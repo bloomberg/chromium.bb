@@ -7,47 +7,86 @@
 #include <utility>
 
 #include "base/compiler_specific.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/common/frame_sinks/begin_frame_source.h"
 #include "components/viz/service/display/display.h"
+#include "components/viz/service/display_embedder/display_provider.h"
+#include "components/viz/service/frame_sinks/external_begin_frame_source_mojo.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
 #include "components/viz/service/hit_test/hit_test_aggregator.h"
 
+#if defined(OS_ANDROID)
+#include "components/viz/service/frame_sinks/external_begin_frame_source_android.h"
+#endif
+
 namespace viz {
 
-RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
+// static
+std::unique_ptr<RootCompositorFrameSinkImpl>
+RootCompositorFrameSinkImpl::Create(
+    mojom::RootCompositorFrameSinkParamsPtr params,
     FrameSinkManagerImpl* frame_sink_manager,
-    const FrameSinkId& frame_sink_id,
-    std::unique_ptr<Display> display,
-    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
-    std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
-    mojom::CompositorFrameSinkAssociatedRequest request,
-    mojom::CompositorFrameSinkClientPtr client,
-    mojom::DisplayPrivateAssociatedRequest display_private_request,
-    mojom::DisplayClientPtr display_client)
-    : compositor_frame_sink_client_(std::move(client)),
-      compositor_frame_sink_binding_(this, std::move(request)),
-      display_client_(std::move(display_client)),
-      display_private_binding_(this, std::move(display_private_request)),
-      support_(std::make_unique<CompositorFrameSinkSupport>(
-          compositor_frame_sink_client_.get(),
-          frame_sink_manager,
-          frame_sink_id,
-          true /* is_root */,
-          true /* needs_sync_points */)),
-      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
-      external_begin_frame_source_(std::move(external_begin_frame_source)),
-      display_(std::move(display)) {
-  DCHECK(begin_frame_source());
-  DCHECK(display_);
+    DisplayProvider* display_provider) {
+  // First create some sort of a BeginFrameSource, depending on the platform
+  // and |params|.
+  std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source;
+  std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source;
+  ExternalBeginFrameSourceMojo* external_begin_frame_source_mojo = nullptr;
 
-  compositor_frame_sink_binding_.set_connection_error_handler(
-      base::Bind(&RootCompositorFrameSinkImpl::OnClientConnectionLost,
-                 base::Unretained(this)));
-  frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),
-                                               frame_sink_id);
-  display_->Initialize(this, frame_sink_manager->surface_manager());
-  support_->SetUpHitTest(display_.get());
+  if (params->external_begin_frame_controller.is_pending() &&
+      params->external_begin_frame_controller_client) {
+    auto owned_external_begin_frame_source_mojo =
+        std::make_unique<ExternalBeginFrameSourceMojo>(
+            std::move(params->external_begin_frame_controller),
+            mojom::ExternalBeginFrameControllerClientPtr(
+                std::move(params->external_begin_frame_controller_client)));
+    external_begin_frame_source_mojo =
+        owned_external_begin_frame_source_mojo.get();
+    external_begin_frame_source =
+        std::move(owned_external_begin_frame_source_mojo);
+  } else {
+#if defined(OS_ANDROID)
+    external_begin_frame_source =
+        std::make_unique<ExternalBeginFrameSourceAndroid>();
+#else
+    synthetic_begin_frame_source = std::make_unique<DelayBasedBeginFrameSource>(
+        std::make_unique<DelayBasedTimeSource>(
+            base::ThreadTaskRunnerHandle::Get().get()),
+        display_provider->GetRestartId());
+#endif
+  }
+
+  // |impl| isn't ready to use until after a display has been created for it and
+  // Initialize() has been called.
+  auto impl = base::WrapUnique(new RootCompositorFrameSinkImpl(
+      frame_sink_manager, params->frame_sink_id,
+      std::move(params->compositor_frame_sink),
+      mojom::CompositorFrameSinkClientPtr(
+          std::move(params->compositor_frame_sink_client)),
+      std::move(params->display_private),
+      mojom::DisplayClientPtr(std::move(params->display_client)),
+      std::move(synthetic_begin_frame_source),
+      std::move(external_begin_frame_source)));
+
+  auto display = display_provider->CreateDisplay(
+      params->frame_sink_id, params->widget, params->gpu_compositing,
+      impl->display_client_.get(), impl->external_begin_frame_source_.get(),
+      impl->synthetic_begin_frame_source_.get(), params->renderer_settings,
+      params->send_swap_size_notifications);
+
+  // Creating a display failed. Destroy |impl| which will close the message
+  // pipes. The host can send a new request, potential with a different
+  // compositing mode.
+  if (!display)
+    return nullptr;
+
+  if (external_begin_frame_source_mojo)
+    external_begin_frame_source_mojo->SetDisplay(display.get());
+
+  impl->Initialize(std::move(display));
+
+  return impl;
 }
 
 RootCompositorFrameSinkImpl::~RootCompositorFrameSinkImpl() {
@@ -125,7 +164,6 @@ void RootCompositorFrameSinkImpl::SubmitCompositorFrame(
               << " because " << reason;
   compositor_frame_sink_binding_.CloseWithReason(static_cast<uint32_t>(result),
                                                  reason);
-  OnClientConnectionLost();
 }
 
 void RootCompositorFrameSinkImpl::SubmitCompositorFrameSync(
@@ -149,13 +187,47 @@ void RootCompositorFrameSinkImpl::DidAllocateSharedBitmap(
     DLOG(ERROR) << "DidAllocateSharedBitmap failed for duplicate "
                 << "SharedBitmapId";
     compositor_frame_sink_binding_.Close();
-    OnClientConnectionLost();
   }
 }
 
 void RootCompositorFrameSinkImpl::DidDeleteSharedBitmap(
     const SharedBitmapId& id) {
   support_->DidDeleteSharedBitmap(id);
+}
+
+RootCompositorFrameSinkImpl::RootCompositorFrameSinkImpl(
+    FrameSinkManagerImpl* frame_sink_manager,
+    const FrameSinkId& frame_sink_id,
+    mojom::CompositorFrameSinkAssociatedRequest frame_sink_request,
+    mojom::CompositorFrameSinkClientPtr frame_sink_client,
+    mojom::DisplayPrivateAssociatedRequest display_request,
+    mojom::DisplayClientPtr display_client,
+    std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
+    std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source)
+    : compositor_frame_sink_client_(std::move(frame_sink_client)),
+      compositor_frame_sink_binding_(this, std::move(frame_sink_request)),
+      display_client_(std::move(display_client)),
+      display_private_binding_(this, std::move(display_request)),
+      support_(std::make_unique<CompositorFrameSinkSupport>(
+          compositor_frame_sink_client_.get(),
+          frame_sink_manager,
+          frame_sink_id,
+          /*is_root=*/true,
+          /*needs_sync_points=*/true)),
+      synthetic_begin_frame_source_(std::move(synthetic_begin_frame_source)),
+      external_begin_frame_source_(std::move(external_begin_frame_source)) {
+  DCHECK(begin_frame_source());
+
+  frame_sink_manager->RegisterBeginFrameSource(begin_frame_source(),
+                                               support_->frame_sink_id());
+}
+
+void RootCompositorFrameSinkImpl::Initialize(std::unique_ptr<Display> display) {
+  display_ = std::move(display);
+  DCHECK(display_);
+
+  display_->Initialize(this, support_->frame_sink_manager()->surface_manager());
+  support_->SetUpHitTest(display_.get());
 }
 
 void RootCompositorFrameSinkImpl::DisplayOutputSurfaceLost() {
@@ -201,12 +273,6 @@ void RootCompositorFrameSinkImpl::DidSwapAfterSnapshotRequestReceived(
 }
 
 void RootCompositorFrameSinkImpl::DisplayDidDrawAndSwap() {}
-
-void RootCompositorFrameSinkImpl::OnClientConnectionLost() {
-  // TODO(kylechar): I'm not sure what we need to do here. If |this| is
-  // destroyed then |display_| will be destroyed and we'll stop producing
-  // frames.
-}
 
 BeginFrameSource* RootCompositorFrameSinkImpl::begin_frame_source() {
   if (external_begin_frame_source_)

@@ -26,10 +26,10 @@ class TestDisplayProvider : public DisplayProvider {
       bool gpu_compositing,
       mojom::DisplayClient* display_client,
       ExternalBeginFrameSource* external_begin_frame_source,
+      SyntheticBeginFrameSource* synthetic_begin_frame_source,
       const RendererSettings& renderer_settings,
-      bool send_swap_size_notifications,
-      std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source)
-      override;
+      bool send_swap_size_notifications) override;
+  uint32_t GetRestartId() const override;
 
  private:
   TestSharedBitmapManager shared_bitmap_manager_;

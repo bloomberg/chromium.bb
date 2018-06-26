@@ -22,17 +22,16 @@ std::unique_ptr<Display> TestDisplayProvider::CreateDisplay(
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
     ExternalBeginFrameSource* external_begin_frame_source,
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
     const RendererSettings& renderer_settings,
-    bool send_swap_size_notifications,
-    std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
+    bool send_swap_size_notifications) {
   auto task_runner = base::ThreadTaskRunnerHandle::Get();
   DCHECK(task_runner);
 
-  // This could use a fake time source if tests wanted to send begin frames.
-  std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source =
-      std::make_unique<DelayBasedBeginFrameSource>(
-          std::make_unique<DelayBasedTimeSource>(task_runner.get()),
-          BeginFrameSource::kNotRestartableId);
+  BeginFrameSource* begin_frame_source =
+      synthetic_begin_frame_source
+          ? static_cast<BeginFrameSource*>(synthetic_begin_frame_source)
+          : static_cast<BeginFrameSource*>(external_begin_frame_source);
 
   std::unique_ptr<OutputSurface> output_surface;
   if (gpu_compositing) {
@@ -43,15 +42,16 @@ std::unique_ptr<Display> TestDisplayProvider::CreateDisplay(
   }
 
   auto scheduler = std::make_unique<DisplayScheduler>(
-      begin_frame_source.get(), task_runner.get(),
+      begin_frame_source, task_runner.get(),
       output_surface->capabilities().max_frames_pending);
-
-  // Give ownership of |begin_frame_source| to caller.
-  *out_begin_frame_source = std::move(begin_frame_source);
 
   return std::make_unique<Display>(&shared_bitmap_manager_, renderer_settings,
                                    frame_sink_id, std::move(output_surface),
                                    std::move(scheduler), task_runner);
+}
+
+uint32_t TestDisplayProvider::GetRestartId() const {
+  return BeginFrameSource::kNotRestartableId;
 }
 
 }  // namespace viz

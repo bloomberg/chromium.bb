@@ -13,11 +13,13 @@
 #include "components/viz/service/frame_sinks/compositor_frame_sink_support.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
 #include "services/viz/privileged/interfaces/compositing/display_private.mojom.h"
+#include "services/viz/privileged/interfaces/compositing/frame_sink_manager.mojom.h"
 #include "services/viz/public/interfaces/compositing/compositor_frame_sink.mojom.h"
 
 namespace viz {
 
 class Display;
+class DisplayProvider;
 class ExternalBeginFrameSource;
 class FrameSinkManagerImpl;
 class SyntheticBeginFrameSource;
@@ -28,16 +30,11 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
                                     public mojom::DisplayPrivate,
                                     public DisplayClient {
  public:
-  RootCompositorFrameSinkImpl(
+  // Creates a new RootCompositorFrameSinkImpl.
+  static std::unique_ptr<RootCompositorFrameSinkImpl> Create(
+      mojom::RootCompositorFrameSinkParamsPtr params,
       FrameSinkManagerImpl* frame_sink_manager,
-      const FrameSinkId& frame_sink_id,
-      std::unique_ptr<Display> display,
-      std::unique_ptr<SyntheticBeginFrameSource> begin_frame_source,
-      std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source,
-      mojom::CompositorFrameSinkAssociatedRequest request,
-      mojom::CompositorFrameSinkClientPtr client,
-      mojom::DisplayPrivateAssociatedRequest display_private_request,
-      mojom::DisplayClientPtr display_client);
+      DisplayProvider* display_provider);
 
   ~RootCompositorFrameSinkImpl() override;
 
@@ -73,6 +70,19 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
       SubmitCompositorFrameSyncCallback callback) override;
 
  private:
+  RootCompositorFrameSinkImpl(
+      FrameSinkManagerImpl* frame_sink_manager,
+      const FrameSinkId& frame_sink_id,
+      mojom::CompositorFrameSinkAssociatedRequest frame_sink_request,
+      mojom::CompositorFrameSinkClientPtr frame_sink_client,
+      mojom::DisplayPrivateAssociatedRequest display_request,
+      mojom::DisplayClientPtr display_client,
+      std::unique_ptr<SyntheticBeginFrameSource> synthetic_begin_frame_source,
+      std::unique_ptr<ExternalBeginFrameSource> external_begin_frame_source);
+
+  // Initializes this object so it will start producing frames with |display|.
+  void Initialize(std::unique_ptr<Display> display);
+
   // DisplayClient:
   void DisplayOutputSurfaceLost() override;
   void DisplayWillDrawAndSwap(bool will_draw_and_swap,
@@ -83,8 +93,6 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   void DisplayDidCompleteSwapWithSize(const gfx::Size& pixel_size) override;
   void DidSwapAfterSnapshotRequestReceived(
       const std::vector<ui::LatencyInfo>& latency_info) override;
-
-  void OnClientConnectionLost();
 
   BeginFrameSource* begin_frame_source();
 

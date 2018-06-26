@@ -100,19 +100,13 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     bool gpu_compositing,
     mojom::DisplayClient* display_client,
     ExternalBeginFrameSource* external_begin_frame_source,
+    SyntheticBeginFrameSource* synthetic_begin_frame_source,
     const RendererSettings& renderer_settings,
-    bool send_swap_size_notifications,
-    std::unique_ptr<SyntheticBeginFrameSource>* out_begin_frame_source) {
-  BeginFrameSource* display_begin_frame_source = nullptr;
-  std::unique_ptr<DelayBasedBeginFrameSource> synthetic_begin_frame_source;
-  if (external_begin_frame_source) {
-    display_begin_frame_source = external_begin_frame_source;
-  } else {
-    synthetic_begin_frame_source = std::make_unique<DelayBasedBeginFrameSource>(
-        std::make_unique<DelayBasedTimeSource>(task_runner_.get()),
-        restart_id_);
-    display_begin_frame_source = synthetic_begin_frame_source.get();
-  }
+    bool send_swap_size_notifications) {
+  BeginFrameSource* begin_frame_source =
+      synthetic_begin_frame_source
+          ? static_cast<BeginFrameSource*>(synthetic_begin_frame_source)
+          : static_cast<BeginFrameSource*>(external_begin_frame_source);
 
   // TODO(penghuang): Merge two output surfaces into one when GLRenderer and
   // software compositor is removed.
@@ -126,11 +120,10 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 #if defined(OS_MACOSX) || defined(OS_WIN)
     // TODO(penghuang): Support DDL for all platforms.
     NOTIMPLEMENTED();
-    // Workaround compile error: private field 'gpu_service_impl_' is not used.
-    ALLOW_UNUSED_LOCAL(gpu_service_impl_);
+    return nullptr;
 #else
     output_surface = std::make_unique<SkiaOutputSurfaceImpl>(
-        gpu_service_impl_, surface_handle, synthetic_begin_frame_source.get());
+        gpu_service_impl_, surface_handle, synthetic_begin_frame_source);
     skia_output_surface = static_cast<SkiaOutputSurface*>(output_surface.get());
 #endif
   } else {
@@ -155,12 +148,12 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
 #if defined(USE_OZONE)
       output_surface = std::make_unique<GLOutputSurfaceOzone>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get(),
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
           GL_TEXTURE_2D, GL_BGRA_EXT);
 #elif defined(OS_MACOSX)
       output_surface = std::make_unique<GLOutputSurfaceMac>(
           std::move(context_provider), surface_handle,
-          synthetic_begin_frame_source.get(), gpu_memory_buffer_manager_.get(),
+          synthetic_begin_frame_source, gpu_memory_buffer_manager_.get(),
           renderer_settings.allow_overlays);
 #else
       NOTREACHED();
@@ -171,14 +164,14 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
       const bool use_overlays =
           capabilities.dc_layers && capabilities.use_dc_overlays_for_video;
       output_surface = std::make_unique<GLOutputSurfaceWin>(
-          std::move(context_provider), synthetic_begin_frame_source.get(),
+          std::move(context_provider), synthetic_begin_frame_source,
           use_overlays);
 #elif defined(OS_ANDROID)
       output_surface = std::make_unique<GLOutputSurfaceAndroid>(
-          std::move(context_provider), synthetic_begin_frame_source.get());
+          std::move(context_provider), synthetic_begin_frame_source);
 #else
       output_surface = std::make_unique<GLOutputSurface>(
-          std::move(context_provider), synthetic_begin_frame_source.get());
+          std::move(context_provider), synthetic_begin_frame_source);
 #endif
     }
   }
@@ -190,16 +183,17 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
   DCHECK_GT(max_frames_pending, 0);
 
   auto scheduler = std::make_unique<DisplayScheduler>(
-      display_begin_frame_source, task_runner_.get(), max_frames_pending,
+      begin_frame_source, task_runner_.get(), max_frames_pending,
       wait_for_all_pipeline_stages_before_draw_);
-
-  // The ownership of the BeginFrameSource is transferred to the caller.
-  *out_begin_frame_source = std::move(synthetic_begin_frame_source);
 
   return std::make_unique<Display>(
       server_shared_bitmap_manager_, renderer_settings, frame_sink_id,
       std::move(output_surface), std::move(scheduler), task_runner_,
       skia_output_surface);
+}
+
+uint32_t GpuDisplayProvider::GetRestartId() const {
+  return restart_id_;
 }
 
 std::unique_ptr<SoftwareOutputDevice>
