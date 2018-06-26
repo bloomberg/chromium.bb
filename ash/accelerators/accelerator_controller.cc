@@ -96,6 +96,10 @@ const char kNotifierAccelerator[] = "ash.accelerator-controller";
 
 const char kHighContrastToggleAccelNotificationId[] =
     "chrome://settings/accessibility/highcontrast";
+const char kDockedMagnifierToggleAccelNotificationId[] =
+    "chrome://settings/accessibility/dockedmagnifier";
+const char kFullscreenMagnifierToggleAccelNotificationId[] =
+    "chrome://settings/accessibility/fullscreenmagnifier";
 
 namespace {
 
@@ -805,6 +809,42 @@ bool CanHandleToggleDockedMagnifier() {
   return features::IsDockedMagnifierEnabled();
 }
 
+void CreateAndShowStickyNotification(const int title_id,
+                                     const int message_id,
+                                     const std::string& notification_id) {
+  std::unique_ptr<Notification> notification =
+      Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, notification_id,
+          l10n_util::GetStringUTF16(title_id),
+          l10n_util::GetStringUTF16(message_id), gfx::Image(),
+          base::string16() /* display source */, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT,
+              kNotifierAccelerator),
+          message_center::RichNotificationData(), nullptr,
+          kNotificationAccessibilityIcon,
+          SystemNotificationWarningLevel::NORMAL);
+  notification->set_priority(message_center::SYSTEM_PRIORITY);
+  message_center::MessageCenter::Get()->AddNotification(
+      std::move(notification));
+}
+
+void RemoveStickyNotitification(const std::string& notification_id) {
+  message_center::MessageCenter::Get()->RemoveNotification(notification_id,
+                                                           false /* by_user */);
+}
+
+void SetDockedMagnifierEnabled(bool enabled) {
+  if (enabled) {
+    CreateAndShowStickyNotification(IDS_DOCKED_MAGNIFIER_ACCEL_TITLE,
+                                    IDS_DOCKED_MAGNIFIER_ACCEL_MSG,
+                                    kDockedMagnifierToggleAccelNotificationId);
+  } else {
+    RemoveStickyNotitification(kDockedMagnifierToggleAccelNotificationId);
+  }
+  Shell::Get()->docked_magnifier_controller()->SetEnabled(enabled);
+}
+
 void HandleToggleDockedMagnifier() {
   DCHECK(features::IsDockedMagnifierEnabled());
   base::RecordAction(UserMetricsAction("Accel_Toggle_Docked_Magnifier"));
@@ -824,41 +864,34 @@ void HandleToggleDockedMagnifier() {
           Shell::Get()
               ->accessibility_controller()
               ->SetDockedMagnifierAcceleratorDialogAccepted();
-          Shell::Get()->docked_magnifier_controller()->SetEnabled(true);
+          SetDockedMagnifierEnabled(true);
         }));
   } else {
-    docked_magnifier_controller->SetEnabled(!current_enabled);
+    SetDockedMagnifierEnabled(!current_enabled);
   }
+}
+
+void SetFullscreenMagnifierEnabled(bool enabled) {
+  if (enabled) {
+    CreateAndShowStickyNotification(
+        IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE,
+        IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG,
+        kFullscreenMagnifierToggleAccelNotificationId);
+  } else {
+    RemoveStickyNotitification(kFullscreenMagnifierToggleAccelNotificationId);
+  }
+  Shell::Get()->magnification_controller()->SetEnabled(enabled);
 }
 
 void SetHighContrastEnabled(bool enabled) {
   if (enabled) {
-    // Show a notification so the user knows that this accelerator toggled
-    // high contrast mode, and that they can press it again to toggle back.
-    // The message center automatically only shows this once per session.
-    std::unique_ptr<Notification> notification =
-        Notification::CreateSystemNotification(
-            message_center::NOTIFICATION_TYPE_SIMPLE,
-            kHighContrastToggleAccelNotificationId,
-            l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_TITLE),
-            l10n_util::GetStringUTF16(IDS_HIGH_CONTRAST_ACCEL_MSG),
-            gfx::Image(), base::string16() /* display source */, GURL(),
-            message_center::NotifierId(
-                message_center::NotifierId::SYSTEM_COMPONENT,
-                kNotifierAccelerator),
-            message_center::RichNotificationData(), nullptr,
-            kNotificationAccessibilityIcon,
-            SystemNotificationWarningLevel::NORMAL);
-    notification->set_priority(message_center::SYSTEM_PRIORITY);
-    message_center::MessageCenter::Get()->AddNotification(
-        std::move(notification));
+    CreateAndShowStickyNotification(IDS_HIGH_CONTRAST_ACCEL_TITLE,
+                                    IDS_HIGH_CONTRAST_ACCEL_MSG,
+                                    kHighContrastToggleAccelNotificationId);
   } else {
-    message_center::MessageCenter::Get()->RemoveNotification(
-        kHighContrastToggleAccelNotificationId, false /* by_user */);
+    RemoveStickyNotitification(kHighContrastToggleAccelNotificationId);
   }
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  controller->SetHighContrastEnabled(enabled);
+  Shell::Get()->accessibility_controller()->SetHighContrastEnabled(enabled);
 }
 
 void HandleToggleHighContrast() {
@@ -912,10 +945,10 @@ void HandleToggleFullscreenMagnifier() {
           Shell::Get()
               ->accessibility_controller()
               ->SetScreenMagnifierAcceleratorDialogAccepted();
-          Shell::Get()->magnification_controller()->SetEnabled(true);
+          SetFullscreenMagnifierEnabled(true);
         }));
   } else {
-    controller->SetEnabled(!current_enabled);
+    SetFullscreenMagnifierEnabled(!current_enabled);
   }
 }
 
