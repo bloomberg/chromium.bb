@@ -19,11 +19,14 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.PackageUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -35,31 +38,33 @@ import javax.annotation.Nullable;
  */
 public abstract class NotificationBuilderBase {
     protected static class Action {
-        enum Type {
+        @IntDef({Type.BUTTON, Type.TEXT})
+        @Retention(RetentionPolicy.SOURCE)
+        public @interface Type {
             /**
              * Regular action that triggers the provided intent when tapped.
              */
-            BUTTON,
+            int BUTTON = 0;
 
             /**
              * Action that triggers a remote input when tapped, for Android Wear input and inline
              * replies from Android N.
              */
-            TEXT
+            int TEXT = 1;
         }
 
         public int iconId;
         public Bitmap iconBitmap;
         public CharSequence title;
         public PendingIntent intent;
-        public Type type;
+        public @Type int type;
 
         /**
          * If the action.type is TEXT, this corresponds to the placeholder text for the input.
          */
         public String placeholder;
 
-        Action(int iconId, CharSequence title, PendingIntent intent, Type type,
+        Action(int iconId, CharSequence title, PendingIntent intent, @Type int type,
                 String placeholder) {
             this.iconId = iconId;
             this.title = title;
@@ -68,7 +73,7 @@ public abstract class NotificationBuilderBase {
             this.placeholder = placeholder;
         }
 
-        Action(Bitmap iconBitmap, CharSequence title, PendingIntent intent, Type type,
+        Action(Bitmap iconBitmap, CharSequence title, PendingIntent intent, @Type int type,
                 String placeholder) {
             this.iconBitmap = iconBitmap;
             this.title = title;
@@ -287,7 +292,8 @@ public abstract class NotificationBuilderBase {
     }
 
     private void addAuthorProvidedAction(@Nullable Bitmap iconBitmap, @Nullable CharSequence title,
-            @Nullable PendingIntent intent, Action.Type actionType, @Nullable String placeholder) {
+            @Nullable PendingIntent intent, @Action.Type int actionType,
+            @Nullable String placeholder) {
         if (mActions.size() == MAX_AUTHOR_PROVIDED_ACTION_BUTTONS) {
             throw new IllegalStateException(
                     "Cannot add more than " + MAX_AUTHOR_PROVIDED_ACTION_BUTTONS + " actions.");

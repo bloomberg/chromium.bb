@@ -111,7 +111,7 @@ public class BrowserActionsTabModelSelector
         // Add observer when tab model is restored to prevent restored tabs updating tab model.
         TabModelObserver tabModelObserver = new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 if (tab != null) {
                     mTabSaver.addTabToSaveQueue(tab);
                 }
@@ -164,7 +164,7 @@ public class BrowserActionsTabModelSelector
     }
 
     @Override
-    public void requestToShowTab(Tab tab, TabSelectionType type) {}
+    public void requestToShowTab(Tab tab, @TabSelectionType int type) {}
 
     @Override
     public boolean closeAllTabsRequest(boolean incognito) {
@@ -204,7 +204,7 @@ public class BrowserActionsTabModelSelector
 
     @Override
     public Tab openNewTab(
-            LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent, boolean incognito) {
+            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
         if (!isTabStateInitialized()) {
             assert type == TabLaunchType.FROM_RESTORE;
         }

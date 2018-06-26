@@ -133,23 +133,24 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * need to override any related calls to add new functionality */
     protected class LayoutManagerTabModelObserver extends EmptyTabModelObserver {
         @Override
-        public void didSelectTab(Tab tab, TabModel.TabSelectionType type, int lastId) {
+        public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
             if (tab.getId() != lastId) tabSelected(tab.getId(), lastId, tab.isIncognito());
         }
 
         @Override
-        public void willAddTab(Tab tab, TabModel.TabLaunchType type) {
+        public void willAddTab(Tab tab, @TabModel.TabLaunchType int type) {
             // Open the new tab
-            if (type == TabModel.TabLaunchType.FROM_RESTORE) return;
-            if (type == TabModel.TabLaunchType.FROM_REPARENTING) return;
-            if (type == TabModel.TabLaunchType.FROM_EXTERNAL_APP) return;
-            if (type == TabModel.TabLaunchType.FROM_LAUNCHER_SHORTCUT) return;
+            if (type == TabModel.TabLaunchType.FROM_RESTORE
+                    || type == TabModel.TabLaunchType.FROM_REPARENTING
+                    || type == TabModel.TabLaunchType.FROM_EXTERNAL_APP
+                    || type == TabModel.TabLaunchType.FROM_LAUNCHER_SHORTCUT)
+                return;
 
             tabCreating(getTabModelSelector().getCurrentTabId(), tab.getUrl(), tab.isIncognito());
         }
 
         @Override
-        public void didAddTab(Tab tab, TabModel.TabLaunchType launchType) {
+        public void didAddTab(Tab tab, @TabModel.TabLaunchType int launchType) {
             int tabId = tab.getId();
             if (launchType == TabModel.TabLaunchType.FROM_RESTORE) {
                 getActiveLayout().onTabRestored(time(), tabId);
@@ -579,7 +580,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
      * @param originX        The x coordinate of the action that created this tab in dp.
      * @param originY        The y coordinate of the action that created this tab in dp.
      */
-    protected void tabCreated(int id, int sourceId, TabModel.TabLaunchType launchType,
+    protected void tabCreated(int id, int sourceId, @TabModel.TabLaunchType int launchType,
             boolean incognito, boolean willBeSelected, float originX, float originY) {
         int newIndex = TabModelUtils.getTabIndexById(getTabModelSelector().getModel(incognito), id);
         getActiveLayout().onTabCreated(
@@ -747,23 +748,20 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         }
 
         switch (getActiveLayout().getViewportMode()) {
-            case ALWAYS_FULLSCREEN:
+            case Layout.ViewportMode.ALWAYS_FULLSCREEN:
                 mHost.getWindowViewport(rect);
                 break;
-
-            case ALWAYS_SHOWING_BROWSER_CONTROLS:
+            case Layout.ViewportMode.ALWAYS_SHOWING_BROWSER_CONTROLS:
                 mHost.getViewportFullControls(rect);
                 break;
-
-            case USE_PREVIOUS_BROWSER_CONTROLS_STATE:
+            case Layout.ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE:
                 if (mPreviousLayoutShowingToolbar) {
                     mHost.getViewportFullControls(rect);
                 } else {
                     mHost.getWindowViewport(rect);
                 }
                 break;
-
-            case DYNAMIC_BROWSER_CONTROLS:
+            case Layout.ViewportMode.DYNAMIC_BROWSER_CONTROLS:
             default:
                 mHost.getVisibleViewport(rect);
         }
@@ -795,9 +793,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         // TODO: If next layout is default layout clear caches (should this be a sub layout thing?)
 
         assert mNextActiveLayout != null : "Need to have a next active layout.";
-        if (mNextActiveLayout != null) {
-            startShowing(mNextActiveLayout, true);
-        }
+        if (mNextActiveLayout != null) startShowing(mNextActiveLayout, true);
     }
 
     @Override
@@ -935,11 +931,7 @@ public class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     }
 
     private int getOrientation() {
-        if (mHost.getWidth() > mHost.getHeight()) {
-            return Orientation.LANDSCAPE;
-        } else {
-            return Orientation.PORTRAIT;
-        }
+        return mHost.getWidth() > mHost.getHeight() ? Orientation.LANDSCAPE : Orientation.PORTRAIT;
     }
 
     /**

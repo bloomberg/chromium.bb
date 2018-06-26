@@ -88,7 +88,7 @@ public class TabSwitcherButtonCoordinator {
 
         mTabModelSelectorTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 updateTabCount();
             }
 

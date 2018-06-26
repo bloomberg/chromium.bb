@@ -213,7 +213,7 @@ class FetchHelper {
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
             @Override
-            public void didAddTab(Tab tab, TabLaunchType type) {
+            public void didAddTab(Tab tab, @TabLaunchType int type) {
                 startObservingTab(tab);
                 if (maybeSetFetchReadinessBaseline(tab)) {
                     maybeStartFetch(tab);
@@ -221,7 +221,7 @@ class FetchHelper {
             }
 
             @Override
-            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
                 if (tab == null) {
                     if (mCurrentTab != null) clearState();
                     mCurrentTab = null;

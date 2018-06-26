@@ -31,7 +31,7 @@ public class PermissionInfo implements Serializable {
         /**
          * Number of handled permissions used for example inside for loops.
          */
-        int NUM_PERMISSIONS = 8;
+        int NUM_ENTRIES = 8;
     }
 
     private final boolean mIsIncognito;

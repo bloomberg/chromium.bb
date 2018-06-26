@@ -12,6 +12,7 @@ import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
@@ -21,6 +22,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.infobar.InfoBarIdentifier;
 import org.chromium.chrome.browser.infobar.SimpleConfirmInfoBarBuilder;
 import org.chromium.chrome.browser.tab.Tab;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Provides ARCore classes access to java-related app functionality.
@@ -37,7 +41,14 @@ public class ArCoreJavaUtils {
     // the intent to install ARCore returns.
     private static final int AR_CORE_INSTALL_RESULT = -1;
 
-    private enum ArCoreInstallStatus { ARCORE_NEEDS_UPDATE, ARCORE_NOT_INSTALLED, ARCORE_INSTALLED }
+    @IntDef({ArCoreInstallStatus.ARCORE_NEEDS_UPDATE, ArCoreInstallStatus.ARCORE_NOT_INSTALLED,
+            ArCoreInstallStatus.ARCORE_INSTALLED})
+    @Retention(RetentionPolicy.SOURCE)
+    private @interface ArCoreInstallStatus {
+        int ARCORE_NEEDS_UPDATE = 0;
+        int ARCORE_NOT_INSTALLED = 1;
+        int ARCORE_INSTALLED = 2;
+    }
 
     private long mNativeArCoreJavaUtils = 0;
     private boolean mAppInfoInitialized = false;
@@ -116,7 +127,7 @@ public class ArCoreJavaUtils {
         }
     }
 
-    private ArCoreInstallStatus getArCoreInstallStatus() {
+    private @ArCoreInstallStatus int getArCoreInstallStatus() {
         assert mAppInfoInitialized;
         int arCoreApkVersionNumber = getArCoreApkVersionNumber();
         if (arCoreApkVersionNumber == ARCORE_NOT_INSTALLED_VERSION_CODE) {
@@ -136,20 +147,21 @@ public class ArCoreJavaUtils {
     @CalledByNative
     private void requestInstallSupportedArCore(final Tab tab) {
         assert shouldRequestInstallSupportedArCore();
-        ArCoreInstallStatus arcoreInstallStatus = getArCoreInstallStatus();
+        @ArCoreInstallStatus
+        int arcoreInstallStatus = getArCoreInstallStatus();
         final Activity activity = tab.getActivity();
         String infobarText = null;
         String buttonText = null;
         switch (arcoreInstallStatus) {
-            case ARCORE_NOT_INSTALLED:
+            case ArCoreInstallStatus.ARCORE_NOT_INSTALLED:
                 infobarText = activity.getString(R.string.ar_core_check_infobar_install_text);
                 buttonText = activity.getString(R.string.app_banner_install);
                 break;
-            case ARCORE_NEEDS_UPDATE:
+            case ArCoreInstallStatus.ARCORE_NEEDS_UPDATE:
                 infobarText = activity.getString(R.string.ar_core_check_infobar_update_text);
                 buttonText = activity.getString(R.string.update_from_market);
                 break;
-            case ARCORE_INSTALLED:
+            case ArCoreInstallStatus.ARCORE_INSTALLED:
                 assert false;
                 break;
         }

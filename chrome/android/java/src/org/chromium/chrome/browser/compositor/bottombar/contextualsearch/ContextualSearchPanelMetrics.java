@@ -68,8 +68,8 @@ public class ContextualSearchPanelMetrics {
      * @param reason The reason for the state change.
      * @param profile The current {@link Profile}.
      */
-    public void onPanelStateChanged(
-            PanelState fromState, PanelState toState, StateChangeReason reason, Profile profile) {
+    public void onPanelStateChanged(PanelState fromState, PanelState toState,
+            @StateChangeReason int reason, Profile profile) {
         // Note: the logging within this function includes the promo, unless specifically
         // excluded.
         boolean isStartingSearch = isStartingNewContextualSearch(toState, reason);
@@ -173,8 +173,8 @@ public class ContextualSearchPanelMetrics {
         // CLOSED (TAB_PROMOTION). For the purpose of logging, the reason for the second transition
         // is reinterpreted to SERP_NAVIGATION, in order to distinguish it from a tab promotion
         // caused when tapping on the Search Bar when the Panel is maximized.
-        StateChangeReason reasonForLogging =
-                mIsSerpNavigation ? StateChangeReason.SERP_NAVIGATION : reason;
+        @StateChangeReason
+        int reasonForLogging = mIsSerpNavigation ? StateChangeReason.SERP_NAVIGATION : reason;
         if (isStartingSearch || isEndingSearch
                 || (!mHasExpanded && toState == PanelState.EXPANDED)
                 || (!mHasMaximized && toState == PanelState.MAXIMIZED)) {
@@ -363,7 +363,8 @@ public class ContextualSearchPanelMetrics {
      * @param reason The reason for the search state transition.
      * @return Whether a new contextual search is starting.
      */
-    private boolean isStartingNewContextualSearch(PanelState toState, StateChangeReason reason) {
+    private boolean isStartingNewContextualSearch(
+            PanelState toState, @StateChangeReason int reason) {
         return toState == PanelState.PEEKED
                 && (reason == StateChangeReason.TEXT_SELECT_TAP
                         || reason == StateChangeReason.TEXT_SELECT_LONG_PRESS);

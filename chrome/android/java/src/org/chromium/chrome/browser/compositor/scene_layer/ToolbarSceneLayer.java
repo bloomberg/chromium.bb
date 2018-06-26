@@ -76,8 +76,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
      */
     private void update(int browserControlsBackgroundColor, float browserControlsUrlBarAlpha,
             ChromeFullscreenManager fullscreenManager, ResourceManager resourceManager,
-            boolean forceHideAndroidBrowserControls, ViewportMode viewportMode, boolean isTablet,
-            float windowHeight) {
+            boolean forceHideAndroidBrowserControls, @ViewportMode int viewportMode,
+            boolean isTablet, float windowHeight) {
         if (!DeviceClassManager.enableFullscreen()) return;
 
         if (fullscreenManager == null) return;
@@ -165,7 +165,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
             LayerTitleCache layerTitleCache, ResourceManager resourceManager, float yOffset) {
         boolean forceHideBrowserControlsAndroidView =
                 mLayoutProvider.getActiveLayout().forceHideBrowserControlsAndroidView();
-        ViewportMode viewportMode = mLayoutProvider.getActiveLayout().getViewportMode();
+        @ViewportMode
+        int viewportMode = mLayoutProvider.getActiveLayout().getViewportMode();
 
         // In Chrome modern design, the url bar is always opaque since it is drawn in the
         // compositor.

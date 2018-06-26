@@ -666,7 +666,7 @@ public class OverlappingStack extends Stack {
     }
 
     @Override
-    public void swipeStarted(long time, ScrollDirection direction, float x, float y) {
+    public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {
         if (direction != ScrollDirection.DOWN) return;
 
         // Turn off warping the tabs because we need them to track the user's finger;

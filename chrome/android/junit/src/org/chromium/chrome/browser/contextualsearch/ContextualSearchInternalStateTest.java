@@ -30,7 +30,7 @@ public class ContextualSearchInternalStateTest {
     private class ContextualSearchInternalStateHandlerStub
             implements ContextualSearchInternalStateHandler {
         @Override
-        public void hideContextualSearchUi(StateChangeReason reason) {
+        public void hideContextualSearchUi(@StateChangeReason int reason) {
             mDidHide = true;
         }
 

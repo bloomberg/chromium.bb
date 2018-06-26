@@ -1226,11 +1226,11 @@ public class ChromeBrowserProvider extends ContentProvider {
         String[] packages = pm.getPackagesForUid(callingUid);
         if (packages.length == 0) return;
 
-        IntentHandler.ExternalAppId externalId =
-                IntentHandler.mapPackageToExternalAppId(packages[0]);
+        @IntentHandler.ExternalAppId
+        int externalId = IntentHandler.mapPackageToExternalAppId(packages[0]);
         RecordHistogram.recordEnumeratedHistogram(
                 "Android.ChromeBrowserProvider." + permissionCheckType + "." + permission,
-                externalId.ordinal(), IntentHandler.ExternalAppId.INDEX_BOUNDARY.ordinal());
+                externalId, IntentHandler.ExternalAppId.NUM_ENTRIES);
     }
 
     private native long nativeInit();

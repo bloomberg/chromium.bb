@@ -37,9 +37,9 @@ class TabModelObserverJniBridge implements TabModelObserver {
     // These simply forward events to the corresponding native implementation.
 
     @Override
-    public final void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
+    public final void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
         assert mNativeTabModelObserverJniBridge != 0;
-        nativeDidSelectTab(mNativeTabModelObserverJniBridge, tab, type.ordinal(), lastId);
+        nativeDidSelectTab(mNativeTabModelObserverJniBridge, tab, type, lastId);
     }
 
     @Override
@@ -55,15 +55,15 @@ class TabModelObserverJniBridge implements TabModelObserver {
     }
 
     @Override
-    public final void willAddTab(Tab tab, TabLaunchType type) {
+    public final void willAddTab(Tab tab, @TabLaunchType int type) {
         assert mNativeTabModelObserverJniBridge != 0;
-        nativeWillAddTab(mNativeTabModelObserverJniBridge, tab, type.ordinal());
+        nativeWillAddTab(mNativeTabModelObserverJniBridge, tab, type);
     }
 
     @Override
-    public final void didAddTab(Tab tab, TabLaunchType type) {
+    public final void didAddTab(Tab tab, @TabLaunchType int type) {
         assert mNativeTabModelObserverJniBridge != 0;
-        nativeDidAddTab(mNativeTabModelObserverJniBridge, tab, type.ordinal());
+        nativeDidAddTab(mNativeTabModelObserverJniBridge, tab, type);
     }
 
     @Override

@@ -326,8 +326,8 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     }
 
     @Override
-    public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
-            boolean incognito) {
+    public Tab openNewTab(
+            LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent, boolean incognito) {
         return mTabCreatorManager.getTabCreator(incognito).createNewTab(
                 loadUrlParams, type, parent);
     }
@@ -340,7 +340,7 @@ public class TabModelSelectorImpl extends TabModelSelectorBase implements TabMod
     }
 
     @Override
-    public void requestToShowTab(Tab tab, TabSelectionType type) {
+    public void requestToShowTab(Tab tab, @TabSelectionType int type) {
         boolean isFromExternalApp =
                 tab != null && tab.getLaunchType() == TabLaunchType.FROM_EXTERNAL_APP;
         Tab tabToDropImportance = null;

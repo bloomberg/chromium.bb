@@ -4,12 +4,15 @@
 
 package org.chromium.chrome.browser.compositor.bottombar;
 
+import android.support.annotation.IntDef;
 import android.view.ViewGroup;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel.StateChangeReason;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.PriorityQueue;
@@ -20,15 +23,16 @@ import java.util.Set;
  * Used to decide which panel should be showing on screen at any moment.
  */
 public class OverlayPanelManager {
-
     /**
      * Priority of an OverlayPanel; used for deciding which panel will be shown when there are
-     * multiple candidates.
+     * multiple candidates. Values should be numbered from 0 and can't have gaps.
      */
-    public static enum PanelPriority {
-        LOW,
-        MEDIUM,
-        HIGH;
+    @IntDef({PanelPriority.LOW, PanelPriority.MEDIUM, PanelPriority.HIGH})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface PanelPriority {
+        int LOW = 0;
+        int MEDIUM = 1;
+        int HIGH = 2;
     }
 
     /** The initial size of the priority queue for suppressed panels. */
@@ -50,7 +54,7 @@ public class OverlayPanelManager {
     private OverlayPanel mPendingPanel;
 
     /** When a panel is suppressed, this the reason the pending panel is to be shown. */
-    private StateChangeReason mPendingReason;
+    private @StateChangeReason int mPendingReason;
 
     /** This handles resource loading for each panels. */
     private DynamicResourceLoader mDynamicResourceLoader;
@@ -68,7 +72,7 @@ public class OverlayPanelManager {
                     public int compare(OverlayPanel p1, OverlayPanel p2) {
                         // The head of the queue is the smallest element, so subtract p1's priority
                         // from p2's priority.
-                        return p2.getPriority().ordinal() - p1.getPriority().ordinal();
+                        return p2.getPriority() - p1.getPriority();
                     }
                 });
         mPanelSet = new HashSet<>();
@@ -80,7 +84,7 @@ public class OverlayPanelManager {
      * @param panel The panel to show.
      * @param reason The reason the panel is going to be shown.
      */
-    public void requestPanelShow(OverlayPanel panel, StateChangeReason reason) {
+    public void requestPanelShow(OverlayPanel panel, @StateChangeReason int reason) {
         if (panel == null || panel == mActivePanel) return;
 
         if (mActivePanel == null) {
@@ -90,7 +94,7 @@ public class OverlayPanelManager {
             // controls if a panel should show or not.
             mActivePanel.peekPanel(reason);
 
-        } else if (panel.getPriority().ordinal() > mActivePanel.getPriority().ordinal()) {
+        } else if (panel.getPriority() > mActivePanel.getPriority()) {
             // If a panel with higher priority than the active one requests to be shown, suppress
             // the active panel and show the requesting one. closePanel will trigger
             // notifyPanelClosed.
@@ -110,7 +114,7 @@ public class OverlayPanelManager {
      * NOTE(mdjones): It is possible that a panel other than the one currently showing was hidden.
      * @param panel The panel that was closed.
      */
-    public void notifyPanelClosed(OverlayPanel panel, StateChangeReason reason) {
+    public void notifyPanelClosed(OverlayPanel panel, @StateChangeReason int reason) {
         // TODO(mdjones): Close should behave like "requestShowPanel". The reason it currently does
         // not is because closing will cancel animation for that panel. This method waits for the
         // panel's "onClosed" event to fire, thus preserving the animation.

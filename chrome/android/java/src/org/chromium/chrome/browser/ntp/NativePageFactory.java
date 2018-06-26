@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import android.net.Uri;
+import android.support.annotation.IntDef;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -21,6 +22,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.content_public.browser.LoadUrlParams;
+
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 
 /**
  * Creates NativePage objects to show chrome-native:// URLs using the native Android view system.
@@ -62,18 +66,22 @@ public class NativePageFactory {
         }
     }
 
-    enum NativePageType {
-        NONE,
-        CANDIDATE,
-        NTP,
-        BOOKMARKS,
-        RECENT_TABS,
-        DOWNLOADS,
-        HISTORY,
+    @IntDef({NativePageType.NONE, NativePageType.CANDIDATE, NativePageType.NTP,
+            NativePageType.BOOKMARKS, NativePageType.RECENT_TABS, NativePageType.DOWNLOADS,
+            NativePageType.HISTORY})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface NativePageType {
+        int NONE = 0;
+        int CANDIDATE = 1;
+        int NTP = 2;
+        int BOOKMARKS = 3;
+        int RECENT_TABS = 4;
+        int DOWNLOADS = 5;
+        int HISTORY = 6;
     }
 
-    private static NativePageType nativePageType(String url, NativePage candidatePage,
-            boolean isIncognito) {
+    private static @NativePageType int nativePageType(
+            String url, NativePage candidatePage, boolean isIncognito) {
         if (url == null) return NativePageType.NONE;
 
         Uri uri = Uri.parse(url);
@@ -126,24 +134,24 @@ public class NativePageFactory {
         NativePage page;
 
         switch (nativePageType(url, candidatePage, isIncognito)) {
-            case NONE:
+            case NativePageType.NONE:
                 return null;
-            case CANDIDATE:
+            case NativePageType.CANDIDATE:
                 page = candidatePage;
                 break;
-            case NTP:
+            case NativePageType.NTP:
                 page = sNativePageBuilder.buildNewTabPage(activity, tab, tabModelSelector);
                 break;
-            case BOOKMARKS:
+            case NativePageType.BOOKMARKS:
                 page = sNativePageBuilder.buildBookmarksPage(activity, tab);
                 break;
-            case DOWNLOADS:
+            case NativePageType.DOWNLOADS:
                 page = sNativePageBuilder.buildDownloadsPage(activity, tab);
                 break;
-            case HISTORY:
+            case NativePageType.HISTORY:
                 page = sNativePageBuilder.buildHistoryPage(activity, tab);
                 break;
-            case RECENT_TABS:
+            case NativePageType.RECENT_TABS:
                 page = sNativePageBuilder.buildRecentTabsPage(activity, tab);
                 break;
             default:

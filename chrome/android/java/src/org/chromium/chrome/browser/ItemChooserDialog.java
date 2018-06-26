@@ -11,6 +11,7 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v4.util.ObjectsCompat;
 import android.text.TextUtils;
@@ -36,6 +37,8 @@ import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.TextViewWithClickableSpans;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -157,7 +160,15 @@ public class ItemChooserDialog {
     /**
      * The various states the dialog can represent.
      */
-    private enum State { INITIALIZING_ADAPTER, STARTING, PROGRESS_UPDATE_AVAILABLE, DISCOVERY_IDLE }
+    @IntDef({State.INITIALIZING_ADAPTER, State.STARTING, State.PROGRESS_UPDATE_AVAILABLE,
+            State.DISCOVERY_IDLE})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface State {
+        int INITIALIZING_ADAPTER = 0;
+        int STARTING = 1;
+        int PROGRESS_UPDATE_AVAILABLE = 2;
+        int DISCOVERY_IDLE = 3;
+    }
 
     /**
      * An adapter for keeping track of which items to show in the dialog.
@@ -641,25 +652,22 @@ public class ItemChooserDialog {
         mStatus.setText(errorStatus);
     }
 
-    private void setState(State state) {
+    private void setState(@State int state) {
         switch (state) {
-            case INITIALIZING_ADAPTER:
-                mListView.setVisibility(View.GONE);
-                mProgressBar.setVisibility(View.VISIBLE);
-                mEmptyMessage.setVisibility(View.GONE);
-                break;
-            case STARTING:
+            case State.STARTING:
                 mStatus.setText(mLabels.searching);
+            // fall through
+            case State.INITIALIZING_ADAPTER:
                 mListView.setVisibility(View.GONE);
                 mProgressBar.setVisibility(View.VISIBLE);
                 mEmptyMessage.setVisibility(View.GONE);
                 break;
-            case PROGRESS_UPDATE_AVAILABLE:
+            case State.PROGRESS_UPDATE_AVAILABLE:
                 mStatus.setText(mLabels.statusActive);
                 mProgressBar.setVisibility(View.GONE);
                 mListView.setVisibility(View.VISIBLE);
                 break;
-            case DISCOVERY_IDLE:
+            case State.DISCOVERY_IDLE:
                 boolean showEmptyMessage = mItemAdapter.isEmpty();
                 mStatus.setText(showEmptyMessage
                         ? mLabels.statusIdleNoneFound : mLabels.statusIdleSomeFound);

@@ -119,7 +119,7 @@ public class TabModelSelectorTabObserverTest {
     public void testObserverAddedBeforeInitialize() {
         TabModelSelectorBase selector = new TabModelSelectorBase() {
             @Override
-            public Tab openNewTab(LoadUrlParams loadUrlParams, TabLaunchType type, Tab parent,
+            public Tab openNewTab(LoadUrlParams loadUrlParams, @TabLaunchType int type, Tab parent,
                     boolean incognito) {
                 return null;
             }
