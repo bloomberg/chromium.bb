@@ -3646,6 +3646,57 @@ IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
   EXPECT_TRUE(bubble_observer.IsSavePromptShownAutomatically());
 }
 
+// This test emulates what was observed in https://crbug.com/856543: Imagine the
+// user stores a single username/password pair on origin A, and later submits a
+// username-less password-reset form on origin B. In the bug, A and B were
+// PSL-matches (different, but with the same eTLD+1), and Chrome ended up
+// overwriting the old password with the new one. This test checks that it no
+// longer is the case.
+IN_PROC_BROWSER_TEST_P(PasswordManagerBrowserTestWithViewsFeature,
+                       NoSilentOverwriteOnPSLMatch) {
+  // Store a password at origin A.
+  const GURL url_A = embedded_test_server()->GetURL("abc.foo.com", "/");
+  scoped_refptr<password_manager::TestPasswordStore> password_store =
+      static_cast<password_manager::TestPasswordStore*>(
+          PasswordStoreFactory::GetForProfile(
+              browser()->profile(), ServiceAccessType::IMPLICIT_ACCESS)
+              .get());
+  autofill::PasswordForm signin_form;
+  signin_form.signon_realm = url_A.GetOrigin().spec();
+  signin_form.origin = url_A;
+  signin_form.username_value = base::ASCIIToUTF16("user");
+  signin_form.password_value = base::ASCIIToUTF16("oldpassword");
+  password_store->AddLogin(signin_form);
+  WaitForPasswordStore();
+
+  // Visit origin B with a form only containing new- and confirmation-password
+  // fields.
+  GURL url_B = embedded_test_server()->GetURL(
+      "www.foo.com", "/password/new_password_form.html");
+  NavigationObserver observer_B(WebContents());
+  ui_test_utils::NavigateToURL(browser(), url_B);
+  observer_B.Wait();
+
+  // Fill in the new password and submit.
+  GURL url_done =
+      embedded_test_server()->GetURL("www.foo.com", "/password/done.html");
+  NavigationObserver observer_done(WebContents());
+  observer_done.SetPathToWaitFor("/password/done.html");
+  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(
+      RenderFrameHost(),
+      "document.getElementById('new_p').value = 'new password';"
+      "document.getElementById('conf_p').value = 'new password';"
+      "document.getElementById('testform').submit();"));
+  observer_done.Wait();
+
+  // Check that the password for origin A was not updated automatically.
+  WaitForPasswordStore();  // Let the navigation take its effect on storing.
+  EXPECT_THAT(
+      password_store->stored_passwords().at(signin_form.signon_realm),
+      ElementsAre(testing::Field(&autofill::PasswordForm::password_value,
+                                 signin_form.password_value)));
+}
+
 INSTANTIATE_TEST_CASE_P(All,
                         PasswordManagerBrowserTestWithViewsFeature,
                         /*popup_views_enabled=*/::testing::Bool());
