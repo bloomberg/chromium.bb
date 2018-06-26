@@ -5,7 +5,6 @@
 package org.chromium.components.sync;
 
 import android.accounts.Account;
-import android.content.Context;
 import android.os.Bundle;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.SmallTest;
@@ -99,7 +98,6 @@ public class AndroidSyncSettingsTest {
         }
     }
 
-    private Context mContext;
     private CountingMockSyncContentResolverDelegate mSyncContentResolverDelegate;
     private String mAuthority;
     private Account mAccount;
@@ -113,7 +111,6 @@ public class AndroidSyncSettingsTest {
     public void setUp() throws Exception {
         mNumberOfCallsToWait = 0;
         mCallbackHelper = new CallbackHelper();
-        mContext = InstrumentationRegistry.getTargetContext();
         setupTestAccounts();
         // Set signed in account to mAccount before initializing AndroidSyncSettings to let
         // AndroidSyncSettings establish correct assumptions.
@@ -121,12 +118,11 @@ public class AndroidSyncSettingsTest {
 
         mSyncContentResolverDelegate = new CountingMockSyncContentResolverDelegate();
         overrideAndroidSyncSettings();
-        mAuthority = AndroidSyncSettings.getContractAuthority(mContext);
+        mAuthority = AndroidSyncSettings.getContractAuthority();
         Assert.assertEquals(1, mSyncContentResolverDelegate.getIsSyncable(mAccount, mAuthority));
 
         mSyncSettingsObserver = new MockSyncSettingsObserver();
-        AndroidSyncSettings.registerObserver(mContext, mSyncSettingsObserver);
-
+        AndroidSyncSettings.registerObserver(mSyncSettingsObserver);
     }
 
     /**
@@ -134,10 +130,8 @@ public class AndroidSyncSettingsTest {
      * changes to propagate to ContentResolverDelegate.
      */
     private void overrideAndroidSyncSettings() throws Exception {
-        AndroidSyncSettings.overrideForTests(mContext, mSyncContentResolverDelegate,
-                (Boolean result) -> {
-                    mCallbackHelper.notifyCalled();
-                });
+        AndroidSyncSettings.overrideForTests(
+                mSyncContentResolverDelegate, (Boolean result) -> mCallbackHelper.notifyCalled());
         mNumberOfCallsToWait++;
         mCallbackHelper.waitForCallback(0, mNumberOfCallsToWait);
     }
@@ -166,7 +160,7 @@ public class AndroidSyncSettingsTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                AndroidSyncSettings.enableChromeSync(mContext);
+                AndroidSyncSettings.enableChromeSync();
             }
         });
     }
@@ -175,7 +169,7 @@ public class AndroidSyncSettingsTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                AndroidSyncSettings.disableChromeSync(mContext);
+                AndroidSyncSettings.disableChromeSync();
             }
         });
     }
@@ -192,7 +186,7 @@ public class AndroidSyncSettingsTest {
     }
 
     private void updateAccountWithCallback(Account account, Callback<Boolean> callback) {
-        AndroidSyncSettings.updateAccount(mContext, account, callback);
+        AndroidSyncSettings.updateAccount(account, callback);
         mNumberOfCallsToWait++;
     }
 
@@ -221,13 +215,12 @@ public class AndroidSyncSettingsTest {
     public void testToggleMasterSyncFromSettings() throws InterruptedException {
         mSyncContentResolverDelegate.setMasterSyncAutomatically(true);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue(
-                "master sync should be set", AndroidSyncSettings.isMasterSyncEnabled(mContext));
+        Assert.assertTrue("master sync should be set", AndroidSyncSettings.isMasterSyncEnabled());
 
         mSyncContentResolverDelegate.setMasterSyncAutomatically(false);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         Assert.assertFalse(
-                "master sync should be unset", AndroidSyncSettings.isMasterSyncEnabled(mContext));
+                "master sync should be unset", AndroidSyncSettings.isMasterSyncEnabled());
     }
 
     @Test
@@ -243,33 +236,33 @@ public class AndroidSyncSettingsTest {
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         mSyncContentResolverDelegate.setSyncAutomatically(mAccount, mAuthority, true);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue("sync should be set", AndroidSyncSettings.isSyncEnabled(mContext));
-        Assert.assertTrue("sync should be set for chrome app",
-                AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertTrue("sync should be set", AndroidSyncSettings.isSyncEnabled());
+        Assert.assertTrue(
+                "sync should be set for chrome app", AndroidSyncSettings.isChromeSyncEnabled());
 
         // Disable sync automatically for the app
         mSyncContentResolverDelegate.setSyncAutomatically(mAccount, mAuthority, false);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertFalse("sync should be unset", AndroidSyncSettings.isSyncEnabled(mContext));
-        Assert.assertFalse("sync should be unset for chrome app",
-                AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertFalse("sync should be unset", AndroidSyncSettings.isSyncEnabled());
+        Assert.assertFalse(
+                "sync should be unset for chrome app", AndroidSyncSettings.isChromeSyncEnabled());
 
         // Re-enable sync
         mSyncContentResolverDelegate.setSyncAutomatically(mAccount, mAuthority, true);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue("sync should be re-enabled", AndroidSyncSettings.isSyncEnabled(mContext));
-        Assert.assertTrue("sync should be set for chrome app",
-                AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertTrue("sync should be re-enabled", AndroidSyncSettings.isSyncEnabled());
+        Assert.assertTrue(
+                "sync should be set for chrome app", AndroidSyncSettings.isChromeSyncEnabled());
 
         // Disabled from master sync
         mSyncContentResolverDelegate.setMasterSyncAutomatically(false);
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertFalse("sync should be disabled due to master sync",
-                AndroidSyncSettings.isSyncEnabled(mContext));
-        Assert.assertFalse("master sync should be disabled",
-                AndroidSyncSettings.isMasterSyncEnabled(mContext));
-        Assert.assertTrue("sync should be set for chrome app",
-                AndroidSyncSettings.isChromeSyncEnabled(mContext));
+        Assert.assertFalse(
+                "sync should be disabled due to master sync", AndroidSyncSettings.isSyncEnabled());
+        Assert.assertFalse(
+                "master sync should be disabled", AndroidSyncSettings.isMasterSyncEnabled());
+        Assert.assertTrue(
+                "sync should be set for chrome app", AndroidSyncSettings.isChromeSyncEnabled());
     }
 
     @Test
@@ -282,12 +275,11 @@ public class AndroidSyncSettingsTest {
 
         enableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled());
 
         disableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertFalse(
-                "account should not be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertFalse("account should not be synced", AndroidSyncSettings.isSyncEnabled());
     }
 
     @Test
@@ -300,26 +292,25 @@ public class AndroidSyncSettingsTest {
 
         enableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled());
 
         updateAccount(mAlternateAccount);
         enableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
         Assert.assertTrue(
-                "alternate account should be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+                "alternate account should be synced", AndroidSyncSettings.isSyncEnabled());
 
         disableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertFalse("alternate account should not be synced",
-                AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertFalse(
+                "alternate account should not be synced", AndroidSyncSettings.isSyncEnabled());
         updateAccount(mAccount);
-        Assert.assertTrue(
-                "account should still be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertTrue("account should still be synced", AndroidSyncSettings.isSyncEnabled());
 
         // Ensure we don't erroneously re-use cached data.
         updateAccount(null);
         Assert.assertFalse(
-                "null account should not be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+                "null account should not be synced", AndroidSyncSettings.isSyncEnabled());
     }
 
     @Test
@@ -332,7 +323,7 @@ public class AndroidSyncSettingsTest {
 
         enableChromeSyncOnUiThread();
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
-        Assert.assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled(mContext));
+        Assert.assertTrue("account should be synced", AndroidSyncSettings.isSyncEnabled());
 
         int masterSyncAutomaticallyCalls =
                 mSyncContentResolverDelegate.mGetMasterSyncAutomaticallyCalls.get();
@@ -341,9 +332,9 @@ public class AndroidSyncSettingsTest {
                 mSyncContentResolverDelegate.mGetSyncAutomaticallyCalls.get();
 
         // Do a bunch of reads.
-        AndroidSyncSettings.isMasterSyncEnabled(mContext);
-        AndroidSyncSettings.isSyncEnabled(mContext);
-        AndroidSyncSettings.isChromeSyncEnabled(mContext);
+        AndroidSyncSettings.isMasterSyncEnabled();
+        AndroidSyncSettings.isSyncEnabled();
+        AndroidSyncSettings.isChromeSyncEnabled();
 
         // Ensure values were read from cache.
         Assert.assertEquals(masterSyncAutomaticallyCalls,
@@ -355,9 +346,9 @@ public class AndroidSyncSettingsTest {
 
         // Do a bunch of reads for alternate account.
         updateAccount(mAlternateAccount);
-        AndroidSyncSettings.isMasterSyncEnabled(mContext);
-        AndroidSyncSettings.isSyncEnabled(mContext);
-        AndroidSyncSettings.isChromeSyncEnabled(mContext);
+        AndroidSyncSettings.isMasterSyncEnabled();
+        AndroidSyncSettings.isSyncEnabled();
+        AndroidSyncSettings.isChromeSyncEnabled();
 
         // Ensure settings were only fetched once.
         Assert.assertEquals(masterSyncAutomaticallyCalls + 1,
@@ -374,7 +365,7 @@ public class AndroidSyncSettingsTest {
     public void testGetContractAuthority() throws Exception {
         Assert.assertEquals("The contract authority should be the package name.",
                 InstrumentationRegistry.getTargetContext().getPackageName(),
-                AndroidSyncSettings.getContractAuthority(mContext));
+                AndroidSyncSettings.getContractAuthority());
     }
 
     @Test
@@ -386,7 +377,7 @@ public class AndroidSyncSettingsTest {
         mSyncContentResolverDelegate.waitForLastNotificationCompleted();
 
         mSyncSettingsObserver.clearNotification();
-        AndroidSyncSettings.enableChromeSync(mContext);
+        AndroidSyncSettings.enableChromeSync();
         Assert.assertTrue("enableChromeSync should trigger observers",
                 mSyncSettingsObserver.receivedNotification());
 
@@ -401,17 +392,17 @@ public class AndroidSyncSettingsTest {
                 mSyncSettingsObserver.receivedNotification());
 
         mSyncSettingsObserver.clearNotification();
-        AndroidSyncSettings.enableChromeSync(mContext);
+        AndroidSyncSettings.enableChromeSync();
         Assert.assertFalse("enableChromeSync shouldn't trigger observers",
                 mSyncSettingsObserver.receivedNotification());
 
         mSyncSettingsObserver.clearNotification();
-        AndroidSyncSettings.disableChromeSync(mContext);
+        AndroidSyncSettings.disableChromeSync();
         Assert.assertTrue("disableChromeSync should trigger observers",
                 mSyncSettingsObserver.receivedNotification());
 
         mSyncSettingsObserver.clearNotification();
-        AndroidSyncSettings.disableChromeSync(mContext);
+        AndroidSyncSettings.disableChromeSync();
         Assert.assertFalse("disableChromeSync shouldn't observers",
                 mSyncSettingsObserver.receivedNotification());
     }

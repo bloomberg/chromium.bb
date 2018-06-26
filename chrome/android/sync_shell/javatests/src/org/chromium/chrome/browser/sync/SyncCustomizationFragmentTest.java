@@ -73,9 +73,8 @@ public class SyncCustomizationFragmentTest {
 
         FakeProfileSyncService() {
             super();
-            setMasterSyncEnabledProvider(() -> {
-                return AndroidSyncSettings.isMasterSyncEnabled(mSyncTestRule.getTargetContext());
-            });
+            setMasterSyncEnabledProvider(
+                    () -> { return AndroidSyncSettings.isMasterSyncEnabled(); });
         }
 
         @Override
@@ -122,16 +121,13 @@ public class SyncCustomizationFragmentTest {
         final SwitchPreference syncSwitch = getSyncSwitch(fragment);
 
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertTrue(AndroidSyncSettings.isChromeSyncEnabled());
         togglePreference(syncSwitch);
         Assert.assertFalse(syncSwitch.isChecked());
-        Assert.assertFalse(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertFalse(AndroidSyncSettings.isChromeSyncEnabled());
         togglePreference(syncSwitch);
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertTrue(AndroidSyncSettings.isChromeSyncEnabled());
     }
 
     /**
@@ -145,8 +141,7 @@ public class SyncCustomizationFragmentTest {
         mSyncTestRule.stopSync();
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         closeFragment(fragment);
-        Assert.assertFalse(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertFalse(AndroidSyncSettings.isChromeSyncEnabled());
     }
 
     /**
@@ -213,8 +208,7 @@ public class SyncCustomizationFragmentTest {
         }
         InstrumentationRegistry.getInstrumentation().waitForIdleSync();
         assertDefaultSyncOffState(fragment);
-        Assert.assertFalse(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertFalse(AndroidSyncSettings.isChromeSyncEnabled());
     }
 
     @Test
@@ -369,18 +363,15 @@ public class SyncCustomizationFragmentTest {
         addServerAutofillCreditCard();
         Assert.assertTrue("There should be server cards", hasServerAutofillCreditCards());
 
-        Assert.assertTrue(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertTrue(AndroidSyncSettings.isChromeSyncEnabled());
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOnState(fragment);
         SwitchPreference syncSwitch = getSyncSwitch(fragment);
         Assert.assertTrue(syncSwitch.isChecked());
-        Assert.assertTrue(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertTrue(AndroidSyncSettings.isChromeSyncEnabled());
         togglePreference(syncSwitch);
         Assert.assertFalse(syncSwitch.isChecked());
-        Assert.assertFalse(
-                AndroidSyncSettings.isChromeSyncEnabled(mSyncTestRule.getTargetContext()));
+        Assert.assertFalse(AndroidSyncSettings.isChromeSyncEnabled());
 
         closeFragment(fragment);
 

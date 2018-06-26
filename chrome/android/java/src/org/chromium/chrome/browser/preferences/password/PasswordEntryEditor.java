@@ -195,8 +195,8 @@ public class PasswordEntryEditor extends Fragment {
 
     private boolean isPasswordSyncingUser() {
         ProfileSyncService syncService = ProfileSyncService.get();
-        return (AndroidSyncSettings.isSyncEnabled(getActivity().getApplicationContext())
-                && syncService.isEngineInitialized() && !syncService.isUsingSecondaryPassphrase());
+        return (AndroidSyncSettings.isSyncEnabled() && syncService.isEngineInitialized()
+                && !syncService.isUsingSecondaryPassphrase());
     }
 
     @Override
