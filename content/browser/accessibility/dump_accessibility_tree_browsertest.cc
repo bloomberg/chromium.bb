@@ -1244,8 +1244,14 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-presentational.html"));
 }
 
+#if defined(OS_WIN)
+// Flaky; https://crbug.com/856566.
+#define MAYBE_AccessibilityIframeTransform DISABLED_AccessibilityIframeTransform
+#else
+#define MAYBE_AccessibilityIframeTransform AccessibilityIframeTransform
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeTransform) {
+                       MAYBE_AccessibilityIframeTransform) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform.html"));
 }
 
@@ -1254,13 +1260,29 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-cross-process.html"));
 }
 
+#if defined(OS_WIN)
+// Flaky; https://crbug.com/856566.
+#define MAYBE_AccessibilityIframeTransformNested \
+  DISABLED_AccessibilityIframeTransformNested
+#else
+#define MAYBE_AccessibilityIframeTransformNested \
+  AccessibilityIframeTransformNested
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeTransformNested) {
+                       MAYBE_AccessibilityIframeTransformNested) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-nested.html"));
 }
 
+#if defined(OS_WIN)
+// Flaky; https://crbug.com/856566.
+#define MAYBE_AccessibilityIframeTransformNestedCrossProcess \
+  DISABLED_AccessibilityIframeTransformNestedCrossProcess
+#else
+#define MAYBE_AccessibilityIframeTransformNestedCrossProcess \
+  AccessibilityIframeTransformNestedCrossProcess
+#endif
 IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest,
-                       AccessibilityIframeTransformNestedCrossProcess) {
+                       MAYBE_AccessibilityIframeTransformNestedCrossProcess) {
   RunHtmlTest(FILE_PATH_LITERAL("iframe-transform-nested-cross-process.html"));
 }
 
