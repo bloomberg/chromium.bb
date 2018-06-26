@@ -680,7 +680,7 @@ const char kSourceSet_Help[] =
   code elimination to delete code not reachable from exported functions.
 
   A source set will not do this code elimination since there is no link step.
-  This allows you to link many sources sets into a shared library and have the
+  This allows you to link many source sets into a shared library and have the
   "exported symbol" notation indicate "export from the final shared library and
   not from the intermediate targets." There is no way to express this concept
   when linking multiple static libraries into a shared library.
