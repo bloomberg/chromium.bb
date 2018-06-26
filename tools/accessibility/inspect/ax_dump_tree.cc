@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
 #include <string>
 
 #include "base/at_exit.h"
@@ -9,7 +10,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "tools/accessibility/inspect/ax_tree_server.h"
 
-char kPidSwitch[] = "pid";
 char kWindowSwitch[] = "window";
 char kFiltersSwitch[] = "filters";
 char kJsonSwitch[] = "json";
@@ -48,16 +48,9 @@ int main(int argc, char** argv) {
           new content::AXTreeServer(widget, filters_path, use_json));
       return 0;
     }
-  }
-  std::string pid_str =
-      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(kPidSwitch);
-  if (!pid_str.empty()) {
-    int pid;
-    if (StringToInt(pid_str, &pid)) {
-      base::ProcessId process_id = static_cast<base::ProcessId>(pid);
-      std::unique_ptr<content::AXTreeServer> server(
-          new content::AXTreeServer(process_id, filters_path, use_json));
-    }
+  } else {
+    std::cout
+        << "* Error: No window handle provided via --window=[window-handle].";
   }
   return 0;
 }

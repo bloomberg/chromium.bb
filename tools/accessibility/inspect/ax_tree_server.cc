@@ -35,7 +35,7 @@ AXTreeServer::AXTreeServer(base::ProcessId pid,
       formatter->BuildAccessibilityTreeForProcess(pid);
 
   if (!dict) {
-    std::cout << "Failed to get accessibility tree";
+    std::cout << "Error: Failed to get accessibility tree";
     return;
   }
 

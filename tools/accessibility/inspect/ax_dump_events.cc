@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <iostream>
 #include <string>
 
 #include "base/at_exit.h"
@@ -35,6 +36,8 @@ int main(int argc, char** argv) {
       std::unique_ptr<content::AXEventServer> server(
           new content::AXEventServer(pid));
     }
+  } else {
+    std::cout << "* Error: No process id provided via --pid=[process-id].";
   }
 
   return 0;
