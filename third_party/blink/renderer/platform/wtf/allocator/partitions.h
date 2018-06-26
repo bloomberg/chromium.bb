@@ -65,11 +65,6 @@ class WTF_EXPORT Partitions {
     return fast_malloc_allocator_->root();
   }
 
-  ALWAYS_INLINE static base::PartitionRoot* NodePartition() {
-    NOTREACHED();
-    return nullptr;
-  }
-
   ALWAYS_INLINE static base::PartitionRoot* LayoutPartition() {
     DCHECK(initialized_);
     return layout_allocator_->root();
@@ -79,11 +74,6 @@ class WTF_EXPORT Partitions {
     base::CheckedNumeric<size_t> total = count;
     total *= size;
     return total.ValueOrDie();
-  }
-
-  static size_t CurrentDOMMemoryUsage() {
-    NOTREACHED();
-    return 0;
   }
 
   static size_t TotalSizeOfCommittedPages() {
