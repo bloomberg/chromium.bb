@@ -2725,6 +2725,22 @@ bool MinidumpModuleList::Read(uint32_t expected_size) {
         return false;
       }
 
+      // Some minidumps have additional modules in the list that are duplicates.
+      // Ignore them. See https://crbug.com/838322
+      uint32_t existing_module_index;
+      if (range_map_->RetrieveRange(base_address, &existing_module_index,
+                                    nullptr, nullptr, nullptr) &&
+          existing_module_index < module_count) {
+        const MinidumpModule& existing_module =
+            (*modules)[existing_module_index];
+        if (existing_module.base_address() == module.base_address() &&
+            existing_module.size() == module.size() &&
+            existing_module.code_file() == module.code_file() &&
+            existing_module.code_identifier() == module.code_identifier()) {
+          continue;
+        }
+      }
+
       const bool is_android = minidump_->IsAndroid();
       if (!StoreRange(module, base_address, module_index, module_count,
                       is_android)) {
