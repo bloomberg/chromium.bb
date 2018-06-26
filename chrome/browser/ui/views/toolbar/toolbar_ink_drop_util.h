@@ -19,6 +19,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/animation/ink_drop_ripple.h"
+#include "ui/views/style/platform_style.h"
 
 constexpr float kToolbarInkDropVisibleOpacity = 0.06f;
 constexpr float kToolbarInkDropHighlightVisibleOpacity = 0.08f;
@@ -72,6 +73,8 @@ std::unique_ptr<views::InkDrop> CreateToolbarInkDrop(
   ink_drop->SetAutoHighlightMode(
       views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
   ink_drop->SetShowHighlightOnHover(true);
+  ink_drop->SetShowHighlightOnFocus(!views::PlatformStyle::kPreferFocusRings);
+
   return ink_drop;
 }
 
