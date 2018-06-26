@@ -2641,6 +2641,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
 
   _paladin_enable_skylab_hwtest = frozenset([
       'nyan_blaze',
+      'reef',
   ])
 
   ### Master paladin (CQ builder).
