@@ -498,35 +498,44 @@ bool VotesUploader::FindCorrectedUsernameElement(
 void VotesUploader::GeneratePasswordAttributesVote(
     const base::string16& password_value,
     FormStructure* form_structure) {
-  // Select a password attribute to upload. Do upload symbols more often as
-  // 2/3rd of issues are because of missing special symbols.
+  // Select a character class attribute to upload.
   int bucket = base::RandGenerator(9);
   int (*predicate)(int c) = nullptr;
-  autofill::PasswordAttribute attribute =
+  autofill::PasswordAttribute character_class_attribute =
       autofill::PasswordAttribute::kHasSpecialSymbol;
   if (bucket == 0) {
     predicate = &islower;
-    attribute = autofill::PasswordAttribute::kHasLowercaseLetter;
+    character_class_attribute =
+        autofill::PasswordAttribute::kHasLowercaseLetter;
   } else if (bucket == 1) {
     predicate = &isupper;
-    attribute = autofill::PasswordAttribute::kHasUppercaseLetter;
+    character_class_attribute =
+        autofill::PasswordAttribute::kHasUppercaseLetter;
   } else if (bucket == 2) {
     predicate = &isdigit;
-    attribute = autofill::PasswordAttribute::kHasNumeric;
+    character_class_attribute = autofill::PasswordAttribute::kHasNumeric;
   } else {  //  3 <= bucket < 9
+    // Upload symbols more often as 2/3rd of issues are because of missing
+    // special symbols.
     predicate = &ispunct;
-    attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
+    character_class_attribute = autofill::PasswordAttribute::kHasSpecialSymbol;
   }
-  bool actual_value =
+  bool actual_value_for_character_class =
       std::any_of(password_value.begin(), password_value.end(), predicate);
 
   // Apply the randomized response technique to noisify the actual value
   // (https://en.wikipedia.org/wiki/Randomized_response).
-  bool randomized_value =
-      base::RandGenerator(2) ? actual_value : base::RandGenerator(2);
+  bool randomized_value_for_character_class =
+      base::RandGenerator(2) ? actual_value_for_character_class
+                             : base::RandGenerator(2);
+  form_structure->set_password_attributes_vote(std::make_pair(
+      character_class_attribute, randomized_value_for_character_class));
 
-  form_structure->set_password_attributes_vote(
-      std::make_pair(attribute, randomized_value));
+  size_t actual_length = password_value.size();
+  size_t randomized_length = base::RandGenerator(5) == 0
+                                 ? actual_length
+                                 : base::RandGenerator(actual_length - 1) + 1;
+  form_structure->set_password_length_vote(randomized_length);
 }
 
 }  // namespace password_manager

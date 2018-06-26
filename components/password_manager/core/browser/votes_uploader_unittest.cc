@@ -199,6 +199,9 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
     int reported_false[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
     int reported_true[kNumberOfPasswordAttributes] = {0, 0, 0, 0};
 
+    int reported_actual_length = 0;
+    int reported_wrong_length = 0;
+
     for (int i = 0; i < 1000; ++i) {
       votes_uploader.GeneratePasswordAttributesVote(password_value,
                                                     &form_structure);
@@ -209,6 +212,15 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
         reported_true[attribute_index]++;
       else
         reported_false[attribute_index]++;
+      size_t reported_length =
+          form_structure.get_password_length_vote_for_testing();
+      if (reported_length == password_value.size()) {
+        reported_actual_length++;
+      } else {
+        reported_wrong_length++;
+        EXPECT_LT(0u, reported_length);
+        EXPECT_LT(reported_length, password_value.size());
+      }
     }
     for (int i = 0; i < kNumberOfPasswordAttributes; i++) {
       EXPECT_LT(0, reported_false[i]);
@@ -226,6 +238,9 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
             << ". password_value = " << password_value;
       }
     }
+    EXPECT_LT(0, reported_actual_length);
+    EXPECT_LT(0, reported_wrong_length);
+    EXPECT_LT(reported_actual_length, reported_wrong_length);
   }
 }
 

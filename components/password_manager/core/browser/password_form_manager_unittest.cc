@@ -164,6 +164,18 @@ MATCHER_P(PasswordsWereRevealed, revealed, "") {
   return arg.passwords_were_revealed() == revealed;
 }
 
+MATCHER_P(HasPasswordAttributesVote, is_vote_expected, "") {
+  base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+      arg.get_password_attributes_vote_for_testing();
+  EXPECT_EQ(is_vote_expected, vote.has_value());
+  if (vote.has_value()) {
+    size_t reported_length = arg.get_password_length_vote_for_testing();
+    EXPECT_LT(0u, reported_length);
+    EXPECT_LE(reported_length, 5u /* actual password length */);
+  }
+  return true;
+}
+
 // Matches iff the masks in |expected_field_properties| match the mask in the
 // uploaded form exactly.
 MATCHER_P(UploadedFieldPropertiesMasksAre, expected_field_properties, "") {

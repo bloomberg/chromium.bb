@@ -2429,6 +2429,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   form_structure.reset(new FormStructure(form));
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasNumeric, true));
+  form_structure->set_password_length_vote(10u);
 
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
@@ -2454,6 +2455,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   upload.set_data_present("144200030e");
   upload.set_passwords_revealed(false);
   upload.set_password_has_numeric(true);
+  upload.set_password_length(10u);
   upload.set_action_signature(15724779818122431245U);
 
   test::FillUploadField(upload.add_field(), 3763331450U, "firstname", "text",
@@ -2505,6 +2507,7 @@ TEST_F(FormStructureTest, EncodeUploadRequest) {
   form_structure.reset(new FormStructure(form));
   form_structure->set_password_attributes_vote(
       std::make_pair(PasswordAttribute::kHasNumeric, true));
+  form_structure->set_password_length_vote(10u);
   ASSERT_EQ(form_structure->field_count(), possible_field_types.size());
   for (size_t i = 0; i < form_structure->field_count(); ++i)
     form_structure->field(i)->set_possible_types(possible_field_types[i]);
