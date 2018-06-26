@@ -81,18 +81,6 @@
 -ExtensionManagementTest.ExternalUrlUpdate
 -ExtensionManagementTest.PolicyOverridesUserInstall
 
-# components/payments/core/payment_manifest_downloader.cc still uses
-# URLFetcher.
-# https://crbug.com/853778
--ManifestVerifierBrowserTest.BobPayHandlerCanUseMethodThatSupportsAllOrigins
--ManifestVerifierBrowserTest.Handler404CanUseMethodThatSupportsAllOrigins
--ManifestVerifierBrowserTest.OneSupportedOrigin
--ManifestVerifierBrowserTest.ThreeTypesOfMethods
--ServiceWorkerPaymentAppFactoryBrowserTest.AllOringsSupported
--ServiceWorkerPaymentAppFactoryBrowserTest.SupportedOrigin
--ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsDifferentMethods
--ServiceWorkerPaymentAppFactoryBrowserTest.TwoAppsSameMethod
-
 # These try to resolver host names using ResourceContext, using the old
 # in-process HostResolver API. Neither works when the network service is
 # enabled, so they'll need to be moved over to a new API.

@@ -12,8 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "components/payments/core/payment_manifest_downloader.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace payments {
@@ -22,7 +22,7 @@ namespace payments {
 class PaymentManifestDownloaderAndroid {
  public:
   explicit PaymentManifestDownloaderAndroid(
-      const scoped_refptr<net::URLRequestContextGetter>& context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~PaymentManifestDownloaderAndroid();
 
   void DownloadPaymentMethodManifest(

@@ -110,7 +110,7 @@ class ServiceWorkerPaymentAppFactoryBrowserTest : public InProcessBrowserTest {
     content::BrowserContext* context = web_contents->GetBrowserContext();
     auto downloader = std::make_unique<TestDownloader>(
         content::BrowserContext::GetDefaultStoragePartition(context)
-            ->GetURLRequestContext());
+            ->GetURLLoaderFactoryForBrowserProcess());
     downloader->AddTestServerURL("https://alicepay.com/",
                                  alicepay_.GetURL("alicepay.com", "/"));
     downloader->AddTestServerURL("https://bobpay.com/",

@@ -17,9 +17,9 @@ class GURL;
 template <class T>
 class scoped_refptr;
 
-namespace net {
-class URLRequestContextGetter;
-}  // namespace net
+namespace network {
+class SharedURLLoaderFactory;
+}
 
 namespace payments {
 
@@ -49,7 +49,7 @@ namespace payments {
 class TestDownloader : public PaymentManifestDownloader {
  public:
   explicit TestDownloader(
-      const scoped_refptr<net::URLRequestContextGetter>& context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~TestDownloader() override;
 
   // PaymentManifestDownloader implementation.

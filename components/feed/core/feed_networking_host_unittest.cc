@@ -14,8 +14,8 @@
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/identity/public/cpp/identity_test_environment.h"
-#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,42 +45,6 @@ class MockResponseDoneCallback {
   std::vector<uint8_t> response_bytes;
 };
 
-// Class that wraps a TestURLLoaderFactory and implements the interface of
-// SharedURLLoaderFactory, allowing one to produce SharedURLLoaderFactory
-// instances that can be mocked.
-class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
- public:
-  void CreateLoaderAndStart(network::mojom::URLLoaderRequest request,
-                            int32_t routing_id,
-                            int32_t request_id,
-                            uint32_t options,
-                            const network::ResourceRequest& url_request,
-                            network::mojom::URLLoaderClientPtr client,
-                            const net::MutableNetworkTrafficAnnotationTag&
-                                traffic_annotation) override {
-    test_factory_.CreateLoaderAndStart(std::move(request), routing_id,
-                                       request_id, options, url_request,
-                                       std::move(client), traffic_annotation);
-  }
-
-  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
-    NOTREACHED();
-  }
-
-  std::unique_ptr<SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED();
-    return nullptr;
-  }
-
-  TestURLLoaderFactory* test_factory() { return &test_factory_; }
-
- protected:
-  ~TestSharedURLLoaderFactory() override = default;
-
- private:
-  TestURLLoaderFactory test_factory_;
-};
-
 }  // namespace
 
 class FeedNetworkingHostTest : public testing::Test {
@@ -95,9 +59,12 @@ class FeedNetworkingHostTest : public testing::Test {
   ~FeedNetworkingHostTest() override {}
 
   void SetUp() override {
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &test_factory_);
     net_service_ = std::make_unique<FeedNetworkingHost>(
         identity_test_env_.identity_manager(), "dummy_api_key",
-        test_loader_factory_);
+        shared_url_loader_factory_);
   }
 
   FeedNetworkingHost* service() { return net_service_.get(); }
@@ -120,8 +87,7 @@ class FeedNetworkingHostTest : public testing::Test {
       status.decoded_body_length = response_string.length();
     }
 
-    test_loader_factory_->test_factory()->AddResponse(url, head,
-                                                      response_string, status);
+    test_factory_.AddResponse(url, head, response_string, status);
 
     RunUntilEmpty();
   }
@@ -165,8 +131,8 @@ class FeedNetworkingHostTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
   identity::IdentityTestEnvironment identity_test_env_;
   std::unique_ptr<FeedNetworkingHost> net_service_;
-  scoped_refptr<TestSharedURLLoaderFactory> test_loader_factory_ =
-      base::MakeRefCounted<TestSharedURLLoaderFactory>();
+  network::TestURLLoaderFactory test_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedNetworkingHostTest);
 };

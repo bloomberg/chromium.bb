@@ -9,7 +9,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument.h"
-#include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -25,11 +24,8 @@ namespace payments {
 class TestIOSPaymentInstrumentFinder final : public IOSPaymentInstrumentFinder {
  public:
   TestIOSPaymentInstrumentFinder(
-      net::TestURLRequestContextGetter* context_getter,
       scoped_refptr<network::SharedURLLoaderFactory> test_url_loader_factory)
-      : IOSPaymentInstrumentFinder(context_getter,
-                                   test_url_loader_factory,
-                                   nil) {}
+      : IOSPaymentInstrumentFinder(test_url_loader_factory, nil) {}
 
   std::vector<GURL> FilterUnsupportedURLPaymentMethods(
       const std::vector<GURL>& queried_url_payment_method_identifiers)
@@ -48,11 +44,8 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
         shared_factory_(
             base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
                 &test_url_loader_factory_)),
-        context_getter_(new net::TestURLRequestContextGetter(
-            base::ThreadTaskRunnerHandle::Get())),
         ios_payment_instrument_finder_(
             std::make_unique<TestIOSPaymentInstrumentFinder>(
-                context_getter_.get(),
                 shared_factory_)) {}
 
   ~PaymentRequestIOSPaymentInstrumentFinderTest() override {}
@@ -164,7 +157,6 @@ class PaymentRequestIOSPaymentInstrumentFinderTest : public PlatformTest {
   network::TestURLLoaderFactory test_url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_factory_;
 
-  scoped_refptr<net::TestURLRequestContextGetter> context_getter_;
   std::unique_ptr<TestIOSPaymentInstrumentFinder>
       ios_payment_instrument_finder_;
 
@@ -615,6 +607,13 @@ TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
 // returned instruments is empty.
 TEST_F(PaymentRequestIOSPaymentInstrumentFinderTest,
        ManyInvalidMethodsSuppliedNoInstruments) {
+  test_url_loader_factory()->AddResponse("https://fake-host-name/bobpay",
+                                         std::string(), net::HTTP_NOT_FOUND);
+  test_url_loader_factory()->AddResponse("https://fake-host-name/alicepay",
+                                         std::string(), net::HTTP_NOT_FOUND);
+  test_url_loader_factory()->AddResponse("https://fake-host-name/sampay",
+                                         std::string(), net::HTTP_NOT_FOUND);
+
   std::vector<GURL> url_methods;
   url_methods.push_back(GURL("https://fake-host-name/bobpay"));
   url_methods.push_back(GURL("https://fake-host-name/alicepay"));
