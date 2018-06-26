@@ -10,9 +10,6 @@
 namespace ash {
 namespace features {
 
-const base::Feature kDisplayMoveWindowAccels{"DisplayMoveWindowAccels",
-                                             base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kDockedMagnifier{"DockedMagnifier",
                                      base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -49,10 +46,6 @@ const base::Feature kTrilinearFiltering{"TrilinearFiltering",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kViewsLogin{"ViewsLogin", base::FEATURE_ENABLED_BY_DEFAULT};
-
-bool IsDisplayMoveWindowAccelsEnabled() {
-  return base::FeatureList::IsEnabled(kDisplayMoveWindowAccels);
-}
 
 bool IsDockedMagnifierEnabled() {
   return base::FeatureList::IsEnabled(kDockedMagnifier);
