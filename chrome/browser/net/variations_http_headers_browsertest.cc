@@ -215,6 +215,10 @@ IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
 // Verify in an integration that that the variations header (X-Client-Data) is
 // correctly attached and stripped from network requests that are triggered via
 // a URLFetcher.
+//
+// TODO(juncai): Remove this test when there are no more clients left that use
+// URLFetcher.
+// https://crbug.com/773295
 IN_PROC_BROWSER_TEST_F(VariationsHttpHeadersBrowserTest,
                        TestStrippingHeadersFromInternalRequest) {
   BlockingURLFetcherDelegate delegate;
