@@ -4,10 +4,11 @@
 
 #include "chrome/browser/extensions/unpacked_installer.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/files/file_util.h"
-#include "base/json/json_file_value_serializer.h"
 #include "base/path_service.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
@@ -275,26 +276,17 @@ bool UnpackedInstaller::IndexAndPersistRulesIfNeeded(std::string* error) {
 
   // TODO(crbug.com/761107): Change this so that we don't need to parse JSON
   // in the browser process.
-  JSONFileValueDeserializer deserializer(resource->GetFilePath());
-  std::unique_ptr<base::Value> root = deserializer.Deserialize(nullptr, error);
-  if (!root)
-    return false;
-
-  if (!root->is_list()) {
-    *error = manifest_errors::kDeclarativeNetRequestListNotPassed;
+  declarative_net_request::IndexAndPersistRulesResult result =
+      declarative_net_request::IndexAndPersistRulesUnsafe(*extension());
+  if (!result.success) {
+    *error = std::move(result.error);
     return false;
   }
 
-  std::vector<InstallWarning> warnings;
-  int ruleset_checksum;
-  if (!declarative_net_request::IndexAndPersistRules(
-          *base::ListValue::From(std::move(root)), *extension(), error,
-          &warnings, &ruleset_checksum)) {
-    return false;
-  }
+  dnr_ruleset_checksum_ = result.ruleset_checksum;
+  if (!result.warnings.empty())
+    extension_->AddInstallWarnings(result.warnings);
 
-  dnr_ruleset_checksum_ = ruleset_checksum;
-  extension_->AddInstallWarnings(warnings);
   return true;
 }
 

@@ -39,6 +39,10 @@ namespace extensions {
 class Extension;
 enum class SandboxedUnpackerFailureReason;
 
+namespace declarative_net_request {
+struct IndexAndPersistRulesResult;
+}
+
 class SandboxedUnpackerClient
     : public base::RefCountedDeleteOnSequence<SandboxedUnpackerClient> {
  public:
@@ -185,11 +189,6 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
                                 JsonFileSanitizer::Status status,
                                 const std::string& error_msg);
 
-  void ReadJSONRulesetIfNeeded(std::unique_ptr<base::DictionaryValue> manifest);
-  void ReadJSONRulesetDone(std::unique_ptr<base::DictionaryValue> manifest,
-                           base::Optional<base::Value> json_ruleset,
-                           const base::Optional<std::string>& error);
-
   // Reports unpack success or failure, or unzip failure.
   void ReportSuccess(std::unique_ptr<base::DictionaryValue> original_manifest,
                      const base::Optional<int>& dnr_ruleset_checksum);
@@ -207,13 +206,15 @@ class SandboxedUnpacker : public base::RefCountedThreadSafe<SandboxedUnpacker> {
   // Cleans up temp directory artifacts.
   void Cleanup();
 
-  // Indexes |json_ruleset| if it is non-null and persists the corresponding
-  // indexed file for the Declarative Net Request API. Also, returns the
-  // checksum of the indexed ruleset file if the ruleset was persisted. Returns
-  // false and reports failure in case of an error.
-  bool IndexAndPersistRulesIfNeeded(
-      std::unique_ptr<base::ListValue> json_ruleset,
-      base::Optional<int>* dnr_ruleset_checksum);
+  // If a Declarative Net Request JSON ruleset is present, parses the JSON
+  // ruleset for the Declarative Net Request API and persists the indexed
+  // ruleset.
+  void IndexAndPersistJSONRulesetIfNeeded(
+      std::unique_ptr<base::DictionaryValue> manifest);
+
+  void OnJSONRulesetIndexed(
+      std::unique_ptr<base::DictionaryValue> manifest,
+      declarative_net_request::IndexAndPersistRulesResult result);
 
   // Returns a JsonParser that can be used on the |unpacker_io_task_runner|.
   data_decoder::mojom::JsonParser* GetJsonParserPtr();
