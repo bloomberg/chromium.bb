@@ -3493,6 +3493,14 @@ public class Tab
         mTrustedCdnPublisherUrl = url;
     }
 
+    /**
+     * Sets a custom {@link DisplayCutoutController} for testing.
+     */
+    @VisibleForTesting
+    public void setDisplayCutoutController(DisplayCutoutController controller) {
+        mDisplayCutoutController = controller;
+    }
+
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
