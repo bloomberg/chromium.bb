@@ -59,6 +59,8 @@ void WaveShaperProcessor::SetCurve(const float* curve_data,
   curve_ = std::make_unique<Vector<float>>(curve_length);
   memcpy(curve_->data(), curve_data, sizeof(float) * curve_length);
 
+  DCHECK_GE(kernels_.size(), 1ULL);
+
   // Compute the curve output for a zero input, and set the tail time for all
   // the kernels.
   WaveShaperDSPKernel* kernel =
