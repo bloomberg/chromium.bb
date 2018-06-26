@@ -41,7 +41,7 @@ const int kIdealizedBitratePercentUtilized[] = {9, 9, 9, 15, 36, 38, 35, 40};
 
 const int kMaxSerializedBytes = 10000;
 
-}
+}  // namespace
 
 namespace media {
 namespace cast {
@@ -88,7 +88,7 @@ class SerializeDeserializeTest : public ::testing::Test {
     event_time_ms = 0;
     int packet_id = 0;
     for (int i = 0; i < metadata_.num_packet_events(); i++) {
-      linked_ptr<AggregatedPacketEvent> packet_event(new AggregatedPacketEvent);
+      auto packet_event = std::make_unique<AggregatedPacketEvent>();
       packet_event->set_relative_rtp_timestamp(i * 90);
       for (int j = 0; j < 10; j++) {
         BasePacketEvent* base_event = packet_event->add_base_packet_event();
@@ -102,7 +102,7 @@ class SerializeDeserializeTest : public ::testing::Test {
           event_time_ms += 256;
         }
       }
-      packet_event_list_.push_back(packet_event);
+      packet_event_list_.push_back(std::move(packet_event));
     }
   }
 

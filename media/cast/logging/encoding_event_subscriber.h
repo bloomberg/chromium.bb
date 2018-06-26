@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "media/cast/logging/logging_defines.h"
 #include "media/cast/logging/proto/raw_events.pb.h"
@@ -36,7 +35,8 @@ static const int kMaxProtosPerFrame = 10;
 
 using FrameEventList =
     std::vector<std::unique_ptr<proto::AggregatedFrameEvent>>;
-using PacketEventList = std::vector<linked_ptr<proto::AggregatedPacketEvent>>;
+using PacketEventList =
+    std::vector<std::unique_ptr<proto::AggregatedPacketEvent>>;
 
 // A RawEventSubscriber implementation that subscribes to events,
 // encodes them in protocol buffer format, and aggregates them into a more
@@ -76,7 +76,7 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   using FrameEventMap =
       std::map<RtpTimeDelta, std::unique_ptr<proto::AggregatedFrameEvent>>;
   using PacketEventMap =
-      std::map<RtpTimeDelta, linked_ptr<proto::AggregatedPacketEvent>>;
+      std::map<RtpTimeDelta, std::unique_ptr<proto::AggregatedPacketEvent>>;
 
   // Transfer up to |max_num_entries| smallest entries from |frame_event_map_|
   // to |frame_event_storage_|. This helps keep size of |frame_event_map_| small
@@ -88,7 +88,7 @@ class EncodingEventSubscriber : public RawEventSubscriber {
   void AddFrameEventToStorage(
       std::unique_ptr<proto::AggregatedFrameEvent> frame_event_proto);
   void AddPacketEventToStorage(
-      const linked_ptr<proto::AggregatedPacketEvent>& packet_event_proto);
+      std::unique_ptr<proto::AggregatedPacketEvent> packet_event_proto);
 
   bool ShouldCreateNewProto(
       uint32_t relative_rtp_timestamp_lower_32_bits) const;

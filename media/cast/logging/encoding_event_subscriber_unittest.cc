@@ -456,7 +456,7 @@ TEST_F(EncodingEventSubscriberTest, PacketEvent) {
 
   PacketEventList::iterator it = packet_events_.begin();
 
-  linked_ptr<AggregatedPacketEvent> event = *it;
+  const AggregatedPacketEvent* event = it->get();
 
   EXPECT_EQ((rtp_timestamp - first_rtp_timestamp_).lower_32_bits(),
             event->relative_rtp_timestamp());
@@ -511,7 +511,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForPacket) {
 
   PacketEventList::iterator it = packet_events_.begin();
 
-  linked_ptr<AggregatedPacketEvent> event = *it;
+  const AggregatedPacketEvent* event = it->get();
 
   EXPECT_EQ((rtp_timestamp - first_rtp_timestamp_).lower_32_bits(),
             event->relative_rtp_timestamp());
@@ -566,7 +566,7 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEventsForFrame) {
 
   PacketEventList::iterator it = packet_events_.begin();
 
-  linked_ptr<AggregatedPacketEvent> event = *it;
+  const AggregatedPacketEvent* event = it->get();
 
   EXPECT_EQ((rtp_timestamp - first_rtp_timestamp_).lower_32_bits(),
             event->relative_rtp_timestamp());
@@ -627,35 +627,40 @@ TEST_F(EncodingEventSubscriberTest, MultiplePacketEvents) {
 
   PacketEventList::iterator it = packet_events_.begin();
 
-  linked_ptr<AggregatedPacketEvent> event = *it;
+  {
+    const AggregatedPacketEvent* event = it->get();
 
-  EXPECT_EQ((rtp_timestamp_1 - first_rtp_timestamp_).lower_32_bits(),
-            event->relative_rtp_timestamp());
+    EXPECT_EQ((rtp_timestamp_1 - first_rtp_timestamp_).lower_32_bits(),
+              event->relative_rtp_timestamp());
 
-  ASSERT_EQ(1, event->base_packet_event_size());
-  const BasePacketEvent& base_event = event->base_packet_event(0);
-  EXPECT_EQ(packet_id_1, base_event.packet_id());
-  ASSERT_EQ(1, base_event.event_type_size());
-  EXPECT_EQ(media::cast::proto::PACKET_SENT_TO_NETWORK,
-            base_event.event_type(0));
-  ASSERT_EQ(1, base_event.event_timestamp_ms_size());
-  EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
+    ASSERT_EQ(1, event->base_packet_event_size());
+    const BasePacketEvent& base_event = event->base_packet_event(0);
+    EXPECT_EQ(packet_id_1, base_event.packet_id());
+    ASSERT_EQ(1, base_event.event_type_size());
+    EXPECT_EQ(media::cast::proto::PACKET_SENT_TO_NETWORK,
+              base_event.event_type(0));
+    ASSERT_EQ(1, base_event.event_timestamp_ms_size());
+    EXPECT_EQ(InMilliseconds(now1), base_event.event_timestamp_ms(0));
+  }
 
   ++it;
   ASSERT_TRUE(it != packet_events_.end());
 
-  event = *it;
-  EXPECT_EQ((rtp_timestamp_2 - first_rtp_timestamp_).lower_32_bits(),
-            event->relative_rtp_timestamp());
+  {
+    const AggregatedPacketEvent* event = it->get();
 
-  ASSERT_EQ(1, event->base_packet_event_size());
-  const BasePacketEvent& base_event_2 = event->base_packet_event(0);
-  EXPECT_EQ(packet_id_2, base_event_2.packet_id());
-  ASSERT_EQ(1, base_event_2.event_type_size());
-  EXPECT_EQ(media::cast::proto::PACKET_RETRANSMITTED,
-            base_event_2.event_type(0));
-  ASSERT_EQ(1, base_event_2.event_timestamp_ms_size());
-  EXPECT_EQ(InMilliseconds(now2), base_event_2.event_timestamp_ms(0));
+    EXPECT_EQ((rtp_timestamp_2 - first_rtp_timestamp_).lower_32_bits(),
+              event->relative_rtp_timestamp());
+
+    ASSERT_EQ(1, event->base_packet_event_size());
+    const BasePacketEvent& base_event_2 = event->base_packet_event(0);
+    EXPECT_EQ(packet_id_2, base_event_2.packet_id());
+    ASSERT_EQ(1, base_event_2.event_type_size());
+    EXPECT_EQ(media::cast::proto::PACKET_RETRANSMITTED,
+              base_event_2.event_type(0));
+    ASSERT_EQ(1, base_event_2.event_timestamp_ms_size());
+    EXPECT_EQ(InMilliseconds(now2), base_event_2.event_timestamp_ms(0));
+  }
 }
 
 TEST_F(EncodingEventSubscriberTest, FirstRtpTimeTicks) {
@@ -793,14 +798,17 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   PacketEventList::iterator packet_it = packet_events_.begin();
   ASSERT_TRUE(packet_it != packet_events_.end());
 
-  linked_ptr<AggregatedPacketEvent> packet_event = *packet_it;
-
-  EXPECT_EQ(kMaxPacketsPerFrame,
-      packet_event->base_packet_event_size());
+  {
+    const AggregatedPacketEvent* packet_event = packet_it->get();
+    EXPECT_EQ(kMaxPacketsPerFrame, packet_event->base_packet_event_size());
+  }
 
   ++packet_it;
-  packet_event = *packet_it;
-  EXPECT_EQ(1, packet_event->base_packet_event_size());
+
+  {
+    const AggregatedPacketEvent* packet_event = packet_it->get();
+    EXPECT_EQ(1, packet_event->base_packet_event_size());
+  }
 
   for (int j = 0; j < kMaxEventsPerProto + 1; j++) {
     std::unique_ptr<PacketEvent> send_event(new PacketEvent());
@@ -823,14 +831,17 @@ TEST_F(EncodingEventSubscriberTest, MaxEventsPerProto) {
   packet_it = packet_events_.begin();
   ASSERT_TRUE(packet_it != packet_events_.end());
 
-  packet_event = *packet_it;
-
-  EXPECT_EQ(kMaxEventsPerProto,
-      packet_event->base_packet_event(0).event_type_size());
+  {
+    const AggregatedPacketEvent* packet_event = packet_it->get();
+    EXPECT_EQ(kMaxEventsPerProto,
+              packet_event->base_packet_event(0).event_type_size());
+  }
 
   ++packet_it;
-  packet_event = *packet_it;
-  EXPECT_EQ(1, packet_event->base_packet_event(0).event_type_size());
+  {
+    const AggregatedPacketEvent* packet_event = packet_it->get();
+    EXPECT_EQ(1, packet_event->base_packet_event(0).event_type_size());
+  }
 }
 
 }  // namespace cast
