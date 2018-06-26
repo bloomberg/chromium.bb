@@ -664,6 +664,9 @@ cr.define('certificate_manager', function() {
       assertEquals(4, certificateLists.length);
 
       const assertCertificateListLength = function(listIndex, expectedSize) {
+        // Need to switch to the corresponding tab before querying the DOM.
+        paperTabsElement.selected = listIndex;
+        Polymer.dom.flush();
         const certificateEntries =
             certificateLists[listIndex].shadowRoot.querySelectorAll(
                 'certificate-entry');

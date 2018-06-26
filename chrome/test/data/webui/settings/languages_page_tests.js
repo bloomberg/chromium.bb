@@ -348,8 +348,8 @@ cr.define('languages_page_tests', function() {
 
         // Find the new language item.
         const items = languagesCollapse.querySelectorAll('.list-item');
-        const domRepeat = assert(
-            languagesCollapse.querySelector('template[is="dom-repeat"]'));
+        const domRepeat = assert(languagesCollapse.querySelector(
+            Polymer.DomRepeat ? 'dom-repeat' : 'template[is="dom-repeat"]'));
         const item = Array.from(items).find(function(el) {
           return domRepeat.itemForElement(el) &&
               domRepeat.itemForElement(el).language.code == 'no';

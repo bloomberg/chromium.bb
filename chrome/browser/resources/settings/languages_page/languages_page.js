@@ -158,37 +158,37 @@ Polymer({
    * Used to determine which "Move" buttons to show for ordering enabled
    * languages.
    * @param {number} n
-   * @param {!LanguageState} language
    * @return {boolean} True if |language| is at the |n|th index in the list of
    *     enabled languages.
    * @private
    */
-  isNthLanguage_: function(n, language) {
+  isNthLanguage_: function(n) {
+    if (this.languages == undefined || this.detailLanguage_ == undefined)
+      return false;
+
     const compareLanguage = assert(this.languages.enabled[n]);
-    return language.language == compareLanguage.language;
+    return this.detailLanguage_.language == compareLanguage.language;
   },
 
   /**
-   * @param {!LanguageState} language
    * @return {boolean} True if the "Move to top" option for |language| should be
    *     visible.
    * @private
    */
-  showMoveUp_: function(language) {
+  showMoveUp_: function() {
     // "Move up" is a no-op for the top language, and redundant with
     // "Move to top" for the 2nd language.
-    return !this.isNthLanguage_(0, language) &&
-        !this.isNthLanguage_(1, language);
+    return !this.isNthLanguage_(0) && !this.isNthLanguage_(1);
   },
 
   /**
-   * @param {!LanguageState} language
    * @return {boolean} True if the "Move down" option for |language| should be
    *     visible.
    * @private
    */
-  showMoveDown_: function(language) {
-    return !this.isNthLanguage_(this.languages.enabled.length - 1, language);
+  showMoveDown_: function() {
+    return this.languages != undefined &&
+        !this.isNthLanguage_(this.languages.enabled.length - 1);
   },
 
   /**
@@ -196,7 +196,7 @@ Polymer({
    * @return {boolean} True if there are less than 2 languages.
    */
   isHelpTextHidden_: function(change) {
-    return this.languages.enabled.length <= 1;
+    return this.languages != undefined && this.languages.enabled.length <= 1;
   },
 
   // <if expr="chromeos">
@@ -333,7 +333,7 @@ Polymer({
    * @private
    */
   disableTranslateCheckbox_: function(language, targetLanguageCode) {
-    if (!language.supportsTranslate)
+    if (language == undefined || !language.supportsTranslate)
       return true;
 
     return this.languageHelper.convertLanguageCodeForTranslate(language.code) ==
@@ -447,6 +447,9 @@ Polymer({
    * @private
    */
   getSpellCheckSecondaryText_: function() {
+    if (this.languages == undefined || this.prefs == undefined)
+      return '';
+
     if (this.getSpellCheckDisabledByPolicy_())
       return loadTimeData.getString('spellCheckDisabled');
     const enabledSpellCheckLanguages =
@@ -505,6 +508,9 @@ Polymer({
 
   /** @private */
   updateSpellcheckLanguages_: function() {
+    if (this.languages == undefined)
+      return;
+
     this.set('spellCheckLanguages_', this.getSpellCheckLanguages_());
 
     // Notify Polymer of subproperties that might have changed on the items in
@@ -524,6 +530,9 @@ Polymer({
 
   /** @private */
   updateSpellcheckEnabled_: function() {
+    if (this.prefs == undefined)
+      return;
+
     this.set('spellCheckDisabled_', this.getSpellCheckDisabledByPolicy_());
 
     // If the spellcheck section was expanded, close it.
