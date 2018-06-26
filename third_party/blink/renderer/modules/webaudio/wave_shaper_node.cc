@@ -99,6 +99,11 @@ void WaveShaperNode::SetCurveImpl(const float* curve_data,
     return;
   }
 
+  // This is to synchronize with the changes made in
+  // AudioBasicProcessorNode::CheckNumberOfChannelsForInput() where we can
+  // Initialize() and Uninitialize(), changing the number of kernels.
+  BaseAudioContext::GraphAutoLocker context_locker(context());
+
   GetWaveShaperProcessor()->SetCurve(curve_data, curve_length);
 }
 
