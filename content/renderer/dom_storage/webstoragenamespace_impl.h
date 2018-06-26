@@ -21,6 +21,7 @@ class WebStorageNamespaceImpl : public blink::WebStorageNamespace {
   blink::WebStorageArea* CreateStorageArea(
       const blink::WebSecurityOrigin& origin) override;
   virtual blink::WebStorageNamespace* copy();
+  blink::WebString GetNamespaceId() const override;
   bool IsSameNamespace(const WebStorageNamespace&) const override;
 
  private:

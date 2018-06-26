@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_STORAGE_NAMESPACE_H_
 
 #include "third_party/blink/public/platform/web_common.h"
+#include "third_party/blink/public/platform/web_string.h"
 
 namespace blink {
 
@@ -51,6 +52,8 @@ class WebStorageNamespace {
   // backing store.  You should call delete on the returned object when you're
   // finished.
   virtual WebStorageArea* CreateStorageArea(const WebSecurityOrigin&) = 0;
+
+  virtual WebString GetNamespaceId() const = 0;
 
   // Returns true of the two instances represent the same storage namespace.
   virtual bool IsSameNamespace(const WebStorageNamespace&) const {

@@ -616,13 +616,6 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     loop.Run();
   }
 
-  // Add observers to the first two connections.
-  testing::StrictMock<test::MockLevelDBObserver> observer1;
-  area1->AddObserver(observer1.Bind());
-  EXPECT_FALSE(area1.encountered_error());
-  testing::StrictMock<test::MockLevelDBObserver> observer3;
-  area3->AddObserver(observer3.Bind());
-
   // Verify one attempt was made to open the database, and connect that request
   // with a database implementation that always fails on write.
   ASSERT_EQ(1u, fake_leveldb_service.open_requests().size());
@@ -645,9 +638,6 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   // pending commit that will get cancelled when the database connection is
   // closed.
   auto value = leveldb::StringPieceToUint8Vector("avalue");
-  EXPECT_CALL(observer3, KeyAdded(leveldb::StringPieceToUint8Vector("w3key"),
-                                  value, "source"))
-      .Times(1);
   area3->Put(leveldb::StringPieceToUint8Vector("w3key"), value, base::nullopt,
              "source",
              base::BindOnce([](bool success) { EXPECT_TRUE(success); }));
@@ -663,17 +653,6 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
     value[0]++;
     area1.set_connection_error_handler(put_loop.QuitClosure());
 
-    if (i == 1) {
-      EXPECT_CALL(observer1, ShouldSendOldValueOnMutations(false)).Times(1);
-      EXPECT_CALL(observer1, KeyAdded(leveldb::StringPieceToUint8Vector("key"),
-                                      value, "source"))
-          .Times(1);
-    } else {
-      EXPECT_CALL(observer1,
-                  KeyChanged(leveldb::StringPieceToUint8Vector("key"), value,
-                             old_value, "source"))
-          .Times(1);
-    }
     area1->Put(leveldb::StringPieceToUint8Vector("key"), value, base::nullopt,
                "source", base::BindLambdaForTesting([&](bool success) {
                  EXPECT_TRUE(success);

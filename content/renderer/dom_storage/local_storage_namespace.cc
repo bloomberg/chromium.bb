@@ -24,6 +24,10 @@ LocalStorageNamespace::LocalStorageNamespace(
 LocalStorageNamespace::~LocalStorageNamespace() {
 }
 
+blink::WebString LocalStorageNamespace::GetNamespaceId() const {
+  return blink::WebString();
+}
+
 WebStorageArea* LocalStorageNamespace::CreateStorageArea(
     const blink::WebSecurityOrigin& origin) {
   return new LocalStorageArea(

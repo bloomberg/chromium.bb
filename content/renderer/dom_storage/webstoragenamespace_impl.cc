@@ -39,11 +39,13 @@ WebStorageNamespace* WebStorageNamespaceImpl::copy() {
   return nullptr;
 }
 
+blink::WebString WebStorageNamespaceImpl::GetNamespaceId() const {
+  return blink::WebString::FromASCII(namespace_id_);
+}
+
 bool WebStorageNamespaceImpl::IsSameNamespace(
     const WebStorageNamespace& other) const {
-  const WebStorageNamespaceImpl* other_impl =
-      static_cast<const WebStorageNamespaceImpl*>(&other);
-  return namespace_id_ == other_impl->namespace_id_;
+  return GetNamespaceId() == other.GetNamespaceId();
 }
 
 }  // namespace content
