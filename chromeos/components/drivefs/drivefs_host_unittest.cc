@@ -109,7 +109,10 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
   TestingDriveFsHostDelegate(
       std::unique_ptr<service_manager::Connector> connector,
       const AccountId& account_id)
-      : connector_(std::move(connector)), account_id_(account_id) {}
+      : connector_(std::move(connector)), account_id_(account_id) {
+    ON_CALL(*this, AreRefreshTokensReady())
+        .WillByDefault(testing::Return(true));
+  }
 
   MockOAuth2MintTokenFlow& mock_flow() { return mock_flow_; }
 
@@ -119,6 +122,7 @@ class TestingDriveFsHostDelegate : public DriveFsHost::Delegate {
 
   // DriveFsHost::Delegate:
   MOCK_METHOD1(OnMounted, void(const base::FilePath&));
+  MOCK_METHOD0(AreRefreshTokensReady, bool());
 
  private:
   // DriveFsHost::Delegate:
@@ -565,6 +569,29 @@ TEST_F(DriveFsHostTest, GetAccessToken_SequentialRequests) {
             }));
     run_loop.Run();
   }
+}
+
+TEST_F(DriveFsHostTest, GetAccessToken_RefreshTokensNotReadyYet) {
+  ASSERT_NO_FATAL_FAILURE(DoMount());
+
+  EXPECT_CALL(*host_delegate_, AreRefreshTokensReady())
+      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_identity_manager_,
+              GetAccessToken("test@example.com", _, "drivefs"))
+      .Times(0);
+  host_delegate_->mock_flow().ExpectNoStartCalls();
+
+  base::RunLoop run_loop;
+  auto quit_closure = run_loop.QuitClosure();
+  delegate_ptr_->GetAccessToken(
+      "client ID", "app ID", {"scope1", "scope2"},
+      base::BindLambdaForTesting(
+          [&](mojom::AccessTokenStatus status, const std::string& token) {
+            EXPECT_EQ(mojom::AccessTokenStatus::kTransientError, status);
+            EXPECT_TRUE(token.empty());
+            std::move(quit_closure).Run();
+          }));
+  run_loop.Run();
 }
 
 TEST_F(DriveFsHostTest, GetAccessToken_GetAccessTokenFailure_Permanent) {
