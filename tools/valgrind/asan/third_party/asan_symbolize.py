@@ -436,7 +436,13 @@ class SymbolizationLoop(object):
 
   def process_logfile(self):
     self.frame_no = 0
-    for line in logfile:
+    # We use readline directly instead of an iterator ("for line in logfile")
+    # because the latter introduces extra buffering that is undesirable for
+    # interactive use.
+    while 1:
+      line = logfile.readline()
+      if not line:
+        break
       processed = self.process_line(line)
       print('\n'.join(processed))
 
