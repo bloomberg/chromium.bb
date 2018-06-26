@@ -428,8 +428,8 @@
 #### **[\--format=json]**
 
 ```
-  Displays information about a given target or config. The build build
-  parameters will be taken for the build in the given <out_dir>.
+  Displays information about a given target or config. The build parameters
+  will be taken for the build in the given <out_dir>.
 
   The <label or pattern> can be a target label, a config label, or a label
   pattern (see "gn help label_pattern"). A label pattern will only match
@@ -446,8 +446,8 @@
   arflags [--blame]
   args
   cflags [--blame]
+  cflags_c [--blame]
   cflags_cc [--blame]
-  cflags_cxx [--blame]
   check_includes
   configs [--tree] (see below)
   defines [--blame]
@@ -496,7 +496,7 @@
 ```
   --blame
       Used with any value specified on a config, this will name the config that
-      cause that target to get the flag. This doesn't currently work for libs
+      causes that target to get the flag. This doesn't currently work for libs
       and lib_dirs because those are inherited and are more complicated to
       figure out the blame (patches welcome).
 ```
@@ -1531,7 +1531,7 @@
   code elimination to delete code not reachable from exported functions.
 
   A source set will not do this code elimination since there is no link step.
-  This allows you to link many sources sets into a shared library and have the
+  This allows you to link many source sets into a shared library and have the
   "exported symbol" notation indicate "export from the final shared library and
   not from the intermediate targets." There is no way to express this concept
   when linking multiple static libraries into a shared library.
@@ -1895,8 +1895,7 @@
   template("my_test") {
     action(target_name) {
       forward_variables_from(invoker, [ "data_deps", "deps",
-                                        "public_deps", "visibility" "
-                                                                    "])
+                                        "public_deps", "visibility"])
       # Add our test code to the dependencies.
       # "deps" may or may not be defined at this point.
       if (defined(deps)) {
@@ -1907,8 +1906,8 @@
     }
   }
 
-  # This is a template around either a target whose type depends on a global
-  # variable. It forwards all values from the invoker.
+  # This is a template around a target whose type depends on a global variable.
+  # It forwards all values from the invoker.
   template("my_wrapper") {
     target(my_wrapper_target_type, target_name) {
       forward_variables_from(invoker, "*")
@@ -3073,7 +3072,7 @@
         same directory as the target is declared in, they will will be the same
         as the "target" versions above. Example: "gen/base/test"
 
-  Linker tools have multiple inputs and (potentially) multiple outputs The
+  Linker tools have multiple inputs and (potentially) multiple outputs. The
   static library tool ("alink") is not considered a linker tool. The following
   expansions are available:
 
@@ -3274,8 +3273,8 @@
 
 ```
   tool()
-    The tool() function call specifies the commands commands to run for a given
-    step. See "gn help tool".
+    The tool() function call specifies the commands to run for a given step. See
+    "gn help tool".
 
   toolchain_args
     Overrides for build arguments to pass to the toolchain when invoking it.
@@ -5454,7 +5453,7 @@
   See "gn help create_bundle" for more information.
 ```
 
-#### **Exmaple**
+#### **Example**
 
 ```
   create_bundle("chrome_xctest") {

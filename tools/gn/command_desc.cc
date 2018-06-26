@@ -295,8 +295,8 @@ const char kDesc_Help[] =
     R"(gn desc <out_dir> <label or pattern> [<what to show>] [--blame] "
 [--format=json]
 
-  Displays information about a given target or config. The build build
-  parameters will be taken for the build in the given <out_dir>.
+  Displays information about a given target or config. The build parameters
+  will be taken for the build in the given <out_dir>.
 
   The <label or pattern> can be a target label, a config label, or a label
   pattern (see "gn help label_pattern"). A label pattern will only match
@@ -311,8 +311,8 @@ Possibilities for <what to show>
   arflags [--blame]
   args
   cflags [--blame]
+  cflags_c [--blame]
   cflags_cc [--blame]
-  cflags_cxx [--blame]
   check_includes
   configs [--tree] (see below)
   defines [--blame]
@@ -353,7 +353,7 @@ Target flags
 
   --blame
       Used with any value specified on a config, this will name the config that
-      cause that target to get the flag. This doesn't currently work for libs
+      causes that target to get the flag. This doesn't currently work for libs
       and lib_dirs because those are inherited and are more complicated to
       figure out the blame (patches welcome).
 

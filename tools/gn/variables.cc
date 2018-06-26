@@ -1859,7 +1859,7 @@ const char kXcodeTestApplicationName_Help[] =
 
   See "gn help create_bundle" for more information.
 
-Exmaple
+Example
 
   create_bundle("chrome_xctest") {
     test_application_name = "chrome"

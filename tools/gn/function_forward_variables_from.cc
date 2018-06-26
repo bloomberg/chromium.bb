@@ -122,8 +122,7 @@ Examples
   template("my_test") {
     action(target_name) {
       forward_variables_from(invoker, [ "data_deps", "deps",
-                                        "public_deps", "visibility" "
-                                                                    "])
+                                        "public_deps", "visibility"])
       # Add our test code to the dependencies.
       # "deps" may or may not be defined at this point.
       if (defined(deps)) {
@@ -134,8 +133,8 @@ Examples
     }
   }
 
-  # This is a template around either a target whose type depends on a global
-  # variable. It forwards all values from the invoker.
+  # This is a template around a target whose type depends on a global variable.
+  # It forwards all values from the invoker.
   template("my_wrapper") {
     target(my_wrapper_target_type, target_name) {
       forward_variables_from(invoker, "*")

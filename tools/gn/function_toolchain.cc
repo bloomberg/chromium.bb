@@ -348,8 +348,8 @@ Toolchain overview
 Functions and variables
 
   tool()
-    The tool() function call specifies the commands commands to run for a given
-    step. See "gn help tool".
+    The tool() function call specifies the commands to run for a given step. See
+    "gn help tool".
 
   toolchain_args
     Overrides for build arguments to pass to the toolchain when invoking it.
@@ -817,7 +817,7 @@ R"(  Compiler tools have the notion of a single input and a single output, along
         same directory as the target is declared in, they will will be the same
         as the "target" versions above. Example: "gen/base/test"
 
-  Linker tools have multiple inputs and (potentially) multiple outputs The
+  Linker tools have multiple inputs and (potentially) multiple outputs. The
   static library tool ("alink") is not considered a linker tool. The following
   expansions are available:
 
