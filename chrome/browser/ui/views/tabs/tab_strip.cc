@@ -678,13 +678,26 @@ void TabStrip::PrepareForCloseAt(int model_index, CloseTabSource source) {
   int model_count = GetModelCount();
   if (model_count > 1 && model_index != model_count - 1) {
     // The user is about to close a tab other than the last tab. Set
-    // available_width_for_tabs_ so that if we do a layout we don't position a
-    // tab past the end of the second to last tab. We do this so that as the
-    // user closes tabs with the mouse a tab continues to fall under the mouse.
+    // available_width_for_tabs_ so that as the user closes tabs with the mouse
+    // a tab continues to fall under the mouse.
     Tab* tab_being_removed = tab_at(model_index);
+    int size_delta = tab_being_removed->width();
+    if (!tab_being_removed->data().pinned && tab_being_removed->IsActive()) {
+      // When removing an active, non-pinned tab, an inactive tab will be made
+      // active and thus given the active width. Thus the width being removed
+      // from the strip is really the current width of whichever inactive tab
+      // will be made active. This could be either |current_inactive_width_| or
+      // (current_inactive_width_ + 1) (if layout has apportioned extra space to
+      // the initial tabs in the strip). Unfortunately, the next active tab has
+      // not yet been chosen, so it's impossible to know which of these is
+      // correct; using the narrower value is more conservative.
+      // TODO(sky): https://crbug.com/856289 Refactor so this happens after
+      // another tab has been activated.
+      size_delta = current_inactive_width_;
+    }
+
     available_width_for_tabs_ = ideal_bounds(model_count - 1).right() -
-                                TabStartX() - tab_being_removed->width() +
-                                Tab::GetOverlap();
+                                TabStartX() - size_delta + Tab::GetOverlap();
     if (model_index == 0 && tab_being_removed->data().pinned &&
         !tab_at(1)->data().pinned) {
       available_width_for_tabs_ -= GetPinnedToNonPinnedOffset();
