@@ -338,30 +338,6 @@ class ExtensionThrottleManagerTest : public testing::Test {
 
   void SetUp() override { request_->SetLoadFlags(0); }
 
-  void ExpectEntryAllowsAllOnErrorIfOptedOut(
-      ExtensionThrottleEntryInterface* entry,
-      bool opted_out,
-      const URLRequest& request) {
-    EXPECT_FALSE(entry->ShouldRejectRequest(request));
-    for (int i = 0; i < 10; ++i) {
-      entry->UpdateWithResponse(503);
-    }
-    EXPECT_NE(opted_out, entry->ShouldRejectRequest(request));
-
-    if (opted_out) {
-      // We're not mocking out GetTimeNow() in this scenario
-      // so add a 100 ms buffer to avoid flakiness (that should always
-      // give enough time to get from the TimeTicks::Now() call here
-      // to the TimeTicks::Now() call in the entry class).
-      EXPECT_GT(TimeTicks::Now() + TimeDelta::FromMilliseconds(100),
-                entry->GetExponentialBackoffReleaseTime());
-    } else {
-      // As above, add 100 ms.
-      EXPECT_LT(TimeTicks::Now() + TimeDelta::FromMilliseconds(100),
-                entry->GetExponentialBackoffReleaseTime());
-    }
-  }
-
   base::MessageLoopForIO message_loop_;
   // context_ must be declared before request_.
   TestURLRequestContext context_;
