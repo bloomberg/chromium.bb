@@ -16,6 +16,8 @@ source_set("scenic") {
     "scenic_surface_factory.h",
     "scenic_window.cc",
     "scenic_window.h",
+    "scenic_window_canvas.cc",
+    "scenic_window_canvas.h",
     "scenic_window_manager.cc",
     "scenic_window_manager.h",
   ]

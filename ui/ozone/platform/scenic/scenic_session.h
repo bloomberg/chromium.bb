@@ -11,6 +11,8 @@
 #include <fuchsia/ui/gfx/cpp/fidl.h>
 #include <fuchsia/ui/scenic/cpp/fidl.h>
 #include <lib/fidl/cpp/binding.h>
+#include <lib/zx/event.h>
+#include <lib/zx/eventpair.h>
 
 #include "base/macros.h"
 #include "base/memory/shared_memory_handle.h"
@@ -70,6 +72,12 @@ class ScenicSession : public fuchsia::ui::scenic::SessionListener {
   void SetMaterialTexture(ResourceId material_id, ResourceId texture_id);
   void SetEventMask(ResourceId resource_id, uint32_t event_mask);
 
+  // Enqueue acquire or release fences for the next Present() call. See
+  // Scenic documentation for description on how these should be used:
+  // https://fuchsia.googlesource.com/garnet/+/master/public/lib/ui/scenic/fidl/session.fidl
+  void AddAcquireFence(zx::event fence);
+  void AddReleaseFence(zx::event fence);
+
   // Flushes queued commands and presents the resulting frame.
   void Present();
 
@@ -103,6 +111,10 @@ class ScenicSession : public fuchsia::ui::scenic::SessionListener {
   int resource_count_ = 0u;
 
   fidl::VectorPtr<fuchsia::ui::scenic::Command> queued_commands_;
+
+  // Pending acquire and release fences passed in the next Present() call.
+  std::vector<zx::event> acquire_fences_;
+  std::vector<zx::event> release_fences_;
 
   DISALLOW_COPY_AND_ASSIGN(ScenicSession);
 };

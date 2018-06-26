@@ -14,9 +14,11 @@
 
 namespace ui {
 
+class ScenicWindowManager;
+
 class ScenicSurfaceFactory : public SurfaceFactoryOzone {
  public:
-  ScenicSurfaceFactory();
+  explicit ScenicSurfaceFactory(ScenicWindowManager* window_manager);
   ~ScenicSurfaceFactory() override;
 
   // SurfaceFactoryOzone implementation.
@@ -33,6 +35,8 @@ class ScenicSurfaceFactory : public SurfaceFactoryOzone {
       gfx::BufferUsage usage) override;
 
  private:
+  ScenicWindowManager* const window_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(ScenicSurfaceFactory);
 };
 

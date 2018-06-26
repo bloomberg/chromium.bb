@@ -238,13 +238,20 @@ void ScenicSession::SetEventMask(ResourceId resource_id, uint32_t event_mask) {
   EnqueueGfxCommand(std::move(command));
 }
 
+void ScenicSession::AddAcquireFence(zx::event fence) {
+  acquire_fences_.push_back(std::move(fence));
+}
+
+void ScenicSession::AddReleaseFence(zx::event fence) {
+  release_fences_.push_back(std::move(fence));
+}
+
 void ScenicSession::Present() {
   Flush();
 
-  // Pass empty non-null vectors for acquire_fences and release_fences.
-  fidl::VectorPtr<zx::event> acquire_fences(static_cast<size_t>(0));
-  fidl::VectorPtr<zx::event> release_fences(static_cast<size_t>(0));
-  session_->Present(0, std::move(acquire_fences), std::move(release_fences),
+  session_->Present(/*flags=*/0,
+                    fidl::VectorPtr<zx::event>(std::move(acquire_fences_)),
+                    fidl::VectorPtr<zx::event>(std::move(release_fences_)),
                     [](fuchsia::images::PresentationInfo info) {});
 }
 
