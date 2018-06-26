@@ -1188,7 +1188,7 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
           if (!stacked_layout_) {
             // In Refresh mode, defer the painting of the hovered tab to below
             // unless a tab drag operation is in progress.
-            if (MD::IsRefreshUi() && tab->IsMouseHovered() &&
+            if (MD::IsRefreshUi() && tab->mouse_hovered() &&
                 !(drag_controller_ && drag_controller_->started_drag())) {
               // Since two adjacent tabs overlap, they can both return as being
               // hovered. Favor the left-most tab by ensuring the current

@@ -165,6 +165,8 @@ class Tab : public gfx::AnimationDelegate,
 
   GlowHoverController* hover_controller() { return &hover_controller_; }
 
+  bool mouse_hovered() const { return mouse_hovered_; }
+
   // Returns the width of the largest part of the tab that is available for the
   // user to click to select/activate the tab.
   int GetWidthOfLargestSelectableRegion() const;
@@ -338,6 +340,11 @@ class Tab : public gfx::AnimationDelegate,
 
   // The current color of the alert indicator and close button icons.
   SkColor button_color_ = SK_ColorTRANSPARENT;
+
+  // Indicates whether the mouse is currently hovered over the tab. This is
+  // different from View::IsMouseHovered() which does a naive intersection with
+  // the view bounds.
+  bool mouse_hovered_ = false;
 
   class BackgroundCache {
    public:
