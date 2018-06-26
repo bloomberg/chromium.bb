@@ -132,13 +132,6 @@ class CC_PAINT_EXPORT PaintCanvas {
                              const SkRect& dst,
                              const PaintFlags* flags,
                              SrcRectConstraint constraint) = 0;
-  virtual void drawBitmap(const SkBitmap& bitmap,
-                          SkScalar left,
-                          SkScalar top,
-                          const PaintFlags* flags) = 0;
-  void drawBitmap(const SkBitmap& bitmap, SkScalar left, SkScalar top) {
-    drawBitmap(bitmap, left, top, nullptr);
-  }
 
   virtual void drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                             SkScalar x,

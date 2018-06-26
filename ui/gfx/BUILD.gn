@@ -302,10 +302,8 @@ jumbo_component("gfx") {
     sources += [ "scoped_cg_context_save_gstate_mac.h" ]
     set_sources_assignment_filter(sources_assignment_filter)
   } else {
-    deps += [
-      "//cc/paint",
-      "//third_party:freetype_harfbuzz",
-    ]
+    public_deps += [ "//cc/paint" ]
+    deps += [ "//third_party:freetype_harfbuzz" ]
   }
 
   # Android.

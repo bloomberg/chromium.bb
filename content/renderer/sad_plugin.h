@@ -7,7 +7,9 @@
 
 #include "cc/paint/paint_canvas.h"
 
-class SkBitmap;
+namespace cc {
+class PaintImage;
+}
 
 namespace gfx {
 class Rect;
@@ -19,7 +21,7 @@ namespace content {
 // is used by PPAPI out-of-process plugin impls.
 void PaintSadPlugin(cc::PaintCanvas* canvas,
                     const gfx::Rect& plugin_rect,
-                    const SkBitmap& sad_plugin_bitmap);
+                    const cc::PaintImage& sad_plugin_image);
 
 }  // namespace content
 

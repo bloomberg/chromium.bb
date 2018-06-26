@@ -247,7 +247,8 @@ void RasterInvalidationTracking::CheckUnderInvalidations(
   auto* canvas = recorder.getRecordingCanvas();
   if (under_invalidation_record_)
     canvas->drawPicture(std::move(under_invalidation_record_));
-  canvas->drawBitmap(new_bitmap, rect.X(), rect.Y());
+  canvas->drawImage(cc::PaintImage::CreateFromBitmap(std::move(new_bitmap)),
+                    rect.X(), rect.Y());
   under_invalidation_record_ = recorder.finishRecordingAsPicture();
 }
 

@@ -536,7 +536,6 @@ PepperPluginInstanceImpl::PepperPluginInstanceImpl(
       flash_fullscreen_(false),
       desired_fullscreen_state_(false),
       message_channel_(nullptr),
-      sad_plugin_(nullptr),
       input_event_mask_(0),
       filtered_input_event_mask_(0),
       text_input_type_(kPluginDefaultTextInputType),
@@ -715,10 +714,15 @@ void PepperPluginInstanceImpl::Paint(cc::PaintCanvas* canvas,
   TRACE_EVENT0("ppapi", "PluginInstance::Paint");
   if (module()->is_crashed()) {
     // Crashed plugin painting.
-    if (!sad_plugin_)  // Lazily initialize bitmap.
-      sad_plugin_ = GetContentClient()->renderer()->GetSadPluginBitmap();
-    if (sad_plugin_)
-      PaintSadPlugin(canvas, plugin_rect, *sad_plugin_);
+    if (!sad_plugin_image_) {  // Lazily initialize bitmap.
+      if (SkBitmap* bitmap =
+              GetContentClient()->renderer()->GetSadPluginBitmap()) {
+        DCHECK(bitmap->isImmutable());
+        sad_plugin_image_ = cc::PaintImage::CreateFromBitmap(*bitmap);
+      }
+    }
+    if (sad_plugin_image_)
+      PaintSadPlugin(canvas, plugin_rect, sad_plugin_image_);
     return;
   }
 

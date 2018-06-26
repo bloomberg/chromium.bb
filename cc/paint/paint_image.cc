@@ -8,6 +8,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/hash.h"
+#include "cc/paint/paint_image_builder.h"
 #include "cc/paint/paint_image_generator.h"
 #include "cc/paint/paint_record.h"
 #include "cc/paint/skia_paint_image_generator.h"
@@ -80,6 +81,18 @@ PaintImage::Id PaintImage::GetNextId() {
 // static
 PaintImage::ContentId PaintImage::GetNextContentId() {
   return g_next_image_content_id.GetNext();
+}
+
+// static
+PaintImage PaintImage::CreateFromBitmap(SkBitmap bitmap) {
+  if (bitmap.drawsNothing())
+    return PaintImage();
+
+  return PaintImageBuilder::WithDefault()
+      .set_id(PaintImage::GetNextId())
+      .set_image(SkImage::MakeFromBitmap(bitmap),
+                 PaintImage::GetNextContentId())
+      .TakePaintImage();
 }
 
 const sk_sp<SkImage>& PaintImage::GetSkImage() const {

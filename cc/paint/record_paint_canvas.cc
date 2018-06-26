@@ -263,23 +263,6 @@ void RecordPaintCanvas::drawImageRect(const PaintImage& image,
   list_->push<DrawImageRectOp>(image, src, dst, flags, constraint);
 }
 
-void RecordPaintCanvas::drawBitmap(const SkBitmap& bitmap,
-                                   SkScalar left,
-                                   SkScalar top,
-                                   const PaintFlags* flags) {
-  // TODO(enne): Move into base class?
-  if (bitmap.drawsNothing())
-    return;
-  // TODO(khushalsagar): Remove this and have callers use PaintImages holding
-  // bitmap-backed images, since they can maintain the PaintImage::Id.
-  drawImage(PaintImageBuilder::WithDefault()
-                .set_id(PaintImage::GetNextId())
-                .set_image(SkImage::MakeFromBitmap(bitmap),
-                           PaintImage::GetNextContentId())
-                .TakePaintImage(),
-            left, top, flags);
-}
-
 void RecordPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                                      SkScalar x,
                                      SkScalar y,

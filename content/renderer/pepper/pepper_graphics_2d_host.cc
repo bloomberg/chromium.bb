@@ -387,8 +387,10 @@ void PepperGraphics2DHost::Paint(cc::PaintCanvas* canvas,
     canvas->scale(scale_, scale_);
     pixel_origin.scale(1.0f / scale_);
   }
-  canvas->drawBitmap(backing_bitmap, pixel_origin.x(), pixel_origin.y(),
-                     &flags);
+  // TODO(khushalsagar): Can this be cached on image_data_, and invalidated when
+  // the bitmap changes?
+  canvas->drawImage(cc::PaintImage::CreateFromBitmap(std::move(backing_bitmap)),
+                    pixel_origin.x(), pixel_origin.y(), &flags);
 }
 
 void PepperGraphics2DHost::ViewInitiatedPaint() {
