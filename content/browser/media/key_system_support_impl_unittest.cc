@@ -63,11 +63,10 @@ class KeySystemSupportTest : public testing::Test {
   // TODO(xhwang): Add tests for hardware secure video codecs and encryption
   // schemes.
   CdmCapability GetTestCdmCapability() {
-    return CdmCapability({VideoCodec::kCodecVP8, VideoCodec::kCodecVP9},
-                         {EncryptionMode::kCenc, EncryptionMode::kCbcs},
-                         {CdmSessionType::TEMPORARY_SESSION,
-                          CdmSessionType::PERSISTENT_LICENSE_SESSION},
-                         {});
+    return CdmCapability(
+        {VideoCodec::kCodecVP8, VideoCodec::kCodecVP9},
+        {EncryptionMode::kCenc, EncryptionMode::kCbcs},
+        {CdmSessionType::kTemporary, CdmSessionType::kPersistentLicense}, {});
   }
 
   // Registers |key_system| with |capability|. All other values for CdmInfo have
@@ -113,8 +112,8 @@ TEST_F(KeySystemSupportTest, OneKeySystem) {
   EXPECT_TRUE(IsSupported("KeySystem2"));
   EXPECT_VIDEO_CODECS(VideoCodec::kCodecVP8, VideoCodec::kCodecVP9);
   EXPECT_ENCRYPTION_SCHEMES(EncryptionMode::kCenc, EncryptionMode::kCbcs);
-  EXPECT_SESSION_TYPES(CdmSessionType::TEMPORARY_SESSION,
-                       CdmSessionType::PERSISTENT_LICENSE_SESSION);
+  EXPECT_SESSION_TYPES(CdmSessionType::kTemporary,
+                       CdmSessionType::kPersistentLicense);
 }
 
 TEST_F(KeySystemSupportTest, MultipleKeySystems) {

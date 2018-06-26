@@ -158,13 +158,12 @@ bool IsWidevineAvailable(base::FilePath* cdm_path,
       capability->encryption_schemes.insert(media::EncryptionMode::kCbcs);
 
       // Temporary session is always supported.
-      capability->session_types.insert(
-          media::CdmSessionType::TEMPORARY_SESSION);
+      capability->session_types.insert(media::CdmSessionType::kTemporary);
 #if defined(OS_CHROMEOS)
       // TODO(crbug.com/767941): Push persistent-license support info here once
       // we check in a new CDM that supports it on Linux.
       capability->session_types.insert(
-          media::CdmSessionType::PERSISTENT_LICENSE_SESSION);
+          media::CdmSessionType::kPersistentLicense);
 #endif  // defined(OS_CHROMEOS)
 
       return true;
@@ -560,8 +559,8 @@ void ChromeContentClient::AddContentDecryptionModules(
       // Supported codecs are hard-coded in ExternalClearKeyProperties.
       content::CdmCapability capability(
           {}, {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs},
-          {media::CdmSessionType::TEMPORARY_SESSION,
-           media::CdmSessionType::PERSISTENT_LICENSE_SESSION},
+          {media::CdmSessionType::kTemporary,
+           media::CdmSessionType::kPersistentLicense},
           {});
 
       // Register kExternalClearKeyDifferentGuidTestKeySystem first separately.

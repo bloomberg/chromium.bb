@@ -117,8 +117,7 @@ void ClearKeyCdmProxy::CreateDecryptor() {
                                          base::DoNothing(), base::DoNothing());
 
   // Also create a dummy session to be used for SetKey().
-  aes_decryptor_->CreateSession(kDummySessionId,
-                                CdmSessionType::TEMPORARY_SESSION);
+  aes_decryptor_->CreateSession(kDummySessionId, CdmSessionType::kTemporary);
 }
 
 }  // namespace media

@@ -70,7 +70,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Status,
                           media::CdmProxy::Status::kMax)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
-                          media::CdmSessionType::SESSION_TYPE_MAX)
+                          media::CdmSessionType::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::ChannelLayout, media::CHANNEL_LAYOUT_MAX)
 

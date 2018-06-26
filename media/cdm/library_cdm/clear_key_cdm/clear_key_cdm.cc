@@ -151,14 +151,14 @@ static cdm::Exception ConvertException(
 static media::CdmSessionType ConvertSessionType(cdm::SessionType session_type) {
   switch (session_type) {
     case cdm::kTemporary:
-      return media::CdmSessionType::TEMPORARY_SESSION;
+      return media::CdmSessionType::kTemporary;
     case cdm::kPersistentLicense:
-      return media::CdmSessionType::PERSISTENT_LICENSE_SESSION;
+      return media::CdmSessionType::kPersistentLicense;
     case cdm::kPersistentKeyRelease:
-      return media::CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION;
+      return media::CdmSessionType::kPersistentReleaseMessage;
   }
   NOTREACHED();
-  return media::CdmSessionType::TEMPORARY_SESSION;
+  return media::CdmSessionType::kTemporary;
 }
 
 static media::EmeInitDataType ConvertInitDataType(

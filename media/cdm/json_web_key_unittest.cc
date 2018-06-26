@@ -112,14 +112,14 @@ TEST_F(JSONWebKeyTest, GenerateJWKSet) {
   EXPECT_EQ(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"temporary\"}",
-      GenerateJWKSet(keys, CdmSessionType::TEMPORARY_SESSION));
+      GenerateJWKSet(keys, CdmSessionType::kTemporary));
   keys.push_back(
       MakeKeyIdAndKeyPair(data2, arraysize(data2), data2, arraysize(data2)));
   EXPECT_EQ(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"},{\"k\":"
       "\"AQIDBA\",\"kid\":\"AQIDBA\",\"kty\":\"oct\"}],\"type\":\"persistent-"
       "license\"}",
-      GenerateJWKSet(keys, CdmSessionType::PERSISTENT_LICENSE_SESSION));
+      GenerateJWKSet(keys, CdmSessionType::kPersistentLicense));
   keys.push_back(
       MakeKeyIdAndKeyPair(data3, arraysize(data3), data3, arraysize(data3)));
   EXPECT_EQ(
@@ -127,7 +127,7 @@ TEST_F(JSONWebKeyTest, GenerateJWKSet) {
       "\"AQIDBA\",\"kid\":\"AQIDBA\",\"kty\":\"oct\"},{\"k\":"
       "\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kid\":\"AQIDBAUGBwgJCgsMDQ4PEA\",\"kty\":"
       "\"oct\"}],\"type\":\"persistent-release-message\"}",
-      GenerateJWKSet(keys, CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION));
+      GenerateJWKSet(keys, CdmSessionType::kPersistentReleaseMessage));
 }
 
 TEST_F(JSONWebKeyTest, ExtractValidJWKKeys) {
@@ -398,26 +398,26 @@ TEST_F(JSONWebKeyTest, Alg) {
 TEST_F(JSONWebKeyTest, CdmSessionType) {
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}]}", true,
-      CdmSessionType::TEMPORARY_SESSION);
+      CdmSessionType::kTemporary);
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"temporary\"}",
-      true, CdmSessionType::TEMPORARY_SESSION);
+      true, CdmSessionType::kTemporary);
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"persistent-license\"}",
-      true, CdmSessionType::PERSISTENT_LICENSE_SESSION);
+      true, CdmSessionType::kPersistentLicense);
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"persistent-release-message\"}",
-      true, CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION);
+      true, CdmSessionType::kPersistentReleaseMessage);
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":"
       "\"unknown\"}",
-      false, CdmSessionType::TEMPORARY_SESSION);
+      false, CdmSessionType::kTemporary);
   ExtractSessionTypeAndExpect(
       "{\"keys\":[{\"k\":\"AQI\",\"kid\":\"AQI\",\"kty\":\"oct\"}],\"type\":3}",
-      false, CdmSessionType::TEMPORARY_SESSION);
+      false, CdmSessionType::kTemporary);
 }
 
 TEST_F(JSONWebKeyTest, CreateLicense) {
@@ -426,21 +426,18 @@ TEST_F(JSONWebKeyTest, CreateLicense) {
   const uint8_t data3[] = {0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
                            0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f, 0x10};
 
-  CreateLicenseAndExpect(data1, arraysize(data1),
-                         CdmSessionType::TEMPORARY_SESSION,
+  CreateLicenseAndExpect(data1, arraysize(data1), CdmSessionType::kTemporary,
                          "{\"kids\":[\"AQI\"],\"type\":\"temporary\"}");
   CreateLicenseAndExpect(
-      data1, arraysize(data1), CdmSessionType::PERSISTENT_LICENSE_SESSION,
+      data1, arraysize(data1), CdmSessionType::kPersistentLicense,
       "{\"kids\":[\"AQI\"],\"type\":\"persistent-license\"}");
   CreateLicenseAndExpect(
-      data1, arraysize(data1),
-      CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION,
+      data1, arraysize(data1), CdmSessionType::kPersistentReleaseMessage,
       "{\"kids\":[\"AQI\"],\"type\":\"persistent-release-message\"}");
-  CreateLicenseAndExpect(data2, arraysize(data2),
-                         CdmSessionType::TEMPORARY_SESSION,
+  CreateLicenseAndExpect(data2, arraysize(data2), CdmSessionType::kTemporary,
                          "{\"kids\":[\"AQIDBA\"],\"type\":\"temporary\"}");
   CreateLicenseAndExpect(data3, arraysize(data3),
-                         CdmSessionType::PERSISTENT_LICENSE_SESSION,
+                         CdmSessionType::kPersistentLicense,
                          "{\"kids\":[\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":"
                          "\"persistent-license\"}");
 }
@@ -506,8 +503,7 @@ TEST_F(JSONWebKeyTest, Base64UrlEncoding) {
   EXPECT_EQ(encoded_text.find('-'), std::string::npos);
   EXPECT_EQ(encoded_text.find('_'), std::string::npos);
 
-  CreateLicenseAndExpect(data1, arraysize(data1),
-                         CdmSessionType::TEMPORARY_SESSION,
+  CreateLicenseAndExpect(data1, arraysize(data1), CdmSessionType::kTemporary,
                          "{\"kids\":[\"-_37_fv9-w\"],\"type\":\"temporary\"}");
 
   ExtractKeyFromLicenseAndExpect(
@@ -526,7 +522,7 @@ TEST_F(JSONWebKeyTest, MultipleKeys) {
   key_ids.push_back(std::vector<uint8_t>(data1, data1 + arraysize(data1)));
   key_ids.push_back(std::vector<uint8_t>(data2, data2 + arraysize(data2)));
   key_ids.push_back(std::vector<uint8_t>(data3, data3 + arraysize(data3)));
-  CreateLicenseRequest(key_ids, CdmSessionType::TEMPORARY_SESSION, &result);
+  CreateLicenseRequest(key_ids, CdmSessionType::kTemporary, &result);
   std::string s(result.begin(), result.end());
   EXPECT_EQ(
       "{\"kids\":[\"AQI\",\"AQIDBA\",\"AQIDBAUGBwgJCgsMDQ4PEA\"],\"type\":"

@@ -68,17 +68,17 @@ CdmSessionType convertSessionType(
     blink::WebEncryptedMediaSessionType session_type) {
   switch (session_type) {
     case blink::WebEncryptedMediaSessionType::kTemporary:
-      return CdmSessionType::TEMPORARY_SESSION;
+      return CdmSessionType::kTemporary;
     case blink::WebEncryptedMediaSessionType::kPersistentLicense:
-      return CdmSessionType::PERSISTENT_LICENSE_SESSION;
+      return CdmSessionType::kPersistentLicense;
     case blink::WebEncryptedMediaSessionType::kPersistentReleaseMessage:
-      return CdmSessionType::PERSISTENT_RELEASE_MESSAGE_SESSION;
+      return CdmSessionType::kPersistentReleaseMessage;
     case blink::WebEncryptedMediaSessionType::kUnknown:
       break;
   }
 
   NOTREACHED();
-  return CdmSessionType::TEMPORARY_SESSION;
+  return CdmSessionType::kTemporary;
 }
 
 bool SanitizeInitData(EmeInitDataType init_data_type,
@@ -176,7 +176,7 @@ bool SanitizeResponse(const std::string& key_system,
   if (IsClearKey(key_system) || IsExternalClearKey(key_system)) {
     std::string key_string(response, response + response_length);
     KeyIdAndKeyPairs keys;
-    CdmSessionType session_type = CdmSessionType::TEMPORARY_SESSION;
+    CdmSessionType session_type = CdmSessionType::kTemporary;
     if (!ExtractKeysFromJWKSet(key_string, &keys, &session_type))
       return false;
 
@@ -332,8 +332,7 @@ void WebContentDecryptionModuleSessionImpl::InitializeNewSession(
   //      instance value.
   // 10.9 Use the cdm to execute the following steps:
   CdmSessionType cdm_session_type = convertSessionType(session_type);
-  is_persistent_session_ =
-      cdm_session_type != CdmSessionType::TEMPORARY_SESSION;
+  is_persistent_session_ = cdm_session_type != CdmSessionType::kTemporary;
   adapter_->InitializeNewSession(
       eme_init_data_type, sanitized_init_data, cdm_session_type,
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
@@ -371,7 +370,7 @@ void WebContentDecryptionModuleSessionImpl::Load(
   // constructor (and removed from initializeNewSession()).
   is_persistent_session_ = true;
   adapter_->LoadSession(
-      CdmSessionType::PERSISTENT_LICENSE_SESSION, sanitized_session_id,
+      CdmSessionType::kPersistentLicense, sanitized_session_id,
       std::unique_ptr<NewSessionCdmPromise>(new NewSessionCdmResultPromise(
           result, adapter_->GetKeySystemUMAPrefix(), kLoadSessionUMAName,
           base::Bind(

@@ -117,7 +117,7 @@ void ClearKeyPersistentSessionCdm::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<NewSessionCdmPromise> promise) {
   std::unique_ptr<NewSessionCdmPromise> new_promise;
-  if (session_type != CdmSessionType::PERSISTENT_LICENSE_SESSION) {
+  if (session_type != CdmSessionType::kPersistentLicense) {
     new_promise = std::move(promise);
   } else {
     // Since it's a persistent session, we need to save the session ID after
@@ -135,7 +135,7 @@ void ClearKeyPersistentSessionCdm::LoadSession(
     CdmSessionType session_type,
     const std::string& session_id,
     std::unique_ptr<NewSessionCdmPromise> promise) {
-  DCHECK_EQ(CdmSessionType::PERSISTENT_LICENSE_SESSION, session_type);
+  DCHECK_EQ(CdmSessionType::kPersistentLicense, session_type);
 
   // Load the saved state for |session_id| and then create the session.
   std::unique_ptr<CdmFileAdapter> file(new CdmFileAdapter(cdm_host_proxy_));
@@ -180,8 +180,7 @@ void ClearKeyPersistentSessionCdm::OnFileReadForLoadSession(
   }
 
   // Add the session to the list of active sessions.
-  if (!cdm_->CreateSession(session_id,
-                           CdmSessionType::PERSISTENT_LICENSE_SESSION)) {
+  if (!cdm_->CreateSession(session_id, CdmSessionType::kPersistentLicense)) {
     // If the session can't be created it's due to an already existing session
     // with the same name.
     promise->reject(CdmPromise::Exception::QUOTA_EXCEEDED_ERROR, 0,

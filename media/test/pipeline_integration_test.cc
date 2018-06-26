@@ -323,7 +323,7 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
     if (current_session_id_.empty()) {
       decryptor->CreateSessionAndGenerateRequest(
-          CdmSessionType::TEMPORARY_SESSION, init_data_type, init_data,
+          CdmSessionType::kTemporary, init_data_type, init_data,
           CreateSessionPromise(RESOLVED));
       EXPECT_FALSE(current_session_id_.empty());
     }
@@ -357,9 +357,9 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
     prev_init_data_ = init_data;
     ++num_distinct_need_key_calls_;
 
-    decryptor->CreateSessionAndGenerateRequest(
-        CdmSessionType::TEMPORARY_SESSION, init_data_type, init_data,
-        CreateSessionPromise(RESOLVED));
+    decryptor->CreateSessionAndGenerateRequest(CdmSessionType::kTemporary,
+                                               init_data_type, init_data,
+                                               CreateSessionPromise(RESOLVED));
   }
 
   bool LookupKey(const std::vector<uint8_t>& key_id,
