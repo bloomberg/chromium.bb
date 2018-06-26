@@ -154,13 +154,6 @@ void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
   }
 }
 
-void BrowserNonClientFrameView::OnThemeChanged() {
-  // Adding or removing a frame image will change whether single tab mode is
-  // available.
-  if (MD::IsRefreshUi() && browser_view()->IsTabStripVisible())
-    browser_view()->tabstrip()->SingleTabModeChanged();
-}
-
 void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
                                                   bool is_visible) {
   // UpdateTaskbarDecoration() calls DrawTaskbarDecoration(), but that does
@@ -171,18 +164,8 @@ void BrowserNonClientFrameView::VisibilityChanged(views::View* starting_from,
     OnProfileAvatarChanged(base::FilePath());
 }
 
-void BrowserNonClientFrameView::OnTabAdded(int index) {
-  if (IsSingleTabModeAvailable()) {
-    // We may be exiting single-tab mode and need to repaint the frame.
-    SchedulePaint();
-  }
-}
-
-void BrowserNonClientFrameView::OnTabRemoved(int index) {
-  if (IsSingleTabModeAvailable()) {
-    // We may be entering single-tab mode and need to repaint the frame.
-    SchedulePaint();
-  }
+void BrowserNonClientFrameView::OnSingleTabModeChanged() {
+  SchedulePaint();
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {

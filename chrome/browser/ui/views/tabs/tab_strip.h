@@ -226,7 +226,7 @@ class TabStrip : public views::View,
   // ongoing this does a layout.
   void StopAnimating(bool layout);
 
-  // TabController overrides:
+  // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
@@ -268,18 +268,19 @@ class TabStrip : public views::View,
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
 
-  // MouseWatcherListener overrides:
+  // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
 
-  // views::View overrides:
+  // views::View:
   void Layout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   views::View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
+  void OnThemeChanged() override;
 
-  // BrowserRootView::DropTarget overrides:
+  // BrowserRootView::DropTarget:
   BrowserRootView::DropIndex GetDropIndex(
       const ui::DropTargetEvent& event) override;
   views::View* GetViewForDrop() override;

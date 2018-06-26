@@ -488,6 +488,10 @@ void BrowserTabStripController::SetTabNeedsAttentionAt(int index,
   tabstrip_->SetTabNeedsAttention(index, attention);
 }
 
+BrowserNonClientFrameView* BrowserTabStripController::GetFrameView() {
+  return browser_view_->frame()->GetFrameView();
+}
+
 const BrowserNonClientFrameView* BrowserTabStripController::GetFrameView()
     const {
   return browser_view_->frame()->GetFrameView();

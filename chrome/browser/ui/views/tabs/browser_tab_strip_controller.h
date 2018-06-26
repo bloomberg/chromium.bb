@@ -124,6 +124,7 @@ class BrowserTabStripController : public TabStripController,
     EXISTING_TAB
   };
 
+  BrowserNonClientFrameView* GetFrameView();
   const BrowserNonClientFrameView* GetFrameView() const;
 
   // Returns the TabRendererData for the specified tab.
