@@ -345,10 +345,13 @@
 
 # Requires a replacement for ChromeNetworkDelegate.
 # http://crbug.com/841309
--VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromSubresourceRequest
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithProfileNetworkContext
 -VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromRequestUsingSimpleURLLoaderWithGlobalSystemNetworkContext
+
+# https://crbug.com/773295
+# Remove this test when there are no more clients left that use URLFetcher.
+-VariationsHttpHeadersBrowserTest.TestStrippingHeadersFromInternalRequest
 
 # Fails because of missing support to navigate to filesystem: URLs.
 # https://crbug.com/797292
