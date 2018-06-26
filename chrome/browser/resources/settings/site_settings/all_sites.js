@@ -40,42 +40,11 @@ Polymer({
    */
   populateList_: function() {
     /** @type {!Array<settings.ContentSettingsTypes>} */
-    let contentTypes = [];
-    const types = Object.values(settings.ContentSettingsTypes);
-    for (let i = 0; i < types.length; ++i) {
-      const type = types[i];
-      // <if expr="not chromeos">
-      if (type == settings.ContentSettingsTypes.PROTECTED_CONTENT)
-        continue;
-      // </if>
-      // Some categories store their data in a custom way.
-      if (type == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
-          type == settings.ContentSettingsTypes.ZOOM_LEVELS) {
-        continue;
-      }
-      // These categories are gated behind flags.
-      if (type == settings.ContentSettingsTypes.SENSORS &&
-          !loadTimeData.getBoolean('enableSensorsContentSetting')) {
-        continue;
-      }
-      if (type == settings.ContentSettingsTypes.ADS &&
-          !loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter')) {
-        continue;
-      }
-      if (type == settings.ContentSettingsTypes.SOUND &&
-          !loadTimeData.getBoolean('enableSoundContentSetting')) {
-        continue;
-      }
-      if (type == settings.ContentSettingsTypes.CLIPBOARD &&
-          !loadTimeData.getBoolean('enableClipboardContentSetting')) {
-        continue;
-      }
-      if (type == settings.ContentSettingsTypes.PAYMENT_HANDLER &&
-          !loadTimeData.getBoolean('enablePaymentHandlerContentSetting')) {
-        continue;
-      }
-      contentTypes.push(type);
-    }
+    const contentTypes = this.getCategoryList();
+    // Make sure to include cookies, because All Sites handles data storage +
+    // cookies as well as regular settings.ContentSettingsTypes.
+    if (!contentTypes.includes(settings.ContentSettingsTypes.COOKIES))
+      contentTypes.push(settings.ContentSettingsTypes.COOKIES);
 
     this.browserProxy_.getAllSites(contentTypes).then((response) => {
       this.siteGroupList = response;
