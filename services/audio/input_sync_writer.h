@@ -33,7 +33,7 @@ namespace audio {
 // is used by InputController to provide a low latency data source for
 // transmitting audio packets between the browser process and the renderer
 // process.
-class InputSyncWriter : public InputController::SyncWriter {
+class InputSyncWriter final : public InputController::SyncWriter {
  public:
   // Maximum fifo size (|overflow_buses_| and |overflow_params_|) in number of
   // media::AudioBuses.
@@ -48,7 +48,7 @@ class InputSyncWriter : public InputController::SyncWriter {
       uint32_t shared_memory_segment_count,
       const media::AudioParameters& params);
 
-  ~InputSyncWriter() override;
+  ~InputSyncWriter() final;
 
   static std::unique_ptr<InputSyncWriter> Create(
       base::RepeatingCallback<void(const std::string&)> log_callback,
@@ -66,9 +66,9 @@ class InputSyncWriter : public InputController::SyncWriter {
   void Write(const media::AudioBus* data,
              double volume,
              bool key_pressed,
-             base::TimeTicks capture_time) override;
+             base::TimeTicks capture_time) final;
 
-  void Close() override;
+  void Close() final;
 
  private:
   friend class InputSyncWriterTest;

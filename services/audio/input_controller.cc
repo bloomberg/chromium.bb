@@ -29,11 +29,13 @@ namespace audio {
 namespace {
 
 const int kMaxInputChannels = 3;
-constexpr int kCheckMutedStateIntervalSeconds = 1;
+constexpr base::TimeDelta kCheckMutedStateInterval =
+    base::TimeDelta::FromSeconds(1);
 
 #if defined(AUDIO_POWER_MONITORING)
 // Time in seconds between two successive measurements of audio power levels.
-const int kPowerMonitorLogIntervalSeconds = 15;
+constexpr base::TimeDelta kPowerMonitorLogInterval =
+    base::TimeDelta::FromSeconds(15);
 
 // A warning will be logged when the microphone audio volume is below this
 // threshold.
@@ -110,7 +112,8 @@ class InputController::AudioCallback
     : public media::AudioInputStream::AudioInputCallback {
  public:
   explicit AudioCallback(InputController* controller)
-      : controller_(controller),
+      : task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        controller_(controller),
         weak_controller_(controller->weak_ptr_factory_.GetWeakPtr()) {}
   ~AudioCallback() override = default;
 
@@ -131,7 +134,7 @@ class InputController::AudioCallback
 
   void OnError() override {
     error_during_callback_ = true;
-    controller_->task_runner_->PostTask(
+    task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(&InputController::DoReportError, weak_controller_));
   }
@@ -153,13 +156,14 @@ class InputController::AudioCallback
                                      &mic_volume_percent)) {
       // Use event handler on the audio thread to relay a message to the ARIH
       // in content which does the actual logging on the IO thread.
-      controller_->task_runner_->PostTask(
+      task_runner_->PostTask(
           FROM_HERE,
           base::BindOnce(&InputController::DoLogAudioLevels, weak_controller_,
                          average_power_dbfs, mic_volume_percent));
     }
   }
 
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   InputController* const controller_;
   // We do not want any pending posted tasks generated from the callback class
   // to keep the controller object alive longer than it should. So we use
@@ -169,32 +173,31 @@ class InputController::AudioCallback
   bool error_during_callback_ = false;
 };
 
-InputController::InputController(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-    EventHandler* handler,
-    SyncWriter* sync_writer,
-    media::UserInputMonitor* user_input_monitor,
-    const media::AudioParameters& params,
-    StreamType type)
-    : task_runner_(std::move(task_runner)),
-      handler_(handler),
+InputController::InputController(EventHandler* handler,
+                                 SyncWriter* sync_writer,
+                                 media::UserInputMonitor* user_input_monitor,
+                                 const media::AudioParameters& params,
+                                 StreamType type)
+    : handler_(handler),
       stream_(nullptr),
       sync_writer_(sync_writer),
       type_(type),
       user_input_monitor_(user_input_monitor),
       weak_ptr_factory_(this) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(handler_);
   DCHECK(sync_writer_);
 }
 
 InputController::~InputController() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(!audio_callback_);
   DCHECK(!stream_);
   DCHECK(!check_muted_state_timer_.IsRunning());
 }
 
 // static
-scoped_refptr<InputController> InputController::Create(
+std::unique_ptr<InputController> InputController::Create(
     media::AudioManager* audio_manager,
     EventHandler* event_handler,
     SyncWriter* sync_writer,
@@ -203,6 +206,7 @@ scoped_refptr<InputController> InputController::Create(
     const std::string& device_id,
     bool enable_agc) {
   DCHECK(audio_manager);
+  DCHECK(audio_manager->GetTaskRunner()->BelongsToCurrentThread());
   DCHECK(sync_writer);
   DCHECK(event_handler);
 
@@ -213,154 +217,22 @@ scoped_refptr<InputController> InputController::Create(
 
   // Create the InputController object and ensure that it runs on
   // the audio-manager thread.
-  scoped_refptr<InputController> controller(new InputController(
-      audio_manager->GetTaskRunner(), event_handler, sync_writer,
-      user_input_monitor, params, ParamsToStreamType(params)));
+  std::unique_ptr<InputController> controller(
+      new InputController(event_handler, sync_writer, user_input_monitor,
+                          params, ParamsToStreamType(params)));
 
-  if (controller->task_runner_->BelongsToCurrentThread()) {
-    controller->DoCreate(audio_manager, params, device_id, enable_agc);
-    return controller;
-  }
-
-  // Create and open a new audio input stream from the existing
-  // audio-device thread. Use the provided audio-input device.
-  controller->task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InputController::DoCreate, controller,
-                                base::Unretained(audio_manager), params,
-                                device_id, enable_agc));
+  controller->DoCreate(audio_manager, params, device_id, enable_agc);
   return controller;
 }
 
 void InputController::Record() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-
-  if (task_runner_->BelongsToCurrentThread()) {
-    DoRecord();
-    return;
-  }
-
-  task_runner_->PostTask(FROM_HERE,
-                         base::BindOnce(&InputController::DoRecord, this));
-}
-
-void InputController::Close(base::OnceClosure closed_task) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-
-  if (task_runner_->BelongsToCurrentThread()) {
-    DCHECK(closed_task.is_null());
-    DoClose();
-    return;
-  }
-
-  task_runner_->PostTaskAndReply(
-      FROM_HERE, base::BindOnce(&InputController::DoClose, this),
-      std::move(closed_task));
-}
-
-void InputController::SetVolume(double volume) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-
-  if (task_runner_->BelongsToCurrentThread()) {
-    DoSetVolume(volume);
-    return;
-  }
-
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InputController::DoSetVolume, this, volume));
-}
-
-void InputController::SetOutputDeviceForAec(
-    const std::string& output_device_id) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(owning_sequence_);
-
-  if (task_runner_->BelongsToCurrentThread()) {
-    DoSetOutputDeviceForAec(output_device_id);
-    return;
-  }
-
-  task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&InputController::DoSetOutputDeviceForAec, this,
-                                output_device_id));
-}
-
-void InputController::DoCreate(media::AudioManager* audio_manager,
-                               const media::AudioParameters& params,
-                               const std::string& device_id,
-                               bool enable_agc) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!stream_);
-  SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.CreateTime");
-  handler_->OnLog("AIC::DoCreate");
-
-#if defined(AUDIO_POWER_MONITORING)
-  // We only do power measurements for UMA stats for low latency streams, and
-  // only if agc is requested, to avoid adding logs and UMA for non-WebRTC
-  // clients.
-  power_measurement_is_enabled_ = (type_ == LOW_LATENCY && enable_agc);
-  last_audio_level_log_time_ = base::TimeTicks::Now();
-#endif
-
-  // MakeAudioInputStream might fail and return nullptr. If so,
-  // DoCreateForStream will handle and report it.
-  auto* stream = audio_manager->MakeAudioInputStream(
-      params, device_id,
-      base::BindRepeating(&InputController::LogMessage, this));
-  DoCreateForStream(stream, enable_agc);
-}
-
-void InputController::DoCreateForStream(
-    media::AudioInputStream* stream_to_control,
-    bool enable_agc) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(!stream_);
-  handler_->OnLog("AIC::DoCreateForStream");
-
-  if (!stream_to_control) {
-    LogCaptureStartupResult(CAPTURE_STARTUP_CREATE_STREAM_FAILED);
-    handler_->OnError(STREAM_CREATE_ERROR);
-    return;
-  }
-
-  if (!stream_to_control->Open()) {
-    stream_to_control->Close();
-    LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
-    handler_->OnError(STREAM_OPEN_ERROR);
-    return;
-  }
-
-#if defined(AUDIO_POWER_MONITORING)
-  bool agc_is_supported =
-      stream_to_control->SetAutomaticGainControl(enable_agc);
-  // Disable power measurements on platforms that does not support AGC at a
-  // lower level. AGC can fail on platforms where we don't support the
-  // functionality to modify the input volume slider. One such example is
-  // Windows XP.
-  power_measurement_is_enabled_ &= agc_is_supported;
-#else
-  stream_to_control->SetAutomaticGainControl(enable_agc);
-#endif
-
-  // Finally, keep the stream pointer around, update the state and notify.
-  stream_ = stream_to_control;
-
-  // Send initial muted state along with OnCreated, to avoid races.
-  is_muted_ = stream_->IsMuted();
-  handler_->OnCreated(is_muted_);
-
-  check_muted_state_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(kCheckMutedStateIntervalSeconds),
-      this, &InputController::CheckMutedState);
-  DCHECK(check_muted_state_timer_.IsRunning());
-}
-
-void InputController::DoRecord() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.RecordTime");
 
   if (!stream_ || audio_callback_)
     return;
 
-  handler_->OnLog("AIC::DoRecord");
+  handler_->OnLog("AIC::Record");
 
   if (user_input_monitor_) {
     user_input_monitor_->EnableKeyPressMonitoring();
@@ -371,10 +243,11 @@ void InputController::DoRecord() {
 
   audio_callback_.reset(new AudioCallback(this));
   stream_->Start(audio_callback_.get());
+  return;
 }
 
-void InputController::DoClose() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+void InputController::Close() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.CloseTime");
 
   if (!stream_)
@@ -443,13 +316,8 @@ void InputController::DoClose() {
   weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
-void InputController::DoReportError() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  handler_->OnError(STREAM_ERROR);
-}
-
-void InputController::DoSetVolume(double volume) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+void InputController::SetVolume(double volume) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK_GE(volume, 0);
   DCHECK_LE(volume, 1.0);
 
@@ -471,17 +339,81 @@ void InputController::DoSetVolume(double volume) {
   stream_->SetVolume(max_volume_ * volume);
 }
 
-void InputController::DoSetOutputDeviceForAec(
+void InputController::SetOutputDeviceForAec(
     const std::string& output_device_id) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   if (stream_)
     stream_->SetOutputDeviceForAec(output_device_id);
+}
+
+void InputController::DoCreate(media::AudioManager* audio_manager,
+                               const media::AudioParameters& params,
+                               const std::string& device_id,
+                               bool enable_agc) {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  DCHECK(!stream_);
+  SCOPED_UMA_HISTOGRAM_TIMER("Media.InputController.CreateTime");
+  handler_->OnLog("AIC::DoCreate");
+
+#if defined(AUDIO_POWER_MONITORING)
+  // We only do power measurements for UMA stats for low latency streams, and
+  // only if agc is requested, to avoid adding logs and UMA for non-WebRTC
+  // clients.
+  power_measurement_is_enabled_ = (type_ == LOW_LATENCY && enable_agc);
+  last_audio_level_log_time_ = base::TimeTicks::Now();
+#endif
+
+  // Unretained is safe since |this| owns |stream|.
+  auto* stream = audio_manager->MakeAudioInputStream(
+      params, device_id,
+      base::BindRepeating(&InputController::LogMessage,
+                          base::Unretained(this)));
+
+  if (!stream) {
+    LogCaptureStartupResult(CAPTURE_STARTUP_CREATE_STREAM_FAILED);
+    handler_->OnError(STREAM_CREATE_ERROR);
+    return;
+  }
+
+  if (!stream->Open()) {
+    stream->Close();
+    LogCaptureStartupResult(CAPTURE_STARTUP_OPEN_STREAM_FAILED);
+    handler_->OnError(STREAM_OPEN_ERROR);
+    return;
+  }
+
+#if defined(AUDIO_POWER_MONITORING)
+  bool agc_is_supported = stream->SetAutomaticGainControl(enable_agc);
+  // Disable power measurements on platforms that does not support AGC at a
+  // lower level. AGC can fail on platforms where we don't support the
+  // functionality to modify the input volume slider. One such example is
+  // Windows XP.
+  power_measurement_is_enabled_ &= agc_is_supported;
+#else
+  stream->SetAutomaticGainControl(enable_agc);
+#endif
+
+  // Finally, keep the stream pointer around, update the state and notify.
+  stream_ = stream;
+
+  // Send initial muted state along with OnCreated, to avoid races.
+  is_muted_ = stream_->IsMuted();
+  handler_->OnCreated(is_muted_);
+
+  check_muted_state_timer_.Start(FROM_HERE, kCheckMutedStateInterval, this,
+                                 &InputController::CheckMutedState);
+  DCHECK(check_muted_state_timer_.IsRunning());
+}
+
+void InputController::DoReportError() {
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
+  handler_->OnError(STREAM_ERROR);
 }
 
 void InputController::DoLogAudioLevels(float level_dbfs,
                                        int microphone_volume_percent) {
 #if defined(AUDIO_POWER_MONITORING)
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   if (!stream_)
     return;
 
@@ -585,7 +517,7 @@ void InputController::LogCallbackError() {
 }
 
 void InputController::LogMessage(const std::string& message) {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   handler_->OnLog(message);
 }
 
@@ -614,8 +546,7 @@ bool InputController::CheckAudioPower(const media::AudioBus* source,
 
   // Perform periodic audio (power) level measurements.
   const auto now = base::TimeTicks::Now();
-  if ((now - last_audio_level_log_time_).InSeconds() <=
-      kPowerMonitorLogIntervalSeconds) {
+  if (now - last_audio_level_log_time_ <= kPowerMonitorLogInterval) {
     return false;
   }
 
@@ -631,7 +562,7 @@ bool InputController::CheckAudioPower(const media::AudioBus* source,
 }
 
 void InputController::CheckMutedState() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK_CALLED_ON_VALID_THREAD(owning_thread_);
   DCHECK(stream_);
   const bool new_state = stream_->IsMuted();
   if (new_state != is_muted_) {

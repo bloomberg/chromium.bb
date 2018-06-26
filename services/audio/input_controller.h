@@ -14,62 +14,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/string_piece.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "media/base/audio_parameters.h"
 
-// An InputController controls an media::AudioInputStream and records data
-// from this input stream. The two main methods are Record() and Close() and
-// they are both executed on the audio thread which is injected by the two
-// alternative factory methods, Create() or CreateForStream().
-//
-// All public methods of InputController are synchronous if called from
-// audio thread, or non-blocking if called from a different thread.
-//
-// Here is a state diagram for the InputController:
-//
-//                    .-->  [ Closed / Error ]  <--.
-//                    |                            |
-//                    |                            |
-//               [ Created ]  ---------->  [ Recording ]
-//                    ^
-//                    |
-//              *[  Empty  ]
-//
-// * Initial state
-//
-// State sequences:
-//
-//  [Creating Thread]                     [Audio Thread]
-//
-//      User               InputController               EventHandler
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Create() ==>        DoCreate()
-//                   media::AudioManager::Makemedia::AudioInputStream()
-//                        media::AudioInputStream::Open()
-//                                  .- - - - - - - - - - - - ->   OnError()
-//                                  .------------------------->  OnCreated()
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Record() ==>                 DoRecord()
-//                      media::AudioInputStream::Start()
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-// Close() ==>                  DoClose()
-//                        media::AudioInputStream::Stop()
-//                        media::AudioInputStream::Close()
-//                          SyncWriter::Close()
-// Closure::Run() <-----------------.
-// (closure-task)
-//
-// The audio thread itself is owned by the media::AudioManager that the
-// InputController holds a reference to.  When performing tasks on the
-// audio thread, the controller must not add or release references to the
-// media::AudioManager or itself (since it in turn holds a reference to the
-// manager).
-//
-
-namespace base {
-class SingleThreadTaskRunner;
-}
 
 namespace media {
 class AudioBus;
@@ -85,7 +34,8 @@ namespace audio {
 #define AUDIO_POWER_MONITORING
 #endif
 
-class InputController : public base::RefCountedThreadSafe<InputController> {
+// All public methods of InputController must be called from the audio thread.
+class InputController final {
  public:
   // Error codes to make native logging more clear. These error codes are added
   // to generic error strings to provide a higher degree of details.
@@ -147,58 +97,36 @@ class InputController : public base::RefCountedThreadSafe<InputController> {
     FAKE = 3,
   };
 
+  ~InputController();
+
   media::AudioInputStream* stream_for_testing() { return stream_; }
 
-  // The audio device will be created on the audio thread, and when that is
-  // done, the event handler will receive an OnCreated() call from that same
-  // thread. |user_input_monitor| is used for typing detection and can be NULL.
-  static scoped_refptr<InputController> Create(
+  // |user_input_monitor| is used for typing detection and can be NULL.
+  static std::unique_ptr<InputController> Create(
       media::AudioManager* audio_manager,
       EventHandler* event_handler,
       SyncWriter* sync_writer,
       media::UserInputMonitor* user_input_monitor,
       const media::AudioParameters& params,
       const std::string& device_id,
-      // External synchronous writer for audio controller.
       bool agc_is_enabled);
 
-  // Factory method for creating an InputController with an existing
-  // |stream|. The stream will be opened on the audio thread, and when that is
-  // done, the event  handler will receive an OnCreated() call from that same
-  // thread. |user_input_monitor| is used for typing detection and can be NULL.
-  static scoped_refptr<InputController> CreateForStream(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      EventHandler* event_handler,
-      media::AudioInputStream* stream,
-      // External synchronous writer for audio controller.
-      SyncWriter* sync_writer,
-      media::UserInputMonitor* user_input_monitor);
-
   // Starts recording using the created audio input stream.
-  // This method is called on the creator thread.
-  virtual void Record();
+  void Record();
 
-  // Closes the audio input stream. The state is changed and the resources
-  // are freed on the audio thread. |closed_task| is then executed on the thread
-  // that called Close().
-  // Callbacks (EventHandler and SyncWriter) must exist until |closed_task|
-  // is called.
-  // It is safe to call this method more than once. Calls after the first one
-  // will have no effect.
-  // This method trampolines to the audio thread.
-  virtual void Close(base::OnceClosure closed_task);
+  // Closes the audio input stream, freeing the associated resources. Must be
+  // called before destruction.
+  void Close();
 
   // Sets the capture volume of the input stream. The value 0.0 corresponds
   // to muted and 1.0 to maximum volume.
-  virtual void SetVolume(double volume);
+  void SetVolume(double volume);
 
   // Sets the output device which will be used to cancel audio from, if this
   // input device supports echo cancellation.
-  virtual void SetOutputDeviceForAec(const std::string& output_device_id);
+  void SetOutputDeviceForAec(const std::string& output_device_id);
 
- protected:
-  friend class base::RefCountedThreadSafe<InputController>;
-
+ private:
   // Used to log the result of capture startup.
   // This was previously logged as a boolean with only the no callback and OK
   // options. The enum order is kept to ensure backwards compatibility.
@@ -239,35 +167,18 @@ class InputController : public base::RefCountedThreadSafe<InputController> {
   };
 #endif
 
-  InputController(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-                  EventHandler* handler,
+  InputController(EventHandler* handler,
                   SyncWriter* sync_writer,
                   media::UserInputMonitor* user_input_monitor,
                   const media::AudioParameters& params,
                   StreamType type);
-  virtual ~InputController();
 
-  const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunnerForTesting()
-      const {
-    return task_runner_;
-  }
-
-  EventHandler* GetHandlerForTesting() const { return handler_; }
-
- private:
-  // Methods called on the audio thread (owned by the media::AudioManager).
   void DoCreate(media::AudioManager* audio_manager,
                 const media::AudioParameters& params,
                 const std::string& device_id,
                 bool enable_agc);
-  void DoCreateForStream(media::AudioInputStream* stream_to_control,
-                         bool enable_agc);
-  void DoRecord();
-  void DoClose();
   void DoReportError();
-  void DoSetVolume(double volume);
   void DoLogAudioLevels(float level_dbfs, int microphone_volume_percent);
-  void DoSetOutputDeviceForAec(const std::string& output_device_id);
 
 #if defined(AUDIO_POWER_MONITORING)
   // Updates the silence state, see enum SilenceState above for state
@@ -288,7 +199,7 @@ class InputController : public base::RefCountedThreadSafe<InputController> {
   void LogMessage(const std::string& message);
 
   // Called on the hw callback thread. Checks for keyboard input if
-  // user_input_monitor_ is set otherwise returns false.
+  // |user_input_monitor_| is set otherwise returns false.
   bool CheckForKeyboardInput();
 
   // Does power monitoring on supported platforms.
@@ -306,10 +217,8 @@ class InputController : public base::RefCountedThreadSafe<InputController> {
 
   static StreamType ParamsToStreamType(const media::AudioParameters& params);
 
-  SEQUENCE_CHECKER(owning_sequence_);
-
-  // The task runner of audio-manager thread that this object runs on.
-  scoped_refptr<base::SingleThreadTaskRunner> const task_runner_;
+  // This class must be used on the audio manager thread.
+  THREAD_CHECKER(owning_thread_);
 
   // Contains the InputController::EventHandler which receives state
   // notifications from this class.

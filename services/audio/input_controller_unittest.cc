@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/fake_audio_input_stream.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -31,28 +32,14 @@ namespace {
 
 const int kSampleRate = media::AudioParameters::kAudioCDSampleRate;
 const media::ChannelLayout kChannelLayout = media::CHANNEL_LAYOUT_STEREO;
-const int kSamplesPerPacket = kSampleRate / 10;
+const int kSamplesPerPacket = kSampleRate / 100;
 
 const double kMaxVolume = 1.0;
 
 // InputController will poll once every second, so wait at most a bit
 // more than that for the callbacks.
-constexpr base::TimeDelta kOnMuteWaitTimeout =
-    base::TimeDelta::FromMilliseconds(1500);
-
-// Posts run_loop->QuitClosure() on specified
-// message loop after a certain number of calls given by |limit|.
-ACTION_P4(CheckCountAndPostQuitTask, count, limit, loop_or_proxy, run_loop) {
-  if (++*count >= limit) {
-    loop_or_proxy->PostTask(FROM_HERE, run_loop->QuitWhenIdleClosure());
-  }
-}
-
-void RunLoopWithTimeout(base::RunLoop* run_loop, base::TimeDelta timeout) {
-  base::OneShotTimer timeout_timer;
-  timeout_timer.Start(FROM_HERE, timeout, run_loop->QuitClosure());
-  run_loop->Run();
-}
+constexpr base::TimeDelta kOnMutePollInterval =
+    base::TimeDelta::FromMilliseconds(1000);
 
 }  // namespace
 
@@ -111,12 +98,13 @@ class MockAudioInputStream : public media::AudioInputStream {
   MOCK_METHOD1(SetVolume, void(double));
 };
 
-class InputControllerTest : public testing::TestWithParam<bool> {
+class InputControllerTest : public testing::Test {
  public:
   InputControllerTest()
-      : run_on_audio_thread_(GetParam()),
+      : task_environment_(
+            base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         audio_manager_(std::make_unique<media::FakeAudioManager>(
-            std::make_unique<media::TestAudioThread>(!run_on_audio_thread_),
+            std::make_unique<media::TestAudioThread>(false),
             &log_factory_)),
         params_(media::AudioParameters::AUDIO_FAKE,
                 kChannelLayout,
@@ -125,7 +113,7 @@ class InputControllerTest : public testing::TestWithParam<bool> {
 
   ~InputControllerTest() override {
     audio_manager_->Shutdown();
-    base::RunLoop().RunUntilIdle();
+    task_environment_.RunUntilIdle();
   }
 
  protected:
@@ -136,24 +124,9 @@ class InputControllerTest : public testing::TestWithParam<bool> {
         media::AudioDeviceDescription::kDefaultDeviceId, false);
   }
 
-  void CloseAudioController() {
-    if (run_on_audio_thread_) {
-      controller_->Close(base::OnceClosure());
-      return;
-    }
+  base::test::ScopedTaskEnvironment task_environment_;
 
-    base::RunLoop loop;
-    controller_->Close(loop.QuitWhenIdleClosure());
-    loop.Run();
-  }
-
-  base::MessageLoop message_loop_;
-
-  // Parameterize tests to run InputController either on audio thread
-  // (synchronously), or on a different thread (non-blocking).
-  bool run_on_audio_thread_;
-
-  scoped_refptr<InputController> controller_;
+  std::unique_ptr<InputController> controller_;
   media::FakeAudioLogFactory log_factory_;
   std::unique_ptr<media::AudioManager> audio_manager_;
   MockInputControllerEventHandler event_handler_;
@@ -166,46 +139,50 @@ class InputControllerTest : public testing::TestWithParam<bool> {
   DISALLOW_COPY_AND_ASSIGN(InputControllerTest);
 };
 
-TEST_P(InputControllerTest, CreateAndCloseWithoutRecording) {
+TEST_F(InputControllerTest, CreateAndCloseWithoutRecording) {
   EXPECT_CALL(event_handler_, OnCreated(_));
   CreateAudioController();
-  base::RunLoop().RunUntilIdle();
+  task_environment_.RunUntilIdle();
   ASSERT_TRUE(controller_.get());
 
   EXPECT_CALL(sync_writer_, Close());
-  CloseAudioController();
+  controller_->Close();
 }
 
 // Test a normal call sequence of create, record and close.
-TEST_P(InputControllerTest, CreateRecordAndClose) {
-  int count = 0;
-
+TEST_F(InputControllerTest, CreateRecordAndClose) {
   EXPECT_CALL(event_handler_, OnCreated(_));
   CreateAudioController();
   ASSERT_TRUE(controller_.get());
 
   base::RunLoop loop;
 
-  // Write() should be called ten times.
-  EXPECT_CALL(sync_writer_, Write(NotNull(), _, _, _))
-      .Times(AtLeast(10))
-      .WillRepeatedly(CheckCountAndPostQuitTask(
-          &count, 10, message_loop_.task_runner(), &loop));
-  EXPECT_CALL(user_input_monitor_, EnableKeyPressMonitoring());
+  {
+    // Wait for Write() to be called ten times.
+    testing::InSequence s;
+    EXPECT_CALL(user_input_monitor_, EnableKeyPressMonitoring());
+    EXPECT_CALL(sync_writer_, Write(NotNull(), _, _, _)).Times(Exactly(9));
+    EXPECT_CALL(sync_writer_, Write(NotNull(), _, _, _))
+        .Times(AtLeast(1))
+        .WillOnce(InvokeWithoutArgs([&]() { loop.Quit(); }));
+  }
   controller_->Record();
-
-  // Record and wait until ten Write() callbacks are received.
   loop.Run();
 
-  EXPECT_CALL(user_input_monitor_, DisableKeyPressMonitoring());
+  testing::Mock::VerifyAndClearExpectations(&user_input_monitor_);
+  testing::Mock::VerifyAndClearExpectations(&sync_writer_);
+
   EXPECT_CALL(sync_writer_, Close());
-  CloseAudioController();
+  EXPECT_CALL(user_input_monitor_, DisableKeyPressMonitoring());
+  controller_->Close();
+
+  task_environment_.RunUntilIdle();
 }
 
 // Test that InputController rejects insanely large packet sizes.
-TEST_P(InputControllerTest, SamplesPerPacketTooLarge) {
+TEST_F(InputControllerTest, SamplesPerPacketTooLarge) {
   // Create an audio device with a very large packet size.
-  params_.set_frames_per_buffer(kSamplesPerPacket * 1000);
+  params_.set_frames_per_buffer(1000000);
 
   // OnCreated() shall not be called in this test.
   EXPECT_CALL(event_handler_, OnCreated(_)).Times(Exactly(0));
@@ -213,7 +190,7 @@ TEST_P(InputControllerTest, SamplesPerPacketTooLarge) {
   ASSERT_FALSE(controller_.get());
 }
 
-TEST_P(InputControllerTest, CloseTwice) {
+TEST_F(InputControllerTest, CloseTwice) {
   EXPECT_CALL(event_handler_, OnCreated(_));
   CreateAudioController();
   ASSERT_TRUE(controller_.get());
@@ -223,72 +200,56 @@ TEST_P(InputControllerTest, CloseTwice) {
 
   EXPECT_CALL(user_input_monitor_, DisableKeyPressMonitoring());
   EXPECT_CALL(sync_writer_, Close());
-  CloseAudioController();
+  controller_->Close();
 
-  CloseAudioController();
+  controller_->Close();
 }
 
 // Test that InputController sends OnMute callbacks properly.
-TEST_P(InputControllerTest, TestOnmutedCallbackInitiallyUnmuted) {
-  const auto timeout = kOnMuteWaitTimeout;
-
+TEST_F(InputControllerTest, TestOnmutedCallbackInitiallyUnmuted) {
   WaitableEvent callback_event(WaitableEvent::ResetPolicy::AUTOMATIC,
                                WaitableEvent::InitialState::NOT_SIGNALED);
 
-  base::RunLoop unmute_run_loop;
-  base::RunLoop mute_run_loop;
-  base::RunLoop setup_run_loop;
-  EXPECT_CALL(event_handler_, OnCreated(false)).WillOnce(InvokeWithoutArgs([&] {
-    setup_run_loop.QuitWhenIdle();
-  }));
+  EXPECT_CALL(event_handler_, OnCreated(false));
   EXPECT_CALL(sync_writer_, Close());
-  EXPECT_CALL(event_handler_, OnMuted(true)).WillOnce(InvokeWithoutArgs([&] {
-    mute_run_loop.Quit();
-  }));
-  EXPECT_CALL(event_handler_, OnMuted(false)).WillOnce(InvokeWithoutArgs([&] {
-    unmute_run_loop.Quit();
-  }));
 
   media::FakeAudioInputStream::SetGlobalMutedState(false);
   CreateAudioController();
   ASSERT_TRUE(controller_.get());
-  RunLoopWithTimeout(&setup_run_loop, timeout);
+  task_environment_.FastForwardBy(kOnMutePollInterval);
 
+  testing::Mock::VerifyAndClearExpectations(&event_handler_);
+  EXPECT_CALL(event_handler_, OnMuted(true));
   media::FakeAudioInputStream::SetGlobalMutedState(true);
-  RunLoopWithTimeout(&mute_run_loop, timeout);
-  media::FakeAudioInputStream::SetGlobalMutedState(false);
-  RunLoopWithTimeout(&unmute_run_loop, timeout);
+  task_environment_.FastForwardBy(kOnMutePollInterval);
 
-  CloseAudioController();
+  testing::Mock::VerifyAndClearExpectations(&event_handler_);
+  EXPECT_CALL(event_handler_, OnMuted(false));
+  media::FakeAudioInputStream::SetGlobalMutedState(false);
+  task_environment_.FastForwardBy(kOnMutePollInterval);
+
+  controller_->Close();
 }
 
-TEST_P(InputControllerTest, TestOnmutedCallbackInitiallyMuted) {
-  const auto timeout = kOnMuteWaitTimeout;
-
+TEST_F(InputControllerTest, TestOnmutedCallbackInitiallyMuted) {
   WaitableEvent callback_event(WaitableEvent::ResetPolicy::AUTOMATIC,
                                WaitableEvent::InitialState::NOT_SIGNALED);
 
-  base::RunLoop unmute_run_loop;
-  base::RunLoop setup_run_loop;
-  EXPECT_CALL(event_handler_, OnCreated(true)).WillOnce(InvokeWithoutArgs([&] {
-    setup_run_loop.QuitWhenIdle();
-  }));
+  EXPECT_CALL(event_handler_, OnCreated(true));
   EXPECT_CALL(sync_writer_, Close());
-  EXPECT_CALL(event_handler_, OnMuted(false)).WillOnce(InvokeWithoutArgs([&] {
-    unmute_run_loop.Quit();
-  }));
 
   media::FakeAudioInputStream::SetGlobalMutedState(true);
   CreateAudioController();
   ASSERT_TRUE(controller_.get());
-  RunLoopWithTimeout(&setup_run_loop, timeout);
+  task_environment_.FastForwardBy(kOnMutePollInterval);
 
+  testing::Mock::VerifyAndClearExpectations(&event_handler_);
+
+  EXPECT_CALL(event_handler_, OnMuted(false));
   media::FakeAudioInputStream::SetGlobalMutedState(false);
-  RunLoopWithTimeout(&unmute_run_loop, timeout);
+  task_environment_.FastForwardBy(kOnMutePollInterval);
 
-  CloseAudioController();
+  controller_->Close();
 }
-
-INSTANTIATE_TEST_CASE_P(SyncAsync, InputControllerTest, testing::Bool());
 
 }  // namespace audio
