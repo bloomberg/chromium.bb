@@ -71,8 +71,7 @@ gfx::Size PrintingContextNoSystemDialog::GetPdfPaperSizeDeviceUnits() {
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    float multiplier = 100 * settings_.device_units_per_inch();
-    multiplier /= kHundrethsMMPerInch;
+    float multiplier = settings_.device_units_per_inch() / kMicronsPerMil;
     width *= multiplier;
     height *= multiplier;
   }

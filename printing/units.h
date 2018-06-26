@@ -9,8 +9,8 @@
 
 namespace printing {
 
-// Length of a thousandth of inches in 0.01mm unit.
-const int kHundrethsMMPerInch = 2540;
+// Length of an inch in 0.001mm unit.
+constexpr int kMicronsPerInch = 25400;
 
 // Mil is a thousandth of an inch.
 constexpr float kMicronsPerMil = 25.4f;

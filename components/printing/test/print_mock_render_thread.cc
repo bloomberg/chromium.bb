@@ -179,7 +179,8 @@ void PrintMockRenderThread::OnUpdatePrintSettings(
         media_size_value->GetInteger(printing::kSettingMediaSizeHeightMicrons,
                                      &height_microns)) {
       float device_microns_per_unit =
-          (printing::kHundrethsMMPerInch * 10.0f) / printing::kDefaultPdfDpi;
+          static_cast<float>(printing::kMicronsPerInch) /
+          printing::kDefaultPdfDpi;
       page_size = gfx::Size(width_microns / device_microns_per_unit,
                             height_microns / device_microns_per_unit);
     }

@@ -28,9 +28,6 @@ namespace printing {
 
 namespace {
 
-// 1 inch in mils.
-const int kInchToMil = 1000;
-
 int Round(double x) {
   return static_cast<int>(x + 0.5);
 }
@@ -131,8 +128,8 @@ void PrintingContextAndroid::AskUserForSettingsReply(
   int dpi = Java_PrintingContext_getDpi(env, j_printing_context_);
   int width = Java_PrintingContext_getWidth(env, j_printing_context_);
   int height = Java_PrintingContext_getHeight(env, j_printing_context_);
-  width = Round(ConvertUnitDouble(width, kInchToMil, 1.0) * dpi);
-  height = Round(ConvertUnitDouble(height, kInchToMil, 1.0) * dpi);
+  width = Round(ConvertUnitDouble(width, kMilsPerInch, 1.0) * dpi);
+  height = Round(ConvertUnitDouble(height, kMilsPerInch, 1.0) * dpi);
   SetSizes(&settings_, dpi, width, height);
 
   std::move(callback_).Run(OK);
@@ -175,8 +172,7 @@ gfx::Size PrintingContextAndroid::GetPdfPaperSizeDeviceUnits() {
   } else {
     // ulocdata_getPaperSize returns the width and height in mm.
     // Convert this to pixels based on the dpi.
-    float multiplier = 100 * settings_.device_units_per_inch();
-    multiplier /= kHundrethsMMPerInch;
+    float multiplier = settings_.device_units_per_inch() / kMicronsPerMil;
     width *= multiplier;
     height *= multiplier;
   }

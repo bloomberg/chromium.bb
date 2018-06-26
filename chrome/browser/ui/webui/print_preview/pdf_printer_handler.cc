@@ -60,11 +60,11 @@ gfx::Size GetDefaultPdfMediaSizeMicrons() {
     return gfx::Size();
   }
   gfx::Size pdf_media_size = printing_context->GetPdfPaperSizeDeviceUnits();
-  float deviceMicronsPerDeviceUnit =
-      (printing::kHundrethsMMPerInch * 10.0f) /
+  float device_microns_per_device_unit =
+      static_cast<float>(printing::kMicronsPerInch) /
       printing_context->settings().device_units_per_inch();
-  return gfx::Size(pdf_media_size.width() * deviceMicronsPerDeviceUnit,
-                   pdf_media_size.height() * deviceMicronsPerDeviceUnit);
+  return gfx::Size(pdf_media_size.width() * device_microns_per_device_unit,
+                   pdf_media_size.height() * device_microns_per_device_unit);
 }
 
 std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
