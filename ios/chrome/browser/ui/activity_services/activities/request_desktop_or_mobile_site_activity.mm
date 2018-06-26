@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/activity_services/activities/request_desktop_or_mobile_site_activity.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -75,8 +77,12 @@ NSString* const kRequestDesktopOrMobileSiteActivityType =
 
 - (void)performActivity {
   if (self.userAgent == web::UserAgentType::MOBILE) {
+    base::RecordAction(
+        base::UserMetricsAction("MobileShareActionRequestDesktop"));
     [self.dispatcher requestDesktopSite];
   } else {
+    base::RecordAction(
+        base::UserMetricsAction("MobileShareActionRequestMobile"));
     [self.dispatcher requestMobileSite];
   }
   [self activityDidFinish:YES];

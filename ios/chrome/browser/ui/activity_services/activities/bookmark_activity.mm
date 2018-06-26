@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/activity_services/activities/bookmark_activity.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/ui/commands/browser_commands.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -81,6 +83,8 @@ NSString* const kBookmarkActivityType = @"com.google.chrome.bookmarkActivity";
 }
 
 - (void)performActivity {
+  base::RecordAction(
+      base::UserMetricsAction("MobileShareActionBookmarkThisPage"));
   [self.dispatcher bookmarkPage];
   [self activityDidFinish:YES];
 }

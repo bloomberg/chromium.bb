@@ -5,6 +5,8 @@
 #import "ios/chrome/browser/ui/activity_services/activities/reading_list_activity.h"
 
 #include "base/logging.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -73,6 +75,7 @@ NSString* const kReadingListActivityType =
 }
 
 - (void)performActivity {
+  base::RecordAction(base::UserMetricsAction("MobileShareActionReadLater"));
   ReadingListAddCommand* command =
       [[ReadingListAddCommand alloc] initWithURL:_activityURL title:_title];
   [_dispatcher addToReadingList:command];

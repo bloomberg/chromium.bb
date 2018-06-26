@@ -12381,6 +12381,42 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileShareActionBookmarkThisPage">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user pressed &quot;Bookmark&quot; from the share action menu.
+  </description>
+</action>
+
+<action name="MobileShareActionFindInPage">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user pressed &quot;Find In Page&quot; from the share action menu.
+  </description>
+</action>
+
+<action name="MobileShareActionReadLater">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user pressed &quot;Read Later&quot; from the share action menu.
+  </description>
+</action>
+
+<action name="MobileShareActionRequestDesktop">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user pressed &quot;Request Desktop Site&quot; from the share action
+    menu.
+  </description>
+</action>
+
+<action name="MobileShareActionRequestMobile">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The user pressed &quot;Request Mobile Site&quot; from the share action menu.
+  </description>
+</action>
+
 <action name="MobileShortcutAllBookmarks">
   <obsolete>Deprecated as of 5/2015</obsolete>
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
