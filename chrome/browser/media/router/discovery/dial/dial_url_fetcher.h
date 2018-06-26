@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/optional.h"
@@ -79,7 +80,8 @@ class DialURLFetcher {
 
   // Invokes the error callback due to redirect, and aborts the request.
   void ReportRedirectError(const net::RedirectInfo& redirect_info,
-                           const network::ResourceResponseHead& response_head);
+                           const network::ResourceResponseHead& response_head,
+                           std::vector<std::string>* to_be_removed_headers);
 
   // Runs |error_cb_| with |message| and clears it.
   void ReportError(int response_code, const std::string& message);

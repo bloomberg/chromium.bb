@@ -13,6 +13,8 @@ static_library("net") {
   public_deps = [
     "//components/variations",
     "//net",
+    "//services/network/public/cpp:cpp",
+    "//services/network/public/cpp:cpp_base",
     "//url",
   ]
   deps = [

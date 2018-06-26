@@ -8,6 +8,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -104,7 +105,8 @@ class PaymentManifestDownloader {
   // Called by SimpleURLLoader on a redirect.
   void OnURLLoaderRedirect(network::SimpleURLLoader* url_loader,
                            const net::RedirectInfo& redirect_info,
-                           const network::ResourceResponseHead& response_head);
+                           const network::ResourceResponseHead& response_head,
+                           std::vector<std::string>* to_be_removed_headers);
 
   // Called by SimpleURLLoader on completion.
   void OnURLLoaderComplete(network::SimpleURLLoader* url_loader,

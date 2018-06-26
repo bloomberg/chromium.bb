@@ -282,13 +282,11 @@ IN_PROC_BROWSER_TEST_F(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
-  variations::AppendVariationHeaders(url, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo,
-                                     &resource_request->headers);
 
   std::unique_ptr<network::SimpleURLLoader> loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+      variations::CreateSimpleURLLoaderWithVariationsHeaders(
+          std::move(resource_request), variations::InIncognito::kNo,
+          variations::SignedIn::kNo, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   content::StoragePartition* partition =
       content::BrowserContext::GetDefaultStoragePartition(browser()->profile());
@@ -315,13 +313,11 @@ IN_PROC_BROWSER_TEST_F(
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = url;
-  variations::AppendVariationHeaders(url, variations::InIncognito::kNo,
-                                     variations::SignedIn::kNo,
-                                     &resource_request->headers);
 
   std::unique_ptr<network::SimpleURLLoader> loader =
-      network::SimpleURLLoader::Create(std::move(resource_request),
-                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+      variations::CreateSimpleURLLoaderWithVariationsHeaders(
+          std::move(resource_request), variations::InIncognito::kNo,
+          variations::SignedIn::kNo, TRAFFIC_ANNOTATION_FOR_TESTS);
 
   network::SharedURLLoaderFactory* loader_factory =
       g_browser_process->system_network_context_manager()

@@ -303,7 +303,7 @@ class SimpleURLLoaderImpl : public SimpleURLLoader,
   // closed.
   void MaybeComplete();
 
-  OnRedirectCallback on_redirect_callback_;
+  std::vector<OnRedirectCallback> on_redirect_callback_;
   OnResponseStartedCallback on_response_started_callback_;
   bool allow_partial_results_ = false;
   bool allow_http_error_results_ = false;
@@ -1087,12 +1087,13 @@ void SimpleURLLoaderImpl::DownloadAsStream(
 
 void SimpleURLLoaderImpl::SetOnRedirectCallback(
     const OnRedirectCallback& on_redirect_callback) {
-  on_redirect_callback_ = on_redirect_callback;
+  on_redirect_callback_.push_back(on_redirect_callback);
 }
 
 void SimpleURLLoaderImpl::SetOnResponseStartedCallback(
     OnResponseStartedCallback on_response_started_callback) {
   on_response_started_callback_ = std::move(on_response_started_callback);
+  DCHECK(on_response_started_callback_);
 }
 
 void SimpleURLLoaderImpl::SetAllowPartialResults(bool allow_partial_results) {
@@ -1352,17 +1353,23 @@ void SimpleURLLoaderImpl::OnReceiveRedirect(
     return;
   }
 
-  if (on_redirect_callback_) {
-    base::WeakPtr<SimpleURLLoaderImpl> weak_this =
-        weak_ptr_factory_.GetWeakPtr();
-    on_redirect_callback_.Run(redirect_info, response_head);
-    // If deleted by the callback, bail now.
-    if (!weak_this)
-      return;
+  std::vector<std::string> to_be_removed_headers;
+  for (auto callback : on_redirect_callback_) {
+    if (callback) {
+      base::WeakPtr<SimpleURLLoaderImpl> weak_this =
+          weak_ptr_factory_.GetWeakPtr();
+      callback.Run(redirect_info, response_head, &to_be_removed_headers);
+      // If deleted by the callback, bail now.
+      if (!weak_this)
+        return;
+    }
   }
 
   final_url_ = redirect_info.new_url;
-  url_loader_->FollowRedirect(base::nullopt, base::nullopt);
+  if (to_be_removed_headers.empty())
+    url_loader_->FollowRedirect(base::nullopt, base::nullopt);
+  else
+    url_loader_->FollowRedirect(to_be_removed_headers, base::nullopt);
 }
 
 void SimpleURLLoaderImpl::OnReceiveCachedMetadata(

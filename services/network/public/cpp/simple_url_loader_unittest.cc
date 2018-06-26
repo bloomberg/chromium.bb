@@ -696,7 +696,8 @@ TEST_P(SimpleURLLoaderTest, OnRedirectCallback) {
       [](int* num_redirects, net::RedirectInfo* redirect_info_ptr,
          network::ResourceResponseHead* response_head_ptr,
          const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head) {
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) {
         ++*num_redirects;
         *redirect_info_ptr = redirect_info;
         *response_head_ptr = response_head;
@@ -725,9 +726,8 @@ TEST_P(SimpleURLLoaderTest, OnRedirectCallbackTwoRedirects) {
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head) {
-        ++*num_redirects;
-      },
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
 
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
@@ -749,7 +749,8 @@ TEST_P(SimpleURLLoaderTest, DeleteInOnRedirectCallback) {
       base::BindRepeating(
           [](std::unique_ptr<SimpleLoaderTestHelper> test_helper,
              base::RunLoop* run_loop, const net::RedirectInfo& redirect_info,
-             const network::ResourceResponseHead& response_head) {
+             const network::ResourceResponseHead& response_head,
+             std::vector<std::string>* to_be_removed_headers) {
             run_loop->Quit();
           },
           base::Passed(std::move(test_helper)), &run_loop));
@@ -771,9 +772,8 @@ TEST_P(SimpleURLLoaderTest, UploadShortStringWithRedirect) {
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head) {
-        ++*num_redirects;
-      },
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
 
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
@@ -796,15 +796,77 @@ TEST_P(SimpleURLLoaderTest, UploadLongStringWithRedirect) {
   int num_redirects = 0;
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head) {
-        ++*num_redirects;
-      },
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
 
   test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
   EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
   ASSERT_TRUE(test_helper->response_body());
   EXPECT_EQ(GetLongUploadBody(), *test_helper->response_body());
+  // Make sure request really was redirected.
+  EXPECT_EQ(1, num_redirects);
+}
+
+TEST_P(SimpleURLLoaderTest,
+       OnRedirectCallbackReturnsExistingToBeRemovedHeaders) {
+  // "/echoheader?foo" is used here to let |test_server_| send response with
+  // "foo" header, and SimpleURLLoader's redirect callback marks "foo" header
+  // to be removed, so that we can test "foo" header has been removed.
+  GURL url = test_server_.GetURL("/echoheader?foo");
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = test_server_.GetURL("/server-redirect?" + url.spec());
+  resource_request->headers.SetHeader("foo", "Expected Response");
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+
+  int num_redirects = 0;
+  test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
+      [](int* num_redirects, const net::RedirectInfo& redirect_info,
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) {
+        ++*num_redirects;
+        to_be_removed_headers->push_back("foo");
+      },
+      base::Unretained(&num_redirects)));
+
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  // The "foo" header is removed since the SimpleURLLoader's redirect callback
+  // marks "foo" header to be removed.
+  EXPECT_EQ("None", *test_helper->response_body());
+  // Make sure request really was redirected.
+  EXPECT_EQ(1, num_redirects);
+}
+
+TEST_P(SimpleURLLoaderTest,
+       OnRedirectCallbackReturnsNonExistingToBeRemovedHeaders) {
+  GURL url = test_server_.GetURL("/echoheader?foo");
+  std::unique_ptr<network::ResourceRequest> resource_request =
+      std::make_unique<network::ResourceRequest>();
+  resource_request->url = test_server_.GetURL("/server-redirect?" + url.spec());
+  resource_request->headers.SetHeader("foo", "Expected Response");
+  std::unique_ptr<SimpleLoaderTestHelper> test_helper =
+      CreateHelper(std::move(resource_request));
+
+  int num_redirects = 0;
+  test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
+      [](int* num_redirects, const net::RedirectInfo& redirect_info,
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) {
+        ++*num_redirects;
+        to_be_removed_headers->push_back("bar");
+      },
+      base::Unretained(&num_redirects)));
+
+  test_helper->StartSimpleLoaderAndWait(url_loader_factory_.get());
+  EXPECT_EQ(net::OK, test_helper->simple_url_loader()->NetError());
+  ASSERT_TRUE(test_helper->response_body());
+  // The "foo" header is not removed since the SimpleURLLoader's redirect
+  // callback marks "bar" header to be removed.
+  EXPECT_EQ("Expected Response", *test_helper->response_body());
   // Make sure request really was redirected.
   EXPECT_EQ(1, num_redirects);
 }
@@ -2192,9 +2254,8 @@ TEST_P(SimpleURLLoaderTest, RetryAfterRedirect) {
       1, SimpleURLLoader::RETRY_ON_5XX);
   test_helper->simple_url_loader()->SetOnRedirectCallback(base::BindRepeating(
       [](int* num_redirects, const net::RedirectInfo& redirect_info,
-         const network::ResourceResponseHead& response_head) {
-        ++*num_redirects;
-      },
+         const network::ResourceResponseHead& response_head,
+         std::vector<std::string>* to_be_removed_headers) { ++*num_redirects; },
       base::Unretained(&num_redirects)));
   loader_factory.RunTest(test_helper.get());
 

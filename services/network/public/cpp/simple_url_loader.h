@@ -10,6 +10,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/callback_forward.h"
 #include "base/component_export.h"
@@ -92,9 +93,12 @@ class COMPONENT_EXPORT(NETWORK_CPP) SimpleURLLoader {
 
   // Callback used when a redirect is being followed. It is safe to delete the
   // SimpleURLLoader during the callback.
-  using OnRedirectCallback =
-      base::RepeatingCallback<void(const net::RedirectInfo& redirect_info,
-                                   const ResourceResponseHead& response_head)>;
+  // |to_be_removed_headers| is used to set variations headers that need to be
+  // removed for requests when a redirect to a non-Google URL occurs.
+  using OnRedirectCallback = base::RepeatingCallback<void(
+      const net::RedirectInfo& redirect_info,
+      const ResourceResponseHead& response_head,
+      std::vector<std::string>* to_be_removed_headers)>;
 
   // Callback used when a response is received. It is safe to delete the
   // SimpleURLLoader during the callback.

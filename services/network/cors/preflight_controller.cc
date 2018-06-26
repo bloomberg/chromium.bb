@@ -5,6 +5,7 @@
 #include "services/network/cors/preflight_controller.h"
 
 #include <algorithm>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/strings/string_util.h"
@@ -268,7 +269,8 @@ class PreflightController::PreflightLoader final {
 
  private:
   void HandleRedirect(const net::RedirectInfo& redirect_info,
-                      const network::ResourceResponseHead& response_head) {
+                      const network::ResourceResponseHead& response_head,
+                      std::vector<std::string>* to_be_removed_headers) {
     // Preflight should not allow any redirect.
     FinalizeLoader();
 
