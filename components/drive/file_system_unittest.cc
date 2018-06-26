@@ -146,9 +146,8 @@ class FileSystemTest : public testing::Test {
     const base::FilePath temp_file_dir = temp_dir_.GetPath().AppendASCII("tmp");
     ASSERT_TRUE(base::CreateDirectory(temp_file_dir));
     file_system_ = std::make_unique<FileSystem>(
-        pref_service_.get(), logger_.get(), cache_.get(), scheduler_.get(),
-        resource_metadata_.get(), base::ThreadTaskRunnerHandle::Get().get(),
-        temp_file_dir);
+        logger_.get(), cache_.get(), scheduler_.get(), resource_metadata_.get(),
+        base::ThreadTaskRunnerHandle::Get().get(), temp_file_dir);
     file_system_->AddObserver(mock_directory_observer_.get());
 
     // Disable delaying so that the sync starts immediately.

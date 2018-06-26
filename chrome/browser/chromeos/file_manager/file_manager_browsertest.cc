@@ -429,6 +429,7 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("showHiddenFilesDrive"),
                       TestCase("showHiddenFilesDrive").EnableDriveFs(),
                       TestCase("toogleGoogleDocsDrive"),
+                      TestCase("toogleGoogleDocsDrive").EnableDriveFs(),
                       TestCase("showPasteIntoCurrentFolder"),
                       TestCase("showSelectAllInCurrentFolder")));
 

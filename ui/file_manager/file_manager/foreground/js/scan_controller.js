@@ -69,13 +69,6 @@ function ScanController(
   this.scanUpdatedTimer_ = 0;
 
   /**
-   * Last value of hosted files disabled.
-   * @type {?boolean}
-   * @private
-   */
-  this.lastHostedFilesDisabled_ = null;
-
-  /**
    * @type {?function()}
    * @private
    */
@@ -93,9 +86,6 @@ function ScanController(
       'scan-updated', this.onScanUpdated_.bind(this));
   this.directoryModel_.addEventListener(
       'rescan-completed', this.onRescanCompleted_.bind(this));
-  chrome.fileManagerPrivate.onPreferencesChanged.addListener(
-      this.onPreferencesChanged_.bind(this));
-  this.onPreferencesChanged_();
 }
 
 /**
@@ -199,25 +189,6 @@ ScanController.prototype.onScanCancelled_ = function() {
  */
 ScanController.prototype.onRescanCompleted_ = function() {
   this.selectionHandler_.onFileSelectionChanged();
-};
-
-/**
- * Handles preferences change and starts rescan if needed.
- * @private
- */
-ScanController.prototype.onPreferencesChanged_ = function() {
-  chrome.fileManagerPrivate.getPreferences(function(prefs) {
-    if (chrome.runtime.lastError) {
-      console.error(chrome.runtime.lastError.name);
-      return;
-    }
-    if (this.lastHostedFilesDisabled_ !== null &&
-        this.lastHostedFilesDisabled_ !== prefs.hostedFilesDisabled &&
-        this.directoryModel_.isOnDrive()) {
-      this.directoryModel_.rescan(false);
-    }
-    this.lastHostedFilesDisabled_ = prefs.hostedFilesDisabled;
-  }.bind(this));
 };
 
 /**

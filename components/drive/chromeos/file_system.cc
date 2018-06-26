@@ -39,7 +39,6 @@
 #include "components/drive/file_system_core_util.h"
 #include "components/drive/job_scheduler.h"
 #include "components/drive/resource_entry_conversion.h"
-#include "components/prefs/pref_service.h"
 #include "google_apis/drive/drive_api_parser.h"
 
 namespace drive {
@@ -246,26 +245,6 @@ int64_t CalculateEvictableCacheSizeOnBlockingPool(internal::FileCache* cache) {
   return cache->CalculateEvictableCacheSize();
 }
 
-// Excludes hosted documents from the given entries.
-// Used to implement ReadDirectory().
-void FilterHostedDocuments(const ReadDirectoryEntriesCallback& callback,
-                           std::unique_ptr<ResourceEntryVector> entries) {
-  DCHECK(callback);
-
-  if (entries) {
-    // TODO(kinaba): Stop handling hide_hosted_docs here. crbug.com/256520.
-    std::unique_ptr<ResourceEntryVector> filtered(new ResourceEntryVector);
-    for (size_t i = 0; i < entries->size(); ++i) {
-      if (entries->at(i).file_specific_info().is_hosted_document()) {
-        continue;
-      }
-      filtered->push_back(entries->at(i));
-    }
-    entries.swap(filtered);
-  }
-  callback.Run(std::move(entries));
-}
-
 // Adapter for using FileOperationCallback as google_apis::EntryActionCallback.
 void RunFileOperationCallbackAsEntryActionCallback(
     const FileOperationCallback& callback,
@@ -308,15 +287,13 @@ struct FileSystem::CreateDirectoryParams {
   FileOperationCallback callback;
 };
 
-FileSystem::FileSystem(PrefService* pref_service,
-                       EventLogger* logger,
+FileSystem::FileSystem(EventLogger* logger,
                        internal::FileCache* cache,
                        JobScheduler* scheduler,
                        internal::ResourceMetadata* resource_metadata,
                        base::SequencedTaskRunner* blocking_task_runner,
                        const base::FilePath& temporary_file_directory)
-    : pref_service_(pref_service),
-      logger_(logger),
+    : logger_(logger),
       cache_(cache),
       scheduler_(scheduler),
       resource_metadata_(resource_metadata),
@@ -682,16 +659,10 @@ void FileSystem::GetResourceEntryAfterRead(
 
 void FileSystem::ReadDirectory(
     const base::FilePath& directory_path,
-    const ReadDirectoryEntriesCallback& entries_callback_in,
+    const ReadDirectoryEntriesCallback& entries_callback,
     const FileOperationCallback& completion_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(completion_callback);
-
-  const bool hide_hosted_docs =
-      pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles);
-  ReadDirectoryEntriesCallback entries_callback = entries_callback_in;
-  if (entries_callback && hide_hosted_docs)
-    entries_callback = base::Bind(&FilterHostedDocuments, entries_callback);
 
   if (util::GetDriveTeamDrivesRootPath().IsParent(directory_path)) {
     // TODO(slangley): It would be nice to cache the result, rather than needing
@@ -831,10 +802,6 @@ void FileSystem::SearchMetadata(const std::string& query,
                                 MetadataSearchOrder order,
                                 const SearchMetadataCallback& callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // TODO(satorux): Stop handling hide_hosted_docs here. crbug.com/256520.
-  if (pref_service_->GetBoolean(prefs::kDisableDriveHostedFiles))
-    options |= SEARCH_METADATA_EXCLUDE_HOSTED_DOCUMENTS;
 
   drive::internal::SearchMetadata(
       blocking_task_runner_, resource_metadata_, query,

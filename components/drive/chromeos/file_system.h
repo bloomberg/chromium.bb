@@ -23,8 +23,6 @@
 #include "components/drive/chromeos/team_drive_list_observer.h"
 #include "google_apis/drive/drive_api_error_codes.h"
 
-class PrefService;
-
 namespace base {
 class SequencedTaskRunner;
 }  // namespace base
@@ -71,8 +69,7 @@ class FileSystem : public FileSystemInterface,
                    public internal::TeamDriveListObserver,
                    public file_system::OperationDelegate {
  public:
-  FileSystem(PrefService* pref_service,
-             EventLogger* logger,
+  FileSystem(EventLogger* logger,
              internal::FileCache* cache,
              JobScheduler* scheduler,
              internal::ResourceMetadata* resource_metadata,
@@ -266,9 +263,6 @@ class FileSystem : public FileSystemInterface,
       file_system::DriveSyncErrorType type,
       const base::FilePath* file_path,
       FileError error);
-
-  // Used to get Drive related preferences.
-  PrefService* pref_service_;
 
   // Sub components owned by DriveIntegrationService.
   EventLogger* logger_;
