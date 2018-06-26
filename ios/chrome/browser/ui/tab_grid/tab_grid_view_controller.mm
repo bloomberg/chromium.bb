@@ -212,6 +212,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+- (void)scrollViewWillBeginDragging:(UIScrollView*)scrollView {
+  // Disable the page control when the user drags on the scroll view since
+  // tapping on the page control during scrolling can result in erratic
+  // scrolling.
+  self.topToolbar.pageControl.userInteractionEnabled = NO;
+}
+
+- (void)scrollViewDidEndDragging:(UIScrollView*)scrollView
+                  willDecelerate:(BOOL)decelerate {
+  // Re-enable the page control since the user isn't dragging anymore.
+  self.topToolbar.pageControl.userInteractionEnabled = YES;
+}
+
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
   _currentPage = GetPageFromScrollView(scrollView);
   [self configureButtonsForActiveAndCurrentPage];
