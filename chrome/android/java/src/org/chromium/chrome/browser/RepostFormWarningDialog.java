@@ -46,7 +46,7 @@ public class RepostFormWarningDialog extends DialogFragment {
         mTabObserver = new EmptyTabObserver() {
             @Override
             public void onDestroyed(Tab tab) {
-                dismiss();
+                dismissAllowingStateLoss();
             }
         };
         mTab.addObserver(mTabObserver);
@@ -111,6 +111,12 @@ public class RepostFormWarningDialog extends DialogFragment {
     public void dismiss() {
         if (getFragmentManager() == null) return;
         super.dismiss();
+    }
+
+    @Override
+    public void dismissAllowingStateLoss() {
+        if (getFragmentManager() == null) return;
+        super.dismissAllowingStateLoss();
     }
 
     @Override
