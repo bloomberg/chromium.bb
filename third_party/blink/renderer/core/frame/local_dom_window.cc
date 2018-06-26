@@ -339,12 +339,12 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
 }
 
 void LocalDOMWindow::EnqueueWindowEvent(Event* event) {
-  EnqueueAsyncEvent(event);
+  EnqueueAsyncEvent(event, TaskType::kInternalDefault);
 }
 
 void LocalDOMWindow::EnqueueDocumentEvent(Event* event) {
   if (document_)
-    document_->EnqueueAsyncEvent(event);
+    document_->EnqueueAsyncEvent(event, TaskType::kInternalDefault);
 }
 
 void LocalDOMWindow::DispatchWindowLoadEvent() {

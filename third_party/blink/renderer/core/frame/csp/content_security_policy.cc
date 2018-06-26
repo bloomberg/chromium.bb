@@ -1427,11 +1427,12 @@ void ContentSecurityPolicy::DispatchViolationEvents(
   if (execution_context_->IsDocument()) {
     Document* document = ToDocument(execution_context_);
     if (element && element->isConnected() && element->GetDocument() == document)
-      element->EnqueueAsyncEvent(event);
+      element->EnqueueAsyncEvent(event, TaskType::kInternalDefault);
     else
-      document->EnqueueAsyncEvent(event);
+      document->EnqueueAsyncEvent(event, TaskType::kInternalDefault);
   } else if (execution_context_->IsWorkerGlobalScope()) {
-    ToWorkerGlobalScope(execution_context_)->EnqueueAsyncEvent(event);
+    ToWorkerGlobalScope(execution_context_)
+        ->EnqueueAsyncEvent(event, TaskType::kInternalDefault);
   }
 }
 

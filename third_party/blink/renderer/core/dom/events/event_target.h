@@ -35,6 +35,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/events/add_event_listener_options_resolved.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_result.h"
@@ -154,7 +155,7 @@ class CORE_EXPORT EventTarget : public ScriptWrappable {
 
   DispatchEventResult DispatchEvent(Event*);
 
-  void EnqueueAsyncEvent(Event*);
+  void EnqueueAsyncEvent(Event*, TaskType);
 
   // dispatchEventForBindings is intended to only be called from
   // javascript originated calls. This method will validate and may adjust
