@@ -26,6 +26,7 @@ namespace multidevice_setup {
 
 class AccountStatusChangeDelegateNotifier;
 class HostBackendDelegate;
+class HostStatusProvider;
 class HostVerifier;
 class EligibleHostDevicesProvider;
 class SetupFlowCompletionRecorder;
@@ -65,6 +66,7 @@ class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
   std::unique_ptr<EligibleHostDevicesProvider> eligible_host_devices_provider_;
   std::unique_ptr<HostBackendDelegate> host_backend_delegate_;
   std::unique_ptr<HostVerifier> host_verifier_;
+  std::unique_ptr<HostStatusProvider> host_status_provider_;
   std::unique_ptr<SetupFlowCompletionRecorder> setup_flow_completion_recorder_;
   std::unique_ptr<AccountStatusChangeDelegateNotifier> delegate_notifier_;
 
