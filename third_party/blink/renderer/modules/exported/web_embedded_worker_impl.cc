@@ -274,6 +274,8 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
     return;
   }
 
+  // Note: We only get here if this is a new (i.e., not installed) service
+  // worker.
   DCHECK(!main_script_loader_);
   main_script_loader_ = WorkerClassicScriptLoader::Create();
   main_script_loader_->LoadAsynchronously(
@@ -284,7 +286,7 @@ void WebEmbeddedWorkerImpl::OnShadowPageInitialized() {
       worker_start_data_.address_space, base::OnceClosure(),
       Bind(&WebEmbeddedWorkerImpl::OnScriptLoaderFinished,
            WTF::Unretained(this)));
-  // Do nothing here since onScriptLoaderFinished() might have been already
+  // Do nothing here since OnScriptLoaderFinished() might have been already
   // invoked and |this| might have been deleted at this point.
 }
 

@@ -693,7 +693,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url,
-    bool is_script_streaming,
+    bool is_starting_installed_worker,
     mojom::ServiceWorkerEventDispatcherRequest dispatcher_request,
     mojom::ControllerServiceWorkerRequest controller_request,
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
@@ -704,6 +704,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       service_worker_version_id_(service_worker_version_id),
       service_worker_scope_(service_worker_scope),
       script_url_(script_url),
+      is_starting_installed_worker_(is_starting_installed_worker),
       main_thread_task_runner_(std::move(main_thread_task_runner)),
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
@@ -724,7 +725,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
                                     "script_url", script_url_.spec());
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
       "ServiceWorker", "LOAD_SCRIPT", this, "Source",
-      (is_script_streaming ? "InstalledScriptsManager" : "ResourceLoader"));
+      (is_starting_installed_worker_ ? "InstalledScriptsManager"
+                                     : "ResourceLoader"));
 }
 
 ServiceWorkerContextClient::~ServiceWorkerContextClient() {}
@@ -798,7 +800,6 @@ void ServiceWorkerContextClient::WorkerContextFailedToStart() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!proxy_);
 
-  (*instance_host_)->OnScriptLoadFailed();
   (*instance_host_)->OnStopped();
 
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ServiceWorkerContextClient",
@@ -809,7 +810,8 @@ void ServiceWorkerContextClient::WorkerContextFailedToStart() {
 }
 
 void ServiceWorkerContextClient::WorkerScriptLoaded() {
-  (*instance_host_)->OnScriptLoaded();
+  if (!is_starting_installed_worker_)
+    (*instance_host_)->OnScriptLoaded();
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "LOAD_SCRIPT", this);
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "START_WORKER_CONTEXT",
                                     this);
