@@ -1,3 +1,4 @@
+
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -7,17 +8,12 @@
 
 #include "base/macros.h"
 #include "third_party/skia/include/core/SkColor.h"
-#include "ui/gfx/animation/animation_delegate.h"
 #include "ui/message_center/message_center_export.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/view.h"
 
 namespace ui {
 class Event;
-}
-
-namespace gfx {
-class LinearAnimation;
 }
 
 namespace views {
@@ -31,8 +27,7 @@ class PaddedButton;
 
 class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
     : public views::View,
-      public views::ButtonListener,
-      public gfx::AnimationDelegate {
+      public views::ButtonListener {
  public:
   // String to be returned by GetClassName() method.
   static const char kViewClassName[];
@@ -47,9 +42,6 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // Change the visibility of the settings button. True to show, false to hide.
   // Default: hidden.
   void ShowSnoozeButton(bool show);
-
-  // Set the background color of the view.
-  void SetBackgroundColor(const SkColor& target_bgcolor);
 
   // Request the focus on the close button.
   void RequestFocusOnCloseButton();
@@ -73,21 +65,12 @@ class MESSAGE_CENTER_EXPORT NotificationControlButtonsView
   // views::ButtonListener
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // gfx::AnimationDelegate
-  void AnimationEnded(const gfx::Animation* animation) override;
-  void AnimationProgressed(const gfx::Animation* animation) override;
-  void AnimationCanceled(const gfx::Animation* animation) override;
-
  private:
   MessageView* message_view_;
 
   std::unique_ptr<PaddedButton> close_button_;
   std::unique_ptr<PaddedButton> settings_button_;
   std::unique_ptr<PaddedButton> snooze_button_;
-
-  std::unique_ptr<gfx::LinearAnimation> bgcolor_animation_;
-  SkColor bgcolor_origin_;
-  SkColor bgcolor_target_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationControlButtonsView);
 };

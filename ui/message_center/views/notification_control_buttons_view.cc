@@ -9,7 +9,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/layer.h"
 #include "ui/events/event.h"
-#include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/message_center/public/cpp/message_center_constants.h"
@@ -22,26 +21,12 @@
 
 namespace message_center {
 
-namespace {
-
-// This value should be the same as the duration of reveal animation of
-// the settings view of an Android notification.
-constexpr auto kBackgroundColorChangeDuration =
-    base::TimeDelta::FromMilliseconds(360);
-
-// The initial background color of the view.
-constexpr SkColor kInitialBackgroundColor = kControlButtonBackgroundColor;
-
-}  // anonymous namespace
-
 const char NotificationControlButtonsView::kViewClassName[] =
     "NotificationControlButtonsView";
 
 NotificationControlButtonsView::NotificationControlButtonsView(
     MessageView* message_view)
-    : message_view_(message_view),
-      bgcolor_origin_(kInitialBackgroundColor),
-      bgcolor_target_(kInitialBackgroundColor) {
+    : message_view_(message_view) {
   DCHECK(message_view);
   SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
@@ -50,7 +35,7 @@ NotificationControlButtonsView::NotificationControlButtonsView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  SetBackground(views::CreateSolidBackground(kInitialBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kControlButtonBackgroundColor));
 }
 
 NotificationControlButtonsView::~NotificationControlButtonsView() = default;
@@ -127,21 +112,6 @@ void NotificationControlButtonsView::ShowSnoozeButton(bool show) {
   }
 }
 
-void NotificationControlButtonsView::SetBackgroundColor(
-    const SkColor& target_bgcolor) {
-  DCHECK(background());
-  if (background()->get_color() != target_bgcolor) {
-    bgcolor_origin_ = background()->get_color();
-    bgcolor_target_ = target_bgcolor;
-
-    if (bgcolor_animation_)
-      bgcolor_animation_->End();
-    bgcolor_animation_.reset(new gfx::LinearAnimation(this));
-    bgcolor_animation_->SetDuration(kBackgroundColorChangeDuration);
-    bgcolor_animation_->Start();
-  }
-}
-
 void NotificationControlButtonsView::SetVisible(bool visible) {
   DCHECK(layer());
   // Manipulate the opacity instead of changing the visibility to keep the tab
@@ -188,33 +158,6 @@ void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
   } else if (snooze_button_ && sender == snooze_button_.get()) {
     message_view_->OnSnoozeButtonPressed(event);
   }
-}
-
-void NotificationControlButtonsView::AnimationProgressed(
-    const gfx::Animation* animation) {
-  DCHECK_EQ(animation, bgcolor_animation_.get());
-
-  const SkColor color = gfx::Tween::ColorValueBetween(
-      animation->GetCurrentValue(), bgcolor_origin_, bgcolor_target_);
-  SetBackground(views::CreateSolidBackground(color));
-  SchedulePaint();
-}
-
-void NotificationControlButtonsView::AnimationEnded(
-    const gfx::Animation* animation) {
-  DCHECK_EQ(animation, bgcolor_animation_.get());
-  bgcolor_animation_.reset();
-  bgcolor_origin_ = bgcolor_target_;
-}
-
-void NotificationControlButtonsView::AnimationCanceled(
-    const gfx::Animation* animation) {
-  // The animation is never cancelled explicitly.
-  NOTREACHED();
-
-  bgcolor_origin_ = bgcolor_target_;
-  SetBackground(views::CreateSolidBackground(bgcolor_target_));
-  SchedulePaint();
 }
 
 }  // namespace message_center

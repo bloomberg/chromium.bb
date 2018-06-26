@@ -511,7 +511,6 @@ NotificationViewMD::NotificationViewMD(const Notification& notification)
   control_buttons_view_ =
       std::make_unique<NotificationControlButtonsView>(this);
   control_buttons_view_->set_owned_by_client();
-  control_buttons_view_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   // |header_row_| contains app_icon, app_name, control buttons, etc...
   header_row_ = new NotificationHeaderView(control_buttons_view_.get(), this);

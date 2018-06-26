@@ -1,3 +1,4 @@
+
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -29,19 +30,6 @@
 #include "ui/wm/core/window_util.h"
 
 namespace ash {
-
-namespace {
-
-SkColor GetControlButtonBackgroundColor(
-    const arc::mojom::ArcNotificationShownContents& shown_contents) {
-  if (shown_contents ==
-      arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN)
-    return message_center::kControlButtonBackgroundColor;
-  else
-    return SK_ColorTRANSPARENT;
-}
-
-}  // namespace
 
 class ArcNotificationContentView::MouseEnterExitHandler
     : public ui::EventHandler {
@@ -262,8 +250,6 @@ ArcNotificationContentView::ArcNotificationContentView(
   // Creates the control_buttons_view_, which collects all control buttons into
   // a horizontal box.
   control_buttons_view_.set_owned_by_client();
-  control_buttons_view_.SetBackgroundColor(
-      GetControlButtonBackgroundColor(item_->GetShownContents()));
 
   Update(message_view, notification);
 
@@ -296,8 +282,6 @@ void ArcNotificationContentView::Update(
   control_buttons_view_.ShowCloseButton(!notification.pinned());
   control_buttons_view_.ShowSnoozeButton(
       notification.should_show_snooze_button());
-  control_buttons_view_.SetBackgroundColor(
-      GetControlButtonBackgroundColor(item_->GetShownContents()));
   UpdateControlButtonsVisibility();
 
   accessible_name_ = notification.accessible_name();
