@@ -149,13 +149,10 @@ class MojoCdmVideoFrame : public VideoFrameImpl {
             Stride(kYPlane), Stride(kUPlane), Stride(kVPlane),
             base::TimeDelta::FromMicroseconds(Timestamp()));
 
-    // If |frame| is not created something is wrong with the video frame data
-    // returned by the CDM. Catch it here rather than returning a null frame
-    // to the renderer.
-    // TODO(crbug.com/829443). Monitor crashes to see if this happens.
-    CHECK(frame);
-
-    frame->SetMojoSharedBufferDoneCB(mojo_shared_buffer_done_cb_);
+    // |frame| could fail to be created if the memory can't be mapped into
+    // this address space.
+    if (frame)
+      frame->SetMojoSharedBufferDoneCB(mojo_shared_buffer_done_cb_);
     return frame;
   }
 
