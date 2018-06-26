@@ -4,6 +4,7 @@
 
 #include "remoting/protocol/webrtc_video_stream.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -119,7 +120,7 @@ void WebrtcVideoStream::Start(
 
   rtc::scoped_refptr<webrtc::VideoTrackSourceInterface> src =
       peer_connection_factory->CreateVideoSource(
-          absl::make_unique<WebrtcDummyVideoCapturer>());
+          std::make_unique<WebrtcDummyVideoCapturer>());
   rtc::scoped_refptr<webrtc::VideoTrackInterface> video_track =
       peer_connection_factory->CreateVideoTrack(kVideoLabel, src);
 
