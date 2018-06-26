@@ -333,6 +333,88 @@ void RenderWidgetHostViewAndroid::LostFocus() {
   LostFocusInternal();
 }
 
+void RenderWidgetHostViewAndroid::OnRenderFrameMetadataChangedBeforeActivation(
+    const cc::RenderFrameMetadata& metadata) {
+  if (!features::IsSurfaceSynchronizationEnabled())
+    return;
+
+  bool is_mobile_optimized = IsMobileOptimizedFrame(
+      metadata.page_scale_factor, metadata.min_page_scale_factor,
+      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
+      metadata.root_layer_size);
+
+  gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
+
+  float dip_scale = view_.GetDipScale();
+  gfx::SizeF root_layer_size_dip = metadata.root_layer_size;
+  gfx::SizeF scrollable_viewport_size_dip = metadata.scrollable_viewport_size;
+  gfx::Vector2dF root_scroll_offset_dip =
+      metadata.root_scroll_offset.value_or(gfx::Vector2dF());
+  if (IsUseZoomForDSFEnabled()) {
+    float pix_to_dip = 1 / dip_scale;
+    root_layer_size_dip.Scale(pix_to_dip);
+    scrollable_viewport_size_dip.Scale(pix_to_dip);
+    root_scroll_offset_dip.Scale(pix_to_dip);
+  }
+
+  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
+  // Note that the height of browser control is not affected by page scale
+  // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
+  float top_content_offset =
+      metadata.top_controls_height * metadata.top_controls_shown_ratio;
+  float top_shown_pix = top_content_offset * to_pix;
+
+  if (ime_adapter_android_) {
+    ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
+                                          top_shown_pix);
+  }
+
+  auto* wcax = GetWebContentsAccessibilityAndroid();
+  if (wcax)
+    wcax->UpdateFrameInfo(metadata.page_scale_factor);
+
+  if (!gesture_listener_manager_)
+    return;
+
+  UpdateTouchSelectionController(metadata.selection, metadata.page_scale_factor,
+                                 metadata.top_controls_height,
+                                 metadata.top_controls_shown_ratio,
+                                 scrollable_viewport_size_dip);
+
+  // ViewAndroid::content_offset() must be in CSS scale
+  float top_content_offset_dip = IsUseZoomForDSFEnabled()
+                                     ? top_content_offset / dip_scale
+                                     : top_content_offset;
+  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
+  bool controls_changed = UpdateControls(
+      view_.GetDipScale(), metadata.top_controls_height,
+      metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
+      metadata.bottom_controls_shown_ratio);
+
+  SetContentBackgroundColor(metadata.has_transparent_background
+                                ? SK_ColorTRANSPARENT
+                                : metadata.root_background_color);
+
+  if (overscroll_controller_) {
+    overscroll_controller_->OnFrameMetadataUpdated(
+        metadata.page_scale_factor, metadata.device_scale_factor,
+        metadata.scrollable_viewport_size, metadata.root_layer_size,
+        metadata.root_scroll_offset.value_or(gfx::Vector2dF()),
+        metadata.root_overflow_y_hidden);
+  }
+
+  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
+  gesture_listener_manager_->UpdateScrollInfo(
+      root_scroll_offset_dip, metadata.page_scale_factor,
+      metadata.min_page_scale_factor, metadata.max_page_scale_factor,
+      root_layer_size_dip, scrollable_viewport_size_dip, top_content_offset_dip,
+      top_shown_pix, controls_changed);
+
+  page_scale_ = metadata.page_scale_factor;
+  min_page_scale_ = metadata.min_page_scale_factor;
+  max_page_scale_ = metadata.max_page_scale_factor;
+}
+
 void RenderWidgetHostViewAndroid::Focus() {
   if (view_.HasFocus())
     GotFocus();
@@ -1270,90 +1352,8 @@ bool RenderWidgetHostViewAndroid::UpdateControls(
 
 void RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete(
     const cc::RenderFrameMetadata& metadata) {
-  base::ScopedClosureRunner sync_visual_props_runner(base::BindOnce(
-      base::IgnoreResult(
-          &RenderWidgetHostViewAndroid::SynchronizeVisualProperties),
-      base::Unretained(this), cc::DeadlinePolicy::UseDefaultDeadline(),
-      metadata.local_surface_id));
-
-  if (!features::IsSurfaceSynchronizationEnabled())
-    return;
-
-  bool is_mobile_optimized = IsMobileOptimizedFrame(
-      metadata.page_scale_factor, metadata.min_page_scale_factor,
-      metadata.max_page_scale_factor, metadata.scrollable_viewport_size,
-      metadata.root_layer_size);
-
-  gesture_provider_.SetDoubleTapSupportForPageEnabled(!is_mobile_optimized);
-
-  float dip_scale = view_.GetDipScale();
-  gfx::SizeF root_layer_size_dip = metadata.root_layer_size;
-  gfx::SizeF scrollable_viewport_size_dip = metadata.scrollable_viewport_size;
-  gfx::Vector2dF root_scroll_offset_dip =
-      metadata.root_scroll_offset.value_or(gfx::Vector2dF());
-  if (IsUseZoomForDSFEnabled()) {
-    float pix_to_dip = 1 / dip_scale;
-    root_layer_size_dip.Scale(pix_to_dip);
-    scrollable_viewport_size_dip.Scale(pix_to_dip);
-    root_scroll_offset_dip.Scale(pix_to_dip);
-  }
-
-  float to_pix = IsUseZoomForDSFEnabled() ? 1.f : dip_scale;
-  // Note that the height of browser control is not affected by page scale
-  // factor. Thus, |top_content_offset| in CSS pixels is also in DIPs.
-  float top_content_offset =
-      metadata.top_controls_height * metadata.top_controls_shown_ratio;
-  float top_shown_pix = top_content_offset * to_pix;
-
-  if (ime_adapter_android_) {
-    ime_adapter_android_->UpdateFrameInfo(metadata.selection.start, dip_scale,
-                                          top_shown_pix);
-  }
-
-  auto* wcax = GetWebContentsAccessibilityAndroid();
-  if (wcax)
-    wcax->UpdateFrameInfo(metadata.page_scale_factor);
-
-  if (!gesture_listener_manager_)
-    return;
-
-  if (overscroll_controller_) {
-    overscroll_controller_->OnFrameMetadataUpdated(
-        metadata.page_scale_factor, metadata.device_scale_factor,
-        metadata.scrollable_viewport_size, metadata.root_layer_size,
-        metadata.root_scroll_offset.value_or(gfx::Vector2dF()),
-        metadata.root_overflow_y_hidden);
-  }
-
-  UpdateTouchSelectionController(metadata.selection, metadata.page_scale_factor,
-                                 metadata.top_controls_height,
-                                 metadata.top_controls_shown_ratio,
-                                 scrollable_viewport_size_dip);
-
-  // ViewAndroid::content_offset() must be in CSS scale
-  float top_content_offset_dip = IsUseZoomForDSFEnabled()
-                                     ? top_content_offset / dip_scale
-                                     : top_content_offset;
-  view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
-  bool controls_changed = UpdateControls(
-      view_.GetDipScale(), metadata.top_controls_height,
-      metadata.top_controls_shown_ratio, metadata.bottom_controls_height,
-      metadata.bottom_controls_shown_ratio);
-
-  SetContentBackgroundColor(metadata.has_transparent_background
-                                ? SK_ColorTRANSPARENT
-                                : metadata.root_background_color);
-
-  // All offsets and sizes except |top_shown_pix| are in CSS pixels.
-  gesture_listener_manager_->UpdateScrollInfo(
-      root_scroll_offset_dip, metadata.page_scale_factor,
-      metadata.min_page_scale_factor, metadata.max_page_scale_factor,
-      root_layer_size_dip, scrollable_viewport_size_dip, top_content_offset_dip,
-      top_shown_pix, controls_changed);
-
-  page_scale_ = metadata.page_scale_factor;
-  min_page_scale_ = metadata.min_page_scale_factor;
-  max_page_scale_ = metadata.max_page_scale_factor;
+  SynchronizeVisualProperties(cc::DeadlinePolicy::UseDefaultDeadline(),
+                              metadata.local_surface_id);
 }
 
 void RenderWidgetHostViewAndroid::ShowInternal() {
@@ -2390,7 +2390,6 @@ RenderWidgetHostViewAndroid::DidUpdateVisualProperties(
       &RenderWidgetHostViewAndroid::OnDidUpdateVisualPropertiesComplete,
       weak_ptr_factory_.GetWeakPtr(), metadata);
   return viz::ScopedSurfaceIdAllocator(std::move(allocation_task));
-  ;
 }
 
 }  // namespace content

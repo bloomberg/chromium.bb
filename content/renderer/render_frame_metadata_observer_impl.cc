@@ -4,10 +4,18 @@
 
 #include "content/renderer/render_frame_metadata_observer_impl.h"
 
+#include <cmath>
+
 #include "build/build_config.h"
 #include "components/viz/common/quads/compositor_frame_metadata.h"
 
 namespace content {
+
+namespace {
+#if defined(OS_ANDROID)
+constexpr float kEdgeThreshold = 10.0f;
+#endif
+}
 
 RenderFrameMetadataObserverImpl::RenderFrameMetadataObserverImpl(
     mojom::RenderFrameMetadataObserverRequest request,
@@ -59,8 +67,10 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     // process with out of date information. It is an optional parameter
     // which we clear here.
     auto metadata_copy = render_frame_metadata;
+#if !defined(OS_ANDROID)
     if (!report_all_frame_submissions_for_testing_enabled_)
       metadata_copy.root_scroll_offset = base::nullopt;
+#endif
 
     last_frame_token_ = compositor_frame_metadata->frame_token;
     compositor_frame_metadata->send_frame_token_to_embedder = true;
@@ -94,26 +104,63 @@ void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(
 bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
     const cc::RenderFrameMetadata& rfm1,
     const cc::RenderFrameMetadata& rfm2) {
-  return rfm1.root_background_color != rfm2.root_background_color ||
-         rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
-         rfm1.selection != rfm2.selection ||
-         rfm1.page_scale_factor != rfm2.page_scale_factor ||
+  if (rfm1.root_background_color != rfm2.root_background_color ||
+      rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
+      rfm1.selection != rfm2.selection ||
+      rfm1.page_scale_factor != rfm2.page_scale_factor ||
+      rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
+      rfm1.device_scale_factor != rfm2.device_scale_factor ||
+      rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
+      rfm1.local_surface_id != rfm2.local_surface_id) {
+    return true;
+  }
+
 #if defined(OS_ANDROID)
-         rfm1.top_controls_height != rfm2.top_controls_height ||
-         rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
-         rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
-         rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
-         rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
-         rfm1.max_page_scale_factor != rfm2.max_page_scale_factor ||
-         rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
-         rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
-         rfm1.root_layer_size != rfm2.root_layer_size ||
-         rfm1.has_transparent_background != rfm2.has_transparent_background ||
+  if (rfm1.top_controls_height != rfm2.top_controls_height ||
+      rfm1.top_controls_shown_ratio != rfm2.top_controls_shown_ratio ||
+      rfm1.bottom_controls_height != rfm2.bottom_controls_height ||
+      rfm1.bottom_controls_shown_ratio != rfm2.bottom_controls_shown_ratio ||
+      rfm1.min_page_scale_factor != rfm2.min_page_scale_factor ||
+      rfm1.max_page_scale_factor != rfm2.max_page_scale_factor ||
+      rfm1.root_overflow_y_hidden != rfm2.root_overflow_y_hidden ||
+      rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
+      rfm1.root_layer_size != rfm2.root_layer_size ||
+      rfm1.has_transparent_background != rfm2.has_transparent_background) {
+    return true;
+  }
+
+  gfx::Vector2dF old_root_scroll_offset =
+      rfm1.root_scroll_offset.value_or(gfx::Vector2dF());
+  gfx::Vector2dF new_root_scroll_offset =
+      rfm2.root_scroll_offset.value_or(gfx::Vector2dF());
+  gfx::RectF old_viewport_rect(
+      gfx::PointF(old_root_scroll_offset.x(), old_root_scroll_offset.y()),
+      rfm1.scrollable_viewport_size);
+  gfx::RectF new_viewport_rect(
+      gfx::PointF(new_root_scroll_offset.x(), new_root_scroll_offset.y()),
+      rfm2.scrollable_viewport_size);
+  gfx::RectF new_root_layer_rect(rfm2.root_layer_size);
+  bool at_left_or_right_edge =
+      rfm2.root_layer_size.width() > rfm2.scrollable_viewport_size.width() &&
+      (std::abs(new_viewport_rect.right() - new_root_layer_rect.right()) <
+           kEdgeThreshold ||
+       std::abs(new_viewport_rect.x() - new_root_layer_rect.x()) <
+           kEdgeThreshold);
+
+  bool at_top_or_bottom_edge =
+      rfm2.root_layer_size.height() > rfm2.scrollable_viewport_size.height() &&
+      (std::abs(new_viewport_rect.y() - new_root_layer_rect.y()) <
+           kEdgeThreshold ||
+       std::abs(new_viewport_rect.bottom() - new_root_layer_rect.bottom()) <
+           kEdgeThreshold);
+
+  if (old_viewport_rect != new_viewport_rect &&
+      (at_left_or_right_edge || at_top_or_bottom_edge)) {
+    return true;
+  }
 #endif
-         rfm1.is_mobile_optimized != rfm2.is_mobile_optimized ||
-         rfm1.device_scale_factor != rfm2.device_scale_factor ||
-         rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
-         rfm1.local_surface_id != rfm2.local_surface_id;
+
+  return false;
 }
 
 }  // namespace content
