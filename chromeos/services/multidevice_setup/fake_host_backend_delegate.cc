@@ -33,12 +33,23 @@ void FakeHostBackendDelegate::NotifyBackendRequestFailed() {
 
 void FakeHostBackendDelegate::AttemptToSetMultiDeviceHostOnBackend(
     const base::Optional<cryptauth::RemoteDeviceRef>& host_device) {
+  ++num_attempt_to_set_calls_;
+
   if (host_device_on_backend_ == host_device) {
-    pending_host_request_.reset();
+    if (pending_host_request_) {
+      pending_host_request_.reset();
+      NotifyPendingHostRequestChange();
+    }
     return;
   }
 
-  *pending_host_request_ = host_device;
+  // If |pending_host_request_| was set and already referred to |host_device|,
+  // there is no need to notify observers.
+  if (pending_host_request_ && *pending_host_request_ == host_device)
+    return;
+
+  pending_host_request_ = host_device;
+  NotifyPendingHostRequestChange();
 }
 
 bool FakeHostBackendDelegate::HasPendingHostRequest() {
