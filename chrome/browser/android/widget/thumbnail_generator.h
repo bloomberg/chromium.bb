@@ -9,7 +9,7 @@
 
 #include "base/android/jni_android.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/image_decoder.h"
+#include "chrome/browser/download/image_thumbnail_request.h"
 
 // Kicks off asynchronous pipelines for creating thumbnails for local files.
 // The native-side ThumbnailGenerator is owned by the Java-side and can be
