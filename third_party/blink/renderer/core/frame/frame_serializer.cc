@@ -532,7 +532,7 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
 
   TRACE_EVENT2("page-serialization", "FrameSerializer::addImageToResources",
                "type", "image", "url", url.ElidedString().Utf8().data());
-  double image_start_time = CurrentTimeTicksInSeconds();
+  base::TimeTicks image_start_time = CurrentTimeTicks();
 
   scoped_refptr<const SharedBuffer> data = image->GetImage()->Data();
   AddToResources(image->GetResponse().MimeType(),
@@ -548,8 +548,7 @@ void FrameSerializer::AddImageToResources(ImageResourceContent* image,
                         ("PageSerialization.SerializationTime.ImageElement", 0,
                          maxSerializationTimeUmaMicroseconds, 50));
     image_histogram.Count(
-        static_cast<int64_t>((CurrentTimeTicksInSeconds() - image_start_time) *
-                             secondsToMicroseconds));
+        (CurrentTimeTicks() - image_start_time).InMicroseconds());
   }
 }
 
