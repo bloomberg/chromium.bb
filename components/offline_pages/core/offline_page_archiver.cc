@@ -21,6 +21,11 @@ namespace offline_pages {
 
 namespace {
 
+const char* kMoveFileFailureReason =
+    "OfflinePages.PublishArchive.MoveFileFailureReason";
+const int kSourceMissing = 0;
+const int kDestinationMissing = 1;
+
 using offline_pages::SavePageResult;
 
 // Helper function to do the move and register synchronously. Make sure this is
@@ -40,9 +45,20 @@ PublishArchiveResult MoveAndRegisterArchive(
   if (!moved) {
     archive_result.move_result = SavePageResult::FILE_MOVE_FAILED;
     DVLOG(0) << "OfflinePage publishing file move failure errno is " << errno
-             << __func__;
+             << " " << __func__;
     base::UmaHistogramSparse("OfflinePages.PublishArchive.MoveFileError",
                              errno);
+
+    if (!base::PathExists(offline_page.file_path)) {
+      DVLOG(0) << "Can't copy from non-existent path, from "
+               << offline_page.file_path << " " << __func__;
+      base::UmaHistogramBoolean(kMoveFileFailureReason, kSourceMissing);
+    }
+    if (!base::PathExists(publish_directory)) {
+      DVLOG(0) << "Target directory does not exist, " << publish_directory
+               << " " << __func__;
+      base::UmaHistogramBoolean(kMoveFileFailureReason, kDestinationMissing);
+    }
     return archive_result;
   }
 
