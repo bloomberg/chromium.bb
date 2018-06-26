@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/callback.h"
+#include "base/containers/flat_set.h"
 #include "base/optional.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/values.h"
@@ -30,6 +31,8 @@
 #include "content/public/common/window_container_type.mojom.h"
 #include "device/usb/public/mojom/chooser_service.mojom.h"
 #include "device/usb/public/mojom/device_manager.mojom.h"
+#include "media/base/video_codecs.h"
+#include "media/cdm/cdm_proxy.h"
 #include "media/media_buildflags.h"
 #include "media/mojo/interfaces/remoting.mojom.h"
 #include "net/base/mime_util.h"
@@ -76,6 +79,7 @@ class ImageSkia;
 namespace media {
 class AudioLogFactory;
 class AudioManager;
+enum class EncryptionMode;
 }
 
 namespace mojo {
@@ -975,6 +979,18 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Returns true if (and only if) CreateAudioManager() is implemented and
   // returns a non-null value.
   virtual bool OverridesAudioManager();
+
+  // Gets supported hardware secure |video_codecs| and |encryption_schemes| for
+  // the purpose of decrypting encrypted media using a Content Decryption Module
+  // (CDM) and a CdmProxy associated with |key_system|. The CDM supports all
+  // protocols in |cdm_proxy_protocols|, but only one CdmProxy protocol will be
+  // supported by the CdmProxy on the system, for which the capabilities will
+  // be returned.
+  virtual void GetHardwareSecureDecryptionCaps(
+      const std::string& key_system,
+      const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
+      base::flat_set<media::VideoCodec>* video_codecs,
+      base::flat_set<media::EncryptionMode>* encryption_schemes);
 
   // Populates |mappings| with all files that need to be mapped before launching
   // a child process.

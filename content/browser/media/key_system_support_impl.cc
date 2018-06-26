@@ -13,7 +13,10 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/strings/string_split.h"
 #include "content/public/browser/cdm_registry.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/cdm_info.h"
+#include "content/public/common/content_client.h"
+#include "content/public/common/content_switches.h"
 #include "media/base/key_system_names.h"
 #include "media/base/key_systems.h"
 #include "media/base/media_switches.h"
@@ -30,35 +33,102 @@ void SendCdmAvailableUMA(const std::string& key_system, bool available) {
                             available);
 }
 
-std::vector<media::VideoCodec> GetEnabledHardwareSecureCodecsFromCommandLine() {
-  std::vector<media::VideoCodec> result;
+template <typename T>
+std::vector<T> SetToVector(const base::flat_set<T>& s) {
+  return std::vector<T>(s.begin(), s.end());
+}
+
+// Returns whether hardware secure codecs are enabled from command line. If
+// true, |video_codecs| are filled with codecs specified on command line, which
+// could be empty if no codecs are specified. If false, |video_codecs| will not
+// be modified.
+bool IsHardwareSecureCodecsOverriddenFromCommandLine(
+    std::vector<media::VideoCodec>* video_codecs,
+    std::vector<media::EncryptionMode>* encryption_schemes) {
+  DCHECK(video_codecs->empty());
+  DCHECK(encryption_schemes->empty());
 
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line)
-    return result;
+  if (!command_line || !command_line->HasSwitch(
+                           switches::kOverrideHardwareSecureCodecsForTesting)) {
+    return false;
+  }
 
   auto codecs_string = command_line->GetSwitchValueASCII(
-      switches::kEnableHardwareSecureCodecsForTesting);
+      switches::kOverrideHardwareSecureCodecsForTesting);
   const auto supported_codecs = base::SplitStringPiece(
       codecs_string, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
 
   for (const auto& codec : supported_codecs) {
     if (codec == "vp8")
-      result.push_back(media::VideoCodec::kCodecVP8);
+      video_codecs->push_back(media::VideoCodec::kCodecVP8);
     else if (codec == "vp9")
-      result.push_back(media::VideoCodec::kCodecVP9);
+      video_codecs->push_back(media::VideoCodec::kCodecVP9);
     else if (codec == "avc1")
-      result.push_back(media::VideoCodec::kCodecH264);
+      video_codecs->push_back(media::VideoCodec::kCodecH264);
     else
       DVLOG(1) << "Unsupported codec specified on command line: " << codec;
   }
 
-  return result;
+  // Codecs enabled from command line assumes CENC support.
+  if (!video_codecs->empty())
+    encryption_schemes->push_back(media::EncryptionMode::kCenc);
+
+  return true;
 }
 
-template <typename T>
-std::vector<T> SetToVector(const base::flat_set<T>& s) {
-  return std::vector<T>(s.begin(), s.end());
+void GetHardwareSecureDecryptionCaps(
+    const std::string& key_system,
+    const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
+    std::vector<media::VideoCodec>* video_codecs,
+    std::vector<media::EncryptionMode>* encryption_schemes) {
+  DCHECK(video_codecs->empty());
+  DCHECK(encryption_schemes->empty());
+
+  if (!base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
+    DVLOG(1) << "Hardware secure decryption disabled";
+    return;
+  }
+
+  // Secure codecs override takes precedence over other checks.
+  if (IsHardwareSecureCodecsOverriddenFromCommandLine(video_codecs,
+                                                      encryption_schemes)) {
+    DVLOG(1) << "Hardware secure codecs overridden from command line";
+    return;
+  }
+
+  if (cdm_proxy_protocols.empty()) {
+    DVLOG(1) << "CDM does not support any CdmProxy protocols";
+    return;
+  }
+
+  // Hardware secure video codecs need hardware video decoder support.
+  // TODO(xhwang): Make sure this check is as close as possible to the check
+  // in the render process. For example, also check check GPU features like
+  // GPU_FEATURE_TYPE_ACCELERATED_VIDEO_DECODE.
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line &&
+      command_line->HasSwitch(switches::kDisableAcceleratedVideoDecode)) {
+    DVLOG(1) << "Hardware secure codecs not supported because accelerated "
+                "video decode disabled";
+    return;
+  }
+
+  if (!base::FeatureList::IsEnabled(media::kMojoVideoDecoder)) {
+    DVLOG(1) << "Hardware secure codecs not supported because mojo video "
+                "decode disabled";
+    return;
+  }
+
+  base::flat_set<media::VideoCodec> video_codec_set;
+  base::flat_set<media::EncryptionMode> encryption_scheme_set;
+
+  GetContentClient()->browser()->GetHardwareSecureDecryptionCaps(
+      key_system, cdm_proxy_protocols, &video_codec_set,
+      &encryption_scheme_set);
+
+  *video_codecs = SetToVector(video_codec_set);
+  *encryption_schemes = SetToVector(encryption_scheme_set);
 }
 
 }  // namespace
@@ -111,15 +181,10 @@ void KeySystemSupportImpl::IsKeySystemSupported(
   capability->encryption_schemes =
       SetToVector(cdm_info->capability.encryption_schemes);
 
-  if (base::FeatureList::IsEnabled(media::kHardwareSecureDecryption)) {
-    capability->hw_secure_video_codecs =
-        GetEnabledHardwareSecureCodecsFromCommandLine();
-
-    // TODO(xhwang): Call into GetContentClient()->browser() to get key system
-    // specific hardware secure decryption capability on Windows.
-    // TODO(xhwang): Also check cdm_info->capability.cdm_proxy_protocols.
-    NOTIMPLEMENTED();
-  }
+  GetHardwareSecureDecryptionCaps(key_system,
+                                  cdm_info->capability.cdm_proxy_protocols,
+                                  &capability->hw_secure_video_codecs,
+                                  &capability->hw_secure_encryption_schemes);
 
   capability->session_types = SetToVector(cdm_info->capability.session_types);
 

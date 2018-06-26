@@ -155,13 +155,6 @@ const char kMSEVideoBufferSizeLimitMb[] = "mse-video-buffer-size-limit-mb";
 // kExternalClearKeyForTesting.
 const char kClearKeyCdmPathForTesting[] = "clear-key-cdm-path-for-testing";
 
-// Enables hardware secure codecs support for testing. Codecs are separated by
-// comma. Valid codecs are "vp8", "vp9" and "avc1". For example:
-// --enable-hardware-secure-codecs-for-testing=vp8,vp9
-// --enable-hardware-secure-codecs-for-testing=avc1
-const char kEnableHardwareSecureCodecsForTesting[] =
-    "enable-hardware-secure-codecs-for-testing";
-
 // Overrides the default enabled library CDM interface version(s) with the one
 // specified with this switch, which will be the only version enabled. For
 // example, on a build where CDM 8, CDM 9 and CDM 10 are all supported
@@ -175,6 +168,18 @@ const char kEnableHardwareSecureCodecsForTesting[] =
 // for testing while it's still in development.
 const char kOverrideEnabledCdmInterfaceVersion[] =
     "override-enabled-cdm-interface-version";
+
+// Overrides hardware secure codecs support for testing. If specified, real
+// platform hardware secure codecs check will be skipped. Codecs are separated
+// by comma. Valid codecs are "vp8", "vp9" and "avc1". For example:
+//  --override-hardware-secure-codecs-for-testing=vp8,vp9
+//  --override-hardware-secure-codecs-for-testing=avc1
+// CENC encryption scheme is assumed to be supported for the specified codecs.
+// If no valid codecs specified, no hardware secure codecs are supported. This
+// can be used to disable hardware secure codecs support:
+//  --override-hardware-secure-codecs-for-testing
+const char kOverrideHardwareSecureCodecsForTesting[] =
+    "override-hardware-secure-codecs-for-testing";
 
 #if !defined(OS_ANDROID)
 // Turns on the internal media session backend. This should be used by embedders

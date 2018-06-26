@@ -185,6 +185,12 @@ bool ContentBrowserClient::OverridesAudioManager() {
   return false;
 }
 
+void ContentBrowserClient::GetHardwareSecureDecryptionCaps(
+    const std::string& key_system,
+    const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
+    base::flat_set<media::VideoCodec>* video_codecs,
+    base::flat_set<media::EncryptionMode>* encryption_schemes) {}
+
 bool ContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
   return true;
 }

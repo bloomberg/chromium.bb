@@ -49,7 +49,6 @@
 #include "chrome/browser/font_family_cache.h"
 #include "chrome/browser/language/chrome_language_detection_tab_helper.h"
 #include "chrome/browser/lifetime/browser_shutdown.h"
-#include "chrome/browser/media/platform_verification_impl.h"
 #include "chrome/browser/media/router/media_router_feature.h"
 #include "chrome/browser/media/router/presentation/presentation_service_delegate_impl.h"
 #include "chrome/browser/media/router/presentation/receiver_presentation_service_delegate_impl.h"
@@ -466,11 +465,17 @@
 #include "chrome/services/printing/public/mojom/constants.mojom.h"
 #endif
 
-#if BUILDFLAG(ENABLE_MOJO_MEDIA)
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "chrome/browser/media/output_protection_impl.h"
+#include "chrome/browser/media/platform_verification_impl.h"
+#if defined(OS_WIN) && defined(WIDEVINE_CDM_AVAILABLE)
+#include "chrome/browser/media/widevine_hardware_caps_win.h"
+#include "third_party/widevine/cdm/widevine_cdm_common.h"
+#endif
+#endif
+
 #if BUILDFLAG(ENABLE_MOJO_CDM) && defined(OS_ANDROID)
 #include "chrome/browser/media/android/cdm/media_drm_storage_factory.h"
-#endif
 #endif
 
 #if BUILDFLAG(ENABLE_MOJO_MEDIA_IN_BROWSER_PROCESS)
@@ -3919,6 +3924,20 @@ std::unique_ptr<content::NavigationUIData>
 ChromeContentBrowserClient::GetNavigationUIData(
     content::NavigationHandle* navigation_handle) {
   return std::make_unique<ChromeNavigationUIData>(navigation_handle);
+}
+
+void ChromeContentBrowserClient::GetHardwareSecureDecryptionCaps(
+    const std::string& key_system,
+    const base::flat_set<media::CdmProxy::Protocol>& cdm_proxy_protocols,
+    base::flat_set<media::VideoCodec>* video_codecs,
+    base::flat_set<media::EncryptionMode>* encryption_schemes) {
+#if defined(OS_WIN) && BUILDFLAG(ENABLE_LIBRARY_CDMS) && \
+    defined(WIDEVINE_CDM_AVAILABLE)
+  if (key_system == kWidevineKeySystem) {
+    GetWidevineHardwareCaps(cdm_proxy_protocols, video_codecs,
+                            encryption_schemes);
+  }
+#endif
 }
 
 content::DevToolsManagerDelegate*

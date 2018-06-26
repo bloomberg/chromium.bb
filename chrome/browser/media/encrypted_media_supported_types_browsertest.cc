@@ -443,7 +443,7 @@ class EncryptedMediaSupportedTypesWidevineHwSecureTest
     // Pretend that we support hardware secure decryption for vp8 and vp9, but
     // not for avc1.
     command_line->AppendSwitchASCII(
-        switches::kEnableHardwareSecureCodecsForTesting, "vp8,vp9");
+        switches::kOverrideHardwareSecureCodecsForTesting, "vp8,vp9");
   }
 
  private:
@@ -1119,7 +1119,7 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
 // Widevine with hardware secure decryption support. Note that for the test
 // suite EncryptedMediaSupportedTypesWidevineHwSecureTest, feature
 // media::kHardwareSecureDecryption is enabled, and command line switch
-// kEnableHardwareSecureCodecsForTesting is used to always enable vp8 and vp9,
+// kOverrideHardwareSecureCodecsForTesting is used to always enable vp8 and vp9,
 // and disable avc1. With the switch, real hardware capabilities are not checked
 // for the stability of tests.
 
