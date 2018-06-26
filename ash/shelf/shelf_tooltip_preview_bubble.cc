@@ -4,42 +4,34 @@
 
 #include "ash/shelf/shelf_tooltip_preview_bubble.h"
 
+#include "base/strings/utf_string_conversions.h"
+
 namespace ash {
 
-// The maximum height or width of the whole tooltip.
-constexpr int kTooltipMaxDimension = 192;
 
 // The padding inside the tooltip.
-constexpr int kTooltipPadding = 16;
-
-// The margins above and below window titles.
-constexpr int kTitleMarginTop = 2;
-constexpr int kTitleMarginBottom = 10;
+constexpr int kTooltipPaddingTop = 8;
+constexpr int kTooltipPaddingBottom = 16;
+constexpr int kTooltipPaddingLeftRight = 16;
 
 // The padding between individual previews.
-constexpr int kPreviewPadding = 10;
+constexpr int kPreviewPadding = 22;
 
 ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
     views::View* anchor,
     views::BubbleBorder::Arrow arrow,
-    const std::vector<aura::Window*>& windows)
-    : ShelfTooltipBubbleBase(anchor, arrow) {
-  // The window previews and titles.
+    const std::vector<aura::Window*>& windows,
+    ShelfTooltipManager* manager)
+    : ShelfTooltipBubbleBase(anchor, arrow), manager_(manager) {
+  const ui::NativeTheme* theme = anchor_widget()->GetNativeTheme();
   for (auto* window : windows) {
-    wm::WindowMirrorView* preview = new wm::WindowMirrorView(
-        window, /* trilinear_filtering_on_init=*/false);
-    previews_.push_back(preview);
+    WindowPreview* preview = new WindowPreview(window, this, theme);
     AddChildView(preview);
-
-    views::Label* title = new views::Label(window->GetTitle());
-    titles_.push_back(title);
-    AddChildView(title);
+    previews_.push_back(preview);
   }
 
-  SetStyling();
-  PerformLayout();
-
-  set_margins(gfx::Insets(kTooltipPadding, kTooltipPadding));
+  set_margins(gfx::Insets(kTooltipPaddingTop, kTooltipPaddingLeftRight,
+                          kTooltipPaddingBottom, kTooltipPaddingLeftRight));
   views::BubbleDialogDelegateView::CreateBubble(this);
   // This must be done after creating the bubble (a segmentation fault happens
   // otherwise).
@@ -48,55 +40,28 @@ ShelfTooltipPreviewBubble::ShelfTooltipPreviewBubble(
 
 ShelfTooltipPreviewBubble::~ShelfTooltipPreviewBubble() = default;
 
-void ShelfTooltipPreviewBubble::SetStyling() {
-  const ui::NativeTheme* theme = anchor_widget()->GetNativeTheme();
-  SkColor background_color =
-      theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipBackground);
-  for (auto* title : titles_) {
-    title->SetEnabledColor(
-        theme->GetSystemColor(ui::NativeTheme::kColorId_TooltipText));
-    title->SetBackgroundColor(background_color);
-    // The background is not opaque, so we can't do subpixel rendering.
-    title->SetSubpixelRenderingEnabled(false);
+void ShelfTooltipPreviewBubble::Layout() {
+  width_ = 0;
+  height_ = 0;
+  for (WindowPreview* preview : previews_) {
+    preview->Layout();
+    gfx::Size size = preview->CalculatePreferredSize();
+    preview->SetBoundsRect(gfx::Rect(width_, 0, size.width(), size.height()));
+    height_ = std::max(height_, size.height());
+    width_ += size.width() + kPreviewPadding;
   }
+
+  // We've counted one too many paddings at the end.
+  width_ -= kPreviewPadding;
 }
 
-void ShelfTooltipPreviewBubble::PerformLayout() {
-  int top = 0;
-  int left = 0;
-
-  for (size_t i = 0; i < previews_.size(); i++) {
-    views::Label* title = titles_[i];
-    wm::WindowMirrorView* preview = previews_[i];
-
-    gfx::Size preview_size = preview->CalculatePreferredSize();
-    float preview_ratio = static_cast<float>(preview_size.width()) /
-                          static_cast<float>(preview_size.height());
-    int preview_height = kTooltipMaxDimension;
-    int preview_width = kTooltipMaxDimension;
-    if (preview_ratio > 1) {
-      preview_height = kTooltipMaxDimension / preview_ratio;
-    } else {
-      preview_width = kTooltipMaxDimension * preview_ratio;
-    }
-
-    top = kTitleMarginTop;
-    if (i > 0) {
-      left += kPreviewPadding;
-    }
-    gfx::Size title_size = title->CalculatePreferredSize();
-    int title_width = std::min(title_size.width(), preview_width);
-    title->SetBoundsRect(
-        gfx::Rect(left, top, title_width, title_size.height()));
-    top += title_size.height() + kTitleMarginBottom;
-
-    preview->SetBoundsRect(gfx::Rect(left, top, preview_width, preview_height));
-    top += preview_height;
-    left += preview_width;
+void ShelfTooltipPreviewBubble::RemovePreview(WindowPreview* to_remove) {
+  base::Erase(previews_, to_remove);
+  RemoveChildView(to_remove);
+  // If we don't have any previews left, close the tooltip.
+  if (previews_.empty()) {
+    manager_->Close();
   }
-
-  width_ = left;
-  height_ = top;
 }
 
 gfx::Size ShelfTooltipPreviewBubble::CalculatePreferredSize() const {
@@ -104,6 +69,23 @@ gfx::Size ShelfTooltipPreviewBubble::CalculatePreferredSize() const {
     return BubbleDialogDelegateView::CalculatePreferredSize();
   }
   return gfx::Size(width_, height_);
+}
+
+bool ShelfTooltipPreviewBubble::ShouldCloseOnPressDown() {
+  return false;
+}
+
+bool ShelfTooltipPreviewBubble::ShouldCloseOnMouseExit() {
+  return false;
+}
+
+void ShelfTooltipPreviewBubble::OnPreviewDismissed(WindowPreview* preview) {
+  RemovePreview(preview);
+}
+
+void ShelfTooltipPreviewBubble::OnPreviewActivated(WindowPreview* preview) {
+  // Always close the tooltip when a window has been focused.
+  manager_->Close();
 }
 
 }  // namespace ash

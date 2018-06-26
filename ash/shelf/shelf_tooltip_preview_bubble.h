@@ -7,7 +7,10 @@
 
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "ash/shelf/shelf_tooltip_bubble_base.h"
+#include "ash/shelf/shelf_tooltip_manager.h"
+#include "ash/shelf/window_preview.h"
 #include "ash/wm/window_mirror_view.h"
 #include "ui/aura/window.h"
 #include "ui/views/controls/label.h"
@@ -15,29 +18,39 @@
 namespace ash {
 
 // The implementation of tooltip bubbles for the shelf item.
-class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfTooltipBubbleBase {
+class ASH_EXPORT ShelfTooltipPreviewBubble : public ShelfTooltipBubbleBase,
+                                             public WindowPreview::Delegate {
  public:
   ShelfTooltipPreviewBubble(views::View* anchor,
                             views::BubbleBorder::Arrow arrow,
-                            const std::vector<aura::Window*>& windows);
+                            const std::vector<aura::Window*>& windows,
+                            ShelfTooltipManager* manager);
   ~ShelfTooltipPreviewBubble() override;
 
  private:
-  void SetStyling();
-  void PerformLayout();
+  // Removes the given preview from the list of previewed windows.
+  void RemovePreview(WindowPreview* preview);
 
   // BubbleDialogDelegateView overrides:
   gfx::Size CalculatePreferredSize() const override;
 
-  // The window previews that this tooltip is meant to display.
-  std::vector<wm::WindowMirrorView*> previews_;
+  // ShelfTooltipBubbleBase:
+  bool ShouldCloseOnPressDown() override;
+  bool ShouldCloseOnMouseExit() override;
 
-  // The titles of the window that are being previewed.
-  std::vector<views::Label*> titles_;
+  // WindowPreview::Delegate:
+  void OnPreviewDismissed(WindowPreview* preview) override;
+  void OnPreviewActivated(WindowPreview* preview) override;
+
+  // views::View:
+  void Layout() override;
+
+  std::vector<WindowPreview*> previews_;
 
   // Computed dimensions for the tooltip.
   int width_ = 0;
   int height_ = 0;
+  ShelfTooltipManager* manager_;
 
   DISALLOW_COPY_AND_ASSIGN(ShelfTooltipPreviewBubble);
 };
