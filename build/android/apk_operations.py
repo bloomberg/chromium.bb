@@ -845,6 +845,8 @@ class _Command(object):
           self._parser.error(_GenerateMissingAllFlagMessage(devices))
 
       if self.supports_incremental:
+        incremental_apk_exists = False
+
         if args.incremental_json:
           with open(args.incremental_json) as f:
             install_dict = json.load(f)
