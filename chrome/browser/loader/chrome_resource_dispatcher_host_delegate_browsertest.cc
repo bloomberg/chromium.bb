@@ -238,6 +238,10 @@ class ChromeResourceDispatcherHostDelegateBrowserTest :
 
 IN_PROC_BROWSER_TEST_F(ChromeResourceDispatcherHostDelegateBrowserTest,
                        NavigationDataProcessed) {
+  // The network service code path doesn't go through ResourceDispatcherHost.
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService))
+    return;
+
   ui_test_utils::NavigateToURL(browser(), embedded_test_server()->base_url());
   {
     DidFinishNavigationObserver nav_observer(

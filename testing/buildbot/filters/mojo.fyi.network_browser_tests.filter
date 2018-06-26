@@ -271,9 +271,6 @@
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledHttpRedirectToHttps
 -PreviewsNoScriptBrowserTest.NoScriptPreviewsEnabledButNoTransformDirective
 
-# crbug.com/778814 Null NavigationData is given to NavigationURLLoaderDelegate::OnResponseStarted() as parameter.
--ChromeResourceDispatcherHostDelegateBrowserTest.NavigationDataProcessed
-
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
 
