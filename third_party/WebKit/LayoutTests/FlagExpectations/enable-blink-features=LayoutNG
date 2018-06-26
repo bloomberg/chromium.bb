@@ -417,7 +417,6 @@ crbug.com/591099 fast/css/getComputedStyle/computed-style-percentage-top-with-po
 crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-margin-auto.html [ Failure ]
 crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-margin-percentage.html [ Failure ]
 crbug.com/591099 fast/css/import_with_baseurl.html [ Failure ]
-crbug.com/591099 fast/css/negative-text-indent-in-inline-block.html [ Failure ]
 crbug.com/591099 fast/css/opacity-float.html [ Pass ]
 crbug.com/591099 fast/css/outline-narrowLine.html [ Failure ]
 crbug.com/591099 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Failure ]
