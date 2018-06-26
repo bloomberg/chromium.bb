@@ -19,6 +19,7 @@
 #include "ui/gfx/animation/linear_animation.h"
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/native_theme/native_theme.h"
@@ -38,19 +39,19 @@ namespace {
 // TODO(markusheintz|msw): Use NativeTheme colors.
 constexpr SkColor kTabTitleColor_InactiveBorder =
     SkColorSetARGB(0xFF, 0x64, 0x64, 0x64);
-constexpr SkColor kTabTitleColor_InactiveHighlight =
-    SkColorSetARGB(0xFF, 0x80, 0x86, 0x8B);
+constexpr SkColor kTabTitleColor_InactiveHighlight = gfx::kGoogleGrey600;
 constexpr SkColor kTabTitleColor_ActiveBorder = SK_ColorBLACK;
-constexpr SkColor kTabTitleColor_ActiveHighlight =
-    SkColorSetARGB(0xFF, 0x42, 0x85, 0xF4);
+constexpr SkColor kTabTitleColor_ActiveHighlight = gfx::kGoogleBlue600;
 const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;
 const SkColor kTabBorderColor = SkColorSetRGB(0xC8, 0xC8, 0xC8);
 const SkScalar kTabBorderThickness = 1.0f;
-constexpr SkColor kTabHighlightBackgroundColor =
+constexpr SkColor kTabHighlightBackgroundColor_Active =
     SkColorSetARGB(0xFF, 0xE8, 0xF0, 0xFE);
+constexpr SkColor kTabHighlightBackgroundColor_Focused =
+    SkColorSetARGB(0xFF, 0xD2, 0xE3, 0xFC);
 constexpr int kTabHighlightBorderRadius = 32;
 constexpr int kTabHighlightPreferredHeight = 32;
-constexpr int kTabHighlightPreferredWidth = 208;
+constexpr int kTabHighlightPreferredWidth = 192;
 
 const gfx::Font::Weight kHoverWeightBorder = gfx::Font::Weight::NORMAL;
 const gfx::Font::Weight kHoverWeightHighlight = gfx::Font::Weight::MEDIUM;
@@ -135,10 +136,8 @@ Tab::Tab(TabbedPane* tabbed_pane, const base::string16& title, View* contents)
   const bool is_highlight_style =
       tabbed_pane_->GetStyle() == TabbedPane::TabStripStyle::kHighlight;
 
-  if (is_vertical) {
+  if (is_vertical)
     title_->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
-    title_->SetElideBehavior(gfx::ElideBehavior::NO_ELIDE);
-  }
 
   if (is_highlight_style && is_vertical) {
     const int kTabVerticalPadding = 8;
@@ -286,7 +285,10 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
 
   cc::PaintFlags fill_flags;
   fill_flags.setAntiAlias(true);
-  fill_flags.setColor(kTabHighlightBackgroundColor);
+  if (HasFocus())
+    fill_flags.setColor(kTabHighlightBackgroundColor_Focused);
+  else
+    fill_flags.setColor(kTabHighlightBackgroundColor_Active);
   canvas->DrawPath(path, fill_flags);
 }
 
@@ -374,16 +376,21 @@ gfx::Size MdTab::CalculatePreferredSize() const {
 }
 
 void MdTab::OnFocus() {
-  SetBorder(CreateSolidBorder(
-      GetInsets().top(),
-      SkColorSetA(GetNativeTheme()->GetSystemColor(
-                      ui::NativeTheme::kColorId_FocusedBorderColor),
-                  0x66)));
+  // Do not draw focus ring in kHighlight mode.
+  if (tabbed_pane()->GetStyle() != TabbedPane::TabStripStyle::kHighlight) {
+    SetBorder(CreateSolidBorder(
+        GetInsets().top(),
+        SkColorSetA(GetNativeTheme()->GetSystemColor(
+                        ui::NativeTheme::kColorId_FocusedBorderColor),
+                    0x66)));
+  }
   SchedulePaint();
 }
 
 void MdTab::OnBlur() {
-  SetBorder(CreateEmptyBorder(GetInsets()));
+  // Do not draw focus ring in kHighlight mode.
+  if (tabbed_pane()->GetStyle() == TabbedPane::TabStripStyle::kHighlight)
+    SetBorder(CreateEmptyBorder(GetInsets()));
   SchedulePaint();
 }
 
