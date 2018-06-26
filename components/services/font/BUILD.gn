@@ -19,7 +19,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//base/test:fontconfig_util_linux",
     "//components/services/font/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
@@ -85,7 +84,6 @@ service_test("font_service_unittests") {
 
   deps = [
     "//base",
-    "//base/test:fontconfig_util_linux",
     "//components/services/font/public/cpp",
     "//components/services/font/public/interfaces",
     "//mojo/public/cpp/bindings",

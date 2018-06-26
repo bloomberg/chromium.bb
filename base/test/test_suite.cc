@@ -411,11 +411,6 @@ void TestSuite::Initialize() {
   switches.erase(switches::kEnableFeatures);
   switches.erase(switches::kDisableFeatures);
 
-#if defined(OS_LINUX)
-  // Pass to child processes that we need the FontConfig testing environment.
-  switches[switches::kFontConfigTestingEnvironment] = "";
-#endif
-
   for (const auto& iter : switches)
     new_command_line.AppendSwitchNative(iter.first, iter.second);
 

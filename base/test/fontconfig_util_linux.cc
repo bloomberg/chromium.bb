@@ -15,12 +15,6 @@
 #include "base/path_service.h"
 #include "base/strings/string_util.h"
 
-namespace switches {
-// Indicate to child processes that they should set up the FontConfig testing
-// environment.
-const char kFontConfigTestingEnvironment[] = "fontconfig-testing-environment";
-};  // namespace switches
-
 namespace base {
 
 namespace {
