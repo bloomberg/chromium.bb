@@ -318,10 +318,8 @@ void MessageCenterImpl::ClickOnNotification(const std::string& id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (FindVisibleNotificationById(id) == NULL)
     return;
-#if defined(OS_CHROMEOS)
-  if (HasPopupNotifications())
+  if (HasMessageCenterView() && HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-#endif
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   for (auto& observer : observer_list_)
@@ -335,10 +333,8 @@ void MessageCenterImpl::ClickOnNotificationButton(const std::string& id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!FindVisibleNotificationById(id))
     return;
-#if defined(OS_CHROMEOS)
-  if (HasPopupNotifications())
+  if (HasMessageCenterView() && HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-#endif
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   for (auto& observer : observer_list_)
@@ -354,10 +350,8 @@ void MessageCenterImpl::ClickOnNotificationButtonWithReply(
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (!FindVisibleNotificationById(id))
     return;
-#if defined(OS_CHROMEOS)
-  if (HasPopupNotifications())
+  if (HasMessageCenterView() && HasPopupNotifications())
     MarkSinglePopupAsShown(id, true);
-#endif
   scoped_refptr<NotificationDelegate> delegate =
       notification_list_->GetNotificationDelegate(id);
   for (auto& observer : observer_list_)
@@ -397,13 +391,13 @@ void MessageCenterImpl::MarkSinglePopupAsShown(const std::string& id,
   if (FindVisibleNotificationById(id) == NULL)
     return;
 
-#if !defined(OS_CHROMEOS)
-  RemoveNotification(id, false);
-#else
-  notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
-  for (auto& observer : observer_list_)
-    observer.OnNotificationUpdated(id);
-#endif  // defined(OS_CHROMEOS)
+  if (HasMessageCenterView()) {
+    notification_list_->MarkSinglePopupAsShown(id, mark_notification_as_read);
+    for (auto& observer : observer_list_)
+      observer.OnNotificationUpdated(id);
+  } else {
+    RemoveNotification(id, false);
+  }
 }
 
 void MessageCenterImpl::DisplayedNotification(
