@@ -11,6 +11,7 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/platform/api/quic_interval.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 
 namespace quic {
@@ -156,7 +157,7 @@ bool QuicStreamSendBuffer::OnStreamDataAcked(
   }
   if (bytes_acked_.Empty() || offset >= bytes_acked_.rbegin()->max() ||
       bytes_acked_.IsDisjoint(
-          net::Interval<QuicStreamOffset>(offset, offset + data_length))) {
+          QuicInterval<QuicStreamOffset>(offset, offset + data_length))) {
     // Optimization for the typical case, when all data is newly acked.
     if (stream_bytes_outstanding_ < data_length) {
       return false;
