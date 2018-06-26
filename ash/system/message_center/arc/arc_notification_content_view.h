@@ -51,8 +51,7 @@ class ArcNotificationContentView
   // views::View overrides:
   const char* GetClassName() const override;
 
-  void Update(message_center::MessageView* message_view,
-              const message_center::Notification& notification);
+  void Update(const message_center::Notification& notification);
   message_center::NotificationControlButtonsView* GetControlButtonsView();
   void UpdateControlButtonsVisibility();
   void OnSlideChanged();
@@ -108,6 +107,8 @@ class ArcNotificationContentView
 
   // ArcNotificationItem::Observer
   void OnItemDestroying() override;
+  void OnItemContentChanged(
+      arc::mojom::ArcNotificationShownContents content) override;
   void OnRemoteInputActivationChanged(bool activated) override;
 
   // ArcNotificationSurfaceManager::Observer:
@@ -118,6 +119,8 @@ class ArcNotificationContentView
   // we have to be careful about what we do.
   ArcNotificationItem* item_;
   ArcNotificationSurface* surface_ = nullptr;
+  arc::mojom::ArcNotificationShownContents shown_content_ =
+      arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
 
   // The flag to prevent an infinite loop of changing the visibility.
   bool updating_control_buttons_visibility_ = false;
@@ -144,6 +147,10 @@ class ArcNotificationContentView
   // RootView thus standard notification control buttons are always below
   // it.
   std::unique_ptr<views::Widget> floating_control_buttons_widget_;
+
+  // The message view which wrapps thie view. This must be the parent of this
+  // view.
+  message_center::MessageView* const message_view_;
 
   // This view is owned by client (this).
   message_center::NotificationControlButtonsView control_buttons_view_;

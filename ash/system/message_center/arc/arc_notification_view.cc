@@ -72,7 +72,7 @@ void ArcNotificationView::OnContentBlurred() {
 void ArcNotificationView::UpdateWithNotification(
     const message_center::Notification& notification) {
   message_center::MessageView::UpdateWithNotification(notification);
-  content_view_->Update(this, notification);
+  content_view_->Update(notification);
 }
 
 void ArcNotificationView::SetDrawBackgroundAsActive(bool active) {

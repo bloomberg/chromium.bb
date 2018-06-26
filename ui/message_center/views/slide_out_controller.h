@@ -19,6 +19,12 @@ class MESSAGE_CENTER_EXPORT SlideOutController
     : public ui::EventHandler,
       public ui::ImplicitAnimationObserver {
  public:
+  enum class SlideMode {
+    FULL,
+    PARTIALLY,
+    NO_SLIDE,
+  };
+
   class Delegate {
    public:
     // Returns the layer for slide operations.
@@ -34,8 +40,8 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   SlideOutController(ui::EventTarget* target, Delegate* delegate);
   ~SlideOutController() override;
 
-  void set_enabled(bool enabled) { enabled_ = enabled; }
-  bool enabled() { return enabled_; }
+  void set_slide_mode(SlideMode mode) { mode_ = mode; }
+  SlideMode mode() const { return mode_; }
 
   // ui::EventHandler
   void OnGestureEvent(ui::GestureEvent* event) override;
@@ -55,7 +61,7 @@ class MESSAGE_CENTER_EXPORT SlideOutController
   Delegate* delegate_;
 
   float gesture_amount_ = 0.f;
-  bool enabled_ = true;
+  SlideMode mode_ = SlideMode::FULL;
 
   DISALLOW_COPY_AND_ASSIGN(SlideOutController);
 };

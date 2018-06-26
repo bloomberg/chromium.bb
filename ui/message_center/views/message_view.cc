@@ -124,7 +124,7 @@ void MessageView::UpdateWithNotification(const Notification& notification) {
     accessible_name_ = new_accessible_name;
     NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
   }
-  slide_out_controller_.set_enabled(!GetPinned());
+  slide_out_controller_.set_slide_mode(CalculateSlideMode());
 }
 
 void MessageView::SetIsNested() {
@@ -132,7 +132,7 @@ void MessageView::SetIsNested() {
 
   is_nested_ = true;
   // Update enability since it might be changed by "is_nested" flag.
-  slide_out_controller_.set_enabled(!GetPinned());
+  slide_out_controller_.set_slide_mode(CalculateSlideMode());
 
   if (ShouldRoundMessageViewCorners()) {
     SetBorder(views::CreateRoundedRectBorder(
@@ -343,10 +343,35 @@ void MessageView::OnSlideOut() {
   }
 }
 
-bool MessageView::GetPinned() const {
+SlideOutController::SlideMode MessageView::CalculateSlideMode() const {
+  switch (GetMode()) {
+    case Mode::SETTING:
+      return SlideOutController::SlideMode::NO_SLIDE;
+    case Mode::PINNED:
+      return SlideOutController::SlideMode::PARTIALLY;
+    case Mode::NORMAL:
+      return SlideOutController::SlideMode::FULL;
+  }
+
+  NOTREACHED();
+  return SlideOutController::SlideMode::FULL;
+}
+
+MessageView::Mode MessageView::GetMode() const {
+  if (setting_mode_)
+    return Mode::SETTING;
+
   // Only nested notifications can be pinned. Standalones (i.e. popups) can't
   // be.
-  return pinned_ && is_nested_;
+  if (pinned_ && is_nested_)
+    return Mode::PINNED;
+
+  return Mode::NORMAL;
+}
+
+void MessageView::SetSettingMode(bool setting_mode) {
+  setting_mode_ = setting_mode;
+  slide_out_controller_.set_slide_mode(CalculateSlideMode());
 }
 
 void MessageView::OnCloseButtonPressed() {
@@ -363,9 +388,8 @@ void MessageView::OnSnoozeButtonPressed(const ui::Event& event) {
 }
 
 void MessageView::SetDrawBackgroundAsActive(bool active) {
-  background_view_->background()->
-      SetNativeControlColor(active ? kHoveredButtonBackgroundColor :
-                                     kNotificationBackgroundColor);
+  background_view_->background()->SetNativeControlColor(
+      active ? kHoveredButtonBackgroundColor : kNotificationBackgroundColor);
   SchedulePaint();
 }
 

@@ -23,7 +23,7 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
     // The threshold for the fling velocity is computed empirically.
     // The unit is in pixels/second.
     const float kFlingThresholdForClose = 800.f;
-    if (enabled_ &&
+    if (mode_ == SlideMode::FULL &&
         fabsf(event->details().velocity_x()) > kFlingThresholdForClose) {
       SlideOutAndClose(event->details().velocity_x());
       event->StopPropagation();
@@ -45,26 +45,37 @@ void SlideOutController::OnGestureEvent(ui::GestureEvent* event) {
     gesture_amount_ += event->details().scroll_x();
 
     float scroll_amount;
-    if (enabled_) {
-      scroll_amount = gesture_amount_;
-      layer->SetOpacity(1.f - std::min(fabsf(scroll_amount) / width, 1.f));
-    } else {
-      if (gesture_amount_ >= 0) {
-        scroll_amount = std::min(0.5f * gesture_amount_,
-                                 width * kScrollRatioForClosingNotification);
-      } else {
-        scroll_amount =
-            std::max(0.5f * gesture_amount_,
-                     -1.f * width * kScrollRatioForClosingNotification);
-      }
+    float opacity;
+    switch (mode_) {
+      case SlideMode::FULL:
+        scroll_amount = gesture_amount_;
+        opacity = 1.f - std::min(fabsf(scroll_amount) / width, 1.f);
+        break;
+      case SlideMode::NO_SLIDE:
+        scroll_amount = 0.f;
+        opacity = 1.f;
+        break;
+      case SlideMode::PARTIALLY:
+        if (gesture_amount_ >= 0) {
+          scroll_amount = std::min(0.5f * gesture_amount_,
+                                   width * kScrollRatioForClosingNotification);
+        } else {
+          scroll_amount =
+              std::max(0.5f * gesture_amount_,
+                       -1.f * width * kScrollRatioForClosingNotification);
+        }
+        opacity = 1.f;
+        break;
     }
 
+    layer->SetOpacity(opacity);
     gfx::Transform transform;
     transform.Translate(scroll_amount, 0.0);
     layer->SetTransform(transform);
   } else if (event->type() == ui::ET_GESTURE_SCROLL_END) {
     float scrolled_ratio = fabsf(gesture_amount_) / width;
-    if (enabled_ && scrolled_ratio >= kScrollRatioForClosingNotification) {
+    if (mode_ == SlideMode::FULL &&
+        scrolled_ratio >= kScrollRatioForClosingNotification) {
       SlideOutAndClose(gesture_amount_);
       event->StopPropagation();
       return;
