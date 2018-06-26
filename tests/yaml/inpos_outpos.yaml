@@ -242,3 +242,42 @@ tests:
     - fooba
     - inputPos: [0,1,2,3,4]
       outputPos: [0,1,2,3,4,4]
+
+# =============================================
+
+
+# Converted from inpos.c
+#     input      aaabcd ef g
+#                012345 67 8
+#     pass0      a  bcddef g
+#                0  345567 8
+#     pass1      x   cddw  g
+#                0   4556  8
+#     pass2      zy    dw  g
+#                00    56  8
+#     pass3      zy    deeeg
+#                00    56668
+                
+table: [tests/tables/inpos_pass0.ctb]
+tests:
+  - - aaabcdefg
+    - abcddefg
+    - inputPos: [0,3,4,5,5,6,7,8]
+
+table: [tests/tables/inpos_pass0.ctb,tests/tables/inpos_pass1.ctb]
+tests:
+  - - aaabcdefg
+    - xcddwg
+    - inputPos: [0,4,5,5,6,8]
+
+table: [tests/tables/inpos_pass0.ctb,tests/tables/inpos_pass1.ctb,tests/tables/inpos_pass2.ctb]
+tests:
+  - - aaabcdefg
+    - zydwg
+    - inputPos: [0,0,5,6,8]
+
+table: [tests/tables/inpos_pass0.ctb,tests/tables/inpos_pass1.ctb,tests/tables/inpos_pass2.ctb,tests/tables/inpos_pass3.ctb]
+tests:
+  - - aaabcdefg
+    - zydeeeg
+    - inputPos: [0,0,5,6,6,6,8]
