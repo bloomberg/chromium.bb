@@ -18,7 +18,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
-import org.chromium.base.test.util.FlakyTest;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
@@ -74,13 +73,10 @@ public class TypedUrlsTest {
         assertServerTypedUrlCountWithName(0, URL);
     }
 
-    /*
     // Test syncing a typed URL from client to server.
+    @Test
     @LargeTest
     @Feature({"Sync"})
-    */
-    @Test
-    @FlakyTest(message = "https://crbug.com/592437")
     public void testUploadTypedUrl() {
         loadUrlByTyping(URL);
         waitForClientTypedUrlCount(1);
