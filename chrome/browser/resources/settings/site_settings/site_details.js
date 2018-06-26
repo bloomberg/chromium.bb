@@ -51,6 +51,47 @@ Polymer({
       },
     },
 
+    /** @private */
+    enableSafeBrowsingSubresourceFilter_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSafeBrowsingSubresourceFilter');
+      },
+    },
+
+    /** @private */
+    enableSoundContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableSoundContentSetting');
+      },
+    },
+
+    /** @private */
+    enableClipboardContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableClipboardContentSetting');
+      },
+    },
+
+    /** @private */
+    enableSensorsContentSetting_: {
+      type: Boolean,
+      readOnly: true,
+      value: function() {
+        return loadTimeData.getBoolean('enableSensorsContentSetting');
+      },
+    },
+
+    /** @private */
+    enablePaymentHandlerContentSetting_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enablePaymentHandlerContentSetting');
+      },
+    },
+
     /**
      * The type of storage for the origin.
      * @private
@@ -103,7 +144,7 @@ Polymer({
         if (this.enableSiteSettings_)
           this.$.usageApi.fetchUsageTotal(this.toUrl(this.origin).hostname);
 
-        this.updatePermissions_(this.getCategoryList());
+        this.updatePermissions_(this.getCategoryList_());
       }
     });
   },
@@ -121,7 +162,7 @@ Polymer({
         origin === undefined || origin == '') {
       return;
     }
-    if (!this.getCategoryList().includes(category))
+    if (!this.getCategoryList_().includes(category))
       return;
 
     // Site details currently doesn't support embedded origins, so ignore it and
@@ -198,20 +239,20 @@ Polymer({
    * Resets all permissions for the current origin.
    * @private
    */
-  onResetSettings_: function(e) {
+  onResetSettings_: function() {
     this.browserProxy.setOriginPermissions(
-        this.origin, this.getCategoryList(), settings.ContentSetting.DEFAULT);
-    if (this.getCategoryList().includes(settings.ContentSettingsTypes.PLUGINS))
+        this.origin, this.getCategoryList_(), settings.ContentSetting.DEFAULT);
+    if (this.getCategoryList_().includes(settings.ContentSettingsTypes.PLUGINS))
       this.browserProxy.clearFlashPref(this.origin);
 
-    this.onCloseDialog_(e);
+    this.$.confirmResetSettings.close();
   },
 
   /**
    * Clears all data stored, except cookies, for the current origin.
    * @private
    */
-  onClearStorage_: function(e) {
+  onClearStorage_: function() {
     // Since usage is only shown when "Site Settings" is enabled, don't clear it
     // when it's not shown.
     if (this.enableSiteSettings_ && this.storedData_ != '') {
@@ -219,7 +260,7 @@ Polymer({
           this.toUrl(this.origin).href, this.storageType_);
     }
 
-    this.onCloseDialog_(e);
+    this.$.confirmClearStorage.close();
   },
 
   /**
@@ -231,6 +272,20 @@ Polymer({
   onUsageDeleted_: function(event) {
     if (event.detail.origin == this.toUrl(this.origin).href)
       this.storedData_ = '';
+  },
+
+  /**
+   * Returns list of categories for each permission displayed in <site-details>.
+   * @return {!Array<!settings.ContentSettingsTypes>}
+   * @private
+   */
+  getCategoryList_: function() {
+    const categoryList = [];
+    this.root.querySelectorAll('site-details-permission').forEach((element) => {
+      if (!element.hidden)
+        categoryList.push(element.category);
+    });
+    return categoryList;
   },
 
   /**
