@@ -220,10 +220,10 @@ void UnifiedMessageCenterView::UpdateNotification(const std::string& id) {
 
   int old_width = view->width();
   int old_height = view->height();
-  bool old_pinned = view->GetPinned();
+  MessageView::Mode old_mode = view->GetMode();
   message_list_view_->UpdateNotification(view, *notification);
   if (view->GetHeightForWidth(old_width) != old_height ||
-      view->GetPinned() != old_pinned) {
+      view->GetMode() != old_mode) {
     Update();
   }
 }

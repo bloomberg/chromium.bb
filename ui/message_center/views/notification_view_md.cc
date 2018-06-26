@@ -702,7 +702,7 @@ void NotificationViewMD::UpdateControlButtonsVisibilityWithNotification(
       notification.should_show_settings_button());
   control_buttons_view_->ShowSnoozeButton(
       notification.should_show_snooze_button());
-  control_buttons_view_->ShowCloseButton(!GetPinned());
+  control_buttons_view_->ShowCloseButton(GetMode() == Mode::NORMAL);
   UpdateControlButtonsVisibility();
 }
 
@@ -1207,6 +1207,7 @@ void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   // Toggling should reset the state.
   dont_block_button_->SetChecked(true);
 
+  SetSettingMode(inline_settings_visible);
   SetExpanded(!inline_settings_visible);
 
   PreferredSizeChanged();
@@ -1227,7 +1228,7 @@ void NotificationViewMD::UpdateControlButtonsVisibility() {
       (AlwaysShowControlButtons() || IsMouseHovered() ||
        control_buttons_view_->IsCloseButtonFocused() ||
        control_buttons_view_->IsSettingsButtonFocused()) &&
-      !GetPinned();
+      (GetMode() != Mode::SETTING);
 
   control_buttons_view_->SetVisible(target_visibility);
 }

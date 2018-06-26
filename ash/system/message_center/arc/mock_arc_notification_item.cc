@@ -64,11 +64,6 @@ arc::mojom::ArcNotificationExpandState MockArcNotificationItem::GetExpandState()
   return arc::mojom::ArcNotificationExpandState::FIXED_SIZE;
 }
 
-arc::mojom::ArcNotificationShownContents
-MockArcNotificationItem::GetShownContents() const {
-  return arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN;
-}
-
 gfx::Rect MockArcNotificationItem::GetSwipeInputRect() const {
   return gfx::Rect();
 }

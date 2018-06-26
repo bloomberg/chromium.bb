@@ -293,7 +293,7 @@ void MessageListView::ClearAllClosableNotifications(
       continue;
     if (gfx::IntersectRects(child->bounds(), visible_scroll_rect).IsEmpty())
       continue;
-    if (child->GetPinned())
+    if (child->GetMode() != MessageView::Mode::NORMAL)
       continue;
     if (deleting_views_.find(child) != deleting_views_.end() ||
         deleted_when_done_.find(child) != deleted_when_done_.end()) {

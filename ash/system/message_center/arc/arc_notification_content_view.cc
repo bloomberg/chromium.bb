@@ -1,4 +1,3 @@
-
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
@@ -227,7 +226,10 @@ ArcNotificationContentView::ArcNotificationContentView(
       notification_key_(item->GetNotificationKey()),
       event_forwarder_(new EventForwarder(this)),
       mouse_enter_exit_handler_(new MouseEnterExitHandler(this)),
+      message_view_(message_view),
       control_buttons_view_(message_view) {
+  DCHECK(message_view);
+
   // kNotificationWidth must be 360, since this value is separately defiend in
   // ArcNotificationWrapperView class in Android side.
   DCHECK_EQ(360, message_center::kNotificationWidth);
@@ -250,8 +252,7 @@ ArcNotificationContentView::ArcNotificationContentView(
   // Creates the control_buttons_view_, which collects all control buttons into
   // a horizontal box.
   control_buttons_view_.set_owned_by_client();
-
-  Update(message_view, notification);
+  Update(notification);
 
   // Create a layer as an anchor to insert surface copy during a slide.
   SetPaintToLayer();
@@ -275,7 +276,6 @@ const char* ArcNotificationContentView::GetClassName() const {
 }
 
 void ArcNotificationContentView::Update(
-    message_center::MessageView* message_view,
     const message_center::Notification& notification) {
   control_buttons_view_.ShowSettingsButton(
       notification.should_show_settings_button());
@@ -307,8 +307,9 @@ void ArcNotificationContentView::UpdateControlButtonsVisibility() {
   DCHECK(floating_control_buttons_widget_);
 
   const bool target_visibility =
-      IsMouseHovered() || (control_buttons_view_.IsCloseButtonFocused()) ||
-      (control_buttons_view_.IsSettingsButtonFocused());
+      (IsMouseHovered() || (control_buttons_view_.IsCloseButtonFocused()) ||
+       (control_buttons_view_.IsSettingsButtonFocused())) &&
+      (message_view_->GetMode() != message_center::MessageView::Mode::SETTING);
 
   if (target_visibility == floating_control_buttons_widget_->IsVisible())
     return;
@@ -689,6 +690,16 @@ void ArcNotificationContentView::OnItemDestroying() {
   // Reset |surface_| with |item_| since no one is observing the |surface_|
   // after |item_| is gone and this view should be removed soon.
   SetSurface(nullptr);
+}
+
+void ArcNotificationContentView::OnItemContentChanged(
+    arc::mojom::ArcNotificationShownContents content) {
+  shown_content_ = content;
+
+  bool is_normal_content_shown =
+      (shown_content_ ==
+       arc::mojom::ArcNotificationShownContents::CONTENTS_SHOWN);
+  message_view_->SetSettingMode(!is_normal_content_shown);
 }
 
 void ArcNotificationContentView::OnNotificationSurfaceAdded(

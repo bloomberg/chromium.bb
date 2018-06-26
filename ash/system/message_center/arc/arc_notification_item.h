@@ -18,6 +18,10 @@ class ArcNotificationItem {
     // Invoked when the notification data for this item has changed.
     virtual void OnItemDestroying() = 0;
 
+    // Invoked when the type of the shown content is changed.
+    virtual void OnItemContentChanged(
+        arc::mojom::ArcNotificationShownContents content) {}
+
     // Invoked when the remote input textbox on notification is activated or
     // deactivated.
     virtual void OnRemoteInputActivationChanged(bool activated) {}
@@ -79,8 +83,6 @@ class ArcNotificationItem {
 
   virtual bool IsManuallyExpandedOrCollapsed() const = 0;
 
-  // Returns the current type of shown contents.
-  virtual arc::mojom::ArcNotificationShownContents GetShownContents() const = 0;
   // Returns the rect for which Android wants to handle all swipe events.
   // Defaults to the empty rectangle.
   virtual gfx::Rect GetSwipeInputRect() const = 0;

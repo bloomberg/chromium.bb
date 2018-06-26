@@ -48,7 +48,6 @@ class ArcNotificationItemImpl : public ArcNotificationItem {
   arc::mojom::ArcNotificationType GetNotificationType() const override;
   arc::mojom::ArcNotificationExpandState GetExpandState() const override;
   bool IsManuallyExpandedOrCollapsed() const override;
-  arc::mojom::ArcNotificationShownContents GetShownContents() const override;
   gfx::Rect GetSwipeInputRect() const override;
   const std::string& GetNotificationKey() const override;
   const std::string& GetNotificationId() const override;

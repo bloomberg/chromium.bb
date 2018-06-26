@@ -47,7 +47,6 @@ class MockArcNotificationItem : public ArcNotificationItem {
 
   arc::mojom::ArcNotificationType GetNotificationType() const override;
   arc::mojom::ArcNotificationExpandState GetExpandState() const override;
-  arc::mojom::ArcNotificationShownContents GetShownContents() const override;
   gfx::Rect GetSwipeInputRect() const override;
 
   void OnUpdatedFromAndroid(arc::mojom::ArcNotificationDataPtr data,

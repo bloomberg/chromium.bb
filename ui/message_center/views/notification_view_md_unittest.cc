@@ -660,6 +660,25 @@ TEST_F(NotificationViewMDTest, Pinned) {
   EXPECT_FALSE(GetCloseButton());
 }
 
+TEST_F(NotificationViewMDTest, FixedViewMode) {
+  ui::ScopedAnimationDurationScaleMode zero_duration_scope(
+      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+  std::unique_ptr<Notification> notification = CreateSimpleNotification();
+  notification_view()->SetSettingMode(true);
+  UpdateNotificationViews(*notification);
+  std::string notification_id = notification->id();
+
+  BeginScroll();
+  ScrollBy(-200);
+  EXPECT_FALSE(IsRemoved(notification_id));
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
+  EndScroll();
+  EXPECT_FALSE(IsRemoved(notification_id));
+
+  EXPECT_EQ(MessageView::Mode::SETTING, notification_view()->GetMode());
+}
+
 TEST_F(NotificationViewMDTest, SnoozeButton) {
   // Create notification to replace the current one with itself.
   message_center::RichNotificationData rich_data;

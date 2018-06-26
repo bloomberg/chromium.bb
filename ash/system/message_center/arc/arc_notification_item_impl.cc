@@ -132,7 +132,13 @@ void ArcNotificationItemImpl::OnUpdatedFromAndroid(
 
   type_ = data->type;
   expand_state_ = data->expand_state;
+
+  if (shown_contents_ != data->shown_contents) {
+    for (auto& observer : observers_)
+      observer.OnItemContentChanged(data->shown_contents);
+  }
   shown_contents_ = data->shown_contents;
+
   swipe_input_rect_ =
       data->swipe_input_rect ? *data->swipe_input_rect : gfx::Rect();
 
@@ -236,11 +242,6 @@ ArcNotificationExpandState ArcNotificationItemImpl::GetExpandState() const {
 
 bool ArcNotificationItemImpl::IsManuallyExpandedOrCollapsed() const {
   return manually_expanded_or_collapsed_;
-}
-
-arc::mojom::ArcNotificationShownContents
-ArcNotificationItemImpl::GetShownContents() const {
-  return shown_contents_;
 }
 
 gfx::Rect ArcNotificationItemImpl::GetSwipeInputRect() const {
