@@ -6,7 +6,23 @@
 
 #include <utility>
 
+#include "components/cbor/cbor_values.h"
+#include "components/cbor/cbor_writer.h"
+
 namespace device {
+
+namespace {
+
+template <typename Container>
+cbor::CBORValue::ArrayValue ToArrayValue(const Container& container) {
+  cbor::CBORValue::ArrayValue value;
+  value.reserve(container.size());
+  for (const auto& item : container)
+    value.emplace_back(item);
+  return value;
+}
+
+}  // namespace
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     base::flat_set<ProtocolVersion> versions,
@@ -43,6 +59,37 @@ AuthenticatorGetInfoResponse& AuthenticatorGetInfoResponse::SetOptions(
     AuthenticatorSupportedOptions options) {
   options_ = std::move(options);
   return *this;
+}
+
+std::vector<uint8_t> EncodeToCBOR(
+    const AuthenticatorGetInfoResponse& response) {
+  cbor::CBORValue::ArrayValue version_array;
+  for (const auto& version : response.versions()) {
+    version_array.emplace_back(version == ProtocolVersion::kCtap ? kCtap2Version
+                                                                 : kU2fVersion);
+  }
+  cbor::CBORValue::MapValue device_info_map;
+  device_info_map.emplace(1, std::move(version_array));
+
+  if (response.extensions())
+    device_info_map.emplace(2, ToArrayValue(*response.extensions()));
+
+  device_info_map.emplace(3, response.aaguid());
+  device_info_map.emplace(4, ConvertToCBOR(response.options()));
+
+  if (response.max_msg_size()) {
+    device_info_map.emplace(
+        5, base::strict_cast<int64_t>(*response.max_msg_size()));
+  }
+
+  if (response.pin_protocol()) {
+    device_info_map.emplace(6, ToArrayValue(*response.pin_protocol()));
+  }
+
+  auto encoded_bytes =
+      cbor::CBORWriter::Write(cbor::CBORValue(std::move(device_info_map)));
+  DCHECK(encoded_bytes);
+  return *encoded_bytes;
 }
 
 }  // namespace device

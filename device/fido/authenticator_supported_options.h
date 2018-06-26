@@ -38,7 +38,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
       AuthenticatorSupportedOptions&& other);
   ~AuthenticatorSupportedOptions();
 
-  cbor::CBORValue ConvertToCBOR() const;
   AuthenticatorSupportedOptions& SetIsPlatformDevice(bool is_platform_device);
   AuthenticatorSupportedOptions& SetSupportsResidentKey(
       bool supports_resident_key);
@@ -77,6 +76,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorSupportedOptions);
 };
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+cbor::CBORValue ConvertToCBOR(const AuthenticatorSupportedOptions& options);
 
 }  // namespace device
 

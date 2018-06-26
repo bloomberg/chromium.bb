@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   AuthenticatorGetInfoResponse& SetOptions(
       AuthenticatorSupportedOptions options);
 
-  const base::flat_set<ProtocolVersion>& versions() { return versions_; }
+  const base::flat_set<ProtocolVersion>& versions() const { return versions_; }
   const std::vector<uint8_t>& aaguid() const { return aaguid_; }
   const base::Optional<uint32_t>& max_msg_size() const { return max_msg_size_; }
   const base::Optional<std::vector<uint8_t>>& pin_protocol() const {
@@ -60,6 +60,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorGetInfoResponse);
 };
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::vector<uint8_t> EncodeToCBOR(const AuthenticatorGetInfoResponse& response);
 
 }  // namespace device
 
