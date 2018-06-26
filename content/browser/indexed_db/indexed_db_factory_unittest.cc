@@ -180,6 +180,9 @@ TEST_F(IndexedDBFactoryTest, BackingStoreLazyClose) {
 }
 
 TEST_F(IndexedDBFactoryTest, BackingStoreNoSweeping) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitWithFeatures(
+      {}, {kIDBTombstoneDeletion, kIDBTombstoneStatistics});
   context()->TaskRunner()->PostTask(
       FROM_HERE,
       base::BindOnce(
