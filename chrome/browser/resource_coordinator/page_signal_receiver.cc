@@ -4,7 +4,7 @@
 
 #include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 
-#include "base/lazy_instance.h"
+#include "base/no_destructor.h"
 #include "base/time/time.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/resource_coordinator/public/cpp/coordination_unit_id.h"
@@ -13,10 +13,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace resource_coordinator {
-
-namespace {
-base::LazyInstance<PageSignalReceiver>::Leaky g_page_signal_receiver;
-}
 
 // static
 bool PageSignalReceiver::IsEnabled() {
@@ -29,7 +25,10 @@ bool PageSignalReceiver::IsEnabled() {
 PageSignalReceiver* PageSignalReceiver::GetInstance() {
   if (!IsEnabled())
     return nullptr;
-  return g_page_signal_receiver.Pointer();
+
+  static base::NoDestructor<PageSignalReceiver> page_signal_receiver;
+
+  return page_signal_receiver.get();
 }
 
 PageSignalReceiver::PageSignalReceiver() : binding_(this) {}
@@ -37,48 +36,48 @@ PageSignalReceiver::PageSignalReceiver() : binding_(this) {}
 PageSignalReceiver::~PageSignalReceiver() = default;
 
 void PageSignalReceiver::NotifyPageAlmostIdle(
-    const CoordinationUnitID& page_cu_id) {
+    const PageNavigationIdentity& page_navigation_id) {
   DCHECK(IsPageAlmostIdleSignalEnabled());
-  NotifyObserversIfKnownCu(page_cu_id, &PageSignalObserver::OnPageAlmostIdle);
+  NotifyObserversIfKnownCu(page_navigation_id,
+                           &PageSignalObserver::OnPageAlmostIdle);
 }
 
 void PageSignalReceiver::NotifyRendererIsBloated(
-    const CoordinationUnitID& page_cu_id) {
-  auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
-  if (web_contents_iter == cu_id_web_contents_map_.end())
-    return;
-  for (auto& observer : observers_)
-    observer.OnRendererIsBloated(web_contents_iter->second);
+    const PageNavigationIdentity& page_navigation_id) {
+  NotifyObserversIfKnownCu(page_navigation_id,
+                           &PageSignalObserver::OnRendererIsBloated);
 }
 
 void PageSignalReceiver::SetExpectedTaskQueueingDuration(
-    const CoordinationUnitID& page_cu_id,
+    const PageNavigationIdentity& page_navigation_id,
     base::TimeDelta duration) {
   NotifyObserversIfKnownCu(
-      page_cu_id, &PageSignalObserver::OnExpectedTaskQueueingDurationSet,
-      duration);
+      page_navigation_id,
+      &PageSignalObserver::OnExpectedTaskQueueingDurationSet, duration);
 }
 
-void PageSignalReceiver::SetLifecycleState(const CoordinationUnitID& page_cu_id,
-                                           mojom::LifecycleState state) {
-  NotifyObserversIfKnownCu(page_cu_id,
+void PageSignalReceiver::SetLifecycleState(
+    const PageNavigationIdentity& page_navigation_id,
+    mojom::LifecycleState state) {
+  NotifyObserversIfKnownCu(page_navigation_id,
                            &PageSignalObserver::OnLifecycleStateChanged, state);
 }
 
 void PageSignalReceiver::NotifyNonPersistentNotificationCreated(
-    const CoordinationUnitID& page_cu_id) {
+    const PageNavigationIdentity& page_navigation_id) {
   NotifyObserversIfKnownCu(
-      page_cu_id, &PageSignalObserver::OnNonPersistentNotificationCreated);
+      page_navigation_id,
+      &PageSignalObserver::OnNonPersistentNotificationCreated);
 }
 
 void PageSignalReceiver::OnLoadTimePerformanceEstimate(
-    const CoordinationUnitID& page_cu_id,
-    const std::string& url,
+    const PageNavigationIdentity& page_navigation_id,
     base::TimeDelta cpu_usage_estimate,
     uint64_t private_footprint_kb_estimate) {
-  NotifyObserversIfKnownCu(
-      page_cu_id, &PageSignalObserver::OnLoadTimePerformanceEstimate, url,
-      cpu_usage_estimate, private_footprint_kb_estimate);
+  NotifyObserversIfKnownCu(page_navigation_id,
+                           &PageSignalObserver::OnLoadTimePerformanceEstimate,
+                           page_navigation_id.url, cpu_usage_estimate,
+                           private_footprint_kb_estimate);
 }
 
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {

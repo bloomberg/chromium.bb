@@ -7,6 +7,7 @@ mojom = "//services/resource_coordinator/public/mojom/coordination_unit.mojom"
 public_headers = [
   "//services/resource_coordinator/public/cpp/coordination_unit_id.h",
   "//services/resource_coordinator/public/cpp/coordination_unit_types.h",
+  "//services/resource_coordinator/public/cpp/page_navigation_identity.h",
 ]
 traits_headers = [
   "//services/resource_coordinator/public/cpp/coordination_unit_mojom_traits.h",
@@ -22,4 +23,5 @@ public_deps = [
 type_mappings = [
   "resource_coordinator.mojom.CoordinationUnitType=::resource_coordinator::CoordinationUnitType",
   "resource_coordinator.mojom.CoordinationUnitID=::resource_coordinator::CoordinationUnitID",
+  "resource_coordinator.mojom.PageNavigationIdentity=::resource_coordinator::PageNavigationIdentity",
 ]

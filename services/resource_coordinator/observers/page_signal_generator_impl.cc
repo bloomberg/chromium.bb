@@ -17,11 +17,6 @@
 
 namespace resource_coordinator {
 
-#define DISPATCH_PAGE_SIGNAL(receivers, METHOD, ...)              \
-  receivers.ForAllPtrs([&](mojom::PageSignalReceiver* receiver) { \
-    receiver->METHOD(__VA_ARGS__);                                \
-  });
-
 namespace {
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -161,9 +156,9 @@ void PageSignalGeneratorImpl::OnProcessPropertyChanged(
       int64_t duration;
       if (!page_cu || !page_cu->GetExpectedTaskQueueingDuration(&duration))
         continue;
-      DISPATCH_PAGE_SIGNAL(receivers_, SetExpectedTaskQueueingDuration,
-                           page_cu->id(),
-                           base::TimeDelta::FromMilliseconds(duration));
+      DispatchPageSignal(
+          page_cu, &mojom::PageSignalReceiver::SetExpectedTaskQueueingDuration,
+          base::TimeDelta::FromMilliseconds(duration));
     }
   } else {
     if (resource_coordinator::IsPageAlmostIdleSignalEnabled() &&
@@ -183,8 +178,9 @@ void PageSignalGeneratorImpl::OnFrameEventReceived(
   if (!page_cu)
     return;
 
-  DISPATCH_PAGE_SIGNAL(receivers_, NotifyNonPersistentNotificationCreated,
-                       page_cu->id());
+  DispatchPageSignal(
+      page_cu,
+      &mojom::PageSignalReceiver::NotifyNonPersistentNotificationCreated);
 }
 
 void PageSignalGeneratorImpl::OnPageEventReceived(
@@ -214,7 +210,8 @@ void PageSignalGeneratorImpl::OnProcessEventReceived(
     // Currently bloated renderer handling supports only a single page.
     if (page_cus.size() == 1u) {
       auto* page_cu = *page_cus.begin();
-      DISPATCH_PAGE_SIGNAL(receivers_, NotifyRendererIsBloated, page_cu->id());
+      DispatchPageSignal(page_cu,
+                         &mojom::PageSignalReceiver::NotifyRendererIsBloated);
       RecordBloatedRendererHandling(
           BloatedRendererHandlingInResourceCoordinator::kForwardedToBrowser);
     } else {
@@ -241,10 +238,10 @@ void PageSignalGeneratorImpl::OnSystemEventReceived(
       if (data->GetLoadIdleState() == kLoadedAndIdle &&
           !data->performance_estimate_issued &&
           data->last_state_change < measurement_start) {
-        DISPATCH_PAGE_SIGNAL(receivers_, OnLoadTimePerformanceEstimate,
-                             page->id(), page->main_frame_url(),
-                             page->cumulative_cpu_usage_estimate(),
-                             page->private_footprint_kb_estimate());
+        DispatchPageSignal(
+            page, &mojom::PageSignalReceiver::OnLoadTimePerformanceEstimate,
+            page->cumulative_cpu_usage_estimate(),
+            page->private_footprint_kb_estimate());
         data->performance_estimate_issued = true;
       }
     }
@@ -370,7 +367,8 @@ void PageSignalGeneratorImpl::UpdateLoadIdleStateProcess(
 void PageSignalGeneratorImpl::UpdateLifecycleState(
     const PageCoordinationUnitImpl* page_cu,
     const mojom::LifecycleState state) {
-  DISPATCH_PAGE_SIGNAL(receivers_, SetLifecycleState, page_cu->id(), state);
+  DispatchPageSignal(page_cu, &mojom::PageSignalReceiver::SetLifecycleState,
+                     state);
 }
 
 void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(
@@ -380,7 +378,7 @@ void PageSignalGeneratorImpl::TransitionToLoadedAndIdle(
   auto* page_data = GetPageData(page_cu);
   page_data->SetLoadIdleState(kLoadedAndIdle, now);
   // Notify observers that the page is loaded and idle.
-  DISPATCH_PAGE_SIGNAL(receivers_, NotifyPageAlmostIdle, page_cu->id());
+  DispatchPageSignal(page_cu, &mojom::PageSignalReceiver::NotifyPageAlmostIdle);
 }
 
 PageSignalGeneratorImpl::PageData* PageSignalGeneratorImpl::GetPageData(
@@ -437,6 +435,19 @@ void PageSignalGeneratorImpl::PageData::SetLoadIdleState(
   last_state_change = now;
   load_idle_state = new_state;
   performance_estimate_issued = false;
+}
+
+template <typename Method, typename... Params>
+void PageSignalGeneratorImpl::DispatchPageSignal(
+    const PageCoordinationUnitImpl* page_cu,
+    Method m,
+    Params... params) {
+  receivers_.ForAllPtrs([&](mojom::PageSignalReceiver* receiver) {
+    (receiver->*m)(
+        PageNavigationIdentity{page_cu->id(), page_cu->navigation_id(),
+                               page_cu->main_frame_url()},
+        std::forward<Params>(params)...);
+  });
 }
 
 }  // namespace resource_coordinator

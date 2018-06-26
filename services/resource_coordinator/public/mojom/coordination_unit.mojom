@@ -88,7 +88,10 @@ interface PageCoordinationUnit {
   // Event signals.
   OnFaviconUpdated();
   OnTitleUpdated();
-  OnMainFrameNavigationCommitted(string url);
+
+  // |navigation_id| is the unique ID of the navigation handle that was
+  // committed.
+  OnMainFrameNavigationCommitted(int64 navigation_id, string url);
 };
 
 interface ProcessCoordinationUnit {

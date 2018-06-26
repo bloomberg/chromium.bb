@@ -149,6 +149,7 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
       UpdateUkmRecorder(navigation_handle->GetNavigationId());
       ResetFlag();
       page_resource_coordinator_->OnMainFrameNavigationCommitted(
+          navigation_handle->GetNavigationId(),
           navigation_handle->GetURL().spec());
     }
   }

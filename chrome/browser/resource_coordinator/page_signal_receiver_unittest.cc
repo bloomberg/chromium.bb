@@ -77,7 +77,7 @@ TEST_F(PageSignalReceiverUnitTest,
   TestPageSignalObserver observer3(Action::kObserve, page_cu_id_,
                                    page_signal_receiver_.get());
   page_signal_receiver_->NotifyObserversIfKnownCu(
-      page_cu_id_, &PageSignalObserver::OnLifecycleStateChanged,
+      {page_cu_id_, 1, ""}, &PageSignalObserver::OnLifecycleStateChanged,
       mojom::LifecycleState::kDiscarded);
 }
 

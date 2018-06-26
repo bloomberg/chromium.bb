@@ -161,6 +161,11 @@ class PageSignalGeneratorImpl : public CoordinationUnitGraphObserver,
   bool IsLoading(const PageCoordinationUnitImpl* page_cu);
   bool IsIdling(const PageCoordinationUnitImpl* page_cu);
 
+  template <typename Method, typename... Params>
+  void DispatchPageSignal(const PageCoordinationUnitImpl* page_cu,
+                          Method m,
+                          Params... params);
+
   mojo::BindingSet<mojom::PageSignalGenerator> bindings_;
   mojo::InterfacePtrSet<mojom::PageSignalReceiver> receivers_;
 
