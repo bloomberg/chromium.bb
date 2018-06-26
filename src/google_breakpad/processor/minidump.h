@@ -544,7 +544,8 @@ class MinidumpModuleList : public MinidumpStream,
   bool StoreRange(const MinidumpModule& module,
                   uint64_t base_address,
                   uint32_t module_index,
-                  uint32_t module_count);
+                  uint32_t module_count,
+                  bool is_android);
 
   // The largest number of modules that will be read from a minidump.  The
   // default is 1024.
