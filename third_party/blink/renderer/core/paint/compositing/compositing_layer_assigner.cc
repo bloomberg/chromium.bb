@@ -285,63 +285,72 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
     PaintLayer* layer,
     SquashingState& squashing_state,
     Vector<PaintLayer*>& layers_needing_paint_invalidation) {
-  if (RequiresSquashing(layer->GetCompositingReasons())) {
-    SquashingDisallowedReasons reasons_preventing_squashing =
-        GetReasonsPreventingSquashing(layer, squashing_state);
-    if (reasons_preventing_squashing) {
-      layer->SetCompositingReasons(layer->GetCompositingReasons() |
-                                   CompositingReason::kSquashingDisallowed);
-      layer->SetSquashingDisallowedReasons(reasons_preventing_squashing);
-    }
-  }
-
-  CompositingStateTransitionType composited_layer_update =
-      ComputeCompositedLayerUpdate(layer);
-
-  if (compositor_->AllocateOrClearCompositedLayerMapping(
-          layer, composited_layer_update)) {
-    TRACE_LAYER_INVALIDATION(
-        layer, InspectorLayerInvalidationTrackingEvent::kNewCompositedLayer);
-    layers_needing_paint_invalidation.push_back(layer);
-    layers_changed_ = true;
-    if (ScrollingCoordinator* scrolling_coordinator =
-            layer->GetScrollingCoordinator()) {
-      if (layer->GetLayoutObject().Style()->HasViewportConstrainedPosition()) {
-        scrolling_coordinator->FrameViewFixedObjectsDidChange(
-            layer->GetLayoutObject().View()->GetFrameView());
+  if (layer->NeedsCompositingLayerAssignment()) {
+    CHECK(layer->GetCompositingReasons() ||
+          (layer->GetCompositingState() != kNotComposited) ||
+          layer->LostGroupedMapping());
+    if (RequiresSquashing(layer->GetCompositingReasons())) {
+      SquashingDisallowedReasons reasons_preventing_squashing =
+          GetReasonsPreventingSquashing(layer, squashing_state);
+      if (reasons_preventing_squashing) {
+        layer->SetCompositingReasons(layer->GetCompositingReasons() |
+                                     CompositingReason::kSquashingDisallowed);
+        layer->SetSquashingDisallowedReasons(reasons_preventing_squashing);
       }
     }
-  }
 
-  if (composited_layer_update != kNoCompositingStateChange) {
-    // A change in the compositing state of a ScrollTimeline's scroll source can
-    // cause the compositor's view of the scroll source to become out of date.
-    // We inform the WorkletAnimationController about any such changes so that
-    // it can schedule a compositing animations update.
-    Node* node = layer->GetLayoutObject().GetNode();
-    if (node && ScrollTimeline::HasActiveScrollTimeline(node)) {
-      node->GetDocument()
-          .GetWorkletAnimationController()
-          .ScrollSourceCompositingStateChanged(node);
+    CompositingStateTransitionType composited_layer_update =
+        ComputeCompositedLayerUpdate(layer);
+
+    if (compositor_->AllocateOrClearCompositedLayerMapping(
+            layer, composited_layer_update)) {
+      TRACE_LAYER_INVALIDATION(
+          layer, InspectorLayerInvalidationTrackingEvent::kNewCompositedLayer);
+      layers_needing_paint_invalidation.push_back(layer);
+      layers_changed_ = true;
+      if (ScrollingCoordinator* scrolling_coordinator =
+              layer->GetScrollingCoordinator()) {
+        if (layer->GetLayoutObject()
+                .Style()
+                ->HasViewportConstrainedPosition()) {
+          scrolling_coordinator->FrameViewFixedObjectsDidChange(
+              layer->GetLayoutObject().View()->GetFrameView());
+        }
+      }
+    }
+
+    if (composited_layer_update != kNoCompositingStateChange) {
+      // A change in the compositing state of a ScrollTimeline's scroll source
+      // can cause the compositor's view of the scroll source to become out of
+      // date. We inform the WorkletAnimationController about any such changes
+      // so that it can schedule a compositing animations update.
+      Node* node = layer->GetLayoutObject().GetNode();
+      if (node && ScrollTimeline::HasActiveScrollTimeline(node)) {
+        node->GetDocument()
+            .GetWorkletAnimationController()
+            .ScrollSourceCompositingStateChanged(node);
+      }
+    }
+
+    // Add this layer to a squashing backing if needed.
+    UpdateSquashingAssignment(layer, squashing_state, composited_layer_update,
+                              layers_needing_paint_invalidation);
+
+    const bool layer_is_squashed =
+        composited_layer_update == kPutInSquashingLayer ||
+        (composited_layer_update == kNoCompositingStateChange &&
+         layer->GroupedMapping());
+    if (layer_is_squashed) {
+      squashing_state.next_squashed_layer_index++;
+      IntRect layer_bounds = layer->ClippedAbsoluteBoundingBox();
+      squashing_state.total_area_of_squashed_rects +=
+          layer_bounds.Size().Area();
+      squashing_state.bounding_rect.Unite(layer_bounds);
     }
   }
 
-  // Add this layer to a squashing backing if needed.
-  UpdateSquashingAssignment(layer, squashing_state, composited_layer_update,
-                            layers_needing_paint_invalidation);
-
-  const bool layer_is_squashed =
-      composited_layer_update == kPutInSquashingLayer ||
-      (composited_layer_update == kNoCompositingStateChange &&
-       layer->GroupedMapping());
-  if (layer_is_squashed) {
-    squashing_state.next_squashed_layer_index++;
-    IntRect layer_bounds = layer->ClippedAbsoluteBoundingBox();
-    squashing_state.total_area_of_squashed_rects += layer_bounds.Size().Area();
-    squashing_state.bounding_rect.Unite(layer_bounds);
-  }
-
-  if (layer->StackingNode()->IsStackingContext()) {
+  if (layer->StackingDescendantNeedsCompositingLayerAssignment() &&
+      layer->StackingNode()->IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer->StackingNode(),
                                             kNegativeZOrderChildren);
     while (PaintLayerStackingNode* cur_node = iterator.Next()) {
@@ -352,25 +361,31 @@ void CompositingLayerAssigner::AssignLayersToBackingsInternal(
 
   // At this point, if the layer is to be separately composited, then its
   // backing becomes the most recent in paint-order.
-  if (layer->GetCompositingState() == kPaintsIntoOwnBacking) {
+  if (layer->NeedsCompositingLayerAssignment() &&
+      layer->GetCompositingState() == kPaintsIntoOwnBacking) {
     DCHECK(!RequiresSquashing(layer->GetCompositingReasons()));
     squashing_state.UpdateSquashingStateForNewMapping(
         layer->GetCompositedLayerMapping(), layer->HasCompositedLayerMapping(),
         layers_needing_paint_invalidation);
   }
 
-  PaintLayerStackingNodeIterator iterator(
-      *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
-  while (PaintLayerStackingNode* cur_node = iterator.Next()) {
-    AssignLayersToBackingsInternal(cur_node->Layer(), squashing_state,
-                                   layers_needing_paint_invalidation);
+  if (layer->StackingDescendantNeedsCompositingLayerAssignment()) {
+    PaintLayerStackingNodeIterator iterator(
+        *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
+    while (PaintLayerStackingNode* cur_node = iterator.Next()) {
+      AssignLayersToBackingsInternal(cur_node->Layer(), squashing_state,
+                                     layers_needing_paint_invalidation);
+    }
   }
 
-  if (squashing_state.has_most_recent_mapping &&
-      &squashing_state.most_recent_mapping->OwningLayer() == layer) {
-    squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
-        true;
+  if (layer->NeedsCompositingLayerAssignment()) {
+    if (squashing_state.has_most_recent_mapping &&
+        &squashing_state.most_recent_mapping->OwningLayer() == layer) {
+      squashing_state.have_assigned_backings_to_entire_squashing_layer_subtree =
+          true;
+    }
   }
+  layer->ClearNeedsCompositingLayerAssignment();
 }
 
 }  // namespace blink

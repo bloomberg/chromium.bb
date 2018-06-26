@@ -168,6 +168,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       descendant_has_direct_or_scrolling_compositing_reason_(false),
       needs_compositing_reasons_update_(true),
       descendant_may_need_compositing_requirements_update_(false),
+      needs_compositing_layer_assignment_(false),
+      descendant_needs_compositing_layer_assignment_(false),
       layout_object_(layout_object),
       parent_(nullptr),
       previous_(nullptr),
@@ -2321,6 +2323,21 @@ bool PaintLayer::IsReplacedNormalFlowStacking() {
   if (!GetLayoutObject().StyleRef().HasAutoZIndex())
     return false;
   return true;
+}
+
+void PaintLayer::SetNeedsCompositingLayerAssignment() {
+  needs_compositing_layer_assignment_ = true;
+
+  for (PaintLayer* curr = CompositingContainer();
+       curr && !curr->StackingDescendantNeedsCompositingLayerAssignment();
+       curr = curr->CompositingContainer()) {
+    curr->descendant_needs_compositing_layer_assignment_ = true;
+  }
+}
+
+void PaintLayer::ClearNeedsCompositingLayerAssignment() {
+  needs_compositing_layer_assignment_ = false;
+  descendant_needs_compositing_layer_assignment_ = false;
 }
 
 void PaintLayer::SetNeedsCompositingRequirementsUpdate() {

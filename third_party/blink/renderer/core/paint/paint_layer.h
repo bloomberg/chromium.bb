@@ -849,7 +849,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     DCHECK(IsAllowedToQueryCompositingState());
     return lost_grouped_mapping_;
   }
-  void SetLostGroupedMapping(bool b) { lost_grouped_mapping_ = b; }
+  void SetLostGroupedMapping(bool b) {
+    lost_grouped_mapping_ = b;
+    needs_compositing_layer_assignment_ =
+        needs_compositing_layer_assignment_ || b;
+  }
 
   CompositingReasons GetCompositingReasons() const {
     DCHECK(IsAllowedToQueryCompositingState());
@@ -1066,6 +1070,16 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void SetNeeedsCompositingReasonsUpdate() {
     needs_compositing_reasons_update_ = true;
+  }
+
+  void SetNeedsCompositingLayerAssignment();
+  void ClearNeedsCompositingLayerAssignment();
+
+  bool NeedsCompositingLayerAssignment() const {
+    return needs_compositing_layer_assignment_;
+  }
+  bool StackingDescendantNeedsCompositingLayerAssignment() const {
+    return descendant_needs_compositing_layer_assignment_;
   }
 
  private:
@@ -1303,6 +1317,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned needs_compositing_reasons_update_ : 1;
 
   unsigned descendant_may_need_compositing_requirements_update_ : 1;
+  unsigned needs_compositing_layer_assignment_ : 1;
+  unsigned descendant_needs_compositing_layer_assignment_ : 1;
 
   LayoutBoxModelObject& layout_object_;
 
