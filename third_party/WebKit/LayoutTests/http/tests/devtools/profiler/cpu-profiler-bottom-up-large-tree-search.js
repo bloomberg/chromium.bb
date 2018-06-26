@@ -14,7 +14,7 @@
     for (var i = 1; i <= count; ++i) {
       nodes.push({
         'id': startId + i - 1,
-        'callFrame': {'functionName': 'foo' + i, 'scriptId': '0', 'url': 'a.js', 'lineNumber': i},
+        'callFrame': {'functionName': 'foo' + i, 'scriptId': '0', 'url': 'a.js', 'lineNumber': i, 'columnNumber': 0},
         'hitCount': 10,
         'children': i < count ? [startId + i] : []
       });
@@ -35,13 +35,14 @@
             'scriptId': '0',
             'url': 'a.js',
             'lineNumber': 0,
+            'columnNumber': 0,
           },
           'hitCount': 1,
           'children': [1, 2]
         },
         {
           'id': 1,
-          'callFrame': {'functionName': '(idle)', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 1},
+          'callFrame': {'functionName': '(idle)', 'scriptId': '0', 'url': 'a.js', 'lineNumber': 1, 'columnNumber': 1},
           'hitCount': 2,
           'children': []
         }
