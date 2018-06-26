@@ -285,6 +285,12 @@
   <message name="IDS_KSV_DESCRIPTION_IDC_RESTORE_TAB" desc="Description of the command in keyboard shortcut viewer.">
     Reopen the last tab or window you closed
   </message>
+  <message name="IDS_KSV_DESCRIPTION_IDC_BACK" desc="Description of the command in keyboard shortcut viewer.">
+    Go back to previous page
+  </message>
+  <message name="IDS_KSV_DESCRIPTION_IDC_FORWARD" desc="Description of the command in keyboard shortcut viewer.">
+    Go forward to next page
+  </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_DEV_TOOLS" desc="Description of the command in keyboard shortcut viewer.">
     Show or hide the Developer Tools panel
   </message>

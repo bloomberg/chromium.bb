@@ -451,6 +451,20 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kPageAndBrowser},
+       IDS_KSV_DESCRIPTION_IDC_BACK,
+       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_LEFT, ui::EF_ALT_DOWN}}},
+
+      {// |categories|
+       {ShortcutCategory::kPageAndBrowser},
+       IDS_KSV_DESCRIPTION_IDC_FORWARD,
+       IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_RIGHT, ui::EF_ALT_DOWN}}},
+
+      {// |categories|
+       {ShortcutCategory::kPageAndBrowser},
        IDS_KSV_DESCRIPTION_IDC_SAVE_PAGE,
        IDS_KSV_SHORTCUT_ONE_MODIFIER_ONE_KEY,
        // |accelerator_ids|
