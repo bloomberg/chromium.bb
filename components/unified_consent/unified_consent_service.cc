@@ -9,7 +9,6 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/sync/base/model_type.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
@@ -83,11 +82,11 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
                                               syncer::UserSelectableTypes());
 
   // Enable all non-personalized services.
-  pref_service_->SetBoolean(prefs::kSafeBrowsingEnabled, true);
   service_client_->SetAlternateErrorPagesEnabled(true);
   service_client_->SetMetricsReportingEnabled(true);
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetSearchSuggestEnabled(true);
+  service_client_->SetSafeBrowsingEnabled(true);
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
   service_client_->SetNetworkPredictionEnabled(true);
 }

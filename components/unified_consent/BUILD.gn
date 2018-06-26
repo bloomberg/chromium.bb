@@ -15,7 +15,6 @@ static_library("unified_consent") {
     "//components/autofill/core/common",
     "//components/browser_sync",
     "//components/pref_registry",
-    "//components/safe_browsing",
     "//components/signin/core/browser",
     "//components/sync",
     "//services/identity/public/cpp",
