@@ -73,7 +73,7 @@ enum class SandboxedUnpackerFailureReason {
   CRX_EXPECTED_HASH_INVALID = 38,
 
   // SandboxedUnpacker::IndexAndPersistRulesIfNeeded()
-  ERROR_PARSING_DNR_RULESET = 39,
+  DEPRECATED_ERROR_PARSING_DNR_RULESET = 39,  // No longer used; kept for UMA.
   ERROR_INDEXING_DNR_RULESET = 40,
 
   NUM_FAILURE_REASONS

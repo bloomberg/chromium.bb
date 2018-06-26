@@ -26,6 +26,7 @@ enum class ParseResult {
   ERROR_INVALID_REDIRECT_URL,
   ERROR_DUPLICATE_IDS,
   ERROR_PERSISTING_RULESET,
+  ERROR_LIST_NOT_PASSED,
 };
 
 // Rule parsing errors.
@@ -39,6 +40,7 @@ extern const char kErrorInvalidRedirectUrl[];
 extern const char kErrorListNotPassed[];
 extern const char kErrorDuplicateIDs[];
 extern const char kErrorPersisting[];
+extern const char kErrorListNotPassed[];
 
 // Rule parsing install warnings.
 extern const char kRulesNotParsedWarning[];

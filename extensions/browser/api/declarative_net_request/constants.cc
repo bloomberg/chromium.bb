@@ -28,6 +28,7 @@ const char kErrorDuplicateIDs[] =
 // Don't surface the actual error to the user, since it's an implementation
 // detail.
 const char kErrorPersisting[] = "*: Rules file could not be parsed.";
+const char kErrorListNotPassed[] = "*: Rules file must contain a list.";
 
 const char kRulesNotParsedWarning[] =
     "Declarative Net Request: Not all rules were successfully parsed.";

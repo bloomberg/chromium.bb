@@ -268,7 +268,8 @@ TEST_P(RuleIndexingTest, InvalidRedirectURL) {
 
 TEST_P(RuleIndexingTest, ListNotPassed) {
   SetRules(std::make_unique<base::DictionaryValue>());
-  LoadAndExpectError(manifest_errors::kDeclarativeNetRequestListNotPassed);
+  LoadAndExpectError(ParseInfo(ParseResult::ERROR_LIST_NOT_PASSED)
+                         .GetErrorDescription(kJSONRulesFilename));
 }
 
 TEST_P(RuleIndexingTest, DuplicateIDS) {

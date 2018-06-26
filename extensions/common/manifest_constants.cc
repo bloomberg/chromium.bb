@@ -297,8 +297,8 @@ const char kChromeVersionTooLow[] =
     "This extension requires * version * or greater.";
 const char kDeclarativeNetRequestPermissionNeeded[] =
     "The extension requires '*' permission for the '*' manifest key.";
-const char kDeclarativeNetRequestListNotPassed[] =
-    "Declarative Net Request: Ruleset must be a list.";
+const char kDeclarativeNetRequestJSONRulesFileReadError[] =
+    "Declarative Net Request: Error in reading JSON rules file.";
 const char kDefaultStateShouldNotBeSet[] =
     "The default_state key cannot be set for browser_action or page_action "
     "keys.";

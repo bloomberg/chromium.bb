@@ -270,7 +270,7 @@ extern const char kCannotScriptSigninPage[];
 extern const char kCannotUninstallManagedExtension[];
 extern const char kChromeVersionTooLow[];
 extern const char kDeclarativeNetRequestPermissionNeeded[];
-extern const char kDeclarativeNetRequestListNotPassed[];
+extern const char kDeclarativeNetRequestJSONRulesFileReadError[];
 extern const char kDefaultStateShouldNotBeSet[];
 extern const char kDevToolsExperimental[];
 extern const char kExpectString[];
