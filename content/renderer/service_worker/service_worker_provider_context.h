@@ -47,6 +47,13 @@ struct ServiceWorkerProviderContextDeleter;
 // the same underlying entity hold strong references to a shared instance of
 // this class.
 //
+// ServiceWorkerProviderContext is also a
+// mojom::ServiceWorkerWorkerClientRegistry. If it's a provider for a document,
+// then it tracks all the dedicated workers created from the document (including
+// nested workers), as dedicated workers don't yet have their own providers. If
+// it's a provider for a shared worker, then it tracks only the shared worker
+// itself.
+//
 // Created and destructed on the main thread. Unless otherwise noted, all
 // methods are called on the main thread.
 class CONTENT_EXPORT ServiceWorkerProviderContext
@@ -139,14 +146,8 @@ class CONTENT_EXPORT ServiceWorkerProviderContext
       base::WeakPtr<WebServiceWorkerProviderImpl> provider);
 
   // mojom::ServiceWorkerWorkerClientRegistry:
-  // For service worker clients. ServiceWorkerProviderContext is also a
-  // mojom::ServiceWorkerWorkerHost (or Registry). If it's a provider for a
-  // document, then it tracks all the dedicated workers created from the
-  // document (including nested workers). If it's a provider for a shared
-  // worker, then it tracks only the shared worker itself.
   void RegisterWorkerClient(
       mojom::ServiceWorkerWorkerClientPtr client) override;
-  // For cloning the worker host pointer.
   void CloneWorkerClientRegistry(
       mojom::ServiceWorkerWorkerClientRegistryRequest request) override;
 
