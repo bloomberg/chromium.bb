@@ -159,15 +159,22 @@ const CGFloat kAppendButtonSize = 48.0;
                              ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO
                              : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND;
   UIImage* appendImage = NativeReversableImage(appendResourceID, YES);
+  if (IsUIRefreshPhase1Enabled()) {
+    appendImage =
+        [appendImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    _appendButton.tintColor = _incognito ? [UIColor colorWithWhite:1 alpha:0.5]
+                                         : [UIColor colorWithWhite:0 alpha:0.3];
+  } else {
+    int appendSelectedResourceID =
+        _incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED
+                   : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED;
+    UIImage* appendImageSelected =
+        NativeReversableImage(appendSelectedResourceID, YES);
+    [_appendButton setImage:appendImageSelected
+                   forState:UIControlStateHighlighted];
+  }
 
   [_appendButton setImage:appendImage forState:UIControlStateNormal];
-  int appendSelectedResourceID =
-      _incognito ? IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED
-                 : IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED;
-  UIImage* appendImageSelected =
-      NativeReversableImage(appendSelectedResourceID, YES);
-  [_appendButton setImage:appendImageSelected
-                 forState:UIControlStateHighlighted];
 }
 
 - (NSString*)accessibilityLabel {

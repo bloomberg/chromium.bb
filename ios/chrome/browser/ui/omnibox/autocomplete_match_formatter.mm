@@ -11,6 +11,7 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "ios/chrome/browser/ui/omnibox/omnibox_util.h"
+#import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/Typography/src/MaterialTypography.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -20,14 +21,33 @@
 namespace {
 // The color of the main text of a suggest cell.
 UIColor* SuggestionTextColor() {
-  return [UIColor colorWithWhite:(51 / 255.0) alpha:1.0];
+  if (IsUIRefreshPhase1Enabled()) {
+    return [UIColor blackColor];
+  } else {
+    return [UIColor colorWithWhite:(51 / 255.0) alpha:1.0];
+  }
 }
 // The color of the detail text of a suggest cell.
 UIColor* SuggestionDetailTextColor() {
-  return [UIColor colorWithRed:(85 / 255.0)
-                         green:(149 / 255.0)
-                          blue:(254 / 255.0)
-                         alpha:1.0];
+  if (IsUIRefreshPhase1Enabled()) {
+    return [UIColor colorWithWhite:0 alpha:0.41];
+  } else {
+    return [UIColor colorWithRed:(85 / 255.0)
+                           green:(149 / 255.0)
+                            blue:(254 / 255.0)
+                           alpha:1.0];
+  }
+}
+// The color of the detail text of a suggest cell.
+UIColor* SuggestionDetailTextColorIncognito() {
+  if (IsUIRefreshPhase1Enabled()) {
+    return [UIColor colorWithWhite:1 alpha:0.5];
+  } else {
+    return [UIColor colorWithRed:(85 / 255.0)
+                           green:(149 / 255.0)
+                            blue:(254 / 255.0)
+                           alpha:1.0];
+  }
 }
 // The color of the text in the portion of a search suggestion that matches the
 // omnibox input text.
@@ -37,6 +57,7 @@ UIColor* DimColor() {
 UIColor* SuggestionTextColorIncognito() {
   return [UIColor whiteColor];
 }
+
 UIColor* DimColorIncognito() {
   return [UIColor whiteColor];
 }
@@ -111,7 +132,9 @@ UIColor* DimColorIncognito() {
       suggestionDetailTextColor =
           _incognito ? SuggestionTextColorIncognito() : SuggestionTextColor();
     } else {
-      suggestionDetailTextColor = SuggestionDetailTextColor();
+      suggestionDetailTextColor = _incognito
+                                      ? SuggestionDetailTextColorIncognito()
+                                      : SuggestionDetailTextColor();
     }
     DCHECK(suggestionDetailTextColor);
     detailAttributedText =
