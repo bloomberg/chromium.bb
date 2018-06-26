@@ -156,6 +156,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   self.view.accessibilityIdentifier =
       kRecentTabsTableViewControllerAccessibilityIdentifier;
   [self.tableView setDelegate:self];
+  self.tableView.cellLayoutMarginsFollowReadableWidth = NO;
   self.tableView.estimatedRowHeight = kEstimatedRowHeight;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionFooterHeight = 0.0;
