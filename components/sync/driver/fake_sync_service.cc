@@ -29,6 +29,10 @@ FakeSyncService::FakeSyncService()
 
 FakeSyncService::~FakeSyncService() {}
 
+int FakeSyncService::GetDisableReasons() const {
+  return DISABLE_REASON_NONE;
+}
+
 bool FakeSyncService::IsFirstSetupComplete() const {
   return false;
 }

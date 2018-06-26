@@ -35,6 +35,7 @@ class FakeSyncService : public SyncService {
  private:
   // Dummy methods.
   // SyncService implementation.
+  int GetDisableReasons() const override;
   bool IsFirstSetupComplete() const override;
   bool IsSyncAllowed() const override;
   bool IsSyncActive() const override;

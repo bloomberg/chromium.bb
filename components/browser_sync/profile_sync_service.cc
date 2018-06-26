@@ -308,6 +308,8 @@ void ProfileSyncService::Initialize() {
   // If sync isn't allowed, the only thing to do is to turn it off.
   if (!IsSyncAllowed()) {
     // Only clear data if disallowed by policy.
+    // TODO(crbug.com/839834): Should this call StopImpl, so that SyncRequested
+    // doesn't get set to false?
     RequestStop(IsManaged() ? CLEAR_DATA : KEEP_DATA);
     return;
   }
@@ -731,6 +733,26 @@ void ProfileSyncService::StopImpl(SyncStopDataFate data_fate) {
       ShutdownImpl(syncer::DISABLE_SYNC);
       break;
   }
+}
+
+int ProfileSyncService::GetDisableReasons() const {
+  int result = DISABLE_REASON_NONE;
+  if (!IsSyncAllowedByFlag() || !IsSyncAllowedByPlatform()) {
+    result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
+  }
+  if (IsManaged()) {
+    result = result | DISABLE_REASON_ENTERPRISE_POLICY;
+  }
+  if (!IsSignedIn() && !IsLocalSyncEnabled()) {
+    result = result | DISABLE_REASON_NOT_SIGNED_IN;
+  }
+  if (!IsSyncRequested()) {
+    result = result | DISABLE_REASON_USER_CHOICE;
+  }
+  if (HasUnrecoverableError()) {
+    result = result | DISABLE_REASON_UNRECOVERABLE_ERROR;
+  }
+  return result;
 }
 
 bool ProfileSyncService::IsFirstSetupComplete() const {
