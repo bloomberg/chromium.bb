@@ -1964,6 +1964,7 @@ interface Element : Node
     method setAttributeNode
     method setAttributeNodeNS
     method setPointerCapture
+    method toggleAttribute
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
