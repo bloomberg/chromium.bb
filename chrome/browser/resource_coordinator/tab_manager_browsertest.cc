@@ -931,18 +931,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndMakeVisible) {
   }
 }
 
-// Flaky on Mac and ChromeOS. https://crbug.com/855874
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
-#define MAYBE_TabFreezeAndUnfreeze DISABLED_TabFreezeAndUnfreeze
-#else
-#define MAYBE_TabFreezeAndUnfreeze TabFreezeAndUnfreeze
-#endif
 // Verifies the following state transitions for a tab:
 // - Initial state: ACTIVE
 // - Freeze(): ACTIVE->PENDING_FREEZE
 // - Freeze happens in renderer: PENDING_FREEZE->FROZEN
 // - Unfreeze(): FROZEN->ACTIVE
-IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabFreezeAndUnfreeze) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUnfreeze) {
   TestTransitionFromActiveToFrozen();
 
   // Unfreeze the tab. It should transition to the ACTIVE state.
@@ -950,11 +944,17 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabFreezeAndUnfreeze) {
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
 }
 
+// Flaky on Mac and ChromeOS. https://crbug.com/855874
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+#define MAYBE_TabPendingFreezeAndUnfreeze DISABLED_TabPendingFreezeAndUnfreeze
+#else
+#define MAYBE_TabPendingFreezeAndUnfreeze TabPendingFreezeAndUnfreeze
+#endif
 // Verifies the following state transitions for a tab:
 // - Initial state: ACTIVE
 // - Freeze(): ACTIVE->PENDING_FREEZE
 // - Unfreeze(): PENDING_FREEZE->ACTIVE
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabPendingFreezeAndUnfreeze) {
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabPendingFreezeAndUnfreeze) {
   TestTransitionFromActiveToPendingFreeze();
 
   // Unfreeze the tab. It should transition to the ACTIVE state.
