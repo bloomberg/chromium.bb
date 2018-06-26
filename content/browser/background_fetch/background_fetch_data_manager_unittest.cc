@@ -78,17 +78,23 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
     bool success = false) {
   DCHECK(request_info);
 
-  request_info->PopulateWithResponse(
-      std::make_unique<BackgroundFetchResponse>(std::vector<GURL>(1), nullptr));
+  std::string headers =
+      success ? "HTTP/1.1 200 OK\n" : "HTTP/1.1 404 Not found\n";
+  request_info->PopulateWithResponse(std::make_unique<BackgroundFetchResponse>(
+      std::vector<GURL>(1u, request_info->fetch_request().url),
+      base::MakeRefCounted<net::HttpResponseHeaders>(headers)));
 
   if (!success) {
     // Fill |request_info| with a failed result.
     request_info->SetResult(std::make_unique<BackgroundFetchResult>(
         base::Time::Now(), BackgroundFetchResult::FailureReason::UNKNOWN));
-  } else {
-    request_info->SetResult(std::make_unique<BackgroundFetchResult>(
-        base::Time::Now(), base::FilePath(), kResponseFileSize));
+    return;
   }
+
+  // This is treated as an empty response, but the size is set to
+  // |kResponseFileSize| for tests that use filesize.
+  request_info->SetResult(std::make_unique<BackgroundFetchResult>(
+      base::Time::Now(), base::FilePath(), kResponseFileSize));
 }
 
 void GetNumUserData(base::Closure quit_closure,

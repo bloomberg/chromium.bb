@@ -41,7 +41,7 @@ void DatabaseTask::AddDatabaseTask(std::unique_ptr<DatabaseTask> task) {
 
 ServiceWorkerContextWrapper* DatabaseTask::service_worker_context() {
   DCHECK(data_manager_->service_worker_context());
-  return data_manager_->service_worker_context().get();
+  return data_manager_->service_worker_context();
 }
 
 CacheStorageManager* DatabaseTask::cache_manager() {
@@ -51,6 +51,10 @@ CacheStorageManager* DatabaseTask::cache_manager() {
 
 std::set<std::string>& DatabaseTask::ref_counted_unique_ids() {
   return data_manager_->ref_counted_unique_ids();
+}
+
+ChromeBlobStorageContext* DatabaseTask::blob_storage_context() {
+  return data_manager_->blob_storage_context();
 }
 
 }  // namespace background_fetch

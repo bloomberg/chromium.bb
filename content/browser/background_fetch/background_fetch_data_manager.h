@@ -156,13 +156,6 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       BackgroundFetchRequestInfo* request,
       BackgroundFetchScheduler::MarkedCompleteCallback callback) override;
 
-  // TODO(rayankans): Move this function to MarkRequestCompleteTask after
-  // non-persistent background fetch support is removed.
-  virtual bool FillServiceWorkerResponse(
-      const BackgroundFetchRequestInfo& request,
-      const url::Origin& origin,
-      ServiceWorkerResponse* response);
-
   void ShutdownOnIO();
 
  private:
@@ -172,15 +165,17 @@ class CONTENT_EXPORT BackgroundFetchDataManager
   friend class background_fetch::DatabaseTask;
 
   // Accessors for tests and DatabaseTasks.
-  const scoped_refptr<ServiceWorkerContextWrapper>& service_worker_context()
-      const {
-    return service_worker_context_;
+  ServiceWorkerContextWrapper* service_worker_context() const {
+    return service_worker_context_.get();
   }
-  const scoped_refptr<CacheStorageManager>& cache_manager() const {
+  scoped_refptr<CacheStorageManager> cache_manager() const {
     return cache_manager_;
   }
   std::set<std::string>& ref_counted_unique_ids() {
     return ref_counted_unique_ids_;
+  }
+  ChromeBlobStorageContext* blob_storage_context() const {
+    return blob_storage_context_.get();
   }
 
   void AddStartNextPendingRequestTask(

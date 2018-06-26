@@ -71,16 +71,6 @@ void BackgroundFetchTestDataManager::InitializeOnIOThread() {
       blob_storage_context->context()->AsWeakPtr());
 }
 
-bool BackgroundFetchTestDataManager::FillServiceWorkerResponse(
-    const BackgroundFetchRequestInfo& request,
-    const url::Origin& origin,
-    ServiceWorkerResponse* response) {
-  return mock_fill_response_
-             ? request.IsResultSuccess()
-             : BackgroundFetchDataManager::FillServiceWorkerResponse(
-                   request, origin, response);
-}
-
 BackgroundFetchTestDataManager::~BackgroundFetchTestDataManager() = default;
 
 }  // namespace content
