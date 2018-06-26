@@ -3847,6 +3847,7 @@ test("unit_tests") {
       "../renderer/safe_browsing/phishing_term_feature_extractor_unittest.cc",
       "../renderer/safe_browsing/phishing_url_feature_extractor_unittest.cc",
       "../renderer/safe_browsing/scorer_unittest.cc",
+      "../utility/safe_browsing/mac/dmg_analyzer_unittest.cc",
       "../utility/safe_browsing/mac/dmg_test_utils.cc",
       "../utility/safe_browsing/mac/dmg_test_utils.h",
       "../utility/safe_browsing/mac/hfs_unittest.cc",
