@@ -1206,7 +1206,8 @@ def GeneralTemplates(site_config, ge_build_config):
       'asan',
       site_config.templates.default_hw_tests_override,
       profile='asan',
-      disk_layout='2gb-rootfs',
+      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
+      disk_layout='16gb-rootfs',
       # TODO(deymo): ASan builders generate bigger files, in particular a bigger
       # Chrome binary, that update_engine can't handle in delta payloads due to
       # memory limits. Remove the following lines once crbug.com/329248 is
@@ -2896,8 +2897,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       board_configs['amd64-generic'],
       site_config.templates.asan,
       description='Paladin build with Address Sanitizer (Clang)',
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='4gb-rootfs',
   )
 
   site_config.Add(
@@ -2907,8 +2906,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       board_configs['betty'],
       site_config.templates.asan,
       description='Paladin build with Address Sanitizer (Clang)',
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='4gb-rootfs',
   )
 
 
@@ -3183,8 +3180,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'amd64-generic-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       site_config.templates.no_hwtest_builder,
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='4gb-rootfs',
       boards=['amd64-generic'],
       active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='with 30m interval',
@@ -3199,8 +3194,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       display_label=config_lib.DISPLAY_LABEL_CHROME_INFORMATIONAL,
       boards=['betty'],
       description='Build with Address Sanitizer (Clang)',
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='4gb-rootfs',
       active_waterfall=waterfall.WATERFALL_SWARMING,
       # Once every day. 3 PM UTC is 7 AM PST (no daylight savings).
       schedule='0 15 * * *'
@@ -3210,8 +3203,6 @@ def InformationalBuilders(site_config, boards_dict, ge_build_config):
       'betty-tot-asan-informational',
       site_config.templates.tot_asan_informational,
       site_config.templates.no_hwtest_builder,
-      # THESE IMAGES CAN DAMAGE THE LAB and cannot be used for hardware testing.
-      disk_layout='4gb-rootfs',
       boards=['betty'],
   )
 
