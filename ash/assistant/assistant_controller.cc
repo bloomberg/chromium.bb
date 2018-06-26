@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/new_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "base/bind.h"
@@ -17,7 +18,7 @@ namespace ash {
 
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
-          std::make_unique<AssistantInteractionController>()),
+          std::make_unique<AssistantInteractionController>(this)),
       assistant_ui_controller_(std::make_unique<AssistantUiController>(this)) {
   // Note that the sub-controllers have a circular dependency.
   // TODO(dmblack): Remove this circular dependency.
@@ -107,10 +108,9 @@ void AssistantController::ManageWebContents(
   params->account_id = user_session->user_info->account_id;
 
   // Specify that we will handle top level browser requests.
-  // TODO(dmblack): Make AssistantController the OpenUrl delegate.
   ash::mojom::ManagedWebContentsOpenUrlDelegatePtr ptr;
-  web_contents_open_url_delegate_bindings_.AddBinding(
-      assistant_interaction_controller_.get(), mojo::MakeRequest(&ptr));
+  web_contents_open_url_delegate_bindings_.AddBinding(this,
+                                                      mojo::MakeRequest(&ptr));
   params->open_url_delegate_ptr_info = ptr.PassInterface();
 
   web_contents_manager_->ManageWebContents(id_token, std::move(params),
@@ -149,6 +149,17 @@ void AssistantController::OnHighlighterSelectionRecognized(
     const gfx::Rect& rect) {
   // TODO(muyuanli): Request screen context for |rect|.
   NOTIMPLEMENTED();
+}
+
+void AssistantController::OnOpenUrlFromTab(const GURL& url) {
+  OpenUrl(url);
+}
+
+void AssistantController::OpenUrl(const GURL& url) {
+  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
+
+  // We dismiss Assistant UI when opening a new browser tab.
+  assistant_ui_controller_->HideUi(AssistantSource::kUnspecified);
 }
 
 }  // namespace ash
