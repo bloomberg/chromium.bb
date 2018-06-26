@@ -14,5 +14,8 @@ include_rules = [
 specific_include_rules = {
   ".*unittest\.cc": [
     "+third_party/khronos/GLES2",
-  ]
+  ],
+  "external_begin_frame_source_android.cc": [
+    "+jni/ExternalBeginFrameSourceAndroid_jni.h",
+  ],
 }
