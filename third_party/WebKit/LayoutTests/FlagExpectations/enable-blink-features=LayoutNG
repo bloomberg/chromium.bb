@@ -63,7 +63,7 @@ crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-prct-vrl-in-ht
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-001.xht [ Pass ]
 crbug.com/626703 external/wpt/css/css-writing-modes/sizing-orthog-vlr-in-htb-004.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/two-levels-of-orthogonal-flows-percentage.html [ Pass ]
-
+crbug.com/855279 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Pass ]
 crbug.com/591099 fast/dom/inner-text-first-letter.html [ Pass ]
 
 # New failures are appended below by the script.
@@ -415,7 +415,6 @@ crbug.com/591099 fast/css/getComputedStyle/getComputedStyle-margin-percentage.ht
 crbug.com/591099 fast/css/import_with_baseurl.html [ Failure Pass ]
 crbug.com/591099 fast/css/opacity-float.html [ Pass ]
 crbug.com/591099 fast/css/outline-narrowLine.html [ Failure ]
-crbug.com/591099 fast/css/text-overflow-ellipsis-vertical-hittest.html [ Failure ]
 crbug.com/591099 fast/css/text-overflow-ellipsis-vertical-select.html [ Failure ]
 crbug.com/591099 fast/css/transform-inline-style-remove.html [ Failure ]
 crbug.com/591099 fast/css3-text/css3-text-decoration/text-underline-position/text-underline-position-auto.html [ Failure ]
