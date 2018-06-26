@@ -139,7 +139,7 @@ class ExtensionRequestLimitingThrottleCommandLineBrowserTest
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        ThrottleRequest) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, false, false));
+      base::BindRepeating(&HandleRequest, false, false));
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_eventually_throttled.html",
@@ -152,7 +152,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        DoNotThrottleCachedResponse) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, false, true));
+      base::BindRepeating(&HandleRequest, false, true));
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
@@ -170,7 +170,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        MAYBE_ThrottleRequest_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, false, false));
+      base::BindRepeating(&HandleRequest, false, false));
   ASSERT_TRUE(embedded_test_server()->Start());
   // Issue a bunch of requests to a url which gets redirected to a new url that
   // generates 503.
@@ -192,7 +192,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        DoNotThrottleCachedResponse_Redirect) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, true, true));
+      base::BindRepeating(&HandleRequest, true, true));
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
@@ -213,7 +213,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        MAYBE_ThrottleRequest_RedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, true, false));
+      base::BindRepeating(&HandleRequest, true, false));
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_eventually_throttled.html",
@@ -233,7 +233,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
                        DoNotThrottleCachedResponse_NonRedirectCached) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, false, true));
+      base::BindRepeating(&HandleRequest, false, true));
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleBrowserTest,
 IN_PROC_BROWSER_TEST_F(ExtensionRequestLimitingThrottleCommandLineBrowserTest,
                        ThrottleRequestDisabled) {
   embedded_test_server()->RegisterRequestHandler(
-      base::Bind(&HandleRequest, false, false));
+      base::BindRepeating(&HandleRequest, false, false));
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_NO_FATAL_FAILURE(
       RunTest("test_request_not_throttled.html",
