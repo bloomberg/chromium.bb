@@ -369,11 +369,10 @@ void HTMLAnchorElement::HandleClick(Event* event) {
               : WebFeature::
                     kHTMLAnchorElementDownloadInSandboxWithoutUserGesture);
     }
-    // TODO(jochen): Only set the suggested filename for URLs we can request.
-    request.SetSuggestedFilename(
-        static_cast<String>(FastGetAttribute(downloadAttr)));
     if (GetDocument().GetSecurityOrigin()->CanReadContent(completed_url)) {
       // TODO(jochen): Handle cross origin server redirects.
+      request.SetSuggestedFilename(
+          static_cast<String>(FastGetAttribute(downloadAttr)));
       request.SetRequestContext(WebURLRequest::kRequestContextDownload);
       request.SetRequestorOrigin(SecurityOrigin::Create(GetDocument().Url()));
       frame->Client()->DownloadURL(request);
