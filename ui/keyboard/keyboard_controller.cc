@@ -531,11 +531,7 @@ void KeyboardController::OnWindowBoundsChanged(
     const gfx::Rect& old_bounds,
     const gfx::Rect& new_bounds,
     ui::PropertyChangeReason reason) {
-  if (!window->IsRootWindow())
-    return;
-  // Keep the same height when window resizes. It gets called when the screen
-  // rotates.
-  if (!ui_->HasContentsWindow())
+  if (!window->IsRootWindow() || !ui_->HasContentsWindow())
     return;
 
   container_behavior_->SetCanonicalBounds(GetContentsWindow(), new_bounds);
