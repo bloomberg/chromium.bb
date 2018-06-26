@@ -722,10 +722,24 @@ CommandHandler.onCommand = function(command) {
         current = cursors.Range.fromNode(end);
       break;
     case 'scrollBackward':
-      current.start.node.scrollBackward();
+      var node = current.start.node;
+      while (node &&
+             !node.standardActions.includes(
+                 chrome.automation.ActionType.SCROLL_BACKWARD))
+        node = node.parent;
+
+      if (node)
+        node.scrollBackward();
       break;
     case 'scrollForward':
-      current.start.node.scrollForward();
+      var node = current.start.node;
+      while (node &&
+             !node.standardActions.includes(
+                 chrome.automation.ActionType.SCROLL_FORWARD))
+        node = node.parent;
+
+      if (node)
+        node.scrollForward();
       break;
     default:
       return true;
