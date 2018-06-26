@@ -63,4 +63,17 @@ bool StructTraits<resource_coordinator::mojom::CoordinationUnitIDDataView,
   return true;
 }
 
+// static
+bool StructTraits<resource_coordinator::mojom::PageNavigationIdentityDataView,
+                  resource_coordinator::PageNavigationIdentity>::
+    Read(resource_coordinator::mojom::PageNavigationIdentityDataView input,
+         resource_coordinator::PageNavigationIdentity* out) {
+  if (!input.ReadPageCuId(&out->page_cu_id))
+    return false;
+  out->navigation_id = input.navigation_id();
+  if (!input.ReadUrl(&out->url))
+    return false;
+  return true;
+}
+
 }  // namespace mojo

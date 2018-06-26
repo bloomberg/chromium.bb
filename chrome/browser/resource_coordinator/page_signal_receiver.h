@@ -61,17 +61,19 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   static PageSignalReceiver* GetInstance();
 
   // mojom::PageSignalReceiver implementation.
-  void NotifyPageAlmostIdle(const CoordinationUnitID& page_cu_id) override;
-  void NotifyRendererIsBloated(const CoordinationUnitID& page_cu_id) override;
-  void SetExpectedTaskQueueingDuration(const CoordinationUnitID& page_cu_id,
-                                       base::TimeDelta duration) override;
-  void SetLifecycleState(const CoordinationUnitID& page_cu_id,
+  void NotifyPageAlmostIdle(
+      const PageNavigationIdentity& page_navigation_id) override;
+  void NotifyRendererIsBloated(
+      const PageNavigationIdentity& page_navigation_id) override;
+  void SetExpectedTaskQueueingDuration(
+      const PageNavigationIdentity& page_navigation_id,
+      base::TimeDelta duration) override;
+  void SetLifecycleState(const PageNavigationIdentity& page_navigation_id,
                          mojom::LifecycleState) override;
   void NotifyNonPersistentNotificationCreated(
-      const CoordinationUnitID& page_cu_id) override;
+      const PageNavigationIdentity& page_navigation_id) override;
   void OnLoadTimePerformanceEstimate(
-      const CoordinationUnitID& page_cu_id,
-      const std::string& url,
+      const PageNavigationIdentity& page_navigation_id,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
 
@@ -87,10 +89,12 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   FRIEND_TEST_ALL_PREFIXES(PageSignalReceiverUnitTest,
                            NotifyObserversThatCanRemoveCoordinationUnitID);
   template <typename Method, typename... Params>
-  void NotifyObserversIfKnownCu(const CoordinationUnitID& page_cu_id,
-                                Method m,
-                                Params... params) {
-    auto web_contents_iter = cu_id_web_contents_map_.find(page_cu_id);
+  void NotifyObserversIfKnownCu(
+      const PageNavigationIdentity& page_navigation_id,
+      Method m,
+      Params... params) {
+    auto web_contents_iter =
+        cu_id_web_contents_map_.find(page_navigation_id.page_cu_id);
     if (web_contents_iter == cu_id_web_contents_map_.end())
       return;
     // An observer can make web_contents_iter invalid by mutating
