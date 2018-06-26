@@ -132,7 +132,8 @@ TEST_F(SecureChannelClientChannelImplTest, TestGetConnectionMetadata) {
 
   mojom::ConnectionMetadataPtr metadata = mojom::ConnectionMetadata::New(
       creation_details,
-      mojom::BluetoothConnectionMetadata::New(-24 /* current_rssi */));
+      mojom::BluetoothConnectionMetadata::New(-24 /* current_rssi */),
+      "channel_binding_data");
   fake_channel_->set_connection_metadata_for_next_call(std::move(metadata));
 
   metadata = CallGetConnectionMetadata();

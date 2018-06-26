@@ -29,6 +29,11 @@ class FakeSecureChannel : public SecureChannel {
     rssi_to_return_ = rssi_to_return;
   }
 
+  void set_channel_binding_data(
+      const base::Optional<std::string>& channel_binding_data) {
+    channel_binding_data_ = channel_binding_data;
+  }
+
   struct SentMessage {
     SentMessage(const std::string& feature, const std::string& payload);
 
@@ -53,6 +58,7 @@ class FakeSecureChannel : public SecureChannel {
   void RemoveObserver(Observer* observer) override;
   void GetConnectionRssi(
       base::OnceCallback<void(base::Optional<int32_t>)> callback) override;
+  base::Optional<std::string> GetChannelBindingData() override;
 
  private:
   int next_sequence_number_ = 0;
@@ -60,6 +66,7 @@ class FakeSecureChannel : public SecureChannel {
   std::vector<Observer*> observers_;
   std::vector<SentMessage> sent_messages_;
   base::Optional<int32_t> rssi_to_return_;
+  base::Optional<std::string> channel_binding_data_;
 
   base::OnceClosure destructor_callback_;
 

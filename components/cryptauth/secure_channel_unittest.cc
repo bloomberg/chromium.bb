@@ -655,4 +655,11 @@ TEST_F(CryptAuthSecureChannelTest, GetRssi) {
   VerifyRssi(-30 /* expected_rssi */);
 }
 
+TEST_F(CryptAuthSecureChannelTest, GetChannelBindingData) {
+  ConnectAndAuthenticate();
+
+  fake_secure_context_->set_channel_binding_data("channel_binding_data");
+  EXPECT_EQ("channel_binding_data", secure_channel_->GetChannelBindingData());
+}
+
 }  // namespace cryptauth

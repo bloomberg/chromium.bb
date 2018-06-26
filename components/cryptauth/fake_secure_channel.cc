@@ -84,4 +84,8 @@ void FakeSecureChannel::GetConnectionRssi(
   std::move(callback).Run(rssi_to_return_);
 }
 
+base::Optional<std::string> FakeSecureChannel::GetChannelBindingData() {
+  return channel_binding_data_;
+}
+
 }  // namespace cryptauth

@@ -78,6 +78,16 @@ struct ConnectionMetadata {
 
   // Only available for connections over Bluetooth.
   BluetoothConnectionMetadata? bluetooth_connection_metadata;
+
+  // The responder auth message returned by the other device during the
+  // cryptographic handshake that established the channel. These are serialized
+  // bytes of a proto which contains an encrypted message, returned by the
+  // remote device in the last step of a 3-step cryptographic handshake. These
+  // bytes were publicly visible over BLE when the connection with the remote
+  // device was being established. It is used by some clients for further
+  // cryptographic communication.
+  // Defined by //components/cryptauth/proto/securemessage.proto.
+  string channel_binding_data;
 };
 
 interface Channel {
