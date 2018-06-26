@@ -82,6 +82,16 @@ void AssistantContainerView::OnBeforeBubbleWidgetInit(
   params->shadow_elevation = wm::kShadowElevationActiveWindow;
 }
 
+void AssistantContainerView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // Apply a clip path to ensure children do not extend outside container
+  // boundaries. The clip path also enforces our round corners on child views.
+  gfx::Path clip_path;
+  clip_path.addRoundRect(gfx::RectToSkRect(GetLocalBounds()), kCornerRadiusDip,
+                         kCornerRadiusDip);
+  set_clip_path(clip_path);
+  SchedulePaint();
+}
+
 void AssistantContainerView::Init() {
   SetLayoutManager(std::make_unique<views::FillLayout>());
 

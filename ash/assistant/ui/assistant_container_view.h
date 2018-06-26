@@ -30,6 +30,7 @@ class AssistantContainerView : public views::BubbleDialogDelegateView,
   void PreferredSizeChanged() override;
   void OnBeforeBubbleWidgetInit(views::Widget::InitParams* params,
                                 views::Widget* widget) const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void Init() override;
   void RequestFocus() override;
 
