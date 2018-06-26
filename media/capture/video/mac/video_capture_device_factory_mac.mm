@@ -123,10 +123,7 @@ void VideoCaptureDeviceFactoryMac::GetSupportedFormats(
 // static
 VideoCaptureDeviceFactory*
 VideoCaptureDeviceFactory::CreateVideoCaptureDeviceFactory(
-    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner,
-    gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    MojoJpegDecodeAcceleratorFactoryCB jda_factory,
-    MojoJpegEncodeAcceleratorFactoryCB jea_factory) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner) {
   return new VideoCaptureDeviceFactoryMac();
 }
 

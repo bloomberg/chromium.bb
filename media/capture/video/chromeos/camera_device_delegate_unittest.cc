@@ -128,7 +128,7 @@ class CameraDeviceDelegateTest : public ::testing::Test {
         hal_delegate_thread_("HalDelegateThread") {}
 
   void SetUp() override {
-    VideoCaptureDeviceFactoryChromeOS::SetBufferManagerForTesting(
+    VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
         &mock_gpu_memory_buffer_manager_);
     hal_delegate_thread_.Start();
     camera_hal_delegate_ =

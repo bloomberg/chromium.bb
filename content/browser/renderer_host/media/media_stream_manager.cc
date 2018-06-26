@@ -67,6 +67,9 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/audio/cras_audio_handler.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
+#include "media/capture/video/chromeos/public/cros_features.h"
+#include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
 #endif
 
 namespace content {
@@ -467,6 +470,18 @@ MediaStreamManager::MediaStreamManager(
       device_task_runner = video_capture_thread_->task_runner();
     }
 
+#if defined(OS_CHROMEOS)
+    if (media::ShouldUseCrosCameraService()) {
+      media::VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
+          BrowserGpuMemoryBufferManager::current());
+      media::CameraHalDispatcherImpl::GetInstance()->Start(
+          base::BindRepeating(
+              &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
+          base::BindRepeating(
+              &VideoCaptureDependencies::CreateJpegEncodeAccelerator));
+    }
+#endif
+
     if (base::FeatureList::IsEnabled(features::kMojoVideoCapture)) {
       video_capture_provider = std::make_unique<VideoCaptureProviderSwitcher>(
           std::make_unique<ServiceVideoCaptureProvider>(
@@ -480,12 +495,7 @@ MediaStreamManager::MediaStreamManager(
       video_capture_provider = InProcessVideoCaptureProvider::CreateInstance(
           std::make_unique<media::VideoCaptureSystemImpl>(
               media::VideoCaptureDeviceFactory::CreateFactory(
-                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
-                  BrowserGpuMemoryBufferManager::current(),
-                  base::BindRepeating(
-                      &VideoCaptureDependencies::CreateJpegDecodeAccelerator),
-                  base::BindRepeating(
-                      &VideoCaptureDependencies::CreateJpegEncodeAccelerator))),
+                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI))),
           std::move(device_task_runner),
           base::BindRepeating(&SendVideoCaptureLogMessage));
     }

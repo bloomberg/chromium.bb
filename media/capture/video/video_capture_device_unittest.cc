@@ -49,6 +49,7 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "media/capture/video/chromeos/camera_buffer_factory.h"
+#include "media/capture/video/chromeos/camera_hal_dispatcher_impl.h"
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/capture/video/chromeos/video_capture_device_chromeos_halv3.h"
 #include "media/capture/video/chromeos/video_capture_device_factory_chromeos.h"
@@ -287,22 +288,20 @@ class VideoCaptureDeviceTest
         video_capture_client_(new MockVideoCaptureClient(
             base::Bind(&VideoCaptureDeviceTest::OnFrameCaptured,
                        base::Unretained(this)))),
-        image_capture_client_(new MockImageCaptureClient()),
+        image_capture_client_(new MockImageCaptureClient()) {
 #if defined(OS_CHROMEOS)
-        local_gpu_memory_buffer_manager_(new LocalGpuMemoryBufferManager()),
-        dbus_setter_(chromeos::DBusThreadManager::GetSetterForTesting()),
+    local_gpu_memory_buffer_manager_ =
+        std::make_unique<LocalGpuMemoryBufferManager>();
+    dbus_setter_ = chromeos::DBusThreadManager::GetSetterForTesting();
+    VideoCaptureDeviceFactoryChromeOS::SetGpuBufferManager(
+        local_gpu_memory_buffer_manager_.get());
+    CameraHalDispatcherImpl::GetInstance()->Start(
+        base::BindRepeating([](media::mojom::JpegDecodeAcceleratorRequest){}),
+        base::DoNothing::Repeatedly<
+            media::mojom::JpegEncodeAcceleratorRequest>());
 #endif
-        video_capture_device_factory_(VideoCaptureDeviceFactory::CreateFactory(
-            base::ThreadTaskRunnerHandle::Get(),
-#if defined(OS_CHROMEOS)
-            local_gpu_memory_buffer_manager_.get(),
-#else
-            nullptr,
-#endif
-            base::BindRepeating(
-                [](media::mojom::JpegDecodeAcceleratorRequest) {}),
-            base::DoNothing::Repeatedly<
-                media::mojom::JpegEncodeAcceleratorRequest>())) {
+    video_capture_device_factory_ = VideoCaptureDeviceFactory::CreateFactory(
+        base::ThreadTaskRunnerHandle::Get());
   }
 
   void SetUp() override {
@@ -435,12 +434,10 @@ class VideoCaptureDeviceTest
   const scoped_refptr<MockImageCaptureClient> image_capture_client_;
   VideoCaptureFormat last_format_;
 #if defined(OS_CHROMEOS)
-  const std::unique_ptr<LocalGpuMemoryBufferManager>
-      local_gpu_memory_buffer_manager_;
+  std::unique_ptr<LocalGpuMemoryBufferManager> local_gpu_memory_buffer_manager_;
   std::unique_ptr<chromeos::DBusThreadManagerSetter> dbus_setter_;
 #endif
-  const std::unique_ptr<VideoCaptureDeviceFactory>
-      video_capture_device_factory_;
+  std::unique_ptr<VideoCaptureDeviceFactory> video_capture_device_factory_;
 };
 
 // Cause hangs on Windows Debug. http://crbug.com/417824

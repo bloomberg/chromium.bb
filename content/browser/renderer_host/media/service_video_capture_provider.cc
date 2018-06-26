@@ -56,18 +56,7 @@ class DelegateToBrowserGpuServiceAcceleratorFactory
     content::VideoCaptureDependencies::CreateJpegDecodeAccelerator(
         std::move(jda_request));
   }
-  void CreateJpegEncodeAccelerator(
-      media::mojom::JpegEncodeAcceleratorRequest jea_request) override {
-    content::VideoCaptureDependencies::CreateJpegEncodeAccelerator(
-        std::move(jea_request));
-  }
 };
-
-std::unique_ptr<ui::mojom::GpuMemoryBufferFactory> CreateGpuClient() {
-  const auto gpu_client_id =
-      content::ChildProcessHostImpl::GenerateChildProcessUniqueId();
-  return std::make_unique<content::GpuClientImpl>(gpu_client_id);
-}
 
 std::unique_ptr<video_capture::mojom::AcceleratorFactory>
 CreateAcceleratorFactory() {
@@ -82,18 +71,14 @@ ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
     : ServiceVideoCaptureProvider(
           std::make_unique<ServiceConnectorImpl>(),
-          base::BindRepeating(&CreateGpuClient),
           base::BindRepeating(&CreateAcceleratorFactory),
           std::move(emit_log_message_cb)) {}
 
 ServiceVideoCaptureProvider::ServiceVideoCaptureProvider(
     std::unique_ptr<ServiceConnector> service_connector,
-    CreateMemoryBufferFactoryCallback create_memory_buffer_factory_cb,
     CreateAcceleratorFactoryCallback create_accelerator_factory_cb,
     base::RepeatingCallback<void(const std::string&)> emit_log_message_cb)
     : service_connector_(std::move(service_connector)),
-      create_memory_buffer_factory_cb_(
-          std::move(create_memory_buffer_factory_cb)),
       create_accelerator_factory_cb_(std::move(create_accelerator_factory_cb)),
       emit_log_message_cb_(std::move(emit_log_message_cb)),
       usage_count_(0),
@@ -161,14 +146,11 @@ void ServiceVideoCaptureProvider::LazyConnectToService() {
   time_of_last_connect_ = base::TimeTicks::Now();
 
   video_capture::mojom::AcceleratorFactoryPtr accelerator_factory;
-  ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory;
   mojo::MakeStrongBinding(create_accelerator_factory_cb_.Run(),
                           mojo::MakeRequest(&accelerator_factory));
-  mojo::MakeStrongBinding(create_memory_buffer_factory_cb_.Run(),
-                          mojo::MakeRequest(&memory_buffer_factory));
   service_connector_->BindFactoryProvider(&device_factory_provider_);
   device_factory_provider_->InjectGpuDependencies(
-      std::move(memory_buffer_factory), std::move(accelerator_factory));
+      std::move(accelerator_factory));
   device_factory_provider_->ConnectToDeviceFactory(
       mojo::MakeRequest(&device_factory_));
   // Unretained |this| is safe, because |this| owns |device_factory_|.

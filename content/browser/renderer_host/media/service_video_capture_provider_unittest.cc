@@ -44,17 +44,14 @@ class MockDeviceFactoryProvider
     DoConnectToDeviceFactory(request);
   }
 
-  void InjectGpuDependencies(
-      ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory,
-      video_capture::mojom::AcceleratorFactoryPtr accelerator_factory)
-      override {
-    DoInjectGpuDependencies(memory_buffer_factory, accelerator_factory);
+  void InjectGpuDependencies(video_capture::mojom::AcceleratorFactoryPtr
+                                 accelerator_factory) override {
+    DoInjectGpuDependencies(accelerator_factory);
   }
 
-  MOCK_METHOD2(
+  MOCK_METHOD1(
       DoInjectGpuDependencies,
-      void(ui::mojom::GpuMemoryBufferFactoryPtr& memory_buffer_factory,
-           video_capture::mojom::AcceleratorFactoryPtr& accelerator_factory));
+      void(video_capture::mojom::AcceleratorFactoryPtr& accelerator_factory));
   MOCK_METHOD1(SetShutdownDelayInSeconds, void(float seconds));
   MOCK_METHOD1(DoConnectToDeviceFactory,
                void(video_capture::mojom::DeviceFactoryRequest& request));
@@ -122,9 +119,6 @@ class ServiceVideoCaptureProviderTest : public testing::Test {
     mock_service_connector_ = mock_service_connector.get();
     provider_ = std::make_unique<ServiceVideoCaptureProvider>(
         std::move(mock_service_connector), base::BindRepeating([]() {
-          return std::unique_ptr<ui::mojom::GpuMemoryBufferFactory>();
-        }),
-        base::BindRepeating([]() {
           return std::unique_ptr<video_capture::mojom::AcceleratorFactory>();
         }),
         kIgnoreLogMessageCB);

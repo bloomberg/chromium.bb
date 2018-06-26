@@ -25,7 +25,6 @@ class DeviceFactoryProviderImpl : public mojom::DeviceFactoryProvider {
 
   // mojom::DeviceFactoryProvider implementation.
   void InjectGpuDependencies(
-      ui::mojom::GpuMemoryBufferFactoryPtr memory_buffer_factory,
       mojom::AcceleratorFactoryPtr accelerator_factory) override;
   void ConnectToDeviceFactory(mojom::DeviceFactoryRequest request) override;
 
