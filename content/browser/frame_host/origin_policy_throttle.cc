@@ -35,7 +35,7 @@ bool OriginPolicyThrottle::ShouldRequestOriginPolicy(
     const GURL& url,
     std::string* request_version) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!base::FeatureList::IsEnabled(features::kOriginManifest))
+  if (!base::FeatureList::IsEnabled(features::kOriginPolicy))
     return false;
 
   if (!url.SchemeIs(url::kHttpsScheme))
@@ -62,7 +62,7 @@ OriginPolicyThrottle::MaybeCreateThrottleFor(NavigationHandle* handle) {
           net::HttpRequestHeaders::kSecOriginPolicy))
     return nullptr;
 
-  DCHECK(base::FeatureList::IsEnabled(features::kOriginManifest));
+  DCHECK(base::FeatureList::IsEnabled(features::kOriginPolicy));
   return base::WrapUnique(new OriginPolicyThrottle(handle));
 }
 

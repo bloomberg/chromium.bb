@@ -868,7 +868,7 @@
       name: "OrientationEvent",
     },
     {
-      name: "OriginManifest",
+      name: "OriginPolicy",
       status: "test",
     },
     {

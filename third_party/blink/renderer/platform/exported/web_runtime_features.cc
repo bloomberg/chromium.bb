@@ -72,8 +72,8 @@ void WebRuntimeFeatures::EnableOriginTrialControlledFeatures(bool enable) {
   RuntimeEnabledFeatures::SetOriginTrialControlledFeaturesEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableOriginManifest(bool enable) {
-  RuntimeEnabledFeatures::SetOriginManifestEnabled(enable);
+void WebRuntimeFeatures::EnableOriginPolicy(bool enable) {
+  RuntimeEnabledFeatures::SetOriginPolicyEnabled(enable);
 }
 
 void WebRuntimeFeatures::EnableOutOfBlinkCORS(bool enable) {
