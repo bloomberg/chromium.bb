@@ -1569,7 +1569,7 @@ This file contains the strings for ash.
         Hi, how can I help?
       </message>
       <message name="IDS_ASH_ASSISTANT_PROMPT_STYLUS" desc="Message shown to indicate that Assistant is ready to receive a selection made using the stylus.">
-        Draw with your stylus to select
+        Use your stylus to select
       </message>
     </messages>
   </release>
