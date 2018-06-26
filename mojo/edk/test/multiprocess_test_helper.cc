@@ -110,17 +110,7 @@ ScopedMessagePipeHandle MultiprocessTestHelper::StartChildWithExtraSwitch(
   mojo::NamedPlatformChannel::ServerName server_name;
   base::LaunchOptions options;
   if (launch_type == LaunchType::CHILD || launch_type == LaunchType::PEER) {
-#if defined(OS_FUCHSIA)
-    channel.PrepareToPassRemoteEndpoint(&options.handles_to_transfer,
-                                        &command_line);
-#elif defined(OS_POSIX)
-    channel.PrepareToPassRemoteEndpoint(&options.fds_to_remap, &command_line);
-#elif defined(OS_WIN)
-    channel.PrepareToPassRemoteEndpoint(&options.handles_to_inherit,
-                                        &command_line);
-#else
-#error "Platform not yet supported."
-#endif
+    channel.PrepareToPassRemoteEndpoint(&options, &command_line);
   } else if (launch_type == LaunchType::NAMED_CHILD ||
              launch_type == LaunchType::NAMED_PEER) {
 #if defined(OS_FUCHSIA)

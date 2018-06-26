@@ -71,18 +71,9 @@ class InvitationCppTest : public testing::Test,
       command_line.AppendSwitchASCII(kTransportTypeSwitch,
                                      kTransportTypeChannel);
       channel.emplace();
-#if defined(OS_FUCHSIA)
-      channel->PrepareToPassRemoteEndpoint(&launch_options.handles_to_transfer,
-                                           &command_line);
-#elif defined(OS_POSIX)
-      channel->PrepareToPassRemoteEndpoint(&launch_options.fds_to_remap,
-                                           &command_line);
-#elif defined(OS_WIN)
+      channel->PrepareToPassRemoteEndpoint(&launch_options, &command_line);
+#if defined(OS_WIN)
       launch_options.start_hidden = true;
-      channel->PrepareToPassRemoteEndpoint(&launch_options.handles_to_inherit,
-                                           &command_line);
-#else
-#error "Unsupported platform."
 #endif
       channel_endpoint = channel->TakeLocalEndpoint();
     } else if (transport_type == TransportType::kChannelServer) {

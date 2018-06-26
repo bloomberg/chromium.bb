@@ -208,6 +208,20 @@ void PlatformChannel::PrepareToPassRemoteEndpoint(
     command_line->AppendSwitchASCII(kHandleSwitch, value);
 }
 
+void PlatformChannel::PrepareToPassRemoteEndpoint(
+    base::LaunchOptions* options,
+    base::CommandLine* command_line) {
+#if defined(OS_WIN)
+  PrepareToPassRemoteEndpoint(&options->handles_to_inherit, command_line);
+#elif defined(OS_FUCHSIA)
+  PrepareToPassRemoteEndpoint(&options->handles_to_transfer, command_line);
+#elif defined(OS_POSIX)
+  PrepareToPassRemoteEndpoint(&options->fds_to_remap, command_line);
+#else
+#error "Platform not supported."
+#endif
+}
+
 void PlatformChannel::RemoteProcessLaunchAttempted() {
 #if defined(OS_FUCHSIA)
   // Unlike other platforms, Fuchsia transfers handle ownership to the new

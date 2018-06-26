@@ -84,6 +84,12 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformChannel {
   void PrepareToPassRemoteEndpoint(HandlePassingInfo* info,
                                    base::CommandLine* command_line);
 
+  // Like above but adds handle-passing information directly to
+  // |*launch_options|, eliminating the potential need for callers to write
+  // platform-specific code to do the same.
+  void PrepareToPassRemoteEndpoint(base::LaunchOptions* options,
+                                   base::CommandLine* command_line);
+
   // Must be called after the corresponding process launch attempt if
   // |PrepareToPassRemoteEndpoint()| was used.
   void RemoteProcessLaunchAttempted();
