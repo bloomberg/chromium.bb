@@ -125,9 +125,7 @@ class AudioFileReaderTest : public testing::Test {
     EXPECT_EQ(reader_->Read(&decoded_audio_packets), 0);
   }
 
-  void disable_packet_verification() {
-    packet_verification_disabled_ = true;
-  }
+  void disable_packet_verification() { packet_verification_disabled_ = true; }
 
  protected:
   scoped_refptr<DecoderBuffer> data_;
@@ -162,72 +160,52 @@ TEST_F(AudioFileReaderTest, Vorbis) {
 }
 
 TEST_F(AudioFileReaderTest, WaveU8) {
-  RunTest("sfx_u8.wav",
-          "-1.23,-1.57,-1.14,-0.91,-0.87,-0.07,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(288414),
-          12720,
-          12719);
+  RunTest("sfx_u8.wav", "-1.23,-1.57,-1.14,-0.91,-0.87,-0.07,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(288414), 12720, 12719);
 }
 
 TEST_F(AudioFileReaderTest, WaveS16LE) {
-  RunTest("sfx_s16le.wav",
-          "3.05,2.87,3.00,3.32,3.58,4.08,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(288414),
-          12720,
-          12719);
+  RunTest("sfx_s16le.wav", "3.05,2.87,3.00,3.32,3.58,4.08,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(288414), 12720, 12719);
 }
 
 TEST_F(AudioFileReaderTest, WaveS24LE) {
-  RunTest("sfx_s24le.wav",
-          "3.03,2.86,2.99,3.31,3.57,4.06,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(288414),
-          12720,
-          12719);
+  RunTest("sfx_s24le.wav", "3.03,2.86,2.99,3.31,3.57,4.06,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(288414), 12720, 12719);
 }
 
 TEST_F(AudioFileReaderTest, WaveF32LE) {
-  RunTest("sfx_f32le.wav",
-          "3.03,2.86,2.99,3.31,3.57,4.06,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(288414),
-          12720,
-          12719);
+  RunTest("sfx_f32le.wav", "3.03,2.86,2.99,3.31,3.57,4.06,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(288414), 12720, 12719);
 }
 
 TEST_F(AudioFileReaderTest, MP3) {
-  RunTest("sfx.mp3",
-          "1.30,2.72,4.56,5.08,3.74,2.03,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(313470),
-          13825,
-          11025);
+  RunTest("sfx.mp3", "1.30,2.72,4.56,5.08,3.74,2.03,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(313470), 13825, 11025);
 }
 
 TEST_F(AudioFileReaderTest, CorruptMP3) {
   // Disable packet verification since the file is corrupt and FFmpeg does not
   // make any guarantees on packet consistency in this case.
   disable_packet_verification();
-  RunTest("corrupt.mp3",
-          "-4.95,-2.95,-0.44,1.16,0.31,-2.21,",
-          1,
-          44100,
-          base::TimeDelta::FromMicroseconds(1018801),
-          44930,
-          44928);
+  RunTest("corrupt.mp3", "-4.95,-2.95,-0.44,1.16,0.31,-2.21,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(1018801), 44930, 44928);
 }
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 TEST_F(AudioFileReaderTest, AAC) {
-  RunTest("sfx.m4a", "1.81,1.66,2.32,3.27,4.46,3.36,", 1, 44100,
-          base::TimeDelta::FromMicroseconds(371660), 16391, 13312);
+  RunTest("sfx.m4a", "0.79,2.31,4.15,4.92,4.04,1.44,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(371660), 16391, 12701);
+}
+
+TEST_F(AudioFileReaderTest, AAC_SinglePacket) {
+  RunTest("440hz-10ms.m4a", "3.77,4.53,4.75,3.48,3.67,3.76,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(69660), 3073, 441);
+}
+
+TEST_F(AudioFileReaderTest, AAC_ADTS) {
+  RunTest("sfx.adts", "1.80,1.66,2.31,3.26,4.46,3.36,", 1, 44100,
+          base::TimeDelta::FromMicroseconds(2825180), 124591, 13312);
 }
 
 TEST_F(AudioFileReaderTest, MidStreamConfigChangesFail) {
@@ -240,13 +218,8 @@ TEST_F(AudioFileReaderTest, VorbisInvalidChannelLayout) {
 }
 
 TEST_F(AudioFileReaderTest, WaveValidFourChannelLayout) {
-  RunTest("4ch.wav",
-          "131.71,38.02,130.31,44.89,135.98,42.52,",
-          4,
-          44100,
-          base::TimeDelta::FromMicroseconds(100001),
-          4411,
-          4410);
+  RunTest("4ch.wav", "131.71,38.02,130.31,44.89,135.98,42.52,", 4, 44100,
+          base::TimeDelta::FromMicroseconds(100001), 4411, 4410);
 }
 
 }  // namespace media

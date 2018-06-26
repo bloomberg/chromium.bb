@@ -215,7 +215,7 @@ bool AudioFileReader::OnNewFrame(
     int* total_frames,
     std::vector<std::unique_ptr<AudioBus>>* decoded_audio_packets,
     AVFrame* frame) {
-  const int frames_read = frame->nb_samples;
+  int frames_read = frame->nb_samples;
   if (frames_read < 0)
     return false;
 
@@ -231,6 +231,27 @@ bool AudioFileReader::OnNewFrame(
     // This is an unrecoverable error, so bail out.  We'll return
     // whatever we've decoded up to this point.
     return false;
+  }
+
+  // AAC decoding doesn't properly trim the last packet in a stream, so if we
+  // have duration information, use it to set the correct length to avoid extra
+  // silence from being output. In the case where we are also discarding some
+  // portion of the packet (as indicated by a negative pts), we further want to
+  // adjust the duration downward by however much exists before zero.
+  if (audio_codec_ == kCodecAAC && frame->pkt_duration) {
+    const base::TimeDelta pkt_duration = ConvertFromTimeBase(
+        glue_->format_context()->streams[stream_index_]->time_base,
+        frame->pkt_duration + std::min(static_cast<int64_t>(0), frame->pts));
+    const base::TimeDelta frame_duration = base::TimeDelta::FromSecondsD(
+        frames_read / static_cast<double>(sample_rate_));
+
+    if (pkt_duration < frame_duration && pkt_duration > base::TimeDelta()) {
+      const int new_frames_read = frames_read * (pkt_duration.InSecondsF() /
+                                                 frame_duration.InSecondsF());
+      DVLOG(2) << "Shrinking AAC frame from " << frames_read << " to "
+               << new_frames_read << " based on packet duration.";
+      frames_read = new_frames_read;
+    }
   }
 
   // Deinterleave each channel and convert to 32bit floating-point with
