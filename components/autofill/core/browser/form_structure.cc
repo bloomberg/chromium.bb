@@ -307,26 +307,30 @@ bool AllTypesCaptured(const FormStructure& form,
   return true;
 }
 
-// Encode password attributes |vote| into |upload|.
+// Encode password attributes and length into |upload|.
 void EncodePasswordAttributesVote(
-    const std::pair<PasswordAttribute, bool>& vote,
+    const std::pair<PasswordAttribute, bool>& password_attributes_vote,
+    const size_t password_length_vote,
     AutofillUploadContents* upload) {
-  switch (vote.first) {
+  switch (password_attributes_vote.first) {
     case PasswordAttribute::kHasLowercaseLetter:
-      upload->set_password_has_lowercase_letter(vote.second);
+      upload->set_password_has_lowercase_letter(
+          password_attributes_vote.second);
       break;
     case PasswordAttribute::kHasUppercaseLetter:
-      upload->set_password_has_uppercase_letter(vote.second);
+      upload->set_password_has_uppercase_letter(
+          password_attributes_vote.second);
       break;
     case PasswordAttribute::kHasNumeric:
-      upload->set_password_has_numeric(vote.second);
+      upload->set_password_has_numeric(password_attributes_vote.second);
       break;
     case PasswordAttribute::kHasSpecialSymbol:
-      upload->set_password_has_special_symbol(vote.second);
+      upload->set_password_has_special_symbol(password_attributes_vote.second);
       break;
     case PasswordAttribute::kPasswordAttributesCount:
       NOTREACHED();
   }
+  upload->set_password_length(password_length_vote);
 }
 
 }  // namespace
@@ -448,8 +452,10 @@ bool FormStructure::EncodeUploadRequest(
   upload->set_autofill_used(form_was_autofilled);
   upload->set_data_present(EncodeFieldTypes(available_field_types));
   upload->set_passwords_revealed(passwords_were_revealed_);
-  if (password_attributes_vote_)
-    EncodePasswordAttributesVote(*password_attributes_vote_, upload);
+  if (password_attributes_vote_) {
+    EncodePasswordAttributesVote(*password_attributes_vote_,
+                                 password_length_vote_, upload);
+  }
 
   if (IsAutofillFieldMetadataEnabled()) {
     upload->set_action_signature(StrToHash64Bit(target_url_.host()));

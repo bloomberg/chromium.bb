@@ -163,11 +163,4 @@ MATCHER_P2(UploadedFormClassifierVoteIs,
   return true;
 }
 
-MATCHER_P(HasPasswordAttributesVote, is_vote_expected, "") {
-  base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
-      arg.get_password_attributes_vote_for_testing();
-  EXPECT_EQ(is_vote_expected, vote.has_value());
-  return true;
-}
-
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_VOTE_UPLOADS_TEST_MATCHERS_H_

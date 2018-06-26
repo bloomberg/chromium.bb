@@ -271,6 +271,21 @@ class FormStructure {
   }
 #endif
 
+  void set_password_length_vote(const size_t noisified_password_length) {
+    DCHECK(password_attributes_vote_.has_value())
+        << "|password_length_vote_| doesn't make sense if "
+           "|password_attributes_vote_| has no value.";
+    password_length_vote_ = noisified_password_length;
+  }
+#if defined(UNIT_TEST)
+  size_t get_password_length_vote_for_testing() const {
+    DCHECK(password_attributes_vote_.has_value())
+        << "|password_length_vote_| doesn't make sense if "
+           "|password_attributes_vote_| has no value.";
+    return password_length_vote_;
+  }
+#endif
+
   bool operator==(const FormData& form) const;
   bool operator!=(const FormData& form) const;
 
@@ -416,6 +431,10 @@ class FormStructure {
   // The vote about password attributes (e.g. whether the password has a numeric
   // character).
   base::Optional<std::pair<PasswordAttribute, bool>> password_attributes_vote_;
+
+  // Noisified password length for crowdsourcing. If |password_attributes_vote_|
+  // has no value, |password_length_vote_| should be ignored.
+  size_t password_length_vote_;
 
   DISALLOW_COPY_AND_ASSIGN(FormStructure);
 };
