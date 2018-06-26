@@ -9,6 +9,8 @@ static_library("unified_consent") {
     "unified_consent_service.cc",
     "unified_consent_service.h",
     "unified_consent_service_client.h",
+    "url_keyed_anonymized_data_collection_consent_helper.cc",
+    "url_keyed_anonymized_data_collection_consent_helper.h",
   ]
   deps = [
     "//base",
@@ -18,5 +20,20 @@ static_library("unified_consent") {
     "//components/signin/core/browser",
     "//components/sync",
     "//services/identity/public/cpp",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "url_keyed_anonymized_data_collection_consent_helper_unittest.cc",
+  ]
+  deps = [
+    ":unified_consent",
+    "//base/test:test_support",
+    "//components/sync",
+    "//components/sync:test_support_driver",
+    "//components/sync_preferences:test_support",
+    "//testing/gtest",
   ]
 }

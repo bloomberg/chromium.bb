@@ -156,6 +156,7 @@ test("components_unittests") {
     "//components/translate/core/language_detection:unit_tests",
     "//components/ukm:unit_tests",
     "//components/undo:unit_tests",
+    "//components/unified_consent:unit_tests",
     "//components/update_client:unit_tests",
     "//components/upload_list:unit_tests",
     "//components/url_formatter:unit_tests",
