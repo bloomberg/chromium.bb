@@ -1193,8 +1193,6 @@ jumbo_source_set("browser") {
     "notifications/notification_id_generator.h",
     "notifications/platform_notification_context_impl.cc",
     "notifications/platform_notification_context_impl.h",
-    "origin_manifest/origin_manifest_parser.cc",
-    "origin_manifest/origin_manifest_parser.h",
     "payments/payment_app_context_impl.cc",
     "payments/payment_app_context_impl.h",
     "payments/payment_app_database.cc",
