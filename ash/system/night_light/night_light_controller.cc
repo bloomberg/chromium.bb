@@ -27,8 +27,10 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
+#include "ui/display/manager/display_configurator.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/types/display_constants.h"
+#include "ui/display/types/display_snapshot.h"
 #include "ui/gfx/animation/animation_delegate.h"
 #include "ui/gfx/animation/linear_animation.h"
 
@@ -145,6 +147,32 @@ void UpdateCompositorMatrix(aura::WindowTreeHost* host,
   }
 }
 
+// Attempts setting one of the given color matrices on the display hardware of
+// |display_id| depending on the hardware capability. The matrix
+// |linear_gamma_space_matrix| will be applied if the hardware applies the
+// CTM in the linear gamma space (i.e. after gamma decoding), whereas the
+// matrix |gamma_compressed_matrix| will be applied instead if the hardware
+// applies the CTM in the gamma compressed space (i.e. after degamma
+// encoding).
+// Returns true if the hardware supports this operation and one of the
+// matrices was successfully sent to the GPU.
+bool AttemptSettingHardwareCtm(int64_t display_id,
+                               const SkMatrix44& linear_gamma_space_matrix,
+                               const SkMatrix44& gamma_compressed_matrix) {
+  for (const auto* snapshot :
+       Shell::Get()->display_configurator()->cached_displays()) {
+    if (snapshot->display_id() == display_id &&
+        snapshot->has_color_correction_matrix()) {
+      return Shell::Get()->display_color_manager()->SetDisplayColorMatrix(
+          snapshot, snapshot->color_correction_in_linear_space()
+                        ? linear_gamma_space_matrix
+                        : gamma_compressed_matrix);
+    }
+  }
+
+  return false;
+}
+
 // Applies the given |temperature| to the display associated with the given
 // |host|. This is useful for when we have a host and not a display ID.
 void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
@@ -162,11 +190,11 @@ void ApplyTemperatureToHost(aura::WindowTreeHost* host, float temperature) {
 
   const SkMatrix44 linear_gamma_space_matrix =
       MatrixFromTemperature(temperature, true);
-  const bool crtc_result =
-      Shell::Get()->display_color_manager()->SetDisplayColorMatrix(
-          display_id, linear_gamma_space_matrix);
-  UpdateCompositorMatrix(host, MatrixFromTemperature(temperature, false),
-                         crtc_result);
+  const SkMatrix44 gamma_compressed_matrix =
+      MatrixFromTemperature(temperature, false);
+  const bool crtc_result = AttemptSettingHardwareCtm(
+      display_id, linear_gamma_space_matrix, gamma_compressed_matrix);
+  UpdateCompositorMatrix(host, gamma_compressed_matrix, crtc_result);
 }
 
 // Applies the given |temperature| value by converting it to the corresponding
@@ -178,14 +206,13 @@ void ApplyTemperatureToAllDisplays(float temperature) {
       MatrixFromTemperature(temperature, false);
 
   Shell* shell = Shell::Get();
-  DisplayColorManager* color_manager = shell->display_color_manager();
   WindowTreeHostManager* wth_manager = shell->window_tree_host_manager();
   for (int64_t display_id :
        shell->display_manager()->GetCurrentDisplayIdList()) {
     DCHECK_NE(display_id, display::kUnifiedDisplayId);
 
-    const bool crtc_result = color_manager->SetDisplayColorMatrix(
-        display_id, linear_gamma_space_matrix);
+    const bool crtc_result = AttemptSettingHardwareCtm(
+        display_id, linear_gamma_space_matrix, gamma_compressed_matrix);
 
     aura::Window* root_window =
         wth_manager->GetRootWindowForDisplayId(display_id);
@@ -315,7 +342,7 @@ float NightLightController::GreenColorScaleFromTemperature(
   // If we only tone down the blue scale, the screen will look very green so
   // we also need to tone down the green, but with a less value compared to
   // the blue scale to avoid making things look very red.
-  return 1.0f - (in_linear_space ? 0.7f : 0.4f) * temperature;
+  return 1.0f - (in_linear_space ? 0.7f : 0.5f) * temperature;
 }
 
 // static

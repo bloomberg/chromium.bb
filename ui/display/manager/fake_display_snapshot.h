@@ -58,6 +58,7 @@ class DISPLAY_MANAGER_EXPORT FakeDisplaySnapshot : public DisplaySnapshot {
     Builder& SetIsAspectPerservingScaling(bool is_aspect_preserving_scaling);
     Builder& SetHasOverscan(bool has_overscan);
     Builder& SetHasColorCorrectionMatrix(bool val);
+    Builder& SetColorCorrectionInLinearSpace(bool val);
     Builder& SetName(const std::string& name);
     Builder& SetProductCode(int64_t product_code);
     Builder& SetMaximumCursorSize(const gfx::Size& maximum_cursor_size);

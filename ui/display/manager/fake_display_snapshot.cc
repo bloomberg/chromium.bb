@@ -226,6 +226,11 @@ Builder& Builder::SetHasColorCorrectionMatrix(bool val) {
   return *this;
 }
 
+Builder& Builder::SetColorCorrectionInLinearSpace(bool val) {
+  color_correction_in_linear_space_ = val;
+  return *this;
+}
+
 Builder& Builder::SetName(const std::string& name) {
   name_ = name;
   return *this;

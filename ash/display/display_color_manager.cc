@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_restrictions.h"
@@ -175,40 +176,6 @@ SkMatrix44 SkMatrix44FromColorMatrixVector(
   return matrix;
 }
 
-constexpr int kGammaMaxValue = (1 << 16) - 1;
-constexpr size_t kDefaultTableSize = 512;
-
-// The below functions are generating default Lookup Tables (LUTs) that use
-// the BT.709 transfer function for gamma/degamma.
-std::vector<display::GammaRampRGBEntry> GetDefaultGammaLut() {
-  std::vector<display::GammaRampRGBEntry> table;
-  table.reserve(kDefaultTableSize);
-
-  constexpr float kGammaValue = 1.0f / 2.2f;
-  for (size_t i = 0; i < kDefaultTableSize; ++i) {
-    const uint16_t v = static_cast<uint16_t>(
-        kGammaMaxValue *
-        std::pow(static_cast<float>(i) / kDefaultTableSize, kGammaValue));
-    table.emplace_back(display::GammaRampRGBEntry{v, v, v});
-  }
-
-  return table;
-}
-
-std::vector<display::GammaRampRGBEntry> GetDefaultDeGammaLut() {
-  std::vector<display::GammaRampRGBEntry> table;
-  table.reserve(kDefaultTableSize);
-
-  for (size_t i = 0; i < kDefaultTableSize; ++i) {
-    const uint16_t v = static_cast<uint16_t>(
-        kGammaMaxValue *
-        std::pow(static_cast<float>(i) / kDefaultTableSize, 2.2f));
-    table.emplace_back(display::GammaRampRGBEntry{v, v, v});
-  }
-
-  return table;
-}
-
 bool HasColorCorrectionMatrix(display::DisplayConfigurator* configurator,
                               int64_t display_id) {
   for (const auto* display_snapshot : configurator->cached_displays()) {
@@ -228,8 +195,6 @@ DisplayColorManager::DisplayColorManager(
     display::Screen* screen_to_observe)
     : configurator_(configurator),
       matrix_buffer_(9, 0.0f),  // 3x3 matrix.
-      default_gamma_lut_(GetDefaultGammaLut()),
-      default_degamma_lut_(GetDefaultDeGammaLut()),
       sequenced_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
            base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN})),
@@ -254,27 +219,38 @@ bool DisplayColorManager::SetDisplayColorMatrix(
     if (display_snapshot->display_id() != display_id)
       continue;
 
-    if (!display_snapshot->has_color_correction_matrix()) {
-      // This display doesn't support setting a CRTC matrix.
-      return false;
-    }
-
-    // Always overwrite any existing matrix for this display.
-    displays_color_matrix_map_[display_id] = color_matrix;
-    const auto iter = calibration_map_.find(display_snapshot->product_code());
-    SkMatrix44 combined_matrix = color_matrix;
-    if (iter != calibration_map_.end()) {
-      DCHECK(iter->second);
-      combined_matrix.preConcat(
-          SkMatrix44FromColorMatrixVector(iter->second->correction_matrix));
-    }
-
-    ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
-    return configurator_->SetColorMatrix(display_id, matrix_buffer_);
+    return SetDisplayColorMatrix(display_snapshot, color_matrix);
   }
 
   LOG(ERROR) << "Display ID: " << display_id << " cannot be found.";
   return false;
+}
+
+bool DisplayColorManager::SetDisplayColorMatrix(
+    const display::DisplaySnapshot* display_snapshot,
+    const SkMatrix44& color_matrix) {
+  DCHECK(display_snapshot);
+  DCHECK(
+      base::ContainsValue(configurator_->cached_displays(), display_snapshot));
+
+  if (!display_snapshot->has_color_correction_matrix()) {
+    // This display doesn't support setting a CRTC matrix.
+    return false;
+  }
+
+  // Always overwrite any existing matrix for this display.
+  const int64_t display_id = display_snapshot->display_id();
+  displays_color_matrix_map_[display_id] = color_matrix;
+  const auto iter = calibration_map_.find(display_snapshot->product_code());
+  SkMatrix44 combined_matrix = color_matrix;
+  if (iter != calibration_map_.end()) {
+    DCHECK(iter->second);
+    combined_matrix.preConcat(
+        SkMatrix44FromColorMatrixVector(iter->second->correction_matrix));
+  }
+
+  ColorMatrixVectorFromSkMatrix44(combined_matrix, &matrix_buffer_);
+  return configurator_->SetColorMatrix(display_id, matrix_buffer_);
 }
 
 void DisplayColorManager::OnDisplayModeChanged(
@@ -332,22 +308,9 @@ void DisplayColorManager::ApplyDisplayColorCalibration(
       LOG(WARNING) << "Error applying the color matrix.";
   }
 
-  // When applying gamma correction, we either use the gamma/degamma tables from
-  // the calibration data if available, or we apply default ones. This makes
-  // sure that color transform matrices are always applied in the RGB linear
-  // space, which gives us consistent colors on all platforms.
-  // The associated gamma/degamma tables should be applied together; i.e. either
-  // both the default gamma/degamma tables, or both the tables from the ICC
-  // profile should be applied together.
-  const bool should_apply_default_tables =
-      calibration_data.degamma_lut.empty() &&
-      calibration_data.gamma_lut.empty();
-  if (!configurator_->SetGammaCorrection(
-          display_id,
-          should_apply_default_tables ? default_degamma_lut_
-                                      : calibration_data.degamma_lut,
-          should_apply_default_tables ? default_gamma_lut_
-                                      : calibration_data.gamma_lut)) {
+  if (!configurator_->SetGammaCorrection(display_id,
+                                         calibration_data.degamma_lut,
+                                         calibration_data.gamma_lut)) {
     LOG(WARNING) << "Error applying gamma correction data.";
   }
 }
