@@ -536,7 +536,12 @@ void FFmpegDemuxerStream::EnqueuePacket(ScopedAVPacket packet) {
 
   buffer->set_timestamp(stream_timestamp - start_time);
 
-  if (packet->flags & AV_PKT_FLAG_DISCARD) {
+  // If the packet is marked for complete discard and it doesn't already have
+  // any discard padding set, mark the DecoderBuffer for complete discard. We
+  // don't want to overwrite any existing discard padding since the discard
+  // padding may refer to frames beyond this packet.
+  if (packet->flags & AV_PKT_FLAG_DISCARD &&
+      buffer->discard_padding() == DecoderBuffer::DiscardPadding()) {
     buffer->set_discard_padding(
         std::make_pair(kInfiniteDuration, base::TimeDelta()));
     if (buffer->timestamp() < base::TimeDelta()) {
