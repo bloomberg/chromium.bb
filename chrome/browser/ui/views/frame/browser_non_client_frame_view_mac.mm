@@ -97,9 +97,14 @@ void BrowserNonClientFrameViewMac::UpdateFullscreenTopUI(
   }
 
   if (old_style != toolbar_style_) {
+    // Notify browser that top ui state has been changed so that we can update
+    // the bookmark bar state as well.
+    browser_view()->browser()->FullscreenTopUIStateChanged();
+
     // Re-layout if toolbar style changes in fullscreen mode.
     if (frame()->IsFullscreen())
       browser_view()->Layout();
+
     UMA_HISTOGRAM_ENUMERATION(
         "OSX.Fullscreen.ToolbarStyle", toolbar_style_,
         static_cast<int>(FullscreenToolbarStyle::kToolbarLast) + 1);

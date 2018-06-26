@@ -385,11 +385,13 @@ class Browser : public TabStripModelObserver,
 
   // External state change handling ////////////////////////////////////////////
 
-  // BrowserWindow::EnterFullscreen invokes WindowFullscreenStateWillChange at
-  // the beginning of a fullscreen transition, and WindowFullscreenStateChanged
-  // at the end.
+  // WindowFullscreenStateWillChange is invoked at the beginning of a fullscreen
+  // transition, and WindowFullscreenStateChanged is at the end.
   void WindowFullscreenStateWillChange();
   void WindowFullscreenStateChanged();
+  // Only used on Mac. Called when the top ui style has been changed since this
+  // may trigger bookmark bar state change.
+  void FullscreenTopUIStateChanged();
 
   // Assorted browser commands ////////////////////////////////////////////////
 
@@ -572,6 +574,10 @@ class Browser : public TabStripModelObserver,
 
     // Change is the result of window toggling in/out of fullscreen mode.
     BOOKMARK_BAR_STATE_CHANGE_TOGGLE_FULLSCREEN,
+
+    // Change is the result of switching the option of showing toolbar in full
+    // screen. Only used on Mac.
+    BOOKMARK_BAR_STATE_CHANGE_TOOLBAR_OPTION_CHANGE,
   };
 
   // Overridden from content::WebContentsDelegate:
