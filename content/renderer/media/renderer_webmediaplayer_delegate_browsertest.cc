@@ -49,6 +49,7 @@ class MockWebMediaPlayerDelegateObserver
   MOCK_METHOD1(OnVolumeMultiplierUpdate, void(double));
   MOCK_METHOD1(OnBecamePersistentVideo, void(bool));
   MOCK_METHOD0(OnPictureInPictureModeEnded, void());
+  MOCK_METHOD0(OnPictureInPictureControlClicked, void());
 };
 
 class RendererWebMediaPlayerDelegateTest : public content::RenderViewTest {

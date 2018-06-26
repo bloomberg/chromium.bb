@@ -2134,6 +2134,13 @@ void WebMediaPlayerImpl::OnPictureInPictureModeEnded() {
   }
 }
 
+void WebMediaPlayerImpl::OnPictureInPictureControlClicked() {
+  if (client_ && client_->DisplayType() ==
+                     WebMediaPlayer::DisplayType::kPictureInPicture) {
+    client_->PictureInPictureControlClicked();
+  }
+}
+
 void WebMediaPlayerImpl::ScheduleRestart() {
   // TODO(watk): All restart logic should be moved into PipelineController.
   if (pipeline_controller_.IsPipelineRunning() &&

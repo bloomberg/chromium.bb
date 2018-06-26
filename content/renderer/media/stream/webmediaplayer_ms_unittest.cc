@@ -561,6 +561,7 @@ class WebMediaPlayerMSTest
   void MediaRemotingStopped(
       blink::WebLocalizedString::Name error_msg) override {}
   void PictureInPictureStopped() override {}
+  void PictureInPictureControlClicked() override {}
   void RequestPlay() override {}
   void RequestPause() override {}
 

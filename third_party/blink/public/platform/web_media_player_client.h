@@ -135,6 +135,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   // Informs that Picture-in-Picture mode has stopped for the media element.
   virtual void PictureInPictureStopped() = 0;
 
+  // Informs that a custom Picture-in-Picture control was clicked for the media
+  // element.
+  virtual void PictureInPictureControlClicked() = 0;
+
   // Returns whether the media element has native controls. It does not mean
   // that the controls are currently visible.
   virtual bool HasNativeControls() = 0;

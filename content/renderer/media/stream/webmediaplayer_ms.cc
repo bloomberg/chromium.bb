@@ -922,6 +922,10 @@ void WebMediaPlayerMS::OnPictureInPictureModeEnded() {
   NOTIMPLEMENTED();
 }
 
+void WebMediaPlayerMS::OnPictureInPictureControlClicked() {
+  NOTIMPLEMENTED();
+}
+
 bool WebMediaPlayerMS::CopyVideoTextureToPlatformTexture(
     gpu::gles2::GLES2Interface* gl,
     unsigned target,

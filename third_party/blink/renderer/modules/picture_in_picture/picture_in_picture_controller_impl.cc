@@ -161,6 +161,19 @@ void PictureInPictureControllerImpl::OnExitedPictureInPicture(
     resolver->Resolve();
 }
 
+void PictureInPictureControllerImpl::OnPictureInPictureControlClicked() {
+  DCHECK(GetSupplementable());
+
+  // Bail out if document is not active.
+  if (!GetSupplementable()->IsActive())
+    return;
+
+  if (picture_in_picture_element_) {
+    picture_in_picture_element_->DispatchEvent(
+        Event::CreateBubble(EventTypeNames::pictureinpicturecontrolclick));
+  }
+}
+
 Element* PictureInPictureControllerImpl::PictureInPictureElement(
     TreeScope& scope) const {
   if (!picture_in_picture_element_)
