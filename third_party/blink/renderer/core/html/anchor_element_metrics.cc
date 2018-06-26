@@ -5,6 +5,8 @@
 #include "third_party/blink/renderer/core/html/anchor_element_metrics.h"
 
 #include "base/metrics/histogram_macros.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/loader/navigation_predictor.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/flat_tree_traversal.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/html_anchor_element.h"
@@ -119,10 +121,10 @@ IntRect AnchorElementMetrics::AbsoluteElementBoundingBoxRect(
       .EnclosingBoundingBox();
 }
 
-base::Optional<AnchorElementMetrics> AnchorElementMetrics::From(
-    const HTMLAnchorElement& anchor_element) {
-  LocalFrame* local_frame = anchor_element.GetDocument().GetFrame();
-  LayoutObject* layout_object = anchor_element.GetLayoutObject();
+base::Optional<AnchorElementMetrics> AnchorElementMetrics::CreateFrom(
+    const HTMLAnchorElement* anchor_element) {
+  LocalFrame* local_frame = anchor_element->GetDocument().GetFrame();
+  LayoutObject* layout_object = anchor_element->GetLayoutObject();
   if (!local_frame || !layout_object)
     return base::nullopt;
 
@@ -151,12 +153,12 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::From(
       (target.Y() + target.Height() / 2.0) / base_height;
 
   float ratio_distance_root_top =
-      (target.Y() + AccumulatedScrollOffset(anchor_element)) / base_height;
+      (target.Y() + AccumulatedScrollOffset(*anchor_element)) / base_height;
 
   // Distance to the bottom is tricky if the element is inside sub/iframes.
   // Here we use the target location in the root viewport, and calculate
   // the distance from the bottom of the anchor element to the root bottom.
-  int root_height = GetRootDocument(anchor_element)
+  int root_height = GetRootDocument(*anchor_element)
                         ->GetLayoutView()
                         ->GetScrollableArea()
                         ->ContentsSize()
@@ -176,11 +178,32 @@ base::Optional<AnchorElementMetrics> AnchorElementMetrics::From(
                              (target_visible.Width() / base_width);
 
   return AnchorElementMetrics(
-      ratio_area, ratio_visible_area, ratio_distance_top_to_visible_top,
-      ratio_distance_center_to_visible_top, ratio_distance_root_top,
-      ratio_distance_root_bottom, IsInIFrame(anchor_element),
-      ContainsImage(anchor_element), IsSameHost(anchor_element),
-      IsUrlIncrementedByOne(anchor_element));
+      anchor_element, ratio_area, ratio_visible_area,
+      ratio_distance_top_to_visible_top, ratio_distance_center_to_visible_top,
+      ratio_distance_root_top, ratio_distance_root_bottom,
+      IsInIFrame(*anchor_element), ContainsImage(*anchor_element),
+      IsSameHost(*anchor_element), IsUrlIncrementedByOne(*anchor_element));
+}
+
+void AnchorElementMetrics::SendMetricsToBrowser() const {
+  LocalFrame* frame = anchor_element_->GetDocument().GetFrame();
+  DCHECK(frame);
+
+  if (!anchor_element_->Href().ProtocolIsInHTTPFamily())
+    return;
+
+  mojom::blink::AnchorElementMetricsHostPtr service_;
+  frame->LocalFrameRoot().GetInterfaceProvider().GetInterface(
+      mojo::MakeRequest(&service_));
+
+  auto metrics = mojom::blink::AnchorElementMetrics::New();
+  metrics->ratio_area = ratio_area_;
+  metrics->ratio_distance_root_top = ratio_distance_root_top_;
+  metrics->ratio_distance_center_to_visible_top =
+      ratio_distance_center_to_visible_top_;
+  metrics->target_url = anchor_element_->Href();
+
+  service_->UpdateAnchorElementMetrics(std::move(metrics));
 }
 
 void AnchorElementMetrics::RecordMetrics() const {
