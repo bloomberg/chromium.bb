@@ -12308,6 +12308,42 @@
 
       This setting controls the presentation of the welcome pages that help users sign into <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph>, choose it as their default browser, or otherwise inform them of product features.'''
     },
+    {
+      'name': 'SafeSitesFilterBehavior',
+      'type': 'int-enum',
+      'schema': {
+        'type': 'integer',
+        'enum': [ 0, 1 ],
+      },
+      'items': [
+        {
+          'name': 'SafeSitesFilterDisabled',
+          'value': 0,
+          'caption': '''Do not filter sites for adult content''',
+        },
+        {
+          'name': 'SafeSitesFilterEnabled',
+          'value': 1,
+          'caption': '''Filter top level sites (but not embedded iframes) for adult content''',
+        },
+      ],
+      'supported_on': ['chrome.*:69-', 'chrome_os:69-'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'example_value': 0,
+      'id': 455,
+      'caption': '''Control SafeSites adult content filtering.''',
+      'tags': ['filtering', 'google-sharing'],
+      'desc':
+      '''This policy controls the application of the SafeSites URL filter.
+      This filter uses the Google Safe Search API to classify URLs as pornographic or not.
+
+      When this policy is not configured or set to "Do not filter sites for adult content", sites will not be filtered.
+
+      When this policy is set to "Filter top level sites for adult content", sites classified as pornographic will be filtered.''',
+    }
   ],
 
   'messages': {
@@ -12449,5 +12485,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 454
+  'highest_id_currently_used': 455
 }
