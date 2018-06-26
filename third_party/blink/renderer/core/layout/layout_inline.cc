@@ -957,8 +957,9 @@ class HitTestCulledInlinesGeneratorContext {
 bool LayoutInline::HitTestCulledInline(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset) {
-  DCHECK(!AlwaysCreateLineBoxes());
+    const LayoutPoint& accumulated_offset,
+    const NGPaintFragment* container_fragment) {
+  DCHECK(container_fragment || !AlwaysCreateLineBoxes());
   if (!VisibleToHitTestRequest(result.GetHitTestRequest()))
     return false;
 
@@ -968,7 +969,26 @@ bool LayoutInline::HitTestCulledInline(
   Region region_result;
   HitTestCulledInlinesGeneratorContext context(region_result,
                                                adjusted_location);
-  GenerateCulledLineBoxRects(context, this);
+  if (container_fragment) {
+    DCHECK(EnclosingNGBlockFlow());
+    DCHECK(container_fragment->IsDescendantOfNotSelf(
+        *EnclosingNGBlockFlow()->PaintFragment()));
+    const NGPhysicalContainerFragment& traversal_root =
+        ToNGPhysicalContainerFragment(container_fragment->PhysicalFragment());
+    DCHECK(traversal_root.IsInline() || traversal_root.IsLineBox());
+    const LayoutPoint root_offset =
+        container_fragment->InlineOffsetToContainerBox().ToLayoutPoint();
+    const auto& descendants =
+        NGInlineFragmentTraversal::SelfFragmentsOf(traversal_root, this);
+    for (const auto& descendant : descendants) {
+      LayoutRect rect = descendant.RectInContainerBox().ToLayoutRect();
+      rect.MoveBy(root_offset);
+      context(rect);
+    }
+  } else {
+    DCHECK(!EnclosingNGBlockFlow());
+    GenerateCulledLineBoxRects(context, this);
+  }
 
   if (context.Intersected()) {
     UpdateHitTestResult(result, adjusted_location.Point());
