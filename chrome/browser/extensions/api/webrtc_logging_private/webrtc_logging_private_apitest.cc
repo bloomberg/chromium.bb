@@ -12,6 +12,7 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_command_line.h"
+#include "base/test/scoped_feature_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/api/webrtc_logging_private/webrtc_logging_private_api.h"
 #include "chrome/browser/extensions/extension_apitest.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/media/webrtc/webrtc_event_log_manager_common.h"
 #include "chrome/browser/media/webrtc/webrtc_log_uploader.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
@@ -74,8 +76,7 @@ void InitializeTestMetaData(base::ListValue* parameters) {
 class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
  protected:
   void SetUp() override {
-    auto* cl = scoped_command_line_.GetProcessCommandLine();
-    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "enabled");
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
     extensions::ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
@@ -340,6 +341,7 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id);
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   base::test::ScopedCommandLine scoped_command_line_;
   scoped_refptr<Extension> extension_;
 };
@@ -348,8 +350,7 @@ class WebrtcLoggingPrivateApiTestDisabledRemoteLogging
     : public WebrtcLoggingPrivateApiTest {
  protected:
   void SetUp() override {
-    auto* cl = scoped_command_line_.GetProcessCommandLine();
-    cl->AppendSwitchASCII(::switches::kWebRtcRemoteEventLog, "disabled");
+    scoped_feature_list_.InitAndDisableFeature(features::kWebRtcRemoteEventLog);
     extensions::ExtensionApiTest::SetUp();
     extension_ = extensions::ExtensionBuilder("Test").Build();
   }
