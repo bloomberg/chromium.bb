@@ -847,8 +847,6 @@ static void init_buffer_indices(AV1_COMP *cpi) {
   int fb_idx;
   for (fb_idx = 0; fb_idx < REF_FRAMES; ++fb_idx)
     cpi->ref_fb_idx[fb_idx] = fb_idx;
-  for (fb_idx = 0; fb_idx < MAX_EXT_ARFS + 1; ++fb_idx)
-    cpi->arf_map[fb_idx] = LAST_REF_FRAMES + 2 + fb_idx;
   cpi->rate_index = 0;
   cpi->rate_size = 0;
   cpi->cur_poc = -1;
@@ -3373,25 +3371,22 @@ static void update_reference_frames(AV1_COMP *cpi) {
     cpi->ref_fb_idx[ALTREF_FRAME - 1] = cpi->ref_fb_idx[GOLDEN_FRAME - 1];
     cpi->ref_fb_idx[GOLDEN_FRAME - 1] = tmp;
 
-    // We need to modify the mapping accordingly
-    cpi->arf_map[0] = cpi->ref_fb_idx[ALTREF_FRAME - 1];
     // TODO(zoeliu): Do we need to copy cpi->interp_filter_selected[0] over to
     // cpi->interp_filter_selected[GOLDEN_FRAME]?
   } else if (cpi->rc.is_src_frame_ext_arf && cm->show_existing_frame) {
+#if CONFIG_DEBUG
+    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
+    assert(gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE);
+#endif
     // Deal with the special case for showing existing internal ALTREF_FRAME
     // Refresh the LAST_FRAME with the ALTREF_FRAME and retire the LAST3_FRAME
     // by updating the virtual indices.
-    const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
-    const int which_arf = gf_group->arf_ref_idx[gf_group->index];
-    assert(gf_group->update_type[gf_group->index] == INTNL_OVERLAY_UPDATE);
 
     const int tmp = cpi->ref_fb_idx[LAST_REF_FRAMES - 1];
     shift_last_ref_frames(cpi);
 
     cpi->ref_fb_idx[LAST_FRAME - 1] = cpi->ref_fb_idx[ALTREF2_FRAME - 1];
     cpi->ref_fb_idx[ALTREF2_FRAME - 1] = tmp;
-    // We need to modify the mapping accordingly
-    cpi->arf_map[which_arf] = cpi->ref_fb_idx[ALTREF2_FRAME - 1];
 
     memcpy(cpi->interp_filter_selected[LAST_FRAME],
            cpi->interp_filter_selected[ALTREF2_FRAME],

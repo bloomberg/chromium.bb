@@ -667,7 +667,6 @@ typedef struct AV1_COMP {
   int existing_fb_idx_to_show;
   int is_arf_filter_off[MAX_EXT_ARFS + 1];
   int num_extra_arfs;
-  int arf_map[MAX_EXT_ARFS + 1];
   int arf_pos_in_gf[MAX_EXT_ARFS + 1];
   int arf_pos_for_ovrly[MAX_EXT_ARFS + 1];
   int global_motion_search_done;
