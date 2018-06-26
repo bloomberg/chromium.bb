@@ -62,6 +62,9 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   // Creates an invalid set of values.
   BeginFrameArgs();
 
+  BeginFrameArgs(const BeginFrameArgs& args);
+  BeginFrameArgs& operator=(const BeginFrameArgs& args);
+
 #ifdef NDEBUG
   typedef const void* CreationLocation;
 #else
@@ -104,6 +107,11 @@ struct VIZ_COMMON_EXPORT BeginFrameArgs {
   uint64_t source_id;
   uint64_t sequence_number;
 
+  // |trace_id| is used as the id for the trace-events associated with this
+  // begin-frame. The trace-id is set by the service, and can be used by both
+  // the client and service as the id for trace-events.
+  int64_t trace_id = -1;
+
   BeginFrameArgsType type;
   bool on_critical_path;
 
@@ -137,7 +145,10 @@ struct VIZ_COMMON_EXPORT BeginFrameAck {
   // Constructs an instance as a response to the specified BeginFrameArgs.
   BeginFrameAck(const BeginFrameArgs& args, bool has_damage);
 
-  BeginFrameAck(uint64_t source_id, uint64_t sequence_number, bool has_damage);
+  BeginFrameAck(uint64_t source_id,
+                uint64_t sequence_number,
+                bool has_damage,
+                int64_t trace_id = -1);
 
   // Creates a BeginFrameAck for a manual BeginFrame. Used when clients produce
   // a CompositorFrame without prior BeginFrame, e.g. for synchronous drawing.
@@ -152,6 +163,9 @@ struct VIZ_COMMON_EXPORT BeginFrameAck {
 
   // Sequence number of the BeginFrame that is acknowledged.
   uint64_t sequence_number;
+
+  // The |trace_id| of the BeginFrame that is acknowledged.
+  int64_t trace_id = -1;
 
   // |true| if the observer has produced damage (e.g. sent a CompositorFrame or
   // damaged a surface) as part of responding to the BeginFrame.

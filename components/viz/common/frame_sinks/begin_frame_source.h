@@ -151,7 +151,7 @@ class VIZ_COMMON_EXPORT BeginFrameSource {
   // The higher 32 bits are used for a process restart id that changes if a
   // process allocating BeginFrameSources has been restarted. The lower 32 bits
   // are allocated from an atomic sequence.
-  uint64_t source_id_;
+  const uint64_t source_id_;
 
   DISALLOW_COPY_AND_ASSIGN(BeginFrameSource);
 };
