@@ -28,7 +28,7 @@ source_set("ui") {
   public_deps = [
     ":network_activity_indicator_manager",
     ":ui_util",
-    "//ios/chrome/browser/ui/util:constraints_ui",
+    "//ios/chrome/common/ui_util",
   ]
   deps = [
     "//base",

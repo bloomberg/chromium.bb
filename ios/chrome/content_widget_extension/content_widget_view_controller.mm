@@ -7,9 +7,9 @@
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/ntp/ntp_tile.h"
-#import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/common/app_group/app_group_constants.h"
 #include "ios/chrome/common/app_group/app_group_metrics.h"
+#import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/content_widget_extension/content_widget_view.h"
 #import "ios/chrome/content_widget_extension/most_visited_tile_view.h"
 
