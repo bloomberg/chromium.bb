@@ -235,14 +235,14 @@ bool HasTLSFeatureExtension(base::StringPiece cert) {
   return HasExtensionWithOID(cert, der::Input(kTLSFeatureExtensionOID));
 }
 
-bool HasTestCanSignHttpExchangesExtension(base::StringPiece cert) {
-  // kTestCanSignHttpExchangesOid is the DER encoding of the OID for
-  // testCanSignHttpExchanges defined in:
+bool HasCanSignHttpExchangesDraftExtension(base::StringPiece cert) {
+  // kCanSignHttpExchangesDraftOid is the DER encoding of the OID for
+  // canSignHttpExchangesDraft defined in:
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
-  static const uint8_t kTestCanSignHttpExchangesOid[] = {
+  static const uint8_t kCanSignHttpExchangesDraftOid[] = {
       0x2B, 0x06, 0x01, 0x04, 0x01, 0xd6, 0x79, 0x02, 0x01, 0x16};
 
-  return HasExtensionWithOID(cert, der::Input(kTestCanSignHttpExchangesOid));
+  return HasExtensionWithOID(cert, der::Input(kCanSignHttpExchangesDraftOid));
 }
 
 bool ExtractSignatureAlgorithmsFromDERCert(
