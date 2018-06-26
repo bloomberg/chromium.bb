@@ -49,6 +49,14 @@ TabCloseButton::TabCloseButton(views::ButtonListener* listener,
 
 TabCloseButton::~TabCloseButton() {}
 
+// static
+int TabCloseButton::GetWidth() {
+  const gfx::VectorIcon& close_icon = MD::IsTouchOptimizedUiEnabled()
+                                          ? kTabCloseButtonTouchIcon
+                                          : kTabCloseNormalIcon;
+  return gfx::GetDefaultSizeOfVectorIcon(close_icon);
+}
+
 void TabCloseButton::SetTabColor(SkColor color, bool tab_color_is_dark) {
   SkColor hover_color = SkColorSetRGB(0xDB, 0x44, 0x37);
   SkColor pressed_color = SkColorSetRGB(0xA8, 0x35, 0x2A);
