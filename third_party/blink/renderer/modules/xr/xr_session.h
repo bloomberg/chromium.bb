@@ -101,14 +101,13 @@ class XRSession final : public EventTargetWithInlineData {
   // when the presentation service connection is closed.
   void ForceEnd();
 
-  // Describes the default scalar to be applied to the ideal framebuffer
-  // dimensions when the developer does not specify one. Should be a value that
-  // provides a good balance between quality and performance.
-  double DefaultFramebufferScale() const;
+  // Describes the scalar to be applied to the default framebuffer dimensions
+  // which gives 1:1 pixel ratio at the center of the user's view.
+  double NativeFramebufferScale() const;
 
-  // Describes the ideal dimensions of layer framebuffers, preferrably defined
-  // as the size which gives 1:1 pixel ratio at the center of the user's view.
-  DoubleSize IdealFramebufferSize() const;
+  // Describes the recommended dimensions of layer framebuffers. Should be a
+  // value that provides a good balance between quality and performance.
+  DoubleSize DefaultFramebufferSize() const;
 
   // Reports the size of the output context's, if one is available. If not
   // reports (0, 0);

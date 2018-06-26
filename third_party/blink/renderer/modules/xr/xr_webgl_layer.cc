@@ -24,7 +24,6 @@ namespace blink {
 namespace {
 
 const double kFramebufferMinScale = 0.2;
-const double kFramebufferMaxScale = 1.0;
 
 const double kViewportMinScale = 0.2;
 const double kViewportMaxScale = 1.0;
@@ -75,18 +74,23 @@ XRWebGLLayer* XRWebGLLayer::Create(
   bool want_alpha_channel = initializer.alpha();
   bool want_multiview = initializer.multiview();
 
-  double framebuffer_scale = session->DefaultFramebufferScale();
+  double framebuffer_scale = 1.0;
 
-  if (initializer.hasFramebufferScaleFactor() &&
-      initializer.framebufferScaleFactor() != 0.0) {
+  if (initializer.hasFramebufferScaleFactor()) {
+    // The max size will be either the native resolution or the default
+    // if that happens to be larger than the native res. (That can happen on
+    // desktop systems.)
+    double max_scale = std::max(session->NativeFramebufferScale(), 1.0);
+
     // Clamp the developer-requested framebuffer size to ensure it's not too
     // small to see or unreasonably large.
-    framebuffer_scale =
-        ClampToRange(initializer.framebufferScaleFactor(), kFramebufferMinScale,
-                     kFramebufferMaxScale);
+    // TODO: Would be best to have the max value communicated from the service
+    // rather than limited to the native res.
+    framebuffer_scale = ClampToRange(initializer.framebufferScaleFactor(),
+                                     kFramebufferMinScale, max_scale);
   }
 
-  DoubleSize framebuffers_size = session->IdealFramebufferSize();
+  DoubleSize framebuffers_size = session->DefaultFramebufferSize();
 
   IntSize desired_size(framebuffers_size.Width() * framebuffer_scale,
                        framebuffers_size.Height() * framebuffer_scale);
@@ -179,6 +183,11 @@ void XRWebGLLayer::requestViewportScaling(double scale_factor) {
   // Don't set this as the viewport_scale_ directly, since that would allow the
   // viewports to change mid-frame.
   requested_viewport_scale_ = scale_factor;
+}
+
+double XRWebGLLayer::getNativeFramebufferScaleFactor(XRSession* session) {
+  return session->NativeFramebufferScale();
+  ;
 }
 
 void XRWebGLLayer::UpdateViewports() {
@@ -291,7 +300,7 @@ void XRWebGLLayer::OnResize() {
   if (!session()->exclusive()) {
     // For non-exclusive sessions a resize indicates we should adjust the
     // drawing buffer size to match the canvas.
-    DoubleSize framebuffers_size = session()->IdealFramebufferSize();
+    DoubleSize framebuffers_size = session()->DefaultFramebufferSize();
 
     IntSize desired_size(framebuffers_size.Width() * framebuffer_scale_,
                          framebuffers_size.Height() * framebuffer_scale_);

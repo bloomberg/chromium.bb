@@ -9196,6 +9196,7 @@ interface XRViewport
     getter y
     method constructor
 interface XRWebGLLayer : XRLayer
+    static method getNativeFramebufferScaleFactor
     attribute @@toStringTag
     getter alpha
     getter antialias
