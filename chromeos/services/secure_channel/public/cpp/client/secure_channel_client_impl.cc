@@ -103,8 +103,8 @@ void SecureChannelClientImpl::PerformInitiateConnectionToDevice(
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr connection_delegate_ptr) {
   secure_channel_ptr_->InitiateConnectionToDevice(
-      *device_to_connect.remote_device_, *local_device.remote_device_, feature,
-      connection_priority, std::move(connection_delegate_ptr));
+      device_to_connect.GetRemoteDevice(), local_device.GetRemoteDevice(),
+      feature, connection_priority, std::move(connection_delegate_ptr));
 }
 
 void SecureChannelClientImpl::PerformListenForConnectionFromDevice(
@@ -114,8 +114,8 @@ void SecureChannelClientImpl::PerformListenForConnectionFromDevice(
     ConnectionPriority connection_priority,
     mojom::ConnectionDelegatePtr connection_delegate_ptr) {
   secure_channel_ptr_->ListenForConnectionFromDevice(
-      *device_to_connect.remote_device_, *local_device.remote_device_, feature,
-      connection_priority, std::move(connection_delegate_ptr));
+      device_to_connect.GetRemoteDevice(), local_device.GetRemoteDevice(),
+      feature, connection_priority, std::move(connection_delegate_ptr));
 }
 
 void SecureChannelClientImpl::FlushForTesting() {

@@ -32,8 +32,6 @@ class ProximityAuthWebUIHandler;
 
 namespace cryptauth {
 
-class RemoteDeviceCache;
-
 // Contains metadata specific to a device associated with a user's account.
 // Because this metadata contains large and expensive data types, and that data
 // can become stale if a Device Sync occurs during a client application's
@@ -107,6 +105,11 @@ class RemoteDeviceRef {
   friend class proximity_auth::BluetoothLowEnergySetupConnectionFinder;
 
   explicit RemoteDeviceRef(std::shared_ptr<RemoteDevice> remote_device);
+
+  // Returns the raw RemoteDevice object. Should only be used when passing
+  // RemoteDevice objects through a Mojo API, which requires that the raw type
+  // is passed instead of the RemoteDeviceRef wrapper object.
+  const RemoteDevice& GetRemoteDevice() const;
 
   std::shared_ptr<const RemoteDevice> remote_device_;
 };

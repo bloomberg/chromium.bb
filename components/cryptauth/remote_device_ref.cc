@@ -68,4 +68,8 @@ bool RemoteDeviceRef::operator<(const RemoteDeviceRef& other) const {
   return *remote_device_ < *other.remote_device_;
 }
 
+const RemoteDevice& RemoteDeviceRef::GetRemoteDevice() const {
+  return *remote_device_;
+}
+
 }  // namespace cryptauth
