@@ -9,23 +9,32 @@
     <div style='position:absolute;top:150;left:50;width:100;height:100;background:blue;transform:rotate(45deg);'></div>
   `, 'Tests DOM.getBoxModel method.');
 
-  await session.evaluate(`
+  await session.evaluate(() => {
     var iframe = document.createElement('iframe');
     iframe.style.position = 'absolute';
     iframe.style.top = '200px';
     iframe.style.left = '200px';
+    iframe.style.width = '500px';
+    iframe.style.height = '500px';
     document.body.appendChild(iframe);
-    iframe.contentWindow.document.body.innerHTML = '<div style="width:100px;height:100px;background:orange"></div>';`);
+    iframe.contentWindow.document.body.innerHTML = `
+      <div style="width:100px;height:100px;background:orange"></div>
+      <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" style="position:absolute;top:200px;left:200px;">
+        <rect id="theRect" x="30" y="50" width="100" height="100"></rect>
+      </svg>
+    `;
+  });
 
   var NodeTracker = await testRunner.loadScript('../resources/node-tracker.js');
   var nodeTracker = new NodeTracker(dp);
   dp.DOM.enable();
   await dp.DOM.getNodeForLocation({x: 100, y: 200});
   await dp.DOM.getNodeForLocation({x: 250, y: 250});
+  await dp.DOM.getNodeForLocation({x: 500, y: 500});
 
   for (var nodeId of nodeTracker.nodeIds()) {
     var node = nodeTracker.nodeForId(nodeId);
-    if (node.nodeName !== 'DIV')
+    if (node.nodeName !== 'DIV' && node.nodeName !== 'rect')
       continue;
 
     await dp.Emulation.clearDeviceMetricsOverride();

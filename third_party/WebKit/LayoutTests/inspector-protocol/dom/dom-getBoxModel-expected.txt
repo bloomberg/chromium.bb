@@ -39,4 +39,14 @@ DIV style,width:100px;height:100px;background:orange [
     [6] : 210
     [7] : 310
 ]
+rect id,theRect,x,30,y,50,width,100,height,100 [
+    [0] : 432
+    [1] : 452
+    [2] : 532
+    [3] : 452
+    [4] : 532
+    [5] : 552
+    [6] : 432
+    [7] : 552
+]
 

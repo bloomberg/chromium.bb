@@ -388,17 +388,10 @@ void InspectorHighlight::AppendNodeHighlight(
   if (!layout_object)
     return;
 
-  // LayoutSVGRoot should be highlighted through the isBox() code path, all
-  // other SVG elements should just dump their absoluteQuads().
-  if (layout_object->GetNode() && layout_object->GetNode()->IsSVGElement() &&
-      !layout_object->IsSVGRoot()) {
-    Vector<FloatQuad> quads;
-    layout_object->AbsoluteQuads(quads);
-    LocalFrameView* containing_view = layout_object->GetFrameView();
-    for (size_t i = 0; i < quads.size(); ++i) {
-      if (containing_view)
-        FrameQuadToViewport(containing_view, quads[i]);
-      AppendQuad(quads[i], highlight_config.content,
+  Vector<FloatQuad> svg_quads;
+  if (BuildSVGQuads(node, svg_quads)) {
+    for (size_t i = 0; i < svg_quads.size(); ++i) {
+      AppendQuad(svg_quads[i], highlight_config.content,
                  highlight_config.content_outline);
     }
     return;
@@ -457,8 +450,17 @@ bool InspectorHighlight::GetBoxModel(
     return false;
 
   FloatQuad content, padding, border, margin;
-  if (!BuildNodeQuads(node, &content, &padding, &border, &margin))
+  Vector<FloatQuad> svg_quads;
+  if (BuildSVGQuads(node, svg_quads)) {
+    if (!svg_quads.size())
+      return false;
+    content = svg_quads[0];
+    padding = svg_quads[0];
+    border = svg_quads[0];
+    margin = svg_quads[0];
+  } else if (!BuildNodeQuads(node, &content, &padding, &border, &margin)) {
     return false;
+  }
 
   AdjustForAbsoluteZoom::AdjustFloatQuad(content, *layout_object);
   AdjustForAbsoluteZoom::AdjustFloatQuad(padding, *layout_object);
@@ -521,6 +523,24 @@ bool InspectorHighlight::GetBoxModel(
   return true;
 }
 
+// static
+bool InspectorHighlight::BuildSVGQuads(Node* node, Vector<FloatQuad>& quads) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return false;
+  if (!layout_object->GetNode() || !layout_object->GetNode()->IsSVGElement() ||
+      layout_object->IsSVGRoot())
+    return false;
+  layout_object->AbsoluteQuads(quads);
+  LocalFrameView* containing_view = layout_object->GetFrameView();
+  if (containing_view) {
+    for (size_t i = 0; i < quads.size(); ++i)
+      FrameQuadToViewport(containing_view, quads[i]);
+  }
+  return true;
+}
+
+// static
 bool InspectorHighlight::BuildNodeQuads(Node* node,
                                         FloatQuad* content,
                                         FloatQuad* padding,
