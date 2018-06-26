@@ -111,7 +111,7 @@ const base::Feature kIDBTombstoneStatistics{"IDBTombstoneStatistics",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kIDBTombstoneDeletion{"IDBTombstoneDeletion",
-                                          base::FEATURE_DISABLED_BY_DEFAULT};
+                                          base::FEATURE_ENABLED_BY_DEFAULT};
 
 constexpr const base::TimeDelta
     IndexedDBFactoryImpl::kMaxEarliestGlobalSweepFromNow;
