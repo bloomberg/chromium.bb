@@ -542,9 +542,10 @@ struct ServiceWorkerContextClient::WorkerContextData {
 class ServiceWorkerContextClient::NavigationPreloadRequest final
     : public network::mojom::URLLoaderClient {
  public:
-  NavigationPreloadRequest(int fetch_event_id,
-                           const GURL& url,
-                           mojom::FetchEventPreloadHandlePtr preload_handle)
+  NavigationPreloadRequest(
+      int fetch_event_id,
+      const GURL& url,
+      blink::mojom::FetchEventPreloadHandlePtr preload_handle)
       : fetch_event_id_(fetch_event_id),
         url_(url),
         url_loader_(std::move(preload_handle->url_loader)),
@@ -1382,7 +1383,7 @@ void ServiceWorkerContextClient::Claim(
 }
 
 void ServiceWorkerContextClient::DispatchOrQueueFetchEvent(
-    mojom::DispatchFetchEventParamsPtr params,
+    blink::mojom::DispatchFetchEventParamsPtr params,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   TRACE_EVENT2("ServiceWorker",
@@ -1652,7 +1653,7 @@ void ServiceWorkerContextClient::DispatchExtendableMessageEvent(
 
 // S13nServiceWorker
 void ServiceWorkerContextClient::DispatchFetchEvent(
-    mojom::DispatchFetchEventParamsPtr params,
+    blink::mojom::DispatchFetchEventParamsPtr params,
     mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
     DispatchFetchEventCallback callback) {
   int event_id = context_->timeout_timer->StartEvent(
@@ -1819,7 +1820,7 @@ void ServiceWorkerContextClient::OnNavigationPreloadComplete(
 void ServiceWorkerContextClient::SetupNavigationPreload(
     int fetch_event_id,
     const GURL& url,
-    mojom::FetchEventPreloadHandlePtr preload_handle) {
+    blink::mojom::FetchEventPreloadHandlePtr preload_handle) {
   auto preload_request = std::make_unique<NavigationPreloadRequest>(
       fetch_event_id, url, std::move(preload_handle));
   context_->preload_requests.AddWithID(std::move(preload_request),

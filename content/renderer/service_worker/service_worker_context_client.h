@@ -251,7 +251,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // This method needs to be used only if the event comes directly from a
   // client, which means it is coming through the ControllerServiceWorkerImpl.
   void DispatchOrQueueFetchEvent(
-      mojom::DispatchFetchEventParamsPtr params,
+      blink::mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback);
 
@@ -307,7 +307,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojom::ExtendableMessageEventPtr event,
       DispatchExtendableMessageEventCallback callback) override;
   void DispatchFetchEvent(
-      mojom::DispatchFetchEventParamsPtr params,
+      blink::mojom::DispatchFetchEventParamsPtr params,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       DispatchFetchEventCallback callback) override;
   void DispatchNotificationClickEvent(
@@ -381,9 +381,10 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       int fetch_event_id,
       std::unique_ptr<blink::WebServiceWorkerError> error);
 
-  void SetupNavigationPreload(int fetch_event_id,
-                              const GURL& url,
-                              mojom::FetchEventPreloadHandlePtr preload_handle);
+  void SetupNavigationPreload(
+      int fetch_event_id,
+      const GURL& url,
+      blink::mojom::FetchEventPreloadHandlePtr preload_handle);
 
   // Called by ServiceWorkerTimeoutTimer when a certain time has passed since
   // the last task finished.

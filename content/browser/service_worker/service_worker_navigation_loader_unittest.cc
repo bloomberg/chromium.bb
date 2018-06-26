@@ -70,7 +70,7 @@ class NavigationPreloadLoaderClient final
     : public network::mojom::URLLoaderClient {
  public:
   NavigationPreloadLoaderClient(
-      mojom::FetchEventPreloadHandlePtr preload_handle,
+      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
           finish_callback)
@@ -288,7 +288,7 @@ class Helper : public EmbeddedWorkerTestHelper {
   void OnFetchEvent(
       int embedded_worker_id,
       const network::ResourceRequest& request,
-      mojom::FetchEventPreloadHandlePtr preload_handle,
+      blink::mojom::FetchEventPreloadHandlePtr preload_handle,
       mojom::ServiceWorkerFetchResponseCallbackPtr response_callback,
       mojom::ServiceWorkerEventDispatcher::DispatchFetchEventCallback
           finish_callback) override {
