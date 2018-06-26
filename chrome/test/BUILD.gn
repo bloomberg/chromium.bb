@@ -239,6 +239,7 @@ static_library("test_support") {
       "//components/user_manager:test_support",
       "//ui/aura",
       "//ui/aura:test_support",
+      "//ui/base/ime",
     ]
   }
 
