@@ -3805,6 +3805,17 @@ jumbo_split_static_library("browser") {
       "media/output_protection_impl.cc",
       "media/output_protection_impl.h",
     ]
+    deps += [ "//media/mojo/interfaces" ]
+
+    if (is_win) {
+      sources += [
+        "media/widevine_hardware_caps_win.cc",
+        "media/widevine_hardware_caps_win.h",
+      ]
+      deps += [ "//third_party/widevine/cdm:headers" ]
+      libs += [ "d3d11.lib" ]
+    }
+
     if (enable_cdm_storage_id) {
       sources += [
         "media/cdm_storage_id.cc",
@@ -3816,7 +3827,7 @@ jumbo_split_static_library("browser") {
         sources += [ "internal/google_chrome_cdm_storage_id_key.h" ]
       }
     }
-    deps += [ "//media/mojo/interfaces" ]
+
     if (mojo_media_host == "browser") {
       deps += [
         "//media/mojo/interfaces:constants",

@@ -7,30 +7,18 @@
 #include <comdef.h>
 #include <initguid.h>
 
-#include <iomanip>
-
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "media/cdm/cdm_proxy.h"
 #include "media/gpu/windows/d3d11_cdm_proxy.h"
 
 namespace {
 
-// Helpers for printing HRESULTs.
-struct PrintHr {
-  explicit PrintHr(HRESULT hr) : hr(hr) {}
-  HRESULT hr;
-};
-
-std::ostream& operator<<(std::ostream& os, const PrintHr& phr) {
-  std::ios_base::fmtflags ff = os.flags();
-  os << _com_error(phr.hr).ErrorMessage() << " (" << std::showbase << std::hex
-     << std::uppercase << std::setfill('0') << std::setw(8) << phr.hr << ")";
-  os.flags(ff);
-  return os;
-}
+// Alias for printing HRESULT.
+const auto PrintHr = logging::SystemErrorCodeToString;
 
 // clang-format off
-DEFINE_GUID(kD3D11ConfigWidevineStreamId,
+DEFINE_GUID(kD3DCryptoTypeIntelWidevine,
   0x586e681, 0x4e14, 0x4133, 0x85, 0xe5, 0xa1, 0x4, 0x1f, 0x59, 0x9e, 0x26);
 // clang-format on
 
@@ -62,10 +50,10 @@ std::unique_ptr<media::CdmProxy> CreateWidevineCdmProxy() {
 
   D3D11_VIDEO_CONTENT_PROTECTION_CAPS caps = {};
 
-  // Check whether kD3D11ConfigWidevineStreamId is supported.
+  // Check whether kD3DCryptoTypeIntelWidevine is supported.
   // We do not care about decoder support so just use a null decoder profile.
-  hresult = video_device->GetContentProtectionCaps(
-      &kD3D11ConfigWidevineStreamId, nullptr, &caps);
+  hresult = video_device->GetContentProtectionCaps(&kD3DCryptoTypeIntelWidevine,
+                                                   nullptr, &caps);
   if (FAILED(hresult)) {
     DLOG(ERROR) << "Failed to GetContentProtectionCaps: " << PrintHr(hresult);
     return nullptr;
@@ -76,6 +64,6 @@ std::unique_ptr<media::CdmProxy> CreateWidevineCdmProxy() {
        0x90000001}};
 
   return std::make_unique<media::D3D11CdmProxy>(
-      kD3D11ConfigWidevineStreamId, media::CdmProxy::Protocol::kIntel,
+      kD3DCryptoTypeIntelWidevine, media::CdmProxy::Protocol::kIntel,
       std::move(function_id_map));
 }
