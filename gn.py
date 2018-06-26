@@ -19,6 +19,15 @@ import sys
 
 
 def main(args):
+  # Try in primary solution location first, with the gn binary having been
+  # downloaded by cipd in the projects DEPS.
+  gn_path = os.path.join(gclient_utils.GetPrimarySolutionPath(), 'third_party',
+                         'gn', 'gn' + gclient_utils.GetExeSuffix())
+  if os.path.exists(gn_path):
+    return subprocess.call([gn_path] + args[1:])
+
+  # Otherwise try the old .sha1 and download_from_google_storage locations
+  # inside of buildtools.
   bin_path = gclient_utils.GetBuildtoolsPlatformBinaryPath()
   if not bin_path:
     print >> sys.stderr, ('gn.py: Could not find checkout in any parent of '
