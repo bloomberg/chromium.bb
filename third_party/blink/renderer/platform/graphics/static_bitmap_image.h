@@ -126,8 +126,8 @@ class PLATFORM_EXPORT StaticBitmapImage : public Image {
 
  protected:
   // Helper for sub-classes
-  void DrawHelper(PaintCanvas*,
-                  const PaintFlags&,
+  void DrawHelper(cc::PaintCanvas*,
+                  const cc::PaintFlags&,
                   const FloatRect&,
                   const FloatRect&,
                   ImageClampingMode,

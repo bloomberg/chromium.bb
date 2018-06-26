@@ -5,15 +5,18 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_VIEW_H_
 
-#include "third_party/blink/public/platform/web_canvas.h"
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/frame/frame_view.h"
 #include "third_party/blink/renderer/core/layout/intrinsic_sizing_info.h"
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class CullRect;
 class ElementVisibilityObserver;
 class GraphicsContext;
@@ -66,7 +69,7 @@ class RemoteFrameView final : public GarbageCollectedFinalized<RemoteFrameView>,
   // and reduce the number of paint-ops generated.
   IntRect GetCompositingRect();
 
-  uint32_t Print(const IntRect&, WebCanvas*) const;
+  uint32_t Print(const IntRect&, cc::PaintCanvas*) const;
 
   void Trace(blink::Visitor*) override;
 

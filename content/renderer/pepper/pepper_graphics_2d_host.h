@@ -12,13 +12,13 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "cc/paint/paint_canvas.h"
 #include "cc/resources/shared_bitmap_id_registrar.h"
 #include "content/common/content_export.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "ppapi/c/ppb_graphics_2d.h"
 #include "ppapi/host/host_message_context.h"
 #include "ppapi/host/resource_host.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -74,7 +74,7 @@ class CONTENT_EXPORT PepperGraphics2DHost
   // is already bound to a different instance, and nothing will happen.
   bool BindToInstance(PepperPluginInstanceImpl* new_instance);
   // Paints the current backing store to the web page.
-  void Paint(blink::WebCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
 

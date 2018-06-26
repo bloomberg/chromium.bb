@@ -7,6 +7,7 @@
 #include <initializer_list>
 
 #include "cc/paint/display_item_list.h"
+#include "cc/paint/paint_flags.h"
 #include "cc/paint/paint_op_buffer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

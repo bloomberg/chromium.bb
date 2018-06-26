@@ -7,13 +7,14 @@
 #import <AppKit/AppKit.h>
 #import <CoreGraphics/CoreGraphics.h>
 
+#include "cc/paint/paint_canvas.h"
 #include "skia/ext/skia_utils_mac.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/wtf/retain_ptr.h"
 
 namespace blink {
 
-GraphicsContextCanvas::GraphicsContextCanvas(PaintCanvas* canvas,
+GraphicsContextCanvas::GraphicsContextCanvas(cc::PaintCanvas* canvas,
                                              const SkIRect& paint_rect,
                                              SkScalar bitmap_scale_factor)
     : canvas_(canvas),

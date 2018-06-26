@@ -70,7 +70,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void RegisterContextToDispatch(CanvasRenderingContext*) {}
 
   // Partial CanvasResourceHost implementation
-  void RestoreCanvasMatrixClipStack(PaintCanvas*) const final;
+  void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const final;
 
   bool Is3d() const;
   bool Is2d() const;

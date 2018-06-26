@@ -11,7 +11,6 @@
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
@@ -19,8 +18,11 @@
 
 class SkMetaData;
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class GraphicsContext;
 class PaintController;
 
@@ -54,7 +56,7 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   // Replays the recording directly into the given canvas, in the ancestor
   // state given by |replay_state|.
   void EndRecording(
-      PaintCanvas&,
+      cc::PaintCanvas&,
       const PropertyTreeState& replay_state = PropertyTreeState::Root());
 
   // DisplayItemClient methods

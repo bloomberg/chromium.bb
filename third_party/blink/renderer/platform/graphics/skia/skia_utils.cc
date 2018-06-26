@@ -343,7 +343,7 @@ gfx::ColorSpace SkColorSpaceToGfxColorSpace(
 
 template <typename PrimitiveType>
 void DrawFocusRingPrimitive(const PrimitiveType&,
-                            PaintCanvas*,
+                            cc::PaintCanvas*,
                             const PaintFlags&,
                             float corner_radius) {
   NOTREACHED();  // Missing an explicit specialization?
@@ -351,7 +351,7 @@ void DrawFocusRingPrimitive(const PrimitiveType&,
 
 template <>
 void DrawFocusRingPrimitive<SkRect>(const SkRect& rect,
-                                    PaintCanvas* canvas,
+                                    cc::PaintCanvas* canvas,
                                     const PaintFlags& flags,
                                     float corner_radius) {
   SkRRect rrect;
@@ -362,7 +362,7 @@ void DrawFocusRingPrimitive<SkRect>(const SkRect& rect,
 
 template <>
 void DrawFocusRingPrimitive<SkPath>(const SkPath& path,
-                                    PaintCanvas* canvas,
+                                    cc::PaintCanvas* canvas,
                                     const PaintFlags& flags,
                                     float corner_radius) {
   PaintFlags path_flags = flags;
@@ -373,7 +373,7 @@ void DrawFocusRingPrimitive<SkPath>(const SkPath& path,
 
 template <typename PrimitiveType>
 void DrawPlatformFocusRing(const PrimitiveType& primitive,
-                           PaintCanvas* canvas,
+                           cc::PaintCanvas* canvas,
                            SkColor color,
                            float width) {
   PaintFlags flags;
@@ -400,11 +400,11 @@ void DrawPlatformFocusRing(const PrimitiveType& primitive,
 }
 
 template void PLATFORM_EXPORT DrawPlatformFocusRing<SkRect>(const SkRect&,
-                                                            PaintCanvas*,
+                                                            cc::PaintCanvas*,
                                                             SkColor,
                                                             float width);
 template void PLATFORM_EXPORT DrawPlatformFocusRing<SkPath>(const SkPath&,
-                                                            PaintCanvas*,
+                                                            cc::PaintCanvas*,
                                                             SkColor,
                                                             float width);
 

@@ -782,7 +782,7 @@ class WebLocalFrame : public WebFrame {
   // Prints one page, and returns the calculated page shrinking factor
   // (usually between 1/1.33 and 1/2).  Returns 0 if the page number is
   // invalid or not in printing mode.
-  virtual float PrintPage(int page_to_print, WebCanvas*) = 0;
+  virtual float PrintPage(int page_to_print, cc::PaintCanvas*) = 0;
 
   // Reformats the WebFrame for screen display.
   virtual void PrintEnd() = 0;
@@ -827,7 +827,7 @@ class WebLocalFrame : public WebFrame {
 
   // Prints the frame into the canvas, with page boundaries drawn as one pixel
   // wide blue lines. This method exists to support layout tests.
-  virtual void PrintPagesForTesting(WebCanvas*, const WebSize&) = 0;
+  virtual void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) = 0;
 
   // Returns the bounds rect for current selection. If selection is performed
   // on transformed text, the rect will still bound the selection but will

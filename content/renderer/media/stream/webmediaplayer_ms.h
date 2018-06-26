@@ -110,7 +110,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   blink::WebTimeRanges Seekable() const override;
 
   // Methods for painting.
-  void Paint(blink::WebCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              const blink::WebRect& rect,
              cc::PaintFlags& flags,
              int already_uploaded_id,

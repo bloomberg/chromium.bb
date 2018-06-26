@@ -26,6 +26,7 @@
 #include "cc/layers/content_layer_client.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/texture_layer_client.h"
+#include "cc/paint/paint_canvas.h"
 #include "components/viz/common/resources/transferable_resource.h"
 #include "content/common/content_export.h"
 #include "content/public/renderer/pepper_plugin_instance.h"
@@ -56,7 +57,6 @@
 #include "ppapi/shared_impl/tracked_callback.h"
 #include "ppapi/thunk/ppb_gamepad_api.h"
 #include "ppapi/thunk/resource_creation_api.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_response.h"
 #include "third_party/blink/public/web/web_associated_url_loader_client.h"
@@ -183,7 +183,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   GURL document_url() const { return document_url_; }
 
   // Paints the current backing store to the web page.
-  void Paint(blink::WebCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              const gfx::Rect& plugin_rect,
              const gfx::Rect& paint_rect);
 
@@ -276,7 +276,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   bool SupportsPrintInterface();
   bool IsPrintScalingDisabled();
   int PrintBegin(const blink::WebPrintParams& print_params);
-  void PrintPage(int page_number, blink::WebCanvas* canvas);
+  void PrintPage(int page_number, cc::PaintCanvas* canvas);
   void PrintEnd();
   bool GetPrintPresetOptionsFromDocument(
       blink::WebPrintPresetOptions* preset_options);

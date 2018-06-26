@@ -17,8 +17,8 @@ class StubImage : public Image {
   IntSize Size() const override { return IntSize(10, 10); }
   void DestroyDecodedData() override {}
   PaintImage PaintImageForCurrentFrame() override { return PaintImage(); }
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,

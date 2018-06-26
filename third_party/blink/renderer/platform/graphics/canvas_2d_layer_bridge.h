@@ -110,7 +110,7 @@ class PLATFORM_EXPORT Canvas2DLayerBridge : public cc::TextureLayerClient {
   virtual void DidRestoreCanvasMatrixClipStack(cc::PaintCanvas*) {}
   virtual bool IsAccelerated() const;
 
-  PaintCanvas* Canvas();
+  cc::PaintCanvas* Canvas();
   bool IsValid() const;
   bool WritePixels(const SkImageInfo&,
                    const void* pixels,

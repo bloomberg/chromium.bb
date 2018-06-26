@@ -168,7 +168,6 @@ using ppapi::thunk::PPB_ImageData_API;
 using ppapi::Var;
 using ppapi::ArrayBufferVar;
 using ppapi::ViewData;
-using blink::WebCanvas;
 using blink::WebCursorInfo;
 using blink::WebDocument;
 using blink::WebElement;
@@ -710,7 +709,7 @@ void PepperPluginInstanceImpl::Delete() {
 
 bool PepperPluginInstanceImpl::is_deleted() const { return is_deleted_; }
 
-void PepperPluginInstanceImpl::Paint(WebCanvas* canvas,
+void PepperPluginInstanceImpl::Paint(cc::PaintCanvas* canvas,
                                      const gfx::Rect& plugin_rect,
                                      const gfx::Rect& paint_rect) {
   TRACE_EVENT0("ppapi", "PluginInstance::Paint");
@@ -1997,7 +1996,7 @@ int PepperPluginInstanceImpl::PrintBegin(const WebPrintParams& print_params) {
 }
 
 void PepperPluginInstanceImpl::PrintPage(int page_number,
-                                         blink::WebCanvas* canvas) {
+                                         cc::PaintCanvas* canvas) {
 #if BUILDFLAG(ENABLE_PRINTING)
   DCHECK(plugin_print_interface_);
 

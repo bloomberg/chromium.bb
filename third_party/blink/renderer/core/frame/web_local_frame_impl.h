@@ -215,7 +215,7 @@ class CORE_EXPORT WebLocalFrameImpl final
   void DispatchBeforePrintEvent() override;
   int PrintBegin(const WebPrintParams&,
                  const WebNode& constrain_to_node) override;
-  float PrintPage(int page_to_print, WebCanvas*) override;
+  float PrintPage(int page_to_print, cc::PaintCanvas*) override;
   float GetPrintPageShrink(int page) override;
   void PrintEnd() override;
   void DispatchAfterPrintEvent() override;
@@ -232,7 +232,7 @@ class CORE_EXPORT WebLocalFrameImpl final
                                   int& margin_left) override;
   WebString PageProperty(const WebString& property_name,
                          int page_index) override;
-  void PrintPagesForTesting(WebCanvas*, const WebSize&) override;
+  void PrintPagesForTesting(cc::PaintCanvas*, const WebSize&) override;
 
   void DispatchMessageEventWithOriginCheck(
       const WebSecurityOrigin& intended_target_origin,

@@ -70,7 +70,7 @@ void BaseRenderingContext2D::RealizeSaves() {
     // state (in turn necessary to support correct resizing and unwinding of the
     // stack).
     state_stack_.back()->ResetUnrealizedSaveCount();
-    PaintCanvas* canvas = DrawingCanvas();
+    cc::PaintCanvas* canvas = DrawingCanvas();
     if (canvas)
       canvas->save();
     ValidateStateStack();
@@ -95,14 +95,14 @@ void BaseRenderingContext2D::restore() {
   state_stack_.pop_back();
   state_stack_.back()->ClearResolvedFilter();
   path_.Transform(GetState().Transform().Inverse());
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (c)
     c->restore();
 
   ValidateStateStack();
 }
 
-void BaseRenderingContext2D::RestoreMatrixClipStack(PaintCanvas* c) const {
+void BaseRenderingContext2D::RestoreMatrixClipStack(cc::PaintCanvas* c) const {
   if (!c)
     return;
   HeapVector<Member<CanvasRenderingContext2DState>>::const_iterator curr_state;
@@ -122,7 +122,7 @@ void BaseRenderingContext2D::RestoreMatrixClipStack(PaintCanvas* c) const {
 
 void BaseRenderingContext2D::UnwindStateStack() {
   if (size_t stack_size = state_stack_.size()) {
-    if (PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
+    if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
       while (--stack_size)
         sk_canvas->restore();
     }
@@ -135,7 +135,7 @@ void BaseRenderingContext2D::Reset() {
   state_stack_.resize(1);
   state_stack_.front() = CanvasRenderingContext2DState::Create();
   path_.Clear();
-  if (PaintCanvas* c = ExistingDrawingCanvas()) {
+  if (cc::PaintCanvas* c = ExistingDrawingCanvas()) {
     // The canvas should always have an initial/unbalanced save frame, which
     // we use to reset the top level matrix and clip here.
     DCHECK_EQ(c->getSaveCount(), 2);
@@ -430,7 +430,7 @@ void BaseRenderingContext2D::setFilter(
 }
 
 void BaseRenderingContext2D::scale(double sx, double sy) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 
@@ -453,7 +453,7 @@ void BaseRenderingContext2D::scale(double sx, double sy) {
 }
 
 void BaseRenderingContext2D::rotate(double angle_in_radians) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 
@@ -473,7 +473,7 @@ void BaseRenderingContext2D::rotate(double angle_in_radians) {
 }
 
 void BaseRenderingContext2D::translate(double tx, double ty) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
   if (!GetState().IsTransformInvertible())
@@ -503,7 +503,7 @@ void BaseRenderingContext2D::transform(double m11,
                                        double m22,
                                        double dx,
                                        double dy) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 
@@ -533,7 +533,7 @@ void BaseRenderingContext2D::transform(double m11,
 }
 
 void BaseRenderingContext2D::resetTransform() {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 
@@ -657,7 +657,7 @@ void BaseRenderingContext2D::DrawPathInternal(
   if (!DrawingCanvas())
     return;
 
-  Draw([&sk_path](PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+  Draw([&sk_path](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawPath(sk_path, *flags); },
        [](const SkIRect& rect)  // overdraw test lambda
        { return false; },
@@ -712,7 +712,7 @@ void BaseRenderingContext2D::fillRect(double x,
   float fheight = clampTo<float>(height);
 
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
-  Draw([&rect](PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+  Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { c->drawRect(rect, *flags); },
        [&rect, this](const SkIRect& clip_bounds)  // overdraw test lambda
        { return RectContainsTransformedRect(rect, clip_bounds); },
@@ -720,7 +720,7 @@ void BaseRenderingContext2D::fillRect(double x,
 }
 
 static void StrokeRectOnCanvas(const FloatRect& rect,
-                               PaintCanvas* canvas,
+                               cc::PaintCanvas* canvas,
                                const PaintFlags* flags) {
   DCHECK_EQ(flags->getStyle(), PaintFlags::kStroke_Style);
   if ((rect.Width() > 0) != (rect.Height() > 0)) {
@@ -754,7 +754,7 @@ void BaseRenderingContext2D::strokeRect(double x,
   SkRect rect = SkRect::MakeXYWH(fx, fy, fwidth, fheight);
   FloatRect bounds = rect;
   InflateStrokeRect(bounds);
-  Draw([&rect](PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+  Draw([&rect](cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
        { StrokeRectOnCanvas(rect, c, flags); },
        [](const SkIRect& clip_bounds)  // overdraw test lambda
        { return false; },
@@ -763,7 +763,7 @@ void BaseRenderingContext2D::strokeRect(double x,
 
 void BaseRenderingContext2D::ClipInternal(const Path& path,
                                           const String& winding_rule_string) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c) {
     return;
   }
@@ -805,7 +805,7 @@ bool BaseRenderingContext2D::IsPointInPathInternal(
     const double x,
     const double y,
     const String& winding_rule_string) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return false;
   if (!GetState().IsTransformInvertible())
@@ -834,7 +834,7 @@ bool BaseRenderingContext2D::isPointInStroke(Path2D* dom_path,
 bool BaseRenderingContext2D::IsPointInStrokeInternal(const Path& path,
                                                      const double x,
                                                      const double y) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return false;
   if (!GetState().IsTransformInvertible())
@@ -867,7 +867,7 @@ void BaseRenderingContext2D::clearRect(double x,
   if (!ValidateRectForCanvas(x, y, width, height))
     return;
 
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
   if (!GetState().IsTransformInvertible())
@@ -1054,7 +1054,7 @@ bool BaseRenderingContext2D::ShouldDrawImageAntialiased(
     const FloatRect& dest_rect) const {
   if (!GetState().ShouldAntialias())
     return false;
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   DCHECK(c);
 
   const SkMatrix& ctm = c->getTotalMatrix();
@@ -1081,7 +1081,7 @@ bool BaseRenderingContext2D::ShouldDrawImageAntialiased(
          dest_rect.Height() * fabs(height_expansion) < 1;
 }
 
-void BaseRenderingContext2D::DrawImageInternal(PaintCanvas* c,
+void BaseRenderingContext2D::DrawImageInternal(cc::PaintCanvas* c,
                                                CanvasImageSource* image_source,
                                                Image* image,
                                                const FloatRect& src_rect,
@@ -1337,7 +1337,7 @@ void BaseRenderingContext2D::drawImage(ScriptState* script_state,
 
   Draw(
       [this, &image_source, &image, &src_rect, dst_rect](
-          PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+          cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
       {
         DrawImageInternal(c, image_source, image.get(), src_rect, dst_rect,
                           flags);
@@ -1361,7 +1361,7 @@ void BaseRenderingContext2D::ClearCanvas() {
   FloatRect canvas_rect(0, 0, Width(), Height());
   CheckOverdraw(canvas_rect, nullptr, CanvasRenderingContext2DState::kNoImage,
                 kClipFill);
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (c)
     c->clear(HasAlpha() ? SK_ColorTRANSPARENT : SK_ColorBLACK);
 }
@@ -1909,7 +1909,7 @@ void BaseRenderingContext2D::CheckOverdraw(
     const PaintFlags* flags,
     CanvasRenderingContext2DState::ImageType image_type,
     DrawType draw_type) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 

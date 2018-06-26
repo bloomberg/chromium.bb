@@ -46,7 +46,10 @@ constexpr int kTextPaddingY = 9;
 
 constexpr int kFontSize = 14;
 
-void DrawIcon(PaintCanvas* canvas, const PaintFlags& flags, float x, float y) {
+void DrawIcon(cc::PaintCanvas* canvas,
+              const PaintFlags& flags,
+              float x,
+              float y) {
   DEFINE_STATIC_REF(Image, icon_image,
                     (Image::LoadPlatformResource("placeholderIcon")));
   DCHECK(!icon_image->IsNull());
@@ -58,10 +61,10 @@ void DrawIcon(PaintCanvas* canvas, const PaintFlags& flags, float x, float y) {
   canvas->drawImageRect(icon_image->PaintImageForCurrentFrame(),
                         IntRect(IntPoint::Zero(), icon_image->Size()),
                         FloatRect(x, y, kIconWidth, kIconHeight), &flags,
-                        PaintCanvas::kFast_SrcRectConstraint);
+                        cc::PaintCanvas::kFast_SrcRectConstraint);
 }
 
-void DrawCenteredIcon(PaintCanvas* canvas,
+void DrawCenteredIcon(cc::PaintCanvas* canvas,
                       const PaintFlags& flags,
                       const FloatRect& dest_rect) {
   DrawIcon(canvas, flags,
@@ -232,7 +235,7 @@ PaintImage PlaceholderImage::PaintImageForCurrentFrame() {
       .TakePaintImage();
 }
 
-void PlaceholderImage::Draw(PaintCanvas* canvas,
+void PlaceholderImage::Draw(cc::PaintCanvas* canvas,
                             const PaintFlags& base_flags,
                             const FloatRect& dest_rect,
                             const FloatRect& src_rect,

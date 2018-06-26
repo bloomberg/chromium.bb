@@ -897,7 +897,7 @@ SkBitmap* RenderFrameProxy::GetSadPageBitmap() {
 }
 
 uint32_t RenderFrameProxy::Print(const blink::WebRect& rect,
-                                 blink::WebCanvas* canvas) {
+                                 cc::PaintCanvas* canvas) {
 #if BUILDFLAG(ENABLE_PRINTING)
   printing::PdfMetafileSkia* metafile =
       printing::MetafileSkiaWrapper::GetMetafileFromCanvas(canvas);

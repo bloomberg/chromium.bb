@@ -53,7 +53,7 @@ class TestImage : public Image {
     // Image pure virtual stub.
   }
 
-  void Draw(PaintCanvas*,
+  void Draw(cc::PaintCanvas*,
             const PaintFlags&,
             const FloatRect&,
             const FloatRect&,

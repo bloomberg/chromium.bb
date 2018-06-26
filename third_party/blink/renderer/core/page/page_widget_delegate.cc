@@ -69,7 +69,7 @@ void PageWidgetDelegate::UpdateLifecycle(
 }
 
 static void PaintInternal(Page& page,
-                          WebCanvas* canvas,
+                          cc::PaintCanvas* canvas,
                           const WebRect& rect,
                           LocalFrame& root,
                           const GlobalPaintFlags global_paint_flags) {
@@ -104,14 +104,14 @@ static void PaintInternal(Page& page,
 }
 
 void PageWidgetDelegate::Paint(Page& page,
-                               WebCanvas* canvas,
+                               cc::PaintCanvas* canvas,
                                const WebRect& rect,
                                LocalFrame& root) {
   PaintInternal(page, canvas, rect, root, kGlobalPaintNormalPhase);
 }
 
 void PageWidgetDelegate::PaintIgnoringCompositing(Page& page,
-                                                  WebCanvas* canvas,
+                                                  cc::PaintCanvas* canvas,
                                                   const WebRect& rect,
                                                   LocalFrame& root) {
   PaintInternal(page, canvas, rect, root, kGlobalPaintFlattenCompositingLayers);

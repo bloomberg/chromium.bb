@@ -28,7 +28,7 @@ void ClipList::ClipPath(const SkPath& path,
   clip_list_.push_back(new_clip);
 }
 
-void ClipList::Playback(PaintCanvas* canvas) const {
+void ClipList::Playback(cc::PaintCanvas* canvas) const {
   for (const ClipOp* it = clip_list_.begin(); it < clip_list_.end(); it++) {
     canvas->clipPath(it->path_, SkClipOp::kIntersect,
                      it->anti_aliasing_mode_ == kAntiAliased);

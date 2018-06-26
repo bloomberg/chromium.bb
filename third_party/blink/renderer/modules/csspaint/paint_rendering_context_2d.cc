@@ -31,7 +31,7 @@ PaintRenderingContext2D::PaintRenderingContext2D(
 
 void PaintRenderingContext2D::InitializePaintRecorder() {
   paint_recorder_ = std::make_unique<PaintRecorder>();
-  PaintCanvas* canvas = paint_recorder_->beginRecording(
+  cc::PaintCanvas* canvas = paint_recorder_->beginRecording(
       container_size_.Width(), container_size_.Height());
 
   // Always save an initial frame, to support resetting the top level matrix
@@ -41,7 +41,7 @@ void PaintRenderingContext2D::InitializePaintRecorder() {
   did_record_draw_commands_in_paint_recorder_ = false;
 }
 
-PaintCanvas* PaintRenderingContext2D::Canvas() const {
+cc::PaintCanvas* PaintRenderingContext2D::Canvas() const {
   DCHECK(paint_recorder_);
   DCHECK(paint_recorder_->getRecordingCanvas());
   return paint_recorder_->getRecordingCanvas();
@@ -98,17 +98,17 @@ void PaintRenderingContext2D::setShadowOffsetY(double y) {
   BaseRenderingContext2D::setShadowOffsetY(y * effective_zoom_);
 }
 
-PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
+cc::PaintCanvas* PaintRenderingContext2D::DrawingCanvas() const {
   return Canvas();
 }
 
-PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
+cc::PaintCanvas* PaintRenderingContext2D::ExistingDrawingCanvas() const {
   return Canvas();
 }
 
 void PaintRenderingContext2D::ValidateStateStack() const {
 #if DCHECK_IS_ON()
-  if (PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
+  if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
     DCHECK_EQ(static_cast<size_t>(sk_canvas->getSaveCount()),
               state_stack_.size() + 1);
   }

@@ -24,8 +24,8 @@ class PLATFORM_EXPORT UnacceleratedStaticBitmapImage final
       base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_wrapper)
       override;
 
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,

@@ -84,7 +84,7 @@ TSAN_TEST(FontObjectThreadedTest, TextIntercepts) {
                                                 0x70, 0xc9, 0x70, 0xc9};
     TextRun ahem_above_below_baseline(ahem_above_below_baseline_string, 9);
     TextRunPaintInfo text_run_paint_info(ahem_above_below_baseline);
-    PaintFlags default_paint;
+    cc::PaintFlags default_paint;
     float device_scale_factor = 1;
     std::tuple<float, float> below_baseline_bounds = std::make_tuple(2, 4);
     Vector<Font::TextIntercept> text_intercepts;

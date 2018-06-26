@@ -13,6 +13,10 @@
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 
+namespace cc {
+class PaintCanvas;
+}
+
 namespace blink {
 
 class Scrollbar;

@@ -290,7 +290,7 @@ void ScrollbarThemeAura::PaintThumb(GraphicsContext& gc,
   DrawingRecorder recorder(gc, scrollbar, DisplayItem::kScrollbarThumb);
 
   WebThemeEngine::State state;
-  WebCanvas* canvas = gc.Canvas();
+  cc::PaintCanvas* canvas = gc.Canvas();
   if (scrollbar.PressedPart() == kThumbPart)
     state = WebThemeEngine::kStatePressed;
   else if (scrollbar.HoveredPart() == kThumbPart)

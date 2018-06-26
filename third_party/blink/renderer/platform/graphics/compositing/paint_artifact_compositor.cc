@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/platform/graphics/paint/geometry_mapper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_hit_test_display_item.h"
@@ -640,7 +641,7 @@ class SynthesizedClip : private cc::ContentLayerClient {
       PaintingControlSetting) final {
     auto cc_list = base::MakeRefCounted<cc::DisplayItemList>(
         cc::DisplayItemList::kTopLevelDisplayItemList);
-    cc::PaintFlags flags;
+    PaintFlags flags;
     flags.setAntiAlias(true);
     cc_list->StartPaint();
     if (!path_) {

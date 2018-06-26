@@ -92,14 +92,14 @@ class CanvasRenderingContext2DAutoRestoreSkCanvas {
       CanvasRenderingContext2D* context)
       : context_(context), save_count_(0) {
     DCHECK(context_);
-    PaintCanvas* c = context_->DrawingCanvas();
+    cc::PaintCanvas* c = context_->DrawingCanvas();
     if (c) {
       save_count_ = c->getSaveCount();
     }
   }
 
   ~CanvasRenderingContext2DAutoRestoreSkCanvas() {
-    PaintCanvas* c = context_->DrawingCanvas();
+    cc::PaintCanvas* c = context_->DrawingCanvas();
     if (c)
       c->restoreToCount(save_count_);
     context_->ValidateStateStack();
@@ -146,7 +146,7 @@ CanvasRenderingContext2D::~CanvasRenderingContext2D() = default;
 
 void CanvasRenderingContext2D::ValidateStateStack() const {
 #if DCHECK_IS_ON()
-  if (PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
+  if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
     // The canvas should always have an initial save frame, to support
     // resetting the top level matrix and clip.
     DCHECK_GT(sk_canvas->getSaveCount(), 1);
@@ -309,7 +309,7 @@ void CanvasRenderingContext2D::Reset() {
 }
 
 void CanvasRenderingContext2D::RestoreCanvasMatrixClipStack(
-    PaintCanvas* c) const {
+    cc::PaintCanvas* c) const {
   RestoreMatrixClipStack(c);
 }
 
@@ -412,7 +412,7 @@ void CanvasRenderingContext2D::SnapshotStateForFilter() {
   ModifiableState().SetFontForFilter(AccessFont());
 }
 
-PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
+cc::PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
   if (isContextLost())
     return nullptr;
   if (canvas()->GetOrCreateCanvas2DLayerBridge())
@@ -420,7 +420,7 @@ PaintCanvas* CanvasRenderingContext2D::DrawingCanvas() const {
   return nullptr;
 }
 
-PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
+cc::PaintCanvas* CanvasRenderingContext2D::ExistingDrawingCanvas() const {
   if (IsPaintable())
     return canvas()->GetCanvas2DLayerBridge()->Canvas();
   return nullptr;
@@ -795,7 +795,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
   // to 0, for example), so update style before grabbing the drawingCanvas.
   canvas()->GetDocument().UpdateStyleAndLayoutTreeForNode(canvas());
 
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 
@@ -882,7 +882,7 @@ void CanvasRenderingContext2D::DrawTextInternal(
 
   Draw(
       [&font, &text_run_paint_info, &location](
-          PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+          cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
       {
         font.DrawBidiText(c, text_run_paint_info, location,
                           Font::kUseFallbackIfFontNotReady, kCDeviceScaleFactor,
@@ -1027,7 +1027,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
 
   Path hit_region_path = options.hasPath() ? options.path()->GetPath() : path_;
 
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
 
   if (hit_region_path.IsEmpty() || !c || !GetState().IsTransformInvertible() ||
       c->isClipEmpty()) {

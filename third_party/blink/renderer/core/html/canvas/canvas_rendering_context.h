@@ -136,7 +136,7 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
 
   // Canvas2D-specific interface
   virtual bool Is2d() const { return false; }
-  virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const {}
+  virtual void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const {}
   virtual void Reset() {}
   virtual void ClearRect(double x, double y, double width, double height) {}
   virtual void DidSetSurfaceSize() {}

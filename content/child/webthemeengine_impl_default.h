@@ -16,7 +16,7 @@ class WebThemeEngineImpl : public blink::WebThemeEngine {
  public:
   // WebThemeEngine methods:
   blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
-  void Paint(blink::WebCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              blink::WebThemeEngine::Part part,
              blink::WebThemeEngine::State state,
              const blink::WebRect& rect,

@@ -214,8 +214,8 @@ PaintImage AcceleratedStaticBitmapImage::PaintImageForCurrentFrame() {
       .TakePaintImage();
 }
 
-void AcceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
-                                        const PaintFlags& flags,
+void AcceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
+                                        const cc::PaintFlags& flags,
                                         const FloatRect& dst_rect,
                                         const FloatRect& src_rect,
                                         RespectImageOrientationEnum,

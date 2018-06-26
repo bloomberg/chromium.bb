@@ -6,15 +6,18 @@
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_FONT_H_
 
 #include <memory>
-#include "third_party/blink/public/platform/web_canvas.h"
+
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/skia/include/core/SkColor.h"
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef DrawText
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFontDescription;
@@ -32,7 +35,7 @@ class WebFont {
   BLINK_PLATFORM_EXPORT int Height() const;
   BLINK_PLATFORM_EXPORT int LineSpacing() const;
   BLINK_PLATFORM_EXPORT float XHeight() const;
-  BLINK_PLATFORM_EXPORT void DrawText(WebCanvas*,
+  BLINK_PLATFORM_EXPORT void DrawText(cc::PaintCanvas*,
                                       const WebTextRun&,
                                       const WebFloatPoint& left_baseline,
                                       SkColor,

@@ -21,15 +21,17 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_MAC_LOCAL_CURRENT_GRAPHICS_CONTEXT_H_
 
 #include "third_party/blink/renderer/platform/geometry/int_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/mac/graphics_context_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
 OBJC_CLASS NSGraphicsContext;
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class GraphicsContext;
 
 // This class automatically saves and restores the current NSGraphicsContext for
@@ -39,14 +41,14 @@ class PLATFORM_EXPORT LocalCurrentGraphicsContext {
 
  public:
   LocalCurrentGraphicsContext(GraphicsContext&, const IntRect& dirty_rect);
-  LocalCurrentGraphicsContext(PaintCanvas*,
+  LocalCurrentGraphicsContext(cc::PaintCanvas*,
                               float device_scale_factor,
                               const IntRect& dirty_rect);
   ~LocalCurrentGraphicsContext();
   CGContextRef CgContext();
 
  private:
-  PaintCanvas* saved_canvas_;
+  cc::PaintCanvas* saved_canvas_;
   NSGraphicsContext* saved_ns_graphics_context_;
   bool did_set_graphics_context_;
   IntRect inflated_dirty_rect_;

@@ -44,7 +44,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   void Destroy() override;
   v8::Local<v8::Object> V8ScriptableObject(v8::Isolate* isolate) override;
   void UpdateAllLifecyclePhases() override {}
-  void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
+  void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override;
   void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,
@@ -80,7 +80,7 @@ class PepperWebPluginImpl : public blink::WebPlugin {
   bool IsPrintScalingDisabled() override;
 
   int PrintBegin(const blink::WebPrintParams& print_params) override;
-  void PrintPage(int page_number, blink::WebCanvas* canvas) override;
+  void PrintPage(int page_number, cc::PaintCanvas* canvas) override;
   void PrintEnd() override;
 
   bool CanRotateView() override;

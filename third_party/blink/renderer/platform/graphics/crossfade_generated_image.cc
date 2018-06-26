@@ -27,6 +27,7 @@
 
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 
 namespace blink {
 
@@ -42,7 +43,7 @@ CrossfadeGeneratedImage::CrossfadeGeneratedImage(
       percentage_(percentage),
       crossfade_size_(crossfade_size) {}
 
-void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
+void CrossfadeGeneratedImage::DrawCrossfade(cc::PaintCanvas* canvas,
                                             const PaintFlags& flags,
                                             ImageClampingMode clamp_mode,
                                             ImageDecodingMode decode_mode) {
@@ -75,7 +76,7 @@ void CrossfadeGeneratedImage::DrawCrossfade(PaintCanvas* canvas,
                   kDoNotRespectImageOrientation, clamp_mode, decode_mode);
 }
 
-void CrossfadeGeneratedImage::Draw(PaintCanvas* canvas,
+void CrossfadeGeneratedImage::Draw(cc::PaintCanvas* canvas,
                                    const PaintFlags& flags,
                                    const FloatRect& dst_rect,
                                    const FloatRect& src_rect,

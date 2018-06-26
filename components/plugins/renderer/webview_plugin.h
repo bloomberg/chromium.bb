@@ -90,7 +90,7 @@ class WebViewPlugin : public blink::WebPlugin,
   bool IsErrorPlaceholder() override;
 
   void UpdateAllLifecyclePhases() override;
-  void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override;
+  void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override;
 
   // Coordinates are relative to the containing window.
   void UpdateGeometry(const blink::WebRect& window_rect,

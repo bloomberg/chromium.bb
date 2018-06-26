@@ -5,11 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_HOST_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_CANVAS_RESOURCE_HOST_H_
 
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include <memory>
+
 #include "third_party/blink/renderer/platform/platform_export.h"
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class CanvasResourceProvider;
 
 class PLATFORM_EXPORT CanvasResourceHost {
@@ -17,7 +21,7 @@ class PLATFORM_EXPORT CanvasResourceHost {
   virtual ~CanvasResourceHost() = default;
   virtual void NotifyGpuContextLost() = 0;
   virtual void SetNeedsCompositingUpdate() = 0;
-  virtual void RestoreCanvasMatrixClipStack(PaintCanvas*) const = 0;
+  virtual void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const = 0;
   virtual void UpdateMemoryUsage() = 0;
 
   CanvasResourceProvider* ResourceProvider() const;

@@ -163,13 +163,14 @@ bool OffscreenCanvasRenderingContext2D::ParseColorOrCurrentColor(
   return ::blink::ParseColorOrCurrentColor(color, color_string, nullptr);
 }
 
-PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
+cc::PaintCanvas* OffscreenCanvasRenderingContext2D::DrawingCanvas() const {
   if (!CanCreateCanvas2dResourceProvider())
     return nullptr;
   return GetCanvasResourceProvider()->Canvas();
 }
 
-PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas() const {
+cc::PaintCanvas* OffscreenCanvasRenderingContext2D::ExistingDrawingCanvas()
+    const {
   if (!IsPaintable())
     return nullptr;
   return GetCanvasResourceProvider()->Canvas();
@@ -202,7 +203,7 @@ void OffscreenCanvasRenderingContext2D::SnapshotStateForFilter() {
 
 void OffscreenCanvasRenderingContext2D::ValidateStateStack() const {
 #if DCHECK_IS_ON()
-  if (PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
+  if (cc::PaintCanvas* sk_canvas = ExistingDrawingCanvas()) {
     DCHECK_EQ(static_cast<size_t>(sk_canvas->getSaveCount()),
               state_stack_.size() + 1);
   }
@@ -378,7 +379,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
     double y,
     CanvasRenderingContext2DState::PaintType paint_type,
     double* max_width) {
-  PaintCanvas* c = DrawingCanvas();
+  cc::PaintCanvas* c = DrawingCanvas();
   if (!c)
     return;
 
@@ -457,7 +458,7 @@ void OffscreenCanvasRenderingContext2D::DrawTextInternal(
 
   Draw(
       [&font, &text_run_paint_info, &location](
-          PaintCanvas* c, const PaintFlags* flags)  // draw lambda
+          cc::PaintCanvas* c, const PaintFlags* flags)  // draw lambda
       {
         font.DrawBidiText(c, text_run_paint_info, location,
                           Font::kUseFallbackIfFontNotReady, kCDeviceScaleFactor,

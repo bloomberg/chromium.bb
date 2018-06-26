@@ -7,6 +7,7 @@
 #include "cc/paint/display_item_list.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_recorder.h"
 #include "third_party/blink/renderer/platform/graphics/skia/skia_utils.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
@@ -24,7 +25,7 @@ class DrawingDisplayItemTest : public testing::Test {
 
 static sk_sp<PaintRecord> CreateRectRecord(const FloatRect& record_bounds) {
   PaintRecorder recorder;
-  PaintCanvas* canvas =
+  cc::PaintCanvas* canvas =
       recorder.beginRecording(record_bounds.Width(), record_bounds.Height());
   canvas->drawRect(record_bounds, PaintFlags());
   return recorder.finishRecordingAsPicture();
@@ -35,7 +36,7 @@ static sk_sp<PaintRecord> CreateRectRecordWithTranslate(
     float dx,
     float dy) {
   PaintRecorder recorder;
-  PaintCanvas* canvas =
+  cc::PaintCanvas* canvas =
       recorder.beginRecording(record_bounds.Width(), record_bounds.Height());
   canvas->save();
   canvas->translate(dx, dy);

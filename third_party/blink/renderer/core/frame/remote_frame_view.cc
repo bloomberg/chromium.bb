@@ -346,7 +346,8 @@ bool RemoteFrameView::HasIntrinsicSizingInfo() const {
   return has_intrinsic_sizing_info_;
 }
 
-uint32_t RemoteFrameView::Print(const IntRect& rect, WebCanvas* canvas) const {
+uint32_t RemoteFrameView::Print(const IntRect& rect,
+                                cc::PaintCanvas* canvas) const {
   return remote_frame_->Client()->Print(rect, canvas);
 }
 

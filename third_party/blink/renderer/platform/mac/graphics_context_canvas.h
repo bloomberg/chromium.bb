@@ -7,11 +7,14 @@
 
 #include <ApplicationServices/ApplicationServices.h>
 
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 struct SkIRect;
+
+namespace cc {
+class PaintCanvas;
+}
 
 namespace blink {
 
@@ -26,7 +29,7 @@ class PLATFORM_EXPORT GraphicsContextCanvas {
   // The |paint_rect| is in canvas device space.  The CgContext is set
   // up to be in exactly the same space as the canvas is at construction
   // time.
-  GraphicsContextCanvas(PaintCanvas*,
+  GraphicsContextCanvas(cc::PaintCanvas*,
                         const SkIRect& paint_rect,
                         SkScalar bitmap_scale_factor = 1);
   ~GraphicsContextCanvas();
@@ -36,7 +39,7 @@ class PLATFORM_EXPORT GraphicsContextCanvas {
  private:
   void ReleaseIfNeeded();
 
-  PaintCanvas* canvas_;
+  cc::PaintCanvas* canvas_;
 
   CGContextRef cg_context_;
   SkBitmap offscreen_;

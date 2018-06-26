@@ -28,7 +28,6 @@
 #include "third_party/blink/public/web/web_plugin_container.h"
 #include "third_party/blink/public/web/web_view.h"
 
-using blink::WebCanvas;
 using blink::WebCursorInfo;
 using blink::WebDragData;
 using blink::WebDragOperationsMask;
@@ -154,7 +153,7 @@ bool WebViewPlugin::IsErrorPlaceholder() {
   return delegate_->IsErrorPlaceholder();
 }
 
-void WebViewPlugin::Paint(WebCanvas* canvas, const WebRect& rect) {
+void WebViewPlugin::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
   gfx::Rect paint_rect = gfx::IntersectRects(rect_, rect);
   if (paint_rect.IsEmpty())
     return;

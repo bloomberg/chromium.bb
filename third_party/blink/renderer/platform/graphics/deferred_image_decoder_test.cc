@@ -167,7 +167,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecord) {
   EXPECT_EQ(1, image.height());
 
   PaintRecorder recorder;
-  PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
+  cc::PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
   temp_canvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
@@ -184,7 +184,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   // Received only half the file.
   lazy_decoder_->SetData(partial_data, false);
   PaintRecorder recorder;
-  PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
+  cc::PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
   PaintImage image =
       CreatePaintImageAtIndex(0, PaintImage::CompletionState::PARTIALLY_DONE);
   temp_canvas->drawImage(image, 0, 0);
@@ -200,7 +200,7 @@ TEST_F(DeferredImageDecoderTest, drawIntoPaintRecordProgressive) {
   EXPECT_EQ(SkColorSetARGB(255, 255, 255, 255), bitmap_.getColor(0, 0));
 }
 
-static void RasterizeMain(PaintCanvas* canvas, sk_sp<PaintRecord> record) {
+static void RasterizeMain(cc::PaintCanvas* canvas, sk_sp<PaintRecord> record) {
   canvas->drawPicture(record);
 }
 
@@ -218,7 +218,7 @@ TEST_F(DeferredImageDecoderTest, MAYBE_decodeOnOtherThread) {
   EXPECT_EQ(1, image.height());
 
   PaintRecorder recorder;
-  PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
+  cc::PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
   temp_canvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);
@@ -313,7 +313,7 @@ TEST_F(DeferredImageDecoderTest, decodedSize) {
 
   // The following code should not fail any assert.
   PaintRecorder recorder;
-  PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
+  cc::PaintCanvas* temp_canvas = recorder.beginRecording(100, 100);
   temp_canvas->drawImage(image, 0, 0);
   sk_sp<PaintRecord> record = recorder.finishRecordingAsPicture();
   EXPECT_EQ(0, decode_request_count_);

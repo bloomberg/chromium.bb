@@ -269,7 +269,7 @@ sk_sp<PaintShader> CreatePatternShader(const PaintImage& image,
                                           image.height() + spacing.Height());
 
   PaintRecorder recorder;
-  PaintCanvas* canvas = recorder.beginRecording(tile_rect);
+  cc::PaintCanvas* canvas = recorder.beginRecording(tile_rect);
   canvas->drawImage(image, 0, 0, &paint);
 
   return PaintShader::MakePaintRecord(recorder.finishRecordingAsPicture(),

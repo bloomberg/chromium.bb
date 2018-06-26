@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/platform/drag_image.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"

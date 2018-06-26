@@ -21,8 +21,8 @@ class PLATFORM_EXPORT PaintGeneratedImage : public GeneratedImage {
   ~PaintGeneratedImage() override = default;
 
  protected:
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,

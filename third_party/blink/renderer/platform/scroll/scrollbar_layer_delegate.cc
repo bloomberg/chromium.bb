@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar.h"

@@ -37,7 +37,7 @@ LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
 
 static const int kMaxDirtyRectPixelSize = 10000;
 
-static SkIRect LocalToClampedDeviceRect(PaintCanvas* canvas,
+static SkIRect LocalToClampedDeviceRect(cc::PaintCanvas* canvas,
                                         const IntRect& local) {
   const SkMatrix& matrix = canvas->getTotalMatrix();
   SkRect device;
@@ -55,7 +55,7 @@ static SkIRect LocalToClampedDeviceRect(PaintCanvas* canvas,
 }
 
 LocalCurrentGraphicsContext::LocalCurrentGraphicsContext(
-    PaintCanvas* canvas,
+    cc::PaintCanvas* canvas,
     float device_scale_factor,
     const IntRect& dirty_rect)
     : did_set_graphics_context_(false),

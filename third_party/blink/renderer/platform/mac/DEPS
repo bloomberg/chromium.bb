@@ -6,6 +6,7 @@ include_rules = [
     "+third_party/blink/renderer/platform/mac",
 
     # Dependencies.
+    "+cc/paint",
     "+third_party/blink/renderer/platform/animation/timing_function.h",
     "+third_party/blink/renderer/platform/geometry",
     "+third_party/blink/renderer/platform/graphics",

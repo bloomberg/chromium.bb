@@ -60,7 +60,7 @@ sk_sp<PaintShader> ImagePattern::CreateShader(const SkMatrix& local_matrix) {
   PaintRecorder recorder;
   auto* canvas = recorder.beginRecording(tile_bounds);
 
-  PaintFlags paint;
+  cc::PaintFlags paint;
   paint.setBlendMode(SkBlendMode::kSrc);
   canvas->drawImage(tile_image_, border_pixel_x, border_pixel_y, &paint);
 

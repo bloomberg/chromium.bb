@@ -18,11 +18,11 @@
 #include "third_party/blink/renderer/platform/graphics/canvas_heuristic_parameters.h"
 #include "third_party/blink/renderer/platform/graphics/color_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/static_bitmap_image.h"
 #include "third_party/skia/include/effects/SkComposeImageFilter.h"
 
 namespace blink {
-
 class CanvasImageSource;
 class Color;
 class Image;
@@ -233,8 +233,8 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   virtual bool ParseColorOrCurrentColor(Color&,
                                         const String& color_string) const = 0;
 
-  virtual PaintCanvas* DrawingCanvas() const = 0;
-  virtual PaintCanvas* ExistingDrawingCanvas() const = 0;
+  virtual cc::PaintCanvas* DrawingCanvas() const = 0;
+  virtual cc::PaintCanvas* ExistingDrawingCanvas() const = 0;
   virtual void DisableDeferral(DisableDeferralReason) = 0;
 
   virtual void DidDraw(const SkIRect& dirty_rect) = 0;
@@ -258,7 +258,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
     return kRGBA8CanvasPixelFormat;
   }
 
-  void RestoreMatrixClipStack(PaintCanvas*) const;
+  void RestoreMatrixClipStack(cc::PaintCanvas*) const;
 
   String textAlign() const;
   void setTextAlign(const String&);
@@ -395,7 +395,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
   void DrawPathInternal(const Path&,
                         CanvasRenderingContext2DState::PaintType,
                         SkPath::FillType = SkPath::kWinding_FillType);
-  void DrawImageInternal(PaintCanvas*,
+  void DrawImageInternal(cc::PaintCanvas*,
                          CanvasImageSource*,
                          Image*,
                          const FloatRect& src_rect,
@@ -413,7 +413,7 @@ class MODULES_EXPORT BaseRenderingContext2D : public GarbageCollectedMixin,
 
   template <typename DrawFunc>
   void CompositedDraw(const DrawFunc&,
-                      PaintCanvas*,
+                      cc::PaintCanvas*,
                       CanvasRenderingContext2DState::PaintType,
                       CanvasRenderingContext2DState::ImageType);
 
@@ -488,7 +488,7 @@ bool BaseRenderingContext2D::Draw(
 template <typename DrawFunc>
 void BaseRenderingContext2D::CompositedDraw(
     const DrawFunc& draw_func,
-    PaintCanvas* c,
+    cc::PaintCanvas* c,
     CanvasRenderingContext2DState::PaintType paint_type,
     CanvasRenderingContext2DState::ImageType image_type) {
   sk_sp<PaintFilter> filter = StateGetFilter();

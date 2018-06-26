@@ -26,7 +26,7 @@
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 
 #include <memory>
-#include "third_party/blink/public/platform/web_canvas.h"
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/dom/attribute.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -325,7 +325,7 @@ void HTMLVideoElement::UpdateDisplayState() {
 }
 
 void HTMLVideoElement::PaintCurrentFrame(
-    PaintCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const IntRect& dest_rect,
     const PaintFlags* flags,
     int already_uploaded_id,

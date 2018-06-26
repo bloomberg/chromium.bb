@@ -235,7 +235,7 @@ void SVGShapePainter::PaintMarker(const PaintInfo& paint_info,
   AffineTransform transform = marker.MarkerTransformation(
       position.origin, position.angle, stroke_width);
 
-  PaintCanvas* canvas = paint_info.context.Canvas();
+  cc::PaintCanvas* canvas = paint_info.context.Canvas();
 
   canvas->save();
   canvas->concat(AffineTransformToSkMatrix(transform));

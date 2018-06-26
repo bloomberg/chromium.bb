@@ -210,7 +210,7 @@ String BitmapImage::FilenameExtension() const {
 }
 
 void BitmapImage::Draw(
-    PaintCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const PaintFlags& flags,
     const FloatRect& dst_rect,
     const FloatRect& src_rect,

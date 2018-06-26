@@ -5,10 +5,10 @@
 #include "third_party/blink/renderer/core/page/page_overlay.h"
 
 #include <memory>
+#include "cc/paint/paint_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/core/exported/web_view_impl.h"

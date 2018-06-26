@@ -178,7 +178,7 @@ void ScrollbarThemeOverlay::PaintThumb(GraphicsContext& context,
   else if (scrollbar.HoveredPart() == kThumbPart)
     state = WebThemeEngine::kStateHover;
 
-  WebCanvas* canvas = context.Canvas();
+  cc::PaintCanvas* canvas = context.Canvas();
 
   WebThemeEngine::Part part = WebThemeEngine::kPartScrollbarHorizontalThumb;
   if (scrollbar.Orientation() == kVerticalScrollbar)

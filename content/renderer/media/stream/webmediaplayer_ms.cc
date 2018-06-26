@@ -764,7 +764,7 @@ bool WebMediaPlayerMS::DidLoadingProgress() {
   return true;
 }
 
-void WebMediaPlayerMS::Paint(blink::WebCanvas* canvas,
+void WebMediaPlayerMS::Paint(cc::PaintCanvas* canvas,
                              const blink::WebRect& rect,
                              cc::PaintFlags& flags,
                              int already_uploaded_id,

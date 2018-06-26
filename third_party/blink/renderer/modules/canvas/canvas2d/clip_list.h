@@ -6,11 +6,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_CANVAS_CANVAS2D_CLIP_LIST_H_
 
 #include "third_party/blink/renderer/platform/graphics/graphics_types.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 class SkPath;
+
+namespace cc {
+class PaintCanvas;
+}
 
 namespace blink {
 
@@ -23,7 +26,7 @@ class ClipList {
   ~ClipList() = default;
 
   void ClipPath(const SkPath&, AntiAliasingMode, const SkMatrix&);
-  void Playback(PaintCanvas*) const;
+  void Playback(cc::PaintCanvas*) const;
   const SkPath& GetCurrentClipPath() const;
 
  private:

@@ -108,7 +108,7 @@ void Font::Update(FontSelector* font_selector) const {
 
 namespace {
 
-void DrawBlobs(PaintCanvas* canvas,
+void DrawBlobs(cc::PaintCanvas* canvas,
                const PaintFlags& flags,
                const ShapeResultBloberizer::BlobBuffer& blobs,
                const FloatPoint& point) {
@@ -129,7 +129,7 @@ void DrawBlobs(PaintCanvas* canvas,
 
 }  // anonymous ns
 
-void Font::DrawText(PaintCanvas* canvas,
+void Font::DrawText(cc::PaintCanvas* canvas,
                     const TextRunPaintInfo& run_info,
                     const FloatPoint& point,
                     float device_scale_factor,
@@ -147,7 +147,7 @@ void Font::DrawText(PaintCanvas* canvas,
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
 
-void Font::DrawText(PaintCanvas* canvas,
+void Font::DrawText(cc::PaintCanvas* canvas,
                     const NGTextFragmentPaintInfo& text_info,
                     const FloatPoint& point,
                     float device_scale_factor,
@@ -163,7 +163,7 @@ void Font::DrawText(PaintCanvas* canvas,
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
 
-bool Font::DrawBidiText(PaintCanvas* canvas,
+bool Font::DrawBidiText(cc::PaintCanvas* canvas,
                         const TextRunPaintInfo& run_info,
                         const FloatPoint& point,
                         CustomFontNotReadyAction custom_font_not_ready_action,
@@ -219,7 +219,7 @@ bool Font::DrawBidiText(PaintCanvas* canvas,
   return true;
 }
 
-void Font::DrawEmphasisMarks(PaintCanvas* canvas,
+void Font::DrawEmphasisMarks(cc::PaintCanvas* canvas,
                              const TextRunPaintInfo& run_info,
                              const AtomicString& mark,
                              const FloatPoint& point,
@@ -242,7 +242,7 @@ void Font::DrawEmphasisMarks(PaintCanvas* canvas,
   DrawBlobs(canvas, flags, bloberizer.Blobs(), point);
 }
 
-void Font::DrawEmphasisMarks(PaintCanvas* canvas,
+void Font::DrawEmphasisMarks(cc::PaintCanvas* canvas,
                              const NGTextFragmentPaintInfo& text_info,
                              const AtomicString& mark,
                              const FloatPoint& point,

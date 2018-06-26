@@ -480,7 +480,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
     auto alpha =
         static_cast<uint8_t>(gfx::ToFlooredInt(255 * effect->Opacity()));
     if (has_other_effects) {
-      cc::PaintFlags flags;
+      PaintFlags flags;
       flags.setBlendMode(effect->BlendMode());
       flags.setAlpha(alpha);
       flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
@@ -504,7 +504,7 @@ void ConversionContext::StartEffect(const EffectPaintPropertyNode* effect) {
     // The size parameter is only used to computed the origin of zoom
     // operation, which we never generate.
     gfx::SizeF empty;
-    cc::PaintFlags filter_flags;
+    PaintFlags filter_flags;
     filter_flags.setImageFilter(cc::RenderSurfaceFilters::BuildImageFilter(
         effect->Filter().AsCcFilterOperations(), empty));
     save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &filter_flags);

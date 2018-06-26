@@ -66,7 +66,6 @@
 #include <wrl/client.h>
 #endif
 
-using blink::WebCanvas;
 using blink::WebLocalFrame;
 using blink::WebImageCache;
 using blink::WebPrivatePtr;

@@ -121,8 +121,8 @@ class PLATFORM_EXPORT BitmapImage final : public Image {
   BitmapImage(const SkBitmap&, ImageObserver* = nullptr);
   BitmapImage(ImageObserver* = nullptr, bool is_multi_part = false);
 
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,

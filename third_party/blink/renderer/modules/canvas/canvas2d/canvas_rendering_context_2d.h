@@ -138,7 +138,7 @@ class MODULES_EXPORT CanvasRenderingContext2D final
   void LoseContext(LostContextMode) override;
   void DidSetSurfaceSize() override;
 
-  void RestoreCanvasMatrixClipStack(PaintCanvas*) const override;
+  void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const override;
 
   // TaskObserver implementation
   void DidProcessTask() final;
@@ -174,8 +174,8 @@ class MODULES_EXPORT CanvasRenderingContext2D final
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  PaintCanvas* DrawingCanvas() const final;
-  PaintCanvas* ExistingDrawingCanvas() const final;
+  cc::PaintCanvas* DrawingCanvas() const final;
+  cc::PaintCanvas* ExistingDrawingCanvas() const final;
   void DisableDeferral(DisableDeferralReason) final;
 
   void DidDraw(const SkIRect& dirty_rect) final;
