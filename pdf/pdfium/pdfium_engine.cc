@@ -1359,7 +1359,7 @@ bool PDFiumEngine::OnLeftMouseDown(const pp::MouseInputEvent& event) {
         is_form_text_area &&
         IsPointInEditableFormTextArea(page, page_x, page_y, form_type);
 
-    FORM_OnLButtonDown(form(), page, 0, page_x, page_y);
+    FORM_OnLButtonDown(form(), page, event.GetModifiers(), page_x, page_y);
     if (form_type != FPDF_FORMFIELD_UNKNOWN) {
       // Destroy SelectionChangeInvalidator object before SetInFormTextArea()
       // changes plugin's focus to be in form text area. This way, regular text
@@ -1566,7 +1566,8 @@ bool PDFiumEngine::OnMouseUp(const pp::MouseInputEvent& event) {
     double page_x;
     double page_y;
     DeviceToPage(page_index, point, &page_x, &page_y);
-    FORM_OnLButtonUp(form(), pages_[page_index]->GetPage(), 0, page_x, page_y);
+    FORM_OnLButtonUp(form(), pages_[page_index]->GetPage(),
+                     event.GetModifiers(), page_x, page_y);
   }
 
   if (!selecting_)
