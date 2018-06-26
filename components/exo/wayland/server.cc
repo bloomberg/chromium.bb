@@ -1382,27 +1382,11 @@ uint32_t InvertBitfield(uint32_t bitfield, uint32_t mask) {
 
 // TODO(oshima): propagate x/y flip state to children.
 struct WaylandPositioner {
-  static constexpr uint32_t kHorizontalAnchors =
-      ZXDG_POSITIONER_V6_ANCHOR_LEFT | ZXDG_POSITIONER_V6_ANCHOR_RIGHT;
-  static constexpr uint32_t kVerticalAnchors =
-      ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_BOTTOM;
-  static constexpr uint32_t kHorizontalGravities =
-      ZXDG_POSITIONER_V6_GRAVITY_LEFT | ZXDG_POSITIONER_V6_GRAVITY_RIGHT;
-  static constexpr uint32_t kVerticalGravities =
-      ZXDG_POSITIONER_V6_GRAVITY_TOP | ZXDG_POSITIONER_V6_GRAVITY_BOTTOM;
-
   static int CalculateX(const gfx::Size& size,
                         const gfx::Rect& anchor_rect,
                         uint32_t anchor,
                         uint32_t gravity,
-                        int offset,
-                        bool flipped) {
-    if (flipped) {
-      anchor = InvertBitfield(anchor, kHorizontalAnchors);
-      gravity = InvertBitfield(gravity, kHorizontalGravities);
-      offset = -offset;
-    }
-
+                        int offset) {
     int x = offset;
     if (anchor & ZXDG_POSITIONER_V6_ANCHOR_LEFT)
       x += anchor_rect.x();
@@ -1422,14 +1406,7 @@ struct WaylandPositioner {
                         const gfx::Rect& anchor_rect,
                         uint32_t anchor,
                         uint32_t gravity,
-                        int offset,
-                        bool flipped) {
-    if (flipped) {
-      anchor = InvertBitfield(anchor, kVerticalAnchors);
-      gravity = InvertBitfield(gravity, kVerticalGravities);
-      offset = -offset;
-    }
-
+                        int offset) {
     int y = offset;
     if (anchor & ZXDG_POSITIONER_V6_ANCHOR_TOP)
       y += anchor_rect.y();
@@ -1446,14 +1423,22 @@ struct WaylandPositioner {
   }
 
   // Calculate and return position from current state.
-  gfx::Point CalculatePosition(const gfx::Rect& work_area) {
+  gfx::Point CalculatePosition(const gfx::Rect& work_area) const {
+    constexpr uint32_t kHorizontalAnchors =
+        ZXDG_POSITIONER_V6_ANCHOR_LEFT | ZXDG_POSITIONER_V6_ANCHOR_RIGHT;
+    constexpr uint32_t kVerticalAnchors =
+        ZXDG_POSITIONER_V6_ANCHOR_TOP | ZXDG_POSITIONER_V6_ANCHOR_BOTTOM;
+    constexpr uint32_t kHorizontalGravities =
+        ZXDG_POSITIONER_V6_GRAVITY_LEFT | ZXDG_POSITIONER_V6_GRAVITY_RIGHT;
+    constexpr uint32_t kVerticalGravities =
+        ZXDG_POSITIONER_V6_GRAVITY_TOP | ZXDG_POSITIONER_V6_GRAVITY_BOTTOM;
+
     // TODO(oshima): The size must be smaller than work area.
 
-    gfx::Rect bounds(gfx::Point(CalculateX(size, anchor_rect, anchor, gravity,
-                                           offset.x(), x_flipped),
-                                CalculateY(size, anchor_rect, anchor, gravity,
-                                           offset.y(), y_flipped)),
-                     size);
+    gfx::Rect bounds(
+        gfx::Point(CalculateX(size, anchor_rect, anchor, gravity, offset.x()),
+                   CalculateY(size, anchor_rect, anchor, gravity, offset.y())),
+        size);
 
     // Adjust x position if the bounds are not fully contained by the work area.
     if (work_area.x() > bounds.x() || work_area.right() < bounds.right()) {
@@ -1470,9 +1455,9 @@ struct WaylandPositioner {
         else if (bounds.right() > work_area.right())
           bounds.set_x(work_area.right() - size.width());
       } else if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_X) {
-        x_flipped = !x_flipped;
-        bounds.set_x(CalculateX(size, anchor_rect, anchor, gravity, offset.x(),
-                                x_flipped));
+        bounds.set_x(CalculateX(
+            size, anchor_rect, InvertBitfield(anchor, kHorizontalAnchors),
+            InvertBitfield(gravity, kHorizontalGravities), -offset.x()));
       }
     }
 
@@ -1491,9 +1476,9 @@ struct WaylandPositioner {
         else if (bounds.bottom() > work_area.bottom())
           bounds.set_y(work_area.bottom() - size.height());
       } else if (adjustment & ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_FLIP_Y) {
-        y_flipped = !y_flipped;
-        bounds.set_y(CalculateY(size, anchor_rect, anchor, gravity, offset.y(),
-                                y_flipped));
+        bounds.set_y(CalculateY(
+            size, anchor_rect, InvertBitfield(anchor, kVerticalAnchors),
+            InvertBitfield(gravity, kVerticalGravities), -offset.y()));
       }
     }
     return bounds.origin();
@@ -1505,8 +1490,6 @@ struct WaylandPositioner {
   uint32_t gravity = ZXDG_POSITIONER_V6_GRAVITY_NONE;
   uint32_t adjustment = ZXDG_POSITIONER_V6_CONSTRAINT_ADJUSTMENT_NONE;
   gfx::Vector2d offset;
-  bool y_flipped = false;
-  bool x_flipped = false;
 };
 
 void xdg_positioner_v6_destroy(wl_client* client, wl_resource* resource) {
@@ -1991,7 +1974,7 @@ void xdg_surface_v6_get_popup(wl_client* client,
     return;
   }
 
-  XdgShellSurface* parent = GetUserDataAs<XdgShellSurface>(parent_resource);
+  ShellSurface* parent = GetUserDataAs<ShellSurface>(parent_resource);
   if (!parent->GetWidget()) {
     wl_resource_post_error(resource, ZXDG_SURFACE_V6_ERROR_NOT_CONSTRUCTED,
                            "popup parent not constructed");
@@ -2003,25 +1986,14 @@ void xdg_surface_v6_get_popup(wl_client* client,
                            "get_popup is called after constructed");
     return;
   }
-
   display::Display display =
       display::Screen::GetScreen()->GetDisplayNearestWindow(
           parent->GetWidget()->GetNativeWindow());
   gfx::Rect work_area = display.work_area();
   wm::ConvertRectFromScreen(parent->GetWidget()->GetNativeWindow(), &work_area);
 
-  WaylandPositioner* positioner =
-      GetUserDataAs<WaylandPositioner>(positioner_resource);
-  // Try layout using parent's flip state.
-  positioner->x_flipped = parent->x_flipped();
-  positioner->y_flipped = parent->y_flipped();
-
-  gfx::Point position = positioner->CalculatePosition(work_area);
-
-  // Remember the new flip state for its child popups.
-  shell_surface->set_x_flipped(positioner->x_flipped);
-  shell_surface->set_y_flipped(positioner->y_flipped);
-
+  gfx::Point position = GetUserDataAs<WaylandPositioner>(positioner_resource)
+                            ->CalculatePosition(work_area);
   // |position| is relative to the parent's contents view origin, and |origin|
   // is in screen coordinates.
   gfx::Point origin = position;
