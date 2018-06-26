@@ -16,8 +16,6 @@ class CastExtensionsDispatcherDelegate
 
  private:
   // extensions::DispatcherDelegate implementation.
-  void InitOriginPermissions(const extensions::Extension* extension,
-                             bool is_extension_active) override;
   void RegisterNativeHandlers(
       extensions::Dispatcher* dispatcher,
       extensions::ModuleSystem* module_system,

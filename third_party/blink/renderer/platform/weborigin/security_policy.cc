@@ -118,6 +118,14 @@ static void RemoveOriginAccessEntry(const SecurityOrigin& source_origin,
     access_map.erase(it);
 }
 
+static void RemoveAllOriginAccessEntriesForOrigin(
+    const SecurityOrigin& source_origin,
+    OriginAccessMap& access_map) {
+  DCHECK(IsMainThread());
+  DCHECK(!source_origin.IsOpaque());
+  access_map.erase(source_origin.ToString());
+}
+
 static bool IsOriginPairInAccessMap(const SecurityOrigin* active_origin,
                                     const SecurityOrigin* target_origin,
                                     const OriginAccessMap& access_map) {
@@ -321,6 +329,12 @@ void SecurityPolicy::RemoveOriginAccessWhitelistEntry(
   RemoveOriginAccessEntry(source_origin, destination_protocol,
                           destination_domain, allow_destination_subdomains,
                           GetOriginAccessWhitelistMap());
+}
+
+void SecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
+    const SecurityOrigin& source_origin) {
+  RemoveAllOriginAccessEntriesForOrigin(source_origin,
+                                        GetOriginAccessWhitelistMap());
 }
 
 void SecurityPolicy::ResetOriginAccessWhitelists() {

@@ -425,4 +425,24 @@ TEST_F(SecurityPolicyAccessTest,
                                                    https_google_origin()));
 }
 
+TEST_F(SecurityPolicyAccessTest,
+       RemoveAllOriginAccessWhitelistEntriesForOrigin) {
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "example.com", true);
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_chromium_origin(),
+                                                "https", "google.com", true);
+  SecurityPolicy::AddOriginAccessWhitelistEntry(*https_example_origin(),
+                                                "https", "google.com", true);
+
+  SecurityPolicy::RemoveAllOriginAccessWhitelistEntriesForOrigin(
+      *https_chromium_origin());
+
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_example_origin()));
+  EXPECT_FALSE(SecurityPolicy::IsAccessWhiteListed(https_chromium_origin(),
+                                                   https_google_origin()));
+  EXPECT_TRUE(SecurityPolicy::IsAccessWhiteListed(https_example_origin(),
+                                                  https_google_origin()));
+}
+
 }  // namespace blink

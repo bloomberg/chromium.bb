@@ -46,12 +46,6 @@ CastExtensionsDispatcherDelegate::CastExtensionsDispatcherDelegate() {
 CastExtensionsDispatcherDelegate::~CastExtensionsDispatcherDelegate() {
 }
 
-void CastExtensionsDispatcherDelegate::InitOriginPermissions(
-    const extensions::Extension* extension,
-    bool is_extension_active) {
-  // TODO(rmrossi): Stub
-}
-
 void CastExtensionsDispatcherDelegate::RegisterNativeHandlers(
     extensions::Dispatcher* dispatcher,
     extensions::ModuleSystem* module_system,
