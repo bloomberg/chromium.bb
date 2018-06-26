@@ -605,23 +605,23 @@ TEST(X509CertificateTest, DoesNotHaveTLSFeatureExtension) {
       x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
 }
 
-TEST(X509CertificateTest, HasTestCanSignHttpExchangesExtension) {
+TEST(X509CertificateTest, HasCanSignHttpExchangesDraftExtension) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert = ImportCertFromFile(
-      certs_dir, "test_can_sign_http_exchanges_extension.pem");
+      certs_dir, "can_sign_http_exchanges_draft_extension.pem");
   ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
 
-  EXPECT_TRUE(asn1::HasTestCanSignHttpExchangesExtension(
+  EXPECT_TRUE(asn1::HasCanSignHttpExchangesDraftExtension(
       x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
 }
 
-TEST(X509CertificateTest, DoesNotHaveTestCanSignHttpExchangesExtension) {
+TEST(X509CertificateTest, DoesNotHaveCanSignHttpExchangesDraftExtension) {
   base::FilePath certs_dir = GetTestCertsDirectory();
   scoped_refptr<X509Certificate> cert =
       ImportCertFromFile(certs_dir, "ok_cert.pem");
   ASSERT_NE(static_cast<X509Certificate*>(NULL), cert.get());
 
-  EXPECT_FALSE(asn1::HasTestCanSignHttpExchangesExtension(
+  EXPECT_FALSE(asn1::HasCanSignHttpExchangesDraftExtension(
       x509_util::CryptoBufferAsStringPiece(cert->cert_buffer())));
 }
 

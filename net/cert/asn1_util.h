@@ -41,12 +41,12 @@ NET_EXPORT_PRIVATE bool ExtractSubjectPublicKeyFromSPKI(
 // present or if there was a parsing failure.
 NET_EXPORT_PRIVATE bool HasTLSFeatureExtension(base::StringPiece cert);
 
-// HasTestCanSignHttpExchangesExtension parses the DER encoded certificate
-// in |cert| and extracts the testCanSignHttpExchangesExtension extension
+// HasCanSignHttpExchangesDraftExtension parses the DER encoded certificate
+// in |cert| and extracts the canSignHttpExchangesDraft extension
 // (https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html)
 // if present. Returns true if the extension was present, and false if
 // the extension was not present or if there was a parsing failure.
-NET_EXPORT bool HasTestCanSignHttpExchangesExtension(base::StringPiece cert);
+NET_EXPORT bool HasCanSignHttpExchangesDraftExtension(base::StringPiece cert);
 
 // Extracts the two (SEQUENCE) tag-length-values for the signature
 // AlgorithmIdentifiers in a DER encoded certificate. Does not use strict
