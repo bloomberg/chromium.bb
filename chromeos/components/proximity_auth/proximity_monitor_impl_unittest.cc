@@ -146,7 +146,8 @@ class ProximityAuthProximityMonitorImplTest : public testing::Test {
           connection_metadata_ptr =
               chromeos::secure_channel::mojom::ConnectionMetadata::New(
                   creation_details,
-                  std::move(bluetooth_connection_metadata_ptr));
+                  std::move(bluetooth_connection_metadata_ptr),
+                  "channel_binding_data");
       fake_client_channel_->InvokePendingGetConnectionMetadataCallback(
           std::move(connection_metadata_ptr));
     } else {

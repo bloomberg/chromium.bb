@@ -98,6 +98,10 @@ class SecureChannel : public ConnectionObserver {
   virtual void GetConnectionRssi(
       base::OnceCallback<void(base::Optional<int32_t>)> callback);
 
+  // The |responder_auth| message. Returns null if |secure_context_| is null or
+  // status() != AUTHENTICATED.
+  virtual base::Optional<std::string> GetChannelBindingData();
+
   Status status() const {
     return status_;
   }

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "components/cryptauth/secure_context.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -31,8 +32,13 @@ class FakeSecureContext : public SecureContext {
     protocol_version_ = protocol_version;
   }
 
+  void set_channel_binding_data(const std::string channel_binding_data) {
+    channel_binding_data_ = channel_binding_data;
+  }
+
  private:
   ProtocolVersion protocol_version_;
+  base::Optional<std::string> channel_binding_data_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeSecureContext);
 };

@@ -126,6 +126,13 @@ void SecureChannel::GetConnectionRssi(
   connection_->GetConnectionRssi(std::move(callback));
 }
 
+base::Optional<std::string> SecureChannel::GetChannelBindingData() {
+  if (secure_context_)
+    return secure_context_->GetChannelBindingData();
+
+  return base::nullopt;
+}
+
 void SecureChannel::OnConnectionStatusChanged(
     Connection* connection,
     Connection::Status old_status,

@@ -24,7 +24,7 @@ FakeSecureContext::FakeSecureContext()
 FakeSecureContext::~FakeSecureContext() {}
 
 std::string FakeSecureContext::GetChannelBindingData() const {
-  return kChannelBindingData;
+  return channel_binding_data_ ? *channel_binding_data_ : kChannelBindingData;
 }
 
 SecureContext::ProtocolVersion FakeSecureContext::GetProtocolVersion() const {

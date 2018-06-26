@@ -30,6 +30,7 @@ const mojom::ConnectionCreationDetail kTestConnectionCreationDetails[] = {
         REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
 
 const int32_t kTestRssi = -24;
+const std::string kTestChannelBindingData = "channel_binding_data";
 
 class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
  protected:
@@ -44,6 +45,7 @@ class SecureChannelAuthenticatedChannelImplTest : public testing::Test {
     fake_secure_channel->ChangeStatus(
         cryptauth::SecureChannel::Status::AUTHENTICATED);
     fake_secure_channel->set_rssi_to_return(kTestRssi);
+    fake_secure_channel->set_channel_binding_data(kTestChannelBindingData);
     fake_secure_channel_ = fake_secure_channel.get();
 
     channel_ = AuthenticatedChannelImpl::Factory::Get()->BuildInstance(
@@ -149,6 +151,8 @@ TEST_F(SecureChannelAuthenticatedChannelImplTest, ConnectionMetadata) {
             connection_metadata_->creation_details);
   EXPECT_EQ(kTestRssi,
             connection_metadata_->bluetooth_connection_metadata->current_rssi);
+  EXPECT_EQ(kTestChannelBindingData,
+            connection_metadata_->channel_binding_data);
 }
 
 TEST_F(SecureChannelAuthenticatedChannelImplTest, DisconnectRequestFromClient) {

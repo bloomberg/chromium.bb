@@ -144,9 +144,13 @@ void AuthenticatedChannelImpl::OnRssiFetched(
         mojom::BluetoothConnectionMetadata::New(*current_rssi);
   }
 
+  // The SecureChannel must have channel binding data if it is authenticated.
+  DCHECK(secure_channel_->GetChannelBindingData());
+
   std::move(callback).Run(mojom::ConnectionMetadata::New(
       connection_creation_details_,
-      std::move(bluetooth_connection_metadata_ptr)));
+      std::move(bluetooth_connection_metadata_ptr),
+      *secure_channel_->GetChannelBindingData()));
 }
 
 }  // namespace secure_channel
