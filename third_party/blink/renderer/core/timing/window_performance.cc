@@ -371,8 +371,11 @@ void WindowPerformance::ReportEventTimings(WebLayerTreeView::SwapResult result,
     if (duration_in_ms <= kEventTimingDurationThresholdInMs)
       continue;
 
-    if (ObservingEventTimingEntries())
+    if (ObservingEventTimingEntries()) {
+      UseCounter::Count(GetFrame(),
+                        WebFeature::kEventTimingExplicitlyRequested);
       NotifyObserversOfEntry(*entry);
+    }
 
     if (ShouldBufferEventTiming() && !IsEventTimingBufferFull())
       AddEventTimingBuffer(*entry);
@@ -388,8 +391,10 @@ void WindowPerformance::DispatchFirstInputTiming(
   if (!entry)
     return;
   DCHECK_EQ("firstInput", entry->entryType());
-  if (HasObserverFor(PerformanceEntry::kFirstInput))
+  if (HasObserverFor(PerformanceEntry::kFirstInput)) {
+    UseCounter::Count(GetFrame(), WebFeature::kEventTimingExplicitlyRequested);
     NotifyObserversOfEntry(*entry);
+  }
 
   DCHECK(!first_input_timing_);
   if (ShouldBufferEventTiming())

@@ -171,10 +171,14 @@ PerformanceEntryVector Performance::getEntriesByType(const String& entry_type) {
         entries.push_back(resource);
       break;
     case PerformanceEntry::kEvent:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kEventTimingExplicitlyRequested);
       for (const auto& event : event_timing_buffer_)
         entries.push_back(event);
       break;
     case PerformanceEntry::kFirstInput:
+      UseCounter::Count(GetExecutionContext(),
+                        WebFeature::kEventTimingExplicitlyRequested);
       if (first_input_timing_)
         entries.push_back(first_input_timing_);
       break;
@@ -246,10 +250,18 @@ PerformanceEntryVector Performance::getEntriesByName(const String& name,
         entries.push_back(event);
     }
   }
+  if (type == PerformanceEntry::kEvent) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kEventTimingExplicitlyRequested);
+  }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kFirstInput) {
     if (first_input_timing_ && first_input_timing_->name() == name)
       entries.push_back(first_input_timing_);
+  }
+  if (type == PerformanceEntry::kFirstInput) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kEventTimingExplicitlyRequested);
   }
 
   if (entry_type.IsNull() || type == PerformanceEntry::kNavigation) {
