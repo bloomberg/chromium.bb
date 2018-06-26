@@ -300,13 +300,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       any_thread_(this),
       policy_may_need_update_(&any_thread_lock_),
       weak_factory_(this) {
-  task_queue_throttler_.reset(
-      new TaskQueueThrottler(this, &tracing_controller_));
-  update_policy_closure_ = base::BindRepeating(
-      &MainThreadSchedulerImpl::UpdatePolicy, weak_factory_.GetWeakPtr());
-  end_renderer_hidden_idle_period_closure_.Reset(base::BindRepeating(
-      &MainThreadSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
-
   // Compositor task queue and default task queue should be managed by
   // WebThreadScheduler. Control task queue should not.
   task_runners_.insert(
@@ -326,6 +319,25 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
       v8_task_queue_, TaskType::kMainThreadTaskQueueV8);
   compositor_task_runner_ = TaskQueueWithTaskType::Create(
       compositor_task_queue_, TaskType::kMainThreadTaskQueueCompositor);
+  control_task_runner_ =
+      TaskQueueWithTaskType::Create(helper_.ControlMainThreadTaskQueue(),
+                                    TaskType::kMainThreadTaskQueueControl);
+  default_task_runner_ =
+      TaskQueueWithTaskType::Create(helper_.DefaultMainThreadTaskQueue(),
+                                    TaskType::kMainThreadTaskQueueDefault);
+  input_task_runner_ = TaskQueueWithTaskType::Create(
+      input_task_queue_, TaskType::kMainThreadTaskQueueInput);
+  ipc_task_runner_ = TaskQueueWithTaskType::Create(
+      ipc_task_queue_, TaskType::kMainThreadTaskQueueIPC);
+
+  // TaskQueueThrottler requires some task runners, then initialize
+  // TaskQueueThrottler after task queues/runners are initialized.
+  task_queue_throttler_.reset(
+      new TaskQueueThrottler(this, &tracing_controller_));
+  update_policy_closure_ = base::BindRepeating(
+      &MainThreadSchedulerImpl::UpdatePolicy, weak_factory_.GetWeakPtr());
+  end_renderer_hidden_idle_period_closure_.Reset(base::BindRepeating(
+      &MainThreadSchedulerImpl::EndIdlePeriod, weak_factory_.GetWeakPtr()));
 
   TRACE_EVENT_OBJECT_CREATED_WITH_ID(
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "MainThreadScheduler",
@@ -679,21 +691,18 @@ std::unique_ptr<blink::WebThread> MainThreadSchedulerImpl::CreateMainThread() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::ControlTaskRunner() {
-  return TaskQueueWithTaskType::Create(ControlTaskQueue(),
-                                       TaskType::kMainThreadTaskQueueControl);
+  return control_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::DefaultTaskRunner() {
-  return TaskQueueWithTaskType::Create(helper_.DefaultMainThreadTaskQueue(),
-                                       TaskType::kMainThreadTaskQueueDefault);
+  return default_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::InputTaskRunner() {
   helper_.CheckOnValidThread();
-  return TaskQueueWithTaskType::Create(input_task_queue_,
-                                       TaskType::kMainThreadTaskQueueInput);
+  return input_task_runner_;
 }
 
 scoped_refptr<SingleThreadIdleTaskRunner>
@@ -703,8 +712,7 @@ MainThreadSchedulerImpl::IdleTaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::IPCTaskRunner() {
-  return TaskQueueWithTaskType::Create(ipc_task_queue_,
-                                       TaskType::kMainThreadTaskQueueIPC);
+  return ipc_task_runner_;
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

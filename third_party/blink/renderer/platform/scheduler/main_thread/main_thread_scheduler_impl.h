@@ -747,6 +747,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
   scoped_refptr<TaskQueueWithTaskType> compositor_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> control_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> default_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> input_task_runner_;
+  scoped_refptr<TaskQueueWithTaskType> ipc_task_runner_;
 
   // Note |virtual_time_domain_| is lazily created.
   std::unique_ptr<AutoAdvancingVirtualTimeDomain> virtual_time_domain_;
