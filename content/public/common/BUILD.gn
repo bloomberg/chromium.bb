@@ -171,8 +171,6 @@ jumbo_source_set("common_sources") {
     "menu_item.h",
     "mhtml_generation_params.cc",
     "mhtml_generation_params.h",
-    "network_connection_tracker.cc",
-    "network_connection_tracker.h",
     "notification_resources.cc",
     "notification_resources.h",
     "origin_util.h",

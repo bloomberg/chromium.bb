@@ -10,7 +10,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/test/base/in_process_browser_test.h"
-#include "content/public/common/network_connection_tracker.h"
+#include "content/public/browser/network_connection_tracker.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test.h"

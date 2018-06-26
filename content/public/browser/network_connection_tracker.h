@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_COMMON_NETWORK_CONNECTION_TRACKER_H_
-#define CONTENT_PUBLIC_COMMON_NETWORK_CONNECTION_TRACKER_H_
+#ifndef CONTENT_PUBLIC_BROWSER_NETWORK_CONNECTION_TRACKER_H_
+#define CONTENT_PUBLIC_BROWSER_NETWORK_CONNECTION_TRACKER_H_
 
 #include <list>
 #include <memory>
@@ -114,4 +114,4 @@ class CONTENT_EXPORT NetworkConnectionTracker
 
 }  // namespace content
 
-#endif  // CONTENT_PUBLIC_COMMON_NETWORK_CONNECTION_TRACKER_H_
+#endif  // CONTENT_PUBLIC_BROWSER_NETWORK_CONNECTION_TRACKER_H_

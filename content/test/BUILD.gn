@@ -1604,11 +1604,11 @@ test("content_unittests") {
     "../common/throttling_url_loader_unittest.cc",
     "../common/unique_name_helper_unittest.cc",
     "../common/webplugininfo_unittest.cc",
+    "../public/browser/network_connection_tracker_unittest.cc",
     "../public/browser/site_isolation_policy_unittest.cc",
 
     # TODO(jam): move these network/ tests to services/network.
     "../public/common/drop_data_unittest.cc",
-    "../public/common/network_connection_tracker_unittest.cc",
     "../public/common/url_utils_unittest.cc",
     "../public/test/referrer_unittest.cc",
     "../public/test/test_browser_thread_bundle_unittest.cc",
