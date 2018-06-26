@@ -1512,6 +1512,7 @@ jumbo_component("platform") {
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/bindings:wtf_support",
     "//services/service_manager/public/cpp",
+    "//services/ui/public/cpp/gpu",
     "//skia:skcms",
     "//third_party:freetype_harfbuzz",
     "//third_party/blink/public:embedded_frame_sink_mojo_bindings_blink",
