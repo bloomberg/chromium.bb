@@ -190,9 +190,9 @@ QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_validate_ack_largest_observed,
           false)
 
-// If true, QuicConnection::ProcessPacket will not set send alarm if it is write
-// blocked.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked,
-    false)
+// If true, QuicConnection::ProcessPacket will add the connection to write
+// blocked list if it is write blocked, and will not attempt to write before the
+// writer unblocks.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked,
+          false)

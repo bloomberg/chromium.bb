@@ -359,6 +359,8 @@ class TestPacketWriter : public QuicPacketWriter {
 
   bool IsWriteBlocked() const override { return write_blocked_; }
 
+  void SetWriteBlocked() { write_blocked_ = true; }
+
   void SetWritable() override { write_blocked_ = false; }
 
   void SetShouldWriteFail() { write_should_fail_ = true; }
@@ -3101,13 +3103,6 @@ TEST_P(QuicConnectionTest, AlarmsWhenWriteBlocked) {
 }
 
 TEST_P(QuicConnectionTest, NoSendAlarmAfterProcessPacketWhenWriteBlocked) {
-  // We are testing the behavior of
-  // quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked,
-  // which only takes effect when ack_response == AckResponse::kDefer.
-  if (GetParam().ack_response != AckResponse::kDefer) {
-    return;
-  }
-
   EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
 
   // Block the connection.
@@ -3134,9 +3129,30 @@ TEST_P(QuicConnectionTest, NoSendAlarmAfterProcessPacketWhenWriteBlocked) {
       QuicReceivedPacket(buffer, encrypted_length, clock_.Now(), false));
 
   EXPECT_TRUE(writer_->IsWriteBlocked());
-  EXPECT_NE(GetQuicReloadableFlag(
-                quic_no_send_alarm_in_process_packet_if_write_blocked),
-            connection_.GetSendAlarm()->IsSet());
+  if (GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)) {
+    EXPECT_FALSE(connection_.GetSendAlarm()->IsSet());
+  } else {
+    EXPECT_EQ(GetParam().ack_response == AckResponse::kDefer,
+              connection_.GetSendAlarm()->IsSet());
+  }
+}
+
+TEST_P(QuicConnectionTest, AddToWriteBlockedListIfWriterBlockedWhenProcessing) {
+  EXPECT_CALL(visitor_, OnSuccessfulVersionNegotiation(_));
+  SendStreamDataToPeer(1, "foo", 0, NO_FIN, nullptr);
+
+  // Simulate the case where a shared writer gets blocked by another connection.
+  writer_->SetWriteBlocked();
+
+  // Process an ACK, make sure the connection calls visitor_->OnWriteBlocked().
+  QuicAckFrame ack1 = InitAckFrame(1);
+  EXPECT_CALL(*send_algorithm_, OnCongestionEvent(_, _, _, _, _));
+  if (GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)) {
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(1);
+  } else {
+    EXPECT_CALL(visitor_, OnWriteBlocked()).Times(0);
+  }
+  ProcessAckPacket(1, &ack1);
 }
 
 TEST_P(QuicConnectionTest, NoLimitPacketsPerNack) {

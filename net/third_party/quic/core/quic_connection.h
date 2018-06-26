@@ -866,6 +866,11 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // and/or peer address changes.
   bool IsCurrentPacketConnectivityProbing() const;
 
+  // Return true iff the writer is blocked, if blocked, call
+  // visitor_->OnWriteBlocked() to add the connection into the write blocked
+  // list.
+  bool HandleWriteBlocked();
+
  private:
   friend class test::QuicConnectionPeer;
 
@@ -1309,8 +1314,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   const bool deprecate_scheduler_;
 
   // Latched value of
-  // quic_reloadable_flag_quic_no_send_alarm_in_process_packet_if_write_blocked.
-  const bool no_send_alarm_in_process_packet_if_write_blocked_;
+  // gfe2_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked.
+  const bool add_to_blocked_list_if_writer_blocked_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };
