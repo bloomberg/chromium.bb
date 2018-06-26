@@ -44,8 +44,8 @@ const base::Feature kPasswordForceSaving = {
     "PasswordForceSaving", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable the user to trigger password generation manually.
-const base::Feature kEnableManualPasswordGeneration = {
-    "enable-manual-password-generation", base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kManualPasswordGeneration = {
+    "manual-password-generation", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Controls the ability to generate passwords that fit sites' requirements.
 const base::Feature kPasswordGenerationRequirements = {
