@@ -362,15 +362,17 @@ String KURL::Host() const {
 unsigned short KURL::Port() const {
   if (!is_valid_ || parsed_.port.len <= 0)
     return 0;
-  DCHECK(!string_.IsNull());
+  // TODO(ricea): Change this back to DCHECK.
+  CHECK(!string_.IsNull());
   int port = string_.Is8Bit()
                  ? url::ParsePort(AsURLChar8Subtle(string_), parsed_.port)
                  : url::ParsePort(string_.Characters16(), parsed_.port);
-  DCHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 before.
+  // TODO(ricea): Change these two to DCHECK.
+  CHECK_NE(port, url::PORT_UNSPECIFIED);  // Checked port.len <= 0 already.
+  CHECK_NE(port, url::PORT_INVALID);      // Checked is_valid_ already.
 
-  if (port == url::PORT_INVALID ||
-      port > kMaximumValidPortNumber)  // Mimic KURL::port()
-    port = kInvalidPortNumber;
+  // TODO(ricea): Remove this CHECK and the constants it uses.
+  CHECK(port <= kMaximumValidPortNumber || port == kInvalidPortNumber);
 
   return static_cast<unsigned short>(port);
 }
