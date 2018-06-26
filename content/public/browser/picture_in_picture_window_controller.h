@@ -38,6 +38,7 @@ class PictureInPictureWindowController {
   virtual gfx::Size Show() = 0;
 
   virtual void Close(bool should_pause_video) = 0;
+  virtual void ClickCustomControl() = 0;
   virtual void EmbedSurface(const viz::SurfaceId& surface_id,
                             const gfx::Size& natural_size) = 0;
   virtual OverlayWindow* GetWindowForTesting() = 0;

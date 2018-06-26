@@ -972,6 +972,10 @@
       status: "stable",
     },
     {
+      name: "PictureInPictureControl",
+      status: "experimental",
+    },
+    {
       name: "PreciseMemoryInfo",
     },
     {

@@ -1128,6 +1128,7 @@ html element video
     property onencrypted
     property onenterpictureinpicture
     property onleavepictureinpicture
+    property onpictureinpicturecontrolclick
     property onwaitingforkey
     property pause
     property paused

@@ -276,6 +276,8 @@ bool RendererWebMediaPlayerDelegate::OnMessageReceived(
                         OnMediaDelegateBecamePersistentVideo)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_EndPictureInPictureMode,
                         OnPictureInPictureModeEnded)
+    IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_ClickPictureInPictureControl,
+                        OnPictureInPictureControlClicked)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateMsg_OnPictureInPictureModeEnded_ACK,
                         OnPictureInPictureModeEndedAck)
     IPC_MESSAGE_HANDLER(
@@ -392,6 +394,13 @@ void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEnded(
   Observer* observer = id_map_.Lookup(player_id);
   if (observer)
     observer->OnPictureInPictureModeEnded();
+}
+
+void RendererWebMediaPlayerDelegate::OnPictureInPictureControlClicked(
+    int player_id) {
+  Observer* observer = id_map_.Lookup(player_id);
+  if (observer)
+    observer->OnPictureInPictureControlClicked();
 }
 
 void RendererWebMediaPlayerDelegate::OnPictureInPictureModeEndedAck(

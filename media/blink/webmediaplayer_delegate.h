@@ -76,6 +76,9 @@ class WebMediaPlayerDelegate {
     // Called when Picture-in-Picture mode is terminated from the
     // Picture-in-Picture window.
     virtual void OnPictureInPictureModeEnded() = 0;
+
+    // Called when a custom control is clicked on the Picture-in-Picture window.
+    virtual void OnPictureInPictureControlClicked() = 0;
   };
 
   // Returns true if the host frame is hidden or closed.

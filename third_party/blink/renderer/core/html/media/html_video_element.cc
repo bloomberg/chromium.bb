@@ -554,6 +554,11 @@ void HTMLVideoElement::PictureInPictureStopped() {
       .OnExitedPictureInPicture(nullptr);
 }
 
+void HTMLVideoElement::PictureInPictureControlClicked() {
+  PictureInPictureController::From(GetDocument())
+      .OnPictureInPictureControlClicked();
+}
+
 WebMediaPlayer::DisplayType HTMLVideoElement::DisplayType() const {
   if (is_auto_picture_in_picture_ ||
       PictureInPictureController::From(GetDocument())

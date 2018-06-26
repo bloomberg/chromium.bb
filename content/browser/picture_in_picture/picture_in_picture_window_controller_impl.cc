@@ -73,6 +73,14 @@ gfx::Size PictureInPictureWindowControllerImpl::Show() {
   return window_->GetBounds().size();
 }
 
+void PictureInPictureWindowControllerImpl::ClickCustomControl() {
+  DCHECK(window_);
+
+  media_player_id_->first->Send(
+      new MediaPlayerDelegateMsg_ClickPictureInPictureControl(
+          media_player_id_->first->GetRoutingID(), media_player_id_->second));
+}
+
 void PictureInPictureWindowControllerImpl::Close(bool should_pause_video) {
   DCHECK(window_);
 

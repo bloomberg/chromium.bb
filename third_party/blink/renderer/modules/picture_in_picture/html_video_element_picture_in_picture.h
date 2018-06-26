@@ -29,6 +29,7 @@ class HTMLVideoElementPictureInPicture {
 
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(enterpictureinpicture);
   DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(leavepictureinpicture);
+  DEFINE_STATIC_ATTRIBUTE_EVENT_LISTENER(pictureinpicturecontrolclick);
 };
 
 }  // namespace blink

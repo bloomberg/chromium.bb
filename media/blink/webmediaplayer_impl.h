@@ -243,6 +243,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   void OnVolumeMultiplierUpdate(double multiplier) override;
   void OnBecamePersistentVideo(bool value) override;
   void OnPictureInPictureModeEnded() override;
+  void OnPictureInPictureControlClicked() override;
 
   void RequestRemotePlaybackDisabled(bool disabled) override;
 #if defined(OS_ANDROID)  // WMPI_CAST
