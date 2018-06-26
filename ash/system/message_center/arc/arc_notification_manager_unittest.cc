@@ -19,6 +19,7 @@
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/message_center/fake_message_center.h"
+#include "ui/message_center/message_center_observer.h"
 
 namespace ash {
 
@@ -52,10 +53,21 @@ class MockMessageCenter : public message_center::FakeMessageCenter {
     return visible_notifications_;
   }
 
+  void SetQuietMode(bool in_quiet_mode) override {
+    if (in_quiet_mode != in_quiet_mode_) {
+      in_quiet_mode_ = in_quiet_mode;
+      for (auto& observer : observer_list())
+        observer.OnQuietModeChanged(in_quiet_mode);
+    }
+  }
+
+  bool IsQuietMode() const override { return in_quiet_mode_; }
+
  private:
   message_center::NotificationList::Notifications visible_notifications_;
   std::map<std::string, std::unique_ptr<message_center::Notification>>
       owned_notifications_;
+  bool in_quiet_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(MockMessageCenter);
 };
@@ -112,16 +124,7 @@ class ArcNotificationManagerTest : public testing::Test {
 
   void FlushInstanceCall() { binding_->FlushForTesting(); }
 
- private:
-  void SetUp() override {
-    arc_notifications_instance_ =
-        std::make_unique<arc::FakeNotificationsInstance>();
-    message_center_ = std::make_unique<MockMessageCenter>();
-
-    arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
-        std::make_unique<FakeArcNotificationManagerDelegate>(),
-        EmptyAccountId(), message_center_.get());
-
+  void ConnectMojoChannel() {
     binding_ =
         std::make_unique<mojo::Binding<arc::mojom::NotificationsInstance>>(
             arc_notifications_instance_.get());
@@ -131,6 +134,17 @@ class ArcNotificationManagerTest : public testing::Test {
     arc_notification_manager_->SetInstance(std::move(instance_ptr));
     WaitForInstanceReady(
         arc_notification_manager_->GetConnectionHolderForTest());
+  }
+
+ private:
+  void SetUp() override {
+    arc_notifications_instance_ =
+        std::make_unique<arc::FakeNotificationsInstance>();
+    message_center_ = std::make_unique<MockMessageCenter>();
+
+    arc_notification_manager_ = std::make_unique<ArcNotificationManager>(
+        std::make_unique<FakeArcNotificationManagerDelegate>(),
+        EmptyAccountId(), message_center_.get());
   }
 
   void TearDown() override {
@@ -161,10 +175,11 @@ TEST_F(ArcNotificationManagerTest, NotificationCreatedAndRemoved) {
 }
 
 TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
+  ConnectMojoChannel();
+
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
   std::string key = CreateNotification();
   EXPECT_EQ(1u, message_center()->GetVisibleNotifications().size());
-
   {
     message_center::Notification* notification =
         *message_center()->GetVisibleNotifications().begin();
@@ -181,6 +196,8 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByChrome) {
 }
 
 TEST_F(ArcNotificationManagerTest, NotificationRemovedByConnectionClose) {
+  ConnectMojoChannel();
+
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
   CreateNotificationWithKey("notification1");
   CreateNotificationWithKey("notification2");
@@ -190,6 +207,98 @@ TEST_F(ArcNotificationManagerTest, NotificationRemovedByConnectionClose) {
   arc_notification_manager()->OnConnectionClosed();
 
   EXPECT_EQ(0u, message_center()->GetVisibleNotifications().size());
+}
+
+TEST_F(ArcNotificationManagerTest, DoNotDisturbSetStatusByRequestFromAndroid) {
+  ConnectMojoChannel();
+
+  // Check the initial conditions.
+  EXPECT_FALSE(message_center()->IsQuietMode());
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+
+  // Emulate the request from Android to turn on Do-Not-Distturb.
+  arc::mojom::ArcDoNotDisturbStatusPtr status =
+      arc::mojom::ArcDoNotDisturbStatus::New();
+  status->enabled = true;
+  arc_notification_manager()->OnDoNotDisturbStatusUpdated(std::move(status));
+  // Confirm that the Do-Not-Disturb is on.
+  EXPECT_TRUE(message_center()->IsQuietMode());
+  // Confirm that no message back to Android.
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+
+  // Emulate the request from Android to turn off Do-Not-Disturb.
+  status = arc::mojom::ArcDoNotDisturbStatus::New();
+  status->enabled = false;
+  arc_notification_manager()->OnDoNotDisturbStatusUpdated(std::move(status));
+  // Confirm that the Do-Not-Disturb is off.
+  EXPECT_FALSE(message_center()->IsQuietMode());
+  // Confirm that no message back to Android.
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+}
+
+TEST_F(ArcNotificationManagerTest, DoNotDisturbSendStatusToAndroid) {
+  ConnectMojoChannel();
+  // FlushInstanceCall();
+
+  // Check the initial conditions.
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+  EXPECT_FALSE(message_center()->IsQuietMode());
+
+  // Trying setting the current value (false). This should be no-op
+  message_center()->SetQuietMode(false);
+  // A request to Android should not be sent, since the status is not changed.
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+
+  // Trying turning on.
+  message_center()->SetQuietMode(true);
+  FlushInstanceCall();
+  // base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+  // A request to Android should be sent.
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status()->enabled);
+}
+
+TEST_F(ArcNotificationManagerTest, DoNotDisturbSyncInitialDisabledState) {
+  // Check the initial conditions.
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+  EXPECT_FALSE(message_center()->IsQuietMode());
+
+  // Establish the mojo connection.
+  ConnectMojoChannel();
+  FlushInstanceCall();
+  // The request to Android should be sent, and the status should be synced
+  // accordingly.
+  EXPECT_FALSE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+  EXPECT_FALSE(
+      arc_notifications_instance()->latest_do_not_disturb_status()->enabled);
+}
+
+TEST_F(ArcNotificationManagerTest, DoNotDisturbSyncInitialEnabledState) {
+  // Set quiet mode.
+  message_center()->SetQuietMode(true);
+  // Check the initial condition.
+  EXPECT_TRUE(message_center()->IsQuietMode());
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+
+  // Establish the mojo connection.
+  ConnectMojoChannel();
+  FlushInstanceCall();
+  // The request to Android should be sent, and the status should be synced
+  // accordingly.
+  EXPECT_FALSE(
+      arc_notifications_instance()->latest_do_not_disturb_status().is_null());
+  EXPECT_TRUE(
+      arc_notifications_instance()->latest_do_not_disturb_status()->enabled);
 }
 
 }  // namespace ash
