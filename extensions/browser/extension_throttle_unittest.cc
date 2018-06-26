@@ -192,10 +192,6 @@ void ExtensionThrottleEntryTest::SetUp() {
   entry_->ResetToBlank(now_);
 }
 
-std::ostream& operator<<(std::ostream& out, const base::TimeTicks& time) {
-  return out << time.ToInternalValue();
-}
-
 TEST_F(ExtensionThrottleEntryTest, CanThrottleRequest) {
   entry_->set_exponential_backoff_release_time(entry_->ImplGetTimeNow() +
                                                TimeDelta::FromMilliseconds(1));
@@ -257,7 +253,7 @@ TEST_F(ExtensionThrottleEntryTest, IsEntryReallyOutdated) {
       TimeAndBool(now_ - lifetime, true, __LINE__),
       TimeAndBool(now_ - (lifetime + kFiveMs), true, __LINE__)};
 
-  for (unsigned int i = 0; i < arraysize(test_values); ++i) {
+  for (unsigned int i = 0; i < base::size(test_values); ++i) {
     entry_->set_exponential_backoff_release_time(test_values[i].time);
     EXPECT_EQ(entry_->IsEntryOutdated(), test_values[i].result)
         << "Test case #" << i << " line " << test_values[i].line << " failed";
@@ -365,7 +361,7 @@ TEST_F(ExtensionThrottleManagerTest, IsUrlStandardised) {
       GurlAndString(GURL("http://www.example.com:1234/"),
                     std::string("http://www.example.com:1234/"), __LINE__)};
 
-  for (unsigned int i = 0; i < arraysize(test_values); ++i) {
+  for (unsigned int i = 0; i < base::size(test_values); ++i) {
     std::string temp = manager.DoGetUrlIdFromUrl(test_values[i].url);
     EXPECT_EQ(temp, test_values[i].result) << "Test case #" << i << " line "
                                            << test_values[i].line << " failed";
