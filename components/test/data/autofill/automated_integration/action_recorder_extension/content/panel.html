@@ -1,0 +1,37 @@
+<html>
+<head>
+  <link rel="stylesheet" type="text/css" href="panel.css">
+</head>
+<body>
+  <div id="panel">
+    <div id="header" class="section">
+      <div class="h-flex-container">
+        <div id="headingText">
+          <h1>Action Recorder</h1>
+        </div>
+      </div>
+    </div>
+    <div id="nextStep" class="section">
+      <a class="nextBtnClass" id="saveBtn">Save Recipe</a>
+      <a class="nextBtnClass" id="stopBtn">Stop Recording</a>
+      <a class="nextBtnClass" id="cancelBtn">Cancel Recording</a>
+    </div>
+    <div id="info" class="section">
+      <h2>Basic Information</h2>
+      <div class="field h-flex-container">
+        <label>Name</label>
+        <input type="text" class="input1Box" id="recipeName" />
+      </div>
+      <div class="field h-flex-container">
+        <label>URL</label>
+        <input type="text" class="input1Box" id="startingURL" disabled/>
+      </div>
+    </div>
+    <div id="actions">
+    </div>
+  </div>
+  <script src="../common_lib.js"></script>
+  <script src="../constants.js"></script>
+  <script src="panel.js"></script>
+</body>
+</html>
