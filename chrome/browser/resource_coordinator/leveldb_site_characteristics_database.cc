@@ -15,6 +15,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/resource_coordinator/utils.h"
 #include "third_party/leveldatabase/env_chromium.h"
+#include "third_party/leveldatabase/leveldb_chrome.h"
 #include "third_party/leveldatabase/src/include/leveldb/write_batch.h"
 
 namespace resource_coordinator {
@@ -57,19 +58,15 @@ void ReportInitStatus(const char* histogram_name,
   }
 }
 
-void ReportRepairResult(bool repair_succeeded) {
-  UMA_HISTOGRAM_BOOLEAN("TabManager.Discarding.LocalDatabase.DatabaseRepair",
-                        repair_succeeded);
-}
-
 // Attempt to repair the database stored in |db_path|.
 bool RepairDatabase(const std::string& db_path) {
   leveldb_env::Options options;
   options.reuse_logs = false;
   options.max_open_files = 0;
-  if (!leveldb::RepairDB(db_path, options).ok())
-    return false;
-  return true;
+  bool repair_succeeded = leveldb::RepairDB(db_path, options).ok();
+  UMA_HISTOGRAM_BOOLEAN("TabManager.Discarding.LocalDatabase.DatabaseRepair",
+                        repair_succeeded);
+  return repair_succeeded;
 }
 
 bool ShouldAttemptDbRepair(const leveldb::Status& status) {
@@ -137,6 +134,7 @@ class LevelDBSiteCharacteristicsDatabase::AsyncHelper {
 
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(!db_) << "Database already open";
   base::AssertBlockingAllowed();
 
   leveldb_env::Options options;
@@ -149,24 +147,18 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::OpenOrCreateDatabase() {
   if (status.ok())
     return;
 
-  db_.reset();
-
   if (!ShouldAttemptDbRepair(status))
     return;
 
   if (RepairDatabase(db_path_.AsUTF8Unsafe())) {
-    ReportRepairResult(true);
     status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
     ReportInitStatus(kInitStatusAfterRepairHistogramLabel, status);
     if (status.ok())
       return;
-  } else {
-    ReportRepairResult(false);
   }
 
-  db_.reset();
   // Delete the database and try to open it one last time.
-  if (base::DeleteFile(db_path_, true /* recursive */)) {
+  if (leveldb_chrome::DeleteDB(db_path_, options).ok()) {
     status = leveldb_env::OpenDB(options, db_path_.AsUTF8Unsafe(), &db_);
     ReportInitStatus(kInitStatusAfterDeleteHistogramLabel, status);
     if (!status.ok())
