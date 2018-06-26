@@ -281,3 +281,17 @@ tests:
   - - aaabcdefg
     - zydeeeg
     - inputPos: [0,0,5,6,6,6,8]
+
+# Converted from inpos_compbrl.c
+table: [tables/en-us-g2.ctb]
+tests:
+  - - 'user@example.com'
+    - '_+user@example.com_:'
+    - inputPos: [0,0,0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,15,15]
+
+# Converted from inpos_match_replace.c
+table: [tests/tables/inpos_match_replace.ctb]
+tests:
+  - - Fussball-Vereinigung
+    - FUSSBALL-V7EINIGUNG
+    - inputPos: [0,1,2,3,4,5,6,7,8,9,9,12,13,14,15,16,17,18,19]

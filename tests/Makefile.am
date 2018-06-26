@@ -23,8 +23,6 @@ findTable_SOURCES = findTable.c
 getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
 hyphenate_xxx_SOURCES = hyphenate_xxx.c
-inpos_compbrl_SOURCES = default_table.h inpos_compbrl.c
-inpos_match_replace_SOURCES = inpos_match_replace.c
 lastworditalafter_SOURCES = default_table.h lastworditalafter.c
 letterDefTest_SOURCES = letterDefTest.c
 logging_SOURCES = logging.c
@@ -52,8 +50,6 @@ program_TESTS =					\
 	getTable				\
 	hash_collision				\
 	hyphenate_xxx				\
-	inpos_compbrl				\
-	inpos_match_replace			\
 	lastworditalafter			\
 	letterDefTest				\
 	logging					\
