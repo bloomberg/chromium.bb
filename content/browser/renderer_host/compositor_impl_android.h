@@ -70,9 +70,7 @@ class CONTENT_EXPORT CompositorImpl
       public ui::UIResourceProvider,
       public ui::WindowAndroidCompositor,
       public viz::HostFrameSinkClient,
-      public display::DisplayObserver,
-      public ui::ExternalBeginFrameClient,
-      public viz::BeginFrameObserverBase {
+      public display::DisplayObserver {
  public:
   CompositorImpl(CompositorClient* client, gfx::NativeWindow root_window);
   ~CompositorImpl() override;
@@ -163,14 +161,6 @@ class CONTENT_EXPORT CompositorImpl
   // ui::CompositorLockManagerClient implementation.
   void OnCompositorLockStateChanged(bool locked) override;
 
-  // viz::BeginFrameObserverBase implementation.
-  bool OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) override;
-  void OnBeginFrameSourcePausedChanged(bool paused) override {}
-
-  // ui::ExternalBeginFrameClient implementation.
-  void OnDisplayDidFinishFrame(const viz::BeginFrameAck& ack) override {}
-  void OnNeedsExternalBeginFrames(bool needs_begin_frames) override;
-
   void SetVisible(bool visible);
   void CreateLayerTreeHost();
 
@@ -260,16 +250,9 @@ class CONTENT_EXPORT CompositorImpl
   // If true, we are using a Viz process.
   const bool enable_viz_;
 
-  // If true, we should send external begin frames to the Viz process.
-  bool needs_external_begin_frames_ = false;
-
   // Viz-specific members for communicating with the display.
   viz::mojom::DisplayPrivateAssociatedPtr display_private_;
   std::unique_ptr<viz::HostDisplayClient> display_client_;
-
-  // Viz-specific member which manages sending begin frames to the Viz process.
-  std::unique_ptr<ui::ExternalBeginFrameControllerClientImpl>
-      external_begin_frame_controller_client_;
 
   // Test-only. Called when we are notified of a swap.
   base::RepeatingCallback<void(const gfx::Size&)>

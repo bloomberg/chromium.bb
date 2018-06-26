@@ -29,6 +29,11 @@ viz_test("viz_unittests") {
   data_deps = [
     "//third_party/mesa:osmesa",
   ]
+
+  if (is_android) {
+    # The top level test target must depend on the java library directly.
+    deps += [ "//components/viz/service:service_java" ]
+  }
 }
 
 viz_test("viz_perftests") {

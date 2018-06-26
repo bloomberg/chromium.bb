@@ -193,6 +193,7 @@ VizMainImpl::~VizMainImpl() {
     compositor_thread_task_runner_->PostTask(
         FROM_HERE, base::BindOnce(&VizMainImpl::TearDownOnCompositorThread,
                                   base::Unretained(this)));
+    compositor_thread_->Stop();
     compositor_thread_.reset();
     compositor_thread_task_runner_ = nullptr;
   }

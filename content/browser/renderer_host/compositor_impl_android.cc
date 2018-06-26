@@ -645,9 +645,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
 
 CompositorImpl::~CompositorImpl() {
   display::Screen::GetScreen()->RemoveObserver(this);
-  if (enable_viz_)
-    OnNeedsExternalBeginFrames(false);
-
   DetachRootWindow();
   // Clean-up any surface references.
   SetSurface(NULL);
@@ -1224,14 +1221,6 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
   root_params->display_client =
       display_client_->GetBoundPtr(task_runner).PassInterface();
 
-  // Initialize ExternalBeginFrameControllerClient.
-  external_begin_frame_controller_client_ =
-      std::make_unique<ui::ExternalBeginFrameControllerClientImpl>(this);
-  root_params->external_begin_frame_controller =
-      external_begin_frame_controller_client_->GetControllerRequest();
-  root_params->external_begin_frame_controller_client =
-      external_begin_frame_controller_client_->GetBoundPtr().PassInterface();
-
   viz::RendererSettings renderer_settings;
   renderer_settings.allow_antialiasing = false;
   renderer_settings.highp_threshold_min = 2048;
@@ -1270,28 +1259,6 @@ viz::LocalSurfaceId CompositorImpl::GenerateLocalSurfaceId() const {
     return CompositorDependencies::Get().surface_id_allocator.GenerateId();
 
   return viz::LocalSurfaceId();
-}
-
-bool CompositorImpl::OnBeginFrameDerivedImpl(const viz::BeginFrameArgs& args) {
-  DCHECK(enable_viz_);
-  DCHECK(external_begin_frame_controller_client_);
-  external_begin_frame_controller_client_->GetController()
-      ->IssueExternalBeginFrame(args);
-  return true;
-}
-
-void CompositorImpl::OnNeedsExternalBeginFrames(bool needs_begin_frames) {
-  DCHECK(enable_viz_);
-
-  if (needs_begin_frames == needs_external_begin_frames_)
-    return;
-
-  needs_external_begin_frames_ = needs_begin_frames;
-  if (needs_begin_frames) {
-    root_window_->GetBeginFrameSource()->AddObserver(this);
-  } else {
-    root_window_->GetBeginFrameSource()->RemoveObserver(this);
-  }
 }
 
 }  // namespace content
