@@ -1612,14 +1612,13 @@ static void write_modes_sb(AV1_COMP *const cpi, const TileInfo *const tile,
 
   const int num_planes = av1_num_planes(cm);
   for (int plane = 0; plane < num_planes; ++plane) {
-    int rcol0, rcol1, rrow0, rrow1, tile_tl_idx;
+    int rcol0, rcol1, rrow0, rrow1;
     if (av1_loop_restoration_corners_in_sb(cm, plane, mi_row, mi_col, bsize,
-                                           &rcol0, &rcol1, &rrow0, &rrow1,
-                                           &tile_tl_idx)) {
+                                           &rcol0, &rcol1, &rrow0, &rrow1)) {
       const int rstride = cm->rst_info[plane].horz_units_per_tile;
       for (int rrow = rrow0; rrow < rrow1; ++rrow) {
         for (int rcol = rcol0; rcol < rcol1; ++rcol) {
-          const int runit_idx = tile_tl_idx + rcol + rrow * rstride;
+          const int runit_idx = rcol + rrow * rstride;
           const RestorationUnitInfo *rui =
               &cm->rst_info[plane].unit_info[runit_idx];
           loop_restoration_write_sb_coeffs(cm, xd, rui, w, plane,
