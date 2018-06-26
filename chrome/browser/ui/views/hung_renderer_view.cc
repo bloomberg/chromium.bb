@@ -110,7 +110,8 @@ void HungPagesTableModel::Reset() {
 }
 
 void HungPagesTableModel::RestartHangMonitorTimeout() {
-  hang_monitor_restarter_.Run();
+  if (hang_monitor_restarter_)
+    hang_monitor_restarter_.Run();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
