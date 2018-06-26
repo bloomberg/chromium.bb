@@ -34,8 +34,10 @@ namespace ash {
 struct AcceleratorData;
 class ExitWarningHandler;
 
-// Identifier for the high contrast toggle accelerator notification.
+// Identifiers for toggling accelerator notifications.
 ASH_EXPORT extern const char kHighContrastToggleAccelNotificationId[];
+ASH_EXPORT extern const char kDockedMagnifierToggleAccelNotificationId[];
+ASH_EXPORT extern const char kFullscreenMagnifierToggleAccelNotificationId[];
 
 // AcceleratorController provides functions for registering or unregistering
 // global keyboard accelerators, which are handled earlier than any windows. It

@@ -183,6 +183,16 @@ class AcceleratorControllerTest : public AshTestBase {
                           kHighContrastToggleAccelNotificationId);
   }
 
+  bool ContainsDockedMagnifierNotification() const {
+    return nullptr != message_center()->FindVisibleNotificationById(
+                          kDockedMagnifierToggleAccelNotificationId);
+  }
+
+  bool ContainsFullscreenMagnifierNotification() const {
+    return nullptr != message_center()->FindVisibleNotificationById(
+                          kFullscreenMagnifierToggleAccelNotificationId);
+  }
+
   bool IsConfirmationDialogOpen() {
     return !!(GetController()->confirmation_dialog_for_testing());
   }
@@ -1420,6 +1430,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_TRUE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(ContainsFullscreenMagnifierNotification());
 
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
@@ -1427,6 +1438,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
   EXPECT_TRUE(accessibility_controller
                   ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
+  EXPECT_FALSE(ContainsFullscreenMagnifierNotification());
 
   // Dialog will not be shown the second time the accelerator is used.
   EXPECT_TRUE(ProcessInController(fullscreen_magnifier_accelerator));
@@ -1435,6 +1447,9 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleFullscreenMagnifier) {
                   ->HasScreenMagnifierAcceleratorDialogBeenAccepted());
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
   EXPECT_TRUE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(ContainsFullscreenMagnifierNotification());
+
+  RemoveAllNotifications();
 }
 
 TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
@@ -1455,6 +1470,7 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_TRUE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(ContainsDockedMagnifierNotification());
 
   EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
   EXPECT_FALSE(docked_magnifier_controller()->GetEnabled());
@@ -1462,12 +1478,16 @@ TEST_F(MagnifiersAcceleratorsTester, TestToggleDockedMagnifier) {
   EXPECT_TRUE(accessibility_controller
                   ->HasDockedMagnifierAcceleratorDialogBeenAccepted());
   EXPECT_FALSE(IsConfirmationDialogOpen());
+  EXPECT_FALSE(ContainsDockedMagnifierNotification());
 
   // Dialog will not be shown the second time accelerator is used.
   EXPECT_TRUE(ProcessInController(docked_magnifier_accelerator));
   EXPECT_FALSE(IsConfirmationDialogOpen());
   EXPECT_TRUE(docked_magnifier_controller()->GetEnabled());
   EXPECT_FALSE(fullscreen_magnifier_controller()->IsEnabled());
+  EXPECT_TRUE(ContainsDockedMagnifierNotification());
+
+  RemoveAllNotifications();
 }
 
 }  // namespace ash

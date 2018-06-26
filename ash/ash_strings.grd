@@ -1293,12 +1293,32 @@ This file contains the strings for ash.
 
       <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
       <message name="IDS_HIGH_CONTRAST_ACCEL_TITLE"
-               desc="Notification title to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
+               desc="Notification title to tell users that they just pressed the Ctrl+Search+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
         High Contrast Mode
       </message>
       <message name="IDS_HIGH_CONTRAST_ACCEL_MSG"
-               desc="Notification message to tell users that they just pressed the Search+Shift+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
+               desc="Notification message to tell users that they just pressed the Ctrl+Search+H shortcut to toggle High Contrast Mode, and that pressing it again will toggle it off.">
         High Contrast Mode enabled. Press Ctrl+Search+H again to toggle it off.
+      </message>
+
+      <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
+      <message name="IDS_DOCKED_MAGNIFIER_ACCEL_TITLE"
+               desc="Notification title to tell users that they just pressed the Ctrl+Search+D shortcut to toggle Docked Magnifier, and that pressing it again will toggle it off.">
+        Docked Magnifier
+      </message>
+      <message name="IDS_DOCKED_MAGNIFIER_ACCEL_MSG"
+               desc="Notification message to tell users that they just pressed the Ctrl+Search+D shortcut to toggle Docked Magnifier, and that pressing it again will toggle it off.">
+        Docked Magnifier enabled. Press Ctrl+Search+D again to toggle it off.
+      </message>
+
+      <!-- Notification that an accelerator was pressed, so the user knows how to toggle it back -->
+      <message name="IDS_FULLSCREEN_MAGNIFIER_ACCEL_TITLE"
+               desc="Notification title to tell users that they just pressed the Ctrl+Search+M shortcut to toggle Fullscreen Magnifier, and that pressing it again will toggle it off.">
+        Fullscreen Magnifier
+      </message>
+      <message name="IDS_FULLSCREEN_MAGNIFIER_ACCEL_MSG"
+               desc="Notification message to tell users that they just pressed the Ctrl+Search+M shortcut to toggle Fullscreen Magnifier, and that pressing it again will toggle it off.">
+        Fullscreen Magnifier enabled. Press Ctrl+Search+M again to toggle it off.
       </message>
 
       <!-- Tray scale strings -->
