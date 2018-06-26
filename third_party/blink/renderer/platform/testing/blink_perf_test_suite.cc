@@ -19,12 +19,10 @@
 namespace blink {
 
 BlinkPerfTestSuite::BlinkPerfTestSuite(int argc, char** argv)
-    : base::TestSuite(argc, argv) {}
+    : base::TestSuite(argc, argv), env(argc, argv) {}
 
 void BlinkPerfTestSuite::Initialize() {
   TestSuite::Initialize();
-  WTF::Partitions::Initialize(nullptr);
-  WTF::Initialize(nullptr);
 
   // Initialize the perf timer log
   base::FilePath log_path =
