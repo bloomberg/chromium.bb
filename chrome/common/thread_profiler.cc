@@ -23,6 +23,8 @@
 #include "services/service_manager/embedder/switches.h"
 #include "services/service_manager/public/cpp/connector.h"
 
+using CallStackProfileParams = metrics::CallStackProfileParams;
+
 namespace {
 
 // Only used by child processes.
@@ -43,26 +45,26 @@ constexpr struct base::StackSamplingProfiler::SamplingParams kSamplingParams = {
     /* samples_per_profile= */ 300,
     /* sampling_interval= */ base::TimeDelta::FromMilliseconds(100)};
 
-metrics::CallStackProfileParams::Process GetProcess() {
+CallStackProfileParams::Process GetProcess() {
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
   std::string process_type =
       command_line->GetSwitchValueASCII(switches::kProcessType);
   if (process_type.empty())
-    return metrics::CallStackProfileParams::BROWSER_PROCESS;
+    return CallStackProfileParams::BROWSER_PROCESS;
   if (process_type == switches::kRendererProcess)
-    return metrics::CallStackProfileParams::RENDERER_PROCESS;
+    return CallStackProfileParams::RENDERER_PROCESS;
   if (process_type == switches::kGpuProcess)
-    return metrics::CallStackProfileParams::GPU_PROCESS;
+    return CallStackProfileParams::GPU_PROCESS;
   if (process_type == switches::kUtilityProcess)
-    return metrics::CallStackProfileParams::UTILITY_PROCESS;
+    return CallStackProfileParams::UTILITY_PROCESS;
   if (process_type == service_manager::switches::kZygoteProcess)
-    return metrics::CallStackProfileParams::ZYGOTE_PROCESS;
+    return CallStackProfileParams::ZYGOTE_PROCESS;
   if (process_type == switches::kPpapiPluginProcess)
-    return metrics::CallStackProfileParams::PPAPI_PLUGIN_PROCESS;
+    return CallStackProfileParams::PPAPI_PLUGIN_PROCESS;
   if (process_type == switches::kPpapiBrokerProcess)
-    return metrics::CallStackProfileParams::PPAPI_BROKER_PROCESS;
-  return metrics::CallStackProfileParams::UNKNOWN_PROCESS;
+    return CallStackProfileParams::PPAPI_BROKER_PROCESS;
+  return CallStackProfileParams::UNKNOWN_PROCESS;
 }
 
 }  // namespace
@@ -116,7 +118,7 @@ ThreadProfiler::~ThreadProfiler() {}
 // static
 std::unique_ptr<ThreadProfiler> ThreadProfiler::CreateAndStartOnMainThread() {
   return std::unique_ptr<ThreadProfiler>(
-      new ThreadProfiler(metrics::CallStackProfileParams::MAIN_THREAD));
+      new ThreadProfiler(CallStackProfileParams::MAIN_THREAD));
 }
 
 void ThreadProfiler::SetMainThreadTaskRunner(
@@ -134,8 +136,7 @@ void ThreadProfiler::SetMainThreadTaskRunner(
 }
 
 // static
-void ThreadProfiler::StartOnChildThread(
-    metrics::CallStackProfileParams::Thread thread) {
+void ThreadProfiler::StartOnChildThread(CallStackProfileParams::Thread thread) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
@@ -149,7 +150,7 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
-  DCHECK_NE(metrics::CallStackProfileParams::BROWSER_PROCESS, GetProcess());
+  DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS, GetProcess());
 
   metrics::mojom::CallStackProfileCollectorPtr browser_interface;
   connector->BindInterface(content::mojom::kBrowserServiceName,
@@ -178,25 +179,24 @@ void ThreadProfiler::SetServiceManagerConnectorForChildProcess(
 // The process in previous paragraph continues until the ThreadProfiler is
 // destroyed prior to thread exit.
 ThreadProfiler::ThreadProfiler(
-    metrics::CallStackProfileParams::Thread thread,
+    CallStackProfileParams::Thread thread,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner)
     : owning_thread_task_runner_(owning_thread_task_runner),
-      periodic_profile_params_(
-          GetProcess(),
-          thread,
-          metrics::CallStackProfileParams::PERIODIC_COLLECTION,
-          metrics::CallStackProfileParams::MAY_SHUFFLE),
+      periodic_profile_params_(GetProcess(),
+                               thread,
+                               CallStackProfileParams::PERIODIC_COLLECTION,
+                               CallStackProfileParams::MAY_SHUFFLE),
       weak_factory_(this) {
   if (!StackSamplingConfiguration::Get()->IsProfilerEnabledForCurrentProcess())
     return;
 
   startup_profiler_ = std::make_unique<base::StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
-      BindRepeating(&ThreadProfiler::ReceiveStartupProfile,
-                    GetReceiverCallback(metrics::CallStackProfileParams(
-                        GetProcess(), thread,
-                        metrics::CallStackProfileParams::PROCESS_STARTUP,
-                        metrics::CallStackProfileParams::MAY_SHUFFLE))));
+      BindRepeating(
+          &ThreadProfiler::ReceiveStartupProfile,
+          GetReceiverCallback(CallStackProfileParams(
+              GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP,
+              CallStackProfileParams::MAY_SHUFFLE))));
   startup_profiler_->Start();
 
   // Estimated time at which the startup profiling will be completed. It's OK if
@@ -217,7 +217,7 @@ ThreadProfiler::ThreadProfiler(
 
 base::StackSamplingProfiler::CompletedCallback
 ThreadProfiler::GetReceiverCallback(
-    const metrics::CallStackProfileParams& profile_params) {
+    const CallStackProfileParams& profile_params) {
   // TODO(wittman): Simplify the approach to getting the profiler callback
   // across CallStackProfileMetricsProvider and
   // ChildCallStackProfileCollector. Ultimately both should expose functions
@@ -231,7 +231,7 @@ ThreadProfiler::GetReceiverCallback(
   // and this function should bind the passed profile_params and
   // base::TimeTicks::Now() to those functions.
   base::TimeTicks profile_start_time = base::TimeTicks::Now();
-  if (GetProcess() == metrics::CallStackProfileParams::BROWSER_PROCESS) {
+  if (GetProcess() == CallStackProfileParams::BROWSER_PROCESS) {
     return metrics::CallStackProfileMetricsProvider::
         GetProfilerCallbackForBrowserProcess(profile_params);
   }
