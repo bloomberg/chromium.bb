@@ -93,7 +93,7 @@ suite('UsbDevices', function() {
       const menuButton =
           testElement.$$('paper-icon-button-light.icon-more-vert');
       assertTrue(!!menuButton);
-      MockInteractions.tap(menuButton.querySelector('button'));
+      menuButton.querySelector('button').click();
       const dialog = testElement.$$('cr-action-menu');
       assertTrue(dialog.open);
     });
@@ -112,8 +112,8 @@ suite('UsbDevices', function() {
     const menuButton = testElement.root.querySelectorAll(
         'paper-icon-button-light.icon-more-vert')[indexToRemove];
     const removeButton = testElement.$.removeButton;
-    MockInteractions.tap(menuButton.querySelector('button'));
-    MockInteractions.tap(removeButton);
+    menuButton.querySelector('button').click();
+    removeButton.click();
     return browserProxy.whenCalled('removeUsbDevice').then(function(args) {
       /**
        * removeUsbDevice() is expected to be called with arguments as

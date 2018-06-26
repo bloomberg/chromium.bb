@@ -235,8 +235,7 @@ suite('SiteDetails', function() {
       assertTrue(testElement.$$('#noStorage').hidden);
       assertFalse(testElement.$$('#storage').hidden);
 
-      MockInteractions.tap(
-          testElement.$$('#confirmClearStorage .action-button'));
+      testElement.$$('#confirmClearStorage .action-button').click();
       assertTrue(usageCleared);
     });
   });
@@ -308,12 +307,12 @@ suite('SiteDetails', function() {
 
     // Check both cancelling and accepting the dialog closes it.
     ['cancel-button', 'action-button'].forEach(buttonType => {
-      MockInteractions.tap(testElement.$$('#resetSettingsButton'));
+      testElement.$$('#resetSettingsButton').click();
       assertTrue(testElement.$.confirmResetSettings.open);
       const actionButtonList =
           testElement.$.confirmResetSettings.getElementsByClassName(buttonType);
       assertEquals(1, actionButtonList.length);
-      MockInteractions.tap(actionButtonList[0]);
+      actionButtonList[0].click();
       assertFalse(testElement.$.confirmResetSettings.open);
     });
 
@@ -352,13 +351,13 @@ suite('SiteDetails', function() {
 
     // Check both cancelling and accepting the dialog closes it.
     ['cancel-button', 'action-button'].forEach(buttonType => {
-      MockInteractions.tap(testElement.$$('#usage paper-button'));
+      testElement.$$('#usage paper-button').click();
       assertTrue(testElement.$.confirmClearStorage.open);
       const actionButtonList =
           testElement.$.confirmClearStorage.getElementsByClassName(buttonType);
       assertEquals(1, actionButtonList.length);
       testElement.storedData_ = '';
-      MockInteractions.tap(actionButtonList[0]);
+      actionButtonList[0].click();
       assertFalse(testElement.$.confirmClearStorage.open);
     });
   });

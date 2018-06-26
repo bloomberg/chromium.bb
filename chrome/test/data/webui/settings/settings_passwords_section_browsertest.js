@@ -322,8 +322,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       };
 
       // Click the remove button on the first password.
-      MockInteractions.tap(firstNode.$$('#passwordMenu'));
-      MockInteractions.tap(passwordsSection.$.menuRemovePassword);
+      firstNode.$$('#passwordMenu').click();
+      passwordsSection.$.menuRemovePassword.click();
     });
 
     test('verifyFilterPasswords', function() {
@@ -459,8 +459,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       let item = 0;
 
       const clickRemoveButton = function() {
-        MockInteractions.tap(
-            exceptions[item].querySelector('#removeExceptionButton'));
+        exceptions[item].querySelector('#removeExceptionButton').click();
       };
 
       passwordManager.onRemoveException = function(index) {
@@ -550,7 +549,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         done();
       });
 
-      MockInteractions.tap(passwordDialog.$.showPasswordButton);
+      passwordDialog.$.showPasswordButton.click();
     });
 
     test('onShowSavedPasswordListItem', function(done) {
@@ -568,7 +567,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         done();
       });
 
-      MockInteractions.tap(passwordListItem.$$('#showPasswordButton'));
+      passwordListItem.$$('#showPasswordButton').click();
     });
 
     test('closingPasswordsSectionHidesUndoToast', function(done) {
@@ -580,8 +579,8 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       // toast is shown.
       const firstNode =
           Polymer.dom(passwordsSection.$.passwordList).children[1];
-      MockInteractions.tap(firstNode.$$('#passwordMenu'));
-      MockInteractions.tap(passwordsSection.$.menuRemovePassword);
+      firstNode.$$('#passwordMenu').click();
+      passwordsSection.$.menuRemovePassword.click();
       assertTrue(passwordsSection.$.undoToast.open);
 
       // Remove the passwords section from the DOM and check that this closes
@@ -632,7 +631,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         done();
       };
       passwordManager.addPasswordsFileExportProgressListener = () => {};
-      MockInteractions.tap(passwordsSection.$.menuExportPassword);
+      passwordsSection.$.menuExportPassword.click();
     });
 
     // Test that tapping "Export passwords..." notifies the browser accordingly
@@ -644,7 +643,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         done();
       };
 
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      exportDialog.$.exportPasswordsButton.click();
     });
 
     // Test the export flow. If exporting is fast, we should skip the
@@ -658,7 +657,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       mockTimer.install();
 
       assertTrue(exportDialog.$.dialog_start.open);
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      exportDialog.$.exportPasswordsButton.click();
       assertTrue(exportDialog.$.dialog_start.open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
@@ -684,7 +683,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       mockTimer.install();
 
       assertTrue(exportDialog.$.dialog_start.open);
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      exportDialog.$.exportPasswordsButton.click();
       assertTrue(exportDialog.$.dialog_start.open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
@@ -697,7 +696,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       // Test that the error dialog is shown.
       assertTrue(exportDialog.$.dialog_error.open);
       // Test that the error dialog can be dismissed.
-      MockInteractions.tap(exportDialog.$.cancelErrorButton);
+      exportDialog.$.cancelErrorButton.click();
       assertFalse(exportDialog.$.dialog_error.open);
       done();
 
@@ -713,7 +712,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       let mockTimer = new MockTimer();
       mockTimer.install();
 
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      exportDialog.$.exportPasswordsButton.click();
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
       progressCallback({
@@ -729,7 +728,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
         callback();
         done();
       };
-      MockInteractions.tap(exportDialog.$.tryAgainButton);
+      exportDialog.$.tryAgainButton.click();
 
       mockTimer.uninstall();
     });
@@ -746,7 +745,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       // The initial dialog remains open for 100ms after export enters the
       // in-progress state.
       assertTrue(exportDialog.$.dialog_start.open);
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      exportDialog.$.exportPasswordsButton.click();
       assertTrue(exportDialog.$.dialog_start.open);
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
@@ -791,13 +790,13 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
 
       // The initial dialog remains open for 100ms after export enters the
       // in-progress state.
-      MockInteractions.tap(exportDialog.$.exportPasswordsButton);
+      exportDialog.$.exportPasswordsButton.click();
       progressCallback(
           {status: chrome.passwordsPrivate.ExportProgressStatus.IN_PROGRESS});
       // The progress bar only appears after 100ms.
       mockTimer.tick(100);
       assertTrue(exportDialog.$.dialog_progress.open);
-      MockInteractions.tap(exportDialog.$.cancel_progress_button);
+      exportDialog.$.cancel_progress_button.click();
 
       // The dialog should be dismissed entirely.
       assertFalse(exportDialog.$.dialog_progress.open);
@@ -812,7 +811,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
       const exportDialog = createExportPasswordsDialog(passwordManager);
 
       assertTrue(exportDialog.$.dialog_start.open);
-      MockInteractions.tap(exportDialog.$.cancelButton);
+      exportDialog.$.cancelButton.click();
       assertFalse(exportDialog.$.dialog_start.open);
 
       done();

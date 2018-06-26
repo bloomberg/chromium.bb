@@ -84,12 +84,12 @@ suite('settings system page', function() {
     const restart = control.querySelector('paper-button');
     expectTrue(!!restart);  // The "RESTART" button should be showing now.
 
-    MockInteractions.tap(restart);
+    restart.click();
     return lifetimeBrowserProxy.whenCalled('restart');
   });
 
   test('proxy row', function() {
-    MockInteractions.tap(systemPage.$.proxy);
+    systemPage.$.proxy.click();
     return systemBrowserProxy.whenCalled('showProxySettings');
   });
 

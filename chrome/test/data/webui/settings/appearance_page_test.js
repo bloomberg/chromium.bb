@@ -160,7 +160,7 @@ suite('AppearanceHandler', function() {
             const button = appearancePage.$.wallpaperButton;
             assertTrue(!!button);
             assertFalse(button.disabled);
-            MockInteractions.tap(button);
+            button.click();
             return appearanceBrowserProxy.whenCalled('openWallpaperManager');
           });
     });
@@ -218,7 +218,7 @@ suite('AppearanceHandler', function() {
       const button = appearancePage.$$('#useDefault');
       assertTrue(!!button);
 
-      MockInteractions.tap(button);
+      button.click();
       return appearanceBrowserProxy.whenCalled('useDefaultTheme');
     });
 
@@ -248,7 +248,7 @@ suite('AppearanceHandler', function() {
       const button = appearancePage.$$('#useSystem');
       assertTrue(!!button);
 
-      MockInteractions.tap(button);
+      button.click();
       return appearanceBrowserProxy.whenCalled('useSystemTheme');
     });
   } else {
@@ -263,7 +263,7 @@ suite('AppearanceHandler', function() {
       const button = appearancePage.$$('#useDefault');
       assertTrue(!!button);
 
-      MockInteractions.tap(button);
+      button.click();
       return appearanceBrowserProxy.whenCalled('useDefaultTheme');
     });
   }

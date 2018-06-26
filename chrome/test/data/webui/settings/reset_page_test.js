@@ -53,7 +53,7 @@ cr.define('settings_reset_page', function() {
         resetPageBrowserProxy.resetResolver('onHideResetProfileDialog');
 
         // Open reset profile dialog.
-        MockInteractions.tap(resetPage.$.resetProfile);
+        resetPage.$.resetProfile.click();
         Polymer.dom.flush();
         const dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
@@ -76,12 +76,12 @@ cr.define('settings_reset_page', function() {
       test(TestNames.ResetProfileDialogOpenClose, function() {
         return testOpenCloseResetProfileDialog(function(dialog) {
                  // Test case where the 'cancel' button is clicked.
-                 MockInteractions.tap(dialog.$.cancel);
+                 dialog.$.cancel.click();
                })
             .then(function() {
               return testOpenCloseResetProfileDialog(function(dialog) {
                 // Test case where the 'close' button is clicked.
-                MockInteractions.tap(dialog.$.dialog.getCloseButton());
+                dialog.$.dialog.getCloseButton().click();
               });
             })
             .then(function() {
@@ -96,7 +96,7 @@ cr.define('settings_reset_page', function() {
       // message is sent to the browser.
       test(TestNames.ResetProfileDialogAction, function() {
         // Open reset profile dialog.
-        MockInteractions.tap(resetPage.$.resetProfile);
+        resetPage.$.resetProfile.click();
         Polymer.dom.flush();
         const dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
@@ -105,7 +105,7 @@ cr.define('settings_reset_page', function() {
         assertTrue(checkbox.checked);
         const showReportedSettingsLink = dialog.$$('[slot=footer] a');
         assertTrue(!!showReportedSettingsLink);
-        MockInteractions.tap(showReportedSettingsLink);
+        showReportedSettingsLink.click();
 
         return resetPageBrowserProxy.whenCalled('showReportedSettings')
             .then(function() {
@@ -114,7 +114,7 @@ cr.define('settings_reset_page', function() {
               assertTrue(checkbox.checked);
               assertFalse(dialog.$.reset.disabled);
               assertFalse(dialog.$.resetSpinner.active);
-              MockInteractions.tap(dialog.$.reset);
+              dialog.$.reset.click();
               assertTrue(dialog.$.reset.disabled);
               assertTrue(dialog.$.cancel.disabled);
               assertTrue(dialog.$.resetSpinner.active);
@@ -126,7 +126,7 @@ cr.define('settings_reset_page', function() {
       function testResetRequestOrigin(expectedOrigin) {
         const dialog = resetPage.$$('settings-reset-profile-dialog');
         assertTrue(!!dialog);
-        MockInteractions.tap(dialog.$.reset);
+        dialog.$.reset.click();
         return resetPageBrowserProxy.whenCalled('performResetProfileSettings')
             .then(function(resetRequest) {
               assertEquals(expectedOrigin, resetRequest);
@@ -142,7 +142,7 @@ cr.define('settings_reset_page', function() {
       });
 
       test(TestNames.ResetProfileDialogOriginUserClick, function() {
-        MockInteractions.tap(resetPage.$.resetProfile);
+        resetPage.$.resetProfile.click();
         return resetPageBrowserProxy.whenCalled('onShowResetProfileDialog')
             .then(function() {
               return testResetRequestOrigin('userclick');
@@ -166,7 +166,7 @@ cr.define('settings_reset_page', function() {
          */
         function testOpenClosePowerwashDialog(closeButtonFn) {
           // Open powerwash dialog.
-          MockInteractions.tap(resetPage.$.powerwash);
+          resetPage.$.powerwash.click();
           Polymer.dom.flush();
           const dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
@@ -178,7 +178,7 @@ cr.define('settings_reset_page', function() {
             });
           });
 
-          MockInteractions.tap(closeButtonFn(dialog));
+          closeButtonFn(dialog).click();
           return Promise.all([
             onDialogClosed,
             resetPageBrowserProxy.whenCalled('onPowerwashDialogShow'),
@@ -204,11 +204,11 @@ cr.define('settings_reset_page', function() {
         // propagated as expected.
         test(TestNames.PowerwashDialogAction, function() {
           // Open powerwash dialog.
-          MockInteractions.tap(resetPage.$.powerwash);
+          resetPage.$.powerwash.click();
           Polymer.dom.flush();
           const dialog = resetPage.$$('settings-powerwash-dialog');
           assertTrue(!!dialog);
-          MockInteractions.tap(dialog.$.powerwash);
+          dialog.$.powerwash.click();
           return lifetimeBrowserProxy.whenCalled('factoryReset')
               .then((requestTpmFirmwareUpdate) => {
                 assertFalse(requestTpmFirmwareUpdate);

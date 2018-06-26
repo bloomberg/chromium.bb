@@ -94,7 +94,7 @@ suite('Bluetooth', function() {
     // Test that tapping the single settings-box div enables bluetooth.
     const div = bluetoothPage.$$('div.settings-box');
     assertTrue(!!div);
-    MockInteractions.tap(div);
+    div.click();
     assertTrue(bluetoothPage.bluetoothToggleState_);
     assertTrue(bluetoothApi_.getAdapterStateForTest().powered);
   });
@@ -113,7 +113,7 @@ suite('Bluetooth', function() {
       bluetoothApi_.setEnabled(true);
       Polymer.dom.flush();
       const div = bluetoothPage.$$('div.settings-box');
-      MockInteractions.tap(div);
+      div.click();
       return flushAsync().then(() => {
         subpage = bluetoothPage.$$('settings-bluetooth-subpage');
         subpage.listUpdateFrequencyMs = 0;

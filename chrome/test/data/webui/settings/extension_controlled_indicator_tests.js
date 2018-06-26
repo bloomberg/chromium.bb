@@ -60,7 +60,7 @@ suite('extension controlled indicator', function() {
   test('tapping disable button invokes browser proxy', function() {
     const disableButton = indicator.$$('paper-button');
     assertTrue(!!disableButton);
-    MockInteractions.tap(disableButton);
+    disableButton.click();
     return browserProxy.whenCalled('disableExtension')
         .then(function(extensionId) {
           assertEquals(extensionId, indicator.extensionId);

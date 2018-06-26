@@ -414,7 +414,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
                   assertEquals(creditCard.guid, event.detail.guid);
                   done();
                 });
-            MockInteractions.tap(creditCardDialog.$.saveButton);
+            creditCardDialog.$.saveButton.click();
           });
     });
 
@@ -437,7 +437,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'CreditCardTests', function() {
               window.setTimeout(done, 100);
             });
 
-            MockInteractions.tap(creditCardDialog.$.cancelButton);
+            creditCardDialog.$.cancelButton.click();
           });
     });
 
@@ -671,7 +671,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
         dialog.$.emailInput.value = emailAddress;
 
         return expectEvent(dialog, 'save-address', function() {
-                 MockInteractions.tap(dialog.$.saveButton);
+                 dialog.$.saveButton.click();
                }).then(function() {
           assertEquals(phoneNumber, dialog.$.phoneInput.value);
           assertEquals(phoneNumber, address.phoneNumbers[0]);
@@ -700,7 +700,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
         dialog.$.emailInput.value = '';
 
         return expectEvent(dialog, 'save-address', function() {
-                 MockInteractions.tap(dialog.$.saveButton);
+                 dialog.$.saveButton.click();
                }).then(function() {
           assertEquals(0, address.phoneNumbers.length);
           assertEquals(0, address.emailAddresses.length);
@@ -782,7 +782,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
         return expectEvent(dialog, 'save-address', function() {
                  // Verify |countryCode| is not set.
                  assertEquals(undefined, address.countryCode);
-                 MockInteractions.tap(dialog.$.saveButton);
+                 dialog.$.saveButton.click();
                }).then(function(event) {
           // 'US' is the default country for these tests.
           assertEquals('US', event.detail.countryCode);
@@ -805,7 +805,7 @@ TEST_F('SettingsAutofillSectionBrowserTest', 'AddressTests', function() {
               window.setTimeout(done, 100);
             });
 
-            MockInteractions.tap(dialog.$.cancelButton);
+            dialog.$.cancelButton.click();
           });
     });
   });

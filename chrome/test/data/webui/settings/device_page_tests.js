@@ -398,7 +398,7 @@ cr.define('device_page_tests', function() {
                const row = assert(devicePage.$$('#main #' + subpage + 'Row'));
                devicePage.$$('#pages').addEventListener(
                    'neon-animation-finish', resolve);
-               MockInteractions.tap(row);
+               row.click();
              })
           .then(function() {
             assertEquals(expectedRoute, settings.getCurrentRoute());
@@ -565,10 +565,10 @@ cr.define('device_page_tests', function() {
         // Prevent actually opening a link, which would block test.
         a.removeAttribute('href');
 
-        MockInteractions.tap(a);
+        a.click();
         expectNaturalScrollValue(pointersPage, false);
 
-        MockInteractions.tap(naturalScrollOn);
+        naturalScrollOn.click();
         expectNaturalScrollValue(pointersPage, true);
         devicePage.set('prefs.settings.touchpad.natural_scroll.value', false);
         expectNaturalScrollValue(pointersPage, false);
@@ -672,7 +672,7 @@ cr.define('device_page_tests', function() {
             expectFalse(collapse.opened);
 
             // Test keyboard shortcut overlay button.
-            MockInteractions.tap(keyboardPage.$$('#keyboardOverlay'));
+            keyboardPage.$$('#keyboardOverlay').click();
             expectEquals(
                 1,
                 settings.DevicePageBrowserProxyImpl.getInstance()
@@ -761,7 +761,7 @@ cr.define('device_page_tests', function() {
             assertTrue(!!displayLayout);
             const displayDiv = displayLayout.$$('#_fakeDisplayId2');
             assertTrue(!!displayDiv);
-            MockInteractions.tap(displayDiv);
+            displayDiv.click();
             expectEquals(
                 displayPage.displays[1].id, displayPage.selectedDisplay.id);
 
@@ -997,7 +997,7 @@ cr.define('device_page_tests', function() {
           sendLid(settings.LidClosedBehavior.SUSPEND);
           assertTrue(lidClosedToggle.checked);
 
-          MockInteractions.tap(lidClosedToggle.$$('#control'));
+          lidClosedToggle.$$('#control').click();
           expectEquals(
               settings.LidClosedBehavior.DO_NOTHING,
               settings.DevicePageBrowserProxyImpl.getInstance()
@@ -1005,7 +1005,7 @@ cr.define('device_page_tests', function() {
           sendLid(settings.LidClosedBehavior.DO_NOTHING);
           expectFalse(lidClosedToggle.checked);
 
-          MockInteractions.tap(lidClosedToggle.$$('#control'));
+          lidClosedToggle.$$('#control').click();
           expectEquals(
               settings.LidClosedBehavior.SUSPEND,
               settings.DevicePageBrowserProxyImpl.getInstance()
@@ -1214,10 +1214,10 @@ cr.define('device_page_tests', function() {
 
         // Tapping the enable stylus tools pref causes the launch palette on
         // eject pref toggle to not be disabled anymore.
-        MockInteractions.tap(stylusPage.$$('#enableStylusToolsToggle'));
+        stylusPage.$$('#enableStylusToolsToggle').click();
         expectTrue(devicePage.prefs.settings.enable_stylus_tools.value);
         expectFalse(stylusPage.$$('#launchPaletteOnEjectEventToggle').disabled);
-        MockInteractions.tap(stylusPage.$$('#launchPaletteOnEjectEventToggle'));
+        stylusPage.$$('#launchPaletteOnEjectEventToggle').click();
         expectTrue(
             devicePage.prefs.settings.launch_palette_on_eject_event.value);
       });
@@ -1476,7 +1476,7 @@ cr.define('device_page_tests', function() {
               expectFalse(enableAppOnLockScreenToggle().checked);
               expectFalse(isVisible(enableAppOnLockScreenPolicyIndicator()));
 
-              MockInteractions.tap(enableAppOnLockScreenToggle());
+              enableAppOnLockScreenToggle().click();
               assertEquals(1, browserProxy.setAppOnLockScreenCount_);
 
               return new Promise(function(resolve) {
@@ -1492,7 +1492,7 @@ cr.define('device_page_tests', function() {
                   LockScreenSupport.ENABLED,
                   browserProxy.getPreferredAppLockScreenState());
 
-              MockInteractions.tap(enableAppOnLockScreenToggle());
+              enableAppOnLockScreenToggle().click();
               assertEquals(2, browserProxy.setAppOnLockScreenCount_);
 
               return new Promise(function(resolve) {
@@ -1521,7 +1521,7 @@ cr.define('device_page_tests', function() {
               assert(isVisible(enableAppOnLockScreenToggle()));
               expectFalse(enableAppOnLockScreenToggle().checked);
 
-              MockInteractions.tap(enableAppOnLockScreenToggleLabel());
+              enableAppOnLockScreenToggleLabel().click();
               assertEquals(1, browserProxy.setAppOnLockScreenCount_);
 
               return new Promise(function(resolve) {
@@ -1537,7 +1537,7 @@ cr.define('device_page_tests', function() {
                   LockScreenSupport.ENABLED,
                   browserProxy.getPreferredAppLockScreenState());
 
-              MockInteractions.tap(enableAppOnLockScreenToggleLabel());
+              enableAppOnLockScreenToggleLabel().click();
               assertEquals(2, browserProxy.setAppOnLockScreenCount_);
 
               return new Promise(function(resolve) {
@@ -1573,7 +1573,7 @@ cr.define('device_page_tests', function() {
 
               // The toggle should be disabled, so enabling app on lock screen
               // should not be attempted.
-              MockInteractions.tap(enableAppOnLockScreenToggle());
+              enableAppOnLockScreenToggle().click();
               assertEquals(0, browserProxy.setAppOnLockScreenCount_);
 
               return new Promise(function(resolve) {
@@ -1584,7 +1584,7 @@ cr.define('device_page_tests', function() {
               Polymer.dom.flush();
 
               // Tap on label should not work either.
-              MockInteractions.tap(enableAppOnLockScreenToggleLabel());
+              enableAppOnLockScreenToggleLabel().click();
               assertEquals(0, browserProxy.setAppOnLockScreenCount_);
 
               return new Promise(function(resolve) {
@@ -1644,8 +1644,7 @@ cr.define('device_page_tests', function() {
               expectTrue(keepLastNoteOnLockScreenToggle().checked);
 
               // Clicking the toggle updates the pref value.
-              MockInteractions.tap(
-                  keepLastNoteOnLockScreenToggle().$$('#control'));
+              keepLastNoteOnLockScreenToggle().$$('#control').click();
               expectFalse(keepLastNoteOnLockScreenToggle().checked);
 
               expectFalse(devicePage.prefs.settings

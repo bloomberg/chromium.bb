@@ -64,7 +64,7 @@ suite('AppearanceFontHandler', function() {
     Polymer.dom.flush();
     const button = fontsPage.$$('#advancedButton');
     assert(!!button);
-    MockInteractions.tap(button);
+    button.click();
     return fontsBrowserProxy.whenCalled('openAdvancedFontSettings');
   });
 });

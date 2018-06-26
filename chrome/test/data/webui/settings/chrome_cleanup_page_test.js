@@ -103,7 +103,7 @@ function validateVisibleItemsList(originalItems, visibleItems) {
     assertFalse(moreItemsLink.hidden);
 
     // Tapping on the "show more" link should expand the list.
-    MockInteractions.tap(moreItemsLink);
+    moreItemsLink.click();
     Polymer.dom.flush();
 
     visibleItemsList = visibleItems.querySelectorAll('* /deep/ .visible-item');
@@ -127,7 +127,7 @@ function startCleanupFromInfected(files, registryKeys) {
 
   const showItemsButton = chromeCleanupPage.$$('#show-items-button');
   assertTrue(!!showItemsButton);
-  MockInteractions.tap(showItemsButton);
+  showItemsButton.click();
 
   const filesToRemoveList = chromeCleanupPage.$$('#files-to-remove-list');
   assertTrue(!!filesToRemoveList);
@@ -187,7 +187,7 @@ function testLogsUploading(testingScanOffered) {
   Polymer.dom.flush();
   assertFalse(logsControl.checked);
 
-  MockInteractions.tap(logsControl.$.control);
+  logsControl.$.control.click();
   return chromeCleanupProxy.whenCalled('setLogsUploadPermission')
       .then(function(logsUploadEnabled) {
         assertTrue(logsUploadEnabled);

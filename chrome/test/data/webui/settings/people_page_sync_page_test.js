@@ -164,11 +164,11 @@ cr.define('settings_people_page_sync_page', function() {
           otherItems.querySelectorAll(':scope > .list-item').length, 3);
 
       // Tapping on the toggle row should toggle ironCollapse.
-      MockInteractions.tap(syncSectionToggle);
+      syncSectionToggle.click();
       Polymer.dom.flush();
       assertFalse(ironCollapse.opened);
       assertFalse(expandIcon.expanded);
-      MockInteractions.tap(syncSectionToggle);
+      syncSectionToggle.click();
       Polymer.dom.flush();
       assertTrue(ironCollapse.opened);
       assertTrue(expandIcon.expanded);
@@ -236,7 +236,7 @@ cr.define('settings_people_page_sync_page', function() {
       }
 
       // Uncheck the Sync All control.
-      MockInteractions.tap(syncAllDataTypesControl);
+      syncAllDataTypesControl.click();
 
       function verifyPrefs(prefs) {
         const expected = getSyncAllPrefs();
@@ -254,7 +254,7 @@ cr.define('settings_people_page_sync_page', function() {
         browserProxy.resetResolver('setSyncDatatypes');
 
         // Test an arbitrarily-selected control (extensions synced control).
-        MockInteractions.tap(datatypeControls[3]);
+        datatypeControls[3].click();
         return browserProxy.whenCalled('setSyncDatatypes')
             .then(function(prefs) {
               const expected = getSyncAllPrefs();
@@ -276,7 +276,7 @@ cr.define('settings_people_page_sync_page', function() {
       // Select 'Encrypt with passphrase' to create a new passphrase.
       assertFalse(!!syncPage.$$('#create-password-box'));
 
-      MockInteractions.tap(encryptWithPassphrase);
+      encryptWithPassphrase.click();
       Polymer.dom.flush();
 
       assertTrue(!!syncPage.$$('#create-password-box'));
@@ -306,13 +306,13 @@ cr.define('settings_people_page_sync_page', function() {
         e.preventDefault();
       });
 
-      MockInteractions.tap(link);
+      link.click();
 
       assertFalse(encryptWithPassphrase.checked);
     });
 
     test('SaveButtonDisabledWhenPassphraseOrConfirmationEmpty', function() {
-      MockInteractions.tap(encryptWithPassphrase);
+      encryptWithPassphrase.click();
       Polymer.dom.flush();
 
       assertTrue(!!syncPage.$$('#create-password-box'));
@@ -335,7 +335,7 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('CreatingPassphraseMismatchedPassphrase', function() {
-      MockInteractions.tap(encryptWithPassphrase);
+      encryptWithPassphrase.click();
       Polymer.dom.flush();
 
       assertTrue(!!syncPage.$$('#create-password-box'));
@@ -348,7 +348,7 @@ cr.define('settings_people_page_sync_page', function() {
       passphraseInput.value = 'foo';
       passphraseConfirmationInput.value = 'bar';
 
-      MockInteractions.tap(saveNewPassphrase);
+      saveNewPassphrase.click();
       Polymer.dom.flush();
 
       assertFalse(passphraseInput.invalid);
@@ -358,7 +358,7 @@ cr.define('settings_people_page_sync_page', function() {
     });
 
     test('CreatingPassphraseValidPassphrase', function() {
-      MockInteractions.tap(encryptWithPassphrase);
+      encryptWithPassphrase.click();
       Polymer.dom.flush();
 
       assertTrue(!!syncPage.$$('#create-password-box'));
@@ -370,7 +370,7 @@ cr.define('settings_people_page_sync_page', function() {
           syncPage.$$('#passphraseConfirmationInput');
       passphraseInput.value = 'foo';
       passphraseConfirmationInput.value = 'foo';
-      MockInteractions.tap(saveNewPassphrase);
+      saveNewPassphrase.click();
 
       function verifyPrefs(prefs) {
         const expected = getSyncAllPrefs();
@@ -441,7 +441,7 @@ cr.define('settings_people_page_sync_page', function() {
 
       const submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
       assertTrue(!!submitExistingPassphrase);
-      MockInteractions.tap(submitExistingPassphrase);
+      submitExistingPassphrase.click();
 
       return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
         const expected = getSyncAllPrefs();
@@ -472,7 +472,7 @@ cr.define('settings_people_page_sync_page', function() {
 
       const submitExistingPassphrase = syncPage.$$('#submitExistingPassphrase');
       assertTrue(!!submitExistingPassphrase);
-      MockInteractions.tap(submitExistingPassphrase);
+      submitExistingPassphrase.click();
 
       return browserProxy.whenCalled('setSyncEncryption').then(function(prefs) {
         const expected = getSyncAllPrefs();
@@ -502,7 +502,7 @@ cr.define('settings_people_page_sync_page', function() {
         Polymer.dom.flush();
         assertTrue(syncPage.$.toast.open);
 
-        MockInteractions.tap(syncPage.$.toast.querySelector('paper-button'));
+        syncPage.$.toast.querySelector('paper-button').click();
 
         return browserProxy.whenCalled('didNavigateAwayFromSyncPage')
             .then(abort => {

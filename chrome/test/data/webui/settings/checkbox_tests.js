@@ -32,11 +32,11 @@ cr.define('settings_checkbox', function() {
     test('value changes on tap', function() {
       assertTrue(testElement.checked);
 
-      MockInteractions.tap(testElement.$.checkbox);
+      testElement.$.checkbox.click();
       assertFalse(testElement.checked);
       assertFalse(pref.value);
 
-      MockInteractions.tap(testElement.$.checkbox);
+      testElement.$.checkbox.click();
       assertTrue(testElement.checked);
       assertTrue(pref.value);
     });
@@ -46,7 +46,7 @@ cr.define('settings_checkbox', function() {
         assertFalse(testElement.checked);
         done();
       });
-      MockInteractions.tap(testElement.$.checkbox);
+      testElement.$.checkbox.click();
     });
 
     test('does not change when disabled', function() {
@@ -55,7 +55,7 @@ cr.define('settings_checkbox', function() {
       assertTrue(testElement.disabled);
       assertTrue(testElement.$.checkbox.disabled);
 
-      MockInteractions.tap(testElement.$.checkbox);
+      testElement.$.checkbox.click();
       assertFalse(testElement.checked);
       assertFalse(testElement.$.checkbox.checked);
     });
@@ -70,11 +70,11 @@ cr.define('settings_checkbox', function() {
       testElement.set('pref', prefNum);
       assertTrue(testElement.checked);
 
-      MockInteractions.tap(testElement.$.checkbox);
+      testElement.$.checkbox.click();
       assertFalse(testElement.checked);
       assertEquals(0, prefNum.value);
 
-      MockInteractions.tap(testElement.$.checkbox);
+      testElement.$.checkbox.click();
       assertTrue(testElement.checked);
       assertEquals(1, prefNum.value);
     });

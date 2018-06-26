@@ -157,9 +157,9 @@ suite('ProtocolHandlers', function() {
         // Test the button for the first protocol handler
         browserProxy.reset();
         assertFalse(dialog.open);
-        MockInteractions.tap(menuButtons[menuIndex].querySelector('button'));
+        menuButtons[menuIndex].querySelector('button').click();
         assertTrue(dialog.open);
-        MockInteractions.tap(testElement.$[button]);
+        testElement.$[button].click();
         assertFalse(dialog.open);
         return browserProxy.whenCalled(browserProxyHandler).then(args => {
           const protocol = args[0];
@@ -185,13 +185,13 @@ suite('ProtocolHandlers', function() {
       const menuButtons = testElement.root.querySelectorAll(
           'paper-icon-button-light.icon-more-vert');
       const closeMenu = () => testElement.$$('cr-action-menu').close();
-      MockInteractions.tap(menuButtons[0].querySelector('button'));
+      menuButtons[0].querySelector('button').click();
       assertTrue(testElement.$.defaultButton.hidden);
       closeMenu();
-      MockInteractions.tap(menuButtons[1].querySelector('button'));
+      menuButtons[1].querySelector('button').click();
       assertTrue(testElement.$.defaultButton.hidden);
       closeMenu();
-      MockInteractions.tap(menuButtons[2].querySelector('button'));
+      menuButtons[2].querySelector('button').click();
       assertFalse(testElement.$.defaultButton.hidden);
     });
   });
@@ -200,7 +200,7 @@ suite('ProtocolHandlers', function() {
     browserProxy.setIgnoredProtocols(ignoredProtocols);
     return initPage()
         .then(() => {
-          MockInteractions.tap(testElement.$$('#removeIgnoredButton'));
+          testElement.$$('#removeIgnoredButton').click();
           return browserProxy.whenCalled('removeProtocolHandler');
         })
         .then(args => {

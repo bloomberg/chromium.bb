@@ -104,7 +104,7 @@ TEST_F('SettingsUIBrowserTest', 'MAYBE_All', function() {
       assertTrue(!!menu);
       assertTrue(menu.advancedOpened);
 
-      MockInteractions.tap(menu.$.advancedButton);
+      menu.$.advancedButton.click();
       Polymer.dom.flush();
 
       // Check that all values are updated in unison.

@@ -48,7 +48,7 @@ suite('CategoryDefaultSetting', function() {
           assertEquals(category, contentType);
           assertEquals(expectedEnabled, testElement.categoryEnabled);
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(testElement.$.toggle);
+          testElement.$.toggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {
@@ -192,7 +192,7 @@ suite('CategoryDefaultSetting', function() {
           assertTrue(secondaryToggle.checked);
 
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(testElement.$.toggle);
+          testElement.$.toggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {
@@ -206,7 +206,7 @@ suite('CategoryDefaultSetting', function() {
           assertTrue(secondaryToggle.checked);
 
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(testElement.$.toggle);
+          testElement.$.toggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {
@@ -220,7 +220,7 @@ suite('CategoryDefaultSetting', function() {
           assertTrue(secondaryToggle.checked);
 
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(secondaryToggle);
+          secondaryToggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {
@@ -234,7 +234,7 @@ suite('CategoryDefaultSetting', function() {
           assertFalse(secondaryToggle.checked);
 
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(testElement.$.toggle);
+          testElement.$.toggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {
@@ -248,7 +248,7 @@ suite('CategoryDefaultSetting', function() {
           assertFalse(secondaryToggle.checked);
 
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(testElement.$.toggle);
+          testElement.$.toggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {
@@ -262,7 +262,7 @@ suite('CategoryDefaultSetting', function() {
           assertFalse(secondaryToggle.checked);
 
           browserProxy.resetResolver('setDefaultValueForContentType');
-          MockInteractions.tap(secondaryToggle);
+          secondaryToggle.click();
           return browserProxy.whenCalled('setDefaultValueForContentType');
         })
         .then(function(args) {

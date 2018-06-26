@@ -401,7 +401,7 @@ cr.define('settings_about_page', function() {
 
         relaunch = page.$.relaunch;
         assertTrue(!!relaunch);
-        MockInteractions.tap(relaunch);
+        relaunch.click();
         return lifetimeBrowserProxy.whenCalled('relaunch');
       });
 
@@ -499,7 +499,7 @@ cr.define('settings_about_page', function() {
             assertTrue(page.$.relaunch.hidden);
             assertFalse(page.$.relaunchAndPowerwash.hidden);
 
-            MockInteractions.tap(page.$.relaunchAndPowerwash);
+            page.$.relaunchAndPowerwash.click();
             return lifetimeBrowserProxy.whenCalled('factoryReset')
                 .then((requestTpmFirmwareUpdate) => {
                   assertFalse(requestTpmFirmwareUpdate);
@@ -524,7 +524,7 @@ cr.define('settings_about_page', function() {
             assertFalse(page.$.relaunch.hidden);
             assertTrue(page.$.relaunchAndPowerwash.hidden);
 
-            MockInteractions.tap(page.$.relaunch);
+            page.$.relaunch.click();
             return lifetimeBrowserProxy.whenCalled('relaunch');
           });
         });
@@ -599,13 +599,13 @@ cr.define('settings_about_page', function() {
               })
               .then(function() {
                 assertFalse(page.$.aboutTPMFirmwareUpdate.hidden);
-                MockInteractions.tap(page.$.aboutTPMFirmwareUpdate);
+                page.$.aboutTPMFirmwareUpdate.click();
               })
               .then(function() {
                 const dialog = page.$$('settings-powerwash-dialog');
                 assertTrue(!!dialog);
                 assertTrue(dialog.$.dialog.open);
-                MockInteractions.tap(dialog.$$('#powerwash'));
+                dialog.$$('#powerwash').click();
                 return lifetimeBrowserProxy.whenCalled('factoryReset')
                     .then((requestTpmFirmwareUpdate) => {
                       assertTrue(requestTpmFirmwareUpdate);
@@ -693,7 +693,7 @@ cr.define('settings_about_page', function() {
 
       test('GetHelp', function() {
         assertTrue(!!page.$.help);
-        MockInteractions.tap(page.$.help);
+        page.$.help.click();
         return aboutBrowserProxy.whenCalled('openHelpPage');
       });
     });
@@ -714,7 +714,7 @@ cr.define('settings_about_page', function() {
 
       test('ReportAnIssue', function() {
         assertTrue(!!page.$.reportIssue);
-        MockInteractions.tap(page.$.reportIssue);
+        page.$.reportIssue.click();
         return browserProxy.whenCalled('openFeedbackDialog');
       });
 
@@ -816,7 +816,7 @@ cr.define('settings_about_page', function() {
           const item = page.$$('#promoteUpdater');
           assertTrue(!!item);
 
-          MockInteractions.tap(item);
+          item.click();
 
           return browserProxy.whenCalled('promoteUpdater');
         });
@@ -942,7 +942,7 @@ cr.define('settings_about_page', function() {
         // Test case where user switches to a less stable channel.
         test('ChangeChannel_LessStable', function() {
           assertEquals(BrowserChannel.DEV, radioButtons.item(2).name);
-          MockInteractions.tap(radioButtons.item(2));
+          radioButtons.item(2).click();
           Polymer.dom.flush();
 
           return browserProxy.whenCalled('getChannelInfo').then(function() {
@@ -954,7 +954,7 @@ cr.define('settings_about_page', function() {
             const whenTargetChannelChangedFired =
                 test_util.eventToPromise('target-channel-changed', dialog);
 
-            MockInteractions.tap(dialog.$.changeChannel);
+            dialog.$.changeChannel.click();
             return browserProxy.whenCalled('setChannel')
                 .then(function(args) {
                   assertEquals(BrowserChannel.DEV, args[0]);
@@ -970,7 +970,7 @@ cr.define('settings_about_page', function() {
         // Test case where user switches to a more stable channel.
         test('ChangeChannel_MoreStable', function() {
           assertEquals(BrowserChannel.STABLE, radioButtons.item(0).name);
-          MockInteractions.tap(radioButtons.item(0));
+          radioButtons.item(0).click();
           Polymer.dom.flush();
 
           return browserProxy.whenCalled('getChannelInfo').then(function() {
@@ -983,7 +983,7 @@ cr.define('settings_about_page', function() {
             const whenTargetChannelChangedFired =
                 test_util.eventToPromise('target-channel-changed', dialog);
 
-            MockInteractions.tap(dialog.$.changeChannelAndPowerwash);
+            dialog.$.changeChannelAndPowerwash.click();
             return browserProxy.whenCalled('setChannel')
                 .then(function(args) {
                   assertEquals(BrowserChannel.STABLE, args[0]);

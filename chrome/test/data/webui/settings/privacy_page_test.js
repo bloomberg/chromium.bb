@@ -103,7 +103,7 @@ cr.define('settings_privacy_page', function() {
       });
 
       test('NativeCertificateManager', function() {
-        MockInteractions.tap(page.$$('#manageCertificates'));
+        page.$$('#manageCertificates').click();
         return testBrowserProxy.whenCalled('showManageSSLCertificates');
       });
     });
@@ -125,7 +125,7 @@ cr.define('settings_privacy_page', function() {
 
       test('showClearBrowsingDataDialog', function() {
         assertFalse(!!page.$$('settings-clear-browsing-data-dialog'));
-        MockInteractions.tap(page.$$('#clearBrowsingData'));
+        page.$$('#clearBrowsingData').click();
         Polymer.dom.flush();
 
         const dialog = page.$$('settings-clear-browsing-data-dialog');
@@ -175,7 +175,7 @@ cr.define('settings_privacy_page', function() {
         // Select a datatype for deletion to enable the clear button.
         const cookieCheckbox = element.$$('#cookiesCheckboxBasic');
         assertTrue(!!cookieCheckbox);
-        MockInteractions.tap(cookieCheckbox.$.checkbox);
+        cookieCheckbox.$.checkbox.click();
 
         assertFalse(cancelButton.disabled);
         assertFalse(actionButton.disabled);
@@ -183,7 +183,7 @@ cr.define('settings_privacy_page', function() {
 
         const promiseResolver = new PromiseResolver();
         testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
-        MockInteractions.tap(actionButton);
+        actionButton.click();
 
         return testBrowserProxy.whenCalled('clearBrowsingData')
             .then(function([dataTypes, timePeriod]) {
@@ -225,14 +225,14 @@ cr.define('settings_privacy_page', function() {
         // Initially the button is disabled because all checkboxes are off.
         assertTrue(actionButton.disabled);
         // The button gets enabled if any checkbox is selected.
-        MockInteractions.tap(cookieCheckboxBasic.$.checkbox);
+        cookieCheckboxBasic.$.checkbox.click();
         assertTrue(cookieCheckboxBasic.checked);
         assertFalse(actionButton.disabled);
         // Switching to advanced disables the button.
-        MockInteractions.tap(advancedTab);
+        advancedTab.click();
         assertTrue(actionButton.disabled);
         // Switching back enables it again.
-        MockInteractions.tap(basicTab);
+        basicTab.click();
         assertFalse(actionButton.disabled);
       });
 
@@ -244,12 +244,12 @@ cr.define('settings_privacy_page', function() {
         // Select a datatype for deletion to enable the clear button.
         const cookieCheckbox = element.$$('#cookiesCheckboxBasic');
         assertTrue(!!cookieCheckbox);
-        MockInteractions.tap(cookieCheckbox.$.checkbox);
+        cookieCheckbox.$.checkbox.click();
         assertFalse(actionButton.disabled);
 
         const promiseResolver = new PromiseResolver();
         testBrowserProxy.setClearBrowsingDataPromise(promiseResolver.promise);
-        MockInteractions.tap(actionButton);
+        actionButton.click();
 
         return testBrowserProxy.whenCalled('clearBrowsingData')
             .then(function() {
@@ -271,7 +271,7 @@ cr.define('settings_privacy_page', function() {
               assertTrue(element.$$('#clearBrowsingDataDialog').open);
               assertTrue(notice.$$('#dialog').open);
 
-              MockInteractions.tap(noticeActionButton);
+              noticeActionButton.click();
 
               return new Promise(function(resolve, reject) {
                 // Tapping the action button will close the notice. Move to the

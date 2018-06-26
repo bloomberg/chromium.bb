@@ -160,7 +160,7 @@ cr.define('settings_startup_urls_page', function() {
       // Test that the dialog remains open if the user somehow manages to submit
       // an invalid URL.
       browserProxy.setUrlValidity(false);
-      MockInteractions.tap(actionButton);
+      actionButton.click();
       return browserProxy.whenCalled(proxyMethodName)
           .then(function() {
             assertTrue(dialog.$.dialog.open);
@@ -168,7 +168,7 @@ cr.define('settings_startup_urls_page', function() {
             // Test that dialog is closed if the user submits a valid URL.
             browserProxy.setUrlValidity(true);
             browserProxy.resetResolver(proxyMethodName);
-            MockInteractions.tap(actionButton);
+            actionButton.click();
             return browserProxy.whenCalled(proxyMethodName);
           })
           .then(function() {
@@ -239,7 +239,7 @@ cr.define('settings_startup_urls_page', function() {
     test('UseCurrentPages', function() {
       const useCurrentPagesButton = page.$$('#useCurrentPages > a');
       assertTrue(!!useCurrentPagesButton);
-      MockInteractions.tap(useCurrentPagesButton);
+      useCurrentPagesButton.click();
       return browserProxy.whenCalled('useCurrentPages');
     });
 
@@ -248,7 +248,7 @@ cr.define('settings_startup_urls_page', function() {
       assertTrue(!!addPageButton);
       assertFalse(!!page.$$('settings-startup-url-dialog'));
 
-      MockInteractions.tap(addPageButton);
+      addPageButton.click();
       Polymer.dom.flush();
       assertTrue(!!page.$$('settings-startup-url-dialog'));
     });
@@ -346,12 +346,12 @@ cr.define('settings_startup_urls_page', function() {
 
       // Bring up the popup menu.
       assertFalse(!!element.$$('cr-action-menu'));
-      MockInteractions.tap(element.$$('#dots'));
+      element.$$('#dots').click();
       Polymer.dom.flush();
       assertTrue(!!element.$$('cr-action-menu'));
 
       const removeButton = element.shadowRoot.querySelector('#remove');
-      MockInteractions.tap(removeButton);
+      removeButton.click();
       return browserProxy.whenCalled('removeStartupPage')
           .then(function(modelIndex) {
             assertEquals(element.model.modelIndex, modelIndex);

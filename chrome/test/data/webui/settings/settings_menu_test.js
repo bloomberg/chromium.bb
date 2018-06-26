@@ -36,11 +36,11 @@ cr.define('settings_menu', function() {
       const advancedToggle = settingsMenu.$$('#advancedButton');
       assertTrue(!!advancedToggle);
 
-      MockInteractions.tap(advancedToggle);
+      advancedToggle.click();
       Polymer.dom.flush();
       assertTrue(settingsMenu.$.advancedSubmenu.opened);
 
-      MockInteractions.tap(advancedToggle);
+      advancedToggle.click();
       Polymer.dom.flush();
       assertFalse(settingsMenu.$.advancedSubmenu.opened);
     });
@@ -73,7 +73,7 @@ cr.define('settings_menu', function() {
       settings.navigateTo(settings.routes.BASIC, urlParams);
       assertEquals(
           urlParams.toString(), settings.getQueryParameters().toString());
-      MockInteractions.tap(settingsMenu.$.people);
+      settingsMenu.$.people.click();
       assertEquals('', settings.getQueryParameters().toString());
     });
   });

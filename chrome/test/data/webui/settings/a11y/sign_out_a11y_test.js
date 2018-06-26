@@ -91,7 +91,7 @@ AccessibilityTest.define('SettingsA11ySignOut', {
           disconnectButton = this.peoplePage.$$('#disconnectButton');
         }
         assert(!!disconnectButton);
-        MockInteractions.tap(disconnectButton);
+        disconnectButton.click();
         Polymer.dom.flush();
       });
     }

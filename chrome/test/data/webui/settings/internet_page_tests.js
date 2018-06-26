@@ -128,7 +128,7 @@ suite('InternetPage', function() {
       assertFalse(toggle.checked);
 
       // Tap the enable toggle button and ensure the state becomes enabled.
-      MockInteractions.tap(toggle);
+      toggle.click();
       Polymer.dom.flush();
       assertTrue(toggle.checked);
       assertEquals('Enabled', api_.getDeviceStateForTest('WiFi').State);
@@ -145,7 +145,7 @@ suite('InternetPage', function() {
       Polymer.dom.flush();
       const wifi = networkSummary_.$$('#WiFi');
       assertTrue(!!wifi);
-      MockInteractions.tap(wifi.$$('.subpage-arrow button'));
+      wifi.$$('.subpage-arrow button').click();
       return flushAsync().then(() => {
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -174,7 +174,7 @@ suite('InternetPage', function() {
           .then(() => {
             const mobile = networkSummary_.$$('#Cellular');
             assertTrue(!!mobile);
-            MockInteractions.tap(mobile.$$('.subpage-arrow button'));
+            mobile.$$('.subpage-arrow button').click();
             return Promise.all([
               api_.whenCalled('getManagedProperties'),
             ]);
@@ -194,7 +194,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Tether');
         assertTrue(!!mobile);
-        MockInteractions.tap(mobile.$$('.subpage-arrow button'));
+        mobile.$$('.subpage-arrow button').click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -223,7 +223,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const mobile = networkSummary_.$$('#Cellular');
         assertTrue(!!mobile);
-        MockInteractions.tap(mobile.$$('.subpage-arrow button'));
+        mobile.$$('.subpage-arrow button').click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -276,7 +276,7 @@ suite('InternetPage', function() {
       return flushAsync().then(() => {
         const vpn = networkSummary_.$$('#VPN');
         assertTrue(!!vpn);
-        MockInteractions.tap(vpn.$$('.subpage-arrow button'));
+        vpn.$$('.subpage-arrow button').click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -312,7 +312,7 @@ suite('InternetPage', function() {
         Polymer.dom.flush();
         const addArcVpn = internetPage.$$('#addArcVpn');
         assertTrue(!!addArcVpn);
-        MockInteractions.tap(addArcVpn);
+        addArcVpn.click();
         Polymer.dom.flush();
         const subpage = internetPage.$$('settings-internet-subpage');
         assertTrue(!!subpage);
@@ -329,7 +329,7 @@ suite('InternetPage', function() {
           .then(() => {
             const wifi = networkSummary_.$$('#WiFi');
             assertTrue(!!wifi);
-            MockInteractions.tap(wifi.$$('.subpage-arrow button'));
+            wifi.$$('.subpage-arrow button').click();
             return flushAsync();
           })
           .then(() => {
@@ -352,7 +352,7 @@ suite('InternetPage', function() {
             assertEquals(1, ironList.items.length);
             const networkListItem = networkList.$$('cr-network-list-item');
             assertTrue(!!networkListItem);
-            MockInteractions.tap(networkListItem);
+            networkListItem.click();
             return flushAsync();
           })
           .then(() => {

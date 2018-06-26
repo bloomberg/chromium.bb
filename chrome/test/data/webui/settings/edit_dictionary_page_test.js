@@ -105,9 +105,9 @@ suite('settings-edit-dictionary-page', function() {
   test('spellcheck edit dictionary page list has words', function() {
     const addWordButton = editDictPage.$$('#addWord');
     editDictPage.$.newWord.value = 'valid word';
-    MockInteractions.tap(addWordButton);
+    addWordButton.click();
     editDictPage.$.newWord.value = 'valid word2';
-    MockInteractions.tap(addWordButton);
+    addWordButton.click();
     Polymer.dom.flush();
 
     assertTrue(editDictPage.$.noWordsLabel.hidden);

@@ -116,7 +116,7 @@ suite('settings-fingerprint-list', function() {
   }
 
   function openDialog() {
-    MockInteractions.tap(fingerprintList.$$('.action-button'));
+    fingerprintList.$$('.action-button').click();
     Polymer.dom.flush();
     dialog = fingerprintList.$$('settings-setup-fingerprint-dialog');
     addAnotherButton = dialog.$$('#addAnotherButton');
@@ -177,7 +177,7 @@ suite('settings-fingerprint-list', function() {
 
       // Verify that by tapping the continue button we should exit the dialog
       // and the fingerprint list should have one fingerprint registered.
-      MockInteractions.tap(dialog.$$('#closeButton'));
+      dialog.$$('#closeButton').click();
       return PolymerTest.flushTasks().then(function() {
         Promise
             .all([
@@ -208,7 +208,7 @@ suite('settings-fingerprint-list', function() {
 
           assertTrue(dialog.$$('#dialog').open);
           assertTrue(isVisible(addAnotherButton));
-          MockInteractions.tap(addAnotherButton);
+          addAnotherButton.click();
 
           // Once the first fingerprint is enrolled, verify that enrolling the
           // second fingerprint without closing the dialog works as expected.
@@ -228,7 +228,7 @@ suite('settings-fingerprint-list', function() {
           // Verify that by tapping the continue button we should exit the
           // dialog and the fingerprint list should have two fingerprints
           // registered.
-          MockInteractions.tap(dialog.$$('#closeButton'));
+          dialog.$$('#closeButton').click();
           return browserProxy.whenCalled('getFingerprintsList');
         })
         .then(function() {
@@ -251,7 +251,7 @@ suite('settings-fingerprint-list', function() {
 
           // Verify that by tapping the exit button we should exit the dialog
           // and the fingerprint list should have zero fingerprints registered.
-          MockInteractions.tap(dialog.$$('#closeButton'));
+          dialog.$$('#closeButton').click();
           return Promise.all([
             browserProxy.whenCalled('cancelCurrentEnroll'),
             browserProxy.whenCalled('startAuthentication')
