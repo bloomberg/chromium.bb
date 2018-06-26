@@ -58,9 +58,8 @@ const base::Feature kPasswordGenerationRequirementsDomainOverrides = {
     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Enables the "Show all saved passwords" option in Context Menu.
-const base::Feature kEnableShowAllSavedPasswordsContextMenu{
-    "kEnableShowAllSavedPasswordsContextMenu",
-    base::FEATURE_ENABLED_BY_DEFAULT};
+const base::Feature kShowAllSavedPasswordsContextMenu{
+    "ShowAllSavedPasswordsContextMenu", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Disallow autofilling of the sync credential.
 const base::Feature kProtectSyncCredential = {
