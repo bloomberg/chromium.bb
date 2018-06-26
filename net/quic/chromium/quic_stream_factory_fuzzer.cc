@@ -109,7 +109,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   env->crypto_client_stream_factory.AddProofVerifyDetails(&env->verify_details);
 
   bool goaway_sessions_on_ip_change = false;
-  bool migrate_sessions_on_network_change = false;
   bool migrate_sessions_early_v2 = false;
   bool migrate_sessions_on_network_change_v2 = false;
 
@@ -119,8 +118,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
       migrate_sessions_on_network_change_v2 = data_provider.ConsumeBool();
       if (migrate_sessions_on_network_change_v2) {
         migrate_sessions_early_v2 = data_provider.ConsumeBool();
-      } else {
-        migrate_sessions_on_network_change = data_provider.ConsumeBool();
       }
     }
   }
@@ -138,7 +135,6 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
           mark_quic_broken_when_network_blackholes,
           kIdleConnectionTimeoutSeconds, quic::kPingTimeoutSecs,
           quic::kMaxTimeForCryptoHandshakeSecs, quic::kInitialIdleTimeoutSecs,
-          migrate_sessions_on_network_change,
           migrate_sessions_on_network_change_v2, migrate_sessions_early_v2,
           base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
           kMaxMigrationsToNonDefaultNetworkOnPathDegrading,

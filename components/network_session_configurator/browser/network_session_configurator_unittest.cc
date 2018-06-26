@@ -103,7 +103,6 @@ TEST_F(NetworkSessionConfiguratorTest, EnableQuicFromFieldTrialGroup) {
             params_.quic_max_idle_time_before_crypto_handshake_seconds);
   EXPECT_FALSE(params_.quic_race_cert_verification);
   EXPECT_FALSE(params_.quic_estimate_initial_rtt);
-  EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params_.quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params_.quic_migrate_sessions_early_v2);
   EXPECT_FALSE(params_.quic_allow_server_migration);

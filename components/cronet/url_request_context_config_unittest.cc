@@ -110,7 +110,6 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   EXPECT_TRUE(params->quic_close_sessions_on_ip_change);
   EXPECT_FALSE(params->quic_goaway_sessions_on_ip_change);
   EXPECT_FALSE(params->quic_allow_server_migration);
-  EXPECT_FALSE(params->quic_migrate_sessions_on_network_change);
   EXPECT_FALSE(params->quic_migrate_sessions_on_network_change_v2);
   EXPECT_FALSE(params->quic_migrate_sessions_early_v2);
 

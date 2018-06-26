@@ -736,7 +736,6 @@ QuicStreamFactory::QuicStreamFactory(
     int reduced_ping_timeout_seconds,
     int max_time_before_crypto_handshake_seconds,
     int max_idle_time_before_crypto_handshake_seconds,
-    bool migrate_sessions_on_network_change,
     bool migrate_sessions_on_network_change_v2,
     bool migrate_sessions_early_v2,
     base::TimeDelta max_time_on_non_default_network,
@@ -796,10 +795,6 @@ QuicStreamFactory::QuicStreamFactory(
       max_time_on_non_default_network_(max_time_on_non_default_network),
       max_migrations_to_non_default_network_on_path_degrading_(
           max_migrations_to_non_default_network_on_path_degrading),
-      migrate_sessions_on_network_change_(
-          !migrate_sessions_on_network_change_v2_ &&
-          migrate_sessions_on_network_change &&
-          NetworkChangeNotifier::AreNetworkHandlesSupported()),
       allow_server_migration_(allow_server_migration),
       race_cert_verification_(race_cert_verification),
       estimate_initial_rtt(estimate_initial_rtt),
@@ -835,9 +830,6 @@ QuicStreamFactory::QuicStreamFactory(
   if (has_aes_hardware_support)
     crypto_config_.PreferAesGcm();
 
-  if (migrate_sessions_on_network_change_v2)
-    DCHECK(!migrate_sessions_on_network_change);
-
   if (migrate_sessions_early_v2)
     DCHECK(migrate_sessions_on_network_change_v2);
 
@@ -849,9 +841,7 @@ QuicStreamFactory::QuicStreamFactory(
   // change.
   bool handle_ip_change =
       close_sessions_on_ip_change_ || goaway_sessions_on_ip_change_;
-  bool connection_migration_on = migrate_sessions_on_network_change_ ||
-                                 migrate_sessions_on_network_change_v2_;
-  DCHECK(!(handle_ip_change && connection_migration_on));
+  DCHECK(!(handle_ip_change && migrate_sessions_on_network_change_v2_));
 
   if (handle_ip_change)
     NetworkChangeNotifier::AddIPAddressObserver(this);
@@ -1261,10 +1251,10 @@ void QuicStreamFactory::ClearCachedStatesInCryptoConfig(
 
 void QuicStreamFactory::OnIPAddressChanged() {
   LogPlatformNotificationInHistogram(NETWORK_IP_ADDRESS_CHANGED);
-  // Do nothing if connection migration is in use.
-  if (migrate_sessions_on_network_change_ ||
-      migrate_sessions_on_network_change_v2_)
+  // Do nothing if connection migration is turned on.
+  if (migrate_sessions_on_network_change_v2_)
     return;
+
   set_require_confirmation(true);
   if (close_sessions_on_ip_change_) {
     CloseAllSessions(ERR_NETWORK_CHANGED, quic::QUIC_IP_ADDRESS_CHANGED);
@@ -1276,9 +1266,9 @@ void QuicStreamFactory::OnIPAddressChanged() {
 
 void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_CONNECTED);
-  if (!migrate_sessions_on_network_change_ &&
-      !migrate_sessions_on_network_change_v2_)
+  if (!migrate_sessions_on_network_change_v2_)
     return;
+
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkConnected");
   QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
@@ -1292,10 +1282,9 @@ void QuicStreamFactory::OnNetworkConnected(NetworkHandle network) {
 
 void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_MADE_DEFAULT);
-
-  if (!migrate_sessions_on_network_change_ &&
-      !migrate_sessions_on_network_change_v2_)
+  if (!migrate_sessions_on_network_change_v2_)
     return;
+
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, network);
   default_network_ = network;
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
@@ -1313,25 +1302,18 @@ void QuicStreamFactory::OnNetworkMadeDefault(NetworkHandle network) {
 
 void QuicStreamFactory::OnNetworkDisconnected(NetworkHandle network) {
   LogPlatformNotificationInHistogram(NETWORK_DISCONNECTED);
-
-  if (!migrate_sessions_on_network_change_ &&
-      !migrate_sessions_on_network_change_v2_)
+  if (!migrate_sessions_on_network_change_v2_)
     return;
+
   ScopedConnectionMigrationEventLog scoped_event_log(net_log_,
                                                      "OnNetworkDisconnected");
-  NetworkHandle new_network = FindAlternateNetwork(network);
   QuicStreamFactory::SessionIdMap::iterator it = all_sessions_.begin();
   // Sessions may be deleted while iterating through the map.
   while (it != all_sessions_.end()) {
     QuicChromiumClientSession* session = it->first;
     ++it;
-    if (migrate_sessions_on_network_change_v2_) {
-      session->OnNetworkDisconnectedV2(/*disconnected_network*/ network,
-                                       scoped_event_log.net_log());
-    } else {
-      session->OnNetworkDisconnected(/*alternate_network*/ new_network,
+    session->OnNetworkDisconnectedV2(/*disconnected_network*/ network,
                                      scoped_event_log.net_log());
-    }
   }
 }
 
@@ -1404,8 +1386,7 @@ int QuicStreamFactory::ConfigureSocket(DatagramClientSocket* socket,
   socket->UseNonBlockingIO();
 
   int rv;
-  if (migrate_sessions_on_network_change_ ||
-      migrate_sessions_on_network_change_v2_) {
+  if (migrate_sessions_on_network_change_v2_) {
     // If caller leaves network unspecified, use current default network.
     if (network == NetworkChangeNotifier::kInvalidNetworkHandle) {
       rv = socket->ConnectUsingDefaultNetwork(addr);
@@ -1549,10 +1530,9 @@ int QuicStreamFactory::CreateSession(
   *session = new QuicChromiumClientSession(
       connection, std::move(socket), this, quic_crypto_client_stream_factory_,
       clock_, transport_security_state_, std::move(server_info),
-      key.session_key(), require_confirmation,
-      migrate_sessions_on_network_change_, migrate_sessions_early_v2_,
-      migrate_sessions_on_network_change_v2_, default_network_,
-      max_time_on_non_default_network_,
+      key.session_key(), require_confirmation, false,
+      migrate_sessions_early_v2_, migrate_sessions_on_network_change_v2_,
+      default_network_, max_time_on_non_default_network_,
       max_migrations_to_non_default_network_on_path_degrading_,
       yield_after_packets_, yield_after_duration_,
       headers_include_h2_stream_dependency_, cert_verify_flags, config,

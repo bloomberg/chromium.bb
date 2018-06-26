@@ -606,13 +606,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void OnNetworkConnected(NetworkChangeNotifier::NetworkHandle network,
                           const NetLogWithSource& net_log);
 
-  // Called when NetworkChangeNotifier broadcasts to observers of the original
-  // network disconnection. Migrates this session to |alternate_network| if
-  // possible.
-  void OnNetworkDisconnected(
-      NetworkChangeNotifier::NetworkHandle alternate_network,
-      const NetLogWithSource& migration_net_log);
-
   // Called when NetworkChangeNotifier broadcasts to observers of
   // |disconnected_network|.
   void OnNetworkDisconnectedV2(

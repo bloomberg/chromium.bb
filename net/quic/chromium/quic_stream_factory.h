@@ -242,7 +242,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int reduced_ping_timeout_seconds,
       int max_time_before_crypto_handshake_seconds,
       int max_idle_time_before_crypto_handshake_seconds,
-      bool migrate_sessions_on_network_change,
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
       base::TimeDelta max_time_on_non_default_network,
@@ -378,8 +377,7 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   }
 
   bool migrate_sessions_on_network_change() const {
-    return migrate_sessions_on_network_change_ ||
-           migrate_sessions_on_network_change_v2_;
+    return migrate_sessions_on_network_change_v2_;
   }
 
   bool mark_quic_broken_when_network_blackholes() const {
@@ -559,10 +557,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
 
   // Maximum number of migrations to non default network on path degrading.
   const int max_migrations_to_non_default_network_on_path_degrading_;
-
-  // Set if migration should be attempted on active sessions when primary
-  // interface changes.
-  const bool migrate_sessions_on_network_change_;
 
   // If set, allows migration of connection to server-specified alternate
   // server address.
