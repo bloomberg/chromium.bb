@@ -213,9 +213,8 @@ void BluetoothAdapterCast::AddDiscoverySession(
 
   // There is no active discovery session, and no pending requests. Enable
   // scanning.
-  le_scan_manager_->SetScanEnable(
-      true, base::BindOnce(&BluetoothAdapterCast::OnScanEnabled,
-                           weak_factory_.GetWeakPtr()));
+  le_scan_manager_->RequestScan(base::BindOnce(
+      &BluetoothAdapterCast::OnScanEnabled, weak_factory_.GetWeakPtr()));
 }
 
 void BluetoothAdapterCast::RemoveDiscoverySession(
@@ -230,8 +229,7 @@ void BluetoothAdapterCast::RemoveDiscoverySession(
   (void)discovery_filter;
 
   // If there are pending requests, run the error call immediately.
-  if (pending_discovery_requests_.size() > 0u ||
-      pending_disable_discovery_request_) {
+  if (pending_discovery_requests_.size() > 0u) {
     std::move(error_callback)
         .Run(UMABluetoothDiscoverySessionOutcome::REMOVE_WITH_PENDING_REQUEST);
     return;
@@ -241,14 +239,14 @@ void BluetoothAdapterCast::RemoveDiscoverySession(
   if (num_discovery_sessions_ > 1) {
     num_discovery_sessions_--;
     callback.Run();
+    return;
   }
 
   // This was the last active discovery session. Disable scanning.
-  pending_disable_discovery_request_.emplace(discovery_filter, callback,
-                                             std::move(error_callback));
-  le_scan_manager_->SetScanEnable(
-      false, base::BindOnce(&BluetoothAdapterCast::OnScanDisabled,
-                            weak_factory_.GetWeakPtr()));
+  num_discovery_sessions_--;
+  DCHECK(scan_handle_);
+  scan_handle_.reset();
+  callback.Run();
 }
 
 void BluetoothAdapterCast::SetDiscoveryFilter(
@@ -394,10 +392,11 @@ void BluetoothAdapterCast::AddDevice(
     observer.DeviceAdded(this, device);
 }
 
-void BluetoothAdapterCast::OnScanEnabled(bool enabled) {
+void BluetoothAdapterCast::OnScanEnabled(
+    std::unique_ptr<chromecast::bluetooth::LeScanManager::ScanHandle>
+        scan_handle) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  if (!enabled) {
+  if (!scan_handle) {
     LOG(WARNING) << "Failed to start scan.";
 
     // Run the error callback.
@@ -408,12 +407,13 @@ void BluetoothAdapterCast::OnScanEnabled(bool enabled) {
 
     // If there is another pending request, try again.
     if (pending_discovery_requests_.size() > 0u) {
-      le_scan_manager_->SetScanEnable(
-          true, base::BindOnce(&BluetoothAdapterCast::OnScanEnabled,
-                               weak_factory_.GetWeakPtr()));
+      le_scan_manager_->RequestScan(base::BindOnce(
+          &BluetoothAdapterCast::OnScanEnabled, weak_factory_.GetWeakPtr()));
     }
     return;
   }
+
+  scan_handle_ = std::move(scan_handle);
 
   // The scan has been successfully enabled. Request the initial scan results
   // from the scan manager.
@@ -426,26 +426,6 @@ void BluetoothAdapterCast::OnScanEnabled(bool enabled) {
     pending_discovery_requests_.front().success_callback.Run();
     pending_discovery_requests_.pop();
   }
-}
-
-void BluetoothAdapterCast::OnScanDisabled(bool success) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(pending_disable_discovery_request_);
-
-  if (!success) {
-    LOG(WARNING) << "Failed to stop scan.";
-
-    // Run the error callback.
-    std::move(pending_disable_discovery_request_->error_callback)
-        .Run(UMABluetoothDiscoverySessionOutcome::FAILED);
-    pending_disable_discovery_request_ = base::nullopt;
-    return;
-  }
-
-  // The scan has been successfully disabled.
-  num_discovery_sessions_--;
-  pending_disable_discovery_request_->success_callback.Run();
-  pending_disable_discovery_request_ = base::nullopt;
 }
 
 void BluetoothAdapterCast::OnGetDevice(

@@ -16,6 +16,12 @@ namespace bluetooth {
 
 class MockLeScanManager : public LeScanManager {
  public:
+  class MockScanHandle : public ScanHandle {
+   public:
+    MockScanHandle() = default;
+    ~MockScanHandle() override = default;
+  };
+
   MockLeScanManager();
   ~MockLeScanManager();
 
@@ -28,9 +34,9 @@ class MockLeScanManager : public LeScanManager {
     observer_ = nullptr;
   }
 
-  MOCK_METHOD1(SetScanEnable, bool(bool enable));
-  void SetScanEnable(bool enable, SetScanEnableCallback cb) override {
-    std::move(cb).Run(SetScanEnable(enable));
+  MOCK_METHOD0(RequestScan, std::unique_ptr<ScanHandle>());
+  void RequestScan(RequestScanCallback cb) override {
+    std::move(cb).Run(RequestScan());
   }
 
   MOCK_METHOD1(
