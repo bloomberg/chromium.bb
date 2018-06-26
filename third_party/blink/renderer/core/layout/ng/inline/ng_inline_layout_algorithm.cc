@@ -608,12 +608,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     container_builder_.SwapPositionedFloats(&positioned_floats_);
     container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
     container_builder_.SetExclusionSpace(std::move(initial_exclusion_space));
-
-    Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
-    container_builder_.GetAndClearOutOfFlowDescendantCandidates(
-        &descendant_candidates, nullptr);
-    for (auto& descendant : descendant_candidates)
-      container_builder_.AddOutOfFlowDescendant(descendant);
+    container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
 
     return container_builder_.ToLineBoxFragment();
   }
@@ -764,12 +759,7 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   container_builder_.SetExclusionSpace(
       exclusion_space ? std::move(exclusion_space)
                       : std::move(initial_exclusion_space));
-
-  Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
-  container_builder_.GetAndClearOutOfFlowDescendantCandidates(
-      &descendant_candidates, nullptr);
-  for (auto& descendant : descendant_candidates)
-    container_builder_.AddOutOfFlowDescendant(descendant);
+  container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
   return container_builder_.ToLineBoxFragment();
 }
 

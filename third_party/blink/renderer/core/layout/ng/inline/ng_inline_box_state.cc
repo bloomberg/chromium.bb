@@ -531,7 +531,7 @@ NGInlineLayoutStateStack::BoxData::CreateBoxFragment(
     // NGInlineLayoutAlgorithm can handle them later.
     DCHECK(!child.HasInFlowFragment());
   }
-
+  box.MoveOutOfFlowDescendantCandidatesToDescendants();
   return box.ToInlineBoxFragment();
 }
 
