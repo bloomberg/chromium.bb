@@ -28,6 +28,7 @@ VulkanRenderer::VulkanRenderer(gpu::VulkanImplementation* vulkan_implementation,
 
 VulkanRenderer::~VulkanRenderer() {
   surface_->Finish();
+  render_pass_->Destroy();
   surface_->Destroy();
   surface_.reset();
   device_queue_->Destroy();
@@ -101,9 +102,6 @@ void VulkanRenderer::RenderFrame() {
   }
 
   CHECK_EQ(surface_->SwapBuffers(), gfx::SwapResult::SWAP_ACK);
-
-  // TODO(spang): Use a better synchronization strategy.
-  command_buffer->Wait(UINT64_MAX);
 
   PostRenderFrameTask();
 }
