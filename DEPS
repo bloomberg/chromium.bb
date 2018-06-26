@@ -939,7 +939,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/r8',
-              'version': 'version:1.0.30',
+              'version': 'version:1.2.28-cr0',
           },
       ],
       'condition': 'checkout_android',
