@@ -298,7 +298,7 @@ void AppListItemView::OnContextMenuModelReceived(
     run_types |= views::MenuRunner::USE_TOUCHABLE_LAYOUT |
                  views::MenuRunner::FIXED_ANCHOR |
                  views::MenuRunner::CONTEXT_MENU;
-    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_LEFT;
+    anchor_position = views::MENU_ANCHOR_BUBBLE_TOUCHABLE_RIGHT;
     anchor_rect = apps_grid_view_->GetIdealBounds(this);
     // Anchor the menu to the same rect that is used for selection highlight.
     anchor_rect.ClampToCenteredSize(
