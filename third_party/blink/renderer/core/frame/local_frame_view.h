@@ -140,6 +140,7 @@ class CORE_EXPORT LocalFrameView final
   // This API is root-layer-scrolling-aware (affects root PLSA in RLS mode).
   void SetCanHaveScrollbars(bool);
   bool CanHaveScrollbars() const { return can_have_scrollbars_; }
+  bool VisualViewportSuppliesScrollbars();
 
   void SnapAfterScrollbarDragging(ScrollbarOrientation) override;
 
@@ -204,7 +205,6 @@ class CORE_EXPORT LocalFrameView final
 
   void UpdateAcceleratedCompositingSettings();
 
-  void RecalcOverflowAfterStyleChange();
   void UpdateCountersAfterStyleChange();
 
   void Dispose() override;
@@ -865,8 +865,6 @@ class CORE_EXPORT LocalFrameView final
   AXObjectCache* ExistingAXObjectCache() const;
 
   void SetLayoutSizeInternal(const IntSize&);
-
-  bool VisualViewportSuppliesScrollbars();
 
   ScrollingCoordinator* GetScrollingCoordinator() const;
 
