@@ -92,8 +92,6 @@ class WebLayerTreeViewImplForTesting
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
 
-  bool IsForSubframe() override;
-
   // cc::LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override {}
   void DidLoseLayerTreeFrameSink() override {}

@@ -94,11 +94,6 @@ class LayerTreeHostClient {
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) = 0;
 
-  // The only time a subframe ever gets its own LayerTree is when the subframe
-  // renders in a different process its ancestors; this returns true in
-  // that case.
-  virtual bool IsForSubframe() = 0;
-
  protected:
   virtual ~LayerTreeHostClient() {}
 };

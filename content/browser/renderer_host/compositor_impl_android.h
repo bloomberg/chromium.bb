@@ -133,7 +133,6 @@ class CONTENT_EXPORT CompositorImpl
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override {}
-  bool IsForSubframe() override;
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

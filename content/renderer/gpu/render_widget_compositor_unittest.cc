@@ -235,11 +235,9 @@ class RenderWidgetLayerTreeFrameSinkTest : public testing::Test {
     auto animation_host = cc::AnimationHost::CreateMainInstance();
 
     ScreenInfo dummy_screen_info;
-    auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
-        &render_widget_compositor_, &render_widget_compositor_,
-        animation_host.get(), &compositor_deps_, dummy_screen_info);
-    render_widget_compositor_.Initialize(std::move(layer_tree_host),
-                                         std::move(animation_host));
+    cc::LayerTreeSettings settings;
+    settings.single_thread_proxy_scheduler = false;
+    render_widget_compositor_.Initialize(settings);
   }
 
   void RunTest(int expected_successes, FailureMode failure_mode) {
@@ -355,11 +353,7 @@ TEST(RenderWidgetCompositorTest, VisibilityTest) {
 
   auto animation_host = cc::AnimationHost::CreateMainInstance();
   ScreenInfo dummy_screen_info;
-  auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
-      &render_widget_compositor, &render_widget_compositor,
-      animation_host.get(), &compositor_deps, dummy_screen_info);
-  render_widget_compositor.Initialize(std::move(layer_tree_host),
-                                      std::move(animation_host));
+  render_widget_compositor.Initialize(cc::LayerTreeSettings());
 
   {
     // Make one request and stop immediately while invisible.

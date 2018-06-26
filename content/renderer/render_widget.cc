@@ -1346,16 +1346,10 @@ void RenderWidget::SetScreenRects(const gfx::Rect& view_screen_rect,
 blink::WebLayerTreeView* RenderWidget::InitializeLayerTreeView() {
   DCHECK(!host_closing_);
 
-  compositor_ = RenderWidgetCompositor::Create(this, compositor_deps_);
-  auto animation_host = cc::AnimationHost::CreateMainInstance();
-
-  // Oopif status must be set before the LayerTreeHost is created.
-  compositor_->SetIsForOopif(for_oopif_);
-  auto layer_tree_host = RenderWidgetCompositor::CreateLayerTreeHost(
-      compositor_.get(), compositor_.get(), animation_host.get(),
-      compositor_deps_, screen_info_);
-  compositor_->Initialize(std::move(layer_tree_host),
-                          std::move(animation_host));
+  compositor_ =
+      std::make_unique<RenderWidgetCompositor>(this, compositor_deps_);
+  compositor_->Initialize(RenderWidgetCompositor::GenerateLayerTreeSettings(
+      compositor_deps_, for_oopif_, screen_info_));
 
   UpdateSurfaceAndScreenInfo(local_surface_id_from_parent_,
                              compositor_viewport_pixel_size_, screen_info_);

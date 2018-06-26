@@ -27,18 +27,12 @@
 #include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace cc {
-
 class AnimationHost;
 class InputHandler;
 class Layer;
 class LayerTreeFrameSink;
 class LayerTreeHost;
-class MutatorHost;
 }
 
 namespace gfx {
@@ -58,29 +52,16 @@ class CONTENT_EXPORT RenderWidgetCompositor
       public cc::LayerTreeHostClient,
       public cc::LayerTreeHostSingleThreadClient {
  public:
-  // Attempt to construct and initialize a compositor instance for the widget
-  // with the given settings. Returns NULL if initialization fails.
-  static std::unique_ptr<RenderWidgetCompositor> Create(
-      RenderWidgetCompositorDelegate* delegate,
-      CompositorDependencies* compositor_deps);
-
+  RenderWidgetCompositor(RenderWidgetCompositorDelegate* delegate,
+                         CompositorDependencies* compositor_deps);
   ~RenderWidgetCompositor() override;
 
   static cc::LayerTreeSettings GenerateLayerTreeSettings(
-      const base::CommandLine& cmd,
       CompositorDependencies* compositor_deps,
       bool is_for_subframe,
-      const ScreenInfo& screen_info,
-      bool is_threaded);
-  static std::unique_ptr<cc::LayerTreeHost> CreateLayerTreeHost(
-      cc::LayerTreeHostClient* client,
-      cc::LayerTreeHostSingleThreadClient* single_thread_client,
-      cc::MutatorHost* mutator_host,
-      CompositorDependencies* deps,
       const ScreenInfo& screen_info);
 
-  void Initialize(std::unique_ptr<cc::LayerTreeHost> layer_tree_host,
-                  std::unique_ptr<cc::AnimationHost> animation_host);
+  void Initialize(const cc::LayerTreeSettings& settings);
 
   static cc::ManagedMemoryPolicy GetGpuMemoryPolicy(
       const cc::ManagedMemoryPolicy& policy,
@@ -117,7 +98,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   bool SendMessageToMicroBenchmark(int id, std::unique_ptr<base::Value> value);
   void SetFrameSinkId(const viz::FrameSinkId& frame_sink_id);
   void SetRasterColorSpace(const gfx::ColorSpace& color_space);
-  void SetIsForOopif(bool is_for_oopif);
   void ClearCachesOnNextCommit();
   void SetContentSourceId(uint32_t source_id);
   void SetViewportSizeAndScale(const gfx::Size& device_viewport_size,
@@ -210,7 +190,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
   void DidCommitAndDrawFrame() override;
   void DidReceiveCompositorFrameAck() override;
   void DidCompletePageScaleAnimation() override;
-  bool IsForSubframe() override;
   void DidPresentCompositorFrame(
       uint32_t frame_token,
       const gfx::PresentationFeedback& feedback) override;
@@ -240,9 +219,6 @@ class CONTENT_EXPORT RenderWidgetCompositor
  protected:
   friend class RenderViewImplScaleFactorTest;
 
-  RenderWidgetCompositor(RenderWidgetCompositorDelegate* delegate,
-                         CompositorDependencies* compositor_deps);
-
  private:
   void SetLayerTreeFrameSink(
       std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink);
@@ -256,8 +232,7 @@ class CONTENT_EXPORT RenderWidgetCompositor
   const bool threaded_;
   std::unique_ptr<cc::AnimationHost> animation_host_;
   std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
-  bool never_visible_;
-  bool is_for_oopif_;
+  bool never_visible_ = false;
 
   bool layer_tree_frame_sink_request_failed_while_invisible_ = false;
 

@@ -659,10 +659,6 @@ void CompositorImpl::DetachRootWindow() {
   root_window_->SetLayer(nullptr);
 }
 
-bool CompositorImpl::IsForSubframe() {
-  return false;
-}
-
 ui::UIResourceProvider& CompositorImpl::GetUIResourceProvider() {
   return *this;
 }
