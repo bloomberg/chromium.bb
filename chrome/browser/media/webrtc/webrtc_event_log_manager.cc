@@ -287,7 +287,6 @@ void WebRtcEventLogManager::StartRemoteLogging(
     int render_process_id,
     const std::string& peer_connection_id,
     size_t max_file_size_bytes,
-    const std::string& metadata,
     base::OnceCallback<void(bool, const std::string&)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -323,7 +322,7 @@ void WebRtcEventLogManager::StartRemoteLogging(
       base::BindOnce(&WebRtcEventLogManager::StartRemoteLoggingInternal,
                      base::Unretained(this), render_process_id,
                      browser_context_id, peer_connection_id,
-                     browser_context->GetPath(), max_file_size_bytes, metadata,
+                     browser_context->GetPath(), max_file_size_bytes,
                      std::move(reply)));
 }
 
@@ -616,14 +615,13 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
     const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    const std::string& metadata,
     base::OnceCallback<void(bool, const std::string&)> reply) {
   DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
   std::string error_message;
   const bool result = remote_logs_manager_->StartRemoteLogging(
       render_process_id, browser_context_id, peer_connection_id,
-      browser_context_dir, max_file_size_bytes, metadata, &error_message);
+      browser_context_dir, max_file_size_bytes, &error_message);
   DCHECK_EQ(result, error_message.empty());  // Error set iff has failed.
 
   if (reply) {

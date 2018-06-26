@@ -122,15 +122,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // posted back to BrowserThread::UI with the return value provided by
   // WebRtcRemoteEventLogManager::StartRemoteLogging - see the comment there
   // for more details.
-  // One may attach an arbitrary binary string |metadata|, which would be
-  // prepended to the WebRTC event log. Its length is counted towards the
-  // max file size. (I.e., if the metadata is of length 4 and the max size
-  // is 10, only 6 bytes are left available for the actual WebRTC event log.)
   void StartRemoteLogging(
       int render_process_id,
       const std::string& peer_connection_id,
       size_t max_file_size_bytes,
-      const std::string& metadata,
       base::OnceCallback<void(bool, const std::string&)> reply =
           base::OnceCallback<void(bool, const std::string&)>());
 
@@ -238,7 +233,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const std::string& peer_connection_id,
       const base::FilePath& browser_context_dir,
       size_t max_file_size_bytes,
-      const std::string& metadata,
       base::OnceCallback<void(bool, const std::string&)> reply);
 
   void ClearCacheForBrowserContextInternal(BrowserContextId browser_context_id,

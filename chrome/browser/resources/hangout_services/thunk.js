@@ -182,9 +182,8 @@ chrome.runtime.onMessageExternal.addListener(function(
     } else if (method == 'logging.startEventLogging') {
       var peerConnectionId = message['peerConnectionId'] || '';
       var maxLogSizeBytes = message['maxLogSizeBytes'] || 0;
-      var metadata = message['metadata'] || '';
       chrome.webrtcLoggingPrivate.startEventLogging(
-          requestInfo, origin, peerConnectionId, maxLogSizeBytes, metadata,
+          requestInfo, origin, peerConnectionId, maxLogSizeBytes,
           doSendResponse);
       return true;
     } else if (method == 'setAudioExperiments') {

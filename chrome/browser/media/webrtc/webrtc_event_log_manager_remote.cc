@@ -23,12 +23,8 @@
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
-const size_t kMaxRemoteLogFileMetadataSizeBytes = 0xffffu;  // 65535
-static_assert(kMaxRemoteLogFileMetadataSizeBytes <= 0xFFFFFFu,
-              "Only 24 bits available for encoding the metadata's length.");
-
-// TODO(crbug.com/775415): Change back to (1u << 29) after resolving the issue
-// where we read the entire file into memory.
+// TODO(crbug.com/775415): Change max back to (1u << 29) after resolving the
+// issue where we read the entire file into memory.
 const size_t kMaxRemoteLogFileSizeBytes = 50000000u;
 
 namespace {
@@ -36,7 +32,6 @@ const base::TimeDelta kDefaultProactivePruningDelta =
     base::TimeDelta::FromMinutes(5);
 
 bool AreLogParametersValid(size_t max_file_size_bytes,
-                           const std::string& metadata,
                            std::string* error_message) {
   if (max_file_size_bytes == kWebRtcEventLogManagerUnlimitedFileSize) {
     LOG(WARNING) << "Unlimited file sizes not allowed for remote-bound logs.";
@@ -47,19 +42,6 @@ bool AreLogParametersValid(size_t max_file_size_bytes,
   if (max_file_size_bytes > kMaxRemoteLogFileSizeBytes) {
     LOG(WARNING) << "File size exceeds maximum allowed.";
     *error_message = kStartRemoteLoggingFailureMaxSizeTooLarge;
-    return false;
-  }
-
-  if (metadata.length() > kMaxRemoteLogFileMetadataSizeBytes) {
-    LOG(ERROR) << "Excessively long metadata.";
-    *error_message = kStartRemoteLoggingFailureMetadaTooLong;
-    return false;
-  }
-
-  if (metadata.size() + kRemoteBoundLogFileHeaderSizeBytes >=
-      max_file_size_bytes) {
-    LOG(ERROR) << "Max file size and metadata must leave room for event log.";
-    *error_message = kStartRemoteLoggingFailureMaxSizeTooSmall;
     return false;
   }
 
@@ -110,10 +92,6 @@ const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention =
 
 const base::FilePath::CharType kRemoteBoundLogExtension[] =
     FILE_PATH_LITERAL("log");
-
-const uint8_t kRemoteBoundWebRtcEventLogFileVersion = 0;
-
-const size_t kRemoteBoundLogFileHeaderSizeBytes = sizeof(uint32_t);
 
 WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     WebRtcRemoteEventLogsObserver* observer)
@@ -237,13 +215,12 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    const std::string& metadata,
     std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
   DCHECK(error_message);
   DCHECK(error_message->empty());
 
-  if (!AreLogParametersValid(max_file_size_bytes, metadata, error_message)) {
+  if (!AreLogParametersValid(max_file_size_bytes, error_message)) {
     // |error_message| will have been set by AreLogParametersValid().
     DCHECK(!error_message->empty()) << "AreLogParametersValid() reported an "
                                        "error without an error message.";
@@ -283,7 +260,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
   }
 
   return StartWritingLog(key, browser_context_dir, max_file_size_bytes,
-                         metadata, error_message);
+                         error_message);
 }
 
 bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
@@ -439,19 +416,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
-    const std::string& metadata,
     std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-
-  // WriteAtCurrentPos() only allows writing up to max-int at a time. We could
-  // iterate to do more, but we don't expect to ever need to, so it's easier
-  // to disallow it.
-  if (metadata.length() >
-      static_cast<size_t>(std::numeric_limits<int>::max())) {
-    LOG(WARNING) << "Metadata too long to be written in one go.";
-    *error_message = kStartRemoteLoggingFailureMetadaTooLong;
-    return false;
-  }
 
   // Randomize a new filename. In the highly unlikely event that this filename
   // is already taken, it will be treated the same way as any other failure
@@ -476,42 +442,8 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     return false;
   }
 
-  // Make the File into a LogFile (path and size information, etc.).
+  // The log is now ACTIVE.
   LogFile log_file(file_path, std::move(file), max_file_size_bytes);
-
-  // Produce the header.
-  const uint32_t header_host_order =
-      static_cast<uint32_t>(metadata.length()) |
-      (kRemoteBoundWebRtcEventLogFileVersion << 24);
-  static_assert(kRemoteBoundLogFileHeaderSizeBytes == sizeof(uint32_t),
-                "Restructure this otherwise.");
-  char header[sizeof(uint32_t)];
-  base::WriteBigEndian<uint32_t>(header, header_host_order);
-  const std::string header_str(header, sizeof(header));
-
-  // Write the header to the file.
-  if (!log_file.Write(header_str) || log_file.MaxSizeReached()) {
-    LOG(WARNING) << "Failed to write header to log file.";
-    log_file.Close();
-    log_file.Delete();
-    // Intentionally using a generic error; look for other places where it's
-    // set for an explanation why.
-    *error_message = kStartRemoteLoggingFailureGeneric;
-    return false;
-  }
-
-  // Write the metadata to the file.
-  if (!log_file.Write(metadata) || log_file.MaxSizeReached()) {
-    LOG(WARNING) << "Failed to write metadata to log file.";
-    log_file.Close();
-    log_file.Delete();
-    // Intentionally using a generic error; look for other places where it's
-    // set for an explanation why.
-    *error_message = kStartRemoteLoggingFailureGeneric;
-    return false;
-  }
-
-  // The log file is now ACTIVE.
   const auto it = active_logs_.emplace(key, std::move(log_file));
   DCHECK(it.second);
 
