@@ -46,7 +46,6 @@ import org.chromium.chrome.browser.signin.SigninManager.SignInStateObserver;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.ProfileSyncService.SyncStateChangedListener;
 import org.chromium.chrome.browser.sync.ui.SyncCustomizationFragment;
-import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
 
@@ -356,11 +355,8 @@ public class AccountManagementFragment extends PreferenceFragment
             pref.setTitle(account.name);
             pref.setIcon(mProfileDataCache.getProfileDataOrDefault(account.name).getImage());
 
-            pref.setOnPreferenceClickListener(preference -> {
-                Intent intent = new Intent(ACCOUNT_SETTINGS_ACTION);
-                intent.putExtra(ACCOUNT_SETTINGS_ACCOUNT_KEY, account);
-                return IntentUtils.safeStartActivity(getActivity(), intent);
-            });
+            pref.setOnPreferenceClickListener(
+                    preference -> SigninUtils.openAccountSettingsPage(getActivity(), account.name));
 
             accountsCategory.addPreference(pref);
         }
