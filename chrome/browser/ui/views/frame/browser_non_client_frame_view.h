@@ -115,12 +115,10 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // views::NonClientFrameView:
   void ChildPreferredSizeChanged(views::View* child) override;
-  void OnThemeChanged() override;
   void VisibilityChanged(views::View* starting_from, bool is_visible) override;
 
   // TabStripObserver:
-  void OnTabAdded(int index) override;
-  void OnTabRemoved(int index) override;
+  void OnSingleTabModeChanged() override;
 
  protected:
   // Whether the frame should be painted with theming.

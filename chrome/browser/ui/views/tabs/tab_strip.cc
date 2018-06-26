@@ -437,7 +437,8 @@ void TabStrip::SetStackedLayout(bool stacked_layout) {
 }
 
 bool TabStrip::SingleTabMode() const {
-  return controller_->IsSingleTabModeAvailable() && tab_count() == 1;
+  return controller_->IsSingleTabModeAvailable() && tab_count() == 1 &&
+         !tab_at(0)->data().pinned;
 }
 
 bool TabStrip::SizeTabButtonToTopOfTabStrip() {
@@ -584,11 +585,15 @@ void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
 }
 
 void TabStrip::SetTabData(int model_index, TabRendererData data) {
+  const bool was_single_tab_mode = SingleTabMode();
+
   Tab* tab = tab_at(model_index);
-  bool pinned_state_changed = tab->data().pinned != data.pinned;
+  const bool pinned_state_changed = tab->data().pinned != data.pinned;
   tab->SetData(std::move(data));
 
   if (pinned_state_changed) {
+    if (SingleTabMode() != was_single_tab_mode)
+      SingleTabModeChanged();
     if (touch_layout_) {
       int pinned_tab_count = 0;
       int start_x = GenerateIdealBoundsForPinnedTabs(&pinned_tab_count);
@@ -1355,6 +1360,13 @@ views::View* TabStrip::GetTooltipHandlerForPoint(const gfx::Point& point) {
       return ConvertPointToViewAndGetTooltipHandler(this, tab, point);
   }
   return this;
+}
+
+void TabStrip::OnThemeChanged() {
+  // Adding or removing a frame image will change whether single tab mode is
+  // available.
+  if (MD::IsRefreshUi())
+    SingleTabModeChanged();
 }
 
 BrowserRootView::DropIndex TabStrip::GetDropIndex(
@@ -2372,6 +2384,8 @@ void TabStrip::SingleTabModeChanged() {
   if (IsValidModelIndex(active_tab_index))
     tab_at(active_tab_index)->Layout();
   new_tab_button_->FrameColorsChanged();
+  for (TabStripObserver& observer : observers_)
+    observer.OnSingleTabModeChanged();
 }
 
 void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
