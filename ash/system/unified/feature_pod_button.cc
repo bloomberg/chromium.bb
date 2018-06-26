@@ -4,6 +4,7 @@
 
 #include "ash/system/unified/feature_pod_button.h"
 
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -17,6 +18,7 @@
 #include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/animation/ink_drop_mask.h"
 #include "ui/views/border.h"
+#include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 
@@ -24,9 +26,11 @@ namespace ash {
 
 namespace {
 
+// TODO(tetsui): Remove when the asset arrives.
+constexpr int kDetailedViewArrowSize = 10;
+
 void ConfigureFeaturePodLabel(views::Label* label) {
   label->SetAutoColorReadabilityEnabled(false);
-  label->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   label->SetSubpixelRenderingEnabled(false);
 }
 
@@ -94,16 +98,25 @@ void FeaturePodIconButton::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 }
 
 FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
-    : Button(listener), label_(new views::Label), sub_label_(new views::Label) {
-  auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
-      views::BoxLayout::kVertical, kUnifiedFeaturePodHoverPadding));
-  layout->set_minimum_cross_axis_size(kUnifiedFeaturePodSize.width());
+    : Button(listener),
+      label_(new views::Label),
+      sub_label_(new views::Label),
+      detailed_view_arrow_(new views::ImageView) {
+  SetBorder(views::CreateEmptyBorder(kUnifiedFeaturePodHoverPadding));
 
   ConfigureFeaturePodLabel(label_);
   ConfigureFeaturePodLabel(sub_label_);
   label_->SetEnabledColor(kUnifiedMenuTextColor);
   sub_label_->SetEnabledColor(kUnifiedMenuSecondaryTextColor);
+
+  detailed_view_arrow_->set_can_process_events_within_subtree(false);
+  detailed_view_arrow_->SetImage(
+      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
+                            kDetailedViewArrowSize, kUnifiedMenuIconColor));
+  detailed_view_arrow_->SetVisible(false);
+
   AddChildView(label_);
+  AddChildView(detailed_view_arrow_);
   AddChildView(sub_label_);
 
   TrayPopupUtils::ConfigureTrayPopupButton(this);
@@ -113,6 +126,30 @@ FeaturePodLabelButton::FeaturePodLabelButton(views::ButtonListener* listener)
 }
 
 FeaturePodLabelButton::~FeaturePodLabelButton() = default;
+
+void FeaturePodLabelButton::Layout() {
+  LayoutInCenter(label_, GetContentsBounds().y());
+  LayoutInCenter(sub_label_, GetContentsBounds().CenterPoint().y());
+
+  if (!detailed_view_arrow_->visible())
+    return;
+
+  // We need custom Layout() because |label_| is first laid out in the center
+  // without considering |detailed_view_arrow_|, then |detailed_view_arrow_| is
+  // placed on the right side of |label_|.
+  gfx::Size arrow_size = detailed_view_arrow_->GetPreferredSize();
+  detailed_view_arrow_->SetBoundsRect(gfx::Rect(
+      gfx::Point(label_->bounds().right() + kUnifiedFeaturePodArrowSpacing,
+                 label_->bounds().CenterPoint().y() - arrow_size.height() / 2),
+      arrow_size));
+}
+
+gfx::Size FeaturePodLabelButton::CalculatePreferredSize() const {
+  return gfx::Size(kUnifiedFeaturePodSize.width(),
+                   label_->GetPreferredSize().height() +
+                       sub_label_->GetPreferredSize().height() +
+                       GetInsets().height());
+}
 
 std::unique_ptr<views::InkDrop> FeaturePodLabelButton::CreateInkDrop() {
   auto ink_drop = TrayPopupUtils::CreateInkDrop(this);
@@ -141,6 +178,7 @@ std::unique_ptr<views::InkDropMask> FeaturePodLabelButton::CreateInkDropMask()
 
 void FeaturePodLabelButton::SetLabel(const base::string16& label) {
   label_->SetText(label);
+  UpdateDetailedViewArrow();
   SetTooltipTextFromLabels();
   Layout();
   SchedulePaint();
@@ -153,10 +191,37 @@ void FeaturePodLabelButton::SetSubLabel(const base::string16& sub_label) {
   SchedulePaint();
 }
 
+void FeaturePodLabelButton::ShowDetailedViewArrow() {
+  show_detailed_view_arrow_ = true;
+  UpdateDetailedViewArrow();
+  Layout();
+  SchedulePaint();
+}
+
 void FeaturePodLabelButton::SetTooltipTextFromLabels() {
   SetTooltipText(
       l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_FEATURE_POD_BUTTON_TOOLTIP,
                                  label_->text(), sub_label_->text()));
+}
+
+void FeaturePodLabelButton::LayoutInCenter(views::View* child, int y) {
+  gfx::Rect contents_bounds = GetContentsBounds();
+  gfx::Size preferred_size = child->GetPreferredSize();
+  int child_width = std::min(contents_bounds.width(), preferred_size.width());
+  child->SetBounds(
+      contents_bounds.x() + (contents_bounds.width() - child_width) / 2, y,
+      child_width, preferred_size.height());
+}
+
+void FeaturePodLabelButton::UpdateDetailedViewArrow() {
+  // If the feature pod button has a detailed view, and the label row has enough
+  // space to show the arrow, set the arrow visible.
+  detailed_view_arrow_->SetVisible(
+      show_detailed_view_arrow_ &&
+      label_->GetPreferredSize().width() +
+              detailed_view_arrow_->GetPreferredSize().width() +
+              kUnifiedFeaturePodArrowSpacing <=
+          GetPreferredSize().width() - GetInsets().width());
 }
 
 FeaturePodButton::FeaturePodButton(FeaturePodControllerBase* controller)
@@ -191,6 +256,10 @@ void FeaturePodButton::SetLabel(const base::string16& label) {
 
 void FeaturePodButton::SetSubLabel(const base::string16& sub_label) {
   label_button_->SetSubLabel(sub_label);
+}
+
+void FeaturePodButton::ShowDetailedViewArrow() {
+  label_button_->ShowDetailedViewArrow();
 }
 
 void FeaturePodButton::SetToggled(bool toggled) {

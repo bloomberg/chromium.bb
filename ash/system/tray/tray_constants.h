@@ -178,6 +178,7 @@ constexpr int kUnifiedFeaturePodHorizontalSidePadding = 26;
 constexpr int kUnifiedFeaturePodHorizontalMiddlePadding = 28;
 constexpr int kUnifiedFeaturePodCollapsedVerticalPadding = 16;
 constexpr int kUnifiedFeaturePodCollapsedHorizontalPadding = 24;
+constexpr int kUnifiedFeaturePodArrowSpacing = 4;
 constexpr int kUnifiedFeaturePodItemsInRow = 3;
 constexpr int kUnifiedFeaturePodMaxItemsInCollapsed = 5;
 constexpr int kUnifiedNotificationSeparatorThickness = 1;
