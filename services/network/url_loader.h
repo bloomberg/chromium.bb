@@ -147,7 +147,17 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   bool HasDataPipe() const;
   void RecordBodyReadFromNetBeforePausedIfNeeded();
   void ResumeStart();
-  void BlockResponseForCorb();
+
+  enum BlockResponseForCorbResult {
+    // Returned when caller of BlockResponseForCorb doesn't need to continue,
+    // because the request will be cancelled soon.
+    kWillCancelRequest,
+
+    // Returned when the caller of BlockResponseForCorb should continue
+    // processing the request (e.g. by calling ReadMore as necessary).
+    kContinueRequest,
+  };
+  BlockResponseForCorbResult BlockResponseForCorb();
 
   net::URLRequestContext* url_request_context_;
   mojom::NetworkServiceClient* network_service_client_;
@@ -186,7 +196,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
 
   // Sniffing state.
   std::unique_ptr<CrossOriginReadBlocking::ResponseAnalyzer> corb_analyzer_;
-  bool did_corb_block_response_ = false;
   bool is_more_corb_sniffing_needed_ = false;
   bool is_more_mime_sniffing_needed_ = false;
 

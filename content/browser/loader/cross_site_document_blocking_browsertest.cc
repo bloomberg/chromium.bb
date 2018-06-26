@@ -689,6 +689,7 @@ IN_PROC_BROWSER_TEST_F(CrossSiteDocumentBlockingTest, PrefetchIsNotImpacted) {
   // Respond to the prefetch request in a way that:
   // 1) will enable caching
   // 2) won't finish until after CORB has blocked the response.
+  FetchHistogramsFromChildProcesses();
   base::HistogramTester histograms;
   std::string response_bytes =
       "HTTP/1.1 200 OK\r\n"

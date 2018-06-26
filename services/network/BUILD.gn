@@ -28,6 +28,8 @@ component("network_service") {
     "cross_origin_read_blocking.h",
     "data_pipe_element_reader.cc",
     "data_pipe_element_reader.h",
+    "empty_url_loader_client.cc",
+    "empty_url_loader_client.h",
     "expect_ct_reporter.cc",
     "expect_ct_reporter.h",
     "http_cache_data_remover.cc",

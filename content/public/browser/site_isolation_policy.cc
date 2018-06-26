@@ -20,6 +20,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/resource_type.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
@@ -87,6 +88,7 @@ void SiteIsolationPolicy::PopulateURLLoaderFactoryParamsPtrForCORB(
   if (!params->is_corb_enabled)
     return;
 
+  params->corb_detachable_resource_type = RESOURCE_TYPE_PREFETCH;
   params->corb_excluded_resource_type = RESOURCE_TYPE_PLUGIN_RESOURCE;
 
   const char* initiator_scheme_exception =

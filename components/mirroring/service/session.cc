@@ -4,6 +4,12 @@
 
 #include "components/mirroring/service/session.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/json/json_writer.h"
 #include "base/logging.h"
 #include "base/rand_util.h"
@@ -171,10 +177,10 @@ void AddStreamObject(int stream_index,
       (config.rtp_payload_type <= media::cast::RtpPayloadType::AUDIO_LAST);
   stream.SetKey("rtpPayloadType",
                 base::Value(is_audio ? kAudioPayloadType : kVideoPayloadType));
-  stream.SetKey("ssrc", base::Value(int(config.sender_ssrc)));
-  stream.SetKey(
-      "targetDelay",
-      base::Value(int(config.animated_playout_delay.InMilliseconds())));
+  stream.SetKey("ssrc", base::Value(static_cast<int>(config.sender_ssrc)));
+  stream.SetKey("targetDelay",
+                base::Value(static_cast<int>(
+                    config.animated_playout_delay.InMilliseconds())));
   stream.SetKey("aesKey", base::Value(base::HexEncode(config.aes_key.data(),
                                                       config.aes_key.size())));
   stream.SetKey("aesIvMask",
@@ -290,11 +296,13 @@ Session::Session(int32_t session_id,
 
   auto wifi_status_monitor =
       std::make_unique<WifiStatusMonitor>(session_id_, &message_dispatcher_);
+  network::mojom::URLLoaderFactoryParamsPtr params =
+      network::mojom::URLLoaderFactoryParams::New();
+  params->process_id = network::mojom::kBrowserProcessId;
+  params->is_corb_enabled = false;
   network::mojom::URLLoaderFactoryPtr url_loader_factory;
   network_context_->CreateURLLoaderFactory(
-      mojo::MakeRequest(&url_loader_factory),
-      network::mojom::URLLoaderFactoryParams::New(
-          network::mojom::kBrowserProcessId, false, -1, std::string()));
+      mojo::MakeRequest(&url_loader_factory), std::move(params));
 
   // Generate session level tags.
   base::Value session_tags(base::Value::Type::DICTIONARY);

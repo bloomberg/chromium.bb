@@ -27,6 +27,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/chunked_data_pipe_upload_data_stream.h"
 #include "services/network/data_pipe_element_reader.h"
+#include "services/network/empty_url_loader_client.h"
 #include "services/network/loader_util.h"
 #include "services/network/network_usage_accumulator.h"
 #include "services/network/public/cpp/features.h"
@@ -622,7 +623,8 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
     if (corb_analyzer_->ShouldBlock()) {
       DCHECK(!is_more_corb_sniffing_needed_);
       corb_analyzer_->LogBlockedResponse();
-      BlockResponseForCorb();
+      if (BlockResponseForCorb() == kWillCancelRequest)
+        return;
     } else if (corb_analyzer_->ShouldAllow()) {
       DCHECK(!is_more_corb_sniffing_needed_);
       corb_analyzer_->LogAllowedResponse();
@@ -734,7 +736,8 @@ void URLLoader::DidRead(int num_bytes, bool completed_synchronously) {
       if (corb_analyzer_->ShouldBlock()) {
         corb_analyzer_->LogBlockedResponse();
         is_more_corb_sniffing_needed_ = false;
-        BlockResponseForCorb();
+        if (BlockResponseForCorb() == kWillCancelRequest)
+          return;
       } else if (corb_analyzer_->ShouldAllow()) {
         corb_analyzer_->LogAllowedResponse();
         is_more_corb_sniffing_needed_ = false;
@@ -830,20 +833,18 @@ void URLLoader::NotifyCompleted(int error_code) {
     upload_progress_tracker_ = nullptr;
   }
 
-  if (consumer_handle_.is_valid())
-    SendResponseToClient();
+  if (network_usage_accumulator_) {
+    network_usage_accumulator_->OnBytesTransferred(
+        factory_params_->process_id, render_frame_id_,
+        url_request_->GetTotalReceivedBytes(),
+        url_request_->GetTotalSentBytes());
+  }
 
-  URLLoaderCompletionStatus status;
-  if (did_corb_block_response_) {
-    // CORB responses are reported as a success.
-    status.error_code = net::OK;
-    status.completion_time = base::TimeTicks::Now();
-    status.encoded_data_length = 0;
-    status.encoded_body_length = 0;
-    status.decoded_body_length = 0;
-    status.should_report_corb_blocking =
-        corb_analyzer_->ShouldReportBlockedResponse();
-  } else {
+  if (url_loader_client_) {
+    if (consumer_handle_.is_valid())
+      SendResponseToClient();
+
+    URLLoaderCompletionStatus status;
     status.error_code = error_code;
     if (error_code == net::ERR_QUIC_PROTOCOL_ERROR) {
       net::NetErrorDetails details;
@@ -861,16 +862,10 @@ void URLLoader::NotifyCompleted(int error_code) {
         !net::IsCertStatusMinorError(url_request_->ssl_info().cert_status)) {
       status.ssl_info = url_request_->ssl_info();
     }
+
+    url_loader_client_->OnComplete(status);
   }
 
-  if (network_usage_accumulator_) {
-    network_usage_accumulator_->OnBytesTransferred(
-        factory_params_->process_id, render_frame_id_,
-        url_request_->GetTotalReceivedBytes(),
-        url_request_->GetTotalSentBytes());
-  }
-
-  url_loader_client_->OnComplete(status);
   DeleteSelf();
 }
 
@@ -992,23 +987,71 @@ void URLLoader::RecordBodyReadFromNetBeforePausedIfNeeded() {
   }
 }
 
-void URLLoader::BlockResponseForCorb() {
-  // TODO(lukasza): https://crbug.com/846334: Need to make sure that the cache
-  // is still populated in the prefetch case (e.g. the implementation of CORB in
-  // CrossSiteDocumentResourceHandler would detach rather than cancel).
-  url_request_->Cancel();
+URLLoader::BlockResponseForCorbResult URLLoader::BlockResponseForCorb() {
+  // The response headers and body shouldn't yet be sent to the URLLoaderClient.
+  DCHECK(response_);
+  DCHECK(consumer_handle_.is_valid());
 
-  // Remember that blocking happened (so that we can report success, rather than
-  // cancellation status to the URLLoaderClient).
-  did_corb_block_response_ = true;
-
-  // Block the headers.
+  // Send stripped headers to the real URLLoaderClient.
   CrossOriginReadBlocking::SanitizeBlockedResponse(response_);
+  url_loader_client_->OnReceiveResponse(response_->head);
 
-  // Block the response body.
-  mojo::DataPipe data_pipe(kBlockedBodyAllocationSize);
-  data_pipe.producer_handle.reset();  // No bytes in the blocked body.
-  consumer_handle_ = std::move(data_pipe.consumer_handle);
+  // Send empty body to the real URLLoaderClient.
+  mojo::DataPipe empty_data_pipe(kBlockedBodyAllocationSize);
+  empty_data_pipe.producer_handle.reset();
+  url_loader_client_->OnStartLoadingResponseBody(
+      std::move(empty_data_pipe.consumer_handle));
+
+  // Tell the real URLLoaderClient that the response has been completed.
+  URLLoaderCompletionStatus status;
+  if (resource_type_ == factory_params_->corb_detachable_resource_type) {
+    // TODO(lukasza): https://crbug.com/827633#c5: Consider passing net::ERR_OK
+    // instead.  net::ERR_ABORTED was chosen for consistency with the old CORB
+    // implementation that used to go through DetachableResourceHandler.
+    status.error_code = net::ERR_ABORTED;
+  } else {
+    // CORB responses are reported as a success.
+    status.error_code = net::OK;
+  }
+  status.completion_time = base::TimeTicks::Now();
+  status.encoded_data_length = 0;
+  status.encoded_body_length = 0;
+  status.decoded_body_length = 0;
+  status.should_report_corb_blocking =
+      corb_analyzer_->ShouldReportBlockedResponse();
+  url_loader_client_->OnComplete(status);
+
+  // Reset the connection to the URLLoaderClient.  This helps ensure that we
+  // won't accidentally leak any data to the renderer from this point on.
+  url_loader_client_.reset();
+
+  // If the factory is asking to complete requests of this type, then we need to
+  // continue processing the response to make sure the network cache is
+  // populated.  Otherwise we can cancel the request.
+  if (resource_type_ == factory_params_->corb_detachable_resource_type) {
+    // Discard any remaining callbacks or data by rerouting the pipes to
+    // EmptyURLLoaderClient (deleting |self_ptr| when the URL request
+    // completes).
+    mojom::URLLoaderPtr self_ptr;
+    binding_.Close();
+    binding_.Bind(mojo::MakeRequest(&self_ptr));
+    binding_.set_connection_error_handler(
+        base::BindOnce(&URLLoader::OnConnectionError, base::Unretained(this)));
+    EmptyURLLoaderClient::DrainURLRequest(
+        mojo::MakeRequest(&url_loader_client_), std::move(self_ptr));
+
+    // Ask the caller to continue processing the request.
+    return kContinueRequest;
+  }
+  // Delete self and cancel the request - the caller doesn't need to continue.
+  //
+  // DeleteSelf is posted asynchronously, to make sure that the callers (e.g.
+  // URLLoader::OnResponseStarted and/or URLLoader::DidRead instance methods)
+  // can still safely dereference |this|.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(&URLLoader::DeleteSelf, weak_ptr_factory_.GetWeakPtr()));
+  return kWillCancelRequest;
 }
 
 }  // namespace network
