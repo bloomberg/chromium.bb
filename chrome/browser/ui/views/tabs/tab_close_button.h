@@ -29,6 +29,9 @@ class TabCloseButton : public views::ImageButton,
                  MouseEventCallback mouse_event_callback);
   ~TabCloseButton() override;
 
+  // Returns the width of the tab close button.
+  static int GetWidth();
+
   // This function must be called before the tab is painted so it knows what
   // color to use. It must also be called when the background color of the tab
   // changes (this class does not track tab activation state), and when the

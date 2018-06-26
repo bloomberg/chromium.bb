@@ -1099,7 +1099,7 @@ int Tab::GetMinimumInactiveWidth() {
 
 // static
 int Tab::GetMinimumActiveWidth() {
-  return gfx::kFaviconSize + GetMinimumInactiveWidth();
+  return TabCloseButton::GetWidth() + GetMinimumInactiveWidth();
 }
 
 // static
