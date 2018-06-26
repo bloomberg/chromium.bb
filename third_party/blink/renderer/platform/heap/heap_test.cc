@@ -368,9 +368,9 @@ class TestGCMarkingScope : public TestGCCollectGarbageScope {
         atomic_pause_scope_(ThreadState::Current()),
         persistent_lock_(ProcessHeap::CrossThreadPersistentMutex()) {
     ThreadState::Current()->Heap().stats_collector()->NotifyMarkingStarted(
-        BlinkGC::kTesting);
+        BlinkGC::GCReason::kTesting);
     ThreadState::Current()->AtomicPausePrologue(state, BlinkGC::kAtomicMarking,
-                                                BlinkGC::kPreciseGC);
+                                                BlinkGC::GCReason::kPreciseGC);
   }
   ~TestGCMarkingScope() {
     ThreadState::Current()->MarkPhaseEpilogue(BlinkGC::kAtomicMarking);
@@ -1961,7 +1961,7 @@ TEST(HeapTest, LazySweepingPages) {
     SimpleFinalizedObject::Create();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   for (int i = 0; i < 10000; i++)
     SimpleFinalizedObject::Create();
@@ -1989,7 +1989,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
     LargeHeapObject::Create();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   EXPECT_EQ(0, LargeHeapObject::destructor_calls_);
   for (int i = 0; i < 10; i++) {
     LargeHeapObject::Create();
@@ -2000,7 +2000,7 @@ TEST(HeapTest, LazySweepingLargeObjectPages) {
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   EXPECT_EQ(10, LargeHeapObject::destructor_calls_);
   PreciselyCollectGarbage();
   EXPECT_EQ(22, LargeHeapObject::destructor_calls_);
@@ -2074,7 +2074,7 @@ TEST(HeapTest, EagerlySweepingPages) {
     SimpleFinalizedObjectInstanceOfTemplate::Create();
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   EXPECT_EQ(0, SimpleFinalizedObject::destructor_calls_);
   EXPECT_EQ(100, SimpleFinalizedEagerObject::destructor_calls_);
   EXPECT_EQ(100, SimpleFinalizedObjectInstanceOfTemplate::destructor_calls_);
@@ -6499,7 +6499,7 @@ void WorkerThreadMainForCrossThreadWeakPersistentTest(
   // Step 4: Run a GC.
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
   WakeMainThread();
   ParkWorkerThread();
 

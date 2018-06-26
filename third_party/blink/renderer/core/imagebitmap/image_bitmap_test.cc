@@ -92,7 +92,7 @@ class ImageBitmapTest : public testing::Test {
     // them from the cache.
     ThreadState::Current()->CollectGarbage(
         BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-        BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
 
     ReplaceMemoryCacheForTesting(global_memory_cache_.Release());
     SharedGpuContext::ResetForTesting();

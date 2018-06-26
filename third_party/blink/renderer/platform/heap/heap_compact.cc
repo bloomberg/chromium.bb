@@ -297,14 +297,15 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
   if (!RuntimeEnabledFeatures::HeapCompactionEnabled())
     return false;
 
-  LOG_HEAP_COMPACTION() << "shouldCompact(): gc=" << reason
+  LOG_HEAP_COMPACTION() << "shouldCompact(): gc=" << static_cast<int>(reason)
                         << " count=" << gc_count_since_last_compaction_
                         << " free=" << free_list_size_;
   gc_count_since_last_compaction_++;
   // It is only safe to compact during non-conservative GCs.
   // TODO: for the main thread, limit this further to only idle GCs.
-  if (reason != BlinkGC::kIdleGC && reason != BlinkGC::kPreciseGC &&
-      reason != BlinkGC::kForcedGC)
+  if (reason != BlinkGC::GCReason::kIdleGC &&
+      reason != BlinkGC::GCReason::kPreciseGC &&
+      reason != BlinkGC::GCReason::kForcedGC)
     return false;
 
   // If the GCing thread requires a stack scan, do not compact.

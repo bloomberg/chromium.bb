@@ -481,7 +481,7 @@ TEST_F(ScriptStreamingTest, GarbageCollectDuringStreaming) {
   pending_script_ = nullptr;
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+      BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
 }
 
 }  // namespace

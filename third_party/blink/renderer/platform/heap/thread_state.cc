@@ -96,25 +96,25 @@ constexpr size_t kMaxTerminationGCLoops = 20;
 
 const char* GcReasonString(BlinkGC::GCReason reason) {
   switch (reason) {
-    case BlinkGC::kIdleGC:
+    case BlinkGC::GCReason::kIdleGC:
       return "IdleGC";
-    case BlinkGC::kPreciseGC:
+    case BlinkGC::GCReason::kPreciseGC:
       return "PreciseGC";
-    case BlinkGC::kConservativeGC:
+    case BlinkGC::GCReason::kConservativeGC:
       return "ConservativeGC";
-    case BlinkGC::kForcedGC:
+    case BlinkGC::GCReason::kForcedGC:
       return "ForcedGC";
-    case BlinkGC::kMemoryPressureGC:
+    case BlinkGC::GCReason::kMemoryPressureGC:
       return "MemoryPressureGC";
-    case BlinkGC::kPageNavigationGC:
+    case BlinkGC::GCReason::kPageNavigationGC:
       return "PageNavigationGC";
-    case BlinkGC::kThreadTerminationGC:
+    case BlinkGC::GCReason::kThreadTerminationGC:
       return "ThreadTerminationGC";
-    case BlinkGC::kTesting:
+    case BlinkGC::GCReason::kTesting:
       return "TestingGC";
-    case BlinkGC::kIncrementalIdleGC:
+    case BlinkGC::GCReason::kIncrementalIdleGC:
       return "IncrementalIdleGC";
-    case BlinkGC::kIncrementalV8FollowupGC:
+    case BlinkGC::GCReason::kIncrementalV8FollowupGC:
       return "IncrementalV8FollowupGC";
   }
   return "<Unknown>";
@@ -178,7 +178,7 @@ ThreadState::ThreadState()
       gc_mixin_marker_(nullptr),
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
-      reason_for_scheduled_gc_(BlinkGC::kLastGCReason),
+      reason_for_scheduled_gc_(BlinkGC::GCReason::kMaxValue),
       isolate_(nullptr),
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
@@ -249,7 +249,8 @@ void ThreadState::RunTerminationGC() {
   DCHECK_GE(current_count, 0);
   while (current_count != old_count) {
     CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                   BlinkGC::kEagerSweeping, BlinkGC::kThreadTerminationGC);
+                   BlinkGC::kEagerSweeping,
+                   BlinkGC::GCReason::kThreadTerminationGC);
     // Release the thread-local static persistents that were
     // instantiated while running the termination GC.
     ReleaseStaticPersistentNodes();
@@ -267,7 +268,8 @@ void ThreadState::RunTerminationGC() {
          i++) {
       GetPersistentRegion()->PrepareForThreadStateTermination();
       CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kEagerSweeping, BlinkGC::kThreadTerminationGC);
+                     BlinkGC::kEagerSweeping,
+                     BlinkGC::GCReason::kThreadTerminationGC);
     }
   }
 
@@ -573,7 +575,8 @@ void ThreadState::SchedulePageNavigationGCIfNeeded(
     VLOG(2) << "[state:" << this << "] "
             << "SchedulePageNavigationGCIfNeeded: Scheduled memory pressure GC";
     CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                   BlinkGC::kLazySweeping, BlinkGC::kMemoryPressureGC);
+                   BlinkGC::kLazySweeping,
+                   BlinkGC::GCReason::kMemoryPressureGC);
     return;
   }
   if (ShouldSchedulePageNavigationGC(estimated_removal_ratio)) {
@@ -612,7 +615,8 @@ void ThreadState::ScheduleGCIfNeeded() {
       VLOG(2) << "[state:" << this << "] "
               << "ScheduleGCIfNeeded: Scheduled memory pressure GC";
       CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kLazySweeping, BlinkGC::kMemoryPressureGC);
+                     BlinkGC::kLazySweeping,
+                     BlinkGC::GCReason::kMemoryPressureGC);
       return;
     }
   }
@@ -623,7 +627,8 @@ void ThreadState::ScheduleGCIfNeeded() {
       VLOG(2) << "[state:" << this << "] "
               << "ScheduleGCIfNeeded: Scheduled conservative GC";
       CollectGarbage(BlinkGC::kHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kLazySweeping, BlinkGC::kConservativeGC);
+                     BlinkGC::kLazySweeping,
+                     BlinkGC::GCReason::kConservativeGC);
       return;
     }
   }
@@ -640,7 +645,7 @@ void ThreadState::ScheduleGCIfNeeded() {
       RuntimeEnabledFeatures::HeapIncrementalMarkingStressEnabled()) {
     VLOG(2) << "[state:" << this << "] "
             << "ScheduleGCIfNeeded: Scheduled incremental marking for testing";
-    IncrementalMarkingStart(BlinkGC::kTesting);
+    IncrementalMarkingStart(BlinkGC::GCReason::kTesting);
     return;
   }
 #endif
@@ -682,13 +687,13 @@ void ThreadState::PerformIdleGC(TimeTicks deadline) {
 
 #if BUILDFLAG(BLINK_HEAP_INCREMENTAL_MARKING)
   if (RuntimeEnabledFeatures::HeapIncrementalMarkingEnabled()) {
-    IncrementalMarkingStart(BlinkGC::kIncrementalIdleGC);
+    IncrementalMarkingStart(BlinkGC::GCReason::kIncrementalIdleGC);
     return;
   }
 #endif
 
   CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                 BlinkGC::kLazySweeping, BlinkGC::kIdleGC);
+                 BlinkGC::kLazySweeping, BlinkGC::GCReason::kIdleGC);
 }
 
 void ThreadState::PerformIdleLazySweep(TimeTicks deadline) {
@@ -904,11 +909,12 @@ void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
       break;
     case kPreciseGCScheduled:
       CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kLazySweeping, BlinkGC::kPreciseGC);
+                     BlinkGC::kLazySweeping, BlinkGC::GCReason::kPreciseGC);
       break;
     case kPageNavigationGCScheduled:
       CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                     BlinkGC::kEagerSweeping, BlinkGC::kPageNavigationGC);
+                     BlinkGC::kEagerSweeping,
+                     BlinkGC::GCReason::kPageNavigationGC);
       break;
     case kIdleGCScheduled:
       // Idle time GC will be scheduled by Blink Scheduler.
@@ -1086,9 +1092,7 @@ void UpdateTraceCounters(const ThreadHeapStatsCollector& stats_collector) {
 // Anything that is part of a histogram should have a well-defined lifetime wrt.
 // to a garbage collection cycle.
 void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, gc_reason_histogram,
-                      ("BlinkGC.GCReason", BlinkGC::kLastGCReason + 1));
-  gc_reason_histogram.Count(event.reason);
+  UMA_HISTOGRAM_ENUMERATION("BlinkGC.GCReason", event.reason);
 
   // TODO(mlippautz): Update name of this histogram.
   DEFINE_STATIC_LOCAL(CustomCountHistogram, marking_time_histogram,
@@ -1155,18 +1159,18 @@ void UpdateHistograms(const ThreadHeapStatsCollector::Event& event) {
 
   // Per GCReason metrics.
   switch (event.reason) {
-#define COUNT_BY_GC_REASON(GCReason)                                        \
-  case BlinkGC::k##GCReason: {                                              \
-    DEFINE_STATIC_LOCAL(                                                    \
-        CustomCountHistogram, atomic_marking_phase_histogram,               \
-        ("BlinkGC.AtomicPhaseMarking_" #GCReason, 0, 10000, 50));           \
-    atomic_marking_phase_histogram.Count(                                   \
-        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]     \
-            .InMilliseconds());                                             \
-    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,    \
-                        ("BlinkGC.CollectionRate_" #GCReason, 1, 100, 20)); \
-    collection_rate_histogram.Count(collection_rate_percent);               \
-    break;                                                                  \
+#define COUNT_BY_GC_REASON(reason)                                        \
+  case BlinkGC::GCReason::k##reason: {                                    \
+    DEFINE_STATIC_LOCAL(                                                  \
+        CustomCountHistogram, atomic_marking_phase_histogram,             \
+        ("BlinkGC.AtomicPhaseMarking_" #reason, 0, 10000, 50));           \
+    atomic_marking_phase_histogram.Count(                                 \
+        event.scope_data[ThreadHeapStatsCollector::kAtomicPhaseMarking]   \
+            .InMilliseconds());                                           \
+    DEFINE_STATIC_LOCAL(CustomCountHistogram, collection_rate_histogram,  \
+                        ("BlinkGC.CollectionRate_" #reason, 1, 100, 20)); \
+    collection_rate_histogram.Count(collection_rate_percent);             \
+    break;                                                                \
   }
 
     COUNT_BY_GC_REASON(IdleGC)
@@ -1515,10 +1519,10 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   // We don't want floating garbage for the specific garbage collection types
   // mentioned below. In this case we will follow up with a regular full
   // garbage collection.
-  const bool should_do_full_gc = !was_incremental_marking ||
-                                 reason == BlinkGC::kForcedGC ||
-                                 reason == BlinkGC::kMemoryPressureGC ||
-                                 reason == BlinkGC::kThreadTerminationGC;
+  const bool should_do_full_gc =
+      !was_incremental_marking || reason == BlinkGC::GCReason::kForcedGC ||
+      reason == BlinkGC::GCReason::kMemoryPressureGC ||
+      reason == BlinkGC::GCReason::kThreadTerminationGC;
   if (should_do_full_gc) {
     CompleteSweep();
     SetGCState(kNoGCScheduled);
@@ -1534,13 +1538,13 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   time_for_total_collect_garbage_histogram.Count(
       total_collect_garbage_time.InMilliseconds());
 
-#define COUNT_BY_GC_REASON(GCReason)                                      \
-  case BlinkGC::k##GCReason: {                                            \
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                      \
-        CustomCountHistogram, histogram,                                  \
-        ("BlinkGC.TimeForTotalCollectGarbage_" #GCReason, 0, 10000, 50)); \
-    histogram.Count(total_collect_garbage_time.InMilliseconds());         \
-    break;                                                                \
+#define COUNT_BY_GC_REASON(reason)                                      \
+  case BlinkGC::GCReason::k##reason: {                                  \
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                    \
+        CustomCountHistogram, histogram,                                \
+        ("BlinkGC.TimeForTotalCollectGarbage_" #reason, 0, 10000, 50)); \
+    histogram.Count(total_collect_garbage_time.InMilliseconds());       \
+    break;                                                              \
   }
 
   switch (reason) {
@@ -1750,7 +1754,7 @@ void ThreadState::CollectAllGarbage() {
   size_t previous_live_objects = 0;
   for (int i = 0; i < 5; ++i) {
     CollectGarbage(BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-                   BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+                   BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
     const size_t live_objects =
         Heap().stats_collector()->previous().marked_bytes;
     if (live_objects == previous_live_objects)

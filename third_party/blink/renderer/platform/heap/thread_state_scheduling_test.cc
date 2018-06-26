@@ -84,12 +84,14 @@ TEST_F(ThreadStateSchedulingTest, ScheduleIncrementalV8FollowupGCAgain) {
   ThreadStateSchedulingTest* test = this;
 
   EXPECT_EQ(ThreadState::kNoGCScheduled, test->state()->GetGCState());
-  test->state()->ScheduleIncrementalGC(BlinkGC::kIncrementalV8FollowupGC);
+  test->state()->ScheduleIncrementalGC(
+      BlinkGC::GCReason::kIncrementalV8FollowupGC);
   EXPECT_EQ(ThreadState::kIncrementalGCScheduled, test->state()->GetGCState());
 
   // Calling ScheduleIncrementalV8FollowupGC() while one is already scheduled
   // will do nothing.
-  test->state()->ScheduleIncrementalGC(BlinkGC::kIncrementalV8FollowupGC);
+  test->state()->ScheduleIncrementalGC(
+      BlinkGC::GCReason::kIncrementalV8FollowupGC);
 
   EXPECT_EQ(ThreadState::kIncrementalGCScheduled, test->state()->GetGCState());
   EXPECT_EQ(0, test->GCCount());
@@ -142,7 +144,8 @@ TEST_F(ThreadStateSchedulingTest,
 
   test->StartLazySweepingForPreciseGC();
 
-  test->state()->ScheduleIncrementalGC(BlinkGC::kIncrementalV8FollowupGC);
+  test->state()->ScheduleIncrementalGC(
+      BlinkGC::GCReason::kIncrementalV8FollowupGC);
 
   // Scheduling a IncrementalV8FollowupGC should finish lazy sweeping.
   EXPECT_FALSE(test->state()->IsSweepingInProgress());
@@ -177,7 +180,8 @@ TEST_F(ThreadStateSchedulingTest,
 
   test->StartIncrementalMarkingForIdleGC();
 
-  test->state()->ScheduleIncrementalGC(BlinkGC::kIncrementalV8FollowupGC);
+  test->state()->ScheduleIncrementalGC(
+      BlinkGC::GCReason::kIncrementalV8FollowupGC);
 
   // Scheduling a precise GC should not cancel incremental marking tasks.
   EXPECT_EQ(ThreadState::kIncrementalMarkingStepScheduled,
@@ -202,7 +206,8 @@ TEST_F(ThreadStateSchedulingTest,
   ThreadStateSchedulingTest* test = this;
 
   EXPECT_EQ(ThreadState::kNoGCScheduled, test->state()->GetGCState());
-  test->state()->ScheduleIncrementalGC(BlinkGC::kIncrementalV8FollowupGC);
+  test->state()->ScheduleIncrementalGC(
+      BlinkGC::GCReason::kIncrementalV8FollowupGC);
   EXPECT_EQ(ThreadState::kIncrementalGCScheduled, test->state()->GetGCState());
 
   ThreadState::GCForbiddenScope gc_forbidden_scope(test->state());
@@ -218,7 +223,8 @@ TEST_F(ThreadStateSchedulingTest, RunIncrementalV8FollowupGC) {
   ThreadStateSchedulingTest* test = this;
 
   EXPECT_EQ(ThreadState::kNoGCScheduled, test->state()->GetGCState());
-  test->state()->ScheduleIncrementalGC(BlinkGC::kIncrementalV8FollowupGC);
+  test->state()->ScheduleIncrementalGC(
+      BlinkGC::GCReason::kIncrementalV8FollowupGC);
   EXPECT_EQ(ThreadState::kIncrementalGCScheduled, test->state()->GetGCState());
 
   test->RunScheduledGC(BlinkGC::kNoHeapPointersOnStack);

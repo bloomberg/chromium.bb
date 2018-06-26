@@ -53,7 +53,7 @@ TEST(MutationObserverTest, DisconnectCrash) {
   // MutationObserverRegistration for |head|.
   ThreadState::Current()->CollectGarbage(
       BlinkGC::kNoHeapPointersOnStack, BlinkGC::kAtomicMarking,
-      BlinkGC::kLazySweeping, BlinkGC::kForcedGC);
+      BlinkGC::kLazySweeping, BlinkGC::GCReason::kForcedGC);
   observer->disconnect();
   // The test passes if disconnect() didn't crash.  crbug.com/657613.
 }

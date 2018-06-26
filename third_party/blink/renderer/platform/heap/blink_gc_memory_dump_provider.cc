@@ -52,7 +52,7 @@ bool BlinkGCMemoryDumpProvider::OnMemoryDump(
   if (level_of_detail == MemoryDumpLevelOfDetail::DETAILED) {
     ThreadState::Current()->CollectGarbage(
         BlinkGC::kNoHeapPointersOnStack, BlinkGC::kTakeSnapshot,
-        BlinkGC::kEagerSweeping, BlinkGC::kForcedGC);
+        BlinkGC::kEagerSweeping, BlinkGC::GCReason::kForcedGC);
   }
   DumpMemoryTotals(memory_dump);
 
