@@ -116,6 +116,10 @@ class CORE_EXPORT NGContainerFragmentBuilder : public NGBaseFragmentBuilder {
       Vector<NGOutOfFlowPositionedDescendant>* descendant_candidates,
       const LayoutObject* container);
 
+  // Utility routine to move all OOF descendant candidates to descendants.
+  // Use if fragment cannot hold any OOF children.
+  void MoveOutOfFlowDescendantCandidatesToDescendants();
+
   NGContainerFragmentBuilder& SetIsPushedByFloats() {
     is_pushed_by_floats_ = true;
     return *this;

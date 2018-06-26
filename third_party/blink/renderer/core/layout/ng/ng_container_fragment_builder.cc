@@ -203,6 +203,12 @@ void NGContainerFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
   oof_positioned_candidates_.clear();
 }
 
+void NGContainerFragmentBuilder::
+    MoveOutOfFlowDescendantCandidatesToDescendants() {
+  GetAndClearOutOfFlowDescendantCandidates(&oof_positioned_descendants_,
+                                           nullptr);
+}
+
 #ifndef NDEBUG
 
 String NGContainerFragmentBuilder::ToString() const {
