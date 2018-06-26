@@ -945,9 +945,9 @@ const char kIgnoreGpuBlacklistDescription[] =
     "Overrides the built-in software rendering list and enables "
     "GPU-acceleration on unsupported system configurations.";
 
-const char kIgnorePreviewsBlacklistName[] = "Ignore Previews Blacklist";
+const char kIgnorePreviewsBlacklistName[] = "Ignore Previews Blocklist";
 const char kIgnorePreviewsBlacklistDescription[] =
-    "Ignore decisions made by the PreviewsBlackList";
+    "Ignore decisions made by the PreviewsBlockList";
 
 const char kImportantSitesInCbdName[] =
     "Important sites options in clear browsing data dialog";
