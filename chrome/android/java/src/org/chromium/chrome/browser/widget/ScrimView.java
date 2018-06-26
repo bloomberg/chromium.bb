@@ -185,9 +185,7 @@ public class ScrimView extends View implements View.OnClickListener {
      */
     private void onParamsChanged(ScrimParams params) {
         mActiveParams = params;
-        UiUtils.removeViewFromParent(this);
-        if (params == null || params.anchorView == null) return;
-
+        if (mActiveParams == null) return;
         placeScrimInHierarchy(params.anchorView, params.showInFrontOfAnchorView);
         getLayoutParams().width = LayoutParams.MATCH_PARENT;
         getLayoutParams().height = LayoutParams.MATCH_PARENT;
