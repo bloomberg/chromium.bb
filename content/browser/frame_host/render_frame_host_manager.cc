@@ -884,12 +884,22 @@ bool RenderFrameHostManager::ShouldSwapBrowsingInstancesForNavigation(
     bool current_is_view_source_mode,
     SiteInstance* new_site_instance,
     const GURL& new_effective_url,
-    bool new_is_view_source_mode) const {
+    bool new_is_view_source_mode,
+    bool is_failure) const {
   // A subframe must stay in the same BrowsingInstance as its parent.
   // TODO(nasko): Ensure that SiteInstance swap is still triggered for subframes
   // in the cases covered by the rest of the checks in this method.
   if (!frame_tree_node_->IsMainFrame())
     return false;
+
+  // If the navigation has resulted in an error page, do not swap
+  // BrowsingInstance and keep the error page in a related SiteInstance. If
+  // later a reload of this navigation is successful, it  will correctly
+  // create a new BrowsingInstance.
+  if (is_failure && SiteIsolationPolicy::IsErrorPageIsolationEnabled(
+                        frame_tree_node_->IsMainFrame())) {
+    return false;
+  }
 
   // If new_entry already has a SiteInstance, assume it is correct.  We only
   // need to force a swap if it is in a different BrowsingInstance.
@@ -1029,11 +1039,9 @@ RenderFrameHostManager::GetSiteInstanceForNavigation(
       current_entry->IsViewSourceMode() : dest_is_view_source_mode;
 
   bool force_swap = ShouldSwapBrowsingInstancesForNavigation(
-      current_effective_url,
-      current_is_view_source_mode,
-      dest_instance,
+      current_effective_url, current_is_view_source_mode, dest_instance,
       SiteInstanceImpl::GetEffectiveURL(browser_context, dest_url),
-      dest_is_view_source_mode);
+      dest_is_view_source_mode, is_failure);
   SiteInstanceDescriptor new_instance_descriptor =
       SiteInstanceDescriptor(current_instance);
   if (ShouldTransitionCrossSite() || force_swap) {
