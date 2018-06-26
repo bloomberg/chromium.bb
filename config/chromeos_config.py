@@ -3869,14 +3869,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
           'useflags': append_useflags(['cfi']),
       },
 
-      'elm-release': {
-          'useflags': append_useflags(['thinlto']),
-      },
-
-      'peach_pit-release': {
-          'useflags': append_useflags(['thinlto']),
-      },
-
       # Remove this one after crbug.com/853946 is fixed.
       'eve-arcnext-release': {
           'useflags': append_useflags(['-cfi']),
