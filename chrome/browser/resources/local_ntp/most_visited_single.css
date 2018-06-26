@@ -492,7 +492,7 @@ body.dark-theme .md-tile:active .md-menu::after {
 
 .fallback-letter {
   color: white;
-  font-family: Roboto;
+  font-family: 'Roboto', arial, sans-serif;
   font-size: 12px;
   height: 16px;
   line-height: 16px;
@@ -506,8 +506,9 @@ body.dark-theme .md-tile:active .md-menu::after {
 
 .md-title {
   color: rgba(33, 32, 36, 0.86);
-  font-family: 'Roboto';
+  font-family: 'Roboto', arial, sans-serif;
   font-size: var(--md-title-font-size);
+  font-weight: 500;
   height: var(--md-title-height);
   line-height: 1.4em;
   text-align: center;
