@@ -133,7 +133,6 @@ TEST_F(AudioBusTest, Create) {
   std::unique_ptr<AudioBus> bus = AudioBus::Create(kChannels, kFrameCount);
   VerifyChannelAndFrameCount(bus.get());
   VerifyReadWriteAndAlignment(bus.get());
-  EXPECT_TRUE(bus->AreFramesZero());
 }
 
 // Verify Create(...) using AudioParameters works as advertised.
@@ -143,7 +142,6 @@ TEST_F(AudioBusTest, CreateUsingAudioParameters) {
                       kSampleRate, kFrameCount));
   VerifyChannelAndFrameCount(bus.get());
   VerifyReadWriteAndAlignment(bus.get());
-  EXPECT_TRUE(bus->AreFramesZero());
 }
 
 // Verify an AudioBus created via CreateWrapper(...) works as advertised.
