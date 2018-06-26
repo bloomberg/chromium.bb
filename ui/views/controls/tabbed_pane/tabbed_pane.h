@@ -153,6 +153,8 @@ class Tab : public View {
  protected:
   Label* title() { return title_; }
 
+  TabbedPane* tabbed_pane() { return tabbed_pane_; }
+
   // Called whenever |tab_state_| changes.
   virtual void OnStateChanged();
 
