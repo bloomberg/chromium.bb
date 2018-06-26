@@ -21,5 +21,11 @@ _ios_conceptually_bad_dependencies = [
 # on iOS. Exclusions will be removed when the dependencies are fixed.
 _ios_transient_bad_dependencies = []
 
+# Global list of dependencies that should never be added to extensions.
+ios_extension_assert_no_deps = [
+  "//ios/chrome/browser",
+  "//ios/chrome/browser/*",
+]
+
 ios_assert_no_deps =
     _ios_conceptually_bad_dependencies + _ios_transient_bad_dependencies

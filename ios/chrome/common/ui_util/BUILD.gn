@@ -11,11 +11,6 @@ source_set("ui_util") {
     "//base",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-
-  assert_no_deps = [
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/*",
-  ]
 }
 
 source_set("unit_tests") {

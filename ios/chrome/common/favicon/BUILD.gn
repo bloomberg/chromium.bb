@@ -15,8 +15,4 @@ source_set("favicon") {
     "//ios/chrome/common/ui_util",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
-  assert_no_deps = [
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/*",
-  ]
 }

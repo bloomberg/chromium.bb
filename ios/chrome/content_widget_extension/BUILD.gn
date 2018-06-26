@@ -7,6 +7,7 @@ import("//build/config/locales.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/build/config.gni")
 import("//tools/grit/repack.gni")
 import("//ios/chrome/tools/strings/generate_localizable_strings.gni")
 
@@ -32,6 +33,8 @@ ios_appex_bundle("content_widget_extension") {
     "CHROMIUM_SHORT_NAME=$chromium_short_name",
     "WIDGET_EXTENSION_BUNDLE_ID=$chromium_bundle_id.ContentTodayExtension",
   ]
+
+  assert_no_deps = ios_extension_assert_no_deps
 
   entitlements_target = ":entitlements"
   info_plist_target = ":tweak_info_plist"
