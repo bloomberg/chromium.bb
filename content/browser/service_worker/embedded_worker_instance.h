@@ -252,7 +252,6 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
   // Notifies the corresponding provider host that the thread has started and is
   // ready to receive messages.
   void OnThreadStarted(int thread_id) override;
-  void OnScriptLoadFailed() override;
   // Fires the callback passed to Start().
   void OnScriptEvaluated(bool success) override;
   // Changes the internal worker status from STARTING to RUNNING.

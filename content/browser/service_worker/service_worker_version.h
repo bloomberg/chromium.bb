@@ -609,8 +609,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnStopping() override;
   void OnStopped(EmbeddedWorkerStatus old_status) override;
   void OnDetached(EmbeddedWorkerStatus old_status) override;
-  void OnScriptLoaded() override;
-  void OnScriptLoadFailed() override;
   void OnRegisteredToDevToolsManager() override;
   void OnReportException(const base::string16& error_message,
                          int line_number,

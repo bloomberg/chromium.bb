@@ -998,17 +998,6 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
   OnStoppedInternal(old_status);
 }
 
-void ServiceWorkerVersion::OnScriptLoaded() {
-  DCHECK(GetMainScriptHttpResponseInfo());
-  if (IsInstalled(status()))
-    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", true);
-}
-
-void ServiceWorkerVersion::OnScriptLoadFailed() {
-  if (IsInstalled(status()))
-    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.ScriptLoadSuccess", false);
-}
-
 void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {
   for (auto& observer : listeners_)
     observer.OnDevToolsRoutingIdChanged(this);
@@ -1574,7 +1563,7 @@ void ServiceWorkerVersion::StartTimeoutTimer() {
   // The worker is starting up and not yet idle.
   ClearTick(&idle_time_);
 
-  // Ping will be activated in OnScriptLoaded.
+  // Ping will be activated in OnThreadStarted.
   ping_controller_->Deactivate();
 
   timeout_timer_.Start(FROM_HERE, kTimeoutTimerDelay, this,

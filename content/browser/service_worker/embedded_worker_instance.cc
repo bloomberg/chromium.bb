@@ -784,15 +784,6 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
     observer.OnThreadStarted();
 }
 
-void EmbeddedWorkerInstance::OnScriptLoadFailed() {
-  if (!inflight_start_task_)
-    return;
-
-  // starting_phase_ may be SCRIPT_READ_FINISHED in case of reading from cache.
-  for (auto& observer : listener_list_)
-    observer.OnScriptLoadFailed();
-}
-
 void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
   if (!inflight_start_task_)
     return;

@@ -121,9 +121,12 @@ interface EmbeddedWorkerInstanceHost {
   // Indicates that the worker is ready for inspection.
   OnReadyForInspection();
   // Indicates that the worker has finished loading the script.
+  //
+  // This is only called for new (non-installed) scripts. It's used so the
+  // browser process knows it can resume the paused worker via
+  // ResumeAfterDownloaded().
   OnScriptLoaded();
-  // Indicates that the worker has failed to load the script.
-  OnScriptLoadFailed();
+
   // Indicates that the worker thread has started. |thread_id| is the actual
   // platform thread id on which the worker runs.
   // This is called after OnScriptLoaded.
