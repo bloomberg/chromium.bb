@@ -370,9 +370,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
        (!is_painting_scrolling_content && !is_painting_mask)) &&
       paint_layer_.GetLayoutObject().StyleRef().HasOutline();
 
-  // Ensure our lists are up to date.
-  paint_layer_.StackingNode()->UpdateLayerListsIfNeeded();
-
   LayoutSize subpixel_accumulation =
       paint_layer_.GetCompositingState() == kPaintsIntoOwnBacking
           ? paint_layer_.SubpixelAccumulation()
@@ -845,14 +842,15 @@ PaintResult PaintLayerPainter::PaintChildren(
   PaintResult result = kFullyPainted;
   if (!paint_layer_.HasSelfPaintingLayerDescendant())
     return result;
-
+  if (!paint_layer_.StackingNode())
+    return result;
 #if DCHECK_IS_ON()
   LayerListMutationDetector mutation_checker(paint_layer_.StackingNode());
 #endif
 
   PaintLayerStackingNodeIterator iterator(*paint_layer_.StackingNode(),
                                           children_to_visit);
-  PaintLayerStackingNode* child = iterator.Next();
+  PaintLayer* child = iterator.Next();
   if (!child)
     return result;
 
@@ -860,15 +858,14 @@ PaintResult PaintLayerPainter::PaintChildren(
     // If this Layer should paint into its own backing or a grouped backing,
     // that will be done via CompositedLayerMapping::PaintContents() and
     // CompositedLayerMapping::DoPaintTask().
-    if (child->Layer()->PaintsIntoOwnOrGroupedBacking(
+    if (child->PaintsIntoOwnOrGroupedBacking(
             painting_info.GetGlobalPaintFlags()))
       continue;
 
-    if (child->Layer()->IsReplacedNormalFlowStacking())
+    if (child->IsReplacedNormalFlowStacking())
       continue;
 
-    if (PaintLayerPainter(*child->Layer())
-            .Paint(context, painting_info, paint_flags) ==
+    if (PaintLayerPainter(*child).Paint(context, painting_info, paint_flags) ==
         kMayBeClippedByPaintDirtyRect)
       result = kMayBeClippedByPaintDirtyRect;
   }

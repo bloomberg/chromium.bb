@@ -182,7 +182,7 @@ static CompositingReasons SubtreeReasonsForCompositing(
                      CompositingReason::kComboCompositedDescendants;
 
   if (layer->ShouldIsolateCompositedDescendants()) {
-    DCHECK(layer->StackingNode()->IsStackingContext());
+    DCHECK(layer->GetLayoutObject().StyleRef().IsStackingContext());
     subtree_reasons |= CompositingReason::kIsolateCompositedDescendants;
   }
 
@@ -252,8 +252,6 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     IntRect& absolute_descendant_bounding_box,
     CompositingReasonsStats& compositing_reasons_stats) {
   PaintLayerCompositor* compositor = layout_view_.Compositor();
-
-  layer->StackingNode()->UpdateLayerListsIfNeeded();
 
   CompositingReasons reasons_to_composite = CompositingReason::kNone;
   CompositingReasons direct_reasons = CompositingReason::kNone;
@@ -395,7 +393,9 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   }
 
 #if DCHECK_IS_ON()
-  LayerListMutationDetector mutation_checker(layer->StackingNode());
+  base::Optional<LayerListMutationDetector> mutation_checker;
+  if (layer->StackingNode())
+    mutation_checker.emplace(layer->StackingNode());
 #endif
 
   bool any_descendant_has3d_transform = false;
@@ -424,15 +424,16 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       !layer->HasCompositingDescendant() &&
       !layer->DescendantMayNeedCompositingRequirementsUpdate();
 
-  if (!skip_children && layer->StackingNode()->IsStackingContext()) {
+  if (!skip_children &&
+      layer->GetLayoutObject().StyleRef().IsStackingContext()) {
     PaintLayerStackingNodeIterator iterator(*layer->StackingNode(),
                                             kNegativeZOrderChildren);
-    while (PaintLayerStackingNode* cur_node = iterator.Next()) {
+    while (PaintLayer* child_layer = iterator.Next()) {
       IntRect absolute_child_descendant_bounding_box;
-      UpdateRecursive(
-          layer, cur_node->Layer(), overlap_map, child_recursion_data,
-          any_descendant_has3d_transform, unclipped_descendants,
-          absolute_child_descendant_bounding_box, compositing_reasons_stats);
+      UpdateRecursive(layer, child_layer, overlap_map, child_recursion_data,
+                      any_descendant_has3d_transform, unclipped_descendants,
+                      absolute_child_descendant_bounding_box,
+                      compositing_reasons_stats);
       absolute_descendant_bounding_box.Unite(
           absolute_child_descendant_bounding_box);
 
@@ -453,9 +454,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
           // child: re-compute the absBounds for the child so that we can add
           // the negative z-index child's bounds to the new overlap context.
           overlap_map.BeginNewOverlapTestingContext();
-          overlap_map.Add(cur_node->Layer(),
-                          cur_node->Layer()->ClippedAbsoluteBoundingBox(),
-                          true);
+          overlap_map.Add(child_layer,
+                          child_layer->ClippedAbsoluteBoundingBox(), true);
           overlap_map.FinishCurrentOverlapTestingContext();
         }
       }
@@ -476,15 +476,15 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     child_recursion_data.testing_overlap_ = true;
   }
 
-  if (!skip_children) {
+  if (!skip_children && layer->StackingNode()) {
     PaintLayerStackingNodeIterator iterator(
         *layer->StackingNode(), kNormalFlowChildren | kPositiveZOrderChildren);
-    while (PaintLayerStackingNode* cur_node = iterator.Next()) {
+    while (PaintLayer* child_layer = iterator.Next()) {
       IntRect absolute_child_descendant_bounding_box;
-      UpdateRecursive(
-          layer, cur_node->Layer(), overlap_map, child_recursion_data,
-          any_descendant_has3d_transform, unclipped_descendants,
-          absolute_child_descendant_bounding_box, compositing_reasons_stats);
+      UpdateRecursive(layer, child_layer, overlap_map, child_recursion_data,
+                      any_descendant_has3d_transform, unclipped_descendants,
+                      absolute_child_descendant_bounding_box,
+                      compositing_reasons_stats);
       absolute_descendant_bounding_box.Unite(
           absolute_child_descendant_bounding_box);
     }
@@ -493,7 +493,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // Now that the subtree has been traversed, we can check for compositing
   // reasons that depended on the state of the subtree.
 
-  if (layer->StackingNode()->IsStackingContext()) {
+  if (layer->GetLayoutObject().StyleRef().IsStackingContext()) {
     layer->SetShouldIsolateCompositedDescendants(
         child_recursion_data.has_unisolated_composited_blending_descendant_);
   } else {

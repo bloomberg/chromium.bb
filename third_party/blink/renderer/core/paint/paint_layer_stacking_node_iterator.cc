@@ -44,9 +44,10 @@ PaintLayerStackingNodeIterator::PaintLayerStackingNodeIterator(
   current_normal_flow_child_ = root.Layer()->FirstChild();
 }
 
-PaintLayerStackingNode* PaintLayerStackingNodeIterator::Next() {
+PaintLayer* PaintLayerStackingNodeIterator::Next() {
   if (remaining_children_ & kNegativeZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* neg_z_order_list = root_.NegZOrderList();
+    PaintLayerStackingNode::PaintLayers* neg_z_order_list =
+        root_.NegZOrderList();
     if (neg_z_order_list && index_ < neg_z_order_list->size())
       return neg_z_order_list->at(index_++);
 
@@ -58,10 +59,12 @@ PaintLayerStackingNode* PaintLayerStackingNodeIterator::Next() {
     for (; current_normal_flow_child_;
          current_normal_flow_child_ =
              current_normal_flow_child_->NextSibling()) {
-      if (!current_normal_flow_child_->StackingNode()->IsStacked()) {
+      if (!current_normal_flow_child_->GetLayoutObject()
+               .StyleRef()
+               .IsStacked()) {
         PaintLayer* normal_flow_child = current_normal_flow_child_;
         current_normal_flow_child_ = current_normal_flow_child_->NextSibling();
-        return normal_flow_child->StackingNode();
+        return normal_flow_child;
       }
     }
 
@@ -71,7 +74,8 @@ PaintLayerStackingNode* PaintLayerStackingNodeIterator::Next() {
   }
 
   if (remaining_children_ & kPositiveZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* pos_z_order_list = root_.PosZOrderList();
+    PaintLayerStackingNode::PaintLayers* pos_z_order_list =
+        root_.PosZOrderList();
     if (pos_z_order_list && index_ < pos_z_order_list->size())
       return pos_z_order_list->at(index_++);
 
@@ -82,9 +86,10 @@ PaintLayerStackingNode* PaintLayerStackingNodeIterator::Next() {
   return nullptr;
 }
 
-PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::Next() {
+PaintLayer* PaintLayerStackingNodeReverseIterator::Next() {
   if (remaining_children_ & kNegativeZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* neg_z_order_list = root_.NegZOrderList();
+    PaintLayerStackingNode::PaintLayers* neg_z_order_list =
+        root_.NegZOrderList();
     if (neg_z_order_list && index_ >= 0)
       return neg_z_order_list->at(index_--);
 
@@ -96,11 +101,13 @@ PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::Next() {
     for (; current_normal_flow_child_;
          current_normal_flow_child_ =
              current_normal_flow_child_->PreviousSibling()) {
-      if (!current_normal_flow_child_->StackingNode()->IsStacked()) {
+      if (!current_normal_flow_child_->GetLayoutObject()
+               .StyleRef()
+               .IsStacked()) {
         PaintLayer* normal_flow_child = current_normal_flow_child_;
         current_normal_flow_child_ =
             current_normal_flow_child_->PreviousSibling();
-        return normal_flow_child->StackingNode();
+        return normal_flow_child;
       }
     }
 
@@ -109,7 +116,8 @@ PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::Next() {
   }
 
   if (remaining_children_ & kPositiveZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* pos_z_order_list = root_.PosZOrderList();
+    PaintLayerStackingNode::PaintLayers* pos_z_order_list =
+        root_.PosZOrderList();
     if (pos_z_order_list && index_ >= 0)
       return pos_z_order_list->at(index_--);
 
@@ -122,7 +130,8 @@ PaintLayerStackingNode* PaintLayerStackingNodeReverseIterator::Next() {
 
 void PaintLayerStackingNodeReverseIterator::SetIndexToLastItem() {
   if (remaining_children_ & kNegativeZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* neg_z_order_list = root_.NegZOrderList();
+    PaintLayerStackingNode::PaintLayers* neg_z_order_list =
+        root_.NegZOrderList();
     if (neg_z_order_list) {
       index_ = neg_z_order_list->size() - 1;
       return;
@@ -137,7 +146,8 @@ void PaintLayerStackingNodeReverseIterator::SetIndexToLastItem() {
   }
 
   if (remaining_children_ & kPositiveZOrderChildren) {
-    Vector<PaintLayerStackingNode*>* pos_z_order_list = root_.PosZOrderList();
+    PaintLayerStackingNode::PaintLayers* pos_z_order_list =
+        root_.PosZOrderList();
     if (pos_z_order_list) {
       index_ = pos_z_order_list->size() - 1;
       return;

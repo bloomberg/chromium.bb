@@ -292,7 +292,7 @@ void LayoutBoxModelObject::StyleDidChange(StyleDifference diff,
     Layer()->UpdateFilters(old_style, StyleRef());
     Layer()->UpdateClipPath(old_style, StyleRef());
     // Calls DestroyLayer() which clears the layer.
-    Layer()->RemoveOnlyThisLayerAfterStyleChange();
+    Layer()->RemoveOnlyThisLayerAfterStyleChange(old_style);
     if (EverHadLayout())
       SetChildNeedsLayout();
     if (had_transform_related_property) {

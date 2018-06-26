@@ -107,6 +107,9 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
   int bit_fields;
   int bit_fields2;
   void* pointers[11];
+#if DCHECK_IS_ON()
+  void* pointer;
+#endif
   LayoutUnit layout_units[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollable_area;
@@ -178,9 +181,12 @@ PaintLayer::PaintLayer(LayoutBoxModelObject& layout_object)
       last_(nullptr),
       static_inline_position_(0),
       static_block_position_(0),
-      ancestor_overflow_layer_(nullptr) {
-  UpdateStackingNode();
-
+      ancestor_overflow_layer_(nullptr)
+#if DCHECK_IS_ON()
+      ,
+      stacking_parent_(nullptr)
+#endif
+{
   is_self_painting_layer_ = ShouldBeSelfPaintingLayer();
 
   UpdateScrollableArea();
@@ -213,6 +219,13 @@ PaintLayer::~PaintLayer() {
 
   if (scrollable_area_)
     scrollable_area_->Dispose();
+
+#if DCHECK_IS_ON()
+  // stacking_parent_ should be cleared because DirtyStackingContextZOrderLists
+  // should have been called.
+  if (!GetLayoutObject().DocumentBeingDestroyed())
+    DCHECK(!stacking_parent_);
+#endif
 }
 
 String PaintLayer::DebugName() const {
@@ -737,7 +750,7 @@ void PaintLayer::UpdateScrollingStateAfterCompositingChange() {
     if (child->GetCompositingState() == kNotComposited) {
       is_all_scrolling_content_composited_ = false;
       return;
-    } else if (!child->StackingNode()->IsStackingContext()) {
+    } else if (!child->GetLayoutObject().StyleRef().IsStackingContext()) {
       // If the child is composited, but not a stacking context, it may paint
       // negative z-index descendants into an ancestor's GraphicsLayer.
       is_all_scrolling_content_composited_ = false;
@@ -759,6 +772,8 @@ void PaintLayer::UpdateDescendantDependentFlags() {
     bool can_contain_abs =
         GetLayoutObject().CanContainAbsolutePositionObjects();
 
+    bool needs_stacking_node = GetLayoutObject().StyleRef().IsStackingContext();
+
     for (PaintLayer* child = FirstChild(); child;
          child = child->NextSibling()) {
       child->UpdateDescendantDependentFlags();
@@ -767,7 +782,7 @@ void PaintLayer::UpdateDescendantDependentFlags() {
         has_visible_descendant_ = true;
 
       has_non_isolated_descendant_with_blend_mode_ |=
-          (!child->StackingNode()->IsStackingContext() &&
+          (!child->GetLayoutObject().StyleRef().IsStackingContext() &&
            child->HasNonIsolatedDescendantWithBlendMode()) ||
           child->GetLayoutObject().StyleRef().HasBlendMode();
 
@@ -786,7 +801,12 @@ void PaintLayer::UpdateDescendantDependentFlags() {
              child->GetLayoutObject().Style()->GetPosition() ==
                  EPosition::kAbsolute);
       }
+
+      needs_stacking_node = needs_stacking_node ||
+                            !child->GetLayoutObject().StyleRef().IsStacked();
     }
+
+    UpdateStackingNode(needs_stacking_node);
 
     if (old_has_non_isolated_descendant_with_blend_mode !=
         static_cast<bool>(has_non_isolated_descendant_with_blend_mode_))
@@ -840,21 +860,22 @@ void PaintLayer::UpdateDescendantDependentFlags() {
 void PaintLayer::Update3DTransformedDescendantStatus() {
   has3d_transformed_descendant_ = false;
 
-  stacking_node_->UpdateZOrderLists();
+  if (!stacking_node_)
+    return;
 
   // Transformed or preserve-3d descendants can only be in the z-order lists,
   // not in the normal flow list, so we only need to check those.
   PaintLayerStackingNodeIterator iterator(
       *stacking_node_.get(), kPositiveZOrderChildren | kNegativeZOrderChildren);
-  while (PaintLayerStackingNode* node = iterator.Next()) {
-    const PaintLayer& child_layer = *node->Layer();
+  while (PaintLayer* child_layer = iterator.Next()) {
     bool child_has3d = false;
     // If the child lives in a 3d hierarchy, then the layer at the root of
     // that hierarchy needs the m_has3DTransformedDescendant set.
-    if (child_layer.Preserves3D() && (child_layer.Has3DTransform() ||
-                                      child_layer.Has3DTransformedDescendant()))
+    if (child_layer->Preserves3D() &&
+        (child_layer->Has3DTransform() ||
+         child_layer->Has3DTransformedDescendant()))
       child_has3d = true;
-    else if (child_layer.Has3DTransform())
+    else if (child_layer->Has3DTransform())
       child_has3d = true;
 
     if (child_has3d) {
@@ -1045,10 +1066,10 @@ LayoutPoint PaintLayer::ComputeOffsetFromAncestor(
 }
 
 PaintLayer* PaintLayer::CompositingContainer() const {
-  if (!StackingNode()->IsStacked())
+  if (!GetLayoutObject().StyleRef().IsStacked())
     return IsSelfPaintingLayer() ? Parent() : ContainingLayer();
   if (PaintLayerStackingNode* ancestor_stacking_node =
-          StackingNode()->AncestorStackingContextNode())
+          PaintLayerStackingNode::AncestorStackingContextNode(this))
     return ancestor_stacking_node->Layer();
   return nullptr;
 }
@@ -1358,18 +1379,20 @@ void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {
 
   SetNeedsCompositingInputsUpdate();
 
+  const ComputedStyle& child_style = child->GetLayoutObject().StyleRef();
+
   if (Compositor()) {
-    if (!child->StackingNode()->IsStacked() &&
-        !GetLayoutObject().DocumentBeingDestroyed())
+    if (!child_style.IsStacked() && !GetLayoutObject().DocumentBeingDestroyed())
       Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
   }
 
-  if (child->StackingNode()->IsStacked() || child->FirstChild()) {
+  if (child_style.IsStacked() || child->FirstChild()) {
     // Dirty the z-order list in which we are contained. The
     // ancestorStackingContextNode() can be null in the case where we're
     // building up generated content layers. This is ok, since the lists will
     // start off dirty in that case anyway.
-    child->StackingNode()->DirtyStackingContextZOrderLists();
+    PaintLayerStackingNode::DirtyStackingContextZOrderLists(child);
+    MarkAncestorChainForDescendantDependentFlagsUpdate();
   }
 
   // Non-self-painting children paint into this layer, so the visible contents
@@ -1399,18 +1422,21 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
   if (last_ == old_child)
     last_ = old_child->PreviousSibling();
 
+  const ComputedStyle& old_child_style =
+      old_child->GetLayoutObject().StyleRef();
+
   if (!GetLayoutObject().DocumentBeingDestroyed()) {
     if (Compositor()) {
-      if (!old_child->StackingNode()->IsStacked())
+      if (!old_child_style.IsStacked())
         Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     }
-
-    if (old_child->StackingNode()->IsStacked() || old_child->FirstChild()) {
+    if (old_child_style.IsStacked() || old_child->FirstChild()) {
       // Dirty the z-order list in which we are contained.  When called via the
       // reattachment process in removeOnlyThisLayer, the layer may already be
       // disconnected from the main layer tree, so we need to null-check the
       // |stackingContext| value.
-      old_child->StackingNode()->DirtyStackingContextZOrderLists();
+      PaintLayerStackingNode::DirtyStackingContextZOrderLists(old_child);
+      MarkAncestorChainForDescendantDependentFlagsUpdate();
     }
   }
 
@@ -1441,9 +1467,15 @@ void PaintLayer::ClearClipRects(ClipRectsCacheSlot cache_slot) {
       .ClearClipRectsIncludingDescendants(cache_slot);
 }
 
-void PaintLayer::RemoveOnlyThisLayerAfterStyleChange() {
+void PaintLayer::RemoveOnlyThisLayerAfterStyleChange(
+    const ComputedStyle* old_style) {
   if (!parent_)
     return;
+
+  if (old_style && old_style->IsStacked()) {
+    PaintLayerStackingNode::DirtyStackingContextZOrderLists(this);
+    MarkAncestorChainForDescendantDependentFlagsUpdate();
+  }
 
   // Destructing PaintLayer would cause CompositedLayerMapping and composited
   // layers to be destructed and detach from layer tree immediately. Layers
@@ -1634,12 +1666,16 @@ void PaintLayer::DidUpdateScrollsOverflow() {
   UpdateSelfPaintingLayer();
 }
 
-void PaintLayer::UpdateStackingNode() {
-  DCHECK(!stacking_node_);
-  if (RequiresStackingNode())
-    stacking_node_ = std::make_unique<PaintLayerStackingNode>(this);
-  else
-    stacking_node_ = nullptr;
+void PaintLayer::UpdateStackingNode(bool needs_stacking_node) {
+  if (needs_stacking_node != !!stacking_node_) {
+    if (needs_stacking_node)
+      stacking_node_ = std::make_unique<PaintLayerStackingNode>(this);
+    else
+      stacking_node_ = nullptr;
+  }
+
+  if (stacking_node_)
+    stacking_node_->UpdateZOrderLists();
 }
 
 bool PaintLayer::RequiresScrollableArea() const {
@@ -2361,15 +2397,16 @@ PaintLayer* PaintLayer::HitTestChildren(
   if (!HasSelfPaintingLayerDescendant())
     return nullptr;
 
+  if (!stacking_node_)
+    return nullptr;
+
   const LayoutObject* stop_node = result.GetHitTestRequest().GetStopNode();
   PaintLayer* stop_layer = stop_node ? stop_node->PaintingLayer() : nullptr;
 
   PaintLayer* result_layer = nullptr;
   PaintLayerStackingNodeReverseIterator iterator(*stacking_node_,
                                                  childrento_visit);
-  while (PaintLayerStackingNode* child = iterator.Next()) {
-    PaintLayer* child_layer = child->Layer();
-
+  while (PaintLayer* child_layer = iterator.Next()) {
     if (child_layer->IsReplacedNormalFlowStacking())
       continue;
 
@@ -2559,7 +2596,10 @@ void PaintLayer::ExpandRectForStackingChildren(
     const PaintLayer& composited_layer,
     LayoutRect& result,
     PaintLayer::CalculateBoundsOptions options) const {
-  DCHECK(StackingNode()->IsStackingContext() ||
+  if (!StackingNode())
+    return;
+
+  DCHECK(GetLayoutObject().StyleRef().IsStackingContext() ||
          !StackingNode()->HasPositiveZOrderList());
 
 #if DCHECK_IS_ON()
@@ -2568,7 +2608,7 @@ void PaintLayer::ExpandRectForStackingChildren(
 #endif
 
   PaintLayerStackingNodeIterator iterator(*StackingNode(), kAllChildren);
-  while (PaintLayerStackingNode* node = iterator.Next()) {
+  while (PaintLayer* child_layer = iterator.Next()) {
     // Here we exclude both directly composited layers and squashing layers
     // because those Layers don't paint into the graphics layer
     // for this Layer. For example, the bounds of squashed Layers
@@ -2576,9 +2616,9 @@ void PaintLayer::ExpandRectForStackingChildren(
     // GraphicsLayer.
     if (options != PaintLayer::CalculateBoundsOptions::
                        kIncludeTransformsAndCompositedChildLayers &&
-        node->Layer()->GetCompositingState() != kNotComposited)
+        child_layer->GetCompositingState() != kNotComposited)
       continue;
-    result.Unite(node->Layer()->BoundingBoxForCompositingInternal(
+    result.Unite(child_layer->BoundingBoxForCompositingInternal(
         composited_layer, this, options));
   }
 }
@@ -2587,9 +2627,6 @@ LayoutRect PaintLayer::PhysicalBoundingBoxIncludingStackingChildren(
     const LayoutPoint& offset_from_root,
     CalculateBoundsOptions options) const {
   LayoutRect result = PhysicalBoundingBox(LayoutPoint());
-
-  const_cast<PaintLayer*>(this)->StackingNode()->UpdateLayerListsIfNeeded();
-
   ExpandRectForStackingChildren(*this, result, options);
 
   result.MoveBy(offset_from_root);
@@ -2630,8 +2667,6 @@ LayoutRect PaintLayer::BoundingBoxForCompositingInternal(
   // content of the multicol container.
   if (GetLayoutObject().IsLayoutFlowThread())
     return LayoutRect();
-
-  const_cast<PaintLayer*>(this)->StackingNode()->UpdateLayerListsIfNeeded();
 
   // If there is a clip applied by an ancestor to this PaintLayer but below or
   // equal to |ancestorLayer|, apply that clip.
@@ -2727,9 +2762,8 @@ BackgroundPaintLocation PaintLayer::GetBackgroundPaintLocation(
     else
       location = GetLayoutObject().GetBackgroundPaintLocation(reasons);
   }
-  if (!IsRootLayer()) {
-    stacking_node_->UpdateLayerListsIfNeeded();
-    if (stacking_node_->HasNegativeZOrderList())
+  if (!IsRootLayer() && stacking_node_) {
+    if (StackingNode()->HasNegativeZOrderList())
       location = kBackgroundPaintInGraphicsLayer;
   }
   return location;
@@ -2822,7 +2856,7 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
     return true;
 
   // Create subsequence for only stacking contexts whose painting are atomic.
-  return StackingNode()->IsStackingContext();
+  return GetLayoutObject().StyleRef().IsStackingContext();
 }
 
 ScrollingCoordinator* PaintLayer::GetScrollingCoordinator() {
@@ -2865,13 +2899,6 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
       GetCompositingState() != kPaintsIntoOwnBacking)
     return false;
 
-  // This function should not be called when layer-lists are dirty.
-  // TODO(schenney) This check never hits in layout tests or most platforms, but
-  // does hit in PopupBlockerBrowserTest.AllowPopupThroughContentSetting on
-  // Win 7 Test Builder.
-  if (stacking_node_->ZOrderListsDirty())
-    return false;
-
   // FIXME: We currently only check the immediate layoutObject,
   // which will miss many cases where additional layout objects paint
   // into this layer.
@@ -2892,11 +2919,13 @@ bool PaintLayer::BackgroundIsKnownToBeOpaqueInRect(
 
 bool PaintLayer::ChildBackgroundIsKnownToBeOpaqueInRect(
     const LayoutRect& local_rect) const {
+  if (!stacking_node_)
+    return false;
+
   PaintLayerStackingNodeReverseIterator reverse_iterator(
       *stacking_node_,
       kPositiveZOrderChildren | kNormalFlowChildren | kNegativeZOrderChildren);
-  while (PaintLayerStackingNode* child = reverse_iterator.Next()) {
-    const PaintLayer* child_layer = child->Layer();
+  while (PaintLayer* child_layer = reverse_iterator.Next()) {
     // Stop at composited paint boundaries and non-self-painting layers.
     if (child_layer->IsPaintInvalidationContainer())
       continue;
@@ -3111,7 +3140,8 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   if (AttemptDirectCompositingUpdate(diff, old_style))
     return;
 
-  stacking_node_->StyleDidChange(old_style);
+  if (PaintLayerStackingNode::StyleDidChange(this, old_style))
+    MarkAncestorChainForDescendantDependentFlagsUpdate();
 
   if (RequiresScrollableArea()) {
     DCHECK(scrollable_area_);
@@ -3122,9 +3152,11 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
   // to recompute the bit once scrollbars have been updated.
   UpdateSelfPaintingLayer();
 
-  UpdateTransform(old_style, GetLayoutObject().StyleRef());
-  UpdateFilters(old_style, GetLayoutObject().StyleRef());
-  UpdateClipPath(old_style, GetLayoutObject().StyleRef());
+  const ComputedStyle& new_style = GetLayoutObject().StyleRef();
+
+  UpdateTransform(old_style, new_style);
+  UpdateFilters(old_style, new_style);
+  UpdateClipPath(old_style, new_style);
 
   SetNeedsCompositingInputsUpdate();
   GetLayoutObject().SetNeedsPaintPropertyUpdate();
@@ -3144,7 +3176,7 @@ void PaintLayer::StyleDidChange(StyleDifference diff,
       // compositing state.
       DisableCompositingQueryAsserts disable;
       if (painter.PaintedOutputInvisible(*old_style) !=
-          painter.PaintedOutputInvisible(GetLayoutObject().StyleRef()))
+          painter.PaintedOutputInvisible(new_style))
         SetNeedsRepaint();
     }
   }

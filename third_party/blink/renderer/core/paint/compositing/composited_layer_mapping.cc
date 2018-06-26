@@ -392,7 +392,9 @@ void CompositedLayerMapping::UpdateIsRootForIsolatedGroup() {
   bool isolate = owning_layer_.ShouldIsolateCompositedDescendants();
 
   // non stacking context layers should never isolate
-  DCHECK(owning_layer_.StackingNode()->IsStackingContext() || !isolate);
+  DCHECK((owning_layer_.StackingNode() &&
+          owning_layer_.GetLayoutObject().StyleRef().IsStackingContext()) ||
+         !isolate);
 
   graphics_layer_->SetIsRootForIsolatedGroup(isolate);
 }
@@ -2692,7 +2694,7 @@ float CompositedLayerMapping::CompositingOpacity(
   for (PaintLayer* curr = owning_layer_.Parent(); curr; curr = curr->Parent()) {
     // We only care about parents that are stacking contexts.
     // Recall that opacity creates stacking context.
-    if (!curr->StackingNode()->IsStackingContext())
+    if (!curr->GetLayoutObject().StyleRef().IsStackingContext())
       continue;
 
     // If we found a composited layer, regardless of whether it actually
@@ -2751,8 +2753,8 @@ bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(
   if (!parent->HasVisibleDescendant())
     return false;
 
-  // FIXME: We shouldn't be called with a stale z-order lists. See bug 85512.
-  parent->StackingNode()->UpdateLayerListsIfNeeded();
+  if (!parent->StackingNode())
+    return false;
 
 #if DCHECK_IS_ON()
   LayerListMutationDetector mutation_checker(parent->StackingNode());
@@ -2760,12 +2762,11 @@ bool CompositedLayerMapping::HasVisibleNonCompositingDescendant(
 
   PaintLayerStackingNodeIterator normal_flow_iterator(*parent->StackingNode(),
                                                       kAllChildren);
-  while (PaintLayerStackingNode* cur_node = normal_flow_iterator.Next()) {
-    PaintLayer* cur_layer = cur_node->Layer();
-    if (cur_layer->HasCompositedLayerMapping())
+  while (PaintLayer* child_layer = normal_flow_iterator.Next()) {
+    if (child_layer->HasCompositedLayerMapping())
       continue;
-    if (cur_layer->HasVisibleContent() ||
-        HasVisibleNonCompositingDescendant(cur_layer))
+    if (child_layer->HasVisibleContent() ||
+        HasVisibleNonCompositingDescendant(child_layer))
       return true;
   }
 
@@ -2933,7 +2934,7 @@ LayoutRect CompositedLayerMapping::ContentsBox() const {
 bool CompositedLayerMapping::NeedsToReparentOverflowControls() const {
   return owning_layer_.GetScrollableArea() &&
          owning_layer_.GetScrollableArea()->HasOverlayScrollbars() &&
-         !owning_layer_.StackingNode()->IsStackingContext() &&
+         !owning_layer_.GetLayoutObject().StyleRef().IsStackingContext() &&
          owning_layer_.GetScrollableArea()->HasPaintLayerScrollChild();
 }
 

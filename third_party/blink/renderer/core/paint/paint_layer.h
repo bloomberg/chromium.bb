@@ -251,7 +251,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   void ClearClipRects(ClipRectsCacheSlot = kNumberOfClipRectsCacheSlots);
 
-  void RemoveOnlyThisLayerAfterStyleChange();
+  void RemoveOnlyThisLayerAfterStyleChange(const ComputedStyle* old_style);
   void InsertOnlyThisLayerAfterStyleChange();
 
   void StyleDidChange(StyleDifference, const ComputedStyle* old_style);
@@ -1072,6 +1072,14 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     needs_compositing_reasons_update_ = true;
   }
 
+#if DCHECK_IS_ON()
+  void SetStackingParent(PaintLayerStackingNode* stacking_parent) {
+    stacking_parent_ = stacking_parent;
+  }
+  PaintLayerStackingNode* StackingParent() { return stacking_parent_; }
+  bool IsInStackingParentZOrderLists() const;
+#endif
+
   void SetNeedsCompositingLayerAssignment();
   void ClearNeedsCompositingLayerAssignment();
 
@@ -1171,9 +1179,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   bool ShouldBeSelfPaintingLayer() const;
 
-  // FIXME: We should only create the stacking node if needed.
-  bool RequiresStackingNode() const { return true; }
-  void UpdateStackingNode();
+  void UpdateStackingNode(bool needs_stacking_node);
 
   FilterOperations FilterOperationsIncludingReflection() const;
 
@@ -1357,6 +1363,10 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   LayoutRect previous_paint_dirty_rect_;
 
   std::unique_ptr<PaintLayerRareData> rare_data_;
+
+#if DCHECK_IS_ON()
+  PaintLayerStackingNode* stacking_parent_;
+#endif
 
   FRIEND_TEST_ALL_PREFIXES(PaintLayerTest,
                            DescendantDependentFlagsStopsAtThrottledFrames);

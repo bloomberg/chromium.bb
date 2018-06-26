@@ -681,12 +681,14 @@ static void Write(WTF::TextStream& ts,
     Write(ts, layer.GetLayoutObject(), indent + 1, behavior);
 }
 
-static Vector<PaintLayerStackingNode*> NormalFlowListFor(
+static PaintLayerStackingNode::PaintLayers NormalFlowListFor(
     PaintLayerStackingNode* node) {
-  PaintLayerStackingNodeIterator it(*node, kNormalFlowChildren);
-  Vector<PaintLayerStackingNode*> vector;
-  while (PaintLayerStackingNode* normal_flow_child = it.Next())
-    vector.push_back(normal_flow_child);
+  PaintLayerStackingNode::PaintLayers vector;
+  if (node) {
+    PaintLayerStackingNodeIterator it(*node, kNormalFlowChildren);
+    while (PaintLayer* normal_flow_child = it.Next())
+      vector.push_back(normal_flow_child);
+  }
   return vector;
 }
 
@@ -704,9 +706,6 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
       .CalculateRects(ClipRectsContext(root_layer, kUncachedClipRects),
                       &layer->GetLayoutObject().FirstFragment(), &paint_rect,
                       layer_bounds, damage_rect, clip_rect_to_apply);
-
-  // Ensure our lists are up to date.
-  layer->StackingNode()->UpdateLayerListsIfNeeded();
 
   LayoutPoint offset_from_root;
   layer->ConvertToLayerCoords(root_layer, offset_from_root);
@@ -727,58 +726,68 @@ void LayoutTreeAsText::WriteLayers(WTF::TextStream& ts,
   }
 #endif
 
-  Vector<PaintLayerStackingNode*>* neg_list =
-      layer->StackingNode()->NegZOrderList();
-  bool paints_background_separately = neg_list && neg_list->size() > 0;
-  if (should_paint && paints_background_separately)
-    Write(ts, *layer, layer_bounds, damage_rect.Rect(),
-          clip_rect_to_apply.Rect(), kLayerPaintPhaseBackground, indent,
-          behavior, marked_layer);
-
-  if (neg_list) {
-    int curr_indent = indent;
-    if (behavior & kLayoutAsTextShowLayerNesting) {
-      WriteIndent(ts, indent);
-      ts << " negative z-order list(" << neg_list->size() << ")\n";
-      ++curr_indent;
+  bool paints_background_separately = false;
+  if (layer->StackingNode()) {
+    PaintLayerStackingNode::PaintLayers* neg_list =
+        layer->StackingNode()->NegZOrderList();
+    paints_background_separately = neg_list && neg_list->size() > 0;
+    if (should_paint && paints_background_separately) {
+      Write(ts, *layer, layer_bounds, damage_rect.Rect(),
+            clip_rect_to_apply.Rect(), kLayerPaintPhaseBackground, indent,
+            behavior, marked_layer);
     }
-    for (unsigned i = 0; i != neg_list->size(); ++i)
-      WriteLayers(ts, root_layer, neg_list->at(i)->Layer(), paint_rect,
-                  curr_indent, behavior, marked_layer);
+
+    if (neg_list) {
+      int curr_indent = indent;
+      if (behavior & kLayoutAsTextShowLayerNesting) {
+        WriteIndent(ts, indent);
+        ts << " negative z-order list(" << neg_list->size() << ")\n";
+        ++curr_indent;
+      }
+      for (unsigned i = 0; i != neg_list->size(); ++i) {
+        WriteLayers(ts, root_layer, neg_list->at(i), paint_rect, curr_indent,
+                    behavior, marked_layer);
+      }
+    }
   }
 
-  if (should_paint)
+  if (should_paint) {
     Write(ts, *layer, layer_bounds, damage_rect.Rect(),
           clip_rect_to_apply.Rect(),
           paints_background_separately ? kLayerPaintPhaseForeground
                                        : kLayerPaintPhaseAll,
           indent, behavior, marked_layer);
-
-  Vector<PaintLayerStackingNode*> normal_flow_list =
-      NormalFlowListFor(layer->StackingNode());
-  if (!normal_flow_list.IsEmpty()) {
-    int curr_indent = indent;
-    if (behavior & kLayoutAsTextShowLayerNesting) {
-      WriteIndent(ts, indent);
-      ts << " normal flow list(" << normal_flow_list.size() << ")\n";
-      ++curr_indent;
-    }
-    for (unsigned i = 0; i != normal_flow_list.size(); ++i)
-      WriteLayers(ts, root_layer, normal_flow_list.at(i)->Layer(), paint_rect,
-                  curr_indent, behavior, marked_layer);
   }
 
-  if (Vector<PaintLayerStackingNode*>* pos_list =
-          layer->StackingNode()->PosZOrderList()) {
-    int curr_indent = indent;
-    if (behavior & kLayoutAsTextShowLayerNesting) {
-      WriteIndent(ts, indent);
-      ts << " positive z-order list(" << pos_list->size() << ")\n";
-      ++curr_indent;
+  if (layer->StackingNode()) {
+    PaintLayerStackingNode::PaintLayers normal_flow_list =
+        NormalFlowListFor(layer->StackingNode());
+    if (!normal_flow_list.IsEmpty()) {
+      int curr_indent = indent;
+      if (behavior & kLayoutAsTextShowLayerNesting) {
+        WriteIndent(ts, indent);
+        ts << " normal flow list(" << normal_flow_list.size() << ")\n";
+        ++curr_indent;
+      }
+      for (unsigned i = 0; i != normal_flow_list.size(); ++i) {
+        WriteLayers(ts, root_layer, normal_flow_list.at(i), paint_rect,
+                    curr_indent, behavior, marked_layer);
+      }
     }
-    for (unsigned i = 0; i != pos_list->size(); ++i)
-      WriteLayers(ts, root_layer, pos_list->at(i)->Layer(), paint_rect,
-                  curr_indent, behavior, marked_layer);
+
+    if (PaintLayerStackingNode::PaintLayers* pos_list =
+            layer->StackingNode()->PosZOrderList()) {
+      int curr_indent = indent;
+      if (behavior & kLayoutAsTextShowLayerNesting) {
+        WriteIndent(ts, indent);
+        ts << " positive z-order list(" << pos_list->size() << ")\n";
+        ++curr_indent;
+      }
+      for (unsigned i = 0; i != pos_list->size(); ++i) {
+        WriteLayers(ts, root_layer, pos_list->at(i), paint_rect, curr_indent,
+                    behavior, marked_layer);
+      }
+    }
   }
 }
 
