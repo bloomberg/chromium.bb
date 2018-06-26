@@ -222,15 +222,16 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
   void StartWaitingForSeek(base::TimeDelta seek_time) override;
   void CancelPendingSeek(base::TimeDelta seek_time) override;
 
-  // Registers a new |id| to use for AppendData() calls. |type| indicates
-  // the MIME type for the data that we intend to append for this ID.
-  // kOk is returned if the demuxer has enough resources to support another ID
-  //    and supports the format indicated by |type|.
-  // kNotSupported is returned if |type| is not a supported format.
-  // kReachedIdLimit is returned if the demuxer cannot handle another ID right
-  //    now.
+  // Registers a new |id| to use for AppendData() calls. |content_type|
+  // indicates the MIME type's ContentType and |codecs| indicates the MIME
+  // type's "codecs" parameter string (if any) for the data that we intend to
+  // append for this ID.  kOk is returned if the demuxer has enough resources to
+  // support another ID and supports the format indicated by |content_type| and
+  // |codecs|.  kReachedIdLimit is returned if the demuxer cannot handle another
+  // ID right now.  kNotSupported is returned if |content_type| and |codecs| is
+  // not a supported format.
   Status AddId(const std::string& id,
-               const std::string& type,
+               const std::string& content_type,
                const std::string& codecs);
 
   // Notifies a caller via |tracks_updated_cb| that the set of media tracks
@@ -290,20 +291,23 @@ class MEDIA_EXPORT ChunkDemuxer : public Demuxer {
               base::TimeDelta end);
 
   // Returns whether or not the source buffer associated with |id| can change
-  // its parser type to one which parses |type| and |codecs|.  |type| indicates
-  // the MIME type for the data that we intend to append for this |id|.
-  bool CanChangeTypeTo(const std::string& id,
-                       const std::string& type,
-                       const std::string& codecs);
+  // its parser type to one which parses |content_type| and |codecs|.
+  // |content_type| indicates the ContentType of the MIME type for the data that
+  // we intend to append for this |id|; |codecs| similarly indicates the MIME
+  // type's "codecs" parameter, if any.
+  bool CanChangeType(const std::string& id,
+                     const std::string& content_type,
+                     const std::string& codecs);
 
   // For the source buffer associated with |id|, changes its parser type to one
-  // which parses |type| and |codecs|.  |type| indicates the MIME type for the
-  // data that we intend to append for this |id|.  Caller must first ensure
-  // CanChangeTypeTo() returns true for the same parameters.  Caller must also
-  // ensure that ResetParserState() is done before calling this, to flush any
-  // pending frames.
+  // which parses |content_type| and |codecs|.  |content_type| indicates the
+  // ContentType of the MIME type for the data that we intend to append for this
+  // |id|; |codecs| similarly indicates the MIME type's "codecs" parameter, if
+  // any.  Caller must first ensure CanChangeType() returns true for the same
+  // parameters.  Caller must also ensure that ResetParserState() is done before
+  // calling this, to flush any pending frames.
   void ChangeType(const std::string& id,
-                  const std::string& type,
+                  const std::string& content_type,
                   const std::string& codecs);
 
   // If the buffer is full, attempts to try to free up space, as specified in

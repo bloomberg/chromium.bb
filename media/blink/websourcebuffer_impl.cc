@@ -165,7 +165,7 @@ void WebSourceBufferImpl::Remove(double start, double end) {
 
 bool WebSourceBufferImpl::CanChangeType(const blink::WebString& content_type,
                                         const blink::WebString& codecs) {
-  return demuxer_->CanChangeTypeTo(id_, content_type.Utf8(), codecs.Utf8());
+  return demuxer_->CanChangeType(id_, content_type.Utf8(), codecs.Utf8());
 }
 
 void WebSourceBufferImpl::ChangeType(const blink::WebString& content_type,
