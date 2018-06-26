@@ -1711,7 +1711,10 @@ TEST_F(PersonalDataManagerTest, GetProfileSuggestions_HideSubsets) {
 }
 
 TEST_F(PersonalDataManagerTest,
-       GetProfileSuggestions_NoSubsetsCheckingIfTooManyProfiles) {
+       GetProfileSuggestions_NoDeduplicationIfTooManyProfiles) {
+  // De-duplication of suggestions takes noticeable time when there are more
+  // than 15 or so suggestions. In that case, Auofill just shows them all to
+  // the user.
   AutofillProfile profile(base::GenerateGUID(), "https://www.example.com");
   test::SetProfileInfo(&profile, "Marion", "Mitchell", "Morrison",
                        "johnwayne@me.xyz", "Fox",
@@ -1719,7 +1722,7 @@ TEST_F(PersonalDataManagerTest,
                        "Hollywood", "CA", "91601", "US", "12345678910");
 
   personal_data_->AddProfile(profile);
-  // 31 profiles in a total, expecting no subset removing.
+  // 16 profiles in a total, expecting no de-duplication.
   for (int i = 0; i < 15; i++) {
     AutofillProfile profile_no_state = profile;
     profile_no_state.set_guid(base::GenerateGUID());
@@ -1737,7 +1740,6 @@ TEST_F(PersonalDataManagerTest,
       AutofillType(ADDRESS_HOME_STREET_ADDRESS), base::ASCIIToUTF16("123"),
       false, types);
   ASSERT_EQ(16U, suggestions.size());
-  EXPECT_EQ(base::ASCIIToUTF16("Hollywood"), suggestions[0].label);
 }
 
 // Tests that GetProfileSuggestions orders its suggestions based on the frecency
