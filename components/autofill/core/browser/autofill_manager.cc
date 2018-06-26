@@ -328,28 +328,15 @@ bool AutofillManager::ShouldShowCreditCardSigninPromo(
   return false;
 }
 
-void AutofillManager::OnFormsSeen(const std::vector<FormData>& forms,
-                                  const TimeTicks timestamp) {
-  if (!IsValidFormDataVector(forms))
-    return;
-
-  if (!driver()->RendererIsAvailable())
-    return;
-
+bool AutofillManager::ShouldParseForms(const std::vector<FormData>& forms,
+                                       const base::TimeTicks timestamp) {
   bool enabled = IsAutofillEnabled();
   if (!has_logged_autofill_enabled_) {
     AutofillMetrics::LogIsAutofillEnabledAtPageLoad(enabled);
     has_logged_autofill_enabled_ = true;
   }
 
-  if (!enabled)
-    return;
-
-  for (const FormData& form : forms) {
-    forms_loaded_timestamps_[form] = timestamp;
-  }
-
-  ParseForms(forms);
+  return enabled;
 }
 
 void AutofillManager::OnFormSubmittedImpl(const FormData& form,
@@ -1575,25 +1562,23 @@ std::vector<Suggestion> AutofillManager::GetCreditCardSuggestions(
   return suggestions;
 }
 
-void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
-  if (forms.empty())
-    return;
+void AutofillManager::OnFormsParsed(
+    const std::vector<FormStructure*>& form_structures,
+    const base::TimeTicks timestamp) {
+  DCHECK(!form_structures.empty());
 
   // Setup the url for metrics that we will collect for this form.
   form_interactions_ukm_logger_->OnFormsParsed(
-      forms[0].main_frame_origin.GetURL(), client_->GetUkmSourceId());
+      form_structures[0]->ToFormData().main_frame_origin.GetURL(),
+      client_->GetUkmSourceId());
 
   std::vector<FormStructure*> non_queryable_forms;
   std::vector<FormStructure*> queryable_forms;
   std::set<FormType> form_types;
-  for (const FormData& form : forms) {
-    const auto parse_form_start_time = TimeTicks::Now();
-
-    FormStructure* form_structure = nullptr;
-    if (!ParseFormInternal(form, /*cached_form=*/nullptr, &form_structure))
-      continue;
-    DCHECK(form_structure);
-
+  for (FormStructure* form_structure : form_structures) {
+    form_structure->DetermineHeuristicTypes(client_->GetUkmRecorder(),
+                                            client_->GetUkmSourceId());
+    forms_loaded_timestamps_[form_structure->ToFormData()] = timestamp;
     std::set<FormType> current_form_types = form_structure->GetFormTypes();
     form_types.insert(current_form_types.begin(), current_form_types.end());
     // Set aside forms with method GET or author-specified types, so that they
@@ -1602,9 +1587,6 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
       queryable_forms.push_back(form_structure);
     else
       non_queryable_forms.push_back(form_structure);
-
-    AutofillMetrics::LogParseFormTiming(TimeTicks::Now() -
-                                        parse_form_start_time);
 
     // If a form with the same name was previously filled, and there has not
     // been a refill attempt on that form yet, start the process of triggering a
@@ -1620,12 +1602,13 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
       if (filling_context->on_refill_timer.IsRunning())
         filling_context->on_refill_timer.AbandonAndStop();
 
+      // Can TriggerRefill get FormData from FormStructure?
       filling_context->on_refill_timer.Start(
           FROM_HERE,
           base::TimeDelta::FromMilliseconds(kWaitTimeForDynamicFormsMs),
           base::BindRepeating(&AutofillManager::TriggerRefill,
-                              weak_ptr_factory_.GetWeakPtr(), form,
-                              form_structure));
+                              weak_ptr_factory_.GetWeakPtr(),
+                              form_structure->ToFormData(), form_structure));
     }
   }
 
@@ -1647,7 +1630,8 @@ void AutofillManager::ParseForms(const std::vector<FormData>& forms) {
   // prompt for credit card assisted filling. Upon accepting the infobar, the
   // form will automatically be filled with the user's information through this
   // class' FillCreditCardForm().
-  if (autofill_assistant_.CanShowCreditCardAssist(form_structures())) {
+  if (autofill_assistant_.CanShowCreditCardAssist(
+          AutofillHandler::form_structures())) {
     const std::vector<CreditCard*> cards =
         personal_data_->GetCreditCardsToSuggest(
             client_->AreServerCardsSupported());

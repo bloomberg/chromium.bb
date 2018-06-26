@@ -34,6 +34,36 @@ void AutofillHandler::OnFormSubmitted(const FormData& form,
     OnFormSubmittedImpl(form, known_success, source, timestamp);
 }
 
+void AutofillHandler::OnFormsSeen(const std::vector<FormData>& forms,
+                                  const base::TimeTicks timestamp) {
+  if (!IsValidFormDataVector(forms) || !driver_->RendererIsAvailable())
+    return;
+
+  // This should be called even forms is empty, AutofillProviderAndroid uses
+  // this event to detect form submission.
+  if (!ShouldParseForms(forms, timestamp))
+    return;
+
+  if (forms.empty())
+    return;
+
+  std::vector<FormStructure*> form_structures;
+  for (const FormData& form : forms) {
+    const auto parse_form_start_time = TimeTicks::Now();
+    FormStructure* form_structure = nullptr;
+    if (!ParseForm(form, /*cached_form=*/nullptr, &form_structure))
+      continue;
+    DCHECK(form_structure);
+    if (form_structure == nullptr)
+      continue;
+    form_structures.push_back(form_structure);
+    AutofillMetrics::LogParseFormTiming(TimeTicks::Now() -
+                                        parse_form_start_time);
+  }
+  if (!form_structures.empty())
+    OnFormsParsed(form_structures, timestamp);
+}
+
 void AutofillHandler::OnTextFieldDidChange(const FormData& form,
                                            const FormFieldData& field,
                                            const gfx::RectF& bounding_box,

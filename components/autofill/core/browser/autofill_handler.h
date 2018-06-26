@@ -72,6 +72,10 @@ class AutofillHandler {
                        SubmissionSource source,
                        base::TimeTicks timestamp);
 
+  // Invoked when |forms| has been detected.
+  void OnFormsSeen(const std::vector<FormData>& forms,
+                   const base::TimeTicks timestamp);
+
   // Invoked when focus is no longer on form.
   virtual void OnFocusNoLongerOnForm() = 0;
 
@@ -82,10 +86,6 @@ class AutofillHandler {
 
   // Invoked when preview autofill value has been shown.
   virtual void OnDidPreviewAutofillFormData() = 0;
-
-  // Invoked when |forms| has been detected.
-  virtual void OnFormsSeen(const std::vector<FormData>& forms,
-                           const base::TimeTicks timestamp) = 0;
 
   // Invoked when textfeild editing ended
   virtual void OnDidEndTextFieldEditing() = 0;
@@ -145,6 +145,15 @@ class AutofillHandler {
   virtual void OnSelectControlDidChangeImpl(const FormData& form,
                                             const FormFieldData& field,
                                             const gfx::RectF& bounding_box) = 0;
+
+  // Return whether the |forms| from OnFormSeen() should be parsed to
+  // form_structures.
+  virtual bool ShouldParseForms(const std::vector<FormData>& forms,
+                                const base::TimeTicks timestamp) = 0;
+
+  // Invoked when forms from OnFormsSeen() has been parsed to |form_structures|.
+  virtual void OnFormsParsed(const std::vector<FormStructure*>& form_structures,
+                             const base::TimeTicks timestamp) = 0;
 
   AutofillDriver* driver() { return driver_; }
 
