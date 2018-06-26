@@ -944,7 +944,7 @@ void CloudPolicyClient::OnAvailableLicensesRequested(
   if (status != DM_STATUS_SUCCESS) {
     LOG(WARNING) << "Could not get available license types";
     status_ = status;
-    callback.Run(false /* success */, licenses);
+    callback.Run(status, licenses);
     RemoveJob(job);
     return;
   }
@@ -952,7 +952,7 @@ void CloudPolicyClient::OnAvailableLicensesRequested(
   if (!response.has_check_device_license_response()) {
     LOG(WARNING) << "Invalid license request response.";
     status_ = DM_STATUS_RESPONSE_DECODING_ERROR;
-    callback.Run(false /* success */, licenses);
+    callback.Run(DM_STATUS_RESPONSE_DECODING_ERROR, licenses);
     RemoveJob(job);
     return;
   }
@@ -967,7 +967,7 @@ void CloudPolicyClient::OnAvailableLicensesRequested(
     ExtractLicenseMap(license_response, licenses);
   }
 
-  callback.Run(true /* success */, licenses);
+  callback.Run(DM_STATUS_SUCCESS, licenses);
   RemoveJob(job);
 }
 

@@ -62,9 +62,10 @@ class POLICY_EXPORT CloudPolicyClient {
   using StatusCallback = base::Callback<void(bool status)>;
 
   // A callback for available licenses request. If the operation succeeded,
-  // |success| is true, and |map| contains available licenses.
-  using LicenseRequestCallback =
-      base::Callback<void(bool success, const LicenseMap& map)>;
+  // |status| is DM_STATUS_SUCCESS, and |map| contains available licenses.
+  using LicenseRequestCallback = base::Callback<void(
+      DeviceManagementStatus status,
+      const LicenseMap& map)>;
 
   // A callback which receives fetched remote commands.
   using RemoteCommandCallback = base::Callback<void(

@@ -186,7 +186,7 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Handles the available licenses request.
   void HandleAvailableLicensesResult(
-      bool success,
+      DeviceManagementStatus status,
       const CloudPolicyClient::LicenseMap& license_map);
 
   // Initiates storing DM token. For Active Directory devices only.
