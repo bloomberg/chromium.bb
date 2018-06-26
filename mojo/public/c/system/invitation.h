@@ -43,15 +43,13 @@ struct MOJO_ALIGNAS(8) MojoProcessErrorDetails {
   // An error message corresponding to the reason why the connection was
   // terminated. This is an information message which may be useful to
   // developers.
-  const char* error_message;
+  MOJO_POINTER_FIELD(const char*, error_message);
 
   // See |MojoProcessErrorFlags|.
   MojoProcessErrorFlags flags;
 };
-MOJO_STATIC_ASSERT_FOR_32_BIT(sizeof(MojoProcessErrorDetails) == 16,
-                              "MojoProcessErrorDetails has wrong size.");
-MOJO_STATIC_ASSERT_FOR_64_BIT(sizeof(MojoProcessErrorDetails) == 24,
-                              "MojoProcessErrorDetails has wrong size.");
+MOJO_STATIC_ASSERT(sizeof(MojoProcessErrorDetails) == 24,
+                   "MojoProcessErrorDetails has wrong size.");
 
 // An opaque process handle value which must be provided when sending an
 // invitation to another process via a platform transport. See
@@ -110,14 +108,10 @@ struct MOJO_ALIGNAS(8) MojoInvitationTransportEndpoint {
   //   - On Fuchsua, this is a single channel Fuchsia handle
   //   - On other POSIX systems, this is a single Unix domain socket file
   //     descriptor.
-  const struct MojoPlatformHandle* platform_handles;
+  MOJO_POINTER_FIELD(const struct MojoPlatformHandle*, platform_handles);
 };
-MOJO_STATIC_ASSERT_FOR_32_BIT(
-    sizeof(MojoInvitationTransportEndpoint) == 16,
-    "MojoInvitationTransportEndpoint has wrong size.");
-MOJO_STATIC_ASSERT_FOR_64_BIT(
-    sizeof(MojoInvitationTransportEndpoint) == 24,
-    "MojoInvitationTransportEndpoint has wrong size.");
+MOJO_STATIC_ASSERT(sizeof(MojoInvitationTransportEndpoint) == 24,
+                   "MojoInvitationTransportEndpoint has wrong size.");
 
 // Flags passed to |MojoCreateInvitation()| via |MojoCreateInvitationOptions|.
 typedef uint32_t MojoCreateInvitationFlags;
@@ -205,13 +199,11 @@ struct MOJO_ALIGNAS(8) MojoSendInvitationOptions {
   // no restrictions on the value given. If |isolated_connection_name_length| is
   // non-zero, the system ensures that only one isolated process connection can
   // exist for the given name at any time.
-  const char* isolated_connection_name;
+  MOJO_POINTER_FIELD(const char*, isolated_connection_name);
   uint32_t isolated_connection_name_length;
 };
-MOJO_STATIC_ASSERT_FOR_32_BIT(sizeof(MojoSendInvitationOptions) == 16,
-                              "MojoSendInvitationOptions has wrong size");
-MOJO_STATIC_ASSERT_FOR_64_BIT(sizeof(MojoSendInvitationOptions) == 24,
-                              "MojoSendInvitationOptions has wrong size");
+MOJO_STATIC_ASSERT(sizeof(MojoSendInvitationOptions) == 24,
+                   "MojoSendInvitationOptions has wrong size");
 
 // Flags passed to |MojoAcceptInvitation()| via |MojoAcceptInvitationOptions|.
 typedef uint32_t MojoAcceptInvitationFlags;

@@ -40,7 +40,7 @@ struct MOJO_ALIGNAS(8) MojoTrapEvent {
   MojoTrapEventFlags flags;
 
   // The context for the trigger which tripped the trap.
-  uintptr_t trigger_context;
+  MOJO_POINTER_FIELD(uintptr_t, trigger_context);
 
   // A result code indicating the cause of the event. May take on any of the
   // following values:
@@ -63,6 +63,8 @@ struct MOJO_ALIGNAS(8) MojoTrapEvent {
   // time the trap was tripped.
   struct MojoHandleSignalsState signals_state;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoTrapEvent) == 32,
+                   "MojoTrapEvent has wrong size.");
 
 // Value given to |MojoAddTrigger| to configure what condition should cause it
 // to trip its trap. May be one of the following values:
@@ -101,6 +103,8 @@ struct MOJO_ALIGNAS(8) MojoCreateTrapOptions {
   // Flags. Currently unused.
   MojoCreateTrapFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoCreateTrapOptions) == 8,
+                   "MojoCreateTrapOptions has wrong size.");
 
 // Flags passed to |MojoAddTrigger()| via |MojoAddTriggerOptions|.
 typedef uint32_t MojoAddTriggerFlags;
@@ -119,6 +123,8 @@ struct MOJO_ALIGNAS(8) MojoAddTriggerOptions {
   // Flags. Currently unused.
   MojoAddTriggerFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoAddTriggerOptions) == 8,
+                   "MojoAddTriggerOptions has wrong size.");
 
 // Flags passed to |MojoRemoveTrigger()| via |MojoRemoveTriggerOptions|.
 typedef uint32_t MojoRemoveTriggerFlags;
@@ -137,6 +143,8 @@ struct MOJO_ALIGNAS(8) MojoRemoveTriggerOptions {
   // Flags. Currently unused.
   MojoRemoveTriggerFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoRemoveTriggerOptions) == 8,
+                   "MojoRemoveTriggerOptions has wrong size.");
 
 // Flags passed to |MojoArmTrap()| via |MojoArmTrapOptions|.
 typedef uint32_t MojoArmTrapFlags;
@@ -155,6 +163,8 @@ struct MOJO_ALIGNAS(8) MojoArmTrapOptions {
   // Flags. Currently unused.
   MojoArmTrapFlags flags;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoArmTrapOptions) == 8,
+                   "MojoArmTrapOptions has wrong size.");
 
 #ifdef __cplusplus
 extern "C" {
