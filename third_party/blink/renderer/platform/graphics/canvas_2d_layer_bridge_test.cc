@@ -396,7 +396,7 @@ class MockCanvasResourceHost : public CanvasResourceHost {
   void NotifyGpuContextLost() override {}
   void SetNeedsCompositingUpdate() override {}
   void UpdateMemoryUsage() override {}
-  MOCK_CONST_METHOD1(RestoreCanvasMatrixClipStack, void(PaintCanvas*));
+  MOCK_CONST_METHOD1(RestoreCanvasMatrixClipStack, void(cc::PaintCanvas*));
 };
 
 void DrawSomething(Canvas2DLayerBridge* bridge) {
@@ -1285,7 +1285,7 @@ TEST_F(Canvas2DLayerBridgeTest, ImageCacheOnContextLost) {
                  color_params);
   bridge->DisableDeferral(DisableDeferralReason::kDisableDeferralReasonUnknown);
 
-  cc::PaintFlags flags;
+  PaintFlags flags;
   std::vector<cc::DrawImage> images = {
       cc::DrawImage(cc::CreateDiscardablePaintImage(gfx::Size(10, 10)),
                     SkIRect::MakeWH(10, 10), kNone_SkFilterQuality,

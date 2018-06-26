@@ -92,7 +92,7 @@ void PaintArtifact::Replay(GraphicsContext& graphics_context,
   Replay(*graphics_context.Canvas(), replay_state, offset);
 }
 
-void PaintArtifact::Replay(PaintCanvas& canvas,
+void PaintArtifact::Replay(cc::PaintCanvas& canvas,
                            const PropertyTreeState& replay_state,
                            const IntPoint& offset) const {
   TRACE_EVENT0("blink,benchmark", "PaintArtifact::replay");

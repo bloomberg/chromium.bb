@@ -49,7 +49,7 @@ bool CanvasRenderingContextHost::IsPaintable() const {
 }
 
 void CanvasRenderingContextHost::RestoreCanvasMatrixClipStack(
-    PaintCanvas* canvas) const {
+    cc::PaintCanvas* canvas) const {
   if (RenderingContext())
     RenderingContext()->RestoreCanvasMatrixClipStack(canvas);
 }

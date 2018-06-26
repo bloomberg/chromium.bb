@@ -256,7 +256,7 @@ static bool ExtractImageData(Image* image,
   IntRect image_source_rect(IntPoint(), image->Size());
   IntRect image_dest_rect(IntPoint(), image_size);
   // TODO(ccameron): No color conversion is required here.
-  std::unique_ptr<PaintCanvas> canvas =
+  std::unique_ptr<cc::PaintCanvas> canvas =
       color_params.WrapCanvas(surface->getCanvas());
   canvas->save();
   canvas->clear(SK_ColorTRANSPARENT);

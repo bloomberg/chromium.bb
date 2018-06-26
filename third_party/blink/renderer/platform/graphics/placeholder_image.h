@@ -39,8 +39,8 @@ class PLATFORM_EXPORT PlaceholderImage final : public Image {
 
   IntSize Size() const override;
 
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect& dest_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,

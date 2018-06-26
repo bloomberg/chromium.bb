@@ -282,7 +282,7 @@ class ChromePrintContext : public PrintContext {
     return printed_page_width_ / page_rect.Width();
   }
 
-  float SpoolSinglePage(WebCanvas* canvas, int page_number) {
+  float SpoolSinglePage(cc::PaintCanvas* canvas, int page_number) {
     DispatchEventsForPrintingOnAllFrames();
     if (!GetFrame()->GetDocument() ||
         !GetFrame()->GetDocument()->GetLayoutView())
@@ -305,7 +305,7 @@ class ChromePrintContext : public PrintContext {
   }
 
   void SpoolAllPagesWithBoundariesForTesting(
-      WebCanvas* canvas,
+      cc::PaintCanvas* canvas,
       const FloatSize& page_size_in_pixels) {
     DispatchEventsForPrintingOnAllFrames();
     if (!GetFrame()->GetDocument() ||
@@ -1524,7 +1524,7 @@ float WebLocalFrameImpl::GetPrintPageShrink(int page) {
   return print_context_->GetPageShrink(page);
 }
 
-float WebLocalFrameImpl::PrintPage(int page, WebCanvas* canvas) {
+float WebLocalFrameImpl::PrintPage(int page, cc::PaintCanvas* canvas) {
   DCHECK(print_context_);
   DCHECK_GE(page, 0);
   DCHECK(GetFrame());
@@ -1593,7 +1593,7 @@ WebString WebLocalFrameImpl::PageProperty(const WebString& property_name,
 }
 
 void WebLocalFrameImpl::PrintPagesForTesting(
-    WebCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const WebSize& page_size_in_pixels) {
   DCHECK(print_context_);
 

@@ -78,9 +78,9 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   // Used by canvas to gain raw pixel access
   void PaintCurrentFrame(
-      PaintCanvas*,
+      cc::PaintCanvas*,
       const IntRect&,
-      const PaintFlags*,
+      const cc::PaintFlags*,
       int already_uploaded_id = -1,
       WebMediaPlayer::VideoFrameUploadMetadata* = nullptr) const;
 

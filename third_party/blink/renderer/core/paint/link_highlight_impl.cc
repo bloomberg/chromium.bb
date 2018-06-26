@@ -280,7 +280,7 @@ LinkHighlightImpl::PaintContentsToDisplayList(
 
   PaintRecorder recorder;
   gfx::Rect record_bounds = PaintableRegion();
-  PaintCanvas* canvas =
+  cc::PaintCanvas* canvas =
       recorder.beginRecording(record_bounds.width(), record_bounds.height());
 
   PaintFlags flags;

@@ -195,7 +195,7 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   origin.Move(-paint_offset);
   context.Translate(-origin.X(), -origin.Y());
 
-  WebCanvas* canvas = context.Canvas();
+  cc::PaintCanvas* canvas = context.Canvas();
 
   IntRect window_rect = ParentFrameView().ConvertToRootFrame(cull_rect.rect_);
   web_plugin_->Paint(canvas, window_rect);
@@ -393,7 +393,7 @@ void WebPluginContainerImpl::PrintPage(int page_number, GraphicsContext& gc) {
                            DisplayItem::kWebPlugin);
   gc.Save();
 
-  WebCanvas* canvas = gc.Canvas();
+  cc::PaintCanvas* canvas = gc.Canvas();
   web_plugin_->PrintPage(page_number, canvas);
   gc.Restore();
 }

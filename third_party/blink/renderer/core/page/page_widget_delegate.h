@@ -31,13 +31,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_WIDGET_DELEGATE_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAGE_PAGE_WIDGET_DELEGATE_H_
 
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/web/web_widget.h"
 #include "third_party/blink/renderer/core/core_export.h"
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class LocalFrame;
 class Page;
 class WebGestureEvent;
@@ -81,9 +83,9 @@ class CORE_EXPORT PageWidgetDelegate {
                               WebWidget::LifecycleUpdate requested_update);
 
   // See documents of methods with the same names in FrameView class.
-  static void Paint(Page&, WebCanvas*, const WebRect&, LocalFrame& root);
+  static void Paint(Page&, cc::PaintCanvas*, const WebRect&, LocalFrame& root);
   static void PaintIgnoringCompositing(Page&,
-                                       WebCanvas*,
+                                       cc::PaintCanvas*,
                                        const WebRect&,
                                        LocalFrame& root);
   // See FIXME in the function body about nullptr |root|.

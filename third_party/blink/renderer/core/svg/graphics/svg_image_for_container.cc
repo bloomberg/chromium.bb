@@ -33,8 +33,8 @@ IntSize SVGImageForContainer::Size() const {
   return RoundedIntSize(scaled_container_size);
 }
 
-void SVGImageForContainer::Draw(PaintCanvas* canvas,
-                                const PaintFlags& flags,
+void SVGImageForContainer::Draw(cc::PaintCanvas* canvas,
+                                const cc::PaintFlags& flags,
                                 const FloatRect& dst_rect,
                                 const FloatRect& src_rect,
                                 RespectImageOrientationEnum,
@@ -56,7 +56,7 @@ void SVGImageForContainer::DrawPattern(GraphicsContext& context,
                                   url_);
 }
 
-bool SVGImageForContainer::ApplyShader(PaintFlags& flags,
+bool SVGImageForContainer::ApplyShader(cc::PaintFlags& flags,
                                        const SkMatrix& local_matrix) {
   return image_->ApplyShaderForContainer(container_size_, zoom_, url_, flags,
                                          local_matrix);

@@ -29,8 +29,6 @@
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 #include "third_party/blink/renderer/platform/fonts/font_fallback_priority.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/layout_unit.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/text/tab_size.h"
@@ -43,6 +41,11 @@
 
 // To avoid conflicts with the CreateWindow macro from the Windows SDK...
 #undef DrawText
+
+namespace cc {
+class PaintCanvas;
+class PaintFlags;
+}  // namespace cc
 
 namespace blink {
 
@@ -81,34 +84,34 @@ class PLATFORM_EXPORT Font {
     kDoNotPaintIfFontNotReady,
     kUseFallbackIfFontNotReady
   };
-  void DrawText(PaintCanvas*,
+  void DrawText(cc::PaintCanvas*,
                 const TextRunPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
-                const PaintFlags&) const;
-  void DrawText(PaintCanvas*,
+                const cc::PaintFlags&) const;
+  void DrawText(cc::PaintCanvas*,
                 const NGTextFragmentPaintInfo&,
                 const FloatPoint&,
                 float device_scale_factor,
-                const PaintFlags&) const;
-  bool DrawBidiText(PaintCanvas*,
+                const cc::PaintFlags&) const;
+  bool DrawBidiText(cc::PaintCanvas*,
                     const TextRunPaintInfo&,
                     const FloatPoint&,
                     CustomFontNotReadyAction,
                     float device_scale_factor,
-                    const PaintFlags&) const;
-  void DrawEmphasisMarks(PaintCanvas*,
+                    const cc::PaintFlags&) const;
+  void DrawEmphasisMarks(cc::PaintCanvas*,
                          const TextRunPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&,
                          float device_scale_factor,
-                         const PaintFlags&) const;
-  void DrawEmphasisMarks(PaintCanvas*,
+                         const cc::PaintFlags&) const;
+  void DrawEmphasisMarks(cc::PaintCanvas*,
                          const NGTextFragmentPaintInfo&,
                          const AtomicString& mark,
                          const FloatPoint&,
                          float device_scale_factor,
-                         const PaintFlags&) const;
+                         const cc::PaintFlags&) const;
 
   struct TextIntercept {
     float begin_, end_;
@@ -119,16 +122,15 @@ class PLATFORM_EXPORT Font {
   // a multiple of two, and is at most the number of glyphs * 2 in the TextRun
   // part of TextRunPaintInfo. Specify bounds for the upper and lower extend of
   // a line crossing through the text, parallel to the baseline.
-  // TODO(drott): crbug.com/655154 Fix this for
-  // upright in vertical.
+  // TODO(drott): crbug.com/655154 Fix this for upright in vertical.
   void GetTextIntercepts(const TextRunPaintInfo&,
                          float device_scale_factor,
-                         const PaintFlags&,
+                         const cc::PaintFlags&,
                          const std::tuple<float, float>& bounds,
                          Vector<TextIntercept>&) const;
   void GetTextIntercepts(const NGTextFragmentPaintInfo&,
                          float device_scale_factor,
-                         const PaintFlags&,
+                         const cc::PaintFlags&,
                          const std::tuple<float, float>& bounds,
                          Vector<TextIntercept>&) const;
 

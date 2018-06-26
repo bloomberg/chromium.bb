@@ -11,7 +11,6 @@
 #include "ui/native_theme/native_theme.h"
 #include "ui/native_theme/overlay_scrollbar_constants_aura.h"
 
-using blink::WebCanvas;
 using blink::WebRect;
 using blink::WebThemeEngine;
 using blink::WebScrollbarOverlayColorTheme;
@@ -230,7 +229,7 @@ blink::WebSize WebThemeEngineImpl::GetSize(WebThemeEngine::Part part) {
 }
 
 void WebThemeEngineImpl::Paint(
-    blink::WebCanvas* canvas,
+    cc::PaintCanvas* canvas,
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
     const blink::WebRect& rect,

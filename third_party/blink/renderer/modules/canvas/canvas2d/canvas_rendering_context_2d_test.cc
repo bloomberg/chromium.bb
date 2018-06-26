@@ -272,7 +272,7 @@ class FakeCanvas2DLayerBridge : public Canvas2DLayerBridge {
       is_accelerated_ = is_accelerated;
   }
   MOCK_METHOD1(DrawFullImage, void(const PaintImage& image));
-  MOCK_METHOD1(DidRestoreCanvasMatrixClipStack, void(PaintCanvas*));
+  MOCK_METHOD1(DidRestoreCanvasMatrixClipStack, void(cc::PaintCanvas*));
 
  private:
   bool is_accelerated_;
@@ -793,7 +793,7 @@ TEST_F(CanvasRenderingContext2DTest,
       size, CanvasColorParams(), kPreferNoAcceleration);
   fake_deaccelerate_surface->SetCanvasResourceHost(&host);
 
-  PaintCanvas* paint_canvas_ptr = fake_deaccelerate_surface->Canvas();
+  cc::PaintCanvas* paint_canvas_ptr = fake_deaccelerate_surface->Canvas();
   FakeCanvas2DLayerBridge* surface_ptr = fake_deaccelerate_surface.get();
 
   EXPECT_CALL(*fake_deaccelerate_surface, DrawFullImage(_)).Times(1);

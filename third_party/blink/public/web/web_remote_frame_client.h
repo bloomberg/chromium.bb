@@ -5,7 +5,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_REMOTE_FRAME_CLIENT_H_
 
-#include "third_party/blink/public/platform/web_canvas.h"
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_security_origin.h"
 #include "third_party/blink/public/platform/web_touch_action.h"
@@ -85,7 +85,9 @@ class WebRemoteFrameClient {
   // frame.
   // |canvas| is the canvas we are printing on.
   // Returns the id of the placeholder content.
-  virtual uint32_t Print(const WebRect& rect, WebCanvas* canvas) { return 0; }
+  virtual uint32_t Print(const WebRect& rect, cc::PaintCanvas* canvas) {
+    return 0;
+  }
 
  protected:
   virtual ~WebRemoteFrameClient() = default;

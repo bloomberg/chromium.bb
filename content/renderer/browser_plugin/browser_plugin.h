@@ -114,7 +114,7 @@ class CONTENT_EXPORT BrowserPlugin : public blink::WebPlugin,
   bool SupportsInputMethod() const override;
   bool CanProcessDrag() const override;
   void UpdateAllLifecyclePhases() override {}
-  void Paint(blink::WebCanvas* canvas, const blink::WebRect& rect) override {}
+  void Paint(cc::PaintCanvas* canvas, const blink::WebRect& rect) override {}
   void UpdateGeometry(const blink::WebRect& window_rect,
                       const blink::WebRect& clip_rect,
                       const blink::WebRect& unobscured_rect,

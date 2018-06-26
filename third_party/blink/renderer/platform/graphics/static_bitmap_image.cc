@@ -62,7 +62,7 @@ scoped_refptr<StaticBitmapImage> StaticBitmapImage::Create(
   return Create(SkImage::MakeFromRaster(pixmap, nullptr, nullptr));
 }
 
-void StaticBitmapImage::DrawHelper(PaintCanvas* canvas,
+void StaticBitmapImage::DrawHelper(cc::PaintCanvas* canvas,
                                    const PaintFlags& flags,
                                    const FloatRect& dst_rect,
                                    const FloatRect& src_rect,

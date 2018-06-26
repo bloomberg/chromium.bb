@@ -9,7 +9,6 @@
 #include "cc/paint/skia_paint_canvas.h"
 
 namespace blink {
-using cc::PaintCanvas;
 using cc::SkiaPaintCanvas;
 using cc::PaintCanvasAutoRestore;
 }

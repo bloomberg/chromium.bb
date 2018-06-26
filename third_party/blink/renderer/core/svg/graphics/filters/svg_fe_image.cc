@@ -182,7 +182,7 @@ sk_sp<PaintFilter> FEImage::CreateImageFilterForLayoutObject(
   SVGPaintContext::PaintResourceSubtree(builder.Context(), &layout_object);
 
   PaintRecorder paint_recorder;
-  PaintCanvas* canvas = paint_recorder.beginRecording(dst_rect);
+  cc::PaintCanvas* canvas = paint_recorder.beginRecording(dst_rect);
   canvas->concat(AffineTransformToSkMatrix(transform));
   builder.EndRecording(*canvas);
 

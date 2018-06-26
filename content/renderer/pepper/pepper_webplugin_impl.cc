@@ -41,7 +41,6 @@
 #include "url/gurl.h"
 
 using ppapi::V8ObjectVar;
-using blink::WebCanvas;
 using blink::WebPlugin;
 using blink::WebPluginContainer;
 using blink::WebPluginParams;
@@ -190,7 +189,7 @@ v8::Local<v8::Object> PepperWebPluginImpl::V8ScriptableObject(
   return result;
 }
 
-void PepperWebPluginImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
+void PepperWebPluginImpl::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
   if (instance_ && !instance_->FlashIsFullscreenOrPending())
@@ -441,7 +440,7 @@ int PepperWebPluginImpl::PrintBegin(const WebPrintParams& print_params) {
   return instance_->PrintBegin(print_params);
 }
 
-void PepperWebPluginImpl::PrintPage(int page_number, blink::WebCanvas* canvas) {
+void PepperWebPluginImpl::PrintPage(int page_number, cc::PaintCanvas* canvas) {
   // Re-entrancy may cause JS to try to execute script on the plugin before it
   // is fully initialized. See: crbug.com/715747.
   if (instance_)

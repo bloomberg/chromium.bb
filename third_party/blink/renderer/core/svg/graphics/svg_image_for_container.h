@@ -76,10 +76,10 @@ class SVGImageForContainer final : public Image {
   }
   bool HasRelativeSize() const override { return image_->HasRelativeSize(); }
 
-  bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix) override;
+  bool ApplyShader(cc::PaintFlags&, const SkMatrix& local_matrix) override;
 
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect&,
             const FloatRect&,
             RespectImageOrientationEnum,

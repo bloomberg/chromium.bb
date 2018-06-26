@@ -11,7 +11,6 @@
 #include "third_party/blink/public/platform/web_size.h"
 #include "ui/native_theme/native_theme.h"
 
-using blink::WebCanvas;
 using blink::WebRect;
 using blink::WebThemeEngine;
 
@@ -204,7 +203,7 @@ void WebThemeEngineImpl::GetOverlayScrollbarStyle(ScrollbarStyle* style) {
 }
 
 void WebThemeEngineImpl::Paint(
-    blink::WebCanvas* canvas,
+    cc::PaintCanvas* canvas,
     WebThemeEngine::Part part,
     WebThemeEngine::State state,
     const blink::WebRect& rect,

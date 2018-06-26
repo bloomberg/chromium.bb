@@ -132,6 +132,10 @@ _CONFIG = [
             'base::Feature.*',
             'base::FEATURE_.+',
 
+            # cc painting types.
+            'cc::PaintCanvas',
+            'cc::PaintFlags',
+
             # Chromium geometry types.
             'gfx::Point',
             'gfx::Rect',
@@ -255,9 +259,6 @@ _CONFIG = [
     {
         'paths': ['third_party/blink/renderer/core/page/scrolling'],
         'allowed': [
-            # cc painting types.
-            'cc::PaintCanvas',
-
             # cc scrollbar layer types.
             'cc::PaintedOverlayScrollbarLayer',
             'cc::PaintedScrollbarLayer',

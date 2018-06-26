@@ -7,7 +7,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_list.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_chunk_subset.h"
 #include "third_party/blink/renderer/platform/graphics/paint/raster_invalidation_tracking.h"
@@ -15,8 +14,11 @@
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class GraphicsContext;
 class PaintChunkSubset;
 
@@ -104,7 +106,7 @@ class PLATFORM_EXPORT PaintArtifact final {
 
   // Draws the paint artifact to a PaintCanvas, into the ancestor state given
   // by |replay_state|.
-  void Replay(PaintCanvas&,
+  void Replay(cc::PaintCanvas&,
               const PropertyTreeState& replay_state,
               const IntPoint& offset = IntPoint()) const;
 

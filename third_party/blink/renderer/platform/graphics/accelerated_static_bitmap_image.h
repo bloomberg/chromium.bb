@@ -48,8 +48,8 @@ class PLATFORM_EXPORT AcceleratedStaticBitmapImage final
     return this;
   }
 
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect& dst_rect,
             const FloatRect& src_rect,
             RespectImageOrientationEnum,

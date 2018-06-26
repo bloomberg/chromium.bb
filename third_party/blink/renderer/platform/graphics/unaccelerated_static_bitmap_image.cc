@@ -74,8 +74,8 @@ bool UnacceleratedStaticBitmapImage::CurrentFrameKnownToBeOpaque() {
   return paint_image_.GetSkImage()->isOpaque();
 }
 
-void UnacceleratedStaticBitmapImage::Draw(PaintCanvas* canvas,
-                                          const PaintFlags& flags,
+void UnacceleratedStaticBitmapImage::Draw(cc::PaintCanvas* canvas,
+                                          const cc::PaintFlags& flags,
                                           const FloatRect& dst_rect,
                                           const FloatRect& src_rect,
                                           RespectImageOrientationEnum,

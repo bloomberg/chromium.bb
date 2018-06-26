@@ -17,7 +17,7 @@ class MockWebThemeEngine : public blink::WebThemeEngine {
 #if !defined(OS_MACOSX)
   // blink::WebThemeEngine:
   blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
-  void Paint(blink::WebCanvas*,
+  void Paint(cc::PaintCanvas*,
              blink::WebThemeEngine::Part,
              blink::WebThemeEngine::State,
              const blink::WebRect&,

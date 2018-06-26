@@ -54,7 +54,7 @@ sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
   return context_->EndRecording();
 }
 
-void PaintRecordBuilder::EndRecording(PaintCanvas& canvas,
+void PaintRecordBuilder::EndRecording(cc::PaintCanvas& canvas,
                                       const PropertyTreeState& replay_state) {
   paint_controller_->CommitNewDisplayItems();
   paint_controller_->GetPaintArtifact().Replay(canvas, replay_state);

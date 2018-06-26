@@ -15,7 +15,7 @@ class WebThemeEngineImpl : public blink::WebThemeEngine {
   blink::WebSize GetSize(blink::WebThemeEngine::Part) override;
   void GetOverlayScrollbarStyle(
       blink::WebThemeEngine::ScrollbarStyle*) override;
-  void Paint(blink::WebCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              blink::WebThemeEngine::Part part,
              blink::WebThemeEngine::State state,
              const blink::WebRect& rect,

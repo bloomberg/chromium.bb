@@ -47,9 +47,9 @@
 class SkMatrix;
 
 namespace cc {
-class ImageDecodeCache;
 class PaintCanvas;
 class PaintFlags;
+class ImageDecodeCache;
 }  // namespace cc
 
 namespace blink {
@@ -62,9 +62,6 @@ class Image;
 class KURL;
 class WebGraphicsContext3DProvider;
 class WebGraphicsContext3DProviderWrapper;
-
-using cc::PaintCanvas;
-using cc::PaintFlags;
 
 class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
   friend class GeneratedImage;
@@ -202,15 +199,15 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
     kDoNotClampImageToSourceRect
   };
 
-  virtual void Draw(PaintCanvas*,
-                    const PaintFlags&,
+  virtual void Draw(cc::PaintCanvas*,
+                    const cc::PaintFlags&,
                     const FloatRect& dst_rect,
                     const FloatRect& src_rect,
                     RespectImageOrientationEnum,
                     ImageClampingMode,
                     ImageDecodingMode) = 0;
 
-  virtual bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix);
+  virtual bool ApplyShader(cc::PaintFlags&, const SkMatrix& local_matrix);
 
   // Use ContextProvider() for immediate use only, use
   // ContextProviderWrapper() to obtain a retainable reference. Note:

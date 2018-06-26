@@ -151,15 +151,15 @@ class CORE_EXPORT SVGImage final : public Image {
   // FIXME: Implement this to be less conservative.
   bool CurrentFrameKnownToBeOpaque() override { return false; }
 
-  void Draw(PaintCanvas*,
-            const PaintFlags&,
+  void Draw(cc::PaintCanvas*,
+            const cc::PaintFlags&,
             const FloatRect& from_rect,
             const FloatRect& to_rect,
             RespectImageOrientationEnum,
             ImageClampingMode,
             ImageDecodingMode) override;
-  void DrawForContainer(PaintCanvas*,
-                        const PaintFlags&,
+  void DrawForContainer(cc::PaintCanvas*,
+                        const cc::PaintFlags&,
                         const FloatSize&,
                         float,
                         const FloatRect&,
@@ -185,10 +185,10 @@ class CORE_EXPORT SVGImage final : public Image {
   // Otherwise returns a pointer to the new PaintRecord.
   sk_sp<PaintRecord> PaintRecordForCurrentFrame(const IntRect& bounds,
                                                 const KURL&,
-                                                PaintCanvas* = nullptr);
+                                                cc::PaintCanvas* = nullptr);
 
-  void DrawInternal(PaintCanvas*,
-                    const PaintFlags&,
+  void DrawInternal(cc::PaintCanvas*,
+                    const cc::PaintFlags&,
                     const FloatRect& from_rect,
                     const FloatRect& to_rect,
                     RespectImageOrientationEnum,
@@ -198,13 +198,13 @@ class CORE_EXPORT SVGImage final : public Image {
   template <typename Func>
   void ForContainer(const FloatSize&, Func&&);
 
-  bool ApplyShader(PaintFlags&, const SkMatrix& local_matrix) override;
+  bool ApplyShader(cc::PaintFlags&, const SkMatrix& local_matrix) override;
   bool ApplyShaderForContainer(const FloatSize&,
                                float zoom,
                                const KURL&,
-                               PaintFlags&,
+                               cc::PaintFlags&,
                                const SkMatrix& local_matrix);
-  bool ApplyShaderInternal(PaintFlags&,
+  bool ApplyShaderInternal(cc::PaintFlags&,
                            const SkMatrix& local_matrix,
                            const KURL&);
 

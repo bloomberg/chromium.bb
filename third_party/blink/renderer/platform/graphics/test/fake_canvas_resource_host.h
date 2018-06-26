@@ -6,8 +6,11 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_FAKE_CANVAS_RESOURCE_HOST_H_
 
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_host.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
+
+namespace cc {
+class PaintCanvas;
+}
 
 namespace blink {
 
@@ -16,7 +19,7 @@ class FakeCanvasResourceHost : public CanvasResourceHost {
   ~FakeCanvasResourceHost() override {}
   void NotifyGpuContextLost() override {}
   void SetNeedsCompositingUpdate() override {}
-  void RestoreCanvasMatrixClipStack(PaintCanvas*) const override {}
+  void RestoreCanvasMatrixClipStack(cc::PaintCanvas*) const override {}
   void UpdateMemoryUsage() override {}
 };
 

@@ -5,16 +5,19 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FRAME_REMOTE_FRAME_CLIENT_H_
 
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/renderer/core/frame/frame_client.h"
 #include "third_party/blink/renderer/core/frame/frame_types.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 
-namespace blink {
+namespace cc {
+class PaintCanvas;
+}
 
+namespace blink {
 class IntRect;
 class LocalFrame;
 class MessageEvent;
@@ -62,7 +65,7 @@ class RemoteFrameClient : public FrameClient {
   virtual void UpdateRenderThrottlingStatus(bool isThrottled,
                                             bool subtreeThrottled) = 0;
 
-  virtual uint32_t Print(const IntRect&, WebCanvas*) const = 0;
+  virtual uint32_t Print(const IntRect&, cc::PaintCanvas*) const = 0;
 };
 
 }  // namespace blink

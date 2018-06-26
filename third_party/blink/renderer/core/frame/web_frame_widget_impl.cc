@@ -312,7 +312,7 @@ void WebFrameWidgetImpl::UpdateAllLifecyclePhasesAndCompositeForTesting() {
     layer_tree_view_->SynchronouslyCompositeNoRasterForTesting();
 }
 
-void WebFrameWidgetImpl::Paint(WebCanvas* canvas, const WebRect& rect) {
+void WebFrameWidgetImpl::Paint(cc::PaintCanvas* canvas, const WebRect& rect) {
   // Out-of-process iframes require compositing.
   NOTREACHED();
 }

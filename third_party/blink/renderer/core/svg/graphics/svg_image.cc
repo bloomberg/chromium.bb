@@ -58,6 +58,7 @@
 #include "third_party/blink/renderer/platform/graphics/image_observer.h"
 #include "third_party/blink/renderer/platform/graphics/paint/cull_rect.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -302,7 +303,7 @@ void SVGImage::ForContainer(const FloatSize& container_size, Func&& func) {
                  rounded_container_size.Height() / container_size.Height()));
 }
 
-void SVGImage::DrawForContainer(PaintCanvas* canvas,
+void SVGImage::DrawForContainer(cc::PaintCanvas* canvas,
                                 const PaintFlags& flags,
                                 const FloatSize& container_size,
                                 float zoom,
@@ -391,7 +392,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForContainer(
     return nullptr;
 
   PaintRecorder recorder;
-  PaintCanvas* canvas = recorder.beginRecording(draw_src_rect);
+  cc::PaintCanvas* canvas = recorder.beginRecording(draw_src_rect);
   if (flip_y) {
     canvas->translate(0, draw_dst_rect.Height());
     canvas->scale(1, -1);
@@ -411,7 +412,7 @@ void SVGImage::PopulatePaintRecordForCurrentFrameForContainer(
   const IntRect container_rect(IntPoint(), container_size);
 
   PaintRecorder recorder;
-  PaintCanvas* canvas = recorder.beginRecording(container_rect);
+  cc::PaintCanvas* canvas = recorder.beginRecording(container_rect);
   DrawForContainer(canvas, PaintFlags(), FloatSize(container_rect.Size()), 1,
                    container_rect, container_rect, url);
   builder.set_paint_record(recorder.finishRecordingAsPicture(), container_rect,
@@ -468,7 +469,7 @@ bool SVGImage::ApplyShaderForContainer(const FloatSize& container_size,
 }
 
 void SVGImage::Draw(
-    PaintCanvas* canvas,
+    cc::PaintCanvas* canvas,
     const PaintFlags& flags,
     const FloatRect& dst_rect,
     const FloatRect& src_rect,
@@ -482,9 +483,10 @@ void SVGImage::Draw(
                should_respect_image_orientation, clamp_mode, NullURL());
 }
 
-sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
-                                                        const KURL& url,
-                                                        PaintCanvas* canvas) {
+sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(
+    const IntRect& bounds,
+    const KURL& url,
+    cc::PaintCanvas* canvas) {
   DCHECK(page_);
   LocalFrameView* view = ToLocalFrame(page_->MainFrame())->View();
   view->Resize(ContainerSize());
@@ -515,7 +517,7 @@ sk_sp<PaintRecord> SVGImage::PaintRecordForCurrentFrame(const IntRect& bounds,
   return builder.EndRecording();
 }
 
-void SVGImage::DrawInternal(PaintCanvas* canvas,
+void SVGImage::DrawInternal(cc::PaintCanvas* canvas,
                             const PaintFlags& flags,
                             const FloatRect& dst_rect,
                             const FloatRect& src_rect,

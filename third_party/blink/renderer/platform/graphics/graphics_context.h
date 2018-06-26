@@ -78,8 +78,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   ~GraphicsContext();
 
-  PaintCanvas* Canvas() { return canvas_; }
-  const PaintCanvas* Canvas() const { return canvas_; }
+  cc::PaintCanvas* Canvas() { return canvas_; }
+  const cc::PaintCanvas* Canvas() const { return canvas_; }
 
   PaintController& GetPaintController() { return paint_controller_; }
   const PaintController& GetPaintController() const {
@@ -465,7 +465,7 @@ class PLATFORM_EXPORT GraphicsContext {
   PaintFlags ApplyHighContrastFilter(const PaintFlags* input) const;
 
   // null indicates painting is contextDisabled. Never delete this object.
-  PaintCanvas* canvas_;
+  cc::PaintCanvas* canvas_;
 
   PaintController& paint_controller_;
 

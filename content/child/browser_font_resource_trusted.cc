@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/paint/paint_canvas.h"
 #include "cc/paint/skia_paint_canvas.h"
 #include "content/public/common/web_preferences.h"
 #include "ppapi/proxy/connection.h"
@@ -18,7 +19,6 @@
 #include "ppapi/thunk/ppb_image_data_api.h"
 #include "ppapi/thunk/thunk.h"
 #include "skia/ext/platform_canvas.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_font.h"
@@ -37,7 +37,6 @@ using blink::WebFont;
 using blink::WebFontDescription;
 using blink::WebRect;
 using blink::WebTextRun;
-using blink::WebCanvas;
 
 namespace content {
 

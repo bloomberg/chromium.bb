@@ -138,7 +138,7 @@ class TestPlugin : public FakeWebPlugin {
   WebString SelectionAsMarkup() const override { return WebString("y"); }
   bool SupportsPaginatedPrint() override { return true; }
   int PrintBegin(const WebPrintParams& print_params) override { return 1; }
-  void PrintPage(int page_number, WebCanvas*) override;
+  void PrintPage(int page_number, cc::PaintCanvas*) override;
 
  private:
   ~TestPlugin() override = default;
@@ -226,7 +226,7 @@ class TestPluginWebFrameClient : public FrameTestHelpers::TestWebFrameClient {
   bool has_editable_text_ = false;
 };
 
-void TestPlugin::PrintPage(int page_number, WebCanvas* canvas) {
+void TestPlugin::PrintPage(int page_number, cc::PaintCanvas* canvas) {
   DCHECK(test_client_);
   test_client_->OnPrintPage();
 }

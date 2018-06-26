@@ -32,8 +32,8 @@
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_FRAME_H_
 
 #include <memory>
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"

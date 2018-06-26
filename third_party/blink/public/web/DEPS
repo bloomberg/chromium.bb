@@ -5,6 +5,8 @@ include_rules = [
     "+base/memory/scoped_refptr.h",
     "+base/strings",
     "+base/time/time.h",
+    "+cc/paint/paint_canvas.h",
+    "+cc/paint/paint_flags.h",
     "+mojo/public",
     # Enforce to use mojom-shared.h in blink/public so that it can compile
     # inside and outside Blink.

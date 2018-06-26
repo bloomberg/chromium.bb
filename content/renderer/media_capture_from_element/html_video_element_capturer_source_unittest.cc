@@ -84,7 +84,7 @@ class MockWebMediaPlayer : public blink::WebMediaPlayer,
   size_t AudioDecodedByteCount() const override { return 0; }
   size_t VideoDecodedByteCount() const override { return 0; }
 
-  void Paint(blink::WebCanvas* canvas,
+  void Paint(cc::PaintCanvas* canvas,
              const blink::WebRect& paint_rectangle,
              cc::PaintFlags&,
              int already_uploaded_id,

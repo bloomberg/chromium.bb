@@ -32,9 +32,9 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "cc/paint/paint_canvas.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_menu_source_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
@@ -424,7 +424,7 @@ class CORE_EXPORT EmptyRemoteFrameClient : public RemoteFrameClient {
   void SetInheritedEffectiveTouchAction(TouchAction) override {}
   void UpdateRenderThrottlingStatus(bool is_throttled,
                                     bool subtree_throttled) override {}
-  uint32_t Print(const IntRect& rect, WebCanvas* canvas) const override {
+  uint32_t Print(const IntRect& rect, cc::PaintCanvas* canvas) const override {
     return 0;
   }
 

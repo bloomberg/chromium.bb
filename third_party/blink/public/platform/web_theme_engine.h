@@ -31,11 +31,14 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_scrollbar_overlay_color_theme.h"
 #include "third_party/blink/public/platform/web_size.h"
 #include "third_party/skia/include/core/SkColor.h"
+
+namespace cc {
+class PaintCanvas;
+}
 
 namespace blink {
 
@@ -183,7 +186,7 @@ class WebThemeEngine {
   }
 
   // Paint the given the given theme part.
-  virtual void Paint(WebCanvas*,
+  virtual void Paint(cc::PaintCanvas*,
                      Part,
                      State,
                      const WebRect&,

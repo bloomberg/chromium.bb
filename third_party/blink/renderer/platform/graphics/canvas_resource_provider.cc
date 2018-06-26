@@ -528,7 +528,7 @@ SkSurface* CanvasResourceProvider::GetSkSurface() const {
   return surface_.get();
 }
 
-PaintCanvas* CanvasResourceProvider::Canvas() {
+cc::PaintCanvas* CanvasResourceProvider::Canvas() {
   if (!canvas_) {
     TRACE_EVENT0("blink", "CanvasResourceProvider::Canvas");
 

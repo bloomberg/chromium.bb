@@ -32,7 +32,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_
 #define THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_PLUGIN_H_
 
-#include "third_party/blink/public/platform/web_canvas.h"
+#include "cc/paint/paint_canvas.h"
 #include "third_party/blink/public/platform/web_drag_operation.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_string.h"
@@ -106,7 +106,7 @@ class WebPlugin {
   virtual bool CanProcessDrag() const { return false; }
 
   virtual void UpdateAllLifecyclePhases() = 0;
-  virtual void Paint(WebCanvas*, const WebRect&) = 0;
+  virtual void Paint(cc::PaintCanvas*, const WebRect&) = 0;
 
   // Coordinates are relative to the containing window.
   virtual void UpdateGeometry(const WebRect& window_rect,
@@ -151,7 +151,7 @@ class WebPlugin {
   // pages to be printed at these settings.
   virtual int PrintBegin(const WebPrintParams& print_params) { return 0; }
 
-  virtual void PrintPage(int page_number, WebCanvas* canvas) {}
+  virtual void PrintPage(int page_number, cc::PaintCanvas* canvas) {}
 
   // Ends the print operation.
   virtual void PrintEnd() {}

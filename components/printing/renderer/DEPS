@@ -1,4 +1,5 @@
 include_rules = [
+  "+cc/paint",
   "+components/grit/components_resources.h",
   "+content/public/renderer",
   "+mojo/public",

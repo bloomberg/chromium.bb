@@ -118,7 +118,7 @@ Canvas2DLayerBridge::~Canvas2DLayerBridge() {
 void Canvas2DLayerBridge::StartRecording() {
   DCHECK(is_deferral_enabled_);
   recorder_ = std::make_unique<PaintRecorder>();
-  PaintCanvas* canvas =
+  cc::PaintCanvas* canvas =
       recorder_->beginRecording(size_.Width(), size_.Height());
   // Always save an initial frame, to support resetting the top level matrix
   // and clip.
@@ -347,7 +347,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
       }
     }
 
-    cc::PaintFlags copy_paint;
+    PaintFlags copy_paint;
     copy_paint.setBlendMode(SkBlendMode::kSrc);
     PaintImageBuilder builder = PaintImageBuilder::WithDefault();
     builder.set_image(hibernation_image_, PaintImage::GetNextContentId());
@@ -370,7 +370,7 @@ CanvasResourceProvider* Canvas2DLayerBridge::GetOrCreateResourceProvider(
   return resource_provider;
 }
 
-PaintCanvas* Canvas2DLayerBridge::Canvas() {
+cc::PaintCanvas* Canvas2DLayerBridge::Canvas() {
   DCHECK(resource_host_);
   if (!is_deferral_enabled_) {
     if (GetOrCreateResourceProvider())
@@ -445,7 +445,7 @@ void Canvas2DLayerBridge::SetIsHidden(bool hidden) {
   }
   if (!IsHidden() && software_rendering_while_hidden_) {
     FlushRecording();
-    cc::PaintFlags copy_paint;
+    PaintFlags copy_paint;
     copy_paint.setBlendMode(SkBlendMode::kSrc);
 
     std::unique_ptr<CanvasResourceProvider> old_resource_provider =
@@ -517,7 +517,7 @@ void Canvas2DLayerBridge::FlushRecording() {
   if (have_recorded_draw_commands_ && GetOrCreateResourceProvider()) {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
 
-    PaintCanvas* canvas = GetOrCreateResourceProvider()->Canvas();
+    cc::PaintCanvas* canvas = GetOrCreateResourceProvider()->Canvas();
     {
       sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
       canvas->drawPicture(recording);

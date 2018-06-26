@@ -15,11 +15,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "cc/paint/paint_canvas.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_frame_observer_tracker.h"
 #include "printing/buildflags/buildflags.h"
 #include "printing/pdf_metafile_skia.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_print_params.h"
 #include "ui/gfx/geometry/size.h"
@@ -303,7 +303,7 @@ class PrintRenderFrameHelper
                                  const gfx::Rect& canvas_area,
                                  const gfx::Rect& content_area,
                                  double scale_factor,
-                                 blink::WebCanvas* canvas);
+                                 cc::PaintCanvas* canvas);
 
   // Helper methods -----------------------------------------------------------
 
@@ -331,7 +331,7 @@ class PrintRenderFrameHelper
 
   // Given the |device| and |canvas| to draw on, prints the appropriate headers
   // and footers using strings from |header_footer_info| on to the canvas.
-  static void PrintHeaderAndFooter(blink::WebCanvas* canvas,
+  static void PrintHeaderAndFooter(cc::PaintCanvas* canvas,
                                    int page_number,
                                    int total_pages,
                                    const blink::WebLocalFrame& source_frame,

@@ -5,14 +5,15 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_GRAPHICS_TEST_MOCK_PAINT_CANVAS_H_
 
+#include "cc/paint/paint_canvas.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
+#include "third_party/blink/renderer/platform/graphics/paint/paint_flags.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_text_blob.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 
 namespace blink {
 
-class MockPaintCanvas : public PaintCanvas {
+class MockPaintCanvas : public cc::PaintCanvas {
  public:
   MOCK_METHOD0(getMetaData, SkMetaData&());
   MOCK_CONST_METHOD0(imageInfo, SkImageInfo());

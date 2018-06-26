@@ -64,7 +64,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
   }
   scoped_refptr<StaticBitmapImage> GetImage(AccelerationHint) const final;
   void Reset() override;
-  void RestoreCanvasMatrixClipStack(PaintCanvas* c) const override {
+  void RestoreCanvasMatrixClipStack(cc::PaintCanvas* c) const override {
     RestoreMatrixClipStack(c);
   }
 
@@ -93,8 +93,8 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   bool ParseColorOrCurrentColor(Color&, const String& color_string) const final;
 
-  PaintCanvas* DrawingCanvas() const final;
-  PaintCanvas* ExistingDrawingCanvas() const final;
+  cc::PaintCanvas* DrawingCanvas() const final;
+  cc::PaintCanvas* ExistingDrawingCanvas() const final;
   void DisableDeferral(DisableDeferralReason) final;
 
   void DidDraw() final;

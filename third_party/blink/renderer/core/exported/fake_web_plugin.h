@@ -33,6 +33,10 @@
 
 #include "third_party/blink/public/web/web_plugin.h"
 
+namespace cc {
+class PaintCanvas;
+}
+
 namespace blink {
 
 class WebCoalescedInputEvent;
@@ -50,7 +54,7 @@ class FakeWebPlugin : public WebPlugin {
   void Destroy() override;
   bool CanProcessDrag() const override { return false; }
   void UpdateAllLifecyclePhases() override {}
-  void Paint(WebCanvas*, const WebRect&) override {}
+  void Paint(cc::PaintCanvas*, const WebRect&) override {}
   void UpdateGeometry(const WebRect& client_rect,
                       const WebRect& clip_rect,
                       const WebRect& window_clip_rect,

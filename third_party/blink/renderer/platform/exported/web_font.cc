@@ -77,7 +77,7 @@ float WebFont::XHeight() const {
   return font_data ? font_data->GetFontMetrics().XHeight() : 0;
 }
 
-void WebFont::DrawText(WebCanvas* canvas,
+void WebFont::DrawText(cc::PaintCanvas* canvas,
                        const WebTextRun& run,
                        const WebFloatPoint& left_baseline,
                        SkColor color,

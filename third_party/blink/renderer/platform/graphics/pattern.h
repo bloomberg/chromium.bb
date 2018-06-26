@@ -61,7 +61,7 @@ class PLATFORM_EXPORT Pattern : public RefCounted<Pattern> {
       RepeatMode = kRepeatModeXY);
   virtual ~Pattern();
 
-  void ApplyToFlags(PaintFlags&, const SkMatrix&);
+  void ApplyToFlags(cc::PaintFlags&, const SkMatrix&);
 
   bool IsRepeatX() const { return repeat_mode_ & kRepeatModeX; }
   bool IsRepeatY() const { return repeat_mode_ & kRepeatModeY; }

@@ -78,7 +78,9 @@ class CanvasRenderingContext2DState final
   void ClipPath(const SkPath&, AntiAliasingMode);
   bool HasClip() const { return has_clip_; }
   bool HasComplexClip() const { return has_complex_clip_; }
-  void PlaybackClips(PaintCanvas* canvas) const { clip_list_.Playback(canvas); }
+  void PlaybackClips(cc::PaintCanvas* canvas) const {
+    clip_list_.Playback(canvas);
+  }
   const SkPath& GetCurrentClipPath() const {
     return clip_list_.GetCurrentClipPath();
   }

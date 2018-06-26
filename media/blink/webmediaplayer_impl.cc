@@ -77,7 +77,6 @@
 #include "media/base/android/media_codec_util.h"
 #endif
 
-using blink::WebCanvas;
 using blink::WebMediaPlayer;
 using blink::WebRect;
 using blink::WebSize;
@@ -1115,7 +1114,7 @@ bool WebMediaPlayerImpl::DidLoadingProgress() {
   return pipeline_progress || data_progress;
 }
 
-void WebMediaPlayerImpl::Paint(blink::WebCanvas* canvas,
+void WebMediaPlayerImpl::Paint(cc::PaintCanvas* canvas,
                                const blink::WebRect& rect,
                                cc::PaintFlags& flags,
                                int already_uploaded_id,

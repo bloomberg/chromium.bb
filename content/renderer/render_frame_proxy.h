@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "cc/paint/paint_canvas.h"
 #include "components/viz/common/surfaces/parent_local_surface_id_allocator.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_messages.h"
@@ -17,7 +18,6 @@
 #include "ipc/ipc_sender.h"
 #include "third_party/blink/public/common/feature_policy/feature_policy.h"
 #include "third_party/blink/public/common/frame/user_activation_update_type.h"
-#include "third_party/blink/public/platform/web_canvas.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/web_remote_frame.h"
@@ -207,7 +207,7 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
                     blink::WebLocalFrame* source) override;
   void FrameFocused() override;
   base::UnguessableToken GetDevToolsFrameToken() override;
-  uint32_t Print(const blink::WebRect& rect, blink::WebCanvas* canvas) override;
+  uint32_t Print(const blink::WebRect& rect, cc::PaintCanvas* canvas) override;
 
   // IPC handlers
   void OnDidStartLoading();
