@@ -25,8 +25,6 @@ namespace chromeos {
 
 LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host) : host_(host) {
   user_manager::UserManager::Get()->AddObserver(this);
-  if (host_->GetOobeUI())
-    host_->GetOobeUI()->signin_screen_handler()->SetDelegate(this);
 }
 
 LoginDisplayMojo::~LoginDisplayMojo() {

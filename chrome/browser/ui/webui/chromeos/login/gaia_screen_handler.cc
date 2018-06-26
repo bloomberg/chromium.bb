@@ -569,11 +569,12 @@ void GaiaScreenHandler::RegisterMessages() {
   AddCallback("cancelAdAuthentication",
               &GaiaScreenHandler::HandleCancelActiveDirectoryAuth);
   AddRawCallback("showAddUser", &GaiaScreenHandler::HandleShowAddUser);
-  AddCallback("getIsSamlUserPasswordless",
-              &GaiaScreenHandler::HandleGetIsSamlUserPasswordless);
   AddCallback("updateGaiaDialogSize",
               &GaiaScreenHandler::HandleUpdateGaiaDialogSize);
-  AddCallback("hideGaiaDialog", &GaiaScreenHandler::HandleHideGaiaDialog);
+  AddCallback("updateGaiaDialogVisibility",
+              &GaiaScreenHandler::HandleUpdateGaiaDialogVisibility);
+  AddCallback("getIsSamlUserPasswordless",
+              &GaiaScreenHandler::HandleGetIsSamlUserPasswordless);
 
   // Allow UMA metrics collection from JS.
   web_ui()->AddMessageHandler(std::make_unique<MetricsHandler>());
@@ -814,9 +815,11 @@ void GaiaScreenHandler::HandleUpdateGaiaDialogSize(int width, int height) {
     LoginDisplayHost::default_host()->UpdateGaiaDialogSize(width, height);
 }
 
-void GaiaScreenHandler::HandleHideGaiaDialog() {
-  if (LoginDisplayHost::default_host())
-    LoginDisplayHost::default_host()->HideGaiaDialog();
+void GaiaScreenHandler::HandleUpdateGaiaDialogVisibility(bool visible) {
+  if (LoginDisplayHost::default_host()) {
+    LoginDisplayHost::default_host()->UpdateGaiaDialogVisibility(
+        visible, true /*can_close*/, base::nullopt /*prefilled_account*/);
+  }
 }
 
 void GaiaScreenHandler::HandleShowAddUser(const base::ListValue* args) {
