@@ -13,7 +13,6 @@ import android.content.Intent;
 import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.Preference;
 import android.preference.Preference.OnPreferenceChangeListener;
@@ -21,17 +20,16 @@ import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.support.annotation.IntDef;
+import android.support.annotation.Nullable;
 import android.support.v4.app.FragmentActivity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BuildInfo;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
@@ -137,8 +135,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
     @SyncError private int mCurrentSyncError = SYNC_NO_ERROR;
 
     @Override
-    public View onCreateView(
-            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
         mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
@@ -146,8 +145,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
                 mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
 
         getActivity().setTitle(R.string.sign_in_sync);
-
-        View view = super.onCreateView(inflater, container, savedInstanceState);
         addPreferencesFromResource(R.xml.sync_customization_preferences);
         mSyncEverything = (SwitchPreference) findPreference(PREFERENCE_SYNC_EVERYTHING);
         mSyncAutofill = (CheckBoxPreference) findPreference(PREFERENCE_SYNC_AUTOFILL);
@@ -176,25 +173,17 @@ public class SyncCustomizationFragment extends PreferenceFragment
         }
 
         mSyncSwitchPreference = (ChromeSwitchPreference) findPreference(PREF_SYNC_SWITCH);
-        mSyncSwitchPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-                assert canDisableSync();
-                if ((boolean) newValue) {
-                    mProfileSyncService.requestStart();
-                } else {
-                    stopSync();
-                }
-                // Must be done asynchronously because the switch state isn't updated
-                // until after this function exits.
-                new Handler().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateSyncStateFromSwitch();
-                    }
-                });
-                return true;
+        mSyncSwitchPreference.setOnPreferenceChangeListener((preference, newValue) -> {
+            assert canDisableSync();
+            if ((boolean) newValue) {
+                mProfileSyncService.requestStart();
+            } else {
+                stopSync();
             }
+            // Must be done asynchronously because the switch state isn't updated
+            // until after this function exits.
+            ThreadUtils.postOnUiThread(this::updateSyncStateFromSwitch);
+            return true;
         });
 
         mSyncedAccountPreference =
@@ -205,38 +194,28 @@ public class SyncCustomizationFragment extends PreferenceFragment
         FragmentActivity fragmentActivity = (FragmentActivity) getActivity();
         mSyncedAccountPreference.setOnPreferenceChangeListener(
                 new SyncAccountSwitcher(fragmentActivity, mSyncedAccountPreference));
-
-        return view;
     }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
         if (preference == mSyncEverything) {
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    updateDataTypeState();
-                }
-            });
+            ThreadUtils.postOnUiThread(this::updateDataTypeState);
             return true;
         }
         if (isSyncTypePreference(preference)) {
             final boolean syncAutofillToggled = preference == mSyncAutofill;
             final boolean preferenceChecked = (boolean) newValue;
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    if (syncAutofillToggled) {
-                        // If the user checks the autofill sync checkbox, then enable and check the
-                        // payments integration checkbox.
-                        //
-                        // If the user unchecks the autofill sync checkbox, then disable and uncheck
-                        // the payments integration checkbox.
-                        mPaymentsIntegration.setEnabled(preferenceChecked);
-                        mPaymentsIntegration.setChecked(preferenceChecked);
-                    }
-                    maybeDisableSync();
+            ThreadUtils.postOnUiThread(() -> {
+                if (syncAutofillToggled) {
+                    // If the user checks the autofill sync checkbox, then enable and check the
+                    // payments integration checkbox.
+                    //
+                    // If the user unchecks the autofill sync checkbox, then disable and uncheck
+                    // the payments integration checkbox.
+                    mPaymentsIntegration.setEnabled(preferenceChecked);
+                    mPaymentsIntegration.setChecked(preferenceChecked);
                 }
+                maybeDisableSync();
             });
             return true;
         }
@@ -392,7 +371,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     private Set<Integer> getSelectedModelTypes() {
-        Set<Integer> types = new HashSet<Integer>();
+        Set<Integer> types = new HashSet<>();
         if (mSyncAutofill.isChecked()) types.add(ModelType.AUTOFILL);
         if (mSyncBookmarks.isChecked()) types.add(ModelType.BOOKMARKS);
         if (mSyncOmnibox.isChecked()) types.add(ModelType.TYPED_URLS);
@@ -433,18 +412,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
         DialogFragment df = (DialogFragment) manager.findFragmentByTag(tag);
         if (df != null) {
             df.dismiss();
-        }
-    }
-
-    private void configureEncryption(String passphrase) {
-        if (mProfileSyncService.isEngineInitialized()) {
-            mProfileSyncService.enableEncryptEverything();
-            mProfileSyncService.setEncryptionPassphrase(passphrase);
-            // Configure the current set of data types - this tells the sync engine to
-            // apply our encryption configuration changes.
-            configureSyncDataTypes();
-            // Re-display our config UI to properly reflect the new state.
-            updateSyncState();
         }
     }
 
@@ -492,7 +459,13 @@ public class SyncCustomizationFragment extends PreferenceFragment
             // If the engine was shut down since the dialog was opened, do nothing.
             return;
         }
-        configureEncryption(passphrase);
+        mProfileSyncService.enableEncryptEverything();
+        mProfileSyncService.setEncryptionPassphrase(passphrase);
+        // Configure the current set of data types - this tells the sync engine to
+        // apply our encryption configuration changes.
+        configureSyncDataTypes();
+        // Re-display our config UI to properly reflect the new state.
+        updateSyncState();
     }
 
     /**
@@ -703,12 +676,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
         if (mCurrentSyncError == SYNC_OTHER_ERRORS) {
             final Account account = ChromeSigninController.get().getSignedInUser();
-            SigninManager.get().signOut(new Runnable() {
-                @Override
-                public void run() {
-                    SigninManager.get().signIn(account, null, null);
-                }
-            });
+            SigninManager.get().signOut(() -> SigninManager.get().signIn(account, null, null));
             return;
         }
 
