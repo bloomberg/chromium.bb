@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/layout/view_fragmentation_context.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/page/scrolling/scrolling_coordinator_context.h"
 #include "third_party/blink/renderer/core/paint/compositing/paint_layer_compositor.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
@@ -852,6 +853,28 @@ void LayoutView::UpdateFromStyle() {
   // LayoutView of the main frame is responsible for painting base background.
   if (GetDocument().IsInMainFrame())
     SetHasBoxDecorationBackground(true);
+}
+
+bool LayoutView::RecalcOverflowAfterStyleChange() {
+  if (!NeedsOverflowRecalcAfterStyleChange())
+    return false;
+  bool result = LayoutBlockFlow::RecalcOverflowAfterStyleChange();
+  if (result) {
+    // Changing overflow should notify scrolling coordinator to ensures that it
+    // updates non-fast scroll rects even if there is no layout.
+    if (ScrollingCoordinator* scrolling_coordinator =
+            GetDocument().GetPage()->GetScrollingCoordinator()) {
+      GetFrameView()->GetScrollingContext()->SetScrollGestureRegionIsDirty(
+          true);
+    }
+    if (NeedsLayout())
+      return result;
+    if (GetFrameView()->VisualViewportSuppliesScrollbars())
+      SetMayNeedPaintInvalidation();
+    GetFrameView()->AdjustViewSize();
+    SetNeedsPaintPropertyUpdate();
+  }
+  return result;
 }
 
 LayoutRect LayoutView::DebugRect() const {

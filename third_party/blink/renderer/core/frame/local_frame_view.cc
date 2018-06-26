@@ -700,39 +700,6 @@ void LocalFrameView::UpdateAcceleratedCompositingSettings() {
     layout_view->Compositor()->UpdateAcceleratedCompositingSettings();
 }
 
-void LocalFrameView::RecalcOverflowAfterStyleChange() {
-  auto* layout_view = this->GetLayoutView();
-  CHECK(layout_view);
-  if (!layout_view->NeedsOverflowRecalcAfterStyleChange())
-    return;
-
-  layout_view->RecalcOverflowAfterStyleChange();
-
-  // Changing overflow should notify scrolling coordinator to ensures that it
-  // updates non-fast scroll rects even if there is no layout.
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator()) {
-    GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
-  }
-
-  IntRect document_rect = layout_view->DocumentRect();
-  if (ScrollOrigin() == -document_rect.Location() &&
-      ContentsSize() == document_rect.Size())
-    return;
-
-  if (NeedsLayout())
-    return;
-
-  if (VisualViewportSuppliesScrollbars())
-    layout_view->SetMayNeedPaintInvalidation();
-
-  AdjustViewSize();
-  SetNeedsPaintPropertyUpdate();
-
-  if (ScrollOriginChanged())
-    SetNeedsLayout();
-}
-
 void LocalFrameView::UpdateCountersAfterStyleChange() {
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
@@ -818,7 +785,7 @@ void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
     box_object.UpdateLayout();
     if (box_object.VisualOverflowRect() != previous_visual_overflow_rect) {
       box_object.SetNeedsOverflowRecalcAfterStyleChange();
-      RecalcOverflowAfterStyleChange();
+      GetLayoutView()->RecalcOverflowAfterStyleChange();
     }
   }
 }
