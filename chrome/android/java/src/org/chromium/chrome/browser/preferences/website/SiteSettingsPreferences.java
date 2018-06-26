@@ -85,7 +85,7 @@ public class SiteSettingsPreferences extends PreferenceFragment
         if (mMediaSubMenu) {
             // The Media sub-menu only contains Protected Content and Autoplay, so remove all other
             // menus.
-            for (@SiteSettingsCategory.Type int i = 0; i < SiteSettingsCategory.Type.NUM_ENTRIES;
+            for (@SiteSettingsCategory.Type int i = 0; i < SiteSettingsCategory.Type.NUM_CATEGORIES;
                     i++) {
                 if (i == SiteSettingsCategory.Type.AUTOPLAY
                         || i == SiteSettingsCategory.Type.PROTECTED_MEDIA)

@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
  * Controls selection gesture interaction for Contextual Search.
  */
 public class ContextualSearchSelectionController {
+
     /**
      * The type of selection made by the user.
      */
@@ -147,7 +148,7 @@ public class ContextualSearchSelectionController {
      * Notifies that the Contextual Search has ended.
      * @param reason The reason for ending the Contextual Search.
      */
-    void onSearchEnded(@OverlayPanel.StateChangeReason int reason) {
+    void onSearchEnded(OverlayPanel.StateChangeReason reason) {
         // If the user explicitly closes the panel after establishing a selection with long press,
         // it should not reappear until a new selection is made. This prevents the panel from
         // reappearing when a long press selection is modified after the user has taken action to
@@ -157,7 +158,9 @@ public class ContextualSearchSelectionController {
         }
 
         // Long press selections should remain visible after ending a Contextual Search.
-        if (mSelectionType == SelectionType.TAP) clearSelection();
+        if (mSelectionType == SelectionType.TAP) {
+            clearSelection();
+        }
     }
 
     /**
@@ -472,7 +475,7 @@ public class ContextualSearchSelectionController {
      * @return Whether the selection modification should be handled.
      */
     private boolean shouldPreventHandlingCurrentSelectionModification(
-            @OverlayPanel.StateChangeReason int reason) {
+            OverlayPanel.StateChangeReason reason) {
         return getSelectionType() == SelectionType.LONG_PRESS
                 && (reason == OverlayPanel.StateChangeReason.BACK_PRESS
                 || reason == OverlayPanel.StateChangeReason.BASE_PAGE_SCROLL
@@ -535,9 +538,18 @@ public class ContextualSearchSelectionController {
 
     @VisibleForTesting
     boolean isValidSelection(String selection, SelectionPopupController controller) {
-        if (selection.length() > MAX_SELECTION_LENGTH) return false;
-        if (!doesContainAWord(selection)) return false;
-        if (controller != null && controller.isFocusedNodeEditable()) return false;
+        if (selection.length() > MAX_SELECTION_LENGTH) {
+            return false;
+        }
+
+        if (!doesContainAWord(selection)) {
+            return false;
+        }
+
+        if (controller != null && controller.isFocusedNodeEditable()) {
+            return false;
+        }
+
         return true;
     }
 

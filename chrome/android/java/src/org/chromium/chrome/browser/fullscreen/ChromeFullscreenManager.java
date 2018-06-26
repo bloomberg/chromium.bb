@@ -197,7 +197,7 @@ public class ChromeFullscreenManager
             }
 
             @Override
-            public void didSelectTab(Tab tab, @TabSelectionType int type, int lastId) {
+            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
                 setTab(modelSelector.getCurrentTab());
             }
 

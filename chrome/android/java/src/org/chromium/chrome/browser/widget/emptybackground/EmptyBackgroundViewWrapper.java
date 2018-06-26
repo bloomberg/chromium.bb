@@ -64,7 +64,7 @@ public class EmptyBackgroundViewWrapper {
         mOverviewModeBehavior = overviewModeBehavior;
         mTabModelObserver = new EmptyTabModelObserver() {
             @Override
-            public void didAddTab(Tab tab, @TabLaunchType int type) {
+            public void didAddTab(Tab tab, TabLaunchType type) {
                 updateEmptyContainerState();
             }
 
@@ -141,7 +141,9 @@ public class EmptyBackgroundViewWrapper {
 
     private void updateEmptyContainerState() {
         boolean showEmptyBackground = shouldShowEmptyContainer();
-        if (showEmptyBackground) inflateViewIfNecessary();
+        if (showEmptyBackground) {
+            inflateViewIfNecessary();
+        }
 
         if (mBackgroundView != null) {
             mBackgroundView.setEmptyContainerState(showEmptyBackground);
@@ -151,8 +153,9 @@ public class EmptyBackgroundViewWrapper {
 
     private boolean shouldShowEmptyContainer() {
         TabModel model = mTabModelSelector.getModel(false);
-        if (model == null) return false;
-
+        if (model == null) {
+            return false;
+        }
         boolean isIncognitoEmpty = mTabModelSelector.getModel(true).getCount() == 0;
         boolean incognitoSelected = mTabModelSelector.isIncognitoSelected();
 

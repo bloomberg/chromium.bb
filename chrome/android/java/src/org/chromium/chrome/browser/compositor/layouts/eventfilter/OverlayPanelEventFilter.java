@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.compositor.layouts.eventfilter;
 
 import android.content.Context;
-import android.support.annotation.IntDef;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.ViewConfiguration;
@@ -18,8 +17,6 @@ import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.contextualsearch.SwipeRecognizer;
 import org.chromium.content_public.browser.WebContents;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 
 /**
@@ -28,27 +25,23 @@ import java.util.ArrayList;
  * ContentViewCore.
  */
 public class OverlayPanelEventFilter extends GestureEventFilter {
+
     /**
      * The targets that can handle MotionEvents.
      */
-    @IntDef({EventTarget.UNDETERMINED, EventTarget.PANEL, EventTarget.CONTENT_VIEW})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface EventTarget {
-        int UNDETERMINED = 0;
-        int PANEL = 1;
-        int CONTENT_VIEW = 2;
+    private enum EventTarget {
+        UNDETERMINED,
+        PANEL,
+        CONTENT_VIEW
     }
 
     /**
      * The direction of the gesture.
      */
-    @IntDef({GestureOrientation.UNDETERMINED, GestureOrientation.HORIZONTAL,
-            GestureOrientation.VERTICAL})
-    @Retention(RetentionPolicy.SOURCE)
-    private @interface GestureOrientation {
-        int UNDETERMINED = 0;
-        int HORIZONTAL = 1;
-        int VERTICAL = 2;
+    private enum GestureOrientation {
+        UNDETERMINED,
+        HORIZONTAL,
+        VERTICAL
     }
 
     /**
@@ -72,7 +65,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
     private final float mTouchSlopSquarePx;
 
     /** The target to propagate events to. */
-    private @EventTarget int mEventTarget;
+    private EventTarget mEventTarget;
 
     /** Whether the code is in the middle of the process of determining the event target. */
     private boolean mIsDeterminingEventTarget;
@@ -81,7 +74,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
     private boolean mHasDeterminedEventTarget;
 
     /** The previous target the events were propagated to. */
-    private @EventTarget int mPreviousEventTarget;
+    private EventTarget mPreviousEventTarget;
 
     /** Whether the event target has changed since the last touch event. */
     private boolean mHasChangedEventTarget;
@@ -97,7 +90,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
     private boolean mHasDeterminedGestureOrientation;
 
     /** The current gesture orientation. */
-    private @GestureOrientation int mGestureOrientation;
+    private GestureOrientation mGestureOrientation;
 
     /** Whether the events are being recorded. */
     private boolean mIsRecordingEvents;
@@ -325,7 +318,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      * @param e The {@link MotionEvent} to be propagated.
      * @param target The {@link EventTarget} to propagate events to.
      */
-    private void propagateAndRecycleEvent(MotionEvent e, @EventTarget int target) {
+    private void propagateAndRecycleEvent(MotionEvent e, EventTarget target) {
         propagateEvent(e, target);
         e.recycle();
     }
@@ -335,7 +328,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      * @param e The {@link MotionEvent} to be propagated.
      * @param target The {@link EventTarget} to propagate events to.
      */
-    private void propagateEvent(MotionEvent e, @EventTarget int target) {
+    private void propagateEvent(MotionEvent e, EventTarget target) {
         if (target == EventTarget.PANEL) {
             // Make sure the internal gesture detector has seen at least on down event.
             if (e.getActionMasked() == MotionEvent.ACTION_DOWN) mFilterHadDownEvent = true;
@@ -518,8 +511,8 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
             if (!isVertical) mMayChangeEventTarget = false;
         }
 
-        @EventTarget
-        int target = shouldPropagateEventsToPanel ? EventTarget.PANEL : EventTarget.CONTENT_VIEW;
+        EventTarget target = shouldPropagateEventsToPanel
+                ? EventTarget.PANEL : EventTarget.CONTENT_VIEW;
 
         if (target != mEventTarget) {
             mPreviousEventTarget = mEventTarget;
@@ -534,7 +527,7 @@ public class OverlayPanelEventFilter extends GestureEventFilter {
      * Sets the {@link EventTarget}.
      * @param target The {@link EventTarget} to be set.
      */
-    private void setEventTarget(@EventTarget int target) {
+    private void setEventTarget(EventTarget target) {
         mEventTarget = target;
 
         mIsDeterminingEventTarget = false;

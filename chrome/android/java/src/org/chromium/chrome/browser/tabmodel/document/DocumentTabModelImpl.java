@@ -244,7 +244,8 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    public void setIndex(int index, @TabSelectionType int type) {}
+    public void setIndex(int index, TabSelectionType type) {
+    }
 
     @Override
     protected boolean closeTabAt(int index) {
@@ -315,7 +316,7 @@ public class DocumentTabModelImpl extends TabModelJniBridge implements DocumentT
     }
 
     @Override
-    public void addTab(Tab tab, int index, @TabLaunchType int type) {
+    public void addTab(Tab tab, int index, TabLaunchType type) {
         assert false;
     }
 

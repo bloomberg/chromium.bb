@@ -65,7 +65,7 @@ public class OverviewListLayout extends Layout implements AccessibilityTabModelA
     }
 
     @Override
-    public @ViewportMode int getViewportMode() {
+    public ViewportMode getViewportMode() {
         return ViewportMode.ALWAYS_FULLSCREEN;
     }
 

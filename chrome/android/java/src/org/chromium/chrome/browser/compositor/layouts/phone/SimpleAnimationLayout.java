@@ -90,7 +90,7 @@ public class SimpleAnimationLayout extends Layout {
     }
 
     @Override
-    public @ViewportMode int getViewportMode() {
+    public ViewportMode getViewportMode() {
         return ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE;
     }
 

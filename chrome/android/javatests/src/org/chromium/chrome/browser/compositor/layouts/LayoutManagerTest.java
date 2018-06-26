@@ -516,8 +516,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
         });
     }
 
-    private void runToolbarSideSwipeTestOnCurrentModel(
-            @ScrollDirection int direction, int finalIndex) {
+    private void runToolbarSideSwipeTestOnCurrentModel(ScrollDirection direction, int finalIndex) {
         final TabModel model = mTabModelSelector.getCurrentModel();
         final int finalId = model.getTabAt(finalIndex).getId();
 
@@ -533,7 +532,7 @@ public class LayoutManagerTest implements MockTabModelDelegate {
                 mManager.getActiveLayout() instanceof StaticLayout);
     }
 
-    private void performToolbarSideSwipe(@ScrollDirection int direction) {
+    private void performToolbarSideSwipe(ScrollDirection direction) {
         Assert.assertTrue("Unexpected direction for side swipe " + direction,
                 direction == ScrollDirection.LEFT || direction == ScrollDirection.RIGHT);
 

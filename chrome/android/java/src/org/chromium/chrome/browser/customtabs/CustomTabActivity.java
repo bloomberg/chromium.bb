@@ -259,7 +259,7 @@ public class CustomTabActivity extends ChromeActivity {
     // Only the normal tab model is observed because there is no incognito tabmodel in Custom Tabs.
     private TabModelObserver mTabModelObserver = new EmptyTabModelObserver() {
         @Override
-        public void didAddTab(Tab tab, @TabLaunchType int type) {
+        public void didAddTab(Tab tab, TabLaunchType type) {
             // Ensure that the PageLoadMetrics observer is attached in all cases, if in
             // the future we do not go through initializeMainTab. ObserverList.addObserver
             // will deduplicate additions, so it is safe to add both here as well as in
@@ -775,10 +775,9 @@ public class CustomTabActivity extends ChromeActivity {
             if (mIntentDataProvider.isOpenedByChrome()) {
                 RecordUserAction.record("ChromeGeneratedCustomTab.StartedInitially");
             } else {
-                @ExternalAppId
-                int externalId = IntentHandler.determineExternalIntentSource(getIntent());
-                RecordHistogram.recordEnumeratedHistogram(
-                        "CustomTabs.ClientAppId", externalId, ExternalAppId.NUM_ENTRIES);
+                ExternalAppId externalId = IntentHandler.determineExternalIntentSource(getIntent());
+                RecordHistogram.recordEnumeratedHistogram("CustomTabs.ClientAppId",
+                        externalId.ordinal(), ExternalAppId.INDEX_BOUNDARY.ordinal());
 
                 RecordUserAction.record("CustomTabs.StartedInitially");
             }

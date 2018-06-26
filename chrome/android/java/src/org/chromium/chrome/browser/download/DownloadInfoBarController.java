@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download;
 import android.app.Activity;
 import android.content.Context;
 import android.os.Handler;
-import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.annotation.PluralsRes;
 import android.text.TextUtils;
@@ -39,8 +38,6 @@ import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItemState;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -76,35 +73,33 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     /**
      * Represents various UI states that the InfoBar cycles through.
      * Note: This enum is append-only and the values must match the DownloadInfoBarState enum in
-     * enums.xml. Values should be number from 0 and can't have gaps.
+     * enums.xml.
      */
     @VisibleForTesting
-    @IntDef({DownloadInfoBarState.INITIAL, DownloadInfoBarState.DOWNLOADING,
-            DownloadInfoBarState.SHOW_RESULT, DownloadInfoBarState.CANCELLED})
-    @Retention(RetentionPolicy.SOURCE)
-    protected @interface DownloadInfoBarState {
+    protected enum DownloadInfoBarState {
         // Default initial state. It is also the final state after all the downloads are paused or
         // removed. No InfoBar is shown in this state.
-        int INITIAL = 0;
+        INITIAL,
+
         // InfoBar is showing a message indicating the downloads in progress. In case of a single
         // accelerated download, the InfoBar would show the speeding-up download message for {@code
         // DURATION_ACCELERATED_INFOBAR_IN_MS} before transitioning to downloading file(s) message.
         // If download completes,fails or goes to pending state, the transition happens immediately
         // to SHOW_RESULT state.
-        int DOWNLOADING = 1;
+        DOWNLOADING,
+
         // InfoBar is showing download complete, failed or pending message. The InfoBar stays in
         // this state for {@code DURATION_SHOW_RESULT_IN_MS} before transitioning to the next state,
         // which can be another SHOW_RESULT or DOWNLOADING state. This can also happen to be the
         // terminal state if there are no more updates to be shown.
         // In case of a new download, completed download or cancellation signal, the transition
         // happens immediately.
-        int SHOW_RESULT = 2;
+        SHOW_RESULT,
+
         // The state of the InfoBar after it was explicitly cancelled by the user. The InfoBar is
         // resurfaced only when there is a new download or an existing download moves to completion,
         // failed or pending state.
-        int CANCELLED = 3;
-        // Number of entries
-        int NUM_ENTRIES = 4;
+        CANCELLED,
     }
 
     /**
@@ -235,7 +230,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     private final Map<ContentId, Integer> mNotificationIds = new HashMap<>();
 
     // The current state of the InfoBar.
-    private @DownloadInfoBarState int mState = DownloadInfoBarState.INITIAL;
+    private DownloadInfoBarState mState = DownloadInfoBarState.INITIAL;
 
     // This is used when the InfoBar is currently in a state awaiting timer completion, e.g. showing
     // the speeding-up message or showing the result of a download. This is used to schedule a task
@@ -404,11 +399,11 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         boolean shouldShowAccelerating =
                 mEndTimerRunnable != null && mState == DownloadInfoBarState.DOWNLOADING;
 
-        @DownloadInfoBarState
-        int nextState = mState;
+        DownloadInfoBarState nextState = mState;
+
         switch (mState) {
-            case DownloadInfoBarState.INITIAL: // Intentional fallthrough.
-            case DownloadInfoBarState.CANCELLED:
+            case INITIAL: // Intentional fallthrough.
+            case CANCELLED:
                 if (isNewDownload) {
                     nextState = DownloadInfoBarState.DOWNLOADING;
                     shouldShowAccelerating =
@@ -416,8 +411,10 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                 } else if (shouldShowResult) {
                     nextState = DownloadInfoBarState.SHOW_RESULT;
                 }
+
                 break;
-            case DownloadInfoBarState.DOWNLOADING:
+
+            case DOWNLOADING:
                 if (isNewDownload) shouldShowAccelerating = false;
 
                 if (shouldShowResult) {
@@ -427,7 +424,8 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                                                               : DownloadInfoBarState.DOWNLOADING;
                 }
                 break;
-            case DownloadInfoBarState.SHOW_RESULT:
+
+            case SHOW_RESULT:
                 if (isNewDownload) {
                     nextState = DownloadInfoBarState.DOWNLOADING;
                     shouldShowAccelerating =
@@ -447,6 +445,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
                         nextState = DownloadInfoBarState.INITIAL;
                     }
                 }
+
                 break;
         }
 
@@ -455,7 +454,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         moveToState(nextState, shouldShowAccelerating);
     }
 
-    private void moveToState(@DownloadInfoBarState int nextState, boolean showAccelerating) {
+    private void moveToState(DownloadInfoBarState nextState, boolean showAccelerating) {
         boolean closeInfoBar = nextState == DownloadInfoBarState.INITIAL
                 || nextState == DownloadInfoBarState.CANCELLED;
         if (closeInfoBar) {
@@ -494,7 +493,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      * message and reset the timer to another full duration. Updates for pending and failed would be
      * shown in the order received.
      */
-    private Integer findOfflineItemStateForInfoBarState(@DownloadInfoBarState int infoBarState) {
+    private Integer findOfflineItemStateForInfoBarState(DownloadInfoBarState infoBarState) {
         if (infoBarState == DownloadInfoBarState.DOWNLOADING) return OfflineItemState.IN_PROGRESS;
 
         assert infoBarState == DownloadInfoBarState.SHOW_RESULT;
@@ -526,7 +525,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      * @param infoBarState The infobar state to be shown.
      * @param offlineItemState The state of the corresponding offline items to be shown.
      */
-    private void createInfoBarForState(@DownloadInfoBarState int infoBarState,
+    private void createInfoBarForState(DownloadInfoBarState infoBarState,
             @OfflineItemState Integer offlineItemState, boolean showAccelerating) {
         DownloadProgressInfoBarData info = new DownloadProgressInfoBarData();
 
@@ -702,7 +701,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
      * @param info Contains the information to be displayed in the UI.
      */
     @VisibleForTesting
-    protected void showInfoBar(@DownloadInfoBarState int state, DownloadProgressInfoBarData info) {
+    protected void showInfoBar(DownloadInfoBarState state, DownloadProgressInfoBarData info) {
         if (!FeatureUtilities.isDownloadProgressInfoBarEnabled()) return;
 
         mCurrentInfo = info;
@@ -858,7 +857,9 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         for (ContentId id : mTrackedItems.keySet()) {
             OfflineItem item = mTrackedItems.get(id);
             if (item == null) continue;
-            if (statesToRemove.contains(item.state)) idsToRemove.add(id);
+            if (statesToRemove.contains(item.state)) {
+                idsToRemove.add(id);
+            }
         }
 
         for (ContentId id : idsToRemove) {
@@ -908,8 +909,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
         }
     }
 
-    private void recordInfoBarState(
-            @DownloadInfoBarState int state, DownloadProgressInfoBarData info) {
+    private void recordInfoBarState(DownloadInfoBarState state, DownloadProgressInfoBarData info) {
         int shownState = -1;
         int multipleDownloadState = -1;
         if (state == DownloadInfoBarState.DOWNLOADING) {
@@ -958,7 +958,7 @@ public class DownloadInfoBarController implements OfflineContentProvider.Observe
     private void recordCloseButtonClicked() {
         RecordUserAction.record("Android.Download.InfoBar.CloseButtonClicked");
         RecordHistogram.recordEnumeratedHistogram("Android.Download.InfoBar.CloseButtonClicked",
-                mState, DownloadInfoBarState.NUM_ENTRIES);
+                mState.ordinal(), DownloadInfoBarState.values().length);
     }
 
     private void recordLinkClicked(boolean openItem) {

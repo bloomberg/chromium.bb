@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.compositor.layouts.ChromeAnimation.Ani
 import android.content.Context;
 import android.graphics.PointF;
 import android.graphics.RectF;
-import android.support.annotation.IntDef;
 import android.view.MotionEvent;
 import android.view.ViewGroup;
 import android.view.animation.Interpolator;
@@ -34,8 +33,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.ui.resources.ResourceManager;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,19 +53,18 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     }
 
     /** The possible variations of the visible viewport that different layouts may need. */
-    @IntDef({ViewportMode.ALWAYS_FULLSCREEN, ViewportMode.ALWAYS_SHOWING_BROWSER_CONTROLS,
-            ViewportMode.DYNAMIC_BROWSER_CONTROLS,
-            ViewportMode.USE_PREVIOUS_BROWSER_CONTROLS_STATE})
-    @Retention(RetentionPolicy.SOURCE)
-    public @interface ViewportMode {
+    public enum ViewportMode {
         /** The viewport is assumed to be always fullscreen. */
-        int ALWAYS_FULLSCREEN = 0;
+        ALWAYS_FULLSCREEN,
+
         /** The viewport is assuming that browser controls are permenantly shown. */
-        int ALWAYS_SHOWING_BROWSER_CONTROLS = 1;
+        ALWAYS_SHOWING_BROWSER_CONTROLS,
+
         /** The viewport will account for animating browser controls (both shown and hidden). */
-        int DYNAMIC_BROWSER_CONTROLS = 2;
+        DYNAMIC_BROWSER_CONTROLS,
+
         /** Use a viewport that accounts for the browser controls state in the previous layout. */
-        int USE_PREVIOUS_BROWSER_CONTROLS_STATE = 3;
+        USE_PREVIOUS_BROWSER_CONTROLS_STATE
     }
 
     // Defines to make the code easier to read.
@@ -386,7 +382,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
     /**
      * @return The sizing mode for the layout.
      */
-    public @ViewportMode int getViewportMode() {
+    public ViewportMode getViewportMode() {
         return ViewportMode.ALWAYS_SHOWING_BROWSER_CONTROLS;
     }
 
@@ -499,7 +495,7 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
      * @param x         The horizontal coordinate the swipe started at in dp.
      * @param y         The vertical coordinate the swipe started at in dp.
      */
-    public void swipeStarted(long time, @ScrollDirection int direction, float x, float y) {}
+    public void swipeStarted(long time, ScrollDirection direction, float x, float y) { }
 
     /**
      * Updates a swipe gesture.

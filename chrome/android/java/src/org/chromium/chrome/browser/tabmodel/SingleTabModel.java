@@ -120,7 +120,7 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
-    public void setIndex(int i, final @TabSelectionType int type) {
+    public void setIndex(int i, final TabSelectionType type) {
         assert i == 0;
     }
 
@@ -170,7 +170,7 @@ public class SingleTabModel implements TabModel {
     }
 
     @Override
-    public void addTab(Tab tab, int index, @TabLaunchType int type) {}
+    public void addTab(Tab tab, int index, TabLaunchType type) {}
 
     @Override
     public void removeTab(Tab tab) {

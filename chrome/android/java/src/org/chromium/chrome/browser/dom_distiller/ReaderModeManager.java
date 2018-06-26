@@ -267,7 +267,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver {
     /**
      * Notify the manager that the panel has completely closed.
      */
-    public void onClosed(@StateChangeReason int reason) {
+    public void onClosed(StateChangeReason reason) {
         if (mTabModelSelector == null) return;
 
         RecordHistogram.recordBooleanHistogram("DomDistiller.InfoBarUsage", false);
