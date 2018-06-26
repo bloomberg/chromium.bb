@@ -377,7 +377,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       std::unique_ptr<QuicServerInfo> server_info,
       const QuicSessionKey& session_key,
       bool require_confirmation,
-      bool migrate_sesion_early,
       bool migrate_session_on_network_change,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
@@ -745,7 +744,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   QuicSessionKey session_key_;
   bool require_confirmation_;
-  bool migrate_session_early_;
   bool migrate_session_on_network_change_;
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
