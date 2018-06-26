@@ -19,8 +19,12 @@
   background-color: rgba(255, 255, 255, .1);
 }
 
-#edit-bg-gear:focus {
+.bg-option:focus {
   outline: 0;
+}
+
+.using-keyboard-nav .bg-option:focus {
+  outline: auto 5px -webkit-focus-ring-color;
 }
 
 #edit-bg-gear {
@@ -35,24 +39,20 @@
   background-size: 16px 16px;
 }
 
-#edit-bg-overlay {
-  display: none;
-  height: 100%;
-  left: 0;
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 10000;
+#edit-bg-dialog::backdrop {
+  background: transparent;
 }
 
 #edit-bg-dialog {
   background: #fff;
+  border: none;
   border-radius: 8px;
   border-style: outset;
   border-width: thin;
   bottom: 44px;
   box-shadow: 0 1px 3px 0 rgba(60, 64, 67, 0.3), 0 4px 8px 3px rgba(60, 64, 67, 0.15);
-  padding-bottom: 16px;
+  left: auto;
+  padding: 0 0 16px 0;
   position: fixed;
   right: 16px;
   width: 325px;
@@ -315,8 +315,4 @@
 
 .is-col-sel #bg-sel-refresh-text {
   display: none;
-}
-
-.show-overlay {
-  display: block !important;
 }

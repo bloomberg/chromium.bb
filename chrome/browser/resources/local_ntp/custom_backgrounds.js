@@ -33,8 +33,6 @@ customBackgrounds.IDS = {
   DONE: 'bg-sel-footer-done',
   EDIT_BG: 'edit-bg',
   EDIT_BG_DIALOG: 'edit-bg-dialog',
-  EDIT_BG_GEAR: 'edit-bg-gear',
-  EDIT_BG_OVERLAY: 'edit-bg-overlay',
   MENU: 'bg-sel-menu',
   OPTIONS_TITLE: 'edit-bg-title',
   RESTORE_DEFAULT: 'edit-bg-restore-default',
@@ -59,9 +57,9 @@ customBackgrounds.CLASSES = {
   COLLECTION_TITLE: 'bg-sel-tile-title',  // Title of a background image
   DONE_AVAILABLE: 'done-available',
   IMAGE_DIALOG: 'is-img-sel',
+  KEYBOARD_NAV: 'using-keyboard-nav',
   SELECTED_BORDER: 'selected-border',
   SELECTED_CHECK: 'selected-check',
-  SHOW_OVERLAY: 'show-overlay',
 };
 
 /**
@@ -249,7 +247,6 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
     tileContainer.appendChild(tile);
   }
 
-  $('img_tile_0').focus();
   doneButton.tabIndex = 0;
 
   dailyRefresh.onclick = function(event) {
@@ -262,8 +259,11 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   };
 
   var setBackground = function(event) {
-    if (!selectedTile)
+    if (!selectedTile ||
+        !doneButton.classList.contains(
+            customBackgrounds.CLASSES.DONE_AVAILABLE)) {
       return;
+    }
 
     menu.close();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL(
@@ -275,11 +275,11 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   doneButton.onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
       setBackground(event);
-      $(customBackgrounds.IDS.EDIT_BG).focus();
     }
   };
 
   backButton.onclick = function(event) {
+    selectedTile = null;
     customBackgrounds.resetSelectionDialog();
     customBackgrounds.showCollectionSelectionDialog();
   };
@@ -306,7 +306,6 @@ customBackgrounds.loadCollections = function() {
  * Display dialog with various options for custom background source.
  */
 customBackgrounds.initCustomBackgrounds = function() {
-  var editDialogOverlay = $(customBackgrounds.IDS.EDIT_BG_OVERLAY);
   var editDialog = $(customBackgrounds.IDS.EDIT_BG_DIALOG);
 
   $(customBackgrounds.IDS.CONNECT_GOOGLE_PHOTOS_TEXT).textContent =
@@ -322,51 +321,31 @@ customBackgrounds.initCustomBackgrounds = function() {
   $(customBackgrounds.IDS.REFRESH_TEXT).textContent =
       configData.translatedStrings.dailyRefresh;
 
-  // Control tab cycling through background options.
-  $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onkeydown = function(event) {
-    if (event.keyCode == customBackgrounds.KEYCODES.TAB) {
-      event.preventDefault();
-      $(customBackgrounds.IDS.RESTORE_DEFAULT).focus();
-    }
-  };
-
-  $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeydown = function(event) {
-    if (event.keyCode == customBackgrounds.KEYCODES.TAB) {
-      event.preventDefault();
-      $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).focus();
-    }
-  };
-
-  $(customBackgrounds.IDS.RESTORE_DEFAULT).onfocus = function() {
-    if (this.hidden) {
-      $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).focus();
-    }
-  };
-
   var editBackgroundInteraction = function(event) {
     customBackgrounds.loadCollections();
-    $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
-        .classList.add(customBackgrounds.CLASSES.SHOW_OVERLAY);
-    $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).focus();
+    editDialog.showModal();
   };
 
-  $(customBackgrounds.IDS.EDIT_BG).onclick = editBackgroundInteraction;
+  $(customBackgrounds.IDS.EDIT_BG).onclick = function(event) {
+    editDialog.classList.remove(customBackgrounds.CLASSES.KEYBOARD_NAV);
+    editBackgroundInteraction(event);
+  };
   $(customBackgrounds.IDS.EDIT_BG).onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ENTER) {
+      editDialog.classList.add(customBackgrounds.CLASSES.KEYBOARD_NAV);
       editBackgroundInteraction(event);
     }
   };
 
   var editDialogOverlayInteraction = function(event) {
-    editDialogOverlay.classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
-    $(customBackgrounds.IDS.EDIT_BG).focus();
+    editDialog.close();
   };
 
-  editDialogOverlay.onclick = function(event) {
-    if (event.target == editDialogOverlay)
+  editDialog.onclick = function(event) {
+    if (event.target == editDialog)
       editDialogOverlayInteraction(event);
   };
-  editDialogOverlay.onkeyup = function(event) {
+  editDialog.onkeyup = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ESC ||
         event.keyCode === customBackgrounds.KEYCODES.BACKSPACE) {
       editDialogOverlayInteraction(event);
@@ -374,10 +353,8 @@ customBackgrounds.initCustomBackgrounds = function() {
   };
 
   var restoreDefaultInteraction = function(event) {
-    $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
-        .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    editDialog.close();
     window.chrome.embeddedSearch.newTabPage.setBackgroundURL('');
-    $(customBackgrounds.IDS.EDIT_BG).focus();
   };
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onclick = restoreDefaultInteraction;
   $(customBackgrounds.IDS.RESTORE_DEFAULT).onkeyup = function(event) {
@@ -387,11 +364,9 @@ customBackgrounds.initCustomBackgrounds = function() {
   };
 
   var defaultWallpapersInteraction = function(event) {
-    $(customBackgrounds.IDS.EDIT_BG_OVERLAY)
-        .classList.remove(customBackgrounds.CLASSES.SHOW_OVERLAY);
+    editDialog.close();
     if (typeof coll != 'undefined') {
       customBackgrounds.showCollectionSelectionDialog();
-      $('coll_tile_0').focus();
     }
   };
   $(customBackgrounds.IDS.DEFAULT_WALLPAPERS).onclick =
@@ -402,18 +377,18 @@ customBackgrounds.initCustomBackgrounds = function() {
     }
   };
 
-  $(customBackgrounds.IDS.MENU).onkeyup = function(event) {
+  $(customBackgrounds.IDS.MENU).onkeydown = function(event) {
     if (event.keyCode === customBackgrounds.KEYCODES.ESC ||
         event.keyCode === customBackgrounds.KEYCODES.BACKSPACE) {
+      event.preventDefault();
+      event.stopPropagation();
       if ($(customBackgrounds.IDS.MENU)
               .classList.contains(
                   customBackgrounds.CLASSES.COLLECTION_DIALOG)) {
         $(customBackgrounds.IDS.MENU).close();
-        $(customBackgrounds.IDS.EDIT_BG).focus();
       } else {
         customBackgrounds.resetSelectionDialog();
         customBackgrounds.showCollectionSelectionDialog();
-        $('coll_tile_0').focus();
       }
     }
   };
