@@ -845,6 +845,8 @@ TEST_F(MessageCenterImplTest, RemoveWhileMessageCenterVisible) {
 }
 
 TEST_F(MessageCenterImplTest, FindNotificationsByAppId) {
+  message_center()->SetHasMessageCenterView(true);
+
   const std::string app_id1("app_id1");
   const std::string id1("id1");
 
@@ -856,31 +858,11 @@ TEST_F(MessageCenterImplTest, FindNotificationsByAppId) {
 
   // Mark the notification as shown but not read.
   message_center()->MarkSinglePopupAsShown(id1, false);
-#if defined(OS_CHROMEOS)
   EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
-#else
-  // Marking a popup as shown in !OS_CHROMEOS removes the notification.
-  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id1).size());
-  // Re-add the notification for the next test scenario.
-  notification =
-      CreateNotificationWithNotifierId(id1, app_id1, NOTIFICATION_TYPE_SIMPLE);
-  message_center()->AddNotification(std::move(notification));
-  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
-#endif
 
   // Mark the notification as shown and read.
   message_center()->MarkSinglePopupAsShown(id1, true);
-#if defined(OS_CHROMEOS)
   EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
-#else
-  // Marking a popup as shown in !OS_CHROMEOS removes the notification.
-  EXPECT_EQ(0u, message_center()->FindNotificationsByAppId(app_id1).size());
-  // Re-add the notification for the next test scenario.
-  notification =
-      CreateNotificationWithNotifierId(id1, app_id1, NOTIFICATION_TYPE_SIMPLE);
-  message_center()->AddNotification(std::move(notification));
-  EXPECT_EQ(1u, message_center()->FindNotificationsByAppId(app_id1).size());
-#endif
 
   // Remove the notification.
   message_center()->RemoveNotification(id1, true);

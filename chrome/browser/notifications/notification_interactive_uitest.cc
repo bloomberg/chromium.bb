@@ -432,6 +432,8 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest, TestNotificationReplacement) {
 
 IN_PROC_BROWSER_TEST_F(NotificationsTest,
                        TestNotificationReplacementReappearance) {
+  message_center::MessageCenter::Get()->SetHasMessageCenterView(false);
+
   ASSERT_TRUE(embedded_test_server()->Start());
 
   // Test that we can replace a notification using the tag, and that it will
@@ -453,11 +455,7 @@ IN_PROC_BROWSER_TEST_F(NotificationsTest,
   message_center::MessageCenter::Get()->ClickOnNotification(
       (*notifications.rbegin())->id());
 
-#if defined(OS_CHROMEOS)
-  ASSERT_EQ(0, GetNotificationPopupCount());
-#else
   ASSERT_EQ(1, GetNotificationPopupCount());
-#endif
 
   result = CreateNotification(
       browser(), true, "abc.png", "Title2", "Body2", "chat");

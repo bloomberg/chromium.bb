@@ -352,11 +352,13 @@ int MessagePopupCollectionTest::CheckedAnimationDelegate::ComputeYDistance(
   return bottom_bounds.y() - (top_bounds.y() + top_bounds.height());
 }
 
-#if defined(OS_CHROMEOS)
 TEST_F(MessagePopupCollectionTest, DismissOnClick) {
+  MessageCenter::Get()->SetHasMessageCenterView(true);
 
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
+  views::Widget* widget1 = GetWidget(id1);
+  views::Widget* widget2 = GetWidget(id2);
 
   EXPECT_EQ(2u, GetToastCounts());
   EXPECT_TRUE(IsToastShown(id1));
@@ -372,11 +374,14 @@ TEST_F(MessagePopupCollectionTest, DismissOnClick) {
   EXPECT_EQ(0u, GetToastCounts());
   EXPECT_FALSE(IsToastShown(id1));
   EXPECT_FALSE(IsToastShown(id2));
+
+  widget1->CloseNow();
+  widget2->CloseNow();
 }
 
-#else
-
 TEST_F(MessagePopupCollectionTest, NotDismissedOnClick) {
+  MessageCenter::Get()->SetHasMessageCenterView(false);
+
   std::string id1 = AddNotification();
   std::string id2 = AddNotification();
 
@@ -400,8 +405,6 @@ TEST_F(MessagePopupCollectionTest, NotDismissedOnClick) {
   GetWidget(id1)->CloseNow();
   GetWidget(id2)->CloseNow();
 }
-
-#endif  // OS_CHROMEOS
 
 TEST_F(MessagePopupCollectionTest, ShutdownDuringShowing) {
   std::string id1 = AddNotification();
