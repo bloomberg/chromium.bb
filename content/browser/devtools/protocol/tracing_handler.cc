@@ -190,15 +190,15 @@ void FillFrameData(base::trace_event::TracedValue* data,
                     node->parent()->devtools_frame_token().ToString());
   if (frame_host) {
     RenderProcessHost* process_host = frame_host->GetProcess();
-    base::ProcessId process_id = process_host->GetProcess().Pid();
-    if (process_id == base::kNullProcessId) {
+    const base::Process& process_handle = process_host->GetProcess();
+    if (!process_handle.IsValid()) {
       data->SetString("processPseudoId", GetProcessHostHex(process_host));
       frame_host->GetProcess()->PostTaskWhenProcessIsReady(
           base::BindOnce(&SendProcessReadyInBrowserEvent,
                          node->devtools_frame_token(), process_host));
     } else {
       // Cast process id to int to be compatible with tracing.
-      data->SetInteger("processId", static_cast<int>(process_id));
+      data->SetInteger("processId", static_cast<int>(process_handle.Pid()));
     }
   }
 }
