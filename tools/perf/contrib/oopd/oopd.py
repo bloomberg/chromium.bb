@@ -15,3 +15,15 @@ class RenderingDesktopOOPD(rendering.RenderingDesktop):
 
   def SetExtraBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-features=VizDisplayCompositor')
+
+
+@benchmark.Owner(emails=['ericrk@chromium.org', 'fsamuel@chromium.org'])
+class RenderingMobileOOPD(rendering.RenderingMobile):
+  tag = 'oopd'
+
+  @classmethod
+  def Name(cls):
+    return 'rendering.oopd.mobile'
+
+  def SetExtraBrowserOptions(self, options):
+    options.AppendExtraBrowserArgs('--enable-features=VizDisplayCompositor')

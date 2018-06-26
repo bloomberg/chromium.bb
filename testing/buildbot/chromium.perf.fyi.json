@@ -203,6 +203,33 @@
           "ignore_task_failure": false,
           "io_timeout": 360
         }
+      },
+      {
+        "args": [
+          "rendering.oopd.mobile",
+          "-v",
+          "--upload-results",
+          "--output-format=histograms",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "telemetry_perf_tests",
+        "name": "rendering.oopd.mobile",
+        "override_compile_targets": [
+          "telemetry_perf_tests"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "id": "build187-b7--device2",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 3600,
+          "hard_timeout": 1080,
+          "ignore_task_failure": false,
+          "io_timeout": 360
+        }
       }
     ]
   },
