@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/browser_window_state.h"
 #include "chrome/browser/ui/views/frame/browser_frame.h"
 #include "chrome/browser/ui/views/frame/browser_frame_ash.h"
+#include "chrome/browser/ui/views/frame/browser_non_client_frame_view_ash.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "services/ui/public/cpp/property_type_converters.h"
@@ -55,8 +56,10 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
 
   Browser* browser = browser_view_->browser();
   properties[ash::mojom::kAshWindowStyle_InitProperty] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int32_t>(ash::mojom::WindowStyle::BROWSER));
+      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
+          BrowserNonClientFrameViewAsh::UsePackagedAppHeaderStyle(browser)
+              ? ash::mojom::WindowStyle::DEFAULT
+              : ash::mojom::WindowStyle::BROWSER));
   // ChromeLauncherController manages the browser shortcut shelf item; set the
   // window's shelf item type property to be ignored by ash::ShelfWindowWatcher.
   properties[ui::mojom::WindowManager::kShelfItemType_Property] =
