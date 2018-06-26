@@ -45,7 +45,7 @@ class ScenicPlatformEventSource : public ui::PlatformEventSource {
 // OzonePlatform for Scenic.
 class OzonePlatformScenic : public OzonePlatform {
  public:
-  OzonePlatformScenic() = default;
+  OzonePlatformScenic() : surface_factory_(&window_manager_) {}
   ~OzonePlatformScenic() override = default;
 
   ScenicWindowManager* window_manager() { return &window_manager_; }

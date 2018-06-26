@@ -13,6 +13,7 @@
 class SkSurface;
 
 namespace gfx {
+class Rect;
 class Size;
 class VSyncProvider;
 }
