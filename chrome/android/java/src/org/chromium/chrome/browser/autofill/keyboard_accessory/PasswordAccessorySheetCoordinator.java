@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.autofill.keyboard_accessory;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.support.graphics.drawable.VectorDrawableCompat;
+import android.support.v7.content.res.AppCompatResources;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
 
@@ -46,8 +46,7 @@ public class PasswordAccessorySheetCoordinator {
          */
         public Drawable getIcon(Context context) {
             if (mIcon != null) return mIcon;
-            mIcon = VectorDrawableCompat.create(
-                    context.getResources(), R.drawable.ic_vpn_key_grey, context.getTheme());
+            mIcon = AppCompatResources.getDrawable(context, R.drawable.ic_vpn_key_grey);
             return mIcon;
         }
 
