@@ -102,12 +102,14 @@ class ASH_EXPORT NightLightController
   static float GreenColorScaleFromTemperature(float temperature,
                                               bool in_linear_space);
 
-  // When using the CRTC color correction, the matrix is applied in the linear
-  // color space (i.e. after gamma decoding). Our standard temperature we use
-  // here, which the user changes, follow a linear slope from 0.0f to 1.0f. This
-  // won't give the same linear rate of change in colors as the temperature
-  // changes in the linear color space. To account for this, we want the
-  // temperature to follow the same slope as that of the gamma factor.
+  // When using the CRTC color correction, depending on the hardware, the matrix
+  // may be applied in the linear gamma space (i.e. after gamma decoding), or in
+  // the non-linear gamma compressed space (i.e. after degamma encoding). Our
+  // standard temperature we use here, which the user changes, follow a linear
+  // slope from 0.0f to 1.0f. This won't give the same linear rate of change in
+  // colors as the temperature changes in the linear color space. To account for
+  // this, we want the temperature to follow the same slope as that of the gamma
+  // factor.
   // This function returns the non-linear temperature that corresponds to the
   // linear |temperature| value.
   static float GetNonLinearTemperature(float temperature);

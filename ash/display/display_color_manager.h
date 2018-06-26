@@ -69,6 +69,11 @@ class ASH_EXPORT DisplayColorManager
   bool SetDisplayColorMatrix(int64_t display_id,
                              const SkMatrix44& color_matrix);
 
+  // Similar to the above but can be used when a display snapshot is known to
+  // the caller.
+  bool SetDisplayColorMatrix(const display::DisplaySnapshot* display_snapshot,
+                             const SkMatrix44& color_matrix);
+
   // display::DisplayConfigurator::Observer
   void OnDisplayModeChanged(
       const display::DisplayConfigurator::DisplayStateList& outputs) override;
@@ -136,9 +141,6 @@ class ASH_EXPORT DisplayColorManager
   // the key.
   base::flat_map<int64_t, std::unique_ptr<ColorCalibrationData>>
       calibration_map_;
-
-  std::vector<display::GammaRampRGBEntry> default_gamma_lut_;
-  std::vector<display::GammaRampRGBEntry> default_degamma_lut_;
 
   SEQUENCE_CHECKER(sequence_checker_);
   scoped_refptr<base::SequencedTaskRunner> sequenced_task_runner_;
