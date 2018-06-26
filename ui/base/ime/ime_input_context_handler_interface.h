@@ -15,6 +15,11 @@
 
 namespace ui {
 
+struct SurroundingTextInfo {
+  base::string16 surrounding_text;
+  gfx::Range selection_range;
+};
+
 class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
  public:
   // Called when the engine commit a text.
@@ -27,6 +32,9 @@ class UI_BASE_IME_EXPORT IMEInputContextHandlerInterface {
 
   // Called when the engine request deleting surrounding string.
   virtual void DeleteSurroundingText(int32_t offset, uint32_t length) = 0;
+
+  // Called from the extension API.
+  virtual SurroundingTextInfo GetSurroundingTextInfo() = 0;
 
   // Called when the engine sends a key event.
   virtual void SendKeyEvent(KeyEvent* event) = 0;

@@ -192,6 +192,22 @@ class InputMethodPrivateOpenOptionsPageFunction
   DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateOpenOptionsPageFunction);
 };
 
+class InputMethodPrivateGetSurroundingTextFunction
+    : public UIThreadExtensionFunction {
+ public:
+  InputMethodPrivateGetSurroundingTextFunction() {}
+
+ protected:
+  ~InputMethodPrivateGetSurroundingTextFunction() override {}
+
+  ResponseAction Run() override;
+
+ private:
+  DECLARE_EXTENSION_FUNCTION("inputMethodPrivate.getSurroundingText",
+                             INPUTMETHODPRIVATE_GETSURROUNDINGTEXT)
+  DISALLOW_COPY_AND_ASSIGN(InputMethodPrivateGetSurroundingTextFunction);
+};
+
 class InputMethodAPI : public BrowserContextKeyedAPI,
                        public extensions::EventRouter::Observer {
  public:

@@ -36,6 +36,7 @@ class UI_BASE_IME_EXPORT MockIMEInputContextHandler
                              uint32_t cursor_pos,
                              bool visible) override;
   void DeleteSurroundingText(int32_t offset, uint32_t length) override;
+  SurroundingTextInfo GetSurroundingTextInfo() override;
   void SendKeyEvent(KeyEvent* event) override;
   InputMethod* GetInputMethod() override;
 
