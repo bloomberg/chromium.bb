@@ -754,6 +754,30 @@ TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
   }
 }
 
+// Inactive tabs shouldn't shrink during mouse-based tab closure.
+// http://crbug.com/850190
+TEST_P(TabStripTest, InactiveTabWidthWhenTabsAreTiny) {
+  tab_strip_->SetBounds(0, 0, 200, 20);
+
+  // Create a lot of tabs in order to make inactive tabs smaller than active
+  // tab but not the minimum.
+  const int min_inactive_width = Tab::GetMinimumInactiveWidth();
+  const int min_active_width = Tab::GetMinimumActiveWidth();
+  while (current_inactive_width() >=
+         (min_inactive_width + min_active_width) / 2)
+    controller_->CreateNewTab();
+
+  // During mouse-based tab closure, inactive tabs shouldn't shrink
+  // so that users can close tabs continuously without moving mouse.
+  controller_->SelectTab(0);
+  for (int old_inactive_width = current_inactive_width();
+       tab_strip_->tab_count(); old_inactive_width = current_inactive_width()) {
+    tab_strip_->CloseTab(tab_strip_->tab_at(controller_->GetActiveIndex()),
+                         CLOSE_TAB_FROM_MOUSE);
+    EXPECT_GE(current_inactive_width(), old_inactive_width);
+  }
+}
+
 // When dragged tabs are moving back to their position, changes to ideal bounds
 // should be respected. http://crbug.com/848016
 TEST_P(TabStripTest, ResetBoundsForDraggedTabs) {
