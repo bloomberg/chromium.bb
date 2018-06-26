@@ -512,7 +512,7 @@ bool Recovery::AutoRecoverTable(const char* table_name,
 }
 
 bool Recovery::SetupMeta() {
-  const char kCreateSql[] =
+  static const char kCreateSql[] =
       "CREATE VIRTUAL TABLE temp.recover_meta USING recover"
       "("
       "corrupt.meta,"
@@ -533,7 +533,7 @@ bool Recovery::GetMetaVersionNumber(int* version) {
   // Unfortunately, DoesTableExist() queries sqlite_master, not
   // sqlite_temp_master.
 
-  const char kVersionSql[] =
+  static const char kVersionSql[] =
       "SELECT value FROM temp.recover_meta WHERE key = 'version'";
   sql::Statement recovery_version(db()->GetUniqueStatement(kVersionSql));
   if (!recovery_version.Step()) {
@@ -720,11 +720,11 @@ std::unique_ptr<Recovery> Recovery::BeginRecoverDatabase(
 
   // Copy triggers and views directly to sqlite_master.  Any tables they refer
   // to should already exist.
-  char kCreateMetaItems[] =
+  static char kCreateMetaItemsSql[] =
       "INSERT INTO main.sqlite_master "
       "SELECT type, name, tbl_name, rootpage, sql "
       "FROM corrupt.sqlite_master WHERE type='view' OR type='trigger'";
-  if (!recovery->db()->Execute(kCreateMetaItems)) {
+  if (!recovery->db()->Execute(kCreateMetaItemsSql)) {
     RecordRecoveryEvent(RECOVERY_FAILED_AUTORECOVERDB_AUX);
     Recovery::Rollback(std::move(recovery));
     return nullptr;
