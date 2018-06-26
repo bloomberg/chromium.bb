@@ -4035,6 +4035,7 @@
     {
       name: "inline-size",
       property_methods: ["ParseSingleValue"],
+      layout_dependent: true,
       direction_aware_options: {
         logical_side: "width",
         shorthand_for_physical_side: "CSSProperty",
@@ -4045,6 +4046,7 @@
     {
       name: "block-size",
       property_methods: ["ParseSingleValue"],
+      layout_dependent: true,
       direction_aware_options: {
         logical_side: "height",
         shorthand_for_physical_side: "CSSProperty",
