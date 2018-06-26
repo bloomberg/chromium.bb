@@ -15,7 +15,7 @@ namespace content {
 
 void PaintSadPlugin(cc::PaintCanvas* webcanvas,
                     const gfx::Rect& plugin_rect,
-                    const SkBitmap& sad_plugin_bitmap) {
+                    const cc::PaintImage& sad_plugin_image) {
   const int width = plugin_rect.width();
   const int height = plugin_rect.height();
 
@@ -29,10 +29,10 @@ void PaintSadPlugin(cc::PaintCanvas* webcanvas,
   flags.setStyle(cc::PaintFlags::kFill_Style);
   flags.setColor(SK_ColorBLACK);
   canvas->drawRect(SkRect::MakeIWH(width, height), flags);
-  canvas->drawBitmap(
-      sad_plugin_bitmap,
-      SkIntToScalar(std::max(0, (width - sad_plugin_bitmap.width()) / 2)),
-      SkIntToScalar(std::max(0, (height - sad_plugin_bitmap.height()) / 2)));
+  canvas->drawImage(
+      sad_plugin_image,
+      SkIntToScalar(std::max(0, (width - sad_plugin_image.width()) / 2)),
+      SkIntToScalar(std::max(0, (height - sad_plugin_image.height()) / 2)));
 }
 
 }  // namespace content

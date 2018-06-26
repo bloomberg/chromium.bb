@@ -114,14 +114,6 @@ TEST_F(SolidColorAnalyzerTest, DrawOval) {
   EXPECT_FALSE(IsSolidColor());
 }
 
-TEST_F(SolidColorAnalyzerTest, DrawBitmap) {
-  Initialize();
-  SkBitmap bitmap;
-  bitmap.allocN32Pixels(16, 16);
-  canvas()->drawBitmap(bitmap, 0, 0, nullptr);
-  EXPECT_FALSE(IsSolidColor());
-}
-
 TEST_F(SolidColorAnalyzerTest, DrawRect) {
   Initialize();
   PaintFlags flags;

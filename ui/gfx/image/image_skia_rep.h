@@ -5,9 +5,14 @@
 #ifndef UI_GFX_IMAGE_IMAGE_SKIA_REP_H_
 #define UI_GFX_IMAGE_IMAGE_SKIA_REP_H_
 
+#include "build/build_config.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gfx_export.h"
+
+#if !defined(OS_IOS)
+#include "cc/paint/paint_image.h"
+#endif
 
 namespace gfx {
 
@@ -57,7 +62,14 @@ class GFX_EXPORT ImageSkiaRep {
   // Returns backing bitmap.
   const SkBitmap& sk_bitmap() const { return bitmap_; }
 
+#if !defined(OS_IOS)
+  const cc::PaintImage& paint_image() const { return paint_image_; }
+#endif
+
  private:
+#if !defined(OS_IOS)
+  cc::PaintImage paint_image_;
+#endif
   SkBitmap bitmap_;
 
   float scale_;

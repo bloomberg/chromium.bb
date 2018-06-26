@@ -69,8 +69,6 @@
 
 struct PP_Point;
 
-class SkBitmap;
-
 namespace blink {
 class WebCoalescedInputEvent;
 class WebInputEvent;
@@ -850,8 +848,8 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   // only valid as long as |message_channel_object_| is alive.
   MessageChannel* message_channel_;
 
-  // Bitmap for crashed plugin. Lazily initialized, non-owning pointer.
-  SkBitmap* sad_plugin_;
+  // Bitmap for crashed plugin. Lazily initialized.
+  cc::PaintImage sad_plugin_image_;
 
   typedef std::set<PluginObject*> PluginObjectSet;
   PluginObjectSet live_plugin_objects_;

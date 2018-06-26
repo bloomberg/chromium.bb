@@ -352,14 +352,13 @@ void Canvas::DrawImageInt(const ImageSkia& image,
   const ImageSkiaRep& image_rep = image.GetRepresentation(image_scale_);
   if (image_rep.is_null())
     return;
-  const SkBitmap& bitmap = image_rep.sk_bitmap();
   float bitmap_scale = image_rep.scale();
 
   ScopedCanvas scoper(this);
   canvas_->scale(SkFloatToScalar(1.0f / bitmap_scale),
                  SkFloatToScalar(1.0f / bitmap_scale));
-  canvas_->drawBitmap(bitmap, SkFloatToScalar(x * bitmap_scale),
-                      SkFloatToScalar(y * bitmap_scale), &flags);
+  canvas_->drawImage(image_rep.paint_image(), SkFloatToScalar(x * bitmap_scale),
+                     SkFloatToScalar(y * bitmap_scale), &flags);
 }
 
 void Canvas::DrawImageInt(const ImageSkia& image,

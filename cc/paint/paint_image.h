@@ -94,6 +94,10 @@ class CC_PAINT_EXPORT PaintImage {
   static Id GetNextId();
   static ContentId GetNextContentId();
 
+  // Creates a PaintImage wrapping |bitmap|. Note that the pixels will be copied
+  // unless the bitmap is marked immutable.
+  static PaintImage CreateFromBitmap(SkBitmap bitmap);
+
   PaintImage();
   PaintImage(const PaintImage& other);
   PaintImage(PaintImage&& other);

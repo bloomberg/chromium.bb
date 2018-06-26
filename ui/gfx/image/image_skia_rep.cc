@@ -19,12 +19,18 @@ ImageSkiaRep::ImageSkiaRep(const gfx::Size& size, float scale) : scale_(scale) {
                          static_cast<int>(size.height() * this->scale()));
   bitmap_.eraseColor(SK_ColorRED);
   bitmap_.setImmutable();
+#if !defined(OS_IOS)
+  paint_image_ = cc::PaintImage::CreateFromBitmap(bitmap_);
+#endif
 }
 
 ImageSkiaRep::ImageSkiaRep(const SkBitmap& src, float scale)
     : bitmap_(src),
       scale_(scale) {
   bitmap_.setImmutable();
+#if !defined(OS_IOS)
+  paint_image_ = cc::PaintImage::CreateFromBitmap(bitmap_);
+#endif
 }
 
 int ImageSkiaRep::GetWidth() const {

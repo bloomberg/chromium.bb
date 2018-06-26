@@ -300,23 +300,6 @@ void SkiaPaintCanvas::drawImageRect(const PaintImage& image,
   FlushAfterDrawIfNeeded();
 }
 
-void SkiaPaintCanvas::drawBitmap(const SkBitmap& bitmap,
-                                 SkScalar left,
-                                 SkScalar top,
-                                 const PaintFlags* flags) {
-  if (flags) {
-    ScopedRasterFlags raster_flags(flags, image_provider_,
-                                   canvas_->getTotalMatrix(), 255u);
-    if (!raster_flags.flags())
-      return;
-    SkPaint paint = raster_flags.flags()->ToSkPaint();
-    canvas_->drawBitmap(bitmap, left, top, &paint);
-  } else {
-    canvas_->drawBitmap(bitmap, left, top, nullptr);
-  }
-  FlushAfterDrawIfNeeded();
-}
-
 void SkiaPaintCanvas::drawTextBlob(scoped_refptr<PaintTextBlob> blob,
                                    SkScalar x,
                                    SkScalar y,

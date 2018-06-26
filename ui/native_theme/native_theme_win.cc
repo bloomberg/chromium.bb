@@ -722,7 +722,9 @@ void NativeThemeWin::PaintIndirect(cc::PaintCanvas* destination_canvas,
     }
   }
 
-  destination_canvas->drawBitmap(offscreen_bitmap, rect.x(), rect.y());
+  destination_canvas->drawImage(
+      cc::PaintImage::CreateFromBitmap(std::move(offscreen_bitmap)), rect.x(),
+      rect.y());
 }
 
 HRESULT NativeThemeWin::GetThemePartSize(ThemeName theme_name,

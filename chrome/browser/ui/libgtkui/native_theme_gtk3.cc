@@ -68,6 +68,7 @@ SkBitmap GetWidgetBitmap(const gfx::Size& size,
   }
   if (render_frame)
     gtk_render_frame(context, cr, 0, 0, size.width(), size.height());
+  bitmap.setImmutable();
   return bitmap;
 }
 
@@ -76,9 +77,9 @@ void PaintWidget(cc::PaintCanvas* canvas,
                  GtkStyleContext* context,
                  BackgroundRenderMode bg_mode,
                  bool render_frame) {
-  canvas->drawBitmap(
-      GetWidgetBitmap(rect.size(), context, bg_mode, render_frame), rect.x(),
-      rect.y());
+  canvas->drawImage(cc::PaintImage::CreateFromBitmap(GetWidgetBitmap(
+                        rect.size(), context, bg_mode, render_frame)),
+                    rect.x(), rect.y());
 }
 
 SkColor SkColorFromColorId(ui::NativeTheme::ColorId color_id) {
@@ -665,9 +666,11 @@ void NativeThemeGtk3::PaintFrameTopArea(
   if (frame_top_area.incognito) {
     bitmap = SkBitmapOperations::CreateHSLShiftedBitmap(
         bitmap, kDefaultTintFrameIncognito);
+    bitmap.setImmutable();
   }
 
-  canvas->drawBitmap(bitmap, rect.x(), rect.y());
+  canvas->drawImage(cc::PaintImage::CreateFromBitmap(std::move(bitmap)),
+                    rect.x(), rect.y());
 }
 
 }  // namespace libgtkui
