@@ -28,11 +28,6 @@ class MockAsyncMethodCaller : public AsyncMethodCaller {
 
   void SetUp(bool success, MountError return_code);
 
-  MOCK_METHOD4(AsyncMigrateKey,
-               void(const Identification& user_id,
-                    const std::string& old_hash,
-                    const std::string& new_hash,
-                    Callback callback));
   MOCK_METHOD1(AsyncMountGuest, void(Callback callback));
   MOCK_METHOD2(AsyncRemove,
                void(const Identification& user_id, Callback callback));

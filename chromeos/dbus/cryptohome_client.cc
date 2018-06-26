@@ -102,19 +102,21 @@ class CryptohomeClientImpl : public CryptohomeClient {
   }
 
   // CryptohomeClient override.
-  void AsyncMigrateKey(const cryptohome::Identification& cryptohome_id,
-                       const std::string& from_key,
-                       const std::string& to_key,
-                       AsyncMethodCallback callback) override {
+  void MigrateKeyEx(
+      const cryptohome::AccountIdentifier& account,
+      const cryptohome::AuthorizationRequest& auth_request,
+      const cryptohome::MigrateKeyRequest& migrate_request,
+      DBusMethodCallback<cryptohome::BaseReply> callback) override {
     dbus::MethodCall method_call(cryptohome::kCryptohomeInterface,
-                                 cryptohome::kCryptohomeAsyncMigrateKey);
+                                 cryptohome::kCryptohomeMigrateKeyEx);
     dbus::MessageWriter writer(&method_call);
-    writer.AppendString(cryptohome_id.id());
-    writer.AppendString(from_key);
-    writer.AppendString(to_key);
+    writer.AppendProtoAsArrayOfBytes(account);
+    writer.AppendProtoAsArrayOfBytes(auth_request);
+    writer.AppendProtoAsArrayOfBytes(migrate_request);
+
     proxy_->CallMethod(
         &method_call, kTpmDBusTimeoutMs,
-        base::BindOnce(&CryptohomeClientImpl::OnAsyncMethodCall,
+        base::BindOnce(&CryptohomeClientImpl::OnBaseReplyMethod,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
