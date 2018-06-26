@@ -34,7 +34,6 @@
 namespace blink {
 
 class EventTarget;
-class TestInterfaceGarbageCollected;
 class TestObject;
 class TestInterfaceImplementation;
 class Element;
@@ -334,26 +333,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setTestInterface2OrUint8ArrayMember(const TestInterface2OrUint8Array&);
 
-  bool hasTestInterfaceGarbageCollectedMember() const { return test_interface_garbage_collected_member_; }
-  TestInterfaceGarbageCollected* testInterfaceGarbageCollectedMember() const {
-    return test_interface_garbage_collected_member_;
-  }
-  inline void setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected*);
-
-  bool hasTestInterfaceGarbageCollectedOrNullMember() const { return test_interface_garbage_collected_or_null_member_; }
-  TestInterfaceGarbageCollected* testInterfaceGarbageCollectedOrNullMember() const {
-    return test_interface_garbage_collected_or_null_member_;
-  }
-  inline void setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected*);
-  inline void setTestInterfaceGarbageCollectedOrNullMemberToNull();
-
-  bool hasTestInterfaceGarbageCollectedSequenceMember() const { return has_test_interface_garbage_collected_sequence_member_; }
-  const HeapVector<Member<TestInterfaceGarbageCollected>>& testInterfaceGarbageCollectedSequenceMember() const {
-    DCHECK(has_test_interface_garbage_collected_sequence_member_);
-    return test_interface_garbage_collected_sequence_member_;
-  }
-  void setTestInterfaceGarbageCollectedSequenceMember(const HeapVector<Member<TestInterfaceGarbageCollected>>&);
-
   bool hasTestInterfaceMember() const { return test_interface_member_; }
   TestInterfaceImplementation* testInterfaceMember() const {
     return test_interface_member_;
@@ -469,7 +448,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_string_or_null_record_member_ = false;
   bool has_string_or_null_sequence_member_ = false;
   bool has_string_sequence_member_ = false;
-  bool has_test_interface_garbage_collected_sequence_member_ = false;
   bool has_test_interface_sequence_member_ = false;
   bool has_test_object_sequence_member_ = false;
   bool has_treat_null_as_string_sequence_member_ = false;
@@ -521,9 +499,6 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   TestEnumOrTestEnumOrNullSequence test_enum_or_test_enum_or_null_sequence_member_;
   TestEnumOrTestEnumSequence test_enum_or_test_enum_sequence_member_;
   TestInterface2OrUint8Array test_interface_2_or_uint8_array_member_;
-  Member<TestInterfaceGarbageCollected> test_interface_garbage_collected_member_;
-  Member<TestInterfaceGarbageCollected> test_interface_garbage_collected_or_null_member_;
-  HeapVector<Member<TestInterfaceGarbageCollected>> test_interface_garbage_collected_sequence_member_;
   Member<TestInterfaceImplementation> test_interface_member_;
   Member<TestInterfaceImplementation> test_interface_or_null_member_;
   HeapVector<Member<TestInterfaceImplementation>> test_interface_sequence_member_;
@@ -638,17 +613,6 @@ void TestDictionary::setStringOrNullMember(const String& value) {
 }
 void TestDictionary::setStringOrNullMemberToNull() {
   string_or_null_member_ = String();
-}
-
-void TestDictionary::setTestInterfaceGarbageCollectedMember(TestInterfaceGarbageCollected* value) {
-  test_interface_garbage_collected_member_ = value;
-}
-
-void TestDictionary::setTestInterfaceGarbageCollectedOrNullMember(TestInterfaceGarbageCollected* value) {
-  test_interface_garbage_collected_or_null_member_ = value;
-}
-void TestDictionary::setTestInterfaceGarbageCollectedOrNullMemberToNull() {
-  test_interface_garbage_collected_or_null_member_ = Member<TestInterfaceGarbageCollected>();
 }
 
 void TestDictionary::setTestInterfaceMember(TestInterfaceImplementation* value) {
