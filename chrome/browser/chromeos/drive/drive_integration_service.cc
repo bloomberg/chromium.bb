@@ -414,9 +414,8 @@ DriveIntegrationService::DriveIntegrationService(
       test_file_system
           ? test_file_system
           : new FileSystem(
-                profile_->GetPrefs(), logger_.get(), cache_.get(),
-                scheduler_.get(), resource_metadata_.get(),
-                blocking_task_runner_.get(),
+                logger_.get(), cache_.get(), scheduler_.get(),
+                resource_metadata_.get(), blocking_task_runner_.get(),
                 cache_root_directory_.Append(kTemporaryFileDirectory)));
   download_handler_.reset(new DownloadHandler(file_system()));
   debug_info_collector_.reset(new DebugInfoCollector(

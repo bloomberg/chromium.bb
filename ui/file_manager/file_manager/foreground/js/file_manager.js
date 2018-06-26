@@ -77,10 +77,9 @@ function FileManager() {
 
   /**
    * File filter.
-   * @private {!FileFilter}
-   * @const
+   * @private {FileFilter}
    */
-  this.fileFilter_ = new FileFilter();
+  this.fileFilter_ = null;
 
   /**
    * Model of current directory.
@@ -369,7 +368,7 @@ FileManager.prototype = /** @struct */ {
     return this.directoryTreeNamingController_;
   },
   /**
-   * @return {!FileFilter}
+   * @return {FileFilter}
    */
   get fileFilter() {
     return this.fileFilter_;
@@ -562,6 +561,7 @@ FileManager.prototype = /** @struct */ {
     assert(this.launchParams_);
     assert(this.volumeManager_);
     assert(this.dialogDom_);
+    assert(this.fileFilter_);
 
     this.scanController_ = new ScanController(
         this.directoryModel_,
@@ -904,6 +904,7 @@ FileManager.prototype = /** @struct */ {
     this.metadataModel_ = MetadataModel.create(this.volumeManager_);
     this.thumbnailModel_ = new ThumbnailModel(this.metadataModel_);
     this.providersModel_ = new ProvidersModel(this.volumeManager_);
+    this.fileFilter_ = new FileFilter(this.metadataModel_);
 
     // Create the root view of FileManager.
     assert(this.dialogDom_);
@@ -1111,6 +1112,7 @@ FileManager.prototype = /** @struct */ {
     // Create naming controller.
     assert(this.ui_.alertDialog);
     assert(this.ui_.confirmDialog);
+    assert(this.fileFilter_);
     this.namingController_ = new NamingController(
         this.ui_.listContainer,
         this.ui_.alertDialog,

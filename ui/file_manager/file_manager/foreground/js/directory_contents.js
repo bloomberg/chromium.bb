@@ -364,10 +364,11 @@ CrostiniMounter.prototype.scan = function(
  * This class manages filters and determines a file should be shown or not.
  * When filters are changed, a 'changed' event is fired.
  *
+ * @param {!MetadataModel} metadataModel
  * @constructor
  * @extends {cr.EventTarget}
  */
-function FileFilter() {
+function FileFilter(metadataModel) {
   /**
    * @type {Object<Function>}
    * @private
@@ -375,6 +376,24 @@ function FileFilter() {
   this.filters_ = {};
   this.setHiddenFilesVisible(false);
   this.setAllAndroidFoldersVisible(false);
+
+  /**
+   * @type {!MetadataModel}
+   * @const
+   * @private
+   */
+  this.metadataModel_ = metadataModel;
+
+  /**
+   * Last value of hosted files disabled.
+   * @type {?boolean}
+   * @private
+   */
+  this.lastHostedFilesDisabled_ = null;
+
+  chrome.fileManagerPrivate.onPreferencesChanged.addListener(
+      this.onPreferencesChanged_.bind(this));
+  this.onPreferencesChanged_();
 }
 
 /**
@@ -425,6 +444,22 @@ FileFilter.prototype.setHiddenFilesVisible = function(visible) {
 };
 
 /**
+ * Show/Hide hosted files (e.g. Google Docs docs).
+ * @param {boolean} visible True if hosted files should be visible to the user.
+ * @private
+ */
+FileFilter.prototype.setHostedFilesVisible_ = function(visible) {
+  if (!visible) {
+    this.addFilter('hosted', entry => {
+      var metadata = this.metadataModel_.getCache([entry], ['hosted']);
+      return !metadata[0].hosted;
+    });
+  } else {
+    this.removeFilter('hosted');
+  }
+};
+
+/**
  * @return {boolean} True if hidden files are visible to the user now.
  */
 FileFilter.prototype.isHiddenFilesVisible = function() {
@@ -471,6 +506,24 @@ FileFilter.prototype.filter = function(entry) {
       return false;
   }
   return true;
+};
+
+/**
+ * Handles preferences change and updates the filter if needed.
+ * @private
+ */
+FileFilter.prototype.onPreferencesChanged_ = function() {
+  chrome.fileManagerPrivate.getPreferences(prefs => {
+    if (chrome.runtime.lastError) {
+      console.error(chrome.runtime.lastError.name);
+      return;
+    }
+    if (this.lastHostedFilesDisabled_ !== null &&
+        this.lastHostedFilesDisabled_ !== prefs.hostedFilesDisabled) {
+      this.setHostedFilesVisible_(!prefs.hostedFilesDisabled);
+    }
+    this.lastHostedFilesDisabled_ = prefs.hostedFilesDisabled;
+  });
 };
 
 /**
@@ -852,25 +905,26 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
   if (this.scanCancelled_)
     return;
 
-  var entriesFiltered = [].filter.call(
-      entries, this.context_.fileFilter.filter.bind(this.context_.fileFilter));
-
   // Caching URL to reduce a number of calls of toURL in sort.
   // This is a temporary solution. We need to fix a root cause of slow toURL.
   // See crbug.com/370908 for detail.
-  entriesFiltered.forEach(function(entry) {
+  entries.forEach(function(entry) {
     entry['cachedUrl'] = entry.toURL();
   });
 
-  if (entriesFiltered.length === 0)
+  if (entries.length === 0)
     return;
 
   // Enlarge the cache size into the new filelist size.
-  var newListSize = this.fileList_.length + entriesFiltered.length;
+  var newListSize = this.fileList_.length + entries.length;
 
   this.processNewEntriesQueue_.run(function(callbackOuter) {
     var finish = function() {
       if (!this.scanCancelled_) {
+        var entriesFiltered = [].filter.call(
+            entries,
+            this.context_.fileFilter.filter.bind(this.context_.fileFilter));
+
         // Just before inserting entries into the file list, check and avoid
         // duplication.
         var currentURLs = {};
@@ -890,11 +944,11 @@ DirectoryContents.prototype.onNewEntries_ = function(refresh, entries) {
     // TODO(hidehiko,mtomasz): This should be handled in MetadataCache.
     var MAX_CHUNK_SIZE = 25;
     var prefetchMetadataQueue = new AsyncUtil.ConcurrentQueue(4);
-    for (var i = 0; i < entriesFiltered.length; i += MAX_CHUNK_SIZE) {
+    for (var i = 0; i < entries.length; i += MAX_CHUNK_SIZE) {
       if (prefetchMetadataQueue.isCancelled())
         break;
 
-      var chunk = entriesFiltered.slice(i, i + MAX_CHUNK_SIZE);
+      var chunk = entries.slice(i, i + MAX_CHUNK_SIZE);
       prefetchMetadataQueue.run(function(chunk, callbackInner) {
         this.prefetchMetadata(chunk, refresh, function() {
           if (!prefetchMetadataQueue.isCancelled()) {
