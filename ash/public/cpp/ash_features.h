@@ -39,6 +39,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 // https://crbug.com/801465.
 ASH_PUBLIC_EXPORT extern const base::Feature kNewOverviewAnimations;
 
+// Enables the new wallpaper picker.
+// TODO(wzang): Remove this after the feature is fully launched.
+// https://crbug.com/777293.
+ASH_PUBLIC_EXPORT extern const base::Feature kNewWallpaperPicker;
+
 // Enables the Night Light feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 
@@ -71,6 +76,8 @@ ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerEnabled();
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsNewWallpaperPickerEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
 

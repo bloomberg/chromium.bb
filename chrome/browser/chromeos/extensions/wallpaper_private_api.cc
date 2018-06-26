@@ -11,6 +11,7 @@
 #include <utility>
 #include <vector>
 
+#include "ash/public/cpp/ash_features.h"
 #include "base/command_line.h"
 #include "base/files/file_enumerator.h"
 #include "base/macros.h"
@@ -93,8 +94,7 @@ bool IsOEMDefaultWallpaper() {
 }
 
 bool IsUsingNewWallpaperPicker() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-      chromeos::switches::kNewWallpaperPicker);
+  return ash::features::IsNewWallpaperPickerEnabled();
 }
 
 // Returns a suffix to be appended to the base url of Backdrop wallpapers.

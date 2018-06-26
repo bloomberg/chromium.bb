@@ -6,6 +6,18 @@ var wallpaperPickerWindow = null;
 
 var surpriseWallpaper = null;
 
+/**
+ * Returns information related to the wallpaper picker.
+ * @param {function} callback A callback function that takes two values:
+ *     |useNewWallpaperPicker|: if the new wallpaper picker is enabled.
+ *     |highResolutionSuffix|: the suffix to append to the wallpaper urls.
+ */
+function getWallpaperPickerInfo(callback) {
+  chrome.wallpaperPrivate.getStrings(strings => {
+    callback(strings['useNewWallpaperPicker'], strings['highResolutionSuffix']);
+  });
+}
+
 function SurpriseWallpaper() {}
 
 /**
@@ -158,12 +170,11 @@ SurpriseWallpaper.prototype.setRandomWallpaper_ = function(dateString) {
         });
   };
 
-  chrome.wallpaperPrivate.getStrings(strings => {
-    var suffix = strings['highResolutionSuffix'];
-    if (strings['useNewWallpaperPicker'])
-      this.setRandomWallpaperFromServer_(onSuccess, suffix);
+  getWallpaperPickerInfo((useNewWallpaperPicker, highResolutionSuffix) => {
+    if (useNewWallpaperPicker)
+      this.setRandomWallpaperFromServer_(onSuccess, highResolutionSuffix);
     else
-      this.setRandomWallpaperFromManifest_(onSuccess, suffix);
+      this.setRandomWallpaperFromManifest_(onSuccess, highResolutionSuffix);
   });
 };
 
@@ -340,20 +351,22 @@ chrome.app.runtime.onLaunched.addListener(function() {
     return;
   }
 
-  chrome.commandLinePrivate.hasSwitch('new-wallpaper-picker', result => {
-    var options = result ? {
-      frame: 'none',
-      innerBounds: {width: 768, height: 512, minWidth: 768, minHeight: 512},
-      resizable: true,
-      alphaEnabled: true
-    } :
-                           {
-                             frame: 'none',
-                             width: 574,
-                             height: 420,
-                             resizable: false,
-                             alphaEnabled: true
-                           };
+  getWallpaperPickerInfo((useNewWallpaperPicker, highResolutionSuffix) => {
+    var options =
+        useNewWallpaperPicker ?
+        {
+          frame: 'none',
+          innerBounds: {width: 768, height: 512, minWidth: 768, minHeight: 512},
+          resizable: true,
+          alphaEnabled: true
+        } :
+        {
+          frame: 'none',
+          width: 574,
+          height: 420,
+          resizable: false,
+          alphaEnabled: true
+        };
 
     chrome.app.window.create('main.html', options, function(w) {
       wallpaperPickerWindow = w;
@@ -364,7 +377,7 @@ chrome.app.runtime.onLaunched.addListener(function() {
         // In case the app exits unexpectedly during preview.
         chrome.wallpaperPrivate.cancelPreviewWallpaper(() => {});
       });
-      if (result) {
+      if (useNewWallpaperPicker) {
         // By design, the new wallpaper picker should never be shown on top of
         // another window.
         wallpaperPickerWindow.contentWindow.addEventListener(
@@ -460,10 +473,11 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
           return;
         var wpDocument = wallpaperPickerWindow.contentWindow.document;
         var hideCheckMarkIfNeeded = () => {
-          chrome.commandLinePrivate.hasSwitch(
-              'new-wallpaper-picker', result => {
+          getWallpaperPickerInfo(
+              (useNewWallpaperPicker, highResolutionSuffix) => {
                 // Do not hide the check mark on the new picker.
-                if (!result && wpDocument.querySelector('.check')) {
+                if (!useNewWallpaperPicker &&
+                    wpDocument.querySelector('.check')) {
                   wpDocument.querySelector('.check').style.visibility =
                       'hidden';
                 }
@@ -503,8 +517,8 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
                     wpDocument.querySelector('.check').style.visibility =
                         'visible';
                 }
-                chrome.commandLinePrivate.hasSwitch(
-                    'new-wallpaper-picker', useNewWallpaperPicker => {
+                getWallpaperPickerInfo(
+                    (useNewWallpaperPicker, highResolutionSuffix) => {
                       if (!useNewWallpaperPicker) {
                         wpDocument.querySelector('#wallpaper-grid').disabled =
                             enable;

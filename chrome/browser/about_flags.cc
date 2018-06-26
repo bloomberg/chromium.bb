@@ -3685,7 +3685,7 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-new-wallpaper-picker",
      flag_descriptions::kEnableNewWallpaperPickerName,
      flag_descriptions::kEnableNewWallpaperPickerDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kNewWallpaperPicker)},
+     FEATURE_VALUE_TYPE(ash::features::kNewWallpaperPicker)},
 #endif  // OS_CHROMEOS
 
 #if defined(OS_ANDROID)
