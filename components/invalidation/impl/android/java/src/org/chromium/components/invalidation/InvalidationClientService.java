@@ -240,9 +240,10 @@ public class InvalidationClientService extends AndroidListener {
         }
     }
 
+    @SuppressWarnings("NoContextGetApplicationContext")
     @Override
-    public void requestAuthToken(final PendingIntent pendingIntent,
-            @Nullable String invalidAuthToken) {
+    public void requestAuthToken(
+            final PendingIntent pendingIntent, @Nullable String invalidAuthToken) {
         @Nullable
         Account account = ChromeSigninController.get().getSignedInUser();
         if (account == null) {
