@@ -30,6 +30,7 @@ FeaturePodButton* BluetoothFeaturePodController::CreateButton() {
   DCHECK(!button_);
   button_ = new FeaturePodButton(this);
   button_->SetVectorIcon(kSystemMenuBluetoothIcon);
+  button_->ShowDetailedViewArrow();
   UpdateButton();
   return button_;
 }

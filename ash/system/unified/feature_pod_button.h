@@ -11,6 +11,7 @@
 #include "ui/views/view.h"
 
 namespace views {
+class ImageView;
 class Label;
 }
 
@@ -58,7 +59,13 @@ class FeaturePodLabelButton : public views::Button {
   // See FeaturePodButton::SetSubLabel.
   void SetSubLabel(const base::string16& sub_label);
 
+  // Show arrow to indicate that the feature has a detailed view.
+  // See FeaturePodButton::ShowDetailedViewArrow.
+  void ShowDetailedViewArrow();
+
   // views::Button:
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
   std::unique_ptr<views::InkDrop> CreateInkDrop() override;
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
   std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
@@ -68,9 +75,18 @@ class FeaturePodLabelButton : public views::Button {
  private:
   void SetTooltipTextFromLabels();
 
+  // Layout |child| in horizontal center with its vertical origin set to |y|.
+  void LayoutInCenter(views::View* child, int y);
+
+  // Hide detailed view arrow if there's no space for it.
+  void UpdateDetailedViewArrow();
+
   // Owned by views hierarchy.
   views::Label* const label_;
   views::Label* const sub_label_;
+  views::ImageView* const detailed_view_arrow_;
+
+  bool show_detailed_view_arrow_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodLabelButton);
 };
@@ -94,6 +110,9 @@ class ASH_EXPORT FeaturePodButton : public views::View,
 
   // Set the text of sub-label shown below the label.
   void SetSubLabel(const base::string16& sub_label);
+
+  // Show arrow to indicate that the feature has a detailed view.
+  void ShowDetailedViewArrow();
 
   // Change the toggled state. If toggled, the background color of the circle
   // will change.

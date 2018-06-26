@@ -72,6 +72,7 @@ NetworkFeaturePodButton::NetworkFeaturePodButton(
   if (!NetworkHandler::IsInitialized())
     return;
   network_state_observer_ = std::make_unique<TrayNetworkStateObserver>(this);
+  ShowDetailedViewArrow();
   Update();
 }
 

@@ -35,6 +35,7 @@ FeaturePodButton* QuietModeFeaturePodController::CreateButton() {
       !Shell::Get()->session_controller()->IsScreenLocked());
   button_->SetLabel(
       l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_NOTIFICATIONS_LABEL));
+  button_->ShowDetailedViewArrow();
   OnQuietModeChanged(MessageCenter::Get()->IsQuietMode());
   return button_;
 }
