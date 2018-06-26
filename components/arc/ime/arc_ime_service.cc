@@ -355,8 +355,7 @@ void ArcImeService::OnKeyboardAppearanceChanged(
   gfx::Rect bounds_in_px =
       gfx::ScaleToEnclosingRect(new_bounds, GetDefaultDeviceScaleFactor());
 
-  ime_bridge_->SendOnKeyboardAppearanceChanging(bounds_in_px,
-                                                state.is_available);
+  ime_bridge_->SendOnKeyboardAppearanceChanging(bounds_in_px, state.is_visible);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

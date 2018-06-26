@@ -55,7 +55,7 @@ class ASH_EXPORT VirtualKeyboardController
   void MoveKeyboardToTouchableDisplay() override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardClosed() override;
+  void OnKeyboardDisabled() override;
   void OnKeyboardHidden() override;
 
   // SessionObserver

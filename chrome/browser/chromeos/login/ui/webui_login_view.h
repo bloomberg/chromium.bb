@@ -146,7 +146,7 @@ class WebUILoginView : public views::View,
   typedef std::map<ui::Accelerator, std::string> AccelMap;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardAvailabilityChanged(bool is_available) override;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
   // Overridden from content::WebContentsDelegate.
   bool HandleContextMenu(const content::ContextMenuParams& params) override;

@@ -291,7 +291,7 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   keyboard_controller->ShowKeyboard(false);
 }
 
-void VirtualKeyboardController::OnKeyboardClosed() {
+void VirtualKeyboardController::OnKeyboardDisabled() {
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       chromeos::input_method::mojom::ImeKeyset::kNone);
 }

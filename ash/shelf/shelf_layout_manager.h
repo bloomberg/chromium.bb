@@ -159,7 +159,7 @@ class ASH_EXPORT ShelfLayoutManager
   // Overridden from keyboard::KeyboardControllerObserver:
   void OnKeyboardAppearanceChanged(
       const keyboard::KeyboardStateDescriptor& state) override;
-  void OnKeyboardAvailabilityChanged(const bool is_available) override;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
   // Overridden from LockStateObserver:
   void OnLockStateEvent(LockStateObserver::EventType event) override;

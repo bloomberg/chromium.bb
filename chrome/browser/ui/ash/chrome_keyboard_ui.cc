@@ -219,7 +219,7 @@ class AshKeyboardControllerObserver
     router->BroadcastEvent(std::move(event));
   }
 
-  void OnKeyboardClosed() override {
+  void OnKeyboardDisabled() override {
     extensions::EventRouter* router = extensions::EventRouter::Get(context_);
 
     if (!router->HasEventListener(

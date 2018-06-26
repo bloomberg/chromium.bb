@@ -36,7 +36,7 @@ class VirtualKeyboardTray : public TrayBackgroundView,
   void OnKeyboardEnabledStateChanged(bool new_enabled) override;
 
   // keyboard::KeyboardControllerObserver:
-  void OnKeyboardAvailabilityChanged(const bool is_available) override;
+  void OnKeyboardVisibilityStateChanged(bool is_visible) override;
 
   // ShellObserver:
   void OnKeyboardControllerCreated() override;

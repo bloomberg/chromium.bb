@@ -94,9 +94,9 @@ void VirtualKeyboardTray::OnKeyboardEnabledStateChanged(bool new_enabled) {
   }
 }
 
-void VirtualKeyboardTray::OnKeyboardAvailabilityChanged(
-    const bool is_available) {
-  SetIsActive(is_available);
+void VirtualKeyboardTray::OnKeyboardVisibilityStateChanged(
+    const bool is_visible) {
+  SetIsActive(is_visible);
 }
 
 void VirtualKeyboardTray::OnKeyboardControllerCreated() {
