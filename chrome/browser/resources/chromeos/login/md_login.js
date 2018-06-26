@@ -57,7 +57,6 @@ cr.define('cr.ui.Oobe', function() {
       login.VoiceInteractionValuePropScreen.register();
       login.WaitForContainerReadyScreen.register();
       login.UpdateRequiredScreen.register();
-      login.DemoSetupScreen.register();
 
       cr.ui.Bubble.decorate($('bubble-persistent'));
       $('bubble-persistent').persistent = true;

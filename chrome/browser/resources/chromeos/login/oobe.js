@@ -17,6 +17,7 @@
 // <include src="oobe_screen_host_pairing.js">
 // <include src="oobe_screen_welcome.js">
 // <include src="oobe_screen_update.js">
+// <include src="oobe_screen_demo_setup.js">
 
 cr.define('cr.ui.Oobe', function() {
   return {
