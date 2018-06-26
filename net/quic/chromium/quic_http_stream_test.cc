@@ -317,7 +317,7 @@ class QuicHttpStreamTest : public ::testing::TestWithParam<
         base::WrapUnique(static_cast<QuicServerInfo*>(nullptr)),
         QuicSessionKey(kDefaultServerHostName, kDefaultServerPort,
                        PRIVACY_MODE_DISABLED, SocketTag()),
-        /*require_confirmation=*/false, /*migrate_session_early*/ false,
+        /*require_confirmation=*/false,
         /*migrate_session_on_network_change*/ false,
         /*migrate_session_early_v2*/ false,
         /*migrate_session_on_network_change_v2*/ false,

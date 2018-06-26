@@ -127,7 +127,6 @@ HttpNetworkSession::Params::Params()
       quic_max_idle_time_before_crypto_handshake_seconds(
           quic::kInitialIdleTimeoutSecs),
       quic_migrate_sessions_on_network_change(false),
-      quic_migrate_sessions_early(false),
       quic_migrate_sessions_on_network_change_v2(false),
       quic_migrate_sessions_early_v2(false),
       quic_max_time_on_non_default_network(
@@ -218,7 +217,6 @@ HttpNetworkSession::HttpNetworkSession(const Params& params,
           params.quic_max_time_before_crypto_handshake_seconds,
           params.quic_max_idle_time_before_crypto_handshake_seconds,
           params.quic_migrate_sessions_on_network_change,
-          params.quic_migrate_sessions_early,
           params.quic_migrate_sessions_on_network_change_v2,
           params.quic_migrate_sessions_early_v2,
           params.quic_max_time_on_non_default_network,
@@ -380,8 +378,6 @@ std::unique_ptr<base::Value> HttpNetworkSession::QuicInfoToValue() const {
                    params_.quic_goaway_sessions_on_ip_change);
   dict->SetBoolean("migrate_sessions_on_network_change",
                    params_.quic_migrate_sessions_on_network_change);
-  dict->SetBoolean("migrate_sessions_early",
-                   params_.quic_migrate_sessions_early);
   dict->SetBoolean("migrate_sessions_on_network_change_v2",
                    params_.quic_migrate_sessions_on_network_change_v2);
   dict->SetBoolean("migrate_sessions_early_v2",

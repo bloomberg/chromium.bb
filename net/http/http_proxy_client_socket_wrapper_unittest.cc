@@ -100,7 +100,6 @@ class HttpProxyClientSocketWrapperTest
         idle_connection_timeout_seconds_(kIdleConnectionTimeoutSeconds),
         reduced_ping_timeout_seconds_(quic::kPingTimeoutSecs),
         migrate_sessions_on_network_change_(false),
-        migrate_sessions_early_(false),
         migrate_sessions_on_network_change_v2_(false),
         migrate_sessions_early_v2_(false),
         allow_server_migration_(false),
@@ -134,8 +133,7 @@ class HttpProxyClientSocketWrapperTest
         quic::kMaxTimeForCryptoHandshakeSecs,
         /*max_idle_time_before_crypto_handshake_seconds=*/
         quic::kInitialIdleTimeoutSecs, migrate_sessions_on_network_change_,
-        migrate_sessions_early_, migrate_sessions_on_network_change_v2_,
-        migrate_sessions_early_v2_,
+        migrate_sessions_on_network_change_v2_, migrate_sessions_early_v2_,
         base::TimeDelta::FromSeconds(kMaxTimeOnNonDefaultNetworkSecs),
         kMaxMigrationsToNonDefaultNetworkOnPathDegrading,
         allow_server_migration_, race_cert_verification_, estimate_initial_rtt_,
@@ -232,7 +230,6 @@ class HttpProxyClientSocketWrapperTest
   int idle_connection_timeout_seconds_;
   int reduced_ping_timeout_seconds_;
   bool migrate_sessions_on_network_change_;
-  bool migrate_sessions_early_;
   bool migrate_sessions_on_network_change_v2_;
   bool migrate_sessions_early_v2_;
   bool allow_server_migration_;

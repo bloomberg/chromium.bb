@@ -243,7 +243,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       int max_time_before_crypto_handshake_seconds,
       int max_idle_time_before_crypto_handshake_seconds,
       bool migrate_sessions_on_network_change,
-      bool migrate_sessions_early,
       bool migrate_sessions_on_network_change_v2,
       bool migrate_sessions_early_v2,
       base::TimeDelta max_time_on_non_default_network,
@@ -564,10 +563,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Set if migration should be attempted on active sessions when primary
   // interface changes.
   const bool migrate_sessions_on_network_change_;
-
-  // Set if early migration should be attempted when the connection
-  // experiences poor connectivity.
-  const bool migrate_sessions_early_;
 
   // If set, allows migration of connection to server-specified alternate
   // server address.

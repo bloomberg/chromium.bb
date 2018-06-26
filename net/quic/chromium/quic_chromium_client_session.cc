@@ -683,7 +683,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     std::unique_ptr<QuicServerInfo> server_info,
     const QuicSessionKey& session_key,
     bool require_confirmation,
-    bool migrate_session_early,
     bool migrate_sessions_on_network_change,
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
@@ -707,7 +706,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     : quic::QuicSpdyClientSessionBase(connection, push_promise_index, config),
       session_key_(session_key),
       require_confirmation_(require_confirmation),
-      migrate_session_early_(migrate_session_early),
       migrate_session_on_network_change_(migrate_sessions_on_network_change),
       migrate_session_early_v2_(migrate_session_early_v2),
       migrate_session_on_network_change_v2_(
@@ -984,9 +982,6 @@ ConnectionMigrationMode QuicChromiumClientSession::connection_migration_mode()
 
   if (migrate_session_on_network_change_v2_)
     return ConnectionMigrationMode::NO_MIGRATION_ON_PATH_DEGRADING_V2;
-
-  if (migrate_session_early_)
-    return ConnectionMigrationMode::FULL_MIGRATION_V1;
 
   if (migrate_session_on_network_change_)
     return ConnectionMigrationMode::NO_MIGRATION_ON_PATH_DEGRADING_V1;
@@ -2038,9 +2033,6 @@ void QuicChromiumClientSession::OnPathDegrading() {
             migration_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
             connection_id(), "No alternative network on path degrading");
       }
-    } else if (migrate_session_early_) {
-      MigrateToAlternateNetwork(/*close_session_on_error*/ true,
-                                migration_net_log);
     } else {
       HistogramAndLogMigrationFailure(
           migration_net_log, MIGRATION_STATUS_PATH_DEGRADING_NOT_ENABLED,
