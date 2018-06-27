@@ -15,7 +15,6 @@
 #include "base/strings/string_util.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "build/build_config.h"
-#include "net/base/completion_once_callback.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"
@@ -1611,7 +1610,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   EXPECT_EQ(OK, request.Request(host_port_pair_, version_, privacy_mode_,
                                 DEFAULT_PRIORITY, SocketTag(),
                                 /*cert_verify_flags=*/0, url_, net_log_,
-                                &net_error_details_, CompletionCallback()));
+                                &net_error_details_, CompletionOnceCallback()));
   std::unique_ptr<HttpStream> stream = CreateStream(&request);
   EXPECT_TRUE(stream);
   EXPECT_EQ(ERR_IO_PENDING,
@@ -5113,7 +5112,7 @@ TEST_P(QuicStreamFactoryTest, OnSSLConfigChanged) {
   request_info.traffic_annotation =
       MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS);
   EXPECT_EQ(OK, stream->InitializeStream(&request_info, false, DEFAULT_PRIORITY,
-                                         net_log_, CompletionCallback()));
+                                         net_log_, CompletionOnceCallback()));
 
   ssl_config_service_->NotifySSLConfigChange();
   EXPECT_EQ(ERR_CERT_DATABASE_CHANGED,

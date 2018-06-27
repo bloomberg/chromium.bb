@@ -10,7 +10,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_repeating_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
 #include "net/socket/datagram_client_socket.h"
@@ -112,7 +112,7 @@ class NET_EXPORT_PRIVATE QuicChromiumPacketWriter
   // Timer set when a packet should be retried after ENOBUFS.
   base::OneShotTimer retry_timer_;
 
-  CompletionCallback write_callback_;
+  CompletionRepeatingCallback write_callback_;
   base::WeakPtrFactory<QuicChromiumPacketWriter> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicChromiumPacketWriter);

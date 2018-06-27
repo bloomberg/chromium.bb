@@ -5,6 +5,7 @@
 #include "net/quic/chromium/quic_chromium_packet_writer.h"
 
 #include <string>
+#include <utility>
 
 #include "base/location.h"
 #include "base/logging.h"
@@ -91,8 +92,8 @@ QuicChromiumPacketWriter::QuicChromiumPacketWriter(
       retry_count_(0),
       weak_factory_(this) {
   retry_timer_.SetTaskRunner(task_runner);
-  write_callback_ = base::Bind(&QuicChromiumPacketWriter::OnWriteComplete,
-                               weak_factory_.GetWeakPtr());
+  write_callback_ = base::BindRepeating(
+      &QuicChromiumPacketWriter::OnWriteComplete, weak_factory_.GetWeakPtr());
 }
 
 QuicChromiumPacketWriter::~QuicChromiumPacketWriter() {}

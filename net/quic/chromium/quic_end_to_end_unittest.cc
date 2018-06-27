@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/ip_address.h"
 #include "net/base/test_completion_callback.h"
@@ -220,7 +221,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams>,
     request_.method = "POST";
     request_.url = GURL("https://test.example.com/");
     request_.upload_data_stream = upload_data_stream_.get();
-    ASSERT_THAT(request_.upload_data_stream->Init(CompletionCallback(),
+    ASSERT_THAT(request_.upload_data_stream->Init(CompletionOnceCallback(),
                                                   NetLogWithSource()),
                 IsOk());
   }

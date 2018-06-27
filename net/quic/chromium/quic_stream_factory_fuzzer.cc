@@ -6,7 +6,6 @@
 
 #include "base/test/fuzzed_data_provider.h"
 
-#include "net/base/completion_once_callback.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/do_nothing_ct_verifier.h"

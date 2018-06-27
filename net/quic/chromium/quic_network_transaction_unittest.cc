@@ -17,6 +17,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "net/base/chunked_upload_data_stream.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/test_proxy_delegate.h"
@@ -2111,9 +2112,9 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2213,9 +2214,9 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2329,9 +2330,9 @@ TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2450,9 +2451,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2527,9 +2528,9 @@ TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2650,9 +2651,9 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2784,9 +2785,9 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -2920,9 +2921,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -3063,9 +3064,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -3195,9 +3196,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -3289,9 +3290,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -3387,9 +3388,9 @@ TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -4354,9 +4355,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithNoHttpRace) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   AddHangingNonAlternateProtocolSocketData();
@@ -4392,9 +4393,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithProxy) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   request_.url = GURL("http://mail.example.org/");
@@ -4438,9 +4439,9 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -4492,9 +4493,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -4558,9 +4559,9 @@ TEST_P(QuicNetworkTransactionTest,
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -4618,9 +4619,9 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -4682,9 +4683,9 @@ TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -5054,9 +5055,9 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnect) {
   HostResolver::RequestInfo info(HostPortPair("mail.example.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
@@ -5132,9 +5133,9 @@ TEST_P(QuicNetworkTransactionTest, ConnectionCloseDuringConnectProxy) {
   HostResolver::RequestInfo info(HostPortPair("myproxy.org", 443));
   AddressList address;
   std::unique_ptr<HostResolver::Request> request;
-  int rv =
-      host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
-                             CompletionCallback(), &request, net_log_.bound());
+  int rv = host_resolver_.Resolve(info, DEFAULT_PRIORITY, &address,
+                                  CompletionOnceCallback(), &request,
+                                  net_log_.bound());
   EXPECT_THAT(rv, IsOk());
 
   CreateSession();
