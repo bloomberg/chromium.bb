@@ -1187,15 +1187,15 @@ void Element::ScrollFrameBy(const ScrollToOptions& scroll_to_options) {
   float new_scaled_top =
       top * frame->PageZoomFactor() + viewport->GetScrollOffset().Height();
 
-  FloatPoint new_scaled_position = ScrollOffsetToPosition(
-      ScrollOffset(new_scaled_left, new_scaled_top), viewport->ScrollOrigin());
+  FloatPoint new_scaled_position = viewport->ScrollOffsetToPosition(
+      ScrollOffset(new_scaled_left, new_scaled_top));
   if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
     new_scaled_position = coordinator->GetSnapPositionForPoint(
         *GetDocument().GetLayoutView(), new_scaled_position,
         scroll_to_options.hasLeft(), scroll_to_options.hasTop());
   }
   viewport->SetScrollOffset(
-      ScrollPositionToOffset(new_scaled_position, viewport->ScrollOrigin()),
+      viewport->ScrollPositionToOffset(new_scaled_position),
       kProgrammaticScroll, scroll_behavior);
 }
 
@@ -1228,15 +1228,15 @@ void Element::ScrollFrameTo(const ScrollToOptions& scroll_to_options) {
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
         frame->PageZoomFactor();
 
-  FloatPoint new_scaled_position = ScrollOffsetToPosition(
-      ScrollOffset(scaled_left, scaled_top), viewport->ScrollOrigin());
+  FloatPoint new_scaled_position =
+      viewport->ScrollOffsetToPosition(ScrollOffset(scaled_left, scaled_top));
   if (SnapCoordinator* coordinator = GetDocument().GetSnapCoordinator()) {
     new_scaled_position = coordinator->GetSnapPositionForPoint(
         *GetDocument().GetLayoutView(), new_scaled_position,
         scroll_to_options.hasLeft(), scroll_to_options.hasTop());
   }
   viewport->SetScrollOffset(
-      ScrollPositionToOffset(new_scaled_position, viewport->ScrollOrigin()),
+      viewport->ScrollPositionToOffset(new_scaled_position),
       kProgrammaticScroll, scroll_behavior);
 }
 

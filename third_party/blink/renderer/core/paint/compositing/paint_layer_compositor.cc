@@ -53,6 +53,7 @@
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_tree_builder.h"
 #include "third_party/blink/renderer/core/paint/compositing/graphics_layer_updater.h"
 #include "third_party/blink/renderer/core/paint/object_paint_invalidator.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/platform/bindings/script_forbidden_scope.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
@@ -272,8 +273,10 @@ void PaintLayerCompositor::UpdateIfNeededRecursiveInternal(
         ->UpdateCompositorScrollAnimations();
     if (const LocalFrameView::ScrollableAreaSet* animating_scrollable_areas =
             layout_view_.GetFrameView()->AnimatingScrollableAreas()) {
-      for (ScrollableArea* scrollable_area : *animating_scrollable_areas)
+      for (PaintLayerScrollableArea* scrollable_area :
+           *animating_scrollable_areas) {
         scrollable_area->UpdateCompositorScrollAnimations();
+      }
     }
   }
 
@@ -470,7 +473,7 @@ void PaintLayerCompositor::UpdateIfNeeded(
                    "PaintLayerCompositor::updateAfterCompositingChange");
       if (const LocalFrameView::ScrollableAreaSet* scrollable_areas =
               layout_view_.GetFrameView()->ScrollableAreas()) {
-        for (ScrollableArea* scrollable_area : *scrollable_areas)
+        for (PaintLayerScrollableArea* scrollable_area : *scrollable_areas)
           scrollable_area->UpdateAfterCompositingChange();
       }
     }

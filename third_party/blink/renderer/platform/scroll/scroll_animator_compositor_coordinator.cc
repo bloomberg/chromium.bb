@@ -231,13 +231,13 @@ ScrollAnimatorCompositorCoordinator::GetCompositorAnimation() const {
 
 FloatPoint ScrollAnimatorCompositorCoordinator::CompositorOffsetFromBlinkOffset(
     ScrollOffset offset) {
-  return GetScrollableArea()->ScrollOrigin() + offset;
+  return GetScrollableArea()->ScrollOffsetToPosition(offset);
 }
 
 ScrollOffset
 ScrollAnimatorCompositorCoordinator::BlinkOffsetFromCompositorOffset(
-    FloatPoint offset) {
-  return offset - GetScrollableArea()->ScrollOrigin();
+    FloatPoint position) {
+  return GetScrollableArea()->ScrollPositionToOffset(position);
 }
 
 bool ScrollAnimatorCompositorCoordinator::HasImplOnlyAnimationUpdate() const {

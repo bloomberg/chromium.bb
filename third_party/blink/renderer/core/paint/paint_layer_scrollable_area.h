@@ -276,7 +276,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // only a helper.
   GraphicsLayer* LayerForScrolling() const override;
 
-  void DidScroll(const gfx::ScrollOffset&) override;
+  void DidScroll(const FloatPoint&) override;
 
   // GraphicsLayers for the scrolling components.
   //
@@ -301,6 +301,16 @@ class CORE_EXPORT PaintLayerScrollableArea final
       const IntPoint&) const override;
   IntPoint ConvertFromRootFrame(const IntPoint&) const override;
   int ScrollSize(ScrollbarOrientation) const override;
+  FloatPoint ScrollPosition() const override {
+    return FloatPoint(ScrollOrigin()) + GetScrollOffset();
+  }
+  FloatPoint ScrollOffsetToPosition(const ScrollOffset& offset) const override {
+    return FloatPoint(ScrollOrigin()) + offset;
+  }
+  ScrollOffset ScrollPositionToOffset(
+      const FloatPoint& position) const override {
+    return position - ScrollOrigin();
+  }
   IntSize ScrollOffsetInt() const override;
   ScrollOffset GetScrollOffset() const override;
   IntSize MinimumScrollOffsetInt() const override;
@@ -329,6 +339,10 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void GetTickmarks(Vector<IntRect>&) const override;
 
   void VisibleSizeChanged();
+
+  // See renderer/core/layout/README.md for an explanation of scroll origin.
+  IntPoint ScrollOrigin() const { return scroll_origin_; }
+  bool ScrollOriginChanged() const { return scroll_origin_changed_; }
 
   // FIXME: We shouldn't allow access to m_overflowRect outside this class.
   LayoutRect OverflowRect() const { return overflow_rect_; }
@@ -361,7 +375,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   void UpdateAfterStyleChange(const ComputedStyle*);
   void UpdateAfterOverflowRecalc();
 
-  void UpdateAfterCompositingChange() override;
+  void UpdateAfterCompositingChange();
 
   bool HasScrollbar() const {
     return HasHorizontalScrollbar() || HasVerticalScrollbar();
@@ -548,6 +562,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
 
   bool NeedsScrollbarReconstruction() const;
 
+  void ResetScrollOriginChanged() { scroll_origin_changed_ = false; }
   void UpdateScrollOrigin();
   void UpdateScrollDimensions();
   void UpdateScrollbarEnabledState();
@@ -646,6 +661,19 @@ class CORE_EXPORT PaintLayerScrollableArea final
   unsigned had_horizontal_scrollbar_before_relayout_ : 1;
   unsigned had_vertical_scrollbar_before_relayout_ : 1;
   unsigned has_paint_layer_scroll_child_ : 1;
+  unsigned scroll_origin_changed_ : 1;
+
+  // There are 6 possible combinations of writing mode and direction. Scroll
+  // origin will be non-zero in the x or y axis if there is any reversed
+  // direction or writing-mode. The combinations are:
+  // writing-mode / direction     scrollOrigin.x() set    scrollOrigin.y() set
+  // horizontal-tb / ltr          NO                      NO
+  // horizontal-tb / rtl          YES                     NO
+  // vertical-lr / ltr            NO                      NO
+  // vertical-lr / rtl            NO                      YES
+  // vertical-rl / ltr            YES                     NO
+  // vertical-rl / rtl            YES                     YES
+  IntPoint scroll_origin_;
 
   // The width/height of our scrolled area.
   // This is OverflowModel's layout overflow translated to physical

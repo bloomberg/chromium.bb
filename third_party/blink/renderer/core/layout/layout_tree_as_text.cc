@@ -629,7 +629,7 @@ static void Write(WTF::TextStream& ts,
     ts << " transparent";
 
   if (layer.GetLayoutObject().HasOverflowClip()) {
-    ScrollableArea* scrollable_area = layer.GetScrollableArea();
+    PaintLayerScrollableArea* scrollable_area = layer.GetScrollableArea();
     ScrollOffset adjusted_scroll_offset =
         scrollable_area->GetScrollOffset() +
         ToFloatSize(scrollable_area->ScrollOrigin());

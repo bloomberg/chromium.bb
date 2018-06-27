@@ -115,8 +115,8 @@ void SnapCoordinator::UpdateSnapContainerData(const LayoutBox& snap_container) {
   ScrollableArea* scrollable_area = ScrollableAreaForSnapping(snap_container);
   if (!scrollable_area)
     return;
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
   snap_container_data.set_max_position(
       gfx::ScrollOffset(max_position.X(), max_position.Y()));
 
@@ -269,7 +269,7 @@ void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,
 
   if (snap_position != current_position) {
     scrollable_area->SetScrollOffset(
-        ScrollPositionToOffset(snap_position, scrollable_area->ScrollOrigin()),
+        scrollable_area->ScrollPositionToOffset(snap_position),
         kProgrammaticScroll, kScrollBehaviorSmooth);
   }
 }

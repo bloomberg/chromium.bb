@@ -159,10 +159,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
     return nullptr;
   }
 
-  // See Source/core/layout/README.md for an explanation of scroll origin.
-  virtual IntPoint ScrollOrigin() const { return scroll_origin_; }
-  bool ScrollOriginChanged() const { return scroll_origin_changed_; }
-
   // This is used to determine whether the incoming fractional scroll offset
   // should be truncated to integer. Current rule is that if
   // preferCompositingToLCDTextEnabled() is disabled (which is true on low-dpi
@@ -217,14 +213,20 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   virtual PaintLayer* Layer() const { return nullptr; }
 
-  // scrollPosition is the location of the top/left of the scroll viewport in
-  // the coordinate system defined by the top/left of the overflow rect.
-  // scrollOffset is the offset of the scroll viewport from its position when
-  // scrolled all the way to the beginning of its content's flow.
-  // For a more detailed explanation of scrollPosition, scrollOffset, and
-  // scrollOrigin, see core/layout/README.md.
-  FloatPoint ScrollPosition() const {
-    return FloatPoint(ScrollOrigin()) + GetScrollOffset();
+  // "Scroll offset" is in content-flow-aware coordinates, "Scroll position" is
+  // in physical (i.e., not flow-aware) coordinates. Among ScrollableArea
+  // sub-classes, only PaintLayerScrollableArea has a real distinction between
+  // the two. For a more detailed explanation of scrollPosition, scrollOffset,
+  // and scrollOrigin, see core/layout/README.md.
+  virtual FloatPoint ScrollPosition() const {
+    return FloatPoint(GetScrollOffset());
+  }
+  virtual FloatPoint ScrollOffsetToPosition(const ScrollOffset& offset) const {
+    return FloatPoint(offset);
+  }
+  virtual ScrollOffset ScrollPositionToOffset(
+      const FloatPoint& position) const {
+    return ToScrollOffset(position);
   }
   virtual IntSize ScrollOffsetInt() const = 0;
   virtual ScrollOffset GetScrollOffset() const {
@@ -290,8 +292,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // Overlay scrollbars can "fade-out" when inactive.
   virtual bool ScrollbarsHiddenIfOverlay() const;
   virtual void SetScrollbarsHiddenIfOverlay(bool);
-
-  virtual void UpdateAfterCompositingChange() {}
 
   virtual bool UserInputScrollable(ScrollbarOrientation) const = 0;
   virtual bool ShouldPlaceVerticalScrollbarOnLeft() const = 0;
@@ -383,7 +383,7 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
       const = 0;
 
   // Callback for compositor-side scrolling.
-  virtual void DidScroll(const gfx::ScrollOffset&);
+  virtual void DidScroll(const FloatPoint&);
 
   virtual void ScrollbarFrameRectChanged() {}
 
@@ -405,9 +405,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   ScrollbarOrientation ScrollbarOrientationFromDirection(
       ScrollDirectionPhysical) const;
   float ScrollStep(ScrollGranularity, ScrollbarOrientation) const;
-
-  void SetScrollOrigin(const IntPoint&);
-  void ResetScrollOriginChanged() { scroll_origin_changed_ = false; }
 
   // Needed to let the animators call scrollOffsetChanged.
   friend class ScrollAnimatorCompositorCoordinator;
@@ -477,8 +474,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
 
   unsigned scrollbar_overlay_color_theme_ : 2;
 
-  unsigned scroll_origin_changed_ : 1;
-
   unsigned horizontal_scrollbar_needs_paint_invalidation_ : 1;
   unsigned vertical_scrollbar_needs_paint_invalidation_ : 1;
   unsigned scroll_corner_needs_paint_invalidation_ : 1;
@@ -490,18 +485,6 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // cc::Layer::ShowScrollbars() on our scroll layer. Ignored if not composited.
   unsigned needs_show_scrollbar_layers_ : 1;
   unsigned uses_composited_scrolling_ : 1;
-
-  // There are 6 possible combinations of writing mode and direction. Scroll
-  // origin will be non-zero in the x or y axis if there is any reversed
-  // direction or writing-mode. The combinations are:
-  // writing-mode / direction     scrollOrigin.x() set    scrollOrigin.y() set
-  // horizontal-tb / ltr          NO                      NO
-  // horizontal-tb / rtl          YES                     NO
-  // vertical-lr / ltr            NO                      NO
-  // vertical-lr / rtl            NO                      YES
-  // vertical-rl / ltr            YES                     NO
-  // vertical-rl / rtl            YES                     YES
-  IntPoint scroll_origin_;
 };
 
 }  // namespace blink

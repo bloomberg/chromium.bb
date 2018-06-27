@@ -327,8 +327,8 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculation) {
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
@@ -360,8 +360,8 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculation) {
       snap_coordinator->GetSnapContainerData(*scroller_element->GetLayoutBox());
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
@@ -417,8 +417,8 @@ TEST_F(SnapCoordinatorTest, ScrolledSnapDataCalculationOnViewport) {
   EXPECT_TRUE(data.has_value());
   SnapContainerData actual_container = data.value();
 
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = body->clientWidth();
   double height = body->clientHeight();
@@ -453,8 +453,8 @@ TEST_F(SnapCoordinatorTest, SnapDataCalculationWithBoxModel) {
 
   ScrollableArea* scrollable_area =
       scroller_element->GetLayoutBox()->GetScrollableArea();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
@@ -495,8 +495,8 @@ TEST_F(SnapCoordinatorTest, NegativeMarginSnapDataCalculation) {
 
   ScrollableArea* scrollable_area =
       scroller_element->GetLayoutBox()->GetScrollableArea();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
@@ -541,8 +541,8 @@ TEST_F(SnapCoordinatorTest, AsymmetricalSnapDataCalculation) {
 
   ScrollableArea* scrollable_area =
       scroller_element->GetLayoutBox()->GetScrollableArea();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
@@ -574,8 +574,8 @@ TEST_F(SnapCoordinatorTest, ScaledSnapDataCalculation) {
 
   ScrollableArea* scrollable_area =
       scroller_element->GetLayoutBox()->GetScrollableArea();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();
@@ -610,8 +610,8 @@ TEST_F(SnapCoordinatorTest, VerticalRlSnapDataCalculation) {
 
   ScrollableArea* scrollable_area =
       scroller_element->GetLayoutBox()->GetScrollableArea();
-  FloatPoint max_position = ScrollOffsetToPosition(
-      scrollable_area->MaximumScrollOffset(), scrollable_area->ScrollOrigin());
+  FloatPoint max_position = scrollable_area->ScrollOffsetToPosition(
+      scrollable_area->MaximumScrollOffset());
 
   double width = scroller_element->clientWidth();
   double height = scroller_element->clientHeight();

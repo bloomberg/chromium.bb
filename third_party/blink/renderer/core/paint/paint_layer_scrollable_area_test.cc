@@ -730,6 +730,34 @@ TEST_F(PaintLayerScrollableAreaTest, FloatOverflowInRtlContainer) {
   EXPECT_FALSE(scrollable_area->HasHorizontalScrollbar());
 }
 
+TEST_F(PaintLayerScrollableAreaTest, ScrollOriginInRtlContainer) {
+  SetBodyInnerHTML(R"HTML(
+    <!DOCTYPE html>
+    <style>
+    #container {
+      width: 200px;
+      overflow: auto;
+      direction: rtl;
+    }
+    #content {
+      width: 300px;
+    }
+    </style>
+    <div id='container'>
+      <div id='content'>
+    lorem ipsum
+      <div>
+    </div>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  Element* container = GetDocument().getElementById("container");
+  ASSERT_TRUE(container);
+  PaintLayerScrollableArea* scrollable_area =
+      ToLayoutBoxModelObject(container->GetLayoutObject())->GetScrollableArea();
+  ASSERT_TRUE(scrollable_area);
+  EXPECT_EQ(scrollable_area->ScrollOrigin().X(), 100);
+}
+
 TEST_F(PaintLayerScrollableAreaTest,
        SlimmingPaintV2OverflowHiddenScrollOffsetInvalidation) {
   ScopedSlimmingPaintV2ForTest enabler(true);

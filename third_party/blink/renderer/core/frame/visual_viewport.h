@@ -222,7 +222,7 @@ class CORE_EXPORT VisualViewport final
   // VisualViewport scrolling may involve pinch zoom and gets routed through
   // WebViewImpl explicitly rather than via ScrollingCoordinator::DidScroll
   // since it needs to be set in tandem with the page scale delta.
-  void DidScroll(const gfx::ScrollOffset&) final { NOTREACHED(); }
+  void DidScroll(const FloatPoint&) final { NOTREACHED(); }
 
   // Visual Viewport API implementation.
   double OffsetLeft() const;

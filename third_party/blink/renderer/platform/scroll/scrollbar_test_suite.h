@@ -83,9 +83,6 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
   bool ScrollAnimatorEnabled() const override { return false; }
   int PageStep(ScrollbarOrientation) const override { return 0; }
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
-  void SetScrollOrigin(const IntPoint& origin) {
-    ScrollableArea::SetScrollOrigin(origin);
-  }
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final {
     return blink::scheduler::GetSingleThreadTaskRunnerForTesting();

@@ -163,7 +163,7 @@ void ScrollingCoordinator::DidScroll(const gfx::ScrollOffset& offset,
     // VisualViewport::didScroll).
     if (LocalFrameView* view = ToLocalFrame(frame)->View()) {
       if (auto* scrollable = view->ScrollableAreaWithElementId(element_id)) {
-        scrollable->DidScroll(offset);
+        scrollable->DidScroll(FloatPoint(offset.x(), offset.y()));
         return;
       }
     }
@@ -544,8 +544,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
       GraphicsLayerToCcLayer(scrollable_area->LayerForContainer());
   if (cc_layer) {
     cc_layer->SetScrollable(container_layer->bounds());
-    FloatPoint scroll_position(scrollable_area->ScrollOrigin() +
-                               scrollable_area->GetScrollOffset());
+    FloatPoint scroll_position(scrollable_area->ScrollPosition());
     cc_layer->SetScrollOffset(static_cast<gfx::ScrollOffset>(scroll_position));
     // TODO(bokan): This method shouldn't be resizing the layer geometry. That
     // happens in CompositedLayerMapping::UpdateScrollingLayerGeometry.
