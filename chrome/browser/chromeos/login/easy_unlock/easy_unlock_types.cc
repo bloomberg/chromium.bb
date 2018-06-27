@@ -13,6 +13,7 @@ const char kEasyUnlockKeyMetaNamePubKey[] = "eu.pubkey";
 const char kEasyUnlockKeyMetaNameChallenge[] = "eu.C";
 const char kEasyUnlockKeyMetaNameWrappedSecret[] = "eu.WUK";
 const char kEasyUnlockKeyMetaNameSerializedBeaconSeeds[] = "eu.BS";
+const char kEasyUnlockKeyMetaNameUnlockKey[] = "eu.unlock_key";
 
 EasyUnlockDeviceKeyData::EasyUnlockDeviceKeyData()
     : bluetooth_type(BLUETOOTH_CLASSIC) {}

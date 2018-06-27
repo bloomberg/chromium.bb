@@ -18,6 +18,7 @@ extern const char kEasyUnlockKeyMetaNamePubKey[];
 extern const char kEasyUnlockKeyMetaNameChallenge[];
 extern const char kEasyUnlockKeyMetaNameWrappedSecret[];
 extern const char kEasyUnlockKeyMetaNameSerializedBeaconSeeds[];
+extern const char kEasyUnlockKeyMetaNameUnlockKey[];
 
 // Device data that is stored with cryptohome keys.
 struct EasyUnlockDeviceKeyData {
@@ -42,6 +43,9 @@ struct EasyUnlockDeviceKeyData {
   std::string wrapped_secret;
   // Serialized BeaconSeeds used to identify this device.
   std::string serialized_beacon_seeds;
+  // True if the device is an Easy Unlock host, false if not (which implies
+  // that it is the local device).
+  bool unlock_key;
 };
 typedef std::vector<EasyUnlockDeviceKeyData> EasyUnlockDeviceKeyDataList;
 

@@ -9,9 +9,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/fake_lock_handler.h"
 #include "chromeos/components/proximity_auth/fake_remote_device_life_cycle.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
@@ -22,6 +24,7 @@
 #include "chromeos/components/proximity_auth/remote_status_update.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/services/secure_channel/public/cpp/client/fake_client_channel.h"
 #include "components/cryptauth/fake_connection.h"
 #include "components/cryptauth/fake_secure_context.h"
 #include "components/cryptauth/remote_device_test_util.h"
@@ -156,6 +159,8 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
         local_device_(cryptauth::CreateRemoteDeviceRefForTest()),
         life_cycle_(remote_device_, local_device_),
         connection_(remote_device_),
+        fake_client_channel_(
+            std::make_unique<chromeos::secure_channel::FakeClientChannel>()),
         bluetooth_adapter_(CreateAndRegisterMockBluetoothAdapter()),
         task_runner_(new base::TestSimpleTaskRunner()),
         thread_task_runner_handle_(task_runner_) {
@@ -163,9 +168,12 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
     ON_CALL(messenger_, GetSecureContext())
         .WillByDefault(Return(&secure_context_));
+    ON_CALL(messenger_, GetChannel())
+        .WillByDefault(Return(fake_client_channel_.get()));
 
     life_cycle_.set_connection(&connection_);
     life_cycle_.set_messenger(&messenger_);
+    life_cycle_.set_channel(fake_client_channel_.get());
     ScreenlockBridge::Get()->SetLockHandler(&lock_handler_);
 
     chromeos::DBusThreadManager::Initialize();
@@ -187,6 +195,11 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
     chromeos::DBusThreadManager::Shutdown();
 
     ScreenlockBridge::Get()->SetLockHandler(nullptr);
+  }
+
+  void SetMultiDeviceApiEnabled() {
+    scoped_feature_list_.InitAndEnableFeature(
+        chromeos::features::kMultiDeviceApi);
   }
 
   void CreateUnlockManager(
@@ -214,6 +227,8 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   cryptauth::RemoteDeviceRef local_device_;
   FakeRemoteDeviceLifeCycle life_cycle_;
   cryptauth::FakeConnection connection_;
+  std::unique_ptr<chromeos::secure_channel::FakeClientChannel>
+      fake_client_channel_;
 
   // Mock used for verifying interactions with the Bluetooth subsystem.
   scoped_refptr<device::MockBluetoothAdapter> bluetooth_adapter_;
@@ -224,6 +239,7 @@ class ProximityAuthUnlockManagerImplTest : public testing::Test {
   cryptauth::FakeSecureContext secure_context_;
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle thread_task_runner_handle_;
   FakeLockHandler lock_handler_;
@@ -791,6 +807,49 @@ TEST_F(ProximityAuthUnlockManagerImplTest, OnAuthAttempted_SignIn_Success) {
 
   EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
   unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
+
+  EXPECT_CALL(messenger_, DispatchUnlockEvent());
+  unlock_manager_->OnDecryptResponse(kSignInSecret);
+
+  EXPECT_CALL(proximity_auth_client_, FinalizeSignin(kSignInSecret));
+  unlock_manager_->OnUnlockEventSent(true);
+}
+
+TEST_F(ProximityAuthUnlockManagerImplTest,
+       OnAuthAttempted_SignIn_Success_MultiDeviceApiEnabled) {
+  SetMultiDeviceApiEnabled();
+
+  ON_CALL(messenger_, SupportsSignIn()).WillByDefault(Return(true));
+  CreateUnlockManager(ProximityAuthSystem::SIGN_IN);
+  SimulateUserPresentState();
+
+  std::string channel_binding_data = "channel binding data";
+
+  EXPECT_CALL(proximity_auth_client_,
+              GetChallengeForUserAndDevice(remote_device_.user_id(),
+                                           remote_device_.public_key(),
+                                           channel_binding_data, _))
+      .WillOnce(Invoke(
+          [](const std::string& user_id, const std::string& public_key,
+             const std::string& channel_binding_data,
+             base::Callback<void(const std::string& challenge)> callback) {
+            callback.Run(kChallenge);
+          }));
+
+  EXPECT_CALL(messenger_, RequestDecryption(kChallenge));
+  unlock_manager_->OnAuthAttempted(mojom::AuthType::USER_CLICK);
+
+  std::vector<chromeos::secure_channel::mojom::ConnectionCreationDetail>
+      creation_details{
+          chromeos::secure_channel::mojom::ConnectionCreationDetail::
+              REMOTE_DEVICE_USED_BACKGROUND_BLE_ADVERTISING};
+  chromeos::secure_channel::mojom::ConnectionMetadataPtr
+      connection_metadata_ptr =
+          chromeos::secure_channel::mojom::ConnectionMetadata::New(
+              creation_details, nullptr /* bluetooth_connection_metadata */,
+              channel_binding_data);
+  fake_client_channel_->InvokePendingGetConnectionMetadataCallback(
+      std::move(connection_metadata_ptr));
 
   EXPECT_CALL(messenger_, DispatchUnlockEvent());
   unlock_manager_->OnDecryptResponse(kSignInSecret);

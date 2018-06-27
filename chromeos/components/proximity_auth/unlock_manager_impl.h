@@ -18,6 +18,7 @@
 #include "chromeos/components/proximity_auth/screenlock_state.h"
 #include "chromeos/components/proximity_auth/unlock_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 
 namespace proximity_auth {
@@ -101,6 +102,10 @@ class UnlockManagerImpl : public UnlockManager,
   // Called when auth is attempted to send the sign-in challenge to the remote
   // device for decryption.
   void SendSignInChallenge();
+
+  void OnGetConnectionMetadata(
+      chromeos::secure_channel::mojom::ConnectionMetadataPtr
+          connection_metadata_ptr);
 
   // Called with the sign-in |challenge| so we can send it to the remote device
   // for decryption.

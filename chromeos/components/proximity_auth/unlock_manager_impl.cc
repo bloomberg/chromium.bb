@@ -20,6 +20,7 @@
 #include "chromeos/components/proximity_auth/proximity_auth_pref_manager.h"
 #include "chromeos/components/proximity_auth/proximity_monitor_impl.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "components/cryptauth/remote_device_ref.h"
 #include "components/cryptauth/secure_context.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
@@ -154,7 +155,7 @@ void UnlockManagerImpl::OnLifeCycleStateChanged() {
 
   remote_screenlock_state_.reset();
   if (state == RemoteDeviceLifeCycle::State::SECURE_CHANNEL_ESTABLISHED) {
-    DCHECK(life_cycle_->GetConnection());
+    DCHECK(life_cycle_->GetConnection() || life_cycle_->GetChannel());
     DCHECK(GetMessenger());
     proximity_monitor_ = CreateProximityMonitor(life_cycle_, pref_manager_);
     GetMessenger()->AddObserver(this);
@@ -335,15 +336,44 @@ std::unique_ptr<ProximityMonitor> UnlockManagerImpl::CreateProximityMonitor(
 }
 
 void UnlockManagerImpl::SendSignInChallenge() {
-  if (!life_cycle_ || !GetMessenger() || !GetMessenger()->GetSecureContext()) {
+  if (!life_cycle_ || !GetMessenger()) {
     PA_LOG(ERROR) << "Not ready to send sign-in challenge";
     return;
   }
 
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    if (!GetMessenger()->GetChannel()) {
+      PA_LOG(ERROR) << "Channel is not ready to send sign-in challenge.";
+      return;
+    }
+
+    GetMessenger()->GetChannel()->GetConnectionMetadata(
+        base::BindOnce(&UnlockManagerImpl::OnGetConnectionMetadata,
+                       weak_ptr_factory_.GetWeakPtr()));
+  } else {
+    if (!GetMessenger()->GetSecureContext()) {
+      PA_LOG(ERROR) << "SecureContext is not ready to send sign-in challenge.";
+      return;
+    }
+
+    cryptauth::RemoteDeviceRef remote_device = life_cycle_->GetRemoteDevice();
+    proximity_auth_client_->GetChallengeForUserAndDevice(
+        remote_device.user_id(), remote_device.public_key(),
+        GetMessenger()->GetSecureContext()->GetChannelBindingData(),
+        base::Bind(&UnlockManagerImpl::OnGotSignInChallenge,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void UnlockManagerImpl::OnGetConnectionMetadata(
+    chromeos::secure_channel::mojom::ConnectionMetadataPtr
+        connection_metadata_ptr) {
+  DCHECK(base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi));
+
   cryptauth::RemoteDeviceRef remote_device = life_cycle_->GetRemoteDevice();
   proximity_auth_client_->GetChallengeForUserAndDevice(
       remote_device.user_id(), remote_device.public_key(),
-      GetMessenger()->GetSecureContext()->GetChannelBindingData(),
+      connection_metadata_ptr->channel_binding_data,
       base::Bind(&UnlockManagerImpl::OnGotSignInChallenge,
                  weak_ptr_factory_.GetWeakPtr()));
 }

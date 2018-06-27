@@ -115,6 +115,7 @@ class EasyUnlockServiceRegular
                           device_change_result) override;
 
   // device_sync::DeviceSyncClient::Observer:
+  void OnEnrollmentFinished() override;
   void OnNewDevicesSynced() override;
 
   void ShowNotificationIfNewDevicePresent(
