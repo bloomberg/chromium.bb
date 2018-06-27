@@ -14514,5 +14514,30 @@ TEST_F(LayerTreeHostImplTest, ImplThreadPhaseUponImplSideInvalidation) {
   // Test passes when there is no crash.
 }
 
+TEST_F(LayerTreeHostImplTest, SkipOnDrawDoesNotUpdateDrawParams) {
+  EXPECT_TRUE(CreateHostImpl(DefaultSettings(),
+                             FakeLayerTreeFrameSink::CreateSoftware()));
+  LayerImpl* layer = SetupScrollAndContentsLayers(gfx::Size(100, 100));
+  layer->SetDrawsContent(true);
+  gfx::Transform transform;
+  transform.Translate(20, 20);
+  gfx::Rect viewport(0, 0, 50, 50);
+  const bool resourceless_software_draw = false;
+
+  bool skip_draw = false;
+  host_impl_->OnDraw(transform, viewport, resourceless_software_draw,
+                     skip_draw);
+  EXPECT_EQ(transform, host_impl_->DrawTransform());
+  EXPECT_EQ(viewport, host_impl_->DeviceViewport());
+
+  skip_draw = true;
+  gfx::Transform new_transform;
+  gfx::Rect new_viewport;
+  host_impl_->OnDraw(new_transform, new_viewport, resourceless_software_draw,
+                     skip_draw);
+  EXPECT_EQ(transform, host_impl_->DrawTransform());
+  EXPECT_EQ(viewport, host_impl_->DeviceViewport());
+}
+
 }  // namespace
 }  // namespace cc
