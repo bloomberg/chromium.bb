@@ -39,6 +39,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/gpu/raster_context_provider.h"
+#include "components/viz/common/quads/texture_draw_quad.h"
 #include "components/viz/common/resources/bitmap_allocation.h"
 #include "components/viz/common/resources/returned_resource.h"
 #include "components/viz/common/resources/shared_bitmap.h"
@@ -1747,8 +1748,10 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
         texture_layer_->SetTransferableResource(
             viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
                                                     viz::RGBA_8888),
-            viz::SingleReleaseCallback::Create(
-                base::BindOnce([](const gpu::SyncToken&, bool) {})));
+            viz::SingleReleaseCallback::Create(base::BindOnce(
+                &SoftwareTextureLayerLoseFrameSinkTest::ReleaseCallback,
+                base::Unretained(this))));
+        EXPECT_FALSE(released_);
         break;
       case 2:
         // The frame sink is lost. The host will make a new one and submit
@@ -1758,24 +1761,15 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
             layer_tree_host()->ReleaseLayerTreeFrameSink().get();
         layer_tree_host()->SetVisible(true);
         texture_layer_->SetNeedsDisplay();
-
-        // TODO(crbug.com/826886): We shouldn't need SetTransferableResource(),
-        // but right now the TextureLayerImpl will drop the software resource
-        // when the frame sink is lost. It needs to be able to handle this for
-        // VizDisplayCompositor.
-        texture_layer_->ClearClient();
-        texture_layer_->SetTransferableResource(
-            viz::TransferableResource::MakeSoftware(id_, gfx::Size(1, 1),
-                                                    viz::RGBA_8888),
-            viz::SingleReleaseCallback::Create(
-                base::BindOnce([](const gpu::SyncToken&, bool) {})));
+        EXPECT_FALSE(released_);
         break;
       case 3:
-        // Release the TransferableResource before shutdown.
+        // Even though the frame sink was lost, the software resource given to
+        // the TextureLayer was not lost/returned.
+        EXPECT_FALSE(released_);
+        // Release the TransferableResource before shutdown, the test ends when
+        // it is released.
         texture_layer_->ClearClient();
-        break;
-      case 4:
-        EndTest();
     }
   }
 
@@ -1804,10 +1798,20 @@ class SoftwareTextureLayerLoseFrameSinkTest : public SoftwareTextureLayerTest {
     }
   }
 
+  void ReleaseCallback(const gpu::SyncToken& token, bool lost) {
+    // The software resource is not released when the LayerTreeFrameSink is lost
+    // since software resources are not destroyed by the GPU process dying. It
+    // is released only after we call TextureLayer::ClearClient().
+    EXPECT_EQ(layer_tree_host()->SourceFrameNumber(), 4);
+    released_ = true;
+    EndTest();
+  }
+
   void AfterTest() override { EXPECT_EQ(3, verified_frames_); }
 
   int step_ = 0;
   int verified_frames_ = 0;
+  bool released_ = false;
   viz::SharedBitmapId id_;
   SharedBitmapIdRegistration registration_;
   scoped_refptr<CrossThreadSharedBitmap> bitmap_;
