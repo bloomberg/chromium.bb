@@ -708,7 +708,7 @@ cr.define('cr.ui.login', function() {
 
       var screenId = screen.id;
       if (screenId == SCREEN_ACCOUNT_PICKER && this.showingViewsLogin) {
-        chrome.send('updateGaiaDialogVisibility', [false]);
+        chrome.send('hideGaiaDialog');
         return;
       }
 

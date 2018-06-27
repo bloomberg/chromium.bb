@@ -130,12 +130,14 @@ class LoginDisplayHost {
   // Returns whether current host is for voice interaction OOBE.
   virtual bool IsVoiceInteractionOobe() = 0;
 
-  // Update the visibility of the gaia dialog. If available, |account| is
-  // preloaded in the gaia dialog.
-  virtual void UpdateGaiaDialogVisibility(
-      bool visible,
+  // Show the gaia dialog. |can_close| determines if the user is allowed to
+  // close the dialog. If available, |account| is preloaded in the gaia dialog.
+  virtual void ShowGaiaDialog(
       bool can_close,
       const base::Optional<AccountId>& prefilled_account) = 0;
+
+  // Hide any visible gaia dialog.
+  virtual void HideGaiaDialog() = 0;
 
   // Update the size of the gaia dialog.
   virtual void UpdateGaiaDialogSize(int width, int height) = 0;
