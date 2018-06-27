@@ -106,6 +106,13 @@ void SurfaceLayerBridge::OnFirstSurfaceActivation(
   }
 
   cc_layer_->SetBounds(surface_info.size_in_pixels());
+  cc_layer_->SetContentsOpaque(opaque_);
+}
+
+void SurfaceLayerBridge::SetContentsOpaque(bool opaque) {
+  if (cc_layer_ && opaque_ != opaque)
+    cc_layer_->SetContentsOpaque(opaque);
+  opaque_ = opaque;
 }
 
 }  // namespace blink

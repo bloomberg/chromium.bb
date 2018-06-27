@@ -43,6 +43,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   // Implementation of WebSurfaceLayerBridge.
   cc::Layer* GetCcLayer() const override { return cc_layer_.get(); }
   void ClearSurfaceId() override;
+  void SetContentsOpaque(bool) override;
 
   const viz::FrameSinkId& GetFrameSinkId() const override {
     return frame_sink_id_;
@@ -58,6 +59,7 @@ class PLATFORM_EXPORT SurfaceLayerBridge
   const viz::FrameSinkId frame_sink_id_;
   viz::SurfaceId current_surface_id_;
   const viz::FrameSinkId parent_frame_sink_id_;
+  bool opaque_ = false;
 };
 
 }  // namespace blink

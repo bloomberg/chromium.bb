@@ -295,6 +295,7 @@ class MockSurfaceLayerBridge : public blink::WebSurfaceLayerBridge {
   MOCK_CONST_METHOD0(GetCcLayer, cc::Layer*());
   MOCK_CONST_METHOD0(GetFrameSinkId, const viz::FrameSinkId&());
   MOCK_METHOD0(ClearSurfaceId, void());
+  MOCK_METHOD1(SetContentsOpaque, void(bool));
 };
 
 class MockVideoFrameCompositor : public VideoFrameCompositor {
@@ -1327,6 +1328,7 @@ TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   EXPECT_CALL(*surface_layer_bridge_ptr_, GetCcLayer())
       .WillRepeatedly(Return(layer.get()));
   EXPECT_CALL(client_, SetCcLayer(Eq(layer.get())));
+  EXPECT_CALL(*surface_layer_bridge_ptr_, SetContentsOpaque(false));
   wmpi_->RegisterContentsLayer(layer.get());
 }
 

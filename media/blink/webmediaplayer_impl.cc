@@ -407,7 +407,7 @@ void WebMediaPlayerImpl::OnWebLayerUpdated() {}
 
 void WebMediaPlayerImpl::RegisterContentsLayer(cc::Layer* layer) {
   DCHECK(bridge_);
-  bridge_->GetCcLayer()->SetContentsOpaque(opaque_);
+  bridge_->SetContentsOpaque(opaque_);
   client_->SetCcLayer(layer);
 }
 
@@ -1673,6 +1673,7 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
               pipeline_metadata_.video_decoder_config.video_rotation(),
               BindToCurrentLoop(base::BindRepeating(
                   &WebMediaPlayerImpl::OnFrameSinkDestroyed, AsWeakPtr()))));
+      bridge_->SetContentsOpaque(opaque_);
     }
   }
 
@@ -1932,7 +1933,7 @@ void WebMediaPlayerImpl::OnVideoOpacityChange(bool opaque) {
     if (video_layer_)
       video_layer_->SetContentsOpaque(opaque_);
   } else if (bridge_->GetCcLayer()) {
-    bridge_->GetCcLayer()->SetContentsOpaque(opaque_);
+    bridge_->SetContentsOpaque(opaque_);
   }
 }
 
