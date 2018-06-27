@@ -54,8 +54,8 @@ CrossThreadPersistentRegion& ProcessHeap::GetCrossThreadWeakPersistentRegion() {
   return persistent_region;
 }
 
-RecursiveMutex& ProcessHeap::CrossThreadPersistentMutex() {
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(RecursiveMutex, mutex, ());
+Mutex& ProcessHeap::CrossThreadPersistentMutex() {
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(Mutex, mutex, ());
   return mutex;
 }
 

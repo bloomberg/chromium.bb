@@ -165,6 +165,7 @@ class PLATFORM_EXPORT PersistentRegion final {
 #endif
 };
 
+// Protected by ProcessHeap::CrossThreadPersistentMutex.
 class CrossThreadPersistentRegion final {
   USING_FAST_MALLOC(CrossThreadPersistentRegion);
 
@@ -172,14 +173,18 @@ class CrossThreadPersistentRegion final {
   void AllocatePersistentNode(PersistentNode*& persistent_node,
                               void* self,
                               TraceCallback trace) {
-    RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+#if DCHECK_IS_ON()
+    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+#endif
     PersistentNode* node =
         persistent_region_.AllocatePersistentNode(self, trace);
     ReleaseStore(reinterpret_cast<void* volatile*>(&persistent_node), node);
   }
 
   void FreePersistentNode(PersistentNode*& persistent_node) {
-    RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+#if DCHECK_IS_ON()
+    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+#endif
     // When the thread that holds the heap object that the cross-thread
     // persistent shuts down, prepareForThreadStateTermination() will clear out
     // the associated CrossThreadPersistent<> and PersistentNode so as to avoid

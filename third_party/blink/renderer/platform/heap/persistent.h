@@ -175,6 +175,22 @@ class PersistentBase {
     return this;
   }
 
+  NO_SANITIZE_ADDRESS
+  void ClearWithLockHeld() {
+    static_assert(
+        crossThreadnessConfiguration == kCrossThreadPersistentConfiguration,
+        "This Persistent does not require the cross-thread lock.");
+#if DCHECK_IS_ON()
+    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+#endif
+    raw_ = nullptr;
+    CrossThreadPersistentRegion& region =
+        weaknessConfiguration == kWeakPersistentConfiguration
+            ? ProcessHeap::GetCrossThreadWeakPersistentRegion()
+            : ProcessHeap::GetCrossThreadPersistentRegion();
+    region.FreePersistentNode(persistent_node_);
+  }
+
  protected:
   NO_SANITIZE_ADDRESS
   T* AtomicGet() {
@@ -186,8 +202,7 @@ class PersistentBase {
   NO_SANITIZE_ADDRESS
   void Assign(T* ptr) {
     if (crossThreadnessConfiguration == kCrossThreadPersistentConfiguration) {
-      RecursiveMutexLocker persistent_lock(
-          ProcessHeap::CrossThreadPersistentMutex());
+      MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
       raw_ = ptr;
     } else {
       raw_ = ptr;
@@ -227,6 +242,7 @@ class PersistentBase {
           weaknessConfiguration == kWeakPersistentConfiguration
               ? ProcessHeap::GetCrossThreadWeakPersistentRegion()
               : ProcessHeap::GetCrossThreadPersistentRegion();
+      MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
       region.AllocatePersistentNode(persistent_node_, this, trace_callback);
       return;
     }
@@ -250,6 +266,7 @@ class PersistentBase {
             weaknessConfiguration == kWeakPersistentConfiguration
                 ? ProcessHeap::GetCrossThreadWeakPersistentRegion()
                 : ProcessHeap::GetCrossThreadPersistentRegion();
+        MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
         region.FreePersistentNode(persistent_node_);
       }
       return;
@@ -312,7 +329,29 @@ class PersistentBase {
     Base* persistent = reinterpret_cast<Base*>(persistent_pointer);
     T* object = persistent->Get();
     if (object && !ObjectAliveTrait<T>::IsHeapObjectAlive(object))
-      persistent->Clear();
+      ClearWeakPersistent(persistent);
+  }
+
+  static void ClearWeakPersistent(
+      PersistentBase<std::remove_const_t<T>,
+                     kWeakPersistentConfiguration,
+                     kCrossThreadPersistentConfiguration>* persistent) {
+#if DCHECK_IS_ON()
+    DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+#endif
+    persistent->ClearWithLockHeld();
+  }
+
+  static void ClearWeakPersistent(
+      PersistentBase<std::remove_const_t<T>,
+                     kWeakPersistentConfiguration,
+                     kSingleThreadPersistentConfiguration>* persistent) {
+    persistent->Clear();
+  }
+
+  template <typename BadPersistent>
+  static void ClearWeakPersistent(BadPersistent* non_weak_persistent) {
+    NOTREACHED();
   }
 
   // m_raw is accessed most, so put it at the first field.
@@ -852,8 +891,6 @@ template <typename T>
 struct BindUnwrapTraits<blink::CrossThreadWeakPersistent<T>> {
   static blink::CrossThreadPersistent<T> Unwrap(
       const blink::CrossThreadWeakPersistent<T>& wrapped) {
-    WTF::RecursiveMutexLocker persistent_lock(
-        blink::ProcessHeap::CrossThreadPersistentMutex());
     return blink::CrossThreadPersistent<T>(wrapped.Get());
   }
 };
