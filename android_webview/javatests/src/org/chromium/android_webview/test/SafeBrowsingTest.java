@@ -507,6 +507,7 @@ public class SafeBrowsingTest {
         assertTargetPageHasLoaded(MALWARE_PAGE_BACKGROUND_COLOR);
     }
 
+    @DisabledTest(message = "crbug.com/855732")
     @Test
     @SmallTest
     @Feature({"AndroidWebView"})
