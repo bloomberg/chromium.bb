@@ -2909,6 +2909,14 @@
           'pdf_fuzzers',
         ],
       },
+      'mac-cocoa-rel': {
+        'test_suites': {
+          'gtest_tests': 'chromium_browser_tests',
+        },
+        'args': [
+          '--disable-features=ViewsBrowserWindows',
+        ],
+      },
       'mac-jumbo-rel': {
         'additional_compile_targets': [
           'all'

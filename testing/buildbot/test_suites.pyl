@@ -469,7 +469,11 @@
     },
     'components_browsertests': {},
     'content_browsertests': {},
-    'interactive_ui_tests': {},
+    'interactive_ui_tests': {
+      'swarming': {
+        'shards': 3,
+      },
+    },
   },
 
   'chromium_gtests': {
