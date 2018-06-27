@@ -368,6 +368,10 @@ void RenderWidgetHostViewMac::Show() {
   browser_compositor_->SetRenderWidgetHostIsHidden(false);
 
   host()->WasShown(true /* record_presentation_time */);
+
+  // If there is not a frame being currently drawn, kick one, so that the below
+  // pause will have a frame to wait on.
+  host()->RequestRepaintForTesting();
 }
 
 void RenderWidgetHostViewMac::Hide() {
