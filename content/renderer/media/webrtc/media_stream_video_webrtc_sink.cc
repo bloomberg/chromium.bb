@@ -89,6 +89,8 @@ webrtc::VideoTrackInterface::ContentHint ContentHintTypeToWebRtcContentHint(
       return webrtc::VideoTrackInterface::ContentHint::kFluid;
     case blink::WebMediaStreamTrack::ContentHintType::kVideoDetail:
       return webrtc::VideoTrackInterface::ContentHint::kDetailed;
+    case blink::WebMediaStreamTrack::ContentHintType::kVideoText:
+      return webrtc::VideoTrackInterface::ContentHint::kText;
   }
   NOTREACHED();
   return webrtc::VideoTrackInterface::ContentHint::kNone;

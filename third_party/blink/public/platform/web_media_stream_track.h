@@ -99,7 +99,8 @@ class WebMediaStreamTrack {
     kAudioSpeech,
     kAudioMusic,
     kVideoMotion,
-    kVideoDetail
+    kVideoDetail,
+    kVideoText
   };
 
   WebMediaStreamTrack() = default;

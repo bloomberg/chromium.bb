@@ -58,6 +58,7 @@ static const char kContentHintStringAudioSpeech[] = "speech";
 static const char kContentHintStringAudioMusic[] = "music";
 static const char kContentHintStringVideoMotion[] = "motion";
 static const char kContentHintStringVideoDetail[] = "detail";
+static const char kContentHintStringVideoText[] = "text";
 
 // The set of constrainable properties for image capture is available at
 // https://w3c.github.io/mediacapture-image/#constrainable-properties
@@ -224,6 +225,8 @@ String MediaStreamTrack::ContentHint() const {
       return kContentHintStringVideoMotion;
     case WebMediaStreamTrack::ContentHintType::kVideoDetail:
       return kContentHintStringVideoDetail;
+    case WebMediaStreamTrack::ContentHintType::kVideoText:
+      return kContentHintStringVideoText;
   }
 
   NOTREACHED();
@@ -255,6 +258,8 @@ void MediaStreamTrack::SetContentHint(const String& hint) {
         translated_hint = WebMediaStreamTrack::ContentHintType::kVideoMotion;
       } else if (hint == kContentHintStringVideoDetail) {
         translated_hint = WebMediaStreamTrack::ContentHintType::kVideoDetail;
+      } else if (hint == kContentHintStringVideoText) {
+        translated_hint = WebMediaStreamTrack::ContentHintType::kVideoText;
       } else {
         // TODO(pbos): Log warning?
         // Invalid values for video are to be ignored (similar to invalid enum

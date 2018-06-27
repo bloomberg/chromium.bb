@@ -60,6 +60,8 @@ test(t => {
   assert_equals(video_track.contentHint, "motion");
   video_track.contentHint = "detail";
   assert_equals(video_track.contentHint, "detail");
+  video_track.contentHint = "text";
+  assert_equals(video_track.contentHint, "text");
   video_track.contentHint = "";
   assert_equals(video_track.contentHint, "");
 }, "Accepts valid video contentHints");

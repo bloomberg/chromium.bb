@@ -209,7 +209,9 @@ bool WebRtcVideoCapturerAdapter::ShouldAdaptResolution() const {
     return true;
   }
   if (content_hint_ ==
-      blink::WebMediaStreamTrack::ContentHintType::kVideoDetail) {
+          blink::WebMediaStreamTrack::ContentHintType::kVideoDetail ||
+      content_hint_ ==
+          blink::WebMediaStreamTrack::ContentHintType::kVideoText) {
     return false;
   }
   // Screencast does not adapt by default.
