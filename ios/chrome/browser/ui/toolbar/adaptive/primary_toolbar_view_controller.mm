@@ -16,6 +16,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_constants.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/omnibox_focuser.h"
 #import "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
@@ -72,8 +73,19 @@
 - (void)setScrollProgressForTabletOmnibox:(CGFloat)progress {
   [super setScrollProgressForTabletOmnibox:progress];
   self.view.locationBarBottomConstraint.constant =
-      -kLocationBarVerticalMargin * progress;
+      -AlignValueToPixel(kAdaptiveLocationBarVerticalMargin * progress);
   self.view.locationBarContainer.alpha = progress;
+
+  // When the locationBarContainer is hidden, show the |fakeOmniboxTarget|.
+  if (progress == 0 && !self.view.fakeOmniboxTarget) {
+    [self.view addFakeOmniboxTarget];
+    UITapGestureRecognizer* tapRecognizer =
+        [[UITapGestureRecognizer alloc] initWithTarget:self.dispatcher
+                                                action:@selector(focusOmnibox)];
+    [self.view.fakeOmniboxTarget addGestureRecognizer:tapRecognizer];
+  } else if (progress > 0 && self.view.fakeOmniboxTarget) {
+    [self.view removeFakeOmniboxTarget];
+  }
 }
 #pragma mark - UIViewController
 
