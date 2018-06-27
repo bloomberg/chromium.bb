@@ -67,11 +67,11 @@ namespace {
 // 2. Enter the run loop.
 // 3. Posted task triggers the load, and starts pumping pending resource
 //    requests using runServeAsyncRequestsTask().
-// 4. TestWebFrameClient watches for didStartLoading/didStopLoading calls,
+// 4. TestWebFrameClient watches for DidStartLoading/DidStopLoading calls,
 //    keeping track of how many loads it thinks are in flight.
-// 5. While runServeAsyncRequestsTask() observes TestWebFrameClient to still
+// 5. While RunServeAsyncRequestsTask() observes TestWebFrameClient to still
 //    have loads in progress, it posts itself back to the run loop.
-// 6. When runServeAsyncRequestsTask() notices there are no more loads in
+// 6. When RunServeAsyncRequestsTask() notices there are no more loads in
 //    progress, it exits the run loop.
 // 7. At this point, all parsing, resource loads, and layout should be finished.
 
@@ -358,11 +358,6 @@ WebRemoteFrameImpl* WebViewHelper::RemoteMainFrame() const {
   return ToWebRemoteFrameImpl(web_view_->MainFrame());
 }
 
-void WebViewHelper::SetViewportSize(const WebSize& viewport_size) {
-  test_web_view_client_->GetLayerTreeViewForTesting()->SetViewportSize(
-      viewport_size);
-}
-
 void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
   GetWebView()->Resize(size);
@@ -466,39 +461,51 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
   self_owned_.reset();
 }
 
-WebLayerTreeViewImplForTesting*
-TestWebViewClient::GetLayerTreeViewForTesting() {
-  return layer_tree_view_.get();
+void TestWebViewClient::SetViewportSize(const WebSize& size) {
+  // TODO(ccameron): This likely causes surface invariant violations.
+  compositor_->SetViewportSizeAndScale(
+      static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
+      compositor_->layer_tree_host()->local_surface_id_from_parent());
 }
 
 WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
-  auto layer_tree_settings =
-      WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings();
-
+  cc::LayerTreeSettings settings;
+  // Use synchronous compositing so that the MessageLoop becomes idle and the
+  // test makes progress.
+  settings.single_thread_proxy_scheduler = false;
+  // For web contents, layer transforms should scale up the contents of layers
+  // to keep content always crisp when possible.
+  settings.layer_transforms_should_scale_layer_contents = true;
   // BlinkGenPropertyTrees should imply layer lists in the compositor. Some
   // code across the boundaries makes assumptions based on this so ensure tests
   // run using this configuration as well.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    layer_tree_settings.use_layer_lists = true;
+    settings.use_layer_lists = true;
 
-  layer_tree_view_ =
-      std::make_unique<WebLayerTreeViewImplForTesting>(layer_tree_settings);
-  return layer_tree_view_.get();
+  compositor_ = std::make_unique<content::RenderWidgetCompositor>(
+      &delegate_, &compositor_deps_);
+  compositor_->Initialize(settings);
+  return compositor_.get();
 }
 
 WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
-  auto layer_tree_settings =
-      WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings();
-
+  cc::LayerTreeSettings settings;
+  // Use synchronous compositing so that the MessageLoop becomes idle and the
+  // test makes progress.
+  settings.single_thread_proxy_scheduler = false;
+  // For web contents, layer transforms should scale up the contents of layers
+  // to keep content always crisp when possible.
+  settings.layer_transforms_should_scale_layer_contents = true;
   // BlinkGenPropertyTrees should imply layer lists in the compositor. Some
   // code across the boundaries makes assumptions based on this so ensure tests
   // run using this configuration as well.
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    layer_tree_settings.use_layer_lists = true;
+    settings.use_layer_lists = true;
 
-  layer_tree_view_ =
-      std::make_unique<WebLayerTreeViewImplForTesting>(layer_tree_settings);
-  return layer_tree_view_.get();
+  compositor_ = std::make_unique<content::RenderWidgetCompositor>(
+      &delegate_, &compositor_deps_);
+  compositor_->Initialize(settings);
+  return compositor_.get();
 }
 
 }  // namespace FrameTestHelpers

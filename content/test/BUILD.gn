@@ -246,6 +246,8 @@ jumbo_static_library("test_support") {
     "ppapi_unittest.h",
     "storage_partition_test_utils.cc",
     "storage_partition_test_utils.h",
+    "stub_render_widget_compositor_delegate.cc",
+    "stub_render_widget_compositor_delegate.h",
     "test_background_sync_context.cc",
     "test_background_sync_context.h",
     "test_background_sync_manager.cc",
