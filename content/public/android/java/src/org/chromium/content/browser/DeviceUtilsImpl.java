@@ -4,8 +4,6 @@
 
 package org.chromium.content.browser;
 
-import android.content.Context;
-
 import org.chromium.base.CommandLine;
 import org.chromium.content_public.common.ContentSwitches;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -16,7 +14,7 @@ import org.chromium.ui.base.DeviceFormFactor;
 public class DeviceUtilsImpl {
     private DeviceUtilsImpl() {}
 
-    public static void addDeviceSpecificUserAgentSwitch(Context context) {
+    public static void addDeviceSpecificUserAgentSwitch() {
         if (!DeviceFormFactor.isTablet()) {
             CommandLine.getInstance().appendSwitch(ContentSwitches.USE_MOBILE_UA);
         }

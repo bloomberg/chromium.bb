@@ -4,8 +4,6 @@
 
 package org.chromium.content_public.browser;
 
-import android.content.Context;
-
 import org.chromium.content.browser.DeviceUtilsImpl;
 
 /**
@@ -16,9 +14,8 @@ public final class DeviceUtils {
 
     /**
      * Appends the switch specifying which user agent should be used for this device.
-     * @param context The context for the caller activity.
      */
-    public static void addDeviceSpecificUserAgentSwitch(Context context) {
-        DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch(context);
+    public static void addDeviceSpecificUserAgentSwitch() {
+        DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch();
     }
 }

@@ -55,7 +55,7 @@ public class ContentShellActivity extends Activity {
             }
         }
 
-        DeviceUtils.addDeviceSpecificUserAgentSwitch(this);
+        DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
         try {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);

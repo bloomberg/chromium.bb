@@ -46,7 +46,7 @@ public class CastBrowserHelper {
             return CommandLine.getInstance();
         });
 
-        DeviceUtils.addDeviceSpecificUserAgentSwitch(context);
+        DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
         try {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);

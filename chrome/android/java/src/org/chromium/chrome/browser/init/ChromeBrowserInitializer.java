@@ -227,7 +227,7 @@ public class ChromeBrowserInitializer {
 
         warmUpSharedPrefs();
 
-        DeviceUtils.addDeviceSpecificUserAgentSwitch(mApplication);
+        DeviceUtils.addDeviceSpecificUserAgentSwitch();
         ApplicationStatus.registerStateListenerForAllActivities(
                 createActivityStateListener());
 
