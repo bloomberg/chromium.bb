@@ -483,6 +483,28 @@ class PaintOpHelper {
     return "<unknown ScalingBehavior>";
   }
 
+  static std::string EnumToString(PaintShader::Type type) {
+    switch (type) {
+      case PaintShader::Type::kColor:
+        return "kColor";
+      case PaintShader::Type::kLinearGradient:
+        return "kLinearGradient";
+      case PaintShader::Type::kRadialGradient:
+        return "kRadialGradient";
+      case PaintShader::Type::kTwoPointConicalGradient:
+        return "kTwoPointConicalGradient";
+      case PaintShader::Type::kSweepGradient:
+        return "kSweepGradient";
+      case PaintShader::Type::kImage:
+        return "kImage";
+      case PaintShader::Type::kPaintRecord:
+        return "kPaintRecord";
+      case PaintShader::Type::kShaderCount:
+        return "kShaderCount";
+    }
+    return "<unknown PaintShader::Type>";
+  }
+
   static std::string ImageToString(const PaintImage& image) {
     return "<paint image>";
   }
@@ -500,7 +522,8 @@ class PaintOpHelper {
     if (!shader)
       return "(nil)";
     std::ostringstream str;
-    str << "[flags=" << shader->flags_;
+    str << "[type=" << EnumToString(shader->shader_type());
+    str << ", flags=" << shader->flags_;
     str << ", end_radius=" << shader->end_radius_;
     str << ", start_radius=" << shader->start_radius_;
     str << ", tx=" << shader->tx_;
@@ -518,7 +541,10 @@ class PaintOpHelper {
     str << ", end_point=" << SkiaTypeToString(shader->end_point_);
     str << ", start_degrees=" << shader->start_degrees_;
     str << ", end_degrees=" << shader->end_degrees_;
-    str << ", image=" << ImageToString(shader->image_);
+    if (shader->shader_type() == PaintShader::Type::kImage)
+      str << ", image=" << ImageToString(shader->image_);
+    else
+      str << ", image=(nil)";
     str << ", record=" << RecordToString(shader->record_);
     str << ", id=" << shader->id_;
     str << ", tile_scale=";

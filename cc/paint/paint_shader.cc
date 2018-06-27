@@ -20,7 +20,9 @@ sk_sp<SkPicture> ToSkPicture(sk_sp<PaintRecord> record,
                              const gfx::SizeF* raster_scale,
                              ImageProvider* image_provider) {
   SkPictureRecorder recorder;
-  SkCanvas* canvas = recorder.beginRecording(bounds);
+  SkCanvas* canvas =
+      recorder.beginRecording(SkRect::MakeWH(bounds.width(), bounds.height()));
+  canvas->translate(-bounds.fLeft, -bounds.fTop);
   if (raster_scale)
     canvas->scale(raster_scale->width(), raster_scale->height());
   record->Playback(canvas, PlaybackParams(image_provider));
@@ -239,25 +241,26 @@ bool PaintShader::GetRasterizationTileRect(const SkMatrix& ctm,
               SkScalarSqrt(matrix.getScaleY() * matrix.getScaleY() +
                            matrix.getSkewY() * matrix.getSkewY()));
   }
-  SkSize scaled_size =
-      SkSize::Make(SkScalarAbs(scale.width() * tile_.width()),
-                   SkScalarAbs(scale.height() * tile_.height()));
+
+  SkScalar tile_area =
+      tile_.width() * tile_.height() * scale.width() * scale.height();
 
   // Clamp the tile size to about 4M pixels.
   // TODO(khushalsagar): We need to consider the max texture size as well.
   static const SkScalar kMaxTileArea = 2048 * 2048;
-  SkScalar tile_area = scaled_size.width() * scaled_size.height();
   if (tile_area > kMaxTileArea) {
     SkScalar clamp_scale = SkScalarSqrt(kMaxTileArea / tile_area);
-    scaled_size.set(scaled_size.width() * clamp_scale,
-                    scaled_size.height() * clamp_scale);
+    scale.set(clamp_scale, clamp_scale);
   }
 
-  scaled_size = scaled_size.toCeil();
-  if (scaled_size.isEmpty())
+  *tile_rect = SkRect::MakeXYWH(
+      tile_.fLeft * scale.width(), tile_.fTop * scale.height(),
+      SkScalarCeilToInt(SkScalarAbs(scale.width() * tile_.width())),
+      SkScalarCeilToInt(SkScalarAbs(scale.height() * tile_.height())));
+
+  if (tile_rect->isEmpty())
     return false;
 
-  *tile_rect = SkRect::MakeWH(scaled_size.width(), scaled_size.height());
   return true;
 }
 

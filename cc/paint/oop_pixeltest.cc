@@ -586,6 +586,50 @@ TEST_P(OopImagePixelTest, DrawRecordShaderWithImageScaled) {
   ExpectEquals(actual, expected);
 }
 
+TEST_F(OopImagePixelTest, DrawRecordShaderTranslatedTileRect) {
+  auto paint_record = sk_make_sp<PaintOpBuffer>();
+
+  // Arbitrary offsets.  The DrawRectOp inside the PaintShader draws
+  // with this offset, but the tile rect also has this offset, so they
+  // should cancel out, and it should be as if the DrawRectOp was at the
+  // origin.
+  int x_offset = 3901;
+  int y_offset = -234;
+
+  // Shader here is a tiled 2x3 rectangle with a 1x2 green block in the
+  // upper left and a 10pixel wide right/bottom border.  The shader
+  // tiling starts from the origin, so starting at 2,1 in the offset_rect
+  // below cuts off part of that, leaving two green i's.
+  PaintFlags internal_flags;
+  internal_flags.setColor(SK_ColorGREEN);
+  sk_sp<PaintOpBuffer> shader_buffer(new PaintOpBuffer);
+  shader_buffer->push<DrawRectOp>(SkRect::MakeXYWH(x_offset, y_offset, 1, 2),
+                                  internal_flags);
+
+  SkRect tile_rect = SkRect::MakeXYWH(x_offset, y_offset, 2, 3);
+  sk_sp<PaintShader> paint_record_shader = PaintShader::MakePaintRecord(
+      shader_buffer, tile_rect, SkShader::kRepeat_TileMode,
+      SkShader::kRepeat_TileMode, nullptr,
+      PaintShader::ScalingBehavior::kRasterAtScale);
+
+  gfx::Size output_size(10, 10);
+
+  auto display_item_list = base::MakeRefCounted<DisplayItemList>();
+  display_item_list->StartPaint();
+  display_item_list->push<DrawColorOp>(SK_ColorWHITE, SkBlendMode::kSrc);
+  display_item_list->push<ScaleOp>(2.f, 2.f);
+  PaintFlags raster_flags;
+  raster_flags.setShader(paint_record_shader);
+  SkRect offset_rect = SkRect::MakeXYWH(2, 1, 10, 10);
+  display_item_list->push<DrawRectOp>(offset_rect, raster_flags);
+  display_item_list->EndPaintOfUnpaired(gfx::Rect(output_size));
+  display_item_list->Finalize();
+
+  auto actual = Raster(display_item_list, output_size);
+  auto expected = RasterExpectedBitmap(display_item_list, output_size);
+  ExpectEquals(actual, expected);
+}
+
 TEST_P(OopImagePixelTest, DrawImageWithTargetColorSpace) {
   SCOPED_TRACE(base::StringPrintf("UseTooLargeImage: %d, FilterQuality: %d\n",
                                   UseTooLargeImage(), FilterQuality()));
