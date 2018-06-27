@@ -104,9 +104,12 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
 
   TabletModeClient* tablet_mode_client = TabletModeClient::Get();
   tablet_mode_client->AddObserver(this);
+
+  OobeConfiguration::Get()->AddObserver(this);
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
+  OobeConfiguration::Get()->RemoveObserver(this);
   TabletModeClient::Get()->RemoveObserver(this);
 }
 
@@ -167,6 +170,7 @@ void CoreOobeHandler::Initialize() {
   UpdateDeviceRequisition();
   UpdateKeyboardState();
   UpdateClientAreaSize();
+  UpdateOobeConfiguration();
 }
 
 void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
@@ -543,6 +547,17 @@ void CoreOobeHandler::UpdateClientAreaSize() {
   const gfx::Size size =
       display::Screen::GetScreen()->GetPrimaryDisplay().size();
   SetClientAreaSize(size.width(), size.height());
+}
+
+void CoreOobeHandler::OnOobeConfigurationChanged() {
+  UpdateOobeConfiguration();
+}
+
+void CoreOobeHandler::UpdateOobeConfiguration() {
+  if (OobeConfiguration::Get()) {
+    CallJSOrDefer("updateOobeConfiguration",
+                  OobeConfiguration::Get()->GetConfiguration());
+  }
 }
 
 void CoreOobeHandler::OnAccessibilityStatusChanged(

@@ -271,5 +271,13 @@ cr.define('cr.ui.Oobe', function() {
       // Buttons, headers and links.
       Oobe.getInstance().updateLocalizedContent_();
     },
+
+    /**
+     * Updates OOBE configuration when it is loaded.
+     * @param {dictionary} configuration OOBE configuration.
+     */
+    updateOobeConfiguration: function(configuration) {
+      Oobe.getInstance().updateOobeConfiguration_(configuration);
+    },
   };
 });

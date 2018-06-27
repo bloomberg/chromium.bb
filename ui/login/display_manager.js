@@ -262,6 +262,12 @@ cr.define('cr.ui.login', function() {
     userCount_: 0,
 
     /**
+     * Stored OOBE configuration for newly registered screens.
+     * @type {dictionary}
+     */
+    oobe_configuration_: {},
+
+    /**
      * Error message (bubble) was shown. This is checked in tests.
      */
     errorMessageWasShownForTesting_: false,
@@ -388,6 +394,14 @@ cr.define('cr.ui.login', function() {
      */
     get forceKeyboardFlow() {
       return this.forceKeyboardFlow_;
+    },
+
+    /**
+     * Returns current OOBE configuration.
+     * @return {dictionary}
+     */
+    getOobeConfiguration: function() {
+      return this.oobe_configuration_;
     },
 
     /**
@@ -727,7 +741,7 @@ cr.define('cr.ui.login', function() {
      * @private
      */
     getScreenIndex_: function(screenId) {
-      for (var i = 0; i < this.screens_.length; ++i) {
+      for (let i = 0; i < this.screens_.length; ++i) {
         if (this.screens_[i] == screenId)
           return i;
       }
@@ -747,8 +761,10 @@ cr.define('cr.ui.login', function() {
       header.textContent = el.header ? el.header : '';
       header.className = 'header-section';
       $('header-sections').appendChild(header);
-
       this.appendButtons_(el.buttons, screenId);
+
+      if (el.updateOobeConfiguration)
+        el.updateOobeConfiguration(oobe_configuration_);
     },
 
     /**
@@ -770,10 +786,12 @@ cr.define('cr.ui.login', function() {
 
       var width = screen.getPreferredSize().width;
       var height = screen.getPreferredSize().height;
-      for (var i = 0, screenGroup; screenGroup = SCREEN_GROUPS[i]; i++) {
+      for (let i = 0; i < SCREEN_GROUPS.length; ++i) {
+        let screenGroup = SCREEN_GROUPS[i];
         if (screenGroup.indexOf(screen.id) != -1) {
           // Set screen dimensions to maximum dimensions within this group.
-          for (var j = 0, screen2; screen2 = $(screenGroup[j]); j++) {
+          for (let j = 0; j < screenGroup.length; ++j) {
+            let screen2 = $(screenGroup[j]);
             width = Math.max(width, screen2.getPreferredSize().width);
             height = Math.max(height, screen2.getPreferredSize().height);
           }
@@ -800,7 +818,8 @@ cr.define('cr.ui.login', function() {
      * Should be executed on language change.
      */
     updateLocalizedContent_: function() {
-      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
+      for (let i = 0; i < this.screens_.length; ++i) {
+        let screenId = this.screens_[i];
         var screen = $(screenId);
         var buttonStrip = $(screenId + '-controls');
         if (buttonStrip)
@@ -819,11 +838,26 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
+     * Updates Oobe configuration for screens.
+     * @param {dictionary} configuration OOBE configuration.
+     */
+    updateOobeConfiguration_: function(configuration) {
+      for (let i = 0; i < this.screens_.length; ++i) {
+        let screenId = this.screens_[i];
+        var screen = $(screenId);
+        if (screen.updateOobeConfiguration)
+          screen.updateOobeConfiguration(configuration);
+      }
+      this.oobe_configuration_ = configuration;
+    },
+
+    /**
      * Updates "device in tablet mode" state when tablet mode is changed.
      * @param {Boolean} isInTabletMode True when in tablet mode.
      */
     setTabletModeState_: function(isInTabletMode) {
-      for (var i = 0, screenId; screenId = this.screens_[i]; ++i) {
+      for (let i = 0; i < this.screens_.length; ++i) {
+        let screenId = this.screens_[i];
         var screen = $(screenId);
         if (screen.setTabletModeState)
           screen.setTabletModeState(isInTabletMode);
@@ -835,8 +869,8 @@ cr.define('cr.ui.login', function() {
      */
     initializeOOBEScreens: function() {
       if (this.isOobeUI() && $('inner-container').classList.contains('down')) {
-        for (var i = 0, screen;
-             screen = $(SCREEN_GROUPS[SCREEN_GROUP_OOBE][i]); i++) {
+        for (let i = 0; i < SCREEN_GROUPS[SCREEN_GROUP_OOBE].length; ++i) {
+          let screen = $(SCREEN_GROUPS[SCREEN_GROUP_OOBE][i]);
           screen.hidden = false;
         }
       }

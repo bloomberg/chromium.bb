@@ -19,6 +19,7 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/enrollment/auto_enrollment_controller.h"
+#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/screen_manager.h"
 #include "chrome/browser/chromeos/login/screens/base_screen_delegate.h"
 #include "chrome/browser/chromeos/login/screens/controller_pairing_screen.h"
@@ -55,7 +56,8 @@ class WizardController : public BaseScreenDelegate,
                          public ControllerPairingScreen::Delegate,
                          public HostPairingScreen::Delegate,
                          public WelcomeScreen::Delegate,
-                         public HIDDetectionScreen::Delegate {
+                         public HIDDetectionScreen::Delegate,
+                         public OobeConfiguration::Observer {
  public:
   WizardController(LoginDisplayHost* host, OobeUI* oobe_ui);
   ~WizardController() override;
@@ -247,6 +249,9 @@ class WizardController : public BaseScreenDelegate,
   // Override from HIDDetectionScreen::Delegate
   void OnHIDScreenNecessityCheck(bool screen_needed) override;
 
+  // Overridden from OobeConfiguration::Observer
+  void OnOobeConfigurationChanged() override;
+
   // Notification of a change in the state of an accessibility setting.
   void OnAccessibilityStatusChanged(
       const AccessibilityStatusEventDetails& details);
@@ -327,6 +332,10 @@ class WizardController : public BaseScreenDelegate,
   // Gaia credentials. If it is false, the screen may return after trying
   // attestation-based enrollment if appropriate.
   void StartEnrollmentScreen(bool force_interactive);
+
+  void OnConfigurationLoaded(
+      OobeScreen first_screen,
+      std::unique_ptr<base::DictionaryValue> configuration);
 
   // Returns auto enrollment controller (lazily initializes one if it doesn't
   // exist already).
@@ -418,6 +427,7 @@ class WizardController : public BaseScreenDelegate,
   friend class WizardControllerFlowTest;
   friend class WizardControllerOobeResumeTest;
   friend class WizardInProcessBrowserTest;
+  friend class WizardControllerOobeConfigurationTest;
 
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
@@ -444,8 +454,8 @@ class WizardController : public BaseScreenDelegate,
   std::unique_ptr<pairing_chromeos::SharkConnectionListener>
       shark_connection_listener_;
 
-  // Configuration for automating OOBE screens.
-  std::unique_ptr<base::DictionaryValue> oobe_configuration_;
+  // Configuration (dictionary) for automating OOBE screens.
+  base::Value oobe_configuration_;
 
   BaseScreen* hid_screen_ = nullptr;
 

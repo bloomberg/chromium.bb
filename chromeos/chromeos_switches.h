@@ -143,6 +143,7 @@ CHROMEOS_EXPORT extern const char kNaturalScrollDefault[];
 CHROMEOS_EXPORT extern const char kNeedArcMigrationPolicyCheck[];
 CHROMEOS_EXPORT extern const char kNoteTakingAppIds[];
 CHROMEOS_EXPORT extern const char kOobeBootstrappingMaster[];
+CHROMEOS_EXPORT extern const char kOobeConfiguration[];
 CHROMEOS_EXPORT extern const char kOobeForceShowScreen[];
 CHROMEOS_EXPORT extern const char kOobeGuestSession[];
 CHROMEOS_EXPORT extern const char kOobeSkipPostLogin[];

@@ -100,5 +100,13 @@ cr.define('cr.ui.Oobe', function() {
     setTabletModeState: function(isInTabletMode) {
       Oobe.getInstance().setTabletModeState_(isInTabletMode);
     },
+
+    /**
+     * Updates OOBE configuration when it is loaded.
+     * @param {dictionary} configuration OOBE configuration.
+     */
+    updateOobeConfiguration: function(configuration) {
+      Oobe.getInstance().updateOobeConfiguration_(configuration);
+    },
   };
 });
