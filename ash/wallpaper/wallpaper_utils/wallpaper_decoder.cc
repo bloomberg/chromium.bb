@@ -40,8 +40,8 @@ void DecodeWallpaper(const std::string& image_data,
   std::vector<uint8_t> image_bytes(image_data.begin(), image_data.end());
   data_decoder::DecodeImage(
       Shell::Get()->shell_delegate()->GetShellConnector(),
-      std::move(image_bytes), data_decoder::mojom::ImageCodec::DEFAULT,
-      true /* shrink_to_fit */, kMaxImageSizeInBytes,
+      std::move(image_bytes), data_decoder::mojom::ImageCodec::ROBUST_JPEG,
+      false /* shrink_to_fit */, kMaxImageSizeInBytes,
       gfx::Size() /* desired_image_frame_size */,
       base::BindOnce(&ConvertToImageSkia, std::move(callback)));
 }
