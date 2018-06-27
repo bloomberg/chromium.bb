@@ -83,6 +83,7 @@ class CORE_EXPORT AXObjectCache
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
   virtual void UpdateCacheAfterNodeIsAttached(Node*) = 0;
+  virtual void DidInsertChildrenOfNode(Node*) = 0;
 
   virtual void HandleAttributeChanged(const QualifiedName& attr_name,
                                       Element*) = 0;
