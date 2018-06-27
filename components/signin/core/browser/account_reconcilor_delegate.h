@@ -51,11 +51,15 @@ class AccountReconcilorDelegate {
   // Returns the first account to add in the Gaia cookie.
   // If this returns an empty string, the user must be logged out of all
   // accounts.
+  // |first_execution| is true for the first reconciliation after startup.
+  // |will_logout| is true if the reconcilor will perform a logout no matter
+  // what is returned by this function.
   virtual std::string GetFirstGaiaAccountForReconcile(
       const std::vector<std::string>& chrome_accounts,
       const std::vector<gaia::ListedAccount>& gaia_accounts,
       const std::string& primary_account,
-      bool first_execution) const;
+      bool first_execution,
+      bool will_logout) const;
 
   // Returns whether secondary accounts should be cleared at the beginning of
   // the reconcile.

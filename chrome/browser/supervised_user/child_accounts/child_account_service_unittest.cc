@@ -64,10 +64,10 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
 
   // A valid, signed-in account means authenticated.
   gaia_cookie_manager_service_->SetListAccountsResponseOneAccountWithParams(
-      "me@example.com", "abcdef",
-      /* is_email_valid = */ true,
-      /* is_signed_out = */ false,
-      /* verified = */ true);
+      {"me@example.com", "abcdef",
+       /* valid = */ true,
+       /* is_signed_out = */ false,
+       /* verified = */ true});
   gaia_cookie_manager_service_->TriggerListAccounts("ChildAccountServiceTest");
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::AUTHENTICATED,
@@ -75,10 +75,10 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
 
   // An invalid (but signed-in) account means not authenticated.
   gaia_cookie_manager_service_->SetListAccountsResponseOneAccountWithParams(
-      "me@example.com", "abcdef",
-      /* is_email_valid = */ false,
-      /* is_signed_out = */ false,
-      /* verified = */ true);
+      {"me@example.com", "abcdef",
+       /* valid = */ false,
+       /* is_signed_out = */ false,
+       /* verified = */ true});
   gaia_cookie_manager_service_->TriggerListAccounts("ChildAccountServiceTest");
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
@@ -86,10 +86,10 @@ TEST_F(ChildAccountServiceTest, GetGoogleAuthState) {
 
   // A valid but not signed-in account means not authenticated.
   gaia_cookie_manager_service_->SetListAccountsResponseOneAccountWithParams(
-      "me@example.com", "abcdef",
-      /* is_email_valid = */ true,
-      /* is_signed_out = */ true,
-      /* verified = */ true);
+      {"me@example.com", "abcdef",
+       /* valid = */ true,
+       /* is_signed_out = */ true,
+       /* verified = */ true});
   gaia_cookie_manager_service_->TriggerListAccounts("ChildAccountServiceTest");
   content::RunAllTasksUntilIdle();
   EXPECT_EQ(ChildAccountService::AuthState::NOT_AUTHENTICATED,
