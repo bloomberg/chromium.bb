@@ -2450,7 +2450,7 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   features[10] = (float)sse_norm_arr[1];
   features[11] = (float)sse_norm_arr[2];
   features[12] = (float)sse_norm_arr[3];
-  features[13] = (float)sse_norm_arr[3];
+  features[13] = (float)sse_norm;
   features[14] = (float)variance;
   features[15] = (float)vdist[0];
   features[16] = (float)vdist[1];
