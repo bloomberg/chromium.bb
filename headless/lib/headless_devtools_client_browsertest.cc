@@ -454,7 +454,8 @@ class TargetDomainCreateAndDeletePageTest
   }
 };
 
-HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateAndDeletePageTest);
+// Disabled due to flakes; see https://crbug.com/856720.
+DISABLED_HEADLESS_ASYNC_DEVTOOLED_TEST_F(TargetDomainCreateAndDeletePageTest);
 
 class TargetDomainCreateAndDeleteBrowserContextTest
     : public HeadlessAsyncDevTooledBrowserTest {
