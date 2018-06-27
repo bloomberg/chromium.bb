@@ -2991,6 +2991,11 @@ const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
 
+const char kEnableNewStyleLauncherName[] = "Enable new style launcher.";
+const char kEnableNewStyleLauncherDescription[] =
+    "Enables new style UI such as suggestion chips, resizable apps grid, etc. "
+    "in app launcher.";
+
 const char kEnableNewWallpaperPickerName[] = "Enable new wallpaper picker";
 const char kEnableNewWallpaperPickerDescription[] =
     "Enable the redesigned wallpaper picker with new wallpaper collections.";

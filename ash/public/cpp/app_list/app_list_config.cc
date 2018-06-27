@@ -26,7 +26,7 @@ AppListConfig::AppListConfig()
       search_list_icon_dimension_(18),
       search_list_badge_icon_dimension_(14),
       app_title_max_line_height_(16) {
-  if (features::IsHomeLauncherEnabled()) {
+  if (features::IsNewStyleLauncherEnabled()) {
     grid_tile_width_ = 120;
     grid_tile_height_ = 112;
     grid_tile_spacing_ = 0;

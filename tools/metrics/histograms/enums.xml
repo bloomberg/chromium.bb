@@ -27354,6 +27354,7 @@ from previous Chrome versions.
   <int value="-1218608640" label="disable-offline-load-stale-cache"/>
   <int value="-1217425153" label="ChromeHomeClearUrlOnOpen:enabled"/>
   <int value="-1216837777" label="clear-data-reduction-proxy-data-savings"/>
+  <int value="-1214870820" label="EnableNewStyleLauncher:enabled"/>
   <int value="-1212855900" label="enable-all-bookmarks-view"/>
   <int value="-1212273428" label="enable-experimental-app-list"/>
   <int value="-1212167260" label="disable-app-window-cycling"/>
@@ -27392,6 +27393,7 @@ from previous Chrome versions.
   <int value="-1145702446" label="ChromeHomeInactivitySheetExpansion:enabled"/>
   <int value="-1145246849" label="ThirdPartyDoodles:enabled"/>
   <int value="-1143496217" label="enable-oop-rasterization"/>
+  <int value="-1143007275" label="EnableNewStyleLauncher:disabled"/>
   <int value="-1137442543" label="enable-slimming-paint"/>
   <int value="-1136627751" label="ignore-autocomplete-off-autofill"/>
   <int value="-1136509631" label="ssl-interstitial-v1"/>
