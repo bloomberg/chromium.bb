@@ -1480,9 +1480,10 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   frame_->GetDocument()->CancelParsing();
   frame_->GetDocument()->CheckCompleted();
 
-  // document.onreadystatechange can fire in CancelParsing(), which can detach
-  // this frame.
-  if (!frame_->GetPage())
+  // document.onreadystatechange can fire in CancelParsing(), which can:
+  // 1) Detach this frame.
+  // 2) Stop the provisional DocumentLoader (i.e window.stop())
+  if (!frame_->GetPage() || !provisional_document_loader_)
     return;
 
   // PlzNavigate: We need to ensure that script initiated navigations are
