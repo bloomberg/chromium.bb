@@ -234,6 +234,12 @@
 #include "content/renderer/pepper/plugin_module.h"
 #endif
 
+#if defined(OS_WIN)
+#include "base/process/kill.h"
+#elif defined(OS_POSIX)
+#include <signal.h>
+#endif
+
 #if defined(OS_ANDROID)
 #include <cpu-features.h>
 
@@ -891,11 +897,20 @@ void HandleChromeDebugURL(const GURL& url) {
     // base::debug::SetDumpWithoutCrashingFunction.  Refer to the documentation
     // of base::debug::DumpWithoutCrashing for more details.
     base::debug::DumpWithoutCrashing();
+#if defined(OS_WIN) || defined(OS_POSIX)
   } else if (url == kChromeUIKillURL) {
     LOG(ERROR) << "Intentionally terminating current process because user"
                   " navigated to "
                << url.spec();
-    base::Process::TerminateCurrentProcessImmediately(1);
+    // Simulate termination such that the base::GetTerminationStatus() API will
+    // return TERMINATION_STATUS_PROCESS_WAS_KILLED.
+#if defined(OS_WIN)
+    base::Process::TerminateCurrentProcessImmediately(
+        base::win::kProcessKilledExitCode);
+#elif defined(OS_POSIX)
+    PCHECK(kill(base::Process::Current().Pid(), SIGTERM) == 0);
+#endif
+#endif  // defined(OS_WIN) || defined(OS_POSIX)
   } else if (url == kChromeUIHangURL) {
     LOG(ERROR) << "Intentionally hanging ourselves with sleep infinite loop"
                << " because user navigated to " << url.spec();
