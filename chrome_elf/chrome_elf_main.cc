@@ -47,6 +47,15 @@ bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
   return true;
 }
 
+// DllMain
+// -------
+// Warning: The OS loader lock is held during DllMain.  Be careful.
+// https://msdn.microsoft.com/en-us/library/windows/desktop/dn633971.aspx
+//
+// - Note: Do not use install_static::GetUserDataDir from inside DllMain.
+//         This can result in path expansion that triggers secondary DLL loads,
+//         that will blow up with the loader lock held.
+//         https://bugs.chromium.org/p/chromium/issues/detail?id=748949#c18
 BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     install_static::InitializeProductDetailsForPrimaryModule();
