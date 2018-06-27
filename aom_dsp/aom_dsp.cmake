@@ -83,6 +83,7 @@ list(APPEND AOM_DSP_COMMON_INTRIN_SSE4_1
 list(APPEND AOM_DSP_COMMON_INTRIN_AVX2
             "${AOM_ROOT}/aom_dsp/x86/aom_subpixel_8t_intrin_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/common_avx2.h"
+            "${AOM_ROOT}/aom_dsp/x86/txfm_common_avx2.h"
             "${AOM_ROOT}/aom_dsp/x86/convolve_avx2.h"
             "${AOM_ROOT}/aom_dsp/x86/fft_avx2.c"
             "${AOM_ROOT}/aom_dsp/x86/highbd_convolve_avx2.c"
