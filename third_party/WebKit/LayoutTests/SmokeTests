@@ -318,6 +318,8 @@ external/wpt/web-animations/timing-model/animation-effects/active-time.html
 external/wpt/web-animations/timing-model/animations/finishing-an-animation.html
 external/wpt/web-animations/timing-model/animations/set-the-animation-start-time.html
 external/wpt/web-animations/timing-model/time-transformations/transformed-progress.html
+external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/audiobuffersource-ended.html
+external/wpt/webaudio/the-audio-api/the-audiobuffersourcenode-interface/audiobuffersource-playbackrate-zero.html
 external/wpt/webaudio/the-audio-api/the-audionode-interface/channel-mode-interp-basic.html
 external/wpt/webaudio/the-audio-api/the-audioworklet-interface/baseaudiocontext-audioworklet.https.html
 external/wpt/webaudio/the-audio-api/the-constantsourcenode-interface/constant-source-onended.html
@@ -999,8 +1001,6 @@ virtual/threaded/synthetic_gestures/synthetic-pinch-zoom-gesture-touchscreen.htm
 virtual/without-smil/svg/animations/exposed/effect.html
 wake_lock/wakelock-api.html
 wake_lock/wakelock-in-nested-frame.html
-webaudio/AudioBufferSource/audiobuffersource-ended.html
-webaudio/AudioBufferSource/audiobuffersource-playbackrate-zero.html
 webaudio/AudioParam/audioparam-setValueCurve-duration.html
 webaudio/codec-tests/flac/flac-decode.html
 webaudio/codec-tests/vorbis/vbr-128kbps-44khz.html
