@@ -57,9 +57,9 @@
 // Updates the location text in the non-editing mode.
 - (void)updateLocationText:(NSString*)text;
 // Updates the location view to show a fake placeholder in the steady location
-// view and hides the trailing button if |isIncognitoNTP|. Otherwise, shows the
+// view and hides the trailing button if |isNTP|. Otherwise, shows the
 // location text and the button as normal.
-- (void)updateForIncognitoNTP:(BOOL)isIncognitoNTP;
+- (void)updateForNTP:(BOOL)isNTP;
 
 // Displays the voice search button instead of the share button in steady state,
 // and adds the voice search button to the empty textfield.
