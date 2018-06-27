@@ -116,7 +116,7 @@ void EnforcePolicyInputMethods(std::string user_input_method) {
   }
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
-  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
+  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods, true);
   if (ImeControllerClient::Get())  // Can be null in tests.
     ImeControllerClient::Get()->SetImesManagedByPolicy(true);
 }
@@ -126,7 +126,7 @@ void StopEnforcingPolicyInputMethods() {
   std::vector<std::string> allowed_input_methods;
   chromeos::input_method::InputMethodManager* imm =
       chromeos::input_method::InputMethodManager::Get();
-  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods);
+  imm->GetActiveIMEState()->SetAllowedInputMethods(allowed_input_methods, true);
   if (ImeControllerClient::Get())  // Can be null in tests.
     ImeControllerClient::Get()->SetImesManagedByPolicy(false);
 }

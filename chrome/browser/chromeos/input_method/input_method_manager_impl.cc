@@ -425,7 +425,8 @@ bool InputMethodManagerImpl::StateImpl::ReplaceEnabledInputMethods(
 }
 
 bool InputMethodManagerImpl::StateImpl::SetAllowedInputMethods(
-    const std::vector<std::string>& new_allowed_input_method_ids) {
+    const std::vector<std::string>& new_allowed_input_method_ids,
+    bool enable_allowed_input_methods) {
   allowed_keyboard_layout_input_method_ids.clear();
   for (auto input_method_id : new_allowed_input_method_ids) {
     std::string migrated_id =
@@ -440,13 +441,29 @@ bool InputMethodManagerImpl::StateImpl::SetAllowedInputMethods(
     return false;
   }
 
-  // Enable all allowed keyboard layout input methods. Leave all non-keyboard
-  // input methods enabled.
-  std::vector<std::string> new_active_input_method_ids(
-      allowed_keyboard_layout_input_method_ids);
-  for (auto active_input_method_id : active_input_method_ids) {
-    if (!manager_->util_.IsKeyboardLayout(active_input_method_id))
-      new_active_input_method_ids.push_back(active_input_method_id);
+  std::vector<std::string> new_active_input_method_ids;
+  if (enable_allowed_input_methods) {
+    // Enable all allowed keyboard layout input methods. Leave all non-keyboard
+    // input methods enabled.
+    new_active_input_method_ids = allowed_keyboard_layout_input_method_ids;
+    for (auto active_input_method_id : active_input_method_ids) {
+      if (!manager_->util_.IsKeyboardLayout(active_input_method_id))
+        new_active_input_method_ids.push_back(active_input_method_id);
+    }
+  } else {
+    // Filter all currently active input methods and leave only non-keyboard or
+    // allowed keyboard layouts. If no input method remains, take a fallback
+    // keyboard layout.
+    bool has_keyboard_layout = false;
+    for (auto active_input_method_id : active_input_method_ids) {
+      if (IsInputMethodAllowed(active_input_method_id)) {
+        new_active_input_method_ids.push_back(active_input_method_id);
+        has_keyboard_layout |=
+            manager_->util_.IsKeyboardLayout(active_input_method_id);
+      }
+    }
+    if (!has_keyboard_layout)
+      new_active_input_method_ids.push_back(GetAllowedFallBackKeyboardLayout());
   }
   return ReplaceEnabledInputMethods(new_active_input_method_ids);
 }
@@ -472,6 +489,16 @@ bool InputMethodManagerImpl::StateImpl::IsInputMethodAllowed(
          base::ContainsValue(
              allowed_keyboard_layout_input_method_ids,
              manager_->util_.MigrateInputMethod(input_method_id));
+}
+
+std::string
+InputMethodManagerImpl::StateImpl::GetAllowedFallBackKeyboardLayout() const {
+  for (const std::string& hardware_id :
+       manager_->util_.GetHardwareInputMethodIds()) {
+    if (IsInputMethodAllowed(hardware_id))
+      return hardware_id;
+  }
+  return allowed_keyboard_layout_input_method_ids[0];
 }
 
 void InputMethodManagerImpl::StateImpl::ChangeInputMethod(

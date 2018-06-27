@@ -1327,7 +1327,8 @@ TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsValid) {
 
   // Only allow xkb:us::eng
   std::vector<std::string> allowed = {"xkb:us::eng"};
-  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(
+      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetActiveInputMethodIds(),
               testing::ElementsAre(ImeIdFromEngineId("xkb:us::eng")));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetCurrentInputMethod().id(),
@@ -1350,7 +1351,8 @@ TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsInvalid) {
 
   // Only allow xkb:us::eng
   std::vector<std::string> allowed = {"invalid_input_method"};
-  EXPECT_FALSE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_FALSE(
+      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetCurrentInputMethod().id(),
               original_input_method);
   EXPECT_THAT(manager_->GetActiveIMEState()->GetAllowedInputMethods(),
@@ -1374,7 +1376,8 @@ TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsValidAndInvalid) {
   // ignored.
   std::vector<std::string> allowed = {original_input_method_1,
                                       "invalid_input_method"};
-  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(
+      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
   EXPECT_THAT(manager_->GetActiveIMEState()->GetCurrentInputMethod().id(),
               original_input_method_1);
   EXPECT_THAT(manager_->GetActiveIMEState()->GetAllowedInputMethods(),
@@ -1394,7 +1397,8 @@ TEST_F(InputMethodManagerImplTest, AllowedKeyboardLayoutsAndExtensions) {
       ImeIdFromEngineId("xkb:fr::fra")));
 
   std::vector<std::string> allowed = {"xkb:us::eng"};
-  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(
+      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
 
   EXPECT_TRUE(manager_->GetActiveIMEState()->EnableInputMethod(
       ImeIdFromEngineId(kNaclMozcUsId)));
@@ -1409,7 +1413,8 @@ TEST_F(InputMethodManagerImplTest, SetLoginDefaultWithAllowedKeyboardLayouts) {
 
   std::vector<std::string> allowed = {"xkb:us::eng", "xkb:de::ger",
                                       "xkb:fr::fra"};
-  EXPECT_TRUE(manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed));
+  EXPECT_TRUE(
+      manager_->GetActiveIMEState()->SetAllowedInputMethods(allowed, true));
   manager_->GetActiveIMEState()->SetInputMethodLoginDefault();
   EXPECT_THAT(manager_->GetActiveIMEState()->GetActiveInputMethodIds(),
               testing::ElementsAre(ImeIdFromEngineId("xkb:us::eng"),

@@ -9,6 +9,12 @@
 <dom-module id="settings-manage-input-methods-page">
   <template>
     <style include="settings-shared"></style>
+    <div class="settings-box continuation"
+        hidden$="[[!inputMethodsLimitedByPolicy_(
+            prefs.settings.language.allowed_input_methods)]]">
+      <iron-icon class="policy" icon="cr20:domain"></iron-icon>
+      <div>$i18n{inputMethodsManagedbyPolicy}</div>
+    </div>
     <div class="settings-box first block">
       <template is="dom-repeat" items="[[languageList_]]">
         <h2>[[item.language.displayName]]</h2>

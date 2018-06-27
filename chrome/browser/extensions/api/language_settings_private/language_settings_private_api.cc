@@ -68,6 +68,13 @@ std::unordered_set<std::string> GetEnabledIMEs(
   return std::unordered_set<std::string>(ime_ids.begin(), ime_ids.end());
 }
 
+// Returns the set of IDs of all allowed IMEs.
+std::unordered_set<std::string> GetAllowedIMEs(
+    scoped_refptr<InputMethodManager::State> ime_state) {
+  const std::vector<std::string>& ime_ids(ime_state->GetAllowedInputMethods());
+  return std::unordered_set<std::string>(ime_ids.begin(), ime_ids.end());
+}
+
 // Returns the set of IDs of enabled IMEs for the given pref.
 std::unordered_set<std::string> GetIMEsFromPref(PrefService* prefs,
                                                 const char* pref_name) {
@@ -525,16 +532,20 @@ void PopulateInputMethodListFromDescriptors(
     return;
 
   const std::unordered_set<std::string> active_ids(GetEnabledIMEs(ime_state));
+  const std::unordered_set<std::string> allowed_ids(GetAllowedIMEs(ime_state));
   for (const auto& descriptor : descriptors) {
     language_settings_private::InputMethod input_method;
     input_method.id = descriptor.id();
     input_method.display_name = util->GetLocalizedDisplayName(descriptor);
     input_method.language_codes = descriptor.language_codes();
-    bool enabled = active_ids.count(input_method.id) > 0;
-    if (enabled)
+    if (active_ids.count(input_method.id) > 0)
       input_method.enabled.reset(new bool(true));
     if (descriptor.options_page_url().is_valid())
       input_method.has_options_page.reset(new bool(true));
+    if (!allowed_ids.empty() && util->IsKeyboardLayout(input_method.id) &&
+        allowed_ids.count(input_method.id) == 0) {
+      input_method.is_prohibited_by_policy.reset(new bool(true));
+    }
     input_methods->push_back(std::move(input_method));
   }
 }

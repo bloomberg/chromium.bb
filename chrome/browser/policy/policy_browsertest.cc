@@ -1179,7 +1179,83 @@ IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedUILocales) {
   // preferred languages.
   EXPECT_EQ("en-US,fr", prefs->GetString(prefs::kLanguagePreferredLanguages));
 }
-#endif
+
+IN_PROC_BROWSER_TEST_F(LoginPolicyTestBase, AllowedInputMethods) {
+  SkipToLoginScreen();
+  LogIn(kAccountId, kAccountPassword, kEmptyServices);
+
+  const user_manager::User* const user =
+      user_manager::UserManager::Get()->GetActiveUser();
+  Profile* const profile =
+      chromeos::ProfileHelper::Get()->GetProfileByUser(user);
+
+  chromeos::input_method::InputMethodManager* imm =
+      chromeos::input_method::InputMethodManager::Get();
+  ASSERT_TRUE(imm);
+  scoped_refptr<chromeos::input_method::InputMethodManager::State> ime_state =
+      imm->GetActiveIMEState();
+  ASSERT_TRUE(ime_state.get());
+
+  std::vector<std::string> input_methods;
+  input_methods.emplace_back("xkb:us::eng");
+  input_methods.emplace_back("xkb:fr::fra");
+  input_methods.emplace_back("xkb:de::ger");
+  EXPECT_TRUE(imm->MigrateInputMethods(&input_methods));
+
+  // No restrictions and current input method should be "xkb:us::eng" (default).
+  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(input_methods[0], ime_state->GetCurrentInputMethod().id());
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[1]));
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
+
+  // Set policy to only allow "xkb:fr::fra", "xkb:de::ger" an an invalid value
+  // as input method.
+  std::unique_ptr<base::DictionaryValue> policy =
+      std::make_unique<base::DictionaryValue>();
+  base::ListValue allowed_input_methods;
+  allowed_input_methods.AppendString("xkb:fr::fra");
+  allowed_input_methods.AppendString("xkb:de::ger");
+  allowed_input_methods.AppendString("invalid_value_will_be_ignored");
+  policy->SetKey(key::kAllowedInputMethods, std::move(allowed_input_methods));
+  user_policy_helper()->UpdatePolicy(*policy, base::DictionaryValue(), profile);
+
+  // Only "xkb:fr::fra", "xkb:de::ger" should be allowed, current input method
+  // should be "xkb:fr::fra", enabling "xkb:us::eng" should not be possible,
+  // enabling "xkb:de::ger" should be possible.
+  EXPECT_EQ(2U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(2U, ime_state->GetActiveInputMethods()->size());
+  EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
+  EXPECT_FALSE(ime_state->EnableInputMethod(input_methods[0]));
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
+
+  // Set policy to only allow an invalid value as input method.
+  std::unique_ptr<base::DictionaryValue> policy_invalid =
+      std::make_unique<base::DictionaryValue>();
+  base::ListValue invalid_input_methods;
+  invalid_input_methods.AppendString("invalid_value_will_be_ignored");
+  policy_invalid->SetKey(key::kAllowedInputMethods,
+                         std::move(invalid_input_methods));
+  user_policy_helper()->UpdatePolicy(*policy_invalid, base::DictionaryValue(),
+                                     profile);
+
+  // No restrictions and current input method should still be "xkb:fr::fra".
+  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
+
+  // Allow all input methods again.
+  user_policy_helper()->UpdatePolicy(base::DictionaryValue(),
+                                     base::DictionaryValue(), profile);
+
+  // No restrictions and current input method should still be "xkb:fr::fra".
+  EXPECT_EQ(0U, ime_state->GetAllowedInputMethods().size());
+  EXPECT_EQ(input_methods[1], ime_state->GetCurrentInputMethod().id());
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[0]));
+  EXPECT_TRUE(ime_state->EnableInputMethod(input_methods[2]));
+}
+
+#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(PolicyTest, BookmarkBarEnabled) {
   // Verifies that the bookmarks bar can be forced to always or never show up.
