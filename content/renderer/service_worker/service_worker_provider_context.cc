@@ -35,7 +35,7 @@ namespace content {
 
 namespace {
 
-void CreateSubresourceLoaderFactory(
+void CreateSubresourceLoaderFactoryForProviderContext(
     mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
     mojom::ControllerServiceWorkerPtrInfo controller_ptr_info,
     const std::string& client_id,
@@ -218,7 +218,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
         {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
     task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(&CreateSubresourceLoaderFactory,
+        base::BindOnce(&CreateSubresourceLoaderFactoryForProviderContext,
                        CloneContainerHostPtrInfo(),
                        std::move(state->controller_endpoint), state->client_id,
                        state->fallback_loader_factory->Clone(),
