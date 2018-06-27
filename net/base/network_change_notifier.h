@@ -21,7 +21,6 @@ struct DnsConfig;
 class NetworkChangeNotifierFactory;
 struct NetworkInterface;
 typedef std::vector<NetworkInterface> NetworkInterfaceList;
-class URLRequest;
 
 #if defined(OS_LINUX)
 namespace internal {
@@ -438,22 +437,6 @@ class NET_EXPORT NetworkChangeNotifier {
   // Return a string equivalent to |type|.
   static const char* ConnectionTypeToString(ConnectionType type);
 
-  // Let the NetworkChangeNotifier know we received some data.
-  // This is used for producing histogram data about the accuracy of
-  // the NetworkChangenotifier's online detection and rough network
-  // connection measurements.
-  static void NotifyDataReceived(const URLRequest& request, int bytes_read);
-
-  // Register the Observer callbacks for producing histogram data.  This
-  // should be called from the network thread to avoid race conditions.
-  // ShutdownHistogramWatcher() must be called prior to NetworkChangeNotifier
-  // destruction.
-  static void InitHistogramWatcher();
-
-  // Unregister the Observer callbacks for producing histogram data.  This
-  // should be called from the network thread to avoid race conditions.
-  static void ShutdownHistogramWatcher();
-
   // Invoked at the time a new user metrics log record is being finalized, on
   // the main thread. NCN Histograms that want to be logged once per record
   // should be logged in this method. Platform-specific histograms should be
@@ -572,7 +555,6 @@ class NET_EXPORT NetworkChangeNotifier {
   friend class NetworkChangeNotifierLinuxTest;
   friend class NetworkChangeNotifierWinTest;
 
-  class HistogramWatcher;
   class NetworkState;
   class NetworkChangeCalculator;
 
@@ -601,9 +583,6 @@ class NET_EXPORT NetworkChangeNotifier {
 
   // The current network state. Hosts DnsConfig, exposed via GetDnsConfig.
   std::unique_ptr<NetworkState> network_state_;
-
-  // A little-piggy-back observer that simply logs UMA histogram data.
-  std::unique_ptr<HistogramWatcher> histogram_watcher_;
 
   // Computes NetworkChange signal from IPAddress and ConnectionType signals.
   std::unique_ptr<NetworkChangeCalculator> network_change_calculator_;

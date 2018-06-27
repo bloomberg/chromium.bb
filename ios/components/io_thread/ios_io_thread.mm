@@ -300,9 +300,6 @@ void IOSIOThread::Init() {
   // logging the network change before other IO thread consumers respond to it.
   network_change_observer_.reset(new LoggingNetworkChangeObserver(net_log_));
 
-  // Setup the HistogramWatcher to run on the IO thread.
-  net::NetworkChangeNotifier::InitHistogramWatcher();
-
   globals_->system_network_delegate = CreateSystemNetworkDelegate();
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
@@ -360,9 +357,6 @@ void IOSIOThread::CleanUp() {
 
   // Release objects that the net::URLRequestContext could have been pointing
   // to.
-
-  // Shutdown the HistogramWatcher on the IO thread.
-  net::NetworkChangeNotifier::ShutdownHistogramWatcher();
 
   // This must be reset before the ChromeNetLog is destroyed.
   network_change_observer_.reset();
