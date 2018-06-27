@@ -167,7 +167,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
   // For heaps belonging to a thread that's detaching, any cross-thread
   // persistents pointing into them needs to be disabled. Do that by clearing
   // out the underlying heap reference.
-  RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
 
   PersistentNodeSlots* slots = persistent_region_.slots_;
   while (slots) {
@@ -187,7 +187,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
       BasePage* page = PageFromObject(raw_object);
       DCHECK(page);
       if (page->Arena()->GetThreadState() == thread_state) {
-        persistent->Clear();
+        persistent->ClearWithLockHeld();
         DCHECK(slots->slot_[i].IsUnused());
       }
     }
@@ -197,7 +197,7 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
 
 #if defined(ADDRESS_SANITIZER)
 void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
-  RecursiveMutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
   int persistent_count = 0;
   for (PersistentNodeSlots* slots = persistent_region_.slots_; slots;
        slots = slots->next_) {

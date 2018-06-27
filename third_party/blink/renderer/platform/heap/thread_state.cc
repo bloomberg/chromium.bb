@@ -362,8 +362,7 @@ void ThreadState::VisitPersistents(Visitor* visitor) {
         Heap().stats_collector(),
         ThreadHeapStatsCollector::kVisitCrossThreadPersistents);
     // See ProcessHeap::CrossThreadPersistentMutex().
-    RecursiveMutexLocker persistent_lock(
-        ProcessHeap::CrossThreadPersistentMutex());
+    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
     ProcessHeap::GetCrossThreadPersistentRegion().TracePersistentNodes(visitor);
   }
   {
@@ -1706,8 +1705,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
 
   {
     // See ProcessHeap::CrossThreadPersistentMutex().
-    RecursiveMutexLocker persistent_lock(
-        ProcessHeap::CrossThreadPersistentMutex());
+    MutexLocker persistent_lock(ProcessHeap::CrossThreadPersistentMutex());
     VisitWeakPersistents(visitor);
     Heap().WeakProcessing(visitor);
   }

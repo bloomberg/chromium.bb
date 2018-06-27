@@ -32,12 +32,7 @@ class PLATFORM_EXPORT ProcessHeap {
   // - Iteration and processing of weak cross-thread Persistents. The lock
   //   needs to span both operations as iteration of weak persistents only
   //   registers memory regions that are then processed afterwards.
-  //
-  // Recursive as PrepareForThreadStateTermination() clears a PersistentNode's
-  // associated Persistent<> -- it in turn freeing the PersistentNode. And both
-  // CrossThreadPersistentRegion operations need a lock on the region before
-  // mutating.
-  static RecursiveMutex& CrossThreadPersistentMutex();
+  static Mutex& CrossThreadPersistentMutex();
 
   static void IncreaseTotalAllocatedObjectSize(size_t delta) {
     AtomicAdd(&total_allocated_object_size_, static_cast<long>(delta));
