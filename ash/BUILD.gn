@@ -1331,6 +1331,7 @@ component("ash") {
     "//ash/components/quick_launch/public/mojom",
     "//ash/components/shortcut_viewer/public/mojom",
     "//ash/components/tap_visualizer/public/mojom",
+    "//ash/keyboard/arc",
     "//ash/system/message_center/arc",
     "//ash/touch_hud",
     "//base",
