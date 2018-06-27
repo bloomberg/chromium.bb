@@ -683,6 +683,14 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
   TRACE_EVENT1("audio", "WASAPIAudioInputStream::PullCaptureDataAndPushToSink",
                "sample rate", input_format_.nSamplesPerSec);
 
+  // Used for storing information when we need to accumulate before checking for
+  // glitches. We don't accumulate over loop edges (i.e. when we exit this
+  // function).
+  UINT64 last_device_position = 0;
+  UINT32 accumulated_frames = 0;
+  DWORD accumulated_discontinuity_flag = 0;
+  UINT64 accumulated_capture_time_100ns = 0;
+
   // Pull data from the capture endpoint buffer until it's empty or an error
   // occurs.
   while (true) {
@@ -703,14 +711,23 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     HRESULT hr =
         audio_capture_client_->GetBuffer(&data_ptr, &num_frames_to_read, &flags,
                                          &device_position, &capture_time_100ns);
-    if (hr == AUDCLNT_S_BUFFER_EMPTY)
-      break;
+    accumulated_frames += num_frames_to_read;
+    accumulated_discontinuity_flag |=
+        flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY;
+    // Store the first capture time in a sequence of accumulated buffers.
+    if (accumulated_capture_time_100ns == 0)
+      accumulated_capture_time_100ns = capture_time_100ns;
 
-    ReportDelayStatsAndUpdateGlitchCount(
-        num_frames_to_read, flags & AUDCLNT_BUFFERFLAGS_DATA_DISCONTINUITY,
-        device_position,
-        base::TimeTicks() +
-            base::TimeDelta::FromMicroseconds(capture_time_100ns / 10.0));
+    if (hr == AUDCLNT_S_BUFFER_EMPTY) {
+      if (accumulated_frames > 0) {
+        ReportDelayStatsAndUpdateGlitchCount(
+            accumulated_frames, accumulated_discontinuity_flag,
+            last_device_position,
+            base::TimeTicks() + CoreAudioUtil::ReferenceTimeToTimeDelta(
+                                    accumulated_capture_time_100ns));
+      }
+      break;
+    }
 
     // TODO(grunell): Should we handle different errors explicitly? Perhaps exit
     // by setting |error = true|. What are the assumptions here that makes us
@@ -719,6 +736,17 @@ void WASAPIAudioInputStream::PullCaptureDataAndPushToSink() {
     if (FAILED(hr)) {
       DLOG(ERROR) << "Failed to get data from the capture buffer";
       break;
+    }
+
+    if (device_position != last_device_position) {
+      ReportDelayStatsAndUpdateGlitchCount(
+          accumulated_frames, accumulated_discontinuity_flag, device_position,
+          base::TimeTicks() + CoreAudioUtil::ReferenceTimeToTimeDelta(
+                                  accumulated_capture_time_100ns));
+      last_device_position = device_position;
+      accumulated_frames = 0;
+      accumulated_discontinuity_flag = false;
+      accumulated_capture_time_100ns = 0;
     }
 
     // TODO(dalecurtis, olka, grunell): Is this ever false? If it is, should we
