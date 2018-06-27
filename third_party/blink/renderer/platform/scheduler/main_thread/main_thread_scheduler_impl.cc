@@ -65,7 +65,7 @@ constexpr base::TimeDelta kQueueingTimeWindowDuration =
 const double kSamplingRateForTaskUkm = 0.0001;
 const int64_t kSecondsPerMinute = 60;
 
-// Field trial name.
+// Wake-up throttling trial.
 const char kWakeUpThrottlingTrial[] = "RendererSchedulerWakeUpThrottling";
 const char kWakeUpDurationParam[] = "wake_up_duration_ms";
 
@@ -579,7 +579,9 @@ MainThreadSchedulerImpl::MainThreadOnly::MainThreadOnly(
       max_virtual_time_task_starvation_count(0),
       virtual_time_stopped(false),
       nested_runloop(false),
-      uniform_distribution(0.0f, 1.0f) {}
+      uniform_distribution(0.0f, 1.0f),
+      compositing_experiment(main_thread_scheduler_impl),
+      should_prioritize_compositing(false) {}
 
 MainThreadSchedulerImpl::MainThreadOnly::~MainThreadOnly() = default;
 
@@ -878,6 +880,7 @@ void MainThreadSchedulerImpl::WillBeginFrame(const viz::BeginFrameArgs& args) {
     base::AutoLock lock(any_thread_lock_);
     any_thread().begin_main_frame_on_critical_path = args.on_critical_path;
   }
+  main_thread_only().compositing_experiment.OnWillBeginMainFrame();
 }
 
 void MainThreadSchedulerImpl::DidCommitFrameToCompositor() {
@@ -1029,6 +1032,10 @@ void MainThreadSchedulerImpl::SetSchedulerKeepActive(bool keep_active) {
   for (PageSchedulerImpl* page_scheduler : main_thread_only().page_schedulers) {
     page_scheduler->SetKeepActive(keep_active);
   }
+}
+
+void MainThreadSchedulerImpl::OnMainFrameRequestedForInput() {
+  main_thread_only().compositing_experiment.OnMainFrameRequestedForInput();
 }
 
 bool MainThreadSchedulerImpl::SchedulerKeepActive() {
@@ -1600,6 +1607,12 @@ void MainThreadSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   new_policy.should_disable_throttling() = main_thread_only().use_virtual_time;
+
+  if (main_thread_only().should_prioritize_compositing) {
+    new_policy.compositor_priority() =
+        main_thread_only()
+            .compositing_experiment.GetIncreasedCompositingPriority();
+  }
 
   // Tracing is done before the early out check, because it's quite possible we
   // will otherwise miss this information in traces.
@@ -2497,6 +2510,8 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
   if (queue)
     task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
 
+  main_thread_only().compositing_experiment.OnTaskCompleted(queue);
+
   // TODO(altimin): Per-page metrics should also be considered.
   main_thread_only().metrics_helper.RecordTaskMetrics(queue, task, start, end,
                                                       thread_time);
@@ -2780,6 +2795,17 @@ UseCase MainThreadSchedulerImpl::current_use_case() const {
 const MainThreadSchedulerImpl::SchedulingSettings&
 MainThreadSchedulerImpl::scheduling_settings() const {
   return scheduling_settings_;
+}
+
+void MainThreadSchedulerImpl::SetShouldPrioritizeCompositing(
+    bool should_prioritize_compositing) {
+  if (main_thread_only().should_prioritize_compositing ==
+      should_prioritize_compositing) {
+    return;
+  }
+  main_thread_only().should_prioritize_compositing =
+      should_prioritize_compositing;
+  UpdatePolicy();
 }
 
 // static

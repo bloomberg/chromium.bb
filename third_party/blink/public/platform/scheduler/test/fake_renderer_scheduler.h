@@ -55,6 +55,7 @@ class FakeRendererScheduler : public WebThreadScheduler {
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
       const char* name,
       WebScopedVirtualTimePauser::VirtualTaskDuration duration) override;
+  void OnMainFrameRequestedForInput() override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeRendererScheduler);

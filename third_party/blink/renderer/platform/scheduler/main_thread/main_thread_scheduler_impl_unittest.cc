@@ -286,11 +286,16 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
 
 class MainThreadSchedulerImplTest : public testing::Test {
  public:
-  MainThreadSchedulerImplTest()
+  MainThreadSchedulerImplTest(std::vector<base::Feature> features_to_enable,
+                              std::vector<base::Feature> features_to_disable)
       : fake_task_(TaskQueue::PostedTask(base::BindOnce([] {}), FROM_HERE),
                    base::TimeTicks()) {
-    feature_list_.InitAndEnableFeature(kHighPriorityInput);
+    feature_list_.InitWithFeatures(features_to_enable, features_to_disable);
   }
+
+  MainThreadSchedulerImplTest()
+      : MainThreadSchedulerImplTest({kHighPriorityInput},
+                                    {kPrioritizeCompositingAfterInput}) {}
 
   ~MainThreadSchedulerImplTest() override = default;
 
@@ -914,6 +919,8 @@ TEST_F(MainThreadSchedulerImplTest, TestDefaultPolicy) {
   EnableIdleTasks();
   base::RunLoop().RunUntilIdle();
   // High-priority input is enabled and input tasks are processed first.
+  // One compositing event is prioritized after an input event but still
+  // has lower priority than input event.
   EXPECT_THAT(run_order,
               testing::ElementsAre(std::string("P1"), std::string("P2"),
                                    std::string("L1"), std::string("D1"),
@@ -3865,6 +3872,70 @@ TEST_F(MainThreadSchedulerImplTest, ShouldIgnoreTaskForUkm) {
     EXPECT_FALSE(scheduler_->ShouldIgnoreTaskForUkm(false, &sampling_rate));
     EXPECT_EQ(0.0001, sampling_rate);
   }
+}
+
+class CompositingExperimentWithExplicitSignalsTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  CompositingExperimentWithExplicitSignalsTest()
+      : MainThreadSchedulerImplTest(
+            {kHighPriorityInput, kPrioritizeCompositingAfterInput,
+             kUseExplicitSignalForTriggeringCompositingPrioritization,
+             kUseWillBeginMainFrameForCompositingPrioritization},
+            {}) {}
+};
+
+TEST_F(CompositingExperimentWithExplicitSignalsTest, CompositingAfterInput) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "P1 T1 C1");
+  base::RunLoop().RunUntilIdle();
+  // Without an explicit signal nothing should be reordered.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("T1"),
+                                   std::string("C1")));
+  run_order.clear();
+
+  scheduler_->OnMainFrameRequestedForInput();
+
+  PostTestTasks(&run_order, "T2 C2 C3");
+  base::RunLoop().RunUntilIdle();
+  // When a signal is present, compositing tasks should be prioritized until
+  // WillBeginMainFrame is received.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("C2"), std::string("C3"),
+                                   std::string("T2")));
+  run_order.clear();
+
+  scheduler_->WillBeginFrame(viz::BeginFrameArgs());
+
+  PostTestTasks(&run_order, "T3 C4 C5");
+  base::RunLoop().RunUntilIdle();
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("T3"), std::string("C4"),
+                                   std::string("C5")));
+  run_order.clear();
+}
+
+class CompositingExperimentWithImplicitSignalsTest
+    : public MainThreadSchedulerImplTest {
+ public:
+  CompositingExperimentWithImplicitSignalsTest()
+      : MainThreadSchedulerImplTest(
+            {kHighPriorityInput, kPrioritizeCompositingAfterInput},
+            {kHighestPriorityForCompositingAfterInput,
+             kUseExplicitSignalForTriggeringCompositingPrioritization,
+             kUseWillBeginMainFrameForCompositingPrioritization}) {}
+};
+
+TEST_F(CompositingExperimentWithImplicitSignalsTest, CompositingAfterInput) {
+  std::vector<std::string> run_order;
+  PostTestTasks(&run_order, "T1 C1 C2 P1 P2");
+  base::RunLoop().RunUntilIdle();
+  // One compositing task should be prioritized after input.
+  EXPECT_THAT(run_order,
+              testing::ElementsAre(std::string("P1"), std::string("P2"),
+                                   std::string("C1"), std::string("T1"),
+                                   std::string("C2")));
 }
 
 }  // namespace main_thread_scheduler_impl_unittest
