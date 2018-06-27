@@ -50,6 +50,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_frame_navigation_observer.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "content/public/test/test_navigation_throttle_inserter.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "content/shell/browser/shell.h"
@@ -4348,6 +4349,65 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+}
+
+// A NavigationThrottle implementation that blocks all outgoing navigation
+// requests for a specific WebContents. It is used to block navigations to
+// WebUI URLs in the following test.
+class RequestBlockingNavigationThrottle : public NavigationThrottle {
+ public:
+  explicit RequestBlockingNavigationThrottle(NavigationHandle* handle)
+      : NavigationThrottle(handle) {}
+
+  static std::unique_ptr<NavigationThrottle> Create(NavigationHandle* handle) {
+    return std::make_unique<RequestBlockingNavigationThrottle>(handle);
+  }
+
+ private:
+  ThrottleCheckResult WillStartRequest() override {
+    return NavigationThrottle::BLOCK_REQUEST;
+  }
+
+  const char* GetNameForLogging() override {
+    return "RequestBlockingNavigationThrottle";
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(RequestBlockingNavigationThrottle);
+};
+
+// Test to verify that navigations to WebUI URL which results in an error
+// commits properly in the error page process and does not give it WebUI
+// bindings.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
+                       ErrorPageNavigationToWebUIResourceWithError) {
+  // This test is only valid if error page isolation is enabled.
+  if (!SiteIsolationPolicy::IsErrorPageIsolationEnabled(true))
+    return;
+
+  StartEmbeddedServer();
+  GURL webui_url = GURL(std::string(kChromeUIScheme) + "://" +
+                        std::string(kChromeUIGpuHost));
+  GURL error_url(webui_url.Resolve("/foo"));
+
+  // Navigate to the main WebUI URL and ensure it is successful.
+  EXPECT_TRUE(NavigateToURL(shell(), webui_url));
+
+  // Ensure that the subsequent navigation is blocked, resulting in an
+  // error.
+  TestNavigationThrottleInserter throttle_inserter(
+      shell()->web_contents(),
+      base::BindRepeating(&RequestBlockingNavigationThrottle::Create));
+
+  // Navigate to an error URL and verify the error page process does not get
+  // WebUI bindings.
+  NavigationHandleObserver observer(shell()->web_contents(), error_url);
+  EXPECT_FALSE(NavigateToURL(shell(), error_url));
+  scoped_refptr<SiteInstance> error_site_instance =
+      shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_TRUE(observer.is_error());
+  EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+  EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
+      error_site_instance->GetProcess()->GetID()));
 }
 
 // A test ContentBrowserClient implementation which enforces

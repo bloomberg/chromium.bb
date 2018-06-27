@@ -3957,6 +3957,12 @@ bool RenderFrameHostImpl::UpdatePendingWebUI(const GURL& dest_url,
   // Reset the pending WebUI as from this point it will certainly not be reused.
   ClearPendingWebUI();
 
+  // If error page isolation is enabled and this RenderFrameHost is going to
+  // commit an error page, there is no reason to create WebUI and give the
+  // process any bindings.
+  if (GetSiteInstance()->GetSiteURL() == GURL(kUnreachableWebDataURL))
+    return true;
+
   // If this navigation is not to a WebUI, skip directly to bindings work.
   if (new_web_ui_type != WebUI::kNoWebUI) {
     if (new_web_ui_type == web_ui_type_) {
