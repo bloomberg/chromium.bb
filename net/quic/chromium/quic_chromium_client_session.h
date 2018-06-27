@@ -556,17 +556,13 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // otherwise a PING packet is written.
   void WriteToNewSocket();
 
-  // Migrates session over to use alternate network if such is available.
-  // If the migrate fails, session will not be affected.
-  MigrationResult MigrateToAlternateNetwork(const NetLogWithSource& net_log);
-
   // Migrates session over to use |peer_address| and |network|.
   // If |network| is kInvalidNetworkHandle, default network is used. If the
   // migration fails and |close_session_on_error| is true, session will be
   // closed.
   MigrationResult Migrate(NetworkChangeNotifier::NetworkHandle network,
                           IPEndPoint peer_address,
-                          bool close_sesion_on_error,
+                          bool close_session_on_error,
                           const NetLogWithSource& migration_net_log);
 
   // Migrates session onto new socket, i.e., starts reading from
@@ -689,8 +685,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void TryMigrateBackToDefaultNetwork(base::TimeDelta timeout);
   void MaybeRetryMigrateBackToDefaultNetwork();
 
-  bool ShouldMigrateSession(NetworkChangeNotifier::NetworkHandle network,
-                            const NetLogWithSource& migration_net_log);
+  // Returns true if session is migratable. If not, a task is posted to
+  // close the session later if |close_session_if_not_migratable| is true.
+  bool IsSessionMigratable(bool close_session_if_not_migratable);
   void LogMetricsOnNetworkDisconnected();
   void LogMetricsOnNetworkMadeDefault();
   void LogConnectionMigrationResultToHistogram(
