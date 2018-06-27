@@ -18,19 +18,9 @@ NetworkChangeManager::NetworkChangeManager(
   net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
   connection_type_ =
       mojom::ConnectionType(net::NetworkChangeNotifier::GetConnectionType());
-  // Only initialize the NetworkChangeNotifier's HistogramWatcher if this class
-  // owns the NCN. Otherwise, can't ensure lifetime guarantees are met, so just
-  // rely on the embedder to set it up, if needed.
-  // TODO(mmenke): Once the network service ships, this class should always own
-  // the NCN, and then this can be done unconditionally.
-  if (network_change_notifier_)
-    net::NetworkChangeNotifier::InitHistogramWatcher();
 }
 
 NetworkChangeManager::~NetworkChangeManager() {
-  // Shut down the HistogramWatcher, if it was started in the constructor.
-  if (network_change_notifier_)
-    net::NetworkChangeNotifier::ShutdownHistogramWatcher();
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 

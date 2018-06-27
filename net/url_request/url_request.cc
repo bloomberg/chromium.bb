@@ -1103,13 +1103,6 @@ void URLRequest::NotifyReadCompleted(int bytes_read) {
   if (bytes_read == -1)
     bytes_read = status_.error();
 
-  // Notify NetworkChangeNotifier that we just received network data.
-  // This is to identify cases where the NetworkChangeNotifier thinks we
-  // are off-line but we are still receiving network data (crbug.com/124069),
-  // and to get rough network connection measurements.
-  if (bytes_read > 0 && !was_cached())
-    NetworkChangeNotifier::NotifyDataReceived(*this, bytes_read);
-
   delegate_->OnReadCompleted(this, bytes_read);
 
   // Nothing below this line as OnReadCompleted may delete |this|.
