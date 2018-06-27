@@ -23,6 +23,10 @@ XRFrameTransport::~XRFrameTransport() {
 
 void XRFrameTransport::PresentChange() {
   frame_copier_ = nullptr;
+
+  // Ensure we don't wait for a frame separator fence when rapidly exiting and
+  // re-entering presentation, cf. https://crbug.com/855722.
+  waiting_for_previous_frame_fence_ = false;
 }
 
 void XRFrameTransport::SetTransportOptions(
