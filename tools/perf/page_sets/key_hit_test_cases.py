@@ -13,7 +13,8 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
       # Generated from https://github.com/zqureshi/paper-calculator
       # vulcanize --inline --strip paper-calculator/demo.html
       url='file://key_hit_test_cases/paper-calculator-no-rendering.html',
-      page_set=page_set, run_no_page_interactions=False)
+      page_set=page_set, run_no_page_interactions=False,
+      name='paper_calculator_hit_test')
 
 
   def PerformPageInteractions(self, action_runner):
