@@ -21,4 +21,3 @@ AXWebArea
 ++++AXGroup AXDropEffects='link|popup'
 ++++++AXListMarker AXValue='• '
 ++++++AXStaticText AXValue='link'
-<-- End-of-file -->

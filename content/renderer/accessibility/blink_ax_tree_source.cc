@@ -409,6 +409,13 @@ void BlinkAXTreeSource::GetChildren(
     if (!is_iframe && !IsParentUnignoredOf(parent, child))
       continue;
 
+    // Skip table headers and columns, they're only needed on Mac
+    // and soon we'll get rid of this code entirely.
+    if (child.Role() == blink::kWebAXRoleColumn ||
+        child.Role() == blink::kWebAXRoleLayoutTableColumn ||
+        child.Role() == blink::kWebAXRoleTableHeaderContainer)
+      continue;
+
     out_children->push_back(child);
   }
 }
@@ -797,9 +804,7 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       dst->AddStringAttribute(ax::mojom::StringAttribute::kHtmlTag,
                               "#document");
 
-    const bool is_table_like_role = dst->role == ax::mojom::Role::kTable ||
-                                    dst->role == ax::mojom::Role::kGrid ||
-                                    dst->role == ax::mojom::Role::kTreeGrid;
+    const bool is_table_like_role = ui::IsTableLikeRole(dst->role);
     if (is_table_like_role) {
       int column_count = src.ColumnCount();
       int row_count = src.RowCount();
@@ -808,10 +813,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                              column_count);
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount,
                              row_count);
-        WebAXObject header = src.HeaderContainerObject();
-        if (!header.IsDetached())
-          dst->AddIntAttribute(ax::mojom::IntAttribute::kTableHeaderId,
-                               header.AxID());
       }
 
       int aria_colcount = src.AriaColumnCount();
@@ -831,15 +832,6 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
       WebAXObject header = src.RowHeader();
       if (!header.IsDetached())
         dst->AddIntAttribute(ax::mojom::IntAttribute::kTableRowHeaderId,
-                             header.AxID());
-    }
-
-    if (dst->role == ax::mojom::Role::kColumn) {
-      dst->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnIndex,
-                           src.ColumnIndex());
-      WebAXObject header = src.ColumnHeader();
-      if (!header.IsDetached())
-        dst->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnHeaderId,
                              header.AxID());
     }
 

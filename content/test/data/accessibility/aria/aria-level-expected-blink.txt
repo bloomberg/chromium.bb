@@ -40,5 +40,3 @@ rootWebArea
 ++++++cell name='Cell at level 2' selected=false
 ++++++++staticText name='Cell at level 2'
 ++++++++++inlineTextBox name='Cell at level 2'
-++++column
-++++tableHeaderContainer

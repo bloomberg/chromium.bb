@@ -6,6 +6,3 @@ android.webkit.WebView focusable focused scrollable name='Table example - th row
 ++++android.view.View
 ++++++android.view.View role_description='row header' collection_item heading name='Lastname' row_index=1 row_span=1 column_span=1
 ++++++android.view.View collection_item name='Smith' row_index=1 row_span=1 column_index=1 column_span=1
-++++android.view.View
-++++android.view.View
-++++android.view.View

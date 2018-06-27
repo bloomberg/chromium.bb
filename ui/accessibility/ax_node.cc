@@ -18,8 +18,7 @@ AXNode::AXNode(AXNode* parent, int32_t id, int32_t index_in_parent)
   data_.id = id;
 }
 
-AXNode::~AXNode() {
-}
+AXNode::~AXNode() {}
 
 int AXNode::GetUnignoredChildCount() const {
   int count = 0;

@@ -254,54 +254,8 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
-                       MultipleInheritanceAccessibility) {
-  // In a WebKit accessibility render tree for a table, each cell is a
-  // child of both a row and a column, so it appears to use multiple
-  // inheritance. Make sure that the ui::AXNodeDataObject tree only
-  // keeps one copy of each cell, and uses an indirect child id for the
-  // additional reference to it.
-  const char url_str[] =
-      "data:text/html,"
-      "<!doctype html>"
-      "<table border=1><tr><td>1</td><td>2</td></tr></table>";
-  GURL url(url_str);
-  NavigateToURL(shell(), url);
-
-  const ui::AXTree& tree = GetAXTree();
-  const ui::AXNode* root = tree.root();
-  ASSERT_EQ(1, root->child_count());
-  const ui::AXNode* table = root->ChildAtIndex(0);
-  EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
-  const ui::AXNode* row = table->ChildAtIndex(0);
-  EXPECT_EQ(ax::mojom::Role::kRow, row->data().role);
-  const ui::AXNode* cell1 = row->ChildAtIndex(0);
-  EXPECT_EQ(ax::mojom::Role::kCell, cell1->data().role);
-  const ui::AXNode* cell2 = row->ChildAtIndex(1);
-  EXPECT_EQ(ax::mojom::Role::kCell, cell2->data().role);
-  const ui::AXNode* column1 = table->ChildAtIndex(1);
-  EXPECT_EQ(ax::mojom::Role::kColumn, column1->data().role);
-  EXPECT_EQ(0, column1->child_count());
-  EXPECT_EQ(1U, column1->data().intlist_attributes.size());
-  EXPECT_EQ(ax::mojom::IntListAttribute::kIndirectChildIds,
-            column1->data().intlist_attributes[0].first);
-  const std::vector<int32_t> column1_indirect_child_ids =
-      column1->data().intlist_attributes[0].second;
-  EXPECT_EQ(1U, column1_indirect_child_ids.size());
-  EXPECT_EQ(cell1->id(), column1_indirect_child_ids[0]);
-  const ui::AXNode* column2 = table->ChildAtIndex(2);
-  EXPECT_EQ(ax::mojom::Role::kColumn, column2->data().role);
-  EXPECT_EQ(0, column2->child_count());
-  EXPECT_EQ(ax::mojom::IntListAttribute::kIndirectChildIds,
-            column2->data().intlist_attributes[0].first);
-  const std::vector<int32_t> column2_indirect_child_ids =
-      column2->data().intlist_attributes[0].second;
-  EXPECT_EQ(1U, column2_indirect_child_ids.size());
-  EXPECT_EQ(cell2->id(), column2_indirect_child_ids[0]);
-}
-
-IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
                        MultipleInheritanceAccessibility2) {
-  // Here's another html snippet where WebKit puts the same node as a child
+  // Here's a html snippet where Blink puts the same node as a child
   // of two different parents. Instead of checking the exact output, just
   // make sure that no id is reused in the resulting tree.
   const char url_str[] =
@@ -416,12 +370,9 @@ IN_PROC_BROWSER_TEST_F(CrossPlatformAccessibilityBrowserTest,
   const ui::AXNode* root = tree.root();
   const ui::AXNode* table = root->ChildAtIndex(0);
   EXPECT_EQ(ax::mojom::Role::kTable, table->data().role);
-  ASSERT_GE(table->child_count(), 5);
+  ASSERT_GE(table->child_count(), 2);
   EXPECT_EQ(ax::mojom::Role::kRow, table->ChildAtIndex(0)->data().role);
   EXPECT_EQ(ax::mojom::Role::kRow, table->ChildAtIndex(1)->data().role);
-  EXPECT_EQ(ax::mojom::Role::kColumn, table->ChildAtIndex(2)->data().role);
-  EXPECT_EQ(ax::mojom::Role::kColumn, table->ChildAtIndex(3)->data().role);
-  EXPECT_EQ(ax::mojom::Role::kColumn, table->ChildAtIndex(4)->data().role);
   EXPECT_EQ(3, GetIntAttr(table, ax::mojom::IntAttribute::kTableColumnCount));
   EXPECT_EQ(2, GetIntAttr(table, ax::mojom::IntAttribute::kTableRowCount));
 

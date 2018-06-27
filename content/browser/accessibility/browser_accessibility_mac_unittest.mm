@@ -23,7 +23,51 @@
 
 namespace content {
 
-class BrowserAccessibilityTest : public ui::CocoaTest {
+namespace {
+
+void MakeTable(ui::AXNodeData* table, int id, int row_count, int col_count) {
+  table->id = id;
+  table->role = ax::mojom::Role::kTable;
+  table->AddIntAttribute(ax::mojom::IntAttribute::kTableRowCount, row_count);
+  table->AddIntAttribute(ax::mojom::IntAttribute::kTableColumnCount, col_count);
+}
+
+void MakeRow(ui::AXNodeData* row, int id) {
+  row->id = id;
+  row->role = ax::mojom::Role::kRow;
+}
+
+void MakeCell(ui::AXNodeData* cell,
+              int id,
+              int row_index,
+              int col_index,
+              int row_span = 1,
+              int col_span = 1) {
+  cell->id = id;
+  cell->role = ax::mojom::Role::kCell;
+  cell->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex, row_index);
+  cell->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnIndex,
+                        col_index);
+  if (row_span > 1)
+    cell->AddIntAttribute(ax::mojom::IntAttribute::kTableCellRowSpan, row_span);
+  if (col_span > 1)
+    cell->AddIntAttribute(ax::mojom::IntAttribute::kTableCellColumnSpan,
+                          col_span);
+}
+
+void MakeColumnHeader(ui::AXNodeData* cell,
+                      int id,
+                      int row_index,
+                      int col_index,
+                      int row_span = 1,
+                      int col_span = 1) {
+  MakeCell(cell, id, row_index, col_index, row_span, col_span);
+  cell->role = ax::mojom::Role::kColumnHeader;
+}
+
+}  // namespace
+
+class BrowserAccessibilityMacTest : public ui::CocoaTest {
  public:
   void SetUp() override {
     CocoaTest::SetUp();
@@ -80,7 +124,7 @@ class BrowserAccessibilityTest : public ui::CocoaTest {
 };
 
 // Standard hit test.
-TEST_F(BrowserAccessibilityTest, HitTestTest) {
+TEST_F(BrowserAccessibilityMacTest, HitTestTest) {
   BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
   EXPECT_NSEQ(@"Child1",
@@ -89,7 +133,7 @@ TEST_F(BrowserAccessibilityTest, HitTestTest) {
 }
 
 // Test doing a hit test on the edge of a child.
-TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
+TEST_F(BrowserAccessibilityMacTest, EdgeHitTest) {
   BrowserAccessibilityCocoa* firstChild =
       [accessibility_ accessibilityHitTest:NSZeroPoint];
   EXPECT_NSEQ(@"Child1",
@@ -100,27 +144,27 @@ TEST_F(BrowserAccessibilityTest, EdgeHitTest) {
 // This will test a hit test with invalid coordinates.  It is assumed that
 // the hit test has been narrowed down to this object or one of its children
 // so it should return itself since it has no better hit result.
-TEST_F(BrowserAccessibilityTest, InvalidHitTestCoordsTest) {
+TEST_F(BrowserAccessibilityMacTest, InvalidHitTestCoordsTest) {
   BrowserAccessibilityCocoa* hitTestResult =
       [accessibility_ accessibilityHitTest:NSMakePoint(-50, 50)];
   EXPECT_NSEQ(accessibility_, hitTestResult);
 }
 
 // Test to ensure querying standard attributes works.
-TEST_F(BrowserAccessibilityTest, BasicAttributeTest) {
+TEST_F(BrowserAccessibilityMacTest, BasicAttributeTest) {
   NSString* helpText = [accessibility_
       accessibilityAttributeValue:NSAccessibilityHelpAttribute];
   EXPECT_NSEQ(@"HelpText", helpText);
 }
 
 // Test querying for an invalid attribute to ensure it doesn't crash.
-TEST_F(BrowserAccessibilityTest, InvalidAttributeTest) {
+TEST_F(BrowserAccessibilityMacTest, InvalidAttributeTest) {
   NSString* shouldBeNil = [accessibility_
       accessibilityAttributeValue:@"NSAnInvalidAttribute"];
   EXPECT_TRUE(shouldBeNil == nil);
 }
 
-TEST_F(BrowserAccessibilityTest, RetainedDetachedObjectsReturnNil) {
+TEST_F(BrowserAccessibilityMacTest, RetainedDetachedObjectsReturnNil) {
   // Get the first child.
   BrowserAccessibilityCocoa* retainedFirstChild =
       [accessibility_ accessibilityHitTest:NSMakePoint(50, 50)];
@@ -142,7 +186,7 @@ TEST_F(BrowserAccessibilityTest, RetainedDetachedObjectsReturnNil) {
   [retainedFirstChild release];
 }
 
-TEST_F(BrowserAccessibilityTest, TestComputeTextEdit) {
+TEST_F(BrowserAccessibilityMacTest, TestComputeTextEdit) {
   BrowserAccessibility* wrapper = [accessibility_ browserAccessibility];
   ASSERT_NE(nullptr, wrapper);
 
@@ -208,6 +252,53 @@ TEST_F(BrowserAccessibilityTest, TestComputeTextEdit) {
   text_edit = [accessibility_ computeTextEdit];
   EXPECT_EQ(base::UTF8ToUTF16("new"), text_edit.deleted_text);
   EXPECT_EQ(base::UTF8ToUTF16("old"), text_edit.inserted_text);
+}
+
+// Test Mac-specific table APIs.
+TEST_F(BrowserAccessibilityMacTest, TableAPIs) {
+  ui::AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  MakeTable(&initial_state.nodes[0], 1, 0, 0);
+  initial_state.nodes[0].child_ids = {2, 3};
+  MakeRow(&initial_state.nodes[1], 2);
+  initial_state.nodes[1].child_ids = {4, 5};
+  MakeRow(&initial_state.nodes[2], 3);
+  initial_state.nodes[2].child_ids = {6, 7};
+  MakeColumnHeader(&initial_state.nodes[3], 4, 0, 0);
+  MakeColumnHeader(&initial_state.nodes[4], 5, 0, 1);
+  MakeCell(&initial_state.nodes[5], 6, 1, 0);
+  MakeCell(&initial_state.nodes[6], 7, 1, 1);
+
+  manager_.reset(new BrowserAccessibilityManagerMac(initial_state, nullptr));
+  base::scoped_nsobject<BrowserAccessibilityCocoa> ax_table_(
+      [ToBrowserAccessibilityCocoa(manager_->GetRoot()) retain]);
+  id children = [ax_table_ children];
+  EXPECT_EQ(5U, [children count]);
+
+  EXPECT_NSEQ(@"AXRow", [children[0] role]);
+  EXPECT_EQ(2U, [[children[0] children] count]);
+
+  EXPECT_NSEQ(@"AXRow", [children[1] role]);
+  EXPECT_EQ(2U, [[children[1] children] count]);
+
+  EXPECT_NSEQ(@"AXColumn", [children[2] role]);
+  EXPECT_EQ(2U, [[children[2] children] count]);
+  id col_children = [children[2] children];
+  EXPECT_NSEQ(@"AXCell", [col_children[0] role]);
+  EXPECT_NSEQ(@"AXCell", [col_children[1] role]);
+
+  EXPECT_NSEQ(@"AXColumn", [children[3] role]);
+  EXPECT_EQ(2U, [[children[3] children] count]);
+  col_children = [children[3] children];
+  EXPECT_NSEQ(@"AXCell", [col_children[0] role]);
+  EXPECT_NSEQ(@"AXCell", [col_children[1] role]);
+
+  EXPECT_NSEQ(@"AXGroup", [children[4] role]);
+  EXPECT_EQ(2U, [[children[4] children] count]);
+  col_children = [children[4] children];
+  EXPECT_NSEQ(@"AXCell", [col_children[0] role]);
+  EXPECT_NSEQ(@"AXCell", [col_children[1] role]);
 }
 
 }  // namespace content

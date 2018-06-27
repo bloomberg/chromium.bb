@@ -249,6 +249,16 @@ class AX_EXPORT AXTree {
 
   int size() { return static_cast<int>(id_map_.size()); }
 
+  // Call this to enable support for extra Mac nodes - for each table,
+  // a table column header and a node for each column.
+  void SetEnableExtraMacNodes(bool enabled);
+  bool enable_extra_mac_nodes() const { return enable_extra_mac_nodes_; }
+
+  // Return a negative number that's suitable to use for a node ID for
+  // internal nodes created automatically by an AXTree, so as not to
+  // conflict with positive-numbered node IDs from tree sources.
+  int32_t GetNextNegativeInternalNodeId();
+
  private:
   AXNode* CreateNode(AXNode* parent,
                      int32_t id,
@@ -291,9 +301,6 @@ class AX_EXPORT AXTree {
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
 
-  // Clear any cached AXTableInfo objects.
-  void ClearTables();
-
   AXTreeDelegate* delegate_ = nullptr;
   AXNode* root_ = nullptr;
   base::hash_map<int32_t, AXNode*> id_map_;
@@ -308,8 +315,17 @@ class AX_EXPORT AXTree {
   IntListReverseRelationMap intlist_reverse_relations_;
 
   // Map from node ID to cached table info, if the given node is a table.
-  // Cleared every time the tree is updated.
+  // Invalidated every time the tree is updated.
   base::hash_map<int32_t, AXTableInfo*> table_info_map_;
+
+  // The next negative node ID to use for internal nodes.
+  int32_t next_negative_internal_node_id_ = -1;
+
+  // Whether we should create extra nodes that
+  // are only useful on macOS. Implemented using this flag to allow
+  // this code to be unit-tested on other platforms (for example, more
+  // code sanitizers run on Linux).
+  bool enable_extra_mac_nodes_ = false;
 };
 
 }  // namespace ui

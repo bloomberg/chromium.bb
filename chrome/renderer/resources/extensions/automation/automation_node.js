@@ -338,6 +338,22 @@ var GetDefaultActionVerb = natives.GetDefaultActionVerb;
  */
 var GetNextTextMatch = natives.GetNextTextMatch;
 
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {?Array<number>} A list of column header ids.
+
+ * @return {?number} The id of the column header, if it exists.
+ */
+var GetTableCellColumnHeaders = natives.GetTableCellColumnHeaders;
+
+/**
+ * @param {number} axTreeID The id of the accessibility tree.
+ * @param {number} nodeID The id of a node.
+ * @return {?Array<number>} A list of row header ids.
+ */
+var GetTableCellRowHeaders = natives.GetTableCellRowHeaders;
+
 var logging = requireNative('logging');
 var utils = require('utils');
 
@@ -507,6 +523,26 @@ AutomationNodeImpl.prototype = {
 
   get defaultActionVerb() {
     return GetDefaultActionVerb(this.treeID, this.id);
+  },
+
+  get tableCellColumnHeaders() {
+    var ids = GetTableCellColumnHeaders(this.treeID, this.id);
+    if (ids && this.rootImpl) {
+      var result = [];
+      for (var i = 0; i < ids.length; i++)
+        result.push(this.rootImpl.get(ids[i]));
+      return result;
+    }
+  },
+
+  get tableCellRowHeaders() {
+    var id = GetTableCellRowHeaders(this.treeID, this.id);
+    if (ids && this.rootImpl) {
+      var result = [];
+      for (var i = 0; i < ids.length; i++)
+        result.push(this.rootImpl.get(ids[i]));
+      return result;
+    }
   },
 
   doDefault: function() {
@@ -1443,6 +1479,8 @@ utils.expose(AutomationNode, AutomationNodeImpl, {
       'customActions',
       'standardActions',
       'unclippedLocation',
+      'tableCellColumnHeaders',
+      'tableCellRowHeaders',
   ]),
 });
 

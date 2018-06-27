@@ -10,6 +10,3 @@ ROLE_SYSTEM_DOCUMENT name='Table example - th rowheader' READONLY FOCUSABLE
 ++++++++ROLE_SYSTEM_STATICTEXT name='Lastname'
 ++++++ROLE_SYSTEM_CELL name='Smith' row_headers='<Lastname>'
 ++++++++ROLE_SYSTEM_STATICTEXT name='Smith'
-++++ROLE_SYSTEM_COLUMN
-++++ROLE_SYSTEM_COLUMN
-++++IA2_ROLE_SECTION

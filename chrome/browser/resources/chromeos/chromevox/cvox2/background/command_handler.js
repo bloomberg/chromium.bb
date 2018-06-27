@@ -243,6 +243,9 @@ CommandHandler.onCommand = function(command) {
 
   var current = ChromeVoxState.instance.currentRange;
 
+  // If true, will check if the predicate matches the current node.
+  var matchCurrent = false;
+
   // Allow edit commands first.
   if (!CommandHandler.onEditCommand_(command))
     return false;
@@ -702,7 +705,16 @@ CommandHandler.onCommand = function(command) {
       var tableOpts = {col: true, dir: dir, end: true};
       pred = AutomationPredicate.makeTableCellPredicate(
           current.start.node, tableOpts);
-      current = cursors.Range.fromNode(node.lastChild);
+
+      // Try to start on the last cell of the table and allow
+      // matching that node.
+      var startNode = node.lastChild;
+      while (startNode.lastChild &&
+             !AutomationPredicate.cellLike(startNode.role))
+        startNode = startNode.lastChild;
+      current = cursors.Range.fromNode(startNode);
+      matchCurrent = true;
+
       // Should not be outputted.
       predErrorMsg = 'no_cell_below';
       rootPred = AutomationPredicate.table;
@@ -753,8 +765,15 @@ CommandHandler.onCommand = function(command) {
 
     var bound = current.getBound(dir).node;
     if (bound) {
-      var node = AutomationUtil.findNextNode(
-          bound, dir, pred, {skipInitialAncestry: true, root: rootPred});
+      var node = null;
+
+      if (matchCurrent && pred(bound))
+        node = bound;
+
+      if (!node) {
+        node = AutomationUtil.findNextNode(
+            bound, dir, pred, {skipInitialAncestry: true, root: rootPred});
+      }
 
       if (node && !skipSync) {
         node = AutomationUtil.findNodePre(

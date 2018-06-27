@@ -125,6 +125,7 @@ BrowserAccessibilityManagerMac::BrowserAccessibilityManagerMac(
     BrowserAccessibilityFactory* factory)
     : BrowserAccessibilityManager(delegate, factory) {
   Initialize(initial_tree);
+  tree_->SetEnableExtraMacNodes(true);
 }
 
 BrowserAccessibilityManagerMac::~BrowserAccessibilityManagerMac() {}

@@ -721,6 +721,20 @@ chrome.automation.AutomationNode.prototype.flowFrom;
 chrome.automation.AutomationNode.prototype.labelFor;
 
 /**
+ * The column header nodes for a table cell.
+ * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-tableCellColumnHeaders
+ */
+chrome.automation.AutomationNode.prototype.tableCellColumnHeaders;
+
+/**
+ * The row header nodes for a table cell.
+ * @type {(!Array<!chrome.automation.AutomationNode>|undefined)}
+ * @see https://developer.chrome.com/extensions/automation#type-tableCellRowHeaders
+ */
+chrome.automation.AutomationNode.prototype.tableCellRowHeaders;
+
+/**
  * An array of standard actions available on this node.
  * @type {(!Array<!chrome.automation.ActionType>|undefined)}
  * @see https://developer.chrome.com/extensions/automation#type-standardActions

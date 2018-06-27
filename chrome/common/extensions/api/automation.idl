@@ -600,6 +600,12 @@
     // Reverse relationship for labelledBy.
     AutomationNode[]? labelFor;
 
+    // The column header nodes for a table cell.
+    AutomationNode[]? tableCellColumnHeaders;
+
+    // The row header nodes for a table cell.
+    AutomationNode[]? tableCellRowHeaders;
+
     // An array of standard actions available on this node.
     ActionType[]? standardActions;
 

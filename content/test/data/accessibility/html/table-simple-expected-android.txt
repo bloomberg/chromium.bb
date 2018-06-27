@@ -9,6 +9,3 @@ android.webkit.WebView focusable focused scrollable name='Table example'
 ++++android.view.View
 ++++++android.view.View collection_item name='CD' row_index=2 row_span=1 column_span=1
 ++++++android.view.View collection_item name='D' row_index=2 row_span=1 column_index=1 column_span=1
-++++android.view.View
-++++android.view.View
-++++android.view.View

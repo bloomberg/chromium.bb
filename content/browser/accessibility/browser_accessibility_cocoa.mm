@@ -1211,8 +1211,19 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
     return nil;
   int headerElementId = -1;
   if (ui::IsTableLikeRole(browserAccessibility_->GetRole())) {
-    browserAccessibility_->GetIntAttribute(
-        ax::mojom::IntAttribute::kTableHeaderId, &headerElementId);
+    // The table header container is always the last child of the table,
+    // if it exists. The table header container is a special node in the
+    // accessibility tree only used on macOS. It has all of the table
+    // headers as its children, even though those cells are also children
+    // of rows in the table. Internally this is implemented using
+    // AXTableInfo and indirect_child_ids.
+    uint32_t childCount = browserAccessibility_->PlatformChildCount();
+    if (childCount > 0) {
+      BrowserAccessibility* tableHeader =
+          browserAccessibility_->PlatformGetChild(childCount - 1);
+      if (tableHeader->GetRole() == ax::mojom::Role::kTableHeaderContainer)
+        return ToBrowserAccessibilityCocoa(tableHeader);
+    }
   } else if ([self internalRole] == ax::mojom::Role::kColumn) {
     browserAccessibility_->GetIntAttribute(
         ax::mojom::IntAttribute::kTableColumnHeaderId, &headerElementId);

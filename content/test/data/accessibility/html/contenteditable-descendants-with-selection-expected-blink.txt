@@ -19,8 +19,6 @@ rootWebArea
 ++++++++cell editable richlyEditable name='Always expose editable tables as tables.'
 ++++++++++staticText editable richlyEditable name='Always expose editable tables as tables.'
 ++++++++++++inlineTextBox name='Always expose editable tables as tables.'
-++++++column
-++++++tableHeaderContainer
 ++++list editable richlyEditable
 ++++++listItem editable richlyEditable
 ++++++++listMarker name='1. '

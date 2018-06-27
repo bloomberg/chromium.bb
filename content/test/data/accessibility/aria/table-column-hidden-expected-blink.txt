@@ -30,10 +30,6 @@ rootWebArea
 ++++++cell name='Rainy' ariaCellColumnIndex=4 ariaCellRowIndex=2 selected=false
 ++++++++staticText name='Rainy'
 ++++++++++inlineTextBox name='Rainy'
-++++column
-++++column
-++++column
-++++tableHeaderContainer
 ++paragraph
 ++++staticText name='done'
 ++++++inlineTextBox name='done'

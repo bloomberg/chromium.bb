@@ -33,6 +33,8 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/accessibility/ax_node.h"
+#include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_table_info.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace extensions {
@@ -66,6 +68,16 @@ v8::Local<v8::Object> RectToV8Object(v8::Isolate* isolate,
       .Set("width", rect.width())
       .Set("height", rect.height())
       .Build();
+}
+
+ui::AXNode* GetContainingTable(ui::AXNode* node) {
+  while (node && !ui::IsTableLikeRole(node->data().role))
+    node = node->parent();
+
+  if (ui::IsTableLikeRole(node->data().role))
+    return node;
+
+  return nullptr;
 }
 
 // Adjust the bounding box of a node from local to global coordinates,
@@ -1052,6 +1064,60 @@ void AutomationInternalCustomBindings::AddRoutes() {
             return;
           }
         }
+      });
+  RouteNodeIDFunction(
+      "GetTableCellColumnHeaders",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ui::AXTree* tree = tree_wrapper->tree();
+
+        int32_t column_index;
+        if (!node->GetIntAttribute(
+                ax::mojom::IntAttribute::kTableCellColumnIndex, &column_index))
+          return;
+
+        ui::AXNode* table = GetContainingTable(node);
+        if (!table)
+          return;
+
+        ui::AXTableInfo* table_info = tree->GetTableInfo(table);
+        if (column_index < 0 || column_index >= table_info->col_count)
+          return;
+
+        std::vector<int32_t>& col_headers =
+            table_info->col_headers[column_index];
+        v8::Local<v8::Array> array_result(
+            v8::Array::New(isolate, col_headers.size()));
+        for (size_t i = 0; i < col_headers.size(); ++i)
+          array_result->Set(static_cast<uint32_t>(i),
+                            v8::Integer::New(isolate, col_headers[i]));
+        result.Set(array_result);
+      });
+  RouteNodeIDFunction(
+      "GetTableCellRowHeaders",
+      [](v8::Isolate* isolate, v8::ReturnValue<v8::Value> result,
+         AutomationAXTreeWrapper* tree_wrapper, ui::AXNode* node) {
+        ui::AXTree* tree = tree_wrapper->tree();
+        int32_t row_index;
+        if (!node->GetIntAttribute(ax::mojom::IntAttribute::kTableCellRowIndex,
+                                   &row_index))
+          return;
+
+        ui::AXNode* table = GetContainingTable(node);
+        if (!table)
+          return;
+
+        ui::AXTableInfo* table_info = tree->GetTableInfo(table);
+        if (row_index < 0 || row_index >= table_info->row_count)
+          return;
+
+        std::vector<int32_t>& row_headers = table_info->row_headers[row_index];
+        v8::Local<v8::Array> array_result(
+            v8::Array::New(isolate, row_headers.size()));
+        for (size_t i = 0; i < row_headers.size(); ++i)
+          array_result->Set(static_cast<uint32_t>(i),
+                            v8::Integer::New(isolate, row_headers[i]));
+        result.Set(array_result);
       });
 }
 

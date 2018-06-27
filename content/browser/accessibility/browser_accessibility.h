@@ -116,11 +116,11 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
 
   // Returns the number of children of this object, or 0 if PlatformIsLeaf()
   // returns true.
-  uint32_t PlatformChildCount() const;
+  virtual uint32_t PlatformChildCount() const;
 
   // Return a pointer to the child at the given index, or NULL for an
   // invalid index. Returns NULL if PlatformIsLeaf() returns true.
-  BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
+  virtual BrowserAccessibility* PlatformGetChild(uint32_t child_index) const;
 
   // Returns true if an ancestor of this node (not including itself) is a
   // leaf node, meaning that this node is not actually exposed to the
