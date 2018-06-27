@@ -48,9 +48,6 @@ BulletedLabelListView::BulletedLabelListView()
 
 BulletedLabelListView::BulletedLabelListView(
     const std::vector<base::string16>& texts) {
-  constexpr auto FILL = views::GridLayout::FILL;
-  constexpr auto USE_PREF = views::GridLayout::USE_PREF;
-  constexpr auto FIXED = views::GridLayout::FIXED;
 
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
@@ -58,8 +55,11 @@ BulletedLabelListView::BulletedLabelListView(
 
   int width = ChromeLayoutProvider::Get()->GetDistanceMetric(
       DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
-  columns->AddColumn(FILL, FILL, 0, FIXED, width, width);
-  columns->AddColumn(FILL, FILL, 1, USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     width, width);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                     views::GridLayout::USE_PREF, 0, 0);
 
   for (const auto& text : texts)
     AddLabel(text);
@@ -70,7 +70,7 @@ BulletedLabelListView::~BulletedLabelListView() {}
 void BulletedLabelListView::AddLabel(const base::string16& text) {
   views::GridLayout* layout =
       static_cast<views::GridLayout*>(GetLayoutManager());
-  layout->StartRow(0, kColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
 
   auto label = std::make_unique<views::Label>(text);
 

@@ -412,14 +412,16 @@ void PaymentRequestDialogView::SetupSpinnerOverlay() {
   views::ColumnSet* throbber_columns = layout->AddColumnSet(0);
   throbber_columns->AddPaddingColumn(0.5, 0);
   throbber_columns->AddColumn(views::GridLayout::Alignment::CENTER,
-                              views::GridLayout::Alignment::TRAILING, 0,
+                              views::GridLayout::Alignment::TRAILING,
+                              views::GridLayout::kFixedSize,
                               views::GridLayout::SizeType::USE_PREF, 0, 0);
   throbber_columns->AddPaddingColumn(0.5, 0);
 
   views::ColumnSet* label_columns = layout->AddColumnSet(1);
   label_columns->AddPaddingColumn(0.5, 0);
   label_columns->AddColumn(views::GridLayout::Alignment::CENTER,
-                           views::GridLayout::Alignment::LEADING, 0,
+                           views::GridLayout::Alignment::LEADING,
+                           views::GridLayout::kFixedSize,
                            views::GridLayout::SizeType::USE_PREF, 0, 0);
   label_columns->AddPaddingColumn(0.5, 0);
 

@@ -111,11 +111,14 @@ void ProximityAuthErrorBubbleView::Init() {
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kBubbleIntraColumnPadding);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
+  columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                            kBubbleIntraColumnPadding);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
 
   // Construct the views.
   std::unique_ptr<views::ImageView> warning_icon(new views::ImageView());
@@ -132,7 +135,7 @@ void ProximityAuthErrorBubbleView::Init() {
                    warning_icon->size().width() - kBubbleIntraColumnPadding);
 
   // Lay out the views.
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(warning_icon.release());
   layout->AddView(label.release());
 }

@@ -77,12 +77,14 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int unrelated_horizontal_spacing = provider->GetDistanceMetric(
           DISTANCE_UNRELATED_CONTROL_HORIZONTAL);
-  columns->AddPaddingColumn(1, unrelated_horizontal_spacing);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 0,
-                     views::GridLayout::USE_PREF, 0, kMinColumnWidth);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING, 0,
-                     views::GridLayout::USE_PREF, 0, kMinColumnWidth);
-  columns->AddPaddingColumn(1, unrelated_horizontal_spacing);
+  columns->AddPaddingColumn(1.0, unrelated_horizontal_spacing);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, kMinColumnWidth);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::LEADING,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, kMinColumnWidth);
+  columns->AddPaddingColumn(1.0, unrelated_horizontal_spacing);
 
   views::ImageView* image = new views::ImageView();
 
@@ -91,8 +93,8 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
 
   const int unrelated_vertical_spacing_large = provider->GetDistanceMetric(
       DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE);
-  layout->AddPaddingRow(1, unrelated_vertical_spacing_large);
-  layout->StartRow(0, column_set_id);
+  layout->AddPaddingRow(1.0, unrelated_vertical_spacing_large);
+  layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
   layout->AddView(image, 2, 1);
 
   title_ = new views::Label(l10n_util::GetStringUTF16(GetTitle()));
@@ -100,13 +102,16 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
   title_->SetFontList(rb.GetFontList(ui::ResourceBundle::LargeFont));
   title_->SetMultiLine(true);
   title_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRowWithPadding(0, column_set_id, 0,
-      unrelated_vertical_spacing_large);
-  layout->AddView(title_, 2, 1);
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set_id,
+                              views::GridLayout::kFixedSize,
+                              unrelated_vertical_spacing_large);
+  layout->AddView(title_, 2, 1.0);
 
   message_ = CreateFormattedLabel(l10n_util::GetStringUTF16(GetMessage()));
-  layout->StartRowWithPadding(0, column_set_id, 0, kTitleBottomSpacing);
-  layout->AddView(message_, 2, 1, views::GridLayout::LEADING,
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set_id,
+                              views::GridLayout::kFixedSize,
+                              kTitleBottomSpacing);
+  layout->AddView(message_, 2, 1.0, views::GridLayout::LEADING,
                   views::GridLayout::LEADING);
 
   std::vector<int> bullet_string_ids = GetSubMessages();
@@ -115,19 +120,20 @@ SadTabView::SadTabView(content::WebContents* web_contents, SadTabKind kind)
     for (const auto& id : bullet_string_ids)
       list_view->AddLabel(l10n_util::GetStringUTF16(id));
 
-    layout->StartRow(0, column_set_id);
-    layout->AddView(list_view.release(), 2, 1);
+    layout->StartRow(views::GridLayout::kFixedSize, column_set_id);
+    layout->AddView(list_view.release(), 2, 1.0);
   }
 
   action_button_ = views::MdTextButton::CreateSecondaryUiBlueButton(
       this, l10n_util::GetStringUTF16(GetButtonTitle()));
   help_link_ = new views::Link(l10n_util::GetStringUTF16(GetHelpLinkTitle()));
   help_link_->set_listener(this);
-  layout->StartRowWithPadding(0, column_set_id, 0,
-      unrelated_vertical_spacing_large);
-  layout->AddView(help_link_, 1, 1, views::GridLayout::LEADING,
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set_id,
+                              views::GridLayout::kFixedSize,
+                              unrelated_vertical_spacing_large);
+  layout->AddView(help_link_, 1.0, 1.0, views::GridLayout::LEADING,
                   views::GridLayout::CENTER);
-  layout->AddView(action_button_, 1, 1, views::GridLayout::TRAILING,
+  layout->AddView(action_button_, 1.0, 1.0, views::GridLayout::TRAILING,
                   views::GridLayout::LEADING);
 
   layout->AddPaddingRow(2, provider->GetDistanceMetric(

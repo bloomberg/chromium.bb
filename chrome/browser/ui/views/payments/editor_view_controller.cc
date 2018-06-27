@@ -255,21 +255,24 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
       std::make_unique<views::GridLayout>(editor_view.get()));
   // Column set for short fields.
   views::ColumnSet* columns_short = editor_layout->AddColumnSet(0);
-  columns_short->AddColumn(views::GridLayout::LEADING,
-                           views::GridLayout::CENTER, 0,
-                           views::GridLayout::FIXED, kLabelWidth, 0);
-  columns_short->AddPaddingColumn(0, kLabelInputFieldHorizontalPadding);
+  columns_short->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::FIXED, kLabelWidth, 0);
+  columns_short->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                  kLabelInputFieldHorizontalPadding);
   // The field view column stretches.
   columns_short->AddColumn(views::GridLayout::LEADING,
-                           views::GridLayout::CENTER, 1,
+                           views::GridLayout::CENTER, 1.0,
                            views::GridLayout::USE_PREF, 0, 0);
-  columns_short->AddPaddingColumn(0, kFieldExtraViewHorizontalPadding);
+  columns_short->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                  kFieldExtraViewHorizontalPadding);
   // The extra field view column is fixed size, computed from the largest
   // extra view.
   int short_extra_view_width =
       ComputeWidestExtraViewWidth(EditorField::LengthHint::HINT_SHORT);
   columns_short->AddColumn(views::GridLayout::LEADING,
-                           views::GridLayout::CENTER, 0,
+                           views::GridLayout::CENTER,
+                           views::GridLayout::kFixedSize,
                            views::GridLayout::FIXED, short_extra_view_width, 0);
   // The padding at the end is fixed, computed to make sure the short field
   // maintains its minimum width.
@@ -277,31 +280,34 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
                       (2 * kPaymentRequestRowHorizontalInsets) -
                       kLabelInputFieldHorizontalPadding -
                       kFieldExtraViewHorizontalPadding - short_extra_view_width;
-  columns_short->AddPaddingColumn(0, short_padding);
+  columns_short->AddPaddingColumn(views::GridLayout::kFixedSize, short_padding);
 
   // Column set for long fields.
   views::ColumnSet* columns_long = editor_layout->AddColumnSet(1);
   columns_long->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          0, views::GridLayout::FIXED, kLabelWidth, 0);
-  columns_long->AddPaddingColumn(0, kLabelInputFieldHorizontalPadding);
+                          views::GridLayout::kFixedSize,
+                          views::GridLayout::FIXED, kLabelWidth, 0);
+  columns_long->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                 kLabelInputFieldHorizontalPadding);
   // The field view column stretches.
   columns_long->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          1, views::GridLayout::USE_PREF, 0, 0);
-  columns_long->AddPaddingColumn(0, kFieldExtraViewHorizontalPadding);
+                          1.0, views::GridLayout::USE_PREF, 0, 0);
+  columns_long->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                 kFieldExtraViewHorizontalPadding);
   // The extra field view column is fixed size, computed from the largest
   // extra view.
   int long_extra_view_width =
       ComputeWidestExtraViewWidth(EditorField::LengthHint::HINT_LONG);
   columns_long->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          0, views::GridLayout::FIXED, long_extra_view_width,
-                          0);
+                          views::GridLayout::kFixedSize,
+                          views::GridLayout::FIXED, long_extra_view_width, 0);
   // The padding at the end is fixed, computed to make sure the long field
   // maintains its minimum width.
   int long_padding = kDialogMinWidth - kLongFieldMinimumWidth - kLabelWidth -
                      (2 * kPaymentRequestRowHorizontalInsets) -
                      kLabelInputFieldHorizontalPadding -
                      kFieldExtraViewHorizontalPadding - long_extra_view_width;
-  columns_long->AddPaddingColumn(0, long_padding);
+  columns_long->AddPaddingColumn(views::GridLayout::kFixedSize, long_padding);
 
   views::View* first_field = nullptr;
   for (const auto& field : GetFieldDefinitions()) {
@@ -322,9 +328,9 @@ std::unique_ptr<views::View> EditorViewController::CreateEditorView() {
 
   views::ColumnSet* required_field_columns = editor_layout->AddColumnSet(2);
   required_field_columns->AddColumn(views::GridLayout::LEADING,
-                                    views::GridLayout::CENTER, 1,
+                                    views::GridLayout::CENTER, 1.0,
                                     views::GridLayout::USE_PREF, 0, 0);
-  editor_layout->StartRow(0, 2);
+  editor_layout->StartRow(views::GridLayout::kFixedSize, 2);
   // Adds the "* indicates a required field" label in "hint" grey text.
   editor_layout->AddView(
       CreateHintLabel(
@@ -348,7 +354,8 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
 
   // This is the top padding for every row.
   constexpr int kInputRowSpacing = 6;
-  layout->StartRowWithPadding(0, column_set, 0, kInputRowSpacing);
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, column_set,
+                              views::GridLayout::kFixedSize, kInputRowSpacing);
 
   std::unique_ptr<views::Label> label = std::make_unique<views::Label>(
       field.required ? field.label + base::ASCIIToUTF16("*") : field.label);
@@ -388,8 +395,9 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       focusable_field = text_field;
 
       // |text_field| will now be owned by |row|.
-      layout->AddView(text_field, 1, 1, views::GridLayout::FILL,
-                      views::GridLayout::FILL, 0, kInputFieldHeight);
+      layout->AddView(text_field, 1.0, 1.0, views::GridLayout::FILL,
+                      views::GridLayout::FILL, views::GridLayout::kFixedSize,
+                      kInputFieldHeight);
       break;
     }
     case EditorField::ControlType::COMBOBOX: {
@@ -400,8 +408,9 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       *valid = combobox->IsValid();
 
       // |combobox| will now be owned by |row|.
-      layout->AddView(combobox.release(), 1, 1, views::GridLayout::FILL,
-                      views::GridLayout::FILL, 0, kInputFieldHeight);
+      layout->AddView(combobox.release(), 1.0, 1.0, views::GridLayout::FILL,
+                      views::GridLayout::FILL, views::GridLayout::kFixedSize,
+                      kInputFieldHeight);
       break;
     }
     case EditorField::ControlType::CUSTOMFIELD: {
@@ -412,7 +421,8 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
       DCHECK(field_view);
 
       layout->AddView(field_view.release(), 1, 1, views::GridLayout::FILL,
-                      views::GridLayout::FILL, 0, kInputFieldHeight);
+                      views::GridLayout::FILL, views::GridLayout::kFixedSize,
+                      kInputFieldHeight);
       break;
     }
     case EditorField::ControlType::READONLY_LABEL: {
@@ -432,7 +442,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   if (extra_view)
     layout->AddView(extra_view.release());
 
-  layout->StartRow(0, column_set);
+  layout->StartRow(views::GridLayout::kFixedSize, column_set);
   layout->SkipColumns(1);
   std::unique_ptr<views::View> error_label_view =
       std::make_unique<views::View>();
@@ -444,7 +454,7 @@ views::View* EditorViewController::CreateInputField(views::GridLayout* layout,
   layout->AddView(error_label_view.release());
 
   // Bottom padding for the row.
-  layout->AddPaddingRow(0, kInputRowSpacing);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, kInputRowSpacing);
   return focusable_field;
 }
 

@@ -81,7 +81,6 @@
 
 using bubble_anchor_util::GetPageInfoAnchorRect;
 using bubble_anchor_util::GetPageInfoAnchorView;
-using views::GridLayout;
 
 namespace {
 
@@ -103,12 +102,12 @@ SkColor GetRelatedTextColor() {
 
 // Adds a ColumnSet on |layout| with a single View column and padding columns
 // on either side of it with |margin| width.
-void AddColumnWithSideMargin(GridLayout* layout, int margin, int id) {
+void AddColumnWithSideMargin(views::GridLayout* layout, int margin, int id) {
   views::ColumnSet* column_set = layout->AddColumnSet(id);
-  column_set->AddPaddingColumn(0, margin);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, margin);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, margin);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, margin);
 }
 
 // Creates a section containing a title, icon, and link. Used to display Cookies
@@ -133,7 +132,7 @@ views::View* CreateMoreInfoLinkSection(views::LinkListener* listener,
   (*link)->SetTooltipText(tooltip_text);
 
   views::View* new_view = new views::View();
-  GridLayout* layout =
+  views::GridLayout* layout =
       new_view->SetLayoutManager(std::make_unique<views::GridLayout>(new_view));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int side_margin =
@@ -143,17 +142,20 @@ views::View* CreateMoreInfoLinkSection(views::LinkListener* listener,
 
   const int column = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(column);
-  column_set->AddPaddingColumn(0, side_margin);
-  column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
-                        GridLayout::FIXED, PageInfoBubbleView::kIconColumnWidth,
-                        0);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
+  column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                        PageInfoBubbleView::kIconColumnWidth, 0);
   column_set->AddPaddingColumn(
-      0, provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
-                        GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, side_margin);
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_LABEL_HORIZONTAL));
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
 
-  layout->StartRowWithPadding(1, column, 0, vert_spacing);
+  layout->StartRowWithPadding(1.0, column, views::GridLayout::kFixedSize,
+                              vert_spacing);
   views::ImageView* icon = new NonAccessibleImageView();
   icon->SetImage(image_icon);
   layout->AddView(icon);
@@ -162,10 +164,10 @@ views::View* CreateMoreInfoLinkSection(views::LinkListener* listener,
       l10n_util::GetStringUTF16(title_resource_id), CONTEXT_BODY_TEXT_LARGE);
   layout->AddView(title_label);
 
-  layout->StartRow(1, column);
+  layout->StartRow(1.0, column);
   layout->SkipColumns(1);
   layout->AddView(*link);
-  layout->AddPaddingRow(0, vert_spacing);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, vert_spacing);
   return new_view;
 }
 
@@ -324,32 +326,32 @@ BubbleHeaderView::BubbleHeaderView(
       password_reuse_button_container_(nullptr),
       change_password_button_(nullptr),
       whitelist_password_reuse_button_(nullptr) {
-  GridLayout* layout =
+  views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
 
   const int label_column_status = 1;
   AddColumnWithSideMargin(layout, side_margin, label_column_status);
 
-  layout->StartRow(0, label_column_status);
+  layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
 
   security_details_label_ =
       new views::StyledLabel(base::string16(), styled_label_listener);
   security_details_label_->set_id(
       PageInfoBubbleView::VIEW_ID_PAGE_INFO_LABEL_SECURITY_DETAILS);
-  layout->AddView(security_details_label_, 1, 1, GridLayout::FILL,
-                  GridLayout::LEADING);
+  layout->AddView(security_details_label_, 1.0, 1.0, views::GridLayout::FILL,
+                  views::GridLayout::LEADING);
 
-  layout->StartRow(0, label_column_status);
+  layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
   reset_decisions_label_container_ = new views::View();
   reset_decisions_label_container_->SetLayoutManager(
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal));
-  layout->AddView(reset_decisions_label_container_, 1, 1, GridLayout::FILL,
-                  GridLayout::LEADING);
+  layout->AddView(reset_decisions_label_container_, 1.0, 1.0,
+                  views::GridLayout::FILL, views::GridLayout::LEADING);
 
-  layout->StartRow(0, label_column_status);
+  layout->StartRow(views::GridLayout::kFixedSize, label_column_status);
   password_reuse_button_container_ = new views::View();
-  layout->AddView(password_reuse_button_container_, 1, 1, GridLayout::FILL,
-                  GridLayout::LEADING);
+  layout->AddView(password_reuse_button_container_, 1, 1,
+                  views::GridLayout::FILL, views::GridLayout::LEADING);
 }
 
 BubbleHeaderView::~BubbleHeaderView() {}
@@ -400,8 +402,8 @@ void BubbleHeaderView::AddResetDecisionsLabel() {
   reset_decisions_label_container_->AddChildView(reset_cert_decisions_label_);
 
   // Now that it contains a label, the container needs padding at the top.
-  reset_decisions_label_container_->SetBorder(
-      views::CreateEmptyBorder(8, 0, 0, 0));
+  reset_decisions_label_container_->SetBorder(views::CreateEmptyBorder(
+      8, views::GridLayout::kFixedSize, views::GridLayout::kFixedSize, 0));
 
   InvalidateLayout();
 }
@@ -447,7 +449,7 @@ void BubbleHeaderView::AddPasswordReuseButtons() {
 
   // Add padding at the top.
   password_reuse_button_container_->SetBorder(
-      views::CreateEmptyBorder(8, 0, 0, 0));
+      views::CreateEmptyBorder(8, views::GridLayout::kFixedSize, 0, 0));
 
   InvalidateLayout();
 }
@@ -584,22 +586,22 @@ PageInfoBubbleView::PageInfoBubbleView(
       UseHarmonyStyle() ? hover_list_spacing : margins().bottom();
   set_margins(gfx::Insets(margins().top(), 0, bottom_margin, 0));
 
-  GridLayout* layout =
+  views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   constexpr int kColumnId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnId);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, kColumnId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   header_ = new BubbleHeaderView(this, this, side_margin);
   layout->AddView(header_);
 
-  layout->StartRow(0, kColumnId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   permissions_view_ = new views::View;
   layout->AddView(permissions_view_);
 
-  layout->StartRow(0, kColumnId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnId);
   layout->AddView(new views::Separator());
 
   // The views inside |site_settings_view_| have their own padding, so subtract
@@ -609,12 +611,13 @@ PageInfoBubbleView::PageInfoBubbleView(
           views::DISTANCE_UNRELATED_CONTROL_VERTICAL) -
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL) / 2;
   layout->StartRowWithPadding(
-      0, kColumnId, 0,
+      views::GridLayout::kFixedSize, kColumnId, views::GridLayout::kFixedSize,
       UseHarmonyStyle() ? hover_list_spacing : vertical_spacing);
   site_settings_view_ = CreateSiteSettingsView();
   layout->AddView(site_settings_view_);
 
-  layout->StartRowWithPadding(0, kColumnId, 0,
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnId,
+                              views::GridLayout::kFixedSize,
                               UseHarmonyStyle() ? 0 : vertical_spacing);
   layout->AddView(CreateSiteSettingsLink(side_margin, this).release());
 
@@ -771,23 +774,22 @@ void PageInfoBubbleView::SetPermissionInfo(
   if (permissions_view_->has_children())
     return;
 
-  GridLayout* layout = permissions_view_->SetLayoutManager(
+  views::GridLayout* layout = permissions_view_->SetLayoutManager(
       std::make_unique<views::GridLayout>(permissions_view_));
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
   const int list_item_padding =
       layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL);
   if (!permission_info_list.empty() || !chosen_object_info_list.empty()) {
-    layout->AddPaddingRow(0, list_item_padding);
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, list_item_padding);
   } else {
     // If nothing to show, just add padding above the separator and exit.
-    layout->AddPaddingRow(0, layout_provider->GetDistanceMetric(
-                                 views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
+    layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                          layout_provider->GetDistanceMetric(
+                              views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
     return;
   }
 
-  constexpr float kFixed = 0.f;
-  constexpr float kStretchy = 1.f;
   int side_margin =
       layout_provider->GetInsetsMetric(views::INSETS_DIALOG).left();
   // A permissions row will have an icon, title, and combobox, with a padding
@@ -798,30 +800,40 @@ void PageInfoBubbleView::SetPermissionInfo(
   // *----------------------------------------------*
   views::ColumnSet* permissions_set =
       layout->AddColumnSet(kPermissionColumnSetId);
-  permissions_set->AddPaddingColumn(kFixed, side_margin);
-  permissions_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, kFixed,
-                             GridLayout::FIXED, kIconColumnWidth, 0);
+  permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
+  permissions_set->AddColumn(views::GridLayout::CENTER,
+                             views::GridLayout::CENTER,
+                             views::GridLayout::kFixedSize,
+                             views::GridLayout::FIXED, kIconColumnWidth, 0);
   permissions_set->AddPaddingColumn(
-      kFixed, layout_provider->GetDistanceMetric(
-                  views::DISTANCE_RELATED_LABEL_HORIZONTAL));
-  permissions_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, kStretchy,
-                             GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      layout_provider->GetDistanceMetric(
+          views::DISTANCE_RELATED_LABEL_HORIZONTAL));
+  permissions_set->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
+      views::GridLayout::USE_PREF, views::GridLayout::kFixedSize, 0);
   permissions_set->AddPaddingColumn(
-      kFixed, layout_provider->GetDistanceMetric(
-                  views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  permissions_set->AddColumn(GridLayout::TRAILING, GridLayout::FILL, kFixed,
-                             GridLayout::USE_PREF, 0, 0);
-  permissions_set->AddPaddingColumn(kFixed, side_margin);
+      views::GridLayout::kFixedSize,
+      layout_provider->GetDistanceMetric(
+          views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+  permissions_set->AddColumn(
+      views::GridLayout::TRAILING, views::GridLayout::FILL,
+      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+      views::GridLayout::kFixedSize, 0);
+  permissions_set->AddPaddingColumn(views::GridLayout::kFixedSize, side_margin);
 
   // |ChosenObjectView| will layout itself, so just add the missing padding
   // here.
   constexpr int kChosenObjectSectionId = 1;
   views::ColumnSet* chosen_object_set =
       layout->AddColumnSet(kChosenObjectSectionId);
-  chosen_object_set->AddPaddingColumn(kFixed, side_margin);
-  chosen_object_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kStretchy,
-                               GridLayout::USE_PREF, 0, 0);
-  chosen_object_set->AddPaddingColumn(kFixed, side_margin);
+  chosen_object_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                      side_margin);
+  chosen_object_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                               1.0, views::GridLayout::USE_PREF,
+                               views::GridLayout::kFixedSize, 0);
+  chosen_object_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                      side_margin);
 
   for (const auto& permission : permission_info_list) {
     std::unique_ptr<PermissionSelectorRow> selector =
@@ -858,14 +870,14 @@ void PageInfoBubbleView::SetPermissionInfo(
     // make sure its height is the same as the permissions row's minimum height
     // plus padding.
     layout->StartRow(
-        1, kChosenObjectSectionId,
+        1.0, kChosenObjectSectionId,
         PermissionSelectorRow::MinHeightForPermissionRow() + list_item_padding);
     // The view takes ownership of the object info.
     auto object_view = std::make_unique<ChosenObjectView>(std::move(object));
     object_view->AddObserver(this);
     layout->AddView(object_view.release());
   }
-  layout->AddPaddingRow(kFixed, list_item_padding);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, list_item_padding);
 
   layout->Layout(permissions_view_);
   SizeToContents();

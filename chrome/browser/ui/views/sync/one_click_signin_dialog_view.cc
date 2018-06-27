@@ -93,10 +93,10 @@ void OneClickSigninDialogView::Init() {
 
   // Column set for descriptive text and link.
   views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
                 views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
 
   views::Label* label = new views::Label(l10n_util::GetStringFUTF16(
       IDS_ONE_CLICK_SIGNIN_DIALOG_MESSAGE_NEW, email_));
@@ -105,7 +105,7 @@ void OneClickSigninDialogView::Init() {
   label->SizeToFit(kMinimumDialogLabelWidth);
   layout->AddView(label);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
 
   learn_more_link_ = new views::Link(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
   learn_more_link_->set_listener(this);

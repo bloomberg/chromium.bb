@@ -86,10 +86,10 @@ DiceSigninButtonView::DiceSigninButtonView(
   views::GridLayout* grid_layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* columns = grid_layout->AddColumnSet(0);
-  grid_layout->StartRow(0, 0);
+  grid_layout->StartRow(views::GridLayout::kFixedSize, 0);
 
   // Add a stretching column for the account button.
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
   auto icon_view = std::make_unique<views::ImageView>();
   icon_view->SetImage(PrepareAvatarImage(account_icon));
@@ -104,8 +104,9 @@ DiceSigninButtonView::DiceSigninButtonView(
     return;
 
   // Add a non-stretching column for the the drop down arrow.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
   arrow_ = new HoverButton(
       button_listener,
       gfx::CreateVectorIcon(kSigninButtonDropDownArrowIcon,

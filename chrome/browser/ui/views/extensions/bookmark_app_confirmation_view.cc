@@ -48,14 +48,16 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   constexpr int kColumnSetId = 0;
 
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0,
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
                                layout_provider->GetDistanceMetric(
                                    views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
   constexpr int textfield_width = 320;
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                        views::GridLayout::FIXED, textfield_width, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                        textfield_width, 0);
 
   const int icon_size = layout_provider->IsHarmonyMode()
                             ? extension_misc::EXTENSION_ICON_SMALL
@@ -67,7 +69,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
       image_size);
   icon_image_view->SetImageSize(image_size);
   icon_image_view->SetImage(image);
-  layout->StartRow(0, kColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   layout->AddView(icon_image_view);
 
   title_tf_ = new views::Textfield();
@@ -78,7 +80,8 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
   layout->AddView(title_tf_);
 
   layout->AddPaddingRow(
-      0, layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL));
+      views::GridLayout::kFixedSize,
+      layout_provider->GetDistanceMetric(DISTANCE_CONTROL_LIST_VERTICAL));
 
   // When CanHostedAppsOpenInWindows() returns false, do not show the open as
   // window checkbox to avoid confusing users.
@@ -88,7 +91,7 @@ BookmarkAppConfirmationView::BookmarkAppConfirmationView(
     open_as_window_checkbox_ = new views::Checkbox(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_APP_BUBBLE_OPEN_AS_WINDOW));
     open_as_window_checkbox_->SetChecked(web_app_info_.open_as_window);
-    layout->StartRow(0, kColumnSetId);
+    layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
     layout->SkipColumns(1);
     layout->AddView(open_as_window_checkbox_);
   }

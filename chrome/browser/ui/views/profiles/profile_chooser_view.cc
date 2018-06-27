@@ -134,8 +134,9 @@ views::GridLayout* CreateSingleColumnLayout(views::View* view, int width) {
       view->SetLayoutManager(std::make_unique<views::GridLayout>(view));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-                     views::GridLayout::FIXED, width, width);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     width, width);
   return layout;
 }
 
@@ -241,21 +242,24 @@ class TitleCard : public views::View {
     // Column set 0 is a single column layout with horizontal padding at left
     // and right, and column set 1 is a single column layout with no padding.
     views::ColumnSet* columns = layout->AddColumnSet(0);
-    columns->AddPaddingColumn(1, dialog_insets.left());
+    columns->AddPaddingColumn(1.0, dialog_insets.left());
     int available_width = width - dialog_insets.width();
-    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
-        views::GridLayout::FIXED, available_width, available_width);
-    columns->AddPaddingColumn(1, dialog_insets.right());
-    layout->AddColumnSet(1)->AddColumn(views::GridLayout::FILL,
-                                       views::GridLayout::FILL, 0,
-                                       views::GridLayout::FIXED, width, width);
+    columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                       views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                       available_width, available_width);
+    columns->AddPaddingColumn(1.0, dialog_insets.right());
+    layout->AddColumnSet(1)->AddColumn(
+        views::GridLayout::FILL, views::GridLayout::FILL,
+        views::GridLayout::kFixedSize, views::GridLayout::FIXED, width, width);
 
-    layout->StartRowWithPadding(1, 0, 0, kVerticalSpacing);
+    layout->StartRowWithPadding(1.0, 0, views::GridLayout::kFixedSize,
+                                kVerticalSpacing);
     layout->AddView(title_card);
-    layout->StartRowWithPadding(1, 1, 0, kVerticalSpacing);
+    layout->StartRowWithPadding(1.0, 1.0, views::GridLayout::kFixedSize,
+                                kVerticalSpacing);
     layout->AddView(new views::Separator());
 
-    layout->StartRow(1, 1);
+    layout->StartRow(1.0, 1.0);
     layout->AddView(view);
 
     return titled_view;
@@ -265,7 +269,8 @@ class TitleCard : public views::View {
   void Layout() override {
     // The back button is left-aligned.
     const int back_button_width = back_button_->GetPreferredSize().width();
-    back_button_->SetBounds(0, 0, back_button_width, height());
+    back_button_->SetBounds(0, views::GridLayout::kFixedSize, back_button_width,
+                            height());
 
     // The title is in the same row as the button positioned with a minimum
     // amount of space between them.
@@ -280,7 +285,8 @@ class TitleCard : public views::View {
     const int unavailable_space = 2 * unavailable_leading_space;
     const int label_width = width() - unavailable_space;
     DCHECK_GT(label_width, 0);
-    title_label_->SetBounds(unavailable_leading_space, 0, label_width,
+    title_label_->SetBounds(unavailable_leading_space,
+                            views::GridLayout::kFixedSize, label_width,
                             height());
   }
 
@@ -370,7 +376,7 @@ ProfileChooserView::ProfileChooserView(views::Button* anchor_button,
                                 : kFixedMenuWidthPreDice) {
   // The sign in webview will be clipped on the bottom corners without these
   // margins, see related bug <http://crbug.com/593203>.
-  set_margins(gfx::Insets(0, 0, 2, 0));
+  set_margins(gfx::Insets(0, views::GridLayout::kFixedSize, 2, 0));
   ResetView();
   chrome::RecordDialogCreation(chrome::DialogIdentifier::PROFILE_CHOOSER);
 }
@@ -528,7 +534,7 @@ void ProfileChooserView::ShowView(profiles::BubbleViewMode view_to_display,
       break;
   }
 
-  layout->StartRow(1, 0);
+  layout->StartRow(1.0, 0);
   layout->AddView(sub_view);
   if (GetBubbleFrameView()) {
     SizeToContents();
@@ -815,9 +821,9 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   }
 
   if (sync_error_view) {
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(sync_error_view);
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     layout->AddView(new views::Separator());
   }
 
@@ -828,20 +834,20 @@ views::View* ProfileChooserView::CreateProfileChooserView(
   }
 
   if (!(dice_enabled_ && sync_error_view)) {
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(current_profile_view);
   }
 
   if (!IsProfileChooser(view_mode_)) {
     DCHECK(current_profile_accounts);
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     layout->AddView(new views::Separator());
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(current_profile_accounts);
   }
 
   if (browser_->profile()->IsSupervised()) {
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(CreateSupervisedUserDisclaimerView());
   }
 
@@ -856,11 +862,11 @@ views::View* ProfileChooserView::CreateProfileChooserView(
     layout->AddView(autofill_home_view);
   }
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(new views::Separator());
 
   if (option_buttons_view) {
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     layout->AddView(option_buttons_view);
   }
   return view;
@@ -1245,7 +1251,8 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
   const bool is_guest = browser_->profile()->IsGuestSession();
   // Add the user switching buttons.
   // Order them such that the active user profile comes first (for Dice).
-  layout->StartRowWithPadding(1, 0, 0, content_list_vert_spacing);
+  layout->StartRowWithPadding(1.0, 0, views::GridLayout::kFixedSize,
+                              content_list_vert_spacing);
   std::vector<size_t> ordered_item_indices;
   for (size_t i = 0; i < avatar_menu->GetNumberOfItems(); ++i) {
     if (avatar_menu->GetItemAt(i).active)
@@ -1266,7 +1273,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
 
       if (!first_profile_button_)
         first_profile_button_ = button;
-      layout->StartRow(1, 0);
+      layout->StartRow(1.0, 0);
       layout->AddView(button);
     }
   }
@@ -1281,7 +1288,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
           gfx::CreateVectorIcon(kUserMenuGuestIcon, kIconSize,
                                 gfx::kChromeIconGrey),
           l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON));
-      layout->StartRow(1, 0);
+      layout->StartRow(1.0, 0);
       layout->AddView(guest_profile_button_);
     }
   }
@@ -1295,7 +1302,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
       gfx::CreateVectorIcon(settings_icon, kIconSize, gfx::kChromeIconGrey),
       text);
 
-  layout->StartRow(1, 0);
+  layout->StartRow(1.0, 0);
   layout->AddView(users_button_);
 
   if (display_lock) {
@@ -1304,7 +1311,7 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
         gfx::CreateVectorIcon(vector_icons::kLockIcon, kIconSize,
                               gfx::kChromeIconGrey),
         l10n_util::GetStringUTF16(IDS_PROFILES_PROFILE_SIGNOUT_BUTTON));
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(lock_button_);
   } else if (!is_guest) {
     AvatarMenu::Item active_avatar_item =
@@ -1316,11 +1323,12 @@ views::View* ProfileChooserView::CreateOptionsView(bool display_lock,
             ? l10n_util::GetStringFUTF16(IDS_PROFILES_EXIT_PROFILE_BUTTON,
                                          active_avatar_item.name)
             : l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON));
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(close_all_windows_button_);
   }
 
-  layout->AddPaddingRow(0, content_list_vert_spacing);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                        content_list_vert_spacing);
   return view;
 }
 
@@ -1337,7 +1345,7 @@ views::View* ProfileChooserView::CreateSupervisedUserDisclaimerView() {
   disclaimer->SetMultiLine(true);
   disclaimer->SetAllowCharacterBreak(true);
   disclaimer->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  layout->StartRow(1, 0);
+  layout->StartRow(1.0, 0);
   layout->AddView(disclaimer);
 
   return view;
@@ -1409,14 +1417,14 @@ views::View* ProfileChooserView::CreateCurrentProfileAccountsView(
   const int vertical_spacing =
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL);
   if (!profile->IsSupervised()) {
-    layout->AddPaddingRow(0, vertical_spacing);
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 
     add_account_link_ = CreateLink(l10n_util::GetStringFUTF16(
         IDS_PROFILES_PROFILE_ADD_ACCOUNT_BUTTON, avatar_item.name), this);
     add_account_link_->SetBorder(views::CreateEmptyBorder(
         0, provider->GetInsetsMetric(views::INSETS_DIALOG).left(),
         vertical_spacing, 0));
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(add_account_link_);
   }
 
@@ -1457,7 +1465,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
   email_button->SetSubtitleElideBehavior(gfx::ELIDE_EMAIL);
   email_button->SetMinSize(gfx::Size(0, kButtonHeight));
   email_button->SetMaxSize(gfx::Size(available_width, kButtonHeight));
-  layout->StartRow(1, 0);
+  layout->StartRow(1.0, 0);
   layout->AddView(email_button);
 
   if (reauth_required)
@@ -1477,7 +1485,7 @@ void ProfileChooserView::CreateAccountButton(views::GridLayout* layout,
     delete_button->SetBounds(
         width - provider->GetInsetsMetric(views::INSETS_DIALOG).right() -
             kDeleteButtonWidth,
-        0, kDeleteButtonWidth, kButtonHeight);
+        views::GridLayout::kFixedSize, kDeleteButtonWidth, kButtonHeight);
 
     email_button->set_notify_enter_exit_on_child(true);
     email_button->AddChildView(delete_button);
@@ -1509,7 +1517,9 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL);
 
   // Adds main text.
-  layout->StartRowWithPadding(1, 0, 0, unrelated_vertical_spacing);
+  layout->StartRowWithPadding(1.0, views::GridLayout::kFixedSize,
+                              views::GridLayout::kFixedSize,
+                              unrelated_vertical_spacing);
 
   if (is_primary_account) {
     std::string email = signin_ui_util::GetDisplayEmail(browser_->profile(),
@@ -1542,10 +1552,13 @@ views::View* ProfileChooserView::CreateAccountRemovalView() {
         this, l10n_util::GetStringUTF16(IDS_PROFILES_ACCOUNT_REMOVAL_BUTTON));
     remove_account_button_->SetHorizontalAlignment(
         gfx::ALIGN_CENTER);
-    layout->StartRowWithPadding(1, 0, 0, unrelated_vertical_spacing);
+    layout->StartRowWithPadding(1.0, views::GridLayout::kFixedSize,
+                                views::GridLayout::kFixedSize,
+                                unrelated_vertical_spacing);
     layout->AddView(remove_account_button_);
   } else {
-    layout->AddPaddingRow(0, unrelated_vertical_spacing);
+    layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                          unrelated_vertical_spacing);
   }
 
   TitleCard* title_card = new TitleCard(

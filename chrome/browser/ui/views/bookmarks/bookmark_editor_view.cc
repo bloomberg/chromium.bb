@@ -42,7 +42,6 @@
 using bookmarks::BookmarkExpandedStateTracker;
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
-using views::GridLayout;
 
 namespace {
 
@@ -339,7 +338,7 @@ void BookmarkEditorView::Init() {
     new_folder_button_->SetEnabled(false);
   }
 
-  GridLayout* layout =
+  views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
@@ -348,34 +347,38 @@ void BookmarkEditorView::Init() {
   const int buttons_column_set_id = 2;
 
   views::ColumnSet* column_set = layout->AddColumnSet(labels_column_set_id);
-  column_set->AddColumn(provider->GetControlLabelGridAlignment(),
-                        GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(
+      provider->GetControlLabelGridAlignment(), views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0,
+      views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(single_column_view_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(buttons_column_set_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      1,
+      1.0,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(
-      0,
+      views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
-  column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::USE_PREF, 0, 0);
   column_set->LinkColumnSizes(0, 2, 4, -1);
 
-  layout->StartRow(0, labels_column_set_id);
+  layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);
   layout->AddView(title_label_);
   layout->AddView(title_tf_);
 
@@ -390,24 +393,27 @@ void BookmarkEditorView::Init() {
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));
     url_tf_->SetTextInputType(ui::TextInputType::TEXT_INPUT_TYPE_URL);
 
-    layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    layout->AddPaddingRow(
+        views::GridLayout::kFixedSize,
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
 
-    layout->StartRow(0, labels_column_set_id);
+    layout->StartRow(views::GridLayout::kFixedSize, labels_column_set_id);
     layout->AddView(url_label_);
     layout->AddView(url_tf_);
   }
 
   if (show_tree_) {
-    layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
-    layout->StartRow(1, single_column_view_set_id);
+    layout->AddPaddingRow(
+        views::GridLayout::kFixedSize,
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    layout->StartRow(1.0, single_column_view_set_id);
     layout->AddView(tree_view_->CreateParentIfNecessary());
   }
 
   if (provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    layout->AddPaddingRow(
+        views::GridLayout::kFixedSize,
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   }
 
   if (!show_tree_ || bb_model_->loaded())

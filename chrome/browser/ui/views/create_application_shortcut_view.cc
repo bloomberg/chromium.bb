@@ -111,35 +111,37 @@ void CreateChromeApplicationShortcutView::InitControls() {
 
   static const int kHeaderColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        100.0f, views::GridLayout::FIXED, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
+                        views::GridLayout::FIXED, 0, 0);
 
   static const int kTableColumnSetId = 1;
   column_set = layout->AddColumnSet(kTableColumnSetId);
   column_set->AddPaddingColumn(
-      0, provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
-                        100.0f, views::GridLayout::USE_PREF, 0, 0);
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(DISTANCE_SUBSECTION_HORIZONTAL_INDENT));
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, kHeaderColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kHeaderColumnSetId);
   layout->AddView(create_shortcuts_label);
 
-  layout->AddPaddingRow(0, provider->GetDistanceMetric(
-      views::DISTANCE_RELATED_CONTROL_VERTICAL));
-  layout->StartRow(0, kTableColumnSetId);
+  layout->AddPaddingRow(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
+  layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
   layout->AddView(desktop_check_box_);
 
   const int vertical_spacing =
       provider->GetDistanceMetric(DISTANCE_RELATED_CONTROL_VERTICAL_SMALL);
   if (menu_check_box_ != nullptr) {
-    layout->AddPaddingRow(0, vertical_spacing);
-    layout->StartRow(0, kTableColumnSetId);
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
+    layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
     layout->AddView(menu_check_box_);
   }
 
   if (quick_launch_check_box_ != nullptr) {
-    layout->AddPaddingRow(0, vertical_spacing);
-    layout->StartRow(0, kTableColumnSetId);
+    layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
+    layout->StartRow(views::GridLayout::kFixedSize, kTableColumnSetId);
     layout->AddView(quick_launch_check_box_);
   }
 }

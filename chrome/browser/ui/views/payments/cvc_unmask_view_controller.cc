@@ -143,10 +143,10 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
 
   views::ColumnSet* instructions_columns = layout->AddColumnSet(0);
   instructions_columns->AddColumn(views::GridLayout::Alignment::FILL,
-                                  views::GridLayout::Alignment::LEADING, 1,
+                                  views::GridLayout::Alignment::LEADING, 1.0,
                                   views::GridLayout::SizeType::USE_PREF, 0, 0);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   // The prompt for server cards should reference Google Payments, whereas the
   // prompt for local cards should not.
   std::unique_ptr<views::Label> instructions =
@@ -159,7 +159,7 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->AddView(instructions.release());
 
   // Space between the instructions and the CVC field.
-  layout->AddPaddingRow(0, 16);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
 
   views::ColumnSet* cvc_field_columns = layout->AddColumnSet(1);
   constexpr int kPadding = 16;
@@ -169,26 +169,32 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   if (requesting_expiration) {
     // Month dropdown column
     cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                                 views::GridLayout::Alignment::BASELINE, 0,
+                                 views::GridLayout::Alignment::BASELINE,
+                                 views::GridLayout::kFixedSize,
                                  views::GridLayout::SizeType::USE_PREF, 0, 0);
-    cvc_field_columns->AddPaddingColumn(0, kPadding);
+    cvc_field_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                        kPadding);
     // Year dropdown column
     cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                                 views::GridLayout::Alignment::BASELINE, 0,
+                                 views::GridLayout::Alignment::BASELINE,
+                                 views::GridLayout::kFixedSize,
                                  views::GridLayout::SizeType::USE_PREF, 0, 0);
-    cvc_field_columns->AddPaddingColumn(0, kPadding);
+    cvc_field_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                        kPadding);
   }
   // CVC image
   cvc_field_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                               views::GridLayout::Alignment::BASELINE, 0,
+                               views::GridLayout::Alignment::BASELINE,
+                               views::GridLayout::kFixedSize,
                                views::GridLayout::SizeType::FIXED, 32, 32);
-  cvc_field_columns->AddPaddingColumn(0, kPadding);
+  cvc_field_columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPadding);
   // CVC field
   cvc_field_columns->AddColumn(views::GridLayout::Alignment::FILL,
-                               views::GridLayout::Alignment::BASELINE, 0,
+                               views::GridLayout::Alignment::BASELINE,
+                               views::GridLayout::kFixedSize,
                                views::GridLayout::SizeType::FIXED, 80, 80);
 
-  layout->StartRow(0, 1);
+  layout->StartRow(views::GridLayout::kFixedSize, 1);
   if (requesting_expiration) {
     auto month = std::make_unique<views::Combobox>(&month_combobox_model_);
     month->set_listener(this);
@@ -226,20 +232,21 @@ void CvcUnmaskViewController::FillContentView(views::View* content_view) {
   layout->AddView(cvc_field.release());
 
   // Space between the CVC field and the error field.
-  layout->AddPaddingRow(0, 16);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, 16);
 
   views::ColumnSet* error_columns = layout->AddColumnSet(2);
   // A column for the error icon
   error_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                           views::GridLayout::Alignment::LEADING, 0,
+                           views::GridLayout::Alignment::LEADING,
+                           views::GridLayout::kFixedSize,
                            views::GridLayout::SizeType::USE_PREF, 0, 0);
-  error_columns->AddPaddingColumn(0, kPadding);
+  error_columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPadding);
   // A column for the error label
   error_columns->AddColumn(views::GridLayout::Alignment::LEADING,
-                           views::GridLayout::Alignment::LEADING, 1,
+                           views::GridLayout::Alignment::LEADING, 1.0,
                            views::GridLayout::SizeType::USE_PREF, 0, 0);
 
-  layout->StartRow(0, 2);
+  layout->StartRow(views::GridLayout::kFixedSize, 2);
   std::unique_ptr<views::ImageView> error_icon =
       std::make_unique<views::ImageView>();
   error_icon->set_id(static_cast<int>(DialogViewID::CVC_ERROR_ICON));

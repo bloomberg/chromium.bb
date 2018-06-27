@@ -269,30 +269,33 @@ void IntentPickerBubbleView::Init() {
 
   constexpr int kColumnSetId = 0;
   views::ColumnSet* cs = layout->AddColumnSet(kColumnSetId);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                views::GridLayout::FIXED, kMaxWidth, 0);
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                kMaxWidth, 0);
 
-  layout->StartRowWithPadding(0, kColumnSetId, 0, kTitlePadding);
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetId,
+                              views::GridLayout::kFixedSize, kTitlePadding);
   layout->AddView(scroll_view_);
-  layout->StartRow(0, kColumnSetId, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId, 0);
   layout->AddView(CreateHorizontalSeparator());
 
   // This second ColumnSet has a padding column in order to manipulate the
   // Checkbox positioning freely.
   constexpr int kColumnSetIdPadded = 1;
   views::ColumnSet* cs_padded = layout->AddColumnSet(kColumnSetIdPadded);
-  cs_padded->AddPaddingColumn(0, kTitlePadding);
-  cs_padded->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                       views::GridLayout::FIXED, kMaxWidth - 2 * kTitlePadding,
-                       0);
+  cs_padded->AddPaddingColumn(views::GridLayout::kFixedSize, kTitlePadding);
+  cs_padded->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                       views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                       kMaxWidth - 2 * kTitlePadding, 0);
 
-  layout->StartRowWithPadding(0, kColumnSetIdPadded, 0, 0);
+  layout->StartRowWithPadding(views::GridLayout::kFixedSize, kColumnSetIdPadded,
+                              views::GridLayout::kFixedSize, 0);
   remember_selection_checkbox_ = new views::Checkbox(l10n_util::GetStringUTF16(
       IDS_INTENT_PICKER_BUBBLE_VIEW_REMEMBER_SELECTION));
   layout->AddView(remember_selection_checkbox_);
   UpdateCheckboxState();
 
-  layout->AddPaddingRow(0, kTitlePadding);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, kTitlePadding);
 }
 
 base::string16 IntentPickerBubbleView::GetWindowTitle() const {

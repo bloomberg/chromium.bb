@@ -228,10 +228,10 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
 
   // Note: each view is responsible for its own padding (insets).
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   header_view_ = std::make_unique<views::View>();
   PopulateSheetHeaderView(ShouldShowHeaderBackArrow(),
                           CreateHeaderContentView(), this, header_view_.get(),
@@ -239,13 +239,13 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   header_view_->set_owned_by_client();
   layout->AddView(header_view_.get());
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   header_content_separator_container_ = std::make_unique<views::View>();
   header_content_separator_container_->set_owned_by_client();
   layout->AddView(header_content_separator_container_.get());
   UpdateHeaderContentSeparatorView();
 
-  layout->StartRow(1, 0);
+  layout->StartRow(1.0, 0);
   // |content_view| will go into a views::ScrollView so it needs to be sized now
   // otherwise it'll be sized to the ScrollView's viewport height, preventing
   // the scroll bar from ever being shown.
@@ -253,11 +253,11 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   views::GridLayout* pane_layout =
       pane_->SetLayoutManager(std::make_unique<views::GridLayout>(pane_));
   views::ColumnSet* pane_columns = pane_layout->AddColumnSet(0);
-  pane_columns->AddColumn(views::GridLayout::Alignment::FILL,
-                          views::GridLayout::Alignment::LEADING, 0,
-                          views::GridLayout::SizeType::FIXED,
-                          GetActualDialogWidth(), GetActualDialogWidth());
-  pane_layout->StartRow(0, 0);
+  pane_columns->AddColumn(
+      views::GridLayout::Alignment::FILL, views::GridLayout::Alignment::LEADING,
+      views::GridLayout::kFixedSize, views::GridLayout::SizeType::FIXED,
+      GetActualDialogWidth(), GetActualDialogWidth());
+  pane_layout->StartRow(views::GridLayout::kFixedSize, 0);
   // This is owned by its parent. It's the container passed to FillContentView.
   content_view_ = new views::View;
   content_view_->SetPaintToLayer();
@@ -277,7 +277,7 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateView() {
   layout->AddView(scroll_.get());
 
   if (footer) {
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     layout->AddView(footer.release());
   }
 
@@ -423,13 +423,15 @@ std::unique_ptr<views::View> PaymentRequestSheetController::CreateFooterView() {
       std::make_unique<views::GridLayout>(container.get()));
 
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(1, 0);
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
+  columns->AddPaddingColumn(1.0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::View> extra_view = CreateExtraFooterView();
   if (extra_view)
     layout->AddView(extra_view.release());

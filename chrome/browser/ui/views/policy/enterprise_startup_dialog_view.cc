@@ -173,19 +173,21 @@ void EnterpriseStartupDialogView::SetupLayout(views::View* icon,
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   auto* columnset = layout->AddColumnSet(0);
   // Horizontally centre the content.
-  columnset->AddPaddingColumn(1, 0);
-  columnset->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+  columnset->AddPaddingColumn(1.0, 0);
+  columnset->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                       views::GridLayout::kFixedSize,
                        views::GridLayout::USE_PREF, 0, 0);
-  columnset->AddPaddingColumn(0, text_padding);
-  columnset->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
+  columnset->AddPaddingColumn(views::GridLayout::kFixedSize, text_padding);
+  columnset->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                       views::GridLayout::kFixedSize,
                        views::GridLayout::USE_PREF, 0, 0);
-  columnset->AddPaddingColumn(1, 0);
+  columnset->AddPaddingColumn(1.0, 0);
 
-  layout->AddPaddingRow(1, 0);
-  layout->StartRow(0, 0);
+  layout->AddPaddingRow(1.0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(icon);
   layout->AddView(text);
-  layout->AddPaddingRow(1, 0);
+  layout->AddPaddingRow(1.0, 0);
 
   GetDialogClientView()->Layout();
   GetDialogClientView()->SchedulePaint();

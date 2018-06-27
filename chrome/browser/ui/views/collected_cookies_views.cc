@@ -76,14 +76,16 @@ void StartNewButtonColumnSet(views::GridLayout* layout,
       provider->GetDistanceMetric(views::DISTANCE_BUTTON_MAX_LINKABLE_WIDTH);
 
   views::ColumnSet* column_set = layout->AddColumnSet(column_layout_id);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, button_padding);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize, button_padding);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                        views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
   column_set->LinkColumnSizes(0, 2, -1);
   column_set->set_linked_column_size_limit(button_size_limit);
-  layout->StartRow(0, column_layout_id);
+  layout->StartRow(views::GridLayout::kFixedSize, column_layout_id);
 }
 
 base::string16 GetAnnotationTextForSetting(ContentSetting setting) {
@@ -397,9 +399,7 @@ CollectedCookiesViews::~CollectedCookiesViews() {
 }
 
 void CollectedCookiesViews::Init() {
-  using views::GridLayout;
-
-  GridLayout* layout =
+  views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   if (provider->UseExtraDialogPadding()) {
@@ -409,10 +409,10 @@ void CollectedCookiesViews::Init() {
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                        views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, single_column_layout_id);
+  layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   views::TabbedPane* tabbed_pane = new views::TabbedPane();
 
   layout->AddView(tabbed_pane);
@@ -426,17 +426,19 @@ void CollectedCookiesViews::Init() {
   tabbed_pane->SelectTabAt(0);
   tabbed_pane->set_listener(this);
   if (ChromeLayoutProvider::Get()->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(0, provider->GetDistanceMetric(
-                                 views::DISTANCE_RELATED_CONTROL_VERTICAL));
+    layout->AddPaddingRow(
+        views::GridLayout::kFixedSize,
+        provider->GetDistanceMetric(views::DISTANCE_RELATED_CONTROL_VERTICAL));
   }
 
-  layout->StartRow(0, single_column_layout_id);
+  layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   cookie_info_view_ = new CookieInfoView();
   layout->AddView(cookie_info_view_);
   if (provider->UseExtraDialogPadding())
-    layout->AddPaddingRow(0, kCookieInfoBottomPadding);
+    layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                          kCookieInfoBottomPadding);
 
-  layout->StartRow(0, single_column_layout_id);
+  layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   infobar_ = new InfobarView();
   layout->AddView(infobar_);
 
@@ -472,10 +474,9 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
 
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
-  using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout =
+  views::GridLayout* layout =
       pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane));
 
   pane->SetBorder(
@@ -487,18 +488,20 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                        1.0, views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, single_column_layout_id);
+  layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
   layout->AddView(allowed_label_);
-  layout->AddPaddingRow(0, unrelated_vertical_distance);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                        unrelated_vertical_distance);
 
-  layout->StartRow(1, single_column_layout_id);
+  layout->StartRow(1.0, single_column_layout_id);
   layout->AddView(CreateScrollView(allowed_cookies_tree_), 1, 1,
-                  GridLayout::FILL, GridLayout::FILL, kTreeViewWidth,
-                  kTreeViewHeight);
-  layout->AddPaddingRow(0, unrelated_vertical_distance);
+                  views::GridLayout::FILL, views::GridLayout::FILL,
+                  kTreeViewWidth, kTreeViewHeight);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                        unrelated_vertical_distance);
 
   return pane;
 }
@@ -537,10 +540,9 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 
   // Create the view that holds all the controls together.  This will be the
   // pane added to the tabbed pane.
-  using views::GridLayout;
 
   views::View* pane = new views::View();
-  GridLayout* layout =
+  views::GridLayout* layout =
       pane->SetLayoutManager(std::make_unique<views::GridLayout>(pane));
   pane->SetBorder(
       views::CreateEmptyBorder(ChromeLayoutProvider::Get()->GetInsetsMetric(
@@ -551,18 +553,21 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
 
   const int single_column_layout_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_layout_id);
-  column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
-                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                        1.0, views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, single_column_layout_id);
-  layout->AddView(blocked_label_, 1, 1, GridLayout::FILL, GridLayout::FILL);
-  layout->AddPaddingRow(0, unrelated_vertical_distance);
+  layout->StartRow(views::GridLayout::kFixedSize, single_column_layout_id);
+  layout->AddView(blocked_label_, 1, 1, views::GridLayout::FILL,
+                  views::GridLayout::FILL);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                        unrelated_vertical_distance);
 
-  layout->StartRow(1, single_column_layout_id);
-  layout->AddView(
-      CreateScrollView(blocked_cookies_tree_), 1, 1,
-      GridLayout::FILL, GridLayout::FILL, kTreeViewWidth, kTreeViewHeight);
-  layout->AddPaddingRow(0, unrelated_vertical_distance);
+  layout->StartRow(1.0, single_column_layout_id);
+  layout->AddView(CreateScrollView(blocked_cookies_tree_), 1, 1,
+                  views::GridLayout::FILL, views::GridLayout::FILL,
+                  kTreeViewWidth, kTreeViewHeight);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                        unrelated_vertical_distance);
 
   return pane;
 }

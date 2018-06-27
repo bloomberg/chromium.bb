@@ -14,17 +14,13 @@
 #include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/layout/grid_layout.h"
 
-using views::GridLayout;
-
 namespace {
 
 constexpr int kHeaderColumnSetId = 0;
 constexpr int kFieldsColumnSetId = 1;
-constexpr float kFixed = 0.f;
-constexpr float kStretchy = 1.f;
 
 // Adds a row to |layout| and puts a Label in it.
-void AddHeaderLabel(GridLayout* layout,
+void AddHeaderLabel(views::GridLayout* layout,
                     const base::string16& text,
                     int text_style) {
   views::Label* label =
@@ -32,7 +28,7 @@ void AddHeaderLabel(GridLayout* layout,
   label->SetMultiLine(true);
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetAllowCharacterBreak(true);
-  layout->StartRow(kFixed, kHeaderColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kHeaderColumnSetId);
   layout->AddView(label);
 }
 
@@ -53,16 +49,17 @@ LoginView::LoginView(const base::string16& authority,
       provider->GetDialogInsetsForContentType(views::TEXT, views::CONTROL)));
 
   // Initialize the Grid Layout Manager used for this dialog box.
-  GridLayout* layout =
+  views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   views::ColumnSet* column_set = layout->AddColumnSet(kHeaderColumnSetId);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, kStretchy,
-                        GridLayout::FIXED, kMessageWidth, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
+                        views::GridLayout::FIXED, kMessageWidth, 0);
   AddHeaderLabel(layout, authority, views::style::STYLE_PRIMARY);
   if (!explanation.empty())
     AddHeaderLabel(layout, explanation, STYLE_SECONDARY);
-  layout->AddPaddingRow(kFixed, provider->GetDistanceMetric(
-                                    DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));
+  layout->AddPaddingRow(
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_VERTICAL_LARGE));
 
   ConfigureTextfieldStack(layout, kFieldsColumnSetId);
   username_field_ = AddFirstTextfieldRow(
@@ -74,7 +71,7 @@ LoginView::LoginView(const base::string16& authority,
   password_field_->SetTextInputType(ui::TEXT_INPUT_TYPE_PASSWORD);
 
   if (provider->UseExtraDialogPadding()) {
-    layout->AddPaddingRow(kFixed,
+    layout->AddPaddingRow(views::GridLayout::kFixedSize,
                           provider->GetDistanceMetric(
                               views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   }
