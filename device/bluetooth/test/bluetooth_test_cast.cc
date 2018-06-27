@@ -11,6 +11,7 @@
 #include "chromecast/device/bluetooth/le/remote_device.h"
 #include "device/bluetooth/cast/bluetooth_adapter_cast.h"
 
+using ::testing::ByMove;
 using ::testing::Return;
 
 namespace device {
@@ -46,7 +47,11 @@ class BluetoothTestCast::GattClientManager
 
 BluetoothTestCast::BluetoothTestCast()
     : gatt_client_manager_(std::make_unique<GattClientManager>()) {
-  ON_CALL(le_scan_manager_, SetScanEnable).WillByDefault(Return(true));
+  ON_CALL(le_scan_manager_, RequestScan)
+      .WillByDefault(Return(ByMove(
+          std::unique_ptr<chromecast::bluetooth::LeScanManager::ScanHandle>(
+              std::make_unique<chromecast::bluetooth::MockLeScanManager::
+                                   MockScanHandle>()))));
 }
 
 BluetoothTestCast::~BluetoothTestCast() {
