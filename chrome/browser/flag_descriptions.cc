@@ -713,6 +713,10 @@ const char kEnableWasmName[] = "WebAssembly structured cloning support.";
 const char kEnableWasmDescription[] =
     "Enable web pages to use WebAssembly structured cloning.";
 
+const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
+const char kEnableWebAuthenticationAPIDescription[] =
+    "Enable Web Authentication API support";
+
 const char kEnableImageCaptureAPIName[] = "Image Capture API";
 const char kEnableImageCaptureAPIDescription[] =
     "Enables the Web Platform Image Capture API: takePhoto(), "
@@ -2567,10 +2571,6 @@ const char kInfiniteSessionRestoreDescription[] =
 const char kEnableNewAppMenuIconName[] = "Enable the New App Menu Icon";
 const char kEnableNewAppMenuIconDescription[] =
     "Use the new app menu icon with update notification animations.";
-
-const char kEnableWebAuthenticationAPIName[] = "Web Authentication API";
-const char kEnableWebAuthenticationAPIDescription[] =
-    "Enable Web Authentication API support";
 
 const char kEnableWebAuthenticationCtap2SupportName[] =
     "Enable Web Authentication API support for CTAP2 security keys";
