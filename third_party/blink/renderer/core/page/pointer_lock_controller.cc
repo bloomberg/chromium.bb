@@ -165,8 +165,10 @@ void PointerLockController::EnqueueEvent(const AtomicString& type,
 
 void PointerLockController::EnqueueEvent(const AtomicString& type,
                                          Document* document) {
-  if (document && document->domWindow())
-    document->domWindow()->EnqueueDocumentEvent(Event::Create(type));
+  if (document && document->domWindow()) {
+    document->domWindow()->EnqueueDocumentEvent(Event::Create(type),
+                                                TaskType::kMiscPlatformAPI);
+  }
 }
 
 void PointerLockController::Trace(blink::Visitor* visitor) {

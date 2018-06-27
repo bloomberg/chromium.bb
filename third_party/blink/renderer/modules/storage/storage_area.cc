@@ -221,9 +221,11 @@ void StorageArea::DispatchLocalStorageEvent(
           local_frame->GetDocument()->GetSecurityOrigin()->IsSameSchemeHostPort(
               security_origin) &&
           !IsEventSource(storage, source_area_instance)) {
+        // https://www.w3.org/TR/webstorage/#the-storage-event
         local_frame->DomWindow()->EnqueueWindowEvent(
             StorageEvent::Create(EventTypeNames::storage, key, old_value,
-                                 new_value, page_url, storage));
+                                 new_value, page_url, storage),
+            TaskType::kDOMManipulation);
       }
     }
     if (InspectorDOMStorageAgent* agent =
@@ -260,9 +262,11 @@ void StorageArea::DispatchSessionStorageEvent(
         local_frame->GetDocument()->GetSecurityOrigin()->IsSameSchemeHostPort(
             security_origin) &&
         !IsEventSource(storage, source_area_instance)) {
+      // https://www.w3.org/TR/webstorage/#the-storage-event
       local_frame->DomWindow()->EnqueueWindowEvent(
           StorageEvent::Create(EventTypeNames::storage, key, old_value,
-                               new_value, page_url, storage));
+                               new_value, page_url, storage),
+          TaskType::kDOMManipulation);
     }
   }
   if (InspectorDOMStorageAgent* agent =

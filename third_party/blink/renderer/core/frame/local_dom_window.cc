@@ -338,13 +338,13 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
   return document_;
 }
 
-void LocalDOMWindow::EnqueueWindowEvent(Event* event) {
-  EnqueueAsyncEvent(event, TaskType::kInternalDefault);
+void LocalDOMWindow::EnqueueWindowEvent(Event* event, TaskType task_type) {
+  EnqueueAsyncEvent(event, task_type);
 }
 
-void LocalDOMWindow::EnqueueDocumentEvent(Event* event) {
+void LocalDOMWindow::EnqueueDocumentEvent(Event* event, TaskType task_type) {
   if (document_)
-    document_->EnqueueAsyncEvent(event, TaskType::kInternalDefault);
+    document_->EnqueueAsyncEvent(event, task_type);
 }
 
 void LocalDOMWindow::DispatchWindowLoadEvent() {
@@ -376,8 +376,9 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
   // asynchronously.  However to be compatible with other browsers blink fires
   // pageshow synchronously unless we are in EventQueueScope.
   if (ScopedEventQueue::Instance()->ShouldQueueEvents() && document_) {
-      EnqueueWindowEvent(
-        PageTransitionEvent::Create(EventTypeNames::pageshow, persisted));
+    EnqueueWindowEvent(
+        PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
+        TaskType::kMiscPlatformAPI);
     return;
   }
   DispatchEvent(
@@ -387,7 +388,9 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
 
 void LocalDOMWindow::EnqueueHashchangeEvent(const String& old_url,
                                             const String& new_url) {
-  EnqueueWindowEvent(HashChangeEvent::Create(old_url, new_url));
+  // https://html.spec.whatwg.org/#history-traversal
+  EnqueueWindowEvent(HashChangeEvent::Create(old_url, new_url),
+                     TaskType::kDOMManipulation);
 }
 
 void LocalDOMWindow::EnqueuePopstateEvent(

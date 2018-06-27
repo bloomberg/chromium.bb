@@ -292,7 +292,8 @@ void FrameSelection::DidSetSelectionDeprecated(
   NotifyCompositorForSelectionChange();
   NotifyEventHandlerForSelectionChange();
   frame_->DomWindow()->EnqueueDocumentEvent(
-      Event::Create(EventTypeNames::selectionchange));
+      Event::Create(EventTypeNames::selectionchange),
+      TaskType::kMiscPlatformAPI);
 }
 
 void FrameSelection::NodeChildrenWillBeRemoved(ContainerNode& container) {
