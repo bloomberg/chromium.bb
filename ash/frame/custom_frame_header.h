@@ -23,7 +23,7 @@ class ASH_EXPORT CustomFrameHeader : public FrameHeader {
     virtual SkColor GetFrameHeaderColor(bool active) = 0;
     virtual gfx::ImageSkia GetFrameHeaderImage(bool active) = 0;
     virtual gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) = 0;
-    virtual bool IsTabletMode() = 0;
+    virtual bool IsTabletMode() const = 0;
   };
 
   // BrowserFrameHeaderAsh does not take ownership of any of the parameters.

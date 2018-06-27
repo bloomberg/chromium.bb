@@ -10,6 +10,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/default_frame_header.h"
 #include "ash/frame/frame_header.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
 #include "ash/public/cpp/ash_switches.h"
@@ -1169,6 +1170,93 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_EQ(inset_normal, inset_in_overview_mode);
 }
 
+namespace {
+
+class HomeLauncherBrowserNonClientFrameViewAshTest
+    : public TopChromeMdParamTest<InProcessBrowserTest> {
+ public:
+  HomeLauncherBrowserNonClientFrameViewAshTest() = default;
+  ~HomeLauncherBrowserNonClientFrameViewAshTest() override = default;
+
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    TopChromeMdParamTest<InProcessBrowserTest>::SetUpDefaultCommandLine(
+        command_line);
+
+    command_line->AppendSwitch(ash::switches::kAshEnableTabletMode);
+  }
+
+  void SetUp() override {
+    scoped_feature_list_.InitAndEnableFeature(
+        app_list::features::kEnableHomeLauncher);
+    TopChromeMdParamTest<InProcessBrowserTest>::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(HomeLauncherBrowserNonClientFrameViewAshTest);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
+                       TabletModeBrowserCaptionButtonVisibility) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
+
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+  ash::Shell* shell = ash::Shell::Get();
+  ash::TabletModeController* tablet_mode_controller =
+      shell->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+}
+
+IN_PROC_BROWSER_TEST_P(HomeLauncherBrowserNonClientFrameViewAshTest,
+                       TabletModeAppCaptionButtonVisibility) {
+  browser()->window()->Close();
+
+  // Open a new app window.
+  Browser::CreateParams params = Browser::CreateParams::CreateForApp(
+      "test_browser_app", true /* trusted_source */, gfx::Rect(),
+      browser()->profile(), true);
+  params.initial_show_state = ui::SHOW_STATE_DEFAULT;
+  Browser* browser = new Browser(params);
+  ASSERT_TRUE(browser->is_app());
+
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
+  BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+
+  // Tablet mode doesn't affect app's caption button's visibility.
+  ash::Shell* shell = ash::Shell::Get();
+  ash::TabletModeController* tablet_mode_controller =
+      shell->tablet_mode_controller();
+  tablet_mode_controller->EnableTabletModeWindowManager(true);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+
+  // However, overview mode does.
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_FALSE(frame_view->caption_button_container_->visible());
+  shell->window_selector_controller()->ToggleOverview();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+
+  tablet_mode_controller->EnableTabletModeWindowManager(false);
+  tablet_mode_controller->FlushForTesting();
+  EXPECT_TRUE(frame_view->caption_button_container_->visible());
+}
+
 #define INSTANTIATE_TEST_CASE(name)                                   \
   INSTANTIATE_TEST_CASE_P(                                            \
       , name,                                                         \
@@ -1181,3 +1269,4 @@ INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(ImmersiveModeBrowserViewTest);
 INSTANTIATE_TEST_CASE(HostedAppNonClientFrameViewAshTest);
 INSTANTIATE_TEST_CASE(BrowserNonClientFrameViewAshBackButtonTest);
+INSTANTIATE_TEST_CASE(HomeLauncherBrowserNonClientFrameViewAshTest);
