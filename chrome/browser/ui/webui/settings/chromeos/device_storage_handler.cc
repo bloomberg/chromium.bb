@@ -66,7 +66,7 @@ const int64_t kSpaceLowBytes = 1 * 1024 * 1024 * 1024;
 
 }  // namespace
 
-StorageHandler::StorageHandler()
+StorageHandler::StorageHandler(Profile* profile)
     : browser_cache_size_(-1),
       has_browser_cache_size_(false),
       browser_site_data_size_(-1),
@@ -77,6 +77,7 @@ StorageHandler::StorageHandler()
       updating_android_size_(false),
       updating_crostini_size_(false),
       updating_other_users_size_(false),
+      profile_(profile),
       weak_ptr_factory_(this) {}
 
 StorageHandler::~StorageHandler() {
@@ -116,20 +117,16 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
 
 void StorageHandler::HandleOpenDownloads(
     const base::ListValue* unused_args) {
-  Profile* const profile = Profile::FromWebUI(web_ui());
   const base::FilePath downloads_path =
-      file_manager::util::GetDownloadsFolderForProfile(profile);
-  platform_util::OpenItem(
-       profile,
-       downloads_path,
-       platform_util::OPEN_FOLDER,
-       platform_util::OpenOperationCallback());
+      file_manager::util::GetDownloadsFolderForProfile(profile_);
+  platform_util::OpenItem(profile_, downloads_path, platform_util::OPEN_FOLDER,
+                          platform_util::OpenOperationCallback());
 }
 
 void StorageHandler::HandleOpenArcStorage(
     const base::ListValue* unused_args) {
-  auto* arc_storage_manager = arc::ArcStorageManager::GetForBrowserContext(
-      Profile::FromWebUI(web_ui()));
+  auto* arc_storage_manager =
+      arc::ArcStorageManager::GetForBrowserContext(profile_);
   if (arc_storage_manager)
     arc_storage_manager->OpenPrivateVolumeSettings();
 }
@@ -137,7 +134,7 @@ void StorageHandler::HandleOpenArcStorage(
 void StorageHandler::HandleClearDriveCache(
     const base::ListValue* unused_args) {
   drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(Profile::FromWebUI(web_ui()));
+      drive::util::GetFileSystemByProfile(profile_);
   file_system->FreeDiskSpaceIfNeededFor(
       std::numeric_limits<int64_t>::max(),  // Removes as much as possible.
       base::Bind(&StorageHandler::OnClearDriveCacheDone,
@@ -149,9 +146,8 @@ void StorageHandler::OnClearDriveCacheDone(bool /*success*/) {
 }
 
 void StorageHandler::UpdateSizeStat() {
-  Profile* const profile = Profile::FromWebUI(web_ui());
   const base::FilePath downloads_path =
-     file_manager::util::GetDownloadsFolderForProfile(profile);
+      file_manager::util::GetDownloadsFolderForProfile(profile_);
 
   int64_t* total_size = new int64_t(0);
   int64_t* available_size = new int64_t(0);
@@ -187,9 +183,8 @@ void StorageHandler::UpdateDownloadsSize() {
     return;
   updating_downloads_size_ = true;
 
-  Profile* const profile = Profile::FromWebUI(web_ui());
   const base::FilePath downloads_path =
-      file_manager::util::GetDownloadsFolderForProfile(profile);
+      file_manager::util::GetDownloadsFolderForProfile(profile_);
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
@@ -205,17 +200,17 @@ void StorageHandler::OnGetDownloadsSize(int64_t size) {
 }
 
 void StorageHandler::UpdateDriveCacheSize() {
-  if (updating_drive_cache_size_)
-    return;
-
   drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(Profile::FromWebUI(web_ui()));
+      drive::util::GetFileSystemByProfile(profile_);
   if (!file_system)
     return;
 
+  if (updating_drive_cache_size_)
+    return;
+  updating_drive_cache_size_ = true;
+
   // Shows the item "Offline cache" and starts calculating size.
   FireWebUIListener("storage-drive-enabled-changed", base::Value(true));
-  updating_drive_cache_size_ = true;
   file_system->CalculateCacheSize(base::Bind(
       &StorageHandler::OnGetDriveCacheSize, weak_ptr_factory_.GetWeakPtr()));
 }
@@ -233,11 +228,10 @@ void StorageHandler::UpdateBrowsingDataSize() {
 
   has_browser_cache_size_ = false;
   has_browser_site_data_size_ = false;
-  Profile* const profile = Profile::FromWebUI(web_ui());
   // Fetch the size of http cache in browsing data.
   // ConditionalCacheCountingHelper deletes itself when it is done.
   browsing_data::ConditionalCacheCountingHelper::CreateForRange(
-      content::BrowserContext::GetDefaultStoragePartition(profile),
+      content::BrowserContext::GetDefaultStoragePartition(profile_),
       base::Time(), base::Time::Max())
       ->CountAndDestroySelfWhenFinished(base::Bind(
           &StorageHandler::OnGetCacheSize, weak_ptr_factory_.GetWeakPtr()));
@@ -245,23 +239,23 @@ void StorageHandler::UpdateBrowsingDataSize() {
   // Fetch the size of site data in browsing data.
   if (!site_data_size_collector_.get()) {
     content::StoragePartition* storage_partition =
-        content::BrowserContext::GetDefaultStoragePartition(profile);
+        content::BrowserContext::GetDefaultStoragePartition(profile_);
     site_data_size_collector_.reset(new SiteDataSizeCollector(
         storage_partition->GetPath(),
         new BrowsingDataCookieHelper(storage_partition),
-        new BrowsingDataDatabaseHelper(profile),
-        new BrowsingDataLocalStorageHelper(profile),
-        new BrowsingDataAppCacheHelper(profile),
+        new BrowsingDataDatabaseHelper(profile_),
+        new BrowsingDataLocalStorageHelper(profile_),
+        new BrowsingDataAppCacheHelper(profile_),
         new BrowsingDataIndexedDBHelper(
             storage_partition->GetIndexedDBContext()),
         BrowsingDataFileSystemHelper::Create(
             storage_partition->GetFileSystemContext()),
-        BrowsingDataChannelIDHelper::Create(profile->GetRequestContext()),
+        BrowsingDataChannelIDHelper::Create(profile_->GetRequestContext()),
         new BrowsingDataServiceWorkerHelper(
             storage_partition->GetServiceWorkerContext()),
         new BrowsingDataCacheStorageHelper(
             storage_partition->GetCacheStorageContext()),
-        BrowsingDataFlashLSOHelper::Create(profile)));
+        BrowsingDataFlashLSOHelper::Create(profile_)));
   }
   site_data_size_collector_->Fetch(
       base::Bind(&StorageHandler::OnGetBrowsingDataSize,
@@ -297,22 +291,21 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
 }
 
 void StorageHandler::UpdateAndroidSize() {
-  if (updating_android_size_)
-    return;
-  updating_android_size_ = true;
-
-  Profile* const profile = Profile::FromWebUI(web_ui());
-  if (!arc::IsArcPlayStoreEnabledForProfile(profile) ||
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile_) ||
       arc::IsArcOptInVerificationDisabled()) {
     return;
   }
+
+  if (updating_android_size_)
+    return;
+  updating_android_size_ = true;
 
   // Shows the item "Android apps and cache" and starts calculating size.
   FireWebUIListener("storage-android-enabled-changed", base::Value(true));
 
   bool success = false;
   auto* arc_storage_manager =
-      arc::ArcStorageManager::GetForBrowserContext(profile);
+      arc::ArcStorageManager::GetForBrowserContext(profile_);
   if (arc_storage_manager) {
     success = arc_storage_manager->GetApplicationsSize(base::BindOnce(
         &StorageHandler::OnGetAndroidSize, weak_ptr_factory_.GetWeakPtr()));
@@ -336,8 +329,7 @@ void StorageHandler::OnGetAndroidSize(bool succeeded,
 }
 
 void StorageHandler::UpdateCrostiniSize() {
-  Profile* const profile = Profile::FromWebUI(web_ui());
-  if (!IsCrostiniEnabled(profile)) {
+  if (!IsCrostiniEnabled(profile_)) {
     return;
   }
 
@@ -346,7 +338,7 @@ void StorageHandler::UpdateCrostiniSize() {
   updating_crostini_size_ = true;
 
   crostini::CrostiniManager::GetInstance()->ListVmDisks(
-      CryptohomeIdForProfile(profile),
+      CryptohomeIdForProfile(profile_),
       base::BindOnce(&StorageHandler::OnGetCrostiniSize,
                      weak_ptr_factory_.GetWeakPtr()));
 }

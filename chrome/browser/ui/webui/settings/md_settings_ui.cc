@@ -216,7 +216,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::SmbHandler>(profile));
   AddSettingsPageUIHandler(
-      std::make_unique<chromeos::settings::StorageHandler>());
+      std::make_unique<chromeos::settings::StorageHandler>(profile));
   AddSettingsPageUIHandler(
       std::make_unique<chromeos::settings::StylusHandler>());
   AddSettingsPageUIHandler(
