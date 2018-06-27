@@ -111,6 +111,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   [collectionView addGestureRecognizer:self.itemReorderRecognizer];
   self.collectionView = collectionView;
   self.view = collectionView;
+
+  // A single selection collection view's default behavior is to momentarily
+  // deselect the selected cell on touch down then select the new cell on touch
+  // up. In this tab grid, the selection ring should stay visible on the
+  // selected cell on touch down. Multiple selection disables the deselection
+  // behavior. Multiple selection will not actually be possible since
+  // |-collectionView:shouldSelectItemAtIndexPath:| returns NO.
+  collectionView.allowsMultipleSelection = YES;
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -245,15 +253,21 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
 
 #pragma mark - UICollectionViewDelegate
 
-// This method is used instead of -willSelectItemAtIndexPath, because any
+// This method is used instead of -didSelectItemAtIndexPath, because any
 // selection events will be signalled through the model layer and handled in
 // the GridConsumer -selectItemWithID: method.
 - (BOOL)collectionView:(UICollectionView*)collectionView
     shouldSelectItemAtIndexPath:(NSIndexPath*)indexPath {
-  NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
-  DCHECK_LT(index, self.items.count);
-  NSString* itemID = self.items[index].identifier;
-  [self.delegate gridViewController:self didSelectItemWithID:itemID];
+  [self tappedItemAtIndexPath:indexPath];
+  // Tapping on a non-selected cell should not select it immediately. The
+  // delegate will trigger a transition to show the item.
+  return NO;
+}
+
+- (BOOL)collectionView:(UICollectionView*)collectionView
+    shouldDeselectItemAtIndexPath:(NSIndexPath*)indexPath {
+  [self tappedItemAtIndexPath:indexPath];
+  // Tapping on the current selected cell should not deselect it.
   return NO;
 }
 
@@ -462,6 +476,15 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
                                      if (cell.itemIdentifier == itemIdentifier)
                                        cell.snapshot = snapshot;
                                    }];
+}
+
+// Tells the delegate that the user tapped the item with identifier
+// corresponding to |indexPath|.
+- (void)tappedItemAtIndexPath:(NSIndexPath*)indexPath {
+  NSUInteger index = base::checked_cast<NSUInteger>(indexPath.item);
+  DCHECK_LT(index, self.items.count);
+  NSString* itemID = self.items[index].identifier;
+  [self.delegate gridViewController:self didSelectItemWithID:itemID];
 }
 
 // Animates the empty state into view.
