@@ -16,7 +16,7 @@
 #include "build/build_config.h"
 #include "mojo/public/c/system/core.h"
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
 #include "base/environment.h"
 #include "base/files/file_path.h"
 #include "base/optional.h"
@@ -28,7 +28,7 @@ namespace {
 
 typedef void (*MojoGetSystemThunksFunction)(MojoSystemThunks* thunks);
 
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
 PROTECTED_MEMORY_SECTION
 base::ProtectedMemory<MojoGetSystemThunksFunction> g_get_thunks;
 #endif
@@ -47,28 +47,48 @@ namespace mojo {
 // enabled.
 class CoreLibraryInitializer {
  public:
-  CoreLibraryInitializer() {
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
-    auto environment = base::Environment::Create();
-
-    base::FilePath library_path;
-    std::string library_path_value;
-    const char kLibraryPathEnvironmentVar[] = "MOJO_CORE_LIBRARY_PATH";
-    if (environment->GetVar(kLibraryPathEnvironmentVar, &library_path_value)) {
-      library_path = base::FilePath::FromUTF8Unsafe(library_path_value);
+  CoreLibraryInitializer(const MojoInitializeOptions* options) {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
+    bool application_provided_path = false;
+    base::Optional<base::FilePath> library_path;
+    if (options && options->struct_size >= sizeof(*options) &&
+        options->mojo_core_path) {
+      base::StringPiece utf8_path(options->mojo_core_path,
+                                  options->mojo_core_path_length);
+      library_path.emplace(base::FilePath::FromUTF8Unsafe(utf8_path));
+      application_provided_path = true;
     } else {
+      auto environment = base::Environment::Create();
+      std::string library_path_value;
+      const char kLibraryPathEnvironmentVar[] = "MOJO_CORE_LIBRARY_PATH";
+      if (environment->GetVar(kLibraryPathEnvironmentVar, &library_path_value))
+        library_path = base::FilePath::FromUTF8Unsafe(library_path_value);
+    }
+
+    if (!library_path) {
       // Default to looking for the library in the current working directory.
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
       const base::FilePath::CharType kDefaultLibraryPathValue[] =
           FILE_PATH_LITERAL("./libmojo_core.so");
-      library_path = base::FilePath(kDefaultLibraryPathValue);
+#elif defined(OS_WIN)
+      const base::FilePath::CharType kDefaultLibraryPathValue[] =
+          FILE_PATH_LITERAL("mojo_core.dll");
+#endif
+      library_path.emplace(kDefaultLibraryPathValue);
     }
 
     base::ScopedAllowBlocking allow_blocking;
-    library_.emplace(library_path);
-    CHECK(library_->is_valid())
-        << "Unable to load the mojo_core library. Make sure the library is in "
-        << "the working directory or is correctly pointed to by the "
-        << "MOJO_CORE_LIBRARY_PATH environment variable.";
+    library_.emplace(*library_path);
+    if (!application_provided_path) {
+      CHECK(library_->is_valid())
+          << "Unable to load the mojo_core library. Make sure the library is "
+          << "in the working directory or is correctly pointed to by the "
+          << "MOJO_CORE_LIBRARY_PATH environment variable.";
+    } else {
+      CHECK(library_->is_valid())
+          << "Unable to locate mojo_core library. This application expects to "
+          << "find it at " << library_path->value();
+    }
 
     const char kGetThunksFunctionName[] = "MojoGetSystemThunks";
     {
@@ -76,7 +96,8 @@ class CoreLibraryInitializer {
       *g_get_thunks = reinterpret_cast<MojoGetSystemThunksFunction>(
           library_->GetFunctionPointer(kGetThunksFunctionName));
     }
-    CHECK(*g_get_thunks) << "Invalid mojo_core library";
+    CHECK(*g_get_thunks) << "Invalid mojo_core library: "
+                         << library_path->value();
 
     DCHECK_EQ(g_thunks->size, 0u);
     {
@@ -85,7 +106,8 @@ class CoreLibraryInitializer {
       base::UnsanitizedCfiCall(g_get_thunks)(&*g_thunks);
     }
 
-    CHECK_GT(g_thunks->size, 0u) << "Invalid mojo_core library";
+    CHECK_GT(g_thunks->size, 0u)
+        << "Invalid mojo_core library: " << library_path->value();
 #else   // defined(OS_CHROMEOS) || defined(OS_LINUX)
     NOTREACHED()
         << "Dynamic mojo_core loading is not supported on this platform.";
@@ -95,7 +117,7 @@ class CoreLibraryInitializer {
   ~CoreLibraryInitializer() = default;
 
  private:
-#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#if defined(OS_CHROMEOS) || defined(OS_LINUX) || defined(OS_WIN)
   base::Optional<base::ScopedNativeLibrary> library_;
 #endif
 
@@ -107,7 +129,7 @@ class CoreLibraryInitializer {
 extern "C" {
 
 MojoResult MojoInitialize(const struct MojoInitializeOptions* options) {
-  static base::NoDestructor<mojo::CoreLibraryInitializer> initializer;
+  static base::NoDestructor<mojo::CoreLibraryInitializer> initializer(options);
   ALLOW_UNUSED_LOCAL(initializer);
   DCHECK(g_thunks->Initialize);
 

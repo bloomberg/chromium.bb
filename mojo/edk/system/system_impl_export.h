@@ -5,6 +5,9 @@
 #ifndef MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
 #define MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
 
+#if defined(MOJO_CORE_IMPL)
+#define MOJO_SYSTEM_IMPL_EXPORT
+#else
 #if defined(COMPONENT_BUILD)
 #if defined(WIN32)
 
@@ -24,6 +27,7 @@
 
 #else  // defined(COMPONENT_BUILD)
 #define MOJO_SYSTEM_IMPL_EXPORT
+#endif
 #endif
 
 #endif  // MOJO_EDK_SYSTEM_SYSTEM_IMPL_EXPORT_H_
