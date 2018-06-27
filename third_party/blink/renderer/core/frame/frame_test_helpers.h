@@ -164,26 +164,10 @@ class TestWebWidgetClient : public WebWidgetClient {
   ~TestWebWidgetClient() override = default;
 
   // WebWidgetClient:
-  bool AllowsBrokenNullLayerTreeView() const override { return true; }
   WebLayerTreeView* InitializeLayerTreeView() override;
 
  private:
   std::unique_ptr<WebLayerTreeView> layer_tree_view_;
-};
-
-class TestWebViewWidgetClient : public TestWebWidgetClient {
- public:
-  explicit TestWebViewWidgetClient(TestWebViewClient& test_web_view_client)
-      : test_web_view_client_(test_web_view_client) {}
-  ~TestWebViewWidgetClient() override = default;
-
-  // TestWebViewWidgetClient:
-  WebLayerTreeView* InitializeLayerTreeView() override;
-  void ScheduleAnimation() override;
-  void DidMeaningfulLayout(WebMeaningfulLayout) override;
-
- private:
-  TestWebViewClient& test_web_view_client_;
 };
 
 class TestWebViewClient : public WebViewClient {
@@ -201,8 +185,6 @@ class TestWebViewClient : public WebViewClient {
   bool CanUpdateLayout() override { return true; }
 
  private:
-  friend class TestWebViewWidgetClient;
-
   std::unique_ptr<WebLayerTreeViewImplForTesting> layer_tree_view_;
   bool animation_scheduled_ = false;
 };
@@ -295,7 +277,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
   void Bind(WebLocalFrame*,
             std::unique_ptr<TestWebFrameClient> self_owned = nullptr);
   // Note: only needed for local roots.
-  void BindWidgetClient(std::unique_ptr<TestWebWidgetClient>);
+  void BindWidgetClient(std::unique_ptr<WebWidgetClient>);
 
   // WebLocalFrameClient:
   void FrameDetached(DetachType) override;
@@ -333,7 +315,7 @@ class TestWebFrameClient : public WebLocalFrameClient {
   // Bind().
   WebLocalFrame* frame_ = nullptr;
 
-  std::unique_ptr<TestWebWidgetClient> owned_widget_client_;
+  std::unique_ptr<WebWidgetClient> owned_widget_client_;
 };
 
 // Minimal implementation of WebRemoteFrameClient needed for unit tests that
