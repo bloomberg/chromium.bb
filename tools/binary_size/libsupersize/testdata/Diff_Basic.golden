@@ -38,22 +38,42 @@ Other section sizes:
     .strtab: 0 bytes (0 bytes)
     .symtab: 0 bytes (0 bytes)
 
-0 symbols added (+), 1 changed (~), 0 removed (-), 40 unchanged (not shown)
-Of changed symbols, 1 grew, 0 shrank
-Number of unique symbols 46 -> 46 (+0)
-0 paths added, 0 removed, 1 changed
+2 symbols added (+), 2 changed (~), 3 removed (-), 34 unchanged (not shown)
+Of changed symbols, 4 grew, 3 shrank
+Number of unique symbols 44 -> 43 (-1)
+0 paths added, 0 removed, 2 changed
 Changed files:
+  
   third_party/container.c
 
-Showing 1 symbols (1 -> 1 unique) with total pss: 10 bytes
+Showing 7 symbols (5 -> 4 unique) with total pss: 38 bytes
 Histogram of symbols based on PSS:
-    [8,16): 1
-.text=0 bytes    .rodata=0 bytes    .data.rel.ro=0 bytes    .data=10 bytes   .bss=0 bytes    total=10 bytes
-Number of unique paths: 1
+    (-256,-128]: 1   (-32,-16]: 1   (-8,-4]: 1   [4,8): 2   [8,16): 1   [16,32): 1
+.text=0 bytes    .rodata=10 bytes   .data.rel.ro=0 bytes    .data=28 bytes   .bss=-232 bytes total=38 bytes
+Number of unique paths: 4
 
 Section Legend: t=.text, r=.rodata, R=.data.rel.ro, d=.data, b=.bss
 Index | Running Total | Section@Address | ...
 ------------------------------------------------------------
-~ 0)         10 (100.0%) d@0x2de70a0  +10 (-6->4)  num_aliases=1
+~ 0)         10 (26.3%) r@0x284e398  +10 (22->32)  num_aliases=1
                source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
-               flags={}  name=base::android::g_renderer_histogram_code
+               flags={}  name=chrome::mojom::FilePatcher::Name_
++ 1)         14 (36.8%) d@0x2de7000  +4 (0->4)  num_aliases=1
+               source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
+               flags={}  name=google::protobuf::internal::pLinuxKernelCmpxchg
++ 2)         18 (47.4%) d@0x2de7004  +4 (0->4)  num_aliases=1
+               source_path=third_party/container.c 	object_path=third_party/sub/ContiguousContainer.o
+               flags={}  name=google::protobuf::internal::pLinuxKernelMemoryBarrier
+~ 3)         38 (100.0%) d@0x2dffd88  20 (0->0)  num_aliases=1
+               source_path= 	object_path=
+               flags={}  name=** symbol gap 0 (end of section)
+- 4)         38 (100.0%) b@0x0        -200 (4->0)  num_aliases=1
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               flags={gen}  name=SaveHistogram::atomic_histogram_pointer
+                    full_name=SaveHistogram(_JNIEnv*, base::android::JavaParamRef<_jobject*> const&, base::android::JavaParamRef<_jstring*> const&, base::android::JavaParamRef<_jlongArray*> const&, int)::atomic_histogram_pointer
+- 5)         38 (100.0%) b@0x0        -28 (28->0)  num_aliases=1
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               flags={gen}  name=g_chrome_content_browser_client
+- 6)         38 (100.0%) b@0x0        -4 (4->0)  num_aliases=1
+               source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
+               flags={anon,gen}  name=g_AnimationFrameTimeHistogram_clazz
