@@ -227,18 +227,19 @@ PositionWithAffinityTemplate<Strategy> ComputeInlineAdjustedPositionAlgorithm(
   if (layout_object.IsText())
     return position;
 
-  if (layout_object.IsAtomicInlineLevel()) {
-    // TODO(crbug.com/567964): Change the following branch to DCHECK once fixed.
-    if (!layout_object.IsInline())
-      return PositionWithAffinityTemplate<Strategy>();
-    return position;
+  // We perform block flow adjustment first, so that we can move into an inline
+  // block when needed instead of stopping at its boundary as if it is a
+  // replaced element.
+  if (layout_object.IsLayoutBlockFlow() &&
+      CanHaveChildrenForEditing(position.AnchorNode()) &&
+      HasRenderedNonAnonymousDescendantsWithHeight(&layout_object)) {
+    return AdjustBlockFlowPositionToInline(position.GetPosition());
   }
 
-  if (!layout_object.IsLayoutBlockFlow() ||
-      !CanHaveChildrenForEditing(position.AnchorNode()) ||
-      !HasRenderedNonAnonymousDescendantsWithHeight(&layout_object))
+  // TODO(crbug.com/567964): Change the second operand to DCHECK once fixed.
+  if (!layout_object.IsAtomicInlineLevel() || !layout_object.IsInline())
     return PositionWithAffinityTemplate<Strategy>();
-  return AdjustBlockFlowPositionToInline(position.GetPosition());
+  return position;
 }
 
 // Returns true if |layout_object| and |offset| points after line end.
