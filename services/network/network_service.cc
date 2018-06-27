@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/values.h"
@@ -28,8 +27,6 @@
 #include "net/http/http_auth_handler_factory.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_util.h"
-#include "net/nqe/network_quality_estimator.h"
-#include "net/nqe/network_quality_estimator_params.h"
 #include "net/url_request/url_request_context_builder.h"
 #include "services/network/mojo_net_log.h"
 #include "services/network/network_context.h"
@@ -46,10 +43,7 @@ namespace network {
 
 namespace {
 
-// Field trial for network quality estimator. Seeds RTT and downstream
-// throughput observations with values that correspond to the connection type
-// determined by the operating system.
-const char kNetworkQualityEstimatorFieldTrialName[] = "NetworkQualityEstimator";
+NetworkService* g_network_service = nullptr;
 
 std::unique_ptr<net::NetworkChangeNotifier>
 CreateNetworkChangeNotifierIfNeeded() {
@@ -95,6 +89,8 @@ NetworkService::NetworkService(
     mojom::NetworkServiceRequest request,
     net::NetLog* net_log)
     : registry_(std::move(registry)), binding_(this) {
+  DCHECK(!g_network_service);
+  g_network_service = this;
   // |registry_| is nullptr when an in-process NetworkService is
   // created directly. The latter is done in concert with using
   // CreateNetworkContextWithBuilder to ease the transition to using the
@@ -148,34 +144,8 @@ NetworkService::NetworkService(
   network_change_observer_.reset(
       new net::LoggingNetworkChangeObserver(net_log_));
 
-  std::map<std::string, std::string> network_quality_estimator_params;
-  base::GetFieldTrialParams(kNetworkQualityEstimatorFieldTrialName,
-                            &network_quality_estimator_params);
-
-  if (command_line->HasSwitch(switches::kForceEffectiveConnectionType)) {
-    const std::string force_ect_value = command_line->GetSwitchValueASCII(
-        switches::kForceEffectiveConnectionType);
-
-    if (!force_ect_value.empty()) {
-      // If the effective connection type is forced using command line switch,
-      // it overrides the one set by field trial.
-      network_quality_estimator_params[net::kForceEffectiveConnectionType] =
-          force_ect_value;
-    }
-  }
-
-  // Pass ownership.
-  network_quality_estimator_ = std::make_unique<net::NetworkQualityEstimator>(
-      std::make_unique<net::NetworkQualityEstimatorParams>(
-          network_quality_estimator_params),
-      net_log_);
-
-#if defined(OS_CHROMEOS)
-  // Get network id asynchronously to workaround https://crbug.com/821607 where
-  // AddressTrackerLinux stucks with a recv() call and blocks IO thread.
-  // TODO(https://crbug.com/821607): Remove after the bug is resolved.
-  network_quality_estimator_->EnableGetNetworkIdAsynchronously();
-#endif
+  network_quality_estimator_manager_ =
+      std::make_unique<NetworkQualityEstimatorManager>(net_log_);
 
   host_resolver_ = CreateHostResolver(net_log_);
 
@@ -185,6 +155,8 @@ NetworkService::NetworkService(
 }
 
 NetworkService::~NetworkService() {
+  DCHECK_EQ(this, g_network_service);
+  g_network_service = nullptr;
   // Destroy owned network contexts.
   DestroyNetworkContexts();
 
@@ -377,6 +349,11 @@ void NetworkService::GetNetworkChangeManager(
   network_change_manager_->AddRequest(std::move(request));
 }
 
+void NetworkService::GetNetworkQualityEstimatorManager(
+    mojom::NetworkQualityEstimatorManagerRequest request) {
+  network_quality_estimator_manager_->AddRequest(std::move(request));
+}
+
 void NetworkService::GetTotalNetworkUsages(
     mojom::NetworkService::GetTotalNetworkUsagesCallback callback) {
   std::move(callback).Run(network_usage_accumulator_->GetTotalNetworkUsages());
@@ -443,6 +420,10 @@ void NetworkService::OnNetworkContextConnectionClosed(
 void NetworkService::Bind(mojom::NetworkServiceRequest request) {
   DCHECK(!binding_.is_bound());
   binding_.Bind(std::move(request));
+}
+
+NetworkService* NetworkService::GetNetworkServiceForTesting() {
+  return g_network_service;
 }
 
 }  // namespace network

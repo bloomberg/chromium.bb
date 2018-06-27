@@ -22,10 +22,12 @@
 #include "net/cert/test_root_certs.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/http/transport_security_state.h"
+#include "net/nqe/network_quality_estimator.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/spawned_test_server/spawned_test_server.h"
 #include "net/test/test_data_directory.h"
 #include "services/network/network_context.h"
+#include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 #include "services/service_manager/sandbox/sandbox_type.h"
@@ -69,6 +71,15 @@ class NetworkServiceTestHelper::NetworkServiceTestImpl
     DCHECK(net::NetworkChangeNotifier::HasNetworkChangeNotifier());
     net::NetworkChangeNotifier::NotifyObserversOfNetworkChangeForTests(
         net::NetworkChangeNotifier::ConnectionType(type));
+    std::move(callback).Run();
+  }
+
+  void SimulateNetworkQualityChange(
+      net::EffectiveConnectionType type,
+      SimulateNetworkChangeCallback callback) override {
+    network::NetworkService::GetNetworkServiceForTesting()
+        ->network_quality_estimator()
+        ->SimulateNetworkQualityChangeForTesting(type);
     std::move(callback).Run();
   }
 

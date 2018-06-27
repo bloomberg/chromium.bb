@@ -134,6 +134,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
+#include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "ui/base/idle/idle.h"
@@ -632,6 +633,16 @@ BrowserProcessImpl::network_connection_tracker() {
     network_connection_tracker_->Initialize(content::GetNetworkService());
   }
   return network_connection_tracker_.get();
+}
+
+network::NetworkQualityTracker* BrowserProcessImpl::network_quality_tracker() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(io_thread_);
+  if (!network_quality_tracker_) {
+    network_quality_tracker_ = std::make_unique<network::NetworkQualityTracker>(
+        base::BindRepeating(&content::GetNetworkService));
+  }
+  return network_quality_tracker_.get();
 }
 
 WatchDogThread* BrowserProcessImpl::watchdog_thread() {

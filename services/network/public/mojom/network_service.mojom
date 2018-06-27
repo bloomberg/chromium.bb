@@ -10,6 +10,7 @@ import "services/network/public/mojom/cookie_manager.mojom";
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_context.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/network_quality_estimator_manager.mojom";
 import "services/network/public/mojom/signed_tree_head.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/network/public/mojom/url_loader_factory.mojom";
@@ -218,6 +219,10 @@ interface NetworkService {
   // Gets the NetworkChangeManager.
   GetNetworkChangeManager(
       NetworkChangeManager& network_change_manager);
+
+  // Gets the NetworkQualityEstimatorManager.
+  GetNetworkQualityEstimatorManager(
+      NetworkQualityEstimatorManager& network_quality_estimator_manager);
 
   // Gets the accumulated network usage since the start/restart of the service.
   GetTotalNetworkUsages() => (array<NetworkUsage> total_network_usages);

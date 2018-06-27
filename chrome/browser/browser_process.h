@@ -43,6 +43,10 @@ namespace content {
 class NetworkConnectionTracker;
 }
 
+namespace network {
+class NetworkQualityTracker;
+}
+
 namespace safe_browsing {
 class SafeBrowsingService;
 }
@@ -182,6 +186,10 @@ class BrowserProcess {
   // Returns a NetworkConnectionTracker that can be used to subscribe for
   // network change events.
   virtual content::NetworkConnectionTracker* network_connection_tracker() = 0;
+
+  // Returns a NetworkQualityTracker that can be used to subscribe for
+  // network quality change events.
+  virtual network::NetworkQualityTracker* network_quality_tracker() = 0;
 
   // Returns the thread that is used for health check of all browser threads.
   virtual WatchDogThread* watchdog_thread() = 0;

@@ -173,6 +173,11 @@ TestingBrowserProcess::network_connection_tracker() {
   return network_connection_tracker_.get();
 }
 
+network::NetworkQualityTracker*
+TestingBrowserProcess::network_quality_tracker() {
+  return nullptr;
+}
+
 WatchDogThread* TestingBrowserProcess::watchdog_thread() {
   return nullptr;
 }

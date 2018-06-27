@@ -127,7 +127,11 @@ class ConnectionTypeGetter {
 
 class NetworkConnectionTrackerTest : public testing::Test {
  public:
-  NetworkConnectionTrackerTest() {
+  NetworkConnectionTrackerTest() {}
+
+  ~NetworkConnectionTrackerTest() override {}
+
+  void Initialize() {
     network::mojom::NetworkServicePtr network_service_ptr;
     network::mojom::NetworkServiceRequest network_service_request =
         mojo::MakeRequest(&network_service_ptr);
@@ -138,8 +142,6 @@ class NetworkConnectionTrackerTest : public testing::Test {
     tracker_->Initialize(network_service_.get());
     observer_ = std::make_unique<TestNetworkConnectionObserver>(tracker_.get());
   }
-
-  ~NetworkConnectionTrackerTest() override {}
 
   network::NetworkService* network_service() { return network_service_.get(); }
 
@@ -173,6 +175,7 @@ class NetworkConnectionTrackerTest : public testing::Test {
 };
 
 TEST_F(NetworkConnectionTrackerTest, ObserverNotified) {
+  Initialize();
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_UNKNOWN,
             network_connection_observer()->connection_type());
 
@@ -188,6 +191,7 @@ TEST_F(NetworkConnectionTrackerTest, ObserverNotified) {
 }
 
 TEST_F(NetworkConnectionTrackerTest, UnregisteredObserverNotNotified) {
+  Initialize();
   auto network_connection_observer2 =
       std::make_unique<TestNetworkConnectionObserver>(
           network_connection_tracker());
@@ -217,18 +221,12 @@ TEST_F(NetworkConnectionTrackerTest, UnregisteredObserverNotNotified) {
 
 TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
   SetConnectionType(net::NetworkChangeNotifier::ConnectionType::CONNECTION_3G);
-  // Creates a new NetworkService so it initializes a NetworkChangeManager
+  // Creates a  NetworkService now so it initializes a NetworkChangeManager
   // with initial connection type as CONNECTION_3G.
-  network::mojom::NetworkServicePtr network_service_ptr;
-  network::mojom::NetworkServiceRequest network_service_request =
-      mojo::MakeRequest(&network_service_ptr);
-  std::unique_ptr<network::NetworkService> network_service =
-      network::NetworkService::Create(std::move(network_service_request),
-                                      nullptr);
-  NetworkConnectionTracker tracker;
-  tracker.Initialize(network_service_ptr.get());
+  Initialize();
 
-  ConnectionTypeGetter getter1(&tracker), getter2(&tracker);
+  ConnectionTypeGetter getter1(network_connection_tracker());
+  ConnectionTypeGetter getter2(network_connection_tracker());
   // These two GetConnectionType() will finish asynchonously because network
   // service is not yet set up.
   EXPECT_FALSE(getter1.GetConnectionType());
@@ -241,7 +239,7 @@ TEST_F(NetworkConnectionTrackerTest, GetConnectionType) {
       /*expected_connection_type=*/network::mojom::ConnectionType::
           CONNECTION_3G);
 
-  ConnectionTypeGetter getter3(&tracker);
+  ConnectionTypeGetter getter3(network_connection_tracker());
   // This GetConnectionType() should finish synchronously.
   EXPECT_TRUE(getter3.GetConnectionType());
   EXPECT_EQ(network::mojom::ConnectionType::CONNECTION_3G,
@@ -254,6 +252,7 @@ class NetworkGetConnectionTest : public NetworkConnectionTrackerTest {
   NetworkGetConnectionTest()
       : getter_thread_("NetworkGetConnectionTestThread") {
     getter_thread_.Start();
+    Initialize();
   }
 
   ~NetworkGetConnectionTest() override {}
