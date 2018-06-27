@@ -82,20 +82,31 @@ bool ShouldGenerateV8CodeCache(ScriptState* script_state,
 // promise. It should be better to achieve this only within C++ world.
 class Cache::FetchResolvedForAdd final : public ScriptFunction {
  public:
+  // |exception_state| is passed so that the context_type, interface_name and
+  // property_name can be copied and then used to construct a new ExceptionState
+  // object asynchronously later.
   static v8::Local<v8::Function> Create(
       ScriptState* script_state,
       Cache* cache,
-      const HeapVector<Member<Request>>& requests) {
+      const HeapVector<Member<Request>>& requests,
+      const ExceptionState& exception_state) {
     FetchResolvedForAdd* self =
-        new FetchResolvedForAdd(script_state, cache, requests);
+        new FetchResolvedForAdd(script_state, cache, requests, exception_state);
     return self->BindToV8Function();
   }
 
   ScriptValue Call(ScriptValue value) override {
-    NonThrowableExceptionState exception_state;
+    ExceptionState exception_state(GetScriptState()->GetIsolate(),
+                                   context_type_, property_name_,
+                                   interface_name_);
     HeapVector<Member<Response>> responses =
         NativeValueTraits<IDLSequence<Response>>::NativeValue(
             GetScriptState()->GetIsolate(), value.V8Value(), exception_state);
+    if (exception_state.HadException()) {
+      ScriptPromise rejection =
+          ScriptPromise::Reject(GetScriptState(), exception_state);
+      return ScriptValue(GetScriptState(), rejection.V8Value());
+    }
 
     for (const auto& response : responses) {
       if (!response->ok()) {
@@ -117,8 +128,8 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
     for (const auto& response : responses)
       RecordResponseTypeForAdd(response);
 
-    ScriptPromise put_promise =
-        cache_->PutImpl(GetScriptState(), requests_, responses);
+    ScriptPromise put_promise = cache_->PutImpl(GetScriptState(), requests_,
+                                                responses, exception_state);
     return ScriptValue(GetScriptState(), put_promise.V8Value());
   }
 
@@ -131,11 +142,20 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
  private:
   FetchResolvedForAdd(ScriptState* script_state,
                       Cache* cache,
-                      const HeapVector<Member<Request>>& requests)
-      : ScriptFunction(script_state), cache_(cache), requests_(requests) {}
+                      const HeapVector<Member<Request>>& requests,
+                      const ExceptionState& exception_state)
+      : ScriptFunction(script_state),
+        cache_(cache),
+        requests_(requests),
+        context_type_(exception_state.Context()),
+        property_name_(exception_state.PropertyName()),
+        interface_name_(exception_state.InterfaceName()) {}
 
   Member<Cache> cache_;
   HeapVector<Member<Request>> requests_;
+  ExceptionState::ContextType context_type_;
+  const char* property_name_;
+  const char* interface_name_;
 };
 
 class Cache::BarrierCallbackForPut final
@@ -476,14 +496,14 @@ ScriptPromise Cache::put(ScriptState* script_state,
   if (request.IsRequest()) {
     return PutImpl(script_state,
                    HeapVector<Member<Request>>(1, request.GetAsRequest()),
-                   HeapVector<Member<Response>>(1, response));
+                   HeapVector<Member<Response>>(1, response), exception_state);
   }
   Request* new_request =
       Request::Create(script_state, request.GetAsUSVString(), exception_state);
   if (exception_state.HadException())
     return ScriptPromise();
   return PutImpl(script_state, HeapVector<Member<Request>>(1, new_request),
-                 HeapVector<Member<Response>>(1, response));
+                 HeapVector<Member<Response>>(1, response), exception_state);
 }
 
 ScriptPromise Cache::keys(ScriptState* script_state, ExceptionState&) {
@@ -646,7 +666,8 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
   }
 
   return ScriptPromise::All(script_state, promises)
-      .Then(FetchResolvedForAdd::Create(script_state, this, requests));
+      .Then(FetchResolvedForAdd::Create(script_state, this, requests,
+                                        exception_state));
 }
 
 ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
@@ -695,7 +716,8 @@ ScriptPromise Cache::DeleteImpl(ScriptState* script_state,
 
 ScriptPromise Cache::PutImpl(ScriptState* script_state,
                              const HeapVector<Member<Request>>& requests,
-                             const HeapVector<Member<Response>>& responses) {
+                             const HeapVector<Member<Response>>& responses,
+                             ExceptionState& exception_state) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   const ScriptPromise promise = resolver->Promise();
   BarrierCallbackForPut* barrier_callback =
@@ -724,8 +746,15 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
           "Partial response (status code 206) is unsupported");
       return promise;
     }
-    if (responses[i]->IsBodyLocked() || responses[i]->bodyUsed()) {
+    if (responses[i]->IsBodyLocked() ||
+        responses[i]->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
+      DCHECK(!exception_state.HadException());
       barrier_callback->OnError("Response body is already used");
+      return promise;
+    }
+    if (exception_state.HadException()) {
+      // TODO(ricea): Reject the promise with the actual exception.
+      barrier_callback->OnError("Could not inspect response body state");
       return promise;
     }
 

@@ -9,6 +9,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/serviceworkers/respond_with_observer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
@@ -34,7 +35,10 @@ class MODULES_EXPORT FetchRespondWithObserver : public RespondWithObserver {
       WaitUntilObserver*);
 
   void OnResponseRejected(mojom::ServiceWorkerResponseError) override;
-  void OnResponseFulfilled(const ScriptValue&) override;
+  void OnResponseFulfilled(const ScriptValue&,
+                           ExceptionState::ContextType context_type,
+                           const char* interface_name,
+                           const char* property_name) override;
   void OnNoResponse() override;
 
   void Trace(blink::Visitor*) override;

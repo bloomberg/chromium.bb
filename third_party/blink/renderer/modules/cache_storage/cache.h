@@ -89,7 +89,8 @@ class MODULES_EXPORT Cache final : public ScriptWrappable {
                            const CacheQueryOptions&);
   ScriptPromise PutImpl(ScriptState*,
                         const HeapVector<Member<Request>>&,
-                        const HeapVector<Member<Response>>&);
+                        const HeapVector<Member<Response>>&,
+                        ExceptionState&);
   ScriptPromise KeysImpl(ScriptState*,
                          const Request*,
                          const CacheQueryOptions&);

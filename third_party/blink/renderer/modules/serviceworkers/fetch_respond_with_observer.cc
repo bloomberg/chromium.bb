@@ -94,6 +94,10 @@ const String GetMessageForResponseError(ServiceWorkerResponseError error,
     case ServiceWorkerResponseError::kDataPipeCreationFailed:
       error_message = error_message + "insufficient resources.";
       break;
+    case ServiceWorkerResponseError::kResponseBodyBroken:
+      error_message =
+          error_message + "a response body's status could not be checked.";
+      break;
     case ServiceWorkerResponseError::kUnknown:
     default:
       error_message = error_message + "an unexpected error occurred.";
@@ -174,7 +178,11 @@ void FetchRespondWithObserver::OnResponseRejected(
       ->RespondToFetchEvent(event_id_, web_response, event_dispatch_time_);
 }
 
-void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
+void FetchRespondWithObserver::OnResponseFulfilled(
+    const ScriptValue& value,
+    ExceptionState::ContextType context_type,
+    const char* interface_name,
+    const char* property_name) {
   DCHECK(GetExecutionContext());
   if (!V8Response::hasInstance(value.V8Value(),
                                ToIsolate(GetExecutionContext()))) {
@@ -233,8 +241,17 @@ void FetchRespondWithObserver::OnResponseFulfilled(const ScriptValue& value) {
     OnResponseRejected(ServiceWorkerResponseError::kBodyLocked);
     return;
   }
-  if (response->bodyUsed()) {
+
+  ExceptionState exception_state(value.GetScriptState()->GetIsolate(),
+                                 context_type, interface_name, property_name);
+  if (response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
+    DCHECK(!exception_state.HadException());
     OnResponseRejected(ServiceWorkerResponseError::kBodyUsed);
+    return;
+  }
+
+  if (exception_state.HadException()) {
+    OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
     return;
   }
 

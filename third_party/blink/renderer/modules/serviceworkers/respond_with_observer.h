@@ -9,11 +9,11 @@
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/core/dom/events/event_target.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 
-class ExceptionState;
 class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
@@ -46,7 +46,10 @@ class MODULES_EXPORT RespondWithObserver
   virtual void OnResponseRejected(mojom::ServiceWorkerResponseError) = 0;
 
   // Called when the respondWith() promise was fulfilled.
-  virtual void OnResponseFulfilled(const ScriptValue&) = 0;
+  virtual void OnResponseFulfilled(const ScriptValue&,
+                                   ExceptionState::ContextType,
+                                   const char* interface_name,
+                                   const char* property_name) = 0;
 
   // Called when the event handler finished without calling respondWith().
   virtual void OnNoResponse() = 0;
@@ -63,7 +66,10 @@ class MODULES_EXPORT RespondWithObserver
 
   void ResponseWasRejected(mojom::ServiceWorkerResponseError,
                            const ScriptValue&);
-  void ResponseWasFulfilled(const ScriptValue&);
+  void ResponseWasFulfilled(ExceptionState::ContextType,
+                            const char* interface_name,
+                            const char* property_name,
+                            const ScriptValue&);
 
   enum State { kInitial, kPending, kDone };
   State state_;

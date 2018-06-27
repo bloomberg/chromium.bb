@@ -63,7 +63,8 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   bool IsStreamClosed();
   bool IsStreamErrored();
   bool IsStreamLocked();
-  bool IsStreamDisturbed();
+  base::Optional<bool> IsStreamDisturbed(ExceptionState&);
+  bool IsStreamDisturbedForDCheck();
   void CloseAndLockAndDisturb();
   ScriptState* GetScriptState() { return script_state_.get(); }
 
@@ -88,12 +89,24 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void EndLoading();
   void StopLoading();
 
-  // Implementation of IsStream*() methods. Sets |stream_broken_| if |predicate|
-  // returns empty. Returns |fallback_value| if |stream_broken_| is or becomes
-  // true.
+  // Implementation of IsStream*() methods that don't take an ExceptionState&
+  // parameter. Delegates to |predicate|, one of the methods defined in
+  // ReadableStreamOperations. Sets |stream_broken_| if |predicate| returns
+  // empty. Returns |fallback_value| if |stream_broken_| is or becomes true.
   bool BooleanStreamOperationOrFallback(
       base::Optional<bool> (*predicate)(ScriptState*, ScriptValue),
       bool fallback_value);
+
+  // Implementation of IsStream*() methods that take an ExceptionState&
+  // parameter. Delegates to |predicate|, one of the methods defined in
+  // ReadableStreamOperations. Sets |stream_broken_| and throws if |predicate|
+  // throws. Throws an exception if called when |stream_broken_| is already
+  // true.
+  base::Optional<bool> BooleanStreamOperation(
+      base::Optional<bool> (*predicate)(ScriptState*,
+                                        ScriptValue,
+                                        ExceptionState&),
+      ExceptionState& exception_state);
 
   scoped_refptr<ScriptState> script_state_;
   Member<BytesConsumer> consumer_;

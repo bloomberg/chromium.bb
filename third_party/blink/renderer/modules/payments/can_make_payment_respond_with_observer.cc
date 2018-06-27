@@ -11,6 +11,7 @@
 #include "third_party/blink/renderer/modules/payments/payment_handler_utils.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 namespace blink {
 
@@ -30,11 +31,13 @@ void CanMakePaymentRespondWithObserver::OnResponseRejected(
 }
 
 void CanMakePaymentRespondWithObserver::OnResponseFulfilled(
-    const ScriptValue& value) {
+    const ScriptValue& value,
+    ExceptionState::ContextType context_type,
+    const char* interface_name,
+    const char* property_name) {
   DCHECK(GetExecutionContext());
-  ExceptionState exception_state(value.GetIsolate(),
-                                 ExceptionState::kUnknownContext,
-                                 "PaymentRequestEvent", "respondWith");
+  ExceptionState exception_state(value.GetIsolate(), context_type,
+                                 interface_name, property_name);
   bool response = ToBoolean(ToIsolate(GetExecutionContext()), value.V8Value(),
                             exception_state);
   if (exception_state.HadException()) {

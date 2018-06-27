@@ -92,7 +92,8 @@ class CORE_EXPORT Response final : public Body {
   const BodyStreamBuffer* InternalBodyBuffer() const {
     return response_->InternalBuffer();
   }
-  bool bodyUsed() override;
+
+  BodyUsed IsBodyUsed(ExceptionState&) override;
 
   String ContentType() const override;
   String MimeType() const override;
@@ -101,6 +102,11 @@ class CORE_EXPORT Response final : public Body {
   const Vector<KURL>& InternalURLList() const;
 
   void Trace(blink::Visitor*) override;
+
+ protected:
+  // A version of IsBodyUsed() which catches exceptions and returns
+  // false. Should never be used outside DCHECK().
+  bool IsBodyUsedForDCheck() override;
 
  private:
   explicit Response(ExecutionContext*);

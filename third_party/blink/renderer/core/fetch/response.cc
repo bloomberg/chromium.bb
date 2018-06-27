@@ -7,6 +7,7 @@
 #include <memory>
 
 #include "base/memory/scoped_refptr.h"
+#include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
@@ -451,10 +452,14 @@ Headers* Response::headers() const {
 
 Response* Response::clone(ScriptState* script_state,
                           ExceptionState& exception_state) {
-  if (IsBodyLocked() || bodyUsed()) {
+  if (IsBodyLocked() || IsBodyUsed(exception_state) == BodyUsed::kUsed) {
+    DCHECK(!exception_state.HadException());
     exception_state.ThrowTypeError("Response body is already used");
     return nullptr;
   }
+
+  if (exception_state.HadException())
+    return nullptr;
 
   FetchResponseData* response = response_->Clone(script_state, exception_state);
   if (exception_state.HadException())
@@ -503,8 +508,16 @@ bool Response::HasBody() const {
   return response_->InternalBuffer();
 }
 
-bool Response::bodyUsed() {
-  return InternalBodyBuffer() && InternalBodyBuffer()->IsStreamDisturbed();
+Body::BodyUsed Response::IsBodyUsed(ExceptionState& exception_state) {
+  auto* body_buffer = InternalBodyBuffer();
+  if (!body_buffer)
+    return BodyUsed::kUnused;
+  base::Optional<bool> stream_disturbed =
+      body_buffer->IsStreamDisturbed(exception_state);
+  if (exception_state.HadException())
+    return BodyUsed::kBroken;
+  DCHECK(stream_disturbed.has_value());
+  return stream_disturbed.value() ? BodyUsed::kUsed : BodyUsed::kUnused;
 }
 
 String Response::MimeType() const {
@@ -550,6 +563,11 @@ void Response::Trace(blink::Visitor* visitor) {
   Body::Trace(visitor);
   visitor->Trace(response_);
   visitor->Trace(headers_);
+}
+
+bool Response::IsBodyUsedForDCheck() {
+  return InternalBodyBuffer() &&
+         InternalBodyBuffer()->IsStreamDisturbedForDCheck();
 }
 
 }  // namespace blink

@@ -171,11 +171,15 @@ void CompileFromResponseCallback(
     return;
   }
 
-  if (response->IsBodyLocked() || response->bodyUsed()) {
+  if (response->IsBodyLocked() ||
+      response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
+    DCHECK(!exception_state.HadException());
     exception_state.ThrowTypeError(
         "Cannot compile WebAssembly.Module from an already read Response");
     return;
   }
+  if (exception_state.HadException())
+    return;
 
   if (!response->BodyBuffer()) {
     exception_state.ThrowTypeError("Response object has a null body.");

@@ -60,7 +60,9 @@ void RespondWithObserver::RespondWith(ScriptState* script_state,
   observer_->WaitUntil(
       script_state, script_promise, exception_state,
       WTF::BindRepeating(&RespondWithObserver::ResponseWasFulfilled,
-                         WrapPersistent(this)),
+                         WrapPersistent(this), exception_state.Context(),
+                         WTF::Unretained(exception_state.InterfaceName()),
+                         WTF::Unretained(exception_state.PropertyName())),
       WTF::BindRepeating(&RespondWithObserver::ResponseWasRejected,
                          WrapPersistent(this),
                          ServiceWorkerResponseError::kPromiseRejected));
@@ -73,8 +75,12 @@ void RespondWithObserver::ResponseWasRejected(ServiceWorkerResponseError error,
   observer_.Clear();
 }
 
-void RespondWithObserver::ResponseWasFulfilled(const ScriptValue& value) {
-  OnResponseFulfilled(value);
+void RespondWithObserver::ResponseWasFulfilled(
+    ExceptionState::ContextType context_type,
+    const char* interface_name,
+    const char* property_name,
+    const ScriptValue& value) {
+  OnResponseFulfilled(value, context_type, interface_name, property_name);
   state_ = kDone;
   observer_.Clear();
 }

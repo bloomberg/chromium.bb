@@ -41799,6 +41799,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="14" label="RedirectedResponseForNotFollowRequest"/>
   <int value="15" label="DataPipeCreationFailed (insufficient resources)"/>
   <int value="16" label="ResponseTypeCORSForRequestModeSameOrigin"/>
+  <int value="17" label="CouldNotCheckIsBodyUsed"/>
 </enum>
 
 <enum name="ServiceWorkerSite">
