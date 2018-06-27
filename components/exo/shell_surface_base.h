@@ -133,9 +133,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // Set the startup ID for the surface.
   void SetStartupId(const char* startup_id);
 
-  // Set the child ax tree ID for the surface.
-  void SetChildAxTreeId(int32_t child_ax_tree_id);
-
   // Signal a request to close the window. It is up to the implementation to
   // actually decide to do so though.
   void Close();
@@ -216,7 +213,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   gfx::Size GetMaximumSize() const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // Overridden from aura::WindowObserver:
   void OnWindowBoundsChanged(aura::Window* window,
@@ -394,7 +390,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Size pending_minimum_size_;
   gfx::Size maximum_size_;
   gfx::Size pending_maximum_size_;
-  int32_t child_ax_tree_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurfaceBase);
 };

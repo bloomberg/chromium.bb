@@ -22,7 +22,6 @@
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/native/native_view_host.h"
-#include "ui/views/widget/widget.h"
 
 using ash::ArcNotificationSurface;
 using ash::ArcNotificationSurfaceManager;
@@ -263,23 +262,8 @@ void ArcAccessibilityHelperBridge::OnAccessibilityEvent(
       if (task_id != event_data->task_id)
         return;
 
-      tree_source = GetFromTaskId(event_data->task_id);
-
-      if (!tree_source) {
-        tree_source = CreateFromTaskId(event_data->task_id);
-
-        ui::AXTreeData tree_data;
-        tree_source->GetTreeData(&tree_data);
-        exo::Surface* surface =
-            exo::ShellSurfaceBase::GetMainSurface(active_window);
-        if (surface) {
-          views::Widget* widget =
-              views::Widget::GetWidgetForNativeWindow(active_window);
-          static_cast<exo::ShellSurfaceBase*>(
-              widget->widget_delegate()->GetContentsView())
-              ->SetChildAxTreeId(tree_data.tree_id);
-        }
-      }
+      tree_source = GetOrCreateFromTaskId(event_data->task_id);
+      tree_source->Focus(active_window);
     }
 
     if (!tree_source)
@@ -339,18 +323,17 @@ void ArcAccessibilityHelperBridge::OnNotificationStateChanged(
   }
 }
 
-AXTreeSourceArc* ArcAccessibilityHelperBridge::GetFromTaskId(int32_t task_id) {
-  auto tree_it = task_id_to_tree_.find(task_id);
-  if (tree_it == task_id_to_tree_.end())
-    return nullptr;
-
-  return tree_it->second.get();
-}
-
-AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromTaskId(
+AXTreeSourceArc* ArcAccessibilityHelperBridge::GetOrCreateFromTaskId(
     int32_t task_id) {
-  task_id_to_tree_[task_id].reset(new AXTreeSourceArc(this));
-  return task_id_to_tree_[task_id].get();
+  AXTreeSourceArc* tree_source = nullptr;
+  auto tree_it = task_id_to_tree_.find(task_id);
+  if (tree_it == task_id_to_tree_.end()) {
+    task_id_to_tree_[task_id].reset(new AXTreeSourceArc(this));
+    tree_source = task_id_to_tree_[task_id].get();
+  } else {
+    tree_source = tree_it->second.get();
+  }
+  return tree_source;
 }
 
 AXTreeSourceArc* ArcAccessibilityHelperBridge::CreateFromNotificationKey(
