@@ -209,7 +209,6 @@ enum Role {
   kListBoxOption,
   kListItem,
   kListMarker,
-  kLocationBar,
   kLog,
   kMain,
   kMark,

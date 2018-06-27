@@ -1246,7 +1246,6 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
     case ax::mojom::Role::kTitleBar:
       return ATK_ROLE_TITLE_BAR;
     case ax::mojom::Role::kInlineTextBox:
-    case ax::mojom::Role::kLocationBar:
     case ax::mojom::Role::kTextField:
     case ax::mojom::Role::kSearchBox:
       if (!GetStringAttribute(ax::mojom::StringAttribute::kAutoComplete)

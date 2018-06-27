@@ -441,8 +441,6 @@ const char* ToString(ax::mojom::Role role) {
       return "listMarker";
     case ax::mojom::Role::kList:
       return "list";
-    case ax::mojom::Role::kLocationBar:
-      return "locationBar";
     case ax::mojom::Role::kLog:
       return "log";
     case ax::mojom::Role::kMain:
@@ -713,8 +711,6 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kListMarker;
   if (0 == strcmp(role, "list"))
     return ax::mojom::Role::kList;
-  if (0 == strcmp(role, "locationBar"))
-    return ax::mojom::Role::kLocationBar;
   if (0 == strcmp(role, "log"))
     return ax::mojom::Role::kLog;
   if (0 == strcmp(role, "main"))
