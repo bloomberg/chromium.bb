@@ -285,10 +285,11 @@ BOOL ShouldCellsBeFullWidth(UITraitCollection* collection) {
 }
 
 - (void)updateOverscrollActionsState {
-  if (IsRegularXRegularSizeClass(self)) {
-    [self.overscrollActionsController disableOverscrollActions];
-  } else {
+  if (IsSplitToolbarMode(self) ||
+      (!IsUIRefreshPhase1Enabled() && !IsRegularXRegularSizeClass(self))) {
     [self.overscrollActionsController enableOverscrollActions];
+  } else {
+    [self.overscrollActionsController disableOverscrollActions];
   }
 }
 

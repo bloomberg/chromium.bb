@@ -65,13 +65,6 @@
 @property(nonatomic, strong, readwrite)
     ContentSuggestionsHeaderViewController* headerController;
 
-// Toolbar to be embeded in header view.
-@property(nonatomic, strong)
-    PrimaryToolbarViewController* primaryToolbarViewController;
-
-// Mediator for updating the toolbar when the WebState changes.
-@property(nonatomic, strong) ToolbarMediator* primaryToolbarMediator;
-
 @end
 
 @implementation ContentSuggestionsCoordinator
@@ -90,8 +83,6 @@
 @synthesize delegate = _delegate;
 @synthesize metricsRecorder = _metricsRecorder;
 @synthesize NTPMediator = _NTPMediator;
-@synthesize primaryToolbarViewController = _primaryToolbarViewController;
-@synthesize primaryToolbarMediator = _primaryToolbarMediator;
 
 - (void)start {
   if (self.visible || !self.browserState) {
@@ -145,26 +136,6 @@
   self.headerController.readingListModel =
       ReadingListModelFactory::GetForBrowserState(self.browserState);
   self.headerController.toolbarDelegate = self.toolbarDelegate;
-
-  if (IsUIRefreshPhase1Enabled()) {
-    ToolbarButtonFactory* buttonFactory =
-        [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
-    buttonFactory.dispatcher = self.dispatcher;
-    buttonFactory.visibilityConfiguration =
-        [[ToolbarButtonVisibilityConfiguration alloc] initWithType:PRIMARY];
-
-    self.primaryToolbarViewController =
-        [[PrimaryToolbarViewController alloc] init];
-    self.primaryToolbarViewController.buttonFactory = buttonFactory;
-    self.primaryToolbarViewController.dispatcher = self.dispatcher;
-    [self.primaryToolbarViewController updateForSideSwipeSnapshotOnNTP:YES];
-    self.headerController.toolbarViewController =
-        self.primaryToolbarViewController;
-
-    self.primaryToolbarMediator = [[ToolbarMediator alloc] init];
-    self.primaryToolbarMediator.consumer = self.primaryToolbarViewController;
-    self.primaryToolbarMediator.webStateList = self.webStateList;
-  }
 
   favicon::LargeIconService* largeIconService =
       IOSChromeLargeIconServiceFactory::GetForBrowserState(self.browserState);
@@ -233,8 +204,6 @@
   self.NTPMediator = nil;
   self.contentSuggestionsMediator = nil;
   self.headerController = nil;
-  [self.primaryToolbarMediator disconnect];
-  self.primaryToolbarMediator = nil;
   _visible = NO;
 }
 

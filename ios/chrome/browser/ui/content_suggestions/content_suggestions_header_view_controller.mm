@@ -106,7 +106,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 @synthesize voiceSearchIsEnabled = _voiceSearchIsEnabled;
 @synthesize logoIsShowing = _logoIsShowing;
 @synthesize logoFetched = _logoFetched;
-@synthesize toolbarViewController = _toolbarViewController;
 
 #pragma mark - Public
 
@@ -133,7 +132,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
   void (^transition)(id<UIViewControllerTransitionCoordinatorContext>) =
       ^(id<UIViewControllerTransitionCoordinatorContext> context) {
         // Ensure omnibox is reset when not a regular tablet.
-        if (IsCompactWidth(self) || IsCompactHeight(self)) {
+        if (IsSplitToolbarMode()) {
           [self.toolbarDelegate setScrollProgressForTabletOmnibox:1];
         }
 
@@ -158,9 +157,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)updateFakeOmniboxForOffset:(CGFloat)offset
                        screenWidth:(CGFloat)screenWidth
                     safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  if (self.headerView.cr_widthSizeClass == REGULAR &&
-      self.headerView.cr_heightSizeClass == REGULAR &&
-      IsUIRefreshPhase1Enabled()) {
+  if (!IsSplitToolbarMode(self) && IsUIRefreshPhase1Enabled()) {
     CGFloat progress =
         self.logoIsShowing
             ? [self.headerView searchFieldProgressForOffset:offset
@@ -182,11 +179,6 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
                                 forOffset:offset
                               screenWidth:screenWidth
                            safeAreaInsets:safeAreaInsets];
-
-  // Before constraining the |fakeTapView| to |locationBarContainer| make sure
-  // to activate the constraints first.
-  if (IsUIRefreshPhase1Enabled())
-    [self.toolbarViewController contractLocationBar];
 }
 
 - (void)updateFakeOmniboxForWidth:(CGFloat)width {
@@ -272,15 +264,7 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
     // iPhone header also contains a toolbar since the normal toolbar is
     // hidden.
-    if (IsUIRefreshPhase1Enabled()) {
-      // This view controller's view is never actually used, so add to the
-      // parent view controller to avoid hierarchy inconsistencies.
-      [self.parentViewController
-          addChildViewController:self.toolbarViewController];
-      [_headerView addToolbarView:self.toolbarViewController.view];
-      [self.toolbarViewController
-          didMoveToParentViewController:self.parentViewController];
-    } else if (!IsIPadIdiom()) {
+    if (!IsUIRefreshPhase1Enabled() && !IsIPadIdiom()) {
       [_headerView addToolbarWithReadingListModel:self.readingListModel
                                        dispatcher:self.dispatcher];
       [_headerView setToolbarTabCount:self.tabCount];
@@ -370,12 +354,18 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 - (void)addFakeTapView {
   UIButton* fakeTapButton = [[UIButton alloc] init];
   fakeTapButton.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.toolbarViewController.view addSubview:fakeTapButton];
-  PrimaryToolbarView* primaryToolbarView =
-      base::mac::ObjCCastStrict<PrimaryToolbarView>(
-          self.toolbarViewController.view);
-  UIView* locationBarContainer = primaryToolbarView.locationBarContainer;
-  AddSameConstraints(locationBarContainer, fakeTapButton);
+  [self.headerView addSubview:fakeTapButton];
+  id<LayoutGuideProvider> layoutGuide =
+      SafeAreaLayoutGuideForView(self.headerView);
+  [NSLayoutConstraint activateConstraints:@[
+    [fakeTapButton.leadingAnchor
+        constraintEqualToAnchor:self.headerView.leadingAnchor],
+    [fakeTapButton.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
+    [fakeTapButton.heightAnchor
+        constraintEqualToConstant:ntp_header::ToolbarHeight()],
+    [fakeTapButton.trailingAnchor
+        constraintEqualToAnchor:self.headerView.trailingAnchor]
+  ]];
   [fakeTapButton addTarget:self
                     action:@selector(fakeOmniboxTapped:)
           forControlEvents:UIControlEventTouchUpInside];
@@ -447,10 +437,12 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 }
 
 - (void)shiftTilesDown {
-  if (!content_suggestions::IsRegularXRegularSizeClass(self.view)) {
-    self.fakeOmnibox.hidden = NO;
+  if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
+      (!IsUIRefreshPhase1Enabled() &&
+       !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
     [self.dispatcher onFakeboxBlur];
   }
+  self.fakeOmnibox.hidden = NO;
 
   [self.collectionSynchronizer shiftTilesDown];
 
@@ -459,7 +451,9 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
 - (void)shiftTilesUp {
   void (^completionBlock)() = ^{
-    if (!content_suggestions::IsRegularXRegularSizeClass(self.view)) {
+    if ((IsUIRefreshPhase1Enabled() && IsSplitToolbarMode()) ||
+        (!IsUIRefreshPhase1Enabled() &&
+         !content_suggestions::IsRegularXRegularSizeClass(self.view))) {
       [self.dispatcher onFakeboxAnimationComplete];
       [self.headerView fadeOutShadow];
       [self.fakeOmnibox setHidden:YES];

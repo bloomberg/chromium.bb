@@ -146,7 +146,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhonePortrait) {
   if (IsUIRefreshPhase1Enabled()) {
     EXPECT_EQ(120, heightLogo);
     EXPECT_EQ(60, heightNoLogo);
-    EXPECT_EQ(48, topMargin);
+    EXPECT_EQ(58, topMargin);
   } else {
     EXPECT_EQ(120, heightLogo);
     EXPECT_EQ(60, heightNoLogo);
@@ -170,7 +170,7 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, doodleFrameIPhoneLandscape) {
   if (IsUIRefreshPhase1Enabled()) {
     EXPECT_EQ(120, heightLogo);
     EXPECT_EQ(60, heightNoLogo);
-    EXPECT_EQ(48, topMargin);
+    EXPECT_EQ(58, topMargin);
   } else {
     EXPECT_EQ(120, heightLogo);
     EXPECT_EQ(60, heightNoLogo);
@@ -269,10 +269,10 @@ TEST_F(ContentSuggestionsCollectionUtilsTest, heightForLogoHeaderIPhone) {
 
   // Action, tests.
   if (IsUIRefreshPhase1Enabled()) {
-    EXPECT_EQ(266, heightForLogoHeader(YES, YES, YES));
-    EXPECT_EQ(266, heightForLogoHeader(YES, NO, YES));
-    EXPECT_EQ(266, heightForLogoHeader(YES, YES, NO));
-    EXPECT_EQ(266, heightForLogoHeader(YES, NO, NO));
+    EXPECT_EQ(276, heightForLogoHeader(YES, YES, YES));
+    EXPECT_EQ(276, heightForLogoHeader(YES, NO, YES));
+    EXPECT_EQ(276, heightForLogoHeader(YES, YES, NO));
+    EXPECT_EQ(276, heightForLogoHeader(YES, NO, NO));
   } else {
     EXPECT_EQ(274, heightForLogoHeader(YES, YES, YES));
     EXPECT_EQ(274, heightForLogoHeader(YES, NO, YES));

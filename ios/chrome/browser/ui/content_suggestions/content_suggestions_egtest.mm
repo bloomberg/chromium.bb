@@ -105,7 +105,7 @@ GREYElementInteraction* CellWithMatcher(id<GREYMatcher> matcher) {
   // Start the scroll from the middle of the screen in case the bottom of the
   // screen is obscured by the bottom toolbar.
   id<GREYAction> action =
-      grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 200, 0.5, 0.5);
+      grey_scrollInDirectionWithStartPoint(kGREYDirectionDown, 230, 0.5, 0.5);
   return [[EarlGrey
       selectElementWithMatcher:grey_allOf(matcher, grey_sufficientlyVisible(),
                                           nil)]

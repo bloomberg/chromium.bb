@@ -270,10 +270,17 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   GREYAssertNotEqual(collectionWidth, collectionWidthAfterRotation,
                      @"The collection width has not changed.");
 
-  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
-                                          FakeOmniboxAccessibilityID())]
-      assertWithMatcher:OmniboxWidthBetween(collectionWidthAfterRotation + 1,
-                                            2)];
+  if (IsUIRefreshPhase1Enabled()) {
+    // In UI refresh, scrolled, landscape, the fake omnibox is hidden.
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            FakeOmniboxAccessibilityID())]
+        assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+  } else {
+    [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                            FakeOmniboxAccessibilityID())]
+        assertWithMatcher:OmniboxWidthBetween(collectionWidthAfterRotation + 1,
+                                              2)];
+  }
 }
 
 // Tests that the promo is correctly displayed and removed once tapped.

@@ -30,6 +30,7 @@
 @property(nonatomic, strong) UIView<AdaptiveToolbarView>* view;
 // Whether a page is loading.
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
+@property(nonatomic, assign) BOOL isNTP;
 
 @end
 
@@ -39,6 +40,7 @@
 @synthesize buttonFactory = _buttonFactory;
 @synthesize dispatcher = _dispatcher;
 @synthesize loading = _loading;
+@synthesize isNTP = _isNTP;
 
 #pragma mark - Public
 
@@ -120,7 +122,7 @@
   if (!loading) {
     [self stopProgressBar];
   } else if (self.view.progressBar.hidden &&
-             !IsRegularXRegularSizeClass(self)) {
+             !IsRegularXRegularSizeClass(self) && !self.isNTP) {
     [self.view.progressBar setProgress:0];
     [self.view.progressBar setHidden:NO animated:YES completion:nil];
     // Layout if needed the progress bar to avoid having the progress bar going
@@ -150,7 +152,7 @@
 }
 
 - (void)setIsNTP:(BOOL)isNTP {
-  // No-op, should be handled by the primary toolbar.
+  _isNTP = isNTP;
 }
 
 #pragma mark - NewTabPageControllerDelegate

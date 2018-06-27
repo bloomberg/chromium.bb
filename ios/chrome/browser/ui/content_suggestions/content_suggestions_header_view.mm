@@ -63,11 +63,6 @@ const CGFloat kBackgroundLandscapeInset = 169;
   return self;
 }
 
-- (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
-  [super traitCollectionDidChange:previousTraitCollection];
-  self.toolBarView.hidden = IsRegularXRegularSizeClass(self);
-}
-
 #pragma mark - Private
 
 // Scale the the hint label down to at most content_suggestions::kHintTextScale.
@@ -85,29 +80,6 @@ const CGFloat kBackgroundLandscapeInset = 169;
 }
 
 #pragma mark - NTPHeaderViewAdapter
-
-- (void)addToolbarView:(UIView*)toolbarView {
-  DCHECK(!self.toolBarView);
-  _toolBarView = toolbarView;
-  [self addSubview:self.toolBarView];
-  // TODO(crbug.com/808431) This logic is duplicated in various places and
-  // should be refactored away for content suggestions.
-  NSArray<GuideName*>* guideNames = @[
-    kOmniboxGuide,
-    kBackButtonGuide,
-    kForwardButtonGuide,
-    kToolsMenuGuide,
-    kTabSwitcherGuide,
-  ];
-  AddNamedGuidesToView(guideNames, self);
-  id<LayoutGuideProvider> layoutGuide = SafeAreaLayoutGuideForView(self);
-  [NSLayoutConstraint activateConstraints:@[
-    [self.toolBarView.leadingAnchor constraintEqualToAnchor:self.leadingAnchor],
-    [self.toolBarView.topAnchor constraintEqualToAnchor:layoutGuide.topAnchor],
-    [self.toolBarView.trailingAnchor
-        constraintEqualToAnchor:self.trailingAnchor],
-  ]];
-}
 
 - (void)addViewsToSearchField:(UIView*)searchField {
   ToolbarButtonFactory* buttonFactory =
@@ -209,7 +181,7 @@ const CGFloat kBackgroundLandscapeInset = 169;
 
   CGFloat percent =
       [self searchFieldProgressForOffset:offset safeAreaInsets:safeAreaInsets];
-  if (IsRegularXRegularSizeClass(self)) {
+  if (!IsSplitToolbarMode(self)) {
     self.alpha = 1 - percent;
     widthConstraint.constant = searchFieldNormalWidth;
     self.backgroundHeightConstraint.constant =
@@ -292,7 +264,7 @@ const CGFloat kBackgroundLandscapeInset = 169;
 #pragma mark - ToolbarOwner
 
 - (CGRect)toolbarFrame {
-  return self.toolBarView.frame;
+  return CGRectZero;
 }
 
 - (id<ToolbarSnapshotProviding>)toolbarSnapshotProvider {
@@ -307,7 +279,8 @@ const CGFloat kBackgroundLandscapeInset = 169;
 
 - (UIView*)snapshotForStackViewWithWidth:(CGFloat)width
                           safeAreaInsets:(UIEdgeInsets)safeAreaInsets {
-  return self.toolBarView;
+  NOTREACHED();
+  return nil;
 }
 
 - (UIColor*)toolbarBackgroundColor {
