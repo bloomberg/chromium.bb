@@ -19,6 +19,7 @@
 #include "third_party/blink/renderer/core/input/input_device_capabilities.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/scroll/scroll_animator_base.h"
 
 #if BUILDFLAG(ENABLE_UNHANDLED_TAP)
@@ -435,7 +436,7 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
   const LocalFrameView::ScrollableAreaSet* areas = view->ScrollableAreas();
   if (!areas)
     return WebInputEventResult::kNotHandled;
-  for (const ScrollableArea* scrollable_area : *areas) {
+  for (const PaintLayerScrollableArea* scrollable_area : *areas) {
     ScrollAnimatorBase* animator = scrollable_area->ExistingScrollAnimator();
     if (animator)
       animator->CancelAnimation();

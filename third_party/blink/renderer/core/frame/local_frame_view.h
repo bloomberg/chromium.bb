@@ -395,15 +395,15 @@ class CORE_EXPORT LocalFrameView final
                                     PaintInvalidationReason);
   std::unique_ptr<JSONArray> TrackedObjectPaintInvalidationsAsJSON() const;
 
-  using ScrollableAreaSet = HeapHashSet<Member<ScrollableArea>>;
-  void AddScrollableArea(ScrollableArea*);
-  void RemoveScrollableArea(ScrollableArea*);
+  using ScrollableAreaSet = HeapHashSet<Member<PaintLayerScrollableArea>>;
+  void AddScrollableArea(PaintLayerScrollableArea*);
+  void RemoveScrollableArea(PaintLayerScrollableArea*);
   const ScrollableAreaSet* ScrollableAreas() const {
     return scrollable_areas_.Get();
   }
 
-  void AddAnimatingScrollableArea(ScrollableArea*);
-  void RemoveAnimatingScrollableArea(ScrollableArea*);
+  void AddAnimatingScrollableArea(PaintLayerScrollableArea*);
+  void RemoveAnimatingScrollableArea(PaintLayerScrollableArea*);
   const ScrollableAreaSet* AnimatingScrollableAreas() const {
     return animating_scrollable_areas_.Get();
   }
@@ -439,7 +439,6 @@ class CORE_EXPORT LocalFrameView final
   PaintLayer* Layer() const override;
   int ScrollSize(ScrollbarOrientation) const override;
   bool IsScrollCornerVisible() const override { return false; }
-  void UpdateAfterCompositingChange() override;
   bool UserInputScrollable(ScrollbarOrientation) const override {
     return false;
   }

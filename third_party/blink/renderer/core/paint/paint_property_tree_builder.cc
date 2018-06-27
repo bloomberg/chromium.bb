@@ -1192,7 +1192,7 @@ void FragmentPaintPropertyTreeBuilder::UpdateScrollAndScrollTranslation() {
   if (NeedsPaintPropertyUpdate()) {
     if (NeedsScrollNode(object_)) {
       const LayoutBox& box = ToLayoutBox(object_);
-      auto* scrollable_area = box.GetScrollableArea();
+      PaintLayerScrollableArea* scrollable_area = box.GetScrollableArea();
       ScrollPaintPropertyNode::State state;
 
       // The container bounds are snapped to integers to match the equivalent

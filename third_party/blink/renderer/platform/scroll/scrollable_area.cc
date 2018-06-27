@@ -82,7 +82,6 @@ ScrollableArea::ScrollableArea()
     : autosize_vertical_scrollbar_mode_(kScrollbarAuto),
       autosize_horizontal_scrollbar_mode_(kScrollbarAuto),
       scrollbar_overlay_color_theme_(kScrollbarOverlayColorThemeDark),
-      scroll_origin_changed_(false),
       horizontal_scrollbar_needs_paint_invalidation_(false),
       vertical_scrollbar_needs_paint_invalidation_(false),
       scroll_corner_needs_paint_invalidation_(false),
@@ -120,13 +119,6 @@ ProgrammaticScrollAnimator& ScrollableArea::GetProgrammaticScrollAnimator()
         ProgrammaticScrollAnimator::Create(const_cast<ScrollableArea*>(this));
 
   return *programmatic_scroll_animator_;
-}
-
-void ScrollableArea::SetScrollOrigin(const IntPoint& origin) {
-  if (scroll_origin_ != origin) {
-    scroll_origin_ = origin;
-    scroll_origin_changed_ = true;
-  }
 }
 
 GraphicsLayer* ScrollableArea::LayerForContainer() const {
@@ -715,9 +707,8 @@ IntSize ScrollableArea::ExcludeScrollbars(const IntSize& size) const {
                  std::max(0, size.Height() - HorizontalScrollbarHeight()));
 }
 
-void ScrollableArea::DidScroll(const gfx::ScrollOffset& offset) {
-  ScrollOffset new_offset = ScrollOffset(offset.x() - ScrollOrigin().X(),
-                                         offset.y() - ScrollOrigin().Y());
+void ScrollableArea::DidScroll(const FloatPoint& position) {
+  ScrollOffset new_offset(ScrollPositionToOffset(position));
   SetScrollOffset(new_offset, kCompositorScroll);
 }
 

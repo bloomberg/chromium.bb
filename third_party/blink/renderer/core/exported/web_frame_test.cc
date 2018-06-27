@@ -7546,7 +7546,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   auto* scrollable_area = frame_impl->GetFrameView()->LayoutViewport();
 
   // Do a compositor scroll, verify that this is counted as a user scroll.
-  scrollable_area->DidScroll(gfx::ScrollOffset(0, 1));
+  scrollable_area->DidScroll(FloatPoint(0, 1));
   web_view_helper.GetWebView()->ApplyViewportDeltas(
       WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.7f, 0);
   EXPECT_TRUE(client.WasFrameScrolled());
@@ -7556,7 +7556,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   initial_scroll_state.was_scrolled_by_user = false;
 
   // The page scale 1.0f and scroll.
-  scrollable_area->DidScroll(gfx::ScrollOffset(0, 2));
+  scrollable_area->DidScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()->ApplyViewportDeltas(
       WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 0);
   EXPECT_TRUE(client.WasFrameScrolled());
@@ -7565,7 +7565,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   initial_scroll_state.was_scrolled_by_user = false;
 
   // No scroll event if there is no scroll delta.
-  scrollable_area->DidScroll(gfx::ScrollOffset(0, 2));
+  scrollable_area->DidScroll(FloatPoint(0, 2));
   web_view_helper.GetWebView()->ApplyViewportDeltas(
       WebFloatSize(), WebFloatSize(), WebFloatSize(), 1.0f, 0);
   EXPECT_FALSE(client.WasFrameScrolled());
@@ -7573,7 +7573,7 @@ TEST_F(WebFrameTest, CompositorScrollIsUserScrollLongPage) {
   client.Reset();
 
   // Non zero page scale and scroll.
-  scrollable_area->DidScroll(gfx::ScrollOffset(9, 15));
+  scrollable_area->DidScroll(FloatPoint(9, 15));
   web_view_helper.GetWebView()->ApplyViewportDeltas(
       WebFloatSize(), WebFloatSize(), WebFloatSize(), 0.6f, 0);
   EXPECT_TRUE(client.WasFrameScrolled());

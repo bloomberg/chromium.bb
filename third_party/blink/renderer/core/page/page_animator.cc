@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 
@@ -61,10 +62,11 @@ void PageAnimator::ServiceScriptedAnimations(
               document->View()->AnimatingScrollableAreas()) {
         // Iterate over a copy, since ScrollableAreas may deregister
         // themselves during the iteration.
-        HeapVector<Member<ScrollableArea>> animating_scrollable_areas_copy;
+        HeapVector<Member<PaintLayerScrollableArea>>
+            animating_scrollable_areas_copy;
         CopyToVector(*animating_scrollable_areas,
                      animating_scrollable_areas_copy);
-        for (ScrollableArea* scrollable_area :
+        for (PaintLayerScrollableArea* scrollable_area :
              animating_scrollable_areas_copy) {
           scrollable_area->ServiceScrollAnimations(
               monotonic_animation_start_time.since_origin().InSecondsF());

@@ -137,6 +137,7 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       had_horizontal_scrollbar_before_relayout_(false),
       had_vertical_scrollbar_before_relayout_(false),
       has_paint_layer_scroll_child_(false),
+      scroll_origin_changed_(false),
       scrollbar_manager_(*this),
       scroll_corner_(nullptr),
       resizer_(nullptr),
@@ -161,8 +162,8 @@ PaintLayerScrollableArea::~PaintLayerScrollableArea() {
   DCHECK(HasBeenDisposed());
 }
 
-void PaintLayerScrollableArea::DidScroll(const gfx::ScrollOffset& offset) {
-  ScrollableArea::DidScroll(offset);
+void PaintLayerScrollableArea::DidScroll(const FloatPoint& position) {
+  ScrollableArea::DidScroll(position);
   // This should be alive if it receives composited scroll callbacks.
   CHECK(!HasBeenDisposed());
 }
@@ -872,8 +873,11 @@ void PaintLayerScrollableArea::UpdateScrollOrigin() {
   LayoutRect scrollable_overflow(overflow_rect_);
   scrollable_overflow.Move(-GetLayoutBox()->BorderLeft(),
                            -GetLayoutBox()->BorderTop());
-  SetScrollOrigin(-scrollable_overflow.PixelSnappedLocation() +
-                  GetLayoutBox()->OriginAdjustmentForScrollbars());
+  IntPoint new_origin(-scrollable_overflow.PixelSnappedLocation() +
+                      GetLayoutBox()->OriginAdjustmentForScrollbars());
+  if (new_origin != scroll_origin_)
+    scroll_origin_changed_ = true;
+  scroll_origin_ = new_origin;
 }
 
 void PaintLayerScrollableArea::UpdateScrollDimensions() {

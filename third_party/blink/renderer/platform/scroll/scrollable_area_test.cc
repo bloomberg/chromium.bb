@@ -267,12 +267,10 @@ TEST_F(ScrollableAreaTest, ScrollableAreaDidScroll) {
 
   MockScrollableArea* scrollable_area =
       MockScrollableArea::Create(ScrollOffset(100, 100));
-  scrollable_area->SetScrollOrigin(IntPoint(20, 30));
-  scrollable_area->DidScroll(gfx::ScrollOffset(40, 51));
+  scrollable_area->DidScroll(FloatPoint(40, 51));
 
-  // After calling didScroll, the new offset should account for scroll origin.
-  EXPECT_EQ(20, scrollable_area->ScrollOffsetInt().Width());
-  EXPECT_EQ(21, scrollable_area->ScrollOffsetInt().Height());
+  EXPECT_EQ(40, scrollable_area->ScrollOffsetInt().Width());
+  EXPECT_EQ(51, scrollable_area->ScrollOffsetInt().Height());
 }
 
 // Scrollbars in popups shouldn't fade out since they aren't composited and thus

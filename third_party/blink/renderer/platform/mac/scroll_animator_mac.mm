@@ -799,7 +799,7 @@ void ScrollAnimatorMac::ImmediateScrollTo(const ScrollOffset& new_offset) {
   ScrollOffset adjusted_offset = AdjustScrollOffsetIfNecessary(new_offset);
 
   bool offset_changed = adjusted_offset != current_offset_;
-  if (!offset_changed && !GetScrollableArea()->ScrollOriginChanged())
+  if (!offset_changed)
     return;
 
   ScrollOffset delta = adjusted_offset - current_offset_;

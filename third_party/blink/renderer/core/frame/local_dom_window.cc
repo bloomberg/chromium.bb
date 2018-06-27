@@ -320,16 +320,6 @@ Document* LocalDOMWindow::InstallNewDocument(const String& mime_type,
 
   if (GetFrame()->GetPage() && GetFrame()->View()) {
     GetFrame()->GetPage()->GetChromeClient().InstallSupplements(*GetFrame());
-
-    if (ScrollingCoordinator* scrolling_coordinator =
-            GetFrame()->GetPage()->GetScrollingCoordinator()) {
-      scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
-          GetFrame()->View(), kHorizontalScrollbar);
-      scrolling_coordinator->ScrollableAreaScrollbarLayerDidChange(
-          GetFrame()->View(), kVerticalScrollbar);
-      scrolling_coordinator->ScrollableAreaScrollLayerDidChange(
-          GetFrame()->View());
-    }
   }
 
   if (GetFrame()->IsCrossOriginSubframe())
@@ -1143,12 +1133,12 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
   if (scroll_to_options.hasTop())
     y = ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top());
 
-  ScrollableArea* viewport = view->LayoutViewport();
+  PaintLayerScrollableArea* viewport = view->LayoutViewport();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   ScrollOffset scaled_delta(x * GetFrame()->PageZoomFactor(),
                             y * GetFrame()->PageZoomFactor());
-  FloatPoint new_scaled_position = ScrollOffsetToPosition(
-      scaled_delta + current_offset, viewport->ScrollOrigin());
+  FloatPoint new_scaled_position =
+      viewport->ScrollOffsetToPosition(scaled_delta + current_offset);
   if (SnapCoordinator* coordinator = document()->GetSnapCoordinator()) {
     new_scaled_position = coordinator->GetSnapPositionForPoint(
         *document()->GetLayoutView(), new_scaled_position,
@@ -1159,7 +1149,7 @@ void LocalDOMWindow::scrollBy(const ScrollToOptions& scroll_to_options) const {
   ScrollableArea::ScrollBehaviorFromString(scroll_to_options.behavior(),
                                            scroll_behavior);
   viewport->SetScrollOffset(
-      ScrollPositionToOffset(new_scaled_position, viewport->ScrollOrigin()),
+      viewport->ScrollPositionToOffset(new_scaled_position),
       kProgrammaticScroll, scroll_behavior);
 }
 
@@ -1203,7 +1193,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
   double scaled_x = 0.0;
   double scaled_y = 0.0;
 
-  ScrollableArea* viewport = view->LayoutViewport();
+  PaintLayerScrollableArea* viewport = view->LayoutViewport();
   ScrollOffset current_offset = viewport->GetScrollOffset();
   scaled_x = current_offset.Width();
   scaled_y = current_offset.Height();
@@ -1218,8 +1208,8 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
         ScrollableArea::NormalizeNonFiniteScroll(scroll_to_options.top()) *
         GetFrame()->PageZoomFactor();
 
-  FloatPoint new_scaled_position = ScrollOffsetToPosition(
-      ScrollOffset(scaled_x, scaled_y), viewport->ScrollOrigin());
+  FloatPoint new_scaled_position =
+      viewport->ScrollOffsetToPosition(ScrollOffset(scaled_x, scaled_y));
   if (SnapCoordinator* coordinator = document()->GetSnapCoordinator()) {
     new_scaled_position = coordinator->GetSnapPositionForPoint(
         *document()->GetLayoutView(), new_scaled_position,
@@ -1231,7 +1221,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scroll_to_options) const {
                                            scroll_behavior);
 
   viewport->SetScrollOffset(
-      ScrollPositionToOffset(new_scaled_position, viewport->ScrollOrigin()),
+      viewport->ScrollPositionToOffset(new_scaled_position),
       kProgrammaticScroll, scroll_behavior);
 }
 

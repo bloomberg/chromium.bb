@@ -3632,7 +3632,8 @@ void LocalFrameView::ScrollableAreasDidChange() {
     GetScrollingContext()->SetScrollGestureRegionIsDirty(true);
 }
 
-void LocalFrameView::AddScrollableArea(ScrollableArea* scrollable_area) {
+void LocalFrameView::AddScrollableArea(
+    PaintLayerScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
   if (!scrollable_areas_)
     scrollable_areas_ = new ScrollableAreaSet;
@@ -3644,7 +3645,8 @@ void LocalFrameView::AddScrollableArea(ScrollableArea* scrollable_area) {
   }
 }
 
-void LocalFrameView::RemoveScrollableArea(ScrollableArea* scrollable_area) {
+void LocalFrameView::RemoveScrollableArea(
+    PaintLayerScrollableArea* scrollable_area) {
   if (!scrollable_areas_)
     return;
   scrollable_areas_->erase(scrollable_area);
@@ -3656,7 +3658,7 @@ void LocalFrameView::RemoveScrollableArea(ScrollableArea* scrollable_area) {
 }
 
 void LocalFrameView::AddAnimatingScrollableArea(
-    ScrollableArea* scrollable_area) {
+    PaintLayerScrollableArea* scrollable_area) {
   DCHECK(scrollable_area);
   if (!animating_scrollable_areas_)
     animating_scrollable_areas_ = new ScrollableAreaSet;
@@ -3664,7 +3666,7 @@ void LocalFrameView::AddAnimatingScrollableArea(
 }
 
 void LocalFrameView::RemoveAnimatingScrollableArea(
-    ScrollableArea* scrollable_area) {
+    PaintLayerScrollableArea* scrollable_area) {
   if (!animating_scrollable_areas_)
     return;
   animating_scrollable_areas_->erase(scrollable_area);
@@ -3792,23 +3794,7 @@ PaintLayer* LocalFrameView::Layer() const {
 }
 
 IntSize LocalFrameView::MaximumScrollOffsetInt() const {
-  // Make the same calculation as in CC's LayerImpl::MaxScrollOffset()
-  // FIXME: We probably shouldn't be storing the bounds in a float.
-  // crbug.com/422331.
-  IntSize visible_size = Size();
-  IntSize content_bounds = ContentsSize();
-
-  Page* page = frame_->GetPage();
-  DCHECK(page);
-
-  TopDocumentRootScrollerController& controller =
-      page->GlobalRootScrollerController();
-  if (LayoutViewport() == controller.RootScrollerArea())
-    visible_size = controller.RootScrollerVisibleArea();
-
-  IntSize maximum_offset =
-      ToIntSize(-ScrollOrigin() + (content_bounds - visible_size));
-  return maximum_offset.ExpandedTo(MinimumScrollOffsetInt());
+  return IntSize();
 }
 
 void LocalFrameView::SetScrollbarModes(ScrollbarMode horizontal_mode,
@@ -3901,7 +3887,7 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
 }
 
 IntSize LocalFrameView::MinimumScrollOffsetInt() const {
-  return ToIntSize(-ScrollOrigin());
+  return IntSize();
 }
 
 int LocalFrameView::ScrollSize(ScrollbarOrientation orientation) const {
@@ -4021,10 +4007,6 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
       frame_->GetPage()->GetVisualViewport().ViewportCSSPixelsToRootFrame(
           point_in_viewport));
   return ConvertFromRootFrame(point_in_root_frame);
-}
-
-void LocalFrameView::UpdateAfterCompositingChange() {
-  ResetScrollOriginChanged();
 }
 
 LayoutRect LocalFrameView::ScrollIntoView(
