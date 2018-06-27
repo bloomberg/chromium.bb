@@ -202,6 +202,9 @@ TEST_P(WaylandWindowTest, Minimize) {
 }
 
 TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
+  // Ensure the initial state is unknown.
+  EXPECT_EQ(window_->GetPlatformWindowState(), PLATFORM_WINDOW_STATE_UNKNOWN);
+
   ScopedWlArray states = InitializeWlArrayWithActivatedState();
 
   AddStateToWlArray(XDG_SURFACE_STATE_FULLSCREEN, states.get());
@@ -210,6 +213,10 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_FULLSCREEN)));
   window_->ToggleFullscreen();
+  // Make sure than WaylandWindow manually handles fullscreen states. Check the
+  // comment in the WaylandWindow::ToggleFullscreen.
+  EXPECT_EQ(window_->GetPlatformWindowState(),
+            PLATFORM_WINDOW_STATE_FULLSCREEN);
   SendConfigureEvent(0, 0, 1, states.get());
   Sync();
 
@@ -217,6 +224,7 @@ TEST_P(WaylandWindowTest, SetFullscreenAndRestore) {
   EXPECT_CALL(delegate_,
               OnWindowStateChanged(Eq(PLATFORM_WINDOW_STATE_NORMAL)));
   window_->Restore();
+  EXPECT_EQ(window_->GetPlatformWindowState(), PLATFORM_WINDOW_STATE_UNKNOWN);
   // Reinitialize wl_array, which removes previous old states.
   states = InitializeWlArrayWithActivatedState();
   SendConfigureEvent(0, 0, 2, states.get());

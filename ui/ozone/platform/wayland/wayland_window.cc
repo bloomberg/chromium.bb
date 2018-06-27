@@ -236,6 +236,13 @@ void WaylandWindow::ToggleFullscreen() {
   // if xdg_surface_set_fullscreen() is not provided with wl_output, it's up to
   // the compositor to choose which display will be used to map this surface.
   if (!IsFullscreen()) {
+    // Fullscreen state changes have to be handled manually and then checked
+    // against configuration events, which come from a compositor. The reason
+    // of manually changing the |state_| is that the compositor answers about
+    // state changes asynchronously, which leads to a wrong return value in
+    // DesktopWindowTreeHostPlatform::IsFullscreen, for example, and media
+    // files can never be set to fullscreen.
+    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
     // Client might have requested a fullscreen state while the window was in
     // a maximized state. Thus, |restored_bounds_| can contain the bounds of a
     // "normal" state before the window was maximized. We don't override them
@@ -245,6 +252,9 @@ void WaylandWindow::ToggleFullscreen() {
       restored_bounds_ = bounds_;
     xdg_surface_->SetFullscreen();
   } else {
+    // Check the comment above. If it's not handled synchronously, media files
+    // may not leave the fullscreen mode.
+    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
     xdg_surface_->UnSetFullscreen();
   }
 
@@ -382,6 +392,11 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
                                            bool is_activated) {
   // Propagate the window state information to the client.
   PlatformWindowState old_state = state_;
+
+  // Ensure that manually handled state changes to fullscreen correspond to the
+  // configuration events from a compositor.
+  DCHECK(is_fullscreen == IsFullscreen());
+
   // There are two cases, which must be handled for the minimized state.
   // The first one is the case, when the surface goes into the minimized state
   // (check comment in WaylandWindow::Minimize), and the second case is when the
@@ -392,7 +407,10 @@ void WaylandWindow::HandleSurfaceConfigure(int32_t width,
     is_minimizing_ = false;
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MINIMIZED;
   } else if (is_fullscreen) {
-    state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN;
+    // To ensure the |delegate_| is notified about state changes to fullscreen,
+    // assume the old_state is UNKNOWN (check comment in ToggleFullscreen).
+    old_state = PlatformWindowState::PLATFORM_WINDOW_STATE_UNKNOWN;
+    DCHECK(state_ == PlatformWindowState::PLATFORM_WINDOW_STATE_FULLSCREEN);
   } else if (is_maximized) {
     state_ = PlatformWindowState::PLATFORM_WINDOW_STATE_MAXIMIZED;
   } else {
