@@ -39,7 +39,7 @@ namespace {
 // TODO(markusheintz|msw): Use NativeTheme colors.
 constexpr SkColor kTabTitleColor_InactiveBorder =
     SkColorSetARGB(0xFF, 0x64, 0x64, 0x64);
-constexpr SkColor kTabTitleColor_InactiveHighlight = gfx::kGoogleGrey600;
+constexpr SkColor kTabTitleColor_InactiveHighlight = gfx::kGoogleGrey700;
 constexpr SkColor kTabTitleColor_ActiveBorder = SK_ColorBLACK;
 constexpr SkColor kTabTitleColor_ActiveHighlight = gfx::kGoogleBlue600;
 const SkColor kTabTitleColor_Hovered = SK_ColorBLACK;

@@ -10,6 +10,7 @@
 #include "ui/base/default_style.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/shadow_value.h"
 #include "ui/gfx/skia_paint_util.h"
@@ -69,8 +70,7 @@ void BubbleView::SetIcon(const gfx::VectorIcon& icon) {
 void BubbleView::SetText(const base::string16& text) {
   if (!text_) {
     text_ = new views::Label();
-    constexpr SkColor kTextColor = SkColorSetARGB(0xFF, 0x5F, 0x63, 0x68);
-    text_->SetEnabledColor(kTextColor);
+    text_->SetEnabledColor(gfx::kGoogleGrey700);
     text_->SetElideBehavior(gfx::NO_ELIDE);
     constexpr int kLabelFontSizeDelta = 1;
     text_->SetFontList(
