@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/chrome_extension_web_contents_observer.h"
 #include "chrome/browser/ui/ash/ash_util.h"
+#include "chrome/browser/ui/ash/login_screen_client.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chrome_web_contents_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
@@ -73,6 +74,7 @@ content::WebContents* OobeUIDialogDelegate::GetWebContents() {
 }
 
 void OobeUIDialogDelegate::Show(bool closable_by_esc) {
+  LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(true);
   closable_by_esc_ = closable_by_esc;
   dialog_widget_->Show();
 }
@@ -85,8 +87,10 @@ void OobeUIDialogDelegate::ShowFullScreen() {
 }
 
 void OobeUIDialogDelegate::Hide() {
-  if (dialog_widget_)
+  if (dialog_widget_) {
+    LoginScreenClient::Get()->login_screen()->NotifyOobeDialogVisibility(false);
     dialog_widget_->Hide();
+  }
 }
 
 void OobeUIDialogDelegate::Close() {
@@ -206,7 +210,7 @@ bool OobeUIDialogDelegate::AcceleratorPressed(
     // Consume the escape key here so WebDialogView won't have a chance to
     // close the widget.
     if (closable_by_esc_)
-      dialog_widget_->Hide();
+      Hide();
     return true;
   }
 

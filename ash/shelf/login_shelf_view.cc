@@ -181,9 +181,11 @@ class KioskAppsButton : public views::MenuButton,
 
   bool HasApps() const { return !kiosk_apps_.empty(); }
 
-  void ResetState() {
-    is_launch_enabled_ = true;
-    SetVisible(true);
+  // views::MenuButton:
+  void SetVisible(bool visible) override {
+    MenuButton::SetVisible(visible);
+    if (visible)
+      is_launch_enabled_ = true;
   }
 
   // views::MenuButtonListener:
@@ -384,6 +386,11 @@ void LoginShelfView::SetKioskApps(
   UpdateUi();
 }
 
+void LoginShelfView::SetLoginDialogVisible(bool visible) {
+  dialog_visible_ = visible;
+  UpdateUi();
+}
+
 void LoginShelfView::OnLockScreenNoteStateChanged(
     mojom::TrayActionState state) {
   UpdateUi();
@@ -438,12 +445,10 @@ void LoginShelfView::UpdateUi() {
   // TODO(agawronska): Implement full list of conditions for buttons visibility,
   // when views based shelf if enabled during OOBE. https://crbug.com/798869
   bool is_login_primary = (session_state == SessionState::LOGIN_PRIMARY);
-  GetViewByID(kBrowseAsGuest)->SetVisible(is_login_primary);
-  GetViewByID(kAddUser)->SetVisible(is_login_primary);
-  if (kiosk_apps_button_->HasApps() && is_login_primary)
-    kiosk_apps_button_->ResetState();
-  else
-    kiosk_apps_button_->SetVisible(false);
+  GetViewByID(kBrowseAsGuest)->SetVisible(!dialog_visible_ && is_login_primary);
+  GetViewByID(kAddUser)->SetVisible(!dialog_visible_ && is_login_primary);
+  kiosk_apps_button_->SetVisible(
+      !dialog_visible_ && kiosk_apps_button_->HasApps() && is_login_primary);
   Layout();
 }
 
