@@ -37,16 +37,18 @@ gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
   // TODO(bsep): The sizes in this function are for 1x device scale and don't
   // match Windows button sizes at hidpi.
   constexpr int kButtonHeightRestored = 29;
-  int h = kButtonHeightRestored;
+  int height = kButtonHeightRestored;
   if (frame_view_->IsMaximized()) {
-    h = frame_view_->browser_view()->IsTabStripVisible()
+    int maximized_height =
+        frame_view_->browser_view()->IsTabStripVisible()
             ? frame_view_->browser_view()->GetTabStripHeight()
             : frame_view_->TitlebarMaximizedVisualHeight();
     constexpr int kMaximizedBottomMargin = 2;
-    h -= kMaximizedBottomMargin;
+    maximized_height -= kMaximizedBottomMargin;
+    height = std::min(height, maximized_height);
   }
   constexpr int kButtonWidth = 45;
-  return gfx::Size(kButtonWidth + GetBetweenButtonSpacing(), h);
+  return gfx::Size(kButtonWidth + GetBetweenButtonSpacing(), height);
 }
 
 namespace {
