@@ -12,10 +12,6 @@ crbug.com/591099 fast/shapes/shape-outside-floats/shape-outside-floats-inset-rou
 crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-006.html [ Skip ]
 crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Skip ]
 
-# Caused by legacy fallback, <details> with position:absolute hits DCHECK in
-# IsEmptyBlock() in NGBlockLayoutAlgorithm::HandleInflow()
-crbug.com/591099 fast/block/child-not-removed-from-parent-lineboxes-crash.html [ Crash ]
-
 # Fails because we don't yet special-case marquee like legacy does:
 # https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_block.cc?l=1372&rcl=0e081149ecd6a83f6289e3aee5797936008a1e10
 crbug.com/591099 fast/block/marquee-width-shrinks-to-fit-in-fixed-size-container.html [ Failure ]
@@ -561,6 +557,7 @@ crbug.com/591099 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure
 crbug.com/591099 fullscreen/full-screen-with-flex-item.html [ Failure ]
 crbug.com/591099 hittesting/border-hittest-inlineFlowBox.html [ Failure ]
 crbug.com/591099 hittesting/inline-with-clip-path.html [ Failure ]
+crbug.com/856730 html/details_summary/details-mouse-click.html [ Failure ]
 crbug.com/855039 html/details_summary/details-writing-mode-align-center.html [ Failure ]
 crbug.com/855039 html/details_summary/details-writing-mode-align-left.html [ Failure ]
 crbug.com/855039 html/details_summary/details-writing-mode-align-right.html [ Failure ]
@@ -649,6 +646,7 @@ crbug.com/591099 paint/invalidation/css-grid-layout/grid-element-change-columns-
 crbug.com/591099 paint/invalidation/css-grid-layout/grid-element-change-rows-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/css-grid-layout/grid-item-change-column-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/css-grid-layout/grid-item-z-index-change-repaint.html [ Failure ]
+crbug.com/591099 paint/invalidation/details-open-repaint.html [ Failure ]
 crbug.com/591099 paint/invalidation/flexbox/align-content-change-keeping-geometry.html [ Failure ]
 crbug.com/714962 paint/invalidation/flexbox/align-content-change-no-flex.html [ Failure ]
 crbug.com/591099 paint/invalidation/flexbox/align-content-change.html [ Failure ]

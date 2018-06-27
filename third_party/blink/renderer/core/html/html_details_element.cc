@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 
@@ -69,8 +70,9 @@ void HTMLDetailsElement::DispatchPendingEvent() {
   DispatchEvent(Event::Create(EventTypeNames::toggle));
 }
 
-LayoutObject* HTMLDetailsElement::CreateLayoutObject(const ComputedStyle&) {
-  return new LayoutBlockFlow(this);
+LayoutObject* HTMLDetailsElement::CreateLayoutObject(
+    const ComputedStyle& style) {
+  return LayoutObjectFactory::CreateBlockFlow(*this, style);
 }
 
 void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {

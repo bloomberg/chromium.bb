@@ -938,6 +938,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/spanner-table
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/spanner-with-margin.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/spanner-with-margins-between-margins.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/spanner-with-relpos-child.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/summary-split.html [ Failure ]
 crbug.com/824918 virtual/layout_ng_experimental/fast/multicol/span/trailing-margin-around-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/trailing-margin-before-spanner.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fast/multicol/span/two-rows-then-spanner-then-two-rows.html [ Failure ]
