@@ -393,7 +393,6 @@ EmbeddedSharedWorkerStub::CreateWorkerFetchContext(
           ->renderer()
           ->CreateWebSocketHandshakeThrottleProvider(),
       ChildThreadImpl::current()->thread_safe_sender(),
-      RenderThreadImpl::current()->GetIOTaskRunner(),
       ChildThreadImpl::current()->GetConnector()->Clone());
 
   // TODO(horo): To get the correct first_party_to_cookies for the shared

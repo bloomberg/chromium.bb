@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/stl_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
@@ -31,6 +32,28 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
+
+namespace {
+
+void CreateSubresourceLoaderFactory(
+    mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
+    mojom::ControllerServiceWorkerPtrInfo controller_ptr_info,
+    const std::string& client_id,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
+    mojom::ControllerServiceWorkerConnectorRequest connector_request,
+    network::mojom::URLLoaderFactoryRequest request) {
+  mojom::ControllerServiceWorkerPtr controller_ptr;
+  controller_ptr.Bind(std::move(controller_ptr_info));
+  auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
+      std::move(container_host_info), std::move(controller_ptr), client_id);
+  connector->AddBinding(std::move(connector_request));
+  ServiceWorkerSubresourceLoaderFactory::Create(
+      std::move(connector),
+      network::SharedURLLoaderFactory::Create(std::move(fallback_factory_info)),
+      std::move(request));
+}
+
+}  // namespace
 
 // Holds state for service worker clients.
 struct ServiceWorkerProviderContext::ProviderStateForClient {
@@ -82,11 +105,20 @@ struct ServiceWorkerProviderContext::ProviderStateForClient {
 
   // S13nServiceWorker
   // Used in |subresource_loader_factory| to get the connection to the
-  // controller service worker. Kept here in order to call
-  // OnContainerHostConnectionClosed when container_host_ for the
-  // provider is reset.
-  // This is (re)set to nullptr if no controller is attached to this client.
-  scoped_refptr<ControllerServiceWorkerConnector> controller_connector;
+  // controller service worker.
+  //
+  // |controller_endpoint| is a Mojo pipe to the controller service worker,
+  // and is to be passed to (i.e. taken by) a subresource loader factory when
+  // GetSubresourceLoaderFactory() is called for the first time when a valid
+  // controller exists.
+  //
+  // |controller_connector| is a Mojo pipe to the
+  // ControllerServiceWorkerConnector that is attached to the newly created
+  // subresource loader factory and lives on a background thread. This is
+  // populated when GetSubresourceLoader() creates the subresource loader
+  // factory and takes |controller_endpoint|.
+  mojom::ControllerServiceWorkerPtrInfo controller_endpoint;
+  mojom::ControllerServiceWorkerConnectorPtr controller_connector;
 
   // For service worker clients. Map from registration id to JavaScript
   // ServiceWorkerRegistration object.
@@ -166,9 +198,7 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
 
   DCHECK(state_for_client_);
   auto* state = state_for_client_.get();
-  if (!state->controller_connector ||
-      state->controller_connector->state() ==
-          ControllerServiceWorkerConnector::State::kNoController) {
+  if (!state->controller_endpoint && !state->controller_connector) {
     // No controller is attached.
     return nullptr;
   }
@@ -180,9 +210,20 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
   }
 
   if (!state->subresource_loader_factory) {
-    ServiceWorkerSubresourceLoaderFactory::Create(
-        state->controller_connector, state->fallback_loader_factory,
-        mojo::MakeRequest(&state->subresource_loader_factory));
+    DCHECK(!state->controller_connector);
+    DCHECK(state->controller_endpoint);
+    // Create a SubresourceLoaderFactory on a background thread to avoid
+    // extra contention on the main thread.
+    auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+        {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+    task_runner->PostTask(
+        FROM_HERE,
+        base::BindOnce(&CreateSubresourceLoaderFactory,
+                       CloneContainerHostPtrInfo(),
+                       std::move(state->controller_endpoint), state->client_id,
+                       state->fallback_loader_factory->Clone(),
+                       mojo::MakeRequest(&state->controller_connector),
+                       mojo::MakeRequest(&state->subresource_loader_factory)));
   }
   return state->subresource_loader_factory.get();
 }
@@ -235,6 +276,7 @@ ServiceWorkerProviderContext::CloneContainerHostPtrInfo() {
   DCHECK(main_thread_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(state_for_client_);
   mojom::ServiceWorkerContainerHostPtrInfo container_host_ptr_info;
+  // TODO(kinuko): rename this, now this can be used for non-worker clients.
   container_host_->CloneForWorker(mojo::MakeRequest(&container_host_ptr_info));
   return container_host_ptr_info;
 }
@@ -276,8 +318,6 @@ ServiceWorkerProviderContext::GetOrCreateServiceWorkerObject(
 
 void ServiceWorkerProviderContext::OnNetworkProviderDestroyed() {
   container_host_.reset();
-  if (state_for_client_ && state_for_client_->controller_connector)
-    state_for_client_->controller_connector->OnContainerHostConnectionClosed();
 }
 
 void ServiceWorkerProviderContext::PingContainerHost(
@@ -321,6 +361,7 @@ void ServiceWorkerProviderContext::SetController(
               blink::mojom::ControllerServiceWorkerMode::kNoController &&
           state->controller));
   state->controller_mode = controller_info->mode;
+  state->controller_endpoint = std::move(controller_info->endpoint);
 
   // Propagate the controller to workers related to this provider.
   if (state->controller) {
@@ -336,7 +377,7 @@ void ServiceWorkerProviderContext::SetController(
     state->used_features.insert(feature);
 
   // S13nServiceWorker:
-  // Reset subresource loader factory if necessary.
+  // Reset connector state for subresource loader factory if necessary.
   if (CanCreateSubresourceLoaderFactory()) {
     DCHECK(ServiceWorkerUtils::IsServicificationEnabled());
 
@@ -346,26 +387,20 @@ void ServiceWorkerProviderContext::SetController(
     //  (C) Didn't have a controller, and got a new controller.
     //  (D) Didn't have a controller, and lost the controller (nothing to do).
     if (state->controller_connector) {
-      // Used to have a controller at least once.
-      // Reset the existing connector so that subsequent resource requests
-      // will get the new controller in case (A)/(C), or fallback to the
-      // network in case (B). Inflight requests that are already dispatched may
-      // just use the existing controller or may use the new controller
-      // settings depending on when the request is actually passed to the
-      // factory (this part is inherently racy).
-      state->controller_connector->ResetControllerConnection(
+      // Used to have a controller at least once and have created a
+      // subresource loader factory before (if no subresource factory was
+      // created before, then the right controller, if any, will be used when
+      // the factory is created in GetSubresourceLoaderFactory, so there's
+      // nothing to do here).
+      // Update the connector's controller so that subsequent resource requests
+      // will get the new controller in case (A)/(C), or fallback to the network
+      // in case (B). Inflight requests that are already dispatched may just use
+      // the existing controller or may use the new controller settings
+      // depending on when the request is actually passed to the factory (this
+      // part is inherently racy).
+      state->controller_connector->UpdateController(
           mojom::ControllerServiceWorkerPtr(
-              std::move(controller_info->endpoint)));
-    } else if (state->controller) {
-      // Case (C): never had a controller, but got a new one now.
-      // Set a new |state->controller_connector| so that subsequent resource
-      // requests will see it.
-      mojom::ControllerServiceWorkerPtr controller_ptr(
-          std::move(controller_info->endpoint));
-      state->controller_connector =
-          base::MakeRefCounted<ControllerServiceWorkerConnector>(
-              container_host_.get(), std::move(controller_ptr),
-              controller_info->client_id);
+              std::move(state->controller_endpoint)));
     }
   }
 

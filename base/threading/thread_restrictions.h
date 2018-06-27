@@ -49,6 +49,7 @@ class ScopedAllowWaitForAndroidLayoutTests;
 class ScopedAllowWaitForDebugURL;
 class SessionStorageDatabase;
 class SoftwareOutputDeviceMus;
+class ServiceWorkerSubresourceLoader;
 class SynchronousCompositor;
 class SynchronousCompositorHost;
 class SynchronousCompositorSyncCallBridge;
@@ -298,6 +299,7 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class rlz_lib::FinancialPing;
   friend class shell_integration::LaunchXdgUtilityScopedAllowBaseSyncPrimitives;
   friend class webrtc::DesktopConfigurationMonitor;
+  friend class content::ServiceWorkerSubresourceLoader;
 
   ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;
   ~ScopedAllowBaseSyncPrimitives() EMPTY_BODY_IF_DCHECK_IS_OFF;

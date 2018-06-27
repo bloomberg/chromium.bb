@@ -69,7 +69,6 @@ class CONTENT_EXPORT WorkerFetchContextImpl
       std::unique_ptr<WebSocketHandshakeThrottleProvider>
           websocket_handshake_throttle_provider,
       ThreadSafeSender* thread_safe_sender,
-      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       std::unique_ptr<service_manager::Connector> service_manager_connection);
   ~WorkerFetchContextImpl() override;
 
@@ -201,8 +200,6 @@ class CONTENT_EXPORT WorkerFetchContextImpl
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;
-
-  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
 
   std::unique_ptr<service_manager::Connector> service_manager_connection_;
 };

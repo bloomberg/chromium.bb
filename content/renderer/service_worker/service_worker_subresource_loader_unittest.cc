@@ -294,7 +294,6 @@ class FakeServiceWorkerContainerHost
     return get_controller_service_worker_count_;
   }
 
- private:
   // Implements mojom::ServiceWorkerContainerHost.
   void Register(const GURL& script_url,
                 blink::mojom::ServiceWorkerRegistrationOptionsPtr options,
@@ -322,12 +321,14 @@ class FakeServiceWorkerContainerHost
   }
   void CloneForWorker(
       mojom::ServiceWorkerContainerHostRequest request) override {
-    NOTIMPLEMENTED();
+    bindings_.AddBinding(this, std::move(request));
   }
   void Ping(PingCallback callback) override { NOTIMPLEMENTED(); }
 
+ private:
   int get_controller_service_worker_count_ = 0;
   FakeControllerServiceWorker* fake_controller_;
+  mojo::BindingSet<mojom::ServiceWorkerContainerHost> bindings_;
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContainerHost);
 };
 
@@ -372,8 +373,11 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
 
   network::mojom::URLLoaderFactoryPtr CreateSubresourceLoaderFactory() {
     if (!connector_) {
+      mojom::ServiceWorkerContainerHostPtrInfo host_ptr_info;
+      fake_container_host_.CloneForWorker(mojo::MakeRequest(&host_ptr_info));
       connector_ = base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          &fake_container_host_, nullptr /*controller_ptr*/, "" /*client_id*/);
+          std::move(host_ptr_info), nullptr /*controller_ptr*/,
+          "" /*client_id*/);
     }
     network::mojom::URLLoaderFactoryPtr service_worker_url_loader_factory;
     ServiceWorkerSubresourceLoaderFactory::Create(
@@ -590,7 +594,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
   }
 
   // Make the connector have no controller.
-  connector_->ResetControllerConnection(nullptr);
+  connector_->UpdateController(nullptr);
   base::RunLoop().RunUntilIdle();
 
   base::HistogramTester histogram_tester;
