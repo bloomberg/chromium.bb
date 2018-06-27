@@ -72,12 +72,9 @@ void ClientHintsPreferences::UpdateFromAcceptClientHintsHeader(
   if (header_value.IsEmpty())
     return;
 
-  // If the persistent client hint feature is enabled, then client hints
-  // should be allowed only on secure URLs.
-  if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled() &&
-      !IsClientHintsAllowed(url)) {
+  // Client hints should be allowed only on secure URLs.
+  if (!IsClientHintsAllowed(url))
     return;
-  }
 
   WebEnabledClientHints new_enabled_types;
 
@@ -117,8 +114,7 @@ void ClientHintsPreferences::UpdatePersistentHintsFromHeaders(
   String accept_ch_lifetime_header_value =
       response.HttpHeaderField(HTTPNames::Accept_CH_Lifetime);
 
-  if (!RuntimeEnabledFeatures::ClientHintsPersistentEnabled() ||
-      accept_ch_header_value.IsEmpty() ||
+  if (accept_ch_header_value.IsEmpty() ||
       accept_ch_lifetime_header_value.IsEmpty()) {
     return;
   }

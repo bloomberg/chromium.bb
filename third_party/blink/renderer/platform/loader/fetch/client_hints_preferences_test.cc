@@ -96,22 +96,18 @@ TEST_F(ClientHintsPreferencesTest, Insecure) {
 
 TEST_F(ClientHintsPreferencesTest, PersistentHints) {
   struct TestCase {
-    bool enable_persistent_runtime_feature;
     const char* accept_ch_header_value;
     const char* accept_lifetime_header_value;
     int64_t expect_persist_duration_seconds;
   } test_cases[] = {
-      {true, "width, dpr, viewportWidth", "", 0},
-      {true, "width, dpr, viewportWidth", "-1000", 0},
-      {true, "width, dpr, viewportWidth", "1000s", 0},
-      {true, "width, dpr, viewportWidth", "1000.5", 0},
-      {false, "width, dpr, viewportWidth", "1000", 0},
-      {true, "width, dpr, rtt, downlink, ect", "1000", 1000},
+      {"width, dpr, viewportWidth", "", 0},
+      {"width, dpr, viewportWidth", "-1000", 0},
+      {"width, dpr, viewportWidth", "1000s", 0},
+      {"width, dpr, viewportWidth", "1000.5", 0},
+      {"width, dpr, rtt, downlink, ect", "1000", 1000},
   };
 
   for (const auto& test : test_cases) {
-    WebRuntimeFeatures::EnableClientHintsPersistent(
-        test.enable_persistent_runtime_feature);
     WebEnabledClientHints enabled_types;
     TimeDelta persist_duration;
 

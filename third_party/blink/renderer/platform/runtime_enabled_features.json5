@@ -202,10 +202,6 @@
       status: "experimental",
     },
     {
-      name: "ClientHintsPersistent",
-      status: "stable",
-    },
-    {
       name: "ClientPlaceholdersForServerLoFi",
     },
     {

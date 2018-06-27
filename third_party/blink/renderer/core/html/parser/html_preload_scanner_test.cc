@@ -657,7 +657,6 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
       all};
 
   // For an insecure document, client hint should not be attached.
-  WebRuntimeFeatures::EnableClientHintsPersistent(true);
   RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
            false /* use_secure_document_url */);
   Test(expect_no_client_hint);
@@ -665,13 +664,6 @@ TEST_F(HTMLPreloadScannerTest, testMetaAcceptCHInsecureDocument) {
   // For a secure document, client hint should be attached.
   RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
            true /* use_secure_document_url */);
-  Test(expect_client_hint);
-
-  // For an insecure document, client hint should be attached if the persistent
-  // client hints are not enabled.
-  WebRuntimeFeatures::EnableClientHintsPersistent(false);
-  RunSetUp(kViewportDisabled, kPreloadEnabled, kReferrerPolicyDefault,
-           false /* use_secure_document_url */);
   Test(expect_client_hint);
 }
 
