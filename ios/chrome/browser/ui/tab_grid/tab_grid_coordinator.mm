@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_coordinator.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
@@ -265,11 +267,18 @@
       completion();
     }
   }
+  // Record when the tab switcher is presented.
+  // TODO(crbug.com/856965) : Rename metrics.
+  base::RecordAction(base::UserMetricsAction("MobileTabSwitcherPresented"));
 }
 
 - (void)showTabViewController:(UIViewController*)viewController
                    completion:(ProceduralBlock)completion {
   DCHECK(viewController);
+
+  // Record when the tab switcher is dismissed.
+  // TODO(crbug.com/856965) : Rename metrics.
+  base::RecordAction(base::UserMetricsAction("MobileTabSwitcherDismissed"));
 
   // If another BVC is already being presented, swap this one into the
   // container.
