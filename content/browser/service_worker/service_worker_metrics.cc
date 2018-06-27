@@ -161,27 +161,6 @@ std::string GetWorkerPreparationSuffix(
   return "_UNKNOWN";
 }
 
-std::string GetSiteSuffix(ServiceWorkerMetrics::Site site) {
-  switch (site) {
-    case ServiceWorkerMetrics::Site::OTHER:
-    case ServiceWorkerMetrics::Site::WITH_FETCH_HANDLER:
-    case ServiceWorkerMetrics::Site::WITHOUT_FETCH_HANDLER:
-      return "";
-    case ServiceWorkerMetrics::Site::NEW_TAB_PAGE:
-      return ".ntp";
-    case ServiceWorkerMetrics::Site::PLUS:
-      return ".plus";
-    case ServiceWorkerMetrics::Site::INBOX:
-      return ".inbox";
-    case ServiceWorkerMetrics::Site::DOCS:
-      return ".docs";
-    case ServiceWorkerMetrics::Site::NUM_TYPES:
-      NOTREACHED() << static_cast<int>(site);
-  }
-  NOTREACHED();
-  return "";
-}
-
 // Use this for histograms with dynamically generated names, which
 // otherwise can't use the UMA_HISTOGRAM macro without code duplication.
 void RecordSuffixedTimeHistogram(const std::string& name,
@@ -624,13 +603,10 @@ void ServiceWorkerMetrics::RecordInstallEventStatus(
 }
 
 void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
-                                                       base::TimeDelta time,
-                                                       Site site_for_metrics) {
+                                                       base::TimeDelta time) {
   const std::string name = "ServiceWorker.EventDispatchingDelay";
   UMA_HISTOGRAM_TIMES(name, time);
-  const std::string event_type_suffix = EventTypeToSuffix(event_type);
-  const std::string site_suffix = GetSiteSuffix(site_for_metrics);
-  RecordSuffixedTimeHistogram(name, event_type_suffix + site_suffix, time);
+  RecordSuffixedTimeHistogram(name, EventTypeToSuffix(event_type), time);
 }
 
 void ServiceWorkerMetrics::RecordEventTimeout(EventType event) {

@@ -672,8 +672,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
   ServiceWorkerMetrics::RecordEventDispatchingDelay(
-      request->event_type, dispatch_event_time - request->start_time,
-      site_for_uma());
+      request->event_type, dispatch_event_time - request->start_time);
 
   RestartTick(&idle_time_);
   TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
