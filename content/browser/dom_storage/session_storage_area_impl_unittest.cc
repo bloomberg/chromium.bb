@@ -149,6 +149,40 @@ TEST_F(SessionStorageAreaImplTest, BasicUsage) {
       .Times(1);
 }
 
+TEST_F(SessionStorageAreaImplTest, DoubleBind) {
+  EXPECT_CALL(listener_,
+              OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
+      .Times(1);
+
+  auto ss_leveldb_impl = std::make_unique<SessionStorageAreaImpl>(
+      metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_), test_origin1_,
+      SessionStorageDataMap::Create(
+          &listener_,
+          metadata_.GetOrCreateNamespaceEntry(test_namespace_id1_)
+              ->second[test_origin1_],
+          leveldb_database_.get()),
+      GetRegisterNewAreaMapCallback());
+
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb1;
+  base::RunLoop loop;
+  ss_leveldb_impl->Bind(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb1));
+  ss_leveldb1.set_connection_error_handler(loop.QuitClosure());
+  // Check that we can bind twice and get data from the second binding.
+  blink::mojom::StorageAreaAssociatedPtr ss_leveldb2;
+  ss_leveldb_impl->Bind(
+      mojo::MakeRequestAssociatedWithDedicatedPipe(&ss_leveldb2));
+  std::vector<blink::mojom::KeyValuePtr> data;
+  EXPECT_TRUE(test::GetAllSync(ss_leveldb2.get(), &data));
+  ASSERT_EQ(1ul, data.size());
+
+  // Make sure the first binding was closed.
+  loop.Run();
+
+  EXPECT_CALL(listener_, OnDataMapDestruction(StdStringToUint8Vector("0")))
+      .Times(1);
+}
+
 TEST_F(SessionStorageAreaImplTest, Cloning) {
   EXPECT_CALL(listener_,
               OnDataMapCreation(StdStringToUint8Vector("0"), testing::_))
