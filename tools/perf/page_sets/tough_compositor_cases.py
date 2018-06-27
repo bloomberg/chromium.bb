@@ -8,11 +8,11 @@ from telemetry import story
 
 class ToughCompositorPage(page_module.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, url, name, page_set):
     super(ToughCompositorPage, self).__init__(
         url=url, page_set=page_set,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
-        name=url)
+        name=name)
 
   def RunNavigateSteps(self, action_runner):
     super(ToughCompositorPage, self).RunNavigateSteps(action_runner)
@@ -21,8 +21,9 @@ class ToughCompositorPage(page_module.Page):
 
 class ToughCompositorScrollPage(ToughCompositorPage):
 
-  def __init__(self, url, page_set):
-    super(ToughCompositorScrollPage, self).__init__(url=url, page_set=page_set)
+  def __init__(self, url, name, page_set):
+    super(ToughCompositorScrollPage, self).__init__(
+        url=url, name=name, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
     # Make the scroll longer to reduce noise.
@@ -31,8 +32,9 @@ class ToughCompositorScrollPage(ToughCompositorPage):
 
 class ToughCompositorWaitPage(ToughCompositorPage):
 
-  def __init__(self, url, page_set):
-    super(ToughCompositorWaitPage, self).__init__(url=url, page_set=page_set)
+  def __init__(self, url, name, page_set):
+    super(ToughCompositorWaitPage, self).__init__(
+        url=url, name=name, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
     # We scroll back and forth a few times to reduce noise in the tests.
@@ -51,28 +53,38 @@ class ToughCompositorCasesPageSet(story.StorySet):
 
     scroll_urls_list = [
       # Why: Baseline CC scrolling page. A long page with only text. """
-      'http://jsbin.com/pixavefe/1/quiet?CC_SCROLL_TEXT_ONLY',
+      ('cc_scroll_text_only',
+       'http://jsbin.com/pixavefe/1/quiet?CC_SCROLL_TEXT_ONLY'),
       # Why: Baseline JS scrolling page. A long page with only text. """
-      'http://jsbin.com/wixadinu/2/quiet?JS_SCROLL_TEXT_ONLY',
+      ('js_scroll_text_only',
+       'http://jsbin.com/wixadinu/2/quiet?JS_SCROLL_TEXT_ONLY'),
       # Why: Scroll by a large number of CC layers """
-      'http://jsbin.com/yakagevo/1/quiet?CC_SCROLL_200_LAYER_GRID',
+      ('cc_scroll_200_layer_grid',
+       'http://jsbin.com/yakagevo/1/quiet?CC_SCROLL_200_LAYER_GRID'),
       # Why: Scroll by a large number of JS layers """
-      'http://jsbin.com/jevibahi/4/quiet?JS_SCROLL_200_LAYER_GRID',
+      ('js_scroll_200_layer_grid',
+       'http://jsbin.com/jevibahi/4/quiet?JS_SCROLL_200_LAYER_GRID'),
     ]
 
     wait_urls_list = [
       # Why: CC Poster circle animates many layers """
-      'http://jsbin.com/falefice/1/quiet?CC_POSTER_CIRCLE',
+      ('cc_poster_circle',
+       'http://jsbin.com/falefice/1/quiet?CC_POSTER_CIRCLE'),
       # Why: JS poster circle animates/commits many layers """
-      'http://jsbin.com/giqafofe/1/quiet?JS_POSTER_CIRCLE',
+      ('js_poster_circle',
+       'http://jsbin.com/giqafofe/1/quiet?JS_POSTER_CIRCLE'),
       # Why: JS invalidation does lots of uploads """
-      'http://jsbin.com/beqojupo/1/quiet?JS_FULL_SCREEN_INVALIDATION',
+      ('js_full_screen_invalidation',
+       'http://jsbin.com/beqojupo/1/quiet?JS_FULL_SCREEN_INVALIDATION'),
       # Why: Creates a large number of new tilings """
-      'http://jsbin.com/covoqi/1/quiet?NEW_TILINGS',
+      ('new_tilings',
+       'http://jsbin.com/covoqi/1/quiet?NEW_TILINGS'),
     ]
 
-    for url in scroll_urls_list:
-      self.AddStory(ToughCompositorScrollPage(url, self))
+    for name, url in scroll_urls_list:
+      self.AddStory(ToughCompositorScrollPage(
+          url=url, name=name, page_set=self))
 
-    for url in wait_urls_list:
-      self.AddStory(ToughCompositorWaitPage(url, self))
+    for name, url in wait_urls_list:
+      self.AddStory(ToughCompositorWaitPage(
+          url=url, name=name, page_set=self))
