@@ -2032,7 +2032,7 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kDataSaverServerPreviewsDescription, kOsAll,
      FEATURE_VALUE_TYPE(
          data_reduction_proxy::features::kDataReductionProxyDecidesTransform)},
-    {"ignore-previews-blacklist",
+    {"ignore-previews-blocklist",
      flag_descriptions::kIgnorePreviewsBlacklistName,
      flag_descriptions::kIgnorePreviewsBlacklistDescription, kOsAll,
      SINGLE_VALUE_TYPE(previews::switches::kIgnorePreviewsBlacklist)},
