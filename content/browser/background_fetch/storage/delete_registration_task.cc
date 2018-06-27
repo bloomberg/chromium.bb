@@ -8,6 +8,7 @@
 
 #include "base/barrier_closure.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -91,8 +92,10 @@ void DeleteRegistrationTask::DidGetRegistration(
               metadata_proto.registration().developer_id())},
           base::BindOnce(&DCheckRegistrationNotActive, unique_id_));
     } else {
-      NOTREACHED()
-          << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
+      // Service worker database has been corrupted. Abandon all fetches.
+      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+      data_manager()->abandon_fetches_callback().Run();
+      std::move(done_closure).Run();
     }
   } else {
     // TODO(crbug.com/780025): Log failure to UMA.

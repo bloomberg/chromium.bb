@@ -27,21 +27,21 @@ BackgroundFetchContext::BackgroundFetchContext(
     const scoped_refptr<content::CacheStorageContextImpl>&
         cache_storage_context)
     : browser_context_(browser_context),
-      data_manager_(
-          std::make_unique<BackgroundFetchDataManager>(browser_context,
-                                                       service_worker_context,
-                                                       cache_storage_context)),
       service_worker_context_(service_worker_context),
       event_dispatcher_(service_worker_context),
       registration_notifier_(
           std::make_unique<BackgroundFetchRegistrationNotifier>()),
       delegate_proxy_(browser_context_->GetBackgroundFetchDelegate()),
-      scheduler_(
-          std::make_unique<BackgroundFetchScheduler>(data_manager_.get())),
       weak_factory_(this) {
   // Although this lives only on the IO thread, it is constructed on UI thread.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(service_worker_context_);
+  data_manager_ = std::make_unique<BackgroundFetchDataManager>(
+      browser_context, service_worker_context, cache_storage_context,
+      base::BindRepeating(&BackgroundFetchContext::AbandonFetches,
+                          weak_factory_.GetWeakPtr(),
+                          blink::mojom::kInvalidServiceWorkerRegistrationId));
+  scheduler_ = std::make_unique<BackgroundFetchScheduler>(data_manager_.get());
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {

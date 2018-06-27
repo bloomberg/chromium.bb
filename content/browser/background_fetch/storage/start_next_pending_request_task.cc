@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/start_next_pending_request_task.h"
 
 #include "base/guid.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 
@@ -59,7 +60,11 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
   }
 
   if (!pending_request_.ParseFromString(data.front())) {
-    NOTREACHED() << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
+    // Service Worker database has been corrupted. Abandon fetches.
+    data_manager()->abandon_fetches_callback().Run();
+    std::move(callback_).Run(nullptr /* request */);
+    Finished();  // Destroys |this|.
+    return;
   }
 
   // Make sure there isn't already an Active Request.
@@ -87,8 +92,11 @@ void StartNextPendingRequestTask::DidFindActiveRequest(
     case DatabaseStatus::kOk:
       // We already stored the active request.
       if (!active_request_.ParseFromString(data.front())) {
-        NOTREACHED()
-            << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
+        // Service worker database has been corrupted. Abandon fetches.
+        data_manager()->abandon_fetches_callback().Run();
+        std::move(callback_).Run(nullptr /* request */);
+        Finished();
+        return;
       }
       StartDownload();
       return;

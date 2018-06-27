@@ -77,7 +77,11 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
         base::BindOnce(&MarkRegistrationForDeletionTask::DidDeactivate,
                        weak_factory_.GetWeakPtr()));
   } else {
-    NOTREACHED() << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
+    // Service worker database has been corrupted. Abandon fetches.
+    data_manager()->abandon_fetches_callback().Run();
+    std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR);
+    Finished();  // Destroys |this|.
+    return;
   }
 }
 

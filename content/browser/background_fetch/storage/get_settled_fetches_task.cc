@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/get_settled_fetches_task.h"
 
 #include "base/barrier_closure.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -78,8 +79,11 @@ void GetSettledFetchesTask::DidGetCompletedRequests(
     completed_requests_.emplace_back();
     if (!completed_requests_.back().ParseFromString(
             serialized_completed_request)) {
-      NOTREACHED()
-          << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
+      // Service worker database has been corrupted. Abandon fetches.
+      error_ = blink::mojom::BackgroundFetchError::STORAGE_ERROR;
+      background_fetch_succeeded_ = false;
+      data_manager()->abandon_fetches_callback().Run();
+      break;
     }
     if (!completed_requests_.back().succeeded())
       background_fetch_succeeded_ = false;
