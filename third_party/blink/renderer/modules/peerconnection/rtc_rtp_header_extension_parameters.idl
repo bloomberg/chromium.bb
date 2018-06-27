@@ -4,7 +4,7 @@
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpheaderextensionparameters*
 dictionary RTCRtpHeaderExtensionParameters {
-    DOMString      uri;
-    unsigned short id;
-    boolean        encrypted;
+    required DOMString      uri;
+    required unsigned short id;
+             boolean        encrypted = false;
 };

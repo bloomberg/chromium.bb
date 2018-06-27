@@ -81,7 +81,13 @@ promise_test(async (t) => {
     new DOMException(
       "getParameters() needs to be called before setParameters().",
       "InvalidStateError"),
-    videoSender.setParameters({ rtcp: {}, headerExtensions: []}));
+    videoSender.setParameters({
+      transactionId: "",
+      codecs: [],
+      encodings: [],
+      rtcp: {},
+      headerExtensions: []
+    }));
 }, 'setParameters() fails without getParameters()');
 
 /**
@@ -96,10 +102,6 @@ var readOnlyParameters = [
   {
     name: "transactionId modification",
     transform: (p) => { p.transactionId = "foo"; },
-  },
-  {
-    name: "transactionId removed",
-    transform: (p) => { delete p.transactionId; },
   },
   {
     name: "codecs remove one",
@@ -119,35 +121,19 @@ var readOnlyParameters = [
   },
   {
     name: "codecs reorder",
-    transform: (p) => { p.codecs.push(p.codecs.splice(-1, 1)); },
-  },
-  {
-    name: "codecs removed",
-    transform: (p) => { delete p.codecs; },
+    transform: (p) => { p.codecs.concat(p.codecs.splice(0, 1)); },
   },
   {
     name: "codecs.payloadtype modification",
     transform: (p) => { p.codecs[0].payloadType = 1337; },
   },
   {
-    name: "codecs.payloadtype removed",
-    transform: (p) => { delete p.codecs[0].payloadType; },
-  },
-  {
     name: "codecs.mimeType modification",
     transform: (p) => { p.codecs[0].mimeType = "mime"; },
   },
   {
-    name: "codecs.mimeType remove",
-    transform: (p) => { delete p.codecs[0].mimeType; },
-  },
-  {
     name: "codecs.clockRate modification",
     transform: (p) => { p.codecs[0].clockRate = 42; },
-  },
-  {
-    name: "codecs.clockRate removed",
-    transform: (p) => { delete p.codecs[0].clockRate; },
   },
   {
     name: "codecs.channels modification",
@@ -166,10 +152,6 @@ var readOnlyParameters = [
     name: "codecs.sdpFmtpLine removed",
     transform: (p) => { delete p.codecs[0].sdpFmtpLine; },
     check: (p) => { return p.codecs[0].sdpFmtpLine !== undefined; },
-  },
-  {
-    name: "encodings removed",
-    transform: (p) => { delete p.encodings; },
   },
   {
     name: "encodings remove one",
@@ -204,11 +186,6 @@ var readOnlyParameters = [
     check: (p) => { return p.headerExtensions.length != 0; },
   },
   {
-    name: "headerExtensions.uri removed",
-    transform: (p) => { delete p.headerExtensions[0].uri; },
-    check: (p) => { return p.headerExtensions.length != 0; },
-  },
-  {
     name: "headerExtensions.id modification",
     transform: (p) => {
       p.headerExtensions[0].id = p.headerExtensions[0].id + 1;
@@ -216,11 +193,6 @@ var readOnlyParameters = [
     check: (p) => {
       return p.headerExtensions.length != 0;
     },
-  },
-  {
-    name: "headerExtensions.id removed",
-    transform: (p) => { delete p.headerExtensions[0].id; },
-    check: (p) => { return p.headerExtensions.length != 0; },
   },
   {
     name: "headerExtensions.encrypted modification",
@@ -291,6 +263,67 @@ for (testCase of readOnlyParameters) {
     }
   }).bind(undefined, testCase.name, testCase.transform, testCase.check),
   'audio setParameters() check for ' + testCase.name);
+}
+
+var requiredParameters = [
+  {
+    name: "transactionId is required",
+    transform: (p) => { delete p.transactionId; },
+  },
+  {
+    name: "codecs is required",
+    transform: (p) => { delete p.codecs; },
+  },
+  {
+    name: "codecs.payloadType is required",
+    transform: (p) => { delete p.codecs[0].payloadType; },
+  },
+  {
+    name: "codecs.mimeType is required",
+    transform: (p) => { delete p.codecs[0].mimeType; },
+  },
+  {
+    name: "codecs.clockRate is required",
+    transform: (p) => { delete p.codecs[0].clockRate; },
+  },
+  {
+    name: "encodings is required",
+    transform: (p) => { delete p.encodings; },
+  },
+  {
+    name: "headerExtensions is required",
+    transform: (p) => { delete p.headerExtensions; },
+  },
+  {
+    name: "headerExtensions.uri is required",
+    transform: (p) => { delete p.headerExtensions[0].uri; },
+  },
+  {
+    name: "headerExtensions.id is required",
+    transform: (p) => { delete p.headerExtensions[0].id; },
+  },
+  {
+    name: "rtcp is required",
+    transform: (p) => { delete p.rtcp; },
+  },
+];
+
+for (testCase of requiredParameters) {
+  promise_test((async (name, transform, check, t) => {
+    let pc1 = new RTCPeerConnection();
+    let pc2 = new RTCPeerConnection();
+
+    let stream = await navigator.mediaDevices.getUserMedia({ video: true }, 1);
+    let videoSender = pc1.addTrack(stream.getVideoTracks()[0], stream);
+    await doSignalingHandshake(pc1, pc2);
+
+    let videoParameters = videoSender.getParameters();
+    transform(videoParameters);
+      return promise_rejects(t,
+        new TypeError(),
+        videoSender.setParameters(videoParameters));
+  }).bind(undefined, testCase.name, testCase.transform, testCase.check),
+  'video setParameters() check for ' + testCase.name);
 }
 
 promise_test(async function() {

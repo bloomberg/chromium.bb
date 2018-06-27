@@ -4,9 +4,7 @@
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpparameters*
 dictionary RTCRtpParameters {
-    DOMString                                 transactionId;
-    sequence<RTCRtpEncodingParameters>        encodings;
     required sequence<RTCRtpHeaderExtensionParameters> headerExtensions;
-    required RTCRtcpParameters                rtcp;
-    sequence<RTCRtpCodecParameters>           codecs;
+    required RTCRtcpParameters                         rtcp;
+    required sequence<RTCRtpCodecParameters>           codecs;
 };
