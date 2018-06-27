@@ -12,8 +12,8 @@
 #include "components/version_info/version_info.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/version_item.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
 #include "ios/chrome/browser/ui/uikit_ui_util.h"
@@ -71,22 +71,22 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierLinks];
 
-  CollectionViewTextItem* credits =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeLinksCredits];
+  SettingsTextItem* credits =
+      [[SettingsTextItem alloc] initWithType:ItemTypeLinksCredits];
   credits.text = l10n_util::GetNSString(IDS_IOS_OPEN_SOURCE_LICENSES);
   credits.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   credits.accessibilityTraits = UIAccessibilityTraitButton;
   [model addItem:credits toSectionWithIdentifier:SectionIdentifierLinks];
 
-  CollectionViewTextItem* terms =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeLinksTerms];
+  SettingsTextItem* terms =
+      [[SettingsTextItem alloc] initWithType:ItemTypeLinksTerms];
   terms.text = l10n_util::GetNSString(IDS_IOS_TERMS_OF_SERVICE);
   terms.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   terms.accessibilityTraits = UIAccessibilityTraitButton;
   [model addItem:terms toSectionWithIdentifier:SectionIdentifierLinks];
 
-  CollectionViewTextItem* privacy =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeLinksPrivacy];
+  SettingsTextItem* privacy =
+      [[SettingsTextItem alloc] initWithType:ItemTypeLinksPrivacy];
   privacy.text = l10n_util::GetNSString(IDS_IOS_PRIVACY_POLICY);
   privacy.accessoryType = MDCCollectionViewCellAccessoryDisclosureIndicator;
   privacy.accessibilityTraits = UIAccessibilityTraitButton;

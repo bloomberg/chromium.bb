@@ -8,8 +8,8 @@
 #import "base/mac/foundation_util.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -73,20 +73,20 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   [model addSectionWithIdentifier:SectionIdentifierOptions];
 
-  CollectionViewTextItem* always =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeOptionsAlways];
+  SettingsTextItem* always =
+      [[SettingsTextItem alloc] initWithType:ItemTypeOptionsAlways];
   [always setText:l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_ALWAYS)];
   [always setAccessibilityTraits:UIAccessibilityTraitButton];
   [model addItem:always toSectionWithIdentifier:SectionIdentifierOptions];
 
-  CollectionViewTextItem* wifi =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeOptionsOnlyOnWiFi];
+  SettingsTextItem* wifi =
+      [[SettingsTextItem alloc] initWithType:ItemTypeOptionsOnlyOnWiFi];
   [wifi setText:l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_ONLY_WIFI)];
   [wifi setAccessibilityTraits:UIAccessibilityTraitButton];
   [model addItem:wifi toSectionWithIdentifier:SectionIdentifierOptions];
 
-  CollectionViewTextItem* never =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeOptionsNever];
+  SettingsTextItem* never =
+      [[SettingsTextItem alloc] initWithType:ItemTypeOptionsNever];
   [never setText:l10n_util::GetNSString(IDS_IOS_OPTIONS_DATA_USAGE_NEVER)];
   [never setAccessibilityTraits:UIAccessibilityTraitButton];
   [model addItem:never toSectionWithIdentifier:SectionIdentifierOptions];
@@ -106,7 +106,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   };
 
   NSMutableArray* modifiedItems = [NSMutableArray array];
-  for (CollectionViewTextItem* item in
+  for (SettingsTextItem* item in
        [model itemsInSectionWithIdentifier:SectionIdentifierOptions]) {
     auto value = optionsMap.find(item.type);
     DCHECK(value != optionsMap.end());

@@ -8,8 +8,8 @@
 #include "components/browsing_data/core/pref_names.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -118,7 +118,7 @@ initWithPrefs:(PrefService*)prefs
   CollectionViewModel* model = self.collectionViewModel;
 
   NSMutableArray* modifiedItems = [NSMutableArray array];
-  for (CollectionViewTextItem* item in
+  for (SettingsTextItem* item in
        [model itemsInSectionWithIdentifier:SectionIdentifierOptions]) {
     NSInteger itemPrefValue = item.type - kItemTypeEnumZero;
 
@@ -140,10 +140,9 @@ initWithPrefs:(PrefService*)prefs
   [self updateCheckedState];
 }
 
-- (CollectionViewTextItem*)timeRangeItemWithOption:(ItemType)itemOption
-                                     textMessageID:(int)textMessageID {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:itemOption];
+- (SettingsTextItem*)timeRangeItemWithOption:(ItemType)itemOption
+                               textMessageID:(int)textMessageID {
+  SettingsTextItem* item = [[SettingsTextItem alloc] initWithType:itemOption];
   [item setText:l10n_util::GetNSString(textMessageID)];
   [item setAccessibilityTraits:UIAccessibilityTraitButton];
   return item;

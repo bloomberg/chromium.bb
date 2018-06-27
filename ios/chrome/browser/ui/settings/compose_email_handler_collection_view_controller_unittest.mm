@@ -5,9 +5,9 @@
 #import "ios/chrome/browser/ui/settings/compose_email_handler_collection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/web/fake_mailto_handler_helpers.h"
 #import "ios/chrome/browser/web/mailto_handler_manager.h"
 #import "ios/chrome/browser/web/mailto_handler_system_mail.h"
@@ -67,7 +67,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestConstructor) {
   EXPECT_EQ(number_of_handlers, NumberOfItemsInSection(0));
   for (int index = 0; index < number_of_handlers; ++index) {
     MailtoHandler* handler = handlers[index];
-    CollectionViewTextItem* item = GetCollectionViewItem(0, index);
+    SettingsTextItem* item = GetCollectionViewItem(0, index);
     // Checks that the title displayed is the name of the MailtoHandler.
     EXPECT_NSEQ([handler appName], item.text);
     EXPECT_FALSE(item.detailText);
@@ -148,8 +148,8 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
       base::mac::ObjCCastStrict<ComposeEmailHandlerCollectionViewController>(
           controller());
   NSIndexPath* switch_index_path = [NSIndexPath indexPathForRow:0 inSection:1];
-  CollectionViewSwitchCell* switch_cell =
-      base::mac::ObjCCastStrict<CollectionViewSwitchCell>([test_view_controller
+  SettingsSwitchCell* switch_cell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>([test_view_controller
                   collectionView:[test_view_controller collectionView]
           cellForItemAtIndexPath:switch_index_path]);
   // Default state of the switch is ON so user is always prompted to make
@@ -167,7 +167,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
   NSArray<MailtoHandler*>* handlers = [manager_ defaultHandlers];
   UIColor* darkest_tint = [[MDCPalette greyPalette] tint900];
   for (NSUInteger index = 0U; index < [handlers count]; ++index) {
-    CollectionViewTextItem* item = GetCollectionViewItem(0, index);
+    SettingsTextItem* item = GetCollectionViewItem(0, index);
     EXPECT_EQ(MDCCollectionViewCellAccessoryNone, item.accessoryType);
     MailtoHandler* handler = handlers[index];
     if ([handler isAvailable])
@@ -184,7 +184,7 @@ TEST_F(ComposeEmailHandlerCollectionViewControllerTest, TestSwitchChanged) {
   EXPECT_TRUE(switch_cell.switchView.on);
   handlers = [manager_ defaultHandlers];
   for (NSUInteger index = 0U; index < [handlers count]; ++index) {
-    CollectionViewTextItem* item = GetCollectionViewItem(0, index);
+    SettingsTextItem* item = GetCollectionViewItem(0, index);
     EXPECT_EQ(MDCCollectionViewCellAccessoryNone, item.accessoryType);
   }
 }

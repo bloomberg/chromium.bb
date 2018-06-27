@@ -6,6 +6,7 @@
 
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/web/public/test/earl_grey/web_view_actions.h"
@@ -23,19 +24,18 @@ id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
       triggers_context_menu);
 }
 
-id<GREYAction> TurnCollectionViewSwitchOn(BOOL on) {
+id<GREYAction> TurnSettingsSwitchOn(BOOL on) {
   id<GREYMatcher> constraints = grey_not(grey_systemAlertViewShown());
   NSString* actionName =
-      [NSString stringWithFormat:@"Turn collection view switch to %@ state",
+      [NSString stringWithFormat:@"Turn settings switch to %@ state",
                                  on ? @"ON" : @"OFF"];
   return [GREYActionBlock
       actionWithName:actionName
          constraints:constraints
         performBlock:^BOOL(id collectionViewCell,
                            __strong NSError** errorOrNil) {
-          CollectionViewSwitchCell* switchCell =
-              base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
-                  collectionViewCell);
+          SettingsSwitchCell* switchCell =
+              base::mac::ObjCCastStrict<SettingsSwitchCell>(collectionViewCell);
           UISwitch* switchView = switchCell.switchView;
           if (switchView.on != on) {
             id<GREYAction> longPressAction = [GREYActions

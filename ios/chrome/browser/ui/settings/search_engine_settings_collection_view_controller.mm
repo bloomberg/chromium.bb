@@ -13,8 +13,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/search_engines/search_engine_observer_bridge.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ui/base/l10n/l10n_util_mac.h"
@@ -83,8 +83,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* value = values[i];
     BOOL checked = [value isEqualToString:[self currentValue]];
 
-    CollectionViewTextItem* engine = [[CollectionViewTextItem alloc]
-        initWithType:ItemTypeSearchEnginesEngine];
+    SettingsTextItem* engine =
+        [[SettingsTextItem alloc] initWithType:ItemTypeSearchEnginesEngine];
     [engine setText:value];
     if (checked) {
       [engine setAccessoryType:MDCCollectionViewCellAccessoryCheckmark];
@@ -108,8 +108,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   // Do nothing if the tapped engine was already the default.
-  CollectionViewTextItem* selectedTextItem =
-      base::mac::ObjCCastStrict<CollectionViewTextItem>(selectedItem);
+  SettingsTextItem* selectedTextItem =
+      base::mac::ObjCCastStrict<SettingsTextItem>(selectedItem);
   if (selectedTextItem.accessoryType ==
       MDCCollectionViewCellAccessoryCheckmark) {
     return;
@@ -123,8 +123,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       continue;
     }
 
-    CollectionViewTextItem* textItem =
-        base::mac::ObjCCastStrict<CollectionViewTextItem>(item);
+    SettingsTextItem* textItem =
+        base::mac::ObjCCastStrict<SettingsTextItem>(item);
     if (textItem.accessoryType == MDCCollectionViewCellAccessoryCheckmark) {
       textItem.accessoryType = MDCCollectionViewCellAccessoryNone;
       [modifiedItems addObject:textItem];
@@ -132,8 +132,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   }
 
   // Show the checkmark on the new default engine.
-  CollectionViewTextItem* newDefaultEngine =
-      base::mac::ObjCCastStrict<CollectionViewTextItem>(
+  SettingsTextItem* newDefaultEngine =
+      base::mac::ObjCCastStrict<SettingsTextItem>(
           [model itemAtIndexPath:indexPath]);
   newDefaultEngine.accessoryType = MDCCollectionViewCellAccessoryCheckmark;
   [modifiedItems addObject:newDefaultEngine];

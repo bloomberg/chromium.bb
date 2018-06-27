@@ -10,8 +10,8 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -69,8 +69,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewModel* model = self.collectionViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierSwitch];
-  CollectionViewSwitchItem* switchItem =
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSwitch];
+  SettingsSwitchItem* switchItem =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitch];
   switchItem.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ENABLE_HANDOFF_TO_OTHER_DEVICES);
   switchItem.on = _handoffEnabled.GetValue();
@@ -98,8 +98,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel itemTypeForIndexPath:indexPath]);
 
   if (itemType == ItemTypeSwitch) {
-    CollectionViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(switchChanged:)
                     forControlEvents:UIControlEventValueChanged];

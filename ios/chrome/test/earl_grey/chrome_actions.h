@@ -20,9 +20,9 @@ namespace chrome_test_util {
 id<GREYAction> LongPressElementForContextMenu(const std::string& element_id,
                                               bool triggers_context_menu);
 
-// Action to turn the switch of a CollectionViewSwitchCell to the given |on|
+// Action to turn the switch of a SettingsSwitchCell to the given |on|
 // state.
-id<GREYAction> TurnCollectionViewSwitchOn(BOOL on);
+id<GREYAction> TurnSettingsSwitchOn(BOOL on);
 
 // Action to turn the switch of a SyncSwitchCell to the given |on| state.
 id<GREYAction> TurnSyncSwitchOn(BOOL on);

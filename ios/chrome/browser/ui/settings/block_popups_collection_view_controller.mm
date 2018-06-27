@@ -13,9 +13,9 @@
 #include "components/content_settings/core/common/content_settings_pattern.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/content_settings/host_content_settings_map_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/utils/content_setting_backed_boolean.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -52,7 +52,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ContentSettingBackedBoolean* _disablePopupsSetting;
 
   // The item related to the switch for the "Disable Popups" setting.
-  CollectionViewSwitchItem* _blockPopupsItem;
+  SettingsSwitchItem* _blockPopupsItem;
 }
 
 // Fetch the urls that can display popups and add them to |_exceptions|.
@@ -107,7 +107,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierMainSwitch];
 
   _blockPopupsItem =
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeMainSwitch];
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeMainSwitch];
   _blockPopupsItem.text = l10n_util::GetNSString(IDS_IOS_BLOCK_POPUPS);
   _blockPopupsItem.on = [_disablePopupsSetting value];
   _blockPopupsItem.accessibilityIdentifier = @"blockPopupsContentView_switch";
@@ -142,8 +142,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if ([self.collectionViewModel itemTypeForIndexPath:indexPath] ==
       ItemTypeMainSwitch) {
-    CollectionViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(blockPopupsSwitchChanged:)
                     forControlEvents:UIControlEventValueChanged];
@@ -299,8 +299,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   CollectionViewModel* model = self.collectionViewModel;
   [model addSectionWithIdentifier:SectionIdentifierExceptions];
 
-  CollectionViewTextItem* header =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+  SettingsTextItem* header =
+      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_POPUPS_ALLOWED);
   header.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:header forSectionWithIdentifier:SectionIdentifierExceptions];
@@ -308,8 +308,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   for (size_t i = 0; i < _exceptions.GetSize(); ++i) {
     std::string allowed_url;
     _exceptions.GetString(i, &allowed_url);
-    CollectionViewTextItem* item =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeException];
+    SettingsTextItem* item =
+        [[SettingsTextItem alloc] initWithType:ItemTypeException];
     item.text = base::SysUTF8ToNSString(allowed_url);
     [model addItem:item toSectionWithIdentifier:SectionIdentifierExceptions];
   }

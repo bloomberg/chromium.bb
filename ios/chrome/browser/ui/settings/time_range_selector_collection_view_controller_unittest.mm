@@ -10,8 +10,8 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/ocmock/OCMock/OCMock.h"
@@ -67,7 +67,7 @@ class TimeRangeSelectorCollectionViewControllerTest
       MDCCollectionViewCellAccessoryType accessory_type,
       int section,
       int item) {
-    CollectionViewTextItem* cell = GetCollectionViewItem(section, item);
+    SettingsTextItem* cell = GetCollectionViewItem(section, item);
     EXPECT_EQ(accessory_type, cell.accessoryType);
   }
 

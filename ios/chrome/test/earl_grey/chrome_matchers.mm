@@ -24,6 +24,7 @@
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/settings/accounts_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/import_data_collection_view_controller.h"
@@ -47,16 +48,16 @@
 
 namespace {
 
-id<GREYMatcher> CollectionViewSwitchIsToggledOn(BOOL isToggledOn) {
+id<GREYMatcher> SettingsSwitchIsToggledOn(BOOL isToggledOn) {
   MatchesBlock matches = ^BOOL(id element) {
-    CollectionViewSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(element);
+    SettingsSwitchCell* switch_cell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
     UISwitch* switch_view = switch_cell.switchView;
     return (switch_view.on && isToggledOn) || (!switch_view.on && !isToggledOn);
   };
   DescribeToBlock describe = ^void(id<GREYDescription> description) {
     NSString* name =
-        [NSString stringWithFormat:@"collectionViewSwitchToggledState(%@)",
+        [NSString stringWithFormat:@"settingsSwitchToggledState(%@)",
                                    isToggledOn ? @"ON" : @"OFF"];
     [description appendText:name];
   };
@@ -64,17 +65,17 @@ id<GREYMatcher> CollectionViewSwitchIsToggledOn(BOOL isToggledOn) {
                                               descriptionBlock:describe];
 }
 
-id<GREYMatcher> CollectionViewSwitchIsEnabled(BOOL isEnabled) {
+id<GREYMatcher> SettingsSwitchIsEnabled(BOOL isEnabled) {
   MatchesBlock matches = ^BOOL(id element) {
-    CollectionViewSwitchCell* switch_cell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(element);
+    SettingsSwitchCell* switch_cell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(element);
     UISwitch* switch_view = switch_cell.switchView;
     return (switch_view.enabled && isEnabled) ||
            (!switch_view.enabled && !isEnabled);
   };
   DescribeToBlock describe = ^void(id<GREYDescription> description) {
     NSString* name =
-        [NSString stringWithFormat:@"collectionViewSwitchEnabledState(%@)",
+        [NSString stringWithFormat:@"settingsSwitchEnabledState(%@)",
                                    isEnabled ? @"YES" : @"NO"];
     [description appendText:name];
   };
@@ -248,17 +249,17 @@ id<GREYMatcher> ShowTabsButton() {
                     grey_sufficientlyVisible(), nil);
 }
 
-id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isToggledOn) {
-  return CollectionViewSwitchCell(accessibilityIdentifier, isToggledOn, YES);
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
+                                   BOOL isToggledOn) {
+  return SettingsSwitchCell(accessibilityIdentifier, isToggledOn, YES);
 }
 
-id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isToggledOn,
-                                         BOOL isEnabled) {
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
+                                   BOOL isToggledOn,
+                                   BOOL isEnabled) {
   return grey_allOf(grey_accessibilityID(accessibilityIdentifier),
-                    CollectionViewSwitchIsToggledOn(isToggledOn),
-                    CollectionViewSwitchIsEnabled(isEnabled),
+                    SettingsSwitchIsToggledOn(isToggledOn),
+                    SettingsSwitchIsEnabled(isEnabled),
                     grey_sufficientlyVisible(), nil);
 }
 

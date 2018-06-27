@@ -17,10 +17,10 @@
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/settings/cells/password_details_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_utils.h"
@@ -167,8 +167,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   CollectionViewModel* model = self.collectionViewModel;
 
   [model addSectionWithIdentifier:SectionIdentifierSite];
-  CollectionViewTextItem* siteHeader =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+  SettingsTextItem* siteHeader =
+      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
   siteHeader.text = l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_SITE);
   siteHeader.textColor = [[MDCPalette greyPalette] tint500];
   [model setHeader:siteHeader forSectionWithIdentifier:SectionIdentifierSite];
@@ -182,8 +182,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 
   if (!_passwordForm.blacklisted_by_user) {
     [model addSectionWithIdentifier:SectionIdentifierUsername];
-    CollectionViewTextItem* usernameHeader =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    SettingsTextItem* usernameHeader =
+        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
     usernameHeader.text =
         l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_USERNAME);
     usernameHeader.textColor = [[MDCPalette greyPalette] tint500];
@@ -200,8 +200,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 
     if (_passwordForm.federation_origin.unique()) {
       [model addSectionWithIdentifier:SectionIdentifierPassword];
-      CollectionViewTextItem* passwordHeader =
-          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+      SettingsTextItem* passwordHeader =
+          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
       passwordHeader.text =
           l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_PASSWORD);
       passwordHeader.textColor = [[MDCPalette greyPalette] tint500];
@@ -220,8 +220,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
           toSectionWithIdentifier:SectionIdentifierPassword];
     } else {
       [model addSectionWithIdentifier:SectionIdentifierFederation];
-      CollectionViewTextItem* federationHeader =
-          [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+      SettingsTextItem* federationHeader =
+          [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
       federationHeader.text =
           l10n_util::GetNSString(IDS_IOS_SHOW_PASSWORD_VIEW_FEDERATION);
       federationHeader.textColor = [[MDCPalette greyPalette] tint500];
@@ -244,8 +244,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 #pragma mark - Items
 
 - (CollectionViewItem*)siteCopyButtonItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeCopySite];
+  SettingsTextItem* item =
+      [[SettingsTextItem alloc] initWithType:ItemTypeCopySite];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_SITE_COPY_BUTTON);
   item.textColor = [[MDCPalette cr_bluePalette] tint500];
   // Accessibility label adds the header to the text, so that accessibility
@@ -261,8 +261,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 }
 
 - (CollectionViewItem*)usernameCopyButtonItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeCopyUsername];
+  SettingsTextItem* item =
+      [[SettingsTextItem alloc] initWithType:ItemTypeCopyUsername];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_USERNAME_COPY_BUTTON);
   item.textColor = [[MDCPalette cr_bluePalette] tint500];
   // Accessibility label adds the header to the text, so that accessibility
@@ -279,8 +279,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 }
 
 - (CollectionViewItem*)passwordCopyButtonItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeCopyPassword];
+  SettingsTextItem* item =
+      [[SettingsTextItem alloc] initWithType:ItemTypeCopyPassword];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_COPY_BUTTON);
   item.textColor = [[MDCPalette cr_bluePalette] tint500];
   // Accessibility label adds the header to the text, so that accessibility
@@ -297,8 +297,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 }
 
 - (CollectionViewItem*)showHidePasswordButtonItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeShowHide];
+  SettingsTextItem* item =
+      [[SettingsTextItem alloc] initWithType:ItemTypeShowHide];
   item.text = [self showHideButtonText];
   item.textColor = [[MDCPalette cr_bluePalette] tint500];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -306,8 +306,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
 }
 
 - (CollectionViewItem*)deletePasswordButtonItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeDelete];
+  SettingsTextItem* item =
+      [[SettingsTextItem alloc] initWithType:ItemTypeDelete];
   item.text = l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORD_DELETE_BUTTON);
   item.textColor = [[MDCPalette cr_redPalette] tint500];
   item.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -345,9 +345,8 @@ reauthenticationModule:(id<ReauthenticationProtocol>)reauthenticationModule {
   CollectionViewModel* model = self.collectionViewModel;
   NSIndexPath* path = [model indexPathForItemType:ItemTypeShowHide
                                 sectionIdentifier:SectionIdentifierPassword];
-  CollectionViewTextItem* item =
-      base::mac::ObjCCastStrict<CollectionViewTextItem>(
-          [model itemAtIndexPath:path]);
+  SettingsTextItem* item =
+      base::mac::ObjCCastStrict<SettingsTextItem>([model itemAtIndexPath:path]);
   item.text = [self showHideButtonText];
   item.textColor = [[MDCPalette cr_bluePalette] tint500];
   [self reconfigureCellsForItems:@[ item ]];

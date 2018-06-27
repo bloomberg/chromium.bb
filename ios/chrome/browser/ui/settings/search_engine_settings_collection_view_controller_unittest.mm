@@ -14,8 +14,8 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/third_party/material_components_ios/src/components/CollectionCells/src/MaterialCollectionCells.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -74,9 +74,8 @@ class SearchEngineSettingsCollectionViewControllerTest
           template_url_service_->GetDefaultSearchProvider() == urls[i];
 
       CheckTextCellTitle(base::SysUTF16ToNSString(urls[i]->short_name()), 0, i);
-      CollectionViewTextItem* textItem =
-          base::mac::ObjCCastStrict<CollectionViewTextItem>(
-              GetCollectionViewItem(0, i));
+      SettingsTextItem* textItem = base::mac::ObjCCastStrict<SettingsTextItem>(
+          GetCollectionViewItem(0, i));
       EXPECT_EQ(isDefault ? MDCCollectionViewCellAccessoryCheckmark
                           : MDCCollectionViewCellAccessoryNone,
                 textItem.accessoryType);

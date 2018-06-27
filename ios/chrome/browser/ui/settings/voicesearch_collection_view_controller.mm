@@ -9,9 +9,9 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #include "ios/chrome/browser/voice/speech_input_locale_config.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/voice/voice_search_prefs.h"
@@ -75,8 +75,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // TTS section.
   [model addSectionWithIdentifier:SectionIdentifierTTS];
-  CollectionViewSwitchItem* tts =
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeTTSEnabled];
+  SettingsSwitchItem* tts =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeTTSEnabled];
   tts.text = l10n_util::GetNSString(IDS_IOS_VOICE_SEARCH_SETTING_TTS);
   tts.on = _ttsEnabled.GetValue();
   tts.enabled = [self currentLanguageSupportsTTS];
@@ -93,8 +93,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [model addSectionWithIdentifier:SectionIdentifierLanguages];
   // Add default locale option.  Using an empty string for the voice search
   // locale pref indicates using the default locale.
-  CollectionViewTextItem* defaultItem = [[CollectionViewTextItem alloc]
-      initWithType:ItemTypeLanguagesLanguageOption];
+  SettingsTextItem* defaultItem =
+      [[SettingsTextItem alloc] initWithType:ItemTypeLanguagesLanguageOption];
   defaultItem.text =
       l10n_util::GetNSStringF(IDS_IOS_VOICE_SEARCH_SETTINGS_DEFAULT_LOCALE,
                               localeConfig->GetDefaultLocale().display_name);
@@ -109,8 +109,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
     NSString* languageName = base::SysUTF16ToNSString(locale.display_name);
     BOOL checked = (locale.code == selectedLocaleCode);
 
-    CollectionViewTextItem* languageItem = [[CollectionViewTextItem alloc]
-        initWithType:ItemTypeLanguagesLanguageOption];
+    SettingsTextItem* languageItem =
+        [[SettingsTextItem alloc] initWithType:ItemTypeLanguagesLanguageOption];
     languageItem.text = languageName;
     languageItem.accessoryType = checked
                                      ? MDCCollectionViewCellAccessoryCheckmark
@@ -131,8 +131,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (itemType == ItemTypeTTSEnabled) {
     // Have the switch send a message on UIControlEventValueChanged.
-    CollectionViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(ttsToggled:)
                     forControlEvents:UIControlEventValueChanged];
@@ -189,11 +189,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel indexPathForItemType:ItemTypeTTSEnabled
                                    sectionIdentifier:SectionIdentifierTTS];
 
-  CollectionViewSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
-  CollectionViewSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(
           [self.collectionView cellForItemAtIndexPath:switchPath]);
 
   // Update the model and the preference with the current value of the switch.
@@ -215,9 +215,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         (ii == index) ? MDCCollectionViewCellAccessoryCheckmark
                       : MDCCollectionViewCellAccessoryNone;
 
-    CollectionViewTextItem* textItem =
-        base::mac::ObjCCastStrict<CollectionViewTextItem>(
-            [languageItems objectAtIndex:ii]);
+    SettingsTextItem* textItem = base::mac::ObjCCastStrict<SettingsTextItem>(
+        [languageItems objectAtIndex:ii]);
     if (textItem.accessoryType != type) {
       textItem.accessoryType = type;
       [modifiedItems addObject:textItem];
@@ -229,8 +228,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSIndexPath* switchPath =
       [self.collectionViewModel indexPathForItemType:ItemTypeTTSEnabled
                                    sectionIdentifier:SectionIdentifierTTS];
-  CollectionViewSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(
           [self.collectionView cellForItemAtIndexPath:switchPath]);
 
   BOOL enabled = [self currentLanguageSupportsTTS];
@@ -239,13 +238,13 @@ typedef NS_ENUM(NSInteger, ItemType) {
   UISwitch* switchView = switchCell.switchView;
   switchView.enabled = enabled;
   switchCell.textLabel.textColor =
-      [CollectionViewSwitchCell defaultTextColorForState:switchView.state];
+      [SettingsSwitchCell defaultTextColorForState:switchView.state];
   if (on != switchView.isOn) {
     [switchView setOn:on animated:YES];
   }
   // Also update the switch item.
-  CollectionViewSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
   switchItem.enabled = enabled;
   switchItem.on = on;

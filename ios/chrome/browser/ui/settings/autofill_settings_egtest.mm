@@ -219,13 +219,11 @@ NSString* GetTextFieldForID(int categoryId) {
 
   // Check the "autofill" and "wallet" switches are disabled. Disabled switches
   // are toggled off.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
-                                   @"autofillItem_switch", NO, NO)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"autofillItem_switch", NO, NO)]
       assertWithMatcher:grey_notNil()];
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
-                                   @"walletItem_switch", NO, NO)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"walletItem_switch", NO, NO)]
       assertWithMatcher:grey_notNil()];
 }
 

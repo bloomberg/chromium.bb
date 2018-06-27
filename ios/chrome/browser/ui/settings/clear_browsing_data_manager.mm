@@ -28,7 +28,6 @@
 #include "ios/chrome/browser/history/web_history_service_factory.h"
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/browser/sync/profile_sync_service_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
@@ -37,6 +36,7 @@
 #import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/clear_browsing_data_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #import "ios/chrome/browser/ui/settings/cells/table_view_clear_browsing_data_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_button_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_text_item.h"
@@ -313,12 +313,11 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 
 - (ListItem*)clearButtonItem {
   ListItem* clearButtonItem;
-  // Create a CollectionViewTextItem for CollectionView models and a
+  // Create a SettingsTextItem for CollectionView models and a
   // TableViewTextButtonItem for TableView models.
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
-    CollectionViewTextItem* collectionClearButtonItem =
-        [[CollectionViewTextItem alloc]
-            initWithType:ItemTypeClearBrowsingDataButton];
+    SettingsTextItem* collectionClearButtonItem =
+        [[SettingsTextItem alloc] initWithType:ItemTypeClearBrowsingDataButton];
     collectionClearButtonItem.text =
         l10n_util::GetNSString(IDS_IOS_CLEAR_BUTTON);
     collectionClearButtonItem.accessibilityTraits |= UIAccessibilityTraitButton;
@@ -490,8 +489,8 @@ const CGFloat kTableViewButtonBackgroundColor = 0xE94235;
 - (ListItem*)timeRangeItem {
   ListItem* timeRangeItem;
   if (self.listType == ClearBrowsingDataListType::kListTypeCollectionView) {
-    CollectionViewDetailItem* collectionTimeRangeItem =
-        [[CollectionViewDetailItem alloc] initWithType:ItemTypeTimeRange];
+    SettingsDetailItem* collectionTimeRangeItem =
+        [[SettingsDetailItem alloc] initWithType:ItemTypeTimeRange];
     collectionTimeRangeItem.text = l10n_util::GetNSString(
         IDS_IOS_CLEAR_BROWSING_DATA_TIME_RANGE_SELECTOR_TITLE);
     NSString* detailText = [TimeRangeSelectorCollectionViewController

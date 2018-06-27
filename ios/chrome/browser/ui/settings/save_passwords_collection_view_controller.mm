@@ -35,9 +35,9 @@
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/settings/password_exporter.h"
@@ -117,11 +117,11 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 }  // namespace password_manager
 
 // Use the type of the items to convey the Saved/Blacklisted status.
-@interface SavedFormContentItem : CollectionViewTextItem
+@interface SavedFormContentItem : SettingsTextItem
 @end
 @implementation SavedFormContentItem
 @end
-@interface BlacklistedFormContentItem : CollectionViewTextItem
+@interface BlacklistedFormContentItem : SettingsTextItem
 @end
 @implementation BlacklistedFormContentItem
 @end
@@ -175,9 +175,9 @@ initWithActivityItems:(NSArray*)activityItems
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
   // The item related to the switch for the password manager setting.
-  CollectionViewSwitchItem* savePasswordsItem_;
+  SettingsSwitchItem* savePasswordsItem_;
   // The item related to the button for exporting passwords.
-  CollectionViewTextItem* exportPasswordsItem_;
+  SettingsTextItem* exportPasswordsItem_;
   // The interface for getting and manipulating a user's saved passwords.
   scoped_refptr<password_manager::PasswordStore> passwordStore_;
   // A helper object for passing data about saved passwords from a finished
@@ -296,8 +296,8 @@ initWithActivityItems:(NSArray*)activityItems
   // Saved passwords.
   if (!savedForms_.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierSavedPasswords];
-    CollectionViewTextItem* headerItem =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    SettingsTextItem* headerItem =
+        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
     headerItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_SAVED_HEADING);
     headerItem.textColor = [[MDCPalette greyPalette] tint500];
@@ -311,8 +311,8 @@ initWithActivityItems:(NSArray*)activityItems
 
   if (!blacklistedForms_.empty()) {
     [model addSectionWithIdentifier:SectionIdentifierBlacklist];
-    CollectionViewTextItem* headerItem =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    SettingsTextItem* headerItem =
+        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
     headerItem.text =
         l10n_util::GetNSString(IDS_IOS_SETTINGS_PASSWORDS_EXCEPTIONS_HEADING);
     headerItem.textColor = [[MDCPalette greyPalette] tint500];
@@ -358,19 +358,18 @@ initWithActivityItems:(NSArray*)activityItems
   return footerItem;
 }
 
-- (CollectionViewSwitchItem*)savePasswordsItem {
-  CollectionViewSwitchItem* savePasswordsItem =
-      [[CollectionViewSwitchItem alloc]
-          initWithType:ItemTypeSavePasswordsSwitch];
+- (SettingsSwitchItem*)savePasswordsItem {
+  SettingsSwitchItem* savePasswordsItem =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSavePasswordsSwitch];
   savePasswordsItem.text = l10n_util::GetNSString(IDS_IOS_SAVE_PASSWORDS);
   savePasswordsItem.on = [passwordManagerEnabled_ value];
   savePasswordsItem.accessibilityIdentifier = @"savePasswordsItem_switch";
   return savePasswordsItem;
 }
 
-- (CollectionViewTextItem*)exportPasswordsItem {
-  CollectionViewTextItem* exportPasswordsItem = [[CollectionViewTextItem alloc]
-      initWithType:ItemTypeExportPasswordsButton];
+- (SettingsTextItem*)exportPasswordsItem {
+  SettingsTextItem* exportPasswordsItem =
+      [[SettingsTextItem alloc] initWithType:ItemTypeExportPasswordsButton];
   exportPasswordsItem.text = l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS);
   exportPasswordsItem.accessibilityIdentifier = @"exportPasswordsItem_button";
   exportPasswordsItem.accessibilityTraits = UIAccessibilityTraitButton;
@@ -472,8 +471,8 @@ initWithActivityItems:(NSArray*)activityItems
 
   if ([self.collectionViewModel itemTypeForIndexPath:indexPath] ==
       ItemTypeSavePasswordsSwitch) {
-    CollectionViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(savePasswordsSwitchChanged:)
                     forControlEvents:UIControlEventValueChanged];
@@ -700,9 +699,8 @@ initWithActivityItems:(NSArray*)activityItems
   int blacklistedDeleted = 0;
   for (NSIndexPath* indexPath in sortedIndexPaths) {
     // Only form items are editable.
-    CollectionViewTextItem* item =
-        base::mac::ObjCCastStrict<CollectionViewTextItem>(
-            [self.collectionViewModel itemAtIndexPath:indexPath]);
+    SettingsTextItem* item = base::mac::ObjCCastStrict<SettingsTextItem>(
+        [self.collectionViewModel itemAtIndexPath:indexPath]);
     BOOL blacklisted = [item isKindOfClass:[BlacklistedFormContentItem class]];
     unsigned int formIndex = (unsigned int)indexPath.item;
     // Adjust index to account for deleted items.
@@ -968,8 +966,8 @@ initWithActivityItems:(NSArray*)activityItems
   NSIndexPath* switchPath =
       [model indexPathForItemType:ItemTypeSavePasswordsSwitch
                 sectionIdentifier:SectionIdentifierSavePasswordsSwitch];
-  CollectionViewSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
           [model itemAtIndexPath:switchPath]);
   [switchItem setEnabled:enabled];
   [self reconfigureCellsForItems:@[ switchItem ]];

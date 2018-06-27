@@ -30,13 +30,13 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/commands/show_signin_command.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/cells/sync_switch_item.h"
 #import "ios/chrome/browser/ui/settings/cells/text_and_error_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
@@ -274,8 +274,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
         [[NSMutableDictionary alloc] init];
     // Accounts section. Cells enabled if sync is on.
     [model addSectionWithIdentifier:SectionIdentifierSyncAccounts];
-    CollectionViewTextItem* syncToHeader =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+    SettingsTextItem* syncToHeader =
+        [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
     syncToHeader.text = l10n_util::GetNSString(IDS_IOS_SYNC_TO_TITLE);
     syncToHeader.textColor = [[MDCPalette greyPalette] tint500];
     [model setHeader:syncToHeader
@@ -300,8 +300,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Data Types to sync. Enabled if sync is on.
   [model addSectionWithIdentifier:SectionIdentifierSyncServices];
-  CollectionViewTextItem* syncServicesHeader =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+  SettingsTextItem* syncServicesHeader =
+      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
   syncServicesHeader.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_DATA_TYPES_TITLE);
   syncServicesHeader.textColor = [[MDCPalette greyPalette] tint500];
@@ -402,8 +402,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)manageSyncedDataItem {
-  CollectionViewTextItem* manageSyncedDataItem =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeManageSyncedData];
+  SettingsTextItem* manageSyncedDataItem =
+      [[SettingsTextItem alloc] initWithType:ItemTypeManageSyncedData];
   manageSyncedDataItem.text =
       l10n_util::GetNSString(IDS_IOS_SYNC_RESET_GOOGLE_DASHBOARD_NO_LINK);
   manageSyncedDataItem.accessibilityTraits |= UIAccessibilityTraitButton;

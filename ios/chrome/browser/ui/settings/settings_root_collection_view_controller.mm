@@ -53,8 +53,9 @@ const CGFloat kActivityIndicatorDimensionIPhone = 56;
       self.collectionViewAccessibilityIdentifier;
 
   // Customize collection view settings.
-  self.styler.cellStyle = MDCCollectionViewCellStyleCard;
-  self.styler.separatorInset = UIEdgeInsetsMake(0, 16, 0, 16);
+  self.collectionView.backgroundColor = [UIColor groupTableViewBackgroundColor];
+  self.styler.cellStyle = MDCCollectionViewCellStyleGrouped;
+  self.styler.separatorInset = UIEdgeInsetsMake(0, 48, 0, 0);
 }
 
 - (void)viewWillAppear:(BOOL)animated {
