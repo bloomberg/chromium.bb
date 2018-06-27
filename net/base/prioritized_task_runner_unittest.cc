@@ -59,6 +59,25 @@ class PrioritizedTaskRunnerTest : public testing::Test {
     return out;
   }
 
+  // Adds a task to the task runner and waits for it to execute.
+  void ProcessTaskRunner(base::TaskRunner* task_runner) {
+    // Use a waitable event instead of a run loop as we need to be careful not
+    // to run any tasks on this task runner while waiting.
+    base::WaitableEvent waitable_event;
+
+    task_runner->PostTask(FROM_HERE,
+                          base::BindOnce(
+                              [](base::WaitableEvent* waitable_event) {
+                                waitable_event->Signal();
+                              },
+                              &waitable_event));
+
+    base::ScopedAllowBaseSyncPrimitivesForTesting sync;
+    waitable_event.Wait();
+  }
+
+  // Adds a task to the |task_runner|, forcing it to wait for a conditional.
+  // Call ReleaseTaskRunner to continue.
   void BlockTaskRunner(base::TaskRunner* task_runner) {
     waitable_event_.Reset();
 
@@ -70,6 +89,8 @@ class PrioritizedTaskRunnerTest : public testing::Test {
                           base::BindOnce(wait_function, &waitable_event_));
   }
 
+  // Signals the task runner's conditional so that it can continue after calling
+  // BlockTaskRunner.
   void ReleaseTaskRunner() { waitable_event_.Signal(); }
 
  protected:
@@ -164,6 +185,54 @@ TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestPriority) {
   scoped_task_environment_.RunUntilIdle();
   EXPECT_EQ((std::vector<std::string>{"Task0", "Task5", "Task7"}), TaskOrder());
   EXPECT_EQ((std::vector<std::string>{"Reply0", "Reply5", "Reply7"}),
+            ReplyOrder());
+}
+
+// Ensure that replies are run in priority order.
+TEST_F(PrioritizedTaskRunnerTest, PostTaskAndReplyTestReplyPriority) {
+  auto task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(base::TaskTraits());
+  auto prioritized_task_runner =
+      base::MakeRefCounted<PrioritizedTaskRunner>(task_runner);
+
+  // Add a couple of tasks to run right away, but don't run their replies yet.
+  BlockTaskRunner(task_runner.get());
+  prioritized_task_runner->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
+                     base::Unretained(this), "Task2"),
+      base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
+                     base::Unretained(this), "Reply2"),
+      2);
+
+  prioritized_task_runner->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
+                     base::Unretained(this), "Task1"),
+      base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
+                     base::Unretained(this), "Reply1"),
+      1);
+  ReleaseTaskRunner();
+
+  // Run the current tasks (but not their replies).
+  ProcessTaskRunner(task_runner.get());
+
+  // Now post task 0 (highest priority) and run it. None of the replies have
+  // been processed yet, so its reply should skip to the head of the queue.
+  prioritized_task_runner->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
+                     base::Unretained(this), "Task0"),
+      base::BindOnce(&PrioritizedTaskRunnerTest::PushName,
+                     base::Unretained(this), "Reply0"),
+      0);
+  ProcessTaskRunner(task_runner.get());
+
+  // Run the replies.
+  scoped_task_environment_.RunUntilIdle();
+
+  EXPECT_EQ((std::vector<std::string>{"Task1", "Task2", "Task0"}), TaskOrder());
+  EXPECT_EQ((std::vector<std::string>{"Reply0", "Reply1", "Reply2"}),
             ReplyOrder());
 }
 
