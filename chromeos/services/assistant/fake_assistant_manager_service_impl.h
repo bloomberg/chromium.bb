@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/macros.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -35,13 +36,17 @@ class FakeAssistantManagerServiceImpl : public AssistantManagerService {
   void SendUpdateSettingsUiRequest(
       const std::string& update,
       UpdateSettingsUiResponseCallback callback) override;
+  void SetAssistantController(
+      ash::mojom::AssistantController* controller) override;
 
-  // mojom::AssistantEvent overrides:
+  // mojom::Assistant overrides:
   void StartVoiceInteraction() override;
   void StopActiveInteraction() override;
   void SendTextQuery(const std::string& query) override;
   void AddAssistantEventSubscriber(
       mojom::AssistantEventSubscriberPtr subscriber) override;
+  void RequestScreenContext(const gfx::Rect& region,
+                            RequestScreenContextCallback callback) override;
 
  private:
   State state_ = State::STOPPED;

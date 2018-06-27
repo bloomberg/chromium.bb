@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <utility>
 
-#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -167,7 +166,7 @@ void Service::Init(mojom::ClientPtr client) {
   context()->connector()->BindInterface(device::mojom::kServiceName,
                                         mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      context()->connector(), std::move(battery_monitor));
+      context()->connector(), std::move(battery_monitor), client_.get());
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();
@@ -233,12 +232,11 @@ void Service::FinalizeAssistantManagerService() {
          AssistantManagerService::State::RUNNING);
 
   // Bind to Assistant controller in ash.
-  ash::mojom::AssistantControllerPtr assistant_controller;
   context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &assistant_controller);
+                                        &assistant_controller_);
   mojom::AssistantPtr ptr;
   BindAssistantConnection(mojo::MakeRequest(&ptr));
-  assistant_controller->SetAssistant(std::move(ptr));
+  assistant_controller_->SetAssistant(std::move(ptr));
 
   AddAshSessionObserver();
   registry_.AddInterface<mojom::Assistant>(base::BindRepeating(
@@ -246,6 +244,8 @@ void Service::FinalizeAssistantManagerService() {
 
   assistant_settings_manager_ =
       assistant_manager_service_.get()->GetAssistantSettingsManager();
+  assistant_manager_service_->SetAssistantController(
+      assistant_controller_.get());
   registry_.AddInterface<mojom::AssistantSettingsManager>(base::BindRepeating(
       &Service::BindAssistantSettingsManager, base::Unretained(this)));
 

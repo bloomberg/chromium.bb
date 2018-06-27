@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "base/callback_forward.h"
 #include "chromeos/services/assistant/assistant_settings_manager.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
@@ -45,6 +46,10 @@ class AssistantManagerService : public mojom::Assistant {
 
   // Returns a pointer of AssistantSettingsManager.
   virtual AssistantSettingsManager* GetAssistantSettingsManager() = 0;
+
+  // Sets assistant controller.
+  virtual void SetAssistantController(
+      ash::mojom::AssistantController* controller) = 0;
 
   using GetSettingsUiResponseCallback =
       base::OnceCallback<void(const std::string&)>;

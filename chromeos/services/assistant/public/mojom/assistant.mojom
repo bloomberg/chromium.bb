@@ -26,6 +26,11 @@ interface Assistant {
   // Registers assistant event subscriber. Subscribers' implementation is
   // responsible for selecting events of interest.
   AddAssistantEventSubscriber(AssistantEventSubscriber subscriber);
+
+  // Asks assistant to grab screen context. |region| controls the part of the
+  // screen to snapshot. If |region| is empty, it takes fullscreen screenshot.
+  // After grabbing completion, the callback will be invoked.
+  RequestScreenContext(gfx.mojom.Rect region) => ();
 };
 
 // Subscribes to assistant's event. Responses from the assistant may contain

@@ -11,10 +11,12 @@
 
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
 // libassistant/contrib dependency.
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
 #include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
+#include "chromeos/assistant/internal/internal_util.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
 #include "chromeos/services/assistant/assistant_settings_manager_impl.h"
 #include "chromeos/services/assistant/platform_api_impl.h"
@@ -25,6 +27,8 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
+#include "ui/accessibility/ax_assistant_structure.h"
+#include "ui/accessibility/mojom/ax_assistant_structure.mojom.h"
 
 namespace assistant_client {
 class AssistantManager;
@@ -52,7 +56,8 @@ class AssistantManagerServiceImpl
       public ash::mojom::VoiceInteractionObserver {
  public:
   AssistantManagerServiceImpl(service_manager::Connector* connector,
-                              device::mojom::BatteryMonitorPtr battery_monitor);
+                              device::mojom::BatteryMonitorPtr battery_monitor,
+                              mojom::Client* client);
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
@@ -68,6 +73,8 @@ class AssistantManagerServiceImpl
   void SendUpdateSettingsUiRequest(
       const std::string& update,
       UpdateSettingsUiResponseCallback callback) override;
+  void SetAssistantController(
+      ash::mojom::AssistantController* controller) override;
 
   // mojom::Assistant overrides:
   void StartVoiceInteraction() override;
@@ -75,6 +82,8 @@ class AssistantManagerServiceImpl
   void SendTextQuery(const std::string& query) override;
   void AddAssistantEventSubscriber(
       mojom::AssistantEventSubscriberPtr subscriber) override;
+  void RequestScreenContext(const gfx::Rect& region,
+                            RequestScreenContextCallback callback) override;
 
   // AssistantActionObserver overrides:
   void OnShowHtml(const std::string& html) override;
@@ -104,8 +113,8 @@ class AssistantManagerServiceImpl
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
       ash::mojom::VoiceInteractionState state) override {}
-  void OnVoiceInteractionSettingsEnabled(bool enabled) override {}
-  void OnVoiceInteractionContextEnabled(bool enabled) override {}
+  void OnVoiceInteractionSettingsEnabled(bool enabled) override;
+  void OnVoiceInteractionContextEnabled(bool enabled) override;
   void OnVoiceInteractionSetupCompleted(bool completed) override;
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
@@ -149,6 +158,15 @@ class AssistantManagerServiceImpl
       ash::mojom::VoiceInteractionController::IsSetupCompletedCallback
           callback);
 
+  void SendContextQueryAndRunCallback(RequestScreenContextCallback callback);
+
+  void OnAssistantStructureReceived(
+      base::OnceClosure on_done,
+      ax::mojom::AssistantExtraPtr assistant_extra,
+      std::unique_ptr<ui::AssistantTree> assistant_tree);
+  void OnAssistantScreenshotReceived(base::OnceClosure on_done,
+                                     const std::vector<uint8_t>& jpg_image);
+
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
@@ -158,9 +176,19 @@ class AssistantManagerServiceImpl
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
+
+  ash::mojom::AssistantController* assistant_controller_;
+  mojom::Client* assistant_client_;
+
+  bool assistant_enabled_ = false;
+  bool context_enabled_ = false;
+  ax::mojom::AssistantExtraPtr assistant_extra_;
+  std::unique_ptr<ui::AssistantTree> assistant_tree_;
+  std::vector<uint8_t> assistant_screenshot_;
 
   base::Thread background_thread_;
 

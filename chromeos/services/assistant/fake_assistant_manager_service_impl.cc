@@ -42,6 +42,10 @@ void FakeAssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
     const std::string& update,
     UpdateSettingsUiResponseCallback callback) {}
 
+void FakeAssistantManagerServiceImpl::RequestScreenContext(
+    const gfx::Rect& region,
+    RequestScreenContextCallback callback) {}
+
 void FakeAssistantManagerServiceImpl::StartVoiceInteraction() {}
 
 void FakeAssistantManagerServiceImpl::StopActiveInteraction() {}
@@ -50,6 +54,9 @@ void FakeAssistantManagerServiceImpl::SendTextQuery(const std::string& query) {}
 
 void FakeAssistantManagerServiceImpl::AddAssistantEventSubscriber(
     mojom::AssistantEventSubscriberPtr subscriber) {}
+
+void FakeAssistantManagerServiceImpl::SetAssistantController(
+    ash::mojom::AssistantController* controller) {}
 
 }  // namespace assistant
 }  // namespace chromeos

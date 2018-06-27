@@ -8,6 +8,7 @@
 #include <memory>
 #include <string>
 
+#include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/session_controller.mojom.h"
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
@@ -120,6 +121,8 @@ class Service : public service_manager::Service,
   bool session_active_ = false;
   // Whether the lock screen is on.
   bool locked_ = false;
+
+  ash::mojom::AssistantControllerPtr assistant_controller_;
 
   base::WeakPtrFactory<Service> weak_ptr_factory_;
 
