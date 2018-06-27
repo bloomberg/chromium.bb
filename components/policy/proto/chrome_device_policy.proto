@@ -264,8 +264,9 @@ message AutoUpdateSettingsProto {
   optional int32 rollback_allowed_milestones = 11 [default = 0];
 
   // Specifies the time intervals during which the device is not allowed to do
-  // automatic update checks.
-  repeated WeeklyTimeIntervalProto disallowed_time_intervals = 12;
+  // automatic update checks. This is a JSON string, for details see
+  // "DeviceAutoUpdateTimeRestrictions" in policy_templates.json.
+  optional string disallowed_time_intervals = 12;
 }
 
 message OBSOLETE_StartUpUrlsProto {
