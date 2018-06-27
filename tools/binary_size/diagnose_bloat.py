@@ -121,8 +121,10 @@ class NativeDiff(BaseDiff):
 
 
 class ResourceSizesDiff(BaseDiff):
+  # Ordered by output appearance.
   _SUMMARY_SECTIONS = (
-      'Breakdown', 'Dex', 'Specifics', 'StaticInitializersCount')
+      'Specifics', 'InstallSize', 'InstallBreakdown', 'Dex',
+      'StaticInitializersCount')
   # Sections where it makes sense to sum subsections into a section total.
   _AGGREGATE_SECTIONS = (
       'InstallBreakdown', 'Breakdown', 'MainLibInfo', 'Uncompressed')
@@ -146,7 +148,12 @@ class ResourceSizesDiff(BaseDiff):
     return self._ResultLines()
 
   def Summary(self):
-    return self._ResultLines(
+    header_lines = [
+        'For an explanation of these metrics, see:',
+        ('https://chromium.googlesource.com/chromium/src/+/master/docs/speed/'
+         'binary_size/metrics.md#Metrics-for-Android'),
+        '']
+    return header_lines + self._ResultLines(
         include_sections=ResourceSizesDiff._SUMMARY_SECTIONS)
 
   def ProduceDiff(self, before_dir, after_dir):
@@ -170,7 +177,7 @@ class ResourceSizesDiff(BaseDiff):
 
   def _ResultLines(self, include_sections=None):
     """Generates diff lines for the specified sections (defaults to all)."""
-    ret = []
+    section_lines = collections.defaultdict(list)
     for section_name, section_results in self._diff.iteritems():
       section_no_target = re.sub(r'^.*_', '', section_name)
       if not include_sections or section_no_target in include_sections:
@@ -182,16 +189,20 @@ class ResourceSizesDiff(BaseDiff):
           if value == 0 and include_sections:
             continue
           section_sum += value
-          subsection_lines.append('{:>+10,} {} {}'.format(value, units, name))
-        section_header = section_name
+          subsection_lines.append('{:>+14,} {} {}'.format(value, units, name))
+        section_header = section_no_target
         if section_no_target in ResourceSizesDiff._AGGREGATE_SECTIONS:
           section_header += ' ({:+,} {})'.format(section_sum, units)
+        section_header += ':'
         # Omit sections with empty subsections.
         if subsection_lines:
-          ret.append(section_header)
-          ret.extend(subsection_lines)
-    if not ret:
-      ret = ['Empty ' + self.name]
+          section_lines[section_no_target].append(section_header)
+          section_lines[section_no_target].extend(subsection_lines)
+    if not section_lines:
+      return ['Empty ' + self.name]
+    ret = []
+    for k in include_sections or sorted(section_lines):
+      ret.extend(section_lines[k])
     return ret
 
   def _LoadResults(self, archive_dir):
@@ -847,17 +858,20 @@ def _DiffMain(args):
   parser.add_argument('--diff-output', required=True)
   args = parser.parse_args(args)
 
-  if args.diff_type == 'native':
+  is_native_diff = args.diff_type == 'native'
+  if is_native_diff:
     supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
     diff = NativeDiff(args.apk_name + '.size', supersize_path)
   else:
     diff = ResourceSizesDiff(args.apk_name)
 
   diff.ProduceDiff(args.before_dir, args.after_dir)
+  lines = diff.DetailedResults() if is_native_diff else diff.Summary()
+
   with open(args.diff_output, 'w') as f:
-    f.writelines(l + '\n' for l in diff.DetailedResults())
+    f.writelines(l + '\n' for l in lines)
     stat = diff.summary_stat
-    f.write('{}={}\n'.format(*stat[:2]))
+    f.write('\n{}={}\n'.format(*stat[:2]))
 
 
 def main():
