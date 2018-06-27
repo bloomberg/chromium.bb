@@ -102,6 +102,10 @@ class ASH_EXPORT ShelfWidget : public views::Widget,
   // Updates the list of kiosk apps for the login shelf view.
   void SetLoginKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
 
+  // Sets if the login dialog is visible. This hides some of the buttons on the
+  // LoginShelf.
+  void SetLoginDialogVisible(bool visible);
+
   void set_default_last_focusable_child(bool default_last_focusable_child);
 
   // Overridden from views::WidgetObserver:

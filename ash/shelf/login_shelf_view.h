@@ -63,6 +63,9 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Sets the list of kiosk apps that can be launched from the login shelf.
   void SetKioskApps(std::vector<mojom::KioskAppInfoPtr> kiosk_apps);
 
+  // Sets if the login dialog is visible.
+  void SetLoginDialogVisible(bool visible);
+
   // views::View:
   const char* GetClassName() const override;
   void OnFocus() override;
@@ -89,6 +92,8 @@ class ASH_EXPORT LoginShelfView : public views::View,
   // Updates the visibility of buttons based on state changes, e.g. shutdown
   // policy updates, session state changes etc.
   void UpdateUi();
+
+  bool dialog_visible_ = false;
 
   LockScreenActionBackgroundController* lock_screen_action_background_;
 

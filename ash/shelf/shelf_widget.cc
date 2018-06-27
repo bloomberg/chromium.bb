@@ -362,6 +362,10 @@ void ShelfWidget::SetLoginKioskApps(
   login_shelf_view_->SetKioskApps(std::move(kiosk_apps));
 }
 
+void ShelfWidget::SetLoginDialogVisible(bool visible) {
+  login_shelf_view_->SetLoginDialogVisible(visible);
+}
+
 void ShelfWidget::set_default_last_focusable_child(
     bool default_last_focusable_child) {
   delegate_view_->set_default_last_focusable_child(
