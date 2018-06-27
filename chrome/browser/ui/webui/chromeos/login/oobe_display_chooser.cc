@@ -6,10 +6,11 @@
 
 #include <stdint.h>
 
-#include "ash/display/window_tree_host_manager.h"
-#include "ash/shell.h"
-#include "base/stl_util.h"
+#include "ash/public/interfaces/constants.mojom.h"
+#include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/events/devices/input_device_manager.h"
@@ -37,7 +38,17 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 }  // namespace
 
 OobeDisplayChooser::OobeDisplayChooser()
-    : scoped_observer_(this), weak_ptr_factory_(this) {}
+    : scoped_observer_(this), weak_ptr_factory_(this) {
+  // |manager_connection| or |connector| may be null in tests.
+  content::ServiceManagerConnection* manager_connection =
+      content::ServiceManagerConnection::GetForProcess();
+  service_manager::Connector* connector =
+      manager_connection ? manager_connection->GetConnector() : nullptr;
+  if (connector) {
+    connector->BindInterface(ash::mojom::kServiceName,
+                             &cros_display_config_ptr_);
+  }
+}
 
 OobeDisplayChooser::~OobeDisplayChooser() {}
 
@@ -82,8 +93,11 @@ void OobeDisplayChooser::MoveToTouchDisplay() {
        input_device_manager->GetTouchscreenDevices()) {
     if (IsWhiteListedVendorId(device.vendor_id) &&
         device.target_display_id != display::kInvalidDisplayId) {
-      ash::Shell::Get()->window_tree_host_manager()->SetPrimaryDisplayId(
-          device.target_display_id);
+      auto config_properties = ash::mojom::DisplayConfigProperties::New();
+      config_properties->set_primary = true;
+      cros_display_config_ptr_->SetDisplayProperties(
+          base::Int64ToString(device.target_display_id),
+          std::move(config_properties), base::DoNothing());
       break;
     }
   }
