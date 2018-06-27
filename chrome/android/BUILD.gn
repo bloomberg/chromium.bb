@@ -621,6 +621,9 @@ android_library("chrome_test_java") {
     "//third_party/android_tools:android_support_design_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",
+    "//third_party/android_tools:android_test_base_java",
+    "//third_party/android_tools:android_test_mock_java",
+    "//third_party/android_tools:android_test_runner_java",
     "//third_party/blink/public:android_mojo_bindings_java",
     "//third_party/blink/public:blink_headers_java",
     "//third_party/cacheinvalidation:cacheinvalidation_javalib",
@@ -642,8 +645,6 @@ android_library("chrome_test_java") {
   if (enable_feed_in_chrome) {
     deps += feed_conformance_test_deps
   }
-
-  deps += android_extra_test_deps
 
   data = [
     "//chrome/test/data/android/",
@@ -1196,8 +1197,8 @@ chrome_public_apk_tmpl_shared("chrome_public_apk_for_test") {
     "//chrome/browser/android/metrics:ukm_utils_java",
     "//components/heap_profiling:heap_profiling_java_test_support",
     "//content/public/test/android:content_java_test_support",
+    "//third_party/android_tools:android_test_mock_java",
   ]
-  deps += android_extra_test_deps
   if (!is_java_debug) {
     proguard_configs = [ "//chrome/android/java/apk_for_test.flags" ]
   }
@@ -1325,9 +1326,10 @@ instrumentation_test_apk("chrome_public_test_apk") {
     "//chrome/android/webapk/shell_apk:shell_apk_javatests",
     "//chrome/browser/profiling_host:profiling_host_javatests",
     "//third_party/android_support_test_runner:runner_java",
+    "//third_party/android_tools:android_test_base_java",
+    "//third_party/android_tools:android_test_mock_java",
+    "//third_party/android_tools:android_test_runner_java",
   ]
-
-  deps += android_extra_test_deps
 
   additional_apks = [
     "//chrome/android/webapk/libs/runtime_library/javatests/apk_with_webapk_service:apk_with_webapk_service",
@@ -1353,8 +1355,8 @@ if (enable_vr) {
 
     deps = [
       ":chrome_test_vr_java",
+      "//third_party/android_tools:android_test_mock_java",
     ]
-    deps += android_extra_test_deps
     additional_apks = [ "//net/android:net_test_support_apk" ]
     proguard_enabled = !is_java_debug
 
@@ -1420,10 +1422,10 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "//third_party/android_support_test_runner:runner_java",
     "//third_party/android_tools:android_arch_lifecycle_common_java",
     "//third_party/android_tools:android_support_v7_appcompat_java",
+    "//third_party/android_tools:android_test_mock_java",
     "//third_party/junit",
     "//ui/android:ui_java",
   ]
-  deps += android_extra_test_deps
   proguard_enabled = !is_java_debug
 
   # The test APK contains code from both the APK under test and the

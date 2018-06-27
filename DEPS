@@ -385,7 +385,7 @@ deps = {
       'packages': [
           {
               'package': 'chromium/third_party/android_system_sdk',
-              'version': 'version:27-cr0',
+              'version': 'version:28-dp3-cr0',
           },
       ],
       'condition': 'checkout_android',
@@ -393,7 +393,7 @@ deps = {
   },
 
   'src/third_party/android_tools': {
-      'url': Var('chromium_git') + '/android_tools.git' + '@' + '3545ab5b9883087a54cb9e5337c32617cb2a443d',
+      'url': Var('chromium_git') + '/android_tools.git' + '@' + '130499e25286f4d56acafa252fee09f3cc595c49',
       'condition': 'checkout_android_native_support',
   },
 
