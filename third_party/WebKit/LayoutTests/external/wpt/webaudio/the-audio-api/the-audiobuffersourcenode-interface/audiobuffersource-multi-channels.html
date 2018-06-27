@@ -7,11 +7,11 @@ Test AudioBufferSourceNode supports 5.1 channel.
     <title>
       audiobuffersource-multi-channels.html
     </title>
-    <script src="../../resources/testharness.js"></script>
-    <script src="../../resources/testharnessreport.js"></script>
-    <script src="../resources/audit-util.js"></script>
-    <script src="../resources/audit.js"></script>
-    <script src="../resources/mix-testing.js"></script>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/webaudio/resources/audit-util.js"></script>
+    <script src="/webaudio/resources/audit.js"></script>
+    <script src="/webaudio/resources/mix-testing.js"></script>
   </head>
   <body>
     <script id="layout-test-code">
@@ -33,12 +33,11 @@ Test AudioBufferSourceNode supports 5.1 channel.
                 .then(arrayBuffer => {
                   context.decodeAudioData(arrayBuffer).then(audioBuffer => {
                     expectedAudio = audioBuffer;
+                    task.done();
                   });
                 }),
             'Fetching expected audio')
-            .beResolved()
-            .then(() => task.done());
-
+            .beResolved();
       });
 
       audit.define(
@@ -61,7 +60,6 @@ Test AudioBufferSourceNode supports 5.1 channel.
                   // the wave file are +/- 32768.
                   let maxUlp = 1;
                   let threshold = maxUlp / 32768;
-
                   for (let k = 0; k < renderedAudio.numberOfChannels; ++k) {
                     should(
                         renderedAudio.getChannelData(k),
