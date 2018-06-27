@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/supervised/supervised_user_creation_flow.h"
 #include "chrome/browser/chromeos/login/ui/fake_login_display_host.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -1009,7 +1010,15 @@ INSTANTIATE_TEST_CASE_P(
 
 class ArcOobeOpaOptInActiveInTest : public ChromeArcUtilTest {
  public:
-  ArcOobeOpaOptInActiveInTest() = default;
+  ArcOobeOpaOptInActiveInTest()
+      : oobe_configuration_(std::make_unique<chromeos::OobeConfiguration>()) {}
+
+  ~ArcOobeOpaOptInActiveInTest() override {
+    // Fake display host have to be shut down first, as it may access
+    // configuration.
+    fake_login_display_host_.reset();
+    oobe_configuration_.reset();
+  }
 
  protected:
   void CreateLoginDisplayHost() {
@@ -1024,6 +1033,7 @@ class ArcOobeOpaOptInActiveInTest : public ChromeArcUtilTest {
   void CloseLoginDisplayHost() { fake_login_display_host_.reset(); }
 
  private:
+  std::unique_ptr<chromeos::OobeConfiguration> oobe_configuration_;
   std::unique_ptr<chromeos::FakeLoginDisplayHost> fake_login_display_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcOobeOpaOptInActiveInTest);

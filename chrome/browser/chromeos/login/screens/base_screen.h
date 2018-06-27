@@ -68,7 +68,7 @@ class BaseScreen {
 
   void set_model_view_channel(ModelViewChannel* channel) { channel_ = channel; }
 
-  virtual void SetConfiguration(base::DictionaryValue* configuration);
+  virtual void SetConfiguration(base::Value* configuration, bool notify);
 
  protected:
   // Scoped context editor, which automatically commits all pending
@@ -122,9 +122,14 @@ class BaseScreen {
   // automatically finish.
   // Configuration is guaranteed to exist between pair of OnShow/OnHide calls,
   // no external changes will be made to configuration during that time.
+  // Outside that time the configuration is set to nullptr to prevent any logic
+  // triggering while the screen is not displayed.
   // Do not confuse it with Context, which is a way to communicate with
   // JS-based UI part of the screen.
-  base::DictionaryValue* GetConfiguration() const { return configuration_; }
+  base::Value* GetConfiguration() { return configuration_; }
+
+  // This is called when configuration is changed while screen is displayed.
+  virtual void OnConfigurationChanged();
 
   BaseScreenDelegate* get_base_screen_delegate() const {
     return base_screen_delegate_;
@@ -154,7 +159,10 @@ class BaseScreen {
   // counterpart.
   void OnContextChanged(const base::DictionaryValue& diff);
 
-  base::DictionaryValue* configuration_ = nullptr;
+  // Screen configuration, unowned.
+  // Configuration itself is owned by WizardController and is accessible
+  // to screen only between OnShow / OnHide calls.
+  base::Value* configuration_ = nullptr;
 
   ModelViewChannel* channel_ = nullptr;
 

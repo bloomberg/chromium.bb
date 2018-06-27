@@ -268,10 +268,7 @@ bool WizardController::zero_delay_enabled_ = false;
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
-    : host_(host),
-      oobe_ui_(oobe_ui),
-      oobe_configuration_(new base::DictionaryValue()),
-      weak_factory_(this) {
+    : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
   screen_manager_ = std::make_unique<ScreenManager>(this);
@@ -289,9 +286,12 @@ WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
   } else {
     NOTIMPLEMENTED();
   }
+  oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
+  OobeConfiguration::Get()->AddObserver(this);
 }
 
 WizardController::~WizardController() {
+  OobeConfiguration::Get()->RemoveObserver(this);
   screen_manager_.reset();
   // |remora_controller| has to be reset after |screen_manager_| is reset.
   remora_controller_.reset();
@@ -1112,7 +1112,7 @@ void WizardController::ShowCurrentScreen() {
   smooth_show_timer_.Stop();
 
   UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
-  current_screen_->SetConfiguration(oobe_configuration_.get());
+  current_screen_->SetConfiguration(&oobe_configuration_, false /*notify */);
   current_screen_->Show();
 }
 
@@ -1129,7 +1129,7 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 
   if (current_screen_) {
     current_screen_->Hide();
-    current_screen_->SetConfiguration(nullptr);
+    current_screen_->SetConfiguration(nullptr, false /*notify */);
   }
 
   const OobeScreen screen = new_current->screen_id();
@@ -1176,6 +1176,13 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
     ShowHIDDetectionScreen();
   } else {
     ShowWelcomeScreen();
+  }
+}
+
+void WizardController::OnOobeConfigurationChanged() {
+  oobe_configuration_ = OobeConfiguration::Get()->GetConfiguration().Clone();
+  if (current_screen_) {
+    current_screen_->SetConfiguration(&oobe_configuration_, true /*notify */);
   }
 }
 

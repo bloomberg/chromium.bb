@@ -78,6 +78,8 @@ void BaseScreen::OnHide() {}
 
 void BaseScreen::OnClose() {}
 
+void BaseScreen::OnConfigurationChanged() {}
+
 bool BaseScreen::IsStatusAreaDisplayed() {
   return true;
 }
@@ -119,8 +121,10 @@ void BaseScreen::OnContextChanged(const base::DictionaryValue& diff) {
     OnContextKeyUpdated(key);
 }
 
-void BaseScreen::SetConfiguration(base::DictionaryValue* configuration) {
+void BaseScreen::SetConfiguration(base::Value* configuration, bool notify) {
   configuration_ = configuration;
+  if (notify)
+    OnConfigurationChanged();
 }
 
 }  // namespace chromeos

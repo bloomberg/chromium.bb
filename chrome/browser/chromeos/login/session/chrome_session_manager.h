@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "components/session_manager/core/session_manager.h"
 
 namespace base {
@@ -41,6 +42,9 @@ class ChromeSessionManager : public session_manager::SessionManager {
                           bool is_child) override;
 
  private:
+  void LoadOobeConfiguration();
+  std::unique_ptr<chromeos::OobeConfiguration> oobe_configuration_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeSessionManager);
 };
 

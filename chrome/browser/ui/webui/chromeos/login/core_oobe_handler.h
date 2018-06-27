@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
+#include "chrome/browser/chromeos/login/oobe_configuration.h"
 #include "chrome/browser/chromeos/login/screens/core_oobe_view.h"
 #include "chrome/browser/chromeos/login/version_info_updater.h"
 #include "chrome/browser/ui/ash/tablet_mode_client_observer.h"
@@ -38,7 +39,8 @@ class CoreOobeHandler : public BaseWebUIHandler,
                         public VersionInfoUpdater::Delegate,
                         public CoreOobeView,
                         public ui::EventSource,
-                        public TabletModeClientObserver {
+                        public TabletModeClientObserver,
+                        public OobeConfiguration::Observer {
  public:
   explicit CoreOobeHandler(OobeUI* oobe_ui,
                            JSCallsContainer* js_calls_container);
@@ -116,6 +118,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
   // TabletModeClientObserver:
   void OnTabletModeToggled(bool enabled) override;
 
+  // OobeConfiguration::Observer:
+  void OnOobeConfigurationChanged() override;
+
   // Handlers for JS WebUI messages.
   void HandleEnableLargeCursor(bool enabled);
   void HandleEnableHighContrast(bool enabled);
@@ -155,6 +160,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
 
   // Updates client area size based on the primary screen size.
   void UpdateClientAreaSize();
+
+  // Updates OOBE configuration.
+  void UpdateOobeConfiguration();
 
   // Notification of a change in the accessibility settings.
   void OnAccessibilityStatusChanged(
