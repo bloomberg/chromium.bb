@@ -10,7 +10,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/callback.h"
 #include "base/json/json_reader.h"
@@ -19,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/accessibility/magnifier_type.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/dbus/power_policy_controller.h"
@@ -337,8 +337,8 @@ void PinnedLauncherAppsPolicyHandler::ApplyList(
 
 ScreenMagnifierPolicyHandler::ScreenMagnifierPolicyHandler()
     : IntRangePolicyHandlerBase(key::kScreenMagnifierType,
-                                ash::MAGNIFIER_DISABLED,
-                                ash::MAGNIFIER_FULL,
+                                chromeos::MAGNIFIER_DISABLED,
+                                chromeos::MAGNIFIER_FULL,
                                 false) {}
 
 ScreenMagnifierPolicyHandler::~ScreenMagnifierPolicyHandler() {
@@ -353,7 +353,7 @@ void ScreenMagnifierPolicyHandler::ApplyPolicySettings(
     // The "type" is only used to enable or disable the feature as a whole.
     // http://crbug.com/170850
     prefs->SetBoolean(ash::prefs::kAccessibilityScreenMagnifierEnabled,
-                      value_in_range != ash::MAGNIFIER_DISABLED);
+                      value_in_range != chromeos::MAGNIFIER_DISABLED);
   }
 }
 

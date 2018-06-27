@@ -243,6 +243,7 @@ source_set("chromeos") {
     "accessibility/event_handler_common.h",
     "accessibility/magnification_manager.cc",
     "accessibility/magnification_manager.h",
+    "accessibility/magnifier_type.h",
     "accessibility/select_to_speak_event_handler.cc",
     "accessibility/select_to_speak_event_handler.h",
     "accessibility/spoken_feedback_event_rewriter_delegate.cc",

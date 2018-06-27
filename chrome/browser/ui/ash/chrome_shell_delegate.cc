@@ -10,7 +10,6 @@
 #include <vector>
 
 #include "ash/accessibility/accessibility_delegate.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "ash/screenshot_delegate.h"
 #include "base/macros.h"
 #include "chrome/browser/browser_process.h"
