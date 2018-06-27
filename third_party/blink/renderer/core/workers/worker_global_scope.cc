@@ -329,7 +329,7 @@ void WorkerGlobalScope::EvaluateClassicScript(
 WorkerGlobalScope::WorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     WorkerThread* thread,
-    double time_origin)
+    base::TimeTicks time_origin)
     : WorkerOrWorkletGlobalScope(thread->GetIsolate(),
                                  creation_params->worker_clients,
                                  thread->GetWorkerReportingProxy()),

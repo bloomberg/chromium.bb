@@ -227,7 +227,7 @@ class CORE_EXPORT WorkerThread : public WebThread::TaskObserver {
 
   // Official moment of creation of worker: when the worker thread is created.
   // (https://w3c.github.io/hr-time/#time-origin)
-  const double time_origin_;
+  const base::TimeTicks time_origin_;
 
  private:
   friend class WorkerThreadTest;

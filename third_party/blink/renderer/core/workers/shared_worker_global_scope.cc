@@ -52,7 +52,7 @@ SharedWorkerGlobalScope::SharedWorkerGlobalScope(
     const String& name,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     SharedWorkerThread* thread,
-    double time_origin)
+    base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
       name_(name) {}
 
