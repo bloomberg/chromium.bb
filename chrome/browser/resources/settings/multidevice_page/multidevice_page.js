@@ -7,6 +7,8 @@
  * Settings page for managing MultiDevice features.
  */
 
+cr.exportPath('settings');
+
 /**
  * The possible statuses of hosts on the logged in account that determine the
  * page content.

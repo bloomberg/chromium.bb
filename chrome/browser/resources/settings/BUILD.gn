@@ -81,6 +81,7 @@ group("closure_compile") {
     "incompatible_applications_page:closure_compile",
     "internet_page:closure_compile",
     "languages_page:closure_compile",
+    "multidevice_page:closure_compile",
     "on_startup_page:closure_compile",
     "passwords_and_forms_page:closure_compile",
     "people_page:closure_compile",
