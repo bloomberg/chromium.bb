@@ -630,6 +630,7 @@ void KeyboardController::PopulateKeyboardContent(
   if (parent_container_->children().empty()) {
     DCHECK_EQ(state_, KeyboardControllerState::INITIAL);
     aura::Window* contents = ui_->GetContentsWindow();
+    contents->AddPreTargetHandler(&event_filter_);
     parent_container_->AddChild(contents);
   }
 

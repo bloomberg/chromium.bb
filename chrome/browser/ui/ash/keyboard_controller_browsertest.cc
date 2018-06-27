@@ -19,6 +19,7 @@
 #include "ui/base/ime/dummy_text_input_client.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/base/ime/input_method_factory.h"
+#include "ui/events/test/event_generator.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/keyboard/keyboard_resource_util.h"
 #include "ui/keyboard/keyboard_switches.h"
@@ -118,6 +119,32 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   // Keyboard should not become visible if previous keyboard is not, even if it
   // is currently focused on an editable node.
   EXPECT_FALSE(IsKeyboardVisible());
+}
+
+IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
+                       CanDragFloatingKeyboardWithMouse) {
+  auto* controller = keyboard::KeyboardController::Get();
+  controller->SetContainerType(keyboard::ContainerType::FLOATING, base::nullopt,
+                               base::DoNothing());
+
+  controller->ShowKeyboard(false);
+  WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
+
+  aura::Window* contents_window = controller->GetContentsWindow();
+  contents_window->SetBounds(gfx::Rect(0, 0, 100, 100));
+  EXPECT_EQ(gfx::Point(0, 0), contents_window->bounds().origin());
+
+  controller->SetDraggableArea(contents_window->bounds());
+
+  // Drag the top left corner of the keyboard to move it.
+  ui::test::EventGenerator event_generator(ash::Shell::GetPrimaryRootWindow());
+  event_generator.MoveMouseTo(gfx::Point(0, 0));
+  event_generator.PressLeftButton();
+  event_generator.MoveMouseTo(gfx::Point(50, 50));
+  event_generator.ReleaseLeftButton();
+  event_generator.MoveMouseTo(gfx::Point(100, 100));
+
+  EXPECT_EQ(gfx::Point(50, 50), contents_window->bounds().origin());
 }
 
 class VirtualKeyboardAppWindowTest : public extensions::PlatformAppBrowserTest {
