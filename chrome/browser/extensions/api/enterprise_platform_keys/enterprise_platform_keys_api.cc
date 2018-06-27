@@ -27,9 +27,9 @@ namespace api_epki = api::enterprise_platform_keys_internal;
 
 // This error will occur if a token is removed and will be exposed to the
 // extension. Keep this in sync with the custom binding in Javascript.
-const char kErrorInternal[] = "Internal Error.";
+const char kEnterprisePlatformErrorInternal[] = "Internal Error.";
 
-const char kErrorInvalidX509Cert[] =
+const char kEnterprisePlatformErrorInvalidX509Cert[] =
     "Certificate is not a valid X.509 certificate.";
 
 std::vector<char> VectorFromString(const std::string& s) {
@@ -151,7 +151,7 @@ EnterprisePlatformKeysImportCertificateFunction::Run() {
       net::X509Certificate::CreateFromBytesUnsafeOptions(
           cert_der.data(), cert_der.size(), options);
   if (!cert_x509.get())
-    return RespondNow(Error(kErrorInvalidX509Cert));
+    return RespondNow(Error(kEnterprisePlatformErrorInvalidX509Cert));
 
   chromeos::platform_keys::ImportCertificate(
       platform_keys_token_id,
@@ -194,7 +194,7 @@ EnterprisePlatformKeysRemoveCertificateFunction::Run() {
       net::X509Certificate::CreateFromBytesUnsafeOptions(
           cert_der.data(), cert_der.size(), options);
   if (!cert_x509.get())
-    return RespondNow(Error(kErrorInvalidX509Cert));
+    return RespondNow(Error(kEnterprisePlatformErrorInvalidX509Cert));
 
   chromeos::platform_keys::RemoveCertificate(
       platform_keys_token_id,
@@ -246,7 +246,7 @@ void EnterprisePlatformKeysInternalGetTokensFunction::OnGotTokens(
        ++it) {
     std::string token_id = platform_keys::PlatformKeysTokenIdToApiId(*it);
     if (token_id.empty()) {
-      Respond(Error(kErrorInternal));
+      Respond(Error(kEnterprisePlatformErrorInternal));
       return;
     }
     token_ids.push_back(token_id);
