@@ -16,8 +16,8 @@
 class PrefService;
 class PrefRegistrySimple;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace user_prefs {
@@ -46,7 +46,7 @@ class GCMChannelStatusSyncer {
       PrefService* prefs,
       const std::string& channel_status_request_url,
       const std::string& user_agent,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~GCMChannelStatusSyncer();
 
   void EnsureStarted();
@@ -60,6 +60,9 @@ class GCMChannelStatusSyncer {
   }
   base::TimeDelta current_request_delay_interval() const {
     return current_request_delay_interval_;
+  }
+  GCMChannelStatusRequest* request_for_testing() const {
+    return request_.get();
   }
   static int first_time_delay_seconds();
 
@@ -85,7 +88,7 @@ class GCMChannelStatusSyncer {
   const std::string channel_status_request_url_;
   const std::string user_agent_;
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<GCMChannelStatusRequest> request_;
 
   bool started_;

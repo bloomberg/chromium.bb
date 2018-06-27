@@ -15,8 +15,9 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -31,17 +32,16 @@ const int kMinPollIntervalSeconds = 30 * 60;  // 30 minutes.
 }  // namespace
 
 GCMChannelStatusRequest::GCMChannelStatusRequest(
-    const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const std::string& channel_status_request_url,
     const std::string& user_agent,
     const GCMChannelStatusRequestCallback& callback)
-    : request_context_getter_(request_context_getter),
+    : url_loader_factory_(url_loader_factory),
       channel_status_request_url_(channel_status_request_url),
       user_agent_(user_agent),
       callback_(callback),
       backoff_entry_(&(GetGCMBackoffPolicy())),
-      weak_ptr_factory_(this) {
-}
+      weak_ptr_factory_(this) {}
 
 GCMChannelStatusRequest::~GCMChannelStatusRequest() {
 }
@@ -57,7 +57,11 @@ int GCMChannelStatusRequest::min_poll_interval_seconds() {
 }
 
 void GCMChannelStatusRequest::Start() {
-  DCHECK(!url_fetcher_);
+  // url_loader_factory_ can be null for tests.
+  if (!url_loader_factory_)
+    return;
+
+  DCHECK(!simple_url_loader_);
 
   GURL request_url(channel_status_request_url_);
 
@@ -102,56 +106,71 @@ void GCMChannelStatusRequest::Start() {
             "Not implemented, considered not useful."
         })");
 
-  url_fetcher_ = net::URLFetcher::Create(request_url, net::URLFetcher::POST,
-                                         this, traffic_annotation);
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher_.get(), data_use_measurement::DataUseUserData::GCM_DRIVER);
-  url_fetcher_->SetRequestContext(request_context_getter_.get());
-  url_fetcher_->AddExtraRequestHeader("User-Agent: " + user_agent_);
-  url_fetcher_->SetUploadData(kRequestContentType, upload_data);
-  url_fetcher_->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                             net::LOAD_DO_NOT_SAVE_COOKIES);
-  url_fetcher_->Start();
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+
+  resource_request->url = request_url;
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES;
+  resource_request->method = "POST";
+  resource_request->headers.SetHeader(net::HttpRequestHeaders::kUserAgent,
+                                      user_agent_);
+  // TODO(https://crbug.com/808498): Re-add data use measurement once
+  // SimpleURLLoader supports it.
+  // ID=data_use_measurement::DataUseUserData::GCM_DRIVER
+  simple_url_loader_ = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  simple_url_loader_->AttachStringForUpload(upload_data, kRequestContentType);
+  simple_url_loader_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory_.get(),
+      base::BindOnce(&GCMChannelStatusRequest::OnSimpleLoaderComplete,
+                     base::Unretained(this)));
 }
 
-void GCMChannelStatusRequest::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  if (ParseResponse(source))
+void GCMChannelStatusRequest::OnSimpleLoaderComplete(
+    std::unique_ptr<std::string> response_body) {
+  if (ParseResponse(std::move(response_body)))
     return;
 
   RetryWithBackoff(true);
 }
 
-bool GCMChannelStatusRequest::ParseResponse(const net::URLFetcher* source) {
-  if (!source->GetStatus().is_success()) {
+bool GCMChannelStatusRequest::ParseResponse(
+    std::unique_ptr<std::string> response_body) {
+  if (simple_url_loader_->ResponseInfo() &&
+      simple_url_loader_->ResponseInfo()->headers) {
+    int response_code =
+        simple_url_loader_->ResponseInfo()->headers->response_code();
+    if (response_code != net::HTTP_OK) {
+      LOG(ERROR) << "GCM channel request failed. HTTP status: "
+                 << response_code;
+      return false;
+    }
+  }
+
+  if (!response_body) {
     LOG(ERROR) << "GCM channel request failed.";
     return false;
   }
 
-  if (source->GetResponseCode() != net::HTTP_OK) {
-    LOG(ERROR) << "GCM channel request failed. HTTP status: "
-               << source->GetResponseCode();
-    return false;
-  }
-
-  std::string response_string;
-  if (!source->GetResponseAsString(&response_string)) {
-    LOG(ERROR) << "GCM channel response failed to be retrieved.";
-    return false;
-  }
-
   // Empty response means to keep the existing values.
-  if (response_string.empty()) {
+  if (response_body->empty()) {
     callback_.Run(false, false, 0);
     return true;
   }
 
   sync_pb::ExperimentStatusResponse response_proto;
-  if (!response_proto.ParseFromString(response_string)) {
+  if (!response_proto.ParseFromString(*response_body)) {
     LOG(ERROR) << "GCM channel response failed to be parsed as proto.";
     return false;
   }
 
+  ParseResponseProto(response_proto);
+
+  return true;
+}
+
+void GCMChannelStatusRequest::ParseResponseProto(
+    sync_pb::ExperimentStatusResponse response_proto) {
   bool enabled = true;
   if (response_proto.experiment_size() == 1 &&
       response_proto.experiment(0).has_gcm_channel() &&
@@ -168,13 +187,11 @@ bool GCMChannelStatusRequest::ParseResponse(const net::URLFetcher* source) {
     poll_interval_seconds = kMinPollIntervalSeconds;
 
   callback_.Run(true, enabled, poll_interval_seconds);
-
-  return true;
 }
 
 void GCMChannelStatusRequest::RetryWithBackoff(bool update_backoff) {
   if (update_backoff) {
-    url_fetcher_.reset();
+    simple_url_loader_.reset();
     backoff_entry_.InformOfRequest(false);
   }
 
