@@ -1320,9 +1320,22 @@ void FormStructure::ApplyRationalizationsToHiddenSelects(
     ServerFieldType new_type) {
   ServerFieldType old_type = fields_[field_index]->Type().GetStorableType();
 
-  // Walk on the hidden select fields right before the field_index which share
+  // Walk on the hidden select fields right after the field_index which share
   // the same type with the field_index, and apply the rationalization to them
   // as well. These fields, if any, function as one field with the field_index.
+  for (auto current_index = field_index + 1; current_index < fields_.size();
+       current_index++) {
+    if (fields_[current_index]->IsVisible() ||
+        fields_[current_index]->form_control_type != "select-one" ||
+        fields_[current_index]->Type().GetStorableType() != old_type)
+      break;
+    fields_[current_index]->SetTypeTo(AutofillType(new_type));
+  }
+
+  // Same for the fields coming right before the field_index. (No need to check
+  // for the fields appearing before the first field!)
+  if (field_index == 0)
+    return;
   for (auto current_index = field_index - 1;; current_index--) {
     if (fields_[current_index]->IsVisible() ||
         fields_[current_index]->form_control_type != "select-one" ||
@@ -1331,15 +1344,6 @@ void FormStructure::ApplyRationalizationsToHiddenSelects(
     fields_[current_index]->SetTypeTo(AutofillType(new_type));
     if (current_index == 0)
       break;
-  }
-  // Same for the fields coming right after the field_index.
-  for (auto current_index = field_index + 1; current_index < fields_.size();
-       current_index++) {
-    if (fields_[current_index]->IsVisible() ||
-        fields_[current_index]->form_control_type != "select-one" ||
-        fields_[current_index]->Type().GetStorableType() != old_type)
-      break;
-    fields_[current_index]->SetTypeTo(AutofillType(new_type));
   }
 }
 
