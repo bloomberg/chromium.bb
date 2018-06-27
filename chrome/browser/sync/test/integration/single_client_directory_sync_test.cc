@@ -9,21 +9,17 @@
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/time/time.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
 #include "chrome/browser/sync/test/integration/updated_progress_marker_checker.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/sync/syncable/directory.h"
-#include "content/public/browser/browser_thread.h"
 #include "sql/test/test_helpers.h"
 #include "url/gurl.h"
 
-using content::BrowserThread;
 using base::FileEnumerator;
 using base::FilePath;
 
@@ -51,16 +47,13 @@ class SingleClientDirectorySyncTest : public SyncTest {
   DISALLOW_COPY_AND_ASSIGN(SingleClientDirectorySyncTest);
 };
 
-void SignalEvent(base::WaitableEvent* e) {
-  e->Signal();
-}
-
-bool WaitForExistingTasksOnLoop(base::MessageLoop* loop) {
-  base::WaitableEvent e(base::WaitableEvent::ResetPolicy::MANUAL,
-                        base::WaitableEvent::InitialState::NOT_SIGNALED);
-  loop->task_runner()->PostTask(FROM_HERE, base::BindOnce(&SignalEvent, &e));
-  // Timeout stolen from StatusChangeChecker::GetTimeoutDuration().
-  return e.TimedWait(base::TimeDelta::FromSeconds(45));
+void WaitForExistingTasksOnLoop(base::MessageLoop* loop) {
+  base::RunLoop run_loop;
+  // Post a task to |loop| that will, in turn, post a task back to the current
+  // sequenced task runner to quit the nested loop.
+  loop->task_runner()->PostTaskAndReply(FROM_HERE, base::DoNothing(),
+                                        run_loop.QuitClosure());
+  run_loop.Run();
 }
 
 // A status change checker that waits for an unrecoverable sync error to occur.
@@ -94,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   run_loop.Run();
   // Wait for the directory deletion to finish.
   base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();
-  ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));
+  WaitForExistingTasksOnLoop(sync_loop);
   ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
 
@@ -114,7 +107,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
   browser_sync::ProfileSyncService* sync_service = GetSyncService(0);
   sync_service->FlushDirectory();
   base::MessageLoop* sync_loop = sync_service->GetSyncLoopForTest();
-  ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));
+  WaitForExistingTasksOnLoop(sync_loop);
 
   // Now corrupt the database.
   const FilePath directory_path(sync_service->GetDirectoryPathForTest());
@@ -147,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
   // Wait until the sync loop has processed any existing tasks and see that the
   // directory no longer exists.
-  ASSERT_TRUE(WaitForExistingTasksOnLoop(sync_loop));
+  WaitForExistingTasksOnLoop(sync_loop);
   ASSERT_FALSE(FolderContainsFiles(directory_path));
 }
 
