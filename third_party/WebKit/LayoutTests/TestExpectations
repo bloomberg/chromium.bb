@@ -4736,3 +4736,5 @@ crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/media
 
 # Sheriff 2018-06-27
 crbug.com/856955 [ Win10 Linux ] inspector-protocol/animation/animation-multiple-frames.js [ Failure Pass ]
+crbug.com/856969 [ Win Linux Mac ] external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Pass Timeout ]
+crbug.com/856969 [ Win Linux Mac ] virtual/outofblink-cors/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Pass Timeout ]
