@@ -39,6 +39,7 @@ class MockPasswordManagerDriver : public StubPasswordManagerDriver {
 
   MOCK_METHOD1(FillPasswordForm, void(const PasswordFormFillData&));
   MOCK_METHOD1(AllowPasswordGenerationForForm, void(const PasswordForm&));
+  MOCK_METHOD0(MatchingBlacklistedFormFound, void());
 };
 
 }  // namespace
@@ -76,11 +77,17 @@ class NewPasswordFormManagerTest : public testing::Test {
     saved_match_.preferred = true;
     saved_match_.username_value = ASCIIToUTF16("test@gmail.com");
     saved_match_.password_value = ASCIIToUTF16("test1");
+    saved_match_.is_public_suffix_match = false;
+    saved_match_.scheme = PasswordForm::SCHEME_HTML;
+
+    blacklisted_match_ = saved_match_;
+    blacklisted_match_.blacklisted_by_user = true;
   }
 
  protected:
   FormData observed_form_;
   PasswordForm saved_match_;
+  PasswordForm blacklisted_match_;
   StubPasswordManagerClient client_;
   MockPasswordManagerDriver driver_;
   scoped_refptr<TestMockTimeTaskRunner> task_runner_;
@@ -122,6 +129,7 @@ TEST_F(NewPasswordFormManagerTest, Autofill) {
   FakeFormFetcher fetcher;
   fetcher.Fetch();
   EXPECT_CALL(driver_, AllowPasswordGenerationForForm(_));
+  EXPECT_CALL(driver_, MatchingBlacklistedFormFound()).Times(0);
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
@@ -161,6 +169,40 @@ TEST_F(NewPasswordFormManagerTest, AutofillSignUpForm) {
   constexpr uint32_t kNoID = FormFieldData::kNotSetFormControlRendererId;
   EXPECT_EQ(kNoID, fill_data.password_field.unique_renderer_id);
   EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+}
+
+TEST_F(NewPasswordFormManagerTest, AutofillWithBlacklistedMatch) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  EXPECT_CALL(driver_, MatchingBlacklistedFormFound());
+  PasswordFormFillData fill_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+
+  fetcher.SetNonFederated({&saved_match_, &blacklisted_match_}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
+
+  EXPECT_EQ(observed_form_.origin, fill_data.origin);
+  EXPECT_EQ(saved_match_.username_value, fill_data.username_field.value);
+  EXPECT_EQ(saved_match_.password_value, fill_data.password_field.value);
+}
+
+TEST_F(NewPasswordFormManagerTest, SendIntoToRendererOnlyBlacklistedMatch) {
+  TestMockTimeTaskRunner::ScopedContext scoped_context(task_runner_.get());
+  FakeFormFetcher fetcher;
+  fetcher.Fetch();
+  EXPECT_CALL(driver_, MatchingBlacklistedFormFound());
+  PasswordFormFillData fill_data;
+  EXPECT_CALL(driver_, FillPasswordForm(_)).Times(0);
+
+  NewPasswordFormManager form_manager(&client_, driver_.AsWeakPtr(),
+                                      observed_form_, &fetcher);
+  fetcher.SetNonFederated({&blacklisted_match_}, 0u);
+
+  task_runner_->FastForwardUntilNoTasksRemain();
 }
 
 TEST_F(NewPasswordFormManagerTest, SetSubmitted) {

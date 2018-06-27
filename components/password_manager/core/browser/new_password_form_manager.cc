@@ -18,6 +18,7 @@ using autofill::FormData;
 using autofill::FormFieldData;
 using autofill::FormSignature;
 using autofill::FormStructure;
+using autofill::PasswordForm;
 using base::TimeDelta;
 
 using Logger = autofill::SavePasswordProgressLogger;
@@ -31,11 +32,11 @@ constexpr TimeDelta kMaxFillingDelayForServerPerdictions =
 
 // Helper function for calling form parsing and logging results if logging is
 // active.
-std::unique_ptr<autofill::PasswordForm> ParseFormAndMakeLogging(
+std::unique_ptr<PasswordForm> ParseFormAndMakeLogging(
     PasswordManagerClient* client,
     const FormData& form,
     const base::Optional<FormPredictions>& predictions) {
-  std::unique_ptr<autofill::PasswordForm> password_form =
+  std::unique_ptr<PasswordForm> password_form =
       ParseFormData(form, predictions ? &predictions.value() : nullptr,
                     FormParsingMode::FILLING);
 
@@ -105,16 +106,15 @@ const GURL& NewPasswordFormManager::GetOrigin() const {
   return observed_form_.origin;
 }
 
-const std::map<base::string16, const autofill::PasswordForm*>&
+const std::map<base::string16, const PasswordForm*>&
 NewPasswordFormManager::GetBestMatches() const {
   return best_matches_;
 }
 
-const autofill::PasswordForm& NewPasswordFormManager::GetPendingCredentials()
-    const {
+const PasswordForm& NewPasswordFormManager::GetPendingCredentials() const {
   // TODO(https://crbug.com/831123): Implement.
   DCHECK(false);
-  static autofill::PasswordForm dummy_form;
+  static PasswordForm dummy_form;
   return dummy_form;
 }
 
@@ -128,17 +128,13 @@ PasswordFormMetricsRecorder* NewPasswordFormManager::GetMetricsRecorder() {
   return metrics_recorder_.get();
 }
 
-const std::vector<const autofill::PasswordForm*>&
+const std::vector<const PasswordForm*>&
 NewPasswordFormManager::GetBlacklistedMatches() const {
-  // TODO(https://crbug.com/831123): Implement.
-  DCHECK(false);
-  static std::vector<const autofill::PasswordForm*> dummy_vector;
-  return dummy_vector;
+  return blacklisted_matches_;
 }
 
 bool NewPasswordFormManager::IsBlacklisted() const {
-  // TODO(https://crbug.com/831123): Implement.
-  return false;
+  return !blacklisted_matches_.empty();
 }
 
 bool NewPasswordFormManager::IsPasswordOverridden() const {
@@ -146,16 +142,15 @@ bool NewPasswordFormManager::IsPasswordOverridden() const {
   return false;
 }
 
-const autofill::PasswordForm* NewPasswordFormManager::GetPreferredMatch()
-    const {
+const PasswordForm* NewPasswordFormManager::GetPreferredMatch() const {
   return preferred_match_;
 }
 
 // TODO(https://crbug.com/831123): Implement all methods from
 // PasswordFormManagerForUI.
 void NewPasswordFormManager::Save() {}
-void NewPasswordFormManager::Update(
-    const autofill::PasswordForm& credentials_to_update) {}
+void NewPasswordFormManager::Update(const PasswordForm& credentials_to_update) {
+}
 void NewPasswordFormManager::UpdateUsername(
     const base::string16& new_username) {}
 void NewPasswordFormManager::UpdatePasswordValue(
@@ -167,13 +162,27 @@ void NewPasswordFormManager::PermanentlyBlacklist() {}
 void NewPasswordFormManager::OnPasswordsRevealed() {}
 
 void NewPasswordFormManager::ProcessMatches(
-    const std::vector<const autofill::PasswordForm*>& non_federated,
+    const std::vector<const PasswordForm*>& non_federated,
     size_t filtered_count) {
-  // TODO(https://crbug.com/831123). Implement correct treating of blacklisted
-  // matches.
-  std::vector<const autofill::PasswordForm*> not_best_matches;
-  password_manager_util::FindBestMatches(non_federated, &best_matches_,
+  std::vector<const PasswordForm*> matches;
+  std::copy_if(non_federated.begin(), non_federated.end(),
+               std::back_inserter(matches), [](const PasswordForm* form) {
+                 return !form->blacklisted_by_user &&
+                        form->scheme == PasswordForm::SCHEME_HTML;
+               });
+
+  std::vector<const PasswordForm*> not_best_matches;
+  password_manager_util::FindBestMatches(matches, &best_matches_,
                                          &not_best_matches, &preferred_match_);
+
+  // Copy out blacklisted matches.
+  blacklisted_matches_.clear();
+  std::copy_if(
+      non_federated.begin(), non_federated.end(),
+      std::back_inserter(blacklisted_matches_), [](const PasswordForm* form) {
+        return form->blacklisted_by_user && !form->is_public_suffix_match;
+      });
+
   filled_ = false;
 
   if (predictions_)
@@ -214,7 +223,7 @@ void NewPasswordFormManager::Fill() {
   // There are additional signals (server-side data) and parse results in
   // filling and saving mode might be different so it is better not to cache
   // parse result, but to parse each time again.
-  std::unique_ptr<autofill::PasswordForm> observed_password_form =
+  std::unique_ptr<PasswordForm> observed_password_form =
       ParseFormAndMakeLogging(client_, observed_form_, predictions_);
   if (!observed_password_form)
     return;
@@ -223,21 +232,21 @@ void NewPasswordFormManager::Fill() {
 
   // TODO(https://crbug.com/831123). Move this lines to the beginning of the
   // function when the old parsing is removed.
-  if (!driver_ || best_matches_.empty() || filled_)
+  if (!driver_ || filled_)
     return;
 
   // TODO(https://crbug.com/831123). Implement correct treating of federated
   // matches.
-  std::vector<const autofill::PasswordForm*> federated_matches;
-  SendFillInformationToRenderer(
-      *client_, driver_.get(), false /* is_blacklisted */,
-      *observed_password_form.get(), best_matches_, federated_matches,
-      preferred_match_, metrics_recorder_.get());
+  std::vector<const PasswordForm*> federated_matches;
+  SendFillInformationToRenderer(*client_, driver_.get(), IsBlacklisted(),
+                                *observed_password_form.get(), best_matches_,
+                                federated_matches, preferred_match_,
+                                metrics_recorder_.get());
   filled_ = true;
 }
 
 void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
-    const autofill::PasswordForm& parsed_form) {
+    const PasswordForm& parsed_form) {
   bool same =
       parsed_form.username_element == old_parsing_result_.username_element &&
       parsed_form.password_element == old_parsing_result_.password_element &&
