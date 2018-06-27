@@ -107,6 +107,14 @@ CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
     return max;
   return value;
 }
+
+// Returns |scrollView|.contentInset with an updated |topInset|.
+UIEdgeInsets TopContentInset(UIScrollView* scrollView, CGFloat topInset) {
+  UIEdgeInsets insets = scrollView.contentInset;
+  insets.top = topInset;
+  return insets;
+}
+
 }  // namespace
 
 NSString* const kOverscrollActionsWillStart = @"OverscrollActionsWillStart";
@@ -360,7 +368,7 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
     return;
 
   const UIEdgeInsets insets =
-      UIEdgeInsetsMake(-[self scrollView].contentOffset.y, 0, 0, 0);
+      TopContentInset(self.scrollView, -[self scrollView].contentOffset.y);
   // Start pulling (on top).
   CGFloat contentOffsetFromTheTop = [self scrollView].contentOffset.y;
   if (![_webViewProxy shouldUseViewContentInset]) {
@@ -634,9 +642,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 }
 
 - (void)resetScrollViewTopContentInset {
-  UIEdgeInsets contentInset = self.scrollView.contentInset;
-  contentInset.top = self.initialContentInset;
-  [self setScrollViewContentInset:contentInset];
+  const UIEdgeInsets insets =
+      TopContentInset(self.scrollView, self.initialContentInset);
+  [self setScrollViewContentInset:insets];
 }
 
 - (UIView<RelaxedBoundsConstraintsHitTestSupport>*)headerView {
@@ -680,8 +688,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   [[self scrollView] panGestureRecognizer].enabled = NO;
   [[self scrollView] panGestureRecognizer].enabled = YES;
 
-  [self setScrollViewContentInset:UIEdgeInsetsMake(self.initialContentInset, 0,
-                                                   0, 0)];
+  [self setScrollViewContentInset:TopContentInset(self.scrollView,
+                                                  self.initialContentInset)];
   [self clear];
 }
 
@@ -704,8 +712,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
       if (CACurrentMediaTime() - _lastScrollBeginTime >=
           kMinimumPullDurationToTriggerActionInSeconds) {
         _performingScrollViewIndependentAnimation = YES;
-        [self setScrollViewContentInset:UIEdgeInsetsMake(
-                                            self.initialContentInset, 0, 0, 0)];
+        [self setScrollViewContentInset:TopContentInset(
+                                            self.scrollView,
+                                            self.initialContentInset)];
         CGPoint contentOffset = [[self scrollView] contentOffset];
         contentOffset.y = -self.initialContentInset;
         [[self scrollView] setContentOffset:contentOffset animated:YES];
@@ -865,8 +874,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
   _dpLink = dpLink;
   memset(&_bounceState, 0, sizeof(_bounceState));
   if (self.overscrollState == OverscrollState::ACTION_READY) {
-    const UIEdgeInsets insets = UIEdgeInsetsMake(
-        -[self scrollView].contentOffset.y + self.initialContentInset, 0, 0, 0);
+    const UIEdgeInsets insets =
+        TopContentInset(self.scrollView, -[self scrollView].contentOffset.y +
+                                             self.initialContentInset);
     [self setScrollViewContentInset:insets];
     [[self scrollView] setScrollIndicatorInsets:insets];
   }
@@ -909,7 +919,8 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
         updateWithVerticalOffset:_bounceState.yInset - _bounceState.headerInset
                        topMargin:_bounceState.initialTopMargin];
   } else {
-    const UIEdgeInsets insets = UIEdgeInsetsMake(_bounceState.yInset, 0, 0, 0);
+    const UIEdgeInsets insets =
+        TopContentInset(self.scrollView, _bounceState.yInset);
     _forceStateUpdate = YES;
     [self setScrollViewContentInset:insets];
     [self scrollView].scrollIndicatorInsets = insets;
