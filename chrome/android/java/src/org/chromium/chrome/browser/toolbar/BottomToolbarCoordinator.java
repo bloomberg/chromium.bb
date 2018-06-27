@@ -34,6 +34,9 @@ public class BottomToolbarCoordinator {
     /** The tab switcher button component that lives in the bottom toolbar. */
     private final TabSwitcherButtonCoordinator mTabSwitcherButtonCoordinator;
 
+    /** The home button component that lives in the bottom toolbar. */
+    private final ToolbarButtonCoordinator mHomeButtonCoordinator;
+
     /**
      * Build the coordinator that manages the bottom toolbar.
      * @param fullscreenManager A {@link ChromeFullscreenManager} to update the bottom controls
@@ -58,6 +61,8 @@ public class BottomToolbarCoordinator {
                         model, new ViewHolder(toolbarRoot), new BottomToolbarViewBinder());
         model.addObserver(processor);
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(toolbarRoot);
+        mHomeButtonCoordinator =
+                new ToolbarButtonCoordinator(toolbarRoot.findViewById(R.id.home_button));
     }
 
     /**
@@ -86,8 +91,7 @@ public class BottomToolbarCoordinator {
             OnClickListener homeButtonListener, OnTouchListener menuButtonListener,
             TabModelSelector tabModelSelector, OverviewModeBehavior overviewModeBehavior,
             ContextualSearchManager contextualSearchManager) {
-        mMediator.setButtonListeners(
-                searchAcceleratorListener, homeButtonListener, menuButtonListener);
+        mMediator.setButtonListeners(searchAcceleratorListener, menuButtonListener);
         mMediator.setLayoutManager(layoutManager);
         mMediator.setResourceManager(resourceManager);
         mMediator.setOverviewModeBehavior(overviewModeBehavior);
@@ -96,6 +100,10 @@ public class BottomToolbarCoordinator {
 
         mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
         mTabSwitcherButtonCoordinator.setTabModelSelector(tabModelSelector);
+
+        mHomeButtonCoordinator.setButtonListeners(homeButtonListener, null);
+        mHomeButtonCoordinator.setOverviewModeBehavior(
+                overviewModeBehavior, ToolbarButtonCoordinator.BROWSING_MODE);
     }
 
     /**

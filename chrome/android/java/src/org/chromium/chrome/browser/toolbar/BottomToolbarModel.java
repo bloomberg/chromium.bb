@@ -26,10 +26,6 @@ public class BottomToolbarModel extends PropertyModel {
     public static final ObjectPropertyKey<OnClickListener> SEARCH_ACCELERATOR_LISTENER =
             new ObjectPropertyKey<>();
 
-    /** The touch listener for the home button. */
-    public static final ObjectPropertyKey<OnClickListener> HOME_BUTTON_LISTENER =
-            new ObjectPropertyKey<>();
-
     /** The touch listener for the menu button. */
     public static final ObjectPropertyKey<OnTouchListener> MENU_BUTTON_LISTENER =
             new ObjectPropertyKey<>();
@@ -53,8 +49,8 @@ public class BottomToolbarModel extends PropertyModel {
 
     /** Default constructor. */
     public BottomToolbarModel() {
-        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, HOME_BUTTON_LISTENER,
-                MENU_BUTTON_LISTENER, LAYOUT_MANAGER, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE,
-                UPDATE_BADGE_VISIBLE, TOOLBAR_SWIPE_HANDLER);
+        super(Y_OFFSET, ANDROID_VIEW_VISIBLE, SEARCH_ACCELERATOR_LISTENER, MENU_BUTTON_LISTENER,
+                LAYOUT_MANAGER, RESOURCE_MANAGER, SEARCH_ACCELERATOR_VISIBLE, UPDATE_BADGE_VISIBLE,
+                TOOLBAR_SWIPE_HANDLER);
     }
 }
