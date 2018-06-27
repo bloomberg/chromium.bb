@@ -170,9 +170,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDisablePrintPreview,
     prefs::kPrintPreviewDisabled,
     base::Value::Type::BOOLEAN },
-  { key::kDefaultPrinterSelection,
-    prefs::kPrintPreviewDefaultDestinationSelectionRules,
-    base::Value::Type::STRING },
   { key::kApplicationLocaleValue,
     prefs::kApplicationLocale,
     base::Value::Type::STRING },
@@ -206,9 +203,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kDefaultPopupsSetting,
     prefs::kManagedDefaultPopupsSetting,
     base::Value::Type::INTEGER },
-  { key::kAutoSelectCertificateForUrls,
-    prefs::kManagedAutoSelectCertificateForUrls,
-    base::Value::Type::LIST },
   { key::kCookiesAllowedForUrls,
     prefs::kManagedCookiesAllowedForUrls,
     base::Value::Type::LIST },
@@ -1113,6 +1107,24 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
           SCHEMA_STRICT,
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED,
           SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED))));
+
+  // Handlers for policies with embedded JSON strings. These handlers are very
+  // lenient - as long as the root value is of the right type, they only display
+  // warnings and never reject the policy value.
+  handlers->AddHandler(
+      std::make_unique<SimpleJsonStringSchemaValidatingPolicyHandler>(
+          key::kDefaultPrinterSelection,
+          prefs::kPrintPreviewDefaultDestinationSelectionRules,
+          chrome_schema.GetValidationSchema(),
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
+  handlers->AddHandler(
+      std::make_unique<SimpleJsonStringSchemaValidatingPolicyHandler>(
+          key::kAutoSelectCertificateForUrls,
+          prefs::kManagedAutoSelectCertificateForUrls,
+          chrome_schema.GetValidationSchema(),
+          SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
+          SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 #endif
 
 #if defined(OS_CHROMEOS)
