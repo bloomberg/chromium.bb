@@ -303,8 +303,10 @@ suite('AppearanceHandler', function() {
 
   test('show home button toggling', function() {
     assertFalse(!!appearancePage.$$('.list-frame'));
-    appearancePage.set('prefs', {browser: {show_home_button: {value: true}}});
-
+    appearancePage.set('prefs', {
+      browser: {show_home_button: {value: true}},
+      extensions: {theme: {id: {value: ''}}},
+    });
     Polymer.dom.flush();
 
     assertTrue(!!appearancePage.$$('.list-frame'));

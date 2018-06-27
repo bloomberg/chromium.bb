@@ -86,6 +86,9 @@ Polymer({
    * @private
    */
   onChangePermissionControl_: function() {
+    if (this.category == undefined)
+      return;
+
     // Don't override user settings with enforced settings.
     if (this.controlParams_.enforcement ==
         chrome.settingsPrivate.Enforcement.ENFORCED) {

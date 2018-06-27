@@ -88,6 +88,9 @@ Polymer({
    * @private
    */
   valueChanged_: function() {
+    if (this.pref == undefined)
+      return;
+
     // If |tickValues| is empty, simply set current value to the slider.
     if (this.tickValues.length == 0) {
       this.$.slider.value =
