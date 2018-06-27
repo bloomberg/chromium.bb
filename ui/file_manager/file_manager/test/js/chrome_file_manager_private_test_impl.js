@@ -16,7 +16,7 @@ const mockVolumeManager = new MockVolumeManager();
     mockVolumeManager
         .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
         .fileSystem)
-    .populate(['/root/']);
+    .populate(['/root/', '/team_drives/']);
 
 /**
  * Suppress compiler warning for overwriting chrome.fileManagerPrivate.
