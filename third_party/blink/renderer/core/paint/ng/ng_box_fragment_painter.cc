@@ -513,10 +513,14 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
   // TODO(layout-dev): Support theme painting.
   bool theme_painted = false;
 
+  // TODO(mstensho): Break dependency on LayoutObject functionality.
+  const LayoutObject& layout_object = *box_fragment_.GetLayoutObject();
   bool should_paint_background =
       !theme_painted &&
       (!paint_info.SkipRootBackground() ||
-       paint_info.PaintContainer() != box_fragment_.GetLayoutObject());
+       paint_info.PaintContainer() != layout_object) &&
+      (!layout_object.IsBoxModelObject() ||
+       !ToLayoutBoxModelObject(layout_object).BackgroundStolenForBeingBody());
   if (should_paint_background) {
     PaintBackground(paint_info, paint_rect,
                     box_decoration_data.background_color,
@@ -529,9 +533,9 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
                                       border_edges_.line_right);
 
     if (box_decoration_data.has_border_decoration &&
-        ShouldPaintBoxFragmentBorders(*box_fragment_.GetLayoutObject())) {
-      Node* generating_node = box_fragment_.GetLayoutObject()->GeneratingNode();
-      const Document& document = box_fragment_.GetLayoutObject()->GetDocument();
+        ShouldPaintBoxFragmentBorders(layout_object)) {
+      Node* generating_node = layout_object.GeneratingNode();
+      const Document& document = layout_object.GetDocument();
       PaintBorder(box_fragment_, document, generating_node, paint_info,
                   paint_rect, style, box_decoration_data.bleed_avoidance,
                   border_edges_.line_left, border_edges_.line_right);
