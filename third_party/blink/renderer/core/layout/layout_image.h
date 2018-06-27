@@ -90,7 +90,7 @@ class CORE_EXPORT LayoutImage : public LayoutReplaced {
 
   // When an image element violates feature policy optimized image policies, it
   // should be rendered with inverted color.
-  // https://github.com/WICG/feature-policy/blob/gh-pages/policies/optimized-images.md
+  // https://github.com/WICG/feature-policy/blob/master/policies/optimized-images.md
   bool ShouldInvertColor() const;
   void UpdateShouldInvertColor();
   void UpdateShouldInvertColorForTest(bool);

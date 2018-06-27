@@ -364,7 +364,7 @@ IN_PROC_BROWSER_TEST_F(DeviceSensorBrowserTest,
       "The deviceorientationabsolute events are blocked by "
       "feature policy. See "
       "https://github.com/WICG/feature-policy/blob/"
-      "gh-pages/features.md#sensor-features";
+      "master/features.md#sensor-features";
 
   auto console_delegate = std::make_unique<ConsoleObserverDelegate>(
       shell()->web_contents(), kWarningMessage);
