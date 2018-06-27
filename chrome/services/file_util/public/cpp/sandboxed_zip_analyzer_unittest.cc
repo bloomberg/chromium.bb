@@ -304,6 +304,8 @@ TEST_F(SandboxedZipAnalyzerTest, ZippedArchiveNoBinaries) {
   ASSERT_EQ(1u, results.archived_archive_filenames.size());
   EXPECT_EQ(FILE_PATH_LITERAL("hello.zip"),
             results.archived_archive_filenames[0].value());
+  EXPECT_GT(results.archived_binary[0].length(), 0);
+  EXPECT_FALSE(results.archived_binary[0].digests().sha256().empty());
 }
 
 TEST_F(SandboxedZipAnalyzerTest, ZippedRarArchiveNoBinaries) {
