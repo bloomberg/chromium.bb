@@ -86,6 +86,7 @@
 @implementation PrimaryToolbarView
 
 @synthesize locationBarView = _locationBarView;
+@synthesize fakeOmniboxTarget = _fakeOmniboxTarget;
 @synthesize locationBarBottomConstraint = _locationBarBottomConstraint;
 @synthesize locationBarHeight = _locationBarHeight;
 @synthesize buttonFactory = _buttonFactory;
@@ -138,6 +139,18 @@
   [self setUpProgressBar];
 
   [self setUpConstraints];
+}
+
+- (void)addFakeOmniboxTarget {
+  self.fakeOmniboxTarget = [[UIView alloc] init];
+  self.fakeOmniboxTarget.translatesAutoresizingMaskIntoConstraints = NO;
+  [self addSubview:self.fakeOmniboxTarget];
+  AddSameConstraints(self.locationBarContainer, self.fakeOmniboxTarget);
+}
+
+- (void)removeFakeOmniboxTarget {
+  [self.fakeOmniboxTarget removeFromSuperview];
+  self.fakeOmniboxTarget = nil;
 }
 
 #pragma mark - UIView

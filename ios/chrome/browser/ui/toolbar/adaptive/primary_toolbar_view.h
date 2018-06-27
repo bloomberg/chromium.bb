@@ -30,6 +30,10 @@
 // Container for the location bar.
 @property(nonatomic, strong, readonly) UIView* locationBarContainer;
 
+// A tappable view overlapping |locationBarContainer| used when the omnibox is
+// hidden by the NTP.
+@property(nonatomic, strong) UIView* fakeOmniboxTarget;
+
 // The height of the container for the location bar.
 @property(nonatomic, strong, readonly) NSLayoutConstraint* locationBarHeight;
 
@@ -63,6 +67,13 @@
 // Sets all the subviews and constraints of the view. The |topSafeAnchor| needs
 // to be set before calling this.
 - (void)setUp;
+
+// Adds a view overlapping |locationBarContainer| for use when the omnibox is
+// hidden by the NTP.
+- (void)addFakeOmniboxTarget;
+
+// Removes |fakeOmniboxTarget| from the view hierarchy.
+- (void)removeFakeOmniboxTarget;
 
 @end
 
