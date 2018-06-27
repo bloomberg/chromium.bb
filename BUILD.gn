@@ -13,7 +13,6 @@ import("//build/config/features.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/ui.gni")
 import("//components/nacl/features.gni")
-import("//components/nux_google_apps/features.gni")
 import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
@@ -1185,7 +1184,7 @@ if (closure_compile) {
     if (is_android) {
       data_deps += [ "components/offline_pages/resources:closure_compile" ]
     }
-    if (enable_nux_google_apps) {
+    if (is_win) {
       data_deps += [ "components/nux_google_apps/resources:closure_compile" ]
     }
   }

@@ -16,7 +16,7 @@
       <part file="net_log_resources.grdp" />
       <part file="neterror_resources.grdp" />
       <part file="ntp_tiles_resources.grdp" />
-      <if expr="enable_nux_google_apps">
+      <if expr="is_win">
         <part file="nux_google_apps.grdp" />
       </if>
       <part file="offline_pages_resources.grdp" />
