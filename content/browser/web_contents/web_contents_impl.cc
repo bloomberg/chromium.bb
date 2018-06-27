@@ -420,32 +420,71 @@ class WebContentsImpl::DisplayCutoutHostImpl
 
     values_[rfh] = value;
 
-    // If we are the current fullscreen frame then notify about the new value.
-    if (web_contents_impl()->current_fullscreen_frame_tree_node_id_ ==
-        rfh->GetFrameTreeNodeId())
+    // If we are the current |RenderFrameHost| frame then notify
+    // WebContentsObservers about the new value.
+    if (current_rfh_ == rfh)
       NotifyObservers(value);
   }
 
   // WebContentsObserver override.
   void DidAcquireFullscreen(RenderFrameHost* rfh) override {
-    NotifyObservers(GetValueOrDefault(rfh));
+    SetCurrentRenderFrameHost(rfh);
   }
 
   // WebContentsObserver override.
   void DidToggleFullscreenModeForTab(bool entered_fullscreen,
                                      bool will_cause_resize) override {
     if (!entered_fullscreen)
-      NotifyObservers(blink::mojom::ViewportFit::kAuto);
+      SetCurrentRenderFrameHost(nullptr);
   }
 
   // Removes any state built up by a render frame.
-  void RenderFrameDeleted(RenderFrameHost* rfh) override { values_.erase(rfh); }
+  void RenderFrameDeleted(RenderFrameHost* rfh) override {
+    values_.erase(rfh);
+
+    // If we were the current |RenderFrameHost| then we should clear that.
+    if (current_rfh_ == rfh)
+      SetCurrentRenderFrameHost(nullptr);
+  }
 
   // Updates the safe area insets on the current frame.
   void SetDisplayCutoutSafeArea(gfx::Insets insets) {
-    RenderFrameHost* frame = web_contents_impl()->GetMainFrame();
+    insets_ = insets;
+
+    if (current_rfh_)
+      SendSafeAreaToFrame(current_rfh_, insets);
+  }
+
+ private:
+  // Set the current |RenderFrameHost| that should have control over the
+  // viewport fit value and we should set safe area insets on.
+  void SetCurrentRenderFrameHost(RenderFrameHost* rfh) {
+    if (current_rfh_ == rfh)
+      return;
+
+    // If we had a previous frame then we should clear the insets on that frame.
+    if (current_rfh_)
+      SendSafeAreaToFrame(current_rfh_, gfx::Insets());
+
+    // If the new RenderFrameHost is nullptr we should stop here and notify
+    // observers that the new viewport fit is kAuto (the default).
+    current_rfh_ = rfh;
+    if (!rfh) {
+      NotifyObservers(blink::mojom::ViewportFit::kAuto);
+      return;
+    }
+
+    // Send the current safe area to the new frame.
+    SendSafeAreaToFrame(rfh, insets_);
+
+    // Notify the WebContentsObservers that the viewport fit value has changed.
+    NotifyObservers(GetValueOrDefault(rfh));
+  }
+
+  // Send the safe area insets to a |RenderFrameHost|.
+  void SendSafeAreaToFrame(RenderFrameHost* rfh, gfx::Insets insets) {
     blink::AssociatedInterfaceProvider* provider =
-        frame->GetRemoteAssociatedInterfaces();
+        rfh->GetRemoteAssociatedInterfaces();
     if (!provider)
       return;
 
@@ -455,8 +494,7 @@ class WebContentsImpl::DisplayCutoutHostImpl
         insets.top(), insets.left(), insets.bottom(), insets.right()));
   }
 
- private:
-  // Notify observers about a new viewport fit value.
+  // Notify WebContentsObservers that the viewport fit value has changed.
   void NotifyObservers(blink::mojom::ViewportFit value) {
     for (auto& observer : web_contents_impl()->observers_)
       observer.ViewportFitChanged(value);
@@ -474,6 +512,13 @@ class WebContentsImpl::DisplayCutoutHostImpl
   WebContentsImpl* web_contents_impl() {
     return static_cast<WebContentsImpl*>(web_contents());
   }
+
+  // Stores the current safe area insets.
+  gfx::Insets insets_ = gfx::Insets();
+
+  // Stores the current |RenderFrameHost| that has the applied safe area insets
+  // and is controlling the viewport fit value.
+  RenderFrameHost* current_rfh_ = nullptr;
 
   // Stores a map of RenderFrameHosts and their current viewport fit values.
   std::map<RenderFrameHost*, blink::mojom::ViewportFit> values_;
