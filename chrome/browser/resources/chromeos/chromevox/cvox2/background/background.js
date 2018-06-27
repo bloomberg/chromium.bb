@@ -230,16 +230,8 @@ Background.prototype = {
     var msg;
 
     if (this.pageSel_ && this.pageSel_.isValid() && range.isValid()) {
-      // Compute the direction of the endpoints of each range.
-
-      // Casts are ok because isValid checks node start and end nodes are
-      // non-null; Closure just doesn't eval enough to see it.
-      var startDir = AutomationUtil.getDirection(
-          this.pageSel_.start.node,
-          /** @type {!AutomationNode} */ (range.start.node));
-      var endDir = AutomationUtil.getDirection(
-          this.pageSel_.end.node,
-          /** @type {!AutomationNode} */ (range.end.node));
+      // Suppress hints.
+      o.withoutHints();
 
       // Selection across roots isn't supported.
       var pageRootStart = this.pageSel_.start.node.root;
@@ -248,21 +240,32 @@ Background.prototype = {
       var curRootEnd = range.end.node.root;
 
       // Disallow crossing over the start of the page selection and roots.
-      if (startDir == Dir.BACKWARD || pageRootStart != pageRootEnd ||
-          pageRootStart != curRootStart || pageRootEnd != curRootEnd) {
+      if (pageRootStart != pageRootEnd || pageRootStart != curRootStart ||
+          pageRootEnd != curRootEnd) {
         o.format('@end_selection');
         this.pageSel_ = null;
       } else {
         // Expand or shrink requires different feedback.
-        if (endDir == Dir.FORWARD &&
-            (this.pageSel_.end.node != range.end.node ||
-             this.pageSel_.end.index <= range.end.index)) {
+
+        // Page sel is the only place in ChromeVox where we used directed
+        // selections. It is important to keep track of the directedness in
+        // places, but when comparing to other ranges, take the undirected
+        // range.
+        var dir = this.pageSel_.normalize().compare(range);
+
+        if (dir) {
+          // Directed expansion.
           msg = '@selected';
         } else {
+          // Directed shrink.
           msg = '@unselected';
           selectedRange = prevRange;
         }
-        this.pageSel_ = new cursors.Range(this.pageSel_.start, range.end);
+        var wasBackwardSel =
+            this.pageSel_.start.compare(this.pageSel_.end) == Dir.BACKWARD ||
+            dir == Dir.BACKWARD;
+        this.pageSel_ = new cursors.Range(
+            this.pageSel_.start, wasBackwardSel ? range.start : range.end);
         if (this.pageSel_)
           this.pageSel_.select();
       }
