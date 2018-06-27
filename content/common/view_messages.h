@@ -52,7 +52,6 @@
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/public/platform/web_intrinsic_sizing_info.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_plugin_action.h"
 #include "third_party/blink/public/web/web_popup_type.h"
 #include "third_party/blink/public/web/web_text_direction.h"
@@ -81,8 +80,6 @@
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebDeviceEmulationParams::ScreenPosition,
                           blink::WebDeviceEmulationParams::kScreenPositionLast)
-IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
-                          blink::WebMediaPlayerAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPluginAction::Type,
                           blink::WebPluginAction::Type::kTypeLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebPopupType,
@@ -120,11 +117,6 @@ IPC_ENUM_TRAITS_MAX_VALUE(
 
 IPC_ENUM_TRAITS_MAX_VALUE(blink::ScrollerStyle, blink::kScrollerStyleOverlay)
 #endif
-
-IPC_STRUCT_TRAITS_BEGIN(blink::WebMediaPlayerAction)
-  IPC_STRUCT_TRAITS_MEMBER(type)
-  IPC_STRUCT_TRAITS_MEMBER(enable)
-IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebPluginAction)
   IPC_STRUCT_TRAITS_MEMBER(type)
@@ -352,12 +344,6 @@ IPC_MESSAGE_ROUTED1(ViewMsg_SetInitialFocus,
 IPC_MESSAGE_ROUTED2(ViewMsg_ShowContextMenu,
                     ui::MenuSourceType,
                     gfx::Point /* location where menu should be shown */)
-
-// Tells the renderer to perform the given action on the media player
-// located at the given point.
-IPC_MESSAGE_ROUTED2(ViewMsg_MediaPlayerActionAt,
-                    gfx::Point, /* location */
-                    blink::WebMediaPlayerAction)
 
 // Tells the renderer to perform the given action on the plugin located at
 // the given point.

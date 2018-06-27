@@ -950,13 +950,6 @@ void RenderViewHostImpl::EnablePreferredSizeMode() {
   Send(new ViewMsg_EnablePreferredSizeChangedMode(GetRoutingID()));
 }
 
-void RenderViewHostImpl::ExecuteMediaPlayerActionAtLocation(
-  const gfx::Point& location, const blink::WebMediaPlayerAction& action) {
-  // TODO(wjmaclean): See if coordinate transforms need to be done for OOPIFs
-  // and guest views. https://crbug.com/776807
-  Send(new ViewMsg_MediaPlayerActionAt(GetRoutingID(), location, action));
-}
-
 void RenderViewHostImpl::ExecutePluginActionAtLocation(
   const gfx::Point& location, const blink::WebPluginAction& action) {
   // TODO(wjmaclean): See if this needs to be done for OOPIFs as well.

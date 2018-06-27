@@ -321,13 +321,13 @@ class CORE_EXPORT WebLocalFrameImpl final
   FrameScheduler* Scheduler() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   WebInputMethodController* GetInputMethodController() override;
-
   void ExtractSmartClipData(WebRect rect_in_viewport,
                             WebString& clip_text,
                             WebString& clip_html,
                             WebRect& clip_rect) override;
-
   void AdvanceFocusInForm(WebFocusType) override;
+  void PerformMediaPlayerAction(const WebPoint&,
+                                const WebMediaPlayerAction&) override;
 
   void InitializeCoreFrame(Page&, FrameOwner*, const AtomicString& name);
   LocalFrame* GetFrame() const { return frame_.Get(); }

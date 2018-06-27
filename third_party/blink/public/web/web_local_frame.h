@@ -60,6 +60,7 @@ struct WebAssociatedURLLoaderOptions;
 struct WebConsoleMessage;
 struct WebContentSecurityPolicyViolation;
 struct WebFindOptions;
+struct WebMediaPlayerAction;
 struct WebPrintParams;
 struct WebPrintPresetOptions;
 struct WebScriptSource;
@@ -834,6 +835,11 @@ class WebLocalFrame : public WebFrame {
   // not be transformed itself. If no selection is present, the rect will be
   // empty ((0,0), (0,0)).
   virtual WebRect GetSelectionBoundsRectForTesting() const = 0;
+
+  // Performs the specified media player action on the media element at the
+  // given location.
+  virtual void PerformMediaPlayerAction(const WebPoint&,
+                                        const WebMediaPlayerAction&) = 0;
 
  protected:
   explicit WebLocalFrame(WebTreeScopeType scope) : WebFrame(scope) {}

@@ -100,7 +100,6 @@
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
-#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/resize_viewport_anchor.h"
 #include "third_party/blink/renderer/core/frame/rotation_viewport_anchor.h"
@@ -112,8 +111,6 @@
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 #include "third_party/blink/renderer/core/html/html_plugin_element.h"
-#include "third_party/blink/renderer/core/html/media/html_media_element.h"
-#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
@@ -2931,48 +2928,6 @@ void WebViewImpl::ResetScrollAndScaleState() {
   }
 
   GetPageScaleConstraintsSet().SetNeedsReset(true);
-}
-
-void WebViewImpl::PerformMediaPlayerAction(const WebMediaPlayerAction& action,
-                                           const WebPoint& location) {
-  HitTestResult result = HitTestResultForRootFramePos(
-      page_->GetVisualViewport().ViewportToRootFrame(location));
-
-  Node* node = result.InnerNode();
-  if (!IsHTMLVideoElement(*node) && !IsHTMLAudioElement(*node))
-    return;
-
-  HTMLMediaElement* media_element = ToHTMLMediaElement(node);
-  switch (action.type) {
-    case WebMediaPlayerAction::kPlay:
-      if (action.enable)
-        media_element->Play();
-      else
-        media_element->pause();
-      break;
-    case WebMediaPlayerAction::kMute:
-      media_element->setMuted(action.enable);
-      break;
-    case WebMediaPlayerAction::kLoop:
-      media_element->SetLoop(action.enable);
-      break;
-    case WebMediaPlayerAction::kControls:
-      media_element->SetBooleanAttribute(HTMLNames::controlsAttr,
-                                         action.enable);
-      break;
-    case WebMediaPlayerAction::kPictureInPicture:
-      DCHECK(media_element->IsHTMLVideoElement());
-      if (action.enable) {
-        PictureInPictureController::From(node->GetDocument())
-            .EnterPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
-      } else {
-        PictureInPictureController::From(node->GetDocument())
-            .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
-      }
-      break;
-    default:
-      NOTREACHED();
-  }
 }
 
 void WebViewImpl::PerformPluginAction(const WebPluginAction& action,

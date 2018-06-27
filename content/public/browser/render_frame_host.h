@@ -25,6 +25,7 @@
 
 namespace blink {
 class AssociatedInterfaceProvider;
+struct WebMediaPlayerAction;
 namespace mojom {
 enum class FeaturePolicyFeature;
 }  // namespace mojom
@@ -308,6 +309,11 @@ class CONTENT_EXPORT RenderFrameHost : public IPC::Listener,
   // navigation happens in the frame.
   virtual blink::mojom::PauseSubresourceLoadingHandlePtr
   PauseSubresourceLoading() = 0;
+
+  // Run the given action on the media player location at the given point.
+  virtual void ExecuteMediaPlayerActionAtLocation(
+      const gfx::Point& location,
+      const blink::WebMediaPlayerAction& action) = 0;
 
  private:
   // This interface should only be implemented inside content.

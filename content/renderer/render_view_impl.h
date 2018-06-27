@@ -74,7 +74,6 @@ class WebGestureEvent;
 class WebMouseEvent;
 class WebURLRequest;
 struct WebDateTimeChooserParams;
-struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebWindowFeatures;
 }  // namespace blink
@@ -514,8 +513,6 @@ class CONTENT_EXPORT RenderViewImpl : private RenderWidget,
   void OnEnablePreferredSizeChangedMode();
   void OnEnumerateDirectoryResponse(int id,
                                     const std::vector<base::FilePath>& paths);
-  void OnMediaPlayerActionAt(const gfx::Point& location,
-                             const blink::WebMediaPlayerAction& action);
   void OnPluginActionAt(const gfx::Point& location,
                         const blink::WebPluginAction& action);
   void OnMoveOrResizeStarted();

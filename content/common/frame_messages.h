@@ -70,6 +70,7 @@
 #include "third_party/blink/public/web/web_frame_owner_properties.h"
 #include "third_party/blink/public/web/web_frame_serializer_cache_control_policy.h"
 #include "third_party/blink/public/web/web_fullscreen_options.h"
+#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_tree_scope_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 #include "ui/gfx/geometry/rect.h"
@@ -138,6 +139,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(blink::WebTriggeringEventInfo,
                           blink::WebTriggeringEventInfo::kMaxValue)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::UserActivationUpdateType,
                           blink::UserActivationUpdateType::kMaxValue)
+IPC_ENUM_TRAITS_MAX_VALUE(blink::WebMediaPlayerAction::Type,
+                          blink::WebMediaPlayerAction::Type::kTypeLast)
 
 IPC_STRUCT_TRAITS_BEGIN(blink::WebFloatSize)
   IPC_STRUCT_TRAITS_MEMBER(width)
@@ -784,6 +787,11 @@ IPC_STRUCT_TRAITS_BEGIN(content::PepperRendererInstanceData)
 IPC_STRUCT_TRAITS_END()
 #endif
 
+IPC_STRUCT_TRAITS_BEGIN(blink::WebMediaPlayerAction)
+  IPC_STRUCT_TRAITS_MEMBER(type)
+  IPC_STRUCT_TRAITS_MEMBER(enable)
+IPC_STRUCT_TRAITS_END()
+
 // -----------------------------------------------------------------------------
 // Messages sent from the browser to the renderer.
 
@@ -1143,6 +1151,12 @@ IPC_MESSAGE_ROUTED1(FrameMsg_MixedContentFound,
 IPC_MESSAGE_ROUTED2(FrameMsg_ScrollRectToVisible,
                     gfx::Rect /* rect_to_scroll */,
                     blink::WebScrollIntoViewParams /* properties */)
+
+// Tells the renderer to perform the given action on the media player location
+// at the given point in the view coordinate space.
+IPC_MESSAGE_ROUTED2(FrameMsg_MediaPlayerActionAt,
+                    gfx::PointF /* location */,
+                    blink::WebMediaPlayerAction)
 
 // -----------------------------------------------------------------------------
 // Messages sent from the renderer to the browser.

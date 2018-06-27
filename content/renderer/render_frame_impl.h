@@ -121,6 +121,7 @@ struct FramePolicy;
 struct WebContextMenuData;
 struct WebCursorInfo;
 struct WebFindOptions;
+struct WebMediaPlayerAction;
 struct WebImeTextSpan;
 struct WebScrollIntoViewParams;
 }  // namespace blink
@@ -1055,6 +1056,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnMixedContentFound(const FrameMsg_MixedContentFound_Params& params);
   void OnSetOverlayRoutingToken(const base::UnguessableToken& token);
   void OnNotifyUserActivation();
+  void OnMediaPlayerActionAt(const gfx::PointF&,
+                             const blink::WebMediaPlayerAction&);
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)

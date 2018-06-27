@@ -211,8 +211,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EnableAutoResizeMode(const WebSize& min_size,
                             const WebSize& max_size) override;
   void DisableAutoResizeMode() override;
-  void PerformMediaPlayerAction(const WebMediaPlayerAction&,
-                                const WebPoint& location) override;
   void PerformPluginAction(const WebPluginAction&, const WebPoint&) override;
   void AudioStateChanged(bool is_audio_playing) override;
   void PausePageScheduledTasks(bool paused) override;
