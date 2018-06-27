@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 #include "base/single_thread_task_runner.h"
+#include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread.h"
 #include "media/capture/video/chromeos/mojo/camera3.mojom.h"
@@ -129,9 +130,11 @@ class CAPTURE_EXPORT CameraHalDelegate final
   // reported by the camera HAL, and |camera_info_| stores the camera info of
   // each camera device. They are modified only on |ipc_task_runner_|. They
   // are also read in GetSupportedFormats and GetDeviceDescriptors, in which the
-  // access is sequenced through UpdateBuiltInCameraInfo and
-  // |builtin_camera_info_updated_| to avoid race conditions.
+  // access is protected by |camera_info_lock_| and sequenced through
+  // UpdateBuiltInCameraInfo and |builtin_camera_info_updated_| to avoid race
+  // conditions.
   size_t num_builtin_cameras_;
+  base::Lock camera_info_lock_;
   std::unordered_map<std::string, cros::mojom::CameraInfoPtr> camera_info_;
 
   SEQUENCE_CHECKER(sequence_checker_);
