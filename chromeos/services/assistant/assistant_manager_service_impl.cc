@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -338,8 +339,7 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
 
   // Device settings update result is not handled because it is not included in
   // the SettingsUiUpdateResult.
-  SendUpdateSettingsUiRequest(update.SerializeAsString(),
-                              UpdateSettingsUiResponseCallback());
+  SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
 
   // Update device locale if voice interaction setup is completed.
   main_thread_task_runner_->PostTask(
@@ -365,8 +365,7 @@ void AssistantManagerServiceImpl::UpdateDeviceLocale(bool is_setup_completed) {
 
   // Device settings update result is not handled because it is not included in
   // the SettingsUiUpdateResult.
-  SendUpdateSettingsUiRequest(update.SerializeAsString(),
-                              UpdateSettingsUiResponseCallback());
+  SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
 }
 
 void AssistantManagerServiceImpl::HandleGetSettingsResponse(
