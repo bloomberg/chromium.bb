@@ -772,14 +772,6 @@ void ServiceWorkerMetrics::RecordTimeToSendStartWorker(
                                     duration);
 }
 
-void ServiceWorkerMetrics::RecordTimeToURLJob(base::TimeDelta duration,
-                                              StartSituation situation) {
-  std::string name = "EmbeddedWorkerInstance.Start.TimeToURLJob";
-  UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                    duration);
-}
-
 void ServiceWorkerMetrics::RecordTimeToStartThread(base::TimeDelta duration,
                                                    StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToStartThread";
