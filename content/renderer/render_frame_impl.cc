@@ -1789,6 +1789,7 @@ bool RenderFrameImpl::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_SetOverlayRoutingToken,
                         OnSetOverlayRoutingToken)
     IPC_MESSAGE_HANDLER(FrameMsg_NotifyUserActivation, OnNotifyUserActivation)
+    IPC_MESSAGE_HANDLER(FrameMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
 #if defined(OS_MACOSX)
@@ -6294,6 +6295,15 @@ void RenderFrameImpl::RequestOverlayRoutingToken(
 
 void RenderFrameImpl::OnNotifyUserActivation() {
   frame_->NotifyUserActivation();
+}
+
+void RenderFrameImpl::OnMediaPlayerActionAt(
+    const gfx::PointF& location,
+    const blink::WebMediaPlayerAction& action) {
+  blink::WebFloatRect viewport_position(location.x(), location.y(), 0, 0);
+  GetRenderWidget()->ConvertWindowToViewport(&viewport_position);
+  frame_->PerformMediaPlayerAction(
+      WebPoint(viewport_position.x, viewport_position.y), action);
 }
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)

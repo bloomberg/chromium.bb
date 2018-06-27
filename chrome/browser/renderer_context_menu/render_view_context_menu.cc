@@ -2676,8 +2676,9 @@ void RenderViewContextMenu::WriteURLToClipboard(const GURL& url) {
 void RenderViewContextMenu::MediaPlayerActionAt(
     const gfx::Point& location,
     const WebMediaPlayerAction& action) {
-  source_web_contents_->GetRenderViewHost()->
-      ExecuteMediaPlayerActionAtLocation(location, action);
+  RenderFrameHost* frame_host = GetRenderFrameHost();
+  if (frame_host)
+    frame_host->ExecuteMediaPlayerActionAtLocation(location, action);
 }
 
 void RenderViewContextMenu::PluginActionAt(

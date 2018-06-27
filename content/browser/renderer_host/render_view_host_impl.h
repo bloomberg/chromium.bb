@@ -93,9 +93,6 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       const std::vector<base::FilePath>& files) override;
   void DisableScrollbarsForThreshold(const gfx::Size& size) override;
   void EnablePreferredSizeMode() override;
-  void ExecuteMediaPlayerActionAtLocation(
-      const gfx::Point& location,
-      const blink::WebMediaPlayerAction& action) override;
   void ExecutePluginActionAtLocation(
       const gfx::Point& location,
       const blink::WebPluginAction& action) override;

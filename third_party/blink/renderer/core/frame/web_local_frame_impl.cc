@@ -118,6 +118,7 @@
 #include "third_party/blink/public/web/web_icon_url.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/web_performance.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -175,6 +176,7 @@
 #include "third_party/blink/renderer/core/frame/page_scale_constraints_set.h"
 #include "third_party/blink/renderer/core/frame/pausable_script_executor.h"
 #include "third_party/blink/renderer/core/frame/pausable_task.h"
+#include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
 #include "third_party/blink/renderer/core/frame/remote_frame.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_owner.h"
 #include "third_party/blink/renderer/core/frame/screen_orientation_controller.h"
@@ -192,6 +194,8 @@
 #include "third_party/blink/renderer/core/html/html_head_element.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
 #include "third_party/blink/renderer/core/html/html_link_element.h"
+#include "third_party/blink/renderer/core/html/media/html_media_element.h"
+#include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/html/plugin_document.h"
 #include "third_party/blink/renderer/core/html_names.h"
 #include "third_party/blink/renderer/core/input/context_menu_allowed_scope.h"
@@ -2473,6 +2477,47 @@ void WebLocalFrameImpl::AdvanceFocusInForm(WebFocusType focus_type) {
 
   next_element->scrollIntoViewIfNeeded(true /*centerIfNeeded*/);
   next_element->focus();
+}
+
+void WebLocalFrameImpl::PerformMediaPlayerAction(
+    const WebPoint& location,
+    const WebMediaPlayerAction& action) {
+  HitTestResult result = HitTestResultForVisualViewportPos(location);
+  Node* node = result.InnerNode();
+  if (!IsHTMLVideoElement(*node) && !IsHTMLAudioElement(*node))
+    return;
+
+  HTMLMediaElement* media_element = ToHTMLMediaElement(node);
+  switch (action.type) {
+    case WebMediaPlayerAction::kPlay:
+      if (action.enable)
+        media_element->Play();
+      else
+        media_element->pause();
+      break;
+    case WebMediaPlayerAction::kMute:
+      media_element->setMuted(action.enable);
+      break;
+    case WebMediaPlayerAction::kLoop:
+      media_element->SetLoop(action.enable);
+      break;
+    case WebMediaPlayerAction::kControls:
+      media_element->SetBooleanAttribute(HTMLNames::controlsAttr,
+                                         action.enable);
+      break;
+    case WebMediaPlayerAction::kPictureInPicture:
+      DCHECK(media_element->IsHTMLVideoElement());
+      if (action.enable) {
+        PictureInPictureController::From(node->GetDocument())
+            .EnterPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+      } else {
+        PictureInPictureController::From(node->GetDocument())
+            .ExitPictureInPicture(ToHTMLVideoElement(media_element), nullptr);
+      }
+      break;
+    default:
+      NOTREACHED();
+  }
 }
 
 void WebLocalFrameImpl::SetTextCheckClient(

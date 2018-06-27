@@ -149,7 +149,6 @@
 #include "third_party/blink/public/web/web_hit_test_result.h"
 #include "third_party/blink/public/web/web_input_element.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_media_player_action.h"
 #include "third_party/blink/public/web/web_navigation_policy.h"
 #include "third_party/blink/public/web/web_page_importance_signals.h"
 #include "third_party/blink/public/web/web_plugin.h"
@@ -217,7 +216,6 @@ using blink::WebImage;
 using blink::WebInputElement;
 using blink::WebInputEvent;
 using blink::WebLocalFrame;
-using blink::WebMediaPlayerAction;
 using blink::WebMouseEvent;
 using blink::WebNavigationPolicy;
 using blink::WebNavigationType;
@@ -1073,7 +1071,6 @@ bool RenderViewImpl::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
                         OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
-    IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_PluginActionAt, OnPluginActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
     IPC_MESSAGE_HANDLER(ViewMsg_ResolveTapDisambiguation,
@@ -1898,12 +1895,6 @@ void RenderViewImpl::OnSetRendererPrefs(
       old_accept_languages != renderer_preferences_.accept_languages) {
     webview()->AcceptLanguagesChanged();
   }
-}
-
-void RenderViewImpl::OnMediaPlayerActionAt(const gfx::Point& location,
-                                           const WebMediaPlayerAction& action) {
-  if (webview())
-    webview()->PerformMediaPlayerAction(action, location);
 }
 
 void RenderViewImpl::OnPluginActionAt(const gfx::Point& location,

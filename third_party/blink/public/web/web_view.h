@@ -54,7 +54,6 @@ class WebString;
 class WebViewClient;
 struct WebDeviceEmulationParams;
 struct WebFloatPoint;
-struct WebMediaPlayerAction;
 struct WebPluginAction;
 struct WebPoint;
 struct WebWindowFeatures;
@@ -309,11 +308,6 @@ class WebView : protected WebWidget {
   virtual void DisableAutoResizeMode() = 0;
 
   // Media ---------------------------------------------------------------
-
-  // Performs the specified media player action on the node at the given
-  // location.
-  virtual void PerformMediaPlayerAction(const WebMediaPlayerAction&,
-                                        const WebPoint& location) = 0;
 
   // Performs the specified plugin action on the node at the given location.
   virtual void PerformPluginAction(const WebPluginAction&,

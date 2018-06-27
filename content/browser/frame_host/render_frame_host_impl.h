@@ -244,6 +244,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void ViewSource() override;
   blink::mojom::PauseSubresourceLoadingHandlePtr PauseSubresourceLoading()
       override;
+  void ExecuteMediaPlayerActionAtLocation(
+      const gfx::Point&,
+      const blink::WebMediaPlayerAction& action) override;
 
   // IPC::Sender
   bool Send(IPC::Message* msg) override;
