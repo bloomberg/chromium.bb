@@ -79,8 +79,9 @@ SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
       case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
         return INVALID;
     }
+    synthetic_pointer_driver_->DispatchEvent(target, timestamp);
   }
-  synthetic_pointer_driver_->DispatchEvent(target, timestamp);
+
   num_actions_dispatched_++;
   if (num_actions_dispatched_ == params_.params.size())
     return DONE;

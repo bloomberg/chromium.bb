@@ -65,7 +65,8 @@ bool MakeUITouchEventsFromWebTouchEvents(
 
   int flags = ui::WebEventModifiersToEventFlags(touch.GetModifiers());
   base::TimeTicks timestamp = touch.TimeStamp();
-  for (unsigned i = 0; i < touch.touches_length; ++i) {
+  unsigned count = 0;
+  for (unsigned i = 0; i < blink::WebTouchEvent::kTouchesLengthCap; ++i) {
     const blink::WebTouchPoint& point = touch.touches[i];
     if (WebTouchPointStateToEventType(point.state) != type)
       continue;
@@ -84,6 +85,8 @@ bool MakeUITouchEventsFromWebTouchEvents(
     uievent->set_root_location_f(location);
     uievent->set_latency(touch_with_latency.latency);
     list->push_back(std::move(uievent));
+    if (++count >= touch.touches_length)
+      break;
   }
   return true;
 }
