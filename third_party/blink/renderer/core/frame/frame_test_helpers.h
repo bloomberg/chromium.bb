@@ -37,6 +37,9 @@
 #include <string>
 
 #include "base/macros.h"
+#include "content/renderer/gpu/render_widget_compositor.h"
+#include "content/test/fake_compositor_dependencies.h"
+#include "content/test/stub_render_widget_compositor_delegate.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/platform/modules/fetch/fetch_api_request.mojom-shared.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -54,7 +57,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme.h"
 #include "third_party/blink/renderer/platform/testing/use_mock_scrollbar_settings.h"
-#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 #define EXPECT_FLOAT_POINT_EQ(expected, actual)    \
   do {                                             \
@@ -167,14 +169,16 @@ class TestWebWidgetClient : public WebWidgetClient {
   WebLayerTreeView* InitializeLayerTreeView() override;
 
  private:
-  std::unique_ptr<WebLayerTreeView> layer_tree_view_;
+  content::StubRenderWidgetCompositorDelegate delegate_;
+  content::FakeCompositorDependencies compositor_deps_;
+  std::unique_ptr<content::RenderWidgetCompositor> compositor_;
 };
 
 class TestWebViewClient : public WebViewClient {
  public:
   ~TestWebViewClient() override = default;
 
-  WebLayerTreeViewImplForTesting* GetLayerTreeViewForTesting();
+  void SetViewportSize(const WebSize& size);
 
   // WebViewClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
@@ -185,7 +189,9 @@ class TestWebViewClient : public WebViewClient {
   bool CanUpdateLayout() override { return true; }
 
  private:
-  std::unique_ptr<WebLayerTreeViewImplForTesting> layer_tree_view_;
+  content::StubRenderWidgetCompositorDelegate delegate_;
+  content::FakeCompositorDependencies compositor_deps_;
+  std::unique_ptr<content::RenderWidgetCompositor> compositor_;
   bool animation_scheduled_ = false;
 };
 
@@ -247,7 +253,9 @@ class WebViewHelper {
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
 
-  void SetViewportSize(const WebSize&);
+  void SetViewportSize(const WebSize& size) {
+    test_web_view_client_->SetViewportSize(size);
+  }
 
  private:
   void InitializeWebView(TestWebViewClient*, class WebView* opener);

@@ -70,9 +70,9 @@ class PageOverlayTest : public testing::Test {
   enum CompositingMode { kAcceleratedCompositing, kUnacceleratedCompositing };
 
   void Initialize(CompositingMode compositing_mode) {
-    helper_.Initialize(nullptr /* webFrameClient */,
-                       nullptr /* webViewClient */,
-                       nullptr /* webWidgetClient */,
+    helper_.Initialize(nullptr /* web_frame_client */,
+                       nullptr /* web_view_client */,
+                       nullptr /* web_widget_client */,
                        compositing_mode == kAcceleratedCompositing
                            ? EnableAcceleratedCompositing
                            : DisableAcceleratedCompositing);

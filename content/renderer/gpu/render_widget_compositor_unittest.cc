@@ -22,6 +22,7 @@
 #include "content/public/test/mock_render_thread.h"
 #include "content/renderer/render_widget.h"
 #include "content/test/fake_compositor_dependencies.h"
+#include "content/test/stub_render_widget_compositor_delegate.h"
 #include "gpu/GLES2/gl2extchromium.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,36 +38,6 @@ enum FailureMode {
   NO_FAILURE,
   BIND_CONTEXT_FAILURE,
   GPU_CHANNEL_FAILURE,
-};
-
-class StubRenderWidgetCompositorDelegate
-    : public RenderWidgetCompositorDelegate {
- public:
-  // RenderWidgetCompositorDelegate implementation.
-  void ApplyViewportDeltas(const gfx::Vector2dF& inner_delta,
-                           const gfx::Vector2dF& outer_delta,
-                           const gfx::Vector2dF& elastic_overscroll_delta,
-                           float page_scale,
-                           float top_controls_delta) override {}
-  void RecordWheelAndTouchScrollingCount(bool has_scrolled_by_wheel,
-                                         bool has_scrolled_by_touch) override {}
-  void BeginMainFrame(base::TimeTicks frame_time) override {}
-  void RequestNewLayerTreeFrameSink(
-      const LayerTreeFrameSinkCallback& callback) override {
-    callback.Run(nullptr);
-  }
-  void DidCommitAndDrawCompositorFrame() override {}
-  void DidCommitCompositorFrame() override {}
-  void DidCompletePageScaleAnimation() override {}
-  void DidReceiveCompositorFrameAck() override {}
-  bool IsClosing() const override { return false; }
-  void RequestScheduleAnimation() override {}
-  void UpdateVisualState(VisualStateUpdate requested_update) override {}
-  void WillBeginCompositorFrame() override {}
-  std::unique_ptr<cc::SwapPromise> RequestCopyOfOutputForLayoutTest(
-      std::unique_ptr<viz::CopyOutputRequest> request) override {
-    return nullptr;
-  }
 };
 
 class FakeRenderWidgetCompositorDelegate
