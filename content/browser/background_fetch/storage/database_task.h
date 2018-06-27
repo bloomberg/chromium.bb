@@ -29,6 +29,18 @@ using HandleBackgroundFetchErrorCallback =
 
 namespace background_fetch {
 
+class DatabaseTask;
+
+// A DatabaseTaskHost is the entity responsible for scheduling and running
+// DatabaseTasks, usually the BackgroundFetchDataManager. Note that a
+// DatabaseTask can be a DatabaseTaskHost, in order to run subtasks.
+class DatabaseTaskHost {
+ public:
+  virtual void OnTaskFinished(DatabaseTask* task) = 0;
+  virtual BackgroundFetchDataManager* data_manager() = 0;
+  virtual ~DatabaseTaskHost() = default;
+};
+
 // A DatabaseTask is an asynchronous "transaction" that needs to read/write the
 // Service Worker Database.
 //
@@ -36,27 +48,25 @@ namespace background_fetch {
 // reads/writes Background Fetch keys, so each task effectively has an exclusive
 // lock, except that core Service Worker code may delete all keys for a
 // ServiceWorkerRegistration or the entire database at any time.
-class DatabaseTask {
+//
+// A DatabaseTask can also optionally run other DatabaseTasks as subtasks. This
+// allows us to re-use commonly used DatabaseTasks. Subtasks are started as soon
+// as they are added, and cannot outlive the parent DatabaseTask.
+class DatabaseTask : public DatabaseTaskHost {
  public:
-  virtual ~DatabaseTask();
+  ~DatabaseTask() override;
 
   virtual void Start() = 0;
 
  protected:
-  explicit DatabaseTask(BackgroundFetchDataManager* data_manager);
-
-  // Constructor for DatabaseTasks that are created by other DatabaseTasks.
-  // They will need to provide their own copy of |cache_manager|, just in case
-  // Shutdown was called and the CacheStorageManager reference in
-  // |data_manager_| was invalidated.
-  DatabaseTask(BackgroundFetchDataManager* data_manager,
-               scoped_refptr<CacheStorageManager> cache_manager);
+  explicit DatabaseTask(DatabaseTaskHost* host);
 
   // Each task MUST call this once finished, even if exceptions occur, to
   // release their lock and allow the next task to execute.
   void Finished();
 
   void AddDatabaseTask(std::unique_ptr<DatabaseTask> task);
+  void AddSubTask(std::unique_ptr<DatabaseTask> task);
 
   ServiceWorkerContextWrapper* service_worker_context();
 
@@ -66,14 +76,19 @@ class DatabaseTask {
 
   ChromeBlobStorageContext* blob_storage_context();
 
-  BackgroundFetchDataManager* data_manager() { return data_manager_; }
+  // DatabaseTaskHost implementation.
+  void OnTaskFinished(DatabaseTask* finished_subtask) override;
+  BackgroundFetchDataManager* data_manager() override;
 
  private:
-  BackgroundFetchDataManager* data_manager_;  // Owns this.
+  DatabaseTaskHost* host_;
 
   // Owns a reference to the CacheStorageManager in case Shutdown was
   // called and the DatabaseTask needs to finish.
   scoped_refptr<CacheStorageManager> cache_manager_;
+
+  // Map the raw pointer to its unique_ptr, to make lookups easier.
+  std::map<DatabaseTask*, std::unique_ptr<DatabaseTask>> active_subtasks_;
 
   DISALLOW_COPY_AND_ASSIGN(DatabaseTask);
 };

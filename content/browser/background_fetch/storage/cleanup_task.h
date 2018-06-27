@@ -20,7 +20,7 @@ namespace background_fetch {
 // TODO(crbug.com/780025): Log failed deletions to UMA.
 class CleanupTask : public background_fetch::DatabaseTask {
  public:
-  explicit CleanupTask(BackgroundFetchDataManager* data_manager);
+  explicit CleanupTask(DatabaseTaskHost* host);
 
   ~CleanupTask() override;
 

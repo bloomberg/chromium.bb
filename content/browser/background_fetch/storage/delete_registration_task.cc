@@ -40,27 +40,12 @@ void DCheckRegistrationNotActive(const std::string& unique_id,
 }  // namespace
 
 DeleteRegistrationTask::DeleteRegistrationTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     const std::string& unique_id,
     HandleBackgroundFetchErrorCallback callback)
-    : DatabaseTask(data_manager),
-      service_worker_registration_id_(service_worker_registration_id),
-      origin_(origin),
-      unique_id_(unique_id),
-      callback_(std::move(callback)),
-      weak_factory_(this) {
-}
-
-DeleteRegistrationTask::DeleteRegistrationTask(
-    BackgroundFetchDataManager* data_manager,
-    scoped_refptr<CacheStorageManager> cache_manager,
-    int64_t service_worker_registration_id,
-    const url::Origin& origin,
-    const std::string& unique_id,
-    HandleBackgroundFetchErrorCallback callback)
-    : DatabaseTask(data_manager, cache_manager),
+    : DatabaseTask(host),
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
       unique_id_(unique_id),

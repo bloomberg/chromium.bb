@@ -24,7 +24,7 @@ namespace background_fetch {
 class GetDeveloperIdsTask : public DatabaseTask {
  public:
   GetDeveloperIdsTask(
-      BackgroundFetchDataManager* data_manager,
+      DatabaseTaskHost* host,
       int64_t service_worker_registration_id,
       const url::Origin& origin,
       blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback);

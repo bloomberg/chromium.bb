@@ -14,12 +14,12 @@ namespace content {
 
 namespace background_fetch {
 
-GetMetadataTask::GetMetadataTask(BackgroundFetchDataManager* data_manager,
+GetMetadataTask::GetMetadataTask(DatabaseTaskHost* host,
                                  int64_t service_worker_registration_id,
                                  const url::Origin& origin,
                                  const std::string& developer_id,
                                  GetMetadataCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
       developer_id_(developer_id),

@@ -14,34 +14,40 @@ namespace content {
 
 namespace background_fetch {
 
-DatabaseTask::DatabaseTask(BackgroundFetchDataManager* data_manager)
-    : data_manager_(data_manager) {
-  DCHECK(data_manager_);
-  cache_manager_ = data_manager_->cache_manager();
+DatabaseTask::DatabaseTask(DatabaseTaskHost* host) : host_(host) {
+  DCHECK(host_);
+  // Hold a reference to the CacheStorageManager.
+  cache_manager_ = data_manager()->cache_manager();
 }
 
-DatabaseTask::DatabaseTask(BackgroundFetchDataManager* data_manager,
-                           scoped_refptr<CacheStorageManager> cache_manager)
-    : data_manager_(data_manager), cache_manager_(cache_manager) {
-  DCHECK(data_manager_);
-  DCHECK(cache_manager_);
+DatabaseTask::~DatabaseTask() {
+  DCHECK(active_subtasks_.empty() || data_manager()->shutting_down_);
 }
-
-DatabaseTask::~DatabaseTask() = default;
 
 void DatabaseTask::Finished() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  host_->OnTaskFinished(this);
+}
 
-  data_manager_->OnDatabaseTaskFinished(this);
+void DatabaseTask::OnTaskFinished(DatabaseTask* finished_subtask) {
+  size_t erased = active_subtasks_.erase(finished_subtask);
+  DCHECK_EQ(erased, 1u);
 }
 
 void DatabaseTask::AddDatabaseTask(std::unique_ptr<DatabaseTask> task) {
-  data_manager_->AddDatabaseTask(std::move(task), true /* internal */);
+  DCHECK_EQ(task->host_, data_manager());
+  data_manager()->AddDatabaseTask(std::move(task));
+}
+
+void DatabaseTask::AddSubTask(std::unique_ptr<DatabaseTask> task) {
+  DCHECK_EQ(task->host_, this);
+  auto insert_result = active_subtasks_.emplace(task.get(), std::move(task));
+  insert_result.first->second->Start();  // Start the subtask.
 }
 
 ServiceWorkerContextWrapper* DatabaseTask::service_worker_context() {
-  DCHECK(data_manager_->service_worker_context());
-  return data_manager_->service_worker_context();
+  DCHECK(data_manager()->service_worker_context());
+  return data_manager()->service_worker_context();
 }
 
 CacheStorageManager* DatabaseTask::cache_manager() {
@@ -50,11 +56,15 @@ CacheStorageManager* DatabaseTask::cache_manager() {
 }
 
 std::set<std::string>& DatabaseTask::ref_counted_unique_ids() {
-  return data_manager_->ref_counted_unique_ids();
+  return data_manager()->ref_counted_unique_ids();
 }
 
 ChromeBlobStorageContext* DatabaseTask::blob_storage_context() {
-  return data_manager_->blob_storage_context();
+  return data_manager()->blob_storage_context();
+}
+
+BackgroundFetchDataManager* DatabaseTask::data_manager() {
+  return host_->data_manager();
 }
 
 }  // namespace background_fetch

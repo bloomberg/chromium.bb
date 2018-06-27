@@ -13,11 +13,11 @@ namespace content {
 namespace background_fetch {
 
 StartNextPendingRequestTask::StartNextPendingRequestTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     int64_t service_worker_registration_id,
     std::unique_ptr<proto::BackgroundFetchMetadata> metadata,
     NextRequestCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       service_worker_registration_id_(service_worker_registration_id),
       metadata_(std::move(metadata)),
       callback_(std::move(callback)),

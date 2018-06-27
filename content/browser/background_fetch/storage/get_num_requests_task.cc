@@ -5,6 +5,7 @@
 #include "content/browser/background_fetch/storage/get_num_requests_task.h"
 
 #include "content/browser/background_fetch/background_fetch.pb.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -31,11 +32,11 @@ void HandleGetMetadataCallback(
 }  // namespace
 
 GetNumRequestsTask::GetNumRequestsTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     RequestType type,
     NumRequestsCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       registration_id_(registration_id),
       type_(type),
       callback_(std::move(callback)),

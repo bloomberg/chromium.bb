@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_BACKGROUND_FETCH_STORAGE_GET_NUM_REQUESTS_TASK_H_
 
 #include "base/callback_forward.h"
+#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/common/content_export.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
@@ -21,7 +22,7 @@ class CONTENT_EXPORT GetNumRequestsTask : public DatabaseTask {
  public:
   using NumRequestsCallback = base::OnceCallback<void(size_t)>;
 
-  GetNumRequestsTask(BackgroundFetchDataManager* data_manager,
+  GetNumRequestsTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,
                      RequestType type,
                      NumRequestsCallback callback);
