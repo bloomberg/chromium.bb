@@ -244,4 +244,20 @@ TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote) {
   }
 }
 
+TEST_F(VotesUploaderTest, GeneratePasswordAttributesVote_OneCharacterPassword) {
+  // |VotesUploader::GeneratePasswordAttributesVote| shouldn't crash if a
+  // password has only one character.
+  autofill::FormData form;
+  autofill::FormStructure form_structure(form);
+  VotesUploader votes_uploader(&client_, true);
+  votes_uploader.GeneratePasswordAttributesVote(ASCIIToUTF16("1"),
+                                                &form_structure);
+  base::Optional<std::pair<autofill::PasswordAttribute, bool>> vote =
+      form_structure.get_password_attributes_vote_for_testing();
+  EXPECT_TRUE(vote.has_value());
+  size_t reported_length =
+      form_structure.get_password_length_vote_for_testing();
+  EXPECT_EQ(1u, reported_length);
+}
+
 }  // namespace password_manager
