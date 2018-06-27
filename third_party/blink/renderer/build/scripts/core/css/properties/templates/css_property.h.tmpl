@@ -58,6 +58,7 @@ class CSSProperty : public CSSUnresolvedProperty {
   virtual bool IsAffectedByAll() const { return IsEnabled() && IsProperty(); }
   virtual bool IsLayoutDependentProperty() const { return false; }
   virtual bool IsLayoutDependent(const ComputedStyle* style, LayoutObject* layout_object) const { return false; }
+  virtual bool IsValidForVisitedLink() const { return false; }
 
   // Properties that do not override this method:
   // CSSPropertyWebkitFontSizeDelta

@@ -50,33 +50,6 @@
 
 namespace blink {
 
-namespace {
-
-static inline bool IsValidVisitedLinkProperty(CSSPropertyID id) {
-  switch (id) {
-    case CSSPropertyBackgroundColor:
-    case CSSPropertyBorderLeftColor:
-    case CSSPropertyBorderRightColor:
-    case CSSPropertyBorderTopColor:
-    case CSSPropertyBorderBottomColor:
-    case CSSPropertyCaretColor:
-    case CSSPropertyColor:
-    case CSSPropertyFill:
-    case CSSPropertyOutlineColor:
-    case CSSPropertyStroke:
-    case CSSPropertyTextDecorationColor:
-    case CSSPropertyColumnRuleColor:
-    case CSSPropertyWebkitTextEmphasisColor:
-    case CSSPropertyWebkitTextFillColor:
-    case CSSPropertyWebkitTextStrokeColor:
-      return true;
-    default:
-      return false;
-  }
-}
-
-}  // namespace
-
 void StyleBuilder::ApplyProperty(const CSSProperty& property,
                                  StyleResolverState& state,
                                  const CSSValue& value) {
@@ -111,7 +84,7 @@ void StyleBuilder::ApplyProperty(const CSSProperty& property,
 
   if (!state.ApplyPropertyToRegularStyle() &&
       (!state.ApplyPropertyToVisitedLinkStyle() ||
-       !IsValidVisitedLinkProperty(id))) {
+       !property.IsValidForVisitedLink())) {
     // Limit the properties that can be applied to only the ones honored by
     // :visited.
     return;

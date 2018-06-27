@@ -360,6 +360,15 @@
       default: false,
       valid_type: "bool",
     },
+
+    // - valid_for_visited_link
+    // Most CSS properties do not apply to :visited and :link for privacy
+    // reasons. Mark properties which apply to :visited and :link by setting
+    // this flag to true.
+    valid_for_visited_link: {
+      default: false,
+      valid_type: "bool",
+    },
   },
 
   // Members in the data objects should appear in the same order as in the
@@ -530,6 +539,7 @@
       priority: "High",
       keywords: ["currentcolor"],
       typedom_types: ["Keyword"],
+      valid_for_visited_link: true,
     },
     {
       name: "direction",
@@ -914,6 +924,7 @@
       style_builder_template_args: {
         initial_color: "ComputedStyleInitialValues::InitialBackgroundColor",
       },
+      valid_for_visited_link: true,
     },
     {
       name: "background-image",
@@ -1006,6 +1017,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "border-bottom-left-radius",
@@ -1131,6 +1143,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "border-left-style",
@@ -1173,6 +1186,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "border-right-style",
@@ -1215,6 +1229,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "border-top-left-radius",
@@ -1369,6 +1384,7 @@
       style_builder_custom_functions: ["initial", "inherit", "value"],
       keywords: ["auto", "currentcolor"],
       typedom_types: ["Keyword"],
+      valid_for_visited_link: true,
     },
     {
       name: "clear",
@@ -1581,6 +1597,7 @@
       style_builder_template_args: {
         paint_type: "FillPaint",
       },
+      valid_for_visited_link: true,
     },
     {
       name: "fill-opacity",
@@ -2313,6 +2330,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "outline-offset",
@@ -2912,6 +2930,7 @@
       style_builder_template_args: {
         paint_type: "StrokePaint",
       },
+      valid_for_visited_link: true,
     },
     {
       name: "stroke-dasharray",
@@ -3063,6 +3082,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "text-decoration-line",
@@ -3525,6 +3545,7 @@
       typedom_types: ["Keyword"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "column-rule-style",
@@ -3843,6 +3864,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-emphasis-position",
@@ -3873,6 +3895,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-security",
@@ -3882,6 +3905,7 @@
       field_template: "keyword",
       keywords: ["none", "disc", "circle", "square"],
       default_value: "none",
+      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-stroke-color",
@@ -3896,6 +3920,7 @@
       computed_style_custom_functions: ["getter", "setter"],
       converter: "ConvertStyleColor",
       style_builder_template: "color",
+      valid_for_visited_link: true,
     },
     {
       name: "-webkit-text-stroke-width",

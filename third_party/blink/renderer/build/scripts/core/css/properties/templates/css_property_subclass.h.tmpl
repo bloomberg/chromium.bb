@@ -80,6 +80,9 @@ class {{property_classname}} final : public {{property.namespace_group}} {
   {% if not property.affected_by_all %}
   bool IsAffectedByAll() const override { return false; }
   {% endif %}
+  {% if property.valid_for_visited_link %}
+  bool IsValidForVisitedLink() const override { return true; }
+  {% endif %}
   {% if property.direction_aware_options %}
   const CSSValue* CSSValueFromComputedStyleInternal(
       const ComputedStyle& ,

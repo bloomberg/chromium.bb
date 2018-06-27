@@ -99,7 +99,7 @@ struct CachedMatchedPropertiesHashTraits
   }
 };
 
-class MatchedPropertiesCache {
+class CORE_EXPORT MatchedPropertiesCache {
   DISALLOW_NEW();
 
  public:
