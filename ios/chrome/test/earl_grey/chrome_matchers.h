@@ -86,14 +86,14 @@ id<GREYMatcher> ShareButton();
 // Matcher for show tabs button.
 id<GREYMatcher> ShowTabsButton();
 
-// Matcher for CollectionViewSwitchCell.
-id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isToggledOn);
+// Matcher for SettingsSwitchCell.
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
+                                   BOOL isToggledOn);
 
-// Matcher for CollectionViewSwitchCell.
-id<GREYMatcher> CollectionViewSwitchCell(NSString* accessibilityIdentifier,
-                                         BOOL isToggledOn,
-                                         BOOL isEnabled);
+// Matcher for SettingsSwitchCell.
+id<GREYMatcher> SettingsSwitchCell(NSString* accessibilityIdentifier,
+                                   BOOL isToggledOn,
+                                   BOOL isEnabled);
 
 // Matcher for SyncSwitchCell.
 id<GREYMatcher> SyncSwitchCell(NSString* accessibilityLabel, BOOL isToggledOn);

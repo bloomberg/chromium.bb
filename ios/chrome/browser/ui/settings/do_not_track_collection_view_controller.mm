@@ -12,8 +12,8 @@
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -81,8 +81,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)switchItem {
-  CollectionViewSwitchItem* item =
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeSwitch];
+  SettingsSwitchItem* item =
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeSwitch];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_DO_NOT_TRACK_MOBILE);
   item.on = _doNotTrackEnabled.GetValue();
   return item;
@@ -110,11 +110,11 @@ typedef NS_ENUM(NSInteger, ItemType) {
       [self.collectionViewModel indexPathForItemType:ItemTypeSwitch
                                    sectionIdentifier:SectionIdentifierSwitch];
 
-  CollectionViewSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<CollectionViewSwitchItem>(
+  SettingsSwitchItem* switchItem =
+      base::mac::ObjCCastStrict<SettingsSwitchItem>(
           [self.collectionViewModel itemAtIndexPath:switchPath]);
-  CollectionViewSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<CollectionViewSwitchCell>(
+  SettingsSwitchCell* switchCell =
+      base::mac::ObjCCastStrict<SettingsSwitchCell>(
           [self.collectionView cellForItemAtIndexPath:switchPath]);
 
   // Update the model and the preference with the current value of the switch.
@@ -135,8 +135,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   if (itemType == ItemTypeSwitch) {
     // Have the switch send a message on UIControlEventValueChanged.
-    CollectionViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(switchToggled:)
                     forControlEvents:UIControlEventValueChanged];

@@ -5,8 +5,8 @@
 #import "ios/chrome/browser/ui/settings/compose_email_handler_collection_view_controller.h"
 
 #include "base/mac/foundation_util.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_switch_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/web/mailto_handler.h"
 #import "ios/chrome/browser/web/mailto_handler_manager.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -39,7 +39,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // When this switch is ON, the user wants to be prompted for which Mail
   // client app to use, so the list of available Mail client apps should be
   // disabled (grayed out).
-  CollectionViewSwitchItem* _alwaysAskItem;
+  SettingsSwitchItem* _alwaysAskItem;
 }
 
 // Returns the MailtoHandler at |indexPath|. Returns nil if |indexPath| falls
@@ -52,7 +52,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Sets the text display state for |item| representing the mail client
 // |handler|. Sets the checkmark if |isSelected| is true.
-- (void)setTextItemState:(CollectionViewTextItem*)item
+- (void)setTextItemState:(SettingsTextItem*)item
                  handler:(MailtoHandler*)handler
                 selected:(BOOL)isSelected;
 @end
@@ -97,7 +97,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // prompt for selection of Mail client app.
   [model addSectionWithIdentifier:SectionIdentifierAlwaysAsk];
   _alwaysAskItem =
-      [[CollectionViewSwitchItem alloc] initWithType:ItemTypeAlwaysAskSwitch];
+      [[SettingsSwitchItem alloc] initWithType:ItemTypeAlwaysAskSwitch];
   _alwaysAskItem.text = l10n_util::GetNSString(IDS_IOS_CHOOSE_EMAIL_ASK_TOGGLE);
   _alwaysAskItem.on = currentHandlerID == nil;
   [model addItem:_alwaysAskItem
@@ -105,8 +105,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
   // Lists all the Mail client apps known.
   for (MailtoHandler* handler in handlers) {
-    CollectionViewTextItem* item =
-        [[CollectionViewTextItem alloc] initWithType:ItemTypeMailtoHandlers];
+    SettingsTextItem* item =
+        [[SettingsTextItem alloc] initWithType:ItemTypeMailtoHandlers];
     [item setText:[handler appName]];
     BOOL isSelected = [currentHandlerID isEqualToString:[handler appStoreID]];
     [self setTextItemState:item handler:handler selected:isSelected];
@@ -133,9 +133,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [super collectionView:collectionView didSelectItemAtIndexPath:indexPath];
   CollectionViewModel* model = self.collectionViewModel;
 
-  CollectionViewTextItem* selectedItem =
-      base::mac::ObjCCastStrict<CollectionViewTextItem>(
-          [model itemAtIndexPath:indexPath]);
+  SettingsTextItem* selectedItem = base::mac::ObjCCastStrict<SettingsTextItem>(
+      [model itemAtIndexPath:indexPath]);
   // Selection in rows other than mailto handlers should be prevented, so
   // DCHECK here is correct.
   DCHECK_EQ(ItemTypeMailtoHandlers, selectedItem.type);
@@ -148,8 +147,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSMutableArray* modifiedItems = [NSMutableArray array];
   for (id item in
        [model itemsInSectionWithIdentifier:SectionIdentifierMailtoHandlers]) {
-    CollectionViewTextItem* textItem =
-        base::mac::ObjCCastStrict<CollectionViewTextItem>(item);
+    SettingsTextItem* textItem =
+        base::mac::ObjCCastStrict<SettingsTextItem>(item);
     DCHECK_EQ(ItemTypeMailtoHandlers, textItem.type);
     if (textItem == selectedItem) {
       // Shows the checkmark on the new default mailto: URL handler.
@@ -179,8 +178,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   NSInteger itemType =
       [self.collectionViewModel itemTypeForIndexPath:indexPath];
   if (itemType == ItemTypeAlwaysAskSwitch) {
-    CollectionViewSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<CollectionViewSwitchCell>(cell);
+    SettingsSwitchCell* switchCell =
+        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(didToggleAlwaysAskSwitch:)
                     forControlEvents:UIControlEventValueChanged];
@@ -213,9 +212,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
       itemsInSectionWithIdentifier:SectionIdentifierMailtoHandlers];
   NSArray<MailtoHandler*>* handlers = [_manager defaultHandlers];
   for (NSUInteger index = 0; index < [itemsInSection count]; ++index) {
-    CollectionViewTextItem* textItem =
-        base::mac::ObjCCastStrict<CollectionViewTextItem>(
-            itemsInSection[index]);
+    SettingsTextItem* textItem =
+        base::mac::ObjCCastStrict<SettingsTextItem>(itemsInSection[index]);
     // Nothing is selected after this clear all operation.
     [self setTextItemState:textItem handler:handlers[index] selected:NO];
     [modifiedItems addObject:textItem];
@@ -223,7 +221,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
   [self reconfigureCellsForItems:modifiedItems];
 }
 
-- (void)setTextItemState:(CollectionViewTextItem*)item
+- (void)setTextItemState:(SettingsTextItem*)item
                  handler:(MailtoHandler*)handler
                 selected:(BOOL)isSelected {
   DCHECK_EQ(ItemTypeMailtoHandlers, item.type);

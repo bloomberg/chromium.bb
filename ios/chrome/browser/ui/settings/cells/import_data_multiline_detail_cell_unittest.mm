@@ -4,7 +4,7 @@
 
 #import "ios/chrome/browser/ui/settings/cells/import_data_multiline_detail_cell.h"
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
 #include "testing/platform_test.h"
@@ -20,8 +20,7 @@ using ImportDataMultilineDetailItemTest = PlatformTest;
 // Tests that the text and detail text are honoured after a call to
 // |configureCell:|.
 TEST_F(ImportDataMultilineDetailItemTest, ConfigureCell) {
-  CollectionViewDetailItem* item =
-      [[CollectionViewDetailItem alloc] initWithType:0];
+  SettingsDetailItem* item = [[SettingsDetailItem alloc] initWithType:0];
   item.cellClass = [ImportDataMultilineDetailCell class];
   NSString* text = @"Test Text";
   NSString* detailText = @"Test Detail Text that can span multiple lines. For "

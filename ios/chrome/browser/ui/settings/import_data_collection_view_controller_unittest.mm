@@ -6,10 +6,10 @@
 
 #include "base/mac/foundation_util.h"
 #include "base/strings/sys_string_conversions.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_detail_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/settings/cells/card_multiline_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_detail_item.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #import "testing/gtest_mac.h"
@@ -127,12 +127,12 @@ TEST_F(ImportDataCollectionViewControllerTest, TestUniqueBoxChecked) {
   NSIndexPath* importIndexPath = [NSIndexPath indexPathForItem:0 inSection:1];
   NSIndexPath* keepSeparateIndexPath =
       [NSIndexPath indexPathForItem:1 inSection:1];
-  CollectionViewDetailItem* importItem =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(
+  SettingsDetailItem* importItem =
+      base::mac::ObjCCastStrict<SettingsDetailItem>(
           [import_data_controller.collectionViewModel
               itemAtIndexPath:importIndexPath]);
-  CollectionViewDetailItem* keepSeparateItem =
-      base::mac::ObjCCastStrict<CollectionViewDetailItem>(
+  SettingsDetailItem* keepSeparateItem =
+      base::mac::ObjCCastStrict<SettingsDetailItem>(
           [import_data_controller.collectionViewModel
               itemAtIndexPath:keepSeparateIndexPath]);
 

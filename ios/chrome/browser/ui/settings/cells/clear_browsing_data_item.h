@@ -5,7 +5,7 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_CLEAR_BROWSING_DATA_ITEM_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_CELLS_CLEAR_BROWSING_DATA_ITEM_H_
 
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 
 #include <memory>
 
@@ -13,7 +13,7 @@ class BrowsingDataCounterWrapper;
 enum class BrowsingDataRemoveMask;
 
 // Collection view item identifying a clear browsing data content view.
-@interface ClearBrowsingDataItem : CollectionViewTextItem
+@interface ClearBrowsingDataItem : SettingsTextItem
 
 // Designated initializer with |counter| that can be nil.
 - (instancetype)initWithType:(NSInteger)type

@@ -17,8 +17,8 @@
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller_test.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/testing/wait_util.h"
@@ -328,7 +328,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
   if (!GetParam().export_enabled)
     return;
 
-  CollectionViewTextItem* exportButton = GetCollectionViewItem(2, 0);
+  SettingsTextItem* exportButton = GetCollectionViewItem(2, 0);
   CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 2, 0);
 
   UIColor* disabledColor = [[MDCPalette greyPalette] tint500];
@@ -350,7 +350,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
   if (!GetParam().export_enabled)
     return;
   AddSavedForm1();
-  CollectionViewTextItem* exportButton = GetCollectionViewItem(3, 0);
+  SettingsTextItem* exportButton = GetCollectionViewItem(3, 0);
 
   CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
   EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
@@ -365,7 +365,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
     return;
   AddSavedForm1();
 
-  CollectionViewTextItem* exportButton = GetCollectionViewItem(3, 0);
+  SettingsTextItem* exportButton = GetCollectionViewItem(3, 0);
   CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
 
   SavePasswordsCollectionViewController* save_passwords_controller =
@@ -386,7 +386,7 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
     return;
   AddSavedForm1();
 
-  CollectionViewTextItem* exportButton = GetCollectionViewItem(3, 0);
+  SettingsTextItem* exportButton = GetCollectionViewItem(3, 0);
   CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
 
   SavePasswordsCollectionViewController* save_passwords_controller =

@@ -30,12 +30,12 @@
 #import "ios/chrome/browser/ui/authentication/resized_avatar_cache.h"
 #import "ios/chrome/browser/ui/collection_view/cells/MDCCollectionViewCell+Chrome.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_account_item.h"
-#import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/open_url_command.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
+#import "ios/chrome/browser/ui/settings/cells/settings_text_item.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_settings_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/sync_utils/sync_util.h"
@@ -246,8 +246,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 #pragma mark - Model objects
 
 - (CollectionViewItem*)header {
-  CollectionViewTextItem* header =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeHeader];
+  SettingsTextItem* header =
+      [[SettingsTextItem alloc] initWithType:ItemTypeHeader];
   header.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_DESCRIPTION);
   header.accessibilityIdentifier = kSettingsHeaderId;
   header.textColor = [[MDCPalette greyPalette] tint500];
@@ -347,8 +347,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 }
 
 - (CollectionViewItem*)signOutItem {
-  CollectionViewTextItem* item =
-      [[CollectionViewTextItem alloc] initWithType:ItemTypeSignOut];
+  SettingsTextItem* item =
+      [[SettingsTextItem alloc] initWithType:ItemTypeSignOut];
   item.text = l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT);
   item.accessibilityTraits |= UIAccessibilityTraitButton;
   item.accessibilityIdentifier = kSettingsAccountsSignoutCellId;

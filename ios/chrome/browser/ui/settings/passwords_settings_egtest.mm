@@ -914,9 +914,8 @@ PasswordForm CreateSampleFormWithIndex(int index) {
 
   // Check that the "Save Passwords" switch is disabled. Disabled switches are
   // toggled off.
-  [[EarlGrey
-      selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
-                                   @"savePasswordsItem_switch", NO, NO)]
+  [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                          @"savePasswordsItem_switch", NO, NO)]
       assertWithMatcher:grey_notNil()];
 
   [GetInteractionForPasswordEntry(@"example.com, concrete username")
@@ -1309,11 +1308,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   for (BOOL expected_state : kExpectedState) {
     // Toggle the switch. It is located near the top, so if not interactable,
     // try scrolling up.
-    [GetInteractionForListItem(chrome_test_util::CollectionViewSwitchCell(
+    [GetInteractionForListItem(chrome_test_util::SettingsSwitchCell(
                                    @"savePasswordsItem_switch", expected_state),
                                kGREYDirectionUp)
-        performAction:chrome_test_util::TurnCollectionViewSwitchOn(
-                          !expected_state)];
+        performAction:chrome_test_util::TurnSettingsSwitchOn(!expected_state)];
     // Check the stored items. Scroll down if needed.
     [GetInteractionForPasswordEntry(@"example.com, concrete username")
         assertWithMatcher:grey_notNil()];
@@ -1336,11 +1334,10 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   // preferences.
   constexpr BOOL kExpectedState[] = {YES, NO};
   for (BOOL expected_initial_state : kExpectedState) {
-    [[EarlGrey
-        selectElementWithMatcher:chrome_test_util::CollectionViewSwitchCell(
-                                     @"savePasswordsItem_switch",
-                                     expected_initial_state)]
-        performAction:chrome_test_util::TurnCollectionViewSwitchOn(
+    [[EarlGrey selectElementWithMatcher:chrome_test_util::SettingsSwitchCell(
+                                            @"savePasswordsItem_switch",
+                                            expected_initial_state)]
+        performAction:chrome_test_util::TurnSettingsSwitchOn(
                           !expected_initial_state)];
     ios::ChromeBrowserState* browserState =
         chrome_test_util::GetOriginalBrowserState();
