@@ -205,7 +205,6 @@ cvox.Api = function() {};
  */
 cvox.Api.internalEnable = function() {
   isActive = true;
-  maybeEnableMathJaX();
   if (!implementation) {
     connect_();
   }

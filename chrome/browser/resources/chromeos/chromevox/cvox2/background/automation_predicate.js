@@ -196,7 +196,8 @@ AutomationPredicate.leaf = function(node) {
       (node.role == Role.MENU_ITEM && !hasActionableDescendant(node)) ||
       node.state[State.INVISIBLE] || node.children.every(function(n) {
         return n.state[State.INVISIBLE];
-      });
+      }) ||
+      !!AutomationPredicate.math(node);
 };
 
 /**
@@ -321,6 +322,10 @@ AutomationPredicate.linebreak = function(first, second) {
  * @return {boolean}
  */
 AutomationPredicate.container = function(node) {
+  // Math is never a container.
+  if (AutomationPredicate.math(node))
+    return false;
+
   return AutomationPredicate.match({
     anyRole: [
       Role.GENERIC_CONTAINER, Role.DOCUMENT, Role.GROUP, Role.LIST,
@@ -431,6 +436,10 @@ AutomationPredicate.shouldIgnoreNode = function(node) {
 
   // Don't ignore nodes with names or name-like attribute.
   if (node.name || node.value || node.description || node.url)
+    return false;
+
+  // Don't ignore math nodes.
+  if (AutomationPredicate.math(node))
     return false;
 
   // Ignore some roles.
@@ -590,6 +599,14 @@ AutomationPredicate.autoScrollable = function(node) {
   return node.scrollable &&
       (node.role == Role.GRID || node.role == Role.LIST ||
        node.role == Role.POP_UP_BUTTON || node.role == Role.SCROLL_VIEW);
+};
+
+/**
+ * @param {!AutomationNode} node
+ * @return {boolean}
+ */
+AutomationPredicate.math = function(node) {
+  return node.role == Role.MATH || !!node.htmlAttributes['data-mathml'];
 };
 
 });  // goog.scope

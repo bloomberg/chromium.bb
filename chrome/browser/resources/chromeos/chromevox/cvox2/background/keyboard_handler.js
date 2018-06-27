@@ -10,6 +10,7 @@ goog.provide('BackgroundKeyboardHandler');
 
 goog.require('ChromeVoxState');
 goog.require('EventSourceState');
+goog.require('MathHandler');
 goog.require('Output');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ChromeVoxPrefs');
@@ -43,7 +44,11 @@ BackgroundKeyboardHandler.prototype = {
       return false;
 
     Output.forceModeForNextSpeechUtterance(cvox.QueueMode.FLUSH);
-    if (!cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
+
+    // Defer first to the math handler, if it exists, then ordinary keyboard
+    // commands.
+    if (!MathHandler.onKeyDown(evt) ||
+        !cvox.ChromeVoxKbHandler.basicKeyDownActionsListener(evt)) {
       evt.preventDefault();
       evt.stopPropagation();
       this.eatenKeyDowns_.add(evt.keyCode);

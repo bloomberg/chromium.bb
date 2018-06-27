@@ -6,3 +6,7 @@
 
 var localStorage = {};
 var sessionStorage = {};
+
+/** Speech Rule Engine. See sre_browser.js. */
+var SRE = {};
+SRE.walk = function(mathMlStr) {};
