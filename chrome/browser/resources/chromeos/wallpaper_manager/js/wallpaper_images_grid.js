@@ -769,8 +769,23 @@ cr.define('wallpapers', function() {
       // The active thumbnail maybe deleted in the above redraw(). Sets it again
       // to make sure checkmark shows correctly.
       this.updateActiveThumb_();
-      if (this.useNewWallpaperPicker_)
+      if (this.useNewWallpaperPicker_) {
+        if (this.dataModel) {
+          var scrollUp =
+              this.cachedScrollTop_ && this.cachedScrollTop_ > this.scrollTop;
+          for (var i = 0; i < this.dataModel.length; ++i) {
+            if (this.getListItemByIndex(i)) {
+              this.getListItemByIndex(i).classList.toggle(
+                  'first-row',
+                  i < this.columns &&
+                      (this.firstIndex_ == 0 || i != this.firstIndex_ ||
+                       scrollUp));
+            }
+          }
+        }
         wallpaperManager.onScrollPositionChanged(this.scrollTop);
+        this.cachedScrollTop_ = this.scrollTop;
+      }
     }
   };
 
