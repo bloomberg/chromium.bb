@@ -74,6 +74,11 @@ constexpr char kPolicyMapJsonWrongTypes[] = R"(
       "PolicyForTesting": [ 1, 2, 3, ]
     })";
 
+constexpr char kPolicyMapJsonWrongRootType[] = R"(
+    {
+      "PolicyForTesting": "test",
+    })";
+
 void GetIntegerTypeMap(
     std::vector<std::unique_ptr<StringMappingListPolicyHandler::MappingEntry>>*
         result) {
@@ -116,14 +121,13 @@ class StringListPolicyHandler : public ListPolicyHandler {
 };
 
 std::unique_ptr<SimpleJsonStringSchemaValidatingPolicyHandler>
-JsonStringHandlerForTesting(bool allow_errors_in_embedded_json) {
+JsonStringHandlerForTesting() {
   std::string error;
   Schema validation_schema = Schema::Parse(kValidationSchemaJson, &error);
   return std::make_unique<SimpleJsonStringSchemaValidatingPolicyHandler>(
-      kPolicyName, kTestPref, validation_schema, SCHEMA_STRICT,
+      kPolicyName, kTestPref, validation_schema,
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
-      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED,
-      allow_errors_in_embedded_json);
+      SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED);
 }
 
 }  // namespace
@@ -913,19 +917,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, ValidEmbeddedJson) {
   PrefValueMap prefs;
   base::Value* value_set_in_pref;
 
+  // This value matches the schema - handler shouldn't record any errors.
   std::unique_ptr<SimpleJsonStringSchemaValidatingPolicyHandler> handler =
-      JsonStringHandlerForTesting(false /* allow_errors_in_embedded_json */);
-  EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
-  EXPECT_TRUE(errors.empty());
-  handler->ApplyPolicySettings(policy_map, &prefs);
-  EXPECT_TRUE(prefs.GetValue(kTestPref, &value_set_in_pref));
-  EXPECT_TRUE(value_expected_in_pref->Equals(value_set_in_pref));
-
-  prefs.Clear();
-  errors.Clear();
-
-  handler =
-      JsonStringHandlerForTesting(true /* allow_errors_in_embedded_json */);
+      JsonStringHandlerForTesting();
   EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_TRUE(errors.empty());
   handler->ApplyPolicySettings(policy_map, &prefs);
@@ -955,18 +949,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, InvalidEmbeddedJson) {
   PrefValueMap prefs;
   base::Value* value_set_in_pref;
 
-  // Normal handler rejects invalid JSON and records errors.
+  // Handler accepts JSON that doesn't match the schema, but records errors.
   std::unique_ptr<SimpleJsonStringSchemaValidatingPolicyHandler> handler =
-      JsonStringHandlerForTesting(false /* allow_errors_in_embedded_json */);
-  EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
-  EXPECT_FALSE(errors.empty());
-
-  prefs.Clear();
-  errors.Clear();
-
-  // Allow JSON errors handler - accepts invalid JSON, still records errors.
-  handler =
-      JsonStringHandlerForTesting(true /* allow_errors_in_embedded_json */);
+      JsonStringHandlerForTesting();
   EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   handler->ApplyPolicySettings(policy_map, &prefs);
@@ -996,18 +981,9 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, UnparsableJson) {
   PrefValueMap prefs;
   base::Value* value_set_in_pref;
 
-  // Normal handler rejects invalid JSON and records errors.
+  // Handler accepts unparsable JSON, but records errors.
   std::unique_ptr<SimpleJsonStringSchemaValidatingPolicyHandler> handler =
-      JsonStringHandlerForTesting(false /* allow_errors_in_embedded_json */);
-  EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
-  EXPECT_FALSE(errors.empty());
-
-  prefs.Clear();
-  errors.Clear();
-
-  // Allow JSON errors handler - accepts unparsable JSON, still records errors.
-  handler =
-      JsonStringHandlerForTesting(true /* allow_errors_in_embedded_json */);
+      JsonStringHandlerForTesting();
   EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
   handler->ApplyPolicySettings(policy_map, &prefs);
@@ -1034,18 +1010,42 @@ TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongType) {
   policy_map_dict->Get(kPolicyName, &value_expected_in_pref);
 
   PolicyErrorMap errors;
+  PrefValueMap prefs;
+  base::Value* value_set_in_pref;
 
-  // Normal handler rejects wrong types and records errors.
+  // Handler allows wrong types (not at the root), but records errors.
   std::unique_ptr<SimpleJsonStringSchemaValidatingPolicyHandler> handler =
-      JsonStringHandlerForTesting(false /* allow_errors_in_embedded_json */);
-  EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
+      JsonStringHandlerForTesting();
+  EXPECT_TRUE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
+  handler->ApplyPolicySettings(policy_map, &prefs);
+  EXPECT_TRUE(prefs.GetValue(kTestPref, &value_set_in_pref));
+  EXPECT_TRUE(value_expected_in_pref->Equals(value_set_in_pref));
+}
 
-  errors.Clear();
+TEST(SimpleJsonStringSchemaValidatingPolicyHandlerTest, WrongRootType) {
+  std::string error;
+  std::unique_ptr<base::Value> policy_map_value =
+      base::JSONReader::ReadAndReturnError(kPolicyMapJsonWrongRootType,
+                                           base::JSON_ALLOW_TRAILING_COMMAS,
+                                           nullptr, &error);
+  ASSERT_TRUE(policy_map_value) << error;
 
-  // Allow JSON errors handler - rejects wrong types and records errors.
-  handler =
-      JsonStringHandlerForTesting(true /* allow_errors_in_embedded_json */);
+  const base::DictionaryValue* policy_map_dict = nullptr;
+  ASSERT_TRUE(policy_map_value->GetAsDictionary(&policy_map_dict));
+
+  PolicyMap policy_map;
+  policy_map.LoadFrom(policy_map_dict, POLICY_LEVEL_MANDATORY,
+                      POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD);
+
+  const base::Value* value_expected_in_pref;
+  policy_map_dict->Get(kPolicyName, &value_expected_in_pref);
+
+  PolicyErrorMap errors;
+
+  // Handler rejects the wrong root type and records errors.
+  std::unique_ptr<SimpleJsonStringSchemaValidatingPolicyHandler> handler =
+      JsonStringHandlerForTesting();
   EXPECT_FALSE(handler->CheckPolicySettings(policy_map, &errors));
   EXPECT_FALSE(errors.empty());
 }

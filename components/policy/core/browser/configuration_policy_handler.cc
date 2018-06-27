@@ -466,22 +466,19 @@ SimpleJsonStringSchemaValidatingPolicyHandler::
         const char* policy_name,
         const char* pref_path,
         Schema schema,
-        SchemaOnErrorStrategy strategy,
         SimpleSchemaValidatingPolicyHandler::RecommendedPermission
             recommended_permission,
         SimpleSchemaValidatingPolicyHandler::MandatoryPermission
-            mandatory_permission,
-        bool allow_errors_in_embedded_json)
+            mandatory_permission)
     : policy_name_(policy_name),
       schema_(schema.GetKnownProperty(policy_name_)),
-      strategy_(strategy),
       pref_path_(pref_path),
       allow_recommended_(
           recommended_permission ==
           SimpleSchemaValidatingPolicyHandler::RECOMMENDED_ALLOWED),
       allow_mandatory_(mandatory_permission ==
-                       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED),
-      allow_errors_in_embedded_json_(allow_errors_in_embedded_json) {}
+                       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED) {
+}
 
 SimpleJsonStringSchemaValidatingPolicyHandler::
     ~SimpleJsonStringSchemaValidatingPolicyHandler() {}
@@ -523,12 +520,10 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckSingleJsonString(
 
   // If that succeeds, validate the JSON inside the string.
   const std::string& json_string = root_value->GetString();
-  if (!ValidateJsonString(json_string, errors, 0)) {
+  if (!ValidateJsonString(json_string, errors, 0))
     RecordJsonError();
-    if (!allow_errors_in_embedded_json_)
-      return false;
-  }
 
+  // Very lenient - return true as long as the root value is a string.
   return true;
 }
 
@@ -544,9 +539,11 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
     return false;
   }
 
-  // If that succeeds, validate all the list items are strings.
+  // If that succeeds, validate all the list items are strings and validate
+  // the JSON inside the strings.
   const ::base::Value::ListStorage& list = root_value->GetList();
-  bool wrong_type_seen = false;
+  bool json_error_seen = false;
+
   for (size_t index = 0; index < list.size(); ++index) {
     const base::Value& entry = list[index];
     if (!entry.is_string()) {
@@ -554,27 +551,18 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::CheckListOfJsonStrings(
         errors->AddError(policy_name_, index, IDS_POLICY_TYPE_ERROR,
                          base::Value::GetTypeName(base::Value::Type::STRING));
       }
-      wrong_type_seen = true;
+      continue;
     }
-  }
-  if (wrong_type_seen)
-    return false;
 
-  // If that succeeds, validate the JSON inside the strings.
-  // We validate every list value, so that if several values have errors, we can
-  // show the users all of the errors instead of one at a time.
-  bool json_error_seen = false;
-  for (size_t index = 0; index < list.size(); ++index) {
-    const std::string& json_string = list[index].GetString();
+    const std::string& json_string = entry.GetString();
     if (!ValidateJsonString(json_string, errors, index))
       json_error_seen = true;
   }
-  if (json_error_seen) {
-    RecordJsonError();
-    if (!allow_errors_in_embedded_json_)
-      return false;
-  }
 
+  if (json_error_seen)
+    RecordJsonError();
+
+  // Very lenient - return true as long as the root value is a list.
   return true;
 }
 
@@ -597,7 +585,7 @@ bool SimpleJsonStringSchemaValidatingPolicyHandler::ValidateJsonString(
   std::string error_path;
   const Schema json_string_schema =
       IsListSchema() ? schema_.GetItems() : schema_;
-  bool validated = json_string_schema.Validate(*parsed_value, strategy_,
+  bool validated = json_string_schema.Validate(*parsed_value, SCHEMA_STRICT,
                                                &error_path, &schema_error);
   if (errors && !schema_error.empty())
     errors->AddError(policy_name_, ErrorPath(index, error_path), schema_error);
@@ -631,9 +619,14 @@ void SimpleJsonStringSchemaValidatingPolicyHandler::ApplyPolicySettings(
 
 void SimpleJsonStringSchemaValidatingPolicyHandler::RecordJsonError() {
   const PolicyDetails* details = GetChromePolicyDetails(policy_name_);
-  if (details)
+  if (details) {
     base::UmaHistogramSparse("EnterpriseCheck.InvalidJsonPolicies",
                              details->id);
+  }
+}
+
+bool SimpleJsonStringSchemaValidatingPolicyHandler::IsListSchema() const {
+  return schema_.type() == base::Value::Type::LIST;
 }
 
 // LegacyPoliciesDeprecatingPolicyHandler implementation -----------------------

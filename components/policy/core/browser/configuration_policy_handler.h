@@ -370,13 +370,12 @@ class POLICY_EXPORT SimpleSchemaValidatingPolicyHandler
   DISALLOW_COPY_AND_ASSIGN(SimpleSchemaValidatingPolicyHandler);
 };
 
-// Maps policy to pref like SimplePolicyHandler while ensuring that the value
-// is either a single JSON string or a list of JSON strings, and that the JSON,
-// when parsed, matches the policy's validation_schema field found in |schema|.
-// If |allow_errors_in_embedded_json| is true, then errors inside the JSON
-// string only cause warnings, they do not cause validation to fail. However,
-// the value as a whole is still validated by ensuring it is either a single
-// string or a list of strings, whichever is appropriate.
+// Maps policy to pref like SimplePolicyHandler. Ensures that the root value
+// of the policy is of the correct type (that is, a string, or a list, depending
+// on the policy). Apart from that, all policy values are accepted without
+// modification, but the |PolicyErrorMap| will be updated for every error
+// encountered - for instance, if the embedded JSON is unparsable or if it does
+// not match the validation schema.
 // NOTE: Do not store new policies using JSON strings! If your policy has a
 // complex schema, store it as a dict of that schema. This has some advantages:
 // - You don't have to parse JSON every time you read it from the pref store.
@@ -388,12 +387,10 @@ class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
       const char* policy_name,
       const char* pref_path,
       Schema schema,
-      SchemaOnErrorStrategy strategy,
       SimpleSchemaValidatingPolicyHandler::RecommendedPermission
           recommended_permission,
       SimpleSchemaValidatingPolicyHandler::MandatoryPermission
-          mandatory_permission,
-      bool allow_errors_in_embedded_json);
+          mandatory_permission);
 
   ~SimpleJsonStringSchemaValidatingPolicyHandler() override;
 
@@ -404,11 +401,13 @@ class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
                            PrefValueMap* prefs) override;
 
  private:
-  // Validates |root_value| as a single JSON string that matches the schema.
+  // Validates |root_value| as a string. Updates |errors| if it is not valid
+  // JSON or if it does not match the validation schema.
   bool CheckSingleJsonString(const base::Value* root_value,
                              PolicyErrorMap* errors);
 
-  // Validates |root_value| as a list of JSON strings that match the schema.
+  // Validates |root_value| as a list. Updates |errors| for each item that is
+  // not a string, is not valid JSON, or doesn't match the validation schema.
   bool CheckListOfJsonStrings(const base::Value* root_value,
                               PolicyErrorMap* errors);
 
@@ -431,18 +430,13 @@ class POLICY_EXPORT SimpleJsonStringSchemaValidatingPolicyHandler
   void RecordJsonError();
 
   // Returns true if the schema root is a list.
-  inline bool IsListSchema() {
-    return schema_.type() == base::Value::Type::LIST;
-  }
+  bool IsListSchema() const;
 
- private:
   const char* policy_name_;
   const Schema schema_;
-  const SchemaOnErrorStrategy strategy_;
   const char* pref_path_;
   const bool allow_recommended_;
   const bool allow_mandatory_;
-  bool allow_errors_in_embedded_json_;
 
   DISALLOW_COPY_AND_ASSIGN(SimpleJsonStringSchemaValidatingPolicyHandler);
 };
