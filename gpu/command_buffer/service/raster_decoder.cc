@@ -1082,12 +1082,14 @@ void RasterDecoderImpl::Destroy(bool have_context) {
   if (have_context) {
     if (copy_tex_image_blit_.get()) {
       copy_tex_image_blit_->Destroy();
+      copy_tex_image_blit_.reset();
     }
 
     if (copy_texture_chromium_.get()) {
       copy_texture_chromium_->Destroy();
+      copy_texture_chromium_.reset();
     }
-
+  } else {
     if (group_ && group_->texture_manager()) {
       group_->texture_manager()->MarkContextLost();
     }
