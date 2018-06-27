@@ -126,6 +126,14 @@ TEST_F(WebRtcVideoCapturerAdapterTest,
 }
 
 TEST_F(WebRtcVideoCapturerAdapterTest,
+       NonScreencastAdapterDoesNotAdaptContentHintText) {
+  // Non-screenshare adapter should not adapt frames when detail is set.
+  TestContentHintResolutionAdaptation(
+      false, blink::WebMediaStreamTrack::ContentHintType::kNone, true,
+      blink::WebMediaStreamTrack::ContentHintType::kVideoText, false);
+}
+
+TEST_F(WebRtcVideoCapturerAdapterTest,
        NonScreencastAdapterAdaptsContentHintFluid) {
   // Non-screenshare adapter should still adapt frames when motion is set.
   TestContentHintResolutionAdaptation(

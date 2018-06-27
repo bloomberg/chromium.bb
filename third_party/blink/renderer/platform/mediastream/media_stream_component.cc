@@ -104,6 +104,7 @@ void MediaStreamComponent::SetContentHint(
       break;
     case WebMediaStreamTrack::ContentHintType::kVideoMotion:
     case WebMediaStreamTrack::ContentHintType::kVideoDetail:
+    case WebMediaStreamTrack::ContentHintType::kVideoText:
       DCHECK_EQ(MediaStreamSource::kTypeVideo, Source()->GetType());
       break;
   }
