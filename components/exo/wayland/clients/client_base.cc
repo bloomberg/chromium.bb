@@ -379,8 +379,8 @@ bool ClientBase::Init(const InitParams& params) {
     LOG(ERROR) << "wl_display_connect failed";
     return false;
   }
-  wl_registry* registry = wl_display_get_registry(display_.get());
-  wl_registry_add_listener(registry, &g_registry_listener, &globals_);
+  registry_.reset(wl_display_get_registry(display_.get()));
+  wl_registry_add_listener(registry_.get(), &g_registry_listener, &globals_);
 
   wl_display_roundtrip(display_.get());
 

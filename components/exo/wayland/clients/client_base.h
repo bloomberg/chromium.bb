@@ -116,6 +116,7 @@ class ClientBase {
   bool transparent_background_ = false;
 
   std::unique_ptr<wl_display> display_;
+  std::unique_ptr<wl_registry> registry_;
   std::unique_ptr<wl_surface> surface_;
   std::unique_ptr<wl_shell_surface> shell_surface_;
   Globals globals_;
