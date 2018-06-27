@@ -383,8 +383,6 @@ class ServiceWorkerMetrics {
   static void RecordProcessCreated(bool is_new_process);
   static void RecordTimeToSendStartWorker(base::TimeDelta duration,
                                           StartSituation start_situation);
-  static void RecordTimeToURLJob(base::TimeDelta duration,
-                                 StartSituation start_situation);
   static void RecordTimeToStartThread(base::TimeDelta duration,
                                       StartSituation start_situation);
   static void RecordTimeToEvaluateScript(base::TimeDelta duration,
