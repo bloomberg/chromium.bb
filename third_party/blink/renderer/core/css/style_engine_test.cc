@@ -955,6 +955,28 @@ TEST_F(StyleEngineTest, ModifyStyleRuleMatchedPropertiesCache) {
                                     GetCSSPropertyColor()));
 }
 
+TEST_F(StyleEngineTest, VisitedExplicitInheritanceMatchedPropertiesCache) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      :visited { overflow: inherit }
+    </style>
+    <span id="span"><a href></a></span>
+  )HTML");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* span = GetDocument().getElementById("span");
+  const ComputedStyle* style = span->GetComputedStyle();
+  EXPECT_FALSE(style->HasExplicitlyInheritedProperties());
+
+  style = span->firstChild()->GetComputedStyle();
+  EXPECT_TRUE(MatchedPropertiesCache::IsStyleCacheable(*style));
+
+  span->SetInlineStyleProperty(CSSPropertyColor, "blue");
+
+  // Should not DCHECK on applying overflow:inherit on cached matched properties
+  GetDocument().View()->UpdateAllLifecyclePhases();
+}
+
 TEST_F(StyleEngineTest, ScheduleInvalidationAfterSubtreeRecalc) {
   GetDocument().body()->SetInnerHTMLFromString(R"HTML(
     <style id='s1'>

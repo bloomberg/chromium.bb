@@ -1574,7 +1574,10 @@ void StyleResolver::ApplyProperties(
       // non-inherited properties as they might override the value inherited
       // here. For this reason we don't allow declarations with explicitly
       // inherited properties to be cached.
-      DCHECK(!current.Value().IsInheritedValue());
+      DCHECK(!current.Value().IsInheritedValue() ||
+             (!state.ApplyPropertyToRegularStyle() &&
+              (!state.ApplyPropertyToVisitedLinkStyle() ||
+               !current.Property().IsValidForVisitedLink())));
       continue;
     }
 
