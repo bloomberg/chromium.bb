@@ -2521,16 +2521,19 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
                        shouldFocus:[_findBarController isFocused]];
   }
 
-  // Hide the toolbar if displaying the compact NTP.
   web::NavigationItem* item = [tab navigationManager]->GetVisibleItem();
   BOOL hideToolbar = NO;
   if (item) {
     GURL url = item->GetURL();
     BOOL isNTP = url.GetOrigin() == kChromeUINewTabURL;
+    // Hide the toolbar when displaying content suggestions without the tab
+    // strip, without the focused omnibox, and for UI Refresh, only when in
+    // split toolbar mode.
     hideToolbar = isNTP && !_isOffTheRecord &&
                   ![self.primaryToolbarCoordinator isOmniboxFirstResponder] &&
                   ![self.primaryToolbarCoordinator showingOmniboxPopup] &&
-                  ![self canShowTabStrip];
+                  ![self canShowTabStrip] &&
+                  (!IsUIRefreshPhase1Enabled() || IsSplitToolbarMode(self));
   }
   [self.primaryToolbarCoordinator.viewController.view setHidden:hideToolbar];
 }

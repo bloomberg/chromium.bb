@@ -122,9 +122,9 @@
 - (void)setIsNTP:(BOOL)isNTP {
   if (isNTP == _isNTP)
     return;
+  [super setIsNTP:isNTP];
   _isNTP = isNTP;
-  if (!isNTP && self.view.cr_widthSizeClass == REGULAR &&
-      self.view.cr_heightSizeClass == REGULAR) {
+  if (!isNTP && !IsSplitToolbarMode(self)) {
     // Reset any location bar view updates when not an NTP.
     [self setScrollProgressForTabletOmnibox:1];
   }

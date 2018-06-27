@@ -45,7 +45,7 @@ const CGFloat kMaxSearchFieldFrameMargin = 200;
 
 // Top margin for the doodle.
 const CGFloat kDoodleTopMarginRegularXRegular = 162;
-const CGFloat kDoodleTopMarginOther = 48;
+const CGFloat kDoodleTopMarginOther = 58;
 const CGFloat kDoodleTopMarginIPadLegacy = 82;
 
 // Top margin for the search field

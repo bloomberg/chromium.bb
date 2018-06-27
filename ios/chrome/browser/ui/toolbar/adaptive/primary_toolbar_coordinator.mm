@@ -153,8 +153,7 @@
   // Hide the toolbar if the NTP is currently displayed.
   web::WebState* webState = self.webStateList->GetActiveWebState();
   if (webState && IsVisibleUrlNewTabPage(webState)) {
-    self.viewController.view.hidden =
-        !IsRegularXRegularSizeClass(self.viewController);
+    self.viewController.view.hidden = IsSplitToolbarMode();
   }
 }
 
