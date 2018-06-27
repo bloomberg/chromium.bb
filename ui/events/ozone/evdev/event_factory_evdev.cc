@@ -309,7 +309,8 @@ void EventFactoryEvdev::DispatchPinchEvent(const PinchEventParams& params) {
                params.device_id);
   GestureEventDetails details(params.type);
   details.set_device_type(GestureDeviceType::DEVICE_TOUCHPAD);
-  details.set_scale(params.scale);
+  if (params.type == ET_GESTURE_PINCH_UPDATE)
+    details.set_scale(params.scale);
   GestureEvent event(params.location.x(), params.location.y(), 0,
                      params.timestamp, details);
   event.set_source_device_id(params.device_id);
