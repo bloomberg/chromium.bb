@@ -27,8 +27,8 @@
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/embedded_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom.h"
 #include "url/gurl.h"
@@ -49,7 +49,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
     : public mojom::EmbeddedWorkerInstanceHost {
  public:
   class DevToolsProxy;
-  using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
+  using StatusCallback =
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
 
   // This enum is used in UMA histograms. Append-only.
   enum StartingPhase {
@@ -275,7 +276,8 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
 
   // Called back from StartTask when the startup sequence failed. Calls
   // ReleaseProcess() and invokes |callback| with |status|. May destroy |this|.
-  void OnStartFailed(StatusCallback callback, ServiceWorkerStatusCode status);
+  void OnStartFailed(StatusCallback callback,
+                     blink::ServiceWorkerStatusCode status);
 
   // Returns the time elapsed since |step_time_| and updates |step_time_|
   // to the current time.

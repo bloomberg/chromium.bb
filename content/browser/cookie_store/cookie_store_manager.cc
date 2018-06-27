@@ -13,9 +13,9 @@
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_version.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_context.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "url/gurl.h"
 
@@ -27,13 +27,14 @@ namespace {
 const char kSubscriptionsUserKey[] = "cookie_store_subscriptions";
 
 // Handles the result of ServiceWorkerContextWrapper::StoreRegistrationUserData.
-void HandleStoreRegistrationUserDataStatus(ServiceWorkerStatusCode status) {
+void HandleStoreRegistrationUserDataStatus(
+    blink::ServiceWorkerStatusCode status) {
   // The current implementation does not have a good way to handle errors in
   // StoreRegistrationUserData. Cookie change subscriptions have been added to
   // the registration during the install event, so it's too late to surface the
   // error to the renderer. The registration has already been persisted, and the
   // Service Worker is likely active by now.
-  DLOG_IF(ERROR, status != SERVICE_WORKER_OK)
+  DLOG_IF(ERROR, status != blink::SERVICE_WORKER_OK)
       << "StoreRegistrationUserData failed";
 }
 
@@ -94,13 +95,13 @@ void CookieStoreManager::ListenToCookieChanges(
 void CookieStoreManager::ProcessOnDiskSubscriptions(
     base::OnceCallback<void(bool)> load_callback,
     const std::vector<std::pair<int64_t, std::string>>& user_data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   DCHECK(!done_loading_subscriptions_) << __func__ << " already called";
   done_loading_subscriptions_ = true;
 
-  if (status != SERVICE_WORKER_OK) {
+  if (status != blink::SERVICE_WORKER_OK) {
     DidLoadAllSubscriptions(false, std::move(load_callback));
     return;
   }
@@ -480,9 +481,9 @@ void CookieStoreManager::OnCookieChange(
             [](base::WeakPtr<CookieStoreManager> manager,
                const net::CanonicalCookie& cookie,
                ::network::mojom::CookieChangeCause cause,
-               ServiceWorkerStatusCode find_status,
+               blink::ServiceWorkerStatusCode find_status,
                scoped_refptr<ServiceWorkerRegistration> registration) {
-              if (find_status != SERVICE_WORKER_OK)
+              if (find_status != blink::SERVICE_WORKER_OK)
                 return;
 
               DCHECK(registration);
@@ -521,8 +522,8 @@ void CookieStoreManager::DidStartWorkerForChangeEvent(
     scoped_refptr<ServiceWorkerRegistration> registration,
     const net::CanonicalCookie& cookie,
     ::network::mojom::CookieChangeCause cause,
-    ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != SERVICE_WORKER_OK)
+    blink::ServiceWorkerStatusCode start_worker_status) {
+  if (start_worker_status != blink::SERVICE_WORKER_OK)
     return;
   DispatchChangeEvent(std::move(registration), cookie, cause);
 }

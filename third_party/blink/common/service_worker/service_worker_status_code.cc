@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 #include "base/logging.h"
 
-namespace content {
+namespace blink {
 
 const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
   switch (status) {
@@ -56,4 +56,4 @@ const char* ServiceWorkerStatusToString(ServiceWorkerStatusCode status) {
   return "";
 }
 
-}  // namespace content
+}  // namespace blink

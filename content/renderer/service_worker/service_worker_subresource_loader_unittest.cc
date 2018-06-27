@@ -499,7 +499,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
 
   client->RunUntilComplete();
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 1);
+                                      blink::SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
@@ -519,7 +519,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Abort) {
 
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_ERROR_ABORT, 1);
+                                      blink::SERVICE_WORKER_ERROR_ABORT, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController) {
@@ -673,7 +673,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_RestartFetchEvent) {
   EXPECT_EQ(3, fake_controller_.fetch_event_count());
   EXPECT_EQ(2, fake_container_host_.get_controller_service_worker_count());
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 1);
+                                      blink::SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
@@ -698,9 +698,9 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, DropController_TooManyRestart) {
   EXPECT_TRUE(client->has_received_completion());
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
 
-  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_ERROR_START_WORKER_FAILED,
-                                      1);
+  histogram_tester.ExpectUniqueSample(
+      kHistogramSubresourceFetchEvent,
+      blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
@@ -747,7 +747,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   EXPECT_EQ(kResponseBody, response);
 
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 1);
+                                      blink::SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
@@ -794,7 +794,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
   EXPECT_EQ(kResponseBody, response);
 
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 1);
+                                      blink::SERVICE_WORKER_OK, 1);
 }
 
 // Test when the service worker responds with network fallback.
@@ -819,7 +819,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
   EXPECT_FALSE(client->response_head().was_fetched_via_service_worker);
 
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 1);
+                                      blink::SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
@@ -839,7 +839,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, ErrorResponse) {
 
   EXPECT_EQ(net::ERR_FAILED, client->completion_status().error_code);
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 1);
+                                      blink::SERVICE_WORKER_OK, 1);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
@@ -917,7 +917,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
 
   // There were 3 fetch events, so expect a count of 3.
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK, 3);
+                                      blink::SERVICE_WORKER_OK, 3);
 }
 
 TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
@@ -970,7 +970,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, TooManyRedirects) {
 
   // Expect a sample for each fetch event (kMaxRedirects + 1).
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
-                                      SERVICE_WORKER_OK,
+                                      blink::SERVICE_WORKER_OK,
                                       net::URLRequest::kMaxRedirects + 1);
 }
 

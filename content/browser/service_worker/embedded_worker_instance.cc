@@ -77,7 +77,7 @@ void NotifyWorkerVersionDoomedOnUI(int worker_process_id, int worker_route_id) {
 }
 
 using SetupProcessCallback = base::OnceCallback<void(
-    ServiceWorkerStatusCode,
+    blink::ServiceWorkerStatusCode,
     mojom::EmbeddedWorkerStartParamsPtr,
     std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>,
     std::unique_ptr<EmbeddedWorkerInstance::DevToolsProxy>,
@@ -103,17 +103,18 @@ void SetupOnUIThread(base::WeakPtr<ServiceWorkerProcessManager> process_manager,
   if (!process_manager) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT,
+        base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT,
                        std::move(params), std::move(process_info),
                        std::move(devtools_proxy), std::move(factory_bundle)));
     return;
   }
 
   // Get a process.
-  ServiceWorkerStatusCode status = process_manager->AllocateWorkerProcess(
-      params->embedded_worker_id, params->scope, params->script_url,
-      can_use_existing_process, process_info.get());
-  if (status != SERVICE_WORKER_OK) {
+  blink::ServiceWorkerStatusCode status =
+      process_manager->AllocateWorkerProcess(
+          params->embedded_worker_id, params->scope, params->script_url,
+          can_use_existing_process, process_info.get());
+  if (status != blink::SERVICE_WORKER_OK) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(std::move(callback), status, std::move(params),
@@ -422,7 +423,7 @@ class EmbeddedWorkerInstance::StartTask {
   }
 
   static void RunStartCallback(StartTask* task,
-                               ServiceWorkerStatusCode status) {
+                               blink::ServiceWorkerStatusCode status) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "INITIALIZING_ON_RENDERER",
                                     task, "Status",
@@ -438,7 +439,7 @@ class EmbeddedWorkerInstance::StartTask {
  private:
   void OnSetupCompleted(
       base::WeakPtr<ServiceWorkerProcessManager> process_manager,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       mojom::EmbeddedWorkerStartParamsPtr params,
       std::unique_ptr<ServiceWorkerProcessManager::AllocatedProcessInfo>
           process_info,
@@ -447,7 +448,7 @@ class EmbeddedWorkerInstance::StartTask {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
     std::unique_ptr<WorkerProcessHandle> process_handle;
-    if (status == SERVICE_WORKER_OK) {
+    if (status == blink::SERVICE_WORKER_OK) {
       // If we allocated a process, WorkerProcessHandle has to be created before
       // returning to ensure the process is eventually released.
       process_handle = std::make_unique<WorkerProcessHandle>(
@@ -455,10 +456,10 @@ class EmbeddedWorkerInstance::StartTask {
           process_info->process_id);
 
       if (!instance_->context_)
-        status = SERVICE_WORKER_ERROR_ABORT;
+        status = blink::SERVICE_WORKER_ERROR_ABORT;
     }
 
-    if (status != SERVICE_WORKER_OK) {
+    if (status != blink::SERVICE_WORKER_OK) {
       TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "ALLOCATING_PROCESS",
                                       this, "Error",
                                       ServiceWorkerStatusToString(status));
@@ -542,7 +543,7 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
                                    StatusCallback callback) {
   restart_count_++;
   if (!context_) {
-    std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT);
     // |this| may be destroyed by the callback.
     return;
   }
@@ -802,8 +803,8 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
   base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();
   StartTask::RunStartCallback(
       inflight_start_task_.get(),
-      success ? SERVICE_WORKER_OK
-              : SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED);
+      success ? blink::SERVICE_WORKER_OK
+              : blink::SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED);
   // |this| may be destroyed by the callback.
 }
 
@@ -918,8 +919,9 @@ void EmbeddedWorkerInstance::ReleaseProcess() {
   thread_id_ = kInvalidEmbeddedWorkerThreadId;
 }
 
-void EmbeddedWorkerInstance::OnStartFailed(StatusCallback callback,
-                                           ServiceWorkerStatusCode status) {
+void EmbeddedWorkerInstance::OnStartFailed(
+    StatusCallback callback,
+    blink::ServiceWorkerStatusCode status) {
   EmbeddedWorkerStatus old_status = status_;
   ReleaseProcess();
   base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();

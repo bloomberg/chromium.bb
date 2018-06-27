@@ -10,7 +10,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -40,7 +40,7 @@ void CreateMetadataTask::Start() {
 }
 
 void CreateMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
-                                        ServiceWorkerStatusCode status) {
+                                        blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
       StoreMetadata();
@@ -148,7 +148,8 @@ void CreateMetadataTask::StoreMetadata() {
                           weak_factory_.GetWeakPtr()));
 }
 
-void CreateMetadataTask::DidStoreMetadata(ServiceWorkerStatusCode status) {
+void CreateMetadataTask::DidStoreMetadata(
+    blink::ServiceWorkerStatusCode status) {
   DCHECK(metadata_proto_);
 
   switch (ToDatabaseStatus(status)) {

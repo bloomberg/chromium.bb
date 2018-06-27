@@ -70,25 +70,25 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
 
   // Called back from ServiceWorkerContextCore when an update is complete.
   void UpdateComplete(UpdateCallback callback,
-                      ServiceWorkerStatusCode status,
+                      blink::ServiceWorkerStatusCode status,
                       const std::string& status_message,
                       int64_t registration_id);
   // Called back from ServiceWorkerContextCore when the unregistration is
   // complete.
   void UnregistrationComplete(UnregisterCallback callback,
-                              ServiceWorkerStatusCode status);
+                              blink::ServiceWorkerStatusCode status);
   // Called back from ServiceWorkerStorage when setting navigation preload is
   // complete.
   void DidUpdateNavigationPreloadEnabled(
       bool enable,
       EnableNavigationPreloadCallback callback,
-      ServiceWorkerStatusCode status);
+      blink::ServiceWorkerStatusCode status);
   // Called back from ServiceWorkerStorage when setting navigation preload
   // header is complete.
   void DidUpdateNavigationPreloadHeader(
       const std::string& value,
       SetNavigationPreloadHeaderCallback callback,
-      ServiceWorkerStatusCode status);
+      blink::ServiceWorkerStatusCode status);
 
   // Sets the corresponding version field to the given version or if the given
   // version is nullptr, clears the field.

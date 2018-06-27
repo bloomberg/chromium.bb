@@ -12,8 +12,8 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/web_ui_controller.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace base {
 class ListValue;
@@ -28,7 +28,8 @@ class ServiceWorkerInternalsUI
     : public WebUIController,
       public base::SupportsWeakPtr<ServiceWorkerInternalsUI> {
  public:
-  using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
+  using StatusCallback =
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
 
   explicit ServiceWorkerInternalsUI(WebUI* web_ui);
   ~ServiceWorkerInternalsUI() override;

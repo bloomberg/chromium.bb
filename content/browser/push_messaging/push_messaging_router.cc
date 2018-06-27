@@ -12,12 +12,12 @@
 #include "content/browser/service_worker/service_worker_registration.h"
 #include "content/browser/service_worker/service_worker_storage.h"
 #include "content/common/service_worker/service_worker_messages.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/push_event_payload.h"
 #include "content/public/common/push_messaging_status.mojom.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -75,18 +75,18 @@ void PushMessagingRouter::FindServiceWorkerRegistration(
 void PushMessagingRouter::FindServiceWorkerRegistrationCallback(
     const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback,
-    ServiceWorkerStatusCode service_worker_status,
+    blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.FindServiceWorker",
                             service_worker_status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
-  if (service_worker_status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+                            blink::SERVICE_WORKER_ERROR_MAX_VALUE);
+  if (service_worker_status == blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
     RunDeliverCallback(deliver_message_callback,
                        mojom::PushDeliveryStatus::NO_SERVICE_WORKER);
     return;
   }
-  if (service_worker_status != SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::SERVICE_WORKER_OK) {
     RunDeliverCallback(deliver_message_callback,
                        mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR);
     return;
@@ -112,9 +112,9 @@ void PushMessagingRouter::DeliverMessageToWorker(
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
     const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback,
-    ServiceWorkerStatusCode start_worker_status) {
+    blink::ServiceWorkerStatusCode start_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (start_worker_status != SERVICE_WORKER_OK) {
+  if (start_worker_status != blink::SERVICE_WORKER_OK) {
     DeliverMessageEnd(deliver_message_callback, service_worker_registration,
                       start_worker_status);
     return;
@@ -135,42 +135,42 @@ void PushMessagingRouter::DeliverMessageToWorker(
 void PushMessagingRouter::DeliverMessageEnd(
     const DeliverMessageCallback& deliver_message_callback,
     const scoped_refptr<ServiceWorkerRegistration>& service_worker_registration,
-    ServiceWorkerStatusCode service_worker_status) {
+    blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   UMA_HISTOGRAM_ENUMERATION("PushMessaging.DeliveryStatus.ServiceWorkerEvent",
                             service_worker_status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
+                            blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   mojom::PushDeliveryStatus delivery_status =
       mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
   switch (service_worker_status) {
-    case SERVICE_WORKER_OK:
+    case blink::SERVICE_WORKER_OK:
       delivery_status = mojom::PushDeliveryStatus::SUCCESS;
       break;
-    case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+    case blink::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
       delivery_status = mojom::PushDeliveryStatus::EVENT_WAITUNTIL_REJECTED;
       break;
-    case SERVICE_WORKER_ERROR_TIMEOUT:
+    case blink::SERVICE_WORKER_ERROR_TIMEOUT:
       delivery_status = mojom::PushDeliveryStatus::TIMEOUT;
       break;
-    case SERVICE_WORKER_ERROR_FAILED:
-    case SERVICE_WORKER_ERROR_ABORT:
-    case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
-    case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
-    case SERVICE_WORKER_ERROR_NOT_FOUND:
-    case SERVICE_WORKER_ERROR_IPC_FAILED:
-    case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
-    case SERVICE_WORKER_ERROR_DISK_CACHE:
-    case SERVICE_WORKER_ERROR_REDUNDANT:
-    case SERVICE_WORKER_ERROR_DISALLOWED:
+    case blink::SERVICE_WORKER_ERROR_FAILED:
+    case blink::SERVICE_WORKER_ERROR_ABORT:
+    case blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED:
+    case blink::SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
+    case blink::SERVICE_WORKER_ERROR_NOT_FOUND:
+    case blink::SERVICE_WORKER_ERROR_IPC_FAILED:
+    case blink::SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+    case blink::SERVICE_WORKER_ERROR_DISK_CACHE:
+    case blink::SERVICE_WORKER_ERROR_REDUNDANT:
+    case blink::SERVICE_WORKER_ERROR_DISALLOWED:
       delivery_status = mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;
       break;
-    case SERVICE_WORKER_ERROR_EXISTS:
-    case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
-    case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
-    case SERVICE_WORKER_ERROR_NETWORK:
-    case SERVICE_WORKER_ERROR_SECURITY:
-    case SERVICE_WORKER_ERROR_STATE:
-    case SERVICE_WORKER_ERROR_MAX_VALUE:
+    case blink::SERVICE_WORKER_ERROR_EXISTS:
+    case blink::SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
+    case blink::SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
+    case blink::SERVICE_WORKER_ERROR_NETWORK:
+    case blink::SERVICE_WORKER_ERROR_SECURITY:
+    case blink::SERVICE_WORKER_ERROR_STATE:
+    case blink::SERVICE_WORKER_ERROR_MAX_VALUE:
       NOTREACHED() << "Got unexpected error code: " << service_worker_status
                    << " " << ServiceWorkerStatusToString(service_worker_status);
       delivery_status = mojom::PushDeliveryStatus::SERVICE_WORKER_ERROR;

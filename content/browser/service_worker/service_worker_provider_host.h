@@ -521,27 +521,27 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // Callback for ServiceWorkerContextCore::RegisterServiceWorker().
   void RegistrationComplete(RegisterCallback callback,
                             int64_t trace_id,
-                            ServiceWorkerStatusCode status,
+                            blink::ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             int64_t registration_id);
   // Callback for ServiceWorkerStorage::FindRegistrationForDocument().
   void GetRegistrationComplete(
       GetRegistrationCallback callback,
       int64_t trace_id,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   // Callback for ServiceWorkerStorage::GetRegistrationsForOrigin().
   void GetRegistrationsComplete(
       GetRegistrationsCallback callback,
       int64_t trace_id,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
           registrations);
 
   // Callback for ServiceWorkerVersion::RunAfterStartWorker()
   void StartControllerComplete(
       mojom::ControllerServiceWorkerRequest controller_request,
-      ServiceWorkerStatusCode status);
+      blink::ServiceWorkerStatusCode status);
 
   bool IsValidRegisterMessage(
       const GURL& script_url,

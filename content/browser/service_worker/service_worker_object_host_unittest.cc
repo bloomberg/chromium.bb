@@ -31,8 +31,8 @@ namespace content {
 namespace service_worker_object_host_unittest {
 
 static void SaveStatusCallback(bool* called,
-                               ServiceWorkerStatusCode* out,
-                               ServiceWorkerStatusCode status) {
+                               blink::ServiceWorkerStatusCode* out,
+                               blink::ServiceWorkerStatusCode status) {
   *called = true;
   *out = status;
 }
@@ -144,12 +144,12 @@ class ServiceWorkerObjectHostTest : public testing::Test {
     version_->SetStatus(ServiceWorkerVersion::INSTALLING);
 
     // Make the registration findable via storage functions.
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+    blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_FAILED;
     helper_->context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(SERVICE_WORKER_OK, status);
+    ASSERT_EQ(blink::SERVICE_WORKER_OK, status);
   }
 
   void TearDown() override {
@@ -161,7 +161,7 @@ class ServiceWorkerObjectHostTest : public testing::Test {
   void CallDispatchExtendableMessageEvent(
       ServiceWorkerObjectHost* object_host,
       ::blink::TransferableMessage message,
-      base::OnceCallback<void(ServiceWorkerStatusCode)> callback) {
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback) {
     object_host->DispatchExtendableMessageEvent(std::move(message),
                                                 std::move(callback));
   }
@@ -258,12 +258,12 @@ TEST_F(ServiceWorkerObjectHostTest,
 
   // Make sure worker has a non-zero timeout.
   bool called = false;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   version_->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::ACTIVATE, base::DoNothing(),
       base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
@@ -290,13 +290,13 @@ TEST_F(ServiceWorkerObjectHostTest,
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   called = false;
-  status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  status = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
       sender_worker_object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   // The dispatched ExtendableMessageEvent should be kept in
   // ExtendableMessageEventTestHelper, and the source service worker object info
   // should correspond to the pair (|version_->provider_host()|, |version_|),
@@ -353,13 +353,13 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   bool called = false;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
       object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   // The dispatched ExtendableMessageEvent should be kept in
   // ExtendableMessageEventTestHelper, and its source client info should
   // correspond to |provider_host|.
@@ -410,13 +410,13 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_Fail) {
   blink::TransferableMessage message;
   SetUpDummyMessagePort(&message.ports);
   bool called = false;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_MAX_VALUE;
   CallDispatchExtendableMessageEvent(
       object_host, std::move(message),
       base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
+  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
   // No ExtendableMessageEvent has been dispatched.
   const std::vector<mojom::ExtendableMessageEventPtr>& events =
       static_cast<ExtendableMessageEventTestHelper*>(helper_.get())->events();

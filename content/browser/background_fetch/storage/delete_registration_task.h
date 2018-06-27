@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "content/browser/background_fetch/storage/database_task.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "url/origin.h"
 
@@ -40,10 +40,10 @@ class DeleteRegistrationTask : public background_fetch::DatabaseTask {
  private:
   void DidGetRegistration(base::OnceClosure done_closure,
                           const std::vector<std::string>& data,
-                          ServiceWorkerStatusCode status);
+                          blink::ServiceWorkerStatusCode status);
 
   void DidDeleteRegistration(base::OnceClosure done_closure,
-                             ServiceWorkerStatusCode status);
+                             blink::ServiceWorkerStatusCode status);
 
   void DidDeleteCache(base::OnceClosure done_closure,
                       blink::mojom::CacheStorageError error);

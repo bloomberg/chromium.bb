@@ -41,7 +41,7 @@ void StartNextPendingRequestTask::GetPendingRequests() {
 
 void StartNextPendingRequestTask::DidGetPendingRequests(
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
     case DatabaseStatus::kFailed:
@@ -74,7 +74,7 @@ void StartNextPendingRequestTask::DidGetPendingRequests(
 
 void StartNextPendingRequestTask::DidFindActiveRequest(
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kFailed:
       // TODO(crbug.com/780025): Log failures to UMA.
@@ -116,7 +116,7 @@ void StartNextPendingRequestTask::CreateAndStoreActiveRequest() {
 }
 
 void StartNextPendingRequestTask::DidStoreActiveRequest(
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
@@ -151,7 +151,7 @@ void StartNextPendingRequestTask::StartDownload() {
 }
 
 void StartNextPendingRequestTask::DidDeletePendingRequest(
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   // TODO(crbug.com/780025): Log failures to UMA.
   Finished();  // Destroys |this|.
 }

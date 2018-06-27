@@ -61,6 +61,8 @@ source_set("headers") {
     "screen_orientation/web_screen_orientation_enum_traits.h",
     "screen_orientation/web_screen_orientation_lock_type.h",
     "screen_orientation/web_screen_orientation_type.h",
+    "service_worker/service_worker_status_code.h",
+    "service_worker/service_worker_type_converters.h",
     "service_worker/service_worker_utils.h",
   ]
 

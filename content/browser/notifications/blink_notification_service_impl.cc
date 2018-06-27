@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "content/browser/notifications/notification_event_dispatcher_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/notification_database_data.h"
@@ -21,6 +20,7 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/notification_resources.h"
 #include "content/public/common/platform_notification_data.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -216,7 +216,7 @@ void BlinkNotificationServiceImpl::
         const PlatformNotificationData& platform_notification_data,
         const NotificationResources& notification_resources,
         DisplayPersistentNotificationCallback callback,
-        ServiceWorkerStatusCode service_worker_status,
+        blink::ServiceWorkerStatusCode service_worker_status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   PersistentNotificationError error =
@@ -224,7 +224,7 @@ void BlinkNotificationServiceImpl::
 
   // Display the notification if the Service Worker's origin matches the origin
   // of the notification's sender.
-  if (service_worker_status == SERVICE_WORKER_OK &&
+  if (service_worker_status == blink::SERVICE_WORKER_OK &&
       registration->pattern().GetOrigin() == origin_.GetURL()) {
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,

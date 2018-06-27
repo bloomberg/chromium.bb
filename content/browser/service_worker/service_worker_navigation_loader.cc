@@ -225,7 +225,7 @@ void ServiceWorkerNavigationLoader::DidPrepareFetchEvent(
 }
 
 void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     ServiceWorkerFetchDispatcher::FetchEventResult fetch_result,
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
@@ -241,7 +241,7 @@ void ServiceWorkerNavigationLoader::DidDispatchFetchEvent(
     return;
   }
 
-  if (status != SERVICE_WORKER_OK) {
+  if (status != blink::SERVICE_WORKER_OK) {
     delegate_->MainResourceLoadFailed();
     FallbackToNetwork();
     return;

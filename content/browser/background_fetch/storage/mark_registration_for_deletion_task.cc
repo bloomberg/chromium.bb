@@ -39,7 +39,7 @@ void MarkRegistrationForDeletionTask::Start() {
 
 void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
@@ -82,7 +82,7 @@ void MarkRegistrationForDeletionTask::DidGetActiveUniqueId(
 }
 
 void MarkRegistrationForDeletionTask::DidDeactivate(
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
     case DatabaseStatus::kNotFound:

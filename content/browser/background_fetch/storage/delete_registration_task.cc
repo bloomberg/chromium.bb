@@ -23,7 +23,7 @@ namespace {
 // been already marked for deletion.
 void DCheckRegistrationNotActive(const std::string& unique_id,
                                  const std::vector<std::string>& data,
-                                 ServiceWorkerStatusCode status) {
+                                 blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       DCHECK_EQ(1u, data.size());
@@ -81,7 +81,7 @@ void DeleteRegistrationTask::Start() {
       base::BindOnce(&DeleteRegistrationTask::DidGetRegistration,
                      weak_factory_.GetWeakPtr(), barrier_closure));
 #else
-  DidGetRegistration(barrier_closure, {}, SERVICE_WORKER_OK);
+  DidGetRegistration(barrier_closure, {}, blink::SERVICE_WORKER_OK);
 #endif  // DCHECK_IS_ON()
 
   cache_manager()->DeleteCache(
@@ -93,7 +93,7 @@ void DeleteRegistrationTask::Start() {
 void DeleteRegistrationTask::DidGetRegistration(
     base::OnceClosure done_closure,
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
 #if DCHECK_IS_ON()
   if (ToDatabaseStatus(status) == DatabaseStatus::kOk) {
     DCHECK_EQ(1u, data.size());
@@ -127,7 +127,7 @@ void DeleteRegistrationTask::DidGetRegistration(
 
 void DeleteRegistrationTask::DidDeleteRegistration(
     base::OnceClosure done_closure,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
     case DatabaseStatus::kNotFound:

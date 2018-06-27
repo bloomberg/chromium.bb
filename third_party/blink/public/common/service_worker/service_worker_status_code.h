@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_STATUS_CODE_H_
-#define CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_STATUS_CODE_H_
+#ifndef THIRD_PARTY_BLINK_PUBLIC_COMMON_SERVICE_WORKER_SERVICE_WORKER_STATUS_CODE_H_
+#define THIRD_PARTY_BLINK_PUBLIC_COMMON_SERVICE_WORKER_SERVICE_WORKER_STATUS_CODE_H_
 
-#include "content/common/content_export.h"
+#include "third_party/blink/common/common_export.h"
 
-namespace content {
+namespace blink {
 
 // Generic service worker operation statuses.
 // This enum is used in UMA histograms. Append-only.
@@ -80,9 +80,9 @@ enum ServiceWorkerStatusCode {
   SERVICE_WORKER_ERROR_MAX_VALUE = 20
 };
 
-CONTENT_EXPORT const char* ServiceWorkerStatusToString(
+BLINK_COMMON_EXPORT const char* ServiceWorkerStatusToString(
     ServiceWorkerStatusCode code);
 
-}  // namespace content
+}  // namespace blink
 
-#endif  // CONTENT_COMMON_SERVICE_WORKER_SERVICE_WORKER_STATUS_CODE_H_
+#endif  // THIRD_PARTY_BLINK_PUBLIC_COMMON_SERVICE_WORKER_SERVICE_WORKER_STATUS_CODE_H_

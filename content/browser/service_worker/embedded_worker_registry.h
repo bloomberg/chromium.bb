@@ -17,7 +17,7 @@
 #include "base/strings/string16.h"
 #include "content/browser/service_worker/service_worker_lifetime_tracker.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 

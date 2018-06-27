@@ -52,36 +52,36 @@ std::string CompletedRequestKey(const std::string& unique_id,
   return CompletedRequestKeyPrefix(unique_id) + std::to_string(request_index);
 }
 
-DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status) {
+DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status) {
   switch (status) {
-    case SERVICE_WORKER_OK:
+    case blink::SERVICE_WORKER_OK:
       return DatabaseStatus::kOk;
-    case SERVICE_WORKER_ERROR_FAILED:
-    case SERVICE_WORKER_ERROR_ABORT:
+    case blink::SERVICE_WORKER_ERROR_FAILED:
+    case blink::SERVICE_WORKER_ERROR_ABORT:
       // FAILED is for invalid arguments (e.g. empty key) or database errors.
       // ABORT is for unexpected failures, e.g. because shutdown is in progress.
       // BackgroundFetchDataManager handles both of these the same way.
       return DatabaseStatus::kFailed;
-    case SERVICE_WORKER_ERROR_NOT_FOUND:
+    case blink::SERVICE_WORKER_ERROR_NOT_FOUND:
       // This can also happen for writes, if the ServiceWorkerRegistration has
       // been deleted.
       return DatabaseStatus::kNotFound;
-    case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
-    case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
-    case SERVICE_WORKER_ERROR_EXISTS:
-    case SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
-    case SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
-    case SERVICE_WORKER_ERROR_IPC_FAILED:
-    case SERVICE_WORKER_ERROR_NETWORK:
-    case SERVICE_WORKER_ERROR_SECURITY:
-    case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
-    case SERVICE_WORKER_ERROR_STATE:
-    case SERVICE_WORKER_ERROR_TIMEOUT:
-    case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
-    case SERVICE_WORKER_ERROR_DISK_CACHE:
-    case SERVICE_WORKER_ERROR_REDUNDANT:
-    case SERVICE_WORKER_ERROR_DISALLOWED:
-    case SERVICE_WORKER_ERROR_MAX_VALUE:
+    case blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED:
+    case blink::SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
+    case blink::SERVICE_WORKER_ERROR_EXISTS:
+    case blink::SERVICE_WORKER_ERROR_INSTALL_WORKER_FAILED:
+    case blink::SERVICE_WORKER_ERROR_ACTIVATE_WORKER_FAILED:
+    case blink::SERVICE_WORKER_ERROR_IPC_FAILED:
+    case blink::SERVICE_WORKER_ERROR_NETWORK:
+    case blink::SERVICE_WORKER_ERROR_SECURITY:
+    case blink::SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
+    case blink::SERVICE_WORKER_ERROR_STATE:
+    case blink::SERVICE_WORKER_ERROR_TIMEOUT:
+    case blink::SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
+    case blink::SERVICE_WORKER_ERROR_DISK_CACHE:
+    case blink::SERVICE_WORKER_ERROR_REDUNDANT:
+    case blink::SERVICE_WORKER_ERROR_DISALLOWED:
+    case blink::SERVICE_WORKER_ERROR_MAX_VALUE:
       break;
   }
   NOTREACHED();

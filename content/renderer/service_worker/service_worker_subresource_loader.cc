@@ -10,7 +10,6 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
-#include "content/common/service_worker/service_worker_type_converters.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/common/content_features.h"
@@ -24,6 +23,7 @@
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/blink/public/common/service_worker/service_worker_type_converters.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/dispatch_fetch_event_params.mojom.h"
 #include "third_party/blink/public/platform/interface_provider.h"
@@ -258,7 +258,8 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     base::Time dispatch_event_time) {
   // Stop restarting logic here since OnFetchEventFinished() indicates that the
   // fetch event dispatch reached the renderer.
-  SettleFetchEventDispatch(mojo::ConvertTo<ServiceWorkerStatusCode>(status));
+  SettleFetchEventDispatch(
+      mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
 
   switch (status) {
     case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
@@ -289,7 +290,7 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
   // the fetch event again. If it has already been restarted, that means
   // starting worker failed. In that case, abort the request.
   if (fetch_request_restarted_) {
-    SettleFetchEventDispatch(SERVICE_WORKER_ERROR_START_WORKER_FAILED);
+    SettleFetchEventDispatch(blink::SERVICE_WORKER_ERROR_START_WORKER_FAILED);
     CommitCompleted(net::ERR_FAILED);
     return;
   }
@@ -301,7 +302,7 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
 }
 
 void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
-    base::Optional<ServiceWorkerStatusCode> status) {
+    base::Optional<blink::ServiceWorkerStatusCode> status) {
   if (!controller_connector_observer_.IsObservingSources()) {
     // Already settled.
     return;
@@ -310,14 +311,15 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
 
   if (status) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.Subresource.Status",
-                              status.value(), SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status.value(),
+                              blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   }
 }
 
 void ServiceWorkerSubresourceLoader::OnResponse(
     const ServiceWorkerResponse& response,
     base::Time dispatch_event_time) {
-  SettleFetchEventDispatch(SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   StartResponse(response, nullptr /* body_as_blob */,
                 nullptr /* body_as_stream */);
 }
@@ -326,7 +328,7 @@ void ServiceWorkerSubresourceLoader::OnResponseBlob(
     const ServiceWorkerResponse& response,
     blink::mojom::BlobPtr body_as_blob,
     base::Time dispatch_event_time) {
-  SettleFetchEventDispatch(SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   StartResponse(response, std::move(body_as_blob),
                 nullptr /* body_as_stream */);
 }
@@ -342,14 +344,14 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     base::Time dispatch_event_time) {
-  SettleFetchEventDispatch(SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   StartResponse(response, nullptr /* body_as_blob */,
                 std::move(body_as_stream));
 }
 
 void ServiceWorkerSubresourceLoader::OnFallback(
     base::Time dispatch_event_time) {
-  SettleFetchEventDispatch(SERVICE_WORKER_OK);
+  SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   // When the request mode is CORS or CORS-with-forced-preflight and the origin
   // of the request URL is different from the security origin of the document,
   // we can't simply fallback to the network here. It is because the CORS

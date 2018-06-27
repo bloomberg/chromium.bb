@@ -68,19 +68,19 @@ class PlatformNotificationContextTest : public ::testing::Test {
   // Callback to provide when registering a Service Worker with a Service
   // Worker Context. Will write the registration id to |store_registration_id|.
   void DidRegisterServiceWorker(int64_t* store_registration_id,
-                                ServiceWorkerStatusCode status,
+                                blink::ServiceWorkerStatusCode status,
                                 const std::string& status_message,
                                 int64_t service_worker_registration_id) {
     DCHECK(store_registration_id);
-    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
 
     *store_registration_id = service_worker_registration_id;
   }
 
   // Callback to provide when unregistering a Service Worker. Will write the
   // resulting status code to |store_status|.
-  void DidUnregisterServiceWorker(ServiceWorkerStatusCode* store_status,
-                                  ServiceWorkerStatusCode status) {
+  void DidUnregisterServiceWorker(blink::ServiceWorkerStatusCode* store_status,
+                                  blink::ServiceWorkerStatusCode status) {
     DCHECK(store_status);
     *store_status = status;
   }
@@ -355,7 +355,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
   ASSERT_TRUE(success());
   EXPECT_FALSE(notification_id().empty());
 
-  ServiceWorkerStatusCode unregister_status;
+  blink::ServiceWorkerStatusCode unregister_status;
 
   // Now drop the Service Worker registration which owns that notification.
   embedded_worker_test_helper->context()->UnregisterServiceWorker(
@@ -364,7 +364,7 @@ TEST_F(PlatformNotificationContextTest, ServiceWorkerUnregistered) {
                   base::Unretained(this), &unregister_status));
 
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(SERVICE_WORKER_OK, unregister_status);
+  ASSERT_EQ(blink::SERVICE_WORKER_OK, unregister_status);
 
   // And verify that the associated notification has indeed been dropped.
   notification_context->ReadNotificationDataAndRecordInteraction(

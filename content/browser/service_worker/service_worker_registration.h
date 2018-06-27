@@ -39,7 +39,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       public ServiceWorkerVersion::Listener {
  public:
   using StatusCallback =
-      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
 
   class CONTENT_EXPORT Listener {
    public:
@@ -204,19 +204,19 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       scoped_refptr<ServiceWorkerVersion> activating_version);
   void DispatchActivateEvent(
       scoped_refptr<ServiceWorkerVersion> activating_version,
-      ServiceWorkerStatusCode start_worker_status);
+      blink::ServiceWorkerStatusCode start_worker_status);
   void OnActivateEventFinished(
       scoped_refptr<ServiceWorkerVersion> activating_version,
-      ServiceWorkerStatusCode status);
+      blink::ServiceWorkerStatusCode status);
 
-  void OnDeleteFinished(ServiceWorkerStatusCode status);
+  void OnDeleteFinished(blink::ServiceWorkerStatusCode status);
 
   // This method corresponds to the [[ClearRegistration]] algorithm.
   void Clear();
 
   void OnRestoreFinished(StatusCallback callback,
                          scoped_refptr<ServiceWorkerVersion> version,
-                         ServiceWorkerStatusCode status);
+                         blink::ServiceWorkerStatusCode status);
 
   const GURL pattern_;
   blink::mojom::ServiceWorkerUpdateViaCache update_via_cache_;

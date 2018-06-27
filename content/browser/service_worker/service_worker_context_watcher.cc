@@ -64,7 +64,7 @@ void ServiceWorkerContextWatcher::GetStoredRegistrationsOnIOThread() {
 }
 
 void ServiceWorkerContextWatcher::OnStoredRegistrationsOnIOThread(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (is_stopped_)

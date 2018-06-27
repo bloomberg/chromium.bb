@@ -307,7 +307,7 @@ class ServiceWorkerMetrics {
 
   // Records the result of trying to start a worker. |is_installed| indicates
   // whether the version has been installed.
-  static void RecordStartWorkerStatus(ServiceWorkerStatusCode status,
+  static void RecordStartWorkerStatus(blink::ServiceWorkerStatusCode status,
                                       EventType purpose,
                                       bool is_installed);
 
@@ -337,9 +337,9 @@ class ServiceWorkerMetrics {
   // Records the time taken to successfully stop a worker.
   static void RecordStopWorkerTime(base::TimeDelta time);
 
-  static void RecordActivateEventStatus(ServiceWorkerStatusCode status,
+  static void RecordActivateEventStatus(blink::ServiceWorkerStatusCode status,
                                         bool is_shutdown);
-  static void RecordInstallEventStatus(ServiceWorkerStatusCode status);
+  static void RecordInstallEventStatus(blink::ServiceWorkerStatusCode status);
 
   // Records how often a dispatched event times out.
   static void RecordEventTimeout(EventType event);
@@ -358,7 +358,7 @@ class ServiceWorkerMetrics {
 
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
-                                     ServiceWorkerStatusCode status);
+                                     blink::ServiceWorkerStatusCode status);
 
   // Records result of a ServiceWorkerURLRequestJob that was forwarded to
   // the service worker.
@@ -398,8 +398,9 @@ class ServiceWorkerMetrics {
 
   // Records the result of a start attempt that occurred after the worker had
   // failed |failure_count| consecutive times.
-  static void RecordStartStatusAfterFailure(int failure_count,
-                                            ServiceWorkerStatusCode status);
+  static void RecordStartStatusAfterFailure(
+      int failure_count,
+      blink::ServiceWorkerStatusCode status);
 
   // Records the size of Service-Worker-Navigation-Preload header when the
   // navigation preload request is to be sent.

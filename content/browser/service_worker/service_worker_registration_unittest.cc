@@ -46,8 +46,8 @@ int CreateInflightRequest(ServiceWorkerVersion* version) {
 }
 
 static void SaveStatusCallback(bool* called,
-                               ServiceWorkerStatusCode* out,
-                               ServiceWorkerStatusCode status) {
+                               blink::ServiceWorkerStatusCode* out,
+                               blink::ServiceWorkerStatusCode status) {
   *called = true;
   *out = status;
 }
@@ -368,12 +368,13 @@ class ServiceWorkerActivationTest : public ServiceWorkerRegistrationTest {
     version_1->script_cache_map()->SetResources(records_1);
     version_1->SetMainScriptHttpResponseInfo(
         EmbeddedWorkerTestHelper::CreateHttpResponseInfo());
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    blink::ServiceWorkerStatusCode status =
+        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
     context()->storage()->StoreRegistration(
         registration_.get(), version_1.get(),
         CreateReceiverOnCurrentThread(&status));
     base::RunLoop().RunUntilIdle();
-    ASSERT_EQ(SERVICE_WORKER_OK, status);
+    ASSERT_EQ(blink::SERVICE_WORKER_OK, status);
 
     // Give the active version a controllee.
     host_ = CreateProviderHostForWindow(
@@ -700,14 +701,16 @@ class ServiceWorkerRegistrationObjectHostTest
     return error;
   }
 
-  ServiceWorkerStatusCode FindRegistrationInStorage(int64_t registration_id,
-                                                    const GURL& scope) {
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  blink::ServiceWorkerStatusCode FindRegistrationInStorage(
+      int64_t registration_id,
+      const GURL& scope) {
+    blink::ServiceWorkerStatusCode status =
+        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->FindRegistrationForId(
         registration_id, scope,
         base::AdaptCallbackForRepeating(base::BindOnce(
-            [](ServiceWorkerStatusCode* out_status,
-               ServiceWorkerStatusCode status,
+            [](blink::ServiceWorkerStatusCode* out_status,
+               blink::ServiceWorkerStatusCode status,
                scoped_refptr<ServiceWorkerRegistration> registration) {
               *out_status = status;
             },
@@ -742,12 +745,13 @@ class ServiceWorkerRegistrationObjectHostTest
     version->SetStatus(ServiceWorkerVersion::INSTALLING);
     // Make the registration findable via storage functions.
     bool called = false;
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    blink::ServiceWorkerStatusCode status =
+        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
     storage()->StoreRegistration(registration.get(), version.get(),
                                  base::AdaptCallbackForRepeating(base::BindOnce(
                                      &SaveStatusCallback, &called, &status)));
     base::RunLoop().RunUntilIdle();
-    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
 
     return registration->id();
   }
@@ -895,12 +899,12 @@ TEST_F(ServiceWorkerRegistrationObjectHostTest, Unregister_Success) {
   info->request = nullptr;
   info->waiting->request = nullptr;
 
-  EXPECT_EQ(SERVICE_WORKER_OK,
+  EXPECT_EQ(blink::SERVICE_WORKER_OK,
             FindRegistrationInStorage(registration_id, kScope));
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
             CallUnregister(registration_host_ptr.get()));
 
-  EXPECT_EQ(SERVICE_WORKER_ERROR_NOT_FOUND,
+  EXPECT_EQ(blink::SERVICE_WORKER_ERROR_NOT_FOUND,
             FindRegistrationInStorage(registration_id, kScope));
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNotFound,
             CallUnregister(registration_host_ptr.get()));

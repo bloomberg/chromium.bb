@@ -270,12 +270,12 @@ class CookieStoreManagerTest
         GURL(script_url), options,
         base::BindOnce(
             [](base::RunLoop* run_loop, bool* success, int64_t* registration_id,
-               ServiceWorkerStatusCode status,
+               blink::ServiceWorkerStatusCode status,
                const std::string& status_message,
                int64_t service_worker_registration_id) {
-              *success = (status == SERVICE_WORKER_OK);
+              *success = (status == blink::SERVICE_WORKER_OK);
               *registration_id = service_worker_registration_id;
-              EXPECT_EQ(SERVICE_WORKER_OK, status)
+              EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
                   << ServiceWorkerStatusToString(status);
               run_loop->Quit();
             },

@@ -308,7 +308,7 @@ void ServiceWorkerControlleeRequestHandler::PrepareForMainResource(
 
 void ServiceWorkerControlleeRequestHandler::
     DidLookupRegistrationForMainResource(
-        ServiceWorkerStatusCode status,
+        blink::ServiceWorkerStatusCode status,
         scoped_refptr<ServiceWorkerRegistration> registration) {
   // The job may have been canceled before this was invoked.
   if (JobWasCanceled())
@@ -319,7 +319,7 @@ void ServiceWorkerControlleeRequestHandler::
 
   if (provider_host_ && !need_to_update)
     provider_host_->SetAllowAssociation(true);
-  if (status != SERVICE_WORKER_OK || !provider_host_ || !context_) {
+  if (status != blink::SERVICE_WORKER_OK || !provider_host_ || !context_) {
     url_job_->FallbackToNetwork();
     TRACE_EVENT_ASYNC_END1(
         "ServiceWorker",
@@ -447,7 +447,7 @@ void ServiceWorkerControlleeRequestHandler::OnVersionStatusChanged(
 
 void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     const scoped_refptr<ServiceWorkerRegistration>& original_registration,
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     int64_t registration_id) {
   DCHECK(force_update_started_);
@@ -460,7 +460,7 @@ void ServiceWorkerControlleeRequestHandler::DidUpdateRegistration(
     url_job_->FallbackToNetwork();
     return;
   }
-  if (status != SERVICE_WORKER_OK ||
+  if (status != blink::SERVICE_WORKER_OK ||
       !original_registration->installing_version()) {
     // Update failed. Look up the registration again since the original
     // registration was possibly unregistered in the meantime.
