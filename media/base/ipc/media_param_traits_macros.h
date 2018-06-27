@@ -61,13 +61,13 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::CdmPromise::Exception,
                           media::CdmPromise::Exception::EXCEPTION_MAX)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Function,
-                          media::CdmProxy::Function::kMax)
+                          media::CdmProxy::Function::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Protocol,
-                          media::CdmProxy::Protocol::kMax)
+                          media::CdmProxy::Protocol::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmProxy::Status,
-                          media::CdmProxy::Status::kMax)
+                          media::CdmProxy::Status::kMaxValue)
 
 IPC_ENUM_TRAITS_MAX_VALUE(media::CdmSessionType,
                           media::CdmSessionType::kMaxValue)

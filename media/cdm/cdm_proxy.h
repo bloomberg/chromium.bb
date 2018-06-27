@@ -38,7 +38,7 @@ class MEDIA_EXPORT CdmProxy {
   enum class Status {
     kOk,
     kFail,
-    kMax = kFail,
+    kMaxValue = kFail,
   };
 
   enum class Protocol {
@@ -48,7 +48,7 @@ class MEDIA_EXPORT CdmProxy {
     kIntel,
     // There will be more values in the future e.g. kD3D11RsaHardware,
     // kD3D11RsaSoftware to use the D3D11 RSA method.
-    kMax = kIntel,
+    kMaxValue = kIntel,
   };
 
   enum class Function {
@@ -56,7 +56,7 @@ class MEDIA_EXPORT CdmProxy {
     // ID3D11VideoContext::NegotiateCryptoSessionKeyExchange.
     kIntelNegotiateCryptoSessionKeyExchange,
     // There will be more values in the future e.g. for D3D11 RSA method.
-    kMax = kIntelNegotiateCryptoSessionKeyExchange,
+    kMaxValue = kIntelNegotiateCryptoSessionKeyExchange,
   };
 
   CdmProxy();
