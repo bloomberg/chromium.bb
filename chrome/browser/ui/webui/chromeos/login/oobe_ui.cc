@@ -390,9 +390,7 @@ OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)
   content::WebContents* contents = web_ui->GetWebContents();
   extensions::TabHelper::CreateForWebContents(contents);
 
-  // TODO(felixe): Display iteration and primary display selection not supported
-  // in Mash. See http://crbug.com/720917.
-  if (features::IsAshInBrowserProcess() && IsRemoraRequisitioned())
+  if (IsRemoraRequisitioned())
     oobe_display_chooser_ = std::make_unique<OobeDisplayChooser>();
 }
 
