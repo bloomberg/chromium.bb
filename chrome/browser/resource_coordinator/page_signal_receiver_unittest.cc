@@ -45,6 +45,7 @@ class TestPageSignalObserver : public PageSignalObserver {
   }
   // PageSignalObserver:
   void OnLifecycleStateChanged(content::WebContents* contents,
+                               const PageNavigationIdentity& page_navigation_id,
                                mojom::LifecycleState state) override {
     if (action_ == Action::kRemoveCoordinationUnitID)
       page_signal_receiver_->RemoveCoordinationUnitID(page_cu_id_);
@@ -102,6 +103,28 @@ TEST_F(PageSignalReceiverUnitTest, ConstructMojoChannelOnce) {
                                      page_signal_receiver_.get());
   }
   content::ServiceManagerConnection::DestroyForProcess();
+}
+
+TEST_F(PageSignalReceiverUnitTest, GetNavigationIDForWebContents) {
+  page_signal_receiver_->AssociateCoordinationUnitIDWithWebContents(
+      page_cu_id_, web_contents());
+
+  // Starts unset.
+  EXPECT_EQ(
+      0, page_signal_receiver_->GetNavigationIDForWebContents(web_contents()));
+
+  // Follows updates.
+  page_signal_receiver_->SetNavigationID(web_contents(), 10);
+  EXPECT_EQ(
+      10, page_signal_receiver_->GetNavigationIDForWebContents(web_contents()));
+  page_signal_receiver_->SetNavigationID(web_contents(), 11);
+  EXPECT_EQ(
+      11, page_signal_receiver_->GetNavigationIDForWebContents(web_contents()));
+
+  // Unset on removal.
+  page_signal_receiver_->RemoveCoordinationUnitID(page_cu_id_);
+  EXPECT_EQ(
+      0, page_signal_receiver_->GetNavigationIDForWebContents(web_contents()));
 }
 
 }  // namespace resource_coordinator

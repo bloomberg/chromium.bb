@@ -54,7 +54,8 @@ class LocalSiteCharacteristicsWebContentsObserver
 
   // PageSignalObserver:
   void OnNonPersistentNotificationCreated(
-      content::WebContents* web_contents) override;
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) override;
 
   SiteCharacteristicsDataWriter* GetWriterForTesting() const {
     return writer_.get();

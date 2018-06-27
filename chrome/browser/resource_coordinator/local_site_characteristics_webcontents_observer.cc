@@ -179,11 +179,15 @@ void LocalSiteCharacteristicsWebContentsObserver::OnLoadingStateChange(
 }
 
 void LocalSiteCharacteristicsWebContentsObserver::
-    OnNonPersistentNotificationCreated(content::WebContents* contents) {
+    OnNonPersistentNotificationCreated(
+        content::WebContents* contents,
+        const PageNavigationIdentity& page_navigation_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (web_contents() != contents)
     return;
 
+  // TODO(sebmarchand): The URL from the page_navigation_id wants to be the
+  //     base of the origin this is saved against.
   MaybeNotifyBackgroundFeatureUsage(
       &SiteCharacteristicsDataWriter::NotifyUsesNotificationsInBackground);
 }

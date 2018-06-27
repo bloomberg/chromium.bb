@@ -25,21 +25,33 @@ class PageSignalObserver {
   // PageSignalReceiver will deliver signals with a |web_contents| even it's not
   // managed by the client. Thus the clients are responsible for checking the
   // passed |web_contents| by themselves.
-  virtual void OnPageAlmostIdle(content::WebContents* web_contents) {}
-  virtual void OnRendererIsBloated(content::WebContents* web_contents) {}
+  // Also note that because these event notifications are asynchronous to
+  // navigation, it's possible that |web_contents| has navigated to another site
+  // by the time the notification arrives.
+  // The |page_navigation_id| parameter allows comparing the navigation_id
+  // against the current navigation handle of |web_contents|, and the url
+  // in the struct can be used post-navigation to rendezvous to the origin
+  // the event relates to.
+  virtual void OnPageAlmostIdle(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) {}
+  virtual void OnRendererIsBloated(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) {}
   virtual void OnExpectedTaskQueueingDurationSet(
       content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id,
       base::TimeDelta duration) {}
-  virtual void OnLifecycleStateChanged(content::WebContents* web_contents,
-                                       mojom::LifecycleState state) {}
+  virtual void OnLifecycleStateChanged(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id,
+      mojom::LifecycleState state) {}
   virtual void OnNonPersistentNotificationCreated(
-      content::WebContents* web_contents) {}
-  // Note that because performance measurement is asynchronous to navigation,
-  // it's possible that |web_contents| has navigated to another site by the time
-  // this notification arrives - hence the |site| parameter.
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) {}
   virtual void OnLoadTimePerformanceEstimate(
       content::WebContents* web_contents,
-      const std::string& url,
+      const PageNavigationIdentity& page_navigation_id,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) {}
 };
@@ -82,8 +94,13 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   void AssociateCoordinationUnitIDWithWebContents(
       const CoordinationUnitID& cu_id,
       content::WebContents* web_contents);
-
+  void SetNavigationID(content::WebContents* web_contents,
+                       int64_t navigation_id);
   void RemoveCoordinationUnitID(const CoordinationUnitID& cu_id);
+
+  // Retrieves the unique ID of the last navigation observed for |web_contents|
+  // or 0 if no navigation has been observed yet.
+  int64_t GetNavigationIDForWebContents(content::WebContents* web_contents);
 
  private:
   FRIEND_TEST_ALL_PREFIXES(PageSignalReceiverUnitTest,
@@ -92,20 +109,11 @@ class PageSignalReceiver : public mojom::PageSignalReceiver {
   void NotifyObserversIfKnownCu(
       const PageNavigationIdentity& page_navigation_id,
       Method m,
-      Params... params) {
-    auto web_contents_iter =
-        cu_id_web_contents_map_.find(page_navigation_id.page_cu_id);
-    if (web_contents_iter == cu_id_web_contents_map_.end())
-      return;
-    // An observer can make web_contents_iter invalid by mutating
-    // the cu_id_web_contents_map_.
-    content::WebContents* web_contents = web_contents_iter->second;
-    for (auto& observer : observers_)
-      (observer.*m)(web_contents, std::forward<Params>(params)...);
-  }
+      Params... params);
 
   mojo::Binding<mojom::PageSignalReceiver> binding_;
   std::map<CoordinationUnitID, content::WebContents*> cu_id_web_contents_map_;
+  std::map<content::WebContents*, int64_t> web_contents_navigation_id_map_;
   base::ObserverList<PageSignalObserver> observers_;
   DISALLOW_COPY_AND_ASSIGN(PageSignalReceiver);
 };

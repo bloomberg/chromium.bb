@@ -120,6 +120,7 @@ class LocalSiteCharacteristicsWebContentsObserverTest
 
   const GURL kTestUrl1 = GURL("http://foo.com");
   const GURL kTestUrl2 = GURL("http://bar.com");
+  const PageNavigationIdentity kNavId = {CoordinationUnitID(), 0, ""};
 
   LocalSiteCharacteristicsWebContentsObserver* observer() {
     return observer_.get();
@@ -191,14 +192,13 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
 
   // Test that the feature usage events get forwarded to the writer when the
   // tab is in background.
-
   observer()->DidUpdateFaviconURL({});
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->TitleWasSet(nullptr);
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  observer()->OnNonPersistentNotificationCreated(web_contents());
+  observer()->OnNonPersistentNotificationCreated(web_contents(), kNavId);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer,
@@ -216,7 +216,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
   EXPECT_CALL(*mock_writer, NotifyUsesNotificationsInBackground());
-  observer()->OnNonPersistentNotificationCreated(web_contents());
+  observer()->OnNonPersistentNotificationCreated(web_contents(), kNavId);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());
@@ -245,7 +245,7 @@ TEST_F(LocalSiteCharacteristicsWebContentsObserverTest,
   ::testing::Mock::VerifyAndClear(mock_writer);
   observer()->OnAudioStateChanged(true);
   ::testing::Mock::VerifyAndClear(mock_writer);
-  observer()->OnNonPersistentNotificationCreated(web_contents());
+  observer()->OnNonPersistentNotificationCreated(web_contents(), kNavId);
   ::testing::Mock::VerifyAndClear(mock_writer);
 
   EXPECT_CALL(*mock_writer, OnDestroy());

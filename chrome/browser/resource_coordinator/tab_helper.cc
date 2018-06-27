@@ -131,10 +131,9 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
     return;
   }
 
-  content::RenderFrameHost* render_frame_host =
-      navigation_handle->GetRenderFrameHost();
-
   if (page_resource_coordinator_) {
+    content::RenderFrameHost* render_frame_host =
+        navigation_handle->GetRenderFrameHost();
     // Make sure the hierarchical structure is constructed before sending signal
     // to Resource Coordinator.
     auto* frame_resource_coordinator =
@@ -146,6 +145,13 @@ void ResourceCoordinatorTabHelper::DidFinishNavigation(
     process_resource_coordinator->AddFrame(*frame_resource_coordinator);
 
     if (navigation_handle->IsInMainFrame()) {
+      if (auto* page_signal_receiver =
+              resource_coordinator::PageSignalReceiver::GetInstance()) {
+        // Update the last observed navigation ID for this WebContents.
+        page_signal_receiver->SetNavigationID(
+            web_contents(), navigation_handle->GetNavigationId());
+      }
+
       UpdateUkmRecorder(navigation_handle->GetNavigationId());
       ResetFlag();
       page_resource_coordinator_->OnMainFrameNavigationCommitted(

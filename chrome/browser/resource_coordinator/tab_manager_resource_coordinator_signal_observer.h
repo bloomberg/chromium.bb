@@ -22,14 +22,19 @@ class TabManager::ResourceCoordinatorSignalObserver
   ~ResourceCoordinatorSignalObserver() override;
 
   // PageSignalObserver implementation.
-  void OnPageAlmostIdle(content::WebContents* web_contents) override;
-  void OnExpectedTaskQueueingDurationSet(content::WebContents* web_contents,
-                                         base::TimeDelta duration) override;
+  void OnPageAlmostIdle(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) override;
+  void OnExpectedTaskQueueingDurationSet(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id,
+      base::TimeDelta duration) override;
   void OnNonPersistentNotificationCreated(
-      content::WebContents* web_contents) override;
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) override;
   void OnLoadTimePerformanceEstimate(
       content::WebContents* web_contents,
-      const std::string& url,
+      const PageNavigationIdentity& page_navigation_id,
       base::TimeDelta cpu_usage_estimate,
       uint64_t private_footprint_kb_estimate) override;
 

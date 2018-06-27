@@ -47,7 +47,7 @@ struct COMPONENT_EXPORT(RESOURCE_COORDINATOR_PUBLIC_MOJOM)
       const resource_coordinator::PageNavigationIdentity& id) {
     return id.page_cu_id;
   }
-  static uint64_t navigation_id(
+  static int64_t navigation_id(
       const resource_coordinator::PageNavigationIdentity& id) {
     return id.navigation_id;
   }

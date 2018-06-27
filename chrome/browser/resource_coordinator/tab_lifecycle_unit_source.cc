@@ -220,11 +220,13 @@ void TabLifecycleUnitSource::OnBrowserNoLongerActive(Browser* browser) {
 
 void TabLifecycleUnitSource::OnLifecycleStateChanged(
     content::WebContents* web_contents,
+    const PageNavigationIdentity& page_navigation_id,
     mojom::LifecycleState state) {
   TabLifecycleUnit* lifecycle_unit = GetTabLifecycleUnit(web_contents);
 
   // Some WebContents aren't attached to a tab, so there is no corresponding
   // TabLifecycleUnit.
+  // TODO(fdoray): This may want to filter for the navigation_id.
   if (lifecycle_unit)
     lifecycle_unit->UpdateLifecycleState(state);
 }
