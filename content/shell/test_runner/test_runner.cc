@@ -207,6 +207,7 @@ class TestRunnerBindings : public gin::Wrappable<TestRunnerBindings> {
   void SetDumpConsoleMessages(bool value);
   void SetDumpJavaScriptDialogs(bool value);
   void SetEffectiveConnectionType(const std::string& connection_type);
+  void SetFileChooserPaths(const std::vector<std::string>& paths);
   void SetMockSpellCheckerEnabled(bool enabled);
   void SetImagesAllowed(bool allowed);
   void SetIsolatedWorldContentSecurityPolicy(int world_id,
@@ -522,6 +523,8 @@ gin::ObjectTemplateBuilder TestRunnerBindings::GetObjectTemplateBuilder(
                  &TestRunnerBindings::SetDumpJavaScriptDialogs)
       .SetMethod("setEffectiveConnectionType",
                  &TestRunnerBindings::SetEffectiveConnectionType)
+      .SetMethod("setFileChooserPaths",
+                 &TestRunnerBindings::SetFileChooserPaths)
       .SetMethod("setMockSpellCheckerEnabled",
                  &TestRunnerBindings::SetMockSpellCheckerEnabled)
       .SetMethod("setIconDatabaseEnabled", &TestRunnerBindings::NotImplemented)
@@ -744,6 +747,12 @@ void TestRunnerBindings::SetEffectiveConnectionType(
 
   if (runner_)
     runner_->SetEffectiveConnectionType(web_type);
+}
+
+void TestRunnerBindings::SetFileChooserPaths(
+    const std::vector<std::string>& paths) {
+  if (runner_)
+    runner_->SetFileChooserPaths(paths);
 }
 
 void TestRunnerBindings::SetMockSpellCheckerEnabled(bool enabled) {
@@ -1558,6 +1567,7 @@ void TestRunner::Reset() {
     close_remaining_windows_ = true;
 
   spellcheck_->Reset();
+  file_chooser_paths_ = std::vector<std::string>();
 }
 
 void TestRunner::SetTestIsRunning(bool running) {
@@ -2529,6 +2539,10 @@ void TestRunner::OnLayoutTestRuntimeFlagsChanged() {
   delegate_->OnLayoutTestRuntimeFlagsChanged(
       layout_test_runtime_flags_.tracked_dictionary().changed_values());
   layout_test_runtime_flags_.tracked_dictionary().ResetChangeTracking();
+}
+
+void TestRunner::SetFileChooserPaths(const std::vector<std::string>& paths) {
+  file_chooser_paths_ = paths;
 }
 
 void TestRunner::LocationChangeDone() {

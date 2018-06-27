@@ -91,11 +91,15 @@ class WebFrameTestClient : public blink::WebLocalFrameClient {
 
  private:
   TestRunner* test_runner();
+  void ChooseFiles(blink::WebFileChooserCompletion* completion,
+                   std::vector<std::string> paths);
 
   // Borrowed pointers to other parts of Layout Tests state.
   WebTestDelegate* delegate_;
   WebViewTestProxyBase* web_view_test_proxy_base_;
   WebFrameTestProxyBase* web_frame_test_proxy_base_;
+
+  base::WeakPtrFactory<WebFrameTestClient> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameTestClient);
 };
