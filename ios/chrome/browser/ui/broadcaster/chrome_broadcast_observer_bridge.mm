@@ -59,4 +59,8 @@ ChromeBroadcastObserverInterface::~ChromeBroadcastObserverInterface() = default;
   self.observer->OnExpandedToolbarHeightBroadcasted(height);
 }
 
+- (void)broadcastBottomToolbarHeight:(CGFloat)height {
+  self.observer->OnBottomToolbarHeightBroadcasted(height);
+}
+
 @end

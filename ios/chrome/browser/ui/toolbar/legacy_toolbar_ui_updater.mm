@@ -140,6 +140,7 @@ initWithToolbarUI:(nonnull ToolbarUIState*)toolbarUI
 - (void)updateState {
   self.toolbarUI.collapsedHeight = [self.owner collapsedTopToolbarHeight];
   self.toolbarUI.expandedHeight = [self.owner expandedTopToolbarHeight];
+  self.toolbarUI.bottomToolbarHeight = [self.owner bottomToolbarHeight];
 }
 
 @end

@@ -3885,6 +3885,10 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   return self.headerHeight;
 }
 
+- (CGFloat)bottomToolbarHeight {
+  return [self secondaryToolbarHeightWithInset];
+}
+
 #pragma mark - Toolbar height helpers
 
 - (CGFloat)nonFullscreenToolbarHeight {

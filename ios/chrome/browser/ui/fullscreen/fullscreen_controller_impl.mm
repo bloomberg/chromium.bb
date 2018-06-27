@@ -44,6 +44,8 @@ FullscreenControllerImpl::FullscreenControllerImpl()
                 forSelector:@selector(broadcastCollapsedToolbarHeight:)];
   [broadcaster_ addObserver:bridge_
                 forSelector:@selector(broadcastExpandedToolbarHeight:)];
+  [broadcaster_ addObserver:bridge_
+                forSelector:@selector(broadcastBottomToolbarHeight:)];
 }
 
 FullscreenControllerImpl::~FullscreenControllerImpl() = default;
@@ -116,4 +118,6 @@ void FullscreenControllerImpl::Shutdown() {
                    forSelector:@selector(broadcastCollapsedToolbarHeight:)];
   [broadcaster_ removeObserver:bridge_
                    forSelector:@selector(broadcastExpandedToolbarHeight:)];
+  [broadcaster_ removeObserver:bridge_
+                   forSelector:@selector(broadcastBottomToolbarHeight:)];
 }

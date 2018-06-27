@@ -96,6 +96,18 @@ CGFloat FullscreenModel::GetExpandedToolbarHeight() const {
   return expanded_toolbar_height_;
 }
 
+void FullscreenModel::SetBottomToolbarHeight(CGFloat height) {
+  if (AreCGFloatsEqual(bottom_toolbar_height_, height))
+    return;
+  DCHECK_GE(height, 0.0);
+  bottom_toolbar_height_ = height;
+  ResetForNavigation();
+}
+
+CGFloat FullscreenModel::GetBottomToolbarHeight() const {
+  return bottom_toolbar_height_;
+}
+
 void FullscreenModel::SetScrollViewHeight(CGFloat scroll_view_height) {
   scroll_view_height_ = scroll_view_height;
 }
@@ -278,4 +290,8 @@ void FullscreenModel::OnCollapsedToolbarHeightBroadcasted(CGFloat height) {
 
 void FullscreenModel::OnExpandedToolbarHeightBroadcasted(CGFloat height) {
   SetExpandedToolbarHeight(height);
+}
+
+void FullscreenModel::OnBottomToolbarHeightBroadcasted(CGFloat height) {
+  SetBottomToolbarHeight(height);
 }
