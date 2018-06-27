@@ -31,15 +31,12 @@ EmbeddedWorkerInstanceClientImpl::WorkerWrapper::~WorkerWrapper() = default;
 
 // static
 void EmbeddedWorkerInstanceClientImpl::Create(
-    base::TimeTicks blink_initialized_time,
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
     mojom::EmbeddedWorkerInstanceClientRequest request) {
   // This won't be leaked because the lifetime will be managed internally.
   // See the class documentation for detail.
-  EmbeddedWorkerInstanceClientImpl* client =
-      new EmbeddedWorkerInstanceClientImpl(std::move(io_thread_runner),
-                                           std::move(request));
-  client->blink_initialized_time_ = blink_initialized_time;
+  new EmbeddedWorkerInstanceClientImpl(std::move(io_thread_runner),
+                                       std::move(request));
 }
 
 void EmbeddedWorkerInstanceClientImpl::WorkerContextDestroyed() {
@@ -68,7 +65,6 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
           ->DefaultTaskRunner());
-  client->set_blink_initialized_time(blink_initialized_time_);
   client->set_start_worker_received_time(base::TimeTicks::Now());
   // Record UMA to indicate StartWorker is received on renderer.
   StartWorkerHistogramEnum metric =

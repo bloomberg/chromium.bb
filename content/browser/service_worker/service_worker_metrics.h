@@ -391,7 +391,6 @@ class ServiceWorkerMetrics {
   static void RecordTimeToEvaluateScript(base::TimeDelta duration,
                                          StartSituation start_situation);
   static void RecordStartMessageLatencyType(CrossProcessTimeDelta type);
-  static void RecordWaitedForRendererSetup(bool waited);
   CONTENT_EXPORT static void RecordEmbeddedWorkerStartTiming(
       mojom::EmbeddedWorkerStartTimingPtr start_timing,
       base::TimeTicks start_worker_sent_time,

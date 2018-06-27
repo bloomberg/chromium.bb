@@ -97,9 +97,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   ~ServiceWorkerContextClient() override;
 
   // Called on the main thread.
-  void set_blink_initialized_time(base::TimeTicks blink_initialized_time) {
-    blink_initialized_time_ = blink_initialized_time;
-  }
   void set_start_worker_received_time(
       base::TimeTicks start_worker_received_time) {
     start_worker_received_time_ = start_worker_received_time;
@@ -442,7 +439,6 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // destructed on the worker thread in willDestroyWorkerContext.
   std::unique_ptr<WorkerContextData> context_;
 
-  base::TimeTicks blink_initialized_time_;
   base::TimeTicks start_worker_received_time_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);

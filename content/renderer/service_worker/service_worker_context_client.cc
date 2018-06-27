@@ -1475,7 +1475,6 @@ void ServiceWorkerContextClient::SendWorkerStarted() {
   mojom::EmbeddedWorkerStartTimingPtr timing =
       mojom::EmbeddedWorkerStartTiming::New();
   timing->start_worker_received_time = start_worker_received_time_;
-  timing->blink_initialized_time = blink_initialized_time_;
   (*instance_host_)->OnStarted(std::move(timing));
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
                                   this);
