@@ -157,7 +157,7 @@ void DeviceOrientationController::LogToConsolePolicyFeaturesDisabled(
   const String& message = String::Format(
       "The %s events are blocked by feature policy. "
       "See "
-      "https://github.com/WICG/feature-policy/blob/gh-pages/"
+      "https://github.com/WICG/feature-policy/blob/master/"
       "features.md#sensor-features",
       event_name.Ascii().data());
   ConsoleMessage* console_message = ConsoleMessage::Create(
