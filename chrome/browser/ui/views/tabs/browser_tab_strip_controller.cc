@@ -62,9 +62,6 @@ using content::WebContents;
 
 namespace {
 
-const base::Feature kRefreshNewTabButtonAfterTabs = {
-    "RefreshNewTabButtonAfterTabs", base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool DetermineTabStripLayoutStacked(PrefService* prefs, bool* adjust_layout) {
   *adjust_layout = false;
   // For ash, always allow entering stacked mode.
@@ -313,6 +310,8 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 
 NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
     const {
+  constexpr base::Feature kRefreshNewTabButtonAfterTabs = {
+      "RefreshNewTabButtonAfterTabs", base::FEATURE_DISABLED_BY_DEFAULT};
   if (!ui::MaterialDesignController::IsRefreshUi() ||
       base::FeatureList::IsEnabled(kRefreshNewTabButtonAfterTabs)) {
     return AFTER_TABS;
