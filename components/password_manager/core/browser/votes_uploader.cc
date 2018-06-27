@@ -532,7 +532,7 @@ void VotesUploader::GeneratePasswordAttributesVote(
       character_class_attribute, randomized_value_for_character_class));
 
   size_t actual_length = password_value.size();
-  size_t randomized_length = base::RandGenerator(5) == 0
+  size_t randomized_length = actual_length <= 1 || base::RandGenerator(5) == 0
                                  ? actual_length
                                  : base::RandGenerator(actual_length - 1) + 1;
   form_structure->set_password_length_vote(randomized_length);
