@@ -126,6 +126,32 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, Cookies) {
   EXPECT_EQ("B=2; D=4", GetCookieFromJS(web_contents_http->GetMainFrame()));
 }
 
+// Ensure "priority" cookie option is settable via document.cookie.
+IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, CookiePriority) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  struct {
+    std::string param;
+    net::CookiePriority priority;
+  } cases[] = {{"name=value", net::COOKIE_PRIORITY_DEFAULT},
+               {"name=value;priority=Low", net::COOKIE_PRIORITY_LOW},
+               {"name=value;priority=Medium", net::COOKIE_PRIORITY_MEDIUM},
+               {"name=value;priority=High", net::COOKIE_PRIORITY_HIGH}};
+
+  for (auto test_case : cases) {
+    GURL url = embedded_test_server()->GetURL("/set_document_cookie.html?" +
+                                              test_case.param);
+    NavigateToURL(shell(), url);
+    std::vector<net::CanonicalCookie> cookies =
+        GetCanonicalCookies(shell()->web_contents()->GetBrowserContext(), url);
+
+    EXPECT_EQ(1u, cookies.size());
+    EXPECT_EQ("name", cookies[0].Name());
+    EXPECT_EQ("value", cookies[0].Value());
+    EXPECT_EQ(test_case.priority, cookies[0].Priority());
+  }
+}
+
 // SameSite cookies (that aren't marked as http-only) should be available to
 // JavaScript.
 IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
