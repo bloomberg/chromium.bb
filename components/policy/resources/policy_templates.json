@@ -142,6 +142,11 @@
 #
 # Schemas:
 #   All policies have a key 'schema' which describes the schema of the policy.
+#   This schema supports a subset of the JSON Schema standard. For more
+#   information see //components/json_schema/json_schema_validator.h
+#   which validates the schema and //components/policy/core/common/schema.h
+#   which validates instances against the specified schema.
+#
 #   For many policies this is simply a type eg 'boolean' or 'string', but for
 #   'dict' policies this describes the types of not only the root object, but
 #   also all of its descendants. This schema data is used to validate 'dict'
