@@ -4,9 +4,9 @@
 
 // https://w3c.github.io/webrtc-pc/#rtcrtpcodecparameters*
 dictionary RTCRtpCodecParameters {
-    octet          payloadType;
-    DOMString      mimeType;
-    unsigned long  clockRate;
-    unsigned short channels;
-    DOMString      sdpFmtpLine;
+    required octet          payloadType;
+    required DOMString      mimeType;
+    required unsigned long  clockRate;
+             unsigned short channels;
+             DOMString      sdpFmtpLine;
 };

@@ -82,8 +82,8 @@ class SetParametersRequest : public RTCVoidRequestScriptPromiseResolverImpl {
   Member<RTCRtpSender> sender_;
 };
 
-bool HasInvalidModification(const RTCRtpParameters& parameters,
-                            const RTCRtpParameters& new_parameters) {
+bool HasInvalidModification(const RTCRtpSendParameters& parameters,
+                            const RTCRtpSendParameters& new_parameters) {
   if (parameters.hasTransactionId() != new_parameters.hasTransactionId() ||
       (parameters.hasTransactionId() &&
        parameters.transactionId() != new_parameters.transactionId())) {
@@ -215,7 +215,7 @@ double PriorityToDouble(const WTF::String& priority) {
 
 std::tuple<std::vector<webrtc::RtpEncodingParameters>,
            webrtc::DegradationPreference>
-ToRtpParameters(const RTCRtpParameters& parameters) {
+ToRtpParameters(const RTCRtpSendParameters& parameters) {
   std::vector<webrtc::RtpEncodingParameters> encodings;
   if (parameters.hasEncodings()) {
     encodings.reserve(parameters.encodings().size());
@@ -275,9 +275,9 @@ ScriptPromise RTCRtpSender::replaceTrack(ScriptState* script_state,
   return promise;
 }
 
-void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
+void RTCRtpSender::getParameters(RTCRtpSendParameters& parameters) {
   // TODO(orphis): Forward missing fields from the WebRTC library:
-  // rtcp, headerExtensions, degradationPreference
+  // degradationPreference
   std::unique_ptr<webrtc::RtpParameters> webrtc_parameters =
       sender_->GetParameters();
 
@@ -340,8 +340,9 @@ void RTCRtpSender::getParameters(RTCRtpParameters& parameters) {
   last_returned_parameters_ = parameters;
 }
 
-ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
-                                          const RTCRtpParameters& parameters) {
+ScriptPromise RTCRtpSender::setParameters(
+    ScriptState* script_state,
+    const RTCRtpSendParameters& parameters) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
