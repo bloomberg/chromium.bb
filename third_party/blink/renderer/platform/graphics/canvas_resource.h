@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/ipc/common/mailbox.mojom-blink.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/geometry/int_size.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_color_params.h"
@@ -40,6 +41,12 @@ namespace blink {
 
 class CanvasResourceProvider;
 class StaticBitmapImage;
+
+// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
+// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
+// conversion through WTF::Vector.
+gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
+    const viz::SharedBitmapId& id);
 
 // Generic resource interface, used for locking (RAII) and recycling pixel
 // buffers of any type.

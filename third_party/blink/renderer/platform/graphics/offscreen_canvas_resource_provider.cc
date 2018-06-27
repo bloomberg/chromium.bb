@@ -27,21 +27,6 @@
 #include "third_party/skia/include/core/SkSwizzle.h"
 #include "third_party/skia/include/gpu/GrContext.h"
 
-namespace {
-
-// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
-// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
-// conversion through WTF::Vector.
-gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
-    const viz::SharedBitmapId& id) {
-  WTF::Vector<int8_t> name(GL_MAILBOX_SIZE_CHROMIUM);
-  for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
-    name[i] = id.name[i];
-  return {base::in_place, name};
-}
-
-}  // namespace
-
 namespace blink {
 
 OffscreenCanvasResourceProvider::OffscreenCanvasResourceProvider(

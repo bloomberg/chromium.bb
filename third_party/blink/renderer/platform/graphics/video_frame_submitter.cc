@@ -18,21 +18,11 @@
 #include "third_party/blink/public/platform/interface_provider.h"
 #include "third_party/blink/public/platform/modules/frame_sinks/embedded_frame_sink.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/platform/graphics/canvas_resource.h"
 
 namespace blink {
 
 namespace {
-
-// TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
-// blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
-// conversion through WTF::Vector.
-gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
-    const viz::SharedBitmapId& id) {
-  WTF::Vector<int8_t> name(GL_MAILBOX_SIZE_CHROMIUM);
-  for (int i = 0; i < GL_MAILBOX_SIZE_CHROMIUM; ++i)
-    name[i] = id.name[i];
-  return {base::in_place, name};
-}
 
 // Delay to retry getting the context_provider.
 constexpr int kGetContextProviderRetryMS = 150;
