@@ -126,7 +126,7 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   DCHECK_LE(apps_num, kNumStartPageTiles);
   for (; i < apps_num; ++i) {
     SearchResultTileItemView* tile_item =
-        new SearchResultTileItemView(this, view_delegate_, pagination_model_);
+        new SearchResultTileItemView(view_delegate_, pagination_model_);
     tiles_layout_manager->AddView(tile_item);
     AddChildView(tile_item);
     tile_item->SetParentBackgroundColor(kLabelBackgroundColor);

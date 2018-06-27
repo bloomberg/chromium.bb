@@ -67,7 +67,7 @@ SearchResultTileItemListView::SearchResultTileItemListView(
     }
 
     SearchResultTileItemView* tile_item = new SearchResultTileItemView(
-        this, view_delegate, nullptr /* pagination model */);
+        view_delegate, nullptr /* pagination model */);
     tile_item->SetParentBackgroundColor(kCardBackgroundColor);
     tile_views_.push_back(tile_item);
     AddChildView(tile_item);
