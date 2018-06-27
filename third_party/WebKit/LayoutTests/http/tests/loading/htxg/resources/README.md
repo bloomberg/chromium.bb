@@ -37,12 +37,12 @@ gen-certurl  \
 
 # Generate the signed exchange file.
 gen-signedexchange \
-  -uri https://www.127.0.0.1/test.html \
+  -uri https://127.0.0.1:8443/test.html \
   -status 200 \
   -content htxg-location.html \
   -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.sxg.pem \
-  -certUrl http://localhost:8000/loading/htxg/resources/127.0.0.1.sxg.pem.cbor \
-  -validityUrl https://www.127.0.0.1/loading/htxg/resources/resource.validity.msg \
+  -certUrl https://127.0.0.1:8443/loading/htxg/resources/127.0.0.1.sxg.pem.cbor \
+  -validityUrl https://127.0.0.1:8443/loading/htxg/resources/resource.validity.msg \
   -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.sxg.key \
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
@@ -51,12 +51,12 @@ gen-signedexchange \
 
 # Generate the signed exchange file which certificate file is not available.
 gen-signedexchange \
-  -uri https://www.127.0.0.1/not_found_cert.html \
+  -uri https://127.0.0.1:8443/not_found_cert.html \
   -status 200 \
   -content htxg-location.html \
   -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.sxg.pem \
-  -certUrl http://localhost:8000/loading/htxg/resources/not_found_cert.pem.cbor \
-  -validityUrl https://www.127.0.0.1/loading/htxg/resources/not_found_cert.validity.msg \
+  -certUrl https://127.0.0.1:8443/loading/htxg/resources/not_found_cert.pem.cbor \
+  -validityUrl https://127.0.0.1:8443/loading/htxg/resources/not_found_cert.validity.msg \
   -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.sxg.key \
   -date 2018-04-01T00:00:00Z \
   -expire 168h \
@@ -66,11 +66,11 @@ gen-signedexchange \
 # Generate the signed exchange file which validity URL is different origin from
 # request URL.
 gen-signedexchange \
-  -uri https://www.127.0.0.1/test.html \
+  -uri https://127.0.0.1:8443/test.html \
   -status 200 \
   -content htxg-location.html \
   -certificate ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.sxg.pem \
-  -certUrl http://localhost:8000/loading/htxg/resources/127.0.0.1.sxg.pem.cbor \
+  -certUrl https://127.0.0.1:8443/loading/htxg/resources/127.0.0.1.sxg.pem.cbor \
   -validityUrl https://www2.127.0.0.1/loading/htxg/resources/resource.validity.msg \
   -privateKey ../../../../../../../blink/tools/blinkpy/third_party/wpt/certs/127.0.0.1.sxg.key \
   -date 2018-04-01T00:00:00Z \
