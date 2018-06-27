@@ -82,7 +82,7 @@ crostini.testCrostiniError = (done) => {
   chrome.fileManagerPrivate.mountCrostiniContainer = (callback) => {
     chrome.runtime.lastError = {message: 'test message'};
     callback();
-    chrome.runtime.lastError = null;
+    delete chrome.runtime.lastError;
   };
   test.setupAndWaitUntilReady()
       .then(() => {

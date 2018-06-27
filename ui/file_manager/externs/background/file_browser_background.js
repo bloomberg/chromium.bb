@@ -15,3 +15,6 @@ FileBrowserBackground.prototype.ready = function(callback) {};
 
 /** @type {!analytics.Tracker} */
 FileBrowserBackground.prototype.tracker;
+
+/** @type {!Object<!Window>} */
+FileBrowserBackground.prototype.dialogs;

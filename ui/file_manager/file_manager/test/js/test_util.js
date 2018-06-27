@@ -45,28 +45,28 @@ test.loadData = function() {
  * @enum {string}
  * @const
  */
-test.EntryType = Object.freeze({
+test.EntryType = {
   FILE: 'file',
   DIRECTORY: 'directory'
-});
+};
 
 /**
  * @enum {string}
  * @const
  */
-test.SharedOption = Object.freeze({
+test.SharedOption = {
   NONE: 'none',
   SHARED: 'shared'
-});
+};
 
 /**
  * File system entry information for tests.
  *
- * @param {EntryType} type Entry type.
+ * @param {test.EntryType} type Entry type.
  * @param {string} sourceFileName Source file name that provides file contents.
- * @param {string} targetName Name of entry on the test file system.
+ * @param {string} targetPath Path of entry on the test file system.
  * @param {string} mimeType Mime type.
- * @param {SharedOption} sharedOption Shared option.
+ * @param {test.SharedOption} sharedOption Shared option.
  * @param {string} lastModifiedTime Last modified time as a text to be shown in
  *     the last modified column.
  * @param {string} nameText File name to be shown in the name column.
@@ -134,7 +134,7 @@ test.TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
 
 /**
  * Filesystem entries used by the test cases.
- * @type {Object<TestEntryInfo>}
+ * @type {Object<test.TestEntryInfo>}
  * @const
  */
 test.ENTRIES = {
@@ -174,22 +174,22 @@ test.ENTRIES = {
   // file extensions works fine.
   beautiful: new test.TestEntryInfo(
       test.EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
-      null, test.SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
+      '', test.SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
       'Beautiful Song.ogg', '14 KB', 'OGG audio'),
 
   photos: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'photos',
-      null, test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
+      test.EntryType.DIRECTORY, '', 'photos',
+      '', test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
       'photos', '--', 'Folder'),
 
   testDocument: new test.TestEntryInfo(
-      test.EntryType.FILE, null, 'Test Document',
+      test.EntryType.FILE, '', 'Test Document',
       'application/vnd.google-apps.document',
       test.SharedOption.NONE, 'Apr 10, 2013, 4:20 PM',
       'Test Document.gdoc', '--', 'Google document'),
 
   testSharedDocument: new test.TestEntryInfo(
-      test.EntryType.FILE, null, 'Test Shared Document',
+      test.EntryType.FILE, '', 'Test Shared Document',
       'application/vnd.google-apps.document',
       test.SharedOption.SHARED, 'Mar 20, 2013, 10:40 PM',
       'Test Shared Document.gdoc', '--', 'Google document'),
@@ -200,33 +200,33 @@ test.ENTRIES = {
       'newly added file.ogg', '14 KB', 'OGG audio'),
 
   directoryA: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'A',
-      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+      test.EntryType.DIRECTORY, '', 'A',
+      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'A', '--', 'Folder'),
 
   directoryB: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'A/B',
-      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+      test.EntryType.DIRECTORY, '', 'A/B',
+      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'B', '--', 'Folder'),
 
   directoryC: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'A/B/C',
-      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+      test.EntryType.DIRECTORY, '', 'A/B/C',
+      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'C', '--', 'Folder'),
 
   directoryD: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'D',
-      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+      test.EntryType.DIRECTORY, '', 'D',
+      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'D', '--', 'Folder'),
 
   directoryE: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'D/E',
-      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+      test.EntryType.DIRECTORY, '', 'D/E',
+      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'E', '--', 'Folder'),
 
   directoryF: new test.TestEntryInfo(
-      test.EntryType.DIRECTORY, null, 'D/E/F',
-      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+      test.EntryType.DIRECTORY, '', 'D/E/F',
+      '', test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'F', '--', 'Folder'),
 
   zipArchive: new test.TestEntryInfo(
@@ -242,7 +242,7 @@ test.ENTRIES = {
 
 /**
  * Basic entry set for the local volume.
- * @type {!Array<!TestEntryInfo>}
+ * @type {!Array<!test.TestEntryInfo>}
  * @const
  */
 test.BASIC_LOCAL_ENTRY_SET = [
@@ -259,7 +259,7 @@ test.BASIC_LOCAL_ENTRY_SET = [
  * TODO(hirono): Add a case for an entry cached by FileCache. For testing
  *               Drive, create more entries with Drive specific attributes.
  *
- * @type {!Array<!TestEntryInfo>}
+ * @type {!Array<!test.TestEntryInfo>}
  * @const
  */
 test.BASIC_DRIVE_ENTRY_SET = [
@@ -275,7 +275,7 @@ test.BASIC_DRIVE_ENTRY_SET = [
 
 /**
  * Basic entry set for the local crostini volume.
- * @type {!Array<!TestEntryInfo>}
+ * @type {!Array<!test.TestEntryInfo>}
  * @const
  */
 test.BASIC_CROSTINI_ENTRY_SET = [
@@ -309,7 +309,7 @@ test.REPEAT_UNTIL_LOG_INTERVAL = 3000;
  * Returns a pending marker. See also the repeatUntil function.
  * @param {string} message Pending reason including %s, %d, or %j markers. %j
  *     format an object as JSON.
- * @param {Array<*>} var_args Values to be assigined to %x markers.
+ * @param {...*} var_args Values to be assigined to %x markers.
  * @return {Object} Object which returns true for the expression: obj instanceof
  *     pending.
  */
@@ -395,29 +395,32 @@ test.waitForElementLost = function(query) {
 /**
  * Adds specified TestEntryInfos to downloads and drive.
  *
- * @param {!Array<!TestEntryInfo>} downloads Entries for downloads.
- * @param {!Array<!TestEntryInfo>} drive Entries for drive.
- * @param {!Array<!TestEntryInfo>} crostini Entries for crostini.
+ * @param {!Array<!test.TestEntryInfo>} downloads Entries for downloads.
+ * @param {!Array<!test.TestEntryInfo>} drive Entries for drive.
+ * @param {!Array<!test.TestEntryInfo>} crostini Entries for crostini.
  */
 test.addEntries = function(downloads, drive, crostini) {
-  var fsDownloads =
+  var fsDownloads = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
-          .fileSystem;
+          .fileSystem);
   fsDownloads.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(downloads, '/'), true);
 
-  var fsDrive =
+  var fsDrive = /** @type {MockFileSystem} */ (
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
-          .fileSystem;
+          .fileSystem);
   fsDrive.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
 
-  var crostiniVolumeInfo = mockVolumeManager.createVolumeInfo(
-      VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
-      str('LINUX_FILES_ROOT_LABEL'));
-  crostiniVolumeInfo.fileSystem.populate(
+  var fsCrostini = /** @type {MockFileSystem} */ (
+      mockVolumeManager
+          .createVolumeInfo(
+              VolumeManagerCommon.VolumeType.CROSTINI, 'crostini',
+              str('LINUX_FILES_ROOT_LABEL'))
+          .fileSystem);
+  fsCrostini.populate(
       test.TestEntryInfo.getMockFileSystemPopulateRows(crostini, '/'), true);
 };
 
@@ -442,8 +445,8 @@ test.mountCrostini = function() {
 /**
  * Waits for the file list turns to the given contents.
  * @param {!Array<!Array<string>>} expected Expected contents of file list.
- * @param {{orderCheck:boolean=, ignoreName:boolean=, ignoreSize:boolean=,
- *     ignoreType:boolean=,ignoreDate:boolean=}=} opt_options
+ * @param {{orderCheck:boolean, ignoreName:boolean, ignoreSize:boolean,
+ *     ignoreType:boolean, ignoreDate:boolean}=} opt_options
  *     Options of the comparison. If orderCheck is true, it also compares the
  *     order of files. If ignore[Name|Size|Type|Date] is true, it compares
  *     the file without considering that field.
@@ -452,12 +455,12 @@ test.mountCrostini = function() {
  */
 test.waitForFiles = function(expected, opt_options) {
   var options = opt_options || {};
-  var nextLog = Date.now() + test.INTERVAL_FOR_WAIT_LOGGING;
+  var nextLog = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
   return test.repeatUntil(function() {
     var files = test.getFileList();
     if (Date.now() > nextLog) {
       console.debug('waitForFiles', expected, files);
-      nextLog = Date.now() + test.INTERVAL_FOR_WAIT_LOGGING;
+      nextLog = Date.now() + test.REPEAT_UNTIL_LOG_INTERVAL;
     }
     if (!options.orderCheck) {
       files.sort();
@@ -492,7 +495,7 @@ test.waitForFiles = function(expected, opt_options) {
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the file list.
  */
-test.setupAndWaitUntilReady = function(resolve) {
+test.setupAndWaitUntilReady = function() {
   // Copy some functions from test.util.sync and bind to main window.
   test.fakeMouseClick = test.util.sync.fakeMouseClick.bind(null, window);
   test.fakeMouseDoubleClick =
@@ -529,7 +532,7 @@ test.setupAndWaitUntilReady = function(resolve) {
  * @param {boolean=} opt_failed True indicates failure.
  */
 test.done = function(opt_failed) {
-  endTests(!opt_failed);
+  window.endTests(!opt_failed);
 };
 
 /**

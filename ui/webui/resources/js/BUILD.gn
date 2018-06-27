@@ -30,6 +30,7 @@ js_type_check("js_resources") {
     ":util",
     ":web_ui_listener_behavior",
     ":webui_listener_tracker",
+    ":webui_resource_test",
   ]
 }
 
@@ -118,4 +119,8 @@ js_library("web_ui_listener_behavior") {
   deps = [
     ":cr",
   ]
+}
+
+js_library("webui_resource_test") {
+  externs_list = [ "dom_automation_controller.js" ]
 }

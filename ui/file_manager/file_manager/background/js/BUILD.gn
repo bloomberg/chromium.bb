@@ -27,6 +27,7 @@ js_type_check("closure_compile") {
     ":mock_volume_manager",
     ":progress_center",
     ":task_queue",
+    ":test_util_base",
     ":volume_info_impl",
     ":volume_info_list_impl",
     ":volume_manager_factory",
@@ -231,6 +232,13 @@ js_library("task_queue") {
   deps = [
     ":duplicate_finder",
     "../../common/js:importer_common",
+  ]
+}
+
+js_library("test_util_base") {
+  deps = [
+    ":app_windows",
+    "../../common/js:error_util",
   ]
 }
 
