@@ -3050,13 +3050,11 @@ source_set("quic_test_tools") {
   testonly = true
   sources = [
     "quic/chromium/crypto_test_utils_chromium.cc",
-    "third_party/quic/platform/api/quic_mock_log.h",
     "third_party/quic/platform/api/quic_test.h",
     "third_party/quic/platform/api/quic_test_loopback.cc",
     "third_party/quic/platform/api/quic_test_loopback.h",
     "third_party/quic/platform/api/quic_test_mem_slice_vector.h",
     "third_party/quic/platform/api/quic_test_output.h",
-    "third_party/quic/platform/impl/quic_mock_log_impl.h",
     "third_party/quic/platform/impl/quic_test_impl.cc",
     "third_party/quic/platform/impl/quic_test_impl.h",
     "third_party/quic/platform/impl/quic_test_loopback_impl.cc",

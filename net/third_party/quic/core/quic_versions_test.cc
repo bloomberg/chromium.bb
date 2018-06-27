@@ -6,15 +6,12 @@
 
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
-#include "net/third_party/quic/platform/api/quic_logging.h"
-#include "net/third_party/quic/platform/api/quic_mock_log.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
 namespace {
-
-using testing::_;
 
 class QuicVersionsTest : public QuicTest {
  protected:
@@ -24,14 +21,17 @@ class QuicVersionsTest : public QuicTest {
 };
 
 TEST_F(QuicVersionsTest, QuicVersionToQuicVersionLabel) {
-  // If you add a new version to the QuicTransportVersion enum you will need to
-  // add a new case to QuicVersionToQuicVersionLabel, otherwise this test will
-  // fail.
+// If you add a new version to the QuicTransportVersion enum you will need to
+// add a new case to QuicVersionToQuicVersionLabel, otherwise this test will
+// fail.
 
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
   // Any logs would indicate an unsupported version which we don't expect.
-  CREATE_QUIC_MOCK_LOG(log);
-  EXPECT_QUIC_LOG_CALL(log).Times(0);
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(_, _, _)).Times(0);
   log.StartCapturingLogs();
+#endif
 
   // Explicitly test a specific version.
   EXPECT_EQ(MakeQuicTag('5', '3', '0', 'Q'),
@@ -47,27 +47,33 @@ TEST_F(QuicVersionsTest, QuicVersionToQuicVersionLabel) {
 }
 
 TEST_F(QuicVersionsTest, QuicVersionToQuicVersionLabelUnsupported) {
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
   // TODO(rjshade): Change to DFATAL once we actually support multiple versions,
   // and QuicConnectionTest::SendVersionNegotiationPacket can be changed to use
   // mis-matched versions rather than relying on QUIC_VERSION_UNSUPPORTED.
-  CREATE_QUIC_MOCK_LOG(log);
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(
+      log, Log(base_logging::ERROR, _, "Unsupported QuicTransportVersion: 0"))
+      .Times(1);
   log.StartCapturingLogs();
-
-  EXPECT_QUIC_LOG_CALL_CONTAINS(log, ERROR,
-                                "Unsupported QuicTransportVersion: 0");
+#endif
 
   EXPECT_EQ(0u, QuicVersionToQuicVersionLabel(QUIC_VERSION_UNSUPPORTED));
 }
 
 TEST_F(QuicVersionsTest, QuicVersionLabelToQuicTransportVersion) {
-  // If you add a new version to the QuicTransportVersion enum you will need to
-  // add a new case to QuicVersionLabelToQuicTransportVersion, otherwise this
-  // test will fail.
+// If you add a new version to the QuicTransportVersion enum you will need to
+// add a new case to QuicVersionLabelToQuicTransportVersion, otherwise this
+// test will fail.
 
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
   // Any logs would indicate an unsupported version which we don't expect.
-  CREATE_QUIC_MOCK_LOG(log);
-  EXPECT_QUIC_LOG_CALL(log).Times(0);
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(_, _, _)).Times(0);
   log.StartCapturingLogs();
+#endif
 
   // Explicitly test specific versions.
   EXPECT_EQ(QUIC_VERSION_35,
@@ -89,22 +95,28 @@ TEST_F(QuicVersionsTest, QuicVersionLabelToQuicTransportVersion) {
 }
 
 TEST_F(QuicVersionsTest, QuicVersionLabelToQuicVersionUnsupported) {
-  CREATE_QUIC_MOCK_LOG(log);
-#if QUIC_DLOG_INFO_IS_ON
-  EXPECT_QUIC_LOG_CALL_CONTAINS(log, INFO,
-                                "Unsupported QuicVersionLabel version: EKAF")
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+#ifndef NDEBUG
+  EXPECT_CALL(log, Log(base_logging::INFO, _,
+                       "Unsupported QuicVersionLabel version: EKAF"))
       .Times(1);
 #endif
   log.StartCapturingLogs();
+#endif
 
   EXPECT_EQ(QUIC_VERSION_UNSUPPORTED,
             QuicVersionLabelToQuicVersion(MakeQuicTag('F', 'A', 'K', 'E')));
 }
 
 TEST_F(QuicVersionsTest, QuicVersionLabelToHandshakeProtocol) {
-  CREATE_QUIC_MOCK_LOG(log);
-  EXPECT_QUIC_LOG_CALL(log).Times(0);
+// TODO(rtenneti): Enable checking of Log(ERROR) messages.
+#if 0
+  ScopedMockLog log(kDoNotCaptureLogsYet);
+  EXPECT_CALL(log, Log(_, _, _)).Times(0);
   log.StartCapturingLogs();
+#endif
 
   for (size_t i = 0; i < QUIC_ARRAYSIZE(kSupportedTransportVersions); ++i) {
     QuicVersionLabel version_label =
@@ -119,10 +131,12 @@ TEST_F(QuicVersionsTest, QuicVersionLabelToHandshakeProtocol) {
   EXPECT_EQ(PROTOCOL_TLS1_3, QuicVersionLabelToHandshakeProtocol(tls_tag));
 
   FLAGS_quic_supports_tls_handshake = false;
-#if QUIC_DLOG_INFO_IS_ON
-  EXPECT_QUIC_LOG_CALL_CONTAINS(log, INFO,
-                                "Unsupported QuicVersionLabel version: T041")
+#if 0
+#ifndef NDEBUG
+  EXPECT_CALL(log, Log(base_logging::INFO, _,
+                       "Unsupported QuicVersionLabel version: T041"))
       .Times(1);
+#endif
 #endif
   EXPECT_EQ(PROTOCOL_UNSUPPORTED, QuicVersionLabelToHandshakeProtocol(tls_tag));
 }

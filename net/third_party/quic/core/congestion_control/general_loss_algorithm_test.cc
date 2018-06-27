@@ -7,11 +7,13 @@
 #include <algorithm>
 #include <cstdint>
 
+#include "base/stl_util.h"
 #include "net/third_party/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quic/core/quic_unacked_packet_map.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
 namespace quic {
 namespace test {
