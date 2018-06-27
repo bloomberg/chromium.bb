@@ -168,8 +168,10 @@ SimpleEnclosedRegion TextureLayerImpl::VisibleOpaqueRegion() const {
 }
 
 void TextureLayerImpl::ReleaseResources() {
-  FreeTransferableResource();
-  resource_id_ = 0;
+  // Gpu resources are lost when the LayerTreeFrameSink is lost. But software
+  // resources are still valid, and we can keep them here in that case.
+  if (!transferable_resource_.is_software)
+    FreeTransferableResource();
 
   // The LayerTreeFrameSink is gone and being replaced, so we will have to
   // re-register all SharedBitmapIds on the new LayerTreeFrameSink. We don't
@@ -276,10 +278,6 @@ const char* TextureLayerImpl::LayerTypeAsString() const {
 
 void TextureLayerImpl::FreeTransferableResource() {
   if (own_resource_) {
-    // TODO(crbug.com/826886): Software resources should be kept alive.
-    // if (transferable_resource_.is_software)
-    //  return;
-
     DCHECK(!resource_id_);
     if (release_callback_) {
       // We didn't use the resource, but the client might need the SyncToken
@@ -290,9 +288,6 @@ void TextureLayerImpl::FreeTransferableResource() {
     transferable_resource_ = viz::TransferableResource();
     release_callback_ = nullptr;
   } else if (resource_id_) {
-    // TODO(crbug.com/826886): Ownership of software resources should be
-    // reclaimed, including the ReleaseCalback, without running it.
-
     DCHECK(!own_resource_);
     auto* resource_provider = layer_tree_impl()->resource_provider();
     resource_provider->RemoveImportedResource(resource_id_);
