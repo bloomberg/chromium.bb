@@ -9,7 +9,6 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "v8/include/v8.h"
 
 namespace blink {
 
@@ -27,8 +26,14 @@ class ScriptState;
 // are not caught, so that they can be handled by user Javascript. This implicit
 // exception passing is error-prone and bad.
 //
-// TODO(ricea): Add ExceptionState arguments and make exception passing
-// explicit. https://crbug.com/853189.
+// In methods which take an ExceptionState& parameter, exception passing is
+// explicit. Callers must check exception_state.HadException() on
+// return. Although these methods return base::nullopt if and only if an
+// exception was thrown, outside of unit tests exception_state should always be
+// used to determine failure.
+//
+// TODO(ricea): Add ExceptionState arguments to the rest of the non-Promise
+// methods to make exception passing explicit. https://crbug.com/853189.
 class CORE_EXPORT ReadableStreamOperations {
   STATIC_ONLY(ReadableStreamOperations);
 
@@ -59,9 +64,21 @@ class CORE_EXPORT ReadableStreamOperations {
                                                ScriptValue,
                                                ExceptionState& exception_state);
 
+  // Performs IsReadableStream.
+  // Catches exceptions, and returns false if there are any. Should only be used
+  // in a DCHECK statement that passes when the return value is true.
+  static bool IsReadableStreamForDCheck(ScriptState*, ScriptValue);
+
   // IsReadableStreamDisturbed.
   // This function assumes |IsReadableStream(stream)|.
-  static base::Optional<bool> IsDisturbed(ScriptState*, ScriptValue stream);
+  static base::Optional<bool> IsDisturbed(ScriptState*,
+                                          ScriptValue stream,
+                                          ExceptionState& exception_state);
+
+  // Performs IsReadableStreamDisturbed.
+  // Catches exceptions, and returns false if there are any. Should only be used
+  // in a DCHECK statement that passes when the return value is false.
+  static bool IsDisturbedForDCheck(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamLocked.
   // This function assumes |IsReadableStream(stream)|.

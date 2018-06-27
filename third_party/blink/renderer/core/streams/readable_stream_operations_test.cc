@@ -199,15 +199,15 @@ TEST(ReadableStreamOperationsTest, IsDisturbed) {
       EvalWithPrintingError(&scope, "stream = new ReadableStream()");
   EXPECT_FALSE(stream.IsEmpty());
 
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream)
-          .value_or(true));
+  EXPECT_FALSE(ReadableStreamOperations::IsDisturbed(
+                   scope.GetScriptState(), stream, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
 
   ASSERT_FALSE(EvalWithPrintingError(&scope, "stream.cancel()").IsEmpty());
 
-  EXPECT_TRUE(
-      ReadableStreamOperations::IsDisturbed(scope.GetScriptState(), stream)
-          .value_or(false));
+  EXPECT_TRUE(ReadableStreamOperations::IsDisturbed(scope.GetScriptState(),
+                                                    stream, ASSERT_NO_EXCEPTION)
+                  .value_or(false));
 }
 
 TEST(ReadableStreamOperationsTest, Read) {

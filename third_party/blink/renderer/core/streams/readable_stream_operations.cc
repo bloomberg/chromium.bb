@@ -77,13 +77,6 @@ bool BooleanOperationForDCheck(ScriptState* script_state,
   return result.value();
 }
 
-// Performs IsReadableStream(value), catching exceptions. Should only be used in
-// DCHECK(). Returns true on exception.
-bool IsReadableStreamForDCheck(ScriptState* script_state, ScriptValue value) {
-  return BooleanOperationForDCheck(script_state, value, "IsReadableStream",
-                                   true);
-}
-
 // Performs IsReadableStreamLocked(stream), catching exceptions. Should only be
 // used in DCHECK(). Returns false on exception.
 bool IsLockedForDCheck(ScriptState* script_state, ScriptValue stream) {
@@ -157,11 +150,27 @@ base::Optional<bool> ReadableStreamOperations::IsReadableStream(
                                      exception_state);
 }
 
+bool ReadableStreamOperations::IsReadableStreamForDCheck(
+    ScriptState* script_state,
+    ScriptValue value) {
+  return BooleanOperationForDCheck(script_state, value, "IsReadableStream",
+                                   true);
+}
+
 base::Optional<bool> ReadableStreamOperations::IsDisturbed(
     ScriptState* script_state,
-    ScriptValue stream) {
+    ScriptValue stream,
+    ExceptionState& exception_state) {
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
-  return BooleanOperation(script_state, stream, "IsReadableStreamDisturbed");
+  return BooleanOperationWithRethrow(
+      script_state, stream, "IsReadableStreamDisturbed", exception_state);
+}
+
+bool ReadableStreamOperations::IsDisturbedForDCheck(ScriptState* script_state,
+                                                    ScriptValue stream) {
+  DCHECK(IsReadableStreamForDCheck(script_state, stream));
+  return BooleanOperationForDCheck(script_state, stream,
+                                   "IsReadableStreamDisturbed", false);
 }
 
 base::Optional<bool> ReadableStreamOperations::IsLocked(
@@ -240,18 +249,12 @@ void ReadableStreamOperations::Tee(ScriptState* script_state,
   ScriptValue result1(script_state,
                       branches->Get(script_state->GetContext(), 0));
   DCHECK(!result1.IsEmpty());
-  DCHECK(
-      IsReadableStream(script_state, result1, exception_state).value_or(true));
-  if (exception_state.HadException())
-    return;
+  DCHECK(IsReadableStreamForDCheck(script_state, result1));
 
   ScriptValue result2(script_state,
                       branches->Get(script_state->GetContext(), 1));
   DCHECK(!result2.IsEmpty());
-  DCHECK(
-      IsReadableStream(script_state, result2, exception_state).value_or(true));
-  if (exception_state.HadException())
-    return;
+  DCHECK(IsReadableStreamForDCheck(script_state, result2));
 
   *new_stream1 = std::move(result1);
   *new_stream2 = std::move(result2);

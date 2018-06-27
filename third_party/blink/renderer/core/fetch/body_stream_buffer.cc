@@ -144,12 +144,8 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
       script_state_(script_state),
       signal_(nullptr),
       made_from_readable_stream_(true) {
-  DCHECK(ReadableStreamOperations::IsReadableStream(script_state, stream,
-                                                    exception_state)
-             .value_or(true));
-
-  if (exception_state.HadException())
-    return;
+  DCHECK(ReadableStreamOperations::IsReadableStreamForDCheck(script_state,
+                                                             stream));
 
   v8::Local<v8::Value> body_value = ToV8(this, script_state);
   DCHECK(!body_value.IsEmpty());
@@ -162,7 +158,7 @@ BodyStreamBuffer::BodyStreamBuffer(ScriptState* script_state,
 
 ScriptValue BodyStreamBuffer::Stream() {
   // Since this is the implementation of response.body, we return the stream
-  // even if |stream_broken_| is true, so that expected Javascript attribute
+  // even if |stream_broken_| is true, so that expected JavaScript attribute
   // behaviour is not changed. User code is still permitted to access the
   // stream even when it has thrown an exception.
   ScriptState::Scope scope(script_state_.get());
@@ -179,7 +175,7 @@ ScriptValue BodyStreamBuffer::Stream() {
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     BytesConsumer::BlobSizePolicy policy) {
   DCHECK(!IsStreamLocked());
-  DCHECK(!IsStreamDisturbed());
+  DCHECK(!IsStreamDisturbedForDCheck());
   if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
 
@@ -197,7 +193,7 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
 
 scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
   DCHECK(!IsStreamLocked());
-  DCHECK(!IsStreamDisturbed());
+  DCHECK(!IsStreamDisturbedForDCheck());
   if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
 
@@ -234,7 +230,7 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
                            BodyStreamBuffer** branch2,
                            ExceptionState& exception_state) {
   DCHECK(!IsStreamLocked());
-  DCHECK(!IsStreamDisturbed());
+  DCHECK(!IsStreamDisturbedForDCheck());
   *branch1 = nullptr;
   *branch2 = nullptr;
 
@@ -352,9 +348,15 @@ bool BodyStreamBuffer::IsStreamLocked() {
                                           true);
 }
 
-bool BodyStreamBuffer::IsStreamDisturbed() {
-  return BooleanStreamOperationOrFallback(ReadableStreamOperations::IsDisturbed,
-                                          true);
+base::Optional<bool> BodyStreamBuffer::IsStreamDisturbed(
+    ExceptionState& exception_state) {
+  return BooleanStreamOperation(ReadableStreamOperations::IsDisturbed,
+                                exception_state);
+}
+
+bool BodyStreamBuffer::IsStreamDisturbedForDCheck() {
+  return ReadableStreamOperations::IsDisturbedForDCheck(script_state_.get(),
+                                                        Stream());
 }
 
 void BodyStreamBuffer::CloseAndLockAndDisturb() {
@@ -477,9 +479,30 @@ bool BodyStreamBuffer::BooleanStreamOperationOrFallback(
   return result.value();
 }
 
+base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
+    base::Optional<bool> (*predicate)(ScriptState*,
+                                      ScriptValue,
+                                      ExceptionState&),
+    ExceptionState& exception_state) {
+  if (stream_broken_) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Body stream has suffered a fatal error and cannot be inspected");
+    return base::nullopt;
+  }
+  ScriptState::Scope scope(script_state_.get());
+  base::Optional<bool> result =
+      predicate(script_state_.get(), Stream(), exception_state);
+  if (exception_state.HadException()) {
+    stream_broken_ = true;
+    return base::nullopt;
+  }
+  return result;
+}
+
 BytesConsumer* BodyStreamBuffer::ReleaseHandle() {
   DCHECK(!IsStreamLocked());
-  DCHECK(!IsStreamDisturbed());
+  DCHECK(!IsStreamDisturbedForDCheck());
 
   if (stream_broken_) {
     return BytesConsumer::CreateErrored(

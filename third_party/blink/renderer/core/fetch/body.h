@@ -17,6 +17,7 @@
 namespace blink {
 
 class BodyStreamBuffer;
+class ExceptionState;
 class ExecutionContext;
 class ScriptState;
 
@@ -34,18 +35,29 @@ class CORE_EXPORT Body : public ScriptWrappable,
   USING_GARBAGE_COLLECTED_MIXIN(Body);
 
  public:
+  enum class BodyUsed { kUsed, kUnused, kBroken };
+
   explicit Body(ExecutionContext*);
 
-  ScriptPromise arrayBuffer(ScriptState*);
-  ScriptPromise blob(ScriptState*);
-  ScriptPromise formData(ScriptState*);
-  ScriptPromise json(ScriptState*);
-  ScriptPromise text(ScriptState*);
+  ScriptPromise arrayBuffer(ScriptState*, ExceptionState&);
+  ScriptPromise blob(ScriptState*, ExceptionState&);
+  ScriptPromise formData(ScriptState*, ExceptionState&);
+  ScriptPromise json(ScriptState*, ExceptionState&);
+  ScriptPromise text(ScriptState*, ExceptionState&);
   ScriptValue body(ScriptState*);
   virtual BodyStreamBuffer* BodyBuffer() = 0;
   virtual const BodyStreamBuffer* BodyBuffer() const = 0;
 
-  virtual bool bodyUsed();
+  // This should only be called from the generated bindings. All other code
+  // should use IsBodyUsed() instead.
+  bool bodyUsed(ExceptionState& exception_state) {
+    return IsBodyUsed(exception_state) == BodyUsed::kUsed;
+  }
+
+  // Returns kUsed, kUnused or kBroken. kBroken implies there is an exception
+  // pending and the caller should return to JavaScript immediately.
+  virtual BodyUsed IsBodyUsed(ExceptionState&);
+
   bool IsBodyLocked();
 
   // ScriptWrappable override.
@@ -56,6 +68,11 @@ class CORE_EXPORT Body : public ScriptWrappable,
     ContextClient::Trace(visitor);
   }
 
+ protected:
+  // A version of IsBodyUsed() which catches exceptions and returns
+  // false. Should never be used outside DCHECK().
+  virtual bool IsBodyUsedForDCheck();
+
  private:
   // TODO(e_hakkinen): Fix |MimeType()| to always contain parameters and
   // remove |ContentType()|.
@@ -63,10 +80,10 @@ class CORE_EXPORT Body : public ScriptWrappable,
   virtual String MimeType() const = 0;
 
   // Body consumption algorithms will reject with a TypeError in a number of
-  // error conditions. This method wraps those up into one call which returns
-  // an empty ScriptPromise if the consumption may proceed, and a
-  // ScriptPromise rejected with a TypeError if it ought to be blocked.
-  ScriptPromise RejectInvalidConsumption(ScriptState*);
+  // error conditions. This method wraps those up into one call which throws
+  // an exception if consumption cannot proceed. The caller must check
+  // |exception_state| on return.
+  void RejectInvalidConsumption(ScriptState*, ExceptionState& exception_state);
   DISALLOW_COPY_AND_ASSIGN(Body);
 };
 
