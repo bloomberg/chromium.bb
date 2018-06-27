@@ -258,6 +258,29 @@ public class ManualFillingControllerTest {
         addTab(mediator, 1111, tab);
     }
 
+    @Test
+    public void testTreatNeverProvidedActionsAsEmptyActionList() {
+        ManualFillingMediator mediator = mController.getMediatorForTesting();
+        KeyboardAccessoryModel keyboardAccessoryModel =
+                mediator.getKeyboardAccessory().getMediatorForTesting().getModelForTesting();
+
+        // Open a tab.
+        Tab tab = addTab(mediator, 1111, null);
+        // Add an action provider that never provided actions.
+        mController.registerActionProvider(new PropertyProvider<>());
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
+
+        // Create a new tab with an action:
+        Tab secondTab = addTab(mediator, 1111, tab);
+        PropertyProvider<Action> provider = new PropertyProvider<>();
+        mController.registerActionProvider(provider);
+        provider.notifyObservers(new Action[] {new Action("Test Action", (action) -> {})});
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(1));
+
+        switchTab(mediator, secondTab, tab);
+        assertThat(keyboardAccessoryModel.getActionList().size(), is(0));
+    }
+
     // TODO(fhorschig): Test that updating tab1 works if tab2 is active.
     // TODO(fhorschig): Test that destroying a tab cleans the model.
     // TODO(fhorschig): Test that unregistering a provider affects only one tab.
