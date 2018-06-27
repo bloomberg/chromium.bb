@@ -11,6 +11,8 @@
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/payments/ssl_validity_checker.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/views/payments/payment_request_dialog_view.h"
 #include "chrome/browser/ui/views/payments/payment_request_views_util.h"
 #include "chrome/grit/generated_resources.h"
@@ -254,6 +256,23 @@ void PaymentHandlerWebFlowViewController::DidStartNavigation(
     return;
 
   UpdateHeaderView();
+}
+
+void PaymentHandlerWebFlowViewController::AddNewContents(
+    content::WebContents* source,
+    std::unique_ptr<content::WebContents> new_contents,
+    WindowOpenDisposition disposition,
+    const gfx::Rect& initial_rect,
+    bool user_gesture,
+    bool* was_blocked) {
+  // Open new foreground tab triggered by user activation in payment handler
+  // window in browser.
+  Browser* browser = chrome::FindLastActiveWithProfile(profile_);
+  if (browser && user_gesture &&
+      disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB) {
+    chrome::AddWebContents(browser, source, std::move(new_contents),
+                           disposition, initial_rect);
+  }
 }
 
 void PaymentHandlerWebFlowViewController::DidFinishNavigation(
