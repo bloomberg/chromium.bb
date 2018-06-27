@@ -46453,6 +46453,17 @@ Full version information for the fingerprint enum values:
   <int value="8" label="IMY"/>
 </enum>
 
+<enum name="UpdateClientErrors">
+  <int value="0" label="(No Error)"/>
+  <int value="1" label="Update in progress"/>
+  <int value="2" label="Update canceled"/>
+  <int value="3" label="Retry later"/>
+  <int value="4" label="Service error"/>
+  <int value="5" label="Update-check error"/>
+  <int value="6" label="CRX not found"/>
+  <int value="7" label="Invalid argument"/>
+</enum>
+
 <enum name="UpdateEngineAttemptResult">
   <int value="0" label="Update Succeeded"/>
   <int value="1" label="Internal Error"/>
