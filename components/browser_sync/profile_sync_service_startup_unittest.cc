@@ -7,9 +7,6 @@
 #include "base/test/scoped_task_environment.h"
 #include "components/browser_sync/profile_sync_test_util.h"
 #include "components/prefs/pref_service.h"
-#include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
-#include "components/signin/core/browser/profile_oauth2_token_service.h"
-#include "components/signin/core/browser/signin_manager.h"
 #include "components/sync/base/pref_names.h"
 #include "components/sync/driver/data_type_manager_mock.h"
 #include "components/sync/driver/fake_data_type_controller.h"
@@ -138,15 +135,6 @@ class ProfileSyncServiceStartupTest : public testing::Test {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   ProfileSyncServiceBundle profile_sync_service_bundle_;
   std::unique_ptr<ProfileSyncService> sync_service_;
-  syncer::DataTypeStatusTable data_type_status_table_;
-};
-
-class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
- public:
-  ProfileSyncServiceStartupCrosTest() {
-    CreateSyncService(ProfileSyncService::AUTO_START);
-    SimulateTestUserSigninWithoutRefreshToken();
-  }
 };
 
 // ChromeOS does not support sign-in after startup (in particular,
@@ -155,6 +143,7 @@ class ProfileSyncServiceStartupCrosTest : public ProfileSyncServiceStartupTest {
 TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // We've never completed startup.
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+
   CreateSyncService(ProfileSyncService::MANUAL_START);
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
@@ -165,6 +154,9 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Should not actually start, rather just clean things up and wait
   // to be enabled.
   sync_service()->Initialize();
+  EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
+            sync_service()->GetDisableReasons());
 
   // Preferences should be back to defaults.
   EXPECT_EQ(0, pref_service()->GetInt64(syncer::prefs::kSyncLastSyncedTime));
@@ -173,9 +165,6 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
 
   // Confirmation isn't needed before sign in occurs.
   EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
-  EXPECT_FALSE(sync_service()->IsSyncActive());
-  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN,
-            sync_service()->GetDisableReasons());
 
   // This tells the ProfileSyncService that setup is now in progress, which
   // causes it to try starting up the engine. We're not signed in yet though, so
@@ -190,8 +179,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // in progress.
   EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
 
-  // Simulate successful signin as test_user. This will cause ProfileSyncService
-  // to start, since all conditions are now fulfilled.
+  // Simulate successful signin. This will cause ProfileSyncService to start,
+  // since all conditions are now fulfilled.
   SimulateTestUserSignin();
 
   // Now we're signed in, so the engine can start.
@@ -205,7 +194,17 @@ TEST_F(ProfileSyncServiceStartupTest, StartFirstTime) {
   // Setup is already in progress, so confirmation still isn't needed.
   EXPECT_FALSE(sync_service()->IsSyncConfirmationNeeded());
 
-  // Releasing the sync blocker will let ProfileSyncService configure the
+  // Simulate the UI telling sync it has finished setting up. Note that this is
+  // a two-step process: Releasing the SetupInProgressHandle, and marking first
+  // setup complete.
+  sync_blocker.reset();
+  // Now setup isn't in progress anymore, but Sync is still waiting to be told
+  // that the initial setup was completed.
+  ASSERT_FALSE(sync_service()->IsSetupInProgress());
+  EXPECT_TRUE(sync_service()->IsSyncConfirmationNeeded());
+  EXPECT_FALSE(sync_service()->IsSyncActive());
+
+  // Marking first setup complete will let ProfileSyncService configure the
   // DataTypeManager.
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   ON_CALL(*data_type_manager, state())
@@ -271,24 +270,38 @@ TEST_F(ProfileSyncServiceStartupTest, StartInvalidCredentials) {
             sync_service()->GetDisableReasons());
 }
 
-TEST_F(ProfileSyncServiceStartupCrosTest, StartCrosNoCredentials) {
+TEST_F(ProfileSyncServiceStartupTest, StartCrosNoCredentials) {
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
+
+  // On ChromeOS, the user is always immediately signed in, but a refresh token
+  // isn't necessarily available yet.
+  SimulateTestUserSigninWithoutRefreshToken();
+
+  CreateSyncService(ProfileSyncService::AUTO_START);
 
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
 
+  // Calling Initialize should cause the service to immediately create and
+  // initialize the engine, and configure the DataTypeManager.
   EXPECT_CALL(*data_type_manager, Configure(_, _));
   sync_service()->Initialize();
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
 
-  // Sync should start up the engine, even though there is no refresh token yet.
+  // Sync should be considered active, even though there is no refresh token.
   EXPECT_TRUE(sync_service()->IsSyncActive());
   // Since we're in AUTO_START mode, FirstSetupComplete gets set automatically.
   EXPECT_TRUE(sync_service()->IsFirstSetupComplete());
 }
 
-TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
+TEST_F(ProfileSyncServiceStartupTest, StartCrosFirstTime) {
+  // On ChromeOS, the user is always immediately signed in, but a refresh token
+  // isn't necessarily available yet.
+  SimulateTestUserSigninWithoutRefreshToken();
+
+  CreateSyncService(ProfileSyncService::AUTO_START);
+
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
   pref_service()->ClearPref(syncer::prefs::kSyncFirstSetupComplete);
@@ -305,17 +318,27 @@ TEST_F(ProfileSyncServiceStartupCrosTest, StartFirstTime) {
 }
 
 TEST_F(ProfileSyncServiceStartupTest, StartNormal) {
-  CreateSyncService(ProfileSyncService::MANUAL_START);
+  // We have previously completed the initial Sync setup, and the user is
+  // already signed in.
+  pref_service()->SetBoolean(syncer::prefs::kSyncFirstSetupComplete, true);
   SimulateTestUserSignin();
-  sync_service()->SetFirstSetupComplete();
+
+  CreateSyncService(ProfileSyncService::MANUAL_START);
   SetUpFakeSyncEngine();
   DataTypeManagerMock* data_type_manager = SetUpDataTypeManagerMock();
-  EXPECT_CALL(*data_type_manager, Configure(_, _));
   ON_CALL(*data_type_manager, state())
       .WillByDefault(Return(DataTypeManager::CONFIGURED));
   ON_CALL(*data_type_manager, IsNigoriEnabled()).WillByDefault(Return(true));
 
+  // Since all conditions for starting Sync are already fulfilled, calling
+  // Initialize should immediately create and initialize the engine and
+  // configure the DataTypeManager. In this test, all of these operations are
+  // synchronous.
+  EXPECT_CALL(*data_type_manager, Configure(_, _));
   sync_service()->Initialize();
+
+  EXPECT_TRUE(sync_service()->IsSyncActive());
+
   EXPECT_CALL(*data_type_manager, Stop(syncer::BROWSER_SHUTDOWN));
 }
 
@@ -500,6 +523,8 @@ TEST_F(ProfileSyncServiceStartupTest, StartDownloadFailed) {
   auto sync_blocker = sync_service()->GetSetupInProgressHandle();
   sync_blocker.reset();
   EXPECT_FALSE(sync_service()->IsSyncActive());
+  EXPECT_EQ(syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR,
+            sync_service()->GetDisableReasons());
 }
 
 }  // namespace browser_sync

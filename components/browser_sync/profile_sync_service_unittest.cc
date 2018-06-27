@@ -157,7 +157,7 @@ void OnClearServerDataCalled(base::Closure* captured_callback,
 }
 
 // A test harness that uses a real ProfileSyncService and in most cases a
-// MockSyncEngine.
+// FakeSyncEngine.
 //
 // This is useful if we want to test the ProfileSyncService and don't care about
 // testing the SyncEngine.
