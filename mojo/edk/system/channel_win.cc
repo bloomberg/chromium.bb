@@ -101,10 +101,13 @@ class ChannelWin : public Channel,
   }
 
   bool GetReadInternalPlatformHandles(
+      const void* payload,
+      size_t payload_size,
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size,
-      std::vector<ScopedInternalPlatformHandle>* handles) override {
+      std::vector<ScopedInternalPlatformHandle>* handles,
+      bool* deferred) override {
     DCHECK(extra_header);
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;

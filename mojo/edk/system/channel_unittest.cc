@@ -29,11 +29,14 @@ class TestChannel : public Channel {
     return OnReadComplete(bytes_read, next_read_size_hint);
   }
 
-  MOCK_METHOD4(GetReadInternalPlatformHandles,
-               bool(size_t num_handles,
+  MOCK_METHOD7(GetReadInternalPlatformHandles,
+               bool(const void* payload,
+                    size_t payload_size,
+                    size_t num_handles,
                     const void* extra_header,
                     size_t extra_header_size,
-                    std::vector<ScopedInternalPlatformHandle>* handles));
+                    std::vector<ScopedInternalPlatformHandle>* handles,
+                    bool* deferred));
   MOCK_METHOD0(Start, void());
   MOCK_METHOD0(ShutDownImpl, void());
   MOCK_METHOD0(LeakHandle, void());

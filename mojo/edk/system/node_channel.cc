@@ -14,11 +14,8 @@
 #include "base/memory/ptr_util.h"
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
+#include "mojo/edk/system/core.h"
 #include "mojo/edk/system/request_context.h"
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "mojo/edk/system/mach_port_relay.h"
-#endif
 
 namespace mojo {
 namespace edk {
@@ -194,12 +191,6 @@ void NodeChannel::GetEventMessageData(Channel::Message* message,
 }
 
 void NodeChannel::Start() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortRelay* relay = delegate_->GetMachPortRelay();
-  if (relay)
-    relay->AddObserver(this);
-#endif
-
   base::AutoLock lock(channel_lock_);
   // ShutDown() may have already been called, in which case |channel_| is null.
   if (channel_)
@@ -207,12 +198,6 @@ void NodeChannel::Start() {
 }
 
 void NodeChannel::ShutDown() {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortRelay* relay = delegate_->GetMachPortRelay();
-  if (relay)
-    relay->RemoveObserver(this);
-#endif
-
   base::AutoLock lock(channel_lock_);
   if (channel_) {
     channel_->ShutDown();
@@ -487,18 +472,6 @@ void NodeChannel::OnChannelMessage(
   // to drop it here in response to, e.g., a malformed message.
   scoped_refptr<NodeChannel> keepalive = this;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // If we're not the root, receive any mach ports from the message. If we're
-  // the root, the only message containing mach ports should be a
-  // RELAY_EVENT_MESSAGE.
-  {
-    MachPortRelay* relay = delegate_->GetMachPortRelay();
-    if (!handles.empty() && !relay)
-      MachPortRelay::ReceivePorts(&handles);
-  }
-#endif  // defined(OS_WIN)
-
-
   if (payload_size <= sizeof(Header)) {
     delegate_->OnChannelError(remote_node_name_, this);
     return;
@@ -657,21 +630,6 @@ void NodeChannel::OnChannelMessage(
         }
   #if defined(OS_MACOSX) && !defined(OS_IOS)
         message->SetHandles(std::move(handles));
-        MachPortRelay* relay = delegate_->GetMachPortRelay();
-        if (!relay) {
-          LOG(ERROR) << "Receiving mach ports without a port relay from "
-                     << remote_node_name_ << ". Dropping message.";
-          break;
-        }
-        {
-          base::AutoLock lock(pending_mach_messages_lock_);
-          if (relay->port_provider()->TaskForPid(from_process) ==
-              MACH_PORT_NULL) {
-            pending_relay_messages_.push(
-                std::make_pair(data->destination, std::move(message)));
-            return;
-          }
-        }
   #endif
         delegate_->OnRelayEventMessage(remote_node_name_, from_process,
                                        data->destination, std::move(message));
@@ -758,83 +716,7 @@ void NodeChannel::OnChannelError(Channel::Error error) {
   delegate_->OnChannelError(node_name, this);
 }
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-void NodeChannel::OnProcessReady(base::ProcessHandle process) {
-  io_task_runner_->PostTask(FROM_HERE, base::Bind(
-      &NodeChannel::ProcessPendingMessagesWithMachPorts, this));
-}
-
-void NodeChannel::ProcessPendingMessagesWithMachPorts() {
-  MachPortRelay* relay = delegate_->GetMachPortRelay();
-  DCHECK(relay);
-
-  base::ProcessHandle remote_process_handle;
-  {
-    base::AutoLock lock(remote_process_handle_lock_);
-    remote_process_handle = remote_process_handle_.get();
-  }
-  PendingMessageQueue pending_writes;
-  PendingRelayMessageQueue pending_relays;
-  {
-    base::AutoLock lock(pending_mach_messages_lock_);
-    pending_writes.swap(pending_write_messages_);
-    pending_relays.swap(pending_relay_messages_);
-  }
-
-  while (!pending_writes.empty()) {
-    Channel::MessagePtr message = std::move(pending_writes.front());
-    pending_writes.pop();
-    relay->SendPortsToProcess(message.get(), remote_process_handle);
-
-    base::AutoLock lock(channel_lock_);
-    if (!channel_) {
-      DLOG(ERROR) << "Dropping message on closed channel.";
-      break;
-    } else {
-      channel_->Write(std::move(message));
-    }
-  }
-
-  // Ensure this NodeChannel stays alive while flushing relay messages.
-  scoped_refptr<NodeChannel> keepalive = this;
-
-  while (!pending_relays.empty()) {
-    ports::NodeName destination = pending_relays.front().first;
-    Channel::MessagePtr message = std::move(pending_relays.front().second);
-    pending_relays.pop();
-    delegate_->OnRelayEventMessage(remote_node_name_, remote_process_handle,
-                                   destination, std::move(message));
-  }
-}
-#endif
-
 void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // On OSX, we need to transfer mach ports to the destination process before
-  // transferring the message itself.
-  if (message->has_mach_ports()) {
-    MachPortRelay* relay = delegate_->GetMachPortRelay();
-    if (relay) {
-      base::AutoLock lock(remote_process_handle_lock_);
-      DCHECK(remote_process_handle_.is_valid());
-      {
-        base::AutoLock lock(pending_mach_messages_lock_);
-        if (relay->port_provider()->TaskForPid(remote_process_handle_.get()) ==
-            MACH_PORT_NULL) {
-          // It is also possible for TaskForPid() to return MACH_PORT_NULL when
-          // the process has started, then died. In that case, the queued
-          // message will never be processed. But that's fine since we're about
-          // to die anyway.
-          pending_write_messages_.push(std::move(message));
-          return;
-        }
-      }
-
-      relay->SendPortsToProcess(message.get(), remote_process_handle_.get());
-    }
-  }
-#endif
-
   // Force a crash if this process attempts to send a message larger than the
   // maximum allowed size. This is more useful than killing a Channel when we
   // *receive* an oversized message, as we should consider oversized message
