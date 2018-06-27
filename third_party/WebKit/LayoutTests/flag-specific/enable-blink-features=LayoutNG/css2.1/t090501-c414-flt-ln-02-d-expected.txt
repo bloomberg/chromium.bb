@@ -25,8 +25,7 @@ layer at (0,0) size 800x550
         LayoutInline {SPAN} at (0,0) size 17x25 [color=#FFFFFF] [bgcolor=#800080] [border: (3px solid #FF00FF)]
           LayoutText {#text} at (517,41) size 11x19
             text run at (517,41) width 11: "B"
-        LayoutText {#text} at (531,41) size 4x19
-          text run at (531,41) width 4: " "
+        LayoutText {#text} at (0,0) size 0x0
         LayoutNGBlockFlow (floating) {P} at (581,41) size 150x58 [color=#FFFFFF] [bgcolor=#800080] [border: (3px solid #FF00FF)]
           LayoutText {#text} at (19,19) size 44x19
             text run at (19,19) width 44: "BBBB"
@@ -35,8 +34,7 @@ layer at (0,0) size 800x550
         LayoutInline {SPAN} at (0,0) size 17x25 [color=#FFFFFF] [bgcolor=#FFA500] [border: (3px solid #FFFF00)]
           LayoutText {#text} at (561,61) size 11x19
             text run at (561,61) width 11: "C"
-        LayoutText {#text} at (575,61) size 4x19
-          text run at (575,61) width 4: " "
+        LayoutText {#text} at (0,0) size 0x0
         LayoutNGBlockFlow (floating) {P} at (171,61) size 150x58 [color=#FFFFFF] [bgcolor=#FFA500] [border: (3px solid #FFFF00)]
           LayoutText {#text} at (19,19) size 44x19
             text run at (19,19) width 44: "CCCC"
@@ -46,8 +44,7 @@ layer at (0,0) size 800x550
         LayoutInline {SPAN} at (0,0) size 18x25 [color=#FFFFFF] [bgcolor=#008000] [border: (3px solid #00FF00)]
           LayoutText {#text} at (711,101) size 12x19
             text run at (711,101) width 12: "D"
-        LayoutText {#text} at (726,101) size 4x19
-          text run at (726,101) width 4: " "
+        LayoutText {#text} at (0,0) size 0x0
         LayoutNGBlockFlow (floating) {P} at (321,101) size 150x58 [color=#FFFFFF] [bgcolor=#008000] [border: (3px solid #00FF00)]
           LayoutText {#text} at (19,19) size 48x19
             text run at (19,19) width 48: "DDDD"

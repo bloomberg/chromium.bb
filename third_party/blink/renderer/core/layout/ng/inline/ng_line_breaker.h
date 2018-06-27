@@ -91,6 +91,9 @@ class CORE_EXPORT NGLineBreaker {
     // the next line.
     bool is_after_forced_break = false;
 
+    // True if trailing collapsible spaces have been collapsed.
+    bool trailing_spaces_collapsed = false;
+
     LayoutUnit AvailableWidth() const {
       return line_opportunity.AvailableInlineSize();
     }

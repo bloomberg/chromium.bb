@@ -192,6 +192,8 @@ bool NGLineBreaker::NextLine(const NGLineLayoutOpportunity& line_opportunity,
                              NGLineInfo* line_info) {
   PrepareNextLine(line_opportunity, line_info);
   BreakLine(line_info);
+  if (!line_.trailing_spaces_collapsed)
+    RemoveTrailingCollapsibleSpace(line_info);
 
 #if DCHECK_IS_ON()
   for (const auto& result : line_info->Results())
@@ -226,7 +228,6 @@ void NGLineBreaker::BreakLine(NGLineInfo* line_info) {
     // If we reach at the end of the block, this is the last line.
     DCHECK_LE(item_index_, items.size());
     if (item_index_ == items.size()) {
-      RemoveTrailingCollapsibleSpace(line_info);
       line_info->SetIsLastLine(true);
       return;
     }
@@ -515,6 +516,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
     // Skipping one whitespace removes all collapsible spaces because
     // collapsible spaces are collapsed to single space in NGInlineItemBuilder.
     offset_++;
+    line_.trailing_spaces_collapsed = true;
 
     // Make the last item breakable after, even if it was nowrap.
     DCHECK(!item_results->IsEmpty());
@@ -523,6 +525,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
     // Find the end of the run of space characters in this item.
     // Other white space characters (e.g., tab) are not included in this item.
     DCHECK(style.BreakOnlyAfterWhiteSpace());
+    line_.trailing_spaces_collapsed = true;
     unsigned end = offset_;
     while (end < item.EndOffset() && text[end] == kSpaceCharacter)
       end++;
@@ -551,9 +554,13 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleTrailingSpaces(
 // Remove trailing collapsible spaces in |line_info|.
 // https://drafts.csswg.org/css-text-3/#white-space-phase-2
 void NGLineBreaker::RemoveTrailingCollapsibleSpace(NGLineInfo* line_info) {
+  DCHECK(!line_.trailing_spaces_collapsed);
+  line_.trailing_spaces_collapsed = true;
+
   NGInlineItemResults* item_results = &line_info->Results();
   if (item_results->IsEmpty())
     return;
+
   for (auto it = item_results->rbegin(); it != item_results->rend(); ++it) {
     NGInlineItemResult& item_result = *it;
     DCHECK(item_result.item);
@@ -771,7 +778,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
   // into the current line or to the next line. Remove trailing spaces if this
   // float is trailing, because whitespace should be collapsed across floats,
   // and this logic requires the width after trailing spaces are collapsed.
-  if (IsTrailing(item, *line_info))
+  if (IsTrailing(item, *line_info) && !line_.trailing_spaces_collapsed)
     RemoveTrailingCollapsibleSpace(line_info);
 
   NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));

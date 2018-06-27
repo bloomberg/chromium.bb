@@ -229,7 +229,7 @@
         },
         {
           "object": "NGPaintFragment",
-          "rect": [65, 400, 304, 19],
+          "rect": [65, 400, 305, 19],
           "reason": "disappeared"
         },
         {
