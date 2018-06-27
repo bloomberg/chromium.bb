@@ -51,7 +51,7 @@ source files.
 
 ## Tuning
 
-By default at most `50`, or `8` when using goma, files are merged at a
+By default on average `50`, or `8` when using goma, files are merged at a
 time. The more files that are are merged, the less total CPU time is
 needed, but parallelism is reduced. This number can be changed by
 setting `jumbo_file_merge_limit`.
