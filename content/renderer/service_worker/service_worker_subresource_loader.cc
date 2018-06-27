@@ -239,6 +239,10 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   // before dispatching the fetch event for keeping the blob alive.
   if (resource_request_.request_body &&
       !base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    // We need this as GetBlobFromUUID is a sync IPC.
+    // TODO(kinuko): Remove the friend for ScopedAllowBaseSyncPrimitives
+    // in //base as well when we remove this code.
+    base::ScopedAllowBaseSyncPrimitives allow_sync_primitives;
     params->request_body_blob_ptrs =
         GetBlobPtrsForRequestBody(*resource_request_.request_body);
   }

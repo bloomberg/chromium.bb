@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/child/child_thread_impl.h"
 #include "content/child/thread_safe_sender.h"
 #include "content/common/frame_messages.h"
@@ -42,7 +43,8 @@ void CreateSubresourceLoaderFactory(
     network::mojom::URLLoaderFactoryRequest request) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
-          std::move(container_host_info), client_id),
+          std::move(container_host_info), nullptr /* controller_ptr */,
+          client_id),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
       std::move(request));
 }
@@ -147,7 +149,6 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
     std::unique_ptr<WebSocketHandshakeThrottleProvider>
         websocket_handshake_throttle_provider,
     ThreadSafeSender* thread_safe_sender,
-    scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     std::unique_ptr<service_manager::Connector> service_manager_connection)
     : binding_(this),
       service_worker_client_request_(std::move(service_worker_client_request)),
@@ -161,7 +162,6 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       throttle_provider_(std::move(throttle_provider)),
       websocket_handshake_throttle_provider_(
           std::move(websocket_handshake_throttle_provider)),
-      io_task_runner_(std::move(io_task_runner)),
       service_manager_connection_(std::move(service_manager_connection)) {}
 
 WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
@@ -187,8 +187,7 @@ WorkerFetchContextImpl::CloneForNestedWorker() {
       websocket_handshake_throttle_provider_
           ? websocket_handshake_throttle_provider_->Clone()
           : nullptr,
-      thread_safe_sender_.get(), io_task_runner_,
-      service_manager_connection_->Clone());
+      thread_safe_sender_.get(), service_manager_connection_->Clone());
   new_context->is_on_sub_frame_ = is_on_sub_frame_;
   new_context->appcache_host_id_ = appcache_host_id_;
   return new_context;
@@ -391,8 +390,10 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
   service_worker_container_host_->CloneForWorker(
       mojo::MakeRequest(&host_ptr_info));
   // To avoid potential dead-lock while synchronous loading, create the
-  // SubresourceLoaderFactory on the IO thread.
-  io_task_runner_->PostTask(
+  // SubresourceLoaderFactory on a background thread.
+  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
+  task_runner->PostTask(
       FROM_HERE,
       base::BindOnce(&CreateSubresourceLoaderFactory, std::move(host_ptr_info),
                      client_id_, fallback_factory_->Clone(),

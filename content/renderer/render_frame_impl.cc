@@ -3391,7 +3391,6 @@ RenderFrameImpl::CreateWorkerFetchContext() {
               ->renderer()
               ->CreateWebSocketHandshakeThrottleProvider(),
           ChildThreadImpl::current()->thread_safe_sender(),
-          RenderThreadImpl::current()->GetIOTaskRunner(),
           ChildThreadImpl::current()->GetConnector()->Clone());
 
   worker_fetch_context->set_parent_frame_id(routing_id_);
