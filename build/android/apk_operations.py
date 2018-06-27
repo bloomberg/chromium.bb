@@ -630,7 +630,7 @@ def _RunCompileDex(devices, package_name, compilation_filter):
   cmd = ['cmd', 'package', 'compile', '-f', '-m', compilation_filter,
          package_name]
   parallel_devices = device_utils.DeviceUtils.parallel(devices)
-  outputs = parallel_devices.RunShellCommand(cmd).pGet(None)
+  outputs = parallel_devices.RunShellCommand(cmd, timeout=120).pGet(None)
   for output in _PrintPerDeviceOutput(devices, outputs):
     for line in output:
       print line
