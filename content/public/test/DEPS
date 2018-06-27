@@ -8,7 +8,7 @@ include_rules = [
   "+components/viz/test",
   "+mojo/android/system/mojo_jni_registrar.h",
   "+services/audio/public/mojom",
-  "+services/network/public/cpp",
+  "+services/network",
   "+services/resource_coordinator",
   "+services/service_manager",
   "+v8/include/v8.h",

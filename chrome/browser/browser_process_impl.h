@@ -125,6 +125,7 @@ class BrowserProcessImpl : public BrowserProcess,
   IOThread* io_thread() override;
   SystemNetworkContextManager* system_network_context_manager() override;
   content::NetworkConnectionTracker* network_connection_tracker() override;
+  network::NetworkQualityTracker* network_quality_tracker() override;
   WatchDogThread* watchdog_thread() override;
   ProfileManager* profile_manager() override;
   PrefService* local_state() override;
@@ -242,6 +243,8 @@ class BrowserProcessImpl : public BrowserProcess,
 
   std::unique_ptr<content::NetworkConnectionTracker>
       network_connection_tracker_;
+
+  std::unique_ptr<network::NetworkQualityTracker> network_quality_tracker_;
 
   bool created_icon_manager_ = false;
   std::unique_ptr<IconManager> icon_manager_;

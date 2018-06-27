@@ -6,6 +6,7 @@ module network.mojom;
 
 import "services/network/public/mojom/network_change_manager.mojom";
 import "services/network/public/mojom/network_param.mojom";
+import "services/network/public/mojom/network_types.mojom";
 
 struct Rule {
   string host_pattern;
@@ -25,6 +26,11 @@ interface NetworkServiceTest {
   // updated to |type| and broadcasts will be sent to
   // NetworkConnectionManagerClient implementations.
   SimulateNetworkChange(ConnectionType type) => ();
+
+  // Simulates a network quality change. The new effective connection type will
+  // be updated to |type| and broadcasts will be sent to
+  // NetworkQualityEstimatorManagerClient implementations.
+  SimulateNetworkQualityChange(EffectiveConnectionType type) => ();
 
   // Crash the process where network service is running.
   SimulateCrash();

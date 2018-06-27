@@ -19,8 +19,9 @@
 #include "net/log/net_log.h"
 #include "services/network/keepalive_statistics_recorder.h"
 #include "services/network/network_change_manager.h"
-#include "services/network/network_service.h"
+#include "services/network/network_quality_estimator_manager.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
+#include "services/network/public/mojom/network_quality_estimator_manager.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -126,6 +127,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   void SetRawHeadersAccess(uint32_t process_id, bool allow) override;
   void GetNetworkChangeManager(
       mojom::NetworkChangeManagerRequest request) override;
+  void GetNetworkQualityEstimatorManager(
+      mojom::NetworkQualityEstimatorManagerRequest request) override;
   void GetTotalNetworkUsages(
       mojom::NetworkService::GetTotalNetworkUsagesCallback callback) override;
   void UpdateSignedTreeHead(const net::ct::SignedTreeHead& sth) override;
@@ -139,7 +142,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   mojom::NetworkServiceClient* client() { return client_.get(); }
   net::NetworkQualityEstimator* network_quality_estimator() {
-    return network_quality_estimator_.get();
+    return network_quality_estimator_manager_->GetNetworkQualityEstimator();
   }
   net::NetLog* net_log() const;
   KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
@@ -151,6 +154,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   }
 
   certificate_transparency::STHReporter* sth_reporter();
+
+  static NetworkService* GetNetworkServiceForTesting();
 
  private:
   // service_manager::Service implementation.
@@ -184,7 +189,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
 
   mojo::Binding<mojom::NetworkService> binding_;
 
-  std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
+  std::unique_ptr<NetworkQualityEstimatorManager>
+      network_quality_estimator_manager_;
+
   std::unique_ptr<net::HostResolver> host_resolver_;
   std::unique_ptr<NetworkUsageAccumulator> network_usage_accumulator_;
 
