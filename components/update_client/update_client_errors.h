@@ -10,7 +10,6 @@ namespace update_client {
 // Errors generated as a result of calling UpdateClient member functions.
 // These errors are not sent in pings.
 enum class Error {
-  INVALID_ARGUMENT = -1,
   NONE = 0,
   UPDATE_IN_PROGRESS = 1,
   UPDATE_CANCELED = 2,
@@ -18,6 +17,8 @@ enum class Error {
   SERVICE_ERROR = 4,
   UPDATE_CHECK_ERROR = 5,
   CRX_NOT_FOUND = 6,
+  INVALID_ARGUMENT = 7,
+  MAX_VALUE,
 };
 
 // These errors are sent in pings. Add new values only to the bottom of
