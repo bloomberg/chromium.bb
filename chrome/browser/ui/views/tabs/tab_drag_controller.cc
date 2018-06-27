@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
+#include "base/numerics/ranges.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -873,9 +874,9 @@ TabDragController::DetachPosition TabDragController::GetDetachPosition(
   DCHECK(attached_tabstrip_);
   gfx::Point attached_point(point_in_screen);
   views::View::ConvertPointFromScreen(attached_tabstrip_, &attached_point);
-  if (attached_point.x() < 0)
+  if (attached_point.x() < attached_tabstrip_->TabStartX())
     return DETACH_BEFORE;
-  if (attached_point.x() >= attached_tabstrip_->width())
+  if (attached_point.x() >= attached_tabstrip_->TabDragAreaEndX())
     return DETACH_AFTER;
   return DETACH_ABOVE_OR_BELOW;
 }
@@ -952,11 +953,11 @@ bool TabDragController::DoesTabStripContain(
   // Make sure the specified screen point is actually within the bounds of the
   // specified tabstrip...
   gfx::Rect tabstrip_bounds = GetViewScreenBounds(tabstrip);
-  return point_in_screen.x() < tabstrip_bounds.right() &&
-      point_in_screen.x() >= tabstrip_bounds.x() &&
-      DoesRectContainVerticalPointExpanded(tabstrip_bounds,
-                                           kVerticalDetachMagnetism,
-                                           point_in_screen.y());
+  const int x_in_strip = point_in_screen.x() - tabstrip_bounds.x();
+  return (x_in_strip >= tabstrip->TabStartX()) &&
+         (x_in_strip < tabstrip->TabDragAreaEndX()) &&
+         DoesRectContainVerticalPointExpanded(
+             tabstrip_bounds, kVerticalDetachMagnetism, point_in_screen.y());
 }
 
 void TabDragController::Attach(TabStrip* attached_tabstrip,
@@ -1395,8 +1396,9 @@ gfx::Point TabDragController::GetAttachedDragPoint(
   for (size_t i = 0; i < drag_data_.size(); ++i)
     attached_tabs.push_back(drag_data_[i].attached_tab);
   const int size = attached_tabstrip_->GetSizeNeededForTabs(attached_tabs);
-  const int max_x = attached_tabstrip_->width() - size;
-  return gfx::Point(std::min(std::max(x, 0), max_x), 0);
+  const int min_x = attached_tabstrip_->TabStartX();
+  const int max_x = attached_tabstrip_->TabDragAreaEndX() - size;
+  return gfx::Point(base::ClampToRange(x, min_x, max_x), 0);
 }
 
 std::vector<Tab*> TabDragController::GetTabsMatchingDraggedContents(

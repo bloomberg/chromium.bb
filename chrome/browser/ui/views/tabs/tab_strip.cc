@@ -618,21 +618,9 @@ bool TabStrip::ShouldTabBeVisible(const Tab* tab) const {
 
   // If the tab is currently clipped by the trailing edge of the strip, it
   // shouldn't be visible.
-  int right_edge = tab->bounds().right();
-  int tabstrip_right = width() - GetFrameGrabWidth();
-  // When there's a trailing new tab button that hides during tab dragging, the
-  // calculation above allows dragged tabs to draw over that region as well,
-  // since if the button is hidden there's no reason not to, and if it's showing
-  // the dragged tabs are animating back to their normal positions, and we don't
-  // want them to vanish in this region and then pop back in after leaving it.
-  // But for non-dragged tabs or when the new tab button never hides, disallow
-  // drawing over the new tab button area.
-  // TODO: Probably doesn't work for RTL
-  if ((controller_->GetNewTabButtonPosition() != LEADING) &&
-      (!tab->dragging() || !MayHideNewTabButtonWhileDragging())) {
-    tabstrip_right -= GetNewTabButtonWidth(IsIncognito()) +
-                      TabToFollowingNewTabButtonSpacing();
-  }
+  const int right_edge = tab->bounds().right();
+  const int tabstrip_right =
+      tab->dragging() ? TabDragAreaEndX() : (TabStartX() + GetTabAreaWidth());
   if (right_edge > tabstrip_right)
     return false;
 
@@ -1694,6 +1682,11 @@ int TabStrip::TabStartX() const {
   return (controller_->GetNewTabButtonPosition() == LEADING)
              ? GetNewTabButtonWidth(IsIncognito())
              : 0;
+}
+
+int TabStrip::TabDragAreaEndX() const {
+  return MayHideNewTabButtonWhileDragging() ? (width() - GetFrameGrabWidth())
+                                            : (TabStartX() + GetTabAreaWidth());
 }
 
 int TabStrip::NewTabButtonIdealX() const {

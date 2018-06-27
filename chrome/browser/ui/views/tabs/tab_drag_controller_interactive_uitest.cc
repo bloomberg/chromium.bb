@@ -719,7 +719,7 @@ void DragToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
 
   // Drag to target_tab_strip. This should stop the nested loop from dragging
   // the window.
-  gfx::Point target_point(target_tab_strip->width() -1,
+  gfx::Point target_point(target_tab_strip->width() / 2,
                           target_tab_strip->height() / 2);
   views::View::ConvertPointToScreen(target_tab_strip, &target_point);
   ASSERT_TRUE(test->DragInputToAsync(target_point));
@@ -1415,7 +1415,7 @@ void DragAllToSeparateWindowStep2(DetachToBrowserTabDragControllerTest* test,
 
   // Drag to target_tab_strip. This should stop the nested loop from dragging
   // the window.
-  gfx::Point target_point(target_tab_strip->width() - 1,
+  gfx::Point target_point(target_tab_strip->width() / 2,
                           target_tab_strip->height() / 2);
   views::View::ConvertPointToScreen(target_tab_strip, &target_point);
   ASSERT_TRUE(test->DragInputToAsync(target_point));
@@ -1488,7 +1488,7 @@ void DragAllToSeparateWindowAndCancelStep2(
 
   // Drag to target_tab_strip. This should stop the nested loop from dragging
   // the window.
-  gfx::Point target_point(target_tab_strip->width() - 1,
+  gfx::Point target_point(target_tab_strip->width() / 2,
                           target_tab_strip->height() / 2);
   views::View::ConvertPointToScreen(target_tab_strip, &target_point);
   ASSERT_TRUE(test->DragInputToAsync(target_point));
@@ -2564,7 +2564,7 @@ void DragToOverviewWindowStep2(DetachToBrowserTabDragControllerTest* test,
       ash::kIsShowingInOverviewKey, true);
 
   // Drag to target_tab_strip.
-  gfx::Point target_point(target_tab_strip->width() - 1,
+  gfx::Point target_point(target_tab_strip->width() / 2,
                           target_tab_strip->height() / 2);
   views::View::ConvertPointToScreen(target_tab_strip, &target_point);
   ASSERT_TRUE(test->DragInputTo(target_point));

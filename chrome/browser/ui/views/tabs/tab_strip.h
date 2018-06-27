@@ -400,6 +400,9 @@ class TabStrip : public views::View,
   // Returns the X coordinate the first tab should start at.
   int TabStartX() const;
 
+  // Returns where the drag region ends; tabs dragged past this should detach.
+  int TabDragAreaEndX() const;
+
   // Returns the X coordinate the new tab button should be placed at.  Requires
   // |tabs_| to have correct ideal bounds.
   int NewTabButtonIdealX() const;
