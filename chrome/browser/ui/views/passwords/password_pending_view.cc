@@ -63,21 +63,26 @@ void BuildColumnSet(views::GridLayout* layout,
     case DOUBLE_VIEW_COLUMN_SET_USERNAME:
     case DOUBLE_VIEW_COLUMN_SET_PASSWORD:
       column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                            0, views::GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(0, column_divider);
-      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                            views::GridLayout::kFixedSize,
                             views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                   column_divider);
+      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                            1.0, views::GridLayout::USE_PREF, 0, 0);
       break;
     case TRIPLE_VIEW_COLUMN_SET:
       column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                            0, views::GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(0, column_divider);
-      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                            views::GridLayout::kFixedSize,
                             views::GridLayout::USE_PREF, 0, 0);
-      column_set->AddPaddingColumn(0, column_divider);
-      column_set->AddColumn(views::GridLayout::TRAILING,
-                            views::GridLayout::FILL, 0,
-                            views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                   column_divider);
+      column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                            1.0, views::GridLayout::USE_PREF, 0, 0);
+      column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                   column_divider);
+      column_set->AddColumn(
+          views::GridLayout::TRAILING, views::GridLayout::FILL,
+          views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
       break;
   }
 }
@@ -251,7 +256,8 @@ void PasswordPendingView::BuildCredentialRows(
     bool show_password_label) {
   // Username row.
   BuildColumnSet(layout, DOUBLE_VIEW_COLUMN_SET_USERNAME);
-  layout->StartRow(0, DOUBLE_VIEW_COLUMN_SET_USERNAME);
+  layout->StartRow(views::GridLayout::kFixedSize,
+                   DOUBLE_VIEW_COLUMN_SET_USERNAME);
   std::unique_ptr<views::Label> username_label(new views::Label(
       l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_USERNAME_LABEL),
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY));
@@ -269,15 +275,16 @@ void PasswordPendingView::BuildCredentialRows(
                   views::GridLayout::FILL, labels_width, 0);
   layout->AddView(username_field);
 
-  layout->AddPaddingRow(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-                               DISTANCE_CONTROL_LIST_VERTICAL));
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                        ChromeLayoutProvider::Get()->GetDistanceMetric(
+                            DISTANCE_CONTROL_LIST_VERTICAL));
 
   // Password row.
   PasswordPendingViewColumnSetType type = password_view_button
                                               ? TRIPLE_VIEW_COLUMN_SET
                                               : DOUBLE_VIEW_COLUMN_SET_PASSWORD;
   BuildColumnSet(layout, type);
-  layout->StartRow(0, type);
+  layout->StartRow(views::GridLayout::kFixedSize, type);
   layout->AddView(password_label.release(), 1, 1, views::GridLayout::LEADING,
                   views::GridLayout::FILL, labels_width, 0);
   layout->AddView(password_field);

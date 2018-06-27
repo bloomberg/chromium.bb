@@ -50,7 +50,7 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
     views::GridLayout* layout =
         SetLayoutManager(std::make_unique<views::GridLayout>(this));
     BuildColumnSet(layout);
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
 
     views::Label* suggestion_label = new views::Label(
         suggestion, ChromeTextContext::CONTEXT_BODY_TEXT_LARGE,
@@ -80,9 +80,9 @@ class PasswordGenerationPopupViewViews::GeneratedPasswordBox
   static void BuildColumnSet(views::GridLayout* layout) {
     views::ColumnSet* column_set = layout->AddColumnSet(0);
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                          1, views::GridLayout::USE_PREF, 0, 0);
+                          1.0, views::GridLayout::USE_PREF, 0, 0);
     column_set->AddColumn(views::GridLayout::TRAILING,
-                          views::GridLayout::CENTER, 1,
+                          views::GridLayout::CENTER, 1.0,
                           views::GridLayout::USE_PREF, 0, 0);
   }
 

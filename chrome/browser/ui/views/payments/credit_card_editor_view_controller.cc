@@ -295,15 +295,16 @@ CreditCardEditorViewController::CreateCustomFieldView(
     views::GridLayout* combobox_layout =
         view->SetLayoutManager(std::make_unique<views::GridLayout>(view.get()));
     views::ColumnSet* columns = combobox_layout->AddColumnSet(0);
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
-                       views::GridLayout::USE_PREF, 0, 0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                       1.0, views::GridLayout::USE_PREF, 0, 0);
     // Space between the two comboboxes.
     constexpr int kHorizontalSpacing = 8;
-    columns->AddPaddingColumn(0, kHorizontalSpacing);
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
-                       views::GridLayout::USE_PREF, 0, 0);
+    columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                              kHorizontalSpacing);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                       1.0, views::GridLayout::USE_PREF, 0, 0);
 
-    combobox_layout->StartRow(0, 0);
+    combobox_layout->StartRow(views::GridLayout::kFixedSize, 0);
     constexpr int kInputFieldHeight = 28;
     EditorField tmp_month{
         autofill::CREDIT_CARD_EXP_MONTH,

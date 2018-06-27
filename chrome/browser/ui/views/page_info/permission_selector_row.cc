@@ -285,8 +285,8 @@ PermissionSelectorRow::PermissionSelectorRow(
   const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CONTROL_LIST_VERTICAL) /
                                 2;
-  layout->StartRowWithPadding(1, PageInfoBubbleView::kPermissionColumnSetId, 0,
-                              list_item_padding);
+  layout->StartRowWithPadding(1.0, PageInfoBubbleView::kPermissionColumnSetId,
+                              views::GridLayout::kFixedSize, list_item_padding);
 
   // Create the permission icon and label.
   icon_ = new NonAccessibleImageView();
@@ -321,7 +321,7 @@ PermissionSelectorRow::PermissionSelectorRow(
   base::string16 reason =
       PageInfoUI::PermissionDecisionReasonToUIString(profile, permission, url);
   if (!reason.empty()) {
-    layout->StartRow(1, PageInfoBubbleView::kPermissionColumnSetId);
+    layout->StartRow(1.0, PageInfoBubbleView::kPermissionColumnSetId);
     layout->SkipColumns(1);
     views::Label* secondary_label = new views::Label(reason);
     secondary_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -346,15 +346,15 @@ PermissionSelectorRow::PermissionSelectorRow(
     constexpr int kMaxSecondaryLabelWidth = 140;
     if (ui::MaterialDesignController::IsSecondaryUiMaterial() &&
         preferred_width > kMaxSecondaryLabelWidth) {
-      layout->AddView(secondary_label, column_span, 1,
+      layout->AddView(secondary_label, column_span, 1.0,
                       views::GridLayout::LEADING, views::GridLayout::CENTER,
                       kMaxSecondaryLabelWidth, 0);
     } else {
-      layout->AddView(secondary_label, column_span, 1, views::GridLayout::FILL,
-                      views::GridLayout::CENTER);
+      layout->AddView(secondary_label, column_span, 1.0,
+                      views::GridLayout::FILL, views::GridLayout::CENTER);
     }
   }
-  layout->AddPaddingRow(0,
+  layout->AddPaddingRow(views::GridLayout::kFixedSize,
                         CalculatePaddingBeneathPermissionRow(!reason.empty()));
 }
 

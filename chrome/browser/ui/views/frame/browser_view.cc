@@ -189,7 +189,6 @@ using base::UserMetricsAction;
 using content::NativeWebKeyboardEvent;
 using content::WebContents;
 using views::ColumnSet;
-using views::GridLayout;
 using web_modal::WebContentsModalDialogHost;
 
 namespace {

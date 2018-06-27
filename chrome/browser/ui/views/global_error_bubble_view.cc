@@ -154,15 +154,16 @@ void GlobalErrorBubbleView::Init() {
 
   // First row, message labels.
   views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+  cs->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
                 views::GridLayout::FIXED, kMaxBubbleViewWidth, 0);
 
   for (size_t i = 0; i < message_labels.size(); ++i) {
-    layout->StartRow(1, 0);
+    layout->StartRow(1.0, 0);
     layout->AddView(message_labels[i]);
     if (i < message_labels.size() - 1)
-      layout->AddPaddingRow(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                   views::DISTANCE_RELATED_CONTROL_VERTICAL));
+      layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                            ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                views::DISTANCE_RELATED_CONTROL_VERTICAL));
   }
 
   // These bubbles show at times where activation is sporadic (like at startup,

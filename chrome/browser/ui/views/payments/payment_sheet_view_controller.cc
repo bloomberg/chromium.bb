@@ -158,26 +158,30 @@ std::unique_ptr<PaymentRequestRowView> CreatePaymentSheetRow(
   views::ColumnSet* columns = layout->AddColumnSet(0);
   // A column for the section name.
   constexpr int kNameColumnWidth = 112;
-  columns->AddColumn(views::GridLayout::LEADING, vertical_alignment, 0,
-                     views::GridLayout::FIXED, kNameColumnWidth, 0);
+  columns->AddColumn(views::GridLayout::LEADING, vertical_alignment,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     kNameColumnWidth, 0);
 
   constexpr int kPaddingAfterName = 32;
-  columns->AddPaddingColumn(0, kPaddingAfterName);
+  columns->AddPaddingColumn(views::GridLayout::kFixedSize, kPaddingAfterName);
 
   // A column for the content.
-  columns->AddColumn(views::GridLayout::FILL, vertical_alignment, 1,
+  columns->AddColumn(views::GridLayout::FILL, vertical_alignment, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
   // A column for the extra content.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
 
   constexpr int kPaddingColumnsWidth = 25;
-  columns->AddPaddingColumn(0, kPaddingColumnsWidth);
+  columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                            kPaddingColumnsWidth);
   // A column for the trailing_button.
-  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER, 0,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
+                     views::GridLayout::kFixedSize, views::GridLayout::USE_PREF,
+                     0, 0);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::Label> name_label = CreateMediumLabel(section_name);
   name_label->SetMultiLine(true);
   name_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -216,11 +220,11 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
   views::GridLayout* item_amount_layout = item_amount_line->SetLayoutManager(
       std::make_unique<views::GridLayout>(item_amount_line.get()));
   views::ColumnSet* item_amount_columns = item_amount_layout->AddColumnSet(0);
-  item_amount_columns->AddColumn(views::GridLayout::LEADING,
-                                 views::GridLayout::LEADING, 0,
-                                 views::GridLayout::USE_PREF, 0, 0);
+  item_amount_columns->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::LEADING,
+      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
   item_amount_columns->AddColumn(views::GridLayout::TRAILING,
-                                 views::GridLayout::LEADING, 1,
+                                 views::GridLayout::LEADING, 1.0,
                                  views::GridLayout::USE_PREF, 0, 0);
 
   DCHECK(!bold || !hint_color);
@@ -238,7 +242,7 @@ std::unique_ptr<views::View> CreateInlineCurrencyAmountItem(
   amount_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   amount_label->SetAllowCharacterBreak(true);
 
-  item_amount_layout->StartRow(0, 0);
+  item_amount_layout->StartRow(views::GridLayout::kFixedSize, 0);
   item_amount_layout->AddView(currency_label.release());
   item_amount_layout->AddView(amount_label.release());
 
@@ -417,21 +421,21 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
   views::GridLayout* layout = content_view->SetLayoutManager(
       std::make_unique<views::GridLayout>(content_view));
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
 
   // The shipping address and contact info rows are optional.
   std::unique_ptr<PaymentRequestRowView> summary_row =
       CreatePaymentSheetSummaryRow();
   PaymentRequestRowView* previous_row = summary_row.get();
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(summary_row.release());
 
   if (spec()->request_shipping()) {
     std::unique_ptr<PaymentRequestRowView> shipping_row = CreateShippingRow();
     shipping_row->set_previous_row(previous_row);
     previous_row = shipping_row.get();
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     layout->AddView(shipping_row.release());
     // It's possible for requestShipping to be true and for there to be no
     // shipping options yet (they will come in updateWith).
@@ -441,7 +445,7 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
     if (shipping_option_row) {
       shipping_option_row->set_previous_row(previous_row);
       previous_row = shipping_option_row.get();
-      layout->StartRow(0, 0);
+      layout->StartRow(views::GridLayout::kFixedSize, 0);
       layout->AddView(shipping_option_row.release());
     }
   }
@@ -449,7 +453,7 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
       CreatePaymentMethodRow();
   payment_method_row->set_previous_row(previous_row);
   previous_row = payment_method_row.get();
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(payment_method_row.release());
   if (spec()->request_payer_name() || spec()->request_payer_email() ||
       spec()->request_payer_phone()) {
@@ -457,10 +461,10 @@ void PaymentSheetViewController::FillContentView(views::View* content_view) {
         CreateContactInfoRow();
     contact_info_row->set_previous_row(previous_row);
     previous_row = contact_info_row.get();
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     layout->AddView(contact_info_row.release());
   }
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(CreateDataSourceRow().release());
 }
 
@@ -573,12 +577,12 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
   views::GridLayout* layout = inline_summary->SetLayoutManager(
       std::make_unique<views::GridLayout>(inline_summary.get()));
   views::ColumnSet* columns = layout->AddColumnSet(0);
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING, 1,
-                     views::GridLayout::USE_PREF, 0, 0);
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
+                     1.0, views::GridLayout::USE_PREF, 0, 0);
   constexpr int kItemSummaryPriceFixedWidth = 96;
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 0,
-                     views::GridLayout::FIXED, kItemSummaryPriceFixedWidth,
-                     kItemSummaryPriceFixedWidth);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     kItemSummaryPriceFixedWidth, kItemSummaryPriceFixedWidth);
 
   const std::vector<const mojom::PaymentItemPtr*>& items =
       spec()->GetDisplayItems(state()->selected_instrument());
@@ -595,7 +599,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
                                ? items.size()
                                : kMaxNumberOfItemsShown;
   for (size_t i = 0; i < items.size() && i < displayed_items; ++i) {
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     std::unique_ptr<views::Label> summary =
         std::make_unique<views::Label>(base::UTF8ToUTF16((*items[i])->label));
     summary->SetHorizontalAlignment(gfx::ALIGN_LEFT);
@@ -614,7 +618,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
 
   size_t hidden_item_count = items.size() - displayed_items;
   if (hidden_item_count > 0) {
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     std::unique_ptr<views::Label> label =
         CreateHintLabel(l10n_util::GetPluralStringFUTF16(
             IDS_PAYMENT_REQUEST_ORDER_SUMMARY_MORE_ITEMS, hidden_item_count));
@@ -627,7 +631,7 @@ PaymentSheetViewController::CreatePaymentSheetSummaryRow() {
     }
   }
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   PaymentInstrument* selected_instrument = state()->selected_instrument();
   const mojom::PaymentItemPtr& total = spec()->GetTotal(selected_instrument);
   base::string16 total_label_text = base::UTF8ToUTF16(total->label);
@@ -744,16 +748,16 @@ PaymentSheetViewController::CreatePaymentMethodRow() {
     views::GridLayout* layout = content_view->SetLayoutManager(
         std::make_unique<views::GridLayout>(content_view.get()));
     views::ColumnSet* columns = layout->AddColumnSet(0);
-    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
-                       views::GridLayout::USE_PREF, 0, 0);
+    columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                       1.0, views::GridLayout::USE_PREF, 0, 0);
 
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     std::unique_ptr<views::Label> selected_instrument_label =
         std::make_unique<views::Label>(selected_instrument->GetLabel());
     selected_instrument_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     layout->AddView(selected_instrument_label.release());
 
-    layout->StartRow(0, 0);
+    layout->StartRow(views::GridLayout::kFixedSize, 0);
     std::unique_ptr<views::Label> selected_instrument_sublabel =
         std::make_unique<views::Label>(selected_instrument->GetSublabel());
     selected_instrument_sublabel->SetHorizontalAlignment(gfx::ALIGN_LEFT);

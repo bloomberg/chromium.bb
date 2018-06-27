@@ -447,15 +447,17 @@ void ExtensionInstallDialogView::AddedToWidget() {
   views::ColumnSet* column_set = layout->AddColumnSet(kTitleColumnSetId);
   constexpr int icon_size = extension_misc::EXTENSION_ICON_SMALL;
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::LEADING,
-                        0, views::GridLayout::FIXED, icon_size, 0);
+                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                        icon_size, 0);
 
   // Equalize padding on the left and the right of the icon.
   column_set->AddPaddingColumn(
-      0, provider->GetInsetsMetric(views::INSETS_DIALOG).left());
+      views::GridLayout::kFixedSize,
+      provider->GetInsetsMetric(views::INSETS_DIALOG).left());
   // Set a resize weight so that the title label will be expanded to the
   // available width.
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING, 1,
-                        views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::LEADING,
+                        1.0, views::GridLayout::USE_PREF, 0, 0);
 
   // Scale down to icon size, but allow smaller icons (don't scale up).
   const gfx::ImageSkia* image = prompt_->icon().ToImageSkia();
@@ -465,7 +467,7 @@ void ExtensionInstallDialogView::AddedToWidget() {
   icon->SetImageSize(size);
   icon->SetImage(*image);
 
-  layout->StartRow(0, kTitleColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kTitleColumnSetId);
   layout->AddView(icon);
 
   std::unique_ptr<views::Label> title_label =
@@ -588,16 +590,17 @@ ExpandableContainerView::ExpandableContainerView(
   constexpr int kColumnSetId = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
 
-  // Even though we only have one column, using a GridLayout here will properly
-  // handle a 0 height row when |details_view_| is collapsed.
+  // Even though we only have one column, using a GridLayout here will
+  // properly handle a 0 height row when |details_view_| is collapsed.
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::LEADING,
-                        0, views::GridLayout::FIXED, available_width, 0);
+                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                        available_width, 0);
 
-  layout->StartRow(0, kColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   details_view_ = new DetailsView(details);
   layout->AddView(details_view_);
 
-  layout->StartRow(0, kColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   details_link_ =
       new views::Link(l10n_util::GetStringUTF16(IDS_EXTENSIONS_SHOW_DETAILS));
   details_link_->set_listener(this);

@@ -129,7 +129,7 @@ void CardUnmaskPromptViews::GotVerificationResult(
       error_icon->SetImage(
           gfx::CreateVectorIcon(kBrowserToolsErrorIcon, warning_text_color));
 
-      layout->StartRow(1, 0);
+      layout->StartRow(1.0, 0);
       layout->AddView(error_icon);
       layout->AddView(error_label);
     }
@@ -468,11 +468,12 @@ views::GridLayout* CardUnmaskPromptViews::ResetOverlayLayout() {
   // The throbber's checkmark is 18dp.
   columns->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
                      0.5, views::GridLayout::FIXED, 18, 0);
-  columns->AddPaddingColumn(0, ChromeLayoutProvider::Get()->GetDistanceMetric(
-                                   views::DISTANCE_RELATED_LABEL_HORIZONTAL));
+  columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                            ChromeLayoutProvider::Get()->GetDistanceMetric(
+                                views::DISTANCE_RELATED_LABEL_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0.5,
                      views::GridLayout::USE_PREF, 0, 0);
-  overlay_layout->StartRow(1, 0);
+  overlay_layout->StartRow(1.0, 0);
   return overlay_layout;
 }
 

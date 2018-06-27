@@ -54,13 +54,16 @@ void BuildColumnSet(views::GridLayout* layout,
                         kFirstColumnWeight, views::GridLayout::FIXED, 0, 0);
 
   if (type_id == PASSWORD_COLUMN_SET) {
-    column_set->AddPaddingColumn(0, between_column_padding);
+    column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                 between_column_padding);
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                           kSecondColumnWeight, views::GridLayout::FIXED, 0, 0);
   }
   // All rows end with a trailing column for the undo/trash button.
-  column_set->AddPaddingColumn(0, between_column_padding);
-  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL, 0,
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                               between_column_padding);
+  column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::FILL,
+                        views::GridLayout::kFixedSize,
                         views::GridLayout::USE_PREF, 0, 0);
 }
 
@@ -68,7 +71,7 @@ void StartRow(views::GridLayout* layout,
               PasswordItemsViewColumnSetType type_id) {
   if (!layout->GetColumnSet(type_id))
     BuildColumnSet(layout, type_id);
-  layout->StartRow(0, type_id);
+  layout->StartRow(views::GridLayout::kFixedSize, type_id);
 }
 
 std::unique_ptr<views::ImageButton> CreateDeleteButton(
@@ -248,7 +251,8 @@ void PasswordItemsView::RecreateLayout() {
   bool first_row = true;
   for (auto& row : password_rows_) {
     if (!first_row)
-      grid_layout->AddPaddingRow(0, vertical_padding);
+      grid_layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                                 vertical_padding);
 
     row->AddToLayout(grid_layout);
     first_row = false;

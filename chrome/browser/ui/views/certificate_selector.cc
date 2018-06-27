@@ -205,17 +205,17 @@ void CertificateSelector::InitWithText(
 
   const int kColumnSetId = 0;
   views::ColumnSet* const column_set = layout->AddColumnSet(kColumnSetId);
-  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1.0,
                         views::GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, kColumnSetId);
+  layout->StartRow(views::GridLayout::kFixedSize, kColumnSetId);
   layout->AddView(text_label.release());
 
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   const int vertical_spacing = provider->GetDistanceMetric(
       views::DISTANCE_RELATED_CONTROL_VERTICAL);
 
-  layout->AddPaddingRow(0, vertical_spacing);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 
   std::vector<ui::TableColumn> columns;
   columns.push_back(ui::TableColumn(IDS_CERT_SELECTOR_SUBJECT_COLUMN,
@@ -231,12 +231,12 @@ void CertificateSelector::InitWithText(
   table_ = new views::TableView(model_.get(), columns, views::TEXT_ONLY,
                                 true /* single_selection */);
   table_->set_observer(this);
-  layout->StartRow(1, kColumnSetId);
+  layout->StartRow(1.0, kColumnSetId);
   layout->AddView(table_->CreateParentIfNecessary(), 1, 1,
                   views::GridLayout::FILL, views::GridLayout::FILL,
                   kTableViewWidth, kTableViewHeight);
 
-  layout->AddPaddingRow(0, vertical_spacing);
+  layout->AddPaddingRow(views::GridLayout::kFixedSize, vertical_spacing);
 }
 
 ui::TableModel* CertificateSelector::table_model_for_testing() const {

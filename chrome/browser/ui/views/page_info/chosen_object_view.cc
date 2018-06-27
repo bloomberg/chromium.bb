@@ -32,8 +32,6 @@ ChosenObjectView::ChosenObjectView(
   //
   // Where the icon and close button columns are fixed widths.
 
-  constexpr float kFixed = 0.f;
-  constexpr float kStretchy = 1.f;
   views::GridLayout* layout =
       SetLayoutManager(std::make_unique<views::GridLayout>(this));
   const int column_set_id = 0;
@@ -43,23 +41,26 @@ ChosenObjectView::ChosenObjectView(
           views::DISTANCE_RELATED_LABEL_HORIZONTAL);
   views::ColumnSet* column_set = layout->AddColumnSet(column_set_id);
   column_set->AddColumn(views::GridLayout::CENTER, views::GridLayout::CENTER,
-                        kFixed, views::GridLayout::FIXED,
+                        views::GridLayout::kFixedSize, views::GridLayout::FIXED,
                         PageInfoBubbleView::kIconColumnWidth, 0);
-  column_set->AddPaddingColumn(kFixed, related_label_padding);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                               related_label_padding);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
-                        kStretchy, views::GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(kFixed, related_label_padding);
+                        1.0, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(views::GridLayout::kFixedSize,
+                               related_label_padding);
   column_set->AddColumn(views::GridLayout::TRAILING, views::GridLayout::CENTER,
-                        kFixed, views::GridLayout::USE_PREF,
+                        views::GridLayout::kFixedSize,
+                        views::GridLayout::USE_PREF,
                         PageInfoBubbleView::kIconColumnWidth, 0);
 
-  layout->StartRow(kStretchy, column_set_id);
+  layout->StartRow(1.0, column_set_id);
   // This padding is added to the top and bottom of each chosen object row, so
   // use half. This is also consistent with |PermissionSelectorRow|'s behavior.
   const int list_item_padding = ChromeLayoutProvider::Get()->GetDistanceMetric(
                                     DISTANCE_CONTROL_LIST_VERTICAL) /
                                 2;
-  layout->StartRowWithPadding(kStretchy, column_set_id, kFixed,
+  layout->StartRowWithPadding(1.0, column_set_id, views::GridLayout::kFixedSize,
                               list_item_padding);
   // Create the chosen object icon.
   icon_ = new views::ImageView();
@@ -98,7 +99,7 @@ ChosenObjectView::ChosenObjectView(
 
   // Display secondary text underneath the name of the chosen object to describe
   // what the chosen object actually is.
-  layout->StartRow(kStretchy, column_set_id);
+  layout->StartRow(1.0, column_set_id);
   views::Label* secondary_label = new views::Label(
       l10n_util::GetStringUTF16(info_->ui_info.secondary_label_string_id));
   secondary_label->SetEnabledColor(PageInfoUI::GetSecondaryTextColor());

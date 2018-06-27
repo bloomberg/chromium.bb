@@ -24,17 +24,17 @@
 // columns->AddColumn(FILL, // Views are horizontally resized to fill column.
 //                    FILL, // Views starting in this column are vertically
 //                          // resized.
-//                    1,    // This column has a resize weight of 1.
+//                    1.0,  // This column has a resize weight of 1.
 //                    USE_PREF, // Use the preferred size of the view.
 //                    0,   // Ignored for USE_PREF.
 //                    0);  // A minimum width of 0.
-// columns->AddPaddingColumn(0,   // The padding column is not resizable.
-//                           10); // And has a width of 10 pixels.
-// columns->AddColumn(FILL, FILL, 0, USE_PREF, 0, 0);
+// columns->AddPaddingColumn(kFixedSize, // The padding column is not resizable.
+//                           10);        // And has a width of 10 pixels.
+// columns->AddColumn(FILL, FILL, kFixedSize, USE_PREF, 0, 0);
 // Now add the views:
 // // First start a row.
-// layout->StartRow(0,  // This row isn't vertically resizable.
-//                  0); // The column set to use for this row.
+// layout->StartRow(kFixedSize,  // This row isn't vertically resizable.
+//                  0);          // The column set to use for this row.
 // layout->AddView(v1);
 // Notice you need not skip over padding columns, that's done for you.
 // layout->AddView(v2);
@@ -77,6 +77,10 @@ struct ViewState;
 
 class VIEWS_EXPORT GridLayout : public LayoutManager {
  public:
+  // Use for |resize_percent| or |vertical_resize| when the column or row is not
+  // resizable.
+  static constexpr float kFixedSize = 0.f;
+
   // An enumeration of the possible alignments supported by GridLayout.
   enum Alignment {
     // Leading equates to left along the horizontal axis, and top along the

@@ -289,11 +289,9 @@ void BookmarkBubbleView::OnIOSPromotionFootnoteLinkClicked() {
 // views::BubbleDialogDelegateView ---------------------------------------------
 
 void BookmarkBubbleView::Init() {
-  using views::GridLayout;
-
   SetLayoutManager(std::make_unique<views::FillLayout>());
   bookmark_contents_view_ = new views::View();
-  GridLayout* layout = bookmark_contents_view_->SetLayoutManager(
+  views::GridLayout* layout = bookmark_contents_view_->SetLayoutManager(
       std::make_unique<views::GridLayout>(bookmark_contents_view_));
 
   constexpr int kColumnId = 0;

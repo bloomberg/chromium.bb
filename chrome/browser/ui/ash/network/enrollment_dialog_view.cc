@@ -179,7 +179,8 @@ void EnrollmentDialogView::InitDialog() {
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
 
   columns->AddPaddingColumn(
-      0, provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
+      views::GridLayout::kFixedSize,
+      provider->GetDistanceMetric(DISTANCE_UNRELATED_CONTROL_HORIZONTAL));
   columns->AddColumn(views::GridLayout::LEADING,   // Horizontal leading.
                      views::GridLayout::FILL,      // Vertical resize.
                      1,                            // Resize weight.
@@ -187,10 +188,10 @@ void EnrollmentDialogView::InitDialog() {
                      0,                            // Ignored for USE_PREF.
                      0);                           // Minimum size.
 
-  grid_layout->StartRow(0, 0);
+  grid_layout->StartRow(views::GridLayout::kFixedSize, 0);
   grid_layout->AddView(label);
   grid_layout->AddPaddingRow(
-      0,
+      views::GridLayout::kFixedSize,
       provider->GetDistanceMetric(views::DISTANCE_UNRELATED_CONTROL_VERTICAL));
   grid_layout->Layout(this);
 }

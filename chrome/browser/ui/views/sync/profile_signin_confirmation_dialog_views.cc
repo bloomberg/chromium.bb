@@ -218,30 +218,34 @@ void ProfileSigninConfirmationDialogViews::ViewHierarchyChanged(
           views::INSETS_DIALOG_SUBSECTION)));
   constexpr int kPromptBarColumnSetId = 0;
   prompt_layout->AddColumnSet(kPromptBarColumnSetId)
-      ->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 100,
+      ->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1.0,
                   views::GridLayout::USE_PREF, 0, 0);
-  prompt_layout->StartRow(0, kPromptBarColumnSetId);
+  prompt_layout->StartRow(views::GridLayout::kFixedSize, kPromptBarColumnSetId);
   prompt_layout->AddView(prompt_label);
   // Use a column set with no padding.
-  dialog_layout->AddColumnSet(0)->AddColumn(
-      views::GridLayout::FILL, views::GridLayout::FILL, 100,
-      views::GridLayout::USE_PREF, 0, 0);
-  dialog_layout->StartRow(0, 0);
+  dialog_layout->AddColumnSet(0)->AddColumn(views::GridLayout::FILL,
+                                            views::GridLayout::FILL, 1.0,
+                                            views::GridLayout::USE_PREF, 0, 0);
+  dialog_layout->StartRow(views::GridLayout::kFixedSize, 0);
   dialog_layout->AddView(
       prompt_bar, 1, 1,
       views::GridLayout::FILL, views::GridLayout::FILL, 0, 0);
 
   // Use a new column set for the explanation label so we can add padding.
-  dialog_layout->AddPaddingRow(0.0, content_insets.top());
+  dialog_layout->AddPaddingRow(views::GridLayout::kFixedSize,
+                               content_insets.top());
   constexpr int kExplanationColumnSetId = 1;
   views::ColumnSet* explanation_columns =
       dialog_layout->AddColumnSet(kExplanationColumnSetId);
-  explanation_columns->AddPaddingColumn(0.0, content_insets.left());
-  explanation_columns->AddColumn(
-      views::GridLayout::FILL, views::GridLayout::FILL, 100,
-      views::GridLayout::USE_PREF, 0, 0);
-  explanation_columns->AddPaddingColumn(0.0, content_insets.right());
-  dialog_layout->StartRow(0, kExplanationColumnSetId);
+  explanation_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                        content_insets.left());
+  explanation_columns->AddColumn(views::GridLayout::FILL,
+                                 views::GridLayout::FILL, 1.0,
+                                 views::GridLayout::USE_PREF, 0, 0);
+  explanation_columns->AddPaddingColumn(views::GridLayout::kFixedSize,
+                                        content_insets.right());
+  dialog_layout->StartRow(views::GridLayout::kFixedSize,
+                          kExplanationColumnSetId);
   const int kPreferredWidth = 440;
   dialog_layout->AddView(explanation_label, 1, 1, views::GridLayout::FILL,
                          views::GridLayout::FILL, kPreferredWidth,

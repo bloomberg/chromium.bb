@@ -32,8 +32,9 @@ ConfirmBubbleViews::ConfirmBubbleViews(
   // Use a fixed maximum message width, so longer messages will wrap.
   const int kMaxMessageWidth = 400;
   views::ColumnSet* cs = layout->AddColumnSet(0);
-  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 0,
-                views::GridLayout::FIXED, kMaxMessageWidth, false);
+  cs->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                kMaxMessageWidth, false);
 
   // Add the message label.
   views::Label* label = new views::Label(model_->GetMessageText());
@@ -41,7 +42,7 @@ ConfirmBubbleViews::ConfirmBubbleViews(
   label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   label->SetMultiLine(true);
   label->SizeToFit(kMaxMessageWidth);
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   layout->AddView(label);
 
   // Initialize the help button.

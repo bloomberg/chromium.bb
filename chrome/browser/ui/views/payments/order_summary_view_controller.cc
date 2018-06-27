@@ -63,13 +63,13 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   // The first column has resize_percent = 1 so that it stretches all the way
   // across the row up to the amount label. This way the first label elides as
   // required.
-  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1,
+  columns->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER, 1.0,
                      views::GridLayout::USE_PREF, 0, 0);
-  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 0,
-                     views::GridLayout::FIXED, kAmountSectionWidth,
-                     kAmountSectionWidth);
+  columns->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                     views::GridLayout::kFixedSize, views::GridLayout::FIXED,
+                     kAmountSectionWidth, kAmountSectionWidth);
 
-  layout->StartRow(0, 0);
+  layout->StartRow(views::GridLayout::kFixedSize, 0);
   std::unique_ptr<views::Label> label_text;
   std::unique_ptr<views::Label> currency_text;
   std::unique_ptr<views::Label> amount_text;
@@ -97,14 +97,14 @@ std::unique_ptr<views::View> CreateLineItemView(const base::string16& label,
   views::GridLayout* wrapper_layout = amount_wrapper->SetLayoutManager(
       std::make_unique<views::GridLayout>(amount_wrapper.get()));
   views::ColumnSet* wrapper_columns = wrapper_layout->AddColumnSet(0);
-  wrapper_columns->AddColumn(views::GridLayout::LEADING,
-                             views::GridLayout::CENTER, 0,
-                             views::GridLayout::USE_PREF, 0, 0);
+  wrapper_columns->AddColumn(
+      views::GridLayout::LEADING, views::GridLayout::CENTER,
+      views::GridLayout::kFixedSize, views::GridLayout::USE_PREF, 0, 0);
   wrapper_columns->AddColumn(views::GridLayout::TRAILING,
-                             views::GridLayout::CENTER, 1,
+                             views::GridLayout::CENTER, 1.0,
                              views::GridLayout::USE_PREF, 0, 0);
 
-  wrapper_layout->StartRow(0, 0);
+  wrapper_layout->StartRow(views::GridLayout::kFixedSize, 0);
   currency_text->set_id(static_cast<int>(currency_label_id));
   wrapper_layout->AddView(currency_text.release());
   wrapper_layout->AddView(amount_text.release());
