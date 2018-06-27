@@ -56,6 +56,10 @@ typedef std::vector<Schema> SchemaList;
 // types of inner elements, for structured types.
 // Objects of this class refer to external, immutable data and are cheap to
 // copy.
+//
+// Schema validation is based on a subset of the JSON Schema standard.
+// TODO(crbug.com/856901): Document the supported subset of the JSON Schema
+// standard.
 class POLICY_EXPORT Schema {
  public:
   // Used internally to store shared data.
