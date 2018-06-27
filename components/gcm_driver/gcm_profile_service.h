@@ -30,6 +30,10 @@ namespace net {
 class URLRequestContextGetter;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}
+
 namespace gcm {
 
 class GCMClientFactory;
@@ -47,6 +51,7 @@ class GCMProfileService : public KeyedService {
       PrefService* prefs,
       base::FilePath path,
       net::URLRequestContextGetter* request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       version_info::Channel channel,
       const std::string& product_category_for_subtypes,
       SigninManagerBase* signin_manager,

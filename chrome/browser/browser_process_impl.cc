@@ -1316,8 +1316,9 @@ void BrowserProcessImpl::CreateGCMDriver() {
 
   gcm_driver_ = gcm::CreateGCMDriverDesktop(
       base::WrapUnique(new gcm::GCMClientFactory), local_state(), store_path,
-      system_request_context(), chrome::GetChannel(),
-      gcm::GetProductCategoryForSubtypes(local_state()),
+      system_request_context(),
+      system_network_context_manager()->GetSharedURLLoaderFactory(),
+      chrome::GetChannel(), gcm::GetProductCategoryForSubtypes(local_state()),
       content::BrowserThread::GetTaskRunnerForThread(
           content::BrowserThread::UI),
       content::BrowserThread::GetTaskRunnerForThread(

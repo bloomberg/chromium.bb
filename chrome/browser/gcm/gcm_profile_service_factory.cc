@@ -22,6 +22,9 @@
 #include "chrome/browser/gcm/gcm_product_util.h"
 #include "chrome/common/channel_info.h"
 #include "components/gcm_driver/gcm_client_factory.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #endif
 
 #if BUILDFLAG(ENABLE_OFFLINE_PAGES)
@@ -80,6 +83,8 @@ KeyedService* GCMProfileServiceFactory::BuildServiceInstanceFor(
 #else
   service = base::WrapUnique(new GCMProfileService(
       profile->GetPrefs(), profile->GetPath(), profile->GetRequestContext(),
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess(),
       chrome::GetChannel(),
       gcm::GetProductCategoryForSubtypes(profile->GetPrefs()),
       SigninManagerFactory::GetForProfile(profile),

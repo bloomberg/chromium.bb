@@ -18,6 +18,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/web_thread.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 // static
 gcm::GCMProfileService* IOSChromeGCMProfileServiceFactory::GetForBrowserState(
@@ -64,7 +65,8 @@ IOSChromeGCMProfileServiceFactory::BuildServiceInstanceFor(
       ios::ChromeBrowserState::FromBrowserState(context);
   return std::make_unique<gcm::GCMProfileService>(
       browser_state->GetPrefs(), browser_state->GetStatePath(),
-      browser_state->GetRequestContext(), ::GetChannel(),
+      browser_state->GetRequestContext(),
+      browser_state->GetSharedURLLoaderFactory(), ::GetChannel(),
       GetProductCategoryForSubtypes(),
       ios::SigninManagerFactory::GetForBrowserState(browser_state),
       ProfileOAuth2TokenServiceFactory::GetForBrowserState(browser_state),

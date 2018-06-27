@@ -16,5 +16,7 @@ include_rules = [
   "+google_apis/gcm",
   "+jni",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+third_party/leveldatabase",  # Only used for tests.
 ]

@@ -19,6 +19,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace gcm {
 
@@ -88,12 +89,12 @@ GCMChannelStatusSyncer::GCMChannelStatusSyncer(
     PrefService* prefs,
     const std::string& channel_status_request_url,
     const std::string& user_agent,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : driver_(driver),
       prefs_(prefs),
       channel_status_request_url_(channel_status_request_url),
       user_agent_(user_agent),
-      request_context_(request_context),
+      url_loader_factory_(std::move(url_loader_factory)),
       started_(false),
       gcm_enabled_(true),
       poll_interval_seconds_(
@@ -201,9 +202,7 @@ void GCMChannelStatusSyncer::StartRequest() {
     return;
 
   request_.reset(new GCMChannelStatusRequest(
-      request_context_,
-      channel_status_request_url_,
-      user_agent_,
+      url_loader_factory_, channel_status_request_url_, user_agent_,
       base::Bind(&GCMChannelStatusSyncer::OnRequestCompleted,
                  weak_ptr_factory_.GetWeakPtr())));
   request_->Start();

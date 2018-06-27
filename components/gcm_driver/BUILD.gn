@@ -63,6 +63,7 @@ static_library("gcm_driver") {
     "//google_apis",
     "//google_apis/gcm",
     "//net",
+    "//services/network/public/cpp",
     "//url:url",
   ]
 
@@ -138,6 +139,8 @@ static_library("test_support") {
     "//content/public/browser",
     "//google_apis/gcm:test_support",
     "//net",
+    "//services/network:test_support",
+    "//services/network/public/cpp",
     "//testing/gtest",
   ]
 

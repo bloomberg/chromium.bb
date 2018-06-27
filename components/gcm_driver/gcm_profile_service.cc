@@ -29,6 +29,7 @@
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #endif
 
 namespace gcm {
@@ -147,6 +148,7 @@ GCMProfileService::GCMProfileService(
     PrefService* prefs,
     base::FilePath path,
     net::URLRequestContextGetter* request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     version_info::Channel channel,
     const std::string& product_category_for_subtypes,
     SigninManagerBase* signin_manager,
@@ -160,9 +162,9 @@ GCMProfileService::GCMProfileService(
       request_context_(request_context) {
   driver_ = CreateGCMDriverDesktop(
       std::move(gcm_client_factory), prefs,
-      path.Append(gcm_driver::kGCMStoreDirname), request_context_, channel,
-      product_category_for_subtypes, ui_task_runner, io_task_runner,
-      blocking_task_runner);
+      path.Append(gcm_driver::kGCMStoreDirname), request_context_,
+      url_loader_factory, channel, product_category_for_subtypes,
+      ui_task_runner, io_task_runner, blocking_task_runner);
 
   identity_observer_.reset(new IdentityObserver(
       signin_manager_, token_service_, request_context_, driver_.get()));

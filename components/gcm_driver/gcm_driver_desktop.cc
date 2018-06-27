@@ -27,6 +27,7 @@
 #include "google_apis/gcm/engine/account_mapping.h"
 #include "net/base/ip_endpoint.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_CHROMEOS)
 #include "components/timers/alarm_timer_chromeos.h"
@@ -522,6 +523,7 @@ GCMDriverDesktop::GCMDriverDesktop(
     PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const scoped_refptr<base::SequencedTaskRunner>& ui_thread,
     const scoped_refptr<base::SequencedTaskRunner>& io_thread,
     const scoped_refptr<base::SequencedTaskRunner>& blocking_task_runner)
@@ -531,7 +533,7 @@ GCMDriverDesktop::GCMDriverDesktop(
                                      prefs,
                                      channel_status_request_url,
                                      user_agent,
-                                     request_context)),
+                                     url_loader_factory)),
       signed_in_(false),
       gcm_started_(false),
       gcm_enabled_(true),

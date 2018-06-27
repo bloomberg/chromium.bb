@@ -2,16 +2,22 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/test/test_simple_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/gcm_driver/gcm_channel_status_request.h"
+#include "base/message_loop/message_loop.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "components/sync/protocol/experiment_status.pb.h"
 #include "components/sync/protocol/experiments_specifics.pb.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace gcm {
+
+namespace {
+const char kTestURL[] = "http://channel.status.request.com/";
+}
 
 class GCMChannelStatusRequestTest : public testing::Test {
  public:
@@ -25,20 +31,21 @@ class GCMChannelStatusRequestTest : public testing::Test {
     GCM_DISABLED,
   };
 
-  void StartRequest();
+  void CreateRequest();
   void SetResponseStatusAndString(net::HttpStatusCode status_code,
                                   const std::string& response_body);
   void SetResponseProtoData(GCMStatus status, int poll_interval_seconds);
-  void CompleteFetch();
+  void StartRequest();
+  std::string GetBodyFromRequest(const network::ResourceRequest& request);
   void OnRequestCompleted(bool update_received,
                           bool enabled,
                           int poll_interval_seconds);
+  network::TestURLLoaderFactory* test_url_loader_factory();
 
   std::unique_ptr<GCMChannelStatusRequest> request_;
-  scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
-  base::ThreadTaskRunnerHandle task_runner_handle_;
-  net::TestURLFetcherFactory url_fetcher_factory_;
-  scoped_refptr<net::TestURLRequestContextGetter> url_request_context_getter_;
+  base::MessageLoop message_loop_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
   bool request_callback_invoked_;
   bool update_received_;
   bool enabled_;
@@ -46,36 +53,29 @@ class GCMChannelStatusRequestTest : public testing::Test {
 };
 
 GCMChannelStatusRequestTest::GCMChannelStatusRequestTest()
-    : task_runner_(new base::TestSimpleTaskRunner()),
-      task_runner_handle_(task_runner_),
-      url_request_context_getter_(
-          new net::TestURLRequestContextGetter(task_runner_)),
+    : test_shared_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)),
       request_callback_invoked_(false),
       update_received_(false),
       enabled_(true),
-      poll_interval_seconds_(0) {
-}
+      poll_interval_seconds_(0) {}
 
 GCMChannelStatusRequestTest::~GCMChannelStatusRequestTest() {
 }
 
-void GCMChannelStatusRequestTest::StartRequest() {
+void GCMChannelStatusRequestTest::CreateRequest() {
   request_.reset(new GCMChannelStatusRequest(
-      url_request_context_getter_.get(),
-      "http://channel.status.request.com/",
-      "user agent string",
+      test_shared_loader_factory_, kTestURL, "user agent string",
       base::Bind(&GCMChannelStatusRequestTest::OnRequestCompleted,
                  base::Unretained(this))));
-  request_->Start();
+  test_url_loader_factory_.ClearResponses();
 }
 
 void GCMChannelStatusRequestTest::SetResponseStatusAndString(
     net::HttpStatusCode status_code,
     const std::string& response_body) {
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->set_response_code(status_code);
-  fetcher->SetResponseString(response_body);
+  test_url_loader_factory_.AddResponse(kTestURL, response_body, status_code);
 }
 
 void GCMChannelStatusRequestTest::SetResponseProtoData(
@@ -97,11 +97,22 @@ void GCMChannelStatusRequestTest::SetResponseProtoData(
   SetResponseStatusAndString(net::HTTP_OK, response_string);
 }
 
-void GCMChannelStatusRequestTest::CompleteFetch() {
-  request_callback_invoked_ = false;
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-  fetcher->delegate()->OnURLFetchComplete(fetcher);
+void GCMChannelStatusRequestTest::StartRequest() {
+  request_->Start();
+  base::RunLoop run_loop;
+  run_loop.RunUntilIdle();
+}
+
+std::string GCMChannelStatusRequestTest::GetBodyFromRequest(
+    const network::ResourceRequest& request) {
+  auto body = request.request_body;
+  if (!body)
+    return std::string();
+
+  CHECK_EQ(1u, body->elements()->size());
+  auto& element = body->elements()->at(0);
+  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+  return std::string(element.bytes(), element.length());
 }
 
 void GCMChannelStatusRequestTest::OnRequestCompleted(
@@ -112,23 +123,32 @@ void GCMChannelStatusRequestTest::OnRequestCompleted(
   poll_interval_seconds_ = poll_interval_seconds;
 }
 
+network::TestURLLoaderFactory*
+GCMChannelStatusRequestTest::test_url_loader_factory() {
+  return &test_url_loader_factory_;
+}
+
 TEST_F(GCMChannelStatusRequestTest, RequestData) {
+  CreateRequest();
+
+  GURL intercepted_url;
+  net::HttpRequestHeaders intercepted_headers;
+  std::string upload_data;
+  test_url_loader_factory()->SetInterceptor(
+      base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
+        intercepted_url = request.url;
+        intercepted_headers = request.headers;
+        upload_data = GetBodyFromRequest(request);
+      }));
   StartRequest();
 
-  net::TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
+  EXPECT_EQ(GURL(request_->channel_status_request_url_), intercepted_url);
 
-  EXPECT_EQ(GURL(request_->channel_status_request_url_),
-            fetcher->GetOriginalURL());
-
-  net::HttpRequestHeaders headers;
-  fetcher->GetExtraRequestHeaders(&headers);
   std::string user_agent_header;
-  headers.GetHeader("User-Agent", &user_agent_header);
+  intercepted_headers.GetHeader("User-Agent", &user_agent_header);
   EXPECT_FALSE(user_agent_header.empty());
   EXPECT_EQ(request_->user_agent_, user_agent_header);
 
-  std::string upload_data = fetcher->upload_data();
   EXPECT_FALSE(upload_data.empty());
   sync_pb::ExperimentStatusRequest proto_data;
   proto_data.ParseFromString(upload_data);
@@ -137,43 +157,43 @@ TEST_F(GCMChannelStatusRequestTest, RequestData) {
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseHttpStatusNotOK) {
-  StartRequest();
+  CreateRequest();
   SetResponseStatusAndString(net::HTTP_UNAUTHORIZED, "");
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_FALSE(request_callback_invoked_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseEmpty) {
-  StartRequest();
+  CreateRequest();
   SetResponseStatusAndString(net::HTTP_OK, "");
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_FALSE(update_received_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseNotInProtoFormat) {
-  StartRequest();
+  CreateRequest();
   SetResponseStatusAndString(net::HTTP_OK, "foo");
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_FALSE(request_callback_invoked_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseEmptyProtoData) {
-  StartRequest();
+  CreateRequest();
   SetResponseProtoData(NOT_SPECIFIED, 0);
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_FALSE(update_received_);
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatus) {
-  StartRequest();
+  CreateRequest();
   SetResponseProtoData(GCM_DISABLED, 0);
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(update_received_);
@@ -184,9 +204,9 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatus) {
 }
 
 TEST_F(GCMChannelStatusRequestTest, ResponseWithEnabledStatus) {
-  StartRequest();
+  CreateRequest();
   SetResponseProtoData(GCM_ENABLED, 0);
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(update_received_);
@@ -201,9 +221,9 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithPollInterval) {
   // enforce.
   int poll_interval_seconds =
       GCMChannelStatusRequest::min_poll_interval_seconds() + 15 * 60;
-  StartRequest();
+  CreateRequest();
   SetResponseProtoData(NOT_SPECIFIED, poll_interval_seconds);
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(update_received_);
@@ -216,9 +236,9 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithShortPollInterval) {
   // enforce.
   int poll_interval_seconds =
       GCMChannelStatusRequest::min_poll_interval_seconds() - 15 * 60;
-  StartRequest();
+  CreateRequest();
   SetResponseProtoData(NOT_SPECIFIED, poll_interval_seconds);
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(update_received_);
@@ -230,9 +250,9 @@ TEST_F(GCMChannelStatusRequestTest, ResponseWithShortPollInterval) {
 TEST_F(GCMChannelStatusRequestTest, ResponseWithDisabledStatusAndPollInterval) {
   int poll_interval_seconds =
       GCMChannelStatusRequest::min_poll_interval_seconds() + 15 * 60;
-  StartRequest();
+  CreateRequest();
   SetResponseProtoData(GCM_DISABLED, poll_interval_seconds);
-  CompleteFetch();
+  StartRequest();
 
   EXPECT_TRUE(request_callback_invoked_);
   EXPECT_TRUE(update_received_);

@@ -14,18 +14,21 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "net/base/backoff_entry.h"
-#include "net/url_request/url_fetcher_delegate.h"
-#include "net/url_request/url_request_context_getter.h"
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
+
+namespace sync_pb {
+class ExperimentStatusResponse;
 }
 
 namespace gcm {
 
 // Defines the request to talk with the server to determine if the GCM support
 // should be enabled.
-class GCMChannelStatusRequest : public net::URLFetcherDelegate {
+class GCMChannelStatusRequest {
  public:
   // Callback completing the channel status request.
   // |update_received|: use the existing values if it is false which means no
@@ -39,31 +42,32 @@ class GCMChannelStatusRequest : public net::URLFetcherDelegate {
       GCMChannelStatusRequestCallback;
 
   GCMChannelStatusRequest(
-      const scoped_refptr<net::URLRequestContextGetter>& request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& channel_status_request_url,
       const std::string& user_agent,
       const GCMChannelStatusRequestCallback& callback);
-  ~GCMChannelStatusRequest() override;
+  ~GCMChannelStatusRequest();
 
   void Start();
 
   static int default_poll_interval_seconds();
   static int min_poll_interval_seconds();
 
+  // Public so tests can use it.
+  void ParseResponseProto(sync_pb::ExperimentStatusResponse response_proto);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(GCMChannelStatusRequestTest, RequestData);
 
-  // Overridden from URLFetcherDelegate:
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
-
-  bool ParseResponse(const net::URLFetcher* source);
+  void OnSimpleLoaderComplete(std::unique_ptr<std::string> response_body);
+  bool ParseResponse(std::unique_ptr<std::string> response_body);
   void RetryWithBackoff(bool update_backoff);
 
-  scoped_refptr<net::URLRequestContextGetter> request_context_getter_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   const std::string channel_status_request_url_;
   const std::string user_agent_;
   GCMChannelStatusRequestCallback callback_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
   net::BackoffEntry backoff_entry_;
   base::WeakPtrFactory<GCMChannelStatusRequest> weak_ptr_factory_;
 

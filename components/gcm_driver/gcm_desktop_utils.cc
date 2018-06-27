@@ -13,6 +13,7 @@
 #include "components/gcm_driver/gcm_driver.h"
 #include "components/gcm_driver/gcm_driver_desktop.h"
 #include "components/sync/driver/sync_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace gcm {
@@ -93,6 +94,7 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
     PrefService* prefs,
     const base::FilePath& store_path,
     const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     version_info::Channel channel,
     const std::string& product_category_for_subtypes,
     const scoped_refptr<base::SequencedTaskRunner>& ui_task_runner,
@@ -102,8 +104,8 @@ std::unique_ptr<GCMDriver> CreateGCMDriverDesktop(
       std::move(gcm_client_factory),
       GetChromeBuildInfo(channel, product_category_for_subtypes),
       GetChannelStatusRequestUrl(channel), GetUserAgent(channel), prefs,
-      store_path, request_context, ui_task_runner, io_task_runner,
-      blocking_task_runner));
+      store_path, request_context, url_loader_factory, ui_task_runner,
+      io_task_runner, blocking_task_runner));
 }
 
 }  // namespace gcm
