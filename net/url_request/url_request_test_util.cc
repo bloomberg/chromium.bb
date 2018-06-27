@@ -648,8 +648,9 @@ NetworkDelegate::AuthRequiredResponse TestNetworkDelegate::OnAuthRequired(
 }
 
 bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,
-                                          const CookieList& cookie_list) {
-  bool allow = true;
+                                          const CookieList& cookie_list,
+                                          bool allowed_from_caller) {
+  bool allow = allowed_from_caller;
   if (cookie_options_bit_mask_ & NO_GET_COOKIES)
     allow = false;
 
@@ -662,8 +663,9 @@ bool TestNetworkDelegate::OnCanGetCookies(const URLRequest& request,
 
 bool TestNetworkDelegate::OnCanSetCookie(const URLRequest& request,
                                          const net::CanonicalCookie& cookie,
-                                         CookieOptions* options) {
-  bool allow = true;
+                                         CookieOptions* options,
+                                         bool allowed_from_caller) {
+  bool allow = allowed_from_caller;
   if (cookie_options_bit_mask_ & NO_SET_COOKIE)
     allow = false;
 
