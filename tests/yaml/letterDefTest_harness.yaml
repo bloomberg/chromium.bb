@@ -1,3 +1,14 @@
+# Converted from letterDefTest.c
 table: [tables/unicode.dis, tests/tables/letterDefTest.ctb]
+table: [tables/unicode.dis, tests/tables/letterDefTest_lowercase.ctb]
+# table: [tables/unicode.dis, tests/tables/letterDefTest_uplow.ctb] # commented out in the C test
+table: [tables/unicode.dis, tests/tables/letterDefTest_uppercase.ctb]
 tests:
   - [⠍⠎, ⠎⠍]
+
+# Converted from uplow_with_unicode.c
+table: [tests/tables/uplow_with_unicode.ctb]
+table: [tests/tables/lowercase_with_unicode.ctb]
+tests:
+  - [gross, g^]
+  - [gro\x00df, g^]

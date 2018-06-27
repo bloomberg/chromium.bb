@@ -24,7 +24,6 @@ getTable_SOURCES = getTable.c
 hash_collision_SOURCES = hash_collision.c
 hyphenate_xxx_SOURCES = hyphenate_xxx.c
 lastworditalafter_SOURCES = default_table.h lastworditalafter.c
-letterDefTest_SOURCES = letterDefTest.c
 logging_SOURCES = logging.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
 pass2_SOURCES = pass2.c
@@ -33,7 +32,6 @@ resolve_table_SOURCES = resolve_table.c
 squash_space_SOURCES = squash_space.c
 typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
-uplow_with_unicode_SOURCES = uplow_with_unicode.c
 check_metadata_SOURCES = check_metadata.c
 suggestChunks_SOURCES = suggestChunks.c
 
@@ -50,7 +48,6 @@ program_TESTS =					\
 	hash_collision				\
 	hyphenate_xxx				\
 	lastworditalafter			\
-	letterDefTest				\
 	logging					\
 	pass0_typebuf				\
 	pass2					\
@@ -59,7 +56,6 @@ program_TESTS =					\
 	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
-	uplow_with_unicode			\
 	suggestChunks
 
 check_PROGRAMS = $(program_TESTS)
