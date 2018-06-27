@@ -353,8 +353,7 @@ class ServiceWorkerMetrics {
   // process to a Service Worker and executing the event handler in the Service
   // Worker.
   static void RecordEventDispatchingDelay(EventType event,
-                                          base::TimeDelta time,
-                                          Site site_for_metrics);
+                                          base::TimeDelta time);
 
   // Records the result of dispatching a fetch event to a service worker.
   static void RecordFetchEventStatus(bool is_main_resource,
