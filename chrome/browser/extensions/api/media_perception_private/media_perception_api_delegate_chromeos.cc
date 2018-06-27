@@ -11,8 +11,6 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
 
-namespace media_perception = extensions::api::media_perception_private;
-
 namespace extensions {
 
 namespace {
@@ -21,13 +19,13 @@ constexpr char kLightComponentName[] = "rtanalytics-light";
 constexpr char kFullComponentName[] = "rtanalytics-full";
 
 std::string GetComponentNameForComponentType(
-    const media_perception::ComponentType& type) {
+    const extensions::api::media_perception_private::ComponentType& type) {
   switch (type) {
-    case media_perception::COMPONENT_TYPE_LIGHT:
+    case extensions::api::media_perception_private::COMPONENT_TYPE_LIGHT:
       return kLightComponentName;
-    case media_perception::COMPONENT_TYPE_FULL:
+    case extensions::api::media_perception_private::COMPONENT_TYPE_FULL:
       return kFullComponentName;
-    case media_perception::COMPONENT_TYPE_NONE:
+    case extensions::api::media_perception_private::COMPONENT_TYPE_NONE:
       LOG(ERROR) << "No component type requested.";
       return "";
   }
@@ -52,7 +50,7 @@ MediaPerceptionAPIDelegateChromeOS::MediaPerceptionAPIDelegateChromeOS() =
 MediaPerceptionAPIDelegateChromeOS::~MediaPerceptionAPIDelegateChromeOS() {}
 
 void MediaPerceptionAPIDelegateChromeOS::LoadCrOSComponent(
-    const media_perception::ComponentType& type,
+    const extensions::api::media_perception_private::ComponentType& type,
     LoadCrOSComponentCallback load_callback) {
   g_browser_process->platform_part()->cros_component_manager()->Load(
       GetComponentNameForComponentType(type),
