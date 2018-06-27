@@ -40,10 +40,19 @@ function observe(target) {
   observer.observe(target, { childList: true, subtree: true });
 }
 
-// Handle what's already in the document.
+// Handle what's already in the document and subframes.
 for (const button of document.getElementsByTagName('button')) {
   click(button);
 }
+for (const iframe of document.getElementsByTagName('iframe')) {
+  if (!iframe.contentDocument)
+    continue;
+  for (const button of iframe.contentDocument.getElementsByTagName('button'))
+    click(button);
+}
+
+// Observe future changes in the document and subframes.
+observe(document);
 for (const iframe of document.getElementsByTagName('iframe')) {
   if (iframe.contentDocument)
     observe(iframe.contentDocument);
@@ -52,8 +61,5 @@ for (const iframe of document.getElementsByTagName('iframe')) {
       observe(iframe.contentDocument);
   });
 }
-
-// Observe future changes.
-observe(document);
 
 })();
