@@ -102,17 +102,6 @@ void ZygoteHostImpl::Init(const base::CommandLine& command_line) {
           service_manager::switches::kDisableNamespaceSandbox) &&
       sandbox::Credentials::CanCreateProcessInNewUserNS()) {
     use_namespace_sandbox_ = true;
-
-#if defined(OS_CHROMEOS)
-    // Chrome OS has a kernel patch that restricts oom_score_adj. See
-    // https://crbug.com/576409 for details.
-    if (!sandbox_binary_.empty()) {
-      use_suid_sandbox_for_adj_oom_score_ = true;
-    } else {
-      LOG(ERROR) << "SUID sandbox binary is missing. Won't be able to adjust "
-                    "OOM scores.";
-    }
-#endif
   } else if (!command_line.HasSwitch(
                  service_manager::switches::kDisableSetuidSandbox) &&
              !sandbox_binary_.empty()) {
