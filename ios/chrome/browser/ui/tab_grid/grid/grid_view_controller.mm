@@ -7,6 +7,8 @@
 #include "base/ios/block_types.h"
 #import "base/logging.h"
 #import "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #import "base/numerics/safe_conversions.h"
 #include "ios/chrome/browser/procedural_block_types.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_cell.h"
@@ -279,6 +281,8 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   DCHECK_LT(index, self.items.count);
   NSString* itemID = self.items[index].identifier;
   [self.delegate gridViewController:self didCloseItemWithID:itemID];
+  // Record when a tab is closed via the X.
+  base::RecordAction(base::UserMetricsAction("MobileStackViewCloseTab"));
 }
 
 #pragma mark - GridConsumer

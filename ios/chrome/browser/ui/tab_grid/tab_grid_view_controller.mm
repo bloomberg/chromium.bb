@@ -4,6 +4,8 @@
 
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_view_controller.h"
 
+#include "base/metrics/user_metrics.h"
+#include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
 #import "ios/chrome/browser/ui/rtl_geometry.h"
@@ -208,6 +210,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     if (page != _currentPage) {
       _currentPage = page;
       [self configureButtonsForActiveAndCurrentPage];
+      // Records when the user drags the scrollView to switch pages.
+      [self recordActionSwitchingToPage:_currentPage];
     }
   }
 }
@@ -767,6 +771,24 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
                                               completion:cleanup];
 }
 
+// Records when the user switches between incognito and regular pages in the tab
+// grid. Switching to a different TabGridPage can either be driven by dragging
+// the scrollView or tapping on the pageControl.
+- (void)recordActionSwitchingToPage:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      base::RecordAction(
+          base::UserMetricsAction("MobileStackViewIncognitoMode"));
+      break;
+    case TabGridPageRegularTabs:
+      base::RecordAction(base::UserMetricsAction("MobileStackViewNormalMode"));
+      break;
+    case TabGridPageRemoteTabs:
+      // This action is not recorded.
+      break;
+  }
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -825,6 +847,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // disabled. Ensure that action is only taken on a valid state.
   if (![[self gridViewControllerForPage:newActivePage] isGridEmpty]) {
     [self.tabPresentationDelegate showActiveTabInPage:newActivePage];
+    // Record when users exit the tab grid to return to the current foreground
+    // tab.
+    base::RecordAction(
+        base::UserMetricsAction("MobileTabReturnedToCurrentTab"));
   }
 }
 
@@ -865,6 +891,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   self.activePage = self.currentPage;
   [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
+  // Record only when a new tab is created through the + button.
+  base::RecordAction(base::UserMetricsAction("MobileToolbarStackViewNewTab"));
 }
 
 - (void)pageControlChangedValue:(id)sender {
@@ -886,7 +914,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)pageControlChangedPage:(id)sender {
-  [self setCurrentPage:self.topToolbar.pageControl.selectedPage animated:YES];
+  TabGridPage newPage = self.topToolbar.pageControl.selectedPage;
+  [self setCurrentPage:newPage animated:YES];
+  // Records when the user taps on the pageControl to switch pages.
+  [self recordActionSwitchingToPage:newPage];
 }
 
 @end
