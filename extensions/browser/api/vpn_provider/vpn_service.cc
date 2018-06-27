@@ -278,11 +278,6 @@ std::string VpnService::GetKey(const std::string& extension_id,
   return base::HexEncode(key.data(), key.size());
 }
 
-void VpnService::OnConfigurationCreated(
-    const std::string& service_path,
-    const std::string& profile_path,
-    const base::DictionaryValue& properties) {}
-
 void VpnService::OnConfigurationRemoved(const std::string& service_path,
                                         const std::string& guid) {
   if (service_path_to_configuration_map_.find(service_path) ==
@@ -304,14 +299,6 @@ void VpnService::OnConfigurationRemoved(const std::string& service_path,
 
   DestroyConfigurationInternal(configuration);
 }
-
-void VpnService::OnPropertiesSet(const std::string& service_path,
-                                 const std::string& guid,
-                                 const base::DictionaryValue& set_properties) {}
-
-void VpnService::OnConfigurationProfileChanged(
-    const std::string& service_path,
-    const std::string& profile_path) {}
 
 void VpnService::OnGetPropertiesSuccess(
     const std::string& service_path,
@@ -683,6 +670,12 @@ void VpnService::Bind(
 
 std::unique_ptr<content::VpnServiceProxy> VpnService::GetVpnServiceProxy() {
   return base::WrapUnique(new VpnServiceProxyImpl(weak_factory_.GetWeakPtr()));
+}
+
+const std::string VpnService::GetSingleServicepathForTesting() {
+  if (service_path_to_configuration_map_.size() == 1)
+    return service_path_to_configuration_map_.begin()->first;
+  return std::string();
 }
 
 }  // namespace chromeos

@@ -81,16 +81,8 @@ class VpnService : public KeyedService,
                          const std::string& error_message);
 
   // NetworkConfigurationObserver:
-  void OnConfigurationCreated(const std::string& service_path,
-                              const std::string& profile_path,
-                              const base::DictionaryValue& properties) override;
   void OnConfigurationRemoved(const std::string& service_path,
                               const std::string& guid) override;
-  void OnPropertiesSet(const std::string& service_path,
-                       const std::string& guid,
-                       const base::DictionaryValue& set_properties) override;
-  void OnConfigurationProfileChanged(const std::string& service_path,
-                                     const std::string& profile_path) override;
 
   // NetworkStateHandlerObserver:
   void NetworkListChanged() override;
@@ -162,6 +154,10 @@ class VpnService : public KeyedService,
   // Creates a new VpnServiceProxy. The caller owns the returned value. It's
   // valid to return nullptr.
   std::unique_ptr<content::VpnServiceProxy> GetVpnServiceProxy();
+
+  // Returns the single entry of |service_path_to_configuration_map_| for
+  // testing (see VpnProviderApiTest);
+  const std::string GetSingleServicepathForTesting();
 
  private:
   class VpnConfiguration;

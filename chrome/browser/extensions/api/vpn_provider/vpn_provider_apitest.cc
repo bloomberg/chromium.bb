@@ -16,7 +16,6 @@
 #include "chromeos/dbus/fake_shill_service_client.h"
 #include "chromeos/dbus/fake_shill_third_party_vpn_driver_client.h"
 #include "chromeos/network/network_configuration_handler.h"
-#include "chromeos/network/network_configuration_observer.h"
 #include "chromeos/network/network_profile_handler.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_utils.h"
@@ -114,22 +113,10 @@ class TestShillThirdPartyVpnDriverClient
   std::vector<char> ip_packet_;
 };
 
-class VpnProviderApiTest : public extensions::ExtensionApiTest,
-                           public NetworkConfigurationObserver {
+class VpnProviderApiTest : public extensions::ExtensionApiTest {
  public:
   VpnProviderApiTest() {}
   ~VpnProviderApiTest() override {}
-
-  void SetUpOnMainThread() override {
-    extensions::ExtensionApiTest::SetUpOnMainThread();
-    NetworkHandler::Get()->network_configuration_handler()->AddObserver(this);
-  }
-
-  void TearDownOnMainThread() override {
-    extensions::ExtensionApiTest::TearDownOnMainThread();
-    NetworkHandler::Get()->network_configuration_handler()->RemoveObserver(
-        this);
-  }
 
   void SetUpInProcessBrowserTestFixture() override {
     extensions::ExtensionApiTest::SetUpInProcessBrowserTestFixture();
@@ -172,8 +159,9 @@ class VpnProviderApiTest : public extensions::ExtensionApiTest,
   }
 
   std::string GetSingleServicePath() {
-    EXPECT_FALSE(service_path_.empty());
-    return service_path_;
+    std::string service_path = service_->GetSingleServicepathForTesting();
+    EXPECT_FALSE(service_path.empty());
+    return service_path;
   }
 
   bool CreateConfigForTest(const std::string& name) {
@@ -198,25 +186,6 @@ class VpnProviderApiTest : public extensions::ExtensionApiTest,
     NetworkHandler::Get()->network_configuration_handler()->RemoveConfiguration(
         GetSingleServicePath(), base::DoNothing(),
         base::Bind(DoNothingFailureCallback));
-  }
-
-  // NetworkConfigurationObserver:
-  void OnConfigurationCreated(
-      const std::string& service_path,
-      const std::string& profile_path,
-      const base::DictionaryValue& properties) override {
-    service_path_ = service_path;
-  }
-
-  void OnConfigurationRemoved(const std::string& service_path,
-                              const std::string& guid) override {}
-
-  void OnPropertiesSet(const std::string& service_path,
-                       const std::string& guid,
-                       const base::DictionaryValue& set_properties) override {}
-
-  void OnConfigurationProfileChanged(const std::string& service_path,
-                                     const std::string& profile_path) override {
   }
 
  protected:

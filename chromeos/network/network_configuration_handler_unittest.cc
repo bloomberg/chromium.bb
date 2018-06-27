@@ -93,62 +93,20 @@ class TestNetworkConfigurationObserver : public NetworkConfigurationObserver {
   TestNetworkConfigurationObserver() = default;
 
   // NetworkConfigurationObserver
-  void OnConfigurationCreated(
-      const std::string& service_path,
-      const std::string& profile_path,
-      const base::DictionaryValue& properties) override {
-    ASSERT_EQ(0u, configurations_.count(service_path));
-    configurations_[service_path] = properties.CreateDeepCopy();
-    profiles_[profile_path].insert(service_path);
-  }
-
   void OnConfigurationRemoved(const std::string& service_path,
                               const std::string& guid) override {
-    ASSERT_EQ(1u, configurations_.count(service_path));
-    configurations_.erase(service_path);
-    for (auto& p : profiles_) {
-      p.second.erase(service_path);
-    }
+    ASSERT_EQ(removed_configurations_.end(),
+              removed_configurations_.find(service_path));
+    removed_configurations_[service_path] = guid;
   }
 
-  void OnConfigurationProfileChanged(const std::string& service_path,
-                                     const std::string& profile_path) override {
-    for (auto& p : profiles_) {
-      p.second.erase(service_path);
-    }
-    profiles_[profile_path].insert(service_path);
-  }
-
-  void OnPropertiesSet(const std::string& service_path,
-                       const std::string& guid,
-                       const base::DictionaryValue& set_properties) override {
-    configurations_[service_path]->MergeDictionary(&set_properties);
-  }
-
-  bool HasConfiguration(const std::string& service_path) {
-    return configurations_.count(service_path) == 1;
-  }
-
-  std::string GetStringProperty(const std::string& service_path,
-                                const std::string& property) {
-    if (!HasConfiguration(service_path))
-      return "";
-    std::string result;
-    configurations_[service_path]->GetStringWithoutPathExpansion(property,
-                                                                 &result);
-    return result;
-  }
-
-  bool HasConfigurationInProfile(const std::string& service_path,
-                                 const std::string& profile_path) {
-    if (profiles_.count(profile_path) == 0)
-      return false;
-    return profiles_[profile_path].count(service_path) == 1;
+  bool HasRemovedConfiguration(const std::string& service_path) {
+    return removed_configurations_.find(service_path) !=
+           removed_configurations_.end();
   }
 
  private:
-  std::map<std::string, std::unique_ptr<base::DictionaryValue>> configurations_;
-  std::map<std::string, std::set<std::string>> profiles_;
+  std::map<std::string, std::string> removed_configurations_;
 
   DISALLOW_COPY_AND_ASSIGN(TestNetworkConfigurationObserver);
 };
@@ -669,7 +627,6 @@ TEST_F(NetworkConfigurationHandlerTest, StubCreateConfiguration) {
 
 TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
   const std::string service_path("/service/test_wifi");
-  const std::string test_passphrase("test_passphrase");
 
   auto network_configuration_observer =
       std::make_unique<TestNetworkConfigurationObserver>();
@@ -677,48 +634,15 @@ TEST_F(NetworkConfigurationHandlerTest, NetworkConfigurationObserver) {
       network_configuration_observer.get());
   CreateTestConfiguration(service_path, shill::kTypeWifi);
 
-  EXPECT_TRUE(network_configuration_observer->HasConfiguration(service_path));
-  EXPECT_TRUE(network_configuration_observer->HasConfigurationInProfile(
-      service_path, NetworkProfileHandler::GetSharedProfilePath()));
-  EXPECT_EQ(shill::kTypeWifi, network_configuration_observer->GetStringProperty(
-                                  service_path, shill::kTypeProperty));
-
-  base::DictionaryValue properties_to_set;
-  properties_to_set.SetKey(shill::kPassphraseProperty,
-                           base::Value(test_passphrase));
-  network_configuration_handler_->SetShillProperties(
-      service_path, properties_to_set, base::DoNothing(),
-      base::Bind(&ErrorCallback));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(test_passphrase, network_configuration_observer->GetStringProperty(
-                                 service_path, shill::kPassphraseProperty));
-
-  std::string user_profile = "/profiles/user1";
-  std::string userhash = "user1";
-  DBusThreadManager::Get()
-      ->GetShillProfileClient()
-      ->GetTestInterface()
-      ->AddProfile(user_profile, userhash);
-
-  network_configuration_handler_->SetNetworkProfile(service_path, user_profile,
-                                                    base::DoNothing(),
-                                                    base::Bind(&ErrorCallback));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(network_configuration_observer->HasConfiguration(service_path));
-  EXPECT_FALSE(network_configuration_observer->HasConfigurationInProfile(
-      service_path, NetworkProfileHandler::GetSharedProfilePath()));
-  EXPECT_TRUE(network_configuration_observer->HasConfigurationInProfile(
-      service_path, user_profile));
+  EXPECT_FALSE(
+      network_configuration_observer->HasRemovedConfiguration(service_path));
 
   network_configuration_handler_->RemoveConfiguration(
       service_path, base::DoNothing(), base::Bind(&ErrorCallback));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_FALSE(network_configuration_observer->HasConfiguration(service_path));
-  EXPECT_FALSE(network_configuration_observer->HasConfigurationInProfile(
-      service_path, NetworkProfileHandler::GetSharedProfilePath()));
-  EXPECT_FALSE(network_configuration_observer->HasConfigurationInProfile(
-      service_path, user_profile));
+  EXPECT_TRUE(
+      network_configuration_observer->HasRemovedConfiguration(service_path));
 
   network_configuration_handler_->RemoveObserver(
       network_configuration_observer.get());
