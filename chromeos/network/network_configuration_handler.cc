@@ -503,13 +503,6 @@ void NetworkConfigurationHandler::ConfigurationCompleted(
   // the newly configured properties immediately, request an update here.
   network_state_handler_->RequestUpdateForNetwork(service_path.value());
 
-  // Notify observers immediately. (Note: Currently this is primarily used
-  // by tests).
-  for (auto& observer : observers_) {
-    observer.OnConfigurationCreated(service_path.value(), profile_path,
-                                    *configure_properties);
-  }
-
   if (callback.is_null())
     return;
 
@@ -540,8 +533,6 @@ void NetworkConfigurationHandler::SetNetworkProfileCompleted(
     const base::Closure& callback) {
   if (!callback.is_null())
     callback.Run();
-  for (auto& observer : observers_)
-    observer.OnConfigurationProfileChanged(service_path, profile_path);
 }
 
 void NetworkConfigurationHandler::GetPropertiesCallback(
@@ -594,10 +585,6 @@ void NetworkConfigurationHandler::SetPropertiesSuccessCallback(
   if (!network_state)
     return;  // Network no longer exists, do not notify or request update.
 
-  for (auto& observer : observers_) {
-    observer.OnPropertiesSet(service_path, network_state->guid(),
-                             *set_properties);
-  }
   network_state_handler_->RequestUpdateForNetwork(service_path);
 }
 
