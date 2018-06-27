@@ -104,9 +104,17 @@ bool LocationIconView::IsBubbleShowing() const {
 
 gfx::Size LocationIconView::GetMinimumSizeForLabelText(
     const base::string16& text) const {
-  views::Label label(text, {font_list()});
-  return GetMinimumSizeForPreferredSize(
-      GetSizeForLabelWidth(label.GetPreferredSize().width()));
+  int width = 0;
+  if (text == label()->text()) {
+    // Optimize this common case by not creating a new label.
+    // GetPreferredSize is not dependent on the label's current
+    // width, so this returns the same value as the branch below.
+    width = label()->GetPreferredSize().width();
+  } else {
+    views::Label label(text, {font_list()});
+    width = label.GetPreferredSize().width();
+  }
+  return GetMinimumSizeForPreferredSize(GetSizeForLabelWidth(width));
 }
 
 void LocationIconView::SetTextVisibility(bool should_show,
