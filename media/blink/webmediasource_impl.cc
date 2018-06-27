@@ -32,13 +32,13 @@ WebMediaSourceImpl::WebMediaSourceImpl(ChunkDemuxer* demuxer)
 WebMediaSourceImpl::~WebMediaSourceImpl() = default;
 
 WebMediaSource::AddStatus WebMediaSourceImpl::AddSourceBuffer(
-    const blink::WebString& type,
+    const blink::WebString& content_type,
     const blink::WebString& codecs,
     blink::WebSourceBuffer** source_buffer) {
   std::string id = base::GenerateGUID();
 
   WebMediaSource::AddStatus result = static_cast<WebMediaSource::AddStatus>(
-      demuxer_->AddId(id, type.Utf8().data(), codecs.Utf8().data()));
+      demuxer_->AddId(id, content_type.Utf8(), codecs.Utf8()));
 
   if (result == WebMediaSource::kAddStatusOk)
     *source_buffer = new WebSourceBufferImpl(id, demuxer_);

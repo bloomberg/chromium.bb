@@ -21,7 +21,7 @@ class MEDIA_BLINK_EXPORT WebMediaSourceImpl : public blink::WebMediaSource {
   ~WebMediaSourceImpl() override;
 
   // blink::WebMediaSource implementation.
-  AddStatus AddSourceBuffer(const blink::WebString& type,
+  AddStatus AddSourceBuffer(const blink::WebString& content_type,
                             const blink::WebString& codecs,
                             blink::WebSourceBuffer** source_buffer) override;
   double Duration() override;
