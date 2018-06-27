@@ -22,6 +22,81 @@ VulkanFunctionPointers* GetVulkanFunctionPointers() {
 VulkanFunctionPointers::VulkanFunctionPointers() = default;
 VulkanFunctionPointers::~VulkanFunctionPointers() = default;
 
+bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
+  // vkGetInstanceProcAddr must be handled specially since it gets its function
+  // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
+  // functions don't do this.
+  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+      base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library_,
+                                                "vkGetInstanceProcAddr"));
+  if (!vkGetInstanceProcAddr)
+    return false;
+
+  vkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(
+      vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
+  if (!vkCreateInstance)
+    return false;
+
+  vkEnumerateInstanceExtensionProperties =
+      reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
+          vkGetInstanceProcAddr(nullptr,
+                                "vkEnumerateInstanceExtensionProperties"));
+  if (!vkEnumerateInstanceExtensionProperties)
+    return false;
+
+  vkEnumerateInstanceLayerProperties =
+      reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(
+          vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceLayerProperties"));
+  if (!vkEnumerateInstanceLayerProperties)
+    return false;
+
+  return true;
+}
+
+bool VulkanFunctionPointers::BindInstanceFunctionPointers(
+    VkInstance vk_instance) {
+  vkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(
+      vkGetInstanceProcAddr(vk_instance, "vkDestroyInstance"));
+  if (!vkDestroyInstance)
+    return false;
+
+  vkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
+      vkGetInstanceProcAddr(vk_instance, "vkEnumeratePhysicalDevices"));
+  if (!vkEnumeratePhysicalDevices)
+    return false;
+
+  vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+      vkGetInstanceProcAddr(vk_instance, "vkGetDeviceProcAddr"));
+  if (!vkGetDeviceProcAddr)
+    return false;
+
+  return true;
+}
+
+bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
+    VkInstance vk_instance) {
+  vkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(
+      vkGetInstanceProcAddr(vk_instance, "vkCreateDevice"));
+  if (!vkCreateDevice)
+    return false;
+
+  vkEnumerateDeviceLayerProperties =
+      reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
+          vkGetInstanceProcAddr(vk_instance,
+                                "vkEnumerateDeviceLayerProperties"));
+  if (!vkEnumerateDeviceLayerProperties)
+    return false;
+
+  vkGetPhysicalDeviceQueueFamilyProperties =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
+          vkGetInstanceProcAddr(vk_instance,
+                                "vkGetPhysicalDeviceQueueFamilyProperties"));
+  if (!vkGetPhysicalDeviceQueueFamilyProperties)
+    return false;
+
+  return true;
+}
+
 bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   // Device functions
   vkAllocateCommandBuffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(

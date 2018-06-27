@@ -52,33 +52,7 @@ bool VulkanInstance::Initialize(
   VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
 
-  vulkan_function_pointers->vkGetInstanceProcAddr =
-      reinterpret_cast<PFN_vkGetInstanceProcAddr>(
-          base::GetFunctionPointerFromNativeLibrary(
-              vulkan_function_pointers->vulkan_loader_library_,
-              "vkGetInstanceProcAddr"));
-  if (!vulkan_function_pointers->vkGetInstanceProcAddr)
-    return false;
-
-  vulkan_function_pointers->vkCreateInstance =
-      reinterpret_cast<PFN_vkCreateInstance>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(nullptr,
-                                                          "vkCreateInstance"));
-  if (!vulkan_function_pointers->vkCreateInstance)
-    return false;
-
-  vulkan_function_pointers->vkEnumerateInstanceExtensionProperties =
-      reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              nullptr, "vkEnumerateInstanceExtensionProperties"));
-  if (!vulkan_function_pointers->vkEnumerateInstanceExtensionProperties)
-    return false;
-
-  vulkan_function_pointers->vkEnumerateInstanceLayerProperties =
-      reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              nullptr, "vkEnumerateInstanceLayerProperties"));
-  if (!vulkan_function_pointers->vkEnumerateInstanceLayerProperties)
+  if (!vulkan_function_pointers->BindUnassociatedFunctionPointers())
     return false;
 
   VkResult result = VK_SUCCESS;
@@ -203,46 +177,11 @@ bool VulkanInstance::Initialize(
   }
 #endif
 
-  vulkan_function_pointers->vkCreateDevice =
-      reinterpret_cast<PFN_vkCreateDevice>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(vk_instance_,
-                                                          "vkCreateDevice"));
-  if (!vulkan_function_pointers->vkCreateDevice)
+  if (!vulkan_function_pointers->BindInstanceFunctionPointers(vk_instance_))
     return false;
 
-  vulkan_function_pointers->vkDestroyInstance =
-      reinterpret_cast<PFN_vkDestroyInstance>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(vk_instance_,
-                                                          "vkDestroyInstance"));
-  if (!vulkan_function_pointers->vkDestroyInstance)
-    return false;
-
-  vulkan_function_pointers->vkEnumerateDeviceLayerProperties =
-      reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkEnumerateDeviceLayerProperties"));
-  if (!vulkan_function_pointers->vkEnumerateDeviceLayerProperties)
-    return false;
-
-  vulkan_function_pointers->vkEnumeratePhysicalDevices =
-      reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkEnumeratePhysicalDevices"));
-  if (!vulkan_function_pointers->vkEnumeratePhysicalDevices)
-    return false;
-
-  vulkan_function_pointers->vkGetDeviceProcAddr =
-      reinterpret_cast<PFN_vkGetDeviceProcAddr>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkGetDeviceProcAddr"));
-  if (!vulkan_function_pointers->vkGetDeviceProcAddr)
-    return false;
-
-  vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties =
-      reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
-              vk_instance_, "vkGetPhysicalDeviceQueueFamilyProperties"));
-  if (!vulkan_function_pointers->vkGetPhysicalDeviceQueueFamilyProperties)
+  if (!vulkan_function_pointers->BindPhysicalDeviceFunctionPointers(
+          vk_instance_))
     return false;
 
   if (gfx::HasExtension(enabled_extensions_, VK_KHR_SURFACE_EXTENSION_NAME)) {
