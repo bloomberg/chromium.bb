@@ -492,7 +492,7 @@ layer at (0,0) size 785x6798 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (17,57) width 50: "source)."
                 LayoutText {#text} at (382,5) size 516x39
                   text run at (382,5) width 333: " The floating elements within this DIV should not go"
-                  text run at (199,25) width 516: "any higher than the line-box containing the inline content which precedes them. * "
+                  text run at (199,25) width 512: "any higher than the line-box containing the inline content which precedes them. *"
                 LayoutNGBlockFlow (floating) {P} at (544,45) size 194x94 [bgcolor=#C0C0C0] [border: (1px solid #00FF00)]
                   LayoutText {#text} at (17,17) size 139x59
                     text run at (17,17) width 139: "This is a right-floating"
@@ -526,7 +526,7 @@ layer at (0,0) size 785x6798 backgroundClip at (0,0) size 785x600 clip at (0,0) 
                     text run at (17,57) width 50: "source)."
                 LayoutText {#text} at (382,5) size 516x39
                   text run at (382,5) width 333: " The floating elements within this DIV should not go"
-                  text run at (199,25) width 516: "any higher than the line-box containing the inline content which precedes them. * "
+                  text run at (199,25) width 512: "any higher than the line-box containing the inline content which precedes them. *"
                 LayoutNGBlockFlow (floating) {P} at (544,45) size 194x94 [bgcolor=#C0C0C0] [border: (1px solid #00FF00)]
                   LayoutText {#text} at (17,17) size 139x59
                     text run at (17,17) width 139: "This is a right-floating"

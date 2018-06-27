@@ -50,20 +50,31 @@ struct NGLineAlign {
 NGLineAlign::NGLineAlign(const NGLineInfo& line_info) {
   space = line_info.AvailableWidth() - line_info.Width();
 
-  // Eliminate trailing spaces from the alignment space.
+  // Compute the end text offset of this line for the alignment purpose.
+  // Trailing spaces are not part of the alignment space even when they are
+  // preserved.
   const NGInlineItemResults& item_results = line_info.Results();
   for (auto it = item_results.rbegin(); it != item_results.rend(); ++it) {
     const NGInlineItemResult& item_result = *it;
-    if (!item_result.has_only_trailing_spaces) {
-      end_offset = item_result.end_offset;
-      space += trailing_spaces_width;
-      return;
+
+    // If this item is opaque to whitespace collapsing, whitespace before this
+    // item maybe collapsed. Keep looking for previous items.
+    if (item_result.item && item_result.item->EndCollapseType() ==
+                                NGInlineItem::kOpaqueToCollapsing) {
+      continue;
     }
-    trailing_spaces_width += item_result.inline_size;
+
+    if (item_result.has_only_trailing_spaces) {
+      trailing_spaces_width += item_result.inline_size;
+      continue;
+    }
+
+    end_offset = item_result.end_offset;
+    space += trailing_spaces_width;
+    return;
   }
 
   // An empty line, or only trailing spaces.
-  DCHECK_EQ(space, line_info.AvailableWidth() - line_info.TextIndent());
   end_offset = line_info.StartOffset();
   space += trailing_spaces_width;
 }
