@@ -21,7 +21,7 @@ namespace background_fetch {
 class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
  public:
   MarkRegistrationForDeletionTask(
-      BackgroundFetchDataManager* data_manager,
+      DatabaseTaskHost* host,
       const BackgroundFetchRegistrationId& registration_id,
       HandleBackgroundFetchErrorCallback callback);
 

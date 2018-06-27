@@ -51,7 +51,8 @@ class ServiceWorkerContextWrapper;
 //
 // Storage schema is documented in storage/README.md
 class CONTENT_EXPORT BackgroundFetchDataManager
-    : public BackgroundFetchScheduler::RequestProvider {
+    : public BackgroundFetchScheduler::RequestProvider,
+      public background_fetch::DatabaseTaskHost {
  public:
   using SettledFetchesCallback = base::OnceCallback<void(
       blink::mojom::BackgroundFetchError,
@@ -184,12 +185,11 @@ class CONTENT_EXPORT BackgroundFetchDataManager
       blink::mojom::BackgroundFetchError error,
       std::unique_ptr<proto::BackgroundFetchMetadata> metadata);
 
-  // |internal| signifies whether the DatabaseTask is being added from within
-  // another DatabaseTask.
-  void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task,
-                       bool internal = false);
+  void AddDatabaseTask(std::unique_ptr<background_fetch::DatabaseTask> task);
 
-  void OnDatabaseTaskFinished(background_fetch::DatabaseTask* task);
+  // DatabaseTaskHost implementation.
+  void OnTaskFinished(background_fetch::DatabaseTask* task) override;
+  BackgroundFetchDataManager* data_manager() override;
 
   void Cleanup();
 

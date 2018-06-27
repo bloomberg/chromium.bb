@@ -23,7 +23,7 @@ class StartNextPendingRequestTask : public DatabaseTask {
       base::OnceCallback<void(scoped_refptr<BackgroundFetchRequestInfo>)>;
 
   StartNextPendingRequestTask(
-      BackgroundFetchDataManager* data_manager,
+      DatabaseTaskHost* host,
       int64_t service_worker_registration_id,
       std::unique_ptr<proto::BackgroundFetchMetadata> metadata,
       NextRequestCallback callback);

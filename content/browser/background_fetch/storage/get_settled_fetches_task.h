@@ -25,7 +25,7 @@ class GetSettledFetchesTask : public DatabaseTask {
       std::vector<BackgroundFetchSettledFetch>,
       std::vector<std::unique_ptr<storage::BlobDataHandle>>)>;
 
-  GetSettledFetchesTask(BackgroundFetchDataManager* data_manager,
+  GetSettledFetchesTask(DatabaseTaskHost* host,
                         BackgroundFetchRegistrationId registration_id,
                         SettledFetchesCallback callback);
 

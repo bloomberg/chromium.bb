@@ -20,14 +20,7 @@ namespace background_fetch {
 // Deletes Background Fetch registration entries from the database.
 class DeleteRegistrationTask : public background_fetch::DatabaseTask {
  public:
-  DeleteRegistrationTask(BackgroundFetchDataManager* data_manager,
-                         int64_t service_worker_registration_id,
-                         const url::Origin& origin,
-                         const std::string& unique_id,
-                         HandleBackgroundFetchErrorCallback callback);
-
-  DeleteRegistrationTask(BackgroundFetchDataManager* data_manager,
-                         scoped_refptr<CacheStorageManager> cache_manager,
+  DeleteRegistrationTask(DatabaseTaskHost* host,
                          int64_t service_worker_registration_id,
                          const url::Origin& origin,
                          const std::string& unique_id,

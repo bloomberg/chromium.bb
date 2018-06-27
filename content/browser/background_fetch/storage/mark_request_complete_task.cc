@@ -9,6 +9,7 @@
 #include "content/browser/background_fetch/background_fetch_cross_origin_filter.h"
 #include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
+#include "content/browser/background_fetch/storage/get_metadata_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/cache_storage/cache_storage_manager.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -35,11 +36,11 @@ bool IsOK(const BackgroundFetchRequestInfo& request) {
 }  // namespace
 
 MarkRequestCompleteTask::MarkRequestCompleteTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     BackgroundFetchRegistrationId registration_id,
     scoped_refptr<BackgroundFetchRequestInfo> request_info,
     MarkedCompleteCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       registration_id_(registration_id),
       request_info_(std::move(request_info)),
       callback_(std::move(callback)),
@@ -212,41 +213,31 @@ void MarkRequestCompleteTask::UpdateMetadata(base::OnceClosure done_closure) {
     return;
   }
 
-  service_worker_context()->GetRegistrationUserData(
-      registration_id_.service_worker_registration_id(),
-      {RegistrationKey(registration_id_.unique_id())},
+  AddSubTask(std::make_unique<GetMetadataTask>(
+      this, registration_id_.service_worker_registration_id(),
+      registration_id_.origin(), registration_id_.developer_id(),
       base::BindOnce(&MarkRequestCompleteTask::DidGetMetadata,
-                     weak_factory_.GetWeakPtr(), std::move(done_closure)));
+                     weak_factory_.GetWeakPtr(), std::move(done_closure))));
 }
 
 void MarkRequestCompleteTask::DidGetMetadata(
     base::OnceClosure done_closure,
-    const std::vector<std::string>& data,
-    blink::ServiceWorkerStatusCode status) {
-  switch (ToDatabaseStatus(status)) {
-    case DatabaseStatus::kNotFound:
-    case DatabaseStatus::kFailed:
-      // TODO(crbug.com/780025): Log failures to UMA.
-      std::move(done_closure).Run();
-      return;
-    case DatabaseStatus::kOk:
-      DCHECK_EQ(1u, data.size());
-      break;
+    blink::mojom::BackgroundFetchError error,
+    std::unique_ptr<proto::BackgroundFetchMetadata> metadata) {
+  if (!metadata || error != blink::mojom::BackgroundFetchError::NONE) {
+    // TODO(crbug.com/780025): Log failures to UMA.
+    std::move(done_closure).Run();
+    return;
   }
 
-  proto::BackgroundFetchMetadata metadata;
-  if (!metadata.ParseFromString(data.front())) {
-    NOTREACHED() << "Database is corrupt";  // TODO(crbug.com/780027): Nuke it.
-  }
-
-  metadata.mutable_registration()->set_download_total(
-      metadata.registration().download_total() + request_info_->GetFileSize());
+  metadata->mutable_registration()->set_download_total(
+      metadata->registration().download_total() + request_info_->GetFileSize());
 
   service_worker_context()->StoreRegistrationUserData(
       registration_id_.service_worker_registration_id(),
       registration_id_.origin().GetURL(),
       {{RegistrationKey(registration_id_.unique_id()),
-        metadata.SerializeAsString()}},
+        metadata->SerializeAsString()}},
       base::BindOnce(&MarkRequestCompleteTask::DidStoreMetadata,
                      weak_factory_.GetWeakPtr(), std::move(done_closure)));
 }

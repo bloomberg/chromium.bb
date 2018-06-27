@@ -14,14 +14,13 @@ namespace content {
 namespace background_fetch {
 
 GetSettledFetchesTask::GetSettledFetchesTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     BackgroundFetchRegistrationId registration_id,
     SettledFetchesCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       registration_id_(registration_id),
       settled_fetches_callback_(std::move(callback)),
-      weak_factory_(this) {
-}
+      weak_factory_(this) {}
 
 GetSettledFetchesTask::~GetSettledFetchesTask() = default;
 

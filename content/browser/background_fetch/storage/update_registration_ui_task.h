@@ -23,7 +23,7 @@ class UpdateRegistrationUITask : public DatabaseTask {
   using UpdateRegistrationUICallback =
       base::OnceCallback<void(blink::mojom::BackgroundFetchError)>;
 
-  UpdateRegistrationUITask(BackgroundFetchDataManager* data_manager,
+  UpdateRegistrationUITask(DatabaseTaskHost* host,
                            const BackgroundFetchRegistrationId& registration_id,
                            const std::string& updated_title,
                            UpdateRegistrationUICallback callback);

@@ -13,11 +13,11 @@ namespace content {
 namespace background_fetch {
 
 UpdateRegistrationUITask::UpdateRegistrationUITask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     const std::string& updated_title,
     UpdateRegistrationUICallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       registration_id_(registration_id),
       updated_title_(updated_title),
       callback_(std::move(callback)),

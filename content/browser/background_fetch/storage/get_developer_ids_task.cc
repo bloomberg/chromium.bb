@@ -14,11 +14,11 @@ namespace content {
 namespace background_fetch {
 
 GetDeveloperIdsTask::GetDeveloperIdsTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     int64_t service_worker_registration_id,
     const url::Origin& origin,
     blink::mojom::BackgroundFetchService::GetDeveloperIdsCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       service_worker_registration_id_(service_worker_registration_id),
       origin_(origin),
       callback_(std::move(callback)),

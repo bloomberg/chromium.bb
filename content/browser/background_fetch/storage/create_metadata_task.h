@@ -25,7 +25,7 @@ class CreateMetadataTask : public DatabaseTask {
       base::OnceCallback<void(blink::mojom::BackgroundFetchError,
                               std::unique_ptr<proto::BackgroundFetchMetadata>)>;
 
-  CreateMetadataTask(BackgroundFetchDataManager* data_manager,
+  CreateMetadataTask(DatabaseTaskHost* host,
                      const BackgroundFetchRegistrationId& registration_id,
                      const std::vector<ServiceWorkerFetchRequest>& requests,
                      const BackgroundFetchOptions& options,

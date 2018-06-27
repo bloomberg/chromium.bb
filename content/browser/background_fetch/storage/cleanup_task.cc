@@ -8,6 +8,7 @@
 
 #include "base/containers/flat_set.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
+#include "content/browser/background_fetch/background_fetch_data_manager.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/background_fetch/storage/delete_registration_task.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
@@ -21,8 +22,8 @@ namespace {
 void EmptyErrorHandler(blink::mojom::BackgroundFetchError) {}
 }  // namespace
 
-CleanupTask::CleanupTask(BackgroundFetchDataManager* data_manager)
-    : DatabaseTask(data_manager), weak_factory_(this) {}
+CleanupTask::CleanupTask(DatabaseTaskHost* host)
+    : DatabaseTask(host), weak_factory_(this) {}
 
 CleanupTask::~CleanupTask() = default;
 
@@ -79,7 +80,7 @@ void CleanupTask::DidGetActiveUniqueIds(
           // This |unique_id| can be safely cleaned up. Re-use
           // DeleteRegistrationTask for the actual deletion logic.
           AddDatabaseTask(std::make_unique<DeleteRegistrationTask>(
-              data_manager(), cache_manager(), service_worker_registration_id,
+              data_manager(), service_worker_registration_id,
               url::Origin::Create(GURL(metadata_proto.origin())), unique_id,
               base::BindOnce(&EmptyErrorHandler)));
         }

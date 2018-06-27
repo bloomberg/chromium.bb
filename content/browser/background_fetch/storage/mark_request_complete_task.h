@@ -24,7 +24,7 @@ class MarkRequestCompleteTask : public DatabaseTask {
   using MarkedCompleteCallback = base::OnceCallback<void()>;
 
   MarkRequestCompleteTask(
-      BackgroundFetchDataManager* data_manager,
+      DatabaseTaskHost* host,
       BackgroundFetchRegistrationId registration_id,
       scoped_refptr<BackgroundFetchRequestInfo> request_info,
       MarkedCompleteCallback callback);
@@ -59,8 +59,8 @@ class MarkRequestCompleteTask : public DatabaseTask {
   void UpdateMetadata(base::OnceClosure done_closure);
 
   void DidGetMetadata(base::OnceClosure done_closure,
-                      const std::vector<std::string>& data,
-                      blink::ServiceWorkerStatusCode status);
+                      blink::mojom::BackgroundFetchError error,
+                      std::unique_ptr<proto::BackgroundFetchMetadata> metadata);
 
   void DidStoreMetadata(base::OnceClosure done_closure,
                         blink::ServiceWorkerStatusCode status);

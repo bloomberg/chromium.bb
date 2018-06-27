@@ -252,11 +252,9 @@ void BackgroundFetchDataManager::ShutdownOnIO() {
 }
 
 void BackgroundFetchDataManager::AddDatabaseTask(
-    std::unique_ptr<background_fetch::DatabaseTask> task,
-    bool internal) {
-  // If Shutdown was called don't add any new tasks, unless they were
-  // created by another DatabaseTask.
-  if (shutting_down_ && !internal)
+    std::unique_ptr<background_fetch::DatabaseTask> task) {
+  // If Shutdown was called don't add any new tasks.
+  if (shutting_down_)
     return;
 
   database_tasks_.push(std::move(task));
@@ -264,7 +262,7 @@ void BackgroundFetchDataManager::AddDatabaseTask(
     database_tasks_.front()->Start();
 }
 
-void BackgroundFetchDataManager::OnDatabaseTaskFinished(
+void BackgroundFetchDataManager::OnTaskFinished(
     background_fetch::DatabaseTask* task) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -274,6 +272,10 @@ void BackgroundFetchDataManager::OnDatabaseTaskFinished(
   database_tasks_.pop();
   if (!database_tasks_.empty())
     database_tasks_.front()->Start();
+}
+
+BackgroundFetchDataManager* BackgroundFetchDataManager::data_manager() {
+  return this;
 }
 
 }  // namespace content

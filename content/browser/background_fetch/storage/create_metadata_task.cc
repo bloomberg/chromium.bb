@@ -17,12 +17,12 @@ namespace content {
 namespace background_fetch {
 
 CreateMetadataTask::CreateMetadataTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     const std::vector<ServiceWorkerFetchRequest>& requests,
     const BackgroundFetchOptions& options,
     CreateMetadataCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       registration_id_(registration_id),
       requests_(requests),
       options_(options),

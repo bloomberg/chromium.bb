@@ -16,10 +16,10 @@ namespace content {
 namespace background_fetch {
 
 MarkRegistrationForDeletionTask::MarkRegistrationForDeletionTask(
-    BackgroundFetchDataManager* data_manager,
+    DatabaseTaskHost* host,
     const BackgroundFetchRegistrationId& registration_id,
     HandleBackgroundFetchErrorCallback callback)
-    : DatabaseTask(data_manager),
+    : DatabaseTask(host),
       registration_id_(registration_id),
       callback_(std::move(callback)),
       weak_factory_(this) {}
