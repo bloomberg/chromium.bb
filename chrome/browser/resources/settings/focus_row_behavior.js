@@ -2,17 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @param {{lastFocused: Object}} listItem
- * @constructor
- * @implements {cr.ui.FocusRow.Delegate}
- */
-function FocusRowDelegate(listItem) {
-  /** @private */
-  this.listItem_ = listItem;
-}
+/** @implements {cr.ui.FocusRow.Delegate} */
+class FocusRowDelegate {
+  /** @param {{lastFocused: Object}} listItem */
+  constructor(listItem) {
+    /** @private */
+    this.listItem_ = listItem;
+  }
 
-FocusRowDelegate.prototype = {
   /**
    * This function gets called when the [focus-row-control] element receives
    * the focus event.
@@ -20,10 +17,10 @@ FocusRowDelegate.prototype = {
    * @param {!cr.ui.FocusRow} row
    * @param {!Event} e
    */
-  onFocus: function(row, e) {
+  onFocus(row, e) {
     this.listItem_.lastFocused = e.path[0];
     this.listItem_.tabIndex = -1;
-  },
+  }
 
   /**
    * @override
@@ -31,29 +28,25 @@ FocusRowDelegate.prototype = {
    * @param {!Event} e
    * @return {boolean} Whether the event was handled.
    */
-  onKeydown: function(row, e) {
+  onKeydown(row, e) {
     // Prevent iron-list from changing the focus on enter.
     if (e.key == 'Enter')
       e.stopPropagation();
 
     return false;
-  },
-};
-
-/**
- * @param {!Element} root
- * @param {cr.ui.FocusRow.Delegate} delegate
- * @constructor
- * @extends {cr.ui.FocusRow}
- */
-function VirtualFocusRow(root, delegate) {
-  cr.ui.FocusRow.call(this, root, /* boundary */ null, delegate);
+  }
 }
 
-VirtualFocusRow.prototype = {
-  __proto__: cr.ui.FocusRow.prototype
-};
-
+/** @extends {cr.ui.FocusRow} */
+class VirtualFocusRow extends cr.ui.FocusRow {
+  /**
+   * @param {!Element} root
+   * @param {cr.ui.FocusRow.Delegate} delegate
+   */
+  constructor(root, delegate) {
+    super(root, /* boundary */ null, delegate);
+  }
+}
 
 /**
  * Any element that is being used as an iron-list row item can extend this

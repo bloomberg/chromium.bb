@@ -39,7 +39,6 @@ js_library("error_dialog") {
 
 js_library("profile_browser_proxy") {
   deps = [
-    "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:cr",
   ]
 }

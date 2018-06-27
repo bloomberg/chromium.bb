@@ -5,23 +5,21 @@
 cr.define('extensions', function() {
   'use strict';
 
-  /**
-   * @param {boolean} dragEnabled
-   * @param {!EventTarget} target
-   * @constructor
-   * @implements cr.ui.DragWrapperDelegate
-   */
-  function DragAndDropHandler(dragEnabled, target) {
-    this.dragEnabled = dragEnabled;
+  /** @implements cr.ui.DragWrapperDelegate */
+  class DragAndDropHandler {
+    /**
+     * @param {boolean} dragEnabled
+     * @param {!EventTarget} target
+     */
+    constructor(dragEnabled, target) {
+      this.dragEnabled = dragEnabled;
 
-    /** @private {!EventTarget} */
-    this.eventTarget_ = target;
-  }
+      /** @private {!EventTarget} */
+      this.eventTarget_ = target;
+    }
 
-  // TODO(devlin): Convert this to an ES6 class.
-  DragAndDropHandler.prototype = {
     /** @override */
-    shouldAcceptDrag: function(e) {
+    shouldAcceptDrag(e) {
       // External Extension installation can be disabled globally, e.g. while a
       // different overlay is already showing.
       if (!this.dragEnabled)
@@ -33,27 +31,27 @@ cr.define('extensions', function() {
       // See: http://www.w3.org/TR/2011/WD-html5-20110113/dnd.html#concept-dnd-p
       return !!e.dataTransfer.types &&
           e.dataTransfer.types.indexOf('Files') > -1;
-    },
+    }
 
     /** @override */
-    doDragEnter: function() {
+    doDragEnter() {
       chrome.developerPrivate.notifyDragInstallInProgress();
       this.eventTarget_.dispatchEvent(
           new CustomEvent('extension-drag-started'));
-    },
+    }
 
     /** @override */
-    doDragLeave: function() {
+    doDragLeave() {
       this.fireDragEnded_();
-    },
+    }
 
     /** @override */
-    doDragOver: function(e) {
+    doDragOver(e) {
       e.preventDefault();
-    },
+    }
 
     /** @override */
-    doDrop: function(e) {
+    doDrop(e) {
       this.fireDragEnded_();
       if (e.dataTransfer.files.length != 1)
         return;
@@ -75,21 +73,21 @@ cr.define('extensions', function() {
 
       if (handled)
         e.preventDefault();
-    },
+    }
 
     /**
      * Handles a dropped file.
      * @private
      */
-    handleFileDrop_: function() {
+    handleFileDrop_() {
       chrome.developerPrivate.installDroppedFile();
-    },
+    }
 
     /**
      * Handles a dropped directory.
      * @private
      */
-    handleDirectoryDrop_: function() {
+    handleDirectoryDrop_() {
       // TODO(devlin): Update this to use extensions.Service when it's not
       // shared between the MD and non-MD pages.
       chrome.developerPrivate.loadUnpacked(
@@ -100,13 +98,13 @@ cr.define('extensions', function() {
                   'drag-and-drop-load-error', {detail: loadError}));
             }
           });
-    },
+    }
 
     /** @private */
-    fireDragEnded_: function() {
+    fireDragEnded_() {
       this.eventTarget_.dispatchEvent(new CustomEvent('extension-drag-ended'));
     }
-  };
+  }
 
   return {
     DragAndDropHandler: DragAndDropHandler,
