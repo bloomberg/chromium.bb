@@ -62,6 +62,9 @@ customBackgrounds.CLASSES = {
   SELECTED_CHECK: 'selected-check',
 };
 
+customBackgrounds.CUSTOM_BACKGROUND_OVERLAY =
+    'linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))';
+
 /**
  * Alias for document.getElementById.
  * @param {string} id The ID of the element to find.
@@ -216,7 +219,19 @@ customBackgrounds.showImageSelectionDialog = function(dialogTitle) {
   for (var i = 0; i < coll_img.length; ++i) {
     var tile = document.createElement('div');
     tile.classList.add(customBackgrounds.CLASSES.COLLECTION_TILE);
-    tile.style.backgroundImage = 'url(' + coll_img[i].thumbnailImageUrl + ')';
+
+    // TODO(crbug.com/854028): Remove this hardcoded check when wallpaper
+    // previews are supported.
+    if (coll_img[i].collectionId == 'solidcolors') {
+      var imageWithOverlay = [
+        customBackgrounds.CUSTOM_BACKGROUND_OVERLAY,
+        'url(' + coll_img[i].thumbnailImageUrl + ')'
+      ].join(',').trim();
+      tile.style.backgroundImage = imageWithOverlay;
+    } else {
+      tile.style.backgroundImage = 'url(' + coll_img[i].thumbnailImageUrl + ')';
+    }
+
     tile.id = 'img_tile_' + i;
     tile.dataset.url = coll_img[i].imageUrl;
     tile.tabIndex = 0;

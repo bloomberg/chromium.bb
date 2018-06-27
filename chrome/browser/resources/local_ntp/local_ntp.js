@@ -180,9 +180,6 @@ var LOG_TYPE = {
  */
 var WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
-const CUSTOM_BACKGROUND_OVERLAY =
-    'linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2))';
-
 /**
  * Enum for keycodes.
  * @enum {number}
@@ -303,8 +300,9 @@ function renderTheme() {
   setCustomThemeStyle(info);
 
   if (info.customBackgroundConfigured) {
-    var imageWithOverlay =
-        [CUSTOM_BACKGROUND_OVERLAY, info.imageUrl].join(',').trim();
+    var imageWithOverlay = [
+      customBackgrounds.CUSTOM_BACKGROUND_OVERLAY, info.imageUrl
+    ].join(',').trim();
     document.body.style.setProperty('background-image', imageWithOverlay);
   }
   $(customBackgrounds.IDS.RESTORE_DEFAULT).hidden =
