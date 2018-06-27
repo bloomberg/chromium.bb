@@ -33,6 +33,8 @@
 
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
+#include <stdint.h>
+
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/text/cstring.h"
@@ -836,5 +838,121 @@ TEST(KURLTest, strippedForUseAsReferrer) {
     EXPECT_STREQ(referrer_cases[i].output, referrer.Utf8().data());
   }
 }
+
+enum class PortIsValid {
+  // The constructor does strict checking. Ports which are considered valid by
+  // the constructor are kAlways valid.
+  kAlways,
+
+  // SetHostAndPort() truncates to the initial numerical prefix, and then does
+  // strict checking. kInSetHostAndPort is used for ports which are considered
+  // valid by SetHostAndPort() but not by the constructor. In this case, the
+  // expected value is the same as for SetPort().
+  kInSetHostAndPort,
+
+  // SetPort() considers all input valid.
+  kInSetPort
+};
+
+struct PortTestCase {
+  const char* input;
+  const uint16_t constructor_output;
+  const uint16_t set_port_output;
+  const PortIsValid is_valid;
+};
+
+// The tested behaviour matches the implementation. It doesn't necessarily match
+// the URL Standard.
+const PortTestCase port_test_cases[] = {
+    {"80", 0, 0, PortIsValid::kAlways},  // 0 because scheme is http.
+    {"443", 443, 443, PortIsValid::kAlways},
+    {"8000", 8000, 8000, PortIsValid::kAlways},
+    {"0", 0, 0, PortIsValid::kAlways},
+    {"1", 1, 1, PortIsValid::kAlways},
+    {"00000000000000000000000000000000000443", 443, 443, PortIsValid::kAlways},
+    {"+80", 0, 0, PortIsValid::kInSetHostAndPort},
+    {"-80", 0, 0, PortIsValid::kInSetHostAndPort},
+    {"443e0", 0, 443, PortIsValid::kInSetHostAndPort},
+    {"0x80", 0, 0, PortIsValid::kInSetHostAndPort},
+    {"8%30", 0, 8, PortIsValid::kInSetHostAndPort},
+    {" 443", 0, 0, PortIsValid::kInSetHostAndPort},
+    {"443 ", 0, 443, PortIsValid::kInSetHostAndPort},
+    {":443", 0, 0, PortIsValid::kInSetHostAndPort},
+    {"65535", 65535, 65535, PortIsValid::kAlways},
+    {"65534", 65534, 65534, PortIsValid::kAlways},
+    {"65536", 0, 0, PortIsValid::kInSetPort},
+    {"65537", 0, 1, PortIsValid::kInSetPort},
+    {"2147483647", 0, 65535, PortIsValid::kInSetPort},
+    {"2147483648", 0, 0, PortIsValid::kInSetPort},
+    {"2147483649", 0, 1, PortIsValid::kInSetPort},
+    {"4294967295", 0, 65535, PortIsValid::kInSetPort},
+    {"4294967296", 0, 0, PortIsValid::kInSetPort},
+    {"4294967297", 0, 0, PortIsValid::kInSetPort},
+    {"18446744073709551615", 0, 0, PortIsValid::kInSetPort},
+    {"18446744073709551616", 0, 0, PortIsValid::kInSetPort},
+    {"18446744073709551617", 0, 0, PortIsValid::kInSetPort},
+    {"9999999999999999999999999999990999999999", 0, 0, PortIsValid::kInSetPort},
+};
+
+void PrintTo(const PortTestCase& port_test_case, ::std::ostream* os) {
+  *os << '"' << port_test_case.input << '"';
+}
+
+class KURLPortTest : public ::testing::TestWithParam<PortTestCase> {};
+
+TEST_P(KURLPortTest, Construct) {
+  const auto& param = GetParam();
+  const KURL url(String("http://a:") + param.input + "/");
+  EXPECT_EQ(url.Port(), param.constructor_output);
+  if (param.is_valid == PortIsValid::kAlways) {
+    EXPECT_EQ(url.IsValid(), true);
+  } else {
+    EXPECT_EQ(url.IsValid(), false);
+  }
+}
+
+TEST_P(KURLPortTest, ConstructRelative) {
+  const auto& param = GetParam();
+  const KURL base("http://a/");
+  const KURL url(base, String("//a:") + param.input + "/");
+  EXPECT_EQ(url.Port(), param.constructor_output);
+  if (param.is_valid == PortIsValid::kAlways) {
+    EXPECT_EQ(url.IsValid(), true);
+  } else {
+    EXPECT_EQ(url.IsValid(), false);
+  }
+}
+
+TEST_P(KURLPortTest, SetPort) {
+  const auto& param = GetParam();
+  KURL url("http://a:8888/");
+  url.SetPort(param.input);
+  EXPECT_EQ(url.Port(), param.set_port_output);
+  EXPECT_EQ(url.IsValid(), true);
+}
+
+TEST_P(KURLPortTest, SetHostAndPort) {
+  const auto& param = GetParam();
+  KURL url("http://a:8888/");
+  url.SetHostAndPort(String("a:") + param.input);
+  switch (param.is_valid) {
+    case PortIsValid::kAlways:
+      EXPECT_EQ(url.Port(), param.constructor_output);
+      EXPECT_EQ(url.IsValid(), true);
+      break;
+
+    case PortIsValid::kInSetHostAndPort:
+      EXPECT_EQ(url.Port(), param.set_port_output);
+      EXPECT_EQ(url.IsValid(), true);
+      break;
+
+    case PortIsValid::kInSetPort:
+      EXPECT_EQ(url.Port(), param.constructor_output);
+      EXPECT_EQ(url.IsValid(), false);
+      break;
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(, KURLPortTest, ::testing::ValuesIn(port_test_cases));
 
 }  // namespace blink
