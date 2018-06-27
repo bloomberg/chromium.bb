@@ -1543,7 +1543,11 @@ void RenderWidgetHostInputEventRouter::SetCursor(const WebCursor& cursor) {
 void RenderWidgetHostInputEventRouter::ShowContextMenuAtPoint(
     const gfx::Point& point,
     const ui::MenuSourceType source_type) {
-  DCHECK(last_mouse_move_target_);
+  // It's possible that since |last_mouse_move_target_| was set by the
+  // outbound mouse event that the view may have gone away. Before dispatching
+  // the context menu, confirm the view is still available.
+  if (!IsViewInMap(last_mouse_move_target_))
+    return;
 
   auto* rwhi = static_cast<RenderWidgetHostImpl*>(
       last_mouse_move_target_->GetRenderWidgetHost());
