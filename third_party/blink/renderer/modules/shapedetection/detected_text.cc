@@ -10,11 +10,12 @@ namespace blink {
 
 DetectedText* DetectedText::Create() {
   HeapVector<Point2D> empty_list;
-  return new DetectedText(g_empty_string, DOMRect::Create(), empty_list);
+  return new DetectedText(g_empty_string, DOMRectReadOnly::Create(0, 0, 0, 0),
+                          empty_list);
 }
 
 DetectedText* DetectedText::Create(String raw_value,
-                                   DOMRect* bounding_box,
+                                   DOMRectReadOnly* bounding_box,
                                    HeapVector<Point2D> corner_points) {
   return new DetectedText(raw_value, bounding_box, corner_points);
 }
@@ -23,7 +24,7 @@ const String& DetectedText::rawValue() const {
   return raw_value_;
 }
 
-DOMRect* DetectedText::boundingBox() const {
+DOMRectReadOnly* DetectedText::boundingBox() const {
   return bounding_box_.Get();
 }
 
@@ -32,7 +33,7 @@ const HeapVector<Point2D>& DetectedText::cornerPoints() const {
 }
 
 DetectedText::DetectedText(String raw_value,
-                           DOMRect* bounding_box,
+                           DOMRectReadOnly* bounding_box,
                            HeapVector<Point2D> corner_points)
     : raw_value_(raw_value),
       bounding_box_(bounding_box),

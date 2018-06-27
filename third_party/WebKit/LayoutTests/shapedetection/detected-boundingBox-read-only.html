@@ -4,9 +4,11 @@
 <script src="file:///gen/layout_test_data/mojo/public/js/mojo_bindings.js"></script>
 <script src="file:///gen/services/shape_detection/public/mojom/barcodedetection_provider.mojom.js"></script>
 <script src="file:///gen/services/shape_detection/public/mojom/facedetection_provider.mojom.js"></script>
+<script src="file:///gen/services/shape_detection/public/mojom/textdetection.mojom.js"></script>
 <script src="resources/big-buffer-helpers.js"></script>
 <script src="resources/mock-barcodedetection.js"></script>
 <script src="resources/mock-facedetection.js"></script>
+<script src="resources/mock-textdetection.js"></script>
 <script>
 
 const createTestForImageData = (createDetector, mock, detectionResultTest) => {
@@ -33,18 +35,17 @@ const createTestForImageData = (createDetector, mock, detectionResultTest) => {
   });
 };
 
-function CheckDetectedReadOnlyBoundingBoxes(detectedObject) {
-  assert_readonly(detectedObject[0].boundingBox, 'x');
-  assert_readonly(detectedObject[0].boundingBox, 'y');
-  assert_readonly(detectedObject[0].boundingBox, 'width');
-  assert_readonly(detectedObject[0].boundingBox, 'height');
-  assert_readonly(detectedObject[0].boundingBox, 'top');
-  assert_readonly(detectedObject[0].boundingBox, 'right');
-  assert_readonly(detectedObject[0].boundingBox, 'bottom');
-  assert_readonly(detectedObject[0].boundingBox, 'left');
+function CheckDetectedReadOnlyBoundingBoxes(detectedObjects) {
+  var properties = ['x', 'y', 'width', 'height', 'top', 'right', 'bottom', 'left'];
+
+  detectedObjects.forEach(detectedObject => {
+    properties.forEach(property => {
+      assert_readonly(detectedObject.boundingBox, property);
+    });
+  });
 }
 
-// These tests verify that detectedFace's boundingBox should be DOMRectReadOnly.
+// These tests verify that detected{Face, Barcode, Text}'s boundingBox should be DOMRectReadOnly.
 generate_tests(createTestForImageData, [
   [
     "Face - detectedFace.boundingBox should be DOMRectReadOnly",
@@ -56,6 +57,12 @@ generate_tests(createTestForImageData, [
     "Barcode - detectedBarcode.boundingBox should be DOMRectReadOnly",
     () => { return new BarcodeDetector(); },
     mockBarcodeDetectionProvider,
+    CheckDetectedReadOnlyBoundingBoxes
+  ],
+  [
+    "Text - detectedText.boundingBox should be DOMRectReadOnly",
+    () => { return new TextDetector(); },
+    mockTextDetection,
     CheckDetectedReadOnlyBoundingBoxes
   ]
 ]);
