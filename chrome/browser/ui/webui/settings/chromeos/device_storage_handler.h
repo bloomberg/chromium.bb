@@ -51,6 +51,9 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   void HandleOpenArcStorage(const base::ListValue* unused_args);
   void HandleClearDriveCache(const base::ListValue* unused_args);
 
+  // Callback called when clearing Drive cache is done.
+  void OnClearDriveCacheDone(bool success);
+
   // Requests updating disk space information.
   void UpdateSizeStat();
 
@@ -78,12 +81,6 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   // Callback to update the UI about the size of browsing data.
   void OnGetBrowsingDataSize(bool is_site_data, int64_t size);
 
-  // Requests updating the total size of other users' data.
-  void UpdateOtherUsersSize();
-
-  // Callback to save the fetched user sizes and update the UI.
-  void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
-
   // Requests updating the space size used by Android apps and cache.
   void UpdateAndroidSize();
 
@@ -97,8 +94,11 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   // Callback to update the UI about Crostini VMs and their apps and cache.
   void OnGetCrostiniSize(crostini::ConciergeClientResult result, int64_t size);
 
-  // Callback called when clearing Drive cache is done.
-  void OnClearDriveCacheDone(bool success);
+  // Requests updating the total size of other users' data.
+  void UpdateOtherUsersSize();
+
+  // Callback to save the fetched user sizes and update the UI.
+  void OnGetOtherUserSize(base::Optional<cryptohome::BaseReply> reply);
 
   // Total size of cache data in browsing data.
   int64_t browser_cache_size_;
@@ -112,15 +112,15 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   // True if we have already received the size of site data.
   bool has_browser_site_data_size_;
 
+  // Helper to compute the total size of all types of site date.
+  std::unique_ptr<SiteDataSizeCollector> site_data_size_collector_;
+
   // The list of other users whose directory sizes will be accumulated as the
   // size of "Other users".
   user_manager::UserList other_users_;
 
   // Fetched sizes of user directories.
   std::vector<int64_t> user_sizes_;
-
-  // Helper to compute the total size of all types of site date.
-  std::unique_ptr<SiteDataSizeCollector> site_data_size_collector_;
 
   // Flags indicating fetch operations for storage sizes are ongoing.
   bool updating_downloads_size_;

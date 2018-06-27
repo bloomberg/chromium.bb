@@ -109,9 +109,9 @@ void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {
   UpdateDownloadsSize();
   UpdateDriveCacheSize();
   UpdateBrowsingDataSize();
-  UpdateOtherUsersSize();
   UpdateAndroidSize();
   UpdateCrostiniSize();
+  UpdateOtherUsersSize();
 }
 
 void StorageHandler::HandleOpenDownloads(
@@ -142,6 +142,10 @@ void StorageHandler::HandleClearDriveCache(
       std::numeric_limits<int64_t>::max(),  // Removes as much as possible.
       base::Bind(&StorageHandler::OnClearDriveCacheDone,
                  weak_ptr_factory_.GetWeakPtr()));
+}
+
+void StorageHandler::OnClearDriveCacheDone(bool /*success*/) {
+  UpdateDriveCacheSize();
 }
 
 void StorageHandler::UpdateSizeStat() {
@@ -292,6 +296,45 @@ void StorageHandler::OnGetBrowsingDataSize(bool is_site_data, int64_t size) {
   }
 }
 
+void StorageHandler::UpdateAndroidSize() {
+  if (updating_android_size_)
+    return;
+  updating_android_size_ = true;
+
+  Profile* const profile = Profile::FromWebUI(web_ui());
+  if (!arc::IsArcPlayStoreEnabledForProfile(profile) ||
+      arc::IsArcOptInVerificationDisabled()) {
+    return;
+  }
+
+  // Shows the item "Android apps and cache" and starts calculating size.
+  FireWebUIListener("storage-android-enabled-changed", base::Value(true));
+
+  bool success = false;
+  auto* arc_storage_manager =
+      arc::ArcStorageManager::GetForBrowserContext(profile);
+  if (arc_storage_manager) {
+    success = arc_storage_manager->GetApplicationsSize(base::BindOnce(
+        &StorageHandler::OnGetAndroidSize, weak_ptr_factory_.GetWeakPtr()));
+  }
+  if (!success)
+    updating_android_size_ = false;
+}
+
+void StorageHandler::OnGetAndroidSize(bool succeeded,
+                                      arc::mojom::ApplicationsSizePtr size) {
+  base::string16 size_string;
+  if (succeeded) {
+    uint64_t total_bytes = size->total_code_bytes + size->total_data_bytes +
+                           size->total_cache_bytes;
+    size_string = ui::FormatBytes(total_bytes);
+  } else {
+    size_string = l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
+  }
+  updating_android_size_ = false;
+  FireWebUIListener("storage-android-size-changed", base::Value(size_string));
+}
+
 void StorageHandler::UpdateCrostiniSize() {
   Profile* const profile = Profile::FromWebUI(web_ui());
   if (!IsCrostiniEnabled(profile)) {
@@ -358,49 +401,6 @@ void StorageHandler::OnGetOtherUserSize(
     FireWebUIListener("storage-other-users-size-changed",
                       base::Value(size_string));
   }
-}
-
-void StorageHandler::UpdateAndroidSize() {
-  if (updating_android_size_)
-    return;
-  updating_android_size_ = true;
-
-  Profile* const profile = Profile::FromWebUI(web_ui());
-  if (!arc::IsArcPlayStoreEnabledForProfile(profile) ||
-      arc::IsArcOptInVerificationDisabled()) {
-    return;
-  }
-
-  // Shows the item "Android apps and cache" and starts calculating size.
-  FireWebUIListener("storage-android-enabled-changed", base::Value(true));
-
-  bool success = false;
-  auto* arc_storage_manager =
-      arc::ArcStorageManager::GetForBrowserContext(profile);
-  if (arc_storage_manager) {
-    success = arc_storage_manager->GetApplicationsSize(base::BindOnce(
-        &StorageHandler::OnGetAndroidSize, weak_ptr_factory_.GetWeakPtr()));
-  }
-  if (!success)
-    updating_android_size_ = false;
-}
-
-void StorageHandler::OnGetAndroidSize(bool succeeded,
-                                      arc::mojom::ApplicationsSizePtr size) {
-  base::string16 size_string;
-  if (succeeded) {
-    uint64_t total_bytes = size->total_code_bytes + size->total_data_bytes +
-                           size->total_cache_bytes;
-    size_string = ui::FormatBytes(total_bytes);
-  } else {
-    size_string = l10n_util::GetStringUTF16(IDS_SETTINGS_STORAGE_SIZE_UNKNOWN);
-  }
-  updating_android_size_ = false;
-  FireWebUIListener("storage-android-size-changed", base::Value(size_string));
-}
-
-void StorageHandler::OnClearDriveCacheDone(bool success) {
-  UpdateDriveCacheSize();
 }
 
 }  // namespace settings
