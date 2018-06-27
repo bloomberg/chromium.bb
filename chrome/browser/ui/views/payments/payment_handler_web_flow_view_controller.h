@@ -9,6 +9,8 @@
 #include "components/payments/content/payment_request_display_manager.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "ui/base/window_open_disposition.h"
+#include "ui/gfx/geometry/rect.h"
 #include "ui/views/controls/progress_bar.h"
 #include "ui/views/controls/separator.h"
 #include "url/gurl.h"
@@ -57,6 +59,12 @@ class PaymentHandlerWebFlowViewController
   void LoadProgressChanged(content::WebContents* source,
                            double progress) override;
   void VisibleSecurityStateChanged(content::WebContents* source) override;
+  void AddNewContents(content::WebContents* source,
+                      std::unique_ptr<content::WebContents> new_contents,
+                      WindowOpenDisposition disposition,
+                      const gfx::Rect& initial_rect,
+                      bool user_gesture,
+                      bool* was_blocked) override;
 
   // content::WebContentsObserver:
   void DidStartNavigation(
