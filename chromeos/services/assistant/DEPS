@@ -10,5 +10,7 @@ include_rules = [
   "+services/identity/public",
   "+services/service_manager/public",
   "+ui/base",
+  "+ui/accessibility/mojom",
+  "+ui/accessibility/ax_assistant_structure.h",
   "+services/audio/public",
 ]

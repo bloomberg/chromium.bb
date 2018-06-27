@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "ash/public/interfaces/constants.mojom.h"
+#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
@@ -36,7 +37,8 @@ const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
-    device::mojom::BatteryMonitorPtr battery_monitor)
+    device::mojom::BatteryMonitorPtr battery_monitor,
+    mojom::Client* client)
     : platform_api_(CreateLibAssistantConfig(),
                     connector,
                     std::move(battery_monitor)),
@@ -44,6 +46,7 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       voice_interaction_observer_binding_(this),
+      assistant_client_(client),
       background_thread_("background thread"),
       weak_factory_(this) {
   background_thread_.Start();
@@ -147,6 +150,37 @@ void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
                   std::move(weak_ptr), repeating_callback, update));
         }
       });
+}
+
+void AssistantManagerServiceImpl::RequestScreenContext(
+    const gfx::Rect& region,
+    RequestScreenContextCallback callback) {
+  if (!assistant_enabled_ || !context_enabled_) {
+    // If context is not enabled, we notify assistant immediately to activate
+    // the UI.
+    std::move(callback).Run();
+    return;
+  }
+
+  auto on_done = base::BarrierClosure(
+      2,  // We wait for the closure execute twice: 1 for screenshot and 1 for
+          // view hierarchy.
+      base::BindOnce(
+          &AssistantManagerServiceImpl::SendContextQueryAndRunCallback,
+          weak_factory_.GetWeakPtr(), std::move(callback)));
+  assistant_client_->RequestAssistantStructure(
+      base::BindOnce(&AssistantManagerServiceImpl::OnAssistantStructureReceived,
+                     weak_factory_.GetWeakPtr(), on_done));
+  // TODO(muyuanli): handle metalayer and grab only part of the screen.
+  assistant_controller_->RequestScreenshot(
+      region, base::BindOnce(
+                  &AssistantManagerServiceImpl::OnAssistantScreenshotReceived,
+                  weak_factory_.GetWeakPtr(), on_done));
+}
+
+void AssistantManagerServiceImpl::SetAssistantController(
+    ash::mojom::AssistantController* controller) {
+  assistant_controller_ = controller;
 }
 
 void AssistantManagerServiceImpl::StartVoiceInteraction() {
@@ -255,6 +289,16 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
   DVLOG(2) << "IsSettingSupported=" << setting_id;
   return (setting_id == kWiFiDeviceSettingId ||
           setting_id == kBluetoothDeviceSettingId);
+}
+
+void AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled(
+    bool enabled) {
+  assistant_enabled_ = enabled;
+}
+
+void AssistantManagerServiceImpl::OnVoiceInteractionContextEnabled(
+    bool enabled) {
+  context_enabled_ = enabled;
 }
 
 void AssistantManagerServiceImpl::OnVoiceInteractionSetupCompleted(
@@ -493,6 +537,34 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdatedOnMainThread(
 void AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted(
     ash::mojom::VoiceInteractionController::IsSetupCompletedCallback callback) {
   voice_interaction_controller_->IsSetupCompleted(std::move(callback));
+}
+
+void AssistantManagerServiceImpl::OnAssistantStructureReceived(
+    base::OnceClosure on_done,
+    ax::mojom::AssistantExtraPtr assistant_extra,
+    std::unique_ptr<ui::AssistantTree> assistant_tree) {
+  assistant_extra_ = std::move(assistant_extra);
+  assistant_tree_ = std::move(assistant_tree);
+  std::move(on_done).Run();
+}
+
+void AssistantManagerServiceImpl::OnAssistantScreenshotReceived(
+    base::OnceClosure on_done,
+    const std::vector<uint8_t>& jpg_image) {
+  assistant_screenshot_ = jpg_image;
+  std::move(on_done).Run();
+}
+
+void AssistantManagerServiceImpl::SendContextQueryAndRunCallback(
+    RequestScreenContextCallback callback) {
+  assistant_manager_internal_->SendScreenContextRequest(
+      std::vector<std::string>{
+          CreateContextProto(AssistantBundle{
+              std::move(assistant_extra_), std::move(assistant_tree_),
+          }),
+          CreateContextProto(assistant_screenshot_)});
+  assistant_screenshot_.clear();
+  std::move(callback).Run();
 }
 
 }  // namespace assistant
