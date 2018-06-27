@@ -86,6 +86,7 @@ std::unique_ptr<VideoCaptureDevice> CameraHalDelegate::CreateDevice(
   if (!UpdateBuiltInCameraInfo()) {
     return capture_device;
   }
+  base::AutoLock lock(camera_info_lock_);
   if (camera_info_.find(device_descriptor.device_id) == camera_info_.end()) {
     LOG(ERROR) << "Invalid camera device: " << device_descriptor.device_id;
     return capture_device;
@@ -104,6 +105,7 @@ void CameraHalDelegate::GetSupportedFormats(
     return;
   }
   std::string camera_id = device_descriptor.device_id;
+  base::AutoLock lock(camera_info_lock_);
   if (camera_info_.find(camera_id) == camera_info_.end() ||
       camera_info_[camera_id].is_null()) {
     LOG(ERROR) << "Invalid camera_id: " << camera_id;
@@ -169,13 +171,14 @@ void CameraHalDelegate::GetDeviceDescriptors(
   if (!UpdateBuiltInCameraInfo()) {
     return;
   }
-  for (size_t id = 0; id < num_builtin_cameras_; ++id) {
-    VideoCaptureDeviceDescriptor desc;
-    std::string camera_id = std::to_string(id);
-    const cros::mojom::CameraInfoPtr& camera_info = camera_info_[camera_id];
+  base::AutoLock lock(camera_info_lock_);
+  for (const auto& it : camera_info_) {
+    const std::string& camera_id = it.first;
+    const cros::mojom::CameraInfoPtr& camera_info = it.second;
     if (!camera_info) {
       continue;
     }
+    VideoCaptureDeviceDescriptor desc;
     desc.device_id = camera_id;
     desc.capture_api = VideoCaptureApi::ANDROID_API2_LIMITED;
     desc.transport_type = VideoCaptureTransportType::OTHER_TRANSPORT;
@@ -197,6 +200,7 @@ void CameraHalDelegate::GetDeviceDescriptors(
     }
     device_descriptors->push_back(desc);
   }
+  // TODO(shik): Report external camera first when lid is closed.
   // TODO(jcliang): Remove this after JS API supports query camera facing
   // (http://crbug.com/543997).
   std::sort(device_descriptors->begin(), device_descriptors->end());
@@ -249,6 +253,9 @@ void CameraHalDelegate::ResetMojoInterfaceOnIpcThread() {
   }
   builtin_camera_info_updated_.Reset();
   camera_module_has_been_set_.Reset();
+
+  // Clear all cached camera info, especially external cameras.
+  camera_info_.clear();
 }
 
 bool CameraHalDelegate::UpdateBuiltInCameraInfo() {
@@ -334,9 +341,25 @@ void CameraHalDelegate::OnGotCameraInfoOnIpcThread(
   }
   // In case of error |camera_info| is empty.
   SortCameraMetadata(&camera_info->static_camera_characteristics);
+
+  base::AutoLock lock(camera_info_lock_);
   camera_info_[std::to_string(camera_id)] = std::move(camera_info);
-  if (camera_info_.size() == num_builtin_cameras_) {
-    builtin_camera_info_updated_.Signal();
+
+  if (camera_id < base::checked_cast<int32_t>(num_builtin_cameras_)) {
+    // |camera_info_| might contain some entries for external cameras as well,
+    // we should check all built-in cameras explicitly.
+    bool all_updated = [&]() {
+      for (size_t i = 0; i < num_builtin_cameras_; i++) {
+        if (camera_info_.find(std::to_string(i)) == camera_info_.end()) {
+          return false;
+        }
+      }
+      return true;
+    }();
+
+    if (all_updated) {
+      builtin_camera_info_updated_.Signal();
+    }
   }
 }
 
@@ -354,8 +377,30 @@ void CameraHalDelegate::CameraDeviceStatusChange(
     int32_t camera_id,
     cros::mojom::CameraDeviceStatus new_status) {
   DCHECK(ipc_task_runner_->BelongsToCurrentThread());
-  // TODO(jcliang): Handle status change for external cameras.
-  NOTIMPLEMENTED() << "CameraDeviceStatusChange is not implemented";
+  VLOG(1) << "camera_id = " << camera_id << ", new_status = " << new_status;
+  base::AutoLock lock(camera_info_lock_);
+  auto it = camera_info_.find(std::to_string(camera_id));
+  switch (new_status) {
+    case cros::mojom::CameraDeviceStatus::CAMERA_DEVICE_STATUS_PRESENT:
+      if (it == camera_info_.end()) {
+        GetCameraInfoOnIpcThread(
+            camera_id,
+            base::BindOnce(&CameraHalDelegate::OnGotCameraInfoOnIpcThread, this,
+                           camera_id));
+      } else {
+        LOG(WARNING) << "Ignore duplicated camera_id = " << camera_id;
+      }
+      break;
+    case cros::mojom::CameraDeviceStatus::CAMERA_DEVICE_STATUS_NOT_PRESENT:
+      if (it != camera_info_.end()) {
+        camera_info_.erase(it);
+      } else {
+        LOG(WARNING) << "Ignore nonexistent camera_id = " << camera_id;
+      }
+      break;
+    default:
+      NOTREACHED() << "Unexpected new status " << new_status;
+  }
 }
 
 void CameraHalDelegate::TorchModeStatusChange(
