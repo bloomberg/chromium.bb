@@ -3286,10 +3286,6 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kListItem:
       return ROLE_SYSTEM_LISTITEM;
 
-    case ax::mojom::Role::kLocationBar:  // TODO(accessibility) Remove.
-      NOTREACHED();
-      return ROLE_SYSTEM_TEXT;
-
     case ax::mojom::Role::kLog:
       return ROLE_SYSTEM_CLIENT;
 
@@ -4359,10 +4355,6 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kListBoxOption:
       return L"option";
 
-    case ax::mojom::Role::kLocationBar:  // TODO(accessibility) Remove.
-      NOTREACHED();
-      return L"textbox";
-
     case ax::mojom::Role::kLog:
       return L"log";
 
@@ -4980,10 +4972,6 @@ long AXPlatformNodeWin::ComputeUIAControlType() {
 
     case ax::mojom::Role::kListBoxOption:
       return UIA_ListItemControlTypeId;
-
-    case ax::mojom::Role::kLocationBar:  // TODO(accessibility) Remove.
-      NOTREACHED();
-      return UIA_DocumentControlTypeId;
 
     case ax::mojom::Role::kLog:
       return UIA_GroupControlTypeId;

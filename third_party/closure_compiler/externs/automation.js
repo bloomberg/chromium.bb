@@ -188,7 +188,6 @@ chrome.automation.RoleType = {
   LIST_BOX_OPTION: 'listBoxOption',
   LIST_ITEM: 'listItem',
   LIST_MARKER: 'listMarker',
-  LOCATION_BAR: 'locationBar',
   LOG: 'log',
   MAIN: 'main',
   MARK: 'mark',
@@ -1566,7 +1565,6 @@ chrome.automation.AutomationNode.prototype.matches = function(params) {};
  * @see https://developer.chrome.com/extensions/automation#method-getNextTextMatch
  */
 chrome.automation.AutomationNode.prototype.getNextTextMatch = function(searchStr, backward) {};
-
 
 /**
  * Get the automation tree for the tab with the given tabId, or the current tab

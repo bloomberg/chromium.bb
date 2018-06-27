@@ -793,9 +793,6 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kList:
       // No role description.
       break;
-    case ax::mojom::Role::kLocationBar:
-      // No role description.
-      break;
     case ax::mojom::Role::kLog:
       message_id = IDS_AX_ROLE_LOG;
       break;
