@@ -264,7 +264,11 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
 
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
                          "WebViewChromiumFactoryProvider.loadChromiumLibrary")) {
-                AwBrowserProcess.loadLibrary(mWebViewDelegate.getDataDirectorySuffix());
+                String dataDirectorySuffix = null;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    dataDirectorySuffix = mWebViewDelegate.getDataDirectorySuffix();
+                }
+                AwBrowserProcess.loadLibrary(dataDirectorySuffix);
             }
 
             try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
