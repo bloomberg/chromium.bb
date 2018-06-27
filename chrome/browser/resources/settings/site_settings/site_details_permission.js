@@ -101,6 +101,7 @@ Polymer({
    * @param {string} askString 'Ask' label, e.g. 'Ask (default)'.
    * @param {string} allowString 'Allow' label, e.g. 'Allow (default)'.
    * @param {string} blockString 'Block' label, e.g. 'Blocked (default)'.
+   * @return {string}
    * @private
    */
   defaultSettingString_: function(
@@ -246,6 +247,9 @@ Polymer({
       extensionAllowString, extensionBlockString, extensionAskString,
       policyAllowString, policyBlockString, policyAskString,
       drmDisabledString) {
+    if (source == undefined || category == undefined || setting == undefined)
+      return null;
+
     /** @type {Object<!settings.ContentSetting, ?string>} */
     const extensionStrings = {};
     extensionStrings[settings.ContentSetting.ALLOW] = extensionAllowString;

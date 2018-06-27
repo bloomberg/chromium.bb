@@ -159,6 +159,9 @@ Polymer({
    * @private
    */
   configureWidget_: function() {
+    if (this.category == undefined)
+      return;
+
     // The observer for All Sites fires before the attached/ready event, so
     // initialize this here.
     if (this.browserProxy_ === undefined) {
