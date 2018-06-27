@@ -35,6 +35,7 @@ class BLINK_PLATFORM_EXPORT WebSurfaceLayerBridge {
   virtual cc::Layer* GetCcLayer() const = 0;
   virtual const viz::FrameSinkId& GetFrameSinkId() const = 0;
   virtual void ClearSurfaceId() = 0;
+  virtual void SetContentsOpaque(bool) = 0;
 };
 
 }  // namespace blink
