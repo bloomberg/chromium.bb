@@ -120,6 +120,11 @@ void AsyncLayerTreeFrameSink::SubmitCompositorFrame(
   DCHECK(frame.metadata.begin_frame_ack.has_damage);
   DCHECK_LE(viz::BeginFrameArgs::kStartingFrameNumber,
             frame.metadata.begin_frame_ack.sequence_number);
+  TRACE_EVENT_WITH_FLOW1(
+      "viz,benchmark", "Graphics.Pipeline",
+      TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SubmitCompositorFrame");
 
   if (!enable_surface_synchronization_) {
     local_surface_id_ =
@@ -194,9 +199,18 @@ void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
 
 void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
   if (!needs_begin_frames_) {
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(args.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "ReceiveBeginFrameDiscard");
     // We had a race with SetNeedsBeginFrame(false) and still need to let the
     // sink know that we didn't use this BeginFrame.
     DidNotProduceFrame(viz::BeginFrameAck(args, false));
+  } else {
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(args.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "ReceiveBeginFrame");
   }
   if (begin_frame_source_)
     begin_frame_source_->OnBeginFrame(args);
