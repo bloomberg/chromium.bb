@@ -1828,16 +1828,17 @@ void LayerTreeHostImpl::OnDraw(const gfx::Transform& transform,
                                bool resourceless_software_draw,
                                bool skip_draw) {
   DCHECK(!resourceless_software_draw_);
-  const bool transform_changed = external_transform_ != transform;
-  const bool viewport_changed = external_viewport_ != viewport;
-
-  external_transform_ = transform;
-  external_viewport_ = viewport;
 
   if (skip_draw) {
     client_->OnDrawForLayerTreeFrameSink(resourceless_software_draw_, true);
     return;
   }
+
+  const bool transform_changed = external_transform_ != transform;
+  const bool viewport_changed = external_viewport_ != viewport;
+
+  external_transform_ = transform;
+  external_viewport_ = viewport;
 
   {
     base::AutoReset<bool> resourceless_software_draw_reset(
