@@ -347,7 +347,7 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
 }
 
 TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
-       StartWithDevice_SimultaneousRequestsToSameDevice) {
+       SimultaneousRequestsToSameDevice) {
   CreateDelegate(base::nullopt /* initial_host */);
 
   // Attempt to set device 0, but do not invoke the callback yet.
@@ -389,6 +389,34 @@ TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
   InvokePendingSetSoftwareFeatureStateCallback(
       base::nullopt /* error_code */,
       false /* expected_to_notify_observer_and_start_retry_timer */);
+  EXPECT_FALSE(delegate()->HasPendingHostRequest());
+  EXPECT_EQ(test_devices()[0], delegate()->GetMultiDeviceHostFromBackend());
+}
+
+TEST_F(MultiDeviceSetupHostBackendDelegateImplTest,
+       MultipleRequestsToSameDevice_FirstFail_ThenSucceed) {
+  CreateDelegate(base::nullopt /* initial_host */);
+
+  // Attempt to set device 0, but fail.
+  AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
+  InvokePendingSetSoftwareFeatureStateCallback(
+      "errorCode1" /* error_code */,
+      true /* expected_to_notify_observer_and_start_retry_timer */);
+  EXPECT_TRUE(delegate()->HasPendingHostRequest());
+  EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
+  EXPECT_EQ(base::nullopt, delegate()->GetMultiDeviceHostFromBackend());
+
+  // The retry timer is running; however, instead of relying on that, call
+  // AttemptToSetMultiDeviceHostOnBackend() again to trigger an immediate retry
+  // without the timer.
+  AttemptToSetMultiDeviceHostOnBackend(test_devices()[0]);
+  InvokePendingSetSoftwareFeatureStateCallback(
+      base::nullopt /* error_code */,
+      false /* expected_to_notify_observer_and_start_retry_timer */);
+  EXPECT_TRUE(delegate()->HasPendingHostRequest());
+  EXPECT_EQ(test_devices()[0], delegate()->GetPendingHostRequest());
+  SimulateNewHostDevicesSynced(test_devices()[0] /* host_device_after_sync */,
+                               true /* expected_to_fulfill_pending_request */);
   EXPECT_FALSE(delegate()->HasPendingHostRequest());
   EXPECT_EQ(test_devices()[0], delegate()->GetMultiDeviceHostFromBackend());
 }

@@ -56,6 +56,9 @@ class HostBackendDelegate {
   // the OnBackendRequestFailed() observer function is invoked, but this
   // object continues to attempt the request until the request succeeds or until
   // AttemptToSetMultiDeviceHostOnBackend() is called with a new device.
+  //
+  // If there is already a pending request and this function is called with the
+  // same request, a retry will be attempted immediately.
   virtual void AttemptToSetMultiDeviceHostOnBackend(
       const base::Optional<cryptauth::RemoteDeviceRef>& host_device) = 0;
 
