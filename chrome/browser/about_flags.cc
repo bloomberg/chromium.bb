@@ -3589,12 +3589,10 @@ const FeatureEntry kFeatureEntries[] = {
          kMarkHttpAsFeatureVariations,
          "HTTPBadPhase3")},
 
-#if !defined(OS_ANDROID)
     {"enable-web-authentication-api",
      flag_descriptions::kEnableWebAuthenticationAPIName,
-     flag_descriptions::kEnableWebAuthenticationAPIDescription, kOsDesktop,
+     flag_descriptions::kEnableWebAuthenticationAPIDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kWebAuth)},
-#endif  // !defined(OS_ANDROID)
 
 #if !defined(OS_ANDROID)
     {"enable-web-authentication-testing-api",

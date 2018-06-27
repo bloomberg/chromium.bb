@@ -449,6 +449,9 @@ extern const char kEnableSharedArrayBufferDescription[];
 extern const char kEnableWasmName[];
 extern const char kEnableWasmDescription[];
 
+extern const char kEnableWebAuthenticationAPIName[];
+extern const char kEnableWebAuthenticationAPIDescription[];
+
 extern const char kEnableWebPaymentsSingleAppUiSkipName[];
 extern const char kEnableWebPaymentsSingleAppUiSkipDescription[];
 
@@ -1555,9 +1558,6 @@ extern const char kEnableAudioFocusEnabledDuckFlash[];
 
 extern const char kEnableNewAppMenuIconName[];
 extern const char kEnableNewAppMenuIconDescription[];
-
-extern const char kEnableWebAuthenticationAPIName[];
-extern const char kEnableWebAuthenticationAPIDescription[];
 
 extern const char kEnableWebAuthenticationCtap2SupportName[];
 extern const char kEnableWebAuthenticationCtap2SupportDescription[];
