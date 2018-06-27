@@ -23,6 +23,7 @@
 #include "net/base/net_errors.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -113,17 +114,6 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     last_request_ = request;
   }
 
-  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-    auto body = request.request_body;
-    if (!body)
-      return std::string();
-
-    CHECK_EQ(1u, body->elements()->size());
-    auto& element = body->elements()->at(0);
-    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-    return std::string(element.bytes(), element.length());
-  }
-
   void ValidateUpdateFetcherRequest(const std::string& expected_prefix,
                                     const std::string& expected_suffix) {
     EXPECT_EQ(net::LOAD_DISABLE_CACHE, last_request_.load_flags);
@@ -131,7 +121,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
     std::string expected_lists(base::StringPrintf("%s;\n%s;\n",
                                                   kDefaultPhishList,
                                                   kDefaultMalwareList));
-    EXPECT_EQ(expected_lists, GetBodyFromRequest(last_request_));
+    EXPECT_EQ(expected_lists, network::GetUploadData(last_request_));
     EXPECT_EQ(GURL(expected_prefix +
                    "/downloads?client=unittest&appver=1.0"
                    "&pver=3.0" +
@@ -145,7 +135,7 @@ class SafeBrowsingProtocolManagerTest : public testing::Test {
 
   void ValidateRedirectFetcherRequest(const std::string& expected_url) {
     EXPECT_EQ(net::LOAD_DISABLE_CACHE, last_request_.load_flags);
-    EXPECT_EQ("", GetBodyFromRequest(last_request_));
+    EXPECT_EQ("", network::GetUploadData(last_request_));
     EXPECT_EQ(GURL(expected_url), last_request_.url);
   }
 
@@ -491,7 +481,7 @@ TEST_F(SafeBrowsingProtocolManagerTest, ExistingDatabase) {
                                "unknown_list;a:adds_unknown:s:subs_unknown\n"
                                "%s;\n",
                                kDefaultPhishList, kDefaultMalwareList),
-            GetBodyFromRequest(last_request_));
+            network::GetUploadData(last_request_));
   EXPECT_EQ(GURL("https://prefix.com/foo/downloads?client=unittest&appver=1.0"
                  "&pver=3.0" +
                  key_param_ + "&ext=0"),
