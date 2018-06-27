@@ -68,8 +68,6 @@ class NET_EXPORT_PRIVATE MultiThreadedCertVerifier : public CertVerifier {
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
 
-  bool SupportsOCSPStapling() override;
-
  private:
   struct JobToRequestParamsComparator;
   friend class CertVerifierRequest;

@@ -17,7 +17,6 @@ class NET_EXPORT_PRIVATE CertVerifyProcMac : public CertVerifyProc {
   CertVerifyProcMac();
 
   bool SupportsAdditionalTrustAnchors() const override;
-  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcMac() override;

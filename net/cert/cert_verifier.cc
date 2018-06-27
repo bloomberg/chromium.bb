@@ -70,10 +70,6 @@ bool CertVerifier::RequestParams::operator<(
   return key_ < other.key_;
 }
 
-bool CertVerifier::SupportsOCSPStapling() {
-  return false;
-}
-
 std::unique_ptr<CertVerifier> CertVerifier::CreateDefault() {
 #if defined(OS_NACL)
   NOTIMPLEMENTED();

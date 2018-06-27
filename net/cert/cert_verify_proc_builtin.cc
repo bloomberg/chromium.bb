@@ -262,7 +262,6 @@ class CertVerifyProcBuiltin : public CertVerifyProc {
   CertVerifyProcBuiltin();
 
   bool SupportsAdditionalTrustAnchors() const override;
-  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcBuiltin() override;
@@ -282,10 +281,6 @@ CertVerifyProcBuiltin::CertVerifyProcBuiltin() = default;
 CertVerifyProcBuiltin::~CertVerifyProcBuiltin() = default;
 
 bool CertVerifyProcBuiltin::SupportsAdditionalTrustAnchors() const {
-  return true;
-}
-
-bool CertVerifyProcBuiltin::SupportsOCSPStapling() const {
   return true;
 }
 

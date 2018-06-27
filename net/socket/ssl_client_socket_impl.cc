@@ -934,9 +934,6 @@ int SSLClientSocketImpl::Init() {
   SSL_enable_signed_cert_timestamps(ssl_.get());
   SSL_enable_ocsp_stapling(ssl_.get());
 
-  if (cert_verifier_->SupportsOCSPStapling())
-    SSL_enable_ocsp_stapling(ssl_.get());
-
   // Configure BoringSSL to allow renegotiations. Once the initial handshake
   // completes, if renegotiations are not allowed, the default reject value will
   // be restored. This is done in this order to permit a BoringSSL

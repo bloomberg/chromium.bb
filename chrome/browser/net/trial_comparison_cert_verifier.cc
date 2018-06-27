@@ -504,10 +504,6 @@ int TrialComparisonCertVerifier::Verify(const RequestParams& params,
                                    out_req, net_log);
 }
 
-bool TrialComparisonCertVerifier::SupportsOCSPStapling() {
-  return primary_verifier_->SupportsOCSPStapling();
-}
-
 void TrialComparisonCertVerifier::OnPrimaryVerifierComplete(
     const RequestParams& params,
     scoped_refptr<net::CRLSet> crl_set,

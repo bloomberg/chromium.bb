@@ -63,7 +63,6 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
              const CompletionCallback& callback,
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
-  bool SupportsOCSPStapling() override;
 
   // Opportunistically attempts to add |error| and |verify_result| as the
   // result for |params|, which was obtained at |verification_time| and

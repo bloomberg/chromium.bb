@@ -158,9 +158,6 @@ class NET_EXPORT CertVerifier {
                      std::unique_ptr<Request>* out_req,
                      const NetLogWithSource& net_log) = 0;
 
-  // Returns true if this CertVerifier supports stapled OCSP responses.
-  virtual bool SupportsOCSPStapling();
-
   // Creates a CertVerifier implementation that verifies certificates using
   // the preferred underlying cryptographic libraries.
   static std::unique_ptr<CertVerifier> CreateDefault();

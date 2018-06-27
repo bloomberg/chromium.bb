@@ -843,15 +843,6 @@ bool CertVerifyProcWin::SupportsAdditionalTrustAnchors() const {
   return false;
 }
 
-bool CertVerifyProcWin::SupportsOCSPStapling() const {
-  // CERT_OCSP_RESPONSE_PROP_ID is only implemented on Vista+, but it can be
-  // set on Windows XP without error. There is some overhead from the server
-  // sending the OCSP response if it supports the extension, for the subset of
-  // XP clients who will request it but be unable to use it, but this is an
-  // acceptable trade-off for simplicity of implementation.
-  return true;
-}
-
 int CertVerifyProcWin::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,

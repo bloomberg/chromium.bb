@@ -985,12 +985,6 @@ bool CertVerifyProcMac::SupportsAdditionalTrustAnchors() const {
   return false;
 }
 
-bool CertVerifyProcMac::SupportsOCSPStapling() const {
-  // TODO(rsleevi): Plumb an OCSP response into the Mac system library.
-  // https://crbug.com/430714
-  return false;
-}
-
 int CertVerifyProcMac::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,

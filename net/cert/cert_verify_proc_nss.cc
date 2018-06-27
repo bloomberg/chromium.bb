@@ -814,10 +814,6 @@ bool CertVerifyProcNSS::SupportsAdditionalTrustAnchors() const {
   return true;
 }
 
-bool CertVerifyProcNSS::SupportsOCSPStapling() const {
-  return *ResolveCacheOCSPResponse() != nullptr;
-}
-
 int CertVerifyProcNSS::VerifyInternalImpl(
     X509Certificate* cert,
     const std::string& hostname,
@@ -843,7 +839,7 @@ int CertVerifyProcNSS::VerifyInternalImpl(
   }
   CERTCertificate* cert_handle = input_chain[0].get();
 
-  if (!ocsp_response.empty() && SupportsOCSPStapling()) {
+  if (!ocsp_response.empty() && *ResolveCacheOCSPResponse() != nullptr) {
     // Note: NSS uses a thread-safe global hash table, so this call will
     // affect any concurrent verification operations on |cert| or copies of
     // the same certificate. This is an unavoidable limitation of NSS's OCSP

@@ -91,7 +91,6 @@ class FakeCertVerifyProc : public net::CertVerifyProc {
 
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  bool SupportsOCSPStapling() const override { return false; }
 
  protected:
   ~FakeCertVerifyProc() override = default;
@@ -133,7 +132,6 @@ class NotCalledCertVerifyProc : public net::CertVerifyProc {
 
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  bool SupportsOCSPStapling() const override { return false; }
 
  protected:
   ~NotCalledCertVerifyProc() override = default;
@@ -171,7 +169,6 @@ class MockCertVerifyProc : public net::CertVerifyProc {
   MockCertVerifyProc() = default;
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  bool SupportsOCSPStapling() const override { return false; }
   MOCK_METHOD7(VerifyInternal,
                int(net::X509Certificate* cert,
                    const std::string& hostname,

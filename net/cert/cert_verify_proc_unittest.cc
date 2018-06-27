@@ -79,7 +79,6 @@ class MockCertVerifyProc : public CertVerifyProc {
       : result_(result) {}
   // CertVerifyProc implementation:
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  bool SupportsOCSPStapling() const override { return false; }
 
  protected:
   ~MockCertVerifyProc() override = default;

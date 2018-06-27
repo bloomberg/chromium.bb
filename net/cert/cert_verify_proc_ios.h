@@ -22,7 +22,6 @@ class CertVerifyProcIOS : public CertVerifyProc {
   static CertStatus GetCertFailureStatusFromTrust(SecTrustRef trust);
 
   bool SupportsAdditionalTrustAnchors() const override;
-  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcIOS() override;

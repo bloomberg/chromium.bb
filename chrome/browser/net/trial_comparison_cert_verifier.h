@@ -54,8 +54,6 @@ class TrialComparisonCertVerifier : public net::CertVerifier {
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override;
 
-  bool SupportsOCSPStapling() override;
-
   // Returns a CertVerifier using the primary CertVerifyProc, which will not
   // cause OnPrimaryVerifierComplete to be called. This can be used to
   // attempt to re-verify a cert with different chain or flags without
