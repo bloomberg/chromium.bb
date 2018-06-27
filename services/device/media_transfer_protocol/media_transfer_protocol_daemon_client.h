@@ -38,50 +38,51 @@ namespace device {
 class MediaTransferProtocolDaemonClient {
  public:
   // A callback to be called when DBus method call fails.
-  using ErrorCallback = base::Closure;
+  using ErrorCallback = base::OnceClosure;
 
   // A callback to handle the result of EnumerateAutoMountableDevices.
   // The argument is the enumerated storage names.
   using EnumerateStoragesCallback =
-      base::Callback<void(const std::vector<std::string>& storage_names)>;
+      base::OnceCallback<void(const std::vector<std::string>& storage_names)>;
 
   // A callback to handle the result of GetStorageInfo.
   // The argument is the information about the specified storage.
   using GetStorageInfoCallback =
-      base::Callback<void(const mojom::MtpStorageInfo& storage_info)>;
+      base::OnceCallback<void(const mojom::MtpStorageInfo& storage_info)>;
 
   // A callback to handle the result of OpenStorage.
   // The argument is the returned handle.
-  using OpenStorageCallback = base::Callback<void(const std::string& handle)>;
+  using OpenStorageCallback =
+      base::OnceCallback<void(const std::string& handle)>;
 
   // A callback to handle the result of CloseStorage.
-  using CloseStorageCallback = base::Closure;
+  using CloseStorageCallback = base::OnceClosure;
 
   // A callback to handle the result of CreateDirectory.
-  using CreateDirectoryCallback = base::Closure;
+  using CreateDirectoryCallback = base::OnceClosure;
 
   // A callback to handle the result of ReadDirectoryEntryIds.
   // The argument is a vector of file ids.
   using ReadDirectoryEntryIdsCallback =
-      base::Callback<void(const std::vector<uint32_t>& file_ids)>;
+      base::OnceCallback<void(const std::vector<uint32_t>& file_ids)>;
 
   // A callback to handle the result of GetFileInfo.
   // The argument is a vector of file entries.
-  using GetFileInfoCallback = base::Callback<void(
+  using GetFileInfoCallback = base::OnceCallback<void(
       const std::vector<mojom::MtpFileEntry>& file_entries)>;
 
   // A callback to handle the result of ReadFileChunkById.
   // The argument is a string containing the file data.
-  using ReadFileCallback = base::Callback<void(const std::string& data)>;
+  using ReadFileCallback = base::OnceCallback<void(const std::string& data)>;
 
   // A callback to handle the result of RenameObject.
-  using RenameObjectCallback = base::Closure;
+  using RenameObjectCallback = base::OnceClosure;
 
   // A callback to handle the result of CopyFileFromLocal.
-  using CopyFileFromLocalCallback = base::Closure;
+  using CopyFileFromLocalCallback = base::OnceClosure;
 
   // A callback to handle the result of DeleteObject.
-  using DeleteObjectCallback = base::Closure;
+  using DeleteObjectCallback = base::OnceClosure;
 
   // A callback to handle storage attach/detach events.
   // The first argument is true for attach, false for detach.
@@ -93,37 +94,35 @@ class MediaTransferProtocolDaemonClient {
 
   // Calls EnumerateStorages method. |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
-  virtual void EnumerateStorages(
-      const EnumerateStoragesCallback& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void EnumerateStorages(EnumerateStoragesCallback callback,
+                                 ErrorCallback error_callback) = 0;
 
   // Calls GetStorageInfo method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   virtual void GetStorageInfo(const std::string& storage_name,
-                              const GetStorageInfoCallback& callback,
-                              const ErrorCallback& error_callback) = 0;
+                              GetStorageInfoCallback callback,
+                              ErrorCallback error_callback) = 0;
 
   // Calls GetStorageInfoFromDevice method. |callback| is called after the
   // method call succeeds, otherwise, |error_callback| is called.
-  virtual void GetStorageInfoFromDevice(
-      const std::string& storage_name,
-      const GetStorageInfoCallback& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void GetStorageInfoFromDevice(const std::string& storage_name,
+                                        GetStorageInfoCallback callback,
+                                        ErrorCallback error_callback) = 0;
 
   // Calls OpenStorage method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   // OpenStorage returns a handle in |callback|.
   virtual void OpenStorage(const std::string& storage_name,
                            const std::string& mode,
-                           const OpenStorageCallback& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           OpenStorageCallback callback,
+                           ErrorCallback error_callback) = 0;
 
   // Calls CloseStorage method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   // |handle| comes from a OpenStorageCallback.
   virtual void CloseStorage(const std::string& handle,
-                            const CloseStorageCallback& callback,
-                            const ErrorCallback& error_callback) = 0;
+                            CloseStorageCallback callback,
+                            ErrorCallback error_callback) = 0;
 
   // Calls CreateDirectory method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
@@ -132,25 +131,24 @@ class MediaTransferProtocolDaemonClient {
   virtual void CreateDirectory(const std::string& handle,
                                const uint32_t parent_id,
                                const std::string& directory_name,
-                               const CreateDirectoryCallback& callback,
-                               const ErrorCallback& error_callback) = 0;
+                               CreateDirectoryCallback callback,
+                               ErrorCallback error_callback) = 0;
 
   // Calls ReadDirectoryEntryIds method. |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   // |file_id| is a MTP-device specific id for a file.
-  virtual void ReadDirectoryEntryIds(
-      const std::string& handle,
-      uint32_t file_id,
-      const ReadDirectoryEntryIdsCallback& callback,
-      const ErrorCallback& error_callback) = 0;
+  virtual void ReadDirectoryEntryIds(const std::string& handle,
+                                     uint32_t file_id,
+                                     ReadDirectoryEntryIdsCallback callback,
+                                     ErrorCallback error_callback) = 0;
 
   // Calls GetFileInfo method. |callback| is called after the method
   // call succeeds, otherwise, |error_callback| is called.
   // |file_ids| is a list of MTP-device specific file ids.
   virtual void GetFileInfo(const std::string& handle,
                            const std::vector<uint32_t>& file_ids,
-                           const GetFileInfoCallback& callback,
-                           const ErrorCallback& error_callback) = 0;
+                           GetFileInfoCallback callback,
+                           ErrorCallback error_callback) = 0;
 
   // Calls ReadFileChunk method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
@@ -161,8 +159,8 @@ class MediaTransferProtocolDaemonClient {
                              uint32_t file_id,
                              uint32_t offset,
                              uint32_t bytes_to_read,
-                             const ReadFileCallback& callback,
-                             const ErrorCallback& error_callback) = 0;
+                             ReadFileCallback callback,
+                             ErrorCallback error_callback) = 0;
 
   // Calls RenameObject method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
@@ -171,8 +169,8 @@ class MediaTransferProtocolDaemonClient {
   virtual void RenameObject(const std::string& handle,
                             const uint32_t object_id,
                             const std::string& new_name,
-                            const RenameObjectCallback& callback,
-                            const ErrorCallback& error_callback) = 0;
+                            RenameObjectCallback callback,
+                            ErrorCallback error_callback) = 0;
 
   // Calls CopyFileFromLocal method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
@@ -183,16 +181,16 @@ class MediaTransferProtocolDaemonClient {
                                  const int source_file_descriptor,
                                  const uint32_t parent_id,
                                  const std::string& file_name,
-                                 const CopyFileFromLocalCallback& callback,
-                                 const ErrorCallback& error_callback) = 0;
+                                 CopyFileFromLocalCallback callback,
+                                 ErrorCallback error_callback) = 0;
 
   // Calls DeleteObject method. |callback| is called after the method call
   // succeeds, otherwise, |error_callback| is called.
   // |object_id| is an object id of a file or directory which is deleted.
   virtual void DeleteObject(const std::string& handle,
                             const uint32_t object_id,
-                            const DeleteObjectCallback& callback,
-                            const ErrorCallback& error_callback) = 0;
+                            DeleteObjectCallback callback,
+                            ErrorCallback error_callback) = 0;
 
   // Registers given callback for events. Should only be called once.
   // |storage_event_handler| is called when a mtp storage attach or detach
