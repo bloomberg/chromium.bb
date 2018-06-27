@@ -37,7 +37,7 @@ class FetchRequestData final
   static FetchRequestData* Create(ScriptState*, const WebServiceWorkerRequest&);
   // Call Request::refreshBody() after calling clone() or pass().
   FetchRequestData* Clone(ScriptState*, ExceptionState&);
-  FetchRequestData* Pass(ScriptState*);
+  FetchRequestData* Pass(ScriptState*, ExceptionState&);
   ~FetchRequestData();
 
   void SetMethod(AtomicString method) { method_ = method; }

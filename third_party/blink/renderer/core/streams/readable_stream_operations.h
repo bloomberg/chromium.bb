@@ -86,7 +86,9 @@ class CORE_EXPORT ReadableStreamOperations {
 
   // IsReadableStreamReadable.
   // This function assumes |IsReadableStream(stream)|.
-  static base::Optional<bool> IsReadable(ScriptState*, ScriptValue stream);
+  static base::Optional<bool> IsReadable(ScriptState*,
+                                         ScriptValue stream,
+                                         ExceptionState& exception_state);
 
   // IsReadableStreamClosed.
   // This function assumes |IsReadableStream(stream)|.

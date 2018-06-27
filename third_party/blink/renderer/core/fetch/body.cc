@@ -152,7 +152,10 @@ ScriptPromise Body::arrayBuffer(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsArrayBuffer(),
-                               new BodyArrayBufferConsumer(resolver));
+                               new BodyArrayBufferConsumer(resolver),
+                               exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
   } else {
     resolver->Resolve(DOMArrayBuffer::Create(0u, 1));
   }
@@ -174,7 +177,9 @@ ScriptPromise Body::blob(ScriptState* script_state,
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(
         FetchDataLoader::CreateLoaderAsBlobHandle(MimeType()),
-        new BodyBlobConsumer(resolver));
+        new BodyBlobConsumer(resolver), exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
   } else {
     std::unique_ptr<BlobData> blob_data = BlobData::Create();
     blob_data->SetContentType(MimeType());
@@ -205,13 +210,18 @@ ScriptPromise Body::formData(ScriptState* script_state,
     if (body_buffer && !boundary.IsEmpty()) {
       body_buffer->StartLoading(
           FetchDataLoader::CreateLoaderAsFormData(boundary),
-          new BodyFormDataConsumer(resolver));
+          new BodyFormDataConsumer(resolver), exception_state);
+      if (exception_state.HadException())
+        return ScriptPromise();
       return promise;
     }
   } else if (parsedType == "application/x-www-form-urlencoded") {
     if (BodyBuffer()) {
       BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                                 new BodyFormDataConsumer(resolver));
+                                 new BodyFormDataConsumer(resolver),
+                                 exception_state);
+      if (exception_state.HadException())
+        return ScriptPromise();
     } else {
       resolver->Resolve(FormData::Create());
     }
@@ -219,7 +229,10 @@ ScriptPromise Body::formData(ScriptState* script_state,
   } else {
     if (BodyBuffer()) {
       BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsFailure(),
-                                 new BodyFormDataConsumer(resolver));
+                                 new BodyFormDataConsumer(resolver),
+                                 exception_state);
+      if (exception_state.HadException())
+        return ScriptPromise();
       return promise;
     }
   }
@@ -243,7 +256,9 @@ ScriptPromise Body::json(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                               new BodyJsonConsumer(resolver));
+                               new BodyJsonConsumer(resolver), exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
   } else {
     resolver->Reject(V8ThrowException::CreateSyntaxError(
         script_state->GetIsolate(), "Unexpected end of input"));
@@ -265,7 +280,9 @@ ScriptPromise Body::text(ScriptState* script_state,
   ScriptPromise promise = resolver->Promise();
   if (BodyBuffer()) {
     BodyBuffer()->StartLoading(FetchDataLoader::CreateLoaderAsString(),
-                               new BodyTextConsumer(resolver));
+                               new BodyTextConsumer(resolver), exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
   } else {
     resolver->Resolve(String());
   }

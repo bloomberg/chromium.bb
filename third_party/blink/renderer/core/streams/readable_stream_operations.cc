@@ -182,9 +182,11 @@ base::Optional<bool> ReadableStreamOperations::IsLocked(
 
 base::Optional<bool> ReadableStreamOperations::IsReadable(
     ScriptState* script_state,
-    ScriptValue stream) {
+    ScriptValue stream,
+    ExceptionState& exception_state) {
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
-  return BooleanOperation(script_state, stream, "IsReadableStreamReadable");
+  return BooleanOperationWithRethrow(
+      script_state, stream, "IsReadableStreamReadable", exception_state);
 }
 
 base::Optional<bool> ReadableStreamOperations::IsClosed(

@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
@@ -57,8 +58,13 @@ class GlobalFetchImpl final
       return ScriptPromise();
 
     probe::willSendXMLHttpOrFetchNetworkRequest(execution_context, r->url());
-    return fetch_manager_->Fetch(script_state, r->PassRequestData(script_state),
-                                 r->signal());
+    auto promise = fetch_manager_->Fetch(
+        script_state, r->PassRequestData(script_state, exception_state),
+        r->signal(), exception_state);
+    if (exception_state.HadException())
+      return ScriptPromise();
+
+    return promise;
   }
 
   void Trace(blink::Visitor* visitor) override {

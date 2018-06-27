@@ -13,6 +13,7 @@
 namespace blink {
 
 class AbortSignal;
+class ExceptionState;
 class ExecutionContext;
 class FetchRequestData;
 class ScriptState;
@@ -23,7 +24,10 @@ class CORE_EXPORT FetchManager final : public GarbageCollected<FetchManager>,
 
  public:
   static FetchManager* Create(ExecutionContext*);
-  ScriptPromise Fetch(ScriptState*, FetchRequestData*, AbortSignal*);
+  ScriptPromise Fetch(ScriptState*,
+                      FetchRequestData*,
+                      AbortSignal*,
+                      ExceptionState&);
   void ContextDestroyed(ExecutionContext*) override;
 
   void Trace(blink::Visitor*) override;
