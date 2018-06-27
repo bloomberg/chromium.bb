@@ -1087,48 +1087,6 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
       ->ClearSettingsForOneType(CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
-// Check the client hints for the given URL in an incognito window.
-// Start incognito browser twice to ensure that client hints prefs are
-// not carried over.
-IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest, ClientHintsHttpsIncognito) {
-  // TODO(crbug.com/850945): This test causes a use-after-free when the
-  // NetworkServices feature is enabled. Disable the test in that configuration
-  // until the issue is fixed.
-  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
-    return;
-  }
-
-  for (size_t i = 0; i < 2; ++i) {
-    base::HistogramTester histogram_tester;
-
-    Browser* incognito = CreateIncognitoBrowser();
-    ui_test_utils::NavigateToURL(incognito, accept_ch_with_lifetime_url());
-
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateEventCount", 1, 1);
-
-    content::FetchHistogramsFromChildProcesses();
-    SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
-
-    // accept_ch_with_lifetime_url() sets six client hints.
-    histogram_tester.ExpectUniqueSample("ClientHints.UpdateSize", 6, 1);
-
-    // At least one renderer must have been created. All the renderers created
-    // must have read 0 client hints.
-    EXPECT_LE(1u,
-              histogram_tester.GetAllSamples("ClientHints.CountRulesReceived")
-                  .size());
-    for (const auto& bucket :
-         histogram_tester.GetAllSamples("ClientHints.CountRulesReceived")) {
-      EXPECT_EQ(0, bucket.min);
-    }
-    // |url| sets client hints persist duration to 3600 seconds.
-    histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
-                                        3600 * 1000, 1);
-
-    CloseBrowserSynchronously(incognito);
-  }
-}
-
 // Verify that client hints are sent in the incognito profiles, and server
 // client hint opt-ins are honored within the incognito profile.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
