@@ -3767,7 +3767,7 @@
 
   "DeviceAutoUpdateTimeRestrictions": {
     "os": ["chromeos"],
-    "test_policy": {"UpdateTimeRestrictions": [{"start" : {"day_of_week" : 3, "time": 15150000}, "end": {"day_of_week" : 4, "time": 15112000}}, {"start": {"day_of_week": 1, "time": 15151000}, "end": {"day_of_week": 1, "time": 15451000}}]}
+    "test_policy": {"UpdateTimeRestrictions": [{"start" : {"day_of_week" : "Wednesday", "minutes": 30, "hours": 3}, "end": {"day_of_week" : "Thursday", "minutes": 20, "hours": 13}}, {"start": {"day_of_week": "Monday", "minutes": 45, "hours": 1}, "end": {"day_of_week": "Monday", "minutes": 50, "hours": 15}}]}
   },
 
   "----- Chrome Frame policies -------------------------------------------": {},

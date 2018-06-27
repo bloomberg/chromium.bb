@@ -12265,11 +12265,44 @@
     },
     {
       'name': 'DeviceAutoUpdateTimeRestrictions',
-      'type': 'list',
+      'type': 'dict',
       'schema': {
         'type': 'array',
         'items': {
-          '$ref': 'WeeklyTimeIntervals'
+          'type': 'object',
+          'description': 'Time interval that spans at most one week. If the start time is later than the end time, then the interval will wrap around.',
+          'properties': {
+            'start': {
+              'description': 'Start time of the interval, inclusive.',
+              'type': 'object',
+              'id': 'DisallowedTimeInterval',
+              'properties': {
+                'day_of_week': {
+                  'description': 'Day of the week for the interval.',
+                  'type': 'string',
+                  'enum': ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+                },
+                'minutes': {
+                  'description': 'Minutes elapsed in the current hour.',
+                  'type': 'integer',
+                  'minimum': 0,
+                  'maximum': 59
+                },
+                'hours': {
+                  'description': 'Hours elapsed since the start of the day in (24 hour format).',
+                  'type': 'integer',
+                  'minimum': 0,
+                  'maximum': 23
+                }
+              },
+              'required': ['day_of_week', 'minutes', 'hours']
+            },
+            'end': {
+              'description': 'End of the interval, exclusive.',
+              '$ref': 'DisallowedTimeInterval'
+            }
+          },
+          'required': ['start', 'end']
         }
       },
       'supported_on': ['chrome_os:69-'],
@@ -12281,22 +12314,26 @@
       'example_value': [
         {
           'start': {
-            'day_of_week': 'TUESDAY',
-            'time': 15150000
+            'day_of_week': 'Monday',
+            'minutes': 50,
+            'hours': 3,
           },
           'end': {
-            'day_of_week': 'WEDNESDAY',
-            'time': 15251000
+            'day_of_week': 'Thursday',
+            'minutes': 30,
+            'hours': 2,
           }
         },
         {
           'start': {
-            'day_of_week': 'FRIDAY',
-            'time': 15213000
+            'day_of_week': 'Thursday',
+            'minutes': 30,
+            'hours': 3
           },
           'end': {
-            'day_of_week': 'FRIDAY',
-            'time': 15410000
+            'day_of_week': 'Sunday',
+            'minutes': 10,
+            'hours': 15,
           }
         }
       ],
