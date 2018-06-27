@@ -674,6 +674,23 @@ SlideMode.prototype.leave = function(zoomToRect, callback) {
   this.touchHandlers_.enabled = false;
 };
 
+/**
+ * Activate content, in a way that makes sense for the content. Currently this
+ * causes video to start playing.
+ */
+SlideMode.prototype.activateContent = function() {
+  var content = this.imageContainer_.firstElementChild;
+  if (content instanceof HTMLVideoElement) {
+    content.autoplay = true;
+    // Disable controls for half a second. This avoids the video starting with a
+    // big "pause" button in the center (even if the mouse is not moving). If
+    // the user moves their mouse after the timeout, the controls will appear.
+    content.controls = false;
+    setTimeout(function() {
+      content.controls = true;
+    }, 500);
+  }
+};
 
 /**
  * Execute an action when the editor is not busy.

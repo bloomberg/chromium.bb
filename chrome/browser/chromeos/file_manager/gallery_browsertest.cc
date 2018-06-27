@@ -315,4 +315,9 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, StopStartSlideshowOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, ActivateVideoFromThumbnailMode) {
+  set_test_case_name("activateVideoFromThumbnailMode");
+  StartTest();
+}
+
 }  // namespace file_manager

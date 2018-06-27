@@ -130,10 +130,8 @@ function Gallery(volumeManager) {
 
   this.thumbnailMode_ = new ThumbnailMode(
       assertInstanceof(document.querySelector('.thumbnail-view'), HTMLElement),
-      this.errorBanner_,
-      this.dataModel_,
-      this.selectionModel_,
-      this.onChangeToSlideMode_.bind(this));
+      this.errorBanner_, this.dataModel_, this.selectionModel_,
+      this.onThumbnailActivated_.bind(this));
   this.thumbnailMode_.hide();
 
   this.slideMode_ = new SlideMode(this.container_,
@@ -493,14 +491,15 @@ Gallery.prototype.onModeSwitchButtonClicked_ = function(event) {
 };
 
 /**
- * Change to slide mode.
+ * Callback from ThumbnailMode: changes to slide mode, possibly autoplaying the
+ *     selected item.
  * @private
  */
-Gallery.prototype.onChangeToSlideMode_ = function() {
+Gallery.prototype.onThumbnailActivated_ = function() {
   if (this.modeSwitchButton_.disabled)
     return;
 
-  this.changeCurrentMode_(this.slideMode_);
+  this.changeCurrentMode_(this.slideMode_, true /* activate */);
 };
 
 /**
@@ -517,11 +516,12 @@ Gallery.prototype.updateModeButtonAttribute_ = function() {
 /**
  * Change current mode.
  * @param {!(SlideMode|ThumbnailMode)} mode Target mode.
+ * @param {boolean} activate Whether to activate a selected item (if any).
  * @param {Event=} opt_event Event that caused this call.
  * @return {!Promise} Resolved when mode has been changed.
  * @private
  */
-Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
+Gallery.prototype.changeCurrentMode_ = function(mode, activate, opt_event) {
   return new Promise(function(fulfill, reject) {
     // Do not re-enter while changing the mode.
     if (this.currentMode_ === mode || this.changingMode_) {
@@ -567,6 +567,8 @@ Gallery.prototype.changeCurrentMode_ = function(mode, opt_event) {
           function() {
             // Animate to zoomed position.
             this.thumbnailMode_.hide();
+            if (activate)
+              this.slideMode_.activateContent();
           }.bind(this),
           onModeChanged);
       this.bottomToolbar_.hidden = false;
@@ -588,7 +590,8 @@ Gallery.prototype.toggleMode_ = function(opt_callback, opt_event) {
   var targetMode = this.currentMode_ === this.slideMode_ ?
       this.thumbnailMode_ : this.slideMode_;
 
-  this.changeCurrentMode_(targetMode, opt_event).then(function() {
+  let activate = false;
+  this.changeCurrentMode_(targetMode, activate, opt_event).then(function() {
     if (opt_callback)
       opt_callback();
   });
