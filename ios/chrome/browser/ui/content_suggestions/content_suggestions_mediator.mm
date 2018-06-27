@@ -218,7 +218,9 @@ initWithContentService:(ntp_snippets::ContentSuggestionsService*)contentService
     [sectionsInfo addObject:self.promoSectionInfo];
   }
 
-  if (self.mostVisitedItems.count > 0) {
+  // Since action items are always visible in UI Refresh, always add
+  // |mostVisitedSectionInfo| in UI Refresh.
+  if (self.mostVisitedItems.count > 0 || IsUIRefreshPhase1Enabled()) {
     [sectionsInfo addObject:self.mostVisitedSectionInfo];
   }
 
