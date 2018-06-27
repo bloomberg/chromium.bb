@@ -1,8 +1,7 @@
 'use strict';
 
 // MockSpeechRecognizer is a mock implementation of mojom::SpeechRecognizer and
-// the browser speech recognition service. It currently only supports running
-// one recognition session at a time. Mock results can be set using
+// the browser speech recognition service. Mock results can be set using
 // addMockSpeechRecognitionResult, and setMockSpeechRecognitionError can be used
 // to simulate an error state. If no mock results are set, a NoMatch error is
 // sent to the client.
@@ -116,7 +115,5 @@ class MockSpeechRecognitionSession {
 
   stop() {}
 
-  abort() {
-    this.recognizer_.session_client_.ended();
-  }
+  abort() {}
 }
