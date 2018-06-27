@@ -210,6 +210,7 @@ def _ArePaintOrCompositingDirectoriesModified(change):  # pylint: disable=C0103
 def _AreLayoutNGDirectoriesModified(change):  # pylint: disable=C0103
     """Checks whether CL has changes to a layout ng directory."""
     layout_ng_paths = [
+        os.path.join('third_party', 'blink', 'renderer', 'core', 'editing'),
         os.path.join('third_party', 'blink', 'renderer', 'core', 'layout',
                      'ng'),
         os.path.join('third_party', 'blink', 'renderer', 'core', 'paint',
