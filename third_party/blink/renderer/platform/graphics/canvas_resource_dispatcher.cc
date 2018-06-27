@@ -128,7 +128,7 @@ void CanvasResourceDispatcher::PostImageToPlaceholder(
 
 void CanvasResourceDispatcher::DispatchFrameSync(
     scoped_refptr<StaticBitmapImage> image,
-    double commit_start_time,
+    base::TimeTicks commit_start_time,
     const SkIRect& damage_rect) {
   scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
       std::move(image),
@@ -150,7 +150,7 @@ void CanvasResourceDispatcher::DispatchFrameSync(
 
 void CanvasResourceDispatcher::DispatchFrame(
     scoped_refptr<StaticBitmapImage> image,
-    double commit_start_time,
+    base::TimeTicks commit_start_time,
     const SkIRect& damage_rect) {
   scoped_refptr<CanvasResource> canvas_resource = CanvasResourceBitmap::Create(
       std::move(image),
@@ -170,7 +170,7 @@ void CanvasResourceDispatcher::DispatchFrame(
 
 bool CanvasResourceDispatcher::PrepareFrame(
     scoped_refptr<CanvasResource> canvas_resource,
-    double commit_start_time,
+    base::TimeTicks commit_start_time,
     const SkIRect& damage_rect,
     viz::CompositorFrame* frame) {
   DCHECK(canvas_resource->IsBitmap());
@@ -295,7 +295,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
 
   frame->render_pass_list.push_back(std::move(pass));
 
-  double elapsed_time = WTF::CurrentTimeTicksInSeconds() - commit_start_time;
+  base::TimeDelta elapsed_time = WTF::CurrentTimeTicks() - commit_start_time;
 
   switch (commit_type) {
     case kCommitGPUCanvasGPUCompositing:
@@ -304,16 +304,16 @@ bool CanvasResourceDispatcher::PrepareFrame(
             CustomCountHistogram, commit_gpu_canvas_gpu_compositing_main_timer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingMain", 0,
              10000000, 50));
-        commit_gpu_canvas_gpu_compositing_main_timer.Count(elapsed_time *
-                                                           1000000.0);
+        commit_gpu_canvas_gpu_compositing_main_timer.Count(
+            elapsed_time.InMicroseconds());
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
             commit_gpu_canvas_gpu_compositing_worker_timer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasGPUCompositingWorker", 0,
              10000000, 50));
-        commit_gpu_canvas_gpu_compositing_worker_timer.Count(elapsed_time *
-                                                             1000000.0);
+        commit_gpu_canvas_gpu_compositing_worker_timer.Count(
+            elapsed_time.InMicroseconds());
       }
       break;
     case kCommitGPUCanvasSoftwareCompositing:
@@ -323,8 +323,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             commit_gpu_canvas_software_compositing_main_timer,
             ("Blink.Canvas.OffscreenCommit.GPUCanvasSoftwareCompositingMain", 0,
              10000000, 50));
-        commit_gpu_canvas_software_compositing_main_timer.Count(elapsed_time *
-                                                                1000000.0);
+        commit_gpu_canvas_software_compositing_main_timer.Count(
+            elapsed_time.InMicroseconds());
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
@@ -332,8 +332,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             ("Blink.Canvas.OffscreenCommit."
              "GPUCanvasSoftwareCompositingWorker",
              0, 10000000, 50));
-        commit_gpu_canvas_software_compositing_worker_timer.Count(elapsed_time *
-                                                                  1000000.0);
+        commit_gpu_canvas_software_compositing_worker_timer.Count(
+            elapsed_time.InMicroseconds());
       }
       break;
     case kCommitSoftwareCanvasGPUCompositing:
@@ -343,8 +343,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             commit_software_canvas_gpu_compositing_main_timer,
             ("Blink.Canvas.OffscreenCommit.SoftwareCanvasGPUCompositingMain", 0,
              10000000, 50));
-        commit_software_canvas_gpu_compositing_main_timer.Count(elapsed_time *
-                                                                1000000.0);
+        commit_software_canvas_gpu_compositing_main_timer.Count(
+            elapsed_time.InMicroseconds());
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
@@ -352,8 +352,8 @@ bool CanvasResourceDispatcher::PrepareFrame(
             ("Blink.Canvas.OffscreenCommit."
              "SoftwareCanvasGPUCompositingWorker",
              0, 10000000, 50));
-        commit_software_canvas_gpu_compositing_worker_timer.Count(elapsed_time *
-                                                                  1000000.0);
+        commit_software_canvas_gpu_compositing_worker_timer.Count(
+            elapsed_time.InMicroseconds());
       }
       break;
     case kCommitSoftwareCanvasSoftwareCompositing:
@@ -365,7 +365,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
              "SoftwareCanvasSoftwareCompositingMain",
              0, 10000000, 50));
         commit_software_canvas_software_compositing_main_timer.Count(
-            elapsed_time * 1000000.0);
+            elapsed_time.InMicroseconds());
       } else {
         DEFINE_THREAD_SAFE_STATIC_LOCAL(
             CustomCountHistogram,
@@ -374,7 +374,7 @@ bool CanvasResourceDispatcher::PrepareFrame(
              "SoftwareCanvasSoftwareCompositingWorker",
              0, 10000000, 50));
         commit_software_canvas_software_compositing_worker_timer.Count(
-            elapsed_time * 1000000.0);
+            elapsed_time.InMicroseconds());
       }
       break;
     case kOffscreenCanvasCommitTypeCount:

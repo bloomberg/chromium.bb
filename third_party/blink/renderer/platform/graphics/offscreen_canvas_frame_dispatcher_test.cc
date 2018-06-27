@@ -60,8 +60,8 @@ class CanvasResourceDispatcherTest : public testing::Test {
 void CanvasResourceDispatcherTest::DispatchOneFrame() {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(10, 10);
   dispatcher_->DispatchFrame(
-      StaticBitmapImage::Create(surface->makeImageSnapshot()), 0.0,
-      SkIRect::MakeEmpty());
+      StaticBitmapImage::Create(surface->makeImageSnapshot()),
+      base::TimeTicks(), SkIRect::MakeEmpty());
 }
 
 TEST_F(CanvasResourceDispatcherTest, PlaceholderRunsNormally) {
