@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/internal_app/internal_app_item.h"
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
 #include "chrome/browser/ui/app_list/internal_app/internal_app_metadata.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -17,8 +17,9 @@ InternalAppItem::InternalAppItem(
     const app_list::AppListSyncableService::SyncItem* sync_item,
     const app_list::InternalApp& internal_app)
     : ChromeAppListItem(profile, internal_app.app_id) {
-  SetIcon(app_list::GetIconForResourceId(internal_app.icon_resource_id,
-                                         app_list::kTileIconSize));
+  SetIcon(app_list::GetIconForResourceId(
+      internal_app.icon_resource_id,
+      app_list::AppListConfig::instance().grid_icon_dimension()));
   SetName(l10n_util::GetStringUTF8(internal_app.name_string_resource_id));
   if (sync_item && sync_item->item_ordinal.IsValid())
     UpdateFromSync(sync_item);

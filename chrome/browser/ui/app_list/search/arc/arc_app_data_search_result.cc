@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -98,7 +98,7 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcAppDataSearchResult::ApplyIcon,
                      weak_ptr_factory_.GetWeakPtr()),
-      kGridIconDimension);
+      app_list::AppListConfig::instance().search_tile_icon_dimension());
   icon_decode_request_->StartWithOptions(icon_png_data().value());
 }
 

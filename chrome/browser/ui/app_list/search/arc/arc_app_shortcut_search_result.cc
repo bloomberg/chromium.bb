@@ -7,7 +7,7 @@
 #include <string>
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chromeos/arc/icon_decode_request.h"
@@ -34,14 +34,16 @@ ArcAppShortcutSearchResult::ArcAppShortcutSearchResult(
   set_id(kAppShortcutSearchPrefix + GetAppId() + "/" + data_->shortcut_id);
   SetDisplayType(ash::SearchResultDisplayType::kTile);
 
+  const int icon_dimension =
+      app_list::AppListConfig::instance().search_tile_icon_dimension();
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcAppShortcutSearchResult::SetIcon,
                      base::Unretained(this)),
-      kGridIconDimension);
+      icon_dimension);
   icon_decode_request_->StartWithOptions(data_->icon_png);
 
   badge_icon_loader_ =
-      std::make_unique<ArcAppIconLoader>(profile_, kGridIconDimension, this);
+      std::make_unique<ArcAppIconLoader>(profile_, icon_dimension, this);
   badge_icon_loader_->FetchImage(GetAppId());
 }
 
@@ -57,7 +59,7 @@ void ArcAppShortcutSearchResult::OnAppImageUpdated(
     const gfx::ImageSkia& image) {
   SetBadgeIcon(gfx::ImageSkiaOperations::CreateResizedImage(
       image, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(kAppBadgeIconSize, kAppBadgeIconSize)));
+      app_list::AppListConfig::instance().search_tile_badge_icon_size()));
 }
 
 std::string ArcAppShortcutSearchResult::GetAppId() const {

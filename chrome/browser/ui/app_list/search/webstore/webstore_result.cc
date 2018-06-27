@@ -9,7 +9,7 @@
 #include <algorithm>
 #include <vector>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/utf_string_conversions.h"
@@ -58,7 +58,8 @@ WebstoreResult::WebstoreResult(Profile* profile,
   InitAndStartObserving();
   UpdateActions();
 
-  int icon_dimension = GetPreferredIconDimension(display_type());
+  int icon_dimension =
+      AppListConfig::instance().GetPreferredIconDimension(display_type());
   icon_ = gfx::ImageSkia(
       std::make_unique<UrlIconSource>(
           base::Bind(&WebstoreResult::OnIconLoaded, weak_factory_.GetWeakPtr()),
@@ -85,9 +86,7 @@ void WebstoreResult::Open(int event_flags) {
       extension_urls::kWebstoreSourceField,
       extension_urls::kLaunchSourceAppListSearch);
 
-  controller_->OpenURL(profile_,
-                       store_url,
-                       ui::PAGE_TRANSITION_LINK,
+  controller_->OpenURL(profile_, store_url, ui::PAGE_TRANSITION_LINK,
                        ui::DispositionFromEventFlags(event_flags));
 }
 

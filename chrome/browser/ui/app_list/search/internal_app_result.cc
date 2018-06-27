@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/internal_app_id_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu.h"
@@ -25,8 +25,9 @@ InternalAppResult::InternalAppResult(Profile* profile,
     : AppResult(profile, app_id, controller, is_recommendation) {
   set_id(app_id);
   SetResultType(ResultType::kInternalApp);
-  SetIcon(
-      GetIconForResourceId(GetIconResourceIdByAppId(app_id), kTileIconSize));
+  SetIcon(GetIconForResourceId(
+      GetIconResourceIdByAppId(app_id),
+      AppListConfig::instance().search_tile_icon_dimension()));
 }
 
 InternalAppResult::~InternalAppResult() {}

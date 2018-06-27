@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
@@ -29,12 +29,13 @@ ArcAppResult::ArcAppResult(Profile* profile,
   id += app_id;
   set_id(id);
   icon_loader_.reset(new ArcAppIconLoader(
-      profile, GetPreferredIconDimension(display_type()), this));
+      profile,
+      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      this));
   icon_loader_->FetchImage(app_id);
 }
 
-ArcAppResult::~ArcAppResult() {
-}
+ArcAppResult::~ArcAppResult() {}
 
 void ArcAppResult::OnAppImageUpdated(const std::string& app_id,
                                      const gfx::ImageSkia& image) {

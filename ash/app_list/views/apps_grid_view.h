@@ -284,6 +284,8 @@ class APP_LIST_EXPORT AppsGridView : public views::View,
     return expand_arrow_view_;
   }
 
+  bool IsHomeLauncherEnabled() const;
+
  private:
   class FadeoutLayerDelegate;
   friend class test::AppsGridViewTestApi;

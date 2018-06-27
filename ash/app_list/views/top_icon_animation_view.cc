@@ -4,6 +4,8 @@
 
 #include "ash/app_list/views/top_icon_animation_view.h"
 
+#include "ash/app_list/views/app_list_item_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
@@ -18,12 +20,12 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
                                            const gfx::Rect& scaled_rect,
                                            bool open_folder,
                                            bool item_in_folder_icon)
-    : icon_size_(kGridIconDimension, kGridIconDimension),
-      icon_(new views::ImageView),
+    : icon_(new views::ImageView),
       title_(new views::Label),
       scaled_rect_(scaled_rect),
       open_folder_(open_folder),
       item_in_folder_icon_(item_in_folder_icon) {
+  icon_size_ = AppListConfig::instance().grid_icon_size();
   DCHECK(!icon.isNull());
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST, icon_size_));
@@ -33,7 +35,7 @@ TopIconAnimationView::TopIconAnimationView(const gfx::ImageSkia& icon,
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHandlesTooltips(false);
-  const gfx::FontList& font = AppListAppTitleFont();
+  const gfx::FontList& font = AppListConfig::instance().app_title_font();
   title_->SetFontList(font);
   title_->SetLineHeight(font.GetHeight());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -110,23 +112,20 @@ void TopIconAnimationView::TransformView() {
 }
 
 gfx::Size TopIconAnimationView::CalculatePreferredSize() const {
-  return gfx::Size(kGridTileWidth, kGridTileHeight);
+  return gfx::Size(AppListConfig::instance().grid_tile_width(),
+                   AppListConfig::instance().grid_tile_height());
 }
 
 void TopIconAnimationView::Layout() {
   // This view's layout should be the same as AppListItemView's.
-  gfx::Rect icon_rect(GetContentsBounds());
-  icon_rect.Inset(0, kGridIconTopPadding, 0, 0);
-  icon_rect.set_height(kGridIconDimension);
-  icon_rect.ClampToCenteredSize(
-      gfx::Size(kGridIconDimension, kGridIconDimension));
-  icon_->SetBoundsRect(icon_rect);
+  gfx::Rect rect(GetContentsBounds());
+  if (rect.IsEmpty())
+    return;
 
-  gfx::Rect title_rect(GetContentsBounds());
-  title_rect.Inset(kGridTitleHorizontalPadding,
-                   kGridIconTopPadding + kGridIconDimension + kGridTitleSpacing,
-                   kGridTitleHorizontalPadding, 0);
-  title_->SetBoundsRect(title_rect);
+  icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
+      rect, icon_->GetImage().size()));
+  title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
+      rect, title_->GetPreferredSize()));
 }
 
 void TopIconAnimationView::OnImplicitAnimationsCompleted() {

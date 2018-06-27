@@ -11,7 +11,9 @@
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/pagination_model.h"
+#include "ash/app_list/views/app_list_item_view.h"
 #include "ash/app_list/views/search_result_container_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
@@ -117,14 +119,14 @@ SearchResultTileItemView::SearchResultTileItemView(
   ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   title_ = new views::Label;
   title_->SetAutoColorReadabilityEnabled(false);
-  title_->SetEnabledColor(kGridTitleColor);
+  title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
   title_->SetFontList(rb.GetFontList(kItemTextFontStyle));
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetHandlesTooltips(false);
   AddChildView(title_);
 
   if (is_play_store_app_search_enabled_) {
-    const gfx::FontList& font = AppListAppTitleFont();
+    const gfx::FontList& font = AppListConfig::instance().app_title_font();
     rating_ = new views::Label;
     rating_->SetEnabledColor(kSearchAppRatingColor);
     rating_->SetFontList(font);
@@ -180,11 +182,11 @@ void SearchResultTileItemView::SetSearchResult(SearchResult* item) {
   SetRating(item_->rating());
   SetPrice(item_->formatted_price());
 
-  const gfx::FontList& font = AppListAppTitleFont();
+  const gfx::FontList& font = AppListConfig::instance().app_title_font();
   if (IsSuggestedAppTile()) {
     title_->SetFontList(font);
     title_->SetLineHeight(font.GetHeight());
-    title_->SetEnabledColor(kGridTitleColor);
+    title_->SetEnabledColor(AppListConfig::instance().grid_title_color());
   } else {
     DCHECK_EQ(ash::SearchResultDisplayType::kTile, item_->display_type());
     // Set solid color background to avoid broken text. See crbug.com/746563.
@@ -306,9 +308,11 @@ void SearchResultTileItemView::PaintButtonContents(gfx::Canvas* canvas) {
   flags.setAntiAlias(true);
   flags.setStyle(cc::PaintFlags::kFill_Style);
   if (IsSuggestedAppTile()) {
-    rect.ClampToCenteredSize(gfx::Size(kGridSelectedSize, kGridSelectedSize));
+    rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
     flags.setColor(kGridSelectedColor);
-    canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
+    canvas->DrawRoundRect(gfx::RectF(rect),
+                          AppListConfig::instance().grid_focus_corner_radius(),
+                          flags);
   } else {
     DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
     const int kLeftRightPadding = (rect.width() - kIconSelectedSize) / 2;
@@ -376,7 +380,7 @@ void SearchResultTileItemView::OnGetContextMenuModel(
     anchor_rect = source->GetBoundsInScreen();
     // Anchor the menu to the same rect that is used for selection highlight.
     anchor_rect.ClampToCenteredSize(
-        gfx::Size(kGridSelectedSize, kGridSelectedSize));
+        AppListConfig::instance().grid_focus_size());
   }
 
   context_menu_ = std::make_unique<AppListMenuModelAdapter>(
@@ -400,9 +404,10 @@ void SearchResultTileItemView::ExecuteCommand(int command_id, int event_flags) {
 }
 
 void SearchResultTileItemView::SetIcon(const gfx::ImageSkia& icon) {
+  const int icon_size = AppListConfig::instance().search_tile_icon_dimension();
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(kTileIconSize, kTileIconSize)));
+      gfx::Size(icon_size, icon_size)));
   icon_->SetImage(resized);
 }
 
@@ -415,7 +420,9 @@ void SearchResultTileItemView::SetBadgeIcon(const gfx::ImageSkia& badge_icon) {
     return;
   }
 
-  const int size = kBadgeBackgroundRadius * 2;
+  const int size = app_list::AppListConfig::instance()
+                       .search_tile_badge_background_radius() *
+                   2;
   gfx::ImageSkia background(std::make_unique<BadgeBackgroundImageSource>(size),
                             gfx::Size(size, size));
   gfx::ImageSkia icon_with_background =
@@ -514,14 +521,10 @@ void SearchResultTileItemView::Layout() {
     return;
 
   if (IsSuggestedAppTile()) {
-    rect.Inset(0, kGridIconTopPadding, 0, 0);
-    icon_->SetBoundsRect(rect);
-
-    rect.Inset(kGridTitleHorizontalPadding,
-               kGridIconDimension + kGridTitleSpacing,
-               kGridTitleHorizontalPadding, 0);
-    rect.set_height(title_->GetPreferredSize().height());
-    title_->SetBoundsRect(rect);
+    icon_->SetBoundsRect(AppListItemView::GetIconBoundsForTargetViewBounds(
+        rect, icon_->GetImage().size()));
+    title_->SetBoundsRect(AppListItemView::GetTitleBoundsForTargetViewBounds(
+        rect, title_->GetPreferredSize()));
   } else {
     DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
     rect.Inset(0, kSearchTileTopPadding, 0, 0);
@@ -529,14 +532,21 @@ void SearchResultTileItemView::Layout() {
 
     if (badge_) {
       gfx::Rect badge_rect(rect);
-      gfx::Size icon_size = icon_->GetImage().size();
-      badge_rect.Offset(
-          (icon_size.width() - kAppBadgeIconSize) / 2,
-          icon_size.height() - kBadgeBackgroundRadius - kAppBadgeIconSize / 2);
+      const gfx::Size icon_size = icon_->GetImage().size();
+      const int badge_icon_dimension =
+          AppListConfig::instance().search_tile_badge_icon_dimension();
+      const int badge_background_radius =
+          AppListConfig::instance().search_tile_badge_background_radius();
+      badge_rect.Offset((icon_size.width() - badge_icon_dimension) / 2,
+                        icon_size.height() - badge_background_radius -
+                            badge_icon_dimension / 2);
       badge_->SetBoundsRect(badge_rect);
     }
 
-    rect.Inset(0, kGridIconDimension + kSearchTitleSpacing, 0, 0);
+    rect.Inset(0,
+               AppListConfig::instance().search_tile_icon_dimension() +
+                   kSearchTitleSpacing,
+               0, 0);
     rect.set_height(title_->GetPreferredSize().height());
     title_->SetBoundsRect(rect);
 
@@ -577,8 +587,10 @@ gfx::Size SearchResultTileItemView::CalculatePreferredSize() const {
   if (!item_)
     return gfx::Size();
 
-  if (IsSuggestedAppTile())
-    return gfx::Size(kGridTileWidth, kGridTileHeight);
+  if (IsSuggestedAppTile()) {
+    return gfx::Size(AppListConfig::instance().grid_tile_width(),
+                     AppListConfig::instance().grid_tile_height());
+  }
 
   DCHECK(item_->display_type() == ash::SearchResultDisplayType::kTile);
   return gfx::Size(kSearchTileWidth, kSearchTileHeight);

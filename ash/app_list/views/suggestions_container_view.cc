@@ -9,6 +9,7 @@
 #include "ash/app_list/views/app_list_main_view.h"
 #include "ash/app_list/views/contents_view.h"
 #include "ash/app_list/views/search_result_tile_item_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ui/views/background.h"
@@ -114,7 +115,8 @@ void SuggestionsContainerView::CreateAppsGrid(int apps_num) {
   for (int col = 0; col < kNumStartPageTiles; ++col) {
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 0,
                           views::GridLayout::USE_PREF, 0, 0);
-    column_set->AddPaddingColumn(0, kGridTileSpacing);
+    column_set->AddPaddingColumn(0,
+                                 AppListConfig::instance().grid_tile_spacing());
   }
 
   // Add SearchResultTileItemViews to the container.

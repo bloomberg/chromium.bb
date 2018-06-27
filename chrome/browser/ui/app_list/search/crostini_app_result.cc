@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -24,7 +24,9 @@ CrostiniAppResult::CrostiniAppResult(Profile* profile,
   set_id(app_id);
 
   icon_loader_.reset(new CrostiniAppIconLoader(
-      profile, GetPreferredIconDimension(display_type()), this));
+      profile,
+      AppListConfig::instance().GetPreferredIconDimension(display_type()),
+      this));
   icon_loader_->FetchImage(app_id);
 }
 

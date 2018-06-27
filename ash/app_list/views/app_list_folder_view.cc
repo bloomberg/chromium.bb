@@ -22,6 +22,7 @@
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/top_icon_animation_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "base/strings/utf_string_conversions.h"
@@ -148,8 +149,10 @@ class FolderItemTitleAnimation : public gfx::SlideAnimation,
   FolderItemTitleAnimation(bool show, AppListFolderView* folder_view)
       : gfx::SlideAnimation(this), show_(show), folder_view_(folder_view) {
     // Calculate the source and target states.
-    from_color_ = show_ ? kGridTitleColor : SK_ColorTRANSPARENT;
-    to_color_ = show_ ? SK_ColorTRANSPARENT : kGridTitleColor;
+    from_color_ = show_ ? AppListConfig::instance().grid_title_color()
+                        : SK_ColorTRANSPARENT;
+    to_color_ = show_ ? SK_ColorTRANSPARENT
+                      : AppListConfig::instance().grid_title_color();
 
     SetTweenType(gfx::Tween::FAST_OUT_SLOW_IN);
     SetSlideDuration(kFolderTransitionInDurationMs);
@@ -289,15 +292,16 @@ class TopIconAnimation : public AppListFolderView::Animation,
     std::vector<gfx::Rect> top_icons_bounds =
         FolderImage::GetTopIconsBounds(folder_view_->folder_item_icon_bounds());
     std::vector<gfx::Rect> top_item_views_bounds;
-
+    const int icon_dimension = AppListConfig::instance().grid_icon_dimension();
+    const int tile_width = AppListConfig::instance().grid_tile_width();
+    const int tile_height = AppListConfig::instance().grid_tile_height();
     for (gfx::Rect bounds : top_icons_bounds) {
       // Calculate the item view's bounds based on the icon bounds.
-      int scale = kGridIconDimension / bounds.width();
-      bounds.set_y(bounds.y() - kGridIconTopPadding / scale);
-      bounds.set_x(bounds.x() -
-                   (kGridTileWidth - kGridIconDimension) / 2 / scale);
-      bounds.set_size(
-          gfx::Size(kGridTileWidth / scale, kGridTileHeight / scale));
+      int scale = icon_dimension / bounds.width();
+      bounds.set_y(bounds.y() -
+                   AppListConfig::instance().grid_icon_top_padding() / scale);
+      bounds.set_x(bounds.x() - (tile_width - icon_dimension) / 2 / scale);
+      bounds.set_size(gfx::Size(tile_width / scale, tile_height / scale));
       top_item_views_bounds.emplace_back(bounds);
     }
     return top_item_views_bounds;
@@ -742,7 +746,8 @@ void AppListFolderView::HideViewImmediately() {
   AppListItemView* activated_folder_item_view = GetActivatedFolderItemView();
   if (activated_folder_item_view) {
     activated_folder_item_view->icon()->SetVisible(true);
-    activated_folder_item_view->title()->SetEnabledColor(kGridTitleColor);
+    activated_folder_item_view->title()->SetEnabledColor(
+        AppListConfig::instance().grid_title_color());
     activated_folder_item_view->title()->SetVisible(true);
   }
 }

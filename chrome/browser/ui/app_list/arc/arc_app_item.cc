@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_item.h"
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
@@ -26,10 +26,9 @@ ArcAppItem::ArcAppItem(
     : ChromeAppListItem(profile, id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  arc_app_icon_.reset(new ArcAppIcon(profile,
-                                     id,
-                                     app_list::kGridIconDimension,
-                                     this));
+  arc_app_icon_.reset(new ArcAppIcon(
+      profile, id, app_list::AppListConfig::instance().grid_icon_dimension(),
+      this));
 
   SetName(name);
   UpdateIcon();
@@ -42,8 +41,7 @@ ArcAppItem::ArcAppItem(
   set_model_updater(model_updater);
 }
 
-ArcAppItem::~ArcAppItem() {
-}
+ArcAppItem::~ArcAppItem() = default;
 
 const char* ArcAppItem::GetItemType() const {
   return ArcAppItem::kItemType;

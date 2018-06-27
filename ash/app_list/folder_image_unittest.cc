@@ -10,7 +10,7 @@
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
 #include "ash/app_list/model/app_list_model.h"
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -75,7 +75,8 @@ class FolderImageTest : public testing::Test {
  protected:
   void AddAppWithColoredIcon(const std::string& id, SkColor icon_color) {
     std::unique_ptr<AppListItem> item(new AppListItem(id));
-    item->SetIcon(CreateSquareBitmapWithColor(kListIconSize, icon_color));
+    item->SetIcon(CreateSquareBitmapWithColor(
+        AppListConfig::instance().search_list_icon_dimension(), icon_color));
     app_list_model_.AddItem(std::move(item));
   }
 
@@ -138,8 +139,8 @@ TEST_F(FolderImageTest, UpdateItemTest) {
   gfx::ImageSkia icon1 = folder_image_.icon();
 
   // Change an item's icon. Ensure that the observer fired and the icon changed.
-  app_list_model_.FindItem("app2")->SetIcon(
-      CreateSquareBitmapWithColor(kListIconSize, SK_ColorMAGENTA));
+  app_list_model_.FindItem("app2")->SetIcon(CreateSquareBitmapWithColor(
+      AppListConfig::instance().search_list_icon_dimension(), SK_ColorMAGENTA));
   EXPECT_TRUE(observer_.updated());
   observer_.Reset();
   EXPECT_FALSE(ImagesAreEqual(icon1, folder_image_.icon()));

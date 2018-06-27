@@ -83,9 +83,23 @@ class APP_LIST_EXPORT AppListItemView
   // Sets UI state to dragging state.
   void SetDragUIState();
 
-  // Returns the icon bounds for the given |target_bounds| as
-  // the assuming bounds of this view.
-  gfx::Rect GetIconBoundsForTargetViewBounds(const gfx::Rect& target_bounds);
+  // Returns the icon bounds for with |target_bounds| as the bounds of this view
+  // and given |icon_size|.
+  static gfx::Rect GetIconBoundsForTargetViewBounds(
+      const gfx::Rect& target_bounds,
+      const gfx::Size& icon_size);
+
+  // Returns the title bounds for with |target_bounds| as the bounds of this
+  // view and given |title_size|.
+  static gfx::Rect GetTitleBoundsForTargetViewBounds(
+      const gfx::Rect& target_bounds,
+      const gfx::Size& title_size);
+
+  // Returns the progress bar bounds for with |target_bounds| as the bounds of
+  // this view and given |progress_bar_size|.
+  static gfx::Rect GetProgressBarBoundsForTargetViewBounds(
+      const gfx::Rect& target_bounds,
+      const gfx::Size& progress_bar_size);
 
   // If the item is not in a folder, not highlighted, not being dragged, and not
   // having something dropped onto it, enables subpixel AA for the title.
