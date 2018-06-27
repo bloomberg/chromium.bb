@@ -130,6 +130,7 @@ class AndroidRndisConfigurator(object):
   _NETWORK_INTERFACES = '/etc/network/interfaces'
   _INTERFACES_INCLUDE = 'source /etc/network/interfaces.d/*.conf'
   _TELEMETRY_INTERFACE_FILE = '/etc/network/interfaces.d/telemetry-{}.conf'
+  _DEVICE_IP_ADDRESS = '192.168.123.2'
 
   def __init__(self, device):
     self._device = device
@@ -173,6 +174,12 @@ class AndroidRndisConfigurator(object):
       assert len(candidates) == 1, 'Found more than one rndis device!'
       return candidates[0]
 
+  def _FindDeviceRndisMacAddress(self, interface):
+    """Returns the MAC address of the RNDIS network interface if present."""
+    config = self._device.RunShellCommand(
+        ['ip', '-o', 'link', 'show', interface], check_return=True)[0]
+    return config.split('link/ether ')[1][:17]
+
   def _EnumerateHostInterfaces(self):
     host_platform = platform.GetHostPlatform().GetOSName()
     if host_platform == 'linux':
@@ -181,7 +188,7 @@ class AndroidRndisConfigurator(object):
       return subprocess.check_output(['ifconfig']).splitlines()
     raise NotImplementedError('Platform %s not supported!' % host_platform)
 
-  def _FindHostRndisInterface(self):
+  def _FindHostRndisInterface(self, device_mac_address):
     """Returns the name of the host-side network interface."""
     interface_list = self._EnumerateHostInterfaces()
     ether_address = self._device.ReadFile(
@@ -191,6 +198,15 @@ class AndroidRndisConfigurator(object):
     for line in interface_list:
       if not line.startswith((' ', '\t')):
         interface_name = line.split(':')[-2].strip()
+        # Attempt to ping device to trigger ARP for device.
+        with open(os.devnull, 'wb') as devnull:
+          subprocess.call(['ping', '-w1', '-c1', '-I', interface_name,
+              self._DEVICE_IP_ADDRESS], stdout=devnull, stderr=devnull)
+        # Check if ARP cache now has device in it.
+        arp = subprocess.check_output(
+            ['arp', '-i', interface_name, self._DEVICE_IP_ADDRESS])
+        if device_mac_address in arp:
+          return interface_name
       elif ether_address in line:
         return interface_name
       # NOTE(pauljensen): |ether_address| seems incorrect on Nougat devices,
@@ -266,13 +282,15 @@ function doit() {
   # For some combinations of devices and host kernels, adb won't work unless the
   # interface is up, but if we bring it up immediately, it will break adb.
   #sleep 1
-  ifconfig rndis0 192.168.123.2 netmask 255.255.255.0 up
+  ifconfig rndis0 %(device_ip_address)s netmask 255.255.255.0 up
   echo DONE >> %(prefix)s.log
 }
 
 doit &
-    """ % {'dev': self._RNDIS_DEVICE, 'functions': 'rndis,adb',
-           'prefix': script_prefix}
+    """ % {'dev': self._RNDIS_DEVICE,
+           'functions': 'rndis,adb',
+           'prefix': script_prefix,
+           'device_ip_address': self._DEVICE_IP_ADDRESS}
     script_file = '%s.sh' % script_prefix
     log_file = '%s.log' % script_prefix
     self._device.WriteFile(script_file, script)
@@ -295,7 +313,8 @@ doit &
       if not force:
         device_iface = self._FindDeviceRndisInterface()
         if device_iface:
-          host_iface = self._FindHostRndisInterface()
+          device_mac_address = self._FindDeviceRndisMacAddress(device_iface)
+          host_iface = self._FindHostRndisInterface(device_mac_address)
           if host_iface:
             return device_iface, host_iface
       self._DisableRndis()
