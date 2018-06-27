@@ -29,42 +29,44 @@ void GiveItSomeTime() {
   run_loop.Run();
 }
 
-const char kWheelEventLatchingDataURL[] =
-    "data:text/html;charset=utf-8,"
-    "<!DOCTYPE html>"
-    "<meta name='viewport' content='width=device-width, minimum-scale=1'>"
-    "<style>"
-    "body {"
-    " height: 10000px;"
-    "}"
-    "%23scrollableDiv {"
-    " position: absolute;"
-    " left: 50px;"
-    " top: 100px;"
-    " width: 200px;"
-    " height: 200px;"
-    " overflow: scroll;"
-    " background: red;"
-    "}"
-    "%23nestedDiv {"
-    " width: 200px;"
-    " height: 8000px;"
-    " opacity: 0;"
-    "}"
-    "</style>"
-    "<div id='scrollableDiv'>"
-    " <div id='nestedDiv'></div>"
-    "</div>"
-    "<script>"
-    " var scrollableDiv = document.getElementById('scrollableDiv');"
-    " var scrollableDivWheelEventCounter = 0;"
-    " var documentWheelEventCounter = 0;"
-    " scrollableDiv.addEventListener('wheel',"
-    "   function(e) { scrollableDivWheelEventCounter++;"
-    "                 e.stopPropagation(); });"
-    " document.scrollingElement.addEventListener('wheel',"
-    "   function(e) { documentWheelEventCounter++; });"
-    "</script>";
+const char kWheelEventLatchingDataURL[] = R"HTML(
+    data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <meta name='viewport' content='width=device-width, minimum-scale=1'>
+    <style>
+    body {
+      height: 10000px;
+    }
+    %23scrollableDiv {
+      position: absolute;
+      left: 50px;
+      top: 100px;
+      width: 200px;
+      height: 200px;
+      overflow: scroll;
+      background: red;
+    }
+    %23nestedDiv {
+      width: 200px;
+      height: 8000px;
+      opacity: 0;
+    }
+    </style>
+    <div id='scrollableDiv'>
+     <div id='nestedDiv'></div>
+    </div>
+    <script>
+      var scrollableDiv = document.getElementById('scrollableDiv');
+      var scrollableDivWheelEventCounter = 0;
+      var documentWheelEventCounter = 0;
+      scrollableDiv.addEventListener('wheel',
+        function(e) {
+          scrollableDivWheelEventCounter++;
+          e.stopPropagation();
+        });
+      document.scrollingElement.addEventListener('wheel',
+        function(e) { documentWheelEventCounter++; });
+    </script>)HTML";
 
 enum WheelScrollingMode {
   kWheelScrollingModeNone,
@@ -110,8 +112,8 @@ class WheelScrollLatchingBrowserTest : public ContentBrowserTest {
                                                       ->GetView());
   }
 
-  void LoadURL() {
-    const GURL data_url(kWheelEventLatchingDataURL);
+  void LoadURL(const std::string& page_data) {
+    const GURL data_url("data:text/html," + page_data);
     NavigateToURL(shell(), data_url);
 
     RenderWidgetHostImpl* host = GetWidgetHost();
@@ -181,7 +183,7 @@ class AsyncWheelEventsBrowserTest : public WheelScrollLatchingBrowserTest {
 };
 
 void WheelScrollLatchingBrowserTest::WheelEventTargetTest() {
-  LoadURL();
+  LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
@@ -282,7 +284,7 @@ void WheelScrollLatchingBrowserTest::WheelEventRetargetWhenTargetRemovedTest() {
   if (!wheel_scroll_latching_enabled_)
     return;
 
-  LoadURL();
+  LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("documentWheelEventCounter"));
   EXPECT_EQ(0, ExecuteScriptAndExtractInt("scrollableDivWheelEventCounter"));
 
@@ -355,7 +357,7 @@ void WheelScrollLatchingBrowserTest::
   if (!wheel_scroll_latching_enabled_)
     return;
 
-  LoadURL();
+  LoadURL(kWheelEventLatchingDataURL);
   EXPECT_EQ(
       ExecuteScriptAndExtractDouble("document.scrollingElement.scrollTop"), 0);
   EXPECT_EQ(ExecuteScriptAndExtractDouble("scrollableDiv.scrollTop"), 0);
@@ -421,6 +423,84 @@ IN_PROC_BROWSER_TEST_F(WheelScrollLatchingBrowserTest,
 IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
                        MAYBE_WheelScrollingRelatchWhenLatchedScrollerRemoved) {
   WheelScrollingRelatchWhenLatchedScrollerRemovedTest();
+}
+
+const char kWheelRetargetIfPreventedByDefault[] = R"HTML(
+    data:text/html;charset=utf-8,
+    <!DOCTYPE html>
+    <meta name='viewport' content='width=device-width, minimum-scale=1'>
+    <style>
+    %23blueDiv {
+      position: absolute;
+      left: 50px;
+      top: 100px;
+      width: 200px;
+      height: 200px;
+      display: block;
+      background: blue;
+    }
+    %23redDiv {
+      width: 200px;
+      height: 200px;
+      display: none;
+      background: red;
+    }
+    </style>
+    <body>
+      <div id='blueDiv'>
+        <div id='redDiv'></div>
+      </div>
+    </body>
+    <script>
+    var blueDiv = document.getElementById('blueDiv');
+    var redDiv = document.getElementById('redDiv');
+    var domTarget = 'noTarget';
+    var x = (blueDiv.getBoundingClientRect().left +
+        blueDiv.getBoundingClientRect().right) / 2;
+    var y = (blueDiv.getBoundingClientRect().top +
+        blueDiv.getBoundingClientRect().bottom) /2;
+    blueDiv.addEventListener('wheel', function(e) {
+      e.preventDefault();
+      domTarget = 'blueDiv';
+      redDiv.style.display = 'block';
+    });
+    redDiv.addEventListener('wheel', function(e) {
+      domTarget = 'redDiv';
+      e.stopPropagation();
+    });
+    </script>)HTML";
+
+IN_PROC_BROWSER_TEST_F(AsyncWheelEventsBrowserTest,
+                       WheelEventRetargetOnPreventDefault) {
+  LoadURL(kWheelRetargetIfPreventedByDefault);
+
+  float x = ExecuteScriptAndExtractDouble("x");
+  float y = ExecuteScriptAndExtractDouble("y");
+
+  // Send the first wheel event.
+  auto wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+  blink::WebMouseWheelEvent wheel_event =
+      SyntheticWebMouseWheelEventBuilder::Build(x, y, x, y, 1, 1, 0, true);
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
+                                    ui::LatencyInfo());
+
+  // Run until we get the callback, then check the target.
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_CONSUMED, wheel_msg_watcher->WaitForAck());
+  EXPECT_EQ("blueDiv", ExecuteScriptAndExtractString("domTarget"));
+
+  // Send the second wheel event.
+  wheel_msg_watcher = std::make_unique<InputMsgWatcher>(
+      GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
+  wheel_event.phase = blink::WebMouseWheelEvent::kPhaseChanged;
+  GetRouter()->RouteMouseWheelEvent(GetRootView(), &wheel_event,
+                                    ui::LatencyInfo());
+
+  // Run until we get the callback, then check the target.
+  EXPECT_EQ(INPUT_EVENT_ACK_STATE_NOT_CONSUMED,
+            wheel_msg_watcher->WaitForAck());
+  EXPECT_EQ("redDiv", ExecuteScriptAndExtractString("domTarget"));
 }
 
 }  // namespace content
