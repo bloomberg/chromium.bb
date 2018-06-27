@@ -1064,7 +1064,8 @@ void URLRequest::NotifySSLCertificateError(const SSLInfo& ssl_info,
 bool URLRequest::CanGetCookies(const CookieList& cookie_list) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SEND_COOKIES));
   if (network_delegate_) {
-    return network_delegate_->CanGetCookies(*this, cookie_list);
+    return network_delegate_->CanGetCookies(*this, cookie_list,
+                                            /*allowed_from_caller=*/true);
   }
   return g_default_can_use_cookies;
 }
@@ -1073,7 +1074,8 @@ bool URLRequest::CanSetCookie(const net::CanonicalCookie& cookie,
                               CookieOptions* options) const {
   DCHECK(!(load_flags_ & LOAD_DO_NOT_SAVE_COOKIES));
   if (network_delegate_) {
-    return network_delegate_->CanSetCookie(*this, cookie, options);
+    return network_delegate_->CanSetCookie(*this, cookie, options,
+                                           /*allowed_from_caller=*/true);
   }
   return g_default_can_use_cookies;
 }

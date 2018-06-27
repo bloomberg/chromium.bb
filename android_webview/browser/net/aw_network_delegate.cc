@@ -89,15 +89,19 @@ int AwNetworkDelegate::OnHeadersReceived(
 }
 
 bool AwNetworkDelegate::OnCanGetCookies(const net::URLRequest& request,
-                                        const net::CookieList& cookie_list) {
-  return AwCookieAccessPolicy::GetInstance()->OnCanGetCookies(request,
+                                        const net::CookieList& cookie_list,
+                                        bool allow_from_caller) {
+  return allow_from_caller &&
+         AwCookieAccessPolicy::GetInstance()->OnCanGetCookies(request,
                                                               cookie_list);
 }
 
 bool AwNetworkDelegate::OnCanSetCookie(const net::URLRequest& request,
                                        const net::CanonicalCookie& cookie,
-                                       net::CookieOptions* options) {
-  return AwCookieAccessPolicy::GetInstance()->OnCanSetCookie(request, cookie,
+                                       net::CookieOptions* options,
+                                       bool allow_from_caller) {
+  return allow_from_caller &&
+         AwCookieAccessPolicy::GetInstance()->OnCanSetCookie(request, cookie,
                                                              options);
 }
 
