@@ -109,6 +109,7 @@
 #include "content/public/common/result_codes.h"
 #include "content/public/common/service_names.mojom.h"
 #include "device/gamepad/gamepad_service.h"
+#include "gpu/config/gpu_switches.h"
 #include "media/audio/audio_manager.h"
 #include "media/audio/audio_system.h"
 #include "media/audio/audio_thread_impl.h"
@@ -1413,7 +1414,10 @@ int BrowserMainLoop::BrowserThreadsStarted() {
   }
 
 #if defined(OS_WIN)
-  GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
+  if (!parsed_command_line_.HasSwitch(
+          switches::kDisableGpuProcessForDX12VulkanInfoCollection)) {
+    GpuDataManagerImpl::GetInstance()->RequestGpuSupportedRuntimeVersion();
+  }
 #endif
 
 #if defined(OS_MACOSX)
