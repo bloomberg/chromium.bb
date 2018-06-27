@@ -115,8 +115,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 // Handles displaying the context menu for all form factors.
 @property(nonatomic, strong) ContextMenuCoordinator* contextMenuCoordinator;
 @property(nonatomic, strong) SigninPromoViewMediator* signinPromoViewMediator;
-// The sectionIdentifier for the last tapped header, 0 if no header was tapped.
-@property(nonatomic, assign) NSInteger lastTappedHeaderSectionIdentifier;
 @end
 
 @implementation RecentTabsTableViewController : ChromeTableViewController
@@ -126,8 +124,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 @synthesize dispatcher = _dispatcher;
 @synthesize presentationDelegate = _presentationDelegate;
 @synthesize imageDataSource = _imageDataSource;
-@synthesize lastTappedHeaderSectionIdentifier =
-    _lastTappedHeaderSectionIdentifier;
 @synthesize loader = _loader;
 @synthesize sessionState = _sessionState;
 @synthesize signinPromoViewMediator = _signinPromoViewMediator;
@@ -141,7 +137,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   if (self) {
     _sessionState = SessionsSyncUserState::USER_SIGNED_OUT;
     _syncedSessions.reset(new synced_sessions::SyncedSessions());
-    _lastTappedHeaderSectionIdentifier = 0;
   }
   return self;
 }
@@ -160,20 +155,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   self.tableView.estimatedRowHeight = kEstimatedRowHeight;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionFooterHeight = 0.0;
-  // Gesture recognizer for long press context menu on Session Headers.
-  UILongPressGestureRecognizer* longPress =
-      [[UILongPressGestureRecognizer alloc]
-          initWithTarget:self
-                  action:@selector(handleLongPress:)];
-  longPress.delegate = self;
-  [self.tableView addGestureRecognizer:longPress];
-  // Gesture recognizer for header collapsing/expanding.
-  UITapGestureRecognizer* tapGesture =
-      [[UITapGestureRecognizer alloc] initWithTarget:self
-                                              action:@selector(handleTap:)];
-  tapGesture.delegate = self;
-  [self.tableView addGestureRecognizer:tapGesture];
-
   self.title = l10n_util::GetNSString(IDS_IOS_CONTENT_SUGGESTIONS_RECENT_TABS);
 }
 
@@ -682,6 +663,30 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   return cell;
 }
 
+- (UIView*)tableView:(UITableView*)tableView
+    viewForHeaderInSection:(NSInteger)section {
+  UIView* header = [super tableView:tableView viewForHeaderInSection:section];
+  // Set the header tag as the sectionIdentifer in order to recognize which
+  // header was tapped.
+  header.tag = [self.tableViewModel sectionIdentifierForSection:section];
+  // Remove all existing gestureRecognizers since the header might be reused.
+  for (UIGestureRecognizer* recognizer in header.gestureRecognizers) {
+    [header removeGestureRecognizer:recognizer];
+  }
+  // Gesture recognizer for long press context menu.
+  UILongPressGestureRecognizer* longPress =
+      [[UILongPressGestureRecognizer alloc]
+          initWithTarget:self
+                  action:@selector(handleLongPress:)];
+  [header addGestureRecognizer:longPress];
+  // Gesture recognizer for header collapsing/expanding.
+  UITapGestureRecognizer* tapGesture =
+      [[UITapGestureRecognizer alloc] initWithTarget:self
+                                              action:@selector(handleTap:)];
+  [header addGestureRecognizer:tapGesture];
+  return header;
+}
+
 #pragma mark - Recently closed tab helpers
 
 - (NSInteger)numberOfRecentlyClosedTabs {
@@ -851,14 +856,15 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 #pragma mark - Collapse/Expand sections
 
-- (void)handleTap:(UITapGestureRecognizer*)tapGesture {
-  DCHECK_EQ(self.tableView, tapGesture.view);
-  if (tapGesture.state == UIGestureRecognizerStateEnded) {
-    [self toggleExpansionOfSectionIdentifier:
-              self.lastTappedHeaderSectionIdentifier];
+- (void)handleTap:(UITapGestureRecognizer*)sender {
+  UIView* headerTapped = sender.view;
+  NSInteger tappedHeaderSectionIdentifier = headerTapped.tag;
+
+  if (sender.state == UIGestureRecognizerStateEnded) {
+    [self toggleExpansionOfSectionIdentifier:tappedHeaderSectionIdentifier];
 
     NSInteger section = [self.tableViewModel
-        sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
+        sectionForSectionIdentifier:tappedHeaderSectionIdentifier];
     UITableViewHeaderFooterView* headerView =
         [self.tableView headerViewForSection:section];
     ListItem* headerItem = [self.tableViewModel headerForSection:section];
@@ -920,18 +926,19 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
 #pragma mark - Long press and context menus
 
-- (void)handleLongPress:(UILongPressGestureRecognizer*)longPressGesture {
-  DCHECK_EQ(self.tableView, longPressGesture.view);
-  if (longPressGesture.state != UIGestureRecognizerStateBegan)
+- (void)handleLongPress:(UILongPressGestureRecognizer*)sender {
+  if (sender.state != UIGestureRecognizerStateBegan)
     return;
-  NSInteger sectionIdentifier = self.lastTappedHeaderSectionIdentifier;
+  UIView* headerTapped = sender.view;
+  NSInteger tappedHeaderSectionIdentifier = headerTapped.tag;
+  NSInteger sectionIdentifier = tappedHeaderSectionIdentifier;
   // Only handle LongPress for SessionHeaders.
   if (![self isSessionSectionIdentifier:sectionIdentifier])
     return;
 
   // Highlight the section header being long pressed.
   NSInteger section = [self.tableViewModel
-      sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
+      sectionForSectionIdentifier:tappedHeaderSectionIdentifier];
   ListItem* headerItem = [self.tableViewModel headerForSection:section];
   UITableViewHeaderFooterView* headerView =
       [self.tableView headerViewForSection:section];
@@ -945,7 +952,7 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 
   web::ContextMenuParams params;
   // Get view coordinates in local space.
-  CGPoint viewCoordinate = [longPressGesture locationInView:self.tableView];
+  CGPoint viewCoordinate = [sender locationInView:self.tableView];
   params.location = viewCoordinate;
   params.view = self.tableView;
 
@@ -1032,24 +1039,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
     openTabs->DeleteForeignSession(sessionTagCopy);
     [self.tableView endUpdates];
   }
-}
-
-#pragma mark - UIGestureRecognizerDelegate
-
-- (BOOL)gestureRecognizerShouldBegin:(UIGestureRecognizer*)gestureRecognizer {
-  CGPoint point = [gestureRecognizer locationInView:self.tableView];
-  // Context menus can be opened on a Session section header.
-  for (NSInteger section = 0; section < [self.tableViewModel numberOfSections];
-       section++) {
-    NSInteger itemType =
-        [self.tableViewModel sectionIdentifierForSection:section];
-    if (CGRectContainsPoint([self.tableView rectForHeaderInSection:section],
-                            point)) {
-      self.lastTappedHeaderSectionIdentifier = itemType;
-      return YES;
-    }
-  }
-  return NO;
 }
 
 #pragma mark - SigninPromoViewConsumer
