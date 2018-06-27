@@ -22,7 +22,6 @@
 <translation id="1351937230027495976">Thu gọn menu</translation>
 <translation id="1383876407941801731">Tìm kiếm</translation>
 <translation id="1467432559032391204">Trái</translation>
-<translation id="1479743070547893297">Chọn vẽ bằng bút cảm ứng</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Trình chạy</translation>
 <translation id="1525508553941733066">LOẠI BỎ</translation>
@@ -274,7 +273,7 @@
 <translation id="6452181791372256707">Từ chối</translation>
 <translation id="6453179446719226835">Đã thay đổi ngôn ngữ</translation>
 <translation id="6459472438155181876">Đang mở rộng màn hình tới <ph name="DISPLAY_NAME" /></translation>
-<translation id="6482559668224714696">Phóng to toàn bộ màn hình</translation>
+<translation id="6482559668224714696">Phóng to toàn màn hình</translation>
 <translation id="6490471652906364588">Thiết bị USB-C (cổng bên phải)</translation>
 <translation id="6501401484702599040">Đang truyền màn hình tới <ph name="RECEIVER_NAME" /></translation>
 <translation id="6521655319214113338">Nhập bằng chữ viết tay</translation>
@@ -299,7 +298,7 @@
 <translation id="6820676911989879663">Hãy nghỉ giải lao!</translation>
 <translation id="683971173229319003">Search+L</translation>
 <translation id="6857811139397017780">Kích hoạt <ph name="NETWORKSERVICE" /></translation>
-<translation id="6910714959251846841">Bản cập nhật này yêu cầu phải dọn sạch thiết bị của bạn. Hãy tìm hiểu thêm về bản cập nhật <ph name="SYSTEM_APP_NAME" /> mới nhất.</translation>
+<translation id="6910714959251846841">Bản cập nhật này yêu cầu phải powerwash (đặt lại toàn bộ) thiết bị của bạn. Hãy tìm hiểu thêm về bản cập nhật <ph name="SYSTEM_APP_NAME" /> mới nhất.</translation>
 <translation id="6911468394164995108">Tham gia mạng khác...</translation>
 <translation id="6981982820502123353">Truy cập</translation>
 <translation id="698231206551913481">Tất cả các tệp và dữ liệu cục bộ liên quan tới người dùng này sẽ bị xóa vĩnh viễn sau khi người dùng này bị xóa.</translation>
@@ -359,7 +358,7 @@
 <translation id="8132793192354020517">Đã kết nối với <ph name="NAME" /></translation>
 <translation id="813913629614996137">Đang khởi chạy...</translation>
 <translation id="8142699993796781067">Mạng riêng</translation>
-<translation id="8152119955266188852">Bạn đã nhấn phím tắt để phóng to toàn bộ màn hình. Bạn có muốn bật chế độ này không?</translation>
+<translation id="8152119955266188852">Bạn đã nhấn phím tắt để phóng to toàn màn hình. Bạn có muốn bật chế độ này không?</translation>
 <translation id="8180896103888046100">Dừng truyền tới người nhận không xác định</translation>
 <translation id="8190698733819146287">Tùy chỉnh ngôn ngữ và dữ liệu nhập...</translation>
 <translation id="8261506727792406068">Xóa</translation>

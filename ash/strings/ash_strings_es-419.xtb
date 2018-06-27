@@ -19,9 +19,9 @@
 <translation id="1290331692326790741">Señal débil</translation>
 <translation id="1293264513303784526">Dispositivo USB-C (puerto izquierdo)</translation>
 <translation id="1346748346194534595">Derecha</translation>
+<translation id="1351937230027495976">Contraer menú</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1467432559032391204">Izquierda</translation>
-<translation id="1479743070547893297">Dibuja con la pluma stylus para seleccionar</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Selector</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
@@ -116,6 +116,7 @@
 <translation id="3009178788565917040">Salida</translation>
 <translation id="3019353588588144572">Tiempo restante hasta que la batería esté completamente cargada: <ph name="TIME_REMAINING" /></translation>
 <translation id="3077734595579995578">shift</translation>
+<translation id="3081696990447829002">Expandir menú</translation>
 <translation id="3087734570205094154">Inferior</translation>
 <translation id="3105990244222795498"><ph name="DEVICE_NAME" /> (Bluetooth)</translation>
 <translation id="3126069444801937830">Reinicia para actualizar.</translation>
@@ -166,6 +167,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una app}other{Desactivadas para # app}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4200057768455216496">Presionaste la combinación de teclas para activar la lupa con vista acoplada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
@@ -190,6 +192,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4570957409596482333">Botón de Seleccionar para pronunciar</translation>
 <translation id="4628757576491864469">Dispositivos</translation>
 <translation id="4659419629803378708">Se habilitó ChromeVox</translation>
+<translation id="4734965478015604180">Horizontal</translation>
 <translation id="4776917500594043016">Contraseña para <ph name="USER_EMAIL_ADDRESS" /></translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Desconectar</translation>
@@ -197,6 +200,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="4872237917498892622">Alt+tecla de búsqueda o Mayús</translation>
 <translation id="4890187583552566966">Tu administrador inhabilitó el Asistente de Google.</translation>
 <translation id="4895488851634969361">La batería está completa.</translation>
+<translation id="490375751687810070">Vertical</translation>
 <translation id="4905614135390995787">Se cambió el acceso directo para activar o desactivar el Modo de contraste alto. Usa <ph name="NEW_SHORTCUT" /> en lugar de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4917385247580444890">Fuerte</translation>
 <translation id="4918086044614829423">Aceptar</translation>
@@ -294,7 +298,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="6820676911989879663">Toma un descanso</translation>
 <translation id="683971173229319003">Tecla de búsqueda + L</translation>
 <translation id="6857811139397017780">Activar <ph name="NETWORKSERVICE" /></translation>
-<translation id="6910714959251846841">Esta actualización requiere que apliques la función "Powerwash" en tu dispositivo. Obtén más información sobre la actualización más reciente de <ph name="SYSTEM_APP_NAME" />.</translation>
+<translation id="6910714959251846841">Esta actualización requiere que apliques la función Powerwash en tu dispositivo. Obtén más información sobre la actualización más reciente de <ph name="SYSTEM_APP_NAME" />.</translation>
 <translation id="6911468394164995108">Conectarte a otra red...</translation>
 <translation id="6981982820502123353">Accesibilidad</translation>
 <translation id="698231206551913481">Todos los archivos y datos locales asociados a este usuario se borrarán de forma permanente una vez que se quite este usuario.</translation>
@@ -350,6 +354,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Detener la transmisión de la pantalla a <ph name="RECEIVER_NAME" /></translation>
+<translation id="8113423164597455979">Activadas para todas las apps</translation>
 <translation id="8132793192354020517">Conectado a <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicializando…</translation>
 <translation id="8142699993796781067">Red privada</translation>
@@ -370,6 +375,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="847056008324733326">Configuración de escala de visualización</translation>
 <translation id="8477270416194247200">Presiona Alt y la tecla de búsqueda o mayúscula para cancelarlo.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: Restableciendo conexión…</translation>
+<translation id="8513108775083588393">Giro automático</translation>
 <translation id="8517041960877371778">Tu <ph name="DEVICE_TYPE" /> podría no cargarse si el dispositivo está encendido.</translation>
 <translation id="8639760480004882931"><ph name="PERCENTAGE" /> restante</translation>
 <translation id="8649101189709089199">Seleccionar para pronunciar</translation>
@@ -392,7 +398,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8940956008527784070">Batería baja (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8984179138335769204">Inicio rápido</translation>
 <translation id="8995603266996330174">Administrado por <ph name="DOMAIN" /></translation>
-<translation id="9029474291399787231">Está disponible la actualización de Adobe Flash Player</translation>
+<translation id="9029474291399787231">La actualización de Adobe Flash Player está disponible</translation>
 <translation id="9033907480196064950">Estás transmitiendo <ph name="TAB_NAME" /></translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>

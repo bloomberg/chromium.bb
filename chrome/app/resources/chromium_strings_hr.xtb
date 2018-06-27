@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Administrator ovog uređaja onemogućio je prijavu na Chromium.</translation>
 <translation id="4423735387467980091">Prilagodite Chromium i upravljajte njime</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium će se ponovo pokrenuti za sat vremena}one{Chromium će se ponovo pokrenuti za # sat}few{Chromium će se ponovo pokrenuti za # sata}other{Chromium će se ponovo pokrenuti za # sati}}</translation>
-<translation id="4469812139324097969">Chromium je zastario jer dulje vrijeme nije ponovo pokrenut. Ažuriranje je dostupno i primijenit će se čim ponovo pokrenete proizvod.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kao <ph name="USER_EMAIL_ADDRESS" />. Sada možete pristupiti svojim oznakama, povijesti i drugim postavkama na svim uređajima na kojima se prijavljujete.</translation>
 <translation id="459535195905078186">Aplikacije sustava Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium će se ponovo pokrenuti za 1 minutu}one{Chromium će se ponovo pokrenuti za # minutu}few{Chromium će se ponovo pokrenuti za # minute}other{Chromium će se ponovo pokrenuti za # minuta}}</translation>

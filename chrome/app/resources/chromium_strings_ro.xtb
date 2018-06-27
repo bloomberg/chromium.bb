@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Conectarea la Chromium este dezactivată de administratorul acestui dispozitiv.</translation>
 <translation id="4423735387467980091">Personalizați și controlați Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium se va relansa într-o oră}few{Chromium se va relansa în # ore}other{Chromium se va relansa în # de ore}}</translation>
-<translation id="4469812139324097969">Chromium este neactualizat, deoarece în ultimul timp nu a fost repornit. Este disponibilă o actualizare, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="4567424176335768812">V-ați conectat ca <ph name="USER_EMAIL_ADDRESS" />. Acum vă puteți accesa marcajele, istoricul și alte setări de pe toate dispozitivele pe care v-ați conectat.</translation>
 <translation id="459535195905078186">Aplicații Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium se va relansa într-un minut}few{Chromium se va relansa în # minute}other{Chromium se va relansa în # de minute}}</translation>

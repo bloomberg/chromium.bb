@@ -254,7 +254,7 @@
 <translation id="1377600615067678409">Omitir por ahora</translation>
 <translation id="1378613616312864539"><ph name="NAME" /> controla esta configuración</translation>
 <translation id="1378727793141957596">Te damos la bienvenida a Google Drive</translation>
-<translation id="1380436189840894976">¿Quieres salir del modo incógnito de todas formas?</translation>
+<translation id="1380436189840894976">¿Quieres salir del modo de incógnito de todas formas?</translation>
 <translation id="1383861834909034572">Abrir cuando haya finalizado</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1386387014181100145">Hola.</translation>
@@ -1644,7 +1644,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3570985609317741174">Contenido web</translation>
 <translation id="3571734092741541777">Configurar</translation>
 <translation id="3574210789297084292">iniciar sesión</translation>
-<translation id="3574917942258583917">¿Quieres salir del modo incógnito de todas formas?</translation>
+<translation id="3574917942258583917">¿Quieres salir del modo de incógnito de todas formas?</translation>
 <translation id="3576324189521867626">Se ha instalado correctamente</translation>
 <translation id="3578594933904494462">Se está compartiendo el contenido de esta pestaña.</translation>
 <translation id="357886715122934472">&lt;strong&gt;<ph name="SENDER" />&lt;/strong&gt; quiere compartir una impresora &lt;strong&gt;<ph name="PRINTER_NAME" />&lt;/strong&gt; con un grupo que te pertenece: &lt;strong&gt;<ph name="GROUP_NAME" />&lt;/strong&gt;. Si aceptas, todos los miembros del grupo podrán utilizar esa impresora para imprimir.</translation>
@@ -2766,7 +2766,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5379268888377976432">Deshacer eliminación</translation>
 <translation id="5380103295189760361">Mantén pulsada la tecla de control, la tecla Alt, la tecla de mayúsculas o la tecla de búsqueda para ver combinaciones de teclas de esos modificadores.</translation>
 <translation id="5382591305415226340">Administrar enlaces compatibles</translation>
-<translation id="5384883051496921101">Este sitio web va a compartir información con una aplicación con la que no se utilizará el modo incógnito.</translation>
+<translation id="5384883051496921101">Este sitio web va a compartir información con una aplicación con la que no se utilizará el modo de incógnito.</translation>
 <translation id="5388885445722491159">Sincronizado</translation>
 <translation id="5389237414310520250">No se ha podido crear el nuevo usuario. Comprueba los permisos y el espacio de tu disco duro y vuelve a intentarlo.</translation>
 <translation id="5390100381392048184">Permitir que los sitios web reproduzcan sonidos</translation>
@@ -2840,7 +2840,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5486561344817861625">Simular reinicio del navegador</translation>
 <translation id="5487521232677179737">Borrar los datos</translation>
 <translation id="5488093641312826914">Se ha copiado <ph name="COPIED_ITEM_NAME" /></translation>
-<translation id="5488468185303821006">Permitir en modo incógnito</translation>
+<translation id="5488468185303821006">Permitir en modo de incógnito</translation>
 <translation id="5491110079163012109">Enviar datos del sistema. Envía automáticamente datos de diagnósticos y uso del dispositivo y las aplicaciones a Google. El propietario aplica esta configuración y puede elegir si se envían datos de uso y diagnósticos de este dispositivo a Google. Puedes ver esta opción en los ajustes. Si has activado la opción Actividad en la Web y en Aplicaciones, esta información se almacenará en tu cuenta para que puedas gestionarla en la sección Mi Actividad. <ph name="BEGIN_LINK1" />Más información<ph name="END_LINK1" /></translation>
 <translation id="5493792505296048976">pantalla encendida</translation>
 <translation id="5494362494988149300">Abrir al &amp;finalizar</translation>
@@ -3854,7 +3854,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7077829361966535409">No se ha podido cargar la página de inicio de sesión con la configuración de proxy actual. <ph name="GAIA_RELOAD_LINK_START" />Intenta iniciar sesión de nuevo<ph name="GAIA_RELOAD_LINK_END" /> o utiliza otra <ph name="PROXY_SETTINGS_LINK_START" />configuración de proxy<ph name="PROXY_SETTINGS_LINK_END" />.</translation>
 <translation id="7078120482318506217">Todas las redes</translation>
 <translation id="708060913198414444">C&amp;opiar dirección de audio</translation>
-<translation id="7081952801286122383">Estás en el modo incógnito</translation>
+<translation id="7081952801286122383">Estás en el modo de incógnito</translation>
 <translation id="708278670402572152">Desconectar para habilitar la búsqueda</translation>
 <translation id="7084192839369222683">Ejecutar solo contenido importante</translation>
 <translation id="7085389578340536476">¿Quieres permitir que Chrome grabe audio?</translation>
@@ -4386,7 +4386,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7904094684485781019">El administrador de esta cuenta ha inhabilitado el inicio de sesión múltiple.</translation>
 <translation id="7904402721046740204">Autenticando</translation>
 <translation id="7908378463497120834">Lo sentimos, pero al menos una partición del dispositivo de almacenamiento externo no se ha podido montar.</translation>
-<translation id="7909969815743704077">Se ha descargado en modo incógnito</translation>
+<translation id="7909969815743704077">Se ha descargado en modo de incógnito</translation>
 <translation id="7910768399700579500">&amp;Nueva carpeta</translation>
 <translation id="7912080627461681647">Tu contraseña se ha cambiado en el servidor. Cierra la sesión y vuelve a iniciarla.</translation>
 <translation id="7915471803647590281">Debes describir el error.</translation>
@@ -4785,7 +4785,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8569764466147087991">Selecciona un archivo para abrir</translation>
 <translation id="8571213806525832805">Últimas cuatro semanas</translation>
 <translation id="8574990355410201600">Permitir siempre el sonido en <ph name="HOST" /></translation>
-<translation id="8575286410928791436">Mantén pulsada las teclas <ph name="KEY_EQUIVALENT" /> para salir</translation>
+<translation id="8575286410928791436">Mantén pulsado <ph name="KEY_EQUIVALENT" /> para salir</translation>
 <translation id="8578639784464423491">No puede tener más de 99 caracteres</translation>
 <translation id="8579285237314169903">Sincronizando <ph name="NUMBER_OF_FILES" /> elementos...</translation>
 <translation id="857943718398505171">Permitido (recomendado)</translation>
@@ -5032,7 +5032,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
     Esto es información general sobre el dispositivo y su uso (como el nivel de batería, el uso de las aplicaciones o la conectividad de red). La información se utilizará con el fin de mejorar los productos y servicios de Google para todo el mundo. Parte de los datos recogidos también ayudarán a nuestros colaboradores, como los desarrolladores de Android, a mejorar sus aplicaciones y productos.
     Desactivar esta opción no afecta a la capacidad del dispositivo de enviar la información necesaria para recibir servicios esenciales, como actualizaciones de seguridad y del sistema.
     Puedes controlar esta función en Ajustes &gt; Google (selecciona Uso y diagnósticos en el menú).</translation>
-<translation id="894871326938397531">¿Salir del modo incógnito?</translation>
+<translation id="894871326938397531">¿Salir del modo de incógnito?</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="8954952943849489823">No se ha podido mover el archivo porque se ha producido un error inesperado ($1).</translation>
 <translation id="895586998699996576">Imagen $1</translation>

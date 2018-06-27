@@ -96,7 +96,6 @@
 <translation id="4421155425831608516">Вход в Chromium отключен администратором устройства.</translation>
 <translation id="4423735387467980091">Настройка и управление Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium перезапустится через 1 час}one{Chromium перезапустится через # час}few{Chromium перезапустится через # часа}many{Chromium перезапустится через # часов}other{Chromium перезапустится через # часа}}</translation>
-<translation id="4469812139324097969">Для текущей версии Chromium доступно обновление. Оно будет установлено при перезапуске приложения.</translation>
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
 <translation id="459535195905078186">Приложения Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium перезапустится через 1 минуту}one{Chromium перезапустится через # минуту}few{Chromium перезапустится через # минуты}many{Chromium перезапустится через # минут}other{Chromium перезапустится через # минуты}}</translation>

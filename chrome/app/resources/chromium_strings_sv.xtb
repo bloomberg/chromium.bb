@@ -100,7 +100,6 @@ Vissa funktioner kanske inte är tillgängliga och ändringar i inställningarna
 <translation id="4421155425831608516">Inloggning i Chromium har inaktiverats av enhetens administratör.</translation>
 <translation id="4423735387467980091">Anpassa och kontrollera Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Om en timme startas Chromium om}other{Om # timmar startas Chromium om}}</translation>
-<translation id="4469812139324097969">Chromium är inaktuellt eftersom det inte har startats om på ett tag. Det finns en uppdatering tillgänglig som tillämpas så snart du startar om.</translation>
 <translation id="4567424176335768812">Du är inloggad som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du komma åt dina bokmärken, historik och andra inställningar på alla enheter som du är inloggad på.</translation>
 <translation id="459535195905078186">Chromium-appar</translation>
 <translation id="4604377857208775795">{0,plural, =1{Om en minut startas Chromium om}other{Om # minuter startas Chromium om}}</translation>

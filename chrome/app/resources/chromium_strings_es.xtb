@@ -100,7 +100,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4421155425831608516">El administrador de este dispositivo ha inhabilitado el inicio de sesión en Chromium.</translation>
 <translation id="4423735387467980091">Personaliza y controla Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium se volverá a iniciar en una hora}other{Chromium se volverá a iniciar en # horas}}</translation>
-<translation id="4469812139324097969">Chromium no está actualizado porque hace algún tiempo que no se reinicia. Hay una actualización disponible, que se aplicará en cuanto lo reinicies.</translation>
 <translation id="4567424176335768812">Has iniciado sesión como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes acceder a tus marcadores, a tu historial y a otras opciones en todos los dispositivos en los que hayas iniciado sesión.</translation>
 <translation id="459535195905078186">Aplicaciones de Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium se volverá a iniciar en 1 minuto}other{Chromium se volverá a iniciar en # minutos}}</translation>
@@ -214,7 +213,7 @@ Consulta tu correo electrónico (<ph name="ACCOUNT_EMAIL" />) para obtener más 
 <translation id="7745317241717453663">Se eliminarán tus datos de navegación de este dispositivo. Para recuperar tus datos en otro momento, inicia sesión en Chromium como <ph name="USER_EMAIL" />.</translation>
 <translation id="7747138024166251722">El programa de instalación no ha podido crear un directorio temporal. Comprueba si hay espacio libre en el disco y si tienes autorización para instalar el software.</translation>
 <translation id="7756122083761163394">Los datos de navegación de este usuario se eliminarán de este dispositivo. Para recuperarlos, inicia sesión en Chrome como $2.</translation>
-<translation id="7773960292263897147">Advertencia: Chromium no puede evitar que las extensiones registren el historial de navegación. Para inhabilitar esta extensión en modo incógnito, desactiva esta opción.</translation>
+<translation id="7773960292263897147">Advertencia: Chromium no puede evitar que las extensiones registren el historial de navegación. Para inhabilitar esta extensión en modo de incógnito, desactiva esta opción.</translation>
 <translation id="7774736947049807614">No se ha podido autenticar el certificado. Vuelve a iniciar sesión en Chromium como <ph name="USER_NAME" /> o ponte en contacto con tu administrador para obtener más información. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> ‑ Chromium Canary</translation>
 <translation id="7867198900892795913">No se ha podido actualizar Chromium a la versión más reciente, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>

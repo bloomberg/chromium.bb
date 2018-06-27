@@ -100,7 +100,6 @@
 <translation id="4421155425831608516">이 기기의 관리자에 의해 Chromium 로그인이 사용 중지되었습니다.</translation>
 <translation id="4423735387467980091">Chromium 맞춤설정 및 제어</translation>
 <translation id="4449801103833300785">{0,plural, =1{1시간 후에 Chromium 다시 시작}other{#시간 후에 Chromium 다시 시작}}</translation>
-<translation id="4469812139324097969">한동안 사용하지 않아 Chromium의 버전이 오래되었습니다. 업데이트를 사용할 수 있으며 다시 시작하면 바로 업데이트됩니다.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" />(으)로 로그인되어 있습니다. 이제 로그인한 모든 기기에서 북마크, 방문 기록 및 기타 설정에 액세스할 수 있습니다.</translation>
 <translation id="459535195905078186">Chromium 앱</translation>
 <translation id="4604377857208775795">{0,plural, =1{1분 후에 Chromium 다시 시작}other{#분 후에 Chromium 다시 시작}}</translation>

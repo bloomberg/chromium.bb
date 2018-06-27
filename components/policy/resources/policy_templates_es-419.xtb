@@ -704,6 +704,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="3034580675120919256">Te permite configurar si los sitios web pueden ejecutar JavaScript. La ejecución de JavaScript puede permitirse para todos los sitios web o denegarse para todos los sitios web. Si esta política no se configura, se usará "AllowJavaScript" y el usuario podrá cambiarla.</translation>
 <translation id="3038323923255997294">Continuar ejecutando aplicaciones en segundo plano cuando <ph name="PRODUCT_NAME" /> esté cerrado</translation>
 <translation id="3046192273793919231">Enviar paquetes de red al servidor de administración para controlar el estado en línea</translation>
+<translation id="3047732214002457234">Controlar cómo "Limpiar Chrome" informa datos a Google</translation>
 <translation id="3048744057455266684">Si se establece esta política y una URL de búsqueda sugerida desde el cuadro multifunción contiene este parámetro en la cadena de consulta o en el identificador de fragmentos, la sugerencia mostrará los términos de búsqueda y el proveedor de búsqueda en lugar de la URL de búsqueda sin procesar.
 
           Esta política es opcional. Si no se establece, no se realizará ningún reemplazo de los términos de búsqueda.
@@ -1024,6 +1025,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si esta política se establece como verdadera, se enviarán paquetes de red de control (conocidos como <ph name="HEARTBEATS_TERM" />).
       Si se establece como falsa o no se establece, no se enviarán paquetes.</translation>
+<translation id="3950239119790560549">Actualizar las restricciones de tiempo</translation>
 <translation id="3958586912393694012">Permitir el uso de Smart Lock</translation>
 <translation id="3963602271515417124">Si esta política se establece como verdadera, se permite la verificación remota para el dispositivo y se generará un certificado de forma automática que se subirá al servidor de administración de dispositivos.
 
@@ -1273,6 +1275,10 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si esta política no se establece, <ph name="PRODUCT_NAME" /> no delegará las credenciales de usuario aunque un servidor se detecte como intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para conectarse a RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Si se establece como verdadera o no se establece esta política, <ph name="PRODUCT_NAME" /> sugerirá páginas relacionadas con la página actual.
+      Estas sugerencias se obtienen de forma remota de los servidores de Google.
+
+      Si se establece como falsa, no se obtendrán ni mostrarán las sugerencias.</translation>
 <translation id="4791031774429044540">Habilita la función de accesibilidad del cursor grande.
 
           Si esta política se establece como verdadera, el cursor grande estará siempre habilitado.
@@ -2088,6 +2094,13 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
           Si no se establece esta política, la lupa se inhabilitará la primera vez que se muestre la pantalla de acceso. Los usuarios pueden habilitar o inhabilitar la lupa en cualquier momento, y su estado en la pantalla de acceso permanece entre usuarios.</translation>
 <translation id="7249828445670652637">Habilitar certificados de CA de <ph name="PRODUCT_OS_NAME" /> para apps de ARC</translation>
+<translation id="725322441686394886">Si no se establece, en caso de que "Limpiar Chrome" detecte software no deseado, es posible que informe metadatos sobre el análisis a Google en conformidad con la política establecida por SafeBrowsingExtendedReportingEnabled. Además, "Limpiar Chrome" le preguntará al usuario si quiere borrar el software no deseado y si elige compartir los resultados de la limpieza con Google a fin de colaborar con futuras detecciones de software no deseado. Estos resultados contienen metadatos de archivos, extensiones instaladas automáticamente y claves de registro, como se describe en el Informe de privacidad de Chrome.
+
+      Si se inhabilita, en caso de que "Limpiar Chrome" detecte software no deseado, no informará metadatos sobre el análisis a Google y se anulará cualquier política establecida por SafeBrowsingExtendedReportingEnabled. "Limpiar Chrome" le preguntará al usuario si quiere borrar el software no deseado. Los resultados de la limpieza no se informarán a Google, y el usuario no tendrá la opción de hacerlo.
+
+      Si se habilita, en caso de que "Limpiar Chrome" detecte software no deseado, es posible que informe metadatos sobre el análisis a Google en conformidad con la política establecida por SafeBrowsingExtendedReportingEnabled. "Limpiar Chrome" le preguntará al usuario si quiere borrar el software no deseado. Los resultados de la limpieza se informarán a Google, y el usuario no tendrá la opción de impedirlo.
+
+      Esta política no está disponible en instancias de Windows que no están vinculadas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Habilitar modo de cortina en hosts de acceso remoto</translation>
 <translation id="7260277299188117560">Conexión P2P de actualizaciones automáticas habilitada</translation>
 <translation id="7261252191178797385">Imagen de fondo de pantalla del dispositivo</translation>
@@ -2151,6 +2164,11 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
       Si se inhabilita esta opción o no se configura, los usuarios podrán elegir continuar hacia el sitio marcado después de que se les haya mostrado la advertencia.
 
       Consulta https://developers.google.com/safe-browsing para obtener más información sobre la Navegación segura.</translation>
+<translation id="7417728346887499628">Si se inhabilita, impide que "Limpiar Chrome" analice el sistema para detectar software no deseado y realice limpiezas. La opción de activar manualmente "Limpiar Chrome" desde chrome://settings/cleanup estará inhabilitada.
+
+      Si se habilita o no se establece, "Limpiar Chrome" analiza el sistema periódicamente para detectar software no deseado y, si encuentra alguno, le pregunta al usuario si quiere quitarlo. La opción de activar manualmente "Limpiar Chrome" desde chrome://settings estará habilitada.
+
+      Esta política no está disponible en instancias de Windows que no están vinculadas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Indica el porcentaje en el que debe ajustarse la demora de inactividad en el modo de presentación (en desuso).</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones para la lista de complementos inhabilitados</translation>
@@ -2550,6 +2568,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="8339420913453596618">Se inhabilitó el segundo factor</translation>
 <translation id="8344454543174932833">Importar favoritos del navegador predeterminado en la primera ejecución</translation>
 <translation id="8359734107661430198">Habilitar la API ExampleDeprecatedFeature hasta el 02/09/2008</translation>
+<translation id="8367209241899435947">Habilitar "Limpiar Chrome" en Windows</translation>
 <translation id="8369602308428138533">Demora de pantalla apagada con alimentación de CA</translation>
 <translation id="8382184662529825177">Habilita el uso de la atestación remota para la protección de contenido del dispositivo.</translation>
 <translation id="838870586332499308">Activar la itinerancia de datos</translation>
@@ -2806,6 +2825,7 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="9150416707757015439">Esta política no está aprobada. Usa IncognitoModeAvailability en su lugar. Esto habilita el modo incógnito en <ph name="PRODUCT_NAME" />. Si se habilita esta opción o si no se configura, los usuarios podrán abrir páginas web en modo incógnito. Si se inhabilita esta configuración, los usuarios no podrán abrir páginas web en modo incógnito. Si esta política no se configura, se habilitará esta opción y el usuario podrá usar el modo incógnito.</translation>
 <translation id="915194831143859291">Si esta política se establece en false o no se configura, <ph name="PRODUCT_OS_NAME" /> permitirá que el usuario apague el dispositivo.
       Si esta política se establece en true, <ph name="PRODUCT_OS_NAME" /> desencadenará un reinicio cuando el usuario apague el dispositivo. <ph name="PRODUCT_OS_NAME" /> reemplaza todos los botones de apagado de la UI por botones de reinicio. Si el usuario apaga el dispositivo con el botón de encendido, no se reiniciará automáticamente aunque la política esté habilitada.</translation>
+<translation id="9152473318295429890">Habilitar las sugerencias contextuales de páginas web relacionadas</translation>
 <translation id="9158929520101169054">Permitir el acceso múltiple en el navegador</translation>
 <translation id="9165792353046089850">Te permite establecer si los sitios web pueden acceder a dispositivos USB conectados. El acceso se puede bloquear por completo, o se puede preguntar al usuario cada vez que un sitio web desee acceder a dispositivos USB conectados.
 
@@ -2841,4 +2861,9 @@ en el mismo valor. Si los valores de ambas políticas no coinciden, es posible q
 <translation id="944817693306670849">Configurar el tamaño de caché de disco</translation>
 <translation id="981346395360763138">Se inhabilitaron los servicios de ubicación de Google</translation>
 <translation id="982497069985795632">Habilitar el corrector ortográfico</translation>
+<translation id="988537626274109600">Esta política controla los períodos durante los cuales los dispositivos <ph name="PRODUCT_OS_NAME" /> no pueden comprobar automáticamente si hay actualizaciones disponibles.
+      Cuando se establece esta política con una lista no vacía de períodos:
+      Los dispositivos no podrán comprobar automáticamente si hay actualizaciones disponibles durante los períodos especificados. Debido a posibles problemas de seguridad, esta política no afectará a los dispositivos que necesiten una reversión o tengan versiones anteriores a la mínima de <ph name="PRODUCT_OS_NAME" />. Además, esta política no bloqueará comprobaciones de actualizaciones que soliciten los usuarios o administradores.
+      Cuando no se establece esta política o no contiene períodos:
+      Esta política no bloqueará ninguna comprobación de actualizaciones, pero otras políticas sí pueden bloquearlas.</translation>
 </translationbundle>

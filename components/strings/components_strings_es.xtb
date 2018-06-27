@@ -302,7 +302,7 @@
 <translation id="3024663005179499861">Tipo de política incorrecto</translation>
 <translation id="3037605927509011580">¡Vaya!</translation>
 <translation id="3041612393474885105">Datos del certificado</translation>
-<translation id="3064966200440839136">Saldrás del modo incógnito para realizar un pago en una aplicación externa. ¿Quieres continuar?</translation>
+<translation id="3064966200440839136">Saldrás del modo de incógnito para realizar un pago en una aplicación externa. ¿Quieres continuar?</translation>
 <translation id="3083099961703215236">{COUNT,plural, =0{Ninguna}=1{1 contraseña}other{# contraseñas}}</translation>
 <translation id="3096100844101284527">Añadir dirección de recogida</translation>
 <translation id="3105172416063519923">ID de recurso:</translation>
@@ -472,7 +472,7 @@
     &lt;li&gt;Accede a cualquier sitio web que empiece por &lt;code&gt;http://&lt;/code&gt;, como &lt;a href="http://example.com" target="_blank"&gt;http://example.com&lt;/a&gt;.&lt;/li&gt;
     &lt;li&gt;En la página de inicio de sesión que se abre, inicia sesión para utilizar la conexión a Internet.&lt;/li&gt;
     &lt;/ol&gt;
-    &lt;h4&gt;Paso 2: Abre la página en modo incógnito (solo en ordenadores)&lt;/h4&gt;
+    &lt;h4&gt;Paso 2: Abre la página en modo de incógnito (solo en ordenadores)&lt;/h4&gt;
     &lt;p&gt;Abre la página que estabas visitando en una ventana de incógnito.&lt;/p&gt;
     &lt;p&gt;Si la página se abre, significa que una extensión de Chrome no funciona correctamente. Para solucionarlo, desactiva esa extensión.&lt;/p&gt;
     &lt;h4&gt;Paso 3: Actualiza tu sistema operativo&lt;/h4&gt;
@@ -955,7 +955,7 @@
 <translation id="7815407501681723534">Se han encontrado <ph name="NUMBER_OF_RESULTS" /> <ph name="SEARCH_RESULTS" /> de <ph name="SEARCH_STRING" /></translation>
 <translation id="7818867226424560206">Gestión de políticas</translation>
 <translation id="782886543891417279">La red Wi-Fi que estás utilizando (<ph name="WIFI_NAME" />) puede requerir que accedas a su página de inicio de sesión.</translation>
-<translation id="785549533363645510">Ten en cuenta que tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
+<translation id="785549533363645510">Ten en cuenta que tus acciones no serán totalmente invisibles. El uso del modo de incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
 <translation id="7862185352068345852">¿Quieres salir del sitio web?</translation>
 <translation id="7878176543348854470">Se aceptan tarjetas prepago y de débito.</translation>

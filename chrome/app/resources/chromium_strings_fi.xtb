@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Tämän laitteen järjestelmänvalvoja on poistanut käytöstä Chromiumiin kirjautumisen.</translation>
 <translation id="4423735387467980091">Chromiumin muokkaus ja hallinta</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium käynnistetään uudelleen tunnin kuluttua}other{Chromium käynnistetään uudelleen # tunnin kuluttua}}</translation>
-<translation id="4469812139324097969">Chromium on vanhentunut, koska sitä ei ole käynnistetty uudelleen viime aikoina. Päivitys on saatavilla, ja se otetaan käyttöön uudelleenkäynnistyksen jälkeen.</translation>
 <translation id="4567424176335768812">Olet kirjautunut Chromeen tilillä <ph name="USER_EMAIL_ADDRESS" />. Nyt voit käyttää kirjanmerkkejäsi, historiaa ja muita asetuksia kaikilla laitteilla, joihin olet kirjautunut.</translation>
 <translation id="459535195905078186">Chromium-sovellukset</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium käynnistetään uudelleen 1 minuutin kuluttua}other{Chromium käynnistetään uudelleen # minuutin kuluttua}}</translation>

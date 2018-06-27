@@ -96,7 +96,6 @@
 <translation id="4421155425831608516">Chromium'da oturum açma işlevi, bu cihazın yöneticisi tarafından devre dışı bırakılmıştır.</translation>
 <translation id="4423735387467980091">Chromium'u özelleştirin ve kontrol edin</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium bir saat içinde yeniden başlatılacak}other{Chromium # saat içinde yeniden başlatılacak}}</translation>
-<translation id="4469812139324097969">Bir süredir çalıştırılmadığından Chromium güncel değil. Kullanılabilir bir güncelleme var ve yeniden başlattığınızda hemen uygulanacak.</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> olarak oturum açtınız. Şimdi oturum açtığınız tüm cihazlarda yer işaretlerinize, geçmişinize ve diğer ayarlarınıza erişebilirsiniz.</translation>
 <translation id="459535195905078186">Chromium Uygulamaları</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium 1 dakika içinde yeniden başlatılacak}other{Chromium # dakika içinde yeniden başlatılacak}}</translation>

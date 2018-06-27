@@ -2854,7 +2854,7 @@ Den anbefalede fremgangsmåde til konfiguration af politikker i Windows er via G
 <translation id="982497069985795632">Aktivér stavekontrol</translation>
 <translation id="988537626274109600">Denne politik styrer de tidsrum, hvor <ph name="PRODUCT_OS_NAME" />-enheden ikke har tilladelse til automatisk at søge efter opdateringer.
       Når denne politik er angivet med en liste over tidsintervaller, som ikke er tom:
-      Enhederne har ikke have mulighed for automatisk at søge efter opdateringer i de angivne tidsintervaller. Enheder, der kræver en tilbagetrækning eller er ældre end minimumsversionen for <ph name="PRODUCT_OS_NAME" />, berøres ikke af denne politik på grund af potentielle sikkerhedsproblemer. Derudover blokerer politikken ikke for søgning efter opdateringer, hvis brugere eller administratorer anmoder om dette.
+      Enhederne har ikke mulighed for automatisk at søge efter opdateringer i de angivne tidsintervaller. Enheder, der kræver en tilbagetrækning eller er ældre end minimumsversionen for <ph name="PRODUCT_OS_NAME" />, berøres ikke af denne politik på grund af potentielle sikkerhedsproblemer. Derudover blokerer politikken ikke for søgning efter opdateringer, hvis brugere eller administratorer anmoder om dette.
       Når denne politik ikke er angivet eller ikke indeholder tidsintervaller:
       Automatiske søgninger efter opdateringer blokeres ikke af denne politik, men blokeres muligvis af andre politikker.</translation>
 </translationbundle>

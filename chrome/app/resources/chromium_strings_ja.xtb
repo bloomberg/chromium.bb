@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Chromium へのログインは、この端末の管理者によって無効にされています。</translation>
 <translation id="4423735387467980091">Chromium の設定</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium は 1 時間後に再起動されます}other{Chromium は # 時間後に再起動されます}}</translation>
-<translation id="4469812139324097969">Chromium はしばらく再起動していないため最新ではありません。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium は 1 分後に再起動されます}other{Chromium は # 分後に再起動されます}}</translation>

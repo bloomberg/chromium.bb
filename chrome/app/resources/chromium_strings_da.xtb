@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Login til Chromium er deaktiveret af administratoren af denne enhed.</translation>
 <translation id="4423735387467980091">Tilpas og kontrollér Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium genstarter om en time}one{Chromium genstarter om # time}other{Chromium genstarter om # timer}}</translation>
-<translation id="4469812139324097969">Chromium er forældet, da den ikke er blevet genstartet i et stykke tid. Der er en tilgængelig opdatering, som anvendes, så snart du genstarter.</translation>
 <translation id="4567424176335768812">Du er logget ind som <ph name="USER_EMAIL_ADDRESS" />. Nu kan du få adgang til dine bogmærker, din historik og andre indstillinger på alle de enheder, hvor du er logget ind.</translation>
 <translation id="459535195905078186">Chromium-apps</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium genstarter om 1 minut}one{Chromium genstarter om # minut}other{Chromium genstarter om # minutter}}</translation>

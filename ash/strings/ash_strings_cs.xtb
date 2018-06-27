@@ -22,7 +22,6 @@
 <translation id="1351937230027495976">Sbalit nabídku</translation>
 <translation id="1383876407941801731">Vyhledávání</translation>
 <translation id="1467432559032391204">Doleva</translation>
-<translation id="1479743070547893297">Proveďte výběr pomocí dotykového pera</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
 <translation id="1525508553941733066">ZAVŘÍT</translation>
@@ -305,7 +304,7 @@
 <translation id="7015766095477679451">Vraťte se v <ph name="COME_BACK_TIME" />.</translation>
 <translation id="7029814467594812963">Ukončit relaci</translation>
 <translation id="7034339000180558234">Odesílání karty <ph name="TAB_NAME" /> do zařízení <ph name="RECEIVER_NAME" /></translation>
-<translation id="7037152028959403492">Stiskli jste klávesovou zkratku pro vysoký kontrast. Chcete ji zapnout?</translation>
+<translation id="7037152028959403492">Stiskli jste klávesovou zkratku pro vysoký kontrast. Chcete ho zapnout?</translation>
 <translation id="7066646422045619941">Tato síť je zakázána vaším administrátorem.</translation>
 <translation id="7067196344162293536">Automatické otáčení</translation>
 <translation id="7076293881109082629">Přihlášení</translation>

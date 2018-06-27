@@ -758,7 +758,7 @@
 <translation id="2154484045852737596">Modifier la carte</translation>
 <translation id="2154710561487035718">Copier l'URL</translation>
 <translation id="2155772377859296191">La résolution est de <ph name="WIDTH" /> x <ph name="HEIGHT" /></translation>
-<translation id="2156283799932971644">Vous pouvez nous aider à améliorer la navigation sécurisée en nous envoyant des informations système et du contenu de page.</translation>
+<translation id="2156283799932971644">Vous pouvez nous aider à améliorer la navigation sécurisée en nous envoyant des informations système et du contenu de pages.</translation>
 <translation id="215753907730220065">Quitter le mode plein écran</translation>
 <translation id="2157875535253991059">Cette page est maintenant en mode plein écran</translation>
 <translation id="216169395504480358">Ajouter un réseau Wi-Fi…</translation>
@@ -2020,7 +2020,7 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4150201353443180367">Écran</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 onglet}one{# onglet}other{# onglets}}</translation>
-<translation id="4153038609398984088">Petit problème… Impossible d'analyser la configuration de l'association de l'appareil au domaine. Veuillez contacter votre administrateur.</translation>
+<translation id="4153038609398984088">Petit problème… Impossible d'analyser la configuration d'association de l'appareil au domaine. Veuillez contacter votre administrateur.</translation>
 <translation id="4154664944169082762">Empreintes</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">Ouvrir la playlist</translation>

@@ -22,7 +22,6 @@
 <translation id="1351937230027495976">మెనూను కుదించు</translation>
 <translation id="1383876407941801731">శోధించు</translation>
 <translation id="1467432559032391204">ఎడమ</translation>
-<translation id="1479743070547893297">ఎంచుకోవడానికి మీ స్టైలస్‌తో గీయండి</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">లాంచర్</translation>
 <translation id="1525508553941733066">తీసివేయి</translation>
@@ -129,6 +128,7 @@
 <translation id="3238765806255363838"><ph name="USERNAME" /> <ph name="MAIL" /></translation>
 <translation id="3294437725009624529">అతిథి</translation>
 <translation id="332587331255250389">దయచేసి బ్యాటరీని భర్తీ చేయండి</translation>
+<translation id="3351879221545518001">ప్రస్తుతం మీరు స్క్రీన్‌ని ప్రసారం చేస్తున్నారు.</translation>
 <translation id="3364721542077212959">స్టైలస్ సాధనాలు</translation>
 <translation id="3368922792935385530">కనెక్ట్ అయింది</translation>
 <translation id="3371140690572404006">USB-C పరికరం (కుడివైపు ముందు పోర్ట్)</translation>
@@ -188,6 +188,7 @@
 <translation id="4527045527269911712">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది.</translation>
 <translation id="453661520163887813">పూర్తి కావడానికి <ph name="TIME" /> పడుతుంది</translation>
 <translation id="4544944664594876241">స్క్రీన్‌ని లాక్ చేసే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
+<translation id="4564869809620998694">ఫాంట్ సేవ</translation>
 <translation id="4570957409596482333">వినడానికి ఎంచుకోండి బటన్</translation>
 <translation id="4628757576491864469">పరికరాలు</translation>
 <translation id="4659419629803378708">ChromeVox ప్రారంభించబడింది</translation>
@@ -231,11 +232,13 @@
 <translation id="5744083938413354016">నొక్కి లాగండి</translation>
 <translation id="5777841717266010279">స్క్రీన్ భాగస్వామ్యాన్ని ఆపివేయాలా?</translation>
 <translation id="57838592816432529">మ్యూట్ చేయి</translation>
+<translation id="5805697420284793859">విండో మేనేజర్</translation>
 <translation id="5820394555380036790">Chromium OS</translation>
 <translation id="5832805196449965646">వ్యక్తిని జోడించు</translation>
 <translation id="5860033963881614850">ఆఫ్ అయ్యింది</translation>
 <translation id="5895138241574237353">మళ్ళీ ప్రారంభించు</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
+<translation id="5911533659001334206">షార్ట్‌కట్ వ్యూయర్</translation>
 <translation id="5916664084637901428">ఆన్ చేయి</translation>
 <translation id="5927132638760172455">తెలియని స్వీకర్తకు ప్రసారం చేస్తోంది</translation>
 <translation id="5947494881799873997">తిరిగి పూర్వ స్థితికి మార్చు</translation>
@@ -276,6 +279,7 @@
 <translation id="6521655319214113338">చేతివ్రాత ఇన్‌పుట్</translation>
 <translation id="6528179044667508675">అంతరాయం కలిగించవద్దు</translation>
 <translation id="6537270692134705506">స్క్రీన్‌ని సంగ్రహించు</translation>
+<translation id="6542521951477560771"><ph name="RECEIVER_NAME" />కు ప్రసారం చేస్తున్నారు</translation>
 <translation id="6585808820553845416">సెషన్ <ph name="SESSION_TIME_REMAINING" />లో ముగుస్తుంది.</translation>
 <translation id="6627638273713273709">Search+Shift+K</translation>
 <translation id="6650933572246256093">బ్లూటూత్ పరికరం "<ph name="DEVICE_NAME" />" జత కావడానికి అనుమతి కోరుతోంది. దయచేసి ఆ పరికరంలో ఈ పాస్‌కీని నమోదు చేయండి: <ph name="PASSKEY" /></translation>
@@ -287,6 +291,8 @@
 <translation id="6715542151869432661">మొబైల్ పరికరాలేమీ కనుగొనబడలేదు.</translation>
 <translation id="671928215901716392">స్క్రీన్‌ను లాక్ చేయి</translation>
 <translation id="6723839937902243910">పవర్</translation>
+<translation id="6725073593266469338">UI సేవ</translation>
+<translation id="6751826523481687655">పనితీరు స్థితిగతి కనుగొనడం ఆన్‌లో ఉంది</translation>
 <translation id="6785414152754474415">బ్యాటరీ <ph name="PERCENTAGE" />% నిండింది మరియు ఛార్జ్ అవుతోంది.</translation>
 <translation id="6803622936009808957">మద్దతు ఉన్న రిజల్యూషన్‌లు కనుగొనబడనందున ప్రదర్శనలను ప్రతిబింబించడం సాధ్యపడలేదు. దానికి బదులుగా విస్తారిత డెస్క్‌టాప్‌కు మారారు.</translation>
 <translation id="6820676911989879663">విరామం తీసుకోండి!</translation>
@@ -361,6 +367,7 @@
 <translation id="8351131234907093545">గమనికను సృష్టించండి</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> కోసం ఎంపికల మెను</translation>
 <translation id="8428213095426709021">సెట్టింగ్‌లు</translation>
+<translation id="8431190899827883166">నొక్కినవి చూపు</translation>
 <translation id="8433186206711564395">నెట్‌వర్క్ సెట్టింగ్‌లు</translation>
 <translation id="8433977262951327081">అరలో ఇన్‌పుట్ ఎంపికల మెను బబుల్‌ని చూపడానికి ఉపయోగించే సత్వరమార్గం మార్చబడింది. దయచేసి <ph name="OLD_SHORTCUT" />కి బదులుగా <ph name="NEW_SHORTCUT" />ని ఉపయోగించండి.</translation>
 <translation id="8452135315243592079">SIM కార్డ్ లేదు</translation>
@@ -375,6 +382,7 @@
 <translation id="8652175077544655965">సెట్టింగ్‌లను మూసివేయండి</translation>
 <translation id="8673028979667498656">270°</translation>
 <translation id="8676770494376880701">తక్కువ-పవర్ గల ఛార్జర్ కనెక్ట్ చేయబడింది</translation>
+<translation id="8683506306463609433">పనితీరు స్థితిగతి కనుగొనడం సక్రియంగా ఉంది</translation>
 <translation id="8734991477317290293">మీ కీస్ట్రోక్‌లను దొంగిలించడానికి ఇది ప్రయత్నిస్తుండవచ్చు</translation>
 <translation id="8809737090443522491">యాప్ లేదా పత్రం యొక్క పేరుని టైప్ చేయండి</translation>
 <translation id="8814190375133053267">Wi-Fi</translation>
@@ -388,8 +396,10 @@
 <translation id="8921624153894383499">Google సహాయకం ఈ భాషను మాట్లాడదు.</translation>
 <translation id="8938800817013097409">USB-C పరికరం (వెనుక భాగంలో కుడి పోర్ట్)</translation>
 <translation id="8940956008527784070">బ్యాటరీ తక్కువగా ఉంది (<ph name="PERCENTAGE" />%)</translation>
+<translation id="8984179138335769204">శీఘ్ర ప్రారంభం</translation>
 <translation id="8995603266996330174"><ph name="DOMAIN" /> ద్వారా నిర్వహించబడుతోంది</translation>
 <translation id="9029474291399787231">Adobe Flash Player అప్‌డేట్ అందుబాటులో ఉంది</translation>
+<translation id="9033907480196064950">ప్రస్తుతం మీరు <ph name="TAB_NAME" />కి ప్రసారం చేస్తున్నారు</translation>
 <translation id="9074739597929991885">Bluetooth</translation>
 <translation id="9079731690316798640">Wi-Fi: <ph name="ADDRESS" /></translation>
 <translation id="9080206825613744995">మైక్రోఫోన్ ఉపయోగంలో ఉంది.</translation>
@@ -406,4 +416,5 @@
 <translation id="923686485342484400">సైన్ అవుట్ చేయడానికి Control Shift Qను రెండుసార్లు నొక్కండి.</translation>
 <translation id="945522503751344254">అభిప్రాయాన్ని పంపండి</translation>
 <translation id="98515147261107953">సమతలదిశ</translation>
+<translation id="995927048686010764">ఆటోక్లిక్</translation>
 </translationbundle>

@@ -719,6 +719,7 @@
 <translation id="3034580675120919256">Permite definir se os Web sites estão autorizados a executar JavaScript. A execução de JavaScript pode ser permitida para todos os Web sites ou negada para todos os Web sites. Se esta política não for definida, será utilizada a definição "AllowJavaScript" e o utilizador poderá alterá-la.</translation>
 <translation id="3038323923255997294">Continuar a executar aplicações em segundo plano quando o <ph name="PRODUCT_NAME" /> está fechado</translation>
 <translation id="3046192273793919231">Enviar pacotes de rede para o servidor de gestão para monitorizar o estado online</translation>
+<translation id="3047732214002457234">Controlar a forma como a Limpeza do Chrome envia dados para a Google</translation>
 <translation id="3048744057455266684">Se esta política estiver definida e um URL de pesquisa sugerido pela caixa geral tiver incluído este parâmetro na cadeia de consulta ou no identificador de fragmento, a sugestão apresentará os termos de pesquisa e o fornecedor de pesquisa em vez do URL de pesquisa não processado.
 
           Esta política é opcional. Se não for definida, não será efetuada qualquer substituição do termo de pesquisa.
@@ -1039,6 +1040,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política for definida como verdadeira, os pacotes de monitorização de rede (os chamados <ph name="HEARTBEATS_TERM" />) são enviados.
        Se for definida como falsa ou não for definida, não são enviados pacotes.</translation>
+<translation id="3950239119790560549">Atualizar restrições de tempo</translation>
 <translation id="3958586912393694012">Permitir a utilização do Smart Lock</translation>
 <translation id="3963602271515417124">Se verdadeira, a comprovação remota é permitida para o dispositivo e será automaticamente gerado um certificado e carregado para o Servidor de Gestão de Dispositivos.
 
@@ -1288,6 +1290,10 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> não irá delegar as credenciais de utilizador, mesmo que um servidor seja detetado como Intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para estabelecer ligação a RemoteAccessHostTokenValidationUrl</translation>
+<translation id="4757671984625088193">Se esta política estiver definida como verdadeira ou não estiver definida, <ph name="PRODUCT_NAME" /> irá sugerir páginas relacionadas com a página atual.
+      Essas sugestões são obtidas remotamente a partir dos servidores da Google.
+
+      Se esta definição estiver definida como falsa, as sugestões não serão obtidas nem apresentadas.</translation>
 <translation id="4791031774429044540">Ativar a funcionalidade de acessibilidade do cursor grande.
 
           Se esta política estiver definida como verdadeira, o cursor grande estará sempre ativado.
@@ -2104,6 +2110,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não for definida, a lupa é desativada quando o ecrã de início de sessão é mostrado pela primeira vez. Os utilizadores podem ativar ou desativar a lupa a qualquer momento e o seu estado no ecrã de início de sessão persiste entre utilizadores.</translation>
 <translation id="7249828445670652637">Ativar certificados da AC (Autoridade de certificação) do <ph name="PRODUCT_OS_NAME" /> em aplicações ARC</translation>
+<translation id="725322441686394886">Se não estiver definida, caso a Limpeza do Chrome detete software indesejado, esta pode comunicar os metadados da análise à Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Limpeza do Chrome pergunta então ao utilizador se pretende limpar o software indesejado. O utilizador pode optar por partilhar os resultados da limpeza com a Google para ajudar em futuras deteções de software indesejado. Estes resultados contêm metadados de ficheiros, extensões instaladas automaticamente e chaves de registo, conforme descrito no documento técnico da Privacidade do Chrome.
+
+      Se desativada, caso a Limpeza do Chrome detete software indesejado, não comunicará os metadados da análise à Google e substituirá qualquer política definida por SafeBrowsingExtendedReportingEnabled. A Limpeza do Chrome perguntará ao utilizador se pretende limpar o software indesejado. Os resultados da limpeza não serão comunicados à Google e o utilizador deixará de ter a opção de realizar essa ação.
+
+      Se ativada, caso a Limpeza do Chrome detete software indesejado, poderá comunicar os metadados da análise à Google de acordo com a política definida por SafeBrowsingExtendedReportingEnabled. A Limpeza do Chrome perguntará ao utilizador se pretende limpar o software indesejado. Os resultados da limpeza serão comunicados à Google e o utilizador deixará de ter a opção de impedir essa ação.
+
+      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Ativar proteção de anfitriões de acesso remoto</translation>
 <translation id="7260277299188117560">Atualização automática de p2p ativada</translation>
 <translation id="7261252191178797385">Imagem de fundo do dispositivo</translation>
@@ -2167,6 +2180,11 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta definição estiver desativada ou não estiver configurada, os utilizadores podem optar por prosseguir para o site sinalizado após a apresentação do aviso.
 
       Consulte https://developers.google.com/safe-browsing para mais informações sobre a Navegação segura.</translation>
+<translation id="7417728346887499628">Se estiver definida como falsa, impede que a Limpeza do Chrome procure software indesejado no sistema e realize limpezas. O acionamento manual da Limpeza do Chrome a partir de chrome://settings/cleanup está desativado.
+
+      Se estiver definida como verdadeira ou não estiver definida, a Limpeza do Chrome procura periodicamente software indesejado no sistema e, caso encontre algum, pergunta ao utilizador se o pretende remover. O acionamento manual da Limpeza do Chrome a partir de chrome://settings está ativado.
+
+      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Percentagem que determina a escala do atraso de inatividade no modo de apresentação (descontinuado)</translation>
 <translation id="7421483919690710988">Definir o tamanho da cache do disco multimédia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
@@ -2554,6 +2572,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="8339420913453596618">Fator duplo desativado</translation>
 <translation id="8344454543174932833">Importar marcadores a partir do navegador predefinido na primeira execução</translation>
 <translation id="8359734107661430198">Ativar a API ExampleDeprecatedFeature através de 2008/09/02</translation>
+<translation id="8367209241899435947">Ativar a Limpeza do Chrome no Windows</translation>
 <translation id="8369602308428138533">Atraso para desligar o ecrã quando o dispositivo está ligado à eletricidade</translation>
 <translation id="8382184662529825177">Ativar a utilização da comprovação remota para proteção de conteúdo no dispositivo</translation>
 <translation id="838870586332499308">Ativar roaming de dados</translation>
@@ -2812,6 +2831,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="9150416707757015439">Esta política está obsoleta. Em alternativa, utilize IncognitoModeAvailability. Ativa o modo de navegação anónima no <ph name="PRODUCT_NAME" />. Se esta definição estiver ativada ou não estiver configurada, os utilizadores podem abrir páginas Web no modo de navegação anónima. Se esta definição estiver desativada, os utilizadores não podem abrir páginas Web no modo de navegação anónima. Se deixar esta política por definir, a definição estará ativada e o utilizador poderá utilizar o modo de navegação anónima.</translation>
 <translation id="915194831143859291">Se esta política estiver definida como falsa ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> permite ao utilizador encerrar o dispositivo.
       Se esta política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> aciona um reinício quando o utilizador encerrar o dispositivo. O <ph name="PRODUCT_OS_NAME" /> substitui todas as ocorrências de botões de encerramento na IU por botões de reinício. Se o utilizador encerrar o dispositivo através do botão ligar/desligar, este não reinicia automaticamente, mesmo que a política esteja ativada.</translation>
+<translation id="9152473318295429890">Ativar sugestões contextuais de páginas Web relacionadas</translation>
 <translation id="9158929520101169054">Permitir o início de sessão integrado no navegador</translation>
 <translation id="9165792353046089850">Permite definir se os Websites podem aceder a dispositivos USB ligados. O acesso pode ser totalmente bloqueado ou pode ser efetuado um pedido ao utilizador sempre que um Website pretender aceder a dispositivos USB ligados.
 
@@ -2847,4 +2867,9 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="944817693306670849">Definir o tamanho da cache do disco</translation>
 <translation id="981346395360763138">Os serviços de localização da Google estão desativados.</translation>
 <translation id="982497069985795632">Ativar a verificação ortográfica</translation>
+<translation id="988537626274109600">Esta política controla os intervalos de tempo durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não está autorizado a realizar verificações automáticas de atualizações.
+      Quando esta política está definida para uma lista não vazia de intervalos de tempo:
+      Os dispositivos não poderão realizar verificações automáticas de atualizações durante os intervalos de tempo especificados. Os dispositivos que requerem uma reversão ou anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política devido a possíveis problemas de segurança. Além disso, esta política não bloqueia as verificações de atualizações solicitadas pelos utilizadores ou administradores.
+      Quando esta política não está definida ou não contém quaisquer intervalos de tempo:
+      Esta política não bloqueará quaisquer verificações automáticas de atualizações, contudo, estas podem ser bloqueadas por outras políticas.</translation>
 </translationbundle>

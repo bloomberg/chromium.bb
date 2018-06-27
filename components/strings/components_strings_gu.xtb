@@ -51,6 +51,7 @@
     &lt;li&gt;ખાતરી કરો કે તમારું ઇન્ટરનેટ કનેક્શન બરાબર કાર્ય કરી રહ્યું છે.&lt;/li&gt;
     &lt;li&gt;વેબસાઇટના માલિકનો સંપર્ક કરો.&lt;/li&gt;
     &lt;/ol&gt;</translation>
+<translation id="1257286744552378071">તમે એવી સાઇટ પર તમારો પાસવર્ડ દાખલ કર્યો છે જે તમારી સંસ્થા દ્વારા મેનેજ કરવામાં આવતી નથી. તમારા એકાઉન્ટને સુરક્ષિત કરવા માટે, અન્ય ઍપ અને સાઇટ પર તમારા પાસવર્ડનો ફરી ઉપયોગ કરશો નહીં.</translation>
 <translation id="1263231323834454256">વાચન સૂચિ</translation>
 <translation id="1264126396475825575"><ph name="CRASH_TIME" /> એ ક્રેશ રિપોર્ટ કૅપ્ચર કરવામાં આવી (હજી સુધી અપલોડ કરવામાં કે અવગણવામાં આવેલ નથી)</translation>
 <translation id="1270502636509132238">પિકઅપ પદ્ધતિ</translation>
@@ -188,6 +189,7 @@
 <translation id="2212735316055980242">નીતિ મળી નથી</translation>
 <translation id="2213606439339815911">પ્રવિષ્ટિઓનું આનયન કરી રહ્યાં છે...</translation>
 <translation id="2218879909401188352">હાલમાં હુમલાખોરો <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પર જોખમકારક ઍપ્લિકેશન ઇન્સ્ટૉલ કરી શકે છે જે તમારા ઉપકરણને નુકસાન પહોંચાડે છે, તમારા મોબાઇલ બિલમાં છુપાયેલા ચાર્જ ઉમેરી શકે છે અથવા તમારી વ્યક્તિગત માહિતી ચોરી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
+<translation id="2224337661447660594">ઇન્ટરનેટ ઍક્સેસ નથી</translation>
 <translation id="2230458221926704099"><ph name="BEGIN_LINK" />ડાયગ્નોસ્ટિક્સ ઍપ્લિકેશન<ph name="END_LINK" />નો ઉપયોગ કરીને તમારું કનેક્શન ઠીક કરો</translation>
 <translation id="2239100178324503013">હમણાં મોકલો</translation>
 <translation id="225207911366869382">આ નીતિ માટે આ મૂલ્યને નાપસંદ કરેલું છે.</translation>
@@ -360,6 +362,7 @@
 <translation id="3422472998109090673"><ph name="HOST_NAME" /> હાલમાં પહોંચવા યોગ્ય નથી.</translation>
 <translation id="3427092606871434483">મંજૂરી આપો (ડિફૉલ્ટ)</translation>
 <translation id="3427342743765426898">&amp;સંપાદિત કરવું ફરી કરો</translation>
+<translation id="342781501876943858">જો તમે અન્ય સાઇટ પર તમારા પાસવર્ડનો ફરી ઉપયોગ કર્યો હોય, તો Chromium તેને રીસેટ કરવાનો સુઝાવ આપે છે.</translation>
 <translation id="3431636764301398940">આ ઉપકરણ પર આ કાર્ડ સાચવો</translation>
 <translation id="3447661539832366887">આ ઉપકરણના માલિકે ડાયનાસોર રમત બંધ કરી છે.</translation>
 <translation id="3447884698081792621">(<ph name="ISSUER" /> દ્વારા રજૂ થયેલ) પ્રમાણપત્ર બતાવો</translation>
@@ -498,6 +501,7 @@
 <translation id="4340982228985273705">આ કમ્પ્યુટર એન્ટરપ્રાઇઝ દ્વારા મેનેજ થતું હોય તેવું જણાયું નથી, તેથી નીતિ માત્ર Chrome Webstore પર હોસ્ટ થયેલા એક્સ્ટેન્શનો આપમેળે ઇન્સ્ટૉલ કરી શકશે. Chrome Webstore અપડેટનું URL "<ph name="CWS_UPDATE_URL" />" છે.</translation>
 <translation id="4346197816712207223">સ્વીકૃત ક્રેડિટ કાર્ડ</translation>
 <translation id="4356973930735388585">આ સાઇટ પરના હુમલાખોરો તમારા કમ્પ્યુટર પર તમારી માહિતી (ઉદાહરણ તરીકે, ફોટો, પાસવર્ડ્સ, સંદેશા અને ક્રેડિટ કાર્ડ્સ) ને ચોરી શકે કે કાઢી નાખે તેવા જોખમી પ્રોગ્રામ્સને ઇન્સ્ટોલ કરવાનો પ્રયાસ કરી શકે છે.</translation>
+<translation id="4358461427845829800">ચુકવણી પદ્ધતિઓ મેનેજ કરો…</translation>
 <translation id="4372948949327679948">અપેક્ષિત <ph name="VALUE_TYPE" /> મૂલ્ય.</translation>
 <translation id="4377125064752653719">તમે <ph name="DOMAIN" /> પર પહોંચવાનો પ્રયાસ કર્યો, પણ સર્વર દ્વારા પ્રસ્તુત કરવામાં આવેલું પ્રમાણપત્ર તેના રજૂકર્તા દ્વારા જ રદ કરવામાં આવ્યું છે. આનો અર્થ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો પૂર્ણપણે વિશ્વસનીય નથી. તમે કોઈ હુમલાખોર જોડે વાત કરતા હોઈ શકો છો.</translation>
 <translation id="4406896451731180161">શોધ પરિણામો</translation>
@@ -587,6 +591,7 @@
 <translation id="5115563688576182185">(64-બિટ)</translation>
 <translation id="5121084798328133320">તમે પુષ્ટિ કરી લો પછી, આ સાઇટ સાથે તમારા Google Payments એકાઉન્ટમાંથી કાર્ડની વિગતો શેર કરવામાં આવશે.</translation>
 <translation id="5128122789703661928">આ નામવાળું સત્ર ડિલીટ કરવા માટે માન્ય નથી.</translation>
+<translation id="5135404736266831032">સરનામા મેનેજ કરો…</translation>
 <translation id="5141240743006678641">તમારા Google ઓળખપત્રો સાથે સમન્વયિત પાસવર્ડ્સને એન્ક્રિપ્ટ કરો</translation>
 <translation id="5145883236150621069">નીતિ પ્રતિક્રિયામાં ભૂલ કોડ હાજર</translation>
 <translation id="5159010409087891077">એક નવી છુપી વિંડોમાં પેજ ખોલો (⇧⌘N)</translation>
@@ -672,9 +677,11 @@
 <translation id="5685654322157854305">વિતરણ માટેનું સરનામું ઉમેરો</translation>
 <translation id="5689199277474810259">JSON પર નિકાસ કરો</translation>
 <translation id="5689516760719285838">સ્થાન</translation>
+<translation id="570530837424789914">મેનેજ કરો…</translation>
 <translation id="5710435578057952990">આ વેબસાઇટની ઓળખ ચકાસવામાં આવી નથી.</translation>
 <translation id="5719499550583120431">પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
+<translation id="5730040223043577876">જો તમે અન્ય સાઇટ પર તમારા પાસવર્ડનો ફરી ઉપયોગ કર્યો હોય, તો Chrome તેને રીસેટ કરવાનો સુઝાવ આપે છે.</translation>
 <translation id="5732392974455271431">તમારા માટે તમારા માતાપિતા તેને અનાવરોધિત કરી શકે છે</translation>
 <translation id="5763042198335101085">એક માન્ય ઇમેઇલ ઍડ્રેસ ઉમેરો</translation>
 <translation id="5765072501007116331">વિતરણ પદ્ધતિઓ અને આવશ્યકતાઓ જોવા માટે, એક સરનામું પસંદ કરો</translation>
@@ -761,6 +768,7 @@
 <translation id="6446608382365791566">વધુ માહિતી ઉમેરો</translation>
 <translation id="6447842834002726250">કૂકીઝ</translation>
 <translation id="6451458296329894277">ફોર્મનાં ફરી સબમિશનની પુષ્ટિ કરો</translation>
+<translation id="6465306955648956876">બધા પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="647261751007945333">ઉપકરણ નીતિઓ</translation>
 <translation id="6477321094435799029">Chrome ને આ પૃષ્ઠ પર અસામાન્ય કોડ મળ્યો અને તમારી વ્યક્તિગત માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ, ફોન નંબર્સ અને ક્રેડિટ કાર્ડ્સ)ની સુરક્ષા કરવા માટે તેને અવરોધિત કરેલ છે.</translation>
 <translation id="6489534406876378309">ક્રેશ અપલોડ કરવાનું શરૂ કરો</translation>
@@ -780,6 +788,7 @@
 <translation id="6628463337424475685"><ph name="ENGINE" /> શોધ</translation>
 <translation id="6630809736994426279"><ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> પરના હુમલાખોરો કદાચ હાલમાં તમારા Mac પર જોખમી પ્રોગ્રામ ઇન્સ્ટૉલ કરવાનો પ્રયાસ કરે છે કે જે તમારી માહિતી (ઉદાહરણ તરીકે, ફોટો, પાસવર્ડ, સંદેશા અને ક્રેડિટ કાર્ડ) ચોરી અથવા કાઢી નાખી શકે છે. <ph name="BEGIN_LEARN_MORE_LINK" />વધુ જાણો<ph name="END_LEARN_MORE_LINK" /></translation>
 <translation id="6644283850729428850">આ નીતિ દૂર કરવામાં આવેલી છે.</translation>
+<translation id="6646269444027925224">{COUNT,plural, =0{કોઈ નહીં}=1{1 સાઇટમાંથી (તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ થશો નહીં)}one{# સાઇટમાંથી (તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ થશો નહીં)}other{# સાઇટમાંથી (તમે તમારા Google એકાઉન્ટમાંથી સાઇન આઉટ થશો નહીં)}}</translation>
 <translation id="6657585470893396449">પાસવર્ડ</translation>
 <translation id="6671697161687535275">Chromium માંથી ફોર્મ સૂચન દૂર કરીએ?</translation>
 <translation id="6685834062052613830">સાઇન આઉટ કરો અને સેટઅપ પૂર્ણ કરો</translation>
@@ -808,6 +817,7 @@
 <translation id="6915804003454593391">વપરાશકર્તા: </translation>
 <translation id="6945221475159498467">પસંદ કરો</translation>
 <translation id="6948701128805548767">પિકઅપ પદ્ધતિ અને આવશ્યકતાઓ જોવા માટે, એક સરનામું પસંદ કરો</translation>
+<translation id="6949872517221025916">પાસવર્ડ રીસેટ કરો</translation>
 <translation id="6950684638814147129">JSON મૂલ્યનું વિશ્લેષણ કરવામાં ભૂલ આવી: <ph name="ERROR" /></translation>
 <translation id="6957887021205513506">સર્વરનું પ્રમાણપત્ર બનાવટી હોય એવું લાગે છે.</translation>
 <translation id="6965382102122355670">બરાબર, સમજાઇ ગયું</translation>
@@ -830,6 +840,7 @@
 <translation id="7138472120740807366">વિતરણ પદ્ધતિ</translation>
 <translation id="7139724024395191329">એમિરાત</translation>
 <translation id="7153549335910886479">{PAYMENT_METHOD,plural, =0{<ph name="PAYMENT_METHOD_PREVIEW" />}=1{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}one{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}other{<ph name="PAYMENT_METHOD_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> વધુ}}</translation>
+<translation id="717330890047184534">Gaia ID:</translation>
 <translation id="7175401108899573750">{SHIPPING_OPTIONS,plural, =0{<ph name="SHIPPING_OPTION_PREVIEW" />}=1{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}one{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}other{<ph name="SHIPPING_OPTION_PREVIEW" /> અને <ph name="NUMBER_OF_ADDITIONAL_SHIPPING_OPTIONS" /> વધુ}}</translation>
 <translation id="7180611975245234373">તાજું કરો</translation>
 <translation id="7182878459783632708">કોઈ નીતિઓ  સેટ નથી</translation>

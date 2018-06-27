@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Quản trị viên của thiết bị này đã tắt tính năng đăng nhập vào Chromium.</translation>
 <translation id="4423735387467980091">Tùy chỉnh và điều khiển Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium sẽ khởi động lại sau một giờ}other{Chromium sẽ khởi động lại sau # giờ}}</translation>
-<translation id="4469812139324097969">Chromium đã lỗi thời vì ứng dụng này chưa được chạy lại trong một thời gian. Đã có bản cập nhật và bản cập nhật này sẽ được áp dụng ngay khi bạn chạy lại.</translation>
 <translation id="4567424176335768812">Bạn đã đăng nhập với tên <ph name="USER_EMAIL_ADDRESS" />. Bây giờ, bạn có thể truy cập dấu trang, lịch sử và các cài đặt khác trên tất cả những thiết bị đã đăng nhập của bạn.</translation>
 <translation id="459535195905078186">Ứng dụng Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium sẽ chạy lại sau 1 phút}other{Chromium sẽ chạy lại sau # phút}}</translation>
