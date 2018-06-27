@@ -193,14 +193,12 @@ void CrostiniAppWindowShelfController::OnWindowVisibilityChanged(
   // Handle genuine Crostini app windows.
   const std::string* window_app_id =
       exo::ShellSurface::GetApplicationId(window);
-  if (window_app_id == nullptr)
-    return;
 
   crostini::CrostiniRegistryService* registry_service =
       crostini::CrostiniRegistryServiceFactory::GetForProfile(
           owner()->profile());
   const std::string& shelf_app_id = registry_service->GetCrostiniShelfAppId(
-      *window_app_id, exo::ShellSurface::GetStartupId(window));
+      window_app_id, exo::ShellSurface::GetStartupId(window));
   // Non-crostini apps (i.e. arc++) are filtered out here.
   if (shelf_app_id.empty())
     return;
