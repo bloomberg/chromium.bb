@@ -331,12 +331,8 @@ CrostiniRegistryService::~CrostiniRegistryService() = default;
 // 5) If we couldn't find a match, prefix the app id with 'crostini:' so we can
 // easily identify shelf entries as Crostini apps.
 std::string CrostiniRegistryService::GetCrostiniShelfAppId(
-    const std::string& window_app_id,
+    const std::string* window_app_id,
     const std::string* window_startup_id) {
-  if (base::StartsWith(window_app_id, kArcWindowAppIdPrefix,
-                       base::CompareCase::SENSITIVE))
-    return std::string();
-
   const base::DictionaryValue* apps =
       prefs_->GetDictionary(kCrostiniRegistryPref);
   std::string app_id;
@@ -352,22 +348,26 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
     // Try a lookup with the window app id.
   }
 
+  if (!window_app_id || base::StartsWith(*window_app_id, kArcWindowAppIdPrefix,
+                                         base::CompareCase::SENSITIVE))
+    return std::string();
+
   // Wayland apps won't be prefixed with org.chromium.termina.
-  if (!base::StartsWith(window_app_id, kCrostiniWindowAppIdPrefix,
+  if (!base::StartsWith(*window_app_id, kCrostiniWindowAppIdPrefix,
                         base::CompareCase::SENSITIVE)) {
-    if (FindAppId(apps, kAppDesktopFileIdKey, window_app_id, &app_id) ==
+    if (FindAppId(apps, kAppDesktopFileIdKey, *window_app_id, &app_id) ==
         FindAppIdResult::UniqueMatch)
       return app_id;
-    return kCrostiniAppIdPrefix + window_app_id;
+    return kCrostiniAppIdPrefix + *window_app_id;
   }
 
   base::StringPiece suffix(
-      window_app_id.begin() + strlen(kCrostiniWindowAppIdPrefix),
-      window_app_id.end());
+      window_app_id->begin() + strlen(kCrostiniWindowAppIdPrefix),
+      window_app_id->end());
 
   // If we don't have an id to match to a desktop file, use the window app id.
   if (!base::StartsWith(suffix, kWMClassPrefix, base::CompareCase::SENSITIVE))
-    return kCrostiniAppIdPrefix + window_app_id;
+    return kCrostiniAppIdPrefix + *window_app_id;
 
   // If an app had StartupWMClass set to the given WM class, use that,
   // otherwise look for a desktop file id matching the WM class.
@@ -376,7 +376,7 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
   if (result == FindAppIdResult::UniqueMatch)
     return app_id;
   if (result == FindAppIdResult::NonUniqueMatch)
-    return kCrostiniAppIdPrefix + window_app_id;
+    return kCrostiniAppIdPrefix + *window_app_id;
 
   if (FindAppId(apps, kAppDesktopFileIdKey, key, &app_id) ==
       FindAppIdResult::UniqueMatch)
@@ -386,7 +386,7 @@ std::string CrostiniRegistryService::GetCrostiniShelfAppId(
       FindAppIdResult::UniqueMatch)
     return app_id;
 
-  return kCrostiniAppIdPrefix + window_app_id;
+  return kCrostiniAppIdPrefix + *window_app_id;
 }
 
 bool CrostiniRegistryService::IsCrostiniShelfAppId(

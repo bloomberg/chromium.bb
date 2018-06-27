@@ -323,29 +323,38 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdNoStartupID) {
 
   EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(5));
 
-  EXPECT_EQ(
-      service()->GetCrostiniShelfAppId(WindowIdForWMClass("App"), nullptr),
-      CrostiniTestHelper::GenerateAppId("app", "vm", "container"));
-  EXPECT_EQ(
-      service()->GetCrostiniShelfAppId(WindowIdForWMClass("cool.app"), nullptr),
-      CrostiniTestHelper::GenerateAppId("cool.app", "vm", "container"));
+  EXPECT_TRUE(service()->GetCrostiniShelfAppId(nullptr, nullptr).empty());
 
-  EXPECT_EQ(
-      service()->GetCrostiniShelfAppId(WindowIdForWMClass("super"), nullptr),
-      "crostini:" + WindowIdForWMClass("super"));
-  EXPECT_EQ(service()->GetCrostiniShelfAppId(
-                "org.chromium.termina.wmclientleader.1234", nullptr),
+  std::string window_app_id = WindowIdForWMClass("App");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
+            CrostiniTestHelper::GenerateAppId("app", "vm", "container"));
+
+  window_app_id = WindowIdForWMClass("cool.app");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
+            CrostiniTestHelper::GenerateAppId("cool.app", "vm", "container"));
+
+  window_app_id = WindowIdForWMClass("super");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
+            "crostini:" + WindowIdForWMClass("super"));
+
+  window_app_id = "org.chromium.termina.wmclientleader.1234";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             "crostini:org.chromium.termina.wmclientleader.1234");
-  EXPECT_EQ(service()->GetCrostiniShelfAppId("org.chromium.termina.xid.654321",
-                                             nullptr),
+
+  window_app_id = "org.chromium.termina.xid.654321";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             "crostini:org.chromium.termina.xid.654321");
 
-  EXPECT_EQ(service()->GetCrostiniShelfAppId("cool.app", nullptr),
+  window_app_id = "cool.app";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             CrostiniTestHelper::GenerateAppId("cool.app", "vm", "container"));
-  EXPECT_EQ(service()->GetCrostiniShelfAppId("fancy.app", nullptr),
+
+  window_app_id = "fancy.app";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             "crostini:fancy.app");
 
-  EXPECT_EQ(service()->GetCrostiniShelfAppId("org.chromium.arc.h", nullptr),
+  window_app_id = "org.chromium.arc.h";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             std::string());
 }
 
@@ -361,12 +370,13 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupWMClass) {
 
   EXPECT_THAT(service()->GetRegisteredAppIds(), testing::SizeIs(4));
 
-  EXPECT_EQ(service()->GetCrostiniShelfAppId(WindowIdForWMClass("app_start"),
-                                             nullptr),
+  std::string window_app_id = WindowIdForWMClass("app_start");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
             CrostiniTestHelper::GenerateAppId("app", "vm", "container"));
-  EXPECT_EQ(
-      service()->GetCrostiniShelfAppId(WindowIdForWMClass("app2"), nullptr),
-      "crostini:" + WindowIdForWMClass("app2"));
+
+  window_app_id = WindowIdForWMClass("app2");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
+            "crostini:" + WindowIdForWMClass("app2"));
 }
 
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupNotify) {
@@ -376,12 +386,18 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdStartupNotify) {
   *app_list.add_apps() = CrostiniTestHelper::BasicApp("app2");
   service()->UpdateApplicationList(app_list);
 
+  std::string window_app_id = "whatever";
   std::string startup_id = "app";
-  EXPECT_EQ(service()->GetCrostiniShelfAppId("whatever", &startup_id),
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, &startup_id),
             CrostiniTestHelper::GenerateAppId("app", "vm", "container"));
+
   startup_id = "app2";
-  EXPECT_EQ(service()->GetCrostiniShelfAppId("whatever", &startup_id),
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, &startup_id),
             "crostini:whatever");
+
+  startup_id = "app";
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(nullptr, &startup_id),
+            CrostiniTestHelper::GenerateAppId("app", "vm", "container"));
 }
 
 TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdName) {
@@ -390,9 +406,9 @@ TEST_F(CrostiniRegistryServiceTest, GetCrostiniAppIdName) {
   *app_list.add_apps() = CrostiniTestHelper::BasicApp("app2", "name2");
   service()->UpdateApplicationList(app_list);
 
-  EXPECT_EQ(
-      service()->GetCrostiniShelfAppId(WindowIdForWMClass("name2"), nullptr),
-      CrostiniTestHelper::GenerateAppId("app2", "vm", "container"));
+  std::string window_app_id = WindowIdForWMClass("name2");
+  EXPECT_EQ(service()->GetCrostiniShelfAppId(&window_app_id, nullptr),
+            CrostiniTestHelper::GenerateAppId("app2", "vm", "container"));
 }
 
 }  // namespace crostini
