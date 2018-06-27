@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/extensions/chrome_app_icon.h"
@@ -43,7 +43,8 @@ ExtensionAppResult::ExtensionAppResult(Profile* profile,
 
   is_platform_app_ = extension->is_platform_app();
   icon_ = extensions::ChromeAppIconService::Get(profile)->CreateIcon(
-      this, app_id, GetPreferredIconDimension(display_type()));
+      this, app_id,
+      AppListConfig::instance().GetPreferredIconDimension(display_type()));
 
   StartObservingExtensionRegistry();
 }
@@ -74,10 +75,8 @@ void ExtensionAppResult::Open(int event_flags) {
   }
 
   controller()->ActivateApp(
-      profile(),
-      extension,
-      AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH,
-      event_flags);
+      profile(), extension,
+      AppListControllerDelegate::LAUNCH_FROM_APP_LIST_SEARCH, event_flags);
 }
 
 void ExtensionAppResult::GetContextMenuModel(GetMenuModelCallback callback) {
@@ -108,8 +107,8 @@ bool ExtensionAppResult::RunExtensionEnableFlow() {
     return false;
 
   if (!extension_enable_flow_) {
-    extension_enable_flow_.reset(new ExtensionEnableFlow(
-        profile(), app_id(), this));
+    extension_enable_flow_.reset(
+        new ExtensionEnableFlow(profile(), app_id(), this));
     extension_enable_flow_->StartForNativeWindow(nullptr);
   }
   return true;

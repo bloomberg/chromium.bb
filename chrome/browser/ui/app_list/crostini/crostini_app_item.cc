@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/bind.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
@@ -25,8 +25,9 @@ CrostiniAppItem::CrostiniAppItem(
     const std::string& name)
     : ChromeAppListItem(profile, id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  crostini_app_icon_.reset(
-      new CrostiniAppIcon(profile, id, app_list::kTileIconSize, this));
+  crostini_app_icon_.reset(new CrostiniAppIcon(
+      profile, id, app_list::AppListConfig::instance().grid_icon_dimension(),
+      this));
 
   SetName(name);
   UpdateIcon();

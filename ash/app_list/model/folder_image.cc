@@ -9,6 +9,7 @@
 
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/model/app_list_item_list.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -220,8 +221,7 @@ void FolderImage::RedrawIconAndNotify() {
   FolderImageSource::Icons top_icons;
   for (const auto* item : top_items_)
     top_icons.push_back(item->icon());
-
-  const gfx::Size icon_size = gfx::Size(kGridIconDimension, kGridIconDimension);
+  const gfx::Size icon_size = AppListConfig::instance().grid_icon_size();
   icon_ = gfx::ImageSkia(
       std::make_unique<FolderImageSource>(top_icons, icon_size), icon_size);
 

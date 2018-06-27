@@ -9,6 +9,7 @@
 #include <memory>
 #include <utility>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
@@ -36,7 +37,8 @@ const char AppListTestModel::kItemType[] = "TestItem";
 AppListTestModel::AppListTestItem::AppListTestItem(const std::string& id,
                                                    AppListTestModel* model)
     : AppListItem(id), model_(model) {
-  SetIcon(CreateImageSkia(kGridIconDimension, kGridIconDimension));
+  const int icon_dimension = AppListConfig::instance().grid_icon_dimension();
+  SetIcon(CreateImageSkia(icon_dimension, icon_dimension));
 }
 
 AppListTestModel::AppListTestItem::~AppListTestItem() = default;

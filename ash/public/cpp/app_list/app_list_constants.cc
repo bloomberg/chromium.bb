@@ -31,22 +31,6 @@ const SkColor kPagerHoverColor = SkColorSetRGB(0xB4, 0xB4, 0xB4);
 const SkColor kPagerNormalColor = SkColorSetRGB(0xE2, 0xE2, 0xE2);
 const SkColor kPagerSelectedColor = SkColorSetRGB(0x46, 0x8F, 0xFC);
 
-const SkColor kResultBorderColor = SkColorSetRGB(0xE5, 0xE5, 0xE5);
-const SkColor kResultDefaultTextColor = SkColorSetRGB(0x33, 0x33, 0x33);
-const SkColor kResultDimmedTextColor = SkColorSetRGB(0x84, 0x84, 0x84);
-const SkColor kResultURLTextColor = SkColorSetRGB(0x00, 0x99, 0x33);
-
-const SkColor kGridTitleColor = SK_ColorWHITE;
-
-const int kGridTileWidth = 96;
-const int kGridTileHeight = 99;
-const int kGridTileSpacing = 24;
-const int kGridIconTopPadding = 24;
-const int kGridTitleSpacing = 10;
-const int kGridTitleHorizontalPadding = 8;
-const int kGridSelectedSize = 64;
-const int kGridSelectedCornerRadius = 8;
-
 // The preferred height for horizontal pages. For page #01 in the apps grid, it
 // includes the top/bottom 24px padding. For page #02 and all the followings,
 // it includes top 24px padding and bottom 56px padding.
@@ -92,27 +76,6 @@ const gfx::Tween::Type kFolderFadeOutTweenType = gfx::Tween::FAST_OUT_LINEAR_IN;
 // Preferred number of columns and rows in apps grid.
 const int kPreferredCols = 5;
 const int kPreferredRows = 5;
-const int kGridIconDimension = 48;
-
-// The preferred app badge icon size.
-const int kAppBadgeIconSize = 12;
-// The preferred badge background(circle) radius.
-const int kBadgeBackgroundRadius = 10;
-
-// Preferred search result icon sizes.
-const int kListIconSize = 18;
-const int kListBadgeIconSize = 14;
-const int kListBadgeIconOffsetX = 6;
-const int kListBadgeIconOffsetY = 6;
-const int kTileIconSize = 48;
-
-const SkColor kIconColor = gfx::kChromeIconGrey;
-
-// The drag and drop app icon should get scaled by this factor.
-const float kDragDropAppIconScale = 1.2f;
-
-// The drag and drop icon scaling up or down animation transition duration.
-const int kDragDropAppIconScaleTransitionInMs = 200;
 
 // The number of apps shown in the start page app grid.
 const int kNumStartPageTiles = 5;
@@ -259,53 +222,6 @@ gfx::ShadowValue GetShadowForZHeight(int z_height) {
       return gfx::ShadowValue(gfx::Vector2d(0, 8), 24,
                               SkColorSetARGB(0x3F, 0, 0, 0));
   }
-}
-
-const gfx::ShadowValues& IconStartShadows() {
-  CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
-                         (1, gfx::ShadowValue(gfx::Vector2d(0, 1), 4,
-                                              SkColorSetARGB(0x33, 0, 0, 0))));
-  return icon_shadows;
-}
-
-const gfx::ShadowValues& IconEndShadows() {
-  CR_DEFINE_STATIC_LOCAL(const gfx::ShadowValues, icon_shadows,
-                         (1, gfx::ShadowValue(gfx::Vector2d(0, 4), 8,
-                                              SkColorSetARGB(0x50, 0, 0, 0))));
-  return icon_shadows;
-}
-
-const gfx::FontList& AppListAppTitleFont() {
-  // The max line height of app titles which is determined by the sizes of app
-  // tile views, its paddings, and the icon.
-  constexpr int kAppTitleMaxLineHeight = 16;
-
-  // The font for app titles. We're getting the largest font that doesn't exceed
-  // |kAppTitleMaxLineHeight|.Note: we resize the font to 1px larger,
-  // otherwise it looks too small.
-  static const gfx::FontList kAppListAppTitleFont =
-      ui::ResourceBundle::GetSharedInstance()
-          .GetFontList(ui::ResourceBundle::LargeFont)
-          .DeriveWithHeightUpperBound(kAppTitleMaxLineHeight)
-          .DeriveWithSizeDelta(1);
-  return kAppListAppTitleFont;
-}
-
-int GetPreferredIconDimension(ash::SearchResultDisplayType display_type) {
-  switch (display_type) {
-    case ash::SearchResultDisplayType::kRecommendation:  // Falls through.
-    case ash::SearchResultDisplayType::kTile:
-      return kTileIconSize;
-    case ash::SearchResultDisplayType::kList:
-      return kListIconSize;
-    case ash::SearchResultDisplayType::kNone:
-    case ash::SearchResultDisplayType::kCard:
-      return 0;
-    case ash::SearchResultDisplayType::kLast:
-      break;
-  }
-  NOTREACHED();
-  return 0;
 }
 
 }  // namespace app_list

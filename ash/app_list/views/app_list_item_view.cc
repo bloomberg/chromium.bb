@@ -12,6 +12,7 @@
 #include "ash/app_list/model/app_list_folder_item.h"
 #include "ash/app_list/model/app_list_item.h"
 #include "ash/app_list/views/apps_grid_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/strings/utf_string_conversions.h"
@@ -54,6 +55,12 @@ constexpr int kMouseDragUIDelayInMs = 200;
 // 650ms.
 constexpr int kTouchLongpressDelayInMs = 300;
 
+// The drag and drop app icon should get scaled by this factor.
+constexpr float kDragDropAppIconScale = 1.2f;
+
+// The drag and drop icon scaling up or down animation transition duration.
+constexpr int kDragDropAppIconScaleTransitionInMs = 200;
+
 // The color of the title for the tiles within folder.
 constexpr SkColor kFolderGridTitleColor = SK_ColorBLACK;
 
@@ -86,13 +93,13 @@ AppListItemView::AppListItemView(AppsGridView* apps_grid_view,
   title_->SetBackgroundColor(SK_ColorTRANSPARENT);
   title_->SetAutoColorReadabilityEnabled(false);
   title_->SetHandlesTooltips(false);
-  const gfx::FontList& font = AppListAppTitleFont();
+  const gfx::FontList& font = AppListConfig::instance().app_title_font();
   title_->SetFontList(font);
   title_->SetLineHeight(font.GetHeight());
   title_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
   title_->SetEnabledColor(apps_grid_view_->is_in_folder()
                               ? kFolderGridTitleColor
-                              : kGridTitleColor);
+                              : AppListConfig::instance().grid_title_color());
 
   SetTitleSubpixelAA();
 
@@ -126,7 +133,7 @@ void AppListItemView::SetIcon(const gfx::ImageSkia& icon) {
 
   gfx::ImageSkia resized(gfx::ImageSkiaOperations::CreateResizedImage(
       icon, skia::ImageOperations::RESIZE_BEST,
-      gfx::Size(kGridIconDimension, kGridIconDimension)));
+      AppListConfig::instance().grid_icon_size()));
   if (shadow_animator_)
     shadow_animator_->SetOriginalImage(resized);
   else
@@ -302,7 +309,7 @@ void AppListItemView::OnContextMenuModelReceived(
     anchor_rect = apps_grid_view_->GetIdealBounds(this);
     // Anchor the menu to the same rect that is used for selection highlight.
     anchor_rect.ClampToCenteredSize(
-        gfx::Size(kGridSelectedSize, kGridSelectedSize));
+        AppListConfig::instance().grid_focus_size());
     views::View::ConvertRectToScreen(apps_grid_view_, &anchor_rect);
   }
 
@@ -365,13 +372,15 @@ void AppListItemView::PaintButtonContents(gfx::Canvas* canvas) {
 
   gfx::Rect rect(GetContentsBounds());
   if (apps_grid_view_->IsSelectedView(this)) {
-    rect.ClampToCenteredSize(gfx::Size(kGridSelectedSize, kGridSelectedSize));
+    const int grid_focus_corner_radius =
+        AppListConfig::instance().grid_focus_corner_radius();
+    rect.ClampToCenteredSize(AppListConfig::instance().grid_focus_size());
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(apps_grid_view_->is_in_folder() ? kFolderGridSelectedColor
                                                    : kGridSelectedColor);
     flags.setStyle(cc::PaintFlags::kFill_Style);
-    canvas->DrawRoundRect(gfx::RectF(rect), kGridSelectedCornerRadius, flags);
+    canvas->DrawRoundRect(gfx::RectF(rect), grid_focus_corner_radius, flags);
   }
 
   if (ui_state_ == UI_STATE_DROPPING_IN_FOLDER) {
@@ -412,25 +421,18 @@ void AppListItemView::Layout() {
   if (rect.IsEmpty())
     return;
 
-  icon_->SetBoundsRect(GetIconBoundsForTargetViewBounds(GetContentsBounds()));
-
-  rect.Inset(kGridTitleHorizontalPadding,
-             kGridIconTopPadding + kGridIconDimension + kGridTitleSpacing,
-             kGridTitleHorizontalPadding, 0);
-  rect.set_height(title_->GetPreferredSize().height());
-  title_->SetBoundsRect(rect);
+  icon_->SetBoundsRect(
+      GetIconBoundsForTargetViewBounds(rect, icon_->GetImage().size()));
+  title_->SetBoundsRect(
+      GetTitleBoundsForTargetViewBounds(rect, title_->GetPreferredSize()));
   SetTitleSubpixelAA();
-
-  gfx::Rect progress_bar_bounds(progress_bar_->GetPreferredSize());
-  progress_bar_bounds.set_x(
-      (GetContentsBounds().width() - progress_bar_bounds.width()) / 2);
-  progress_bar_bounds.set_y(rect.y());
-  progress_bar_->SetBoundsRect(progress_bar_bounds);
+  progress_bar_->SetBoundsRect(GetProgressBarBoundsForTargetViewBounds(
+      rect, progress_bar_->GetPreferredSize()));
 }
 
 gfx::Size AppListItemView::CalculatePreferredSize() const {
-  gfx::Size size = gfx::Size(kGridTileWidth, kGridTileHeight);
-  return size;
+  return gfx::Size(AppListConfig::instance().grid_tile_width(),
+                   AppListConfig::instance().grid_tile_height());
 }
 
 bool AppListItemView::OnKeyPressed(const ui::KeyEvent& event) {
@@ -582,12 +584,37 @@ void AppListItemView::SetDragUIState() {
 }
 
 gfx::Rect AppListItemView::GetIconBoundsForTargetViewBounds(
-    const gfx::Rect& target_bounds) {
+    const gfx::Rect& target_bounds,
+    const gfx::Size& icon_size) {
   gfx::Rect rect(target_bounds);
-  rect.Inset(0, kGridIconTopPadding, 0, 0);
-  rect.set_height(icon_->GetImage().height());
-  rect.ClampToCenteredSize(icon_->GetImage().size());
+  rect.Inset(0, AppListConfig::instance().grid_icon_top_padding(), 0, 0);
+  rect.set_height(icon_size.height());
+  rect.ClampToCenteredSize(icon_size);
   return rect;
+}
+
+gfx::Rect AppListItemView::GetTitleBoundsForTargetViewBounds(
+    const gfx::Rect& target_bounds,
+    const gfx::Size& title_size) {
+  gfx::Rect rect(target_bounds);
+  rect.Inset(0,
+             AppListConfig::instance().grid_icon_top_padding() +
+                 AppListConfig::instance().grid_icon_dimension() +
+                 AppListConfig::instance().grid_icon_title_spacing(),
+             0, 0);
+  rect.set_height(title_size.height());
+  rect.ClampToCenteredSize(title_size);
+  return rect;
+}
+
+gfx::Rect AppListItemView::GetProgressBarBoundsForTargetViewBounds(
+    const gfx::Rect& target_bounds,
+    const gfx::Size& progress_bar_size) {
+  gfx::Rect progress_bar_bounds(progress_bar_size);
+  progress_bar_bounds.set_x(
+      (target_bounds.width() - progress_bar_bounds.width()) / 2);
+  progress_bar_bounds.set_y(target_bounds.y());
+  return progress_bar_bounds;
 }
 
 void AppListItemView::SetTitleSubpixelAA() {

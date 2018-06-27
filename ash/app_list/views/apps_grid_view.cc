@@ -29,6 +29,7 @@
 #include "ash/app_list/views/search_result_tile_item_view.h"
 #include "ash/app_list/views/suggestions_container_view.h"
 #include "ash/app_list/views/top_icon_animation_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -138,7 +139,8 @@ constexpr float kExpandArrowShowEndFraction = 1.0f;
 
 // Returns the size of a tile view excluding its padding.
 gfx::Size GetTileViewSize() {
-  return gfx::Size(kGridTileWidth, kGridTileHeight);
+  return gfx::Size(AppListConfig::instance().grid_tile_width(),
+                   AppListConfig::instance().grid_tile_height());
 }
 
 // RowMoveAnimationDelegate is used when moving an item into a different row.
@@ -824,12 +826,14 @@ void AppsGridView::Layout() {
   gfx::Rect indicator_rect(rect);
   gfx::Rect arrow_rect(rect);
   if (suggestions_container_) {
+    const int tile_width = AppListConfig::instance().grid_tile_width();
     gfx::Rect suggestions_rect(rect);
     suggestions_rect.set_height(
         suggestions_container_->GetHeightForWidth(suggestions_rect.width()));
-    suggestions_rect.Offset((suggestions_rect.width() - kGridTileWidth) / 2 -
-                                (kGridTileWidth + kGridTileSpacing) * 2,
-                            0);
+    suggestions_rect.Offset(
+        (suggestions_rect.width() - tile_width) / 2 -
+            (tile_width + AppListConfig::instance().grid_tile_spacing()) * 2,
+        0);
     suggestions_rect.Offset(CalculateTransitionOffset(0));
     suggestions_container_->SetBoundsRect(suggestions_rect);
     indicator_rect.Inset(0,
@@ -1458,10 +1462,11 @@ bool AppsGridView::IsDraggingForReparentInHiddenGridView() const {
 gfx::Rect AppsGridView::GetTargetIconRectInFolder(
     AppListItemView* drag_item_view,
     AppListItemView* folder_item_view) {
-  gfx::Rect view_ideal_bounds =
+  const gfx::Rect view_ideal_bounds =
       view_model_.ideal_bounds(view_model_.GetIndexOfView(folder_item_view));
-  gfx::Rect icon_ideal_bounds =
-      folder_item_view->GetIconBoundsForTargetViewBounds(view_ideal_bounds);
+  const gfx::Rect icon_ideal_bounds =
+      folder_item_view->GetIconBoundsForTargetViewBounds(
+          view_ideal_bounds, folder_item_view->icon()->GetImage().size());
   AppListFolderItem* folder_item =
       static_cast<AppListFolderItem*>(folder_item_view->item());
   return folder_item->GetTargetIconRectInFolderForItem(drag_item_view->item(),

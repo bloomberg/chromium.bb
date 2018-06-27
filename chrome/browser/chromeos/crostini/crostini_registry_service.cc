@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -746,7 +746,8 @@ void CrostiniRegistryService::RequestIcon(const std::string& app_id,
 
   crostini::CrostiniManager::GetInstance()->GetContainerAppIcons(
       profile_, registration->VmName(), registration->ContainerName(),
-      desktop_file_ids, app_list::kTileIconSize, icon_scale,
+      desktop_file_ids,
+      app_list::AppListConfig::instance().grid_icon_dimension(), icon_scale,
       base::BindOnce(&CrostiniRegistryService::OnContainerAppIcon,
                      weak_ptr_factory_.GetWeakPtr(), app_id, scale_factor));
 }

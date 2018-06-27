@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -69,7 +69,8 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   SetDisplayType(ash::SearchResultDisplayType::kTile);
   SetBadgeIcon(gfx::CreateVectorIcon(
       is_instant_app() ? kIcBadgeInstantIcon : kIcBadgePlayIcon,
-      kAppBadgeIconSize, kBadgeColor));
+      app_list::AppListConfig::instance().search_tile_badge_icon_dimension(),
+      kBadgeColor));
   SetFormattedPrice(base::UTF8ToUTF16(formatted_price().value()));
   SetRating(review_score());
   SetResultType(is_instant_app() ? ash::SearchResultType::kInstantApp
@@ -78,7 +79,7 @@ ArcPlayStoreSearchResult::ArcPlayStoreSearchResult(
   icon_decode_request_ = std::make_unique<arc::IconDecodeRequest>(
       base::BindOnce(&ArcPlayStoreSearchResult::SetIcon,
                      weak_ptr_factory_.GetWeakPtr()),
-      kGridIconDimension);
+      app_list::AppListConfig::instance().search_tile_icon_dimension());
   icon_decode_request_->StartWithOptions(icon_png_data());
 }
 

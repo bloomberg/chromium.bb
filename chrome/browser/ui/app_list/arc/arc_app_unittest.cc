@@ -11,7 +11,7 @@
 #include <string>
 #include <vector>
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -129,7 +129,9 @@ void WaitForIconUpdates(Profile* profile,
                         const std::string& app_id,
                         size_t expected_updates) {
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile, app_list::kListIconSize, &delegate);
+  ArcAppIconLoader icon_loader(
+      profile, app_list::AppListConfig::instance().search_list_icon_dimension(),
+      &delegate);
   icon_loader.FetchImage(app_id);
   delegate.WaitForIconUpdates(expected_updates);
 }
@@ -363,9 +365,8 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     // Process requested apps.
     for (auto& app : apps) {
       const std::string id = ArcAppTest::GetAppId(app);
-      std::vector<std::string>::iterator it_id = std::find(ids.begin(),
-                                                           ids.end(),
-                                                           id);
+      std::vector<std::string>::iterator it_id =
+          std::find(ids.begin(), ids.end(), id);
       ASSERT_NE(it_id, ids.end());
       ids.erase(it_id);
 
@@ -408,8 +409,10 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
 
   // Validates that provided image is acceptable as ARC app icon.
   void ValidateIcon(const gfx::ImageSkia& image) {
-    EXPECT_EQ(app_list::kGridIconDimension, image.width());
-    EXPECT_EQ(app_list::kGridIconDimension, image.height());
+    const int icon_dimension =
+        app_list::AppListConfig::instance().grid_icon_dimension();
+    EXPECT_EQ(icon_dimension, image.width());
+    EXPECT_EQ(icon_dimension, image.height());
 
     const std::vector<ui::ScaleFactor>& scale_factors =
         ui::GetSupportedScaleFactors();
@@ -418,10 +421,10 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
       EXPECT_TRUE(image.HasRepresentation(scale));
       const gfx::ImageSkiaRep& representation = image.GetRepresentation(scale);
       EXPECT_FALSE(representation.is_null());
-      EXPECT_EQ(gfx::ToCeiledInt(app_list::kGridIconDimension * scale),
-          representation.pixel_width());
-      EXPECT_EQ(gfx::ToCeiledInt(app_list::kGridIconDimension * scale),
-          representation.pixel_height());
+      EXPECT_EQ(gfx::ToCeiledInt(icon_dimension * scale),
+                representation.pixel_width());
+      EXPECT_EQ(gfx::ToCeiledInt(icon_dimension * scale),
+                representation.pixel_height());
     }
   }
 
@@ -465,9 +468,7 @@ class ArcAppModelBuilderTest : public extensions::ExtensionServiceTestBase,
     return arc_test_.fake_shortcuts();
   }
 
-  arc::FakeAppInstance* app_instance() {
-    return arc_test_.app_instance();
-  }
+  arc::FakeAppInstance* app_instance() { return arc_test_.app_instance(); }
 
  private:
   ArcAppTest arc_test_;
@@ -549,8 +550,7 @@ class ArcPlayStoreAppTest : public ArcDefaulAppTest {
     ArcDefaulAppTest::OnBeforeArcTestSetup();
 
     base::DictionaryValue manifest;
-    manifest.SetString(extensions::manifest_keys::kName,
-                       "Play Store");
+    manifest.SetString(extensions::manifest_keys::kName, "Play Store");
     manifest.SetString(extensions::manifest_keys::kVersion, "1");
     manifest.SetInteger(extensions::manifest_keys::kManifestVersion, 2);
     manifest.SetString(extensions::manifest_keys::kDescription,
@@ -984,7 +984,7 @@ TEST_P(ArcAppModelBuilderTest, RequestIcons) {
   const std::vector<ui::ScaleFactor>& scale_factors =
       ui::GetSupportedScaleFactors();
   for (auto& scale_factor : scale_factors) {
-    expected_mask |= 1 <<  scale_factor;
+    expected_mask |= 1 << scale_factor;
     for (auto& app : fake_apps()) {
       ArcAppItem* app_item = FindArcItem(ArcAppTest::GetAppId(app));
       ASSERT_NE(nullptr, app_item);
@@ -1243,8 +1243,8 @@ TEST_P(ArcPlayStoreAppTest, PlayStore) {
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
   ASSERT_TRUE(prefs);
 
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
-      arc::kPlayStoreAppId);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      prefs->GetApp(arc::kPlayStoreAppId);
   if (GetParam() != ArcState::ARC_PERSISTENT_WITHOUT_PLAY_STORE) {
     // Make sure PlayStore is available.
     ASSERT_TRUE(app_info);
@@ -1537,7 +1537,10 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
       arc::ArcAppShelfId("arc_test_shelf_group_absent", app_id).ToString();
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
+  ArcAppIconLoader icon_loader(
+      profile(),
+      app_list::AppListConfig::instance().search_list_icon_dimension(),
+      &delegate);
   EXPECT_EQ(0UL, delegate.update_image_cnt());
 
   // Shortcut exists, icon is requested from shortcut.
@@ -1595,7 +1598,10 @@ TEST_P(ArcAppModelBuilderTest, IconLoaderWithBadIcon) {
       app_instance()->icon_requests().size();
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
+  ArcAppIconLoader icon_loader(
+      profile(),
+      app_list::AppListConfig::instance().search_list_icon_dimension(),
+      &delegate);
   icon_loader.FetchImage(app_id);
 
   // So far one updated of default icon is expected.
@@ -1648,9 +1654,10 @@ TEST_P(ArcAppModelBuilderTest, IconLoader) {
       fake_apps().begin(), fake_apps().begin() + 1));
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile(),
-                               app_list::kListIconSize,
-                               &delegate);
+  ArcAppIconLoader icon_loader(
+      profile(),
+      app_list::AppListConfig::instance().search_list_icon_dimension(),
+      &delegate);
   EXPECT_EQ(0UL, delegate.update_image_cnt());
   icon_loader.FetchImage(app_id);
   EXPECT_EQ(1UL, delegate.update_image_cnt());
@@ -1781,7 +1788,10 @@ TEST_P(ArcAppModelBuilderTest, IconLoadNonSupportedScales) {
       fake_apps().begin(), fake_apps().begin() + 1));
 
   FakeAppIconLoaderDelegate delegate;
-  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize, &delegate);
+  ArcAppIconLoader icon_loader(
+      profile(),
+      app_list::AppListConfig::instance().search_list_icon_dimension(),
+      &delegate);
   icon_loader.FetchImage(app_id);
   // Expected 1 update with default image and 2 representations should be
   // allocated.
@@ -1980,8 +1990,8 @@ TEST_P(ArcDefaulAppTest, DefaultApps) {
 
   // However default apps are still not ready.
   for (const auto& default_app : fake_default_apps()) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
-        ArcAppTest::GetAppId(default_app));
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+        prefs->GetApp(ArcAppTest::GetAppId(default_app));
     ASSERT_TRUE(app_info);
     EXPECT_FALSE(app_info->ready);
   }
@@ -2050,8 +2060,10 @@ TEST_P(ArcAppLauncherForDefaulAppTest, AppIconUpdated) {
   const std::string app_id = ArcAppTest::GetAppId(app);
 
   FakeAppIconLoaderDelegate icon_delegate;
-  ArcAppIconLoader icon_loader(profile(), app_list::kListIconSize,
-                               &icon_delegate);
+  ArcAppIconLoader icon_loader(
+      profile(),
+      app_list::AppListConfig::instance().search_list_icon_dimension(),
+      &icon_delegate);
   icon_loader.FetchImage(app_id);
 
   arc_test()->WaitForDefaultApps();

@@ -11,6 +11,7 @@
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/views/search_result_actions_view.h"
 #include "ash/app_list/views/search_result_list_view.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
 #include "base/bind.h"
@@ -43,9 +44,12 @@ constexpr SkColor kDefaultTextColor = SkColorSetARGB(0x8A, 0x00, 0x00, 0x00);
 constexpr SkColor kUrlColor = SkColorSetARGB(0xFF, 0x33, 0x67, 0xD6);
 // Row selected color, #000 8%.
 constexpr SkColor kRowHighlightedColor = SkColorSetARGB(0x14, 0x00, 0x00, 0x00);
+// Search result border color.
+constexpr SkColor kResultBorderColor = SkColorSetARGB(0xFF, 0xE5, 0xE5, 0xE5);
 
 int GetIconViewWidth() {
-  return kListIconSize + 2 * kIconLeftRightPadding;
+  return AppListConfig::instance().search_list_icon_dimension() +
+         2 * kIconLeftRightPadding;
 }
 
 }  // namespace
@@ -195,7 +199,9 @@ void SearchResultView::Layout() {
 
   gfx::Rect icon_bounds(rect);
   icon_bounds.set_width(GetIconViewWidth());
-  const int top_bottom_padding = (rect.height() - kListIconSize) / 2;
+  const int top_bottom_padding =
+      (rect.height() - AppListConfig::instance().search_list_icon_dimension()) /
+      2;
   icon_bounds.Inset(kIconLeftRightPadding, top_bottom_padding,
                     kIconLeftRightPadding, top_bottom_padding);
   icon_bounds.Intersect(rect);
@@ -203,9 +209,11 @@ void SearchResultView::Layout() {
 
   gfx::Rect badge_icon_bounds;
 
-  badge_icon_bounds = gfx::Rect(icon_bounds.right() - kListBadgeIconSize / 2,
-                                icon_bounds.bottom() - kListBadgeIconSize / 2,
-                                kListBadgeIconSize, kListBadgeIconSize);
+  const int badge_icon_dimension =
+      AppListConfig::instance().search_list_badge_icon_dimension();
+  badge_icon_bounds = gfx::Rect(icon_bounds.right() - badge_icon_dimension / 2,
+                                icon_bounds.bottom() - badge_icon_dimension / 2,
+                                badge_icon_dimension, badge_icon_dimension);
 
   badge_icon_bounds.Intersect(rect);
   badge_icon_->SetBoundsRect(badge_icon_bounds);
@@ -340,7 +348,8 @@ void SearchResultView::OnMetadataChanged() {
   // not forget to SetIcon when it's ready.
   const gfx::ImageSkia icon(result_ ? result_->icon() : gfx::ImageSkia());
   if (!icon.isNull())
-    SetIconImage(icon, icon_, kListIconSize);
+    SetIconImage(icon, icon_,
+                 AppListConfig::instance().search_list_icon_dimension());
 
   // Updates |badge_icon_|.
   const gfx::ImageSkia badge_icon(result_ ? result_->badge_icon()
@@ -348,7 +357,8 @@ void SearchResultView::OnMetadataChanged() {
   if (badge_icon.isNull()) {
     badge_icon_->SetVisible(false);
   } else {
-    SetIconImage(badge_icon, badge_icon_, kListBadgeIconSize);
+    SetIconImage(badge_icon, badge_icon_,
+                 AppListConfig::instance().search_list_badge_icon_dimension());
     badge_icon_->SetVisible(true);
   }
 

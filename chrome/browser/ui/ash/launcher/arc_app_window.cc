@@ -4,7 +4,7 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 
-#include "ash/public/cpp/app_list/app_list_constants.h"
+#include "ash/public/cpp/app_list/app_list_config.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
@@ -81,7 +81,8 @@ void ArcAppWindow::OnIconUpdated(ArcAppIcon* icon) {
 void ArcAppWindow::SetDefaultAppIcon() {
   if (!app_icon_) {
     app_icon_ = std::make_unique<ArcAppIcon>(
-        profile_, app_shelf_id_.ToString(), app_list::kGridIconDimension, this);
+        profile_, app_shelf_id_.ToString(),
+        app_list::AppListConfig::instance().grid_icon_dimension(), this);
   }
   // Apply default image now and in case icon is updated then OnIconUpdated()
   // will be called additionally.
