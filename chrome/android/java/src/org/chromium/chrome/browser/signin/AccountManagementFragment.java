@@ -269,10 +269,7 @@ public class AccountManagementFragment extends PreferenceFragment
 
             if (ProfileSyncService.get() == null) return true;
 
-            Bundle args = new Bundle();
-            args.putString(SyncCustomizationFragment.ARGUMENT_ACCOUNT, mSignedInAccountName);
-            preferences.startFragment(SyncCustomizationFragment.class.getName(), args);
-
+            preferences.startFragment(SyncCustomizationFragment.class.getName(), new Bundle());
             return true;
         });
     }

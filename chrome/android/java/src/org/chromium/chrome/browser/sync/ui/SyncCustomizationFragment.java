@@ -108,8 +108,6 @@ public class SyncCustomizationFragment extends PreferenceFragment
     private static final int SYNC_CLIENT_OUT_OF_DATE = 3;
     private static final int SYNC_OTHER_ERRORS = 128;
 
-    public static final String ARGUMENT_ACCOUNT = "account";
-
     private ChromeSwitchPreference mSyncSwitchPreference;
     private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
