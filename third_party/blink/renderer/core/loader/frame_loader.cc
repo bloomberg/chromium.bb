@@ -1336,8 +1336,8 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
     HTMLFormElement* form,
     mojom::blink::BlobURLTokenPtr blob_url_token,
     bool check_with_client) {
-  // Don't ask if we are loading an empty URL.
-  if (request.Url().IsEmpty() || substitute_data.IsValid())
+  // Don't ask if we already have the data.
+  if (substitute_data.IsValid())
     return kNavigationPolicyCurrentTab;
 
   // Check for non-escaped new lines in the url.
