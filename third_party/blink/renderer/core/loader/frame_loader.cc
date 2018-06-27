@@ -1456,6 +1456,12 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
     provisional_document_loader_->SetSentDidFinishLoad();
   DetachDocumentLoader(provisional_document_loader_);
 
+  // Detaching the provisional DocumentLoader above may leave the frame without
+  // any loading DocumentLoader. It can causes the 'load' event to fire, which
+  // can be used to detach this frame.
+  if (!frame_->GetPage())
+    return;
+
   progress_tracker_->ProgressStarted();
   // TODO(japhet): This case wants to flag the frame as loading and do nothing
   // else. It'd be nice if it could go through the placeholder DocumentLoader

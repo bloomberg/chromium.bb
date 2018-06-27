@@ -802,4 +802,59 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
   EXPECT_FALSE(dom_message_queue.PopMessage(&message));
 }
 
+// Regression test for https://crbug.com/856396.
+IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
+                       ReplacingDocumentLoaderFiresLoadEvent) {
+  net::test_server::ControllableHttpResponse main_document_response(
+      embedded_test_server(), "/main_document");
+  net::test_server::ControllableHttpResponse iframe_response(
+      embedded_test_server(), "/iframe");
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  // 1) Load the main document.
+  shell()->LoadURL(embedded_test_server()->GetURL("/main_document"));
+  main_document_response.WaitForRequest();
+  main_document_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<script>"
+      "  var detach_iframe = function() {"
+      "    var iframe = document.querySelector('iframe');"
+      "    iframe.parentNode.removeChild(iframe);"
+      "  }"
+      "</script>"
+      "<body onload='detach_iframe()'>"
+      "  <iframe src='/iframe'></iframe>"
+      "</body>");
+  main_document_response.Done();
+
+  // 2) The iframe starts to load, but the server only have time to send the
+  // response's headers, not the response's body. A provisional DocumentLoader
+  // will be created in the renderer process, but it will never commit.
+  iframe_response.WaitForRequest();
+  iframe_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n");
+
+  // 3) In the meantime the iframe navigates elsewhere. It causes the previous
+  // provisional DocumentLoader to be replaced by the new one. Removing it may
+  // trigger the 'load' event and delete the iframe.
+  EXPECT_TRUE(ExecuteScript(
+      shell(), "document.querySelector('iframe').src = '/title1.html'"));
+
+  // Wait for the iframe to be deleted and check the renderer process is still
+  // alive.
+  int iframe_count = 1;
+  while (iframe_count != 0) {
+    ASSERT_TRUE(ExecuteScriptAndExtractInt(
+        shell(),
+        "var iframe_count = document.getElementsByTagName('iframe').length;"
+        "window.domAutomationController.send(iframe_count);",
+        &iframe_count));
+  }
+}
+
 }  // namespace content
