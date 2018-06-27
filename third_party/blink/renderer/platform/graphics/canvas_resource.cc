@@ -18,7 +18,7 @@
 #include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/color_space.h"
 
-namespace {
+namespace blink {
 
 // TODO(danakj): One day the gpu::mojom::Mailbox type should be shared with
 // blink directly and we won't need to use gpu::mojom::blink::Mailbox, nor the
@@ -30,10 +30,6 @@ gpu::mojom::blink::MailboxPtr SharedBitmapIdToGpuMailboxPtr(
     name[i] = id.name[i];
   return {base::in_place, name};
 }
-
-}  // unnamed namespace
-
-namespace blink {
 
 CanvasResource::CanvasResource(base::WeakPtr<CanvasResourceProvider> provider,
                                SkFilterQuality filter_quality,
