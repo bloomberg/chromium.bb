@@ -32,8 +32,11 @@ SessionStorageAreaImpl::~SessionStorageAreaImpl() {
 
 void SessionStorageAreaImpl::Bind(
     blink::mojom::StorageAreaAssociatedRequest request) {
-  DCHECK(!IsBound());
-  shared_data_map_->AddBindingReference();
+  if (IsBound()) {
+    binding_.Unbind();
+  } else {
+    shared_data_map_->AddBindingReference();
+  }
   binding_.Bind(std::move(request));
   binding_.set_connection_error_handler(base::BindOnce(
       &SessionStorageAreaImpl::OnConnectionError, base::Unretained(this)));
