@@ -38,17 +38,22 @@ void ReplyAdapter(base::OnceCallback<void(ReplyArgType)> callback,
 }
 }  // namespace internal
 
-// PrioritizedTaskRunner allows for prioritization of posted tasks within a
-// single TaskRunner. Be careful, as it is possible to starve a task.
+// PrioritizedTaskRunner allows for prioritization of posted tasks and their
+// replies. It provides up to 2^32 priority levels. All tasks posted via the
+// PrioritizedTaskRunner will run in priority order. All replies from
+// PostTaskAndReply will also run in priority order. Be careful, as it is
+// possible to starve a task.
 class NET_EXPORT_PRIVATE PrioritizedTaskRunner
     : public base::RefCountedThreadSafe<PrioritizedTaskRunner> {
  public:
+  enum class ReplyRunnerType { kStandard, kPrioritized };
   PrioritizedTaskRunner(scoped_refptr<base::TaskRunner> task_runner);
 
   // Similar to TaskRunner::PostTaskAndReply, except that the task runs at
   // |priority|. Priority 0 is the highest priority and will run before other
   // priority values. Multiple tasks with the same |priority| value are run in
-  // order of posting.
+  // order of posting. The replies are also run in prioritized order on the
+  // calling taskrunner.
   void PostTaskAndReply(const base::Location& from_here,
                         base::OnceClosure task,
                         base::OnceClosure reply,
@@ -106,20 +111,18 @@ class NET_EXPORT_PRIVATE PrioritizedTaskRunner
     }
   };
 
-  // Pops the next task from the heap.
-  Job PopJob();
-
-  void RunPostTaskAndReply(Job* out_job);
-
-  void RunReply(Job* job);
+  void RunPostTaskAndReply();
+  void RunReply();
 
   ~PrioritizedTaskRunner();
 
-  // TODO(jkarlin): Replace the heap with a std::priority_queue once it
+  // TODO(jkarlin): Replace the heaps with std::priority_queue once it
   // supports move-only types.
   // Accessed on both task_runner_ and the reply task runner.
-  std::vector<Job> job_heap_;
-  base::Lock job_heap_lock_;
+  std::vector<Job> task_job_heap_;
+  base::Lock task_job_heap_lock_;
+  std::vector<Job> reply_job_heap_;
+  base::Lock reply_job_heap_lock_;
 
   // Accessed on the reply task runner.
   scoped_refptr<base::TaskRunner> task_runner_;
