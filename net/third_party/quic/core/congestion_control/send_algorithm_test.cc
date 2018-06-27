@@ -6,7 +6,6 @@
 #include <map>
 #include <memory>
 
-#include "build/build_config.h"
 #include "net/third_party/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
 #include "net/third_party/quic/core/quic_types.h"
