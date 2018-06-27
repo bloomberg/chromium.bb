@@ -30,11 +30,11 @@ namespace third_party_dlls {
 //   second by code_id hash (there can be multiple of the same basename hash).
 // -----------------------------------------------------------------------------
 
-// Subkey relative to install_static::GetRegistryPath().
-extern const wchar_t kThirdPartyRegKeyName[];
+// Subdir relative to install_static::GetUserDataDirectory().
+extern const wchar_t kFileSubdir[];
 
-// Subkey value of type REG_SZ to hold a full path to a packed-list file.
-extern const wchar_t kBlFilePathRegValue[];
+// Packed module list cache file.
+extern const wchar_t kBlFileName[];
 
 enum PackedListVersion : uint32_t {
   kInitialVersion = 1,

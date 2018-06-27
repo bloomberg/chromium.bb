@@ -12,8 +12,7 @@
 #include <algorithm>
 #include <limits>
 
-#include "chrome/install_static/install_util.h"
-#include "chrome_elf/nt_registry/nt_registry.h"
+#include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/third_party_dlls/packed_list_format.h"
 
 namespace third_party_dlls {
@@ -27,7 +26,7 @@ bool g_initialized = false;
 PackedListModule* g_bl_module_array = nullptr;
 size_t g_bl_module_array_size = 0;
 
-// NOTE: this "global" is only initialized once on first access.
+// NOTE: this "global" is only initialized once during InitComponent().
 // NOTE: it is wrapped in a function to prevent exit-time dtors.
 std::wstring& GetBlFilePath() {
   static std::wstring* const file_path = new std::wstring();
@@ -107,38 +106,20 @@ FileStatus ReadInArray(HANDLE file,
   return FileStatus::kSuccess;
 }
 
-// Reads the path to the blacklist file from the registry into |file_path|.
-//
-// - Returns false if the value is not found, is not a REG_SZ, or is empty.
-bool GetFilePathFromRegistry(std::wstring* file_path) {
-  file_path->clear();
-  HANDLE key_handle = nullptr;
-
-  // If the ThirdParty registry key does not exist, it will be created.
-  if (!nt::CreateRegKey(nt::HKCU,
-                        install_static::GetRegistryPath()
-                            .append(kThirdPartyRegKeyName)
-                            .c_str(),
-                        KEY_QUERY_VALUE, &key_handle)) {
-    return false;
-  }
-
-  bool found = nt::QueryRegValueSZ(key_handle, kBlFilePathRegValue, file_path);
-  nt::CloseRegKey(key_handle);
-
-  return found && !file_path->empty();
-}
-
 // Open a packed data file.
 //
-// - Returns kSuccess, kFilePathNotFoundInRegistry, or kFileNotFound on success.
+// - Returns kSuccess or kFileNotFound on success.
 FileStatus OpenDataFile(HANDLE* file_handle) {
   *file_handle = INVALID_HANDLE_VALUE;
   std::wstring& file_path = GetBlFilePath();
 
   // The path may have been overridden for testing.
-  if (file_path.empty() && !GetFilePathFromRegistry(&file_path))
-    return FileStatus::kFilePathNotFoundInRegistry;
+  if (file_path.empty()) {
+    if (!install_static::GetUserDataDirectory(&file_path, nullptr))
+      return FileStatus::kUserDataDirFail;
+    file_path.append(kFileSubdir);
+    file_path.append(kBlFileName);
+  }
 
   // See if file exists.  INVALID_HANDLE_VALUE alert!
   *file_handle =
@@ -160,16 +141,17 @@ FileStatus OpenDataFile(HANDLE* file_handle) {
   return FileStatus::kSuccess;
 }
 
-// Find the packed blacklist file and read in the array.
-// - NOTE: kFilePathNotFoundInRegistry, kFileNotFound, and kArraySizeZero are
-//         treated as kSuccess.
+// Example file location, relative to user data dir.
+// %localappdata% / Google / Chrome SxS / User Data / ThirdPartyModuleList64 /
+//
+// - NOTE: kFileNotFound and kArraySizeZero are treated as kSuccess.
 FileStatus InitInternal() {
+  // blacklist
+  // ---------
   HANDLE handle = INVALID_HANDLE_VALUE;
   FileStatus status = OpenDataFile(&handle);
-  if (status == FileStatus::kFilePathNotFoundInRegistry ||
-      status == FileStatus::kFileNotFound) {
+  if (status == FileStatus::kFileNotFound)
     return FileStatus::kSuccess;
-  }
   if (status == FileStatus::kSuccess) {
     status = ReadInArray(handle, &g_bl_module_array_size, &g_bl_module_array);
     ::CloseHandle(handle);
