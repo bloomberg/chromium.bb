@@ -10,6 +10,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_request.h"
 #include "third_party/blink/renderer/core/testing/sim/sim_test.h"
+#include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
 
 namespace blink {
 
@@ -18,6 +19,20 @@ class AnchorElementMetricsTest : public SimTest {
   static constexpr int kViewportWidth = 400;
   static constexpr int kViewportHeight = 600;
 
+  // Helper function to test IsUrlIncrementedByOne().
+  bool IsIncrementedByOne(const String& source, const String& target) {
+    SimRequest main_resource(source, "text/html");
+    LoadURL(source);
+    main_resource.Complete("<a id='anchor' href=''>example</a>");
+    HTMLAnchorElement* anchor_element =
+        ToHTMLAnchorElement(GetDocument().getElementById("anchor"));
+    anchor_element->SetHref(AtomicString(target));
+
+    return AnchorElementMetrics::CreateFrom(anchor_element)
+        .value()
+        .GetIsUrlIncrementedByOne();
+  }
+
  protected:
   AnchorElementMetricsTest() = default;
 
@@ -25,26 +40,28 @@ class AnchorElementMetricsTest : public SimTest {
     SimTest::SetUp();
     WebView().Resize(WebSize(kViewportWidth, kViewportHeight));
   }
-
-  bool IsIncrementedByOne(const String& a, const String& b) {
-    return AnchorElementMetrics::IsStringIncrementedByOne(a, b);
-  }
 };
 
 // Test for IsUrlIncrementedByOne().
 TEST_F(AnchorElementMetricsTest, IsUrlIncrementedByOne) {
-  EXPECT_TRUE(IsIncrementedByOne("example.com/p1", "example.com/p2"));
-  EXPECT_TRUE(IsIncrementedByOne("example.com/?p=9", "example.com/?p=10"));
-  EXPECT_TRUE(IsIncrementedByOne("example.com/?p=12", "example.com/?p=13"));
   EXPECT_TRUE(
-      IsIncrementedByOne("example.com/p9/cat1", "example.com/p10/cat1"));
-
-  EXPECT_FALSE(IsIncrementedByOne("example.com", ""));
-  EXPECT_FALSE(IsIncrementedByOne("example.com/1", "google.com/2"));
-  EXPECT_FALSE(IsIncrementedByOne("example.com/p1", "example.com/p1"));
-  EXPECT_FALSE(IsIncrementedByOne("example.com/p2", "example.com/p1"));
+      IsIncrementedByOne("http://example.com/p1", "http://example.com/p2"));
+  EXPECT_TRUE(IsIncrementedByOne("http://example.com/?p=9",
+                                 "http://example.com/?p=10"));
+  EXPECT_TRUE(IsIncrementedByOne("http://example.com/?p=12",
+                                 "http://example.com/?p=13"));
+  EXPECT_TRUE(IsIncrementedByOne("http://example.com/p9/cat1",
+                                 "http://example.com/p10/cat1"));
   EXPECT_FALSE(
-      IsIncrementedByOne("example.com/p9/cat1", "example.com/p10/cat2"));
+      IsIncrementedByOne("http://example.com/1", "https://example.com/2"));
+  EXPECT_FALSE(
+      IsIncrementedByOne("http://example.com/1", "http://google.com/2"));
+  EXPECT_FALSE(
+      IsIncrementedByOne("http://example.com/p1", "http://example.com/p1"));
+  EXPECT_FALSE(
+      IsIncrementedByOne("http://example.com/p2", "http://example.com/p1"));
+  EXPECT_FALSE(IsIncrementedByOne("http://example.com/p9/cat1",
+                                  "http://example.com/p10/cat2"));
 }
 
 // The main frame contains an anchor element, which contains an image element.

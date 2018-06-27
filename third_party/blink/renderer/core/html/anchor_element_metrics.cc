@@ -16,11 +16,19 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/platform/histogram.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-int AnchorElementMetrics::AccumulatedScrollOffset(
-    const HTMLAnchorElement& anchor_element) {
+namespace {
+
+// Helper function that returns the root document the anchor element is in.
+Document* GetRootDocument(const HTMLAnchorElement& anchor) {
+  return anchor.GetDocument().GetFrame()->LocalFrameRoot().GetDocument();
+}
+
+// Accumulated scroll offset of all frames up to the local root frame.
+int AccumulatedScrollOffset(const HTMLAnchorElement& anchor_element) {
   IntSize offset;
   Frame* frame = anchor_element.GetDocument().GetFrame();
   while (frame && frame->View() && frame->IsLocalFrame()) {
@@ -30,7 +38,8 @@ int AnchorElementMetrics::AccumulatedScrollOffset(
   return offset.Height();
 }
 
-bool AnchorElementMetrics::IsInIFrame(const HTMLAnchorElement& anchor_element) {
+// Whether the element is inside an iframe.
+bool IsInIFrame(const HTMLAnchorElement& anchor_element) {
   Frame* frame = anchor_element.GetDocument().GetFrame();
   while (frame && frame->IsLocalFrame()) {
     HTMLFrameOwnerElement* owner =
@@ -42,8 +51,8 @@ bool AnchorElementMetrics::IsInIFrame(const HTMLAnchorElement& anchor_element) {
   return false;
 }
 
-bool AnchorElementMetrics::ContainsImage(
-    const HTMLAnchorElement& anchor_element) {
+// Whether the anchor element contains an image element.
+bool ContainsImage(const HTMLAnchorElement& anchor_element) {
   for (Node* node = FlatTreeTraversal::FirstChild(anchor_element); node;
        node = FlatTreeTraversal::Next(*node, &anchor_element)) {
     if (IsHTMLImageElement(*node))
@@ -52,24 +61,18 @@ bool AnchorElementMetrics::ContainsImage(
   return false;
 }
 
-bool AnchorElementMetrics::IsSameHost(const HTMLAnchorElement& anchor_element) {
+// Whether the link target has the same host as the root document.
+bool IsSameHost(const HTMLAnchorElement& anchor_element) {
   String source_host = GetRootDocument(anchor_element)->Url().Host();
   String target_host = anchor_element.Href().Host();
   return source_host == target_host;
 }
 
-bool AnchorElementMetrics::IsUrlIncrementedByOne(
-    const HTMLAnchorElement& anchor_element) {
-  if (!IsSameHost(anchor_element))
-    return false;
-
-  String source_url = GetRootDocument(anchor_element)->Url().GetString();
-  String target_url = anchor_element.Href().GetString();
-  return IsStringIncrementedByOne(source_url, target_url);
-}
-
-bool AnchorElementMetrics::IsStringIncrementedByOne(const String& source,
-                                                    const String& target) {
+// Returns true if the two strings only differ by one number, and
+// the second number equals the first number plus one. Examples:
+// example.com/page9/cat5, example.com/page10/cat5 => true
+// example.com/page9/cat5, example.com/page10/cat10 => false
+bool IsStringIncrementedByOne(const String& source, const String& target) {
   // Consecutive numbers should differ in length by at most 1.
   int length_diff = target.length() - source.length();
   if (length_diff < 0 || length_diff > 1)
@@ -106,13 +109,19 @@ bool AnchorElementMetrics::IsStringIncrementedByOne(const String& source,
          source.Substring(source_right) == target.Substring(target_right);
 }
 
-Document* AnchorElementMetrics::GetRootDocument(
-    const HTMLAnchorElement& anchor) {
-  return anchor.GetDocument().GetFrame()->LocalFrameRoot().GetDocument();
+// Extract source and target link url, and return IsStringIncrementedByOne().
+bool IsUrlIncrementedByOne(const HTMLAnchorElement& anchor_element) {
+  if (!IsSameHost(anchor_element))
+    return false;
+
+  String source_url = GetRootDocument(anchor_element)->Url().GetString();
+  String target_url = anchor_element.Href().GetString();
+  return IsStringIncrementedByOne(source_url, target_url);
 }
 
-IntRect AnchorElementMetrics::AbsoluteElementBoundingBoxRect(
-    const LayoutObject* layout_object) {
+// Returns the bounding box rect of a layout object, including visual
+// overflows.
+IntRect AbsoluteElementBoundingBoxRect(const LayoutObject* layout_object) {
   Vector<LayoutRect> rects;
   layout_object->AddElementVisualOverflowRects(rects, LayoutPoint());
 
@@ -120,6 +129,8 @@ IntRect AnchorElementMetrics::AbsoluteElementBoundingBoxRect(
       ->LocalToAbsoluteQuad(FloatQuad(FloatRect(UnionRect(rects))))
       .EnclosingBoundingBox();
 }
+
+}  // anonymous namespace
 
 base::Optional<AnchorElementMetrics> AnchorElementMetrics::CreateFrom(
     const HTMLAnchorElement* anchor_element) {
