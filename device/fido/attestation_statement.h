@@ -37,7 +37,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationStatement {
   // indended to be trackable.)
   virtual bool IsAttestationCertificateInappropriatelyIdentifying() = 0;
 
-  const std::string& format_name() { return format_; }
+  const std::string& format_name() const { return format_; }
 
  protected:
   explicit AttestationStatement(std::string format);

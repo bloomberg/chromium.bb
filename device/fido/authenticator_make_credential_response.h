@@ -49,17 +49,25 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorMakeCredentialResponse
   // Returns true if the attestation certificate is known to be inappropriately
   // identifying. Some tokens return unique attestation certificates even when
   // the bit to request that is not set. (Normal attestation certificates are
-  // not indended to be trackable.)
+  // not intended to be trackable.)
   bool IsAttestationCertificateInappropriatelyIdentifying();
 
   // ResponseData:
   const std::array<uint8_t, kRpIdHashLength>& GetRpIdHash() const override;
+
+  const AttestationObject& attestation_object() const {
+    return attestation_object_;
+  }
 
  private:
   AttestationObject attestation_object_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorMakeCredentialResponse);
 };
+
+COMPONENT_EXPORT(DEVICE_FIDO)
+std::vector<uint8_t> GetSerializedCtapDeviceResponse(
+    const AuthenticatorMakeCredentialResponse& response);
 
 }  // namespace device
 

@@ -13,6 +13,8 @@
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_parsing_utils.h"
 #include "device/fido/fido_test_data.h"
+#include "device/fido/opaque_attestation_statement.h"
+#include "device/fido/opaque_public_key.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -196,6 +198,10 @@ constexpr uint8_t kAuthDataCBOR[] = {
     // and test_data::kTestECPublicKeyCOSE.
     0x58, 0xC4};
 
+constexpr uint8_t kTestDeviceAaguid[] = {0xF8, 0xA0, 0x11, 0xF3, 0x8C, 0x0A,
+                                         0x4D, 0x15, 0x80, 0x06, 0x17, 0x11,
+                                         0x1F, 0x9E, 0xDC, 0x7D};
+
 std::vector<uint8_t> GetTestAttestedCredentialDataBytes() {
   // Combine kTestAttestedCredentialDataPrefix and kTestECPublicKeyCOSE.
   auto test_attested_data =
@@ -250,7 +256,7 @@ std::vector<uint8_t> GetTestCredentialRawIdBytes() {
 // 20170927.html
 TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
   auto make_credential_response =
-      ReadCTAPMakeCredentialResponse(test_data::kDeviceMakeCredentialResponse);
+      ReadCTAPMakeCredentialResponse(test_data::kTestMakeCredentialResponse);
   ASSERT_TRUE(make_credential_response);
   auto cbor_attestation_object = cbor::CBORReader::Read(
       make_credential_response->GetCBOREncodedAttestationObject());
@@ -278,8 +284,8 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
   auto attStmt_it = attestation_statement_map.find(cbor::CBORValue("alg"));
 
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
-  ASSERT_TRUE(attStmt_it->second.is_unsigned());
-  EXPECT_EQ(attStmt_it->second.GetUnsigned(), 7u);
+  ASSERT_TRUE(attStmt_it->second.is_integer());
+  EXPECT_EQ(attStmt_it->second.GetInteger(), -7);
 
   attStmt_it = attestation_statement_map.find(cbor::CBORValue("sig"));
   ASSERT_TRUE(attStmt_it != attestation_statement_map.end());
@@ -304,7 +310,7 @@ TEST(CTAPResponseTest, TestReadMakeCredentialResponse) {
 
 TEST(CTAPResponseTest, TestMakeCredentialNoneAttestationResponse) {
   auto make_credential_response =
-      ReadCTAPMakeCredentialResponse(test_data::kDeviceMakeCredentialResponse);
+      ReadCTAPMakeCredentialResponse(test_data::kTestMakeCredentialResponse);
   ASSERT_TRUE(make_credential_response);
   make_credential_response->EraseAttestationStatement();
   EXPECT_THAT(make_credential_response->GetCBOREncodedAttestationObject(),
@@ -506,9 +512,6 @@ TEST(CTAPResponseTest, TestReadGetInfoResponseWithIncorrectVersionFormat) {
 }
 
 TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
-  constexpr uint8_t kTestDeviceAaguid[] = {0xF8, 0xA0, 0x11, 0xF3, 0x8C, 0x0A,
-                                           0x4D, 0x15, 0x80, 0x06, 0x17, 0x11,
-                                           0x1F, 0x9E, 0xDC, 0x7D};
   AuthenticatorGetInfoResponse response(
       {ProtocolVersion::kCtap, ProtocolVersion::kU2f},
       fido_parsing_utils::Materialize(kTestDeviceAaguid));
@@ -530,6 +533,57 @@ TEST(CTAPResponseTest, TestSerializeGetInfoResponse) {
               ::testing::ElementsAreArray(
                   base::make_span(test_data::kTestAuthenticatorGetInfoResponse)
                       .subspan(1)));
+}
+
+TEST(CTAPResponseTest, TestSerializeMakeCredentialResponse) {
+  constexpr uint8_t kCoseEncodedPublicKey[] = {
+      0xa3, 0x63, 0x61, 0x6c, 0x67, 0x65, 0x45, 0x53, 0x32, 0x35, 0x36, 0x61,
+      0x78, 0x58, 0x20, 0xf7, 0xc4, 0xf4, 0xa6, 0xf1, 0xd7, 0x95, 0x38, 0xdf,
+      0xa4, 0xc9, 0xac, 0x50, 0x84, 0x8d, 0xf7, 0x08, 0xbc, 0x1c, 0x99, 0xf5,
+      0xe6, 0x0e, 0x51, 0xb4, 0x2a, 0x52, 0x1b, 0x35, 0xd3, 0xb6, 0x9a, 0x61,
+      0x79, 0x58, 0x20, 0xde, 0x7b, 0x7d, 0x6c, 0xa5, 0x64, 0xe7, 0x0e, 0xa3,
+      0x21, 0xa4, 0xd5, 0xd9, 0x6e, 0xa0, 0x0e, 0xf0, 0xe2, 0xdb, 0x89, 0xdd,
+      0x61, 0xd4, 0x89, 0x4c, 0x15, 0xac, 0x58, 0x5b, 0xd2, 0x36, 0x84,
+  };
+
+  const auto application_parameter =
+      base::make_span(test_data::kApplicationParameter)
+          .subspan<0, kRpIdHashLength>();
+  // Starting signature counter value set by example 4 of the CTAP spec. The
+  // signature counter can start at any value but it should never decrease.
+  // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html
+  std::array<uint8_t, kSignCounterLength> signature_counter = {
+      {0x00, 0x00, 0x00, 0x0b}};
+  auto flag =
+      base::strict_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserPresence) |
+      base::strict_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
+  AttestedCredentialData attested_credential_data(
+      kTestDeviceAaguid,
+      std::array<uint8_t, kCredentialIdLengthLength>{
+          {0x00, 0x10}} /* credential_id_length */,
+      fido_parsing_utils::Materialize(
+          test_data::kCtap2MakeCredentialCredentialId),
+      std::make_unique<OpaquePublicKey>(kCoseEncodedPublicKey));
+  AuthenticatorData authenticator_data(application_parameter, flag,
+                                       signature_counter,
+                                       std::move(attested_credential_data));
+
+  cbor::CBORValue::MapValue attestation_map;
+  attestation_map.emplace("alg", -7);
+  attestation_map.emplace("sig", fido_parsing_utils::Materialize(
+                                     test_data::kCtap2MakeCredentialSignature));
+  cbor::CBORValue::ArrayValue certificate_chain;
+  certificate_chain.emplace_back(fido_parsing_utils::Materialize(
+      test_data::kCtap2MakeCredentialCertificate));
+  attestation_map.emplace("x5c", std::move(certificate_chain));
+  AuthenticatorMakeCredentialResponse response(AttestationObject(
+      std::move(authenticator_data),
+      std::make_unique<OpaqueAttestationStatement>(
+          "packed", cbor::CBORValue(std::move(attestation_map)))));
+  EXPECT_THAT(
+      GetSerializedCtapDeviceResponse(response),
+      ::testing::ElementsAreArray(
+          base::make_span(test_data::kTestMakeCredentialResponse).subspan(1)));
 }
 
 }  // namespace device
