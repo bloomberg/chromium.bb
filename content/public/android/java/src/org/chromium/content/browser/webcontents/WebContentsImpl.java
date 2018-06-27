@@ -856,6 +856,13 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
         nativeSetFocus(mNativeWebContentsAndroid, hasFocus);
     }
 
+    @Override
+    public void setDisplayCutoutSafeArea(Rect insets) {
+        if (mNativeWebContentsAndroid == 0) return;
+        nativeSetDisplayCutoutSafeArea(
+                mNativeWebContentsAndroid, insets.top, insets.left, insets.bottom, insets.right);
+    }
+
     // This is static to avoid exposing a public destroy method on the native side of this class.
     private static native void nativeDestroyWebContents(long webContentsAndroidPtr);
 
@@ -938,4 +945,6 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate, Wi
             long nativeWebContentsAndroid, int orientation);
     private native void nativeOnScaleFactorChanged(long nativeWebContentsAndroid);
     private native void nativeSetFocus(long nativeWebContentsAndroid, boolean focused);
+    private native void nativeSetDisplayCutoutSafeArea(
+            long nativeWebContentsAndroid, int top, int left, int bottom, int right);
 }
