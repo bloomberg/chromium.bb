@@ -268,7 +268,10 @@ bool WizardController::zero_delay_enabled_ = false;
 PrefService* WizardController::local_state_for_testing_ = nullptr;
 
 WizardController::WizardController(LoginDisplayHost* host, OobeUI* oobe_ui)
-    : host_(host), oobe_ui_(oobe_ui), weak_factory_(this) {
+    : host_(host),
+      oobe_ui_(oobe_ui),
+      oobe_configuration_(new base::DictionaryValue()),
+      weak_factory_(this) {
   DCHECK(default_controller_ == nullptr);
   default_controller_ = this;
   screen_manager_ = std::make_unique<ScreenManager>(this);
@@ -1109,6 +1112,7 @@ void WizardController::ShowCurrentScreen() {
   smooth_show_timer_.Stop();
 
   UpdateStatusAreaVisibilityForScreen(current_screen_->screen_id());
+  current_screen_->SetConfiguration(oobe_configuration_.get());
   current_screen_->Show();
 }
 
@@ -1123,8 +1127,10 @@ void WizardController::SetCurrentScreenSmooth(BaseScreen* new_current,
 
   smooth_show_timer_.Stop();
 
-  if (current_screen_)
+  if (current_screen_) {
     current_screen_->Hide();
+    current_screen_->SetConfiguration(nullptr);
+  }
 
   const OobeScreen screen = new_current->screen_id();
   if (IsOOBEStepToTrack(screen))

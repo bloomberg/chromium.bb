@@ -21,6 +21,7 @@ class MockWelcomeScreen : public WelcomeScreen {
 
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
+  MOCK_METHOD1(SetConfiguration, void(base::DictionaryValue* configuration));
 };
 
 class MockWelcomeView : public WelcomeView {
