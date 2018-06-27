@@ -49,4 +49,8 @@ const char kWebglAntialiasingMode[] = "webgl-antialiasing-mode";
 // Set a default sample count for webgl if msaa is enabled.
 const char kWebglMSAASampleCount[] = "webgl-msaa-sample-count";
 
+// Disables the non-sandboxed GPU process for DX12 and Vulkan info collection
+const char kDisableGpuProcessForDX12VulkanInfoCollection[] =
+    "disable-gpu-process-for-dx12-vulkan-info-collection";
+
 }  // namespace switches

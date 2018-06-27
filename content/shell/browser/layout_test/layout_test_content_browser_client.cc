@@ -29,6 +29,7 @@
 #include "content/test/mock_clipboard_host.h"
 #include "content/test/mock_platform_notification_service.h"
 #include "device/bluetooth/test/fake_bluetooth.h"
+#include "gpu/config/gpu_switches.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "third_party/blink/public/mojom/web_package/web_package_internals.mojom.h"
@@ -230,6 +231,12 @@ void LayoutTestContentBrowserClient::AppendExtraCommandLineSwitches(
           switches::kEnableDisplayCompositorPixelDump)) {
     command_line->AppendSwitch(switches::kEnableDisplayCompositorPixelDump);
   }
+  // This non-sandboxed gpu process used for Windows gpu info collection
+  // is not needed here. (This task is delayed 15 seconds after the browser
+  // starts and quits when the job is done.) Because it might interfere with the
+  // layout test, a command line switch is added to skip this gpu process.
+  command_line->AppendSwitch(
+      switches::kDisableGpuProcessForDX12VulkanInfoCollection);
 }
 
 BrowserMainParts* LayoutTestContentBrowserClient::CreateBrowserMainParts(
