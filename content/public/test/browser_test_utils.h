@@ -55,6 +55,7 @@ class Point;
 }
 
 namespace net {
+class CanonicalCookie;
 namespace test_server {
 class EmbeddedTestServer;
 }
@@ -419,8 +420,13 @@ RenderFrameHost* ChildFrameAt(RenderFrameHost* frame, size_t index);
 bool ExecuteWebUIResourceTest(WebContents* web_contents,
                               const std::vector<int>& js_resource_ids);
 
-// Returns the cookies for the given url.
+// Returns the serialized cookie string for the given url.
 std::string GetCookies(BrowserContext* browser_context, const GURL& url);
+
+// Returns the canonical cookies for the given url.
+std::vector<net::CanonicalCookie> GetCanonicalCookies(
+    BrowserContext* browser_context,
+    const GURL& url);
 
 // Sets a cookie for the given url. Returns true on success.
 bool SetCookie(BrowserContext* browser_context,

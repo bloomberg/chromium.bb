@@ -413,18 +413,6 @@ void SimulateKeyPressImpl(WebContents* web_contents,
   ASSERT_EQ(modifiers, 0);
 }
 
-void GetCookiesCallback(std::string* cookies_out,
-                        base::RunLoop* run_loop,
-                        const std::vector<net::CanonicalCookie>& cookies) {
-  *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
-  run_loop->Quit();
-}
-
-void SetCookieCallback(bool* result, base::RunLoop* run_loop, bool success) {
-  *result = success;
-  run_loop->Quit();
-}
-
 std::unique_ptr<net::test_server::HttpResponse>
 CrossSiteRedirectResponseHandler(const net::EmbeddedTestServer* test_server,
                                  const net::test_server::HttpRequest& request) {
@@ -1337,7 +1325,36 @@ std::string GetCookies(BrowserContext* browser_context, const GURL& url) {
       ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
   cookie_manager->GetCookieList(
       url, net::CookieOptions(),
-      base::BindOnce(&GetCookiesCallback, &cookies, &run_loop));
+      base::BindOnce(
+          [](std::string* cookies_out, base::RunLoop* run_loop,
+             const std::vector<net::CanonicalCookie>& cookies) {
+            *cookies_out = net::CanonicalCookie::BuildCookieLine(cookies);
+            run_loop->Quit();
+          },
+          &cookies, &run_loop));
+  run_loop.Run();
+  return cookies;
+}
+
+std::vector<net::CanonicalCookie> GetCanonicalCookies(
+    BrowserContext* browser_context,
+    const GURL& url) {
+  std::vector<net::CanonicalCookie> cookies;
+  base::RunLoop run_loop;
+  network::mojom::CookieManagerPtr cookie_manager;
+  BrowserContext::GetDefaultStoragePartition(browser_context)
+      ->GetNetworkContext()
+      ->GetCookieManager(mojo::MakeRequest(&cookie_manager));
+  cookie_manager->GetCookieList(
+      url, net::CookieOptions(),
+      base::BindOnce(
+          [](base::RunLoop* run_loop,
+             std::vector<net::CanonicalCookie>* cookies_out,
+             const std::vector<net::CanonicalCookie>& cookies) {
+            *cookies_out = cookies;
+            run_loop->Quit();
+          },
+          &run_loop, &cookies));
   run_loop.Run();
   return cookies;
 }
@@ -1357,7 +1374,12 @@ bool SetCookie(BrowserContext* browser_context,
 
   cookie_manager->SetCanonicalCookie(
       *cc.get(), true /* secure_source */, true /* modify_http_only */,
-      base::BindOnce(&SetCookieCallback, &result, &run_loop));
+      base::BindOnce(
+          [](bool* result, base::RunLoop* run_loop, bool success) {
+            *result = success;
+            run_loop->Quit();
+          },
+          &result, &run_loop));
   run_loop.Run();
   return result;
 }
