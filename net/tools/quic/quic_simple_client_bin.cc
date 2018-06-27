@@ -253,7 +253,7 @@ int main(int argc, char* argv[]) {
   // Build the client, and try to connect.
   quic::QuicServerId server_id(url.host(), url.EffectiveIntPort(),
                                net::PRIVACY_MODE_DISABLED);
-  quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
+  quic::ParsedQuicVersionVector versions = quic::CurrentSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();
     versions.push_back(quic::ParsedQuicVersion(
