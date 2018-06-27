@@ -44,7 +44,9 @@ const size_t MaxFFTSize = 32768;
 namespace blink {
 
 ConvolverHandler::ConvolverHandler(AudioNode& node, float sample_rate)
-    : AudioHandler(kNodeTypeConvolver, node, sample_rate), normalize_(true) {
+    : AudioHandler(kNodeTypeConvolver, node, sample_rate),
+      normalize_(true),
+      buffer_has_been_set_(false) {
   AddInput();
   AddOutput(1);
 
@@ -94,9 +96,21 @@ void ConvolverHandler::SetBuffer(AudioBuffer* buffer,
                                  ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
-  if (!buffer)
+  if (!buffer) {
+    reverb_.reset();
+    buffer_ = buffer;
     return;
+  }
 
+  if (buffer && buffer_has_been_set_) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      "Cannot set buffer to non-null after it "
+                                      "has been already been set to a non-null "
+                                      "buffer");
+    return;
+  }
+
+  buffer_has_been_set_ = true;
   if (buffer->sampleRate() != Context()->sampleRate()) {
     exception_state.ThrowDOMException(
         DOMExceptionCode::kNotSupportedError,
