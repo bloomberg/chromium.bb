@@ -14,6 +14,7 @@
 #include "components/favicon_base/fallback_icon_style.h"
 #include "components/favicon_base/favicon_callback.h"
 #include "ios/chrome/browser/experimental_flags.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/favicon/favicon_attributes.h"
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"
@@ -21,6 +22,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+extern const CGFloat kFallbackIconDefaultTextColor = 0xAAAAAA;
+}  // namespace
 
 FaviconLoader::FaviconLoader(favicon::LargeIconService* large_icon_service)
     : large_icon_service_(large_icon_service),
@@ -59,15 +64,22 @@ FaviconAttributes* FaviconLoader::FaviconForUrl(
       return;
     }
     DCHECK(result.fallback_icon_style);
+    UIColor* textColor =
+        skia::UIColorFromSkColor(result.fallback_icon_style->text_color);
+    UIColor* backgroundColor =
+        skia::UIColorFromSkColor(result.fallback_icon_style->background_color);
+    if (experimental_flags::IsCollectionsUIRebootEnabled()) {
+      textColor = UIColorFromRGB(kFallbackIconDefaultTextColor);
+      backgroundColor = [UIColor clearColor];
+    }
     FaviconAttributes* attributes = [FaviconAttributes
         attributesWithMonogram:base::SysUTF16ToNSString(
                                    favicon::GetFallbackIconText(block_url))
-                     textColor:skia::UIColorFromSkColor(
-                                   result.fallback_icon_style->text_color)
-               backgroundColor:skia::UIColorFromSkColor(
-                                   result.fallback_icon_style->background_color)
+                     textColor:textColor
+               backgroundColor:backgroundColor
         defaultBackgroundColor:result.fallback_icon_style->
                                is_default_background_color];
+
     [favicon_cache_ setObject:attributes forKey:key];
     block(attributes);
   };

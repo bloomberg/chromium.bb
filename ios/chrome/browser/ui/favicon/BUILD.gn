@@ -16,6 +16,7 @@ source_set("favicon") {
     "//components/favicon/core",
     "//components/favicon_base",
     "//ios/chrome/browser/favicon",
+    "//ios/chrome/browser/ui:ui_util",
     "//ios/chrome/common/favicon",
     "//url",
   ]
