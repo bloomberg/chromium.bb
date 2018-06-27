@@ -683,7 +683,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     std::unique_ptr<QuicServerInfo> server_info,
     const QuicSessionKey& session_key,
     bool require_confirmation,
-    bool migrate_sessions_on_network_change,
     bool migrate_session_early_v2,
     bool migrate_sessions_on_network_change_v2,
     NetworkChangeNotifier::NetworkHandle default_network,
@@ -706,7 +705,6 @@ QuicChromiumClientSession::QuicChromiumClientSession(
     : quic::QuicSpdyClientSessionBase(connection, push_promise_index, config),
       session_key_(session_key),
       require_confirmation_(require_confirmation),
-      migrate_session_on_network_change_(migrate_sessions_on_network_change),
       migrate_session_early_v2_(migrate_session_early_v2),
       migrate_session_on_network_change_v2_(
           migrate_sessions_on_network_change_v2),
@@ -982,9 +980,6 @@ ConnectionMigrationMode QuicChromiumClientSession::connection_migration_mode()
 
   if (migrate_session_on_network_change_v2_)
     return ConnectionMigrationMode::NO_MIGRATION_ON_PATH_DEGRADING_V2;
-
-  if (migrate_session_on_network_change_)
-    return ConnectionMigrationMode::NO_MIGRATION_ON_PATH_DEGRADING_V1;
 
   return ConnectionMigrationMode::NO_MIGRATION;
 }
@@ -1611,7 +1606,7 @@ int QuicChromiumClientSession::HandleWriteError(
                              -error_code);
   }
   if (error_code == ERR_MSG_TOO_BIG || stream_factory_ == nullptr ||
-      !stream_factory_->migrate_sessions_on_network_change()) {
+      !migrate_session_on_network_change_v2_) {
     return error_code;
   }
   NetworkChangeNotifier::NetworkHandle current_network =
@@ -1644,6 +1639,7 @@ int QuicChromiumClientSession::HandleWriteError(
 }
 
 void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
+  DCHECK(migrate_session_on_network_change_v2_);
   most_recent_write_error_timestamp_ = base::TimeTicks::Now();
   most_recent_write_error_ = error_code;
   // If migration_pending_ is false, an earlier task completed migration.
@@ -1663,8 +1659,7 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
         base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
                    "WriteError"));
 
-    result = MigrateToAlternateNetwork(/*close_session_on_error*/ false,
-                                       migration_net_log);
+    result = MigrateToAlternateNetwork(migration_net_log);
     migration_net_log.EndEvent(
         NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
   }
@@ -1826,27 +1821,17 @@ void QuicChromiumClientSession::OnNetworkConnected(
     current_connection_migration_cause_ = ON_NETWORK_CONNECTED;
   }
 
-  if (migrate_session_on_network_change_v2_) {
-    LogHandshakeStatusOnConnectionMigrationSignal();
+  LogHandshakeStatusOnConnectionMigrationSignal();
 
-    if (migration_pending_) {
-      // |migration_pending_| is true, there was no working network previously.
-      // |network| is now the only possible candidate, migrate immediately.
-      MigrateImmediately(network);
-    } else {
-      // The connection is path degrading.
-      DCHECK(connection()->IsPathDegrading());
-      OnPathDegrading();
-    }
-    return;
+  if (migration_pending_) {
+    // |migration_pending_| is true, there was no working network previously.
+    // |network| is now the only possible candidate, migrate immediately.
+    MigrateImmediately(network);
+  } else {
+    // The connection is path degrading.
+    DCHECK(connection()->IsPathDegrading());
+    OnPathDegrading();
   }
-
-  // TODO(jri): Ensure that OnSessionGoingAway is called consistently,
-  // and that it's always called at the same time in the whole
-  // migration process. Allows tests to be more uniform.
-  NotifyFactoryOfSessionGoingAway();
-  Migrate(network, connection()->peer_address().impl().socket_address(),
-          /*close_session_on_error=*/true, net_log);
 }
 
 void QuicChromiumClientSession::OnNetworkDisconnectedV2(
@@ -1857,8 +1842,6 @@ void QuicChromiumClientSession::OnNetworkDisconnectedV2(
       NetLogEventType::QUIC_CONNECTION_MIGRATION_ON_NETWORK_DISCONNECTED,
       NetLog::Int64Callback("disconnected_network", disconnected_network));
   LogMetricsOnNetworkDisconnected();
-  if (!migrate_session_on_network_change_v2_)
-    return;
 
   // Stop probing the disconnected network if there is one.
   probing_manager_.CancelProbing(disconnected_network);
@@ -1900,21 +1883,11 @@ void QuicChromiumClientSession::OnNetworkMadeDefault(
       NetLog::Int64Callback("new_default_network", new_network));
   LogMetricsOnNetworkMadeDefault();
 
-  if (!migrate_session_on_network_change_ &&
-      !migrate_session_on_network_change_v2_)
-    return;
-
   DCHECK_NE(NetworkChangeNotifier::kInvalidNetworkHandle, new_network);
   DVLOG(1) << "Network: " << new_network
            << " becomes default, old default: " << default_network_;
   default_network_ = new_network;
   current_connection_migration_cause_ = ON_NETWORK_MADE_DEFAULT;
-
-  if (!migrate_session_on_network_change_v2_) {
-    MaybeMigrateOrCloseSession(new_network, /*close_if_cannot_migrate*/ false,
-                               migration_net_log);
-    return;
-  }
   current_migrations_to_non_default_network_on_path_degrading_ = 0;
 
   // Connection migration v2.
@@ -1944,10 +1917,8 @@ void QuicChromiumClientSession::MigrateImmediately(
   // otherwise, we are now on default networ, cancel timer to migrate back
   // to the defautlt network if it is running.
 
-  if (!ShouldMigrateSession(/*close_if_cannot_migrate*/ true, network,
-                            net_log_)) {
+  if (!ShouldMigrateSession(network, net_log_))
     return;
-  }
 
   if (network == GetDefaultSocket()->GetBoundNetwork())
     return;
@@ -2327,7 +2298,6 @@ void QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork() {
 }
 
 bool QuicChromiumClientSession::ShouldMigrateSession(
-    bool close_if_cannot_migrate,
     NetworkChangeNotifier::NetworkHandle network,
     const NetLogWithSource& migration_net_log) {
   // Close idle sessions.
@@ -2341,26 +2311,14 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
     return false;
   }
 
-  if (migrate_session_on_network_change_) {
-    // Always mark session going away for connection migrate v1 if session
-    // has any active streams.
-    DCHECK(stream_factory_);
-    NotifyFactoryOfSessionGoingAway();
-  }
-
   // Do not migrate sessions where connection migration is disabled.
   if (config()->DisableConnectionMigration()) {
     HistogramAndLogMigrationFailure(
         migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
         "Migration disabled by config");
-    if (close_if_cannot_migrate) {
-      CloseSessionOnErrorLater(
-          ERR_NETWORK_CHANGED,
-          quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
-    } else if (migrate_session_on_network_change_v2_) {
-      // Session cannot migrate, mark it as going away for v2.
-      NotifyFactoryOfSessionGoingAway();
-    }
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
     return false;
   }
 
@@ -2369,14 +2327,9 @@ bool QuicChromiumClientSession::ShouldMigrateSession(
     HistogramAndLogMigrationFailure(migration_net_log,
                                     MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
                                     connection_id(), "Non-migratable stream");
-    if (close_if_cannot_migrate) {
-      CloseSessionOnErrorLater(
-          ERR_NETWORK_CHANGED,
-          quic::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
-    } else if (migrate_session_on_network_change_v2_) {
-      // Session cannot migrate, mark it as going away for v2.
-      NotifyFactoryOfSessionGoingAway();
-    }
+    CloseSessionOnErrorLater(
+        ERR_NETWORK_CHANGED,
+        quic::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
     return false;
   }
 
@@ -2601,35 +2554,9 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
     stream_factory_->OnSessionClosed(this);
 }
 
-void QuicChromiumClientSession::MaybeMigrateOrCloseSession(
-    NetworkChangeNotifier::NetworkHandle new_network,
-    bool close_if_cannot_migrate,
-    const NetLogWithSource& migration_net_log) {
-  if (!ShouldMigrateSession(close_if_cannot_migrate, new_network,
-                            migration_net_log)) {
-    return;
-  }
-  // No new network was found. Notify session, so it can wait for a new
-  // network.
-  if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
-    OnNoNewNetwork();
-    return;
-  }
-
-  Migrate(new_network, connection()->peer_address().impl().socket_address(),
-          /*close_session_on_error*/ true, migration_net_log);
-}
-
 MigrationResult QuicChromiumClientSession::MigrateToAlternateNetwork(
-    bool close_session_on_error,
     const NetLogWithSource& migration_net_log) {
-  if (!migrate_session_on_network_change_ &&
-      !migrate_session_on_network_change_v2_) {
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_NOT_ENABLED,
-                                    connection_id(), "Migration not enabled");
-    return MigrationResult::FAILURE;
-  }
+  DCHECK(migrate_session_on_network_change_v2_);
 
   if (HasNonMigratableStreams()) {
     HistogramAndLogMigrationFailure(migration_net_log,
@@ -2660,7 +2587,7 @@ MigrationResult QuicChromiumClientSession::MigrateToAlternateNetwork(
   NotifyFactoryOfSessionGoingAway();
   return Migrate(new_network,
                  connection()->peer_address().impl().socket_address(),
-                 close_session_on_error, migration_net_log);
+                 /*close_session_on_error=*/false, migration_net_log);
 }
 
 MigrationResult QuicChromiumClientSession::Migrate(
