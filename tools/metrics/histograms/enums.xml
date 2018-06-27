@@ -3396,6 +3396,13 @@ uploading your change for review.  These are checked by presubmit scripts.
              frozen."/>
 </enum>
 
+<enum name="BlockStatusForClient3DAPIs">
+  <summary>The reason WebGL / Pepper3D were blocked, or not.</summary>
+  <int value="0" label="BLOCK_STATUS_NOT_BLOCKED"/>
+  <int value="1" label="BLOCK_STATUS_SPECIFIC_DOMAIN_BLOCKED"/>
+  <int value="2" label="BLOCK_STATUS_ALL_DOMAINS_BLOCKED"/>
+</enum>
+
 <enum name="BluetoothAvailability">
   <int value="0" label="Unexpected error"/>
   <int value="1" label="Not available"/>
