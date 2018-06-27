@@ -1552,20 +1552,11 @@ void ProfileManager::OnLoadProfileForProfileDeletion(
         content::NotificationService::NoDetails());
 
     // Disable sync for doomed profile.
-    if (ProfileSyncServiceFactory::GetInstance()->HasProfileSyncService(
-            profile)) {
+    if (ProfileSyncServiceFactory::HasProfileSyncService(profile)) {
       browser_sync::ProfileSyncService* sync_service =
-          ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-      if (sync_service->IsSyncRequested()) {
-        // Record sync stopped by profile destruction if it was on before.
-        UMA_HISTOGRAM_ENUMERATION("Sync.StopSource",
-                                  syncer::PROFILE_DESTRUCTION,
-                                  syncer::STOP_SOURCE_LIMIT);
-      }
+          ProfileSyncServiceFactory::GetForProfile(profile);
       // Ensure data is cleared even if sync was already off.
-      ProfileSyncServiceFactory::GetInstance()
-          ->GetForProfile(profile)
-          ->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
+      sync_service->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
     }
 
     ProfileAttributesEntry* entry;
