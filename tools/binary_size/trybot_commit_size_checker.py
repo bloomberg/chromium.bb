@@ -60,8 +60,9 @@ Binary-Size: Increase needed to reduce runtime of a common user flow.
 Binary-Size: Increase needed to implement a feature, and I've already spent a
     non-trivial amount of time trying to reduce its size.
 """.format(_MAX_UNNOTICED_INCREASE)
-    # Make blank lines have a space to prevent them from being stripped.
-    failure_message.replace('\n\n', '\n \n')
+    # Make blank lines not blank prevent them from being stripped.
+    # https://crbug.com/855671
+    failure_message.replace('\n\n', '\n.\n')
     sys.exit(failure_message)
 
 
