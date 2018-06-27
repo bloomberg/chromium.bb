@@ -944,8 +944,8 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, TabFreezeAndUnfreeze) {
   EXPECT_EQ(LifecycleUnitState::ACTIVE, GetLifecycleUnitAt(1)->GetState());
 }
 
-// Flaky on Mac and ChromeOS. https://crbug.com/855874
-#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
+// Flaky on Mac/Linux and ChromeOS. https://crbug.com/855874
+#if defined(OS_POSIX) || defined(OS_CHROMEOS)
 #define MAYBE_TabPendingFreezeAndUnfreeze DISABLED_TabPendingFreezeAndUnfreeze
 #else
 #define MAYBE_TabPendingFreezeAndUnfreeze TabPendingFreezeAndUnfreeze
