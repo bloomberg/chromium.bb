@@ -106,7 +106,6 @@ class WebThreadForCompositor : public WebThreadImplForWorkerScheduler {
   std::unique_ptr<blink::scheduler::NonMainThreadSchedulerImpl>
   CreateNonMainThreadScheduler() override {
     return std::make_unique<CompositorThreadScheduler>(
-        GetThread(),
         base::sequence_manager::CreateSequenceManagerOnCurrentThread());
   }
 
