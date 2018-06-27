@@ -217,3 +217,67 @@ testcase.checkAvailabilityOfShareButtonOnDownloads = function() {
 testcase.checkAvailabilityOfShareButtonOnDrive = function() {
   return checkAvailabilityOfShareButton('drive', 'drive', true /* available */);
 };
+
+/**
+ * Tests activating a video (in slide mode) when double clicked from thumbnail
+ * mode.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.activateVideoFromThumbnailMode = function() {
+  // Launch with an image and a video. Start with the image selected so there's
+  // less work before switching to thumbnail mode.
+  var launchedPromise = launch(
+      'local', 'downloads', [ENTRIES.image3, ENTRIES.world], [ENTRIES.image3]);
+  var appId;
+  return launchedPromise
+      .then(function(result) {
+        appId = result.appId;
+        return gallery.waitForElement(appId, '.gallery[mode="slide"]');
+      })
+      .then(function() {
+        // Switch to thumbnail mode.
+        return gallery.waitAndClickElement(appId, 'button.mode');
+      })
+      .then(function() {
+        return gallery.waitForElement(
+            appId, '.thumbnail-view > ul > li > .video');
+      })
+      .then(function() {
+        return gallery.callRemoteTestUtil(
+            'queryAllElements', appId, ['.thumbnail-view > ul > li']);
+      })
+      .then(function(results) {
+        // Confirm the video (and the image) appear in the thumbnail view.
+        chrome.test.assertEq(2, results.length);
+        chrome.test.assertEq('image3.jpg', results[0].attributes.title);
+        chrome.test.assertEq('world.ogv', results[1].attributes.title);
+        return gallery.callRemoteTestUtil(
+            'queryAllElements', appId,
+            ['.thumbnail-view > ul > li > div.image.frame']);
+      })
+      .then(function(results) {
+        // Confirm that the video has the video class (and the image does not).
+        chrome.test.assertEq(2, results.length);
+        chrome.test.assertTrue(
+            results[0].attributes.class.split(' ').indexOf('video') == -1);
+        chrome.test.assertTrue(
+            results[1].attributes.class.split(' ').indexOf('video') >= 0);
+
+        // Activate the video with a double-click.
+        return gallery.callRemoteTestUtil(
+            'fakeMouseDoubleClick', appId,
+            ['.thumbnail-view > ul > li > div.video.frame + .selection']);
+      })
+      .then(function() {
+        // A <video> should appear.
+        return gallery.waitForElement(appId, 'video');
+      })
+      .then(function() {
+        return gallery.callRemoteTestUtil('queryAllElements', appId, ['video']);
+      })
+      .then(function(results) {
+        chrome.test.assertEq(1, results.length);
+        chrome.test.assertTrue('autoplay' in results[0].attributes);
+        return true;
+      });
+};

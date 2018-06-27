@@ -9,7 +9,7 @@
  * @param {!GalleryDataModel} dataModel Gallery data model.
  * @param {!cr.ui.ListSelectionModel} selectionModel List selection model.
  * @param {function()} changeToSlideModeCallback A callback to be called to
- *     change to slide mode.
+ *     change to slide mode due to activating a thumbnail.
  * @constructor
  * @extends {cr.EventTarget}
  * @struct
@@ -841,6 +841,10 @@ ThumbnailView.Thumbnail = function(galleryItem) {
   this.imageFrame_ = assertInstanceof(
       document.createElement('div'), HTMLElement);
   this.imageFrame_.classList.add('image', 'frame');
+
+  if (FileType.isVideo(galleryItem.getEntry()))
+    this.imageFrame_.classList.add('video');
+
   this.container_.appendChild(this.imageFrame_);
 
   /**

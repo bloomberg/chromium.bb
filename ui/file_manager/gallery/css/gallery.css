@@ -1430,6 +1430,21 @@ html[dir='rtl'] .thumbnail-view .scrollbar {
   top: 0;
 }
 
+/*
+ * Overlay a play icon over video. The video thumbnail is already hosted using
+ * background-image, so this puts the overlay in the selection div.
+ */
+.thumbnail-view .thumbnail > .video + .frame.selection {
+  background-image: -webkit-image-set(url(../images/play_arrow.svg) 1x);
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: 48px 48px;
+}
+
+.thumbnail-view .thumbnail > .video + .frame.selection:hover {
+  background-image: -webkit-image-set(url(../images/play_arrow_hover.svg) 1x);
+}
+
 .thumbnail-view .thumbnail > .frame.image {
   background-repeat: no-repeat;
   background-size: cover;
