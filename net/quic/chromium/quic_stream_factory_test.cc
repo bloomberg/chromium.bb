@@ -311,13 +311,15 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
   }
 
   bool HasActiveSession(const HostPortPair& host_port_pair) {
-    quic::QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
+    quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
+                                 false);
     return QuicStreamFactoryPeer::HasActiveSession(factory_.get(), server_id);
   }
 
   bool HasActiveJob(const HostPortPair& host_port_pair,
                     const PrivacyMode privacy_mode) {
-    quic::QuicServerId server_id(host_port_pair, privacy_mode);
+    quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
+                                 privacy_mode == PRIVACY_MODE_ENABLED);
     return QuicStreamFactoryPeer::HasActiveJob(factory_.get(), server_id);
   }
 
@@ -328,7 +330,8 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
 
   QuicChromiumClientSession* GetActiveSession(
       const HostPortPair& host_port_pair) {
-    quic::QuicServerId server_id(host_port_pair, PRIVACY_MODE_DISABLED);
+    quic::QuicServerId server_id(host_port_pair.host(), host_port_pair.port(),
+                                 false);
     return QuicStreamFactoryPeer::GetActiveSession(factory_.get(), server_id);
   }
 
@@ -686,10 +689,11 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
 
     QuicStreamRequest request(factory_.get());
     EXPECT_EQ(ERR_IO_PENDING,
-              request.Request(quic_server_id.host_port_pair(), version_,
-                              privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
-                              /*cert_verify_flags=*/0, url_, net_log_,
-                              &net_error_details_, callback_.callback()));
+              request.Request(
+                  HostPortPair(quic_server_id.host(), quic_server_id.port()),
+                  version_, privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
+                  /*cert_verify_flags=*/0, url_, net_log_, &net_error_details_,
+                  callback_.callback()));
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
@@ -720,11 +724,11 @@ class QuicStreamFactoryTestBase : public WithScopedTaskEnvironment {
 
     QuicStreamRequest request2(factory_.get());
     EXPECT_EQ(ERR_IO_PENDING,
-              request2.Request(quic_server_id2.host_port_pair(), version_,
-                               privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
-                               /*cert_verify_flags=*/0,
-                               GURL("https://mail.example.org/"), net_log_,
-                               &net_error_details_, callback_.callback()));
+              request2.Request(
+                  HostPortPair(quic_server_id2.host(), quic_server_id2.port()),
+                  version_, privacy_mode_, DEFAULT_PRIORITY, SocketTag(),
+                  /*cert_verify_flags=*/0, GURL("https://mail.example.org/"),
+                  net_log_, &net_error_details_, callback_.callback()));
     EXPECT_THAT(callback_.WaitForResult(), IsOk());
 
     EXPECT_FALSE(QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
@@ -5219,7 +5223,8 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     HostPortPair host_port_pair1(r1_host_name, 80);
     quic::QuicCryptoClientConfig* crypto_config =
         QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
-    quic::QuicServerId server_id1(host_port_pair1, privacy_mode_);
+    quic::QuicServerId server_id1(host_port_pair1.host(),
+                                  host_port_pair1.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config->LookupOrCreate(server_id1);
     EXPECT_FALSE(cached1->proof_valid());
@@ -5231,7 +5236,8 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
     cached1->SetProofValid();
 
     HostPortPair host_port_pair2(r2_host_name, 80);
-    quic::QuicServerId server_id2(host_port_pair2, privacy_mode_);
+    quic::QuicServerId server_id2(host_port_pair2.host(),
+                                  host_port_pair2.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config->LookupOrCreate(server_id2);
     EXPECT_EQ(cached1->source_address_token(), cached2->source_address_token());
@@ -5254,7 +5260,8 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     HostPortPair host_port_pair1(r3_host_name, 80);
     quic::QuicCryptoClientConfig* crypto_config =
         QuicStreamFactoryPeer::GetCryptoConfig(factory_.get());
-    quic::QuicServerId server_id1(host_port_pair1, privacy_mode_);
+    quic::QuicServerId server_id1(host_port_pair1.host(),
+                                  host_port_pair1.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached1 =
         crypto_config->LookupOrCreate(server_id1);
     EXPECT_FALSE(cached1->proof_valid());
@@ -5266,7 +5273,8 @@ TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
     cached1->SetProofInvalid();
 
     HostPortPair host_port_pair2(r4_host_name, 80);
-    quic::QuicServerId server_id2(host_port_pair2, privacy_mode_);
+    quic::QuicServerId server_id2(host_port_pair2.host(),
+                                  host_port_pair2.port(), privacy_mode_);
     quic::QuicCryptoClientConfig::CachedState* cached2 =
         crypto_config->LookupOrCreate(server_id2);
     EXPECT_NE(cached1->source_address_token(), cached2->source_address_token());
@@ -5425,7 +5433,9 @@ TEST_P(QuicStreamFactoryTest, StartCertVerifyJob) {
 
   // Load server config.
   HostPortPair host_port_pair(kDefaultServerHostName, kDefaultServerPort);
-  quic::QuicServerId quic_server_id(host_port_pair_, privacy_mode_);
+  quic::QuicServerId quic_server_id(host_port_pair_.host(),
+                                    host_port_pair_.port(),
+                                    privacy_mode_ == PRIVACY_MODE_ENABLED);
   QuicStreamFactoryPeer::CacheDummyServerConfig(factory_.get(), quic_server_id);
 
   QuicStreamFactoryPeer::SetRaceCertVerification(factory_.get(), true);
@@ -5713,7 +5723,8 @@ TEST_P(QuicStreamFactoryTest, PoolByOrigin) {
   QuicChromiumClientSession::Handle* session2 =
       QuicHttpStreamPeer::GetSessionHandle(stream2.get());
   EXPECT_TRUE(session1->SharesSameSession(*session2));
-  EXPECT_EQ(quic::QuicServerId(host_port_pair_, privacy_mode_),
+  EXPECT_EQ(quic::QuicServerId(host_port_pair_.host(), host_port_pair_.port(),
+                               privacy_mode_ == PRIVACY_MODE_ENABLED),
             session1->server_id());
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
@@ -5876,7 +5887,9 @@ TEST_P(QuicStreamFactoryWithDestinationTest, SharedCertificate) {
       QuicHttpStreamPeer::GetSessionHandle(stream2.get());
   EXPECT_TRUE(session1->SharesSameSession(*session2));
 
-  EXPECT_EQ(quic::QuicServerId(origin1_, privacy_mode_), session1->server_id());
+  EXPECT_EQ(quic::QuicServerId(origin1_.host(), origin1_.port(),
+                               privacy_mode_ == PRIVACY_MODE_ENABLED),
+            session1->server_id());
 
   EXPECT_TRUE(AllDataConsumed());
 }
@@ -5953,9 +5966,9 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DifferentPrivacyMode) {
       QuicHttpStreamPeer::GetSessionHandle(stream2.get());
   EXPECT_FALSE(session1->SharesSameSession(*session2));
 
-  EXPECT_EQ(quic::QuicServerId(origin1_, PRIVACY_MODE_DISABLED),
+  EXPECT_EQ(quic::QuicServerId(origin1_.host(), origin1_.port(), false),
             session1->server_id());
-  EXPECT_EQ(quic::QuicServerId(origin2_, PRIVACY_MODE_ENABLED),
+  EXPECT_EQ(quic::QuicServerId(origin2_.host(), origin2_.port(), true),
             session2->server_id());
 
   EXPECT_TRUE(AllDataConsumed());
@@ -6038,8 +6051,12 @@ TEST_P(QuicStreamFactoryWithDestinationTest, DisjointCertificate) {
       QuicHttpStreamPeer::GetSessionHandle(stream2.get());
   EXPECT_FALSE(session1->SharesSameSession(*session2));
 
-  EXPECT_EQ(quic::QuicServerId(origin1_, privacy_mode_), session1->server_id());
-  EXPECT_EQ(quic::QuicServerId(origin2_, privacy_mode_), session2->server_id());
+  EXPECT_EQ(quic::QuicServerId(origin1_.host(), origin1_.port(),
+                               privacy_mode_ == PRIVACY_MODE_ENABLED),
+            session1->server_id());
+  EXPECT_EQ(quic::QuicServerId(origin2_.host(), origin2_.port(),
+                               privacy_mode_ == PRIVACY_MODE_ENABLED),
+            session2->server_id());
 
   EXPECT_TRUE(AllDataConsumed());
 }

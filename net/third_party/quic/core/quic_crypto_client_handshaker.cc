@@ -677,7 +677,7 @@ void QuicCryptoClientHandshaker::SetCachedProofValid(
 
 bool QuicCryptoClientHandshaker::RequiresChannelID(
     QuicCryptoClientConfig::CachedState* cached) {
-  if (server_id_.privacy_mode() == net::PRIVACY_MODE_ENABLED ||
+  if (server_id_.privacy_mode_enabled() ||
       !crypto_config_->channel_id_source()) {
     return false;
   }

@@ -187,7 +187,7 @@ class TestQuicCryptoClientStream : public TestQuicCryptoStream {
         handshaker_(new TlsClientHandshaker(
             this,
             session,
-            QuicServerId("test.example.com", 443),
+            QuicServerId("test.example.com", 443, false),
             proof_verifier_.get(),
             ssl_ctx_.get(),
             crypto_test_utils::ProofVerifyContextForTesting(),

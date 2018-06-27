@@ -258,8 +258,7 @@ int main(int argc, char* argv[]) {
 
   // Build the client, and try to connect.
   net::EpollServer epoll_server;
-  quic::QuicServerId server_id(url.host(), url.port(),
-                               net::PRIVACY_MODE_DISABLED);
+  quic::QuicServerId server_id(url.host(), url.port(), false);
   quic::ParsedQuicVersionVector versions = quic::CurrentSupportedVersions();
   if (FLAGS_quic_version != -1) {
     versions.clear();

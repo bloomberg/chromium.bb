@@ -71,7 +71,7 @@ class QuicCryptoServerStreamTest : public QuicTestWithParam<bool> {
                               TlsServerHandshaker::CreateSslCtx()),
         server_compressed_certs_cache_(
             QuicCompressedCertsCache::kQuicCompressedCertsCacheSize),
-        server_id_(kServerHostname, kServerPort, net::PRIVACY_MODE_DISABLED),
+        server_id_(kServerHostname, kServerPort, false),
         client_crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                               TlsClientHandshaker::CreateSslCtx()) {
     SetQuicReloadableFlag(enable_quic_stateless_reject_support, false);

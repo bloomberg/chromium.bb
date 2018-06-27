@@ -197,8 +197,7 @@ std::unique_ptr<base::Value> NetLogQuicClientSessionCallback(
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
   dict->SetString("host", server_id->host());
   dict->SetInteger("port", server_id->port());
-  dict->SetBoolean("privacy_mode",
-                   server_id->privacy_mode() == PRIVACY_MODE_ENABLED);
+  dict->SetBoolean("privacy_mode", server_id->privacy_mode_enabled());
   dict->SetBoolean("require_confirmation", require_confirmation);
   dict->SetInteger("cert_verify_flags", cert_verify_flags);
   return std::move(dict);

@@ -11,8 +11,10 @@
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 #include "net/base/port_util.h"
+#include "net/base/privacy_mode.h"
 #include "net/third_party/quic/platform/api/quic_hostname_utils.h"
 #include "url/gurl.h"
 
@@ -91,10 +93,17 @@ quic::QuicServerId QuicServerIdFromString(const std::string& str) {
   if (!url.is_valid()) {
     return quic::QuicServerId();
   }
-  return quic::QuicServerId(HostPortPair::FromURL(url),
+  HostPortPair host_port_pair = HostPortPair::FromURL(url);
+  return quic::QuicServerId(host_port_pair.host(), host_port_pair.port(),
                             url.path_piece() == "/private"
                                 ? PRIVACY_MODE_ENABLED
                                 : PRIVACY_MODE_DISABLED);
+}
+
+std::string QuicServerIdToString(const quic::QuicServerId& server_id) {
+  HostPortPair host_port_pair(server_id.host(), server_id.port());
+  return "https://" + host_port_pair.ToString() +
+         (server_id.privacy_mode_enabled() ? "/private" : "");
 }
 
 }  // namespace
@@ -1202,7 +1211,7 @@ void HttpServerPropertiesManager::SaveQuicServerInfoMapToServerPrefs(
     auto quic_server_pref_dict = std::make_unique<base::DictionaryValue>();
     quic_server_pref_dict->SetKey(kServerInfoKey, base::Value(it->second));
     quic_servers_dict->SetWithoutPathExpansion(
-        server_id.ToString(), std::move(quic_server_pref_dict));
+        QuicServerIdToString(server_id), std::move(quic_server_pref_dict));
   }
   http_server_properties_dict->SetWithoutPathExpansion(
       kQuicServers, std::move(quic_servers_dict));

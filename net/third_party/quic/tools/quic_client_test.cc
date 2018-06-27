@@ -52,8 +52,7 @@ size_t NumOpenSocketFDs() {
 QuicClient* CreateAndInitializeQuicClient(net::EpollServer* eps,
                                           uint16_t port) {
   QuicSocketAddress server_address(QuicSocketAddress(TestLoopback(), port));
-  QuicServerId server_id("hostname", server_address.port(),
-                         net::PRIVACY_MODE_DISABLED);
+  QuicServerId server_id("hostname", server_address.port(), false);
   ParsedQuicVersionVector versions = AllSupportedVersions();
   QuicClient* client =
       new QuicClient(server_address, server_id, versions, eps,

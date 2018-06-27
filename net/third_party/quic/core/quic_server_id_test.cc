@@ -14,50 +14,28 @@ namespace {
 
 class QuicServerIdTest : public QuicTest {};
 
-TEST_F(QuicServerIdTest, ToString) {
-  net::HostPortPair google_host_port_pair("google.com", 10);
+TEST_F(QuicServerIdTest, Constructor) {
+  QuicServerId google_server_id("google.com", 10, false);
+  EXPECT_EQ("google.com", google_server_id.host());
+  EXPECT_EQ(10, google_server_id.port());
+  EXPECT_FALSE(google_server_id.privacy_mode_enabled());
 
-  QuicServerId google_server_id(google_host_port_pair,
-                                net::PRIVACY_MODE_DISABLED);
-  QuicString google_server_id_str = google_server_id.ToString();
-  EXPECT_EQ("https://google.com:10", google_server_id_str);
-
-  QuicServerId private_server_id(google_host_port_pair,
-                                 net::PRIVACY_MODE_ENABLED);
-  QuicString private_server_id_str = private_server_id.ToString();
-  EXPECT_EQ("https://google.com:10/private", private_server_id_str);
-}
-
-TEST_F(QuicServerIdTest, HostPortPair) {
-  net::HostPortPair google_host_port_pair("google.com", 10);
-
-  QuicServerId google_server_id(google_host_port_pair,
-                                net::PRIVACY_MODE_DISABLED);
-  EXPECT_TRUE(google_host_port_pair.Equals(google_server_id.host_port_pair()));
-
-  QuicServerId private_server_id(google_host_port_pair,
-                                 net::PRIVACY_MODE_ENABLED);
-  EXPECT_TRUE(google_host_port_pair.Equals(private_server_id.host_port_pair()));
+  QuicServerId private_server_id("mail.google.com", 12, true);
+  EXPECT_EQ("mail.google.com", private_server_id.host());
+  EXPECT_EQ(12, private_server_id.port());
+  EXPECT_TRUE(private_server_id.privacy_mode_enabled());
 }
 
 TEST_F(QuicServerIdTest, LessThan) {
-  QuicServerId a_10_https(net::HostPortPair("a.com", 10),
-                          net::PRIVACY_MODE_DISABLED);
-  QuicServerId a_11_https(net::HostPortPair("a.com", 11),
-                          net::PRIVACY_MODE_DISABLED);
-  QuicServerId b_10_https(net::HostPortPair("b.com", 10),
-                          net::PRIVACY_MODE_DISABLED);
-  QuicServerId b_11_https(net::HostPortPair("b.com", 11),
-                          net::PRIVACY_MODE_DISABLED);
+  QuicServerId a_10_https("a.com", 10, false);
+  QuicServerId a_11_https("a.com", 11, false);
+  QuicServerId b_10_https("b.com", 10, false);
+  QuicServerId b_11_https("b.com", 11, false);
 
-  QuicServerId a_10_https_private(net::HostPortPair("a.com", 10),
-                                  net::PRIVACY_MODE_ENABLED);
-  QuicServerId a_11_https_private(net::HostPortPair("a.com", 11),
-                                  net::PRIVACY_MODE_ENABLED);
-  QuicServerId b_10_https_private(net::HostPortPair("b.com", 10),
-                                  net::PRIVACY_MODE_ENABLED);
-  QuicServerId b_11_https_private(net::HostPortPair("b.com", 11),
-                                  net::PRIVACY_MODE_ENABLED);
+  QuicServerId a_10_https_private("a.com", 10, true);
+  QuicServerId a_11_https_private("a.com", 11, true);
+  QuicServerId b_10_https_private("b.com", 10, true);
+  QuicServerId b_11_https_private("b.com", 11, true);
 
   // Test combinations of host, port, and privacy being same on left and
   // right side of less than.
@@ -68,28 +46,20 @@ TEST_F(QuicServerIdTest, LessThan) {
 
   // Test with either host, port or https being different on left and right side
   // of less than.
-  net::PrivacyMode left_privacy;
-  net::PrivacyMode right_privacy;
+  bool left_privacy;
+  bool right_privacy;
   for (int i = 0; i < 4; i++) {
-    left_privacy = static_cast<net::PrivacyMode>(i / 2);
-    right_privacy = static_cast<net::PrivacyMode>(i % 2);
-    QuicServerId a_10_https_left_private(net::HostPortPair("a.com", 10),
-                                         left_privacy);
-    QuicServerId a_10_https_right_private(net::HostPortPair("a.com", 10),
-                                          right_privacy);
-    QuicServerId a_11_https_left_private(net::HostPortPair("a.com", 11),
-                                         left_privacy);
-    QuicServerId a_11_https_right_private(net::HostPortPair("a.com", 11),
-                                          right_privacy);
+    left_privacy = (i / 2 == 0);
+    right_privacy = (i % 2 == 0);
+    QuicServerId a_10_https_left_private("a.com", 10, left_privacy);
+    QuicServerId a_10_https_right_private("a.com", 10, right_privacy);
+    QuicServerId a_11_https_left_private("a.com", 11, left_privacy);
+    QuicServerId a_11_https_right_private("a.com", 11, right_privacy);
 
-    QuicServerId b_10_https_left_private(net::HostPortPair("b.com", 10),
-                                         left_privacy);
-    QuicServerId b_10_https_right_private(net::HostPortPair("b.com", 10),
-                                          right_privacy);
-    QuicServerId b_11_https_left_private(net::HostPortPair("b.com", 11),
-                                         left_privacy);
-    QuicServerId b_11_https_right_private(net::HostPortPair("b.com", 11),
-                                          right_privacy);
+    QuicServerId b_10_https_left_private("b.com", 10, left_privacy);
+    QuicServerId b_10_https_right_private("b.com", 10, right_privacy);
+    QuicServerId b_11_https_left_private("b.com", 11, left_privacy);
+    QuicServerId b_11_https_right_private("b.com", 11, right_privacy);
 
     EXPECT_TRUE(a_10_https_left_private < a_11_https_right_private);
     EXPECT_TRUE(a_10_https_left_private < b_10_https_right_private);
@@ -107,27 +77,19 @@ TEST_F(QuicServerIdTest, LessThan) {
 }
 
 TEST_F(QuicServerIdTest, Equals) {
-  net::PrivacyMode left_privacy;
-  net::PrivacyMode right_privacy;
+  bool left_privacy;
+  bool right_privacy;
   for (int i = 0; i < 2; i++) {
-    left_privacy = right_privacy = static_cast<net::PrivacyMode>(i);
-    QuicServerId a_10_https_right_private(net::HostPortPair("a.com", 10),
-                                          right_privacy);
-    QuicServerId a_11_https_right_private(net::HostPortPair("a.com", 11),
-                                          right_privacy);
-    QuicServerId b_10_https_right_private(net::HostPortPair("b.com", 10),
-                                          right_privacy);
-    QuicServerId b_11_https_right_private(net::HostPortPair("b.com", 11),
-                                          right_privacy);
+    left_privacy = right_privacy = (i == 0);
+    QuicServerId a_10_https_right_private("a.com", 10, right_privacy);
+    QuicServerId a_11_https_right_private("a.com", 11, right_privacy);
+    QuicServerId b_10_https_right_private("b.com", 10, right_privacy);
+    QuicServerId b_11_https_right_private("b.com", 11, right_privacy);
 
-    QuicServerId new_a_10_https_left_private(net::HostPortPair("a.com", 10),
-                                             left_privacy);
-    QuicServerId new_a_11_https_left_private(net::HostPortPair("a.com", 11),
-                                             left_privacy);
-    QuicServerId new_b_10_https_left_private(net::HostPortPair("b.com", 10),
-                                             left_privacy);
-    QuicServerId new_b_11_https_left_private(net::HostPortPair("b.com", 11),
-                                             left_privacy);
+    QuicServerId new_a_10_https_left_private("a.com", 10, left_privacy);
+    QuicServerId new_a_11_https_left_private("a.com", 11, left_privacy);
+    QuicServerId new_b_10_https_left_private("b.com", 10, left_privacy);
+    QuicServerId new_b_11_https_left_private("b.com", 11, left_privacy);
 
     EXPECT_EQ(new_a_10_https_left_private, a_10_https_right_private);
     EXPECT_EQ(new_a_11_https_left_private, a_11_https_right_private);
@@ -136,36 +98,29 @@ TEST_F(QuicServerIdTest, Equals) {
   }
 
   for (int i = 0; i < 2; i++) {
-    right_privacy = static_cast<net::PrivacyMode>(i);
-    QuicServerId a_10_https_right_private(net::HostPortPair("a.com", 10),
-                                          right_privacy);
-    QuicServerId a_11_https_right_private(net::HostPortPair("a.com", 11),
-                                          right_privacy);
-    QuicServerId b_10_https_right_private(net::HostPortPair("b.com", 10),
-                                          right_privacy);
-    QuicServerId b_11_https_right_private(net::HostPortPair("b.com", 11),
-                                          right_privacy);
+    right_privacy = (i == 0);
+    QuicServerId a_10_https_right_private("a.com", 10, right_privacy);
+    QuicServerId a_11_https_right_private("a.com", 11, right_privacy);
+    QuicServerId b_10_https_right_private("b.com", 10, right_privacy);
+    QuicServerId b_11_https_right_private("b.com", 11, right_privacy);
 
-    QuicServerId new_a_10_https_left_private(net::HostPortPair("a.com", 10),
-                                             net::PRIVACY_MODE_DISABLED);
+    QuicServerId new_a_10_https_left_private("a.com", 10, false);
 
     EXPECT_FALSE(new_a_10_https_left_private == a_11_https_right_private);
     EXPECT_FALSE(new_a_10_https_left_private == b_10_https_right_private);
     EXPECT_FALSE(new_a_10_https_left_private == b_11_https_right_private);
   }
-  QuicServerId a_10_https_private(net::HostPortPair("a.com", 10),
-                                  net::PRIVACY_MODE_ENABLED);
-  QuicServerId new_a_10_https_no_private(net::HostPortPair("a.com", 10),
-                                         net::PRIVACY_MODE_DISABLED);
+  QuicServerId a_10_https_private("a.com", 10, true);
+  QuicServerId new_a_10_https_no_private("a.com", 10, false);
   EXPECT_FALSE(new_a_10_https_no_private == a_10_https_private);
 }
 
 TEST_F(QuicServerIdTest, EstimateMemoryUsage) {
-  net::HostPortPair host_port_pair("this is a rather very quite long hostname",
-                                   10);
-  QuicServerId server_id(host_port_pair, net::PRIVACY_MODE_ENABLED);
-  EXPECT_EQ(QuicEstimateMemoryUsage(host_port_pair),
-            QuicEstimateMemoryUsage(server_id));
+  QuicString host = "this is a rather very quite long hostname";
+  uint16_t port = 10;
+  bool privacy_mode_enabled = true;
+  QuicServerId server_id(host, port, privacy_mode_enabled);
+  EXPECT_EQ(QuicEstimateMemoryUsage(host), QuicEstimateMemoryUsage(server_id));
 }
 
 }  // namespace

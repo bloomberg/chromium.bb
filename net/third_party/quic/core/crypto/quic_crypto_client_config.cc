@@ -557,8 +557,7 @@ QuicErrorCode QuicCryptoClientConfig::FillClientHello(
   out->SetVector(kAEAD, QuicTagVector{out_params->aead});
   out->SetVector(kKEXS, QuicTagVector{out_params->key_exchange});
 
-  if (!tb_key_params.empty() &&
-      server_id.privacy_mode() == net::PRIVACY_MODE_DISABLED) {
+  if (!tb_key_params.empty() && !server_id.privacy_mode_enabled()) {
     QuicTagVector their_tbkps;
     switch (scfg->GetTaglist(kTBKP, &their_tbkps)) {
       case QUIC_CRYPTO_MESSAGE_PARAMETER_NOT_FOUND:
@@ -983,7 +982,7 @@ bool QuicCryptoClientConfig::PopulateFromCanonicalConfig(
   }
 
   QuicServerId suffix_server_id(canonical_suffixes_[i], server_id.port(),
-                                server_id.privacy_mode());
+                                server_id.privacy_mode_enabled());
   if (!QuicContainsKey(canonical_server_map_, suffix_server_id)) {
     // This is the first host we've seen which matches the suffix, so make it
     // canonical.
