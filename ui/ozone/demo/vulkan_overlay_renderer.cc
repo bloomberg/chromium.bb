@@ -48,8 +48,7 @@ VulkanOverlayRenderer::VulkanOverlayRenderer(
       weak_ptr_factory_(this) {}
 
 VulkanOverlayRenderer::~VulkanOverlayRenderer() {
-  for (auto& buffer : buffers_)
-    buffer.reset();
+  DestroyBuffers();
   command_buffer_->Destroy();
   command_buffer_.reset();
   command_pool_->Destroy();
@@ -118,8 +117,27 @@ bool VulkanOverlayRenderer::Initialize() {
   return true;
 }
 
+void VulkanOverlayRenderer::DestroyBuffers() {
+  VkDevice vk_device = device_queue_->GetVulkanDevice();
+  for (std::unique_ptr<Buffer>& buffer : buffers_) {
+    if (!buffer)
+      continue;
+    vulkan_function_pointers_->vkDestroyFramebuffer(
+        vk_device, buffer->vk_framebuffer(), nullptr);
+    vulkan_function_pointers_->vkDestroyImageView(
+        vk_device, buffer->vk_image_view(), nullptr);
+    vulkan_function_pointers_->vkDestroyImage(vk_device, buffer->vk_image(),
+                                              nullptr);
+    vulkan_function_pointers_->vkFreeMemory(
+        vk_device, buffer->vk_device_memory(), nullptr);
+    buffer.reset();
+  }
+}
+
 void VulkanOverlayRenderer::RecreateBuffers() {
   TRACE_EVENT0("ozone", "VulkanOverlayRenderer::RecreateBuffers");
+
+  DestroyBuffers();
 
   for (auto& buffer : buffers_) {
     buffer = Buffer::Create(surface_factory_ozone_, vulkan_function_pointers_,

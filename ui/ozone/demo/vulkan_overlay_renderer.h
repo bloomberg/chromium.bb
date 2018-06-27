@@ -44,6 +44,7 @@ class VulkanOverlayRenderer : public RendererBase {
   bool Initialize() override;
 
  private:
+  void DestroyBuffers();
   void RecreateBuffers();
   void RenderFrame();
   void PostRenderFrameTask();
