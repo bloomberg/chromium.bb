@@ -9,7 +9,6 @@ component("cpp") {
   sources = [
     "accelerators.cc",
     "accelerators.h",
-    "accessibility_types.h",
     "app_list/answer_card_contents_registry.cc",
     "app_list/answer_card_contents_registry.h",
     "app_list/app_list_config.cc",

@@ -6,7 +6,6 @@
 #define ASH_ACCESSIBILITY_ACCESSIBILITY_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/accessibility_types.h"
 #include "base/time/time.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 
