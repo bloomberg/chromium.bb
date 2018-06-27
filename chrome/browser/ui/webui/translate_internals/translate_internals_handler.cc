@@ -64,6 +64,10 @@ void TranslateInternalsHandler::RegisterMessages() {
       base::BindRepeating(&TranslateInternalsHandler::OnRemovePrefItem,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
+      "setRecentTargetLanguage",
+      base::BindRepeating(&TranslateInternalsHandler::OnSetRecentTargetLanguage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
       "requestInfo",
       base::BindRepeating(&TranslateInternalsHandler::OnRequestInfo,
                           base::Unretained(this)));
@@ -164,6 +168,24 @@ void TranslateInternalsHandler::OnRemovePrefItem(const base::ListValue* args) {
   SendPrefsToJs();
 }
 
+void TranslateInternalsHandler::OnSetRecentTargetLanguage(
+    const base::ListValue* args) {
+  content::WebContents* web_contents = web_ui()->GetWebContents();
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  PrefService* prefs = profile->GetOriginalProfile()->GetPrefs();
+  std::unique_ptr<translate::TranslatePrefs> translate_prefs(
+      ChromeTranslateClient::CreateTranslatePrefs(prefs));
+
+  std::string new_value;
+  if (!args->GetString(0, &new_value))
+    return;
+
+  translate_prefs->SetRecentTargetLanguage(new_value);
+
+  SendPrefsToJs();
+}
+
 void TranslateInternalsHandler::OnOverrideCountry(const base::ListValue* args) {
   std::string country;
   if (args->GetString(0, &country)) {
@@ -199,6 +221,7 @@ void TranslateInternalsHandler::SendPrefsToJs() {
 
   static const char* keys[] = {
       prefs::kOfferTranslateEnabled,
+      translate::TranslatePrefs::kPrefTranslateRecentTarget,
       translate::TranslatePrefs::kPrefTranslateBlockedLanguages,
       translate::TranslatePrefs::kPrefTranslateSiteBlacklist,
       translate::TranslatePrefs::kPrefTranslateWhitelists,
