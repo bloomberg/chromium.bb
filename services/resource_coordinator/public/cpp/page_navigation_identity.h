@@ -16,7 +16,7 @@ struct PageNavigationIdentity {
   CoordinationUnitID page_cu_id;
   // The unique ID of the NavigationHandle of the page at the time the event
   // relates to.
-  uint64_t navigation_id;
+  int64_t navigation_id;
   // The URL of the last navigation.
   std::string url;
 };

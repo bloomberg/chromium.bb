@@ -33,7 +33,9 @@ class BloatedRendererTabHelper
   void WebContentsDestroyed() override;
 
   // resource_coordinator::PageSignalObserver:
-  void OnRendererIsBloated(content::WebContents* web_contents) override;
+  void OnRendererIsBloated(content::WebContents* web_contents,
+                           const resource_coordinator::PageNavigationIdentity&
+                               page_navigation_id) override;
 
   static void ShowInfoBar(InfoBarService* infobar_service);
 

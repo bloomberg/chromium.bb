@@ -93,11 +93,21 @@ bool BloatedRendererTabHelper::CanReloadBloatedTab() {
 }
 
 void BloatedRendererTabHelper::OnRendererIsBloated(
-    content::WebContents* bloated_web_contents) {
+    content::WebContents* bloated_web_contents,
+    const resource_coordinator::PageNavigationIdentity& page_navigation_id) {
   if (web_contents() != bloated_web_contents) {
     // Ignore if the notification is about a different tab.
     return;
   }
+  auto* page_signal_receiver =
+      resource_coordinator::PageSignalReceiver::GetInstance();
+  DCHECK_NE(nullptr, page_signal_receiver);
+  if (page_navigation_id.navigation_id !=
+      page_signal_receiver->GetNavigationIDForWebContents(web_contents())) {
+    // Ignore if the notification is pursuant to an earlier navigation.
+    return;
+  }
+
   if (CanReloadBloatedTab()) {
     const size_t expected_page_count = 1u;
     const bool skip_unload_handlers = true;

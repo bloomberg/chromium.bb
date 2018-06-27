@@ -76,8 +76,7 @@ void PageSignalReceiver::OnLoadTimePerformanceEstimate(
     uint64_t private_footprint_kb_estimate) {
   NotifyObserversIfKnownCu(page_navigation_id,
                            &PageSignalObserver::OnLoadTimePerformanceEstimate,
-                           page_navigation_id.url, cpu_usage_estimate,
-                           private_footprint_kb_estimate);
+                           cpu_usage_estimate, private_footprint_kb_estimate);
 }
 
 void PageSignalReceiver::AddObserver(PageSignalObserver* observer) {
@@ -112,9 +111,47 @@ void PageSignalReceiver::AssociateCoordinationUnitIDWithWebContents(
   cu_id_web_contents_map_[cu_id] = web_contents;
 }
 
+void PageSignalReceiver::SetNavigationID(content::WebContents* web_contents,
+                                         int64_t navigation_id) {
+  DCHECK_NE(nullptr, web_contents);
+  web_contents_navigation_id_map_[web_contents] = navigation_id;
+}
+
 void PageSignalReceiver::RemoveCoordinationUnitID(
     const CoordinationUnitID& cu_id) {
-  cu_id_web_contents_map_.erase(cu_id);
+  auto it = cu_id_web_contents_map_.find(cu_id);
+  DCHECK(it != cu_id_web_contents_map_.end());
+
+  web_contents_navigation_id_map_.erase(it->second);
+  cu_id_web_contents_map_.erase(it);
+}
+
+int64_t PageSignalReceiver::GetNavigationIDForWebContents(
+    content::WebContents* web_contents) {
+  DCHECK_NE(nullptr, web_contents);
+  auto it = web_contents_navigation_id_map_.find(web_contents);
+  if (it == web_contents_navigation_id_map_.end())
+    return 0;
+
+  return it->second;
+}
+
+template <typename Method, typename... Params>
+void PageSignalReceiver::NotifyObserversIfKnownCu(
+    const PageNavigationIdentity& page_navigation_id,
+    Method m,
+    Params... params) {
+  auto web_contents_iter =
+      cu_id_web_contents_map_.find(page_navigation_id.page_cu_id);
+  if (web_contents_iter == cu_id_web_contents_map_.end())
+    return;
+  // An observer can make web_contents_iter invalid by mutating
+  // the cu_id_web_contents_map_.
+  content::WebContents* web_contents = web_contents_iter->second;
+  for (auto& observer : observers_) {
+    (observer.*m)(web_contents, page_navigation_id,
+                  std::forward<Params>(params)...);
+  }
 }
 
 }  // namespace resource_coordinator

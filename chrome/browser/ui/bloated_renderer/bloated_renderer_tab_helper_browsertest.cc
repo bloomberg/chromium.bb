@@ -37,8 +37,10 @@ IN_PROC_BROWSER_TEST_F(BloatedRendererTabHelperBrowserTest,
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   EXPECT_EQ(0u, infobar_service->infobar_count());
+
+  resource_coordinator::PageNavigationIdentity page_id;
   BloatedRendererTabHelper::FromWebContents(web_contents)
-      ->OnRendererIsBloated(web_contents);
+      ->OnRendererIsBloated(web_contents, page_id);
   reload.Wait();
   EXPECT_EQ(1u, infobar_service->infobar_count());
 }

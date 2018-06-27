@@ -113,6 +113,7 @@ class TabLifecycleUnitSource : public BrowserListObserver,
 
   // PageSignalObserver:
   void OnLifecycleStateChanged(content::WebContents* web_contents,
+                               const PageNavigationIdentity& page_navigation_id,
                                mojom::LifecycleState state) override;
 
   // Tracks the BrowserList and all TabStripModels.
