@@ -7,6 +7,8 @@
 #include <utility>
 
 #include "base/optional.h"
+#include "components/cbor/cbor_values.h"
+#include "components/cbor/cbor_writer.h"
 #include "device/fido/authenticator_data.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -87,6 +89,26 @@ AuthenticatorGetAssertionResponse&
 AuthenticatorGetAssertionResponse::SetNumCredentials(uint8_t num_credentials) {
   num_credentials_ = num_credentials;
   return *this;
+}
+
+std::vector<uint8_t> GetSerializedCtapDeviceResponse(
+    const AuthenticatorGetAssertionResponse& response) {
+  cbor::CBORValue::MapValue response_map;
+  if (response.credential())
+    response_map.emplace(1, response.credential()->ConvertToCBOR());
+
+  response_map.emplace(2, response.auth_data().SerializeToByteArray());
+  response_map.emplace(3, response.signature());
+
+  if (response.user_entity())
+    response_map.emplace(4, response.user_entity()->ConvertToCBOR());
+
+  // Multiple account selection is not supported.
+  response_map.emplace(5, 1);
+  auto encoded_response =
+      cbor::CBORWriter::Write(cbor::CBORValue(std::move(response_map)));
+  DCHECK(encoded_response);
+  return *encoded_response;
 }
 
 }  // namespace device
