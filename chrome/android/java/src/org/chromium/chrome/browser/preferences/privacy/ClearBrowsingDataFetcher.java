@@ -8,7 +8,6 @@ import android.os.Parcel;
 import android.os.Parcelable;
 
 import org.chromium.base.metrics.RecordHistogram;
-import org.chromium.chrome.browser.ChromeFeatureList;
 
 import java.util.Arrays;
 
@@ -74,9 +73,7 @@ public class ClearBrowsingDataFetcher
      * Fetch important sites if the feature is enabled.
      */
     public void fetchImportantSites() {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)) {
-            BrowsingDataBridge.fetchImportantSites(this);
-        }
+        BrowsingDataBridge.fetchImportantSites(this);
     }
 
     /**

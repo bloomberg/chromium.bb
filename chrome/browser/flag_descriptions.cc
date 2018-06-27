@@ -949,12 +949,6 @@ const char kIgnorePreviewsBlacklistName[] = "Ignore Previews Blocklist";
 const char kIgnorePreviewsBlacklistDescription[] =
     "Ignore decisions made by the PreviewsBlockList";
 
-const char kImportantSitesInCbdName[] =
-    "Important sites options in clear browsing data dialog";
-const char kImportantSitesInCbdDescription[] =
-    "Include the option to whitelist important sites in the clear browsing "
-    "data dialog.";
-
 const char kImprovedLanguageSettingsName[] = "Improved Language Settings";
 const char kImprovedLanguageSettingsDescription[] =
     "Set of changes for Language Settings. These changes are intended to fix "

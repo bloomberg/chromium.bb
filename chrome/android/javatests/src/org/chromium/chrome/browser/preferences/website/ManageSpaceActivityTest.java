@@ -39,7 +39,7 @@ import org.chromium.net.test.EmbeddedTestServer;
 @RunWith(ChromeJUnit4ClassRunner.class)
 @TargetApi(Build.VERSION_CODES.KITKAT)
 @MinAndroidSdkLevel(Build.VERSION_CODES.KITKAT)
-@CommandLineFlags.Add({"enable-site-engagement", ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
+@CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManageSpaceActivityTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =

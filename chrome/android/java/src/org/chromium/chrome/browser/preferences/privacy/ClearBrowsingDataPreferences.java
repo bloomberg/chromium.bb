@@ -430,7 +430,6 @@ public abstract class ClearBrowsingDataPreferences extends PreferenceFragment
      * </ol>
      */
     private boolean shouldShowImportantSitesDialog() {
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.IMPORTANT_SITES_IN_CBD)) return false;
         EnumSet<DialogOption> selectedOptions = getSelectedOptions();
         if (!selectedOptions.contains(DialogOption.CLEAR_CACHE)
                 && !selectedOptions.contains(DialogOption.CLEAR_COOKIES_AND_SITE_DATA)) {
