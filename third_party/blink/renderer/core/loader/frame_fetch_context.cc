@@ -552,6 +552,8 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   if (IsDetached())
     return;
 
+  DCHECK(resource);
+
   MaybeRecordCTPolicyComplianceUseCounter(GetFrame(), resource->GetType(),
                                           response.GetCTPolicyCompliance());
 
@@ -589,9 +591,11 @@ void FrameFetchContext::DispatchDidReceiveResponse(
     frame_url = document_loader_->Url();
 
   // Check if |response| belongs to a resource in the main frame, and if belongs
-  // to the same origin as frame top request.
+  // to the same origin as frame top request. Also, the accept-ch-lifetime
+  // header is honored only on the navigation responses.
   if (SecurityOrigin::AreSameSchemeHostPort(response.Url(), frame_url) &&
-      GetFrame()->IsMainFrame()) {
+      GetFrame()->IsMainFrame() &&
+      (resource->GetType() == Resource::kMainResource)) {
     ParseAndPersistClientHints(response);
   }
 
