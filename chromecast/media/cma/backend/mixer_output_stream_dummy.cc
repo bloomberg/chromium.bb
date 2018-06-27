@@ -5,6 +5,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chromecast/media/cma/backend/system_volume_control.h"
 #include "chromecast/public/media/mixer_output_stream.h"
 
 namespace chromecast {
@@ -42,6 +43,14 @@ class MixerOutputStreamDummy : public MixerOutputStream {
 // static
 std::unique_ptr<MixerOutputStream> MixerOutputStream::Create() {
   return std::make_unique<MixerOutputStreamDummy>();
+}
+
+// static
+std::unique_ptr<SystemVolumeControl> SystemVolumeControl::Create(
+    Delegate* delegate) {
+  // No tests currently actually call this, so we don't need a real dummy
+  // implementation here.
+  return nullptr;
 }
 
 }  // namespace media
