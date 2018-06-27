@@ -60,6 +60,7 @@ class ScrollOffset;
 }
 
 namespace viz {
+class CompositorFrame;
 class CompositorFrameMetadata;
 }
 
@@ -365,6 +366,7 @@ class CC_EXPORT LayerTreeHostImpl
   // called between the two.
   virtual DrawResult PrepareToDraw(FrameData* frame);
   virtual bool DrawLayers(FrameData* frame);
+  viz::CompositorFrame GenerateCompositorFrame(FrameData* frame);
   // Must be called if and only if PrepareToDraw was called.
   void DidDrawAllLayers(const FrameData& frame);
 

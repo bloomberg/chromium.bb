@@ -1277,6 +1277,10 @@ void LayerTreeHostImpl::InvalidateLayerTreeFrameSink(bool needs_redraw) {
 DrawResult LayerTreeHostImpl::PrepareToDraw(FrameData* frame) {
   TRACE_EVENT1("cc", "LayerTreeHostImpl::PrepareToDraw", "SourceFrameNumber",
                active_tree_->source_frame_number());
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "GenerateRenderPass");
   if (input_handler_client_)
     input_handler_client_->ReconcileElasticOverscrollAndRootScroll();
 
@@ -2013,9 +2017,6 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata(
 bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
   DCHECK(CanDraw());
   DCHECK_EQ(frame->has_no_damage, frame->render_passes.empty());
-
-  TRACE_EVENT0("cc,benchmark", "LayerTreeHostImpl::DrawLayers");
-
   ResetRequiresHighResToDraw();
   skipped_frame_tracker_.DidProduceFrame();
 
@@ -2027,6 +2028,36 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
     return false;
   }
 
+  auto compositor_frame = GenerateCompositorFrame(frame);
+  layer_tree_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
+
+  // Clears the list of swap promises after calling DidSwap on each of them to
+  // signal that the swap is over.
+  active_tree()->ClearSwapPromises();
+
+  // The next frame should start by assuming nothing has changed, and changes
+  // are noted as they occur.
+  // TODO(boliu): If we did a temporary software renderer frame, propogate the
+  // damage forward to the next frame.
+  for (size_t i = 0; i < frame->render_surface_list->size(); i++) {
+    auto* surface = (*frame->render_surface_list)[i];
+    surface->damage_tracker()->DidDrawDamagedArea();
+  }
+  active_tree_->ResetAllChangeTracking();
+
+  active_tree_->set_has_ever_been_drawn(true);
+  devtools_instrumentation::DidDrawFrame(id_);
+  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
+      rendering_stats_instrumentation_->TakeImplThreadRenderingStats());
+  return true;
+}
+
+viz::CompositorFrame LayerTreeHostImpl::GenerateCompositorFrame(
+    FrameData* frame) {
+  TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                         TRACE_ID_GLOBAL(CurrentBeginFrameArgs().trace_id),
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "step", "GenerateCompositorFrame");
   base::TimeTicks frame_time = CurrentBeginFrameArgs().frame_time;
   fps_counter_->SaveTimeStamp(frame_time,
                               !layer_tree_frame_sink_->context_provider());
@@ -2152,27 +2183,7 @@ bool LayerTreeHostImpl::DrawLayers(FrameData* frame) {
         total_quad_count);
   }
 
-  layer_tree_frame_sink_->SubmitCompositorFrame(std::move(compositor_frame));
-
-  // Clears the list of swap promises after calling DidSwap on each of them to
-  // signal that the swap is over.
-  active_tree()->ClearSwapPromises();
-
-  // The next frame should start by assuming nothing has changed, and changes
-  // are noted as they occur.
-  // TODO(boliu): If we did a temporary software renderer frame, propogate the
-  // damage forward to the next frame.
-  for (size_t i = 0; i < frame->render_surface_list->size(); i++) {
-    auto* surface = (*frame->render_surface_list)[i];
-    surface->damage_tracker()->DidDrawDamagedArea();
-  }
-  active_tree_->ResetAllChangeTracking();
-
-  active_tree_->set_has_ever_been_drawn(true);
-  devtools_instrumentation::DidDrawFrame(id_);
-  benchmark_instrumentation::IssueImplThreadRenderingStatsEvent(
-      rendering_stats_instrumentation_->TakeImplThreadRenderingStats());
-  return true;
+  return compositor_frame;
 }
 
 void LayerTreeHostImpl::DidDrawAllLayers(const FrameData& frame) {

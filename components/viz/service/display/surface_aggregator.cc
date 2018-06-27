@@ -301,6 +301,11 @@ void SurfaceAggregator::EmitSurfaceContent(
 
   ++uma_stats_.valid_surface;
   const CompositorFrame& frame = surface->GetActiveFrame();
+  TRACE_EVENT_WITH_FLOW1(
+      "viz,benchmark", "Graphics.Pipeline",
+      TRACE_ID_GLOBAL(frame.metadata.begin_frame_ack.trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SurfaceAggregation");
 
   if (ignore_undamaged) {
     gfx::Transform quad_to_target_transform(
@@ -1160,7 +1165,11 @@ CompositorFrame SurfaceAggregator::Aggregate(
     return {};
 
   const CompositorFrame& root_surface_frame = surface->GetActiveFrame();
-  TRACE_EVENT0("viz", "SurfaceAggregator::Aggregate");
+  TRACE_EVENT_WITH_FLOW1(
+      "viz,benchmark", "Graphics.Pipeline",
+      TRACE_ID_GLOBAL(root_surface_frame.metadata.begin_frame_ack.trace_id),
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "step",
+      "SurfaceAggregation");
 
   CompositorFrame frame;
 
