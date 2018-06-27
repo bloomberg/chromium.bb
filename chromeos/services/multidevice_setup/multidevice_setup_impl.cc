@@ -11,7 +11,6 @@
 #include "chromeos/services/multidevice_setup/account_status_change_delegate_notifier_impl.h"
 #include "chromeos/services/multidevice_setup/eligible_host_devices_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
-#include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/setup_flow_completion_recorder_impl.h"
 
@@ -65,12 +64,6 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl(
           host_backend_delegate_.get(),
           device_sync_client,
           secure_channel_client)),
-      host_status_provider_(
-          HostStatusProviderImpl::Factory::Get()->BuildInstance(
-              eligible_host_devices_provider_.get(),
-              host_backend_delegate_.get(),
-              host_verifier_.get(),
-              device_sync_client)),
       setup_flow_completion_recorder_(
           SetupFlowCompletionRecorderImpl::Factory::Get()->BuildInstance(
               pref_service,

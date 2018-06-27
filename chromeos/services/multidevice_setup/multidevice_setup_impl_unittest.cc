@@ -13,11 +13,9 @@
 #include "chromeos/services/multidevice_setup/fake_account_status_change_delegate_notifier.h"
 #include "chromeos/services/multidevice_setup/fake_eligible_host_devices_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_backend_delegate.h"
-#include "chromeos/services/multidevice_setup/fake_host_status_provider.h"
 #include "chromeos/services/multidevice_setup/fake_host_verifier.h"
 #include "chromeos/services/multidevice_setup/fake_setup_flow_completion_recorder.h"
 #include "chromeos/services/multidevice_setup/host_backend_delegate_impl.h"
-#include "chromeos/services/multidevice_setup/host_status_provider_impl.h"
 #include "chromeos/services/multidevice_setup/host_verifier_impl.h"
 #include "chromeos/services/multidevice_setup/multidevice_setup_impl.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
@@ -147,55 +145,6 @@ class FakeHostVerifierFactory : public HostVerifierImpl::Factory {
   DISALLOW_COPY_AND_ASSIGN(FakeHostVerifierFactory);
 };
 
-class FakeHostStatusProviderFactory : public HostStatusProviderImpl::Factory {
- public:
-  FakeHostStatusProviderFactory(
-      FakeEligibleHostDevicesProviderFactory*
-          fake_eligible_host_devices_provider_factory,
-      FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory,
-      FakeHostVerifierFactory* fake_host_verifier_factory,
-      device_sync::FakeDeviceSyncClient* expected_device_sync_client)
-      : fake_eligible_host_devices_provider_factory_(
-            fake_eligible_host_devices_provider_factory),
-        fake_host_backend_delegate_factory_(fake_host_backend_delegate_factory),
-        fake_host_verifier_factory_(fake_host_verifier_factory),
-        expected_device_sync_client_(expected_device_sync_client) {}
-
-  ~FakeHostStatusProviderFactory() override = default;
-
-  FakeHostStatusProvider* instance() { return instance_; }
-
- private:
-  // HostStatusProviderImpl::Factory:
-  std::unique_ptr<HostStatusProvider> BuildInstance(
-      EligibleHostDevicesProvider* eligible_host_devices_provider,
-      HostBackendDelegate* host_backend_delegate,
-      HostVerifier* host_verifier,
-      device_sync::DeviceSyncClient* device_sync_client) override {
-    EXPECT_FALSE(instance_);
-    EXPECT_EQ(fake_eligible_host_devices_provider_factory_->instance(),
-              eligible_host_devices_provider);
-    EXPECT_EQ(fake_host_backend_delegate_factory_->instance(),
-              host_backend_delegate);
-    EXPECT_EQ(fake_host_verifier_factory_->instance(), host_verifier);
-    EXPECT_EQ(expected_device_sync_client_, device_sync_client);
-
-    auto instance = std::make_unique<FakeHostStatusProvider>();
-    instance_ = instance.get();
-    return instance;
-  }
-
-  FakeEligibleHostDevicesProviderFactory*
-      fake_eligible_host_devices_provider_factory_;
-  FakeHostBackendDelegateFactory* fake_host_backend_delegate_factory_;
-  FakeHostVerifierFactory* fake_host_verifier_factory_;
-  device_sync::FakeDeviceSyncClient* expected_device_sync_client_;
-
-  FakeHostStatusProvider* instance_ = nullptr;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeHostStatusProviderFactory);
-};
-
 class FakeSetupFlowCompletionRecorderFactory
     : public SetupFlowCompletionRecorderImpl::Factory {
  public:
@@ -308,14 +257,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
     HostVerifierImpl::Factory::SetFactoryForTesting(
         fake_host_verifier_factory_.get());
 
-    fake_host_status_provider_factory_ =
-        std::make_unique<FakeHostStatusProviderFactory>(
-            fake_eligible_host_devices_provider_factory_.get(),
-            fake_host_backend_delegate_factory_.get(),
-            fake_host_verifier_factory_.get(), fake_device_sync_client_.get());
-    HostStatusProviderImpl::Factory::SetFactoryForTesting(
-        fake_host_status_provider_factory_.get());
-
     fake_setup_flow_completion_recorder_factory_ =
         std::make_unique<FakeSetupFlowCompletionRecorderFactory>(
             test_pref_service_.get());
@@ -338,7 +279,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
     EligibleHostDevicesProviderImpl::Factory::SetFactoryForTesting(nullptr);
     HostBackendDelegateImpl::Factory::SetFactoryForTesting(nullptr);
     HostVerifierImpl::Factory::SetFactoryForTesting(nullptr);
-    HostStatusProviderImpl::Factory::SetFactoryForTesting(nullptr);
     SetupFlowCompletionRecorderImpl::Factory::SetFactoryForTesting(nullptr);
     AccountStatusChangeDelegateNotifierImpl::Factory::SetFactoryForTesting(
         nullptr);
@@ -403,8 +343,6 @@ class MultiDeviceSetupImplTest : public testing::Test {
   std::unique_ptr<FakeHostBackendDelegateFactory>
       fake_host_backend_delegate_factory_;
   std::unique_ptr<FakeHostVerifierFactory> fake_host_verifier_factory_;
-  std::unique_ptr<FakeHostStatusProviderFactory>
-      fake_host_status_provider_factory_;
   std::unique_ptr<FakeSetupFlowCompletionRecorderFactory>
       fake_setup_flow_completion_recorder_factory_;
   std::unique_ptr<FakeAccountStatusChangeDelegateNotifierFactory>
