@@ -25,17 +25,6 @@ def _CheckFilePathsEndWithJar(parser, file_paths):
     _CheckFilePathEndsWithJar(parser, file_path)
 
 
-def _RemoveUnwantedFilesFromZip(dex_path):
-  iz = zipfile.ZipFile(dex_path, 'r')
-  tmp_dex_path = '%s.tmp.zip' % dex_path
-  oz = zipfile.ZipFile(tmp_dex_path, 'w', zipfile.ZIP_DEFLATED)
-  for i in iz.namelist():
-    if i.endswith('.dex'):
-      oz.writestr(i, iz.read(i))
-  os.remove(dex_path)
-  os.rename(tmp_dex_path, dex_path)
-
-
 def _ParseArgs(args):
   args = build_utils.ExpandFileArgs(args)
 
@@ -159,15 +148,6 @@ def main(args):
   if options.multi_dex:
     input_paths.append(options.main_dex_list_path)
 
-  output_paths = [
-    options.dex_path,
-    options.dex_path + '.inputs',
-  ]
-
-  # An escape hatch to be able to check if incremental dexing is causing
-  # problems.
-  force = int(os.environ.get('DISABLE_INCREMENTAL_DX', 0))
-
   dex_cmd = ['java', '-jar', options.d8_jar_path]
   if options.multi_dex:
     dex_cmd += ['--main-dex-list', options.main_dex_list_path]
@@ -175,35 +155,23 @@ def main(args):
   is_dex = options.dex_path.endswith('.dex')
   is_jar = options.dex_path.endswith('.jar')
 
-  def on_stale_md5_callback():
-    if is_jar and _NoClassFiles(paths):
-      # Handle case where no classfiles are specified in inputs
-      # by creating an empty JAR
-      with zipfile.ZipFile(options.dex_path, 'w') as outfile:
-        outfile.comment = 'empty'
-    elif is_dex:
-      # .dex files can't specify a name for D8. Instead, we output them to a
-      # temp directory then move them after the command has finished running
-      # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
-      with build_utils.TempDir() as tmp_dex_dir:
-        _RunD8(dex_cmd, paths, tmp_dex_dir)
-        _MoveTempDexFile(tmp_dex_dir, options.dex_path)
-    else:
-      _RunD8(dex_cmd, paths, options.dex_path)
+  if is_jar and _NoClassFiles(paths):
+    # Handle case where no classfiles are specified in inputs
+    # by creating an empty JAR
+    with zipfile.ZipFile(options.dex_path, 'w') as outfile:
+      outfile.comment = 'empty'
+  elif is_dex:
+    # .dex files can't specify a name for D8. Instead, we output them to a
+    # temp directory then move them after the command has finished running
+    # (see _MoveTempDexFile). For other files, tmp_dex_dir is None.
+    with build_utils.TempDir() as tmp_dex_dir:
+      _RunD8(dex_cmd, paths, tmp_dex_dir)
+      _MoveTempDexFile(tmp_dex_dir, options.dex_path)
+  else:
+    _RunD8(dex_cmd, paths, options.dex_path)
 
-    build_utils.WriteJson(
-        [os.path.relpath(p, options.output_directory) for p in paths],
-        options.dex_path + '.inputs')
-
-  build_utils.CallAndWriteDepfileIfStale(
-      on_stale_md5_callback,
-      options,
-      input_paths=input_paths,
-      input_strings=dex_cmd,
-      output_paths=output_paths,
-      force=force,
-      depfile_deps=input_paths,
-      add_pydeps=False)
+  build_utils.WriteDepfile(
+      options.depfile, options.dex_path, input_paths, add_pydeps=False)
 
 
 if __name__ == '__main__':
