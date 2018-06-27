@@ -6,6 +6,7 @@
 # Some projects (e.g. V8) do not have non-build directories DEPS'ed in.
 import("//build_overrides/build.gni")
 import("//build/config/android/config.gni")
+import("//build/config/compute_inputs_for_analyze.gni")
 import("//build/config/dcheck_always_on.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 
@@ -41,6 +42,14 @@ _java_target_blacklist = [
 ]
 
 _default_proguard_jar_path = "//third_party/proguard/lib/proguard.jar"
+
+# List of .py files required when scripts import build_utils.py.
+# Use this for "inputs" for actions that rely on build_utils.py.
+build_utils_py = [
+  "//build/android/gyp/util/build_utils.py",
+  "//build/android/gyp/util/md5_check.py",
+  "//build/gn_helpers.py",
+]
 
 # Write the target's .build_config file. This is a json file that contains a
 # dictionary of information about how to build this target (things that
@@ -94,7 +103,7 @@ template("write_build_config") {
 
     script = "//build/android/gyp/write_build_config.py"
     depfile = "$target_gen_dir/$target_name.d"
-    inputs = []
+    inputs = build_utils_py
     outputs = [
       invoker.build_config,
     ]
@@ -422,15 +431,19 @@ template("copy_ex") {
                            [
                              "data",
                              "deps",
-                             "inputs",
                              "outputs",
-                             "sources",
                              "testonly",
                              "visibility",
                            ])
-    if (!defined(sources)) {
-      sources = []
+    sources = []
+    if (defined(invoker.sources)) {
+      sources += invoker.sources
     }
+    inputs = build_utils_py
+    if (defined(invoker.inputs)) {
+      inputs += invoker.inputs
+    }
+
     script = "//build/android/gyp/copy_ex.py"
 
     args = [
@@ -508,7 +521,7 @@ template("test_runner_script") {
     }
 
     script = "//build/android/gyp/create_test_runner_script.py"
-    depfile = "$target_gen_dir/$target_name.d"
+    inputs = build_utils_py
 
     data_deps += [
       "//build/android:test_runner_py",
@@ -689,8 +702,6 @@ template("test_runner_script") {
     data += [ generated_script ]
 
     args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
       "--script-output-path",
       rebase_path(generated_script, root_build_dir),
     ]
@@ -727,7 +738,7 @@ template("stack_script") {
         [ "//third_party/android_platform/development/scripts:stack_py" ]
 
     script = "//build/android/gyp/create_stack_script.py"
-    depfile = "$target_gen_dir/$target_name.d"
+    inputs = build_utils_py
 
     _stack_script = "//third_party/android_platform/development/scripts/stack"
 
@@ -741,8 +752,6 @@ template("stack_script") {
     ]
 
     args = [
-      "--depfile",
-      rebase_path(depfile, root_build_dir),
       "--output-directory",
       rebase_path(root_build_dir, root_build_dir),
       "--script-path",
@@ -797,10 +806,10 @@ if (enable_java_templates) {
 
       script = "//build/android/gyp/lint.py"
       depfile = "$target_gen_dir/$target_name.d"
-      inputs = [
-        _platform_xml_path,
-        _suppressions_file,
-      ]
+      inputs = build_utils_py + [
+                 _platform_xml_path,
+                 _suppressions_file,
+               ]
 
       outputs = [
         _result_path,
@@ -898,10 +907,11 @@ if (enable_java_templates) {
         _proguard_jar_path = invoker.proguard_jar_path
       }
 
-      inputs = [
-        _proguard_jar_path,
-        invoker.build_config,
-      ]
+      inputs = build_utils_py + [
+                 "//build/android/gyp/util/proguard_util.py",
+                 _proguard_jar_path,
+                 invoker.build_config,
+               ]
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
       }
@@ -963,18 +973,13 @@ if (enable_java_templates) {
       _script_name = invoker.script_name
 
       script = "//build/android/gyp/create_java_binary_script.py"
-      depfile = "$target_gen_dir/$_script_name.d"
+      inputs = build_utils_py + [ _build_config ]
       _java_script = "$root_build_dir/bin/$_script_name"
-      inputs = [
-        _build_config,
-      ]
       outputs = [
         _java_script,
       ]
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
       args = [
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
         "--output",
         rebase_path(_java_script, root_build_dir),
         "--main-class",
@@ -1034,10 +1039,15 @@ if (enable_java_templates) {
           _proguard_jar_path = _default_proguard_jar_path
         }
 
-        inputs = [
-          main_dex_rules,
-          _proguard_jar_path,
-        ]
+        _shrinked_android = "$android_sdk_build_tools/lib/shrinkedAndroid.jar"
+        _dx = "$android_sdk_build_tools/lib/dx.jar"
+        inputs = build_utils_py + [
+                   "//build/android/gyp/util/proguard_util.py",
+                   main_dex_rules,
+                   _dx,
+                   _proguard_jar_path,
+                   _shrinked_android,
+                 ]
 
         outputs = [
           _main_dex_list_path,
@@ -1046,8 +1056,10 @@ if (enable_java_templates) {
         args = [
           "--depfile",
           rebase_path(depfile, root_build_dir),
-          "--android-sdk-tools",
-          rebase_path(android_sdk_build_tools, root_build_dir),
+          "--dx-path",
+          rebase_path(_dx, root_build_dir),
+          "--shrinked-android-path",
+          rebase_path(_shrinked_android, root_build_dir),
           "--main-dex-list-path",
           rebase_path(_main_dex_list_path, root_build_dir),
           "--main-dex-rules-path",
@@ -1090,7 +1102,7 @@ if (enable_java_templates) {
                              ])
       script = "//build/android/gyp/dex.py"
       depfile = "$target_gen_dir/$target_name.d"
-      inputs = []
+      inputs = build_utils_py
       outputs = [
         invoker.output,
       ]
@@ -1151,8 +1163,7 @@ if (enable_java_templates) {
       _emma_jar = "${android_sdk_root}/tools/lib/emma.jar"
 
       script = "//build/android/gyp/emma_instr.py"
-      depfile = "${target_gen_dir}/${target_name}.d"
-      inputs = invoker.java_files + [
+      inputs = build_utils_py + invoker.java_files + [
                  _emma_jar,
                  invoker.input_jar_path,
                ]
@@ -1167,8 +1178,6 @@ if (enable_java_templates) {
         rebase_path(invoker.input_jar_path, root_build_dir),
         "--output-path",
         rebase_path(invoker.output_jar_path, root_build_dir),
-        "--depfile",
-        rebase_path(depfile, root_build_dir),
         "--coverage-file",
         rebase_path(_coverage_file, root_build_dir),
         "--sources-list-file",
@@ -1260,7 +1269,6 @@ if (enable_java_templates) {
 
       action(_java_bytecode_rewriter_target) {
         script = "//build/android/gyp/bytecode_processor.py"
-        depfile = "$target_gen_dir/$target_name.d"
         _bytecode_rewriter_script =
             "$root_build_dir/bin/helper/java_bytecode_rewriter"
         deps = _deps + [ "//build/android/bytecode:java_bytecode_rewriter($default_toolchain)" ]
@@ -1276,8 +1284,6 @@ if (enable_java_templates) {
           _java_bytecode_rewriter_output_jar,
         ]
         args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
           "--script",
           rebase_path(_bytecode_rewriter_script, root_build_dir),
           "--input-jar",
@@ -1311,21 +1317,23 @@ if (enable_java_templates) {
 
       action(_desugar_target) {
         script = "//build/android/gyp/desugar.py"
-        depfile = "$target_gen_dir/$target_name.d"
         deps = _deps
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        inputs = [
-          _build_config,
-          _desugar_input_jar,
-        ]
+        _desugar_jar = "//third_party/bazel/desugar/Desugar.jar"
+
+        inputs = build_utils_py + [
+                   _build_config,
+                   _desugar_input_jar,
+                   _desugar_jar,
+                 ]
         outputs = [
           _desugar_output_jar,
         ]
         args = [
-          "--depfile",
-          rebase_path(depfile, root_build_dir),
+          "--desugar-jar",
+          rebase_path(_desugar_jar, root_build_dir),
           "--input-jar",
           rebase_path(_desugar_input_jar, root_build_dir),
           "--output-jar",
@@ -1351,10 +1359,10 @@ if (enable_java_templates) {
         if (defined(invoker.deps)) {
           deps += invoker.deps
         }
-        inputs = [
-          _build_config,
-          _filter_input_jar,
-        ]
+        inputs = build_utils_py + [
+                   _build_config,
+                   _filter_input_jar,
+                 ]
         outputs = [
           _filter_output_jar,
         ]
@@ -1445,10 +1453,10 @@ if (enable_java_templates) {
       script = "//build/android/gyp/merge_manifest.py"
       depfile = "$target_gen_dir/$target_name.d"
 
-      inputs = [
-        invoker.build_config,
-        invoker.input_manifest,
-      ]
+      inputs = build_utils_py + [
+                 invoker.build_config,
+                 invoker.input_manifest,
+               ]
 
       outputs = [
         invoker.output_manifest,
@@ -1468,6 +1476,19 @@ if (enable_java_templates) {
         "@FileArg($_rebased_build_config:extra_android_manifests)",
       ]
     }
+  }
+
+  if (compute_inputs_for_analyze) {
+    _prepare_resources_py =
+        exec_script("//build/print_python_deps.py",
+                    [
+                      rebase_path("//build/android/gyp/prepare_resources.py"),
+                      "--no-header",
+                      "--gn-paths",
+                      "--root",
+                      rebase_path("//", root_build_dir),
+                    ],
+                    "list lines")
   }
 
   # This template is used to parse a set of resource directories and
@@ -1566,6 +1587,9 @@ if (enable_java_templates) {
         invoker.build_config,
         _android_aapt_path,
       ]
+      if (compute_inputs_for_analyze) {
+        inputs += _prepare_resources_py
+      }
 
       _rebased_all_resource_dirs =
           rebase_path(_all_resource_dirs, root_build_dir)
@@ -1648,6 +1672,19 @@ if (enable_java_templates) {
         args += [ "--v14-skip" ]
       }
     }
+  }
+
+  if (compute_inputs_for_analyze) {
+    _compile_resources_py =
+        exec_script("//build/print_python_deps.py",
+                    [
+                      rebase_path("//build/android/gyp/compile_resources.py"),
+                      "--no-header",
+                      "--gn-paths",
+                      "--root",
+                      rebase_path("//", root_build_dir),
+                    ],
+                    "list lines")
   }
 
   # A template that is used to compile all resources needed by a binary
@@ -1763,6 +1800,9 @@ if (enable_java_templates) {
         _android_aapt_path,
         _android_aapt2_path,
       ]
+      if (compute_inputs_for_analyze) {
+        inputs += _compile_resources_py
+      }
 
       _rebased_build_config = rebase_path(invoker.build_config, root_build_dir)
 
@@ -1954,6 +1994,9 @@ if (enable_java_templates) {
           _srcjar_path,
           _compiled_resources_path,
         ]
+        if (defined(invoker.post_process_script_inputs)) {
+          inputs += invoker.post_process_script_inputs
+        }
         outputs = [
           invoker.output,
           invoker.srcjar_path,
@@ -2034,9 +2077,10 @@ if (enable_java_templates) {
                                "deps",
                              ])
       script = "//build/android/gyp/merge_jar_info_files.py"
-      inputs = [
-        _build_config,
-      ]
+      inputs = build_utils_py + [
+                 _build_config,
+                 "//build/android/gyp/util/jar_info_utils.py",
+               ]
       outputs = [
         _output,
       ]
@@ -2107,7 +2151,8 @@ if (enable_java_templates) {
         "//tools/android/md5sum",
       ]  # Used when deploying APKs
 
-      inputs = invoker.native_libs + [
+      inputs = build_utils_py + invoker.native_libs + [
+                 "//build/android/gyp/finalize_apk.py",
                  invoker.keystore_path,
                  invoker.packaged_resources_path,
                  _apksigner,
@@ -2318,12 +2363,12 @@ if (enable_java_templates) {
         deps = _incremental_deps
         script =
             "//build/android/incremental_install/generate_android_manifest.py"
-        inputs = [
-          # Save on a depfile by listing only .py dep here.
-          "//build/android/gyp/util/build_utils.py",
-          _android_manifest,
-          invoker.packaged_resources_path,
-        ]
+        inputs = build_utils_py + [
+                   # Save on a depfile by listing only .py dep here.
+                   "//build/android/gyp/util/build_utils.py",
+                   _android_manifest,
+                   invoker.packaged_resources_path,
+                 ]
         outputs = [
           # Output the non-compiled manifest for easy debugging (as opposed to
           # generating to a temp file).
@@ -2386,6 +2431,18 @@ if (enable_java_templates) {
         packaged_resources_path = _incremental_compiled_resources_path
       }
     }
+  }
+
+  if (compute_inputs_for_analyze) {
+    _javac_py = exec_script("//build/print_python_deps.py",
+                            [
+                              rebase_path("//build/android/gyp/javac.py"),
+                              "--no-header",
+                              "--gn-paths",
+                              "--root",
+                              rebase_path("//", root_build_dir),
+                            ],
+                            "list lines")
   }
 
   # Compile Java source files into a .jar file, potentially using an
@@ -2513,6 +2570,9 @@ if (enable_java_templates) {
       if (invoker.java_files != []) {
         inputs += [ invoker.java_sources_file ]
       }
+      if (compute_inputs_for_analyze) {
+        inputs += _javac_py
+      }
 
       _rebased_build_config = rebase_path(_build_config, root_build_dir)
       _rebased_javac_jar_path =
@@ -2603,10 +2663,10 @@ if (enable_java_templates) {
       if (defined(invoker.deps)) {
         deps += invoker.deps
       }
-      inputs = [
-        invoker.input_jar,
-        _ijar_executable,
-      ]
+      inputs = build_utils_py + [
+                 invoker.input_jar,
+                 _ijar_executable,
+               ]
       if (defined(invoker.inputs)) {
         inputs += invoker.inputs
       }

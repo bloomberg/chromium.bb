@@ -14,16 +14,14 @@ import zipfile
 from util import build_utils
 from util import proguard_util
 
-sys.path.append(os.path.abspath(os.path.join(
-    os.path.dirname(__file__), os.pardir)))
-from pylib import constants
-
 
 def main(args):
   parser = argparse.ArgumentParser()
   build_utils.AddDepfileOption(parser)
-  parser.add_argument('--android-sdk-tools', required=True,
-                      help='Android sdk build tools directory.')
+  parser.add_argument('--shrinked-android-path', required=True,
+                      help='Path to shrinkedAndroid.jar')
+  parser.add_argument('--dx-path', required=True,
+                      help='Path to dx.jar')
   parser.add_argument('--main-dex-rules-path', action='append', default=[],
                       dest='main_dex_rules_paths',
                       help='A file containing a list of proguard rules to use '
@@ -46,28 +44,27 @@ def main(args):
 
   args = parser.parse_args(build_utils.ExpandFileArgs(args))
 
+  depfile_deps = []
   if args.inputs:
-    args.paths.extend(build_utils.ParseGnList(args.inputs))
+    args.inputs = build_utils.ParseGnList(args.inputs)
+    depfile_deps = args.inputs
+    args.paths.extend(args.inputs)
+
   if args.negative_main_dex_globs:
     args.negative_main_dex_globs = build_utils.ParseGnList(
         args.negative_main_dex_globs)
-
-  shrinked_android_jar = os.path.abspath(
-      os.path.join(args.android_sdk_tools, 'lib', 'shrinkedAndroid.jar'))
-  dx_jar = os.path.abspath(
-      os.path.join(args.android_sdk_tools, 'lib', 'dx.jar'))
 
   proguard_cmd = [
     'java', '-jar', args.proguard_path,
     '-forceprocessing',
     '-dontwarn', '-dontoptimize', '-dontobfuscate', '-dontpreverify',
-    '-libraryjars', shrinked_android_jar,
+    '-libraryjars', args.shrinked_android_path,
   ]
   for m in args.main_dex_rules_paths:
     proguard_cmd.extend(['-include', m])
 
   main_dex_list_cmd = [
-    'java', '-cp', dx_jar,
+    'java', '-cp', args.dx_path,
     'com.android.multidex.MainDexListBuilder',
     # This workaround significantly increases main dex size and doesn't seem to
     # be needed by Chrome. See comment in the source:
@@ -77,8 +74,8 @@ def main(args):
 
   input_paths = list(args.paths)
   input_paths += [
-    shrinked_android_jar,
-    dx_jar,
+    args.shrinked_android_path,
+    args.dx_path,
   ]
   input_paths += args.main_dex_rules_paths
 
@@ -100,7 +97,9 @@ def main(args):
       args,
       input_paths=input_paths,
       input_strings=input_strings,
-      output_paths=output_paths)
+      output_paths=output_paths,
+      depfile_deps=depfile_deps,
+      add_pydeps=False)
 
   return 0
 

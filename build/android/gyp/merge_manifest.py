@@ -101,7 +101,8 @@ def main(argv):
         build_utils.IsTimeStale(args.output, [root_manifest] + extras))
   if args.depfile:
     inputs = extras + classpath.split(':')
-    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs)
+    build_utils.WriteDepfile(args.depfile, args.output, inputs=inputs,
+                             add_pydeps=False)
 
 
 if __name__ == '__main__':

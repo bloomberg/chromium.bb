@@ -121,7 +121,8 @@ def main(args):
         input_paths=input_paths,
         input_strings=input_strings,
         output_paths=proguard.GetOutputs(),
-        depfile_deps=proguard.GetDepfileDeps())
+        depfile_deps=proguard.GetDepfileDeps(),
+        add_pydeps=False)
 
 
 if __name__ == '__main__':

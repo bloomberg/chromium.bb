@@ -403,7 +403,8 @@ def main():
       input_paths=input_paths,
       input_strings=input_strings,
       output_paths=output_paths,
-      depfile_deps=classpath)
+      depfile_deps=classpath,
+      add_pydeps=False)
 
 
 if __name__ == '__main__':

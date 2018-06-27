@@ -202,7 +202,8 @@ def main(args):
       input_strings=dex_cmd,
       output_paths=output_paths,
       force=force,
-      depfile_deps=input_paths)
+      depfile_deps=input_paths,
+      add_pydeps=False)
 
 
 if __name__ == '__main__':

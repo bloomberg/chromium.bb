@@ -55,9 +55,6 @@ def main(args):
   parser = argparse.ArgumentParser()
   parser.add_argument('--script-output-path',
                       help='Output path for executable script.')
-  parser.add_argument('--depfile',
-                      help='Path to the depfile. This must be specified as '
-                           "the action's first output.")
   parser.add_argument('--test-runner-path',
                       help='Path to test_runner.py (optional).')
 
@@ -164,8 +161,6 @@ def main(args):
 
   os.chmod(args.script_output_path, 0750)
 
-  if args.depfile:
-    build_utils.WriteDepfile(args.depfile, args.script_output_path)
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))
