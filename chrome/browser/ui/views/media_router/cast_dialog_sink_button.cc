@@ -130,16 +130,31 @@ void CastDialogSinkButton::SetSelected(bool is_selected) {
 }
 
 bool CastDialogSinkButton::OnMousePressed(const ui::MouseEvent& event) {
-  // TODO(crbug.com/826089): Show a context menu on right click.
   if (event.IsRightMouseButton())
     return true;
   return HoverButton::OnMousePressed(event);
 }
 
-void CastDialogSinkButton::OnBlur() {
-  Button::OnBlur();
-  if (is_selected_)
-    SnapInkDropToActivated();
+void CastDialogSinkButton::OnMouseReleased(const ui::MouseEvent& event) {
+  if (event.IsRightMouseButton())
+    return;
+  HoverButton::OnMouseReleased(event);
+  if (state() != STATE_DISABLED && IsTriggerableEvent(event) &&
+      HitTestPoint(event.location()) && !InDrag()) {
+    // Show inkdrop to indicate that the button has been pressed.
+    AnimateInkDrop(views::InkDropState::ACTIVATED,
+                   ui::LocatedEvent::FromIfValid(&event));
+  }
+}
+
+bool CastDialogSinkButton::OnKeyPressed(const ui::KeyEvent& event) {
+  bool handled_event = HoverButton::OnKeyPressed(event);
+  if (handled_event) {
+    // Show inkdrop to indicate that the button has been pressed.
+    AnimateInkDrop(views::InkDropState::ACTIVATED,
+                   ui::LocatedEvent::FromIfValid(&event));
+  }
+  return handled_event;
 }
 
 std::unique_ptr<views::InkDrop> CastDialogSinkButton::CreateInkDrop() {
