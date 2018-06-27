@@ -22,6 +22,7 @@
 #include "components/omnibox/browser/suggestion_answer.h"
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
+#include "components/variations/net/variations_http_headers.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -39,10 +40,9 @@ class SuggestionDeletionHandler {
   typedef base::Callback<void(bool, SuggestionDeletionHandler*)>
       DeletionCompletedCallback;
 
-  SuggestionDeletionHandler(
-      const std::string& deletion_url,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      const DeletionCompletedCallback& callback);
+  SuggestionDeletionHandler(AutocompleteProviderClient* client,
+                            const std::string& deletion_url,
+                            const DeletionCompletedCallback& callback);
 
   ~SuggestionDeletionHandler();
 
@@ -58,8 +58,8 @@ class SuggestionDeletionHandler {
 };
 
 SuggestionDeletionHandler::SuggestionDeletionHandler(
+    AutocompleteProviderClient* client,
     const std::string& deletion_url,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     const DeletionCompletedCallback& callback)
     : callback_(callback) {
   GURL url(deletion_url);
@@ -102,13 +102,20 @@ SuggestionDeletionHandler::SuggestionDeletionHandler(
         })");
   auto request = std::make_unique<network::ResourceRequest>();
   request->url = url;
+  // Note: It's OK to pass SignedIn::kNo if it's unknown, as it does not affect
+  // transmission of experiments coming from the variations server.
+  variations::AppendVariationHeaders(
+      request->url,
+      client->IsOffTheRecord() ? variations::InIncognito::kYes
+                               : variations::InIncognito::kNo,
+      variations::SignedIn::kNo, &request->headers);
   // TODO(https://crbug.com/808498) re-add data use measurement once
   // SimpleURLLoader supports it.
   // data_use_measurement::DataUseUserData::OMNIBOX
   deletion_fetcher_ =
       network::SimpleURLLoader::Create(std::move(request), traffic_annotation);
   deletion_fetcher_->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
-      url_loader_factory.get(),
+      client->GetURLLoaderFactory().get(),
       base::BindOnce(&SuggestionDeletionHandler::OnURLLoadComplete,
                      base::Unretained(this), deletion_fetcher_.get()));
 }
@@ -179,8 +186,7 @@ void BaseSearchProvider::DeleteMatch(const AutocompleteMatch& match) {
   DCHECK(match.deletable);
   if (!match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey).empty()) {
     deletion_handlers_.push_back(std::make_unique<SuggestionDeletionHandler>(
-        match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
-        client_->GetURLLoaderFactory(),
+        client(), match.GetAdditionalInfo(BaseSearchProvider::kDeletionUrlKey),
         base::Bind(&BaseSearchProvider::OnDeletionComplete,
                    base::Unretained(this))));
   }
