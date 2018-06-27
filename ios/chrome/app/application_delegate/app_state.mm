@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/critical_closure.h"
+#include "base/mac/bundle_locations.h"
+#include "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
@@ -40,6 +42,7 @@
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
 #import "ios/chrome/browser/ui/main/browser_view_information.h"
 #import "ios/chrome/browser/ui/safe_mode/safe_mode_coordinator.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/net/cookies/cookie_store_ios.h"
 #include "ios/net/cookies/system_cookie_util.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -201,7 +204,16 @@ initWithBrowserLauncher:(id<BrowserLauncher>)browserLauncher
         std::max(CGRectGetWidth(screenBounds), CGRectGetHeight(screenBounds));
     _incognitoBlocker = [[UIView alloc]
         initWithFrame:CGRectMake(0, 0, maxDimension, maxDimension)];
-    InstallBackgroundInView(_incognitoBlocker);
+    if (IsUIRefreshPhase1Enabled()) {
+      NSBundle* mainBundle = base::mac::FrameworkBundle();
+      NSArray* topObjects =
+          [mainBundle loadNibNamed:@"LaunchScreen" owner:self options:nil];
+      UIViewController* launchScreenController =
+          base::mac::ObjCCastStrict<UIViewController>([topObjects lastObject]);
+      [_incognitoBlocker addSubview:[launchScreenController view]];
+    } else {
+      InstallBackgroundInView(_incognitoBlocker);
+    }
     [_window addSubview:_incognitoBlocker];
   }
 
