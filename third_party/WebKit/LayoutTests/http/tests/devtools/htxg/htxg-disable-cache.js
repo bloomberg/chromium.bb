@@ -5,10 +5,10 @@
   TestRunner.addResult('The \'disable cache\' flag must affect on the certificate fetch request.\n');
 
   const outerUrl =
-      'http://localhost:8000/loading/htxg/resources/htxg-location.sxg';
+      'https://127.0.0.1:8443/loading/htxg/resources/htxg-location.sxg';
   const certUrl =
-      'http://localhost:8000/loading/htxg/resources/127.0.0.1.sxg.pem.cbor';
-  const innerUrl = 'https://www.127.0.0.1/test.html';
+      'https://127.0.0.1:8443/loading/htxg/resources/127.0.0.1.sxg.pem.cbor';
+  const innerUrl = 'https://127.0.0.1:8443/test.html';
 
   await TestRunner.loadModule('network_test_runner');
   await TestRunner.showPanel('network');
