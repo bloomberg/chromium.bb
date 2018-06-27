@@ -28,7 +28,7 @@ bool GLOzoneEGL::InitializeStaticGLBindings(
   if (!LoadGLES2Bindings(implementation))
     return false;
 
-  gl::SetGLImplementation(gl::kGLImplementationEGLGLES2);
+  gl::SetGLImplementation(implementation);
   gl::InitializeStaticGLBindingsGL();
   gl::InitializeStaticGLBindingsEGL();
 
