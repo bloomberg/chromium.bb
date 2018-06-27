@@ -2,9 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Test implementation of chrome.* apis.
-// These APIs are provided natively to a chrome app, but since we are
-// running as a regular web page, we must provide test implementations.
+/**
+ * @fileoverview Test implementation of chrome.* apis.
+ *
+ * These APIs are provided natively to a chrome app, but since we are
+ * running as a regular web page, we must provide test implementations.
+ */
 
 // All testing functions in namespace 'test'.
 var test = test || {};
@@ -13,11 +16,11 @@ var test = test || {};
 test.Event = function() {
   this.listeners_ = [];
 };
-/** @param {function} callback */
+/** @param {function()} callback */
 test.Event.prototype.addListener = function(callback) {
   this.listeners_.push(callback);
 };
-/** @param {function} callback */
+/** @param {function()} callback */
 test.Event.prototype.removeListener = function(callback) {
   this.listeners_ = this.listeners_.filter(l => l !== callback);
 };
@@ -30,6 +33,10 @@ test.Event.prototype.dispatchEvent = function(...args) {
   }, 0);
 };
 
+/**
+ * Suppress compiler warning for overwriting default chrome object.
+ * @suppress {checkTypes|const}
+ */
 chrome = {
   app: {
     runtime: {
@@ -61,7 +68,7 @@ chrome = {
         // checkSpaceAndMaybeShowWelcomeBanner_ relies on lastError being set.
         chrome.runtime.lastError = {message: 'Not found'};
         callback(undefined);
-        chrome.runtime.lastError = undefined;
+        delete chrome.runtime.lastError;
       }, 0);
     },
   },
@@ -93,11 +100,11 @@ chrome = {
     recordMediumCount: () => {},
     recordPercentage: () => {},
     recordSmallCount: () => {},
-    recordTime: function(metricName, value) {
-      this.times_.push([metricName, value]);
+    recordTime: (metricName, value) => {
+      chrome.metricsPrivate.times_.push([metricName, value]);
     },
-    recordUserAction: function(action) {
-      this.userActions_.push(action);
+    recordUserAction: (action) => {
+      chrome.metricsPrivate.userActions_.push(action);
     },
     recordValue: () => {},
   },
@@ -128,20 +135,20 @@ chrome = {
   },
 
   storage: {
-    state: {},
+    state_: {},
     local: {
       get: (keys, callback) => {
         var keys = keys instanceof Array ? keys : [keys];
         var result = {};
-        keys.forEach(function(key) {
-          if (key in chrome.storage.state)
-            result[key] = chrome.storage.state[key];
+        keys.forEach(key => {
+          if (key in chrome.storage.state_)
+            result[key] = chrome.storage.state_[key];
         });
         setTimeout(callback, 0, result);
       },
       set: (items, opt_callback) => {
         for (var key in items) {
-          chrome.storage.state[key] = items[key];
+          chrome.storage.state_[key] = items[key];
         }
         if (opt_callback)
           setTimeout(opt_callback, 0);
@@ -167,8 +174,15 @@ HTMLElement.prototype.stop = () => {};
 
 // domAutomationController is provided in tests, but is
 // useful for debugging tests in browser.
-window.domAutomationController = window.domAutomationController || {
-  send: msg => {
-    console.debug('domAutomationController.send', msg);
-  },
+
+/**
+ * @constructor
+ * @extends {DomAutomationController}
+ */
+function ConsoleDomAutomationController() {}
+ConsoleDomAutomationController.prototype.send = (json) => {
+  console.debug('domAutomationController.send', json);
 };
+
+window.domAutomationController =
+    window.domAutomationController || new ConsoleDomAutomationController();

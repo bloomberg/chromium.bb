@@ -2,17 +2,26 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Test implementation of chrome.file[ManagerPrivate|System] apis.
-// These APIs are provided natively to a chrome app, but since we are
-// running as a regular web page, we must provide test implementations.
+/**
+ * @fileoverview Test implementation of chrome.file[ManagerPrivate|System].
+ *
+ * These APIs are provided natively to a chrome app, but since we are
+ * running as a regular web page, we must provide test implementations.
+ */
 
-mockVolumeManager = new MockVolumeManager();
+const mockVolumeManager = new MockVolumeManager();
 
 // Create drive /root/ immediately.
-mockVolumeManager
-    .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
-    .fileSystem.populate(['/root/']);
+/** @type {MockFileSystem} */ (
+    mockVolumeManager
+        .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
+        .fileSystem)
+    .populate(['/root/']);
 
+/**
+ * Suppress compiler warning for overwriting chrome.fileManagerPrivate.
+ * @suppress {checkTypes}
+ */
 chrome.fileManagerPrivate = {
   currentId_: 'test@example.com',
   displayedId_: 'test@example.com',
@@ -112,19 +121,19 @@ chrome.fileManagerPrivate = {
     setTimeout(callback, 0);
   },
   crostiniEnabled_: true,
-  isCrostiniEnabled: function(callback) {
-    setTimeout(callback, 0, this.crostiniEnabled_);
+  isCrostiniEnabled: (callback) => {
+    setTimeout(callback, 0, chrome.fileManagerPrivate.crostiniEnabled_);
   },
   isUMAEnabled: (callback) => {
     setTimeout(callback, 0, false);
   },
   // Simulate startup of vm and container by taking 1s.
   mountCrostiniContainerDelay_: 1000,
-  mountCrostiniContainer: function(callback) {
+  mountCrostiniContainer: (callback) => {
     setTimeout(() => {
       test.mountCrostini();
       callback();
-    }, this.mountCrostiniContainerDelay_);
+    }, chrome.fileManagerPrivate.mountCrostiniContainerDelay_);
   },
   onAppsUpdated: new test.Event(),
   onCopyProgress: new test.Event(),
@@ -200,6 +209,10 @@ chrome.fileManagerPrivate = {
   },
 };
 
+/**
+ * Suppress compiler warning for overwriting chrome.mediaGalleries.
+ * @suppress {checkTypes}
+ */
 chrome.mediaGalleries = {
   getMetadata: (mediaFile, options, callback) => {
     // Returns metdata {mimeType: ..., ...}.
@@ -211,6 +224,10 @@ chrome.mediaGalleries = {
   },
 };
 
+/**
+ * Suppress compiler warning for overwriting chrome.fileSystem.
+ * @suppress {checkTypes}
+ */
 chrome.fileSystem = {
   requestFileSystem: (options, callback) => {
     var volume =
@@ -223,12 +240,12 @@ chrome.fileSystem = {
  * Override webkitResolveLocalFileSystemURL for testing.
  * @param {string} url URL to resolve.
  * @param {function(!MockEntry)} successCallback Success callback.
- * @param {function(!DOMException)} errorCallback Error callback.
+ * @param {function(!Error)} errorCallback Error callback.
  */
-webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
+var webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
   var match = url.match(/^filesystem:(\w+)(\/.*)/);
   if (match) {
-    var volumeType = match[1];
+    var volumeType = /** @type {VolumeManagerCommon.VolumeType} */ (match[1]);
     var path = match[2];
     var volume = mockVolumeManager.getCurrentProfileVolumeInfo(volumeType);
     if (volume) {
@@ -241,8 +258,8 @@ webkitResolveLocalFileSystemURL = (url, successCallback, errorCallback) => {
       }
     }
   }
-  var error = new DOMException(
-      'webkitResolveLocalFileSystemURL not found: [' + url + ']');
+  var error =
+      new Error('webkitResolveLocalFileSystemURL not found: [' + url + ']');
   if (errorCallback) {
     setTimeout(errorCallback, 0, error);
   } else {

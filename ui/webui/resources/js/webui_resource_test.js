@@ -4,8 +4,8 @@
 
 /**
  * Tests that an observation matches the expected value.
- * @param {Object} expected The expected value.
- * @param {Object} observed The actual value.
+ * @param {*} expected The expected value.
+ * @param {*} observed The actual value.
  * @param {string=} opt_message Optional message to include with a test
  *     failure.
  */
@@ -41,8 +41,8 @@ function assertFalse(observed, opt_message) {
 
 /**
  * Verifies that the observed and reference values differ.
- * @param {Object} reference The target value for comparison.
- * @param {Object} observed The test result.
+ * @param {*} reference The target value for comparison.
+ * @param {*} observed The test result.
  * @param {string=} opt_message Optional message to include with a test
  *     failure.
  */
@@ -121,9 +121,9 @@ function assertDeepEquals(expected, observed, opt_message) {
 (function(exports) {
 /**
  * Scope containing testXXX functions.
- * @type {object}
+ * @type {!Object}
  */
-var testScope = [];
+var testScope = {};
 
 /**
  * List of test cases.
@@ -145,7 +145,7 @@ var pendingTearDown = null;
 
 /**
  * Name of current test.
- * @type {String?}
+ * @type {?string}
  */
 var testName = null;
 
@@ -164,7 +164,7 @@ var runnerStartTime = 0;
 /**
  * Runs all functions starting with test and reports success or
  * failure of the test suite.
- * @param {object=} opt_testScope optional scope containing testXXX functions.
+ * @param {Object=} opt_testScope optional scope containing testXXX functions.
  *   Uses global 'window' by default.
  */
 function runTests(opt_testScope) {
@@ -218,7 +218,7 @@ function continueTesting(opt_asyncTestFailure) {
     try {
       if (testScope.setUp)
         testScope.setUp();
-      pendingTearDown = testScope.tearDown;
+      pendingTearDown = testScope.tearDown || null;
       testScope[testName](continueTesting);
     } catch (err) {
       console.error('Failure in test ' + testName + '\n' + err);
@@ -235,7 +235,7 @@ function continueTesting(opt_asyncTestFailure) {
     endTests(cleanTestRun);
   }
   if (!done) {
-    domAutomationController.send('PENDING');
+    window.domAutomationController.send('PENDING');
   }
 }
 
@@ -250,13 +250,13 @@ function endTests(success) {
       ', duration=' + Math.round(duration) + 'ms');
   testName = null;
   runnerStartTime = 0;
-  domAutomationController.send(success ? 'SUCCESS' : 'FAILURE');
+  window.domAutomationController.send(success ? 'SUCCESS' : 'FAILURE');
 }
 
 exports.runTests = runTests;
 exports.endTests = endTests;
-})(this);
+})(window);
 
 window.onerror = function() {
-  endTests(false);
+  window.endTests(false);
 };
