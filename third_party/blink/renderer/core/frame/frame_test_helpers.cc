@@ -191,22 +191,22 @@ WebLocalFrameImpl* CreateProvisional(WebRemoteFrame& old_frame,
           ParsedFeaturePolicy()));
   client->Bind(frame, std::move(owned_client));
   // Create a local root, if necessary.
-  std::unique_ptr<TestWebWidgetClient> owned_widget_client;
+  std::unique_ptr<WebWidgetClient> owned_widget_client;
+  WebWidgetClient* widget_client = nullptr;
   if (!frame->Parent()) {
     // TODO(dcheng): The main frame widget currently has a special case.
     // Eliminate this once WebView is no longer a WebWidget.
-    owned_widget_client = std::make_unique<TestWebViewWidgetClient>(
-        *static_cast<TestWebViewClient*>(frame->ViewImpl()->Client()));
+    widget_client = frame->ViewImpl()->Client()->WidgetClient();
   } else if (frame->Parent()->IsWebRemoteFrame()) {
     owned_widget_client = std::make_unique<TestWebWidgetClient>();
+    widget_client = owned_widget_client.get();
   }
-  if (owned_widget_client) {
-    WebFrameWidget::Create(owned_widget_client.get(), frame);
-    // Set an initial size for subframes.
+  if (widget_client) {
+    WebFrameWidget::Create(widget_client, frame);
     if (frame->Parent())
       frame->FrameWidget()->Resize(WebSize());
-    client->BindWidgetClient(std::move(owned_widget_client));
   }
+  client->BindWidgetClient(std::move(owned_widget_client));
   return frame;
 }
 
@@ -265,7 +265,7 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
     WebFrame* opener,
     TestWebFrameClient* web_frame_client,
     TestWebViewClient* web_view_client,
-    TestWebWidgetClient* web_widget_client,
+    TestWebWidgetClient* test_web_widget_client,
     void (*update_settings_func)(WebSettings*)) {
   Reset();
 
@@ -280,17 +280,13 @@ WebViewImpl* WebViewHelper::InitializeWithOpener(
 
   // TODO(dcheng): The main frame widget currently has a special case.
   // Eliminate this once WebView is no longer a WebWidget.
-  std::unique_ptr<TestWebWidgetClient> owned_web_widget_client;
-  if (!web_widget_client) {
-    owned_web_widget_client =
-        std::make_unique<TestWebViewWidgetClient>(*test_web_view_client_);
-    web_widget_client = owned_web_widget_client.get();
-  }
+  WebWidgetClient* web_widget_client = test_web_widget_client;
+  if (!web_widget_client)
+    web_widget_client = test_web_view_client_->WidgetClient();
   blink::WebFrameWidget::Create(web_widget_client, frame);
   // Set an initial size for subframes.
   if (frame->Parent())
     frame->FrameWidget()->Resize(WebSize());
-  web_frame_client->BindWidgetClient(std::move(owned_web_widget_client));
 
   return web_view_;
 }
@@ -408,7 +404,7 @@ void TestWebFrameClient::Bind(WebLocalFrame* frame,
 }
 
 void TestWebFrameClient::BindWidgetClient(
-    std::unique_ptr<TestWebWidgetClient> client) {
+    std::unique_ptr<WebWidgetClient> client) {
   DCHECK(!owned_widget_client_);
   owned_widget_client_ = std::move(client);
 }
@@ -490,10 +486,6 @@ WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
   return layer_tree_view_.get();
 }
 
-WebLayerTreeView* TestWebViewWidgetClient::InitializeLayerTreeView() {
-  return test_web_view_client_.InitializeLayerTreeView();
-}
-
 WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
   auto layer_tree_settings =
       WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings();
@@ -507,15 +499,6 @@ WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
   layer_tree_view_ =
       std::make_unique<WebLayerTreeViewImplForTesting>(layer_tree_settings);
   return layer_tree_view_.get();
-}
-
-void TestWebViewWidgetClient::ScheduleAnimation() {
-  test_web_view_client_.ScheduleAnimation();
-}
-
-void TestWebViewWidgetClient::DidMeaningfulLayout(
-    WebMeaningfulLayout layout_type) {
-  test_web_view_client_.DidMeaningfulLayout(layout_type);
 }
 
 }  // namespace FrameTestHelpers
