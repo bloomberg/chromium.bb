@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/syslog_logging.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -80,6 +81,11 @@ void RemoteCommandsService::SetClockForTesting(const base::TickClock* clock) {
   queue_.SetClockForTesting(clock);
 }
 
+void RemoteCommandsService::SetOnCommandAckedCallback(
+    base::OnceClosure callback) {
+  on_command_acked_callback_ = std::move(callback);
+}
+
 void RemoteCommandsService::EnqueueCommand(
     const enterprise_management::RemoteCommand& command) {
   if (!command.has_type() || !command.has_command_id()) {
@@ -96,7 +102,7 @@ void RemoteCommandsService::EnqueueCommand(
   fetched_command_ids_.push_back(command.command_id());
 
   std::unique_ptr<RemoteCommandJob> job =
-      factory_->BuildJobForType(command.type());
+      factory_->BuildJobForType(command.type(), this);
 
   if (!job || !job->Init(queue_.GetNowTicks(), command)) {
     SYSLOG(ERROR) << "Initialization of remote command failed.";
@@ -159,6 +165,9 @@ void RemoteCommandsService::OnRemoteCommandsFetched(
   // TODO(hunyadym): Remove after crbug.com/582506 is fixed.
   SYSLOG(INFO) << "Remote commands fetched.";
   command_fetch_in_progress_ = false;
+
+  if (!on_command_acked_callback_.is_null())
+    std::move(on_command_acked_callback_).Run();
 
   // TODO(binjin): Add retrying on errors. See http://crbug.com/466572.
   if (status == DM_STATUS_SUCCESS) {

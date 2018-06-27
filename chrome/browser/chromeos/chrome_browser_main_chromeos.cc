@@ -90,6 +90,7 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chrome/browser/chromeos/settings/shutdown_policy_forwarder.h"
 #include "chrome/browser/chromeos/system/input_device_settings.h"
+#include "chrome/browser/chromeos/system/user_removal_manager.h"
 #include "chrome/browser/chromeos/ui/low_disk_notification.h"
 #include "chrome/browser/chromeos/upgrade_detector_chromeos.h"
 #include "chrome/browser/component_updater/cros_component_installer_chromeos.h"
@@ -956,6 +957,7 @@ void ChromeBrowserMainPartsChromeos::PostProfileInit() {
 
   g_browser_process->platform_part()->InitializeAutomaticRebootManager();
   g_browser_process->platform_part()->InitializeDeviceDisablingManager();
+  user_removal_manager::RemoveUsersIfNeeded();
 
   // This observer cannot be created earlier because it requires the shell to be
   // available.

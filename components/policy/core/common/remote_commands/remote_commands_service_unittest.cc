@@ -68,7 +68,8 @@ class MockTestRemoteCommandFactory : public RemoteCommandsFactory {
  private:
   // RemoteCommandJobsFactory:
   std::unique_ptr<RemoteCommandJob> BuildJobForType(
-      em::RemoteCommand_Type type) override {
+      em::RemoteCommand_Type type,
+      RemoteCommandsService* service) override {
     if (type != em::RemoteCommand_Type_COMMAND_ECHO_TEST) {
       ADD_FAILURE();
       return nullptr;
@@ -333,6 +334,38 @@ TEST_F(RemoteCommandsServiceTest, NewCommandFollwingFetch) {
   FlushAllTasks();
 
   EXPECT_EQ(0u, server_->NumberOfCommandsPendingResult());
+}
+
+// Tests that on_command_acked_callback_ gets called after the commands get
+// acked/fetched (one function handles both).
+TEST_F(RemoteCommandsServiceTest, AckedCallback) {
+  std::unique_ptr<MockTestRemoteCommandFactory> factory(
+      new MockTestRemoteCommandFactory());
+  EXPECT_CALL(*factory, BuildTestCommand()).Times(1);
+
+  StartService(std::move(factory));
+
+  bool on_command_acked_callback_called = false;
+  remote_commands_service_->SetOnCommandAckedCallback(base::BindOnce(
+      [](bool* on_command_acked_callback_called) {
+        *on_command_acked_callback_called = true;
+      },
+      &on_command_acked_callback_called));
+
+  // Set up expectations on fetch commands calls. The first request will fetch
+  // one command, and the second will fetch none but provide result for the
+  // previous command instead.
+  cloud_policy_client_->ExpectFetchCommands(0u, 1u, base::Closure());
+  cloud_policy_client_->ExpectFetchCommands(1u, 0u, base::Closure());
+
+  // Issue a command and manually start a command fetch.
+  server_->IssueCommand(em::RemoteCommand_Type_COMMAND_ECHO_TEST, kTestPayload,
+                        base::Bind(&ExpectSucceededJob, kTestPayload), false);
+  EXPECT_TRUE(remote_commands_service_->FetchRemoteCommands());
+
+  FlushAllTasks();
+
+  EXPECT_TRUE(on_command_acked_callback_called);
 }
 
 }  // namespace policy

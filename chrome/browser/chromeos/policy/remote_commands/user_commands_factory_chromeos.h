@@ -21,7 +21,8 @@ class UserCommandsFactoryChromeOS : public RemoteCommandsFactory {
 
   // RemoteCommandsFactory:
   std::unique_ptr<RemoteCommandJob> BuildJobForType(
-      enterprise_management::RemoteCommand_Type type) override;
+      enterprise_management::RemoteCommand_Type type,
+      RemoteCommandsService* service) override;
 
  private:
   Profile* const profile_;

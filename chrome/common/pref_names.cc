@@ -1904,6 +1904,10 @@ const char kReportingUsers[] = "reporting_users";
 const char kArcAppInstallEventLoggingEnabled[] =
     "arc.app_install_event_logging_enabled";
 
+// Whether we received the remove users remote command, and hence should proceed
+// with removing the users while at the login screen.
+const char kRemoveUsersRemoteCommand[] = "remove_users_remote_command";
+
 #endif  // defined(OS_CHROMEOS)
 
 // Whether there is a Flash version installed that supports clearing LSO data.
