@@ -14,6 +14,7 @@
 #include "build/build_config.h"
 #include "mojo/edk/system/connection_params.h"
 #include "mojo/edk/system/scoped_platform_handle.h"
+#include "mojo/edk/system/scoped_process_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -187,18 +188,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // such as Mach ports, will be removed.
     std::vector<ScopedInternalPlatformHandle> TakeHandlesForTransport();
 
-#if defined(OS_WIN)
-    // Prepares the handles in this message for use in a different process.
-    // Upon calling this the handles should belong to |from_process|; after the
-    // call they'll belong to |to_process|. The source handles are always
-    // closed by this call. Returns false iff one or more handles failed
-    // duplication.
-    static bool RewriteHandles(
-        base::ProcessHandle from_process,
-        base::ProcessHandle to_process,
-        std::vector<ScopedInternalPlatformHandle>* handles);
-#endif
-
     void SetVersionForTest(uint16_t version_number);
 
    private:
@@ -278,6 +267,15 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // Delegate methods will no longer be invoked after this call.
   void ShutDown();
 
+  // Sets the process handle of the remote endpoint to which this Channel is
+  // connected. If called at all, must be called only once, and before Start().
+  void set_remote_process(ScopedProcessHandle remote_process) {
+    DCHECK(!remote_process_.is_valid());
+    DCHECK(remote_process.is_valid());
+    remote_process_ = std::move(remote_process);
+  }
+  const ScopedProcessHandle& remote_process() const { return remote_process_; }
+
   // Begin processing I/O events. Delegate methods must only be invoked after
   // this call.
   virtual void Start() = 0;
@@ -348,6 +346,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
   Delegate* delegate_;
   const std::unique_ptr<ReadBuffer> read_buffer_;
+
+  // Handle to the process on the other end of this Channel, iff known.
+  ScopedProcessHandle remote_process_;
 
   DISALLOW_COPY_AND_ASSIGN(Channel);
 };

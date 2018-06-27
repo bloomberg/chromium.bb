@@ -18,6 +18,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "base/win/win_util.h"
@@ -54,6 +55,26 @@ class ChannelWin : public Channel,
   }
 
   void Write(MessagePtr message) override {
+    if (remote_process().is_valid()) {
+      // If we know the remote process handle, we transfer all outgoing handles
+      // to the process now rewriting them in the message.
+      std::vector<ScopedInternalPlatformHandle> handles =
+          message->TakeHandles();
+      for (auto& handle : handles) {
+        BOOL result = ::DuplicateHandle(
+            base::GetCurrentProcessHandle(), handle.get().handle,
+            remote_process().get(), &handle.get().handle, 0, FALSE,
+            DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+        if (result) {
+          handle.get().owning_process = remote_process().Clone().release();
+        } else {
+          handle.get().handle = INVALID_HANDLE_VALUE;
+          DPLOG(ERROR) << "DuplicateHandle failed";
+        }
+      }
+      message->SetHandles(std::move(handles));
+    }
+
     bool write_error = false;
     {
       base::AutoLock lock(write_lock_);
@@ -95,8 +116,22 @@ class ChannelWin : public Channel,
     const HandleEntry* extra_header_handles =
         reinterpret_cast<const HandleEntry*>(extra_header);
     for (size_t i = 0; i < num_handles; i++) {
-      handles->emplace_back(ScopedInternalPlatformHandle(InternalPlatformHandle(
-          base::win::Uint32ToHandle(extra_header_handles[i].handle))));
+      ScopedInternalPlatformHandle handle(InternalPlatformHandle(
+          base::win::Uint32ToHandle(extra_header_handles[i].handle)));
+      if (remote_process().is_valid()) {
+        // If we know the remote process's handle, we assume it doesn't know
+        // ours; that means any handle values still belong to that process, and
+        // we need to transfer them to this process.
+        BOOL result = ::DuplicateHandle(
+            remote_process().get(), handle.get().handle,
+            base::GetCurrentProcessHandle(), &handle.get().handle, 0, FALSE,
+            DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+        if (!result) {
+          handle.get().handle = INVALID_HANDLE_VALUE;
+          DPLOG(ERROR) << "DuplicateHandle failed";
+        }
+      }
+      handles->emplace_back(std::move(handle));
     }
     return true;
   }

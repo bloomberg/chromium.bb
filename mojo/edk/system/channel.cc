@@ -460,46 +460,6 @@ Channel::Message::TakeHandlesForTransport() {
 #endif
 }
 
-#if defined(OS_WIN)
-// static
-bool Channel::Message::RewriteHandles(
-    base::ProcessHandle from_process,
-    base::ProcessHandle to_process,
-    std::vector<ScopedInternalPlatformHandle>* handles) {
-  bool success = true;
-  for (size_t i = 0; i < handles->size(); ++i) {
-    if (!(*handles)[i].is_valid()) {
-      DLOG(ERROR) << "Refusing to duplicate invalid handle.";
-      continue;
-    }
-    DCHECK_EQ((*handles)[i].get().owning_process, from_process);
-    BOOL result =
-        DuplicateHandle(from_process, (*handles)[i].get().handle, to_process,
-                        &(*handles)[i].get().handle, 0, FALSE,
-                        DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    if (result) {
-      if (to_process == base::GetCurrentProcessHandle()) {
-        (*handles)[i].get().owning_process = to_process;
-      } else {
-        // If this handle is bound for an external process, make sure it owns
-        // its own copy of the target process handle.
-        (*handles)[i].get().owning_process =
-            ScopedProcessHandle::CloneFrom(to_process).release();
-      }
-    } else {
-      success = false;
-
-      // If handle duplication fails, the source handle will already be closed
-      // due to DUPLICATE_CLOSE_SOURCE. Replace the handle in the message with
-      // an invalid handle.
-      (*handles)[i].get().handle = INVALID_HANDLE_VALUE;
-      (*handles)[i].get().owning_process = base::GetCurrentProcessHandle();
-    }
-  }
-  return success;
-}
-#endif
-
 // Helper class for managing a Channel's read buffer allocations. This maintains
 // a single contiguous buffer with the layout:
 //
