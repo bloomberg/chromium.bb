@@ -37,6 +37,7 @@
 -ExtensionUninstallDialogViewBrowserTest.BookmarkAppWindowAshCrash
 -HostedAppNonClientFrameViewAshTest.*
 -ImmersiveModeControllerAshHostedAppBrowserTest.*
+-HomeLauncherBrowserNonClientFrameViewAshTest.*
 
 # Fix immersive fullscreen mode in mash. https://crbug.com/844748.
 -ImmersiveModeBrowserViewTest.TestCaptionButtonsReceiveEventsInAppImmersiveMode*

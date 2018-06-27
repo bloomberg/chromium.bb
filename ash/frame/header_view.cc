@@ -51,7 +51,7 @@ class WindowPropertyAppearanceProvider
                                          : kFrameImageOverlayInactiveKey);
   }
 
-  bool IsTabletMode() override {
+  bool IsTabletMode() const override {
     return Shell::Get()
         ->tablet_mode_controller()
         ->IsTabletModeWindowManagerEnabled();

@@ -12,6 +12,7 @@
 #include "ash/frame/frame_border_hit_test.h"     // mash-ok
 #include "ash/frame/frame_header_origin_text.h"  // mash-ok
 #include "ash/frame/frame_header_util.h"         // mash-ok
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/ash_constants.h"
 #include "ash/public/cpp/ash_layout_constants.h"
@@ -652,7 +653,7 @@ gfx::ImageSkia BrowserNonClientFrameViewAsh::GetFrameHeaderOverlayImage(
   return GetFrameOverlayImage(active);
 }
 
-bool BrowserNonClientFrameViewAsh::IsTabletMode() {
+bool BrowserNonClientFrameViewAsh::IsTabletMode() const {
   return TabletModeClient::Get() &&
          TabletModeClient::Get()->tablet_mode_enabled();
 }
@@ -697,6 +698,7 @@ void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
     OnImmersiveRevealEnded();
   }
 
+  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
   caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
 
   if (enabled) {
@@ -848,6 +850,25 @@ AvatarButtonStyle BrowserNonClientFrameViewAsh::GetAvatarButtonStyle() const {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameViewAsh, private:
 
+bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
+  // In tablet mode, to prevent accidental taps of the window controls, and to
+  // give more horizontal space for tabs and the new tab button especially in
+  // splitscreen view, we hide the window controls. We only do this when the
+  // Home Launcher feature is enabled, since it gives the user the ability to
+  // minimize all windows when pressing the Launcher button on the shelf.
+  if (app_list::features::IsHomeLauncherEnabled() && IsTabletMode() &&
+      !browser_view()->browser()->is_app()) {
+    return false;
+  }
+
+  return ShouldShowIconAndBackButton();
+}
+
+bool BrowserNonClientFrameViewAsh::ShouldShowIconAndBackButton() const {
+  return !in_overview_mode_ ||
+         IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_);
+}
+
 int BrowserNonClientFrameViewAsh::GetTabStripRightInset() const {
   int inset = IsMash() ? frame_values().normal_insets.right() +
                              frame_values().max_title_bar_button_width
@@ -881,20 +902,14 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
 void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
   DCHECK(!IsMash());
 
-  if (in_overview_mode_ &&
-      IsSnappedInSplitView(frame()->GetNativeWindow(), split_view_state_)) {
-    caption_button_container_->SetVisible(true);
-    if (window_icon_)
-      window_icon_->SetVisible(true);
-    if (back_button_)
-      back_button_->SetVisible(true);
-  } else {
-    caption_button_container_->SetVisible(!in_overview_mode_);
-    if (window_icon_)
-      window_icon_->SetVisible(!in_overview_mode_);
-    if (back_button_)
-      back_button_->SetVisible(!in_overview_mode_);
-  }
+  caption_button_container_->SetVisible(ShouldShowCaptionButtons());
+
+  const bool visibility = ShouldShowIconAndBackButton();
+  if (window_icon_)
+    window_icon_->SetVisible(visibility);
+  if (back_button_)
+    back_button_->SetVisible(visibility);
+
   // Schedule a paint to show or hide the header.
   SchedulePaint();
 }

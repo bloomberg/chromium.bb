@@ -93,7 +93,7 @@ class BrowserNonClientFrameViewAsh
   SkColor GetFrameHeaderColor(bool active) override;
   gfx::ImageSkia GetFrameHeaderImage(bool active) override;
   gfx::ImageSkia GetFrameHeaderOverlayImage(bool active) override;
-  bool IsTabletMode() override;
+  bool IsTabletMode() const override;
 
   // ash::ShellObserver:
   void OnOverviewModeStarting() override;
@@ -157,9 +157,20 @@ class BrowserNonClientFrameViewAsh
                            RestoreMinimizedBrowserUpdatesCaption);
   FRIEND_TEST_ALL_PREFIXES(ImmersiveModeControllerAshHostedAppBrowserTest,
                            FrameLayoutToggleTabletMode);
+  FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewAshTest,
+                           TabletModeBrowserCaptionButtonVisibility);
+  FRIEND_TEST_ALL_PREFIXES(HomeLauncherBrowserNonClientFrameViewAshTest,
+                           TabletModeAppCaptionButtonVisibility);
 
   friend class HostedAppNonClientFrameViewAshTest;
   friend class ImmersiveModeControllerAshHostedAppBrowserTest;
+
+  // Returns whether a caption item (such as window controls, window icons, and
+  // the back button) should be currently visible. They're split in two methods
+  // because the caption buttons's visibility has a special treatment when in
+  // tablet mode.
+  bool ShouldShowCaptionButtons() const;
+  bool ShouldShowIconAndBackButton() const;
 
   // Distance between the right edge of the NonClientFrameView and the tab
   // strip.
