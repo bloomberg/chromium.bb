@@ -56,7 +56,6 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &features::kExperimentalAppBanners,
     &features::kExperimentalUi,
     &features::kGenericSensorExtraClasses,
-    &features::kImportantSitesInCbd,
     &features::kMaterialDesignIncognitoNTP,
     &features::kPermissionDelegation,
     &features::kServiceWorkerPaymentApps,

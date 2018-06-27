@@ -169,10 +169,6 @@ extern const base::Feature kHappinessTrackingSystem;
 extern const base::Feature kViewsCastDialog;
 #endif
 
-#if defined(OS_ANDROID)
-extern const base::Feature kImportantSitesInCbd;
-#endif
-
 extern const base::Feature kImprovedRecoveryComponent;
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)

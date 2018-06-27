@@ -1787,21 +1787,6 @@
             ]
         }
     ],
-    "ImportantSitesInCBD": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "DialogEnabled",
-                    "enable_features": [
-                        "ImportantSitesInCBD"
-                    ]
-                }
-            ]
-        }
-    ],
     "ImprovedRecoveryComponent": [
         {
             "platforms": [

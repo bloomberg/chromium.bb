@@ -210,8 +210,6 @@ public abstract class ChromeFeatureList {
     public static final String GENERIC_SENSOR_EXTRA_CLASSES = "GenericSensorExtraClasses";
     public static final String HOME_PAGE_BUTTON_FORCE_ENABLED = "HomePageButtonForceEnabled";
     public static final String HORIZONTAL_TAB_SWITCHER_ANDROID = "HorizontalTabSwitcherAndroid";
-    // Whether we show an important sites dialog in the "Clear Browsing Data" flow.
-    public static final String IMPORTANT_SITES_IN_CBD = "ImportantSitesInCBD";
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS = "InterestFeedContentSuggestions";
     public static final String LANGUAGES_PREFERENCE = "LanguagesPreference";
     public static final String SEARCH_ENGINE_PROMO_EXISTING_DEVICE =
