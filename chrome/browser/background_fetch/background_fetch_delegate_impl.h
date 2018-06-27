@@ -103,6 +103,7 @@ class BackgroundFetchDelegateImpl
     void UpdateOfflineItem();
 
     bool cancelled;
+    bool failed;
 
     // Set of DownloadService GUIDs that are currently downloading. They are
     // added by DownloadUrl and are removed when the download completes, fails

@@ -92,12 +92,17 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
   offline_item.is_transient = true;
 
   using OfflineItemState = offline_items_collection::OfflineItemState;
-  if (cancelled)
+  if (cancelled) {
     offline_item.state = OfflineItemState::CANCELLED;
-  else if (fetch_description->completed_parts == fetch_description->total_parts)
+  } else if (fetch_description->completed_parts ==
+             fetch_description->total_parts) {
+    // This includes cases when the download failed, or completed but the
+    // response was an HTTP error, e.g. 404.
     offline_item.state = OfflineItemState::COMPLETE;
-  else
+    offline_item.is_openable = true;
+  } else {
     offline_item.state = OfflineItemState::IN_PROGRESS;
+  }
 }
 
 bool BackgroundFetchDelegateImpl::JobDetails::ShouldReportProgressBySize() {
@@ -390,8 +395,8 @@ void BackgroundFetchDelegateImpl::UpdateOfflineItemAndUpdateObservers(
 
 void BackgroundFetchDelegateImpl::OpenItem(
     const offline_items_collection::ContentId& id) {
-  // TODO(delphick): Add custom OpenItem behavior.
-  NOTIMPLEMENTED();
+  if (client())
+    client()->OnUIActivated(id.id);
 }
 
 void BackgroundFetchDelegateImpl::RemoveItem(

@@ -28,6 +28,8 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
  public:
   // Subclasses must only be destroyed on the IO thread, since these methods
   // will be called on the IO thread.
+  using DispatchClickEventCallback =
+      base::RepeatingCallback<void(const std::string& /* unique_id */)>;
   class Controller {
    public:
     // Called when the given |request| has started fetching.
@@ -53,6 +55,11 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   explicit BackgroundFetchDelegateProxy(BackgroundFetchDelegate* delegate);
 
   ~BackgroundFetchDelegateProxy();
+
+  // Set BackgroundFetchClick event dispatcher callback, which is a method on
+  // the background fetch context.
+  void SetClickEventDispatcher(
+      const DispatchClickEventCallback click_event_callback);
 
   // Gets size of the icon to display with the Background Fetch UI.
   void GetIconDisplaySize(
@@ -113,6 +120,9 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
                        const std::string& guid,
                        std::unique_ptr<BackgroundFetchResponse> response);
 
+  // Should only be called from the BackgroundFetchDelegate (on the IO thread).
+  void DidActivateUI(const std::string& job_unique_id);
+
   std::unique_ptr<Core, BrowserThread::DeleteOnUIThread> ui_core_;
   base::WeakPtr<Core> ui_core_ptr_;
 
@@ -135,6 +145,7 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   // GUIDs and the controller that started the download.
   std::map<std::string, JobDetails> job_details_map_;
 
+  DispatchClickEventCallback click_event_dispatcher_callback_;
   base::WeakPtrFactory<BackgroundFetchDelegateProxy> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BackgroundFetchDelegateProxy);

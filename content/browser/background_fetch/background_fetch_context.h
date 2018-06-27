@@ -191,13 +191,23 @@ class CONTENT_EXPORT BackgroundFetchContext
       std::vector<BackgroundFetchSettledFetch> settled_fetches,
       std::vector<std::unique_ptr<storage::BlobDataHandle>> blob_data_handles);
 
+  // Called when the notification UI for the background fetch job associated
+  // with |unique_id| is activated.
+  void DispatchClickEvent(const std::string& unique_id);
+
   // Called when all processing for the |registration_id| has been finished and
   // the job is ready to be deleted. |blob_handles| are unused, but some callers
   // use it to keep blobs alive for the right duration.
+  // |partial cleanup|, when set, preserves  the registration ID, and the state
+  // of Fetch when it completed, in |completed_fetches_|. This is not done when
+  // fetch is aborted or cancelled. We use this information to propagate
+  // BackgroundFetchClicked event to the developer, when the user taps the UI.
   void CleanupRegistration(
       const BackgroundFetchRegistrationId& registration_id,
       const std::vector<std::unique_ptr<storage::BlobDataHandle>>&
-          blob_data_handles);
+          blob_data_handles,
+      mojom::BackgroundFetchState background_fetch_state,
+      bool preserve_info_to_dispatch_click_event = false);
 
   // Called when the last JavaScript BackgroundFetchRegistration object has been
   // garbage collected for a registration marked for deletion, and so it is now
@@ -230,6 +240,15 @@ class CONTENT_EXPORT BackgroundFetchContext
   // |registration_notifier_|.
   std::map<std::string, std::unique_ptr<BackgroundFetchJobController>>
       job_controllers_;
+
+  // Map from background fetch registration |unique_ids|s to {background fetch
+  // registration id, fetch state}. An entry in here means the fetch has
+  // completed. This information is needed after the fetch has completed.
+  // TODO(crbug.com/857122): Clean this up when the UI is no longer showing.
+  std::map<
+      std::string,
+      std::pair<BackgroundFetchRegistrationId, mojom::BackgroundFetchState>>
+      completed_fetches_;
 
   // Map from BackgroundFetchRegistrationIds to FetchCallbacks for active
   // fetches. Must be destroyed before |data_manager_| and
