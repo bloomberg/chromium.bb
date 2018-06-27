@@ -36,17 +36,17 @@ class WebXrSamplePageSet(VrStorySet):
     # turned off.
     cube_test_cases_no_vsync = [
       # Standard sample app with no changes.
-      ['framebufferScale=0.7'],
-      # Increased render scale.
       ['framebufferScale=1.0'],
+      # Increased render scale.
+      ['framebufferScale=1.4'],
       # Default render scale, increased load.
-      ['framebufferScale=0.7', 'heavyGpu=1', 'cubeScale=0.2', 'workTime=5'],
+      ['framebufferScale=1.0', 'heavyGpu=1', 'cubeScale=0.2', 'workTime=5'],
       # Further increased load.
-      ['framebufferScale=0.7', 'heavyGpu=1', 'cubeScale=0.3', 'workTime=10'],
+      ['framebufferScale=1.0', 'heavyGpu=1', 'cubeScale=0.3', 'workTime=10'],
       # Absurd load for fill-rate testing. Only half the cube sea is rendered,
       # and the page automatically rotates the view between the rendered and
       # unrendered halves.
-      ['frameBufferScale=1.0', 'heavyGpu=1', 'cubeScale=0.4', 'workTime=4',
+      ['frameBufferScale=1.4', 'heavyGpu=1', 'cubeScale=0.4', 'workTime=4',
        'halfOnly=1', 'autorotate=1'],
     ]
 
