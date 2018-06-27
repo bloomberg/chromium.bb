@@ -8,7 +8,6 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
@@ -45,7 +44,9 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       voice_interaction_observer_binding_(this),
+      background_thread_("background thread"),
       weak_factory_(this) {
+  background_thread_.Start();
   connector->BindInterface(ash::mojom::kServiceName,
                            &voice_interaction_controller_);
 
@@ -57,19 +58,19 @@ AssistantManagerServiceImpl::AssistantManagerServiceImpl(
 AssistantManagerServiceImpl::~AssistantManagerServiceImpl() {}
 
 void AssistantManagerServiceImpl::Start(const std::string& access_token,
-                                        base::OnceClosure callback) {
-  // LibAssistant creation will make file IO. Post the creation to
-  // background thread to avoid DCHECK.
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&assistant_client::AssistantManager::Create,
-                     &platform_api_, CreateLibAssistantConfig()),
-      base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
-                     base::Unretained(this), std::move(callback), access_token,
-                     chromeos::version_loader::GetARCVersion()));
-
+                                        base::OnceClosure post_init_callback) {
   // Set the flag to avoid starting the service multiple times.
   state_ = State::STARTED;
+
+  // LibAssistant creation will make file IO and sync wait. Post the creation to
+  // background thread to avoid DCHECK.
+  background_thread_.task_runner()->PostTaskAndReply(
+      FROM_HERE,
+      base::BindOnce(&AssistantManagerServiceImpl::StartAssistantInternal,
+                     base::Unretained(this), access_token,
+                     chromeos::version_loader::GetARCVersion()),
+      base::BindOnce(&AssistantManagerServiceImpl::PostInitAssistant,
+                     base::Unretained(this), std::move(post_init_callback)));
 }
 
 AssistantManagerService::State AssistantManagerServiceImpl::GetState() const {
@@ -99,6 +100,8 @@ AssistantManagerServiceImpl::GetAssistantSettingsManager() {
 void AssistantManagerServiceImpl::SendGetSettingsUiRequest(
     const std::string& selector,
     GetSettingsUiResponseCallback callback) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
   std::string serialized_proto = SerializeGetSettingsUiRequest(selector);
   assistant_manager_internal_->SendGetSettingsUiRequest(
       serialized_proto, std::string(), [
@@ -123,6 +126,8 @@ void AssistantManagerServiceImpl::SendGetSettingsUiRequest(
 void AssistantManagerServiceImpl::SendUpdateSettingsUiRequest(
     const std::string& update,
     UpdateSettingsUiResponseCallback callback) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
   std::string serialized_proto = SerializeUpdateSettingsUiRequest(update);
   assistant_manager_internal_->SendUpdateSettingsUiRequest(
       serialized_proto, std::string(), [
@@ -258,11 +263,12 @@ void AssistantManagerServiceImpl::OnVoiceInteractionSetupCompleted(
 }
 
 void AssistantManagerServiceImpl::StartAssistantInternal(
-    base::OnceCallback<void()> callback,
     const std::string& access_token,
-    const std::string& arc_version,
-    assistant_client::AssistantManager* assistant_manager) {
-  assistant_manager_.reset(assistant_manager);
+    const std::string& arc_version) {
+  DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
+
+  assistant_manager_.reset(assistant_client::AssistantManager::Create(
+      &platform_api_, CreateLibAssistantConfig()));
   assistant_manager_internal_ =
       UnwrapAssistantManagerInternal(assistant_manager_.get());
 
@@ -278,26 +284,23 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   assistant_manager_internal_->SetAssistantManagerDelegate(this);
   assistant_manager_->AddConversationStateListener(this);
 
+  SetAccessToken(access_token);
+
+  assistant_manager_->Start();
+}
+
+void AssistantManagerServiceImpl::PostInitAssistant(
+    base::OnceClosure post_init_callback) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
+  state_ = State::RUNNING;
+
   if (!assistant_settings_manager_) {
     assistant_settings_manager_ =
         std::make_unique<AssistantSettingsManagerImpl>(this);
   }
-
-  SetAccessToken(access_token);
-
-  assistant_client::Callback0 assistant_callback([
-    callback = std::move(callback),
-    update_settings_callback =
-        base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceSettings,
-                       weak_factory_.GetWeakPtr())
-  ]() mutable {
-    std::move(callback).Run();
-    std::move(update_settings_callback).Run();
-  });
-
-  assistant_manager_->Start(std::move(assistant_callback));
-
-  state_ = State::RUNNING;
+  std::move(post_init_callback).Run();
+  UpdateDeviceSettings();
 }
 
 std::string AssistantManagerServiceImpl::BuildUserAgent(
@@ -324,6 +327,8 @@ std::string AssistantManagerServiceImpl::BuildUserAgent(
 }
 
 void AssistantManagerServiceImpl::UpdateDeviceSettings() {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
   const std::string device_id = assistant_manager_->GetDeviceId();
   if (device_id.empty())
     return;
@@ -342,16 +347,14 @@ void AssistantManagerServiceImpl::UpdateDeviceSettings() {
   SendUpdateSettingsUiRequest(update.SerializeAsString(), base::DoNothing());
 
   // Update device locale if voice interaction setup is completed.
-  main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(
-          &AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted,
-          weak_factory_.GetWeakPtr(),
-          base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceLocale,
-                         weak_factory_.GetWeakPtr())));
+  AssistantManagerServiceImpl::IsVoiceInteractionSetupCompleted(
+      base::BindOnce(&AssistantManagerServiceImpl::UpdateDeviceLocale,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AssistantManagerServiceImpl::UpdateDeviceLocale(bool is_setup_completed) {
+  DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
+
   if (!is_setup_completed)
     return;
 

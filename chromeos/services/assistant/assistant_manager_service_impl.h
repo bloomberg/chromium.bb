@@ -12,6 +12,7 @@
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
 // libassistant/contrib dependency.
 #include "ash/public/interfaces/voice_interaction_controller.mojom.h"
+#include "base/threading/thread.h"
 #include "chromeos/assistant/internal/action/cros_action_module.h"
 #include "chromeos/assistant/internal/cros_display_connection.h"
 #include "chromeos/services/assistant/assistant_manager_service.h"
@@ -110,16 +111,16 @@ class AssistantManagerServiceImpl
       ash::mojom::AssistantAllowedState state) override {}
 
  private:
-  void StartAssistantInternal(
-      base::OnceClosure callback,
-      const std::string& access_token,
-      const std::string& arc_version,
-      assistant_client::AssistantManager* assistant_manager);
+  void StartAssistantInternal(const std::string& access_token,
+                              const std::string& arc_version);
+  void PostInitAssistant(base::OnceClosure post_init_callback);
+
   std::string BuildUserAgent(const std::string& arc_version) const;
 
   // Update device id, type, and call |UpdateDeviceLocale| when assistant
   // service starts.
   void UpdateDeviceSettings();
+
   // Update device locale if |is_setup_completed| is true;
   void UpdateDeviceLocale(bool is_setup_completed);
 
@@ -160,6 +161,9 @@ class AssistantManagerServiceImpl
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
+
+  base::Thread background_thread_;
+
   base::WeakPtrFactory<AssistantManagerServiceImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(AssistantManagerServiceImpl);
