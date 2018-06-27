@@ -340,7 +340,7 @@ class UnitTest(unittest.TestCase):
 
     # Make sure we log both what is written to args.gn and the command line.
     self.assertIn('Writing """', mbw.out)
-    self.assertIn('/fake_src/third_party/gn/gn gen //out/Default --check',
+    self.assertIn('/fake_src/buildtools/linux64/gn gen //out/Default --check',
                   mbw.out)
 
     mbw = self.fake_mbw(win32=True)
@@ -350,7 +350,7 @@ class UnitTest(unittest.TestCase):
                               ('goma_dir = "c:\\\\goma"\n'
                                'is_debug = true\n'
                                'use_goma = true\n'))
-    self.assertIn('c:\\fake_src\\third_party\\gn\\gn.exe gen //out/Debug '
+    self.assertIn('c:\\fake_src\\buildtools\\win\\gn.exe gen //out/Debug '
                   '--check\n', mbw.out)
 
     mbw = self.fake_mbw()
@@ -581,7 +581,7 @@ class UnitTest(unittest.TestCase):
                     'is_debug = false\n'
                     'use_goma = true\n'
                     '""" to _path_/args.gn.\n\n'
-                    '/fake_src/third_party/gn/gn gen _path_\n'))
+                    '/fake_src/buildtools/linux64/gn gen _path_\n'))
 
   def test_help(self):
     orig_stdout = sys.stdout

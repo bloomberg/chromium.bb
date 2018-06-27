@@ -121,7 +121,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': 'f45682622e92e65482b3568bd15f39d227b5e078',
+  'buildtools_revision': '9c9fd97928dd45a0d9738af90f7c03b082f1216f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -647,16 +647,6 @@ deps = {
 
   'src/third_party/googletest/src':
     Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + 'ce468a17c434e4e79724396ee1b51d86bfc8a88b',
-
-  'src/third_party/gn': {
-      'packages': [
-          {
-              'package': 'gn/gn/${{platform}}',
-              'version': 'git_revision:f30b5738e20fdd2f00eba6298c536d66c13b09e3',
-          },
-      ],
-      'dep_type': 'cipd',
-  },
 
   # GNU binutils assembler for x86-32.
   'src/third_party/gnu_binutils': {
@@ -1579,12 +1569,42 @@ hooks = [
                '-s', 'src/third_party/skia',
                '--header', 'src/skia/ext/skia_commit_hash.h'],
   },
+  # Pull GN binaries. This needs to be before running GYP below.
   {
-    # Clean up old gn binaries in buildtools to ensure we're not using them.
-    # TODO(scottmg): Remove this if it's 2019. https://crbug.com/855791.
-    'name': 'gn_cleanup',
+    'name': 'gn_win',
     'pattern': '.',
-    'action': ['python', 'src/build/util/gn_cleanup.py'],
+    'condition': 'host_os == "win"',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-gn',
+                '-s', 'src/buildtools/win/gn.exe.sha1',
+    ],
+  },
+  {
+    'name': 'gn_mac',
+    'pattern': '.',
+    'condition': 'host_os == "mac"',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-gn',
+                '-s', 'src/buildtools/mac/gn.sha1',
+    ],
+  },
+  {
+    'name': 'gn_linux64',
+    'pattern': '.',
+    'condition': 'host_os == "linux"',
+    'action': [ 'python',
+                'src/third_party/depot_tools/download_from_google_storage.py',
+                '--no_resume',
+                '--no_auth',
+                '--bucket', 'chromium-gn',
+                '-s', 'src/buildtools/linux64/gn.sha1',
+    ],
   },
   # Pull clang-format binaries using checked-in hashes.
   {
