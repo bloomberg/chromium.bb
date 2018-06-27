@@ -15,22 +15,16 @@ let ProfileInfo;
 
 cr.define('signin', function() {
   /** @interface */
-  function ProfileBrowserProxy() {}
-
-  ProfileBrowserProxy.prototype = {
+  class ProfileBrowserProxy {
     /**
      * Gets the available profile icons to choose from.
      */
-    getAvailableIcons: function() {
-      assertNotReached();
-    },
+    getAvailableIcons() {}
 
     /**
      * Launches the guest user.
      */
-    launchGuestUser: function() {
-      assertNotReached();
-    },
+    launchGuestUser() {}
 
     /**
      * Creates a profile.
@@ -40,25 +34,19 @@ cr.define('signin', function() {
      * @param {boolean} createShortcut if true a desktop shortcut will be
      *     created.
      */
-    createProfile: function(profileName, profileIconUrl, createShortcut) {
-      assertNotReached();
-    },
+    createProfile(profileName, profileIconUrl, createShortcut) {}
 
     /**
      * Initializes the UserManager
      * @param {string} locationHash
      */
-    initializeUserManager: function(locationHash) {
-      assertNotReached();
-    },
+    initializeUserManager(locationHash) {}
 
     /**
      * Launches the user with the given |profilePath|
      * @param {string} profilePath Profile Path of the user.
      */
-    launchUser: function(profilePath) {
-      assertNotReached();
-    },
+    launchUser(profilePath) {}
 
     /**
      * Opens the given url in a new tab in the browser instance of the last
@@ -66,92 +54,79 @@ cr.define('signin', function() {
      * browser instance does not support tabs.
      * @param {string} url
      */
-    openUrlInLastActiveProfileBrowser: function(url) {
-      assertNotReached();
-    },
+    openUrlInLastActiveProfileBrowser(url) {}
 
     /**
      * Switches to the profile with the given path.
      * @param {string} profilePath Path to the profile to switch to.
      */
-    switchToProfile: function(profilePath) {
-      assertNotReached();
-    },
+    switchToProfile(profilePath) {}
 
     /**
      * @return {!Promise<boolean>} Whether all (non-supervised and non-child)
      *     profiles are locked.
      */
-    areAllProfilesLocked: function() {
-      assertNotReached();
-    },
+    areAllProfilesLocked() {}
 
     /**
      * Authenticates the custodian profile with the given email address.
      * @param {string} emailAddress Email address of the custodian profile.
      */
-    authenticateCustodian: function(emailAddress) {
-      assertNotReached();
-    }
-  };
+    authenticateCustodian(emailAddress) {}
+  }
 
-  /**
-   * @constructor
-   * @implements {signin.ProfileBrowserProxy}
-   */
-  function ProfileBrowserProxyImpl() {}
+  /** @implements {signin.ProfileBrowserProxy} */
+  class ProfileBrowserProxyImpl {
+    /** @override */
+    getAvailableIcons() {
+      chrome.send('requestDefaultProfileIcons');
+    }
+
+    /** @override */
+    launchGuestUser() {
+      chrome.send('launchGuest');
+    }
+
+    /** @override */
+    createProfile(profileName, profileIconUrl, createShortcut) {
+      chrome.send(
+          'createProfile', [profileName, profileIconUrl, createShortcut]);
+    }
+
+    /** @override */
+    initializeUserManager(locationHash) {
+      chrome.send('userManagerInitialize', [locationHash]);
+    }
+
+    /** @override */
+    launchUser(profilePath) {
+      chrome.send('launchUser', [profilePath]);
+    }
+
+    /** @override */
+    openUrlInLastActiveProfileBrowser(url) {
+      chrome.send('openUrlInLastActiveProfileBrowser', [url]);
+    }
+
+    /** @override */
+    switchToProfile(profilePath) {
+      chrome.send('switchToProfile', [profilePath]);
+    }
+
+    /** @override */
+    areAllProfilesLocked() {
+      return cr.sendWithPromise('areAllProfilesLocked');
+    }
+
+    /** @override */
+    authenticateCustodian(emailAddress) {
+      chrome.send('authenticateCustodian', [emailAddress]);
+    }
+  }
 
   // The singleton instance_ is replaced with a test version of this wrapper
   // during testing.
   cr.addSingletonGetter(ProfileBrowserProxyImpl);
-
-  ProfileBrowserProxyImpl.prototype = {
-    /** @override */
-    getAvailableIcons: function() {
-      chrome.send('requestDefaultProfileIcons');
-    },
-
-    /** @override */
-    launchGuestUser: function() {
-      chrome.send('launchGuest');
-    },
-
-    /** @override */
-    createProfile: function(profileName, profileIconUrl, createShortcut) {
-      chrome.send(
-          'createProfile', [profileName, profileIconUrl, createShortcut]);
-    },
-
-    /** @override */
-    initializeUserManager: function(locationHash) {
-      chrome.send('userManagerInitialize', [locationHash]);
-    },
-
-    /** @override */
-    launchUser: function(profilePath) {
-      chrome.send('launchUser', [profilePath]);
-    },
-
-    /** @override */
-    openUrlInLastActiveProfileBrowser: function(url) {
-      chrome.send('openUrlInLastActiveProfileBrowser', [url]);
-    },
-
-    /** @override */
-    switchToProfile: function(profilePath) {
-      chrome.send('switchToProfile', [profilePath]);
-    },
-
-    /** @override */
-    areAllProfilesLocked: function() {
-      return cr.sendWithPromise('areAllProfilesLocked');
-    },
-
-    /** @override */
-    authenticateCustodian: function(emailAddress) {
-      chrome.send('authenticateCustodian', [emailAddress]);
-    }
-  };
 
   return {
     ProfileBrowserProxy: ProfileBrowserProxy,

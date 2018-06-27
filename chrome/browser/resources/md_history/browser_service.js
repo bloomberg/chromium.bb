@@ -8,20 +8,19 @@
  */
 
 cr.define('md_history', function() {
-  /** @constructor */
-  function BrowserService() {
-    /** @private {Array<!HistoryEntry>} */
-    this.pendingDeleteItems_ = null;
-    /** @private {PromiseResolver} */
-    this.pendingDeletePromise_ = null;
-  }
+  class BrowserService {
+    constructor() {
+      /** @private {Array<!HistoryEntry>} */
+      this.pendingDeleteItems_ = null;
+      /** @private {PromiseResolver} */
+      this.pendingDeletePromise_ = null;
+    }
 
-  BrowserService.prototype = {
     /**
      * @param {!Array<!HistoryEntry>} items
      * @return {Promise<!Array<!HistoryEntry>>}
      */
-    deleteItems: function(items) {
+    deleteItems(items) {
       if (this.pendingDeleteItems_ != null) {
         // There's already a deletion in progress, reject immediately.
         return new Promise(function(resolve, reject) {
@@ -42,21 +41,21 @@ cr.define('md_history', function() {
       chrome.send('removeVisits', removalList);
 
       return this.pendingDeletePromise_.promise;
-    },
+    }
 
     /**
      * @param {!string} url
      */
-    removeBookmark: function(url) {
+    removeBookmark(url) {
       chrome.send('removeBookmark', [url]);
-    },
+    }
 
     /**
      * @param {string} sessionTag
      */
-    openForeignSessionAllTabs: function(sessionTag) {
+    openForeignSessionAllTabs(sessionTag) {
       chrome.send('openForeignSession', [sessionTag]);
-    },
+    }
 
     /**
      * @param {string} sessionTag
@@ -64,48 +63,48 @@ cr.define('md_history', function() {
      * @param {number} tabId
      * @param {MouseEvent} e
      */
-    openForeignSessionTab: function(sessionTag, windowId, tabId, e) {
+    openForeignSessionTab(sessionTag, windowId, tabId, e) {
       chrome.send('openForeignSession', [
         sessionTag, String(windowId), String(tabId), e.button || 0, e.altKey,
         e.ctrlKey, e.metaKey, e.shiftKey
       ]);
-    },
+    }
 
     /**
      * @param {string} sessionTag
      */
-    deleteForeignSession: function(sessionTag) {
+    deleteForeignSession(sessionTag) {
       chrome.send('deleteForeignSession', [sessionTag]);
-    },
+    }
 
-    openClearBrowsingData: function() {
+    openClearBrowsingData() {
       chrome.send('clearBrowsingData');
-    },
+    }
 
     /**
      * @param {string} histogram
      * @param {number} value
      * @param {number} max
      */
-    recordHistogram: function(histogram, value, max) {
+    recordHistogram(histogram, value, max) {
       chrome.send('metricsHandler:recordInHistogram', [histogram, value, max]);
-    },
+    }
 
     /**
      * Record an action in UMA.
      * @param {string} action The name of the action to be logged.
      */
-    recordAction: function(action) {
+    recordAction(action) {
       if (action.indexOf('_') == -1)
         action = `HistoryPage_${action}`;
       chrome.send('metricsHandler:recordAction', [action]);
-    },
+    }
 
     /**
      * @param {boolean} successful
      * @private
      */
-    resolveDelete_: function(successful) {
+    resolveDelete_(successful) {
       if (this.pendingDeleteItems_ == null ||
           this.pendingDeletePromise_ == null) {
         return;
@@ -118,12 +117,12 @@ cr.define('md_history', function() {
 
       this.pendingDeleteItems_ = null;
       this.pendingDeletePromise_ = null;
-    },
+    }
 
-    menuPromoShown: function() {
+    menuPromoShown() {
       chrome.send('menuPromoShown');
-    },
-  };
+    }
+  }
 
   cr.addSingletonGetter(BrowserService);
 

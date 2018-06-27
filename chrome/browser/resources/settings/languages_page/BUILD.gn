@@ -68,9 +68,7 @@ js_library("languages_page") {
 }
 
 js_library("languages_types") {
-  deps = [
-    "//ui/webui/resources/js:assert",
-  ]
+  deps = []
   externs_list = [ "$externs_path/language_settings_private.js" ]
 }
 

@@ -2,33 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-/**
- * @param {!Element} root
- * @param {?Element} boundary
- * @param {cr.ui.FocusRow.Delegate} delegate
- * @constructor
- * @extends {cr.ui.FocusRow}
- */
-function HistoryFocusRow(root, boundary, delegate) {
-  cr.ui.FocusRow.call(this, root, boundary, delegate);
-  this.addItems();
-}
-
-HistoryFocusRow.prototype = {
-  __proto__: cr.ui.FocusRow.prototype,
+class HistoryFocusRow extends cr.ui.FocusRow {
+  /**
+   * @param {!Element} root
+   * @param {?Element} boundary
+   * @param {cr.ui.FocusRow.Delegate} delegate
+   */
+  constructor(root, boundary, delegate) {
+    super(root, boundary, delegate);
+    this.addItems();
+  }
 
   /** @override */
-  getCustomEquivalent: function(sampleElement) {
+  getCustomEquivalent(sampleElement) {
     let equivalent;
 
     if (this.getTypeForElement(sampleElement) == 'star')
       equivalent = this.getFirstFocusable('title');
 
-    return equivalent ||
-        cr.ui.FocusRow.prototype.getCustomEquivalent.call(this, sampleElement);
-  },
+    return equivalent || super.getCustomEquivalent(sampleElement);
+  }
 
-  addItems: function() {
+  addItems() {
     this.destroy();
 
     assert(this.addItem('checkbox', '#checkbox'));
@@ -36,28 +31,25 @@ HistoryFocusRow.prototype = {
     assert(this.addItem('menu-button', '#menu-button'));
 
     this.addItem('star', '#bookmark-star');
-  },
-};
+  }
+}
 
 cr.define('md_history', function() {
-  /**
-   * @param {{lastFocused: Object}} historyItemElement
-   * @constructor
-   * @implements {cr.ui.FocusRow.Delegate}
-   */
-  function FocusRowDelegate(historyItemElement) {
-    this.historyItemElement = historyItemElement;
-  }
+  /** @implements {cr.ui.FocusRow.Delegate} */
+  class FocusRowDelegate {
+    /** @param {{lastFocused: Object}} historyItemElement */
+    constructor(historyItemElement) {
+      this.historyItemElement = historyItemElement;
+    }
 
-  FocusRowDelegate.prototype = {
     /**
      * @override
      * @param {!cr.ui.FocusRow} row
      * @param {!Event} e
      */
-    onFocus: function(row, e) {
+    onFocus(row, e) {
       this.historyItemElement.lastFocused = e.path[0];
-    },
+    }
 
     /**
      * @override
@@ -65,7 +57,7 @@ cr.define('md_history', function() {
      * @param {!Event} e
      * @return {boolean} Whether the event was handled.
      */
-    onKeydown: function(row, e) {
+    onKeydown(row, e) {
       // Allow Home and End to move the history list.
       if (e.key == 'Home' || e.key == 'End')
         return true;
@@ -75,8 +67,8 @@ cr.define('md_history', function() {
         e.stopPropagation();
 
       return false;
-    },
-  };
+    }
+  }
 
   const HistoryItem = Polymer({
     is: 'history-item',
