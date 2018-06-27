@@ -376,6 +376,8 @@ void LocalDOMWindow::EnqueuePageshowEvent(PageshowEventPersistence persisted) {
   // asynchronously.  However to be compatible with other browsers blink fires
   // pageshow synchronously unless we are in EventQueueScope.
   if (ScopedEventQueue::Instance()->ShouldQueueEvents() && document_) {
+    // The task source should be kDOMManipulation, but the spec doesn't say
+    // anything about this.
     EnqueueWindowEvent(
         PageTransitionEvent::Create(EventTypeNames::pageshow, persisted),
         TaskType::kMiscPlatformAPI);
