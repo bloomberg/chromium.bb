@@ -8,11 +8,11 @@
 
 #include "ash/app_list/app_list_metrics.h"
 #include "ash/app_list/app_list_view_delegate.h"
+#include "ash/app_list/model/app_list_model.h"
 #include "ash/app_list/model/app_list_view_state.h"
 #include "ash/app_list/model/search/search_result.h"
 #include "ash/app_list/pagination_model.h"
 #include "ash/app_list/views/app_list_item_view.h"
-#include "ash/app_list/views/search_result_container_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_constants.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
@@ -87,11 +87,9 @@ class BadgeBackgroundImageSource : public gfx::CanvasImageSource {
 }  // namespace
 
 SearchResultTileItemView::SearchResultTileItemView(
-    SearchResultContainerView* result_container,
     AppListViewDelegate* view_delegate,
     PaginationModel* pagination_model)
-    : result_container_(result_container),
-      view_delegate_(view_delegate),
+    : view_delegate_(view_delegate),
       pagination_model_(pagination_model),
       is_play_store_app_search_enabled_(
           features::IsPlayStoreAppSearchEnabled()),
@@ -363,10 +361,6 @@ void SearchResultTileItemView::OnGetContextMenuModel(
     std::vector<ash::mojom::MenuItemPtr> menu) {
   if (menu.empty() || (context_menu_ && context_menu_->IsShowingMenu()))
     return;
-
-  // TODO(warx): This is broken (https://crbug.com/795994).
-  if (!HasFocus())
-    result_container_->ClearSelectedIndex();
 
   int run_types = views::MenuRunner::HAS_MNEMONICS;
   views::MenuAnchorPosition anchor_position = views::MENU_ANCHOR_TOPLEFT;

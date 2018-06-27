@@ -24,7 +24,6 @@ namespace app_list {
 
 class AppListViewDelegate;
 class SearchResult;
-class SearchResultContainerView;
 class PaginationModel;
 
 // A tile view that displays a search result. It hosts view for search result
@@ -34,8 +33,7 @@ class APP_LIST_EXPORT SearchResultTileItemView
       public views::ContextMenuController,
       public AppListMenuModelAdapter::Delegate {
  public:
-  SearchResultTileItemView(SearchResultContainerView* result_container,
-                           AppListViewDelegate* view_delegate,
+  SearchResultTileItemView(AppListViewDelegate* view_delegate,
                            PaginationModel* pagination_model);
   ~SearchResultTileItemView() override;
 
@@ -103,7 +101,6 @@ class APP_LIST_EXPORT SearchResultTileItemView
   bool GetTooltipText(const gfx::Point& p,
                       base::string16* tooltip) const override;
 
-  SearchResultContainerView* const result_container_;  // Parent view
   AppListViewDelegate* const view_delegate_;           // Owned by AppListView.
   PaginationModel* const pagination_model_;            // Owned by AppsGridView.
 
