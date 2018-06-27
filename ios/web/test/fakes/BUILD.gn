@@ -11,6 +11,7 @@ source_set("fakes") {
     "//ios/web/navigation:core",
     "//ios/web/public:public",
     "//ios/web/web_state/ui:crw_web_view_navigation_proxy",
+    "//testing/gmock",
     "//third_party/ocmock:ocmock",
   ]
 
@@ -23,6 +24,8 @@ source_set("fakes") {
     "crw_fake_wk_navigation_response.mm",
     "fake_navigation_manager_delegate.h",
     "fake_navigation_manager_delegate.mm",
+    "mock_interstitial_delegate.h",
+    "mock_interstitial_delegate.mm",
   ]
 
   libs = [ "WebKit.framework" ]
