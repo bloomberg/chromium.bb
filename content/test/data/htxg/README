@@ -16,8 +16,7 @@ go get -v -u github.com/WICG/webpackage/go/signedexchange/cmd/gen-signedexchange
 openssl ecparam -out prime256v1.key -name prime256v1 -genkey
 
 openssl req -new -sha256 -key prime256v1.key -out prime256v1-sha256.csr \
-  -subj '/CN=test.example.org/O=Test/C=US' -reqexts SAN \
-  -config <(echo "[req]\ndistinguished_name=distinguished_name_req\n[distinguished_name_req]\n[ext]\nsubjectAltName=DNS:test.example.org")
+  -subj '/CN=test.example.org/O=Test/C=US'
 
 openssl x509 -req -days 360 -in prime256v1-sha256.csr \
   -CA ../../../../net/data/ssl/certificates/root_ca_cert.pem \

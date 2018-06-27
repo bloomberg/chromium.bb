@@ -4,3 +4,4 @@ basicConstraints = CA:FALSE
 keyUsage = nonRepudiation, digitalSignature, keyEncipherment
 subjectKeyIdentifier = hash
 authorityKeyIdentifier = keyid,issuer
+subjectAltName=DNS:test.example.org
