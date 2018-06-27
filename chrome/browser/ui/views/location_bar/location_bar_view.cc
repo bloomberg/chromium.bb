@@ -476,8 +476,10 @@ void LocationBarView::Layout() {
   keyword_hint_view_->SetVisible(false);
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
-  LocationBarLayout leading_decorations(LocationBarLayout::LEFT_EDGE,
-                                        item_padding, item_padding);
+
+  LocationBarLayout leading_decorations(
+      LocationBarLayout::LEFT_EDGE, item_padding,
+      item_padding - omnibox_view_->GetInsets().left());
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
                                          item_padding, item_padding);
 
@@ -1240,9 +1242,6 @@ void LocationBarView::OnPopupVisibilityChanged() {
   // The focus ring may be hidden or shown when the popup visibility changes.
   if (focus_ring_)
     focus_ring_->SchedulePaint();
-
-  if (ui::MaterialDesignController::IsRefreshUi())
-    omnibox_view_->UpdateTextIndent();
 }
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {

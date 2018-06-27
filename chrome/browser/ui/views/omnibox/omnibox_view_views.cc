@@ -239,20 +239,6 @@ void OmniboxViewViews::InstallPlaceholderText() {
   }
 }
 
-void OmniboxViewViews::UpdateTextIndent() {
-  DCHECK(ui::MaterialDesignController::IsRefreshUi());
-
-  gfx::Insets insets =
-      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX);
-  if (model()->popup_model()->IsOpen())
-    insets += gfx::Insets(0, 8 /* left */, 0, 0);
-
-  SetBorder(views::CreateEmptyBorder(insets));
-
-  // This is necessary to reposition the internal RenderText.
-  OnBoundsChanged(gfx::Rect());
-}
-
 bool OmniboxViewViews::IsHovered() const {
   return hovered_;
 }

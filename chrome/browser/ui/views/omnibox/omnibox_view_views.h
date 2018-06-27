@@ -91,10 +91,6 @@ class OmniboxViewViews : public OmniboxView,
   // "Search Google or type a URL" when the Omnibox is empty and unfocused.
   void InstallPlaceholderText();
 
-  // If the Omnibox popup is open, updates the text indent to match the popup.
-  // Otherwise, resets the text indent to default.
-  void UpdateTextIndent();
-
   // Returns true if the omnibox is currently hovered.
   bool IsHovered() const;
 
