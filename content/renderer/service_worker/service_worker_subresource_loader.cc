@@ -333,13 +333,6 @@ void ServiceWorkerSubresourceLoader::OnResponseBlob(
                 nullptr /* body_as_stream */);
 }
 
-void ServiceWorkerSubresourceLoader::OnResponseLegacyBlob(
-    const ServiceWorkerResponse& response,
-    base::Time dispatch_event_time,
-    OnResponseLegacyBlobCallback callback) {
-  NOTREACHED();
-}
-
 void ServiceWorkerSubresourceLoader::OnResponseStream(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
