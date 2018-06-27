@@ -24,6 +24,7 @@
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/chromeos_features.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/components/proximity_auth/proximity_auth_local_state_pref_manager.h"
 #include "chromeos/components/proximity_auth/switches.h"
@@ -259,20 +260,28 @@ EasyUnlockServiceSignin::GetTurnOffFlowStatus() const {
 
 std::string EasyUnlockServiceSignin::GetChallenge() const {
   const UserData* data = FindLoadedDataForCurrentUser();
-  // TODO(xiyuan): Use correct remote device instead of hard coded first one.
-  uint32_t device_index = 0;
-  if (!data || data->devices.size() <= device_index)
+  if (!data)
     return std::string();
-  return data->devices[device_index].challenge;
+
+  for (const auto& device : data->devices) {
+    if (device.unlock_key)
+      return device.challenge;
+  }
+
+  return std::string();
 }
 
 std::string EasyUnlockServiceSignin::GetWrappedSecret() const {
   const UserData* data = FindLoadedDataForCurrentUser();
-  // TODO(xiyuan): Use correct remote device instead of hard coded first one.
-  uint32_t device_index = 0;
-  if (!data || data->devices.size() <= device_index)
+  if (!data)
     return std::string();
-  return data->devices[device_index].wrapped_secret;
+
+  for (const auto& device : data->devices) {
+    if (device.unlock_key)
+      return device.wrapped_secret;
+  }
+
+  return std::string();
 }
 
 void EasyUnlockServiceSignin::RecordEasySignInOutcome(
@@ -468,6 +477,7 @@ void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
                  weak_ptr_factory_.GetWeakPtr(), account_id_));
 }
 
+// TODO(crbug.com/856387): Write tests for device retrieval from the TPM.
 void EasyUnlockServiceSignin::OnUserDataLoaded(
     const AccountId& account_id,
     bool success,
@@ -510,11 +520,6 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
                     << "  psk: " << device.psk;
       continue;
     }
-    // TODO(tengs): We assume that the device is an unlock key since we only
-    // request unlock keys for EasyUnlock. Instead, we should include unlockable
-    // (as well as the "supports_mobile_hotspot" bool and
-    // last_update_time_millis) as part of EasyUnlockDeviceKeyData instead of
-    // making that assumption here.
 
     std::vector<cryptauth::BeaconSeed> beacon_seeds;
     if (!device.serialized_beacon_seeds.empty()) {
@@ -527,7 +532,7 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
 
     cryptauth::RemoteDevice remote_device(
         account_id.GetUserEmail(), std::string() /* name */, decoded_public_key,
-        decoded_psk /* persistent_symmetric_key */, true /* unlock_key */,
+        decoded_psk /* persistent_symmetric_key */, device.unlock_key,
         false /* supports_mobile_hotspot */, 0L /* last_update_time_millis */,
         std::map<cryptauth::SoftwareFeature, cryptauth::SoftwareFeatureState>(),
         beacon_seeds);
@@ -535,15 +540,69 @@ void EasyUnlockServiceSignin::OnUserDataLoaded(
     remote_devices.push_back(remote_device);
     PA_LOG(INFO) << "Loaded Remote Device:\n"
                  << "  user id: " << remote_device.user_id << "\n"
-                 << "  name: " << remote_device.name << "\n"
-                 << "  public key" << remote_device.public_key;
+                 << "  device id: "
+                 << cryptauth::RemoteDeviceRef::TruncateDeviceIdForLogs(
+                        remote_device.GetDeviceId());
+  }
+
+  // If |chromeos::features::kMultiDeviceApi| is enabled, both a remote device
+  // and local device are expected, and this service cannot continue unless
+  // both are present.
+  //
+  // If the flag is disabled, just one device, the remote device, is expected to
+  // be passed along -- if a second device is present, it can simply be ignored.
+  //
+  // TODO(crbug.com/856380): The remote and local devices need to be passed in a
+  // less hacky way.
+  if (remote_devices.size() > 2u) {
+    PA_LOG(ERROR)
+        << "Expected a device list of size 1 or 2, received list of size "
+        << remote_devices.size();
+    SetHardlockStateForUser(account_id,
+                            EasyUnlockScreenlockStateHandler::NO_PAIRING);
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      remote_devices.size() != 2u) {
+    PA_LOG(ERROR) << "Expected a device list of size 2, received list of size "
+                  << remote_devices.size();
+    SetHardlockStateForUser(account_id,
+                            EasyUnlockScreenlockStateHandler::PAIRING_CHANGED);
+    return;
+  }
+
+  std::string unlock_key_id;
+  // This may be left unset if the local device was not passed along.
+  std::string local_device_id;
+
+  for (const auto& remote_device : remote_devices) {
+    if (remote_device.unlock_key) {
+      if (!unlock_key_id.empty()) {
+        PA_LOG(ERROR) << "Only one of the devices should be an unlock key.";
+        SetHardlockStateForUser(account_id,
+                                EasyUnlockScreenlockStateHandler::NO_PAIRING);
+        return;
+      }
+
+      unlock_key_id = remote_device.GetDeviceId();
+    } else {
+      if (!local_device_id.empty()) {
+        PA_LOG(ERROR) << "Only one of the devices should be the local device.";
+        SetHardlockStateForUser(account_id,
+                                EasyUnlockScreenlockStateHandler::NO_PAIRING);
+        return;
+      }
+
+      local_device_id = remote_device.GetDeviceId();
+    }
   }
 
   remote_device_cache_->SetRemoteDevices(remote_devices);
 
-  // TODO(crbug.com/752273): Inject a real local device.
-  SetProximityAuthDevices(account_id, remote_device_cache_->GetRemoteDevices(),
-                          base::nullopt /* local_device */);
+  SetProximityAuthDevices(
+      account_id, {*remote_device_cache_->GetRemoteDevice(unlock_key_id)},
+      remote_device_cache_->GetRemoteDevice(local_device_id));
 }
 
 const EasyUnlockServiceSignin::UserData*

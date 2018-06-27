@@ -157,6 +157,15 @@ EasyUnlockServiceRegular::~EasyUnlockServiceRegular() {
 // that SmartLock setup has completed successfully. Make this signal more
 // explicit.
 void EasyUnlockServiceRegular::LoadRemoteDevices() {
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      !device_sync_client_->GetLocalDeviceMetadata()) {
+    // OnEnrollmentFinished() will call back on this method once the local
+    // device is ready.
+    PA_LOG(INFO)
+        << "Local device is not ready yet, delaying UseLoadedRemoteDevices().";
+    return;
+  }
+
   bool has_unlock_keys;
   if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
     has_unlock_keys = !GetUnlockKeys().empty();
@@ -228,17 +237,44 @@ void EasyUnlockServiceRegular::OnRemoteDevicesLoaded(
 
 void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     const cryptauth::RemoteDeviceRefList& remote_devices) {
+  // When EasyUnlock is enabled, only one EasyUnlock host should exist.
+  // If |remote_devices| is empty, that means the caller of this method didn't
+  // verify that EasyUnlock is enabled, as it should have. |remote_devices|
+  // should never be longer than 1.
+  DCHECK(!remote_devices.empty());
+  if (remote_devices.size() != 1u) {
+    PA_LOG(ERROR) << "Expected only one unlock key, found "
+                  << remote_devices.size();
+    return;
+  }
+
   SetProximityAuthDevices(
       GetAccountId(), remote_devices,
       base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)
           ? device_sync_client_->GetLocalDeviceMetadata()
           : base::nullopt);
 
-  // We need to store a copy of |remote devices_| in the TPM, so it can be
-  // retrieved on the sign-in screen when a user session has not been started
+  // EasyUnlockServiceSignin accesses this list.
+  // If |chromeos::features::kMultiDeviceApi| is enabled, it will expect a final
+  // size of 2 (the one remote device, and the local device).
+  // If |chromeos::features::kMultiDeviceApi| is disabled, it will expect a
+  // final size of 1 (just the remote device).
+  // TODO(crbug.com/856380): For historical reasons, the local and remote device
+  // are persisted together in a list. This is awkward and hacky; they should
+  // be persisted in a dictionary.
+  cryptauth::RemoteDeviceRefList local_and_remote_devices;
+  local_and_remote_devices.push_back(remote_devices[0]);
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+    local_and_remote_devices.push_back(
+        *device_sync_client_->GetLocalDeviceMetadata());
+  }
+
+  // We need to store a copy of |local_and_remote_devices| in the TPM, so it can
+  // be retrieved on the sign-in screen when a user session has not been started
   // yet.
+  // These same constants are used in EasyUnlockKeyManager.
   std::unique_ptr<base::ListValue> device_list(new base::ListValue());
-  for (const auto& device : remote_devices) {
+  for (const auto& device : local_and_remote_devices) {
     std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
     std::string b64_public_key, b64_psk;
     base::Base64UrlEncode(device.public_key(),
@@ -280,6 +316,9 @@ void EasyUnlockServiceRegular::UseLoadedRemoteDevices(
     JSONStringValueSerializer serializer(&serialized_beacon_seeds);
     serializer.Serialize(*beacon_seed_list);
     dict->SetString("serializedBeaconSeeds", serialized_beacon_seeds);
+
+    // This differentiates the local device from the remote device.
+    dict->SetBoolean("unlockKey", device.unlock_key());
 
     device_list->Append(std::move(dict));
   }
@@ -578,6 +617,12 @@ void EasyUnlockServiceRegular::OnSyncFinished(
   ShowNotificationIfNewDevicePresent(public_keys_before_sync,
                                      public_keys_after_sync);
 
+  LoadRemoteDevices();
+}
+
+void EasyUnlockServiceRegular::OnEnrollmentFinished() {
+  // If the local device is ready for the first time, or has been updated,
+  // reload devices.
   LoadRemoteDevices();
 }
 

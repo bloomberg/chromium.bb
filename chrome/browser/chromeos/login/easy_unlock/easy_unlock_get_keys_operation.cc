@@ -133,6 +133,15 @@ void EasyUnlockGetKeysOperation::OnGetKeyData(
         device.serialized_beacon_seeds = *entry.bytes;
       else
         NOTREACHED();
+    } else if (entry.name == kEasyUnlockKeyMetaNameUnlockKey) {
+      // ProviderData only has the std::string |bytes| and int64_t |number|
+      // fields for persistence -- the number field is used to store this
+      // boolean. The boolean was stored as either a 1 or 0 in as an int64_t.
+      // Cast it back to bool here.
+      if (entry.number)
+        device.unlock_key = static_cast<bool>(*entry.number);
+      else
+        NOTREACHED();
     } else {
       PA_LOG(WARNING) << "Unknown EasyUnlock key data entry, name="
                       << entry.name;

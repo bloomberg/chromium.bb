@@ -337,6 +337,12 @@ void EasyUnlockCreateKeysOperation::OnGetSystemSalt(
   key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
       kEasyUnlockKeyMetaNameSerializedBeaconSeeds,
       device->serialized_beacon_seeds));
+  // ProviderData only has std::string and int64_t fields for persistence -- use
+  // the int64_t field to store this boolean. The boolean is stored as either a
+  // 1 or 0 in as an int64_t.
+  key_def.provider_data.push_back(cryptohome::KeyDefinition::ProviderData(
+      kEasyUnlockKeyMetaNameUnlockKey,
+      static_cast<int64_t>(device->unlock_key)));
 
   std::unique_ptr<Key> auth_key(new Key(*user_context_.GetKey()));
   if (auth_key->GetKeyType() == Key::KEY_TYPE_PASSWORD_PLAIN)
