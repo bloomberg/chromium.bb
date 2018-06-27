@@ -43,6 +43,9 @@ ASH_PUBLIC_EXPORT extern const base::Feature kEnableSettingsShortcutSearch;
 // Enables the apps grid gap feature.
 ASH_PUBLIC_EXPORT extern const base::Feature kEnableAppsGridGapFeature;
 
+// Enables the new style launcher (See details at http://crbug.com/857206).
+ASH_PUBLIC_EXPORT extern const base::Feature kEnableNewStyleLauncher;
+
 bool ASH_PUBLIC_EXPORT IsAnswerCardEnabled();
 bool ASH_PUBLIC_EXPORT IsAppShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsBackgroundBlurEnabled();
@@ -50,6 +53,7 @@ bool ASH_PUBLIC_EXPORT IsPlayStoreAppSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsHomeLauncherEnabled();
 bool ASH_PUBLIC_EXPORT IsSettingsShortcutSearchEnabled();
 bool ASH_PUBLIC_EXPORT IsAppsGridGapFeatureEnabled();
+bool ASH_PUBLIC_EXPORT IsNewStyleLauncherEnabled();
 std::string ASH_PUBLIC_EXPORT AnswerServerUrl();
 std::string ASH_PUBLIC_EXPORT AnswerServerQuerySuffix();
 

@@ -25,6 +25,8 @@ const base::Feature kEnableSettingsShortcutSearch{
     "EnableSettingsShortcutSearch", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kEnableAppsGridGapFeature{
     "EnableAppsGridGapFeature", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kEnableNewStyleLauncher{"EnableNewStyleLauncher",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
 
 bool IsAnswerCardEnabled() {
   // Not using local static variable to allow tests to change this value.
@@ -54,6 +56,10 @@ bool IsSettingsShortcutSearchEnabled() {
 
 bool IsAppsGridGapFeatureEnabled() {
   return base::FeatureList::IsEnabled(kEnableAppsGridGapFeature);
+}
+
+bool IsNewStyleLauncherEnabled() {
+  return base::FeatureList::IsEnabled(kEnableNewStyleLauncher);
 }
 
 std::string AnswerServerUrl() {

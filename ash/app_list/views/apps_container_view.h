@@ -26,7 +26,7 @@ class PageSwitcher;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
-// active folder. Only one if them is visible to user at any time.
+// active folder.
 class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
  public:
   AppsContainerView(ContentsView* contents_view, AppListModel* model);

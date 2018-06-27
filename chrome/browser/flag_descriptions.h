@@ -1834,6 +1834,9 @@ extern const char kEnableHomeLauncherDescription[];
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 
+extern const char kEnableNewStyleLauncherName[];
+extern const char kEnableNewStyleLauncherDescription[];
+
 extern const char kEnableNewWallpaperPickerName[];
 extern const char kEnableNewWallpaperPickerDescription[];
 
