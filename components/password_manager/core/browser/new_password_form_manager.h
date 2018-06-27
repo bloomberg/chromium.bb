@@ -123,6 +123,10 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   // by |form_fetcher_|.
   std::map<base::string16, const autofill::PasswordForm*> best_matches_;
 
+  // Set of blacklisted forms from the PasswordStore that best match the current
+  // form. They are owned by |form_fetcher_|.
+  std::vector<const autofill::PasswordForm*> blacklisted_matches_;
+
   // Convenience pointer to entry in best_matches_ that is marked
   // as preferred. This is only allowed to be null if there are no best matches
   // at all, since there will always be one preferred login when there are
