@@ -12,10 +12,14 @@
 #include "chrome/browser/ui/avatar_button_error_controller.h"
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "components/signin/core/browser/account_tracker_service.h"
+#include "components/signin/core/browser/gaia_cookie_manager_service.h"
 
 class AvatarToolbarButton : public ToolbarButton,
                             public AvatarButtonErrorControllerDelegate,
-                            public ProfileAttributesStorage::Observer {
+                            public ProfileAttributesStorage::Observer,
+                            public GaiaCookieManagerService::Observer,
+                            public AccountTrackerService::Observer {
  public:
   AvatarToolbarButton(Profile* profile, views::ButtonListener* listener);
   ~AvatarToolbarButton() override;
@@ -39,6 +43,18 @@ class AvatarToolbarButton : public ToolbarButton,
   void OnProfileNameChanged(const base::FilePath& profile_path,
                             const base::string16& old_profile_name) override;
 
+  // GaiaCookieManagerService::Observer:
+  // Needed if the first sync promo account should be displayed.
+  void OnGaiaAccountsInCookieUpdated(
+      const std::vector<gaia::ListedAccount>& accounts,
+      const std::vector<gaia::ListedAccount>& signed_out_accounts,
+      const GoogleServiceAuthError& error) override;
+
+  // AccountTrackerService::Observer:
+  // Needed if the first sync promo account should be displayed.
+  void OnAccountImageUpdated(const std::string& account_id,
+                             const gfx::Image& image) override;
+
   bool IsIncognito() const;
   bool ShouldShowGenericIcon() const;
   base::string16 GetAvatarTooltipText();
@@ -53,6 +69,10 @@ class AvatarToolbarButton : public ToolbarButton,
 #endif  // !defined(OS_CHROMEOS)
   ScopedObserver<ProfileAttributesStorage, AvatarToolbarButton>
       profile_observer_;
+  ScopedObserver<GaiaCookieManagerService, AvatarToolbarButton>
+      cookie_manager_service_observer_;
+  ScopedObserver<AccountTrackerService, AvatarToolbarButton>
+      account_tracker_service_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(AvatarToolbarButton);
 };
