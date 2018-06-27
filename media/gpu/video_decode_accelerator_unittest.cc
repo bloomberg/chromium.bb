@@ -326,6 +326,9 @@ class GLRenderingVDAClient
   void SetState(ClientState new_state);
   void FinishInitialization();
   void ReturnPicture(int32_t picture_buffer_id);
+  bool IsLastPlayThrough() {
+    return config_.num_play_throughs - completed_play_throughs_ == 1;
+  }
 
   // Delete the associated decoder helper.
   void DeleteDecoder();
@@ -346,7 +349,7 @@ class GLRenderingVDAClient
   std::unique_ptr<base::WeakPtrFactory<VideoDecodeAccelerator>>
       weak_vda_ptr_factory_;
   std::unique_ptr<GpuVideoDecodeAcceleratorFactory> vda_factory_;
-  size_t remaining_play_throughs_;
+  size_t completed_play_throughs_;
   ResetPoint reset_point_;
   ClientState state_;
   size_t num_queued_fragments_;
@@ -401,7 +404,7 @@ GLRenderingVDAClient::GLRenderingVDAClient(
       outstanding_decodes_(0),
       next_bitstream_buffer_id_(0),
       note_(note),
-      remaining_play_throughs_(config_.num_play_throughs),
+      completed_play_throughs_(0),
       reset_point_(config_.reset_point),
       state_(CS_CREATED),
       num_queued_fragments_(0),
@@ -584,7 +587,7 @@ void GLRenderingVDAClient::PictureReady(const Picture& picture) {
 
   // Mid-stream reset applies only to the last play-through per constructor
   // comment.
-  if (remaining_play_throughs_ == 1 && reset_point_ == MID_STREAM_RESET &&
+  if (IsLastPlayThrough() && reset_point_ == MID_STREAM_RESET &&
       config_.reset_after_frame_num == num_decoded_frames_) {
     decoder_->Reset();
     // Re-start decoding from the beginning of the stream to avoid needing to
@@ -638,8 +641,6 @@ void GLRenderingVDAClient::ReturnPicture(int32_t picture_buffer_id) {
 }
 
 void GLRenderingVDAClient::ResetDecoderAfterFlush() {
-  DCHECK_GE(remaining_play_throughs_, 1u);
-  --remaining_play_throughs_;
   // SetState(CS_RESETTING) should be called before decoder_->Reset(), because
   // VDA can call NotifyFlushDone() from Reset().
   // TODO(johnylin): call SetState() before all decoder Flush() and Reset().
@@ -725,12 +726,16 @@ void GLRenderingVDAClient::NotifyResetDone() {
       break;
   }
 
-  if (remaining_play_throughs_) {
+  completed_play_throughs_++;
+  DCHECK_GE(config_.num_play_throughs, completed_play_throughs_);
+
+  if (completed_play_throughs_ < config_.num_play_throughs) {
     encoded_data_helper_->Rewind();
     FinishInitialization();
     return;
   }
 
+  // completed_play_throughs == config.num_play_throughs.
   rendering_helper_->Flush(config_.window_id);
 
   if (pending_textures_.empty()) {
@@ -759,7 +764,11 @@ void GLRenderingVDAClient::OutputFrameDeliveryTimes(base::File* output) {
 void GLRenderingVDAClient::SetState(ClientState new_state) {
   note_->Notify(new_state);
   state_ = new_state;
-  if (!remaining_play_throughs_ && new_state == config_.delete_decoder_state) {
+  if (IsLastPlayThrough() && new_state == config_.delete_decoder_state) {
+    // If config_.delete_decoder_state is CS_RESET, IsLastPlayThrough() is
+    // false. But it does not matter, because DeleteDecoder() is executed after
+    // SetState(CS_RESET) in NotifyResetDone().
+    ASSERT_NE(config_.delete_decoder_state, CS_RESET);
     LOG_ASSERT(!decoder_deleted());
     DeleteDecoder();
   }
@@ -836,7 +845,7 @@ void GLRenderingVDAClient::DecodeNextFragment() {
   next_bitstream_buffer_id_ = (next_bitstream_buffer_id_ + 1) & 0x3FFFFFFF;
   decoder_->Decode(bitstream_buffer);
   ++outstanding_decodes_;
-  if (!remaining_play_throughs_ &&
+  if (IsLastPlayThrough() &&
       -config_.delete_decoder_state == next_bitstream_buffer_id_) {
     DeleteDecoder();
   }
@@ -1202,7 +1211,9 @@ TEST_P(VideoDecodeAcceleratorParamTest, MAYBE_TestSimpleDecode) {
   for (size_t i = 0; i < num_concurrent_decoders; ++i) {
     ClientStateNotification<ClientState>* note = notes_[i].get();
     ClientState state = note->Wait();
-    if (state != CS_INITIALIZED) {
+    EXPECT_TRUE(delete_decoder_state != CS_DECODER_SET ||
+                state == CS_DESTROYED);
+    if (delete_decoder_state != CS_DECODER_SET && state != CS_INITIALIZED) {
       skip_performance_and_correctness_checks = true;
       // We expect initialization to fail only when more than the supported
       // number of decoders is instantiated.  Assert here that something else
@@ -1432,7 +1443,6 @@ INSTANTIATE_TEST_CASE_P(
                         CS_RESETTING,
                         false,
                         false),
-        std::make_tuple(1, 1, 1, END_OF_STREAM_RESET, CS_RESET, false, false),
         std::make_tuple(1,
                         1,
                         1,
