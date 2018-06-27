@@ -572,12 +572,6 @@ void RemoveBlacklistState() {
                                  install_static::GetRegistryPath().append(
                                      blacklist::kRegistryBeaconKeyName),
                                  0);  // wow64_access
-  // The following key is no longer used (https://crbug.com/631771). This
-  // cleanup is being left in for a time though.
-  InstallUtil::DeleteRegistryKey(
-      HKEY_CURRENT_USER,
-      install_static::GetRegistryPath().append(L"\\BLFinchList"),
-      0);  // wow64_access
 }
 
 // Removes the browser's persistent state in the Windows registry for the

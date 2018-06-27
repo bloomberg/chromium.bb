@@ -14,7 +14,7 @@ namespace third_party_dlls {
 // "static_cast<int>(FileStatus::value)" to access underlying value.
 enum class FileStatus {
   kSuccess = 0,
-  kUserDataDirFail = 1,
+  kFilePathNotFoundInRegistry = 1,
   kFileNotFound = 2,
   kFileAccessDenied = 3,
   kFileUnexpectedFailure = 4,
