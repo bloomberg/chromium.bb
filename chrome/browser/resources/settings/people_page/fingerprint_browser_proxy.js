@@ -35,6 +35,7 @@ settings.FingerprintAttempt;
  * @typedef {{
  *   result: settings.FingerprintResultType,
  *   isComplete: boolean,
+ *   percentComplete: number,
  * }}
  */
 settings.FingerprintScan;

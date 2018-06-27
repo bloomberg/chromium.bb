@@ -30,15 +30,6 @@ const FLASH_DURATION_MS = 300;
  */
 const SHOW_TAP_SENSOR_MESSAGE_DELAY_MS = 2000;
 
-/**
- * The estimated amount of complete scans needed to enroll a fingerprint. Used
- * to help us estimate the progress of an enroll session.
- * TODO(xiaoyinh@): This will be replaced by percentage of completion in the
- * future.
- * @type {number}
- */
-const SUCCESSFUL_SCANS_TO_COMPLETE = 15;
-
 Polymer({
   is: 'settings-setup-fingerprint-dialog',
 
@@ -63,14 +54,6 @@ Polymer({
   },
 
   /**
-   * The number of scans that have been received during setup. This is used to
-   * approximate the progress of the setup.
-   * @type {number}
-   * @private
-   */
-  receivedScanCount_: 0,
-
-  /**
    * A message shows after the user has not scanned a finger during setup. This
    * is the set timeout id.
    * @type {number}
@@ -80,6 +63,15 @@ Polymer({
 
   /** @private {?settings.FingerprintBrowserProxy}*/
   browserProxy_: null,
+
+  /**
+   * The percentage of completion that has been received during setup.
+   * This is used to approximate the progress of the setup.
+   * The value within [0, 100] represents the percent of enrollment completion.
+   * @type {number}
+   * @private
+   */
+  percentComplete_: 0,
 
   /** @override */
   attached: function() {
@@ -126,7 +118,7 @@ Polymer({
    */
   reset_: function() {
     this.step_ = settings.FingerprintSetupStep.LOCATE_SCANNER;
-    this.receivedScanCount_ = 0;
+    this.percentComplete_ = 0;
     this.$.arc.clearCanvas();
     this.clearSensorMessageTimeout_();
   },
@@ -156,14 +148,14 @@ Polymer({
           this.$.arc.drawBackgroundCircle();
 
           this.step_ = settings.FingerprintSetupStep.MOVE_FINGER;
-          this.receivedScanCount_ = 0;
+          this.percentComplete_ = 0;
         }
-        const slice = 2 * Math.PI / SUCCESSFUL_SCANS_TO_COMPLETE;
+        const slice = 2 * Math.PI / 100;
         if (scan.isComplete) {
           this.problemMessage_ = '';
           this.step_ = settings.FingerprintSetupStep.READY;
           this.$.arc.animateProgress(
-              this.receivedScanCount_ * slice, 2 * Math.PI);
+              this.percentComplete_ * slice, 2 * Math.PI);
           this.clearSensorMessageTimeout_();
         } else {
           this.setProblem_(scan.result);
@@ -177,10 +169,11 @@ Polymer({
                   opacity: [0.7, 1.0],
                 },
                 FLASH_DURATION_MS);
-            this.$.arc.animateProgress(
-                this.receivedScanCount_ * slice,
-                (this.receivedScanCount_ + 1) * slice);
-            this.receivedScanCount_++;
+            if (scan.percentComplete > this.percentComplete_) {
+              this.$.arc.animateProgress(
+                  this.percentComplete_ * slice, scan.percentComplete * slice);
+              this.percentComplete_ = scan.percentComplete;
+            }
           }
         }
         break;
