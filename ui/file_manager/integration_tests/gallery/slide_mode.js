@@ -137,6 +137,49 @@ function checkAvailabilityOfShareButton(testVolumeName, volumeType, available) {
   });
 }
 
+
+/**
+ * Ensures edit and print buttons are available for images, disabled for video.
+ * @return {Promise} Promise to be fulfilled with on success.
+ */
+testcase.checkAvailabilityOfEditAndPrintButtons = function() {
+  var launchedPromise = launch(
+      'local', 'downloads', [ENTRIES.image3, ENTRIES.world], [ENTRIES.image3]);
+  var appId;
+  return launchedPromise
+      .then(function(result) {
+        appId = result.appId;
+        return gallery.waitForElement(appId, '.gallery[mode="slide"]');
+      })
+      .then(function() {
+        return gallery.callRemoteTestUtil(
+            'queryAllElements', appId,
+            ['#top-toolbar > div > button.edit,button.print']);
+      })
+      .then(function(results) {
+        chrome.test.assertEq(2, results.length);
+        chrome.test.assertFalse('disabled' in results[0].attributes);
+        chrome.test.assertFalse('disabled' in results[0].attributes);
+
+        // Switch to the video.
+        return gallery.waitAndClickElement(appId, '.arrow.right');
+      })
+      .then(function() {
+        return gallery.waitForElement(appId, 'video');
+      })
+      .then(function() {
+        return gallery.callRemoteTestUtil(
+            'queryAllElements', appId,
+            ['#top-toolbar > div > button.edit,button.print']);
+      })
+      .then(function(results) {
+        chrome.test.assertEq(2, results.length);
+        chrome.test.assertTrue('disabled' in results[0].attributes);
+        chrome.test.assertTrue('disabled' in results[0].attributes);
+        return true;
+      });
+};
+
 /**
  * The traverseSlideImages test for Downloads.
  * @return {Promise} Promise to be fulfilled with on success.

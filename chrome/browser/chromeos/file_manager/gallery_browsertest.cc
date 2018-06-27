@@ -71,6 +71,12 @@ IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, OpenMultipleImagesOnDrive) {
   StartTest();
 }
 
+IN_PROC_BROWSER_TEST_F(GalleryBrowserTest,
+                       CheckAvailabilityOfEditAndPrintButtons) {
+  set_test_case_name("checkAvailabilityOfEditAndPrintButtons");
+  StartTest();
+}
+
 IN_PROC_BROWSER_TEST_F(GalleryBrowserTest, TraverseSlideImagesOnDownloads) {
   set_test_case_name("traverseSlideImagesOnDownloads");
   StartTest();

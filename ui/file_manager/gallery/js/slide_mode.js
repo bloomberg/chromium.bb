@@ -1081,13 +1081,9 @@ SlideMode.prototype.itemLoaded_ = function(
       ImageUtil.getMetricName('FileType'), ext, ImageUtil.FILE_TYPES);
 
   // Enable or disable buttons for editing and printing.
-  if (opt_error) {
-    this.editButton_.disabled = true;
-    this.printButton_.disabled = true;
-  } else {
-    this.editButton_.disabled = false;
-    this.printButton_.disabled = false;
-  }
+  let canEditAndPrint = !opt_error && item.isEditable();
+  this.editButton_.disabled = !canEditAndPrint;
+  this.printButton_.disabled = !canEditAndPrint;
 
   // Saved label is hidden by default.
   this.savedLabel_.hidden = true;
