@@ -589,8 +589,8 @@ Channel::~Channel() {
 }
 
 void Channel::ShutDown() {
-  delegate_ = nullptr;
   ShutDownImpl();
+  delegate_ = nullptr;
 }
 
 char* Channel::GetReadBuffer(size_t *buffer_capacity) {
@@ -604,7 +604,7 @@ char* Channel::GetReadBuffer(size_t *buffer_capacity) {
 }
 
 bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
-  bool did_dispatch_message = false;
+  bool did_consume_message = false;
   read_buffer_->Claim(bytes_read);
   while (read_buffer_->num_occupied_bytes() >= sizeof(Message::LegacyHeader)) {
     // Ensure the occupied data is properly aligned. If it isn't, a SIGBUS could
@@ -669,9 +669,11 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
     const uint16_t num_handles =
         header ? header->num_handles : legacy_header->num_handles;
     std::vector<ScopedInternalPlatformHandle> handles;
+    bool deferred = false;
     if (num_handles > 0) {
-      if (!GetReadInternalPlatformHandles(num_handles, extra_header,
-                                          extra_header_size, &handles)) {
+      if (!GetReadInternalPlatformHandles(payload, payload_size, num_handles,
+                                          extra_header, extra_header_size,
+                                          &handles, &deferred)) {
         return false;
       }
 
@@ -684,20 +686,23 @@ bool Channel::OnReadComplete(size_t bytes_read, size_t *next_read_size_hint) {
     // We've got a complete message! Dispatch it and try another.
     if (legacy_header->message_type != Message::MessageType::NORMAL_LEGACY &&
         legacy_header->message_type != Message::MessageType::NORMAL) {
+      DCHECK(!deferred);
       if (!OnControlMessage(legacy_header->message_type, payload, payload_size,
                             std::move(handles))) {
         return false;
       }
-      did_dispatch_message = true;
+      did_consume_message = true;
+    } else if (deferred) {
+      did_consume_message = true;
     } else if (delegate_) {
       delegate_->OnChannelMessage(payload, payload_size, std::move(handles));
-      did_dispatch_message = true;
+      did_consume_message = true;
     }
 
     read_buffer_->Discard(legacy_header->num_bytes);
   }
 
-  *next_read_size_hint = did_dispatch_message ? 0 : kReadBufferSize;
+  *next_read_size_hint = did_consume_message ? 0 : kReadBufferSize;
   return true;
 }
 

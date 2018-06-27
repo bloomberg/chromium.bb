@@ -65,37 +65,29 @@ void ReportChildError(ChildUMAError error) {
 }  // namespace
 
 // static
-void MachPortRelay::ReceivePorts(
-    std::vector<ScopedInternalPlatformHandle>* handles) {
-  DCHECK(handles);
+void MachPortRelay::ReceiveSendRight(InternalPlatformHandle* handle) {
+  DCHECK_EQ(handle->type, InternalPlatformHandle::Type::MACH_NAME);
+  handle->type = InternalPlatformHandle::Type::MACH;
 
-  for (auto& handle : *handles) {
-    DCHECK(handle.get().type != InternalPlatformHandle::Type::MACH);
-    if (handle.get().type != InternalPlatformHandle::Type::MACH_NAME)
-      continue;
+  // MACH_PORT_NULL doesn't need translation.
+  if (handle->port == MACH_PORT_NULL)
+    return;
 
-    handle.get().type = InternalPlatformHandle::Type::MACH;
-
-    // MACH_PORT_NULL doesn't need translation.
-    if (handle.get().port == MACH_PORT_NULL)
-      continue;
-
-    // TODO(wez): Wrapping handle.get().port in this way causes it to be
-    // Free()d via mach_port_mod_refs() - should InternalPlatformHandle also do
-    // that if the handle never reaches here, or should this code not be
-    // wrapping it?
-    base::mac::ScopedMachReceiveRight message_port(handle.get().port);
-    base::mac::ScopedMachSendRight received_port(
-        base::ReceiveMachPort(message_port.get()));
-    handle.get().port = received_port.release();
-    if (!handle.is_valid()) {
-      ReportChildError(ChildUMAError::ERROR_RECEIVE_MACH_MESSAGE);
-      DLOG(ERROR) << "Error receiving mach port";
-      continue;
-    }
-
-    ReportChildError(ChildUMAError::SUCCESS);
+  // TODO(wez): Wrapping handle.get().port in this way causes it to be
+  // Free()d via mach_port_mod_refs() - should InternalPlatformHandle also do
+  // that if the handle never reaches here, or should this code not be
+  // wrapping it?
+  base::mac::ScopedMachReceiveRight message_port(handle->port);
+  base::mac::ScopedMachSendRight received_port(
+      base::ReceiveMachPort(message_port.get()));
+  handle->port = received_port.release();
+  if (!handle->is_valid()) {
+    ReportChildError(ChildUMAError::ERROR_RECEIVE_MACH_MESSAGE);
+    DLOG(ERROR) << "Error receiving mach port";
+    return;
   }
+
+  ReportChildError(ChildUMAError::SUCCESS);
 }
 
 MachPortRelay::MachPortRelay(base::PortProvider* port_provider)

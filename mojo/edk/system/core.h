@@ -15,6 +15,7 @@
 #include "base/memory/shared_memory_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "build/build_config.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/handle_table.h"
@@ -36,6 +37,7 @@ class PortProvider;
 namespace mojo {
 namespace edk {
 
+class MachPortRelay;
 class PlatformSharedMemoryMapping;
 
 // |Core| is an object that implements the Mojo system calls. All public methods
@@ -112,6 +114,10 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
 
   // Sets the mach port provider for this process.
   void SetMachPortProvider(base::PortProvider* port_provider);
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  MachPortRelay* GetMachPortRelay();
+#endif
 
   MojoHandle AddDispatcher(scoped_refptr<Dispatcher> dispatcher);
 

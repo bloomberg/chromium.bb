@@ -296,6 +296,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   explicit Channel(Delegate* delegate);
   virtual ~Channel();
 
+  Delegate* delegate() const { return delegate_; }
+
   // Called by the implementation when it wants somewhere to stick data.
   // |*buffer_capacity| may be set by the caller to indicate the desired buffer
   // size. If 0, a sane default size will be used instead.
@@ -325,11 +327,18 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // insufficient number of handles to be available when this call is made, but
   // this is not necessarily an error condition. In such cases this returns
   // |true| but |*handles| will also be reset to null.
+  //
+  // If the implementation sets |*deferred| to |true|, it assumes responsibility
+  // for dispatching the message eventually. It must copy |payload| and take
+  // ownership of |*handles|.
   virtual bool GetReadInternalPlatformHandles(
+      const void* payload,
+      size_t payload_size,
       size_t num_handles,
       const void* extra_header,
       size_t extra_header_size,
-      std::vector<ScopedInternalPlatformHandle>* handles) = 0;
+      std::vector<ScopedInternalPlatformHandle>* handles,
+      bool* deferred) = 0;
 
   // Handles a received control message. Returns |true| if the message is
   // accepted, or |false| otherwise.

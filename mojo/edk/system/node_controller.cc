@@ -1136,23 +1136,7 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
     }
   }
   message->SetHandles(std::move(handles));
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
-  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
-  for (auto& handle : handles) {
-    if (handle.get().type == InternalPlatformHandle::Type::MACH_NAME) {
-      MachPortRelay* relay = GetMachPortRelay();
-      if (!relay) {
-        handle.get().type = InternalPlatformHandle::Type::MACH;
-        handle.get().port = MACH_PORT_NULL;
-        DLOG(ERROR) << "Receiving Mach ports without a port relay from "
-                    << from_node << ".";
-        continue;
-      }
-      relay->ExtractPort(&handle, from_process);
-    }
-  }
-  message->SetHandles(std::move(handles));
-#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
+#endif  // defined(OS_WIN)
 
   if (destination == name_) {
     // Great, we can deliver this message locally.

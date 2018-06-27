@@ -230,8 +230,9 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                     const ports::PortName& port_name) override;
   void OnChannelError(const ports::NodeName& from_node,
                       NodeChannel* channel) override;
+
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-  MachPortRelay* GetMachPortRelay() override;
+  MachPortRelay* GetMachPortRelay();
 #endif
 
   // Cancels all pending port merges. These are merges which are supposed to

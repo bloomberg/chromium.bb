@@ -34,17 +34,16 @@ class MachPortRelay : public base::PortProvider::Observer {
   };
 
   // Used by a child process to receive Mach ports from a sender (privileged)
-  // process. Each Mach port in |handles| is interpreted as an intermediate Mach
+  // process. The Mach port in |*handle| is interpreted as an intermediate Mach
   // port. It replaces each Mach port with the final Mach port received from the
   // intermediate port. This method takes ownership of the intermediate Mach
-  // port and gives ownership of the final Mach port to the caller. Any handles
-  // that are not Mach ports will remain unchanged, and the number and ordering
-  // of handles is preserved.
+  // port and gives ownership of the final Mach port to the caller.
+  //
   // On failure, the Mach port is replaced with MACH_PORT_NULL.
   //
   // See SendPortsToProcess() for the definition of intermediate and final Mach
   // ports.
-  static void ReceivePorts(std::vector<ScopedInternalPlatformHandle>* handles);
+  static void ReceiveSendRight(InternalPlatformHandle* handle);
 
   explicit MachPortRelay(base::PortProvider* port_provider);
   ~MachPortRelay() override;

@@ -23,20 +23,12 @@
 #include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-#include "mojo/edk/system/mach_port_relay.h"
-#endif
-
 namespace mojo {
 namespace edk {
 
 // Wraps a Channel to send and receive Node control messages.
 class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
-                    public Channel::Delegate
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-                    , public MachPortRelay::Observer
-#endif
-  {
+                    public Channel::Delegate {
  public:
   class Delegate {
    public:
@@ -85,10 +77,6 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
                               const ports::PortName& port_name) = 0;
     virtual void OnChannelError(const ports::NodeName& node,
                                 NodeChannel* channel) = 0;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-    virtual MachPortRelay* GetMachPortRelay() = 0;
-#endif
   };
 
   static scoped_refptr<NodeChannel> Create(
@@ -181,13 +169,6 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
       std::vector<ScopedInternalPlatformHandle> handles) override;
   void OnChannelError(Channel::Error error) override;
 
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // MachPortRelay::Observer:
-  void OnProcessReady(base::ProcessHandle process) override;
-
-  void ProcessPendingMessagesWithMachPorts();
-#endif
-
   void WriteChannelMessage(Channel::MessagePtr message);
 
   Delegate* const delegate_;
@@ -202,12 +183,6 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
 
   base::Lock remote_process_handle_lock_;
   ScopedProcessHandle remote_process_handle_;
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  base::Lock pending_mach_messages_lock_;
-  PendingMessageQueue pending_write_messages_;
-  PendingRelayMessageQueue pending_relay_messages_;
-#endif
 
   DISALLOW_COPY_AND_ASSIGN(NodeChannel);
 };
