@@ -255,6 +255,8 @@ ScopedPixelUnpackState::~ScopedPixelUnpackState() {
   state_->RestoreUnpackState();
 }
 
+// Commands that are whitelisted as OK to occur between BeginRasterCHROMIUM and
+// EndRasterCHROMIUM. They do not invalidate GrContext state tracking.
 bool AllowedBetweenBeginEndRaster(CommandId command) {
   switch (command) {
     case kCreateTransferCacheEntryINTERNAL:
@@ -271,8 +273,62 @@ bool AllowedBetweenBeginEndRaster(CommandId command) {
   }
 }
 
+// Commands that do not require that GL state matches ContextState. Some
+// are completely indifferent to GL state. Others require that GL state
+// matches GrContext state tracking.
+bool PermitsInconsistentContextState(CommandId command) {
+  switch (command) {
+    case kBeginRasterCHROMIUM:
+    case kCreateAndConsumeTextureINTERNALImmediate:
+    case kCreateTransferCacheEntryINTERNAL:
+    case kDeleteTexturesImmediate:
+    case kDeleteTransferCacheEntryINTERNAL:
+    case kEndRasterCHROMIUM:
+    case kFinish:
+    case kFlush:
+    case kGetError:
+    case kInsertFenceSyncCHROMIUM:
+    case kRasterCHROMIUM:
+    case kUnlockTransferCacheEntryINTERNAL:
+    case kWaitSyncTokenCHROMIUM:
+      return true;
+    default:
+      return false;
+  }
+}
+
 }  // namespace
 
+// RasterDecoderImpl uses two separate state trackers (gpu::gles2::ContextState
+// and GrContext) that cache the current GL driver state. Each class sees a
+// fraction of the GL calls issued and can easily become inconsistent with GL
+// state. We guard against that by resetting. But resetting is expensive, so we
+// avoid it as much as possible. The argument for correctness is as follows:
+//
+// - GLES2Decoder: The GL state matches the ContextState before and after a
+//   command is executed here. The interesting case is making a GLES2Decoder
+//   current. If using a virtual context, we will restore state appropriately
+//   when the GLES2Decoder is made current because of the call to
+//   RasterDecoderImpl::GetContextState.
+//
+// - RasterDecoder: There are two cases to consider
+//
+//   Case 1: Making a RasterDecoder current. If we are using virtual contexts,
+//     we will restore to |state_| and GrContext::resetContext because of
+//     RasterDecoderImpl::{GetContextState,RestoreState}. If not, we will
+//     restore to the previous GL state (either |state_| or GrContext consistent
+//     with previous GL state).
+//
+//   Case 2a: Executing a PermitsInconsistentContextState command: Either the
+//     command doesn't inspect/modify GL state (InsertSyncPoint,
+//     CreateAndConsumeTexture) or it requires and maintains that GrContext
+//     state tracking matches GL context state (e.g. *RasterCHROMIUM --- see
+//     PessimisticallyResetGrContext).
+//
+//   Case 2b: Executing a command that is not whitelisted: We force GL state to
+//     match |state_| as necessary (see |need_context_state_reset_|) in
+//     DoCommandsImpl with RestoreState(nullptr). This will call
+//     GrContext::resetContext.
 class RasterDecoderImpl final : public RasterDecoder,
                                 public gles2::ErrorStateClient,
                                 public ServiceFontManager::Client {
@@ -479,15 +535,6 @@ class RasterDecoderImpl final : public RasterDecoder,
     DCHECK(texture_iter != texture_metadata_.end());
 
     texture_metadata_.erase(texture_iter);
-  }
-
-  void UnbindTexture(TextureRef* texture_ref) {
-    if (gr_context_) {
-      gr_context_->resetContext(kTextureBinding_GrGLBackendState);
-    }
-
-    // Unbind texture_ref from texture_ref units.
-    state_.UnbindTexture(texture_ref);
   }
 
   // Creates a vertex attrib manager for the given vertex array.
@@ -752,6 +799,10 @@ class RasterDecoderImpl final : public RasterDecoder,
   std::vector<SkDiscardableHandleId> locked_handles_;
   size_t glyph_cache_max_texture_bytes_;
 
+  // |need_context_state_reset_| is set whenever Skia may have altered the
+  // driver's GL state. It signals the need to restore driver GL state to
+  // |state_| before executing commands that do not
+  // PermitsInconsistentContextState.
   bool need_context_state_reset_ = false;
 
   // Tracing helpers.
@@ -1494,6 +1545,12 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
           continue;
         }
       }
+      if (!PermitsInconsistentContextState(command)) {
+        if (need_context_state_reset_) {
+          need_context_state_reset_ = false;
+          RestoreState(nullptr);
+        }
+      }
       unsigned int info_arg_count = static_cast<unsigned int>(info.arg_count);
       if ((info.arg_flags == cmd::kFixed && arg_count == info_arg_count) ||
           (info.arg_flags == cmd::kAtLeastN && arg_count >= info_arg_count)) {
@@ -2071,7 +2128,6 @@ void RasterDecoderImpl::DeleteTexturesHelper(
     GLuint client_id = client_ids[ii];
     TextureRef* texture_ref = GetTexture(client_id);
     if (texture_ref) {
-      UnbindTexture(texture_ref);
       RemoveTexture(client_id);
     }
   }
