@@ -88,10 +88,6 @@ crbug.com/829740 fast/history/history-back-twice-with-subframes-assert.html [ Pa
 ########## Genuinely flaky ##########
 crbug.com/624233 virtual/gpu-rasterization/images/color-profile-background-clip-text.html [ Pass Failure ]
 
-crbug.com/653722 compositing/reflections/nested-reflection-anchor-point.html [ Pass Failure ]
-crbug.com/653722 compositing/reflections/nested-reflection-animated.html [ Pass Failure ]
-crbug.com/653722 compositing/reflections/nested-reflection-transition.html [ Pass Failure ]
-
 crbug.com/816045 [ Win Linux Mac ] virtual/gpu/fast/canvas/canvas-imageSmoothingQuality-pixel.html [ Pass Timeout ]
 
 ########## Bugs to fix ##########
@@ -2026,7 +2022,6 @@ crbug.com/404597 fast/forms/long-text-in-input.html [ Skip ]
 # Web Components related tests (Shadow DOM, Custom Elements) failures.
 crbug.com/392771 external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
 
-crbug.com/552494 scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 crbug.com/652964 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
@@ -2518,9 +2513,6 @@ crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 crbug.com/545140 [ Mac ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 
-crbug.com/621772 fast/forms/color/color-suggestion-picker-with-scrollbar-appearance.html [ Pass Failure ]
-crbug.com/652995 fast/forms/text/input-text-scroll-left-on-blur.html [ Pass Failure ]
-
 crbug.com/591500 [ Win10 ] printing/webgl-repeated-printing.html [ Failure ]
 
 crbug.com/591500 [ Win10 ] printing/simultaneous-position-float-change.html [ Failure ]
@@ -2569,8 +2561,6 @@ crbug.com/591500 [ Win10 ] printing/fixed-positioned-headers-and-footers-clipped
 crbug.com/591500 [ Win10 ] virtual/threaded/printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] printing/ellipsis-printing-style.html [ Skip ]
 crbug.com/591500 [ Win10 ] virtual/layout_ng_experimental/printing/ellipsis-printing-style.html [ Skip ]
-
-crbug.com/474759 fast/writing-mode/vertical-rl-replaced-selection.html [ Failure ]
 
 crbug.com/353746 virtual/android/fullscreen/video-specified-size.html [ Failure Pass ]
 
@@ -2635,8 +2625,6 @@ crbug.com/654477 media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 virtual/video-surface-layer/media/controls-focus-ring.html [ Failure ]
 crbug.com/654477 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win7 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-
-crbug.com/855166 svg/as-background-image/svg-as-background-5.html [ Pass Failure ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 
@@ -2771,7 +2759,7 @@ crbug.com/626703 http/tests/devtools/indexeddb/database-refresh-view.js [ Pass F
 crbug.com/626703 http/tests/devtools/extensions/extensions-sidebar.js [ Pass Failure ]
 crbug.com/751952 external/wpt/editing/run/forwarddelete.html [ Failure Pass Timeout ]
 crbug.com/751952 fast/text/international/complex-text-rectangle.html [ Timeout Pass ]
-crbug.com/751952 editing/selection/modify_extend/extend_by_character.html [ Pass Failure ]
+crbug.com/751952 [ Mac Win ] editing/selection/modify_extend/extend_by_character.html [ Failure Pass ]
 crbug.com/751952 http/tests/devtools/console/console-uncaught-promise.js [ Pass Failure ]
 crbug.com/751952 virtual/origin-trials-runtimeflags-disabled/http/tests/origin_trials/webexposed/budget-api-origin-trial-interfaces.html [ Pass Failure ]
 
@@ -3783,7 +3771,6 @@ crbug.com/663585 editing/pasteboard/data-transfer-items-image-png.html [ Pass Fa
 
 crbug.com/652536 fast/events/mouse-cursor.html [ Pass Failure ]
 crbug.com/652536 virtual/mouseevent_fractional/fast/events/mouse-cursor.html [ Pass Failure ]
-crbug.com/663858 fast/text/selection/emphasis.html [ Pass Failure ]
 crbug.com/663858 fast/text/emphasis-vertical.html [ Pass Failure ]
 crbug.com/664816 http/tests/security/contentSecurityPolicy/require-sri-for/require-sri-for-script-reportonly-blocked.php [ Pass Failure ]
 crbug.com/664819 http/tests/security/isolatedWorld/bypass-main-world-csp-for-inline-style.html [ Pass Failure ]
