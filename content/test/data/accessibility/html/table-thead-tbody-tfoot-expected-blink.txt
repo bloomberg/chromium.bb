@@ -28,6 +28,3 @@ rootWebArea name='Table example - thead, tbody, tfoot'
 ++++++cell name='3'
 ++++++++staticText name='3'
 ++++++++++inlineTextBox name='3'
-++++column
-++++column
-++++tableHeaderContainer

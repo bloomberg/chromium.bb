@@ -152,6 +152,13 @@ IN_PROC_BROWSER_TEST_F(AutomationApiTest, ImageData) {
       << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(AutomationApiTest, TableProperties) {
+  StartEmbeddedTestServer();
+  ASSERT_TRUE(
+      RunExtensionSubtest("automation/tests/tabs", "table_properties.html"))
+      << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(AutomationApiTest, TabsAutomationBooleanPermissions) {
   StartEmbeddedTestServer();
   ASSERT_TRUE(RunExtensionSubtest(

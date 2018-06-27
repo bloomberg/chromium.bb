@@ -17,7 +17,3 @@ rootWebArea
 ++++++cell name='cell 3' ariaCellRowIndex=4 selected=false
 ++++++++staticText name='cell 3'
 ++++++++++inlineTextBox name='cell 3'
-++++column
-++++column
-++++column
-++++tableHeaderContainer

@@ -18,6 +18,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_assistant_structure.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/accessibility/ax_table_info.h"
 #include "ui/accessibility/platform/ax_android_constants.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 
@@ -1323,7 +1324,9 @@ int BrowserAccessibilityAndroid::AndroidRangeType() const {
 
 int BrowserAccessibilityAndroid::RowCount() const {
   if (ui::IsTableLikeRole(GetRole())) {
-    return CountChildrenWithRole(ax::mojom::Role::kRow);
+    ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
+    if (table_info)
+      return table_info->row_count;
   }
 
   if (GetRole() == ax::mojom::Role::kList ||
@@ -1338,7 +1341,9 @@ int BrowserAccessibilityAndroid::RowCount() const {
 
 int BrowserAccessibilityAndroid::ColumnCount() const {
   if (ui::IsTableLikeRole(GetRole())) {
-    return CountChildrenWithRole(ax::mojom::Role::kColumn);
+    ui::AXTableInfo* table_info = manager()->ax_tree()->GetTableInfo(node());
+    if (table_info)
+      return table_info->col_count;
   }
   return 0;
 }

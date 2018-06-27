@@ -14,6 +14,3 @@ rootWebArea
 ++++++cell name='Blink'
 ++++++++staticText name='Blink'
 ++++++++++inlineTextBox name='Blink'
-++++column
-++++column
-++++tableHeaderContainer

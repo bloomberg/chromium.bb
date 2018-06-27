@@ -8,7 +8,3 @@ android.webkit.WebView focusable focused scrollable
 ++++++android.view.View role_description='row header' collection_item heading name='Rendering Engine' row_index=1 row_span=1 column_span=1
 ++++++android.view.View collection_item name='Blink' row_index=1 row_span=1 column_index=1 column_span=1
 ++++++android.view.View collection_item name='WebKit' row_index=1 row_span=1 column_index=2 column_span=1
-++++android.view.View
-++++android.view.View
-++++android.view.View
-++++android.view.View

@@ -203,17 +203,6 @@ public class AccessibilitySnapshotTest {
         Assert.assertTrue(grandchild.bold);
     }
 
-    @Test
-    @SmallTest
-    public void testRequestAccessibilitySnapshotNoStyle() throws Throwable {
-        final String data = "<table><thead></thead></table>";
-        AccessibilitySnapshotNode root = receiveAccessibilitySnapshot(data, null);
-        Assert.assertEquals(1, root.children.size());
-        Assert.assertEquals("", root.text);
-        AccessibilitySnapshotNode grandChild = root.children.get(0).children.get(0);
-        Assert.assertFalse(grandChild.hasStyle);
-    }
-
     private String getSelectionScript(String node1, int start, String node2, int end) {
         return "var element1 = document.getElementById('" + node1 + "');"
                 + "var node1 = element1.childNodes.item(0);"

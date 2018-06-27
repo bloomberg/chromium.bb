@@ -20,7 +20,3 @@ rootWebArea
 ++++++cell name='WebKit' selected=false
 ++++++++staticText name='WebKit'
 ++++++++++inlineTextBox name='WebKit'
-++++column
-++++column
-++++column
-++++tableHeaderContainer

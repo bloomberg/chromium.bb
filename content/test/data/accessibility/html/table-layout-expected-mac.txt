@@ -21,7 +21,3 @@ AXWebArea AXTitle='Table example #2'
 ++++++++AXStaticText AXValue='8'
 ++++++AXGroup AXTitle='9'
 ++++++++AXStaticText AXValue='9'
-++++AXGroup
-++++AXGroup
-++++AXGroup
-++++AXGroup

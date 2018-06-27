@@ -30,7 +30,3 @@ rootWebArea name='Table example #2'
 ++++++layoutTableCell name='9'
 ++++++++staticText name='9'
 ++++++++++inlineTextBox name='9'
-++++layoutTableColumn
-++++layoutTableColumn
-++++layoutTableColumn
-++++tableHeaderContainer

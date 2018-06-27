@@ -11,9 +11,6 @@ rootWebArea name='Table example with rowspan and colspan'
 ++++++cell name='EF'
 ++++++++staticText name='EF'
 ++++++++++inlineTextBox name='EF'
-++++column
-++++column
-++++tableHeaderContainer
 ++table
 ++++row
 ++++++cell name='AD'
@@ -29,7 +26,3 @@ rootWebArea name='Table example with rowspan and colspan'
 ++++++cell name='GH'
 ++++++++staticText name='GH'
 ++++++++++inlineTextBox name='GH'
-++++column
-++++column
-++++column
-++++tableHeaderContainer

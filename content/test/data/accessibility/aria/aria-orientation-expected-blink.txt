@@ -33,8 +33,5 @@ rootWebArea
 ++tree horizontal
 ++tree vertical
 ++treeGrid
-++++tableHeaderContainer
 ++treeGrid horizontal
-++++tableHeaderContainer
 ++treeGrid vertical
-++++tableHeaderContainer

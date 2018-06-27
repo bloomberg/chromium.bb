@@ -388,13 +388,13 @@ Output.RULES = {
     },
     cell: {
       enter: {
-        speak: `$cellIndexText $node(tableColumnHeader) $state`,
-        braille: `$state $cellIndexText $node(tableColumnHeader)`,
+        speak: `$cellIndexText $node(tableCellColumnHeaders) $state`,
+        braille: `$state $cellIndexText $node(tableCellColumnHeaders)`,
       },
-      speak: `$name $cellIndexText $node(tableColumnHeader)
+      speak: `$name $cellIndexText $node(tableCellColumnHeaders)
           $state $description`,
       braille: `$state
-          $name $cellIndexText $node(tableColumnHeader) $description
+          $name $cellIndexText $node(tableCellColumnHeaders) $description
           $if($selected, @aria_selected_true)`
     },
     checkBox: {
@@ -538,10 +538,6 @@ Output.RULES = {
           $if($ariaRowCount, $ariaRowCount, $tableRowCount),
           $if($ariaColumnCount, $ariaColumnCount, $tableColumnCount))
           $node(tableHeader)`
-    },
-    tableHeaderContainer: {
-      speak: `$nameOrTextContent $state $roleDescription
-        $description`
     },
     tabList: {
       speak: `$name $node(activeDescendant) $state $restriction $role
@@ -1371,36 +1367,38 @@ Output.prototype = {
             return;
 
           var relationName = tree.firstChild.value;
-          if (node[relationName]) {
+          if (relationName == 'tableCellColumnHeaders') {
+            // Skip output when previous position falls on the same column.
+            while (opt_prevNode &&
+                   !AutomationPredicate.cellLike(opt_prevNode)) {
+              opt_prevNode = opt_prevNode.parent;
+            }
+            if (opt_prevNode &&
+                opt_prevNode.tableCellColumnIndex ==
+                    node.tableCellColumnIndex) {
+              return;
+            }
+
+            var headers = node.tableCellColumnHeaders;
+            if (headers) {
+              for (var i = 0; i < headers.length; i++) {
+                var header = headers[i].name;
+                if (header)
+                  this.append_(buff, header, options);
+              }
+            }
+          } else if (relationName == 'tableCellRowHeaders') {
+            var headers = node.tableCellRowHeaders;
+            if (headers) {
+              for (var i = 0; i < headers.length; i++) {
+                var header = headers[i].name;
+                if (header)
+                  this.append_(buff, header, options);
+              }
+            }
+          } else if (node[relationName]) {
             var related = node[relationName];
             this.node_(related, related, Output.EventType.NAVIGATE, buff);
-          } else if (
-              relationName == 'tableColumnHeader' &&
-              node.role == RoleType.CELL) {
-            // Because table columns do not contain cells as descendants, we
-            // must search for the correct column.
-            var columnIndex = node.tableCellColumnIndex;
-            if (opt_prevNode) {
-              // Skip output when previous position falls on the same column.
-              while (opt_prevNode &&
-                     !AutomationPredicate.cellLike(opt_prevNode)) {
-                opt_prevNode = opt_prevNode.parent;
-              }
-
-              if (opt_prevNode &&
-                  opt_prevNode.tableCellColumnIndex == columnIndex)
-                return;
-            }
-            var tableLike = node.parent && node.parent.parent;
-            if (!tableLike || !AutomationPredicate.table(tableLike))
-              return;
-            var column = tableLike.children.find(function(candidate) {
-              return columnIndex === candidate.tableColumnIndex;
-            });
-            if (column && column.tableColumnHeader &&
-                column.tableColumnHeader.name) {
-              this.append_(buff, column.tableColumnHeader.name, options);
-            }
           }
         } else if (token == 'nameOrTextContent') {
           if (node.name && node.nameFrom != 'contents') {

@@ -14,7 +14,6 @@ rootWebArea
 ++dialog name='Modal illegal' modal=true
 ++textField multiline name='Multiline illegal'
 ++grid multiselectable name='Multiselectable illegal'
-++++tableHeaderContainer
 ++slider horizontal name='Orientation illegal'
 ++toggleButton name='Pressed illegal' checkedState=true
 ++textField name='Readonly illegal' restriction=readOnly

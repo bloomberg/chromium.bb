@@ -117,6 +117,8 @@ TEST(AXTableInfoTest, SimpleTable) {
   EXPECT_EQ(1, table_info->cell_id_to_index[5]);
   EXPECT_EQ(2, table_info->cell_id_to_index[6]);
   EXPECT_EQ(3, table_info->cell_id_to_index[7]);
+
+  EXPECT_EQ(0U, table_info->extra_mac_nodes.size());
 }
 
 TEST(AXTableInfoTest, ComputedTableSizeIncludesSpans) {
@@ -160,7 +162,7 @@ TEST(AXTableInfoTest, AuthorRowAndColumnCountsAreRespected) {
   EXPECT_EQ(9, table_info->col_count);
 }
 
-TEST(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableCHanges) {
+TEST(AXTableInfoTest, TableInfoRecomputedOnlyWhenTableChanges) {
   // Simple 1 x 1 table.
   AXTreeUpdate initial_state;
   initial_state.root_id = 1;
@@ -341,6 +343,78 @@ TEST(AXTableInfoTest, HeadersWithSpans) {
   EXPECT_EQ(6, table_info->cell_ids[2][0]);
   EXPECT_EQ(0, table_info->cell_ids[2][1]);
   EXPECT_EQ(8, table_info->cell_ids[2][2]);
+}
+
+TEST(AXTableInfoTest, ExtraMacNodes) {
+  // Simple 2 x 2 table with 2 column headers in first row, 2 cells in second
+  // row.
+  AXTreeUpdate initial_state;
+  initial_state.root_id = 1;
+  initial_state.nodes.resize(7);
+  MakeTable(&initial_state.nodes[0], 1, 0, 0);
+  initial_state.nodes[0].child_ids = {2, 3};
+  MakeRow(&initial_state.nodes[1], 2);
+  initial_state.nodes[1].child_ids = {4, 5};
+  MakeRow(&initial_state.nodes[2], 3);
+  initial_state.nodes[2].child_ids = {6, 7};
+  MakeColumnHeader(&initial_state.nodes[3], 4, 0, 0);
+  MakeColumnHeader(&initial_state.nodes[4], 5, 0, 1);
+  MakeCell(&initial_state.nodes[5], 6, 1, 0);
+  MakeCell(&initial_state.nodes[6], 7, 1, 1);
+  AXTree tree(initial_state);
+
+  tree.SetEnableExtraMacNodes(true);
+  AXTableInfo* table_info = tree.GetTableInfo(tree.root()->children()[0]);
+  EXPECT_FALSE(table_info);
+
+  table_info = tree.GetTableInfo(tree.root());
+  EXPECT_TRUE(table_info);
+
+  // We expect 3 extra Mac nodes: two column nodes, and one header node.
+  EXPECT_EQ(3U, table_info->extra_mac_nodes.size());
+
+  // The first column.
+  AXNodeData extra_node_0 = table_info->extra_mac_nodes[0]->data();
+  EXPECT_EQ(-1, table_info->extra_mac_nodes[0]->id());
+  EXPECT_EQ(1, table_info->extra_mac_nodes[0]->parent()->id());
+  EXPECT_EQ(ax::mojom::Role::kColumn, extra_node_0.role);
+  EXPECT_EQ(0, extra_node_0.GetIntAttribute(
+                   ax::mojom::IntAttribute::kTableColumnIndex));
+  std::vector<int32_t> indirect_child_ids;
+  EXPECT_EQ(true, extra_node_0.GetIntListAttribute(
+                      ax::mojom::IntListAttribute::kIndirectChildIds,
+                      &indirect_child_ids));
+  EXPECT_EQ(2U, indirect_child_ids.size());
+  EXPECT_EQ(4, indirect_child_ids[0]);
+  EXPECT_EQ(6, indirect_child_ids[1]);
+
+  // The second column.
+  AXNodeData extra_node_1 = table_info->extra_mac_nodes[1]->data();
+  EXPECT_EQ(-2, table_info->extra_mac_nodes[1]->id());
+  EXPECT_EQ(1, table_info->extra_mac_nodes[1]->parent()->id());
+  EXPECT_EQ(ax::mojom::Role::kColumn, extra_node_1.role);
+  EXPECT_EQ(1, extra_node_1.GetIntAttribute(
+                   ax::mojom::IntAttribute::kTableColumnIndex));
+  indirect_child_ids.clear();
+  EXPECT_EQ(true, extra_node_1.GetIntListAttribute(
+                      ax::mojom::IntListAttribute::kIndirectChildIds,
+                      &indirect_child_ids));
+  EXPECT_EQ(2U, indirect_child_ids.size());
+  EXPECT_EQ(5, indirect_child_ids[0]);
+  EXPECT_EQ(7, indirect_child_ids[1]);
+
+  // The table header container.
+  AXNodeData extra_node_2 = table_info->extra_mac_nodes[2]->data();
+  EXPECT_EQ(-3, table_info->extra_mac_nodes[2]->id());
+  EXPECT_EQ(1, table_info->extra_mac_nodes[2]->parent()->id());
+  EXPECT_EQ(ax::mojom::Role::kTableHeaderContainer, extra_node_2.role);
+  indirect_child_ids.clear();
+  EXPECT_EQ(true, extra_node_2.GetIntListAttribute(
+                      ax::mojom::IntListAttribute::kIndirectChildIds,
+                      &indirect_child_ids));
+  EXPECT_EQ(2U, indirect_child_ids.size());
+  EXPECT_EQ(4, indirect_child_ids[0]);
+  EXPECT_EQ(5, indirect_child_ids[1]);
 }
 
 }  // namespace ui

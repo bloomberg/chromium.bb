@@ -14,6 +14,3 @@ rootWebArea
 ++++++cell name='AA'
 ++++++++staticText name='AA'
 ++++++++++inlineTextBox name='AA'
-++++column
-++++column
-++++tableHeaderContainer

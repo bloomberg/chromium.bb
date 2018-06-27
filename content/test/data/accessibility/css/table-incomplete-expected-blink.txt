@@ -7,6 +7,3 @@ rootWebArea
 ++++++cell name='Jackson' selected=false
 ++++++++staticText name='Jackson'
 ++++++++++inlineTextBox name='Jackson'
-++++column
-++++column
-++++tableHeaderContainer

@@ -14,6 +14,3 @@ rootWebArea name='Table example - th rowheader'
 ++++++cell name='Smith'
 ++++++++staticText name='Smith'
 ++++++++++inlineTextBox name='Smith'
-++++column
-++++column
-++++tableHeaderContainer
