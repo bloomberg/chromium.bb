@@ -66,6 +66,9 @@ bool CompositingReasonFinder::RequiresCompositingForScrollableFrame() const {
   if (!(compositing_triggers_ & kScrollableInnerFrameTrigger))
     return false;
 
+  if (layout_view_.GetFrameView()->Size().IsEmpty())
+    return false;
+
   return layout_view_.GetFrameView()->LayoutViewport()->ScrollsOverflow();
 }
 
