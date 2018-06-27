@@ -377,7 +377,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
       std::unique_ptr<QuicServerInfo> server_info,
       const QuicSessionKey& session_key,
       bool require_confirmation,
-      bool migrate_session_on_network_change,
       bool migrate_sesion_early_v2,
       bool migrate_session_on_network_change_v2,
       NetworkChangeNotifier::NetworkHandle default_network,
@@ -557,27 +556,9 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // otherwise a PING packet is written.
   void WriteToNewSocket();
 
-  // Method that initiates migration to |new_network|. If |new_network| is a
-  // valid network, and this session does not have non-migratable stream
-  // while have active streams, |this| will migrate to |new_network| if not on
-  // it yet.
-  //
-  // If |this| has no active stream, it will be closed. Otherwise, it will be
-  // closed when migration encounters failure and |close_if_cannot_migrate| is
-  // true.
-  //
-  // If |new_network| is NetworkChange::kInvalidNetworkHandle, there is no new
-  // network to migrate onto, |this| will wait for new network to be connected.
-  void MaybeMigrateOrCloseSession(
-      NetworkChangeNotifier::NetworkHandle new_network,
-      bool close_if_cannot_migrate,
-      const NetLogWithSource& migration_net_log);
-
   // Migrates session over to use alternate network if such is available.
-  // If the migrate fails and |close_session_on_error| is true, session will
-  // be closed.
-  MigrationResult MigrateToAlternateNetwork(bool close_session_on_error,
-                                            const NetLogWithSource& net_log);
+  // If the migrate fails, session will not be affected.
+  MigrationResult MigrateToAlternateNetwork(const NetLogWithSource& net_log);
 
   // Migrates session over to use |peer_address| and |network|.
   // If |network| is kInvalidNetworkHandle, default network is used. If the
@@ -708,8 +689,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   void TryMigrateBackToDefaultNetwork(base::TimeDelta timeout);
   void MaybeRetryMigrateBackToDefaultNetwork();
 
-  bool ShouldMigrateSession(bool close_if_cannot_migrate,
-                            NetworkChangeNotifier::NetworkHandle network,
+  bool ShouldMigrateSession(NetworkChangeNotifier::NetworkHandle network,
                             const NetLogWithSource& migration_net_log);
   void LogMetricsOnNetworkDisconnected();
   void LogMetricsOnNetworkMadeDefault();
@@ -737,7 +717,6 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
   QuicSessionKey session_key_;
   bool require_confirmation_;
-  bool migrate_session_on_network_change_;
   bool migrate_session_early_v2_;
   bool migrate_session_on_network_change_v2_;
   base::TimeDelta max_time_on_non_default_network_;
