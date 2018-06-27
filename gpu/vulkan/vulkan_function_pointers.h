@@ -26,6 +26,12 @@ struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
+  bool BindUnassociatedFunctionPointers();
+
+  // These functions assume that vkGetInstanceProcAddr has been populated.
+  bool BindInstanceFunctionPointers(VkInstance vk_instance);
+  bool BindPhysicalDeviceFunctionPointers(VkInstance vk_instance);
+
   // These functions assume that vkGetDeviceProcAddr has been populated.
   bool BindDeviceFunctionPointers(VkDevice vk_device);
   bool BindSwapchainFunctionPointers(VkDevice vk_device);
@@ -34,30 +40,30 @@ struct VulkanFunctionPointers {
 
   // Unassociated functions
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = nullptr;
-  PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr = nullptr;
+  PFN_vkCreateInstance vkCreateInstance = nullptr;
   PFN_vkEnumerateInstanceExtensionProperties
       vkEnumerateInstanceExtensionProperties = nullptr;
   PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerProperties =
       nullptr;
-  PFN_vkCreateInstance vkCreateInstance = nullptr;
 
   // Instance functions
-  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = nullptr;
-  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
   PFN_vkDestroyInstance vkDestroyInstance = nullptr;
+  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = nullptr;
+  PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr = nullptr;
+  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
 
   // Physical Device functions
-  PFN_vkGetPhysicalDeviceQueueFamilyProperties
-      vkGetPhysicalDeviceQueueFamilyProperties = nullptr;
+  PFN_vkCreateDevice vkCreateDevice = nullptr;
   PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerProperties =
       nullptr;
-  PFN_vkCreateDevice vkCreateDevice = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceSupportKHR
-      vkGetPhysicalDeviceSurfaceSupportKHR = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
-      vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+  PFN_vkGetPhysicalDeviceQueueFamilyProperties
+      vkGetPhysicalDeviceQueueFamilyProperties = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
       vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+  PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
+      vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+  PFN_vkGetPhysicalDeviceSurfaceSupportKHR
+      vkGetPhysicalDeviceSurfaceSupportKHR = nullptr;
 
   // Device functions
   PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = nullptr;

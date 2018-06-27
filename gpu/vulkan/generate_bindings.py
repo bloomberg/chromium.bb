@@ -11,6 +11,30 @@ import platform
 import sys
 from subprocess import call
 
+VULKAN_UNASSOCIATED_FUNCTIONS = [
+# vkGetInstanceProcAddr belongs here but is handled specially.
+{ 'name': 'vkCreateInstance' },
+{ 'name': 'vkEnumerateInstanceExtensionProperties' },
+{ 'name': 'vkEnumerateInstanceLayerProperties' },
+]
+
+VULKAN_INSTANCE_FUNCTIONS = [
+{ 'name': 'vkDestroyInstance' },
+# vkDestroySurfaceKHR belongs here but is handled specially.
+{ 'name': 'vkEnumeratePhysicalDevices' },
+{ 'name': 'vkGetDeviceProcAddr' },
+]
+
+VULKAN_PHYSICAL_DEVICE_FUNCTIONS = [
+{ 'name': 'vkCreateDevice' },
+{ 'name': 'vkEnumerateDeviceLayerProperties' },
+{ 'name': 'vkGetPhysicalDeviceQueueFamilyProperties' },
+# The following functions belong here but are handled specially:
+# vkGetPhysicalDeviceSurfaceCapabilitiesKHR
+# vkGetPhysicalDeviceSurfaceFormatsKHR
+# vkGetPhysicalDeviceSurfaceSupportKHR
+]
+
 VULKAN_DEVICE_FUNCTIONS = [
 { 'name': 'vkAllocateCommandBuffers' },
 { 'name': 'vkAllocateDescriptorSets' },
@@ -85,8 +109,10 @@ LICENSE_AND_HEADER = """\
 
 """
 
-def GenerateHeaderFile(file, device_functions, queue_functions,
-                       command_buffer_functions, swapchain_functions):
+def GenerateHeaderFile(file, unassociated_functions, instance_functions,
+                       physical_device_functions, device_functions,
+                       queue_functions, command_buffer_functions,
+                       swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.h"""
 
   file.write(LICENSE_AND_HEADER +
@@ -110,6 +136,12 @@ struct VulkanFunctionPointers {
   VulkanFunctionPointers();
   ~VulkanFunctionPointers();
 
+  bool BindUnassociatedFunctionPointers();
+
+  // These functions assume that vkGetInstanceProcAddr has been populated.
+  bool BindInstanceFunctionPointers(VkInstance vk_instance);
+  bool BindPhysicalDeviceFunctionPointers(VkInstance vk_instance);
+
   // These functions assume that vkGetDeviceProcAddr has been populated.
   bool BindDeviceFunctionPointers(VkDevice vk_device);
   bool BindSwapchainFunctionPointers(VkDevice vk_device);
@@ -118,30 +150,35 @@ struct VulkanFunctionPointers {
 
   // Unassociated functions
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = nullptr;
-  PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr = nullptr;
-  PFN_vkEnumerateInstanceExtensionProperties
-      vkEnumerateInstanceExtensionProperties = nullptr;
-  PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerProperties =
-      nullptr;
-  PFN_vkCreateInstance vkCreateInstance = nullptr;
+""")
+
+  for func in unassociated_functions:
+    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+
+  file.write("""\
 
   // Instance functions
-  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = nullptr;
+""")
+
+  for func in instance_functions:
+    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+
+  file.write("""\
   PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
-  PFN_vkDestroyInstance vkDestroyInstance = nullptr;
 
   // Physical Device functions
-  PFN_vkGetPhysicalDeviceQueueFamilyProperties
-      vkGetPhysicalDeviceQueueFamilyProperties = nullptr;
-  PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerProperties =
-      nullptr;
-  PFN_vkCreateDevice vkCreateDevice = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceSupportKHR
-      vkGetPhysicalDeviceSurfaceSupportKHR = nullptr;
-  PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
-      vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+""")
+
+  for func in physical_device_functions:
+    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+
+  file.write("""\
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
       vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+  PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
+      vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+  PFN_vkGetPhysicalDeviceSurfaceSupportKHR
+      vkGetPhysicalDeviceSurfaceSupportKHR = nullptr;
 
   // Device functions
 """)
@@ -181,8 +218,10 @@ struct VulkanFunctionPointers {
 #endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
 """)
 
-def GenerateSourceFile(file, device_functions, queue_functions,
-                       command_buffer_functions, swapchain_functions):
+def GenerateSourceFile(file, unassociated_functions, instance_functions,
+                       physical_device_functions, device_functions,
+                       queue_functions, command_buffer_functions,
+                       swapchain_functions):
   """Generates gpu/vulkan/vulkan_function_pointers.cc"""
 
   file.write(LICENSE_AND_HEADER +
@@ -202,8 +241,60 @@ VulkanFunctionPointers* GetVulkanFunctionPointers() {
 VulkanFunctionPointers::VulkanFunctionPointers() = default;
 VulkanFunctionPointers::~VulkanFunctionPointers() = default;
 
-bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
+bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
+  // vkGetInstanceProcAddr must be handled specially since it gets its function
+  // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
+  // functions don't do this.
+  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+      base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library_,
+                                                "vkGetInstanceProcAddr"));
+  if (!vkGetInstanceProcAddr)
+    return false;
 
+""")
+
+  for func in unassociated_functions:
+    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name']
+      + '>(vkGetInstanceProcAddr(nullptr, "' + func['name'] + '"));\n')
+    file.write('  if (!' + func['name'] + ')\n')
+    file.write('    return false;\n\n')
+
+  file.write("""\
+
+  return true;
+}
+
+bool VulkanFunctionPointers::BindInstanceFunctionPointers(
+    VkInstance vk_instance) {
+""")
+
+  for func in instance_functions:
+    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name']
+      + '>(vkGetInstanceProcAddr(vk_instance, "' + func['name'] + '"));\n')
+    file.write('  if (!' + func['name'] + ')\n')
+    file.write('    return false;\n\n')
+
+  file.write("""\
+
+  return true;
+}
+
+bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
+    VkInstance vk_instance) {
+""")
+
+  for func in physical_device_functions:
+    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name']
+      + '>(vkGetInstanceProcAddr(vk_instance, "' + func['name'] + '"));\n')
+    file.write('  if (!' + func['name'] + ')\n')
+    file.write('    return false;\n\n')
+
+  file.write("""\
+
+  return true;
+}
+
+bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   // Device functions
 """)
   for func in device_functions:
@@ -274,7 +365,9 @@ def main(argv):
 
   header_file = open(
       os.path.join(directory, 'vulkan_function_pointers.h'), 'wb')
-  GenerateHeaderFile(header_file, VULKAN_DEVICE_FUNCTIONS,
+  GenerateHeaderFile(header_file, VULKAN_UNASSOCIATED_FUNCTIONS,
+                     VULKAN_INSTANCE_FUNCTIONS,
+                     VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
                      VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   header_file.close()
@@ -282,7 +375,9 @@ def main(argv):
 
   source_file = open(
       os.path.join(directory, 'vulkan_function_pointers.cc'), 'wb')
-  GenerateSourceFile(source_file, VULKAN_DEVICE_FUNCTIONS,
+  GenerateSourceFile(source_file, VULKAN_UNASSOCIATED_FUNCTIONS,
+                     VULKAN_INSTANCE_FUNCTIONS,
+                     VULKAN_PHYSICAL_DEVICE_FUNCTIONS, VULKAN_DEVICE_FUNCTIONS,
                      VULKAN_QUEUE_FUNCTIONS, VULKAN_COMMAND_BUFFER_FUNCTIONS,
                      VULKAN_SWAPCHAIN_FUNCTIONS)
   source_file.close()
