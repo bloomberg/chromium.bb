@@ -94,9 +94,11 @@ scoped_refptr<RemoteDevice> GattClientManagerImpl::GetDeviceSync(
   return new_device;
 }
 
-size_t GattClientManagerImpl::GetNumConnected() const {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  return connected_devices_.size();
+void GattClientManagerImpl::GetNumConnected(
+    base::OnceCallback<void(size_t)> cb) const {
+  MAKE_SURE_IO_THREAD(GetNumConnected, BindToCurrentSequence(std::move(cb)));
+  DCHECK(cb);
+  std::move(cb).Run(connected_devices_.size());
 }
 
 void GattClientManagerImpl::NotifyConnect(

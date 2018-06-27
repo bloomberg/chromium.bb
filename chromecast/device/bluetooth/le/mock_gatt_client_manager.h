@@ -37,7 +37,8 @@ class MockGattClientManager : public GattClientManager {
   MOCK_METHOD1(
       GetDeviceSync,
       scoped_refptr<RemoteDevice>(const bluetooth_v2_shlib::Addr& addr));
-  MOCK_CONST_METHOD0(GetNumConnected, size_t());
+  MOCK_CONST_METHOD1(GetNumConnected,
+                     void(base::OnceCallback<void(size_t)> cb));
   MOCK_METHOD1(NotifyConnect, void(const bluetooth_v2_shlib::Addr& addr));
   MOCK_METHOD0(task_runner, scoped_refptr<base::SingleThreadTaskRunner>());
 
