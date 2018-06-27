@@ -13,6 +13,15 @@
 
 class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
  public:
+  // Parameters for the fake ListAccounts response.
+  struct CookieParams {
+    std::string email;
+    std::string gaia_id;
+    bool valid;
+    bool signed_out;
+    bool verified;
+  };
+
   FakeGaiaCookieManagerService(OAuth2TokenService* token_service,
                                const std::string& source,
                                SigninClient* client);
@@ -21,24 +30,18 @@ class FakeGaiaCookieManagerService : public GaiaCookieManagerService {
 
   void SetListAccountsResponseHttpNotFound();
   void SetListAccountsResponseWebLoginRequired();
+  void SetListAccountsResponseWithParams(
+      const std::vector<CookieParams>& params);
+
+  // Helper methods, equivalent to calling SetListAccountsResponseWithParams().
   void SetListAccountsResponseNoAccounts();
-  void SetListAccountsResponseOneAccount(const char* email,
-                                         const char* gaia_id);
-  void SetListAccountsResponseOneAccountWithParams(const char* account,
-                                                   const char* gaia_id,
-                                                   bool is_email_valid,
-                                                   bool is_signed_out,
-                                                   bool verified);
-  void SetListAccountsResponseTwoAccounts(const char* email1,
-                                          const char* gaia_id1,
-                                          const char* email2,
-                                          const char* gaia_id2);
-  void SetListAccountsResponseTwoAccountsWithExpiry(const char* email1,
-                                                    const char* gaia_id1,
-                                                    bool account1_expired,
-                                                    const char* email2,
-                                                    const char* gaia_id2,
-                                                    bool account2_expired);
+  void SetListAccountsResponseOneAccount(const std::string& email,
+                                         const std::string& gaia_id);
+  void SetListAccountsResponseOneAccountWithParams(const CookieParams& params);
+  void SetListAccountsResponseTwoAccounts(const std::string& email1,
+                                          const std::string& gaia_id1,
+                                          const std::string& email2,
+                                          const std::string& gaia_id2);
 
  private:
   std::string GetSourceForRequest(

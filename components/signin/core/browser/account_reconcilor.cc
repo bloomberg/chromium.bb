@@ -466,15 +466,7 @@ void AccountReconcilor::FinishReconcile(
   VLOG(1) << "AccountReconcilor::FinishReconcile";
   DCHECK(add_to_cookie_.empty());
 
-  std::string first_account = delegate_->GetFirstGaiaAccountForReconcile(
-      chrome_accounts, gaia_accounts, primary_account, first_execution_);
-  // |first_account| must be in |chrome_accounts|.
-  DCHECK(first_account.empty() ||
-         base::ContainsValue(chrome_accounts, first_account));
   size_t number_gaia_accounts = gaia_accounts.size();
-  bool first_account_mismatch =
-      (number_gaia_accounts > 0) && (first_account != gaia_accounts[0].id);
-
   // If there are any accounts in the gaia cookie but not in chrome, then
   // those accounts need to be removed from the cookie.  This means we need
   // to blow the cookie away.
@@ -485,6 +477,12 @@ void AccountReconcilor::FinishReconcile(
       ++removed_from_cookie;
     }
   }
+
+  std::string first_account = delegate_->GetFirstGaiaAccountForReconcile(
+      chrome_accounts, gaia_accounts, primary_account, first_execution_,
+      removed_from_cookie > 0);
+  bool first_account_mismatch =
+      (number_gaia_accounts > 0) && (first_account != gaia_accounts[0].id);
 
   bool rebuild_cookie = first_account_mismatch || (removed_from_cookie > 0);
   std::vector<gaia::ListedAccount> original_gaia_accounts = gaia_accounts;
@@ -499,13 +497,18 @@ void AccountReconcilor::FinishReconcile(
 
   if (first_account.empty()) {
     DCHECK(!delegate_->ShouldAbortReconcileIfPrimaryHasError());
-    // Gaia cookie has been cleared or was already empty.
-    DCHECK((first_account_mismatch && rebuild_cookie) ||
-           (number_gaia_accounts == 0));
     RevokeAllSecondaryTokens(primary_account, chrome_accounts);
   } else {
     // Create a list of accounts that need to be added to the Gaia cookie.
-    add_to_cookie_.push_back(first_account);
+    if (base::ContainsValue(chrome_accounts, first_account)) {
+      add_to_cookie_.push_back(first_account);
+    } else {
+      // If the first account is not empty and not in chrome_accounts, it is
+      // impossible to rebuild it. It must be already the current default
+      // account, and no logout can happen.
+      DCHECK_EQ(gaia_accounts[0].gaia_id, first_account);
+      DCHECK(!rebuild_cookie);
+    }
     for (size_t i = 0; i < chrome_accounts.size(); ++i) {
       if (chrome_accounts[i] != first_account)
         add_to_cookie_.push_back(chrome_accounts[i]);

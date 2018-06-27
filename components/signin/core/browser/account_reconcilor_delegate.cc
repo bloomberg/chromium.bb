@@ -31,7 +31,8 @@ std::string AccountReconcilorDelegate::GetFirstGaiaAccountForReconcile(
     const std::vector<std::string>& chrome_accounts,
     const std::vector<gaia::ListedAccount>& gaia_accounts,
     const std::string& primary_account,
-    bool first_execution) const {
+    bool first_execution,
+    bool will_logout) const {
   return std::string();
 }
 
