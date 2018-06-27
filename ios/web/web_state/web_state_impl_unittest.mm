@@ -16,6 +16,7 @@
 #import "base/strings/sys_string_conversions.h"
 #import "base/test/ios/wait_util.h"
 #include "base/test/scoped_feature_list.h"
+#import "ios/web/interstitials/html_web_interstitial_impl.h"
 #import "ios/web/navigation/wk_navigation_util.h"
 #import "ios/web/public/crw_navigation_item_storage.h"
 #import "ios/web/public/crw_session_storage.h"
@@ -33,6 +34,7 @@
 #import "ios/web/public/web_state/web_state_delegate.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/public/web_state/web_state_policy_decider.h"
+#import "ios/web/test/fakes/mock_interstitial_delegate.h"
 #include "ios/web/web_state/global_web_state_event_tracker.h"
 #import "ios/web/web_state/navigation_context_impl.h"
 #import "ios/web/web_state/ui/crw_web_controller.h"
@@ -195,6 +197,26 @@ class WebStateImplTest : public web::WebTest {
     web_state_ = std::make_unique<web::WebStateImpl>(params);
   }
 
+  // Adds PendingNavigationItem and commits it.
+  void AddCommittedNavigationItem() {
+    web_state_->GetNavigationManagerImpl().InitializeSession();
+    web_state_->GetNavigationManagerImpl().AddPendingItem(
+        GURL::EmptyGURL(), web::Referrer(), ui::PAGE_TRANSITION_LINK,
+        NavigationInitiationType::RENDERER_INITIATED,
+        NavigationManager::UserAgentOverrideOption::DESKTOP);
+    web_state_->GetNavigationManagerImpl().CommitPendingItem();
+  }
+
+  // Creates interstitial raw pointer and calls Show(). The pointer must be
+  // deleted by dismissing the interstitial.
+  WebInterstitialImpl* ShowInterstitial() {
+    auto delegate = std::make_unique<MockInterstitialDelegate>();
+    WebInterstitialImpl* result =
+        new HtmlWebInterstitialImpl(web_state_.get(), /*new_navigation=*/true,
+                                    GURL::EmptyGURL(), std::move(delegate));
+    result->Show();
+    return result;
+  }
   std::unique_ptr<WebStateImpl> web_state_;
 };
 
@@ -981,6 +1003,89 @@ TEST_F(WebStateImplTest, NoUncommittedRestoreSession) {
   EXPECT_EQ(-1, session_storage.lastCommittedItemIndex);
   EXPECT_NSEQ(@[], session_storage.itemStorages);
   EXPECT_TRUE(web_state_->GetTitle().empty());
+}
+
+// Tests showing and clearing interstitial when NavigationManager is
+// empty.
+TEST_F(WebStateImplTest, ShowAndClearInterstitialWithNoCommittedItems) {
+  web_state_->GetNavigationManagerImpl().InitializeSession();
+
+  // Show the interstitial.
+  ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
+  ASSERT_FALSE(web_state_->GetWebInterstitial());
+  WebInterstitialImpl* interstitial = ShowInterstitial();
+  ASSERT_EQ(interstitial, web_state_->GetWebInterstitial());
+  ASSERT_TRUE(web_state_->IsShowingWebInterstitial());
+
+  // Clear the interstitial.
+  TestWebStateObserver observer(web_state_.get());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+  web_state_->ClearTransientContent();
+
+  // Verify that interstitial was removed and DidChangeVisibleSecurityState was
+  // called.
+  EXPECT_FALSE(web_state_->IsShowingWebInterstitial());
+  EXPECT_FALSE(web_state_->GetWebInterstitial());
+  ASSERT_TRUE(observer.did_change_visible_security_state_info());
+  EXPECT_EQ(web_state_.get(),
+            observer.did_change_visible_security_state_info()->web_state);
+}
+
+// Tests showing and clearing interstitial when NavigationManager has a
+// committed item.
+TEST_F(WebStateImplTest, ShowAndClearInterstitialWithCommittedItem) {
+  // Add SECURITY_STYLE_AUTHENTICATED committed item to navigation manager.
+  AddCommittedNavigationItem();
+  web_state_->GetNavigationManagerImpl()
+      .GetLastCommittedItem()
+      ->GetSSL()
+      .security_style = SECURITY_STYLE_AUTHENTICATED;
+
+  // Show the interstitial.
+  ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
+  ASSERT_FALSE(web_state_->GetWebInterstitial());
+  WebInterstitialImpl* interstitial = ShowInterstitial();
+  ASSERT_TRUE(web_state_->IsShowingWebInterstitial());
+  ASSERT_EQ(interstitial, web_state_->GetWebInterstitial());
+
+  // Clear the interstitial.
+  TestWebStateObserver observer(web_state_.get());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+  web_state_->ClearTransientContent();
+
+  // Verify that interstitial was removed and DidChangeVisibleSecurityState was
+  // called.
+  EXPECT_FALSE(web_state_->IsShowingWebInterstitial());
+  EXPECT_FALSE(web_state_->GetWebInterstitial());
+  ASSERT_TRUE(observer.did_change_visible_security_state_info());
+  EXPECT_EQ(web_state_.get(),
+            observer.did_change_visible_security_state_info()->web_state);
+}
+
+// Tests showing and clearing interstitial when visible SSL status does not
+// change.
+TEST_F(WebStateImplTest, ShowAndClearInterstitialWithoutChangingSslStatus) {
+  // Add a committed item to navigation manager with default SSL status.
+  AddCommittedNavigationItem();
+
+  // Show the interstitial.
+  ASSERT_FALSE(web_state_->IsShowingWebInterstitial());
+  ASSERT_FALSE(web_state_->GetWebInterstitial());
+  WebInterstitialImpl* interstitial = ShowInterstitial();
+  ASSERT_TRUE(web_state_->IsShowingWebInterstitial());
+  ASSERT_EQ(interstitial, web_state_->GetWebInterstitial());
+
+  // Clear the interstitial.
+  TestWebStateObserver observer(web_state_.get());
+  ASSERT_FALSE(observer.did_change_visible_security_state_info());
+  web_state_->ClearTransientContent();
+
+  // Verify that interstitial was removed.
+  EXPECT_FALSE(web_state_->IsShowingWebInterstitial());
+  EXPECT_FALSE(web_state_->GetWebInterstitial());
+  // DidChangeVisibleSecurityState is not called, because last committed and
+  // transient items had the same SSL status.
+  EXPECT_FALSE(observer.did_change_visible_security_state_info());
 }
 
 }  // namespace web

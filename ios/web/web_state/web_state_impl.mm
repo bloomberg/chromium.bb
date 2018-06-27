@@ -804,6 +804,10 @@ void WebStateImpl::OnNavigationFinished(web::NavigationContext* context) {
 
 void WebStateImpl::ClearTransientContent() {
   if (interstitial_) {
+    // |visible_item| can be null if non-committed entries where discarded.
+    NavigationItem* visible_item = navigation_manager_->GetVisibleItem();
+    const SSLStatus* old_status =
+        visible_item ? &(visible_item->GetSSL()) : nullptr;
     // Store the currently displayed interstitial in a local variable and reset
     // |interstitial_| early.  This is to prevent an infinite loop, as
     // |DontProceed()| internally calls |ClearTransientContent()|.
@@ -812,6 +816,12 @@ void WebStateImpl::ClearTransientContent() {
     interstitial->DontProceed();
     // Don't access |interstitial| after calling |DontProceed()|, as it triggers
     // deletion.
+
+    const web::NavigationItem* new_item = navigation_manager_->GetVisibleItem();
+    if (!new_item || !old_status || !new_item->GetSSL().Equals(*old_status)) {
+      // Visible SSL state has actually changed after interstitial dismissal.
+      DidChangeVisibleSecurityState();
+    }
   }
   [web_controller_ clearTransientContentView];
 }
