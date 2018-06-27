@@ -189,10 +189,8 @@
       # chromium.clang
       'CrWinAsanCov',
       'linux-win_cross-rel',
-      'ToTLinuxUBSanVptr',
       'ToTMac', # https://crbug.com/828031
       'ToTMacASan', # https://crbug.com/828031
-      'UBSanVptr Linux',
       # chromium.fyi
       'Chromium Mac 10.13', # https://crbug.com/828031
       'Out of Process Profiling Mac', # https://crbug.com/828031
