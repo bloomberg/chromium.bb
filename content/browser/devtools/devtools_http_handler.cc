@@ -289,7 +289,10 @@ void StartServerOnHandlerThread(
       }
     }
   } else {
-    LOG(ERROR) << "Cannot start http server for devtools. Stop devtools.";
+#if !defined(OS_ANDROID)
+    // Android uses UNIX domain sockets which don't have an IP address.
+    LOG(ERROR) << "Cannot start http server for devtools.";
+#endif
   }
 
   BrowserThread::PostTask(
