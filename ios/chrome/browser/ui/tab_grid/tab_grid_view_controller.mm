@@ -789,6 +789,39 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
 }
 
+// Tells the appropriate delegate to create a new item, and then tells the
+// presentation delegate to show the new item.
+- (void)openNewTabInPage:(TabGridPage)page {
+  switch (page) {
+    case TabGridPageIncognitoTabs:
+      [self.incognitoTabsDelegate addNewItem];
+      break;
+    case TabGridPageRegularTabs:
+      [self.regularTabsDelegate addNewItem];
+      break;
+    case TabGridPageRemoteTabs:
+      // This is intended as NO-OP since the user can ⌘-t while on this page.
+      break;
+  }
+  self.activePage = page;
+  [self.tabPresentationDelegate showActiveTabInPage:page];
+}
+
+// Creates and shows a new regular tab.
+- (void)openNewRegularTab {
+  [self openNewTabInPage:TabGridPageRegularTabs];
+}
+
+// Creates and shows a new incognito tab.
+- (void)openNewIncognitoTab {
+  [self openNewTabInPage:TabGridPageIncognitoTabs];
+}
+
+// Creates and shows a new tab in the current page.
+- (void)openNewTabInCurrentPage {
+  [self openNewTabInPage:self.currentPage];
+}
+
 #pragma mark - GridViewControllerDelegate
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -878,19 +911,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)newTabButtonTapped:(id)sender {
-  switch (self.currentPage) {
-    case TabGridPageIncognitoTabs:
-      [self.incognitoTabsDelegate addNewItem];
-      break;
-    case TabGridPageRegularTabs:
-      [self.regularTabsDelegate addNewItem];
-      break;
-    case TabGridPageRemoteTabs:
-      NOTREACHED() << "It is invalid to call insert new tab on remote tabs.";
-      break;
-  }
-  self.activePage = self.currentPage;
-  [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
+  [self openNewTabInCurrentPage];
   // Record only when a new tab is created through the + button.
   base::RecordAction(base::UserMetricsAction("MobileToolbarStackViewNewTab"));
 }
@@ -918,6 +939,30 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self setCurrentPage:newPage animated:YES];
   // Records when the user taps on the pageControl to switch pages.
   [self recordActionSwitchingToPage:newPage];
+}
+
+#pragma mark - UIResponder
+
+- (NSArray*)keyCommands {
+  UIKeyCommand* newWindowShortcut =
+      [UIKeyCommand keyCommandWithInput:@"n"
+                          modifierFlags:UIKeyModifierCommand
+                                 action:@selector(openNewRegularTab)
+                   discoverabilityTitle:l10n_util::GetNSStringWithFixup(
+                                            IDS_IOS_TOOLS_MENU_NEW_TAB)];
+  UIKeyCommand* newIncognitoWindowShortcut = [UIKeyCommand
+       keyCommandWithInput:@"n"
+             modifierFlags:UIKeyModifierCommand | UIKeyModifierShift
+                    action:@selector(openNewIncognitoTab)
+      discoverabilityTitle:l10n_util::GetNSStringWithFixup(
+                               IDS_IOS_TOOLS_MENU_NEW_INCOGNITO_TAB)];
+  UIKeyCommand* newTabShortcut =
+      [UIKeyCommand keyCommandWithInput:@"t"
+                          modifierFlags:UIKeyModifierCommand
+                                 action:@selector(openNewTabInCurrentPage)
+                   discoverabilityTitle:l10n_util::GetNSStringWithFixup(
+                                            IDS_IOS_TOOLS_MENU_NEW_TAB)];
+  return @[ newWindowShortcut, newIncognitoWindowShortcut, newTabShortcut ];
 }
 
 @end
