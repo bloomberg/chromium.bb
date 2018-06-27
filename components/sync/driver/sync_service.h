@@ -122,6 +122,11 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Returns the set of reasons that are keeping Sync disabled, as a bitmask of
   // DisableReason enum entries.
   virtual int GetDisableReasons() const = 0;
+  // Helper that returns whether GetDisableReasons() contains the given |reason|
+  // (possibly among others).
+  bool HasDisableReason(DisableReason reason) const {
+    return GetDisableReasons() & reason;
+  }
 
   // Whether sync is enabled by user or not. This does not necessarily mean
   // that sync is currently running (due to delayed startup, unrecoverable

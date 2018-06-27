@@ -90,10 +90,37 @@ enum SyncInitialState {
   NOT_REQUESTED_NOT_SETUP,  // The user turned off sync and setup completed
                             // is false. Might indicate a stop-and-clear.
   NEEDS_CONFIRMATION,       // The user must confirm sync settings.
-  IS_MANAGED,               // Sync is disallowed by enterprise policy.
+  NOT_ALLOWED_BY_POLICY,    // Sync is disallowed by enterprise policy.
   NOT_ALLOWED_BY_PLATFORM,  // Sync is disallowed by the platform.
   SYNC_INITIAL_STATE_LIMIT
 };
+
+void RecordSyncInitialState(int disable_reasons, bool first_setup_complete) {
+  SyncInitialState sync_state = CAN_START;
+  if (disable_reasons & ProfileSyncService::DISABLE_REASON_NOT_SIGNED_IN) {
+    sync_state = NOT_SIGNED_IN;
+  } else if (disable_reasons &
+             ProfileSyncService::DISABLE_REASON_ENTERPRISE_POLICY) {
+    sync_state = NOT_ALLOWED_BY_POLICY;
+  } else if (disable_reasons &
+             ProfileSyncService::DISABLE_REASON_PLATFORM_OVERRIDE) {
+    // This case means either a command-line flag or Android's "MasterSync"
+    // toggle. However, the latter is not plumbed into ProfileSyncService until
+    // after this method, so currently we only get here for the command-line
+    // case. See http://crbug.com/568771.
+    sync_state = NOT_ALLOWED_BY_PLATFORM;
+  } else if (disable_reasons & ProfileSyncService::DISABLE_REASON_USER_CHOICE) {
+    if (first_setup_complete) {
+      sync_state = NOT_REQUESTED;
+    } else {
+      sync_state = NOT_REQUESTED_NOT_SETUP;
+    }
+  } else if (!first_setup_complete) {
+    sync_state = NEEDS_CONFIRMATION;
+  }
+  UMA_HISTOGRAM_ENUMERATION("Sync.InitialState", sync_state,
+                            SYNC_INITIAL_STATE_LIMIT);
+}
 
 constexpr char kSyncUnrecoverableErrorHistogram[] = "Sync.UnrecoverableErrors";
 
@@ -222,8 +249,13 @@ ProfileSyncService::~ProfileSyncService() {
 
 bool ProfileSyncService::CanSyncStart() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return (IsSyncAllowed() && IsSyncRequested() &&
-          (IsLocalSyncEnabled() || IsSignedIn()));
+  int disable_reasons = GetDisableReasons();
+  // An unrecoverable error is currently *not* considered a start-preventing
+  // disable reason, because it occurs after Sync has already started.
+  // TODO(crbug.com/839834): Consider changing this, since Sync shuts down and
+  // won't start up again after an unrecoverable error.
+  disable_reasons = disable_reasons & ~DISABLE_REASON_UNRECOVERABLE_ERROR;
+  return disable_reasons == DISABLE_REASON_NONE;
 }
 
 void ProfileSyncService::Initialize() {
@@ -284,29 +316,12 @@ void ProfileSyncService::Initialize() {
 
   sync_prefs_.AddSyncPrefObserver(this);
 
-  SyncInitialState sync_state = CAN_START;
-  if (!IsLocalSyncEnabled() && !IsSignedIn()) {
-    sync_state = NOT_SIGNED_IN;
-  } else if (IsManaged()) {
-    sync_state = IS_MANAGED;
-  } else if (!IsSyncAllowedByPlatform()) {
-    // This case should currently never be hit, as Android's master sync isn't
-    // plumbed into PSS until after this function. See http://crbug.com/568771.
-    sync_state = NOT_ALLOWED_BY_PLATFORM;
-  } else if (!IsSyncRequested()) {
-    if (IsFirstSetupComplete()) {
-      sync_state = NOT_REQUESTED;
-    } else {
-      sync_state = NOT_REQUESTED_NOT_SETUP;
-    }
-  } else if (!IsFirstSetupComplete()) {
-    sync_state = NEEDS_CONFIRMATION;
-  }
-  UMA_HISTOGRAM_ENUMERATION("Sync.InitialState", sync_state,
-                            SYNC_INITIAL_STATE_LIMIT);
+  int disable_reasons = GetDisableReasons();
+  RecordSyncInitialState(disable_reasons, IsFirstSetupComplete());
 
   // If sync isn't allowed, the only thing to do is to turn it off.
-  if (!IsSyncAllowed()) {
+  if ((disable_reasons & DISABLE_REASON_PLATFORM_OVERRIDE) ||
+      (disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY)) {
     // Only clear data if disallowed by policy.
     // TODO(crbug.com/839834): Should this call StopImpl, so that SyncRequested
     // doesn't get set to false?
@@ -344,7 +359,8 @@ void ProfileSyncService::Initialize() {
 
   // Auto-start means the first time the profile starts up, sync should start up
   // immediately.
-  bool force_immediate = (start_behavior_ == AUTO_START && IsSyncRequested() &&
+  bool force_immediate = (start_behavior_ == AUTO_START &&
+                          !HasDisableReason(DISABLE_REASON_USER_CHOICE) &&
                           !IsFirstSetupComplete());
   startup_controller_->TryStart(force_immediate);
 }
@@ -743,13 +759,16 @@ int ProfileSyncService::GetDisableReasons() const {
   if (IsManaged()) {
     result = result | DISABLE_REASON_ENTERPRISE_POLICY;
   }
+  // Local sync doesn't require sign-in.
   if (!IsSignedIn() && !IsLocalSyncEnabled()) {
     result = result | DISABLE_REASON_NOT_SIGNED_IN;
   }
-  if (!IsSyncRequested()) {
+  // When local sync is on sync should be considered requsted or otherwise it
+  // will not resume after the policy or the flag has been removed.
+  if (!sync_prefs_.IsSyncRequested() && !IsLocalSyncEnabled()) {
     result = result | DISABLE_REASON_USER_CHOICE;
   }
-  if (HasUnrecoverableError()) {
+  if (unrecoverable_error_reason_ != ERROR_REASON_UNSET) {
     result = result | DISABLE_REASON_UNRECOVERABLE_ERROR;
   }
   return result;
@@ -771,7 +790,8 @@ void ProfileSyncService::SetFirstSetupComplete() {
 bool ProfileSyncService::IsSyncConfirmationNeeded() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return (!IsLocalSyncEnabled() && IsSignedIn()) && !IsFirstSetupInProgress() &&
-         !IsFirstSetupComplete() && IsSyncRequested();
+         !IsFirstSetupComplete() &&
+         !HasDisableReason(DISABLE_REASON_USER_CHOICE);
 }
 
 void ProfileSyncService::UpdateLastSyncedTime() {
@@ -827,7 +847,7 @@ void ProfileSyncService::OnUnrecoverableError(const base::Location& from_here,
 void ProfileSyncService::OnUnrecoverableErrorImpl(
     const base::Location& from_here,
     const std::string& message) {
-  DCHECK(HasUnrecoverableError());
+  DCHECK_NE(unrecoverable_error_reason_, ERROR_REASON_UNSET);
   unrecoverable_error_message_ = message;
   unrecoverable_error_location_ = from_here;
 
@@ -1197,7 +1217,10 @@ void ProfileSyncService::OnConfigureStart() {
 std::string ProfileSyncService::QuerySyncStatusSummaryString() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  if (HasUnrecoverableError())
+  // TODO(crbug.com/839834): Reevaluate this method; the cases below don't make
+  // a whole lot of sense.
+
+  if (HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR))
     return "Unrecoverable error detected";
   if (!engine_)
     return "Syncing not enabled";
@@ -1319,7 +1342,7 @@ bool ProfileSyncService::ConfigurationDone() const {
 
 bool ProfileSyncService::HasUnrecoverableError() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return unrecoverable_error_reason_ != ERROR_REASON_UNSET;
+  return HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR);
 }
 
 bool ProfileSyncService::IsPassphraseRequired() const {
@@ -1403,7 +1426,7 @@ void ProfileSyncService::OnUserChoseDatatypes(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(syncer::UserSelectableTypes().HasAll(chosen_types));
 
-  if (!engine_ && !HasUnrecoverableError()) {
+  if (!engine_ && !HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
     NOTREACHED();
     return;
   }
@@ -1976,19 +1999,18 @@ void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
 
 bool ProfileSyncService::IsSyncRequested() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // When local sync is on sync should be considered requsted or otherwise it
-  // will not resume after the policy or the flag has been removed.
-  return sync_prefs_.IsSyncRequested() || sync_prefs_.IsLocalSyncEnabled();
+  return !HasDisableReason(DISABLE_REASON_USER_CHOICE);
 }
 
 void ProfileSyncService::RequestStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  if (!IsSyncAllowed()) {
+  if (HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) ||
+      HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY)) {
     // Sync cannot be requested if it's not allowed.
     return;
   }
   DCHECK(sync_client_);
-  if (!IsSyncRequested()) {
+  if (!sync_prefs_.IsSyncRequested()) {
     sync_prefs_.SetSyncRequested(true);
     NotifyObservers();
   }
@@ -2002,7 +2024,7 @@ void ProfileSyncService::ReconfigureDatatypeManager() {
   if (engine_initialized_) {
     DCHECK(engine_);
     ConfigureDataTypeManager();
-  } else if (HasUnrecoverableError()) {
+  } else if (HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR)) {
     // There is nothing more to configure. So inform the listeners,
     NotifyObservers();
 
@@ -2028,7 +2050,7 @@ void ProfileSyncService::OnInternalUnrecoverableError(
     const base::Location& from_here,
     const std::string& message,
     UnrecoverableErrorReason reason) {
-  DCHECK(!HasUnrecoverableError());
+  DCHECK_EQ(unrecoverable_error_reason_, ERROR_REASON_UNSET);
   unrecoverable_error_reason_ = reason;
   OnUnrecoverableErrorImpl(from_here, message);
 }
