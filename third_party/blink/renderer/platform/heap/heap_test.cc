@@ -4891,7 +4891,7 @@ TEST(HeapTest, NeedsAdjustPointer) {
   // class Mixin : public GarbageCollectedMixin {};
   static_assert(NeedsAdjustPointer<Mixin>::value,
                 "A Mixin pointer needs adjustment");
-  static_assert(NeedsAdjustPointer<Mixin>::value,
+  static_assert(NeedsAdjustPointer<const Mixin>::value,
                 "A const Mixin pointer needs adjustment");
 
   // class SimpleObject : public GarbageCollected<SimpleObject> {};
