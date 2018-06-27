@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.compositor.bottombar;
 
 import android.content.Context;
-import android.graphics.Color;
 import android.support.annotation.Nullable;
 import android.view.ViewGroup;
 
@@ -509,18 +508,6 @@ abstract class OverlayPanelBase {
         return mBasePageBrightness;
     }
 
-    /**
-     * @return The color to fill the base page when viewport is resized/changes orientation.
-     */
-    public int getBasePageBackgroundColor() {
-        // TODO(pedrosimonetti): Get the color from the CVC and apply a proper brightness transform.
-        // NOTE(pedrosimonetti): Assumes the background color of the base page to be white (255)
-        // and applies a simple brightness transformation based on the base page value.
-        int value = Math.round(255 * mBasePageBrightness);
-        value = MathUtils.clamp(value, 0, 255);
-        return Color.rgb(value, value, value);
-    }
-
     // --------------------------------------------------------------------------------------------
     // Progress Bar states
     // --------------------------------------------------------------------------------------------
@@ -809,6 +796,8 @@ abstract class OverlayPanelBase {
         } else if (endState == PanelState.MAXIMIZED) {
             updatePanelForMaximization(percentage);
         }
+
+        updateStatusBar();
     }
 
     /**
@@ -1019,6 +1008,19 @@ abstract class OverlayPanelBase {
 
         // Update the Bar Shadow.
         updateBarShadow();
+    }
+
+    /** Updates the Status Bar. */
+    protected void updateStatusBar() {}
+
+    /** @return the maximum brightness of the base page. */
+    protected float getMaxBasePageBrightness() {
+        return BASE_PAGE_BRIGHTNESS_STATE_PEEKED;
+    }
+
+    /** @return the minimum brightness of the base page. */
+    protected float getMinBasePageBrightness() {
+        return BASE_PAGE_BRIGHTNESS_STATE_MAXIMIZED;
     }
 
     private float getBarHeightExpanded() {

@@ -28,6 +28,8 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchManagementDe
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
+import org.chromium.chrome.browser.widget.ScrimView;
+import org.chromium.chrome.browser.widget.ScrimView.ScrimParams;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -75,6 +77,18 @@ public class ContextualSearchPanel extends OverlayPanel {
      * e.g. swipe-closed behavior.  See crbug.com/831783 for details.
      */
     private boolean mUseGenericSheetUx;
+
+    /**
+     * A ScrimView for adjusting the Status Bar's brightness when a scrim is present (when the panel
+     * is open).
+     */
+    private ScrimView mScrimView;
+
+    /**
+     * Params that configure our use of the ScrimView for adjusting the Status Bar's
+     * brightness when a scrim is present (when the panel is open).
+     */
+    private ScrimParams mScrimParams;
 
     // ============================================================================================
     // Constructor
@@ -274,6 +288,7 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.onClosed(reason);
 
         if (mSceneLayer != null) mSceneLayer.hideTree();
+        if (mScrimView != null) mScrimView.hideScrim(false);
     }
 
     // ============================================================================================
@@ -591,7 +606,7 @@ public class ContextualSearchPanel extends OverlayPanel {
      * @param searchTerm The string that represents the search term.
      * @param thumbnailUrl The URL of the thumbnail to display.
      * @param quickActionUri The URI for the intent associated with the quick action.
-     * @param quickActionCategory The {@link QuickActionCategory} for the quick action.
+     * @param quickActionCategory The {@code QuickActionCategory} for the quick action.
      */
     public void onSearchTermResolved(String searchTerm, String thumbnailUrl, String quickActionUri,
             int quickActionCategory) {
@@ -697,6 +712,34 @@ public class ContextualSearchPanel extends OverlayPanel {
         super.updatePanelForSizeChange();
 
         mManagementDelegate.onPanelResized();
+    }
+
+    @Override
+    protected void updateStatusBar() {
+        float maxBrightness = getMaxBasePageBrightness();
+        float minBrightness = getMinBasePageBrightness();
+        float basePageBrightness = getBasePageBrightness();
+        // Compute Status Bar alpha based on the base-page brightness range applied by the Overlay.
+        // TODO(donnd): Create a full-screen sized view and apply the black_alpha_65 color to get
+        // an exact match between the scrim and the status bar colors instead of adjusting the
+        // status bar alpha to approximate the native overlay brightness filter.
+        // Details in https://crbug.com/848922.
+        float statusBarAlpha =
+                (maxBrightness - basePageBrightness) / (maxBrightness - minBrightness);
+        if (statusBarAlpha == 0.0) {
+            if (mScrimView != null) mScrimView.hideScrim(false);
+            mScrimParams = null;
+            mScrimView = null;
+            return;
+
+        } else {
+            mScrimView = mManagementDelegate.getChromeActivity().getScrim();
+            if (mScrimParams == null) {
+                mScrimParams = new ScrimParams(null, false, true, 0, null);
+                mScrimView.showScrim(mScrimParams);
+            }
+            mScrimView.setViewAlpha(statusBarAlpha);
+        }
     }
 
     @Override
