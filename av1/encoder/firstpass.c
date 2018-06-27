@@ -3413,6 +3413,51 @@ static void configure_buffer_updates(AV1_COMP *cpi) {
   }
 }
 
+void av1_configure_buffer_updates_firstpass(AV1_COMP *cpi,
+                                            FRAME_UPDATE_TYPE update_type) {
+  RATE_CONTROL *rc = &cpi->rc;
+
+  cpi->refresh_last_frame = 1;
+  cpi->refresh_golden_frame = 0;
+  cpi->refresh_bwd_ref_frame = 0;
+  cpi->refresh_alt2_ref_frame = 0;
+  cpi->refresh_alt_ref_frame = 0;
+
+  rc->is_bwd_ref_frame = 0;
+
+  switch (update_type) {
+    case ARF_UPDATE:
+      cpi->refresh_alt_ref_frame = 1;
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+
+      rc->is_src_frame_alt_ref = 0;
+      break;
+    case INTNL_ARF_UPDATE:
+      cpi->refresh_alt2_ref_frame = 1;
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_bwd_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+      rc->is_src_frame_alt_ref = 0;
+      rc->is_src_frame_ext_arf = 0;
+
+      break;
+    case BIPRED_UPDATE:
+      cpi->refresh_bwd_ref_frame = 1;
+      cpi->refresh_last_frame = 0;
+      cpi->refresh_golden_frame = 0;
+      cpi->refresh_alt2_ref_frame = 0;
+      cpi->refresh_alt_ref_frame = 0;
+
+      rc->is_bwd_ref_frame = 1;
+      break;
+    default: break;
+  }
+}
+
 static int is_skippable_frame(const AV1_COMP *cpi) {
   // If the current frame does not have non-zero motion vector detected in the
   // first  pass, and so do its previous and forward frames, then this frame

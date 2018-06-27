@@ -3395,10 +3395,9 @@ static void update_reference_frames(AV1_COMP *cpi) {
     // === ALTREF_FRAME ===
     if (cpi->refresh_alt_ref_frame) {
       int arf_idx = cpi->ref_fb_idx[ALTREF_FRAME - 1];
-      int which_arf = 0;
       ref_cnt_fb(pool->frame_bufs, &cm->ref_frame_map[arf_idx], cm->new_fb_idx);
 
-      memcpy(cpi->interp_filter_selected[ALTREF_FRAME + which_arf],
+      memcpy(cpi->interp_filter_selected[ALTREF_FRAME],
              cpi->interp_filter_selected[0],
              sizeof(cpi->interp_filter_selected[0]));
     }
@@ -5653,11 +5652,8 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   if (oxcf->large_scale_tile)
     cm->refresh_frame_context = REFRESH_FRAME_CONTEXT_DISABLED;
 
-  cpi->refresh_last_frame = 1;
-  cpi->refresh_golden_frame = 0;
-  cpi->refresh_bwd_ref_frame = 0;
-  cpi->refresh_alt2_ref_frame = 0;
-  cpi->refresh_alt_ref_frame = 0;
+  // default reference buffers update config
+  av1_configure_buffer_updates_firstpass(cpi, LF_UPDATE);
 
   // Initialize fields related to forward keyframes
   cpi->no_show_kf = 0;
@@ -5770,12 +5766,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       }
       cm->show_frame = 0;
       cm->intra_only = 0;
-      cpi->refresh_alt_ref_frame = 1;
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      rc->is_src_frame_alt_ref = 0;
+
+      if (oxcf->pass < 2) {
+        // In second pass, the buffer updates configure will be set
+        // in the function av1_rc_get_second_pass_params
+        av1_configure_buffer_updates_firstpass(cpi, ARF_UPDATE);
+      }
     }
     rc->source_alt_ref_pending = 0;
   }
@@ -5812,13 +5808,12 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
 
       cm->show_frame = 0;
       cm->intra_only = 0;
-      cpi->refresh_alt2_ref_frame = 1;
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_bwd_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
-      rc->is_src_frame_alt_ref = 0;
-      rc->is_src_frame_ext_arf = 0;
+
+      if (oxcf->pass < 2) {
+        // In second pass, the buffer updates configure will be set
+        // in the function av1_rc_get_second_pass_params
+        av1_configure_buffer_updates_firstpass(cpi, INTNL_ARF_UPDATE);
+      }
     }
     rc->source_alt_ref_pending = 0;
   }
@@ -5832,13 +5827,11 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
       cm->show_frame = 0;
       cm->intra_only = 0;
 
-      cpi->refresh_bwd_ref_frame = 1;
-      cpi->refresh_last_frame = 0;
-      cpi->refresh_golden_frame = 0;
-      cpi->refresh_alt2_ref_frame = 0;
-      cpi->refresh_alt_ref_frame = 0;
-
-      rc->is_bwd_ref_frame = 1;
+      if (oxcf->pass < 2) {
+        // In second pass, the buffer updates configure will be set
+        // in the function av1_rc_get_second_pass_params
+        av1_configure_buffer_updates_firstpass(cpi, BIPRED_UPDATE);
+      }
     }
   }
 
