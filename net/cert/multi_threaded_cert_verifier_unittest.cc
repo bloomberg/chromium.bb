@@ -43,7 +43,6 @@ class MockCertVerifyProc : public CertVerifyProc {
 
   // CertVerifyProc implementation
   bool SupportsAdditionalTrustAnchors() const override { return false; }
-  bool SupportsOCSPStapling() const override { return false; }
 
   int VerifyInternal(X509Certificate* cert,
                      const std::string& hostname,

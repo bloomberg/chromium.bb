@@ -16,7 +16,6 @@ class CertVerifyProcWin : public CertVerifyProc {
   CertVerifyProcWin();
 
   bool SupportsAdditionalTrustAnchors() const override;
-  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcWin() override;

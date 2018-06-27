@@ -349,10 +349,6 @@ bool CertVerifyProcAndroid::SupportsAdditionalTrustAnchors() const {
   return false;
 }
 
-bool CertVerifyProcAndroid::SupportsOCSPStapling() const {
-  return false;
-}
-
 int CertVerifyProcAndroid::VerifyInternal(
     X509Certificate* cert,
     const std::string& hostname,

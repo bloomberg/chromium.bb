@@ -63,10 +63,6 @@ int CachingCertVerifier::Verify(const CertVerifier::RequestParams& params,
   return result;
 }
 
-bool CachingCertVerifier::SupportsOCSPStapling() {
-  return verifier_->SupportsOCSPStapling();
-}
-
 bool CachingCertVerifier::AddEntry(const RequestParams& params,
                                    int error,
                                    const CertVerifyResult& verify_result,

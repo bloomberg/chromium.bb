@@ -248,10 +248,6 @@ bool CertVerifyProcIOS::SupportsAdditionalTrustAnchors() const {
   return false;
 }
 
-bool CertVerifyProcIOS::SupportsOCSPStapling() const {
-  return false;
-}
-
 CertVerifyProcIOS::~CertVerifyProcIOS() = default;
 
 int CertVerifyProcIOS::VerifyInternal(

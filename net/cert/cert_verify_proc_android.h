@@ -18,7 +18,6 @@ class NET_EXPORT CertVerifyProcAndroid : public CertVerifyProc {
   CertVerifyProcAndroid();
 
   bool SupportsAdditionalTrustAnchors() const override;
-  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcAndroid() override;

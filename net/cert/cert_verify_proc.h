@@ -71,11 +71,6 @@ class NET_EXPORT CertVerifyProc
   // passed to Verify() is ignored when this returns false.
   virtual bool SupportsAdditionalTrustAnchors() const = 0;
 
-  // Returns true if the implementation supports passing a stapled OCSP response
-  // to the Verify() call. The |ocsp_response| parameter passed to Verify() is
-  // ignored when this returns false.
-  virtual bool SupportsOCSPStapling() const = 0;
-
  protected:
   CertVerifyProc();
   virtual ~CertVerifyProc();

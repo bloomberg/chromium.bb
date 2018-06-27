@@ -200,11 +200,6 @@ class WrappedCertVerifierForProfileIODataTesting : public net::CertVerifier {
     return g_cert_verifier_for_profile_io_data_testing->Verify(
         params, crl_set, verify_result, callback, out_req, net_log);
   }
-  bool SupportsOCSPStapling() override {
-    if (!g_cert_verifier_for_profile_io_data_testing)
-      return false;
-    return g_cert_verifier_for_profile_io_data_testing->SupportsOCSPStapling();
-  }
 };
 
 #if BUILDFLAG(DEBUG_DEVTOOLS)

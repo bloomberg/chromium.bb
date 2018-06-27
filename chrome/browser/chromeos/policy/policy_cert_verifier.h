@@ -52,8 +52,6 @@ class PolicyCertVerifier : public net::CertVerifier {
              std::unique_ptr<Request>* out_req,
              const net::NetLogWithSource& net_log) override;
 
-  bool SupportsOCSPStapling() override;
-
  private:
   net::CertificateList trust_anchors_;
   base::Closure anchor_used_callback_;

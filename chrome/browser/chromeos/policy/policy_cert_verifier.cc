@@ -94,9 +94,4 @@ int PolicyCertVerifier::Verify(
   return error;
 }
 
-bool PolicyCertVerifier::SupportsOCSPStapling() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  return delegate_->SupportsOCSPStapling();
-}
-
 }  // namespace policy

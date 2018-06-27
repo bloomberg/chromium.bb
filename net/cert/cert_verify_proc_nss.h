@@ -18,7 +18,6 @@ class NET_EXPORT_PRIVATE CertVerifyProcNSS : public CertVerifyProc {
   CertVerifyProcNSS();
 
   bool SupportsAdditionalTrustAnchors() const override;
-  bool SupportsOCSPStapling() const override;
 
  protected:
   ~CertVerifyProcNSS() override;

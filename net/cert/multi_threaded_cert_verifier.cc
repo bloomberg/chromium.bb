@@ -389,10 +389,6 @@ int MultiThreadedCertVerifier::Verify(const RequestParams& params,
   return ERR_IO_PENDING;
 }
 
-bool MultiThreadedCertVerifier::SupportsOCSPStapling() {
-  return verify_proc_->SupportsOCSPStapling();
-}
-
 bool MultiThreadedCertVerifier::JobComparator::operator()(
     const CertVerifierJob* job1,
     const CertVerifierJob* job2) const {
