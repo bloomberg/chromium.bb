@@ -11,6 +11,7 @@
 [
   Exposed=Window,
   RuntimeEnabled=AsyncCookies,
+  SecureContext,
   Constructor(DOMString type, optional CookieChangeEventInit eventInitDict)
 ] interface CookieChangeEvent : Event {
   [Measure] readonly attribute CookieList changed;

@@ -10,6 +10,6 @@ dictionary CookieStoreSetOptions {
   DOMTimeStamp? expires = null;
   USVString domain;
   USVString path = "/";
-  boolean? secure;
+  boolean secure = true;
   boolean httpOnly = false;
 };
