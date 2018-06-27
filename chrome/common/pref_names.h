@@ -208,6 +208,7 @@ extern const char kResolveTimezoneByGeolocationMigratedToMethod[];
 // keyboards, not UI languages.
 extern const char kLanguageCurrentInputMethod[];
 extern const char kLanguagePreviousInputMethod[];
+extern const char kLanguageAllowedInputMethods[];
 extern const char kLanguagePreferredLanguages[];
 extern const char kLanguagePreferredLanguagesSyncable[];
 extern const char kLanguagePreloadEngines[];

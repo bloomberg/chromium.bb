@@ -11983,6 +11983,28 @@
       If this policy is set, the user can only configure <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in one of the locales specified by this policy. If this policy is not set or set to an empty list, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> can be displayed in all supported UI locales. If this policy is set to a list with invalid values, all invalid values will be ignored. If a user previously configured <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> to be displayed in a locale that is not allowed by this policy, the display locale will be switched to an allowed UI locale the next time the user signs in. If the user had configured preferred locales and one of the preferred locales is allowed by this policy, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to this locale. Otherwise, <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> will switch to the first valid value specified by this policy, or to a fallback locale (currently en-US), if this policy only contains invalid entries.'''
     },
     {
+      'name': 'AllowedInputMethods',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' },
+      },
+      'supported_on': ['chrome_os:69-'],
+      'device_only': False,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True
+      },
+      'example_value': [ 'xkb:us::eng' ],
+      'max_size': 16777216,
+      'id': 456,
+      'caption': '''Configure the allowed input methods in a user session''',
+      'tags': [],
+      'desc': '''Configures which keyboard layouts are allowed for <ph name="PRODUCT_OS_NAME">$2<ex>Google Chrome OS</ex></ph> user sessions.
+
+      If this policy is set, the user can only select one of the input methods specified by this policy. If this policy is not set or set to an empty list, the user can select all supported input methods. If the current input method is not allowed by this policy, the input method will be switched to the hardware keyboard layout (if allowed) or the first valid entry in this list. All invalid or unsupported input methods in this list will be ignored.'''
+    },
+    {
       'name': 'ArcAppInstallEventLoggingEnabled',
       'type': 'main',
       'schema': { 'type': 'boolean' },
@@ -12485,5 +12507,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 455
+  'highest_id_currently_used': 456
 }

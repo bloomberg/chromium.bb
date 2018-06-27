@@ -3140,6 +3140,15 @@
     ]
   },
 
+  "AllowedInputMethods": {
+    "os": ["chromeos"],
+    "can_be_recommended": false,
+    "test_policy": { "AllowedInputMethods": ["xkb:us::en"] },
+    "pref_mappings": [
+      { "pref": "settings.language.allowed_input_methods" }
+    ]
+  },
+
 
   "----- Chrome OS device policies ---------------------------------------": {},
 

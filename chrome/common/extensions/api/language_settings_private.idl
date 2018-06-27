@@ -67,6 +67,9 @@ namespace languageSettingsPrivate {
 
     // True if the input method extension has an options page.
     boolean? hasOptionsPage;
+
+    // True if the input method is not allowed by policy.
+    boolean? isProhibitedByPolicy;
   };
 
   dictionary InputMethodLists {

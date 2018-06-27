@@ -70,7 +70,7 @@ Polymer({
   },
 
   /**
-   * Returns true if the input method can be removed.
+   * Returns true if the input method can be added/removed.
    * @param {!chrome.languageSettingsPrivate.InputMethod} targetInputMethod
    * @param {!Object} change Polymer change object (provided in the HTML so this
    *     gets called whenever languages.inputMethods.enabled.* changes).
@@ -78,6 +78,9 @@ Polymer({
    * @private
    */
   enableInputMethodCheckbox_: function(targetInputMethod, change) {
+    if (targetInputMethod.isProhibitedByPolicy)
+      return false;
+
     if (!targetInputMethod.enabled)
       return true;
 
@@ -194,4 +197,13 @@ Polymer({
       }
     }
   },
+
+  /**
+   * @param {Object} allowedInputMethods
+   * @return {boolean}
+   * @private
+   */
+  inputMethodsLimitedByPolicy_: function(allowedInputMethods) {
+    return !!allowedInputMethods && allowedInputMethods.value.length > 0;
+  }
 });

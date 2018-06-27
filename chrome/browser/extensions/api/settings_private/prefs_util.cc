@@ -420,6 +420,8 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_api::PrefType::PREF_TYPE_STRING;
   (*s_whitelist)[::prefs::kLanguageEnabledExtensionImes] =
       settings_api::PrefType::PREF_TYPE_STRING;
+  (*s_whitelist)[::prefs::kLanguageAllowedInputMethods] =
+      settings_api::PrefType::PREF_TYPE_LIST;
 
   // Device settings.
   (*s_whitelist)[::prefs::kTapToClickEnabled] =

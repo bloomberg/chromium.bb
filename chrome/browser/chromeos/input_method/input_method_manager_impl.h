@@ -109,7 +109,8 @@ class InputMethodManagerImpl : public InputMethodManager,
     bool ReplaceEnabledInputMethods(
         const std::vector<std::string>& new_active_input_method_ids) override;
     bool SetAllowedInputMethods(
-        const std::vector<std::string>& new_allowed_input_method_ids) override;
+        const std::vector<std::string>& new_allowed_input_method_ids,
+        bool enable_allowed_input_methods) override;
     const std::vector<std::string>& GetAllowedInputMethods() override;
     void EnableInputView() override;
     void DisableInputView() override;
@@ -152,11 +153,15 @@ class InputMethodManagerImpl : public InputMethodManager,
     ~StateImpl() override;
 
    private:
-    // Retruns true if the passed input method is allowed. By default, all input
+    // Returns true if the passed input method is allowed. By default, all input
     // methods are allowed. After SetAllowedKeyboardLayoutInputMethods was
     // called, the passed keyboard layout input methods are allowed and all
     // non-keyboard input methods remain to be allowed.
     bool IsInputMethodAllowed(const std::string& input_method_id) const;
+
+    // Returns the first hardware input method that is allowed or the first
+    // allowed input method, if no hardware input method is allowed.
+    std::string GetAllowedFallBackKeyboardLayout() const;
   };
 
   // Constructs an InputMethodManager instance. The client is responsible for

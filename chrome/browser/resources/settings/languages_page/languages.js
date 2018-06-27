@@ -405,6 +405,7 @@ Polymer({
       for (let j = 0; j < supportedInputMethods.length; j++) {
         const inputMethod = supportedInputMethods[j];
         inputMethod.enabled = !!inputMethod.enabled;
+        inputMethod.isProhibitedByPolicy = !!inputMethod.isProhibitedByPolicy;
         // Add the input method to the map of IDs.
         this.supportedInputMethodMap_.set(inputMethod.id, inputMethod);
         // Add the input method to the list of input methods for each language

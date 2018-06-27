@@ -2297,6 +2297,9 @@
     <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_EXPAND_ACCESSIBILITY_LABEL" desc="Label for the button that toggles showing the input options (keyboard and keyboard layouts). Only visible by screen reader software.">
       Show input options
     </message>
+    <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGED_BY_POLICY" desc="Label which is shown on the manage input methods page if input methods are managed by policy.">
+      Your administrator has limited the available input methods.
+    </message>
     <message name="IDS_SETTINGS_LANGUAGES_INPUT_METHODS_MANAGE" desc="Button under the list of input methods which opens a sub-page that lets the user enable or disable keyboard layouts and input method editors.">
       Manage input methods
     </message>

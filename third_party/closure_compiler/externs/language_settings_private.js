@@ -55,7 +55,8 @@ chrome.languageSettingsPrivate.SpellcheckDictionaryStatus;
  *   displayName: string,
  *   languageCodes: !Array<string>,
  *   enabled: (boolean|undefined),
- *   hasOptionsPage: (boolean|undefined)
+ *   hasOptionsPage: (boolean|undefined),
+ *   isProhibitedByPolicy: (boolean|undefined)
  * }}
  */
 chrome.languageSettingsPrivate.InputMethod;
