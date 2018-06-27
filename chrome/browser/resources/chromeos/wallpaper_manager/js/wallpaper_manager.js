@@ -64,7 +64,6 @@ function WallpaperManager(dialogDom) {
     // Its value will either replace |dailyRefreshInfo_| or be discarded.
     this.pendingDailyRefreshInfo_ = null;
     this.placeWallpaperPicker_();
-    $('spinner').hidden = false;
     this.getCollectionsInfo_();
   } else {
     this.fetchManifest_();
@@ -532,7 +531,6 @@ WallpaperManager.prototype.postDownloadDomInit_ = function() {
   this.initCategoriesList_();
   this.initThumbnailsGrid_();
   this.presetCategory_();
-  $('spinner').hidden = true;
 
   $('file-selector')
       .addEventListener('change', this.onFileSelectorChanged_.bind(this));
@@ -2099,9 +2097,6 @@ WallpaperManager.prototype.isDuringPreview_ = function() {
 WallpaperManager.prototype.onScrollPositionChanged = function(scrollTop) {
   // The current wallpaper info bar should scroll together with the image grid.
   $('current-wallpaper-info-bar').style.top = -scrollTop + 'px';
-  var needTopPadding =
-      scrollTop <= $('current-wallpaper-info-bar').offsetHeight;
-  $('wallpaper-grid').classList.toggle('top-padding', needTopPadding);
 };
 
 /**
