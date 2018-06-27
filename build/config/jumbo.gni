@@ -14,7 +14,7 @@ declare_args() {
   # when frequently changing a set of cpp files.
   jumbo_build_excluded = []
 
-  # How many files to group at most. Smaller numbers give more
+  # How many files to group on average. Smaller numbers give more
   # parallellism, higher numbers give less total CPU usage. Higher
   # numbers also give longer single-file recompilation times.
   #

@@ -12,12 +12,67 @@ for compiling.
 from __future__ import print_function
 
 import argparse
+import hashlib
 import cStringIO
 import os
 
-def write_jumbo_files(inputs, outputs, written_input_set, written_output_set):
-  output_count = len(outputs)
+def cut_ranges(boundaries):
+  # Given an increasing sequence of boundary indices, generate a sequence of
+  # non-overlapping ranges. The total range is inclusive of the first index
+  # and exclusive of the last index from the given sequence.
+  for start, stop in zip(boundaries, boundaries[1:]):
+    yield range(start, stop)
+
+
+def generate_chunk_stops(inputs, output_count, smart_merge=True):
+  # Note: In the comments below, unique numeric labels are assigned to files.
+  #       Consider them as the sorted rank of the hash of each file path.
+  # Simple jumbo chunking generates uniformly sized chunks with the ceiling of:
+  # (output_index + 1) * input_count / output_count
   input_count = len(inputs)
+  stops = [((i + 1) * input_count + output_count - 1) // output_count
+           for i in range(output_count)]
+  # This is disruptive at times because file insertions and removals can
+  # invalidate many chunks as all files are offset by one.
+  # For example, say we have 12 files in 4 uniformly sized chunks:
+  # 9, 4, 0; 7,  1, 11;  5, 10, 2; 6, 3, 8
+  # If we delete the first file we get:
+  # 4, 0, 7; 1, 11,  5; 10,  2, 6; 3, 8
+  # All of the chunks have new sets of inputs.
+
+  # With path-aware chunking, we start with the uniformly sized chunks:
+  # 9, 4, 0; 7,  1, 11;  5, 10, 2; 6, 3, 8
+  # First we find the smallest rank in each of the chunks. Their indices are
+  # stored in the |centers| list and in this example the ranks would be:
+  # 0, 1, 2, 3
+  # Then we find the largest rank between the centers. Their indices are stored
+  # in the |stops| list and in this example the ranks would be:
+  # 7, 11, 6
+  # These files mark the boundaries between chunks and these boundary files are
+  # often maintained even as files are added or deleted.
+  # In this example, 7, 11, and 6 are the first files in each chunk:
+  # 9, 4, 0; 7,  1; 11,  5, 10, 2; 6, 3, 8
+  # If we delete the first file and repeat the process we get:
+  # 4, 0; 7, 1; 11,  5, 10,  2; 6, 3, 8
+  # Only the first chunk has a new set of inputs.
+  if smart_merge:
+    # Starting with the simple chunks, every file is assigned a rank.
+    # This requires a hash function that is stable across runs.
+    hasher = lambda n: hashlib.md5(inputs[n]).hexdigest()
+    # In each chunk there is a key file with lowest rank; mark them.
+    # Note that they will not easily change.
+    centers = [min(indices, key=hasher) for indices in cut_ranges([0] + stops)]
+    # Between each pair of key files there is a file with highest rank.
+    # Mark these to be used as border files. They also will not easily change.
+    # Forget the inital chunks and create new chunks by splitting the list at
+    # every border file.
+    stops = [max(indices, key=hasher) for indices in cut_ranges(centers)]
+    stops.append(input_count)
+  return stops
+
+
+def write_jumbo_files(inputs, outputs, written_input_set, written_output_set):
+  chunk_stops = generate_chunk_stops(inputs, len(outputs))
 
   written_inputs = 0
   for output_index, output_file in enumerate(outputs):
@@ -31,7 +86,7 @@ def write_jumbo_files(inputs, outputs, written_input_set, written_output_set):
     out = cStringIO.StringIO()
     out.write("/* This is a Jumbo file. Don't edit. */\n\n")
     out.write("/* Generated with merge_for_jumbo.py. */\n\n")
-    input_limit = (output_index + 1) * input_count / output_count
+    input_limit = chunk_stops[output_index]
     while written_inputs < input_limit:
       filename = inputs[written_inputs]
       written_inputs += 1
