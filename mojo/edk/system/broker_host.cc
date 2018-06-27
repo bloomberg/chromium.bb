@@ -15,6 +15,10 @@
 #include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/scoped_platform_handle.h"
 
+#if defined(OS_WIN)
+#include <windows.h>
+#endif
+
 namespace mojo {
 namespace edk {
 
@@ -47,16 +51,24 @@ BrokerHost::~BrokerHost() {
 bool BrokerHost::PrepareHandlesForClient(
     std::vector<ScopedInternalPlatformHandle>* handles) {
 #if defined(OS_WIN)
-  if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
-                                        client_process_.get(), handles)) {
-    // NOTE: We only log an error here. We do not signal a logical error or
-    // prevent any message from being sent. The client should handle unexpected
-    // invalid handles appropriately.
-    DLOG(ERROR) << "Failed to rewrite one or more handles to broker client.";
-    return false;
+  bool handles_ok = true;
+  for (auto& handle : *handles) {
+    HANDLE value = handle.release().handle;
+    BOOL result = ::DuplicateHandle(
+        base::GetCurrentProcessHandle(), value, client_process_.get(), &value,
+        0, FALSE, DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
+    if (result) {
+      handle.reset(InternalPlatformHandle(value));
+      handle.get().owning_process = client_process_.Clone().release();
+    } else {
+      handles_ok = false;
+      DPLOG(ERROR) << "DuplicateHandle failed";
+    }
   }
-#endif
+  return handles_ok;
+#else
   return true;
+#endif
 }
 
 bool BrokerHost::SendChannel(ScopedInternalPlatformHandle handle) {

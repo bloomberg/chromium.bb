@@ -234,6 +234,11 @@ void NodeChannel::NotifyBadMessage(const std::string& error) {
 
 void NodeChannel::SetRemoteProcessHandle(ScopedProcessHandle process_handle) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  {
+    base::AutoLock lock(channel_lock_);
+    if (channel_)
+      channel_->set_remote_process(process_handle.Clone());
+  }
   base::AutoLock lock(remote_process_handle_lock_);
   DCHECK(!remote_process_handle_.is_valid());
   CHECK_NE(remote_process_handle_.get(), base::GetCurrentProcessHandle());
@@ -482,30 +487,7 @@ void NodeChannel::OnChannelMessage(
   // to drop it here in response to, e.g., a malformed message.
   scoped_refptr<NodeChannel> keepalive = this;
 
-#if defined(OS_WIN)
-  // If we receive handles from a known process, rewrite them to our own
-  // process. This can occur when a privileged node receives handles directly
-  // from a privileged descendant.
-  {
-    base::AutoLock lock(remote_process_handle_lock_);
-    if (!handles.empty() && remote_process_handle_.is_valid()) {
-      // Note that we explicitly mark the handles as being owned by the sending
-      // process before rewriting them, in order to accommodate RewriteHandles'
-      // internal sanity checks.
-      for (auto& handle : handles)
-        handle.get().owning_process = remote_process_handle_.get();
-      if (!Channel::Message::RewriteHandles(remote_process_handle_.get(),
-                                            base::GetCurrentProcessHandle(),
-                                            &handles)) {
-        DLOG(ERROR) << "Received one or more invalid handles.";
-      }
-    } else if (!handles.empty()) {
-      // Handles received by an unknown process must already be owned by us.
-      for (auto& handle : handles)
-        handle.get().owning_process = base::GetCurrentProcessHandle();
-    }
-  }
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // If we're not the root, receive any mach ports from the message. If we're
   // the root, the only message containing mach ports should be a
   // RELAY_EVENT_MESSAGE.
@@ -827,29 +809,7 @@ void NodeChannel::ProcessPendingMessagesWithMachPorts() {
 #endif
 
 void NodeChannel::WriteChannelMessage(Channel::MessagePtr message) {
-#if defined(OS_WIN)
-  // Map handles to the destination process. Note: only messages from a
-  // privileged node should contain handles on Windows. If an unprivileged
-  // node needs to send handles, it should do so via RelayEventMessage which
-  // stashes the handles in the message in such a way that they go undetected
-  // here (they'll be unpacked and duplicated by the broker).
-
-  if (message->has_handles()) {
-    base::AutoLock lock(remote_process_handle_lock_);
-
-    // Rewrite outgoing handles if we have a handle to the destination process.
-    if (remote_process_handle_.is_valid()) {
-      std::vector<ScopedInternalPlatformHandle> handles =
-          message->TakeHandles();
-      if (!Channel::Message::RewriteHandles(base::GetCurrentProcessHandle(),
-                                            remote_process_handle_.get(),
-                                            &handles)) {
-        DLOG(ERROR) << "Failed to duplicate one or more outgoing handles.";
-      }
-      message->SetHandles(std::move(handles));
-    }
-  }
-#elif defined(OS_MACOSX) && !defined(OS_IOS)
+#if defined(OS_MACOSX) && !defined(OS_IOS)
   // On OSX, we need to transfer mach ports to the destination process before
   // transferring the message itself.
   if (message->has_mach_ports()) {
