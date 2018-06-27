@@ -787,6 +787,7 @@ jumbo_static_library("extensions") {
   # browser, then we can clean up these dependencies.
   public_deps = [
     "//chrome/common/extensions/api",
+    "//components/safe_browsing:csd_proto",
     "//components/safe_browsing/db:util",
     "//content/public/browser",
   ]
