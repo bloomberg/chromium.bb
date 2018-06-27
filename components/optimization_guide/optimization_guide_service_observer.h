@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_SERVICE_OBSERVER_H_
 #define COMPONENTS_OPTIMIZATION_GUIDE_OPTIMIZATION_GUIDE_SERVICE_OBSERVER_H_
 
+#include "base/version.h"
 #include "components/optimization_guide/proto/hints.pb.h"
 
 namespace optimization_guide {
