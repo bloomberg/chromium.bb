@@ -33,8 +33,7 @@ const CGFloat kIconSizeLegacy = 48;
     _titleLabel = [[UILabel alloc] init];
     if (IsUIRefreshPhase1Enabled()) {
       _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:kTitleAlpha];
-      _titleLabel.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+      _titleLabel.font = [UIFont systemFontOfSize:12];
     } else {
       _titleLabel.textColor =
           [UIColor colorWithWhite:kLabelTextColor alpha:1.0];
@@ -46,12 +45,10 @@ const CGFloat kIconSizeLegacy = 48;
 
     _faviconView = [[FaviconViewNew alloc] init];
     if (IsUIRefreshPhase1Enabled()) {
-      _faviconView.font =
-          [UIFont preferredFontForTextStyle:UIFontTextStyleTitle2];
+      _faviconView.font = [UIFont systemFontOfSize:22];
     } else {
       _faviconView.font = [MDCTypography headlineFont];
     }
-
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _faviconView.translatesAutoresizingMaskIntoConstraints = NO;
 

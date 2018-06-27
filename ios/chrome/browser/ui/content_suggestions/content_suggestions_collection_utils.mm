@@ -232,8 +232,7 @@ void configureSearchHintLabel(UILabel* searchHintLabel,
   }
   if (IsUIRefreshPhase1Enabled()) {
     [searchHintLabel setTextColor:[UIColor colorWithWhite:0 alpha:kHintAlpha]];
-    searchHintLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleTitle3];
+    searchHintLabel.font = [UIFont systemFontOfSize:20];
   } else {
     [searchHintLabel
         setTextColor:

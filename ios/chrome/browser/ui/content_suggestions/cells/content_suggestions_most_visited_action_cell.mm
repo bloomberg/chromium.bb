@@ -35,8 +35,7 @@ const CGFloat kCountBorderWidth = 24;
   if (self) {
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.textColor = [UIColor colorWithWhite:0 alpha:kTitleAlpha];
-    _titleLabel.font =
-        [UIFont preferredFontForTextStyle:UIFontTextStyleCaption1];
+    _titleLabel.font = [UIFont systemFontOfSize:12];
     _titleLabel.textAlignment = NSTextAlignmentCenter;
     _titleLabel.preferredMaxLayoutWidth = [[self class] defaultSize].width;
     _titleLabel.numberOfLines = kLabelNumLines;

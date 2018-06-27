@@ -7,6 +7,7 @@
 #include "base/ios/ios_util.h"
 #import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_cell.h"
+#import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_action_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/cells/content_suggestions_most_visited_cell.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_controlling.h"
 #import "ios/chrome/browser/ui/content_suggestions/content_suggestions_collection_utils.h"
@@ -166,6 +167,7 @@ initWithCollectionController:
 }
 
 - (void)invalidateLayout {
+  [self updateFakeOmniboxOnNewWidth:self.collectionView.bounds.size.width];
   [self.collectionView.collectionViewLayout invalidateLayout];
 }
 
@@ -262,10 +264,13 @@ initWithCollectionController:
   BOOL isMostVisitedCell =
       content_suggestions::nearestAncestor(
           touch.view, [ContentSuggestionsMostVisitedCell class]) != nil;
+  BOOL isMostVisitedActionCell =
+      content_suggestions::nearestAncestor(
+          touch.view, [ContentSuggestionsMostVisitedActionCell class]) != nil;
   BOOL isSuggestionCell =
       content_suggestions::nearestAncestor(
           touch.view, [ContentSuggestionsCell class]) != nil;
-  return !isMostVisitedCell && !isSuggestionCell;
+  return !isMostVisitedCell && !isMostVisitedActionCell && !isSuggestionCell;
 }
 
 - (UIView*)nearestAncestorOfView:(UIView*)view withClass:(Class)aClass {
