@@ -1,4 +1,5 @@
-Mock: Opening a file chooser.
-Ensure pressing Space key with focus on an INPUT element with TYPE=FILE and WEBKITDIRECTORY launches a file chooser. Automated test passes if 'Opening a file chooser' was logged.
+FileChooser: opened; multiple=true directory=true
+FileChooser: testRunner doesn't support directory selection yet.
+Ensure pressing Space key with focus on an INPUT element with TYPE=FILE and WEBKITDIRECTORY launches a file chooser. Automated test passes if 'FileChooser: opened' was logged.
 
 

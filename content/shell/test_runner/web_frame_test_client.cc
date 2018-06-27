@@ -171,7 +171,8 @@ WebFrameTestClient::WebFrameTestClient(
     WebFrameTestProxyBase* web_frame_test_proxy_base)
     : delegate_(delegate),
       web_view_test_proxy_base_(web_view_test_proxy_base),
-      web_frame_test_proxy_base_(web_frame_test_proxy_base) {
+      web_frame_test_proxy_base_(web_frame_test_proxy_base),
+      weak_factory_(this) {
   DCHECK(delegate_);
   DCHECK(web_frame_test_proxy_base_);
   DCHECK(web_view_test_proxy_base_);
@@ -688,9 +689,43 @@ void WebFrameTestClient::DidClearWindowObject() {
 bool WebFrameTestClient::RunFileChooser(
     const blink::WebFileChooserParams& params,
     blink::WebFileChooserCompletion* completion) {
-  delegate_->PrintMessage("Mock: Opening a file chooser.\n");
-  // FIXME: Add ability to set file names to a file upload control.
-  return false;
+  delegate_->PrintMessage(
+      base::StringPrintf("FileChooser: opened; multiple=%s directory=%s\n",
+                         params.multi_select ? "true" : "false",
+                         params.directory ? "true" : "false"));
+  const std::vector<std::string>& paths = test_runner()->file_chooser_paths();
+  if (params.directory) {
+    delegate_->PrintMessage(
+        "FileChooser: testRunner doesn't support directory selection yet.\n");
+    return false;
+  } else if (params.multi_select) {
+    delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
+                                       weak_factory_.GetWeakPtr(), completion,
+                                       paths));
+  } else if (paths.size() == 0) {
+    delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
+                                       weak_factory_.GetWeakPtr(), completion,
+                                       paths));
+  } else {
+    delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
+                                       weak_factory_.GetWeakPtr(), completion,
+                                       std::vector<std::string>(1, paths[0])));
+  }
+  return true;
+}
+
+void WebFrameTestClient::ChooseFiles(
+    blink::WebFileChooserCompletion* completion,
+    std::vector<std::string> paths) {
+  if (paths.size() > 0)
+    delegate_->PrintMessage("FileChooser: selected\n");
+  else
+    delegate_->PrintMessage("FileChooser: canceled\n");
+  blink::WebVector<blink::WebString> web_paths(paths.size());
+  for (size_t i = 0; i < paths.size(); ++i)
+    web_paths[i] = delegate_->GetAbsoluteWebStringFromUTF8Path(paths[i]);
+  delegate_->RegisterIsolatedFileSystem(web_paths);
+  completion->DidChooseFile(web_paths);
 }
 
 blink::WebEffectiveConnectionType
