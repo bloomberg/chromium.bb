@@ -97,6 +97,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapGetAssertionRequest {
       alternative_application_parameter_;
 };
 
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<CtapGetAssertionRequest> ParseCtapGetAssertionRequest(
+    base::span<const uint8_t> request_bytes);
+
 }  // namespace device
 
 #endif  // DEVICE_FIDO_CTAP_GET_ASSERTION_REQUEST_H_
