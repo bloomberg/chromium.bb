@@ -89,4 +89,9 @@ AuthenticatorMakeCredentialResponse::GetRpIdHash() const {
   return attestation_object_.rp_id_hash();
 }
 
+std::vector<uint8_t> GetSerializedCtapDeviceResponse(
+    const AuthenticatorMakeCredentialResponse& response) {
+  return SerializeToCtapStyleCborEncodedBytes(response.attestation_object());
+}
+
 }  // namespace device
