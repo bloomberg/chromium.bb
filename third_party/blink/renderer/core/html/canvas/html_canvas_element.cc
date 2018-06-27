@@ -415,7 +415,7 @@ void HTMLCanvasElement::FinalizeFrame() {
 
     if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
       // Push a frame
-      double start_time = WTF::CurrentTimeTicksInSeconds();
+      base::TimeTicks start_time = WTF::CurrentTimeTicks();
       scoped_refptr<StaticBitmapImage> image =
           canvas2d_bridge_->NewImageSnapshot(kPreferAcceleration);
       FloatRect src_rect(0, 0, Size().Width(), Size().Height());

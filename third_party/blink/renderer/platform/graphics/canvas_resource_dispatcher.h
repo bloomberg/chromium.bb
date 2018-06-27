@@ -48,11 +48,11 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   bool NeedsBeginFrame() const { return needs_begin_frame_; }
   bool IsAnimationSuspended() const { return suspend_animation_; }
   void DispatchFrame(scoped_refptr<StaticBitmapImage>,
-                     double commit_start_time,
+                     base::TimeTicks commit_start_time,
                      const SkIRect& damage_rect);
   void ReclaimResource(viz::ResourceId);
   void DispatchFrameSync(scoped_refptr<StaticBitmapImage>,
-                         double commit_start_time,
+                         base::TimeTicks commit_start_time,
                          const SkIRect& damage_rect);
 
   void Reshape(const IntSize&);
@@ -86,7 +86,7 @@ class PLATFORM_EXPORT CanvasResourceDispatcher
   friend class CanvasResourceDispatcherTest;
 
   bool PrepareFrame(scoped_refptr<CanvasResource>,
-                    double commit_start_time,
+                    base::TimeTicks commit_start_time,
                     const SkIRect& damage_rect,
                     viz::CompositorFrame* frame);
 

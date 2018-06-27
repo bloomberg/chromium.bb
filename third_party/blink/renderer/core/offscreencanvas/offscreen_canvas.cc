@@ -49,7 +49,7 @@ void OffscreenCanvas::Commit(scoped_refptr<StaticBitmapImage> bitmap_image,
   if (!HasPlaceholderCanvas())
     return;
 
-  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
+  base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   current_frame_damage_rect_.join(damage_rect);
   GetOrCreateFrameDispatcher()->DispatchFrameSync(
       std::move(bitmap_image), commit_start_time, current_frame_damage_rect_);
@@ -329,7 +329,7 @@ void OffscreenCanvas::PushFrame(scoped_refptr<StaticBitmapImage> image,
   current_frame_damage_rect_.join(damage_rect);
   if (current_frame_damage_rect_.isEmpty())
     return;
-  double commit_start_time = WTF::CurrentTimeTicksInSeconds();
+  base::TimeTicks commit_start_time = WTF::CurrentTimeTicks();
   GetOrCreateFrameDispatcher()->DispatchFrame(
       std::move(image), commit_start_time, current_frame_damage_rect_);
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
