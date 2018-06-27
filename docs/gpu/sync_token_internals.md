@@ -28,7 +28,12 @@ count*. `CommandBufferId` is a 64-bit unsigned integer which is unique within a
 CommandBufferNamespace, and are identified by CommandBufferId with process id as
 the MSB and IPC route id as the LSB.
 
-The fence release count marks completion of some work in a command buffer.
+The fence release count marks completion of some work in a command buffer. Note:
+this is CPU side work done that includes command decoding, validation, issuing
+GL calls to the driver, etc. and not GPU side work. See
+[gpu_synchronication.md](/docs/design/gpu_synchronization.md) for more
+information about synchronizing GPU work.
+
 Fences are typically generated or inserted on the client using a sequential
 counter. The corresponding GL API is `GenSyncTokenCHROMIUM` which generates the
 fence using `CommandBufferProxyImpl::GenerateFenceSyncRelease()`, and also adds
