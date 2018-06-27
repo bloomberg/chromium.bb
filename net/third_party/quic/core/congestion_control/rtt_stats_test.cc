@@ -6,13 +6,12 @@
 
 #include <cmath>
 
-#include "base/test/mock_log.h"
+#include "net/third_party/quic/platform/api/quic_logging.h"
+#include "net/third_party/quic/platform/api/quic_mock_log.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/rtt_stats_peer.h"
 
-using logging::LOG_WARNING;
 using testing::_;
-using testing::HasSubstr;
 using testing::Message;
 
 namespace quic {
@@ -177,7 +176,7 @@ TEST_F(RttStatsTest, ExpireSmoothedMetrics) {
 
 TEST_F(RttStatsTest, UpdateRttWithBadSendDeltas) {
   // Make sure we ignore bad RTTs.
-  base::test::MockLog log;
+  CREATE_QUIC_MOCK_LOG(log);
 
   QuicTime::Delta initial_rtt = QuicTime::Delta::FromMilliseconds(10);
   rtt_stats_.UpdateRtt(initial_rtt, QuicTime::Delta::Zero(), QuicTime::Zero());
@@ -193,8 +192,8 @@ TEST_F(RttStatsTest, UpdateRttWithBadSendDeltas) {
   for (QuicTime::Delta bad_send_delta : bad_send_deltas) {
     SCOPED_TRACE(Message() << "bad_send_delta = "
                            << bad_send_delta.ToMicroseconds());
-#ifndef NDEBUG
-    EXPECT_CALL(log, Log(LOG_WARNING, _, _, _, HasSubstr("Ignoring")));
+#if QUIC_LOG_WARNING_IS_ON
+    EXPECT_QUIC_LOG_CALL_CONTAINS(log, WARNING, "Ignoring");
 #endif
     rtt_stats_.UpdateRtt(bad_send_delta, QuicTime::Delta::Zero(),
                          QuicTime::Zero());
