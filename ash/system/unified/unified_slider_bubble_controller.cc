@@ -81,8 +81,10 @@ void UnifiedSliderBubbleController::OnKeyboardBrightnessChanged(bool by_user) {
 }
 
 void UnifiedSliderBubbleController::ShowBubble(SliderType slider_type) {
-  if (tray_->IsBubbleShown())
+  if (tray_->IsBubbleShown()) {
+    tray_->EnsureBubbleExpanded();
     return;
+  }
 
   // If the bubble already exists, update the content of the bubble and extend
   // the autoclose timer.

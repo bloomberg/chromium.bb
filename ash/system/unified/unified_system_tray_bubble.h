@@ -49,6 +49,9 @@ class UnifiedSystemTrayBubble : public TrayBubbleBase,
   // Close the bubble immediately.
   void CloseNow();
 
+  // Ensure the bubble is expanded.
+  void EnsureExpanded();
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   views::TrayBubbleView* GetBubbleView() const override;
