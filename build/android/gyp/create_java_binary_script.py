@@ -67,7 +67,6 @@ os.execvp("java", java_cmd)
 def main(argv):
   argv = build_utils.ExpandFileArgs(argv)
   parser = optparse.OptionParser()
-  build_utils.AddDepfileOption(parser)
   parser.add_option('--output', help='Output path for executable script.')
   parser.add_option('--main-class',
       help='Name of the java class with the "main" entry point.')
@@ -107,9 +106,6 @@ def main(argv):
       noverify_flag=noverify_flag))
 
   os.chmod(options.output, 0750)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.output)
 
 
 if __name__ == '__main__':

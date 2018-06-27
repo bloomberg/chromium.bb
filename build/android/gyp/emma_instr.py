@@ -30,7 +30,6 @@ from util import build_utils
 
 def _AddCommonOptions(option_parser):
   """Adds common options to |option_parser|."""
-  build_utils.AddDepfileOption(option_parser)
   option_parser.add_option('--input-path',
                            help=('Path to input file(s). Either the classes '
                                  'directory, or the path to a jar.'))
@@ -92,9 +91,6 @@ def _RunCopyCommand(_command, options, _, option_parser):
     os.remove(options.sources_list_file)
 
   shutil.copy(options.input_path, options.output_path)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.output_path)
 
 
 def _GetSourceDirsFromSourceFiles(source_files):
@@ -203,12 +199,6 @@ def _RunInstrumentCommand(_command, options, _, option_parser):
   # This can obviously be simplified!
   _CreateSourcesListFile(source_dirs, options.sources_list_file,
                          options.src_root)
-
-  if options.stamp:
-    build_utils.Touch(options.stamp)
-
-  if options.depfile:
-    build_utils.WriteDepfile(options.depfile, options.output_path)
 
   return 0
 

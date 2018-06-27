@@ -19,6 +19,9 @@ import sys
 import tempfile
 import zipfile
 
+# Any new non-system import must be added to:
+#     //build/config/android/internal_rules.gni
+
 # Some clients do not add //build/android/gyp to PYTHONPATH.
 import md5_check  # pylint: disable=relative-import
 
@@ -539,8 +542,8 @@ def ReadSourcesList(sources_list_file_name):
 def CallAndWriteDepfileIfStale(function, options, record_path=None,
                                input_paths=None, input_strings=None,
                                output_paths=None, force=False,
-                               pass_changes=False,
-                               depfile_deps=None):
+                               pass_changes=False, depfile_deps=None,
+                               add_pydeps=True):
   """Wraps md5_check.CallAndRecordIfStale() and also writes dep & stamp files.
 
   Depfiles and stamp files are automatically added to output_paths when present
@@ -572,7 +575,7 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
     args = (changes,) if pass_changes else ()
     function(*args)
     if python_deps is not None:
-      all_depfile_deps = list(python_deps)
+      all_depfile_deps = list(python_deps) if add_pydeps else []
       if depfile_deps:
         all_depfile_deps.extend(depfile_deps)
       WriteDepfile(options.depfile, output_paths[0], all_depfile_deps,

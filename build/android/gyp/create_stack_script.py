@@ -40,7 +40,6 @@ SCRIPT_TEMPLATE = textwrap.dedent(
 def main(args):
 
   parser = argparse.ArgumentParser()
-  build_utils.AddDepfileOption(parser)
   parser.add_argument(
       '--script-path',
       help='Path to the wrapped script.')
@@ -73,9 +72,6 @@ def main(args):
         script_path_args=script_path_args))
 
   os.chmod(args.script_output_path, 0750)
-
-  if args.depfile:
-    build_utils.WriteDepfile(args.depfile, args.script_output_path)
 
   return 0
 

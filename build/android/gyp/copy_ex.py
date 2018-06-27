@@ -112,8 +112,8 @@ def main(args):
     DoRenaming(options, deps)
 
   if options.depfile:
-    assert options.stamp
-    build_utils.WriteDepfile(options.depfile, options.stamp, deps)
+    build_utils.WriteDepfile(
+        options.depfile, options.stamp, deps, add_pydeps=False)
 
   if options.stamp:
     build_utils.Touch(options.stamp)

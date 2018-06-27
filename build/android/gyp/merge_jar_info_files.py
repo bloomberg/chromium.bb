@@ -50,6 +50,10 @@ def _MergeInfoFiles(output, jar_paths):
     #     allows us to later map these classes back to their respective src
     #     directories.
     jar_info_path = jar_path + '.info'
+    # TODO(agrieve): This should probably also check that the mtime of the .info
+    #     is newer than that of the .jar, or change prebuilts to always output
+    #     .info files so that they always exist (and change the depfile to
+    #     depend directly on them).
     if os.path.exists(jar_info_path):
       info_data.update(jar_info_utils.ParseJarInfoFile(jar_path + '.info'))
     else:
@@ -86,7 +90,9 @@ def main(args):
   build_utils.CallAndWriteDepfileIfStale(
       _OnStaleMd5, options,
       input_paths=jar_files,
-      output_paths=[options.output])
+      output_paths=[options.output],
+      depfile_deps=jar_files,
+      add_pydeps=False)
 
 
 if __name__ == '__main__':

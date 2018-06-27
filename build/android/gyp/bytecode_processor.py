@@ -20,7 +20,6 @@ def _AddSwitch(parser, val):
 def main(argv):
   argv = build_utils.ExpandFileArgs(argv[1:])
   parser = argparse.ArgumentParser()
-  build_utils.AddDepfileOption(parser)
   parser.add_argument('--script', required=True,
                       help='Path to the java binary wrapper script.')
   parser.add_argument('--input-jar', required=True)
@@ -38,12 +37,6 @@ def main(argv):
   cmd = [args.script, args.input_jar, args.output_jar, args.enable_assert,
          args.enable_custom_resources] + extra_classpath_jars
   build_utils.CheckOutput(cmd)
-
-  if args.depfile:
-    # Do not write classpath jars to depfile under the assumption that if
-    # the input jar has not changed, then bytecode rewriting will not have to
-    # be re-run.
-    build_utils.WriteDepfile(args.depfile, args.output_jar)
 
 
 if __name__ == '__main__':
