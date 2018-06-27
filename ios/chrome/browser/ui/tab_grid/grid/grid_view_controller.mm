@@ -282,6 +282,7 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
   NSString* itemID = self.items[index].identifier;
   [self.delegate gridViewController:self didCloseItemWithID:itemID];
   // Record when a tab is closed via the X.
+  // TODO(crbug.com/856965) : Rename metrics.
   base::RecordAction(base::UserMetricsAction("MobileStackViewCloseTab"));
 }
 
