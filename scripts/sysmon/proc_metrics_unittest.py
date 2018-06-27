@@ -85,6 +85,12 @@ class TestProcMetrics(cros_test_lib.TestCase):
                        'cros-version:winky-release/R61-9741.0.0']
           ),
           _mock_process(
+              name='gs_offloader',
+              cmdline=['/usr/bin/python',
+                       '/usr/local/autotest/site_utils/gs_offloader.py',
+                       '-s', '--parallelism=30']
+          ),
+          _mock_process(
               name='python',
               cmdline=[('/usr/local/google/home/chromeos-test/.cache/cros_venv'
                         '/venv-2.7.6-5addca6cf590166d7b70e22a95bea4a0'
@@ -151,14 +157,15 @@ class TestProcMetrics(cros_test_lib.TestCase):
 
     setter = self.store.set
     calls = []
+    calls.extend(_expected_calls_for('apache'))
     calls.extend(_expected_calls_for('autoserv'))
-    calls.extend(_expected_calls_for('sysmon'))
+    calls.extend(_expected_calls_for('gs_offloader'))
     calls.extend(_expected_calls_for('job_aborter'))
     calls.extend(_expected_calls_for('job_reporter'))
     calls.extend(_expected_calls_for('lucifer_run_job'))
-    calls.extend(_expected_calls_for('apache'))
     calls.extend(_expected_calls_for('lxc-start'))
     calls.extend(_expected_calls_for('lxc-attach'))
+    calls.extend(_expected_calls_for('sysmon'))
     calls.extend(_expected_calls_for('other'))
     setter.assert_has_calls(calls)
     self.assertEqual(len(setter.mock_calls), len(calls))

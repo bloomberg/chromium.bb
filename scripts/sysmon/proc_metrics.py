@@ -35,11 +35,12 @@ class _ProcessMetricsCollector(object):
 
   def __init__(self):
     self._metrics = [
+        _ProcessMetric('apache',
+                       test_func=partial(_is_process_name, 'apache2')),
         _ProcessMetric('autoserv',
                        test_func=_is_parent_autoserv),
-        _ProcessMetric('sysmon',
-                       test_func=partial(_is_python_module,
-                                         'chromite.scripts.sysmon')),
+        _ProcessMetric('gs_offloader',
+                       test_func=_is_gs_offloader),
         _ProcessMetric('job_aborter',
                        test_func=partial(_is_python_module,
                                          'lucifer.cmd.job_aborter')),
@@ -48,12 +49,13 @@ class _ProcessMetricsCollector(object):
                                          'lucifer.cmd.job_reporter')),
         _ProcessMetric('lucifer_run_job',
                        test_func=partial(_is_process_name, 'lucifer_run_job')),
-        _ProcessMetric('apache',
-                       test_func=partial(_is_process_name, 'apache2')),
         _ProcessMetric('lxc-start',
                        test_func=partial(_is_process_name, 'lxc-start')),
         _ProcessMetric('lxc-attach',
                        test_func=partial(_is_process_name, 'lxc-attach')),
+        _ProcessMetric('sysmon',
+                       test_func=partial(_is_python_module,
+                                         'chromite.scripts.sysmon')),
     ]
     self._other_metric = _ProcessMetric('other')
 
@@ -124,6 +126,14 @@ def _is_autoserv(proc):
   # be named autoserv exactly and start with a shebang that is /usr/bin/python,
   # NOT /bin/env
   return _is_process_name('autoserv', proc)
+
+
+def _is_gs_offloader(proc):
+  """Return whether proc is a gs_offloader process."""
+  cmdline = proc.cmdline()
+  return (len(cmdline) >= 2
+          and cmdline[0].endswith('python')
+          and cmdline[1].endswith('gs_offloader.py'))
 
 
 def _is_python_module(module, proc):
