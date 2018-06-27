@@ -149,7 +149,16 @@ struct MOJO_ALIGNAS(8) MojoInitializeOptions {
 
   // See |MojoInitializeFlags|.
   MojoInitializeFlags flags;
+
+  // Address and length of the UTF8-encoded path of a mojo_core shared library
+  // to load. If the |mojo_core_path| is null then |mojo_core_path_length| is
+  // ignored and Mojo will fall back first onto the |MOJO_CORE_LIBRARY_PATH|
+  // environment variable, and then onto the current working directory.
+  MOJO_POINTER_FIELD(const char*, mojo_core_path);
+  uint32_t mojo_core_path_length;
 };
+MOJO_STATIC_ASSERT(sizeof(MojoInitializeOptions) == 24,
+                   "MojoInitializeOptions has wrong size");
 
 // |MojoHandleSignals|: Used to specify signals that can be watched for on a
 // handle (and which can be triggered), e.g., the ability to read or write to

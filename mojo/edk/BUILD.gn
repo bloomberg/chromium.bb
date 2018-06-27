@@ -38,7 +38,6 @@ component("edk_internal") {
   public_deps = [
     ":impl_for_edk",
   ]
-  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
   visibility = [
     ":edk",
     "//mojo:*",
@@ -165,7 +164,9 @@ template("core_impl_source_set") {
     }
 
     defines = []
-    if (!invoker.for_mojo_core) {
+    if (invoker.for_mojo_core) {
+      defines += [ "MOJO_CORE_IMPL" ]
+    } else {
       defines += [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
     }
 
@@ -194,7 +195,7 @@ core_impl_source_set("impl_for_edk") {
   for_mojo_core = false
 }
 
-if (is_chromeos || is_linux || is_android) {
+if (is_chromeos || is_linux || is_android || is_win) {
   core_impl_source_set("impl_for_mojo_core") {
     for_mojo_core = true
   }
@@ -203,11 +204,19 @@ if (is_chromeos || is_linux || is_android) {
     sources = [
       "mojo_core.cc",
     ]
+    defines = [ "MOJO_CORE_IMPL" ]
     deps = [
       ":impl_for_mojo_core",
       "//mojo/public/c/system:headers",
     ]
-    configs += [ ":export_only_thunks_api" ]
+    if (is_win) {
+      inputs = [
+        "mojo_core.def",
+      ]
+      ldflags = [ "/DEF:" + rebase_path("mojo_core.def", root_build_dir) ]
+    } else {
+      configs += [ ":export_only_thunks_api" ]
+    }
   }
 
   if (is_chromeos) {
@@ -257,7 +266,7 @@ if (is_chromeos || is_linux || is_android) {
           rebase_path("//mojo/edk/export_only_thunks_api.lst", root_build_dir) ]
   }
 
-  if (is_chromeos || is_linux) {
+  if (is_chromeos || is_linux || is_win) {
     test("mojo_core_unittests") {
       sources = [
         "mojo_core_unittest.cc",

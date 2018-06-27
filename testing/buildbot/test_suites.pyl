@@ -2285,6 +2285,7 @@
         ],
       },
     },
+    'mojo_core_unittests': {},
     'notification_helper_unittests': {},
     'sbox_integration_tests': {
       'swarming': {
