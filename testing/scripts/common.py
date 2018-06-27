@@ -165,6 +165,32 @@ def parse_common_test_results(json_results, test_separator='/'):
   return results
 
 
+def get_gtest_summary_passes(output):
+  """Returns a mapping of test to boolean indicating if the test passed.
+
+  Only partially parses the format. This code is based on code in tools/build,
+  specifically
+  https://chromium.googlesource.com/chromium/tools/build/+/17fef98756c5f250b20bf716829a0004857235ff/scripts/slave/recipe_modules/test_utils/util.py#189
+  """
+  if not output:
+    return {}
+
+  mapping = {}
+
+  for cur_iteration_data in output.get('per_iteration_data', []):
+    for test_fullname, results in cur_iteration_data.iteritems():
+      # Results is a list with one entry per test try. Last one is the final
+      # result.
+      last_result = results[-1]
+
+      if last_result['status'] == 'SUCCESS':
+        mapping[test_fullname] = True
+      elif last_result['status'] != 'SKIPPED':
+        mapping[test_fullname] = False
+
+  return mapping
+
+
 def extract_filter_list(filter_list):
   """Helper for isolated script test wrappers. Parses the
   --isolated-script-test-filter command line argument. Currently, double-colon
