@@ -1,5 +1,4 @@
 rootWebArea pageLocation=(0, 0)
-++genericContainer pageLocation=(0, 0) name='Done'
 ++genericContainer pageLocation=(0, 50)
 ++++paragraph pageLocation=(0, 50)
 ++++++staticText pageLocation=(0, 50) name='content'

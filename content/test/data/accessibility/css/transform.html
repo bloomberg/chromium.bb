@@ -2,7 +2,7 @@
 
 @BLINK-ALLOW:pageLocation=(0, 0)
 @BLINK-ALLOW:pageLocation=(0, 50)
-@WAIT-FOR:Done
+@WAIT-FOR:(0, 50)
 -->
 <!DOCTYPE html>
 <html>
@@ -25,7 +25,6 @@ div {
 </head>
 <body>
 
-<div id="status" aria-label="Working"></div>
 <div id="outer">
   <p>content</p>
 </div>
@@ -34,9 +33,6 @@ div {
   setTimeout(function() {
     document.getElementById("outer").style.transform = "translateY(50px)";
   }, 10);
-  setTimeout(function() {
-    document.getElementById("status").setAttribute("aria-label", "Done");
-  }, 20);
 </script>
 </body>
 </html>
