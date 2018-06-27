@@ -41,6 +41,10 @@
 #define SHARED_LOCKS_REQUIRED(...)
 #endif
 
+#ifndef EXCLUSIVE_LOCKS_REQUIRED
+#define EXCLUSIVE_LOCKS_REQUIRED(...)
+#endif
+
 namespace quic {
 
 // A class wrapping a non-reentrant mutex.

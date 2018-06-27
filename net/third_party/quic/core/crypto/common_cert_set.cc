@@ -7,7 +7,6 @@
 #include <cstddef>
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"

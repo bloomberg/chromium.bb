@@ -365,7 +365,7 @@ class QUIC_EXPORT_PRIVATE QuicCryptoClientConfig : public QuicCryptoConfig {
   QuicErrorCode CacheNewServerConfig(
       const CryptoHandshakeMessage& message,
       QuicWallTime now,
-      const QuicTransportVersion version,
+      QuicTransportVersion version,
       QuicStringPiece chlo_hash,
       const std::vector<QuicString>& cached_certs,
       CachedState* cached,
