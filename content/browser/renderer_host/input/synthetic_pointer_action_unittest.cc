@@ -60,6 +60,22 @@ WebInputEvent::Type ToWebMouseEventType(
   return WebInputEvent::kUndefined;
 }
 
+WebInputEvent::Type WebTouchPointStateToEventType(
+    blink::WebTouchPoint::State state) {
+  switch (state) {
+    case blink::WebTouchPoint::kStateReleased:
+      return WebInputEvent::kTouchEnd;
+    case blink::WebTouchPoint::kStatePressed:
+      return WebInputEvent::kTouchStart;
+    case blink::WebTouchPoint::kStateMoved:
+      return WebInputEvent::kTouchMove;
+    case blink::WebTouchPoint::kStateCancelled:
+      return WebInputEvent::kTouchCancel;
+    default:
+      return WebInputEvent::kUndefined;
+  }
+}
+
 class MockSyntheticPointerActionTarget : public SyntheticGestureTarget {
  public:
   MockSyntheticPointerActionTarget() {}
@@ -107,11 +123,13 @@ class MockSyntheticPointerTouchActionTarget
     const WebTouchEvent& touch_event = static_cast<const WebTouchEvent&>(event);
     type_ = touch_event.GetType();
     for (size_t i = 0; i < WebTouchEvent::kTouchesLengthCap; ++i) {
+      if (WebTouchPointStateToEventType(touch_event.touches[i].state) != type_)
+        continue;
+
       indexes_[i] = touch_event.touches[i].id;
       positions_[i] = gfx::PointF(touch_event.touches[i].PositionInWidget());
       states_[i] = touch_event.touches[i].state;
     }
-    touch_length_ = touch_event.touches_length;
   }
 
   testing::AssertionResult SyntheticTouchActionDispatchedCorrectly(
@@ -146,16 +164,12 @@ class MockSyntheticPointerTouchActionTarget
 
   testing::AssertionResult SyntheticTouchActionListDispatchedCorrectly(
       const std::vector<SyntheticPointerActionParams>& params_list) {
-    if (touch_length_ != params_list.size()) {
-      return testing::AssertionFailure() << "Touch point length was "
-                                         << touch_length_ << ", expected "
-                                         << params_list.size() << ".";
-    }
-
     testing::AssertionResult result = testing::AssertionSuccess();
     for (size_t i = 0; i < params_list.size(); ++i) {
-      result = SyntheticTouchActionDispatchedCorrectly(params_list[i],
-                                                       params_list[i].index());
+      if (params_list[i].pointer_action_type() !=
+          SyntheticPointerActionParams::PointerActionType::IDLE)
+        result = SyntheticTouchActionDispatchedCorrectly(
+            params_list[i], params_list[i].index());
       if (result == testing::AssertionFailure())
         return result;
     }
@@ -169,7 +183,6 @@ class MockSyntheticPointerTouchActionTarget
 
  private:
   gfx::PointF positions_[WebTouchEvent::kTouchesLengthCap];
-  unsigned touch_length_;
   int indexes_[WebTouchEvent::kTouchesLengthCap];
   WebTouchPoint::State states_[WebTouchEvent::kTouchesLengthCap];
 };

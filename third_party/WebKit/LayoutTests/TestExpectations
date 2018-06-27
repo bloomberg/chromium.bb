@@ -2366,6 +2366,9 @@ crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-ac
 # In addition to having no support on Mac, the following test times out
 # regularly on Windows.
 crbug.com/613672 [ Mac Win ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
+crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-touch-events.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/pointerevents/multi-touch-events.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/multi-touch-events.html [ Skip ]
 
 crbug.com/802067 [ Mac ] external/wpt/pointerlock/movementX_Y_basic-manual.html [ Failure ]
 crbug.com/802067 [ Mac ] external/wpt/pointerevents/pointerlock/pointerevent_movementxy-manual.html [ Failure ]
