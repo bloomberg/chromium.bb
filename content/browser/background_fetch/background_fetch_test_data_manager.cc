@@ -42,7 +42,8 @@ BackgroundFetchTestDataManager::BackgroundFetchTestDataManager(
     bool mock_fill_response)
     : BackgroundFetchDataManager(browser_context,
                                  service_worker_context,
-                                 nullptr /* cache_storage_context */),
+                                 nullptr /* cache_storage_context */,
+                                 base::DoNothing()),
       browser_context_(browser_context),
       storage_partition_(storage_partition),
       mock_fill_response_(mock_fill_response) {}
