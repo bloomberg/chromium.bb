@@ -14,7 +14,6 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
 using testing::AtMost;
