@@ -6,6 +6,8 @@ static_library("content") {
   sources = [
     "previews_content_util.cc",
     "previews_content_util.h",
+    "previews_hints.cc",
+    "previews_hints.h",
     "previews_io_data.cc",
     "previews_io_data.h",
     "previews_optimization_guide.cc",

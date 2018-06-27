@@ -5,20 +5,15 @@
 #ifndef COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_OPTIMIZATION_GUIDE_H_
 #define COMPONENTS_PREVIEWS_CONTENT_PREVIEWS_OPTIMIZATION_GUIDE_H_
 
-#include <map>
-#include <set>
-
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequence_checker.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/optimization_guide/optimization_guide_service_observer.h"
 #include "components/previews/content/previews_optimization_guide.h"
 #include "components/previews/core/previews_experiments.h"
-#include "components/url_matcher/url_matcher.h"
 
 namespace net {
 class URLRequest;
@@ -31,6 +26,8 @@ class Configuration;
 }  // namespace optimization_guide
 
 namespace previews {
+
+class PreviewsHints;
 
 // A Previews optimization guide that makes decisions guided by hints received
 // from the OptimizationGuideService.
@@ -55,10 +52,8 @@ class PreviewsOptimizationGuide
       const optimization_guide::ComponentInfo& component_info) override;
 
  private:
-  class Hints;
-
   // Updates the hints to the latest hints sent by the Component Updater.
-  void UpdateHints(std::unique_ptr<Hints> hints);
+  void UpdateHints(std::unique_ptr<PreviewsHints> hints);
 
   // The OptimizationGuideService that this guide is listening to. Not owned.
   optimization_guide::OptimizationGuideService* optimization_guide_service_;
@@ -70,7 +65,7 @@ class PreviewsOptimizationGuide
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // The current hints used for this optimization guide.
-  std::unique_ptr<Hints> hints_;
+  std::unique_ptr<PreviewsHints> hints_;
 
   // Used to get |weak_ptr_| to self on the IO thread.
   base::WeakPtrFactory<PreviewsOptimizationGuide> io_weak_ptr_factory_;
