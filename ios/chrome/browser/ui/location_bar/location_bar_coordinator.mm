@@ -282,7 +282,7 @@ const int kLocationAuthorizationStatusCount = 4;
 - (void)updateLocationText:(NSString*)text {
   [self.omniboxCoordinator updateOmniboxState];
   [self.viewController updateLocationText:text];
-  [self.viewController updateForIncognitoNTP:NO];
+  [self.viewController updateForNTP:NO];
 }
 
 - (void)defocusOmnibox {
@@ -294,10 +294,7 @@ const int kLocationAuthorizationStatusCount = 4;
 }
 
 - (void)updateAfterNavigatingToNTP {
-  BOOL isIncognito = self.browserState->IsOffTheRecord();
-  if (isIncognito) {
-    [self.viewController updateForIncognitoNTP:YES];
-  }
+  [self.viewController updateForNTP:YES];
 }
 
 #pragma mark - private

@@ -201,8 +201,8 @@ typedef NS_ENUM(int, TrailingButtonState) {
           [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
 }
 
-- (void)updateForIncognitoNTP:(BOOL)isIncognitoNTP {
-  if (isIncognitoNTP) {
+- (void)updateForNTP:(BOOL)isNTP {
+  if (isNTP) {
     // Display a fake "placeholder".
     NSString* placeholderString =
         l10n_util::GetNSString(IDS_OMNIBOX_EMPTY_HINT);
@@ -213,7 +213,7 @@ typedef NS_ENUM(int, TrailingButtonState) {
         initWithString:placeholderString
             attributes:@{NSForegroundColorAttributeName : placeholderColor}];
   }
-  self.hideShareButtonWhileOnIncognitoNTP = isIncognitoNTP;
+  self.hideShareButtonWhileOnIncognitoNTP = isNTP;
 }
 
 #pragma mark - private
