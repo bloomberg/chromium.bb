@@ -124,10 +124,9 @@ class BottomToolbarMediator
         mModel.setValue(BottomToolbarModel.ANDROID_VIEW_VISIBLE, true);
     }
 
-    public void setButtonListeners(OnClickListener searchAcceleratorListener,
-            OnClickListener homeButtonListener, OnTouchListener menuButtonListener) {
+    public void setButtonListeners(
+            OnClickListener searchAcceleratorListener, OnTouchListener menuButtonListener) {
         mModel.setValue(BottomToolbarModel.SEARCH_ACCELERATOR_LISTENER, searchAcceleratorListener);
-        mModel.setValue(BottomToolbarModel.HOME_BUTTON_LISTENER, homeButtonListener);
         mModel.setValue(BottomToolbarModel.MENU_BUTTON_LISTENER, menuButtonListener);
     }
 
