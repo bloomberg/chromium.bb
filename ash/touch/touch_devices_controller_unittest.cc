@@ -11,6 +11,7 @@
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/test/ash_test_helper.h"
 #include "base/command_line.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "components/prefs/pref_service.h"
@@ -51,6 +52,13 @@ void SetTapDraggingEnabled(bool enabled) {
   prefs->CommitPendingWrite();
 }
 
+void SetTapToClickEnabled(bool enabled) {
+  PrefService* prefs =
+      Shell::Get()->session_controller()->GetLastActiveUserPrefService();
+  prefs->SetBoolean(prefs::kTapToClickEnabled, enabled);
+  prefs->CommitPendingWrite();
+}
+
 class TouchDevicesControllerSigninTest : public NoSessionAshTestBase {
  public:
   TouchDevicesControllerSigninTest() = default;
@@ -84,10 +92,16 @@ class TouchDevicesControllerSigninTest : public NoSessionAshTestBase {
   DISALLOW_COPY_AND_ASSIGN(TouchDevicesControllerSigninTest);
 };
 
+TEST_F(TouchDevicesControllerSigninTest, LocalStatePrefsAreRegistered) {
+  PrefService* prefs = ash_test_helper()->GetLocalStatePrefService();
+  EXPECT_TRUE(prefs->FindPreference(prefs::kOwnerTapToClickEnabled));
+}
+
 TEST_F(TouchDevicesControllerSigninTest, PrefsAreRegistered) {
   PrefService* prefs =
       Shell::Get()->session_controller()->GetLastActiveUserPrefService();
   EXPECT_TRUE(prefs->FindPreference(prefs::kTapDraggingEnabled));
+  EXPECT_TRUE(prefs->FindPreference(prefs::kTapToClickEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kTouchpadEnabled));
   EXPECT_TRUE(prefs->FindPreference(prefs::kTouchscreenEnabled));
 }
@@ -106,6 +120,22 @@ TEST_F(TouchDevicesControllerSigninTest, SetTapDraggingEnabled) {
 
   SetTapDraggingEnabled(false);
   EXPECT_FALSE(controller->tap_dragging_enabled_for_test());
+}
+
+TEST_F(TouchDevicesControllerSigninTest, SetTapToClickEnabled) {
+  auto* controller = Shell::Get()->touch_devices_controller();
+  ASSERT_TRUE(controller->tap_to_click_enabled_for_test());
+  SetTapToClickEnabled(false);
+  EXPECT_FALSE(controller->tap_to_click_enabled_for_test());
+
+  // Switch to user 2 and switch back.
+  SwitchActiveUser(kUser2Email);
+  EXPECT_TRUE(controller->tap_to_click_enabled_for_test());
+  SwitchActiveUser(kUser1Email);
+  EXPECT_FALSE(controller->tap_to_click_enabled_for_test());
+
+  SetTapToClickEnabled(true);
+  EXPECT_TRUE(controller->tap_to_click_enabled_for_test());
 }
 
 // Tests that touchpad enabled user pref works properly under debug accelerator.
