@@ -101,7 +101,6 @@ Te storitve lahko po želji onemogočite. <ph name="BEGIN_LINK" />Več o tem<ph 
 <translation id="4421155425831608516">Prijavo v Chromium je onemogočil skrbnik te naprave.</translation>
 <translation id="4423735387467980091">Prilagajanje in nadziranje Chromiuma</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium se bo znova zagnal čez eno uro}one{Chromium se bo znova zagnal čez # uro}two{Chromium se bo znova zagnal čez # uri}few{Chromium se bo znova zagnal čez # ure}other{Chromium se bo znova zagnal čez # ur}}</translation>
-<translation id="4469812139324097969">Chromium je zastarel, ker ga že nekaj časa niste znova zagnali. Na voljo je posodobitev, ki bo nameščena, takoj ko ga znova zaženete.</translation>
 <translation id="4567424176335768812">Prijavljeni ste kot <ph name="USER_EMAIL_ADDRESS" />. Zdaj imate dostop do zaznamkov, zgodovine in drugih nastavitev v vseh napravah, v katerih ste prijavljeni.</translation>
 <translation id="459535195905078186">Aplikacije za Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium se bo znova zagnal čez 1 minuto}one{Chromium se bo znova zagnal čez # minuto}two{Chromium se bo znova zagnal čez # minuti}few{Chromium se bo znova zagnal čez # minute}other{Chromium se bo znova zagnal čez # minut}}</translation>

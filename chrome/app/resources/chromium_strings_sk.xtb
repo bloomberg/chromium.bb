@@ -100,7 +100,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="4421155425831608516">Prihlásenie do prehliadača Chromium je zakázané správcom tohto zariadenia.</translation>
 <translation id="4423735387467980091">Prispôsobiť a spravovať Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium sa znova spustí do jednej hodiny}few{Chromium sa znova spustí do # hodín}many{Chromium sa znova spustí do # hodiny}other{Chromium sa znova spustí do # hodín}}</translation>
-<translation id="4469812139324097969">Chromium je zastaraný, pretože nebol dlhší čas reštartovaný. K dispozícii je aktualizácia, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="4567424176335768812">Ste prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Teraz môžete na všetkých zariadeniach, kde ste prihlásený/-á, pristupovať k svojim záložkám, histórii a ďalším nastaveniam.</translation>
 <translation id="459535195905078186">Aplikácie Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium sa reštartuje o 1 minútu}few{Chromium sa reštartuje o # minúty}many{Chromium sa reštartuje o # minúty}other{Chromium sa reštartuje o # minút}}</translation>

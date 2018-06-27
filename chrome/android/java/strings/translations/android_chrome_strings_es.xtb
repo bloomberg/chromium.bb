@@ -152,7 +152,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, una aplicación web disponible en <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Enviar información del sistema y contenido de las páginas a Google</translation>
-<translation id="2234876718134438132">Servicios de Google y sinc.</translation>
+<translation id="2234876718134438132">Servicios de Google y sincronización</translation>
 <translation id="2259659629660284697">Exportar contraseñas…</translation>
 <translation id="2268044343513325586">Restringir</translation>
 <translation id="2286841657746966508">Dirección de facturación</translation>
@@ -248,7 +248,7 @@
 <translation id="3089395242580810162">Abrir en modo de incógnito</translation>
 <translation id="311456632243022227">Varios enlaces abiertos en Chrome</translation>
 <translation id="3115898365077584848">Mostrar información</translation>
-<translation id="3137521801621304719">Salir del modo incógnito</translation>
+<translation id="3137521801621304719">Salir del modo de incógnito</translation>
 <translation id="3148434565183091099">Inicia sesión en Chrome para ver tus marcadores en todos tus dispositivos.</translation>
 <translation id="3157842584138209013">Consulta la cantidad de datos que has ahorrado con el botón Más opciones</translation>
 <translation id="3166827708714933426">Combinaciones de teclas de pestañas y ventanas</translation>
@@ -550,7 +550,7 @@ Es posible que tu cuenta de Google tenga otros tipos de historial de navegación
 <translation id="5689516760719285838">Ubicación</translation>
 <translation id="5719837394786370183">Las páginas que visites a través de las pestañas de incógnito no se mostrarán en el historial del navegador, en el almacén de cookies ni en el historial de búsquedas una vez que cierres todas las pestañas de incógnito. Sí se conservarán los archivos que descargues y los marcadores que crees.
 
-No obstante, tus acciones no serán totalmente invisibles. El uso del modo incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
+No obstante, tus acciones no serán totalmente invisibles. El uso del modo de incógnito no te permite ocultar tu actividad de navegación a tu empresa, a tu proveedor de servicios de Internet o a los sitios web que visites.</translation>
 <translation id="572328651809341494">Pestañas recientes</translation>
 <translation id="5726692708398506830">Amplía todo el contenido de la página</translation>
 <translation id="5731185123186077399">Servicios de Google personalizados, como Google Pay</translation>
@@ -874,7 +874,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8503559462189395349">Contraseñas de Chrome</translation>
 <translation id="8503813439785031346">Nombre de usuario</translation>
 <translation id="8514477925623180633">Exportar contraseñas almacenadas en Chrome</translation>
-<translation id="8514577642972634246">Navegar en modo incógnito</translation>
+<translation id="8514577642972634246">Navegar en modo de incógnito</translation>
 <translation id="851751545965956758">No permitir que los sitios web se conecten a dispositivos</translation>
 <translation id="8523928698583292556">Eliminar contraseña guardada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
@@ -929,7 +929,7 @@ Para obtener nuevas licencias, conéctate a Internet y reproduce el contenido de
 <translation id="8981454092730389528">Gestión de tu actividad en Google</translation>
 <translation id="8983677657449185470">Ayudar a mejorar la función Navegación Segura</translation>
 <translation id="8986494364107987395">Enviar automáticamente estadísticas de uso e informes sobre fallos a Google</translation>
-<translation id="8993760627012879038">Abre una nueva pestaña en modo incógnito</translation>
+<translation id="8993760627012879038">Abre una nueva pestaña en modo de incógnito</translation>
 <translation id="8998729206196772491">Estás iniciando sesión con una cuenta gestionada por <ph name="MANAGED_DOMAIN" />, lo que significa que vas a proporcionar a su administrador el control sobre tus datos de Chrome. Los datos se vincularán de forma permanente a esta cuenta. Si cierras sesión en Chrome, se eliminarán los datos de este dispositivo, pero permanecerán almacenados en tu cuenta de Google.</translation>
 <translation id="9019902583201351841">Administrado por tus padres</translation>
 <translation id="9040142327097499898">Las notificaciones están permitidas. La ubicación está desactivada en este dispositivo.</translation>

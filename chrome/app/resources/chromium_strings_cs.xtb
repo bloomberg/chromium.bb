@@ -100,7 +100,6 @@ Některé funkce možná nebudou k dispozici a změny nastavení se neuloží.</
 <translation id="4421155425831608516">Přihlášení do prohlížeče Chromium je administrátorem tohoto zařízení zakázáno.</translation>
 <translation id="4423735387467980091">Přizpůsobit a ovládat Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium se za hodinu restartuje}few{Chromium se za # hodiny restartuje}many{Chromium se za # hodiny restartuje}other{Chromium se za # hodin restartuje}}</translation>
-<translation id="4469812139324097969">Prohlížeč Chromium není aktuální, protože nějakou dobu nebyl restartován. Je k dispozici aktualizace, která bude použita po restartování.</translation>
 <translation id="4567424176335768812">Jste přihlášeni pomocí účtu <ph name="USER_EMAIL_ADDRESS" />. Nyní můžete přistupovat ke všem svým záložkám, historii a dalším nastavením ve všech přihlášených zařízeních.</translation>
 <translation id="459535195905078186">Aplikace Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium se za 1 minutu restartuje}few{Chromium se za # minuty restartuje}many{Chromium se za # minuty restartuje}other{Chromium se za # minut restartuje}}</translation>

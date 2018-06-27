@@ -96,7 +96,6 @@
 <translation id="4421155425831608516">‏מנהל המערכת של המכשיר הזה השבית את הכניסה אל Chromium.</translation>
 <translation id="4423735387467980091">‏התאם אישית ושלוט ב-Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{‏Chromium יופעל מחדש בעוד שעה}two{‏Chromium יופעל מחדש בעוד # שעות}many{‏Chromium יופעל מחדש בעוד # שעות}other{‏Chromium יופעל מחדש בעוד # שעות}}</translation>
-<translation id="4469812139324097969">‏Chromium אינו מעודכן מכיוון שהוא לא הופעל בזמן האחרון. יש עדכון זמין והוא יחול ברגע שתבצע הפעלה מחדש.</translation>
 <translation id="4567424176335768812">נכנסת למערכת בתור <ph name="USER_EMAIL_ADDRESS" />. כעת אתה יכול לגשת אל הסימניות, ההיסטוריה והגדרות אחרות שלך בכל המכשירים שבהם אתה מחובר לחשבון.</translation>
 <translation id="459535195905078186">‏יישומי Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{‏Chromium יופעל מחדש בעוד דקה}two{‏Chromium יופעל מחדש בעוד # דקות}many{‏Chromium יופעל מחדש בעוד # דקות}other{‏Chromium יופעל מחדש בעוד # דקות}}</translation>

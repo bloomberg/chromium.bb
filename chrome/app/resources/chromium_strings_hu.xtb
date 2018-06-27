@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">A Chromium böngészőbe való bejelentkezést letiltotta az eszköz rendszergazdája.</translation>
 <translation id="4423735387467980091">A Chromium személyre szabása és beállításai</translation>
 <translation id="4449801103833300785">{0,plural, =1{A Chromium 1 órán belül újraindul}other{A Chromium # órán belül újraindul}}</translation>
-<translation id="4469812139324097969">A Chromium elavult, mert nem volt újraindítva egy ideje. Megjelent egy frissítés, amelyik az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="4567424176335768812">A(z) <ph name="USER_EMAIL_ADDRESS" /> címmel van bejelentkezve. Elérheti könyvjelzőit, előzményeit és más beállításait minden olyan eszközön, amelyen bejelentkezett.</translation>
 <translation id="459535195905078186">Chromium-alkalmazások</translation>
 <translation id="4604377857208775795">{0,plural, =1{A Chromium 1 percen belül újraindul}other{A Chromium # percen belül újraindul}}</translation>

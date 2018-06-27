@@ -98,7 +98,6 @@
 <translation id="4421155425831608516">Die Anmeldung in Chromium wurde vom Administrator dieses Geräts deaktiviert.</translation>
 <translation id="4423735387467980091">Chromium anpassen und einstellen</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium wird in einer Stunde neu gestartet}other{Chromium wird in # Stunden neu gestartet}}</translation>
-<translation id="4469812139324097969">Chromium ist veraltet, da es über einen längeren Zeitraum nicht neu gestartet wurde. Ein Update ist verfügbar und wird übernommen, sobald Sie Chromium neu starten.</translation>
 <translation id="4567424176335768812">Sie sind als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Auf allen Geräten, auf denen Sie angemeldet sind, sind nun Ihre Lesezeichen, Ihr Verlauf und andere Einstellungen verfügbar.</translation>
 <translation id="459535195905078186">Chromium-Apps</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium wird in 1 Minute neu gestartet}other{Chromium wird in # Minuten neu gestartet}}</translation>

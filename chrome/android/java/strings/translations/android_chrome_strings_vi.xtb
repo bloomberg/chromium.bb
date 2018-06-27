@@ -628,7 +628,7 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="6343192674172527289">Không tìm thấy tài nguyên đã tải xuống nào</translation>
 <translation id="6343495912647200061">{SHIPPING_ADDRESS,plural, =1{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />\u2026 và <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> tùy chọn khác}}</translation>
 <translation id="6364438453358674297">Xóa đề xuất khỏi lịch sử?</translation>
-<translation id="6378173571450987352">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã sử dụng</translation>
+<translation id="6378173571450987352">Thông tin chi tiết: Sắp xếp theo lượng dữ liệu đã dùng</translation>
 <translation id="6383961787135158834">Xóa bộ nhớ trang web...</translation>
 <translation id="6388207532828177975">Xóa và đặt lại</translation>
 <translation id="6393863479814692971">Chrome cần có quyền truy cập máy ảnh và micrô của bạn cho trang web này.</translation>

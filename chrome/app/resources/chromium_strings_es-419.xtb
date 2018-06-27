@@ -96,7 +96,6 @@
 <translation id="4421155425831608516">El administrador de este dispositivo inhabilitó el acceso a Chromium.</translation>
 <translation id="4423735387467980091">Personaliza y controla Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium se volverá a iniciar en una hora}other{Chromium se volverá a iniciar en # horas}}</translation>
-<translation id="4469812139324097969">Chromium no está actualizado porque no se reinició por un tiempo. Cuando lo reinicies, se aplicará la actualización disponible.</translation>
 <translation id="4567424176335768812">Accediste como <ph name="USER_EMAIL_ADDRESS" />. Ahora puedes ir a los favoritos, al historial y a otras opciones en todos los dispositivos en los que hayas accedido.</translation>
 <translation id="459535195905078186">Aplicaciones de Chromium</translation>
 <translation id="4604377857208775795">{0,plural, =1{Chromium se reiniciará en 1 minuto}other{Chromium se reiniciará en # minutos}}</translation>

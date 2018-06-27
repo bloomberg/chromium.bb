@@ -135,6 +135,7 @@
 <translation id="2086652334978798447">Para obter conteúdo personalizado sugerido pelo Google, inicie sessão no Chrome.</translation>
 <translation id="2091887806945687916">Som</translation>
 <translation id="2095887075102408547">Quando esta funcionalidade está ativada, o Chrome utiliza os servidores da Google para comprimir as páginas visitadas antes de as transferir. As páginas acedidas através de ligações privadas (HTTPS) ou em separadores de navegação anónima não são otimizadas ou vistas pela Google.</translation>
+<translation id="2096012225669085171">Sincronizar e personalizar entre dispositivos</translation>
 <translation id="2100273922101894616">Início de sessão automático</translation>
 <translation id="2111511281910874386">Ir para a página</translation>
 <translation id="2122601567107267586">Não foi possível abrir a aplicação.</translation>
@@ -151,6 +152,7 @@
 <translation id="2206488550163399966"><ph name="APP_NAME" />, aplicação Web. <ph name="APP_URL" /></translation>
 <translation id="2227444325776770048">Continuar como <ph name="USER_FULL_NAME" /></translation>
 <translation id="2232379019872353004">Enviar algumas informações do sistema e conteúdo da página para a Google</translation>
+<translation id="2234876718134438132">Sincronização e serviços Google</translation>
 <translation id="2259659629660284697">Exportar palavras-passe</translation>
 <translation id="2268044343513325586">Refinar</translation>
 <translation id="2286841657746966508">Endereço de facturação</translation>
@@ -408,6 +410,7 @@ A sua Conta Google pode ter outras formas do histórico de navegação, como pes
 <translation id="4594952190837476234">Esta página foi criada a <ph name="CREATION_TIME" /> e pode ser diferente da versão online.</translation>
 <translation id="4605958867780575332">Item removido: <ph name="ITEM_TITLE" /></translation>
 <translation id="4616150815774728855">Abrir <ph name="WEBAPK_NAME" /></translation>
+<translation id="4634124774493850572">Utilizar palavra-passe</translation>
 <translation id="4645575059429386691">Gerido pelos teus pais</translation>
 <translation id="4663756553811254707"><ph name="NUMBER_OF_BOOKMARKS" /> marcadores eliminados</translation>
 <translation id="4665282149850138822"><ph name="NAME" /> foi adicionado ao seu Ecrã principal</translation>
@@ -583,6 +586,7 @@ No entanto, a navegação não é invisível. Passar para o modo de navegação 
 <translation id="5958275228015807058">Encontre os seus ficheiros e páginas nas Transferências.</translation>
 <translation id="5962718611393537961">Toque para reduzir</translation>
 <translation id="6000066717592683814">Manter o Google</translation>
+<translation id="6005538289190791541">Palavra-passe sugerida</translation>
 <translation id="6039379616847168523">Ir para o próximo separador</translation>
 <translation id="6040143037577758943">Fechar</translation>
 <translation id="6042308850641462728">Mais</translation>
@@ -811,6 +815,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="7942131818088350342">O <ph name="PRODUCT_NAME" /> está desatualizado.</translation>
 <translation id="7947953824732555851">Aceitar e in. sessão</translation>
 <translation id="7963646190083259054">Fornecedor:</translation>
+<translation id="79859296434321399">Para ver conteúdo de realidade aumentada, instale o ARCore.</translation>
 <translation id="7987073022710626672">Termos de Utilização do Chrome</translation>
 <translation id="7998918019931843664">Reabrir separador fechado</translation>
 <translation id="7999064672810608036">Tem a certeza de que pretende limpar todos os dados locais, incluindo cookies, e repor todas as autorizações para este Website?</translation>
@@ -873,6 +878,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="851751545965956758">Impedir a ligação de sites a dispositivos</translation>
 <translation id="8523928698583292556">Eliminar palavra-passe armazenada</translation>
 <translation id="854522910157234410">Abrir esta página</translation>
+<translation id="8558485628462305855">Para ver conteúdo de realidade aumentada, atualize o ARCore.</translation>
 <translation id="8559990750235505898">Propor a tradução de páginas noutros idiomas</translation>
 <translation id="8562452229998620586">As palavras-passe guardadas aparecem aqui.</translation>
 <translation id="8569404424186215731">desde <ph name="DATE" /></translation>

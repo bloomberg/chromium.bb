@@ -363,7 +363,7 @@
 <translation id="1530838837447122178">Mở cài đặt thiết bị chuột và bàn di chuột</translation>
 <translation id="1531004739673299060">Cửa sổ ứng dụng</translation>
 <translation id="15373452373711364">Con trỏ chuột lớn</translation>
-<translation id="1540605929960647700">Bật chế độ trình diễn</translation>
+<translation id="1540605929960647700">Bật chế độ minh họa</translation>
 <translation id="1543284117603151572">Được nhập từ Edge</translation>
 <translation id="1545177026077493356">Chế độ kiosk tự động</translation>
 <translation id="1545775234664667895">Đã cài đặt chủ đề "<ph name="THEME_NAME" />"</translation>
@@ -566,7 +566,7 @@
 <translation id="1839704667838141620">Thay đổi cách chia sẻ tệp này</translation>
 <translation id="1841545962859478868">Quản trị viên thiết bị có thể theo dõi các vấn đề sau đây:</translation>
 <translation id="1841705068325380214"><ph name="EXTENSION_NAME" /> đã bị vô hiệu hóa</translation>
-<translation id="1842766183094193446">Bạn có chắc chắn muốn bật chế độ trình diễn không?</translation>
+<translation id="1842766183094193446">Bạn có chắc chắn muốn bật chế độ minh họa không?</translation>
 <translation id="1844692022597038441">Tệp này không có khi ngoại tuyến.</translation>
 <translation id="1846308012215045257">Giữ Control khi nhấp để chạy <ph name="PLUGIN_NAME" /></translation>
 <translation id="1847880352285315359">Đã lưu</translation>
@@ -2310,7 +2310,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="4682551433947286597">Hình nền xuất hiện trên màn hình đăng nhập.</translation>
 <translation id="4684427112815847243">Đồng bộ hóa mọi thứ</translation>
 <translation id="4689421377817139245">Đồng bộ hóa dấu trang này với iPhone của bạn</translation>
-<translation id="4690091457710545971">&lt;Bốn tệp do chương trình cơ sở Intel Wi-Fi tạo ra: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ba tệp đầu tiên là tệp nhị phân có chứa báo cáo đăng ký và được Intel xác nhận không chứa thông tin cá nhân hoặc thông tin nhận dạng thiết bị.  Tệp cuối cùng là dấu vết thực thi từ chương trình cơ sở Intel; tệp này đã được xóa mọi thông tin nhận dạng cá nhân hoặc thiết bị, nhưng kích thước tệp quá lớn nên không hiển thị được ở đây.  Các tệp này được tạo do các sự cố Wi-Fi xảy ra gần đây với thiết bị của bạn và sẽ được chia sẻ với Intel để giúp khắc phục các sự cố này.&gt;</translation>
+<translation id="4690091457710545971">&lt;Bốn tệp do chương trình cơ sở Intel Wi-Fi tạo ra: csr.lst, fh_regs.lst, radio_reg.lst, monitor.lst.sysmon.  Ba tệp đầu tiên là tệp nhị phân có chứa nội dung kết xuất đăng ký và được Intel xác nhận là không chứa thông tin nhận dạng cá nhân hoặc thiết bị.  Tệp cuối cùng là dấu vết thực thi từ chương trình cơ sở Intel; tệp này đã được xóa mọi thông tin nhận dạng cá nhân hoặc thiết bị, nhưng kích thước tệp quá lớn nên không hiển thị được ở đây.  Các tệp này được tạo do các sự cố Wi-Fi xảy ra gần đây với thiết bị của bạn và sẽ được chia sẻ với Intel để giúp khắc phục các sự cố này.&gt;</translation>
 <translation id="4692302215262324251"><ph name="DEVICE_TYPE" /> của bạn đã được đăng ký thành công cho quản lý doanh nghiệp <ph name="BEGIN_BOLD" /><ph name="DOMAIN" /><ph name="END_BOLD" />.
     <ph name="LINE_BREAK_AND_EMPTY_LINE" />
     Nếu không mong muốn việc này, vui lòng liên hệ với bộ phận hỗ trợ.</translation>
@@ -3301,7 +3301,7 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="6198102561359457428">Đăng xuất rồi đăng nhập lại...</translation>
 <translation id="6198252989419008588">Thay đổi mã PIN</translation>
 <translation id="6199801702437275229">Đang chờ thông tin dung lượng...</translation>
-<translation id="6204015976622790023">Xem đề xuất liên quan đến nội dung trên màn hình từ Trợ lý của bạn</translation>
+<translation id="6204015976622790023">Xem đề xuất liên quan đến nội dung trên màn hình từ Trợ lý.</translation>
 <translation id="6205710420833115353">Một số tác vụ đang diễn ra lâu hơn thông thường. Bạn có muốn hủy các tác vụ này không?</translation>
 <translation id="6206311232642889873">Sao ché&amp;p Hình ảnh</translation>
 <translation id="6207200176136643843">Đặt lại về mức thu phóng mặc định</translation>

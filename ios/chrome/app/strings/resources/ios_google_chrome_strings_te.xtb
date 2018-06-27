@@ -1,6 +1,7 @@
 <?xml version="1.0" ?>
 <!DOCTYPE translationbundle>
 <translationbundle lang="te">
+<translation id="114721135501989771">Chromeలో Google స్మార్ట్‌లను పొందండి</translation>
 <translation id="1326317727527857210">మీ ఇతర పరికరాల నుండి మీ ట్యాబ్‌లను పొందడానికి, Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="1759842336958782510">Chrome</translation>
 <translation id="1816764564654397850">Google Chrome గోప్యతా ప్రకటన</translation>
@@ -12,6 +13,7 @@
 <translation id="2441696206556358796">చిత్రాలను సేవ్ చేయడం కోసం, మీ ఫోటోలను ఉపయోగించేందుకు Chromeని అనుమతించడానికి సెట్టింగ్‌లపై నొక్కండి</translation>
 <translation id="2576431527583832481">Chrome ఇప్పుడే మెరుగుపరచబడింది! క్రొత్త సంస్కరణ అందుబాటులో ఉంది.</translation>
 <translation id="257708665678654955">మీరు తదుపరి సారి సందర్శించినప్పుడు Google Chrome ఈ సైట్‌లోని <ph name="LANGUAGE_NAME" /> పేజీలను అనువదించే సదుపాయాన్ని అందించాలని కోరుకుంటున్నారా?</translation>
+<translation id="2943166482989655199">సిస్టమ్ సమాచారం మరియు వినియోగ వివరాలను Googleకి పంపడం ద్వారా Chromeని మరియు దాని భద్రతను మెరుగుపరచండి</translation>
 <translation id="3148434565183091099">మీ అన్ని పరికరాల్లో మీ బుక్‌మార్క్‌లను పొందడానికి, Chromeకి సైన్ ఇన్ చేయండి.</translation>
 <translation id="3148688391461398285">మీ స్థానం ఆధారంగా Chromeలో మెరుగైన అనుభవాన్ని పొందండి.</translation>
 <translation id="3167189358072330585">మీ ఖాతా Google Chromeలో పని చేయదు. దయచేసి మీ డొమైన్ నిర్వాహకుడిని సంప్రదించండి లేదా సైన్ ఇన్ చేయడానికి సాధారణ Google ఖాతాని ఉపయోగించండి.</translation>
@@ -29,6 +31,7 @@
 <translation id="4523886039239821078">కొన్ని యాడ్-ఆన్‌లు Chrome క్రాష్ అయ్యేలా చేసాయి. దయచేసి వీటిని అన్‌ఇన్‌స్టాల్ చేయండి:</translation>
 <translation id="4615174829807303908">మీరు <ph name="SIGNOUT_MANAGED_DOMAIN" /> నిర్వహణలో ఉన్న ఖాతా నుండి సైన్ అవుట్ చేస్తున్నారు. దీని వలన మీ Chrome డేటా ఈ పరికరం నుండి తొలగించబడుతుంది, కానీ మీ డేటా మీ Google ఖాతాలో అలాగే ఉంటుంది.</translation>
 <translation id="5389212809648216794">మీ కెమెరాను మరొక అనువర్తనం ఉపయోగిస్తున్నందున Google Chrome దాన్ని ఉపయోగించలేదు</translation>
+<translation id="5489543008378040943"><ph name="BEGIN_LINK" />సెట్టింగ్‌లను<ph name="END_LINK" /> ఎప్పుడైనా అనుకూలీకరించవచ్చు. Google మీరు సందర్శించే సైట్‌ల్లోని కంటెంట్, బ్రౌజర్ పరస్పర చర్యలు మరియు కార్యకలాపం ఉపయోగించడం ద్వారా Chromeని మరియు అనువాదం, శోధన మరియు ప్రకటనలు వంటి Google సేవలను వ్యక్తిగతీకరించవచ్చు.</translation>
 <translation id="5639704535586432836">సెట్టింగ్‌లు &gt; గోప్యత &gt; కెమెరా &gt; Google Chromeని తెరిచి, కెమెరాను ఆన్ చేయండి.</translation>
 <translation id="5642200033778930880">Google Chrome విభజన వీక్షణ మోడ్‌లో మీ కెమెరాను ఉపయోగించలేదు</translation>
 <translation id="5703130498371792817">Chromeని ఆస్వాదిస్తున్నారా? <ph name="BEGIN_LINK" />ఈ అనువర్తనాన్ని రేట్ చేయండి<ph name="END_LINK" /></translation>
