@@ -16,7 +16,7 @@
 #include "chromecast/device/bluetooth/le/remote_descriptor.h"
 #include "chromecast/device/bluetooth/le/remote_device.h"
 #include "chromecast/device/bluetooth/le/remote_service.h"
-#include "chromecast/device/bluetooth/shlib/mock_gatt_client.h"
+#include "chromecast/device/bluetooth/shlib/mock_le_scanner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -37,24 +37,8 @@ const bluetooth_v2_shlib::Addr kTestAddr2 = {
 // This hack is needed because base::BindOnce does not support capture lambdas.
 template <typename T>
 void CopyResult(T* out, T in) {
-  *out = in;
+  *out = std::move(in);
 }
-
-class FakeLeScannerImpl : public bluetooth_v2_shlib::LeScannerImpl {
- public:
-  FakeLeScannerImpl() {}
-  ~FakeLeScannerImpl() override = default;
-
-  // bluetooth_v2_shlib::LeScannerImpl implementation:
-  bool IsSupported() override { return true; }
-  void SetDelegate(bluetooth_v2_shlib::LeScanner::Delegate* delegate) override {
-  }
-  bool StartScan() override { return true; }
-  bool StopScan() override { return true; }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeLeScannerImpl);
-};
 
 class MockLeScanManagerObserver : public LeScanManager::Observer {
  public:
@@ -67,17 +51,12 @@ class LeScanManagerTest : public ::testing::Test {
   LeScanManagerTest()
       : io_task_runner_(base::CreateSingleThreadTaskRunnerWithTraits(
             {base::TaskPriority::BACKGROUND, base::MayBlock()})),
-        le_scan_manager_(&fake_le_scan_manager_impl_) {}
-  ~LeScanManagerTest() override {}
-
-  // testing::Test implementation:
-  void SetUp() override {
+        le_scan_manager_(&le_scanner_) {
     le_scan_manager_.Initialize(io_task_runner_);
     le_scan_manager_.AddObserver(&mock_observer_);
     scoped_task_environment_.RunUntilIdle();
   }
-
-  void TearDown() override {
+  ~LeScanManagerTest() override {
     le_scan_manager_.RemoveObserver(&mock_observer_);
     le_scan_manager_.Finalize();
   }
@@ -88,7 +67,7 @@ class LeScanManagerTest : public ::testing::Test {
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-  FakeLeScannerImpl fake_le_scan_manager_impl_;
+  bluetooth_v2_shlib::MockLeScanner le_scanner_;
   LeScanManagerImpl le_scan_manager_;
   MockLeScanManagerObserver mock_observer_;
 
@@ -98,17 +77,52 @@ class LeScanManagerTest : public ::testing::Test {
 
 }  // namespace
 
-TEST_F(LeScanManagerTest, TestSetScanEnable) {
-  bool enabled = false;
+TEST_F(LeScanManagerTest, TestEnableDisableScan) {
+  std::unique_ptr<LeScanManager::ScanHandle> scan_handle;
+
+  // Enable the LE scan. We expect the observer to be updated and to get a scan
+  // handle.
+  EXPECT_CALL(le_scanner_, StartScan()).WillOnce(Return(true));
   EXPECT_CALL(mock_observer_, OnScanEnableChanged(true));
-
-  // Enable the LE scan. We expect the observer to be updated and the callback
-  // to be called with success=true.
-  le_scan_manager_.SetScanEnable(true, /* enable */
-                                 base::BindOnce(&CopyResult<bool>, &enabled));
-
+  le_scan_manager_.RequestScan(base::BindOnce(
+      &CopyResult<std::unique_ptr<LeScanManager::ScanHandle>>, &scan_handle));
   scoped_task_environment_.RunUntilIdle();
-  ASSERT_TRUE(enabled);
+  ASSERT_TRUE(scan_handle);
+
+  // After deleting the last handle, we expect scan to be disabled.
+  EXPECT_CALL(le_scanner_, StopScan()).WillOnce(Return(true));
+  EXPECT_CALL(mock_observer_, OnScanEnableChanged(false));
+  scan_handle.reset();
+  scoped_task_environment_.RunUntilIdle();
+}
+
+TEST_F(LeScanManagerTest, TestMultipleHandles) {
+  static constexpr int kNumHandles = 20;
+
+  std::vector<std::unique_ptr<LeScanManager::ScanHandle>> scan_handles;
+
+  EXPECT_CALL(le_scanner_, StartScan()).WillOnce(Return(true));
+  EXPECT_CALL(mock_observer_, OnScanEnableChanged(true));
+  for (int i = 0; i < kNumHandles; ++i) {
+    std::unique_ptr<LeScanManager::ScanHandle> handle;
+    le_scan_manager_.RequestScan(base::BindOnce(
+        &CopyResult<std::unique_ptr<LeScanManager::ScanHandle>>, &handle));
+    scoped_task_environment_.RunUntilIdle();
+    ASSERT_TRUE(handle);
+    scan_handles.push_back(std::move(handle));
+  }
+
+  EXPECT_CALL(le_scanner_, StopScan()).Times(0);
+  for (int i = 0; i < kNumHandles - 1; ++i) {
+    scan_handles.pop_back();
+    scoped_task_environment_.RunUntilIdle();
+  }
+
+  // After deleting the last handle, we expect scan to be disabled.
+  EXPECT_CALL(le_scanner_, StopScan()).WillOnce(Return(true));
+  EXPECT_CALL(mock_observer_, OnScanEnableChanged(false));
+  scan_handles.pop_back();
+  scoped_task_environment_.RunUntilIdle();
 }
 
 TEST_F(LeScanManagerTest, TestGetScanResultsEmpty) {
@@ -120,6 +134,19 @@ TEST_F(LeScanManagerTest, TestGetScanResultsEmpty) {
 
   scoped_task_environment_.RunUntilIdle();
   ASSERT_EQ(0u, results.size());
+}
+
+TEST_F(LeScanManagerTest, TestEnableScanFails) {
+  std::unique_ptr<LeScanManager::ScanHandle> scan_handle;
+
+  // Observer should not be notified.
+  EXPECT_CALL(mock_observer_, OnScanEnableChanged(true)).Times(0);
+
+  EXPECT_CALL(le_scanner_, StartScan()).WillOnce(Return(false));
+  le_scan_manager_.RequestScan(base::BindOnce(
+      &CopyResult<std::unique_ptr<LeScanManager::ScanHandle>>, &scan_handle));
+  scoped_task_environment_.RunUntilIdle();
+  EXPECT_FALSE(scan_handle);
 }
 
 TEST_F(LeScanManagerTest, TestGetScanResults) {
@@ -254,23 +281,6 @@ TEST_F(LeScanManagerTest, TestOnNewScanResult) {
   ASSERT_EQ(kTestAddr1, result.addr);
   ASSERT_EQ(std::vector<uint8_t>({0x44, 0x44}), result.type_to_data[0x02][0]);
   ASSERT_EQ(1, result.rssi);
-}
-
-TEST_F(LeScanManagerTest, TestOnScanEnableChanged) {
-  bool enabled = false;
-  ON_CALL(mock_observer_, OnScanEnableChanged(_))
-      .WillByDefault(
-          Invoke([&enabled](bool enabled_in) { enabled = enabled_in; }));
-
-  // Enable scanning.
-  le_scan_manager_.SetScanEnable(true /* enable */, base::DoNothing());
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_TRUE(enabled);
-
-  // Disable scanning.
-  le_scan_manager_.SetScanEnable(false /* enable */, base::DoNothing());
-  scoped_task_environment_.RunUntilIdle();
-  ASSERT_FALSE(enabled);
 }
 
 }  // namespace bluetooth
