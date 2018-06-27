@@ -12,11 +12,17 @@
 #import "ios/chrome/browser/ui/table_view/table_view_empty_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_loading_view.h"
 #import "ios/chrome/browser/ui/table_view/table_view_model.h"
+#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// Color of the TableView separators.
+const CGFloat kTableViewSeparatorColor = 0xC8C7CC;
+}
 
 @interface ChromeTableViewController ()
 // The loading displayed by [self startLoadingIndicatorWithLoadingMessage:].
@@ -78,7 +84,7 @@
   [super viewDidLoad];
 
   [self.tableView setBackgroundColor:self.styler.tableViewBackgroundColor];
-  [self.tableView setSeparatorColor:[UIColor lightGrayColor]];
+  [self.tableView setSeparatorColor:UIColorFromRGB(kTableViewSeparatorColor)];
   [self.tableView setSeparatorInset:UIEdgeInsetsMake(0, 56, 0, 0)];
 
   // Configure the app bar if needed.
