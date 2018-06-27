@@ -139,8 +139,11 @@ std::string BrowserSavePasswordProgressLogger::FormStructureToFieldsLogString(
       field_info +=
           ", autocomplete=" + ScrubElementID(field->autocomplete_attribute);
 
-    if (!field->Type().IsUnknown())
-      field_info += ", SERVER_PREDICTION: " + field->Type().ToString();
+    if (field->server_type() != autofill::NO_SERVER_DATA) {
+      field_info +=
+          ", SERVER_PREDICTION: " +
+          autofill::AutofillType::ServerFieldTypeToString(field->server_type());
+    }
 
     for (autofill::ServerFieldType type : field->possible_types())
       field_info +=
