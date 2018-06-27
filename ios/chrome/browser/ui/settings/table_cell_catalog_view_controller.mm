@@ -33,6 +33,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeTextAccessoryNoImage,
   ItemTypeURLWithTimestamp,
   ItemTypeURLWithSize,
+  ItemTypeURLWithSupplementalText,
+  ItemTypeURLWithBadgeImage,
 };
 }
 
@@ -130,6 +132,19 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.title = @"World Series 2017: Houston Astros Defeat Someone Else";
   item.URL = GURL("https://m.bbc.com");
   item.metadata = @"176 KB";
+  [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
+
+  item =
+      [[TableViewURLItem alloc] initWithType:ItemTypeURLWithSupplementalText];
+  item.title = @"Chrome | Google Blog";
+  item.URL = GURL("https://blog.google/products/chrome/");
+  item.supplementalURLText = @"Read 4 days ago";
+  [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
+
+  item = [[TableViewURLItem alloc] initWithType:ItemTypeURLWithBadgeImage];
+  item.title = @"Photos - Google Photos";
+  item.URL = GURL("https://photos.google.com/");
+  item.badgeImage = [UIImage imageNamed:@"table_view_cell_check_mark"];
   [model addItem:item toSectionWithIdentifier:SectionIdentifierURL];
 }
 
