@@ -139,6 +139,10 @@ def get_parser():
   parser.add_argument(
       '--debug', action='store',
       help='If specified, the filename to write extra timing data to.')
+  parser.add_argument(
+      '--benchmarks',
+      help='Comma separated list of benchmark names to generate a map for',
+      required=False)
   return parser
 
 

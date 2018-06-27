@@ -40,6 +40,11 @@ def _get_stories_for_benchmark(b):
     return story_list
 
 
+def _include_benchmark(name, shorlist):
+  if not shortlist:
+    return True
+  return name in shortlist
+
 
 if __name__ == '__main__':
   parser = sharding_map_generator.get_parser()
@@ -49,8 +54,14 @@ if __name__ == '__main__':
   # sharding_map_generator.py and perf_data_generator.py
   benchmarks = perf_data_generator.current_benchmarks()
 
+  shortlist = []
+  if options.benchmarks:
+    shortlist = options.benchmarks.split(',')
+
   benchmarks_data = {}
   for b in benchmarks:
+    if not _include_benchmark(b.Name(), shortlist):
+      continue
     benchmarks_data[b.Name()] = {
         'repeat':  b().options.get('pageset_repeat', 1),
         'stories': _get_stories_for_benchmark(b)
