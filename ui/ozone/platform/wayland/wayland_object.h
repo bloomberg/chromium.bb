@@ -23,6 +23,8 @@ struct wl_registry;
 struct wl_seat;
 struct wl_shm;
 struct wl_shm_pool;
+struct wl_subcompositor;
+struct wl_subsurface;
 struct wl_surface;
 struct wl_touch;
 struct xdg_shell;
@@ -127,6 +129,18 @@ template <>
 struct ObjectTraits<wl_shm_pool> {
   static const wl_interface* interface;
   static void (*deleter)(wl_shm_pool*);
+};
+
+template <>
+struct ObjectTraits<wl_subcompositor> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_subcompositor*);
+};
+
+template <>
+struct ObjectTraits<wl_subsurface> {
+  static const wl_interface* interface;
+  static void (*deleter)(wl_subsurface*);
 };
 
 template <>

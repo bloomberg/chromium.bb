@@ -21,6 +21,7 @@ enum class PlatformWindowType {
   kWindow,
   kPopup,
   kMenu,
+  kTooltip,
 };
 
 // Initial properties which are passed to PlatformWindow to be initialized

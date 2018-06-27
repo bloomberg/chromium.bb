@@ -34,6 +34,10 @@ ui::PlatformWindowInitProperties ConvertWidgetInitParamsToInitProperties(
       properties.type = ui::PlatformWindowType::kMenu;
       break;
 
+    case Widget::InitParams::TYPE_TOOLTIP:
+      properties.type = ui::PlatformWindowType::kTooltip;
+      break;
+
     default:
       properties.type = ui::PlatformWindowType::kPopup;
       break;
