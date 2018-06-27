@@ -29,6 +29,11 @@ void RemoveShellView(const base::android::JavaRef<jobject>& shell_view);
 
 void ShellAttachLayer(cc::Layer* layer);
 void ShellRemoveLayer(cc::Layer* layer);
+
+// Destroys the ShellManager on app exit. Must not use the above functions
+// after this is called.
+void DestroyShellManager();
+
 }  // namespace content
 
 #endif  // CONTENT_SHELL_ANDROID_SHELL_MANAGER_H_

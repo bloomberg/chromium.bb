@@ -65,4 +65,9 @@ void JNI_ShellManager_LaunchShell(JNIEnv* env,
                          gfx::Size());
 }
 
+void DestroyShellManager() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_ShellManager_destroy(env, g_global_state.Get().j_shell_manager);
+}
+
 }  // namespace content
