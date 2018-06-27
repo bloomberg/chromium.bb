@@ -15,6 +15,7 @@
 #include "ash/focus_cycler.h"
 #include "ash/high_contrast/high_contrast_controller.h"
 #include "ash/host/ash_window_tree_host.h"
+#include "ash/keyboard/arc/arc_virtual_keyboard_container_layout_manager.h"
 #include "ash/keyboard/virtual_keyboard_container_layout_manager.h"
 #include "ash/lock_screen_action/lock_screen_action_background_controller.h"
 #include "ash/login_status.h"
@@ -876,6 +877,8 @@ void RootWindowController::CreateContainers() {
       non_lock_screen_containers);
   wm::SetSnapsChildrenToPhysicalPixelBoundary(arc_ime_parent_container);
   arc_ime_parent_container->SetProperty(::wm::kUsesScreenCoordinatesKey, true);
+  arc_ime_parent_container->SetLayoutManager(
+      new ArcVirtualKeyboardContainerLayoutManager(arc_ime_parent_container));
   aura::Window* arc_vk_container =
       CreateContainer(kShellWindowId_ArcVirtualKeyboardContainer,
                       "ArcVirtualKeyboardContainer", arc_ime_parent_container);
