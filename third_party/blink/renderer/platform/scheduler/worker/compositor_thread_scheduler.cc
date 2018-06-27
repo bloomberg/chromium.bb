@@ -20,13 +20,11 @@ namespace blink {
 namespace scheduler {
 
 CompositorThreadScheduler::CompositorThreadScheduler(
-    base::Thread* thread,
     std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager)
     : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
           std::move(task_queue_manager),
           this,
-          TaskType::kCompositorThreadTaskQueueDefault)),
-      thread_(thread) {}
+          TaskType::kCompositorThreadTaskQueueDefault)) {}
 
 CompositorThreadScheduler::~CompositorThreadScheduler() = default;
 
@@ -53,8 +51,8 @@ CompositorThreadScheduler::IdleTaskRunner() {
   // an idle task runner with the semantics we want for the compositor thread
   // which runs them after the current frame has been drawn before the next
   // vsync. https://crbug.com/609532
-  return base::MakeRefCounted<SingleThreadIdleTaskRunner>(
-      thread_->task_runner(), this);
+  return base::MakeRefCounted<SingleThreadIdleTaskRunner>(DefaultTaskQueue(),
+                                                          this);
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

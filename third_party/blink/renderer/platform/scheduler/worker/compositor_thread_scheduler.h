@@ -15,10 +15,6 @@
 #include "third_party/blink/renderer/platform/scheduler/worker/compositor_metrics_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_impl.h"
 
-namespace base {
-class Thread;
-}
-
 namespace blink {
 namespace scheduler {
 
@@ -26,8 +22,7 @@ class PLATFORM_EXPORT CompositorThreadScheduler
     : public NonMainThreadSchedulerImpl,
       public SingleThreadIdleTaskRunner::Delegate {
  public:
-  CompositorThreadScheduler(
-      base::Thread* thread,
+  explicit CompositorThreadScheduler(
       std::unique_ptr<base::sequence_manager::SequenceManager>
           task_queue_manager);
 
@@ -64,8 +59,6 @@ class PLATFORM_EXPORT CompositorThreadScheduler
   void InitImpl() override;
 
  private:
-  base::Thread* thread_;
-
   CompositorMetricsHelper compositor_metrics_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorThreadScheduler);
