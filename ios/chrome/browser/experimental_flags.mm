@@ -151,4 +151,8 @@ bool IsCollectionsUIRebootEnabled() {
   return base::FeatureList::IsEnabled(kCollectionsUIReboot);
 }
 
+bool IsSettingsUIRebootEnabled() {
+  return base::FeatureList::IsEnabled(kCollectionsUIReboot);
+}
+
 }  // namespace experimental_flags
