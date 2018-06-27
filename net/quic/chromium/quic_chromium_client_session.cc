@@ -1645,31 +1645,53 @@ void QuicChromiumClientSession::MigrateSessionOnWriteError(int error_code) {
   if (!migration_pending_)
     return;
 
-  current_connection_migration_cause_ = ON_WRITE_ERROR;
-
-  MigrationResult result = MigrationResult::FAILURE;
-  if (stream_factory_ != nullptr) {
-    LogHandshakeStatusOnConnectionMigrationSignal();
-
-    const NetLogWithSource migration_net_log = NetLogWithSource::Make(
-        net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
-    migration_net_log.BeginEvent(
-        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
-        base::Bind(&NetLogQuicConnectionMigrationTriggerCallback,
-                   "WriteError"));
-
-    result = MigrateToAlternateNetwork(migration_net_log);
-    migration_net_log.EndEvent(
-        NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+  if (stream_factory_ == nullptr) {
+    // Close the connection if migration failed. Do not cause a
+    // connection close packet to be sent since socket may be borked.
+    connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
+                                  "Write and subsequent migration failed",
+                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    return;
   }
 
-  if (result == MigrationResult::SUCCESS)
-    return;
+  current_connection_migration_cause_ = ON_WRITE_ERROR;
+  LogHandshakeStatusOnConnectionMigrationSignal();
+  const NetLogWithSource migration_net_log = NetLogWithSource::Make(
+      net_log_.net_log(), NetLogSourceType::QUIC_CONNECTION_MIGRATION);
+  migration_net_log.BeginEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED,
+      base::Bind(&NetLogQuicConnectionMigrationTriggerCallback, "WriteError"));
 
-  if (result == MigrationResult::NO_NEW_NETWORK) {
+  if (!IsSessionMigratable(/*close_session_if_not_migratable*/ false)) {
+    // Close the connection if migration failed. Do not cause a
+    // connection close packet to be sent since socket may be borked.
+    connection()->CloseConnection(quic::QUIC_PACKET_WRITE_ERROR,
+                                  "Write and subsequent migration failed",
+                                  quic::ConnectionCloseBehavior::SILENT_CLOSE);
+    return;
+  }
+
+  NetworkChangeNotifier::NetworkHandle new_network =
+      stream_factory_->FindAlternateNetwork(
+          GetDefaultSocket()->GetBoundNetwork());
+  if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
+    // No alternate network found.
+    HistogramAndLogMigrationFailure(
+        migration_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
+        connection_id(), "No alternate network found");
     OnNoNewNetwork();
     return;
   }
+
+  NotifyFactoryOfSessionGoingAway();
+  MigrationResult result =
+      Migrate(new_network, connection()->peer_address().impl().socket_address(),
+              /*close_session_on_error=*/false, migration_net_log);
+  migration_net_log.EndEvent(
+      NetLogEventType::QUIC_CONNECTION_MIGRATION_TRIGGERED);
+
+  if (result == MigrationResult::SUCCESS)
+    return;
 
   // Close the connection if migration failed. Do not cause a
   // connection close packet to be sent since socket may be borked.
@@ -1916,11 +1938,15 @@ void QuicChromiumClientSession::MigrateImmediately(
   // otherwise, we are now on default networ, cancel timer to migrate back
   // to the defautlt network if it is running.
 
-  if (!ShouldMigrateSession(network, net_log_))
+  if (!IsSessionMigratable(/*close_session_if_not_migratable=*/true))
     return;
 
-  if (network == GetDefaultSocket()->GetBoundNetwork())
+  if (network == GetDefaultSocket()->GetBoundNetwork()) {
+    HistogramAndLogMigrationFailure(net_log_, MIGRATION_STATUS_ALREADY_MIGRATED,
+                                    connection_id(),
+                                    "Already bound to new network");
     return;
+  }
 
   // Cancel probing on |network| if there is any.
   probing_manager_.CancelProbing(network);
@@ -2297,49 +2323,46 @@ void QuicChromiumClientSession::MaybeRetryMigrateBackToDefaultNetwork() {
   TryMigrateBackToDefaultNetwork(retry_migrate_back_timeout);
 }
 
-bool QuicChromiumClientSession::ShouldMigrateSession(
-    NetworkChangeNotifier::NetworkHandle network,
-    const NetLogWithSource& migration_net_log) {
+bool QuicChromiumClientSession::IsSessionMigratable(
+    bool close_session_if_not_migratable) {
   // Close idle sessions.
   if (GetNumActiveStreams() == 0 && GetNumDrainingStreams() == 0) {
-    HistogramAndLogMigrationFailure(migration_net_log,
+    HistogramAndLogMigrationFailure(net_log_,
                                     MIGRATION_STATUS_NO_MIGRATABLE_STREAMS,
                                     connection_id(), "No active streams");
-    CloseSessionOnErrorLater(
-        ERR_NETWORK_CHANGED,
-        quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+    if (close_session_if_not_migratable) {
+      CloseSessionOnErrorLater(
+          ERR_NETWORK_CHANGED,
+          quic::QUIC_CONNECTION_MIGRATION_NO_MIGRATABLE_STREAMS);
+    }
     return false;
   }
 
   // Do not migrate sessions where connection migration is disabled.
   if (config()->DisableConnectionMigration()) {
     HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
+        net_log_, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
         "Migration disabled by config");
-    CloseSessionOnErrorLater(
-        ERR_NETWORK_CHANGED,
-        quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
+    if (close_session_if_not_migratable) {
+      CloseSessionOnErrorLater(
+          ERR_NETWORK_CHANGED,
+          quic::QUIC_CONNECTION_MIGRATION_DISABLED_BY_CONFIG);
+    }
     return false;
   }
 
   // Do not migrate sessions with non-migratable streams.
   if (HasNonMigratableStreams()) {
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
-                                    connection_id(), "Non-migratable stream");
-    CloseSessionOnErrorLater(
-        ERR_NETWORK_CHANGED,
-        quic::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
+    if (close_session_if_not_migratable) {
+      HistogramAndLogMigrationFailure(net_log_,
+                                      MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
+                                      connection_id(), "Non-migratable stream");
+      CloseSessionOnErrorLater(
+          ERR_NETWORK_CHANGED,
+          quic::QUIC_CONNECTION_MIGRATION_NON_MIGRATABLE_STREAM);
+    }
     return false;
   }
-
-  if (GetDefaultSocket()->GetBoundNetwork() == network) {
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_ALREADY_MIGRATED, connection_id(),
-        "Already bound to new network");
-    return false;
-  }
-
   return true;
 }
 
@@ -2554,41 +2577,6 @@ void QuicChromiumClientSession::NotifyFactoryOfSessionClosed() {
     stream_factory_->OnSessionClosed(this);
 }
 
-MigrationResult QuicChromiumClientSession::MigrateToAlternateNetwork(
-    const NetLogWithSource& migration_net_log) {
-  DCHECK(migrate_session_on_network_change_v2_);
-
-  if (HasNonMigratableStreams()) {
-    HistogramAndLogMigrationFailure(migration_net_log,
-                                    MIGRATION_STATUS_NON_MIGRATABLE_STREAM,
-                                    connection_id(), "Non-migratable stream");
-    return MigrationResult::FAILURE;
-  }
-
-  if (config()->DisableConnectionMigration()) {
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_DISABLED_BY_CONFIG, connection_id(),
-        "Migration disabled by config");
-    return MigrationResult::FAILURE;
-  }
-
-  DCHECK(stream_factory_);
-  NetworkChangeNotifier::NetworkHandle new_network =
-      stream_factory_->FindAlternateNetwork(
-          GetDefaultSocket()->GetBoundNetwork());
-
-  if (new_network == NetworkChangeNotifier::kInvalidNetworkHandle) {
-    // No alternate network found.
-    HistogramAndLogMigrationFailure(
-        migration_net_log, MIGRATION_STATUS_NO_ALTERNATE_NETWORK,
-        connection_id(), "No alternate network found");
-    return MigrationResult::NO_NEW_NETWORK;
-  }
-  NotifyFactoryOfSessionGoingAway();
-  return Migrate(new_network,
-                 connection()->peer_address().impl().socket_address(),
-                 /*close_session_on_error=*/false, migration_net_log);
-}
 
 MigrationResult QuicChromiumClientSession::Migrate(
     NetworkChangeNotifier::NetworkHandle network,

@@ -376,10 +376,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
     push_delegate_ = push_delegate;
   }
 
-  bool migrate_sessions_on_network_change() const {
-    return migrate_sessions_on_network_change_v2_;
-  }
-
   bool mark_quic_broken_when_network_blackholes() const {
     return mark_quic_broken_when_network_blackholes_;
   }
