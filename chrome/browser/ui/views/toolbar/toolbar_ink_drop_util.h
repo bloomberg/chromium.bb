@@ -41,11 +41,17 @@ gfx::Insets GetInkDropInsets(BaseInkDropHostView* host_view) {
   // If content is not centered (leftmost or rightmost toolbar button), inset
   // the inkdrop mask accordingly.
   if (host_insets.left() > host_insets.right()) {
-    inkdrop_insets +=
-        gfx::Insets(0, host_insets.left() - host_insets.right(), 0, 0);
+    const int leading_excess = host_insets.left() - host_insets.right();
+    // TODO(pbos): Inkdrop masks and layers should be flipped with RTL. Fix this
+    // and remove RTL handling from here (and below).
+    inkdrop_insets += base::i18n::IsRTL()
+                          ? gfx::Insets(0, 0, 0, leading_excess)
+                          : gfx::Insets(0, leading_excess, 0, 0);
   } else if (host_insets.right() > host_insets.left()) {
-    inkdrop_insets +=
-        gfx::Insets(0, 0, 0, host_insets.right() - host_insets.left());
+    const int trailing_excess = host_insets.right() - host_insets.left();
+    inkdrop_insets += base::i18n::IsRTL()
+                          ? gfx::Insets(0, trailing_excess, 0, 0)
+                          : gfx::Insets(0, 0, 0, trailing_excess);
   }
 
   // Inset the inkdrop insets so that the end result matches the target inkdrop
