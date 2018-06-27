@@ -271,6 +271,14 @@ void UnifiedSystemTrayController::CloseBubble() {
     unified_view_->GetWidget()->Close();
 }
 
+void UnifiedSystemTrayController::EnsureExpanded() {
+  if (detailed_view_controller_) {
+    detailed_view_controller_.reset();
+    unified_view_->ResetDetailedView();
+  }
+  animation_->Show();
+}
+
 void UnifiedSystemTrayController::AnimationEnded(
     const gfx::Animation* animation) {
   UpdateExpandedAmount();

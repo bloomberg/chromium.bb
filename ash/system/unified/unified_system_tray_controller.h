@@ -93,6 +93,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // Close the bubble. Called from a detailed view controller.
   void CloseBubble();
 
+  // Ensure the main view is expanded. Called from the slider bubble controller.
+  void EnsureExpanded();
+
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;
   void AnimationProgressed(const gfx::Animation* animation) override;

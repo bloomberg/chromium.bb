@@ -120,6 +120,15 @@ void UnifiedSystemTrayBubble::CloseNow() {
   bubble_widget_ = nullptr;
 }
 
+void UnifiedSystemTrayBubble::EnsureExpanded() {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+  controller_->EnsureExpanded();
+}
+
 TrayBackgroundView* UnifiedSystemTrayBubble::GetTray() const {
   return tray_;
 }

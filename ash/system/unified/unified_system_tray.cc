@@ -191,6 +191,11 @@ void UnifiedSystemTray::ActivateBubble() {
     bubble_->ActivateBubble();
 }
 
+void UnifiedSystemTray::EnsureBubbleExpanded() {
+  if (bubble_)
+    bubble_->EnsureExpanded();
+}
+
 void UnifiedSystemTray::ShowVolumeSliderBubble() {
   slider_bubble_controller_->ShowBubble(
       UnifiedSliderBubbleController::SLIDER_TYPE_VOLUME);

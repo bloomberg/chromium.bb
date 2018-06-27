@@ -52,6 +52,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // Activates the system tray bubble.
   void ActivateBubble();
 
+  // Ensure the system tray bubble is expanded.
+  void EnsureBubbleExpanded();
+
   // Shows volume slider bubble shown at the right bottom of screen. The bubble
   // is same as one shown when volume buttons on keyboard are pressed.
   void ShowVolumeSliderBubble();
