@@ -87,6 +87,21 @@ static int import_into_minigbm(struct dri_driver *dri, struct bo *bo)
 }
 
 /*
+ * Close Gem Handle
+ */
+static void close_gem_handle(uint32_t handle, int fd)
+{
+	struct drm_gem_close gem_close;
+	int ret = 0;
+
+	memset(&gem_close, 0, sizeof(gem_close));
+	gem_close.handle = handle;
+	ret = drmIoctl(fd, DRM_IOCTL_GEM_CLOSE, &gem_close);
+	if (ret)
+		drv_log("DRM_IOCTL_GEM_CLOSE failed (handle=%x) error %d\n", handle, ret);
+}
+
+/*
  * The caller is responsible for setting drv->priv to a structure that derives from dri_driver.
  */
 int dri_init(struct driver *drv, const char *dri_so_path, const char *driver_suffix)
@@ -194,12 +209,12 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 
 	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_STRIDE, &stride)) {
 		ret = -errno;
-		goto free_image;
+		goto close_handle;
 	}
 
 	if (!dri->image_extension->queryImage(bo->priv, __DRI_IMAGE_ATTRIB_OFFSET, &offset)) {
 		ret = -errno;
-		goto free_image;
+		goto close_handle;
 	}
 
 	bo->strides[0] = stride;
@@ -208,6 +223,8 @@ int dri_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t forma
 	bo->total_size = offset + bo->sizes[0];
 	return 0;
 
+close_handle:
+	close_gem_handle(bo->handles[0].u32, bo->drv->fd);
 free_image:
 	dri->image_extension->destroyImage(bo->priv);
 	return ret;
@@ -243,6 +260,7 @@ int dri_bo_destroy(struct bo *bo)
 	struct dri_driver *dri = bo->drv->priv;
 
 	assert(bo->priv);
+	close_gem_handle(bo->handles[0].u32, bo->drv->fd);
 	dri->image_extension->destroyImage(bo->priv);
 	bo->priv = NULL;
 	return 0;
