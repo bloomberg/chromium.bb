@@ -54,8 +54,7 @@ class HashingFileWriter : public zip::FileWriterDelegate {
 
 HashingFileWriter::HashingFileWriter(base::File* file)
     : zip::FileWriterDelegate(file),
-      sha256_(crypto::SecureHash::Create(crypto::SecureHash::SHA256)) {
-}
+      sha256_(crypto::SecureHash::Create(crypto::SecureHash::SHA256)) {}
 
 bool HashingFileWriter::WriteBytes(const char* data, int num_bytes) {
   if (!zip::FileWriterDelegate::WriteBytes(data, num_bytes))
@@ -80,8 +79,7 @@ bool StringIsMachOMagic(std::string bytes) {
 }
 #endif  // OS_MACOSX
 
-void AnalyzeContainedFile(
-    const scoped_refptr<BinaryFeatureExtractor>& binary_feature_extractor,
+void SetLengthAndDigestForContainedFile(
     const base::FilePath& file_path,
     zip::ZipReader* reader,
     base::File* temp_file,
@@ -96,20 +94,25 @@ void AnalyzeContainedFile(
   if (reader->ExtractCurrentEntry(&writer,
                                   std::numeric_limits<uint64_t>::max())) {
     uint8_t digest[crypto::kSHA256Length];
-    writer.ComputeDigest(&digest[0], arraysize(digest));
+    writer.ComputeDigest(&digest[0], base::size(digest));
     archived_binary->mutable_digests()->set_sha256(&digest[0],
-                                                   arraysize(digest));
-    if (!binary_feature_extractor->ExtractImageFeaturesFromFile(
-            temp_file->Duplicate(),
-            BinaryFeatureExtractor::kDefaultOptions,
-            archived_binary->mutable_image_headers(),
-            archived_binary->mutable_signature()->mutable_signed_data())) {
-      archived_binary->clear_image_headers();
-      archived_binary->clear_signature();
-    } else if (!archived_binary->signature().signed_data_size()) {
-      // No SignedData blobs were extracted, so clear the signature field.
-      archived_binary->clear_signature();
-    }
+                                                   base::size(digest));
+  }
+}
+
+void AnalyzeContainedBinary(
+    const scoped_refptr<BinaryFeatureExtractor>& binary_feature_extractor,
+    base::File* temp_file,
+    ClientDownloadRequest::ArchivedBinary* archived_binary) {
+  if (!binary_feature_extractor->ExtractImageFeaturesFromFile(
+          temp_file->Duplicate(), BinaryFeatureExtractor::kDefaultOptions,
+          archived_binary->mutable_image_headers(),
+          archived_binary->mutable_signature()->mutable_signed_data())) {
+    archived_binary->clear_image_headers();
+    archived_binary->clear_signature();
+  } else if (!archived_binary->signature().signed_data_size()) {
+    // No SignedData blobs were extracted, so clear the signature field.
+    archived_binary->clear_signature();
   }
 }
 
@@ -159,10 +162,9 @@ void AnalyzeZipFile(base::File zip_file,
       archived_archive_filenames.insert(file.BaseName());
       ClientDownloadRequest::ArchivedBinary* archived_archive =
           results->archived_binary.Add();
-      std::string file_basename_utf8(file.BaseName().AsUTF8Unsafe());
-      if (base::StreamingUtf8Validator::Validate(file_basename_utf8))
-        archived_archive->set_file_basename(file_basename_utf8);
       archived_archive->set_download_type(ClientDownloadRequest::ARCHIVE);
+      SetLengthAndDigestForContainedFile(file, &reader, &temp_file,
+                                         archived_archive);
     } else if (current_entry_is_executable) {
 #if defined(OS_MACOSX)
       // This check prevents running analysis on .app files since they are
@@ -175,8 +177,12 @@ void AnalyzeZipFile(base::File zip_file,
 #endif  // OS_MACOSX
         DVLOG(2) << "Downloaded a zipped executable: " << file.value();
         results->has_executable = true;
-        AnalyzeContainedFile(binary_feature_extractor, file, &reader,
-                             &temp_file, results->archived_binary.Add());
+        ClientDownloadRequest::ArchivedBinary* archived_binary =
+            results->archived_binary.Add();
+        SetLengthAndDigestForContainedFile(file, &reader, &temp_file,
+                                           archived_binary);
+        AnalyzeContainedBinary(binary_feature_extractor, &temp_file,
+                               archived_binary);
 #if defined(OS_MACOSX)
       }
 #endif  // OS_MACOSX
