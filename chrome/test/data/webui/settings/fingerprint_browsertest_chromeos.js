@@ -29,13 +29,15 @@ class TestFingerprintBrowserProxy extends TestBrowserProxy {
   /**
    * @param {settings.FingerprintResultType} result
    * @param {boolean} complete
+   * @param {number} percent
    */
-  scanReceived(result, complete) {
+  scanReceived(result, complete, percent) {
     if (complete)
       this.fingerprintsList_.push('New Label');
 
     cr.webUIListenerCallback(
-        'on-fingerprint-scan-received', {result: result, isComplete: complete});
+        'on-fingerprint-scan-received',
+        {result: result, isComplete: complete, percentComplete: percent});
   }
 
   /** @override */
@@ -154,25 +156,30 @@ suite('settings-fingerprint-list', function() {
     openDialog();
     return browserProxy.whenCalled('startEnroll').then(function() {
       assertTrue(dialog.$$('#dialog').open);
-      assertEquals(0, dialog.receivedScanCount_);
+      assertEquals(0, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
-      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
-      assertEquals(1, dialog.receivedScanCount_);
+      browserProxy.scanReceived(
+          settings.FingerprintResultType.SUCCESS, false, 20 /* percent */);
+      assertEquals(20, dialog.percentComplete_);
       assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
 
       // Verify that by sending a scan problem, the div that contains the
       // problem message and icon should be visible.
-      browserProxy.scanReceived(settings.FingerprintResultType.TOO_FAST, false);
-      assertEquals(1, dialog.receivedScanCount_);
+      browserProxy.scanReceived(
+          settings.FingerprintResultType.TOO_FAST, false, 20 /* percent */);
+      assertEquals(20, dialog.percentComplete_);
       assertEquals(
           'visible',
           window.getComputedStyle(dialog.$$('#problemDiv')).visibility);
-      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
+      browserProxy.scanReceived(
+          settings.FingerprintResultType.SUCCESS, false, 50 /* percent */);
       assertEquals(
           'hidden',
           window.getComputedStyle(dialog.$$('#problemDiv')).visibility);
-      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, false);
-      browserProxy.scanReceived(settings.FingerprintResultType.SUCCESS, true);
+      browserProxy.scanReceived(
+          settings.FingerprintResultType.SUCCESS, false, 70 /* percent */);
+      browserProxy.scanReceived(
+          settings.FingerprintResultType.SUCCESS, true, 100 /* percent */);
       assertEquals(settings.FingerprintSetupStep.READY, dialog.step_);
 
       // Verify that by tapping the continue button we should exit the dialog
@@ -200,10 +207,10 @@ suite('settings-fingerprint-list', function() {
           browserProxy.resetResolver('startEnroll');
 
           assertTrue(dialog.$$('#dialog').open);
-          assertEquals(0, dialog.receivedScanCount_);
+          assertEquals(0, dialog.percentComplete_);
           assertFalse(isVisible(addAnotherButton));
           browserProxy.scanReceived(
-              settings.FingerprintResultType.SUCCESS, true);
+              settings.FingerprintResultType.SUCCESS, true, 100 /* percent */);
           assertEquals(settings.FingerprintSetupStep.READY, dialog.step_);
 
           assertTrue(dialog.$$('#dialog').open);
@@ -223,7 +230,7 @@ suite('settings-fingerprint-list', function() {
           assertTrue(dialog.$$('#dialog').open);
           assertFalse(isVisible(addAnotherButton));
           browserProxy.scanReceived(
-              settings.FingerprintResultType.SUCCESS, true);
+              settings.FingerprintResultType.SUCCESS, true, 100 /* percent */);
 
           // Verify that by tapping the continue button we should exit the
           // dialog and the fingerprint list should have two fingerprints
@@ -241,12 +248,12 @@ suite('settings-fingerprint-list', function() {
     return browserProxy.whenCalled('startEnroll')
         .then(function() {
           assertTrue(dialog.$$('#dialog').open);
-          assertEquals(0, dialog.receivedScanCount_);
+          assertEquals(0, dialog.percentComplete_);
           assertEquals(
               settings.FingerprintSetupStep.LOCATE_SCANNER, dialog.step_);
           browserProxy.scanReceived(
-              settings.FingerprintResultType.SUCCESS, false);
-          assertEquals(1, dialog.receivedScanCount_);
+              settings.FingerprintResultType.SUCCESS, false, 20 /* percent */);
+          assertEquals(20, dialog.percentComplete_);
           assertEquals(settings.FingerprintSetupStep.MOVE_FINGER, dialog.step_);
 
           // Verify that by tapping the exit button we should exit the dialog
