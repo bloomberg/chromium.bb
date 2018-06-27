@@ -9,6 +9,6 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
 interface IModuleHost {
   IObjectWrapper /* Context */ getHostApplicationContext() = 0;
   IObjectWrapper /* Context */ getModuleContext() = 1;
-  int getVersion() = 2;
+  int getHostVersion() = 2;
   int getMinimumModuleVersion() = 3;
 }

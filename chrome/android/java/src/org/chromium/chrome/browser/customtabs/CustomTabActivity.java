@@ -158,6 +158,7 @@ public class CustomTabActivity extends ChromeActivity {
     private WebappCustomTabTimeSpentLogger mWebappTimeSpentLogger;
 
     @Nullable private ActivityDelegate mActivityDelegate;
+    private boolean mHasSetOverlayView;
 
     private static class PageLoadMetricsObserver implements PageLoadMetrics.Observer {
         private final CustomTabsConnection mConnection;
@@ -365,16 +366,22 @@ public class CustomTabActivity extends ChromeActivity {
                 mConnection.loadModule(packageName, mIntentDataProvider.getModuleClassName());
         if (entryPoint == null) return;
 
-        mActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
+        mActivityDelegate = entryPoint.createActivityDelegate(
+                new ActivityHostImpl(this), getIntent().getExtras());
         mActivityDelegate.onCreate(getSavedInstanceState());
-        if (mBottomBarDelegate != null) {
-            mBottomBarDelegate.setBottomBarContentView(mActivityDelegate.getBottomBarView());
-            mBottomBarDelegate.showBottomBarIfNecessary();
-        }
+    }
 
+    public void setBottomBarContentView(View view) {
+        mBottomBarDelegate.setBottomBarContentView(view);
+        mBottomBarDelegate.showBottomBarIfNecessary();
+    }
+
+    public void setOverlayView(View view) {
+        assert !mHasSetOverlayView;
+        mHasSetOverlayView = true;
         ViewGroup.LayoutParams layoutParams = new ViewGroup.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        addContentView(mActivityDelegate.getOverlayView(), layoutParams);
+        addContentView(view, layoutParams);
     }
 
     @Override

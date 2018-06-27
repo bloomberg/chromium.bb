@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
-import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
-
 interface IActivityDelegate {
   void onCreate(in Bundle savedInstanceState) = 0;
 
@@ -28,8 +26,4 @@ interface IActivityDelegate {
   void onDestroy(boolean isChangingConfigurations) = 9;
 
   boolean onBackPressed() = 10;
-
-  IObjectWrapper /* View */ getBottomBarView() = 11;
-
-  IObjectWrapper /* View */ getOverlayView() = 12;
 }

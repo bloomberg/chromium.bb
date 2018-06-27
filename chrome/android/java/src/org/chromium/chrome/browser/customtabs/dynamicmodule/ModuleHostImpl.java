@@ -32,7 +32,7 @@ public class ModuleHostImpl extends IModuleHost.Stub {
     }
 
     @Override
-    public int getVersion() {
+    public int getHostVersion() {
         return VERSION;
     }
 

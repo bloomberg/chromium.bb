@@ -4,6 +4,7 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
+import android.os.Bundle;
 import android.os.RemoteException;
 
 /**
@@ -26,18 +27,9 @@ public class ModuleEntryPoint {
         }
     }
 
-    public ActivityDelegate createActivityDelegate(ActivityHostImpl activityHost) {
+    public int getModuleVersion() {
         try {
-            return new ActivityDelegate(mEntryPoint.createActivityDelegate(activityHost));
-        } catch (RemoteException e) {
-            assert false;
-        }
-        return null;
-    }
-
-    public int getVersion() {
-        try {
-            return mEntryPoint.getVersion();
+            return mEntryPoint.getModuleVersion();
         } catch (RemoteException e) {
             assert false;
         }
@@ -51,5 +43,22 @@ public class ModuleEntryPoint {
             assert false;
         }
         return -1;
+    }
+
+    public ActivityDelegate createActivityDelegate(ActivityHostImpl activityHost, Bundle data) {
+        try {
+            return new ActivityDelegate(mEntryPoint.createActivityDelegate(activityHost, data));
+        } catch (RemoteException e) {
+            assert false;
+        }
+        return null;
+    }
+
+    public void onDestroy() {
+        try {
+            mEntryPoint.onDestroy();
+        } catch (RemoteException e) {
+            assert false;
+        }
     }
 }

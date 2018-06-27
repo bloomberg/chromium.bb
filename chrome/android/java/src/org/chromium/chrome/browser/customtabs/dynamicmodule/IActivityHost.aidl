@@ -8,4 +8,8 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.IObjectWrapper;
 
 interface IActivityHost {
   IObjectWrapper /* Context */ getActivityContext() = 0;
+
+  void setBottomBarView(in IObjectWrapper /* View */ bottomBarView) = 1;
+
+  void setOverlayView(in IObjectWrapper /* View */ overlayView) = 2;
 }
