@@ -18,7 +18,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_export.h"
 #include "net/ssl/channel_id_store.h"
 
@@ -49,14 +49,14 @@ class NET_EXPORT ChannelIDService {
     friend class ChannelIDServiceJob;
 
     void RequestStarted(ChannelIDService* service,
-                        const CompletionCallback& callback,
+                        CompletionOnceCallback callback,
                         std::unique_ptr<crypto::ECPrivateKey>* key,
                         ChannelIDServiceJob* job);
 
     void Post(int error, std::unique_ptr<crypto::ECPrivateKey> key);
 
     ChannelIDService* service_;
-    CompletionCallback callback_;
+    CompletionOnceCallback callback_;
     std::unique_ptr<crypto::ECPrivateKey>* key_;
     ChannelIDServiceJob* job_;
   };
@@ -91,7 +91,7 @@ class NET_EXPORT ChannelIDService {
   // |*out_req| will be initialized with a handle to the async request.
   int GetOrCreateChannelID(const std::string& host,
                            std::unique_ptr<crypto::ECPrivateKey>* key,
-                           const CompletionCallback& callback,
+                           CompletionOnceCallback callback,
                            Request* out_req);
 
   // Fetches the channel ID for the specified host if one exists.
@@ -111,7 +111,7 @@ class NET_EXPORT ChannelIDService {
   // |*out_req| will be initialized with a handle to the async request.
   int GetChannelID(const std::string& host,
                    std::unique_ptr<crypto::ECPrivateKey>* key,
-                   const CompletionCallback& callback,
+                   CompletionOnceCallback callback,
                    Request* out_req);
 
   // Returns the backing ChannelIDStore.
@@ -140,23 +140,24 @@ class NET_EXPORT ChannelIDService {
                     const std::string& server_identifier,
                     std::unique_ptr<crypto::ECPrivateKey> key);
 
-  // Searches for an in-flight request for the same domain. If found,
-  // attaches to the request and returns true. Returns false if no in-flight
-  // request is found.
+  // Searches for an in-flight request for the same domain. If found, attaches
+  // to the request, consumes |*callback|, and returns true.  Otherwise does not
+  // consume |*callback| and returns false.
   bool JoinToInFlightRequest(const std::string& domain,
                              std::unique_ptr<crypto::ECPrivateKey>* key,
                              bool create_if_missing,
-                             const CompletionCallback& callback,
+                             CompletionOnceCallback* callback,
                              Request* out_req);
 
-  // Looks for the channel ID for |domain| in this service's store.
-  // Returns OK if it can be found synchronously, ERR_IO_PENDING if the
-  // result cannot be obtained synchronously, or a network error code on
-  // failure (including failure to find a channel ID of |domain|).
+  // Looks for the channel ID for |domain| in this service's store.  Returns OK
+  // if it can be found synchronously, ERR_IO_PENDING if the result cannot be
+  // obtained synchronously, or a different network error code on failure
+  // (including failure to find a channel ID of |domain|).  Consumes |*callback|
+  // if and only if ERR_IO_PENDING is returned.
   int LookupChannelID(const std::string& domain,
                       std::unique_ptr<crypto::ECPrivateKey>* key,
                       bool create_if_missing,
-                      const CompletionCallback& callback,
+                      CompletionOnceCallback* callback,
                       Request* out_req);
 
   std::unique_ptr<ChannelIDStore> channel_id_store_;
