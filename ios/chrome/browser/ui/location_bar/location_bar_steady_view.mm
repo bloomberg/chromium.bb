@@ -18,6 +18,9 @@ namespace {
 // Length of the trailing button side.
 const CGFloat kButtonSize = 28;
 
+// Space between the location icon and the location label.
+const CGFloat kLocationImageToLabelSpacing = 2.0;
+
 const CGFloat kButtonTrailingSpacing = 10;
 
 // Font size used in the omnibox.
@@ -27,6 +30,13 @@ const CGFloat kFontSize = 17.0f;
 
 @interface LocationBarSteadyView ()
 
+// The image view displaying the current location icon (i.e. http[s] status).
+@property(nonatomic, strong) UIImageView* locationIconImageView;
+
+// The view containing the location label, and (sometimes) the location image
+// view.
+@property(nonatomic, strong) UIView* locationContainerView;
+
 // Constraints to hide the trailing button.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* hideButtonConstraints;
@@ -34,6 +44,14 @@ const CGFloat kFontSize = 17.0f;
 // Constraints to show the trailing button.
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* showButtonConstraints;
+
+// Constraints to hide the location image view.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* hideLocationImageConstraints;
+
+// Constraints to show the location image view.
+@property(nonatomic, strong)
+    NSArray<NSLayoutConstraint*>* showLocationImageConstraints;
 
 @end
 
@@ -76,6 +94,9 @@ const CGFloat kFontSize = 17.0f;
 @synthesize trailingButton = _trailingButton;
 @synthesize hideButtonConstraints = _hideButtonConstraints;
 @synthesize showButtonConstraints = _showButtonConstraints;
+@synthesize hideLocationImageConstraints = _hideLocationImageConstraints;
+@synthesize showLocationImageConstraints = _showLocationImageConstraints;
+@synthesize locationContainerView = _locationContainerView;
 
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
@@ -107,38 +128,55 @@ const CGFloat kFontSize = 17.0f;
     _locationLabel.font = [UIFont systemFontOfSize:kFontSize];
 
     // Container for location label and icon.
-    UIView* container = [[UIView alloc] init];
-    container.translatesAutoresizingMaskIntoConstraints = NO;
-    container.userInteractionEnabled = NO;
-    [container addSubview:_locationIconImageView];
-    [container addSubview:_locationLabel];
+    _locationContainerView = [[UIView alloc] init];
+    _locationContainerView.translatesAutoresizingMaskIntoConstraints = NO;
+    _locationContainerView.userInteractionEnabled = NO;
+    [_locationContainerView addSubview:_locationIconImageView];
+    [_locationContainerView addSubview:_locationLabel];
 
     [self addSubview:_trailingButton];
-    [self addSubview:container];
+    [self addSubview:_locationContainerView];
+
+    _showLocationImageConstraints = @[
+      [_locationContainerView.leadingAnchor
+          constraintEqualToAnchor:_locationIconImageView.leadingAnchor],
+      [_locationIconImageView.trailingAnchor
+          constraintEqualToAnchor:_locationLabel.leadingAnchor
+                         constant:kLocationImageToLabelSpacing],
+      [_locationLabel.trailingAnchor
+          constraintEqualToAnchor:_locationContainerView.trailingAnchor],
+      [_locationIconImageView.centerYAnchor
+          constraintEqualToAnchor:_locationContainerView.centerYAnchor],
+    ];
+
+    _hideLocationImageConstraints = @[
+      [_locationContainerView.leadingAnchor
+          constraintEqualToAnchor:_locationLabel.leadingAnchor],
+      [_locationLabel.trailingAnchor
+          constraintEqualToAnchor:_locationContainerView.trailingAnchor],
+    ];
+
+    [NSLayoutConstraint activateConstraints:_showLocationImageConstraints];
 
     ApplyVisualConstraints(
-        @[ @"|[icon]-(2)-[label]|", @"V:|[label]|", @"V:|[container]|" ], @{
-          @"icon" : _locationIconImageView,
-          @"label" : _locationLabel,
-          @"button" : _trailingButton,
-          @"container" : container
-        });
-
-    AddSameCenterYConstraint(_locationIconImageView, container);
+        @[ @"V:|[label]|", @"V:|[container]|" ],
+        @{@"label" : _locationLabel, @"container" : _locationContainerView});
 
     // Make the label graviatate towards the center of the view.
-    NSLayoutConstraint* centerX =
-        [container.centerXAnchor constraintEqualToAnchor:self.centerXAnchor];
+    NSLayoutConstraint* centerX = [_locationContainerView.centerXAnchor
+        constraintEqualToAnchor:self.centerXAnchor];
     centerX.priority = UILayoutPriorityDefaultHigh;
 
     [NSLayoutConstraint activateConstraints:@[
-      [container.leadingAnchor
+      [_locationContainerView.leadingAnchor
           constraintGreaterThanOrEqualToAnchor:self.leadingAnchor],
       [_trailingButton.centerYAnchor
           constraintEqualToAnchor:self.centerYAnchor],
-      [container.centerYAnchor constraintEqualToAnchor:self.centerYAnchor],
+      [_locationContainerView.centerYAnchor
+          constraintEqualToAnchor:self.centerYAnchor],
       [_trailingButton.leadingAnchor
-          constraintGreaterThanOrEqualToAnchor:container.trailingAnchor],
+          constraintGreaterThanOrEqualToAnchor:_locationContainerView
+                                                   .trailingAnchor],
       centerX,
     ]];
 
@@ -169,6 +207,27 @@ const CGFloat kFontSize = 17.0f;
   self.trailingButton.tintColor = colorScheme.trailingButtonColor;
   self.locationLabel.textColor = colorScheme.fontColor;
   self.locationIconImageView.tintColor = colorScheme.fontColor;
+}
+
+- (void)setLocationImage:(UIImage*)locationImage {
+  BOOL hadImage = self.locationIconImageView.image != nil;
+  BOOL hasImage = locationImage != nil;
+  self.locationIconImageView.image = locationImage;
+  if (hadImage == hasImage) {
+    return;
+  }
+
+  if (hasImage) {
+    [self.locationContainerView addSubview:self.locationIconImageView];
+    [NSLayoutConstraint
+        deactivateConstraints:self.hideLocationImageConstraints];
+    [NSLayoutConstraint activateConstraints:self.showLocationImageConstraints];
+  } else {
+    [NSLayoutConstraint
+        deactivateConstraints:self.showLocationImageConstraints];
+    [NSLayoutConstraint activateConstraints:self.hideLocationImageConstraints];
+    [self.locationIconImageView removeFromSuperview];
+  }
 }
 
 - (void)hideButton:(BOOL)hidden {

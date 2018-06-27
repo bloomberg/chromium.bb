@@ -196,8 +196,9 @@ typedef NS_ENUM(int, TrailingButtonState) {
 }
 
 - (void)updateLocationIcon:(UIImage*)icon {
-  self.locationBarSteadyView.locationIconImageView.image =
-      [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+  [self.locationBarSteadyView
+      setLocationImage:
+          [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
 }
 
 - (void)updateForIncognitoNTP:(BOOL)isIncognitoNTP {
