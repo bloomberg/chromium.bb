@@ -19,6 +19,8 @@
 #include "components/arc/storage_manager/arc_storage_manager.h"
 #include "components/user_manager/user.h"
 
+class Profile;
+
 namespace crostini {
 enum class ConciergeClientResult;
 }  // namespace crostini
@@ -36,7 +38,7 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
     STORAGE_SPACE_CRITICALLY_LOW = 2,
   };
 
-  StorageHandler();
+  explicit StorageHandler(Profile* profile);
   ~StorageHandler() override;
 
   // SettingsPageUIHandler implementation.
@@ -130,6 +132,7 @@ class StorageHandler : public ::settings::SettingsPageUIHandler {
   bool updating_crostini_size_;
   bool updating_other_users_size_;
 
+  Profile* const profile_;
   base::WeakPtrFactory<StorageHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(StorageHandler);
