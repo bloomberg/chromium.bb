@@ -118,10 +118,10 @@ public class DisplayCutoutTest {
         mTestRule.setViewportFit(DisplayCutoutTestRule.VIEWPORT_FIT_CONTAIN);
 
         mTestRule.enterFullscreenOnSubframe();
-        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
+        mTestRule.waitForSafeArea(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
         mTestRule.waitForLayoutInDisplayCutoutMode(
                 DisplayCutoutTestRule.LayoutParamsApi28.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES);
-        mTestRule.waitForSafeAreaOnSubframe(DisplayCutoutTestRule.TEST_SAFE_AREA_WITHOUT_CUTOUT);
+        mTestRule.waitForSafeAreaOnSubframe(DisplayCutoutTestRule.TEST_SAFE_AREA_WITH_CUTOUT);
     }
 
     /**
