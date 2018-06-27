@@ -701,8 +701,12 @@ class SymbolGroup(BaseSymbol):
 
   def Sorted(self, cmp_func=None, key=None, reverse=False):
     if cmp_func is None and key is None:
-      cmp_func = lambda a, b: cmp((a.IsBss(), abs(b.pss), a.name),
-                                  (b.IsBss(), abs(a.pss), b.name))
+      if self.IsDelta():
+        key = lambda s: (s.diff_status == DIFF_STATUS_UNCHANGED, s.IsBss(),
+                         s.size_without_padding == 0, -abs(s.pss), s.name)
+      else:
+        key = lambda s: (
+            s.IsBss(), s.size_without_padding == 0, -abs(s.pss), s.name)
 
     after_symbols = sorted(self._symbols, cmp_func, key, reverse)
     return self._CreateTransformed(

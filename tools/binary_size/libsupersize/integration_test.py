@@ -330,11 +330,25 @@ class IntegrationTest(unittest.TestCase):
     size_info2 = self._CloneSizeInfo(use_elf=False)
     size_info1.metadata = {"foo": 1, "bar": [1,2,3], "baz": "yes"}
     size_info2.metadata = {"foo": 1, "bar": [1,3], "baz": "yes"}
-    size_info1.symbols -= size_info1.symbols[:2]
-    size_info2.symbols -= size_info2.symbols[-3:]
-    size_info1.symbols[1].size -= 10
+
+    size_info1.raw_symbols -= size_info1.raw_symbols[:2]
+    size_info2.raw_symbols -= size_info2.raw_symbols[-3:]
+    changed_sym = size_info1.raw_symbols.WhereNameMatches('Patcher::Name_')[0]
+    changed_sym.size -= 10
+    padding_sym = size_info2.raw_symbols.WhereNameMatches('symbol gap 0')[0]
+    padding_sym.padding += 20
+    padding_sym.size += 20
     d = diff.Diff(size_info1, size_info2)
-    d.symbols = d.symbols.Sorted()
+    d.raw_symbols = d.raw_symbols.Sorted()
+    self.assertEquals(d.raw_symbols.CountsByDiffStatus()[1:], [2, 2, 3])
+    changed_sym = d.raw_symbols.WhereNameMatches('Patcher::Name_')[0]
+    padding_sym = d.raw_symbols.WhereNameMatches('symbol gap 0')[0]
+    # Padding-only deltas should sort after all non-padding changes.
+    padding_idx = d.raw_symbols.index(padding_sym)
+    self.assertLess(d.raw_symbols.index(changed_sym), padding_idx)
+    # And before bss.
+    self.assertTrue(d.raw_symbols[padding_idx + 1].IsBss())
+
     return describe.GenerateLines(d, verbose=True)
 
   def test_Diff_Aliases1(self):
