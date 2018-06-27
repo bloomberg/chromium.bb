@@ -7,8 +7,6 @@
 
 #include <cstdint>
 
-#include "net/base/host_port_pair.h"
-#include "net/base/privacy_mode.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 
@@ -19,36 +17,28 @@ namespace quic {
 class QUIC_EXPORT_PRIVATE QuicServerId {
  public:
   QuicServerId();
-  QuicServerId(const net::HostPortPair& host_port_pair,
-               net::PrivacyMode privacy_mode);
   QuicServerId(const QuicString& host, uint16_t port);
   QuicServerId(const QuicString& host,
                uint16_t port,
-               net::PrivacyMode privacy_mode);
+               bool privacy_mode_enabled);
   ~QuicServerId();
 
   // Needed to be an element of std::set.
   bool operator<(const QuicServerId& other) const;
   bool operator==(const QuicServerId& other) const;
 
-  // ToString() will convert the QuicServerId to "scheme:hostname:port" or
-  // "scheme:hostname:port/private". "scheme" will be "https".
-  QuicString ToString() const;
+  const QuicString& host() const { return host_; }
 
-  // Used in Chromium, but not internally.
-  const net::HostPortPair& host_port_pair() const { return host_port_pair_; }
+  uint16_t port() const { return port_; }
 
-  const QuicString& host() const { return host_port_pair_.host(); }
-
-  uint16_t port() const { return host_port_pair_.port(); }
-
-  net::PrivacyMode privacy_mode() const { return privacy_mode_; }
+  bool privacy_mode_enabled() const { return privacy_mode_enabled_; }
 
   size_t EstimateMemoryUsage() const;
 
  private:
-  net::HostPortPair host_port_pair_;
-  net::PrivacyMode privacy_mode_;
+  QuicString host_;
+  uint16_t port_;
+  bool privacy_mode_enabled_;
 };
 
 }  // namespace quic

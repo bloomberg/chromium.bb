@@ -89,8 +89,8 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
                                              SupportedVersions(GetParam()));
     session_ = QuicMakeUnique<TestQuicSpdyClientSession>(
         DefaultQuicConfig(), connection_,
-        QuicServerId(kServerHostname, kPort, net::PRIVACY_MODE_DISABLED),
-        &crypto_config_, &push_promise_index_);
+        QuicServerId(kServerHostname, kPort, false), &crypto_config_,
+        &push_promise_index_);
     session_->Initialize();
     push_promise_[":path"] = "/bar";
     push_promise_[":authority"] = "www.google.com";

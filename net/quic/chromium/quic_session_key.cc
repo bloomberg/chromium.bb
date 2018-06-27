@@ -9,15 +9,18 @@ namespace net {
 QuicSessionKey::QuicSessionKey(const HostPortPair& host_port_pair,
                                PrivacyMode privacy_mode,
                                const SocketTag& socket_tag)
-    : QuicSessionKey(quic::QuicServerId(host_port_pair, privacy_mode),
+    : QuicSessionKey(host_port_pair.host(),
+                     host_port_pair.port(),
+                     privacy_mode,
                      socket_tag) {}
 
 QuicSessionKey::QuicSessionKey(const std::string& host,
                                uint16_t port,
                                PrivacyMode privacy_mode,
                                const SocketTag& socket_tag)
-    : QuicSessionKey(quic::QuicServerId(host, port, privacy_mode), socket_tag) {
-}
+    : QuicSessionKey(
+          quic::QuicServerId(host, port, privacy_mode == PRIVACY_MODE_ENABLED),
+          socket_tag) {}
 
 QuicSessionKey::QuicSessionKey(const quic::QuicServerId& server_id,
                                const SocketTag& socket_tag)

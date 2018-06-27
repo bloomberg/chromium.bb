@@ -107,7 +107,11 @@ std::unique_ptr<base::Value> NetLogQuicStreamFactoryJobCallback(
     const quic::QuicServerId* server_id,
     NetLogCaptureMode capture_mode) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetString("server_id", server_id->ToString());
+  dict->SetString(
+      "server_id",
+      "https://" +
+          HostPortPair(server_id->host(), server_id->port()).ToString() +
+          (server_id->privacy_mode_enabled() ? "/private" : ""));
   return std::move(dict);
 }
 
@@ -205,11 +209,6 @@ class ServerIdOriginFilter
  private:
   const base::Callback<bool(const GURL&)> origin_filter_;
 };
-
-// Returns the estimate of dynamically allocated memory of |server_id|.
-size_t EstimateServerIdMemoryUsage(const quic::QuicServerId& server_id) {
-  return base::trace_event::EstimateMemoryUsage(server_id.host_port_pair());
-}
 
 }  // namespace
 
@@ -968,8 +967,9 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
                                              base::Time::Now())) {
     MarkAllActiveSessionsGoingAway();
   }
-  DCHECK(session_key.server_id().host_port_pair().Equals(
-      HostPortPair::FromURL(url)));
+  DCHECK(HostPortPair(session_key.server_id().host(),
+                      session_key.server_id().port())
+             .Equals(HostPortPair::FromURL(url)));
   // Enforce session affinity for promised streams.
   quic::QuicClientPromisedInfo* promised =
       push_promise_index_.GetPromised(url.spec());
@@ -977,8 +977,8 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
     QuicChromiumClientSession* session =
         static_cast<QuicChromiumClientSession*>(promised->session());
     DCHECK(session);
-    if (session->server_id().privacy_mode() ==
-        session_key.server_id().privacy_mode()) {
+    if (session->server_id().privacy_mode_enabled() ==
+        session_key.server_id().privacy_mode_enabled()) {
       request->SetSession(session->CreateHandle(destination));
       ++num_push_streams_created_;
       return OK;
@@ -1020,7 +1020,9 @@ int QuicStreamFactory::Create(const QuicSessionKey& session_key,
       QuicChromiumClientSession* session = key_value.second;
       if (destination.Equals(all_sessions_[session].destination()) &&
           session->CanPool(session_key.server_id().host(),
-                           session_key.server_id().privacy_mode(),
+                           session_key.server_id().privacy_mode_enabled()
+                               ? PRIVACY_MODE_ENABLED
+                               : PRIVACY_MODE_DISABLED,
                            session_key.socket_tag())) {
         request->SetSession(session->CreateHandle(destination));
         return OK;
@@ -1085,7 +1087,7 @@ bool QuicStreamFactory::QuicSessionAliasKey::operator==(
 
 size_t QuicStreamFactory::QuicSessionAliasKey::EstimateMemoryUsage() const {
   return base::trace_event::EstimateMemoryUsage(destination_) +
-         EstimateServerIdMemoryUsage(session_key_.server_id());
+         base::trace_event::EstimateMemoryUsage(session_key_.server_id());
 }
 
 bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
@@ -1098,7 +1100,10 @@ bool QuicStreamFactory::HasMatchingIpSession(const QuicSessionAliasKey& key,
 
     const SessionSet& sessions = ip_aliases_[address];
     for (QuicChromiumClientSession* session : sessions) {
-      if (!session->CanPool(server_id.host(), server_id.privacy_mode(),
+      if (!session->CanPool(server_id.host(),
+                            server_id.privacy_mode_enabled()
+                                ? PRIVACY_MODE_ENABLED
+                                : PRIVACY_MODE_DISABLED,
                             key.session_key().socket_tag()))
         continue;
       active_sessions_[key.session_key()] = session;
@@ -1192,8 +1197,9 @@ void QuicStreamFactory::OnBlackholeAfterHandshakeConfirmed(
     ping_timeout_ = reduced_ping_timeout_;
 
   if (mark_quic_broken_when_network_blackholes_) {
-    http_server_properties_->MarkAlternativeServiceBroken(
-        AlternativeService(kProtoQUIC, session->server_id().host_port_pair()));
+    http_server_properties_->MarkAlternativeServiceBroken(AlternativeService(
+        kProtoQUIC, HostPortPair(session->server_id().host(),
+                                 session->server_id().port())));
   }
 }
 
@@ -1233,7 +1239,8 @@ std::unique_ptr<base::Value> QuicStreamFactory::QuicStreamFactoryInfoToValue()
       std::set<HostPortPair> hosts;
       for (AliasSet::const_iterator alias_it = aliases.begin();
            alias_it != aliases.end(); ++alias_it) {
-        hosts.insert(alias_it->server_id().host_port_pair());
+        hosts.insert(HostPortPair(alias_it->server_id().host(),
+                                  alias_it->server_id().port()));
       }
       list->Append(session->GetInfoAsValue(hosts));
     }
@@ -1597,8 +1604,7 @@ void QuicStreamFactory::ConfigureInitialRttEstimate(
 
 const base::TimeDelta* QuicStreamFactory::GetServerNetworkStatsSmoothedRtt(
     const quic::QuicServerId& server_id) const {
-  url::SchemeHostPort server("https", server_id.host_port_pair().host(),
-                             server_id.host_port_pair().port());
+  url::SchemeHostPort server("https", server_id.host(), server_id.port());
   const ServerNetworkStats* stats =
       http_server_properties_->GetServerNetworkStats(server);
   if (stats == nullptr)
@@ -1614,8 +1620,8 @@ int64_t QuicStreamFactory::GetServerNetworkStatsSmoothedRttInMicroseconds(
 
 bool QuicStreamFactory::WasQuicRecentlyBroken(
     const quic::QuicServerId& server_id) const {
-  const AlternativeService alternative_service(kProtoQUIC,
-                                               server_id.host_port_pair());
+  const AlternativeService alternative_service(
+      kProtoQUIC, HostPortPair(server_id.host(), server_id.port()));
   return http_server_properties_->WasAlternativeServiceRecentlyBroken(
       alternative_service);
 }
@@ -1681,10 +1687,10 @@ void QuicStreamFactory::ProcessGoingAwaySession(
     return;
 
   const quic::QuicConnectionStats& stats = session->connection()->GetStats();
-  const AlternativeService alternative_service(kProtoQUIC,
-                                               server_id.host_port_pair());
-  url::SchemeHostPort server("https", server_id.host_port_pair().host(),
-                             server_id.host_port_pair().port());
+  const AlternativeService alternative_service(
+      kProtoQUIC, HostPortPair(server_id.host(), server_id.port()));
+
+  url::SchemeHostPort server("https", server_id.host(), server_id.port());
   // Do nothing if QUIC is currently marked as broken.
   if (http_server_properties_->IsAlternativeServiceBroken(alternative_service))
     return;

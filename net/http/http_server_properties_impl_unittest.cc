@@ -1283,8 +1283,7 @@ TEST_F(ServerNetworkStatsServerPropertiesTest, ClearServerNetworkStats) {
 typedef HttpServerPropertiesImplTest QuicServerInfoServerPropertiesTest;
 
 TEST_F(QuicServerInfoServerPropertiesTest, Set) {
-  HostPortPair google_server("www.google.com", 443);
-  quic::QuicServerId google_quic_server_id(google_server, PRIVACY_MODE_ENABLED);
+  quic::QuicServerId google_quic_server_id("www.google.com", 443, true);
 
   const int kMaxQuicServerEntries = 10;
   impl_.SetMaxServerConfigsStoredInProperties(kMaxQuicServerEntries);
@@ -1313,8 +1312,7 @@ TEST_F(QuicServerInfoServerPropertiesTest, Set) {
   // |docs_server| has a QuicServerInfo, which will be overwritten by
   // SetQuicServerInfoMap(), because |quic_server_info_map| has an
   // entry for |docs_server|.
-  HostPortPair docs_server("docs.google.com", 443);
-  quic::QuicServerId docs_quic_server_id(docs_server, PRIVACY_MODE_ENABLED);
+  quic::QuicServerId docs_quic_server_id("docs.google.com", 443, true);
   std::string docs_server_info("docs_quic_server_info");
   impl_.SetQuicServerInfo(docs_quic_server_id, docs_server_info);
 
@@ -1336,8 +1334,7 @@ TEST_F(QuicServerInfoServerPropertiesTest, Set) {
   std::string new_docs_server_info("new_docs_quic_server_info");
   quic_server_info_map->Put(docs_quic_server_id, new_docs_server_info);
   // Add data for mail.google.com:443.
-  HostPortPair mail_server("mail.google.com", 443);
-  quic::QuicServerId mail_quic_server_id(mail_server, PRIVACY_MODE_ENABLED);
+  quic::QuicServerId mail_quic_server_id("mail.google.com", 443, true);
   std::string mail_server_info("mail_quic_server_info");
   quic_server_info_map->Put(mail_quic_server_id, mail_server_info);
   impl_.SetQuicServerInfoMap(std::move(quic_server_info_map));
@@ -1373,8 +1370,7 @@ TEST_F(QuicServerInfoServerPropertiesTest, Set) {
 }
 
 TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
-  HostPortPair foo_server("foo", 80);
-  quic::QuicServerId quic_server_id(foo_server, PRIVACY_MODE_ENABLED);
+  quic::QuicServerId quic_server_id("foo", 80, true);
   EXPECT_EQ(0u, impl_.quic_server_info_map().size());
 
   std::string quic_server_info1("quic_server_info1");
@@ -1393,17 +1389,17 @@ TEST_F(QuicServerInfoServerPropertiesTest, SetQuicServerInfo) {
 TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatch) {
   // Set up HttpServerProperties.
   // Add a host that has the same canonical suffix.
-  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
   std::string foo_server_info("foo_server_info");
   impl_.SetQuicServerInfo(foo_server_id, foo_server_info);
 
   // Add a host that has a different canonical suffix.
-  quic::QuicServerId baz_server_id("baz.video.com", 443);
+  quic::QuicServerId baz_server_id("baz.video.com", 443, false);
   std::string baz_server_info("baz_server_info");
   impl_.SetQuicServerInfo(baz_server_id, baz_server_info);
 
   // Create quic::QuicServerId with a host that has the same canonical suffix.
-  quic::QuicServerId bar_server_id("bar.googlevideo.com", 443);
+  quic::QuicServerId bar_server_id("bar.googlevideo.com", 443, false);
 
   // Check the the server info associated with "foo" is returned for "bar".
   const std::string* bar_server_info = impl_.GetQuicServerInfo(bar_server_id);
@@ -1417,16 +1413,16 @@ TEST_F(QuicServerInfoServerPropertiesTest,
        TestCanonicalSuffixMatchReturnsMruEntry) {
   // Set up HttpServerProperties by adding two hosts with the same canonical
   // suffixes.
-  quic::QuicServerId h1_server_id("h1.googlevideo.com", 443);
+  quic::QuicServerId h1_server_id("h1.googlevideo.com", 443, false);
   std::string h1_server_info("h1_server_info");
   impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
 
-  quic::QuicServerId h2_server_id("h2.googlevideo.com", 443);
+  quic::QuicServerId h2_server_id("h2.googlevideo.com", 443, false);
   std::string h2_server_info("h2_server_info");
   impl_.SetQuicServerInfo(h2_server_id, h2_server_info);
 
   // Create quic::QuicServerId to use for the search.
-  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
 
   // Check that 'h2' info is returned since it is MRU.
   const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
@@ -1447,12 +1443,12 @@ TEST_F(QuicServerInfoServerPropertiesTest,
 TEST_F(QuicServerInfoServerPropertiesTest,
        TestCanonicalSuffixMatchDoesntChangeOrder) {
   // Add a host with a matching canonical name.
-  quic::QuicServerId h1_server_id("h1.googlevideo.com", 443);
+  quic::QuicServerId h1_server_id("h1.googlevideo.com", 443, false);
   std::string h1_server_info("h1_server_info");
   impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
 
   // Add a host hosts with a non-matching canonical name.
-  quic::QuicServerId h2_server_id("h2.video.com", 443);
+  quic::QuicServerId h2_server_id("h2.video.com", 443, false);
   std::string h2_server_info("h2_server_info");
   impl_.SetQuicServerInfo(h2_server_id, h2_server_info);
 
@@ -1461,7 +1457,7 @@ TEST_F(QuicServerInfoServerPropertiesTest,
 
   // Search for the entry that matches the canonical name
   // ("h1.googlevideo.com").
-  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
   const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
   ASSERT_TRUE(server_info != nullptr);
 
@@ -1484,16 +1480,16 @@ TEST_F(QuicServerInfoServerPropertiesTest,
 TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatchSetInfoMap) {
   // Add a host info using SetQuicServerInfo(). That will simulate an info
   // entry stored in memory cache.
-  quic::QuicServerId h1_server_id("h1.googlevideo.com", 443);
+  quic::QuicServerId h1_server_id("h1.googlevideo.com", 443, false);
   std::string h1_server_info("h1_server_info_memory_cache");
   impl_.SetQuicServerInfo(h1_server_id, h1_server_info);
 
   // Prepare a map with host info and add it using SetQuicServerInfoMap(). That
   // will simulate info records read from the persistence storage.
-  quic::QuicServerId h2_server_id("h2.googlevideo.com", 443);
+  quic::QuicServerId h2_server_id("h2.googlevideo.com", 443, false);
   std::string h2_server_info("h2_server_info_from_disk");
 
-  quic::QuicServerId h3_server_id("h3.ggpht.com", 443);
+  quic::QuicServerId h3_server_id("h3.ggpht.com", 443, false);
   std::string h3_server_info("h3_server_info_from_disk");
 
   const int kMaxQuicServerEntries = 10;
@@ -1508,14 +1504,14 @@ TEST_F(QuicServerInfoServerPropertiesTest, TestCanonicalSuffixMatchSetInfoMap) {
   // Check that the server info from the memory cache is returned since unique
   // entries from the memory cache are added after entries from the
   // persistence storage and, therefore, are most recently used.
-  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443);
+  quic::QuicServerId foo_server_id("foo.googlevideo.com", 443, false);
   const std::string* server_info = impl_.GetQuicServerInfo(foo_server_id);
   ASSERT_TRUE(server_info != nullptr);
   EXPECT_STREQ(h1_server_info.c_str(), server_info->c_str());
 
   // Check that server info that was added using SetQuicServerInfoMap() can be
   // found.
-  foo_server_id = quic::QuicServerId("foo.ggpht.com", 443);
+  foo_server_id = quic::QuicServerId("foo.ggpht.com", 443, false);
   server_info = impl_.GetQuicServerInfo(foo_server_id);
   ASSERT_TRUE(server_info != nullptr);
   EXPECT_STREQ(h3_server_info.c_str(), server_info->c_str());

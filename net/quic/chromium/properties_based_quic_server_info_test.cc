@@ -6,7 +6,9 @@
 
 #include <string>
 
+#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/privacy_mode.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/quic_server_id.h"

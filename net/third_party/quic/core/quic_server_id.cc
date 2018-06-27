@@ -12,40 +12,30 @@
 
 namespace quic {
 
-QuicServerId::QuicServerId() : privacy_mode_(net::PRIVACY_MODE_DISABLED) {}
-
-QuicServerId::QuicServerId(const net::HostPortPair& host_port_pair,
-                           net::PrivacyMode privacy_mode)
-    : host_port_pair_(host_port_pair), privacy_mode_(privacy_mode) {}
+QuicServerId::QuicServerId() : QuicServerId("", 0, false) {}
 
 QuicServerId::QuicServerId(const QuicString& host, uint16_t port)
-    : host_port_pair_(host, port), privacy_mode_(net::PRIVACY_MODE_DISABLED) {}
+    : QuicServerId(host, port, false) {}
 
 QuicServerId::QuicServerId(const QuicString& host,
                            uint16_t port,
-                           net::PrivacyMode privacy_mode)
-    : host_port_pair_(host, port), privacy_mode_(privacy_mode) {}
+                           bool privacy_mode_enabled)
+    : host_(host), port_(port), privacy_mode_enabled_(privacy_mode_enabled) {}
 
 QuicServerId::~QuicServerId() {}
 
 bool QuicServerId::operator<(const QuicServerId& other) const {
-  return std::tie(host_port_pair_, privacy_mode_) <
-         std::tie(other.host_port_pair_, other.privacy_mode_);
+  return std::tie(port_, host_, privacy_mode_enabled_) <
+         std::tie(other.port_, other.host_, other.privacy_mode_enabled_);
 }
 
 bool QuicServerId::operator==(const QuicServerId& other) const {
-  return privacy_mode_ == other.privacy_mode_ &&
-         host_port_pair_.Equals(other.host_port_pair_);
-}
-
-QuicString QuicServerId::ToString() const {
-  return QuicStrCat(
-      "https://", host_port_pair_.ToString(),
-      (privacy_mode_ == net::PRIVACY_MODE_ENABLED ? "/private" : ""));
+  return privacy_mode_enabled_ == other.privacy_mode_enabled_ &&
+         host_ == other.host_ && port_ == other.port_;
 }
 
 size_t QuicServerId::EstimateMemoryUsage() const {
-  return QuicEstimateMemoryUsage(host_port_pair_);
+  return QuicEstimateMemoryUsage(host_);
 }
 
 }  // namespace quic

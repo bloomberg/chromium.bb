@@ -5,6 +5,8 @@
 #ifndef NET_QUIC_CHROMIUM_QUIC_SESSION_KEY_H_
 #define NET_QUIC_CHROMIUM_QUIC_SESSION_KEY_H_
 
+#include "net/base/host_port_pair.h"
+#include "net/base/privacy_mode.h"
 #include "net/socket/socket_tag.h"
 #include "net/third_party/quic/core/quic_server_id.h"
 
@@ -32,7 +34,10 @@ class QUIC_EXPORT_PRIVATE QuicSessionKey {
 
   const std::string& host() const { return server_id_.host(); }
 
-  PrivacyMode privacy_mode() const { return server_id_.privacy_mode(); }
+  PrivacyMode privacy_mode() const {
+    return server_id_.privacy_mode_enabled() ? PRIVACY_MODE_ENABLED
+                                             : PRIVACY_MODE_DISABLED;
+  }
 
   const quic::QuicServerId& server_id() const { return server_id_; }
 

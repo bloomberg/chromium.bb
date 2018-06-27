@@ -16,8 +16,7 @@ namespace test {
 TEST(QuicSimpleClientTest, Initialize) {
   base::test::ScopedTaskEnvironment scoped_task_environment;
   quic::QuicSocketAddress server_address(quic::QuicIpAddress::Loopback4(), 80);
-  quic::QuicServerId server_id("hostname", server_address.port(),
-                               PRIVACY_MODE_DISABLED);
+  quic::QuicServerId server_id("hostname", server_address.port(), false);
   quic::ParsedQuicVersionVector versions = quic::AllSupportedVersions();
   QuicSimpleClient client(
       server_address, server_id, versions,

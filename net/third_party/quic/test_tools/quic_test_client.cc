@@ -261,13 +261,12 @@ QuicTestClient::QuicTestClient(
     const string& server_hostname,
     const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions)
-    : client_(new MockableQuicClient(server_address,
-                                     QuicServerId(server_hostname,
-                                                  server_address.port(),
-                                                  net::PRIVACY_MODE_DISABLED),
-                                     config,
-                                     supported_versions,
-                                     &epoll_server_)) {
+    : client_(new MockableQuicClient(
+          server_address,
+          QuicServerId(server_hostname, server_address.port(), false),
+          config,
+          supported_versions,
+          &epoll_server_)) {
   Initialize();
 }
 
@@ -277,14 +276,13 @@ QuicTestClient::QuicTestClient(
     const QuicConfig& config,
     const ParsedQuicVersionVector& supported_versions,
     std::unique_ptr<ProofVerifier> proof_verifier)
-    : client_(new MockableQuicClient(server_address,
-                                     QuicServerId(server_hostname,
-                                                  server_address.port(),
-                                                  net::PRIVACY_MODE_DISABLED),
-                                     config,
-                                     supported_versions,
-                                     &epoll_server_,
-                                     std::move(proof_verifier))) {
+    : client_(new MockableQuicClient(
+          server_address,
+          QuicServerId(server_hostname, server_address.port(), false),
+          config,
+          supported_versions,
+          &epoll_server_,
+          std::move(proof_verifier))) {
   Initialize();
 }
 
@@ -564,8 +562,8 @@ void QuicTestClient::Connect() {
 
   // If we've been asked to override SNI, set it now
   if (override_sni_set_) {
-    client_->set_server_id(QuicServerId(override_sni_, address().port(),
-                                        net::PRIVACY_MODE_DISABLED));
+    client_->set_server_id(
+        QuicServerId(override_sni_, address().port(), false));
   }
 
   client_->Connect();

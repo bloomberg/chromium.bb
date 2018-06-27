@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/quic_spdy_client_session.h"
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
@@ -19,7 +18,9 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/quic_client_promised_info_peer.h"
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
+#include "net/third_party/quic/test_tools/quic_test_utils.h"
 
+using spdy::SpdyHeaderBlock;
 using testing::_;
 using testing::StrictMock;
 
@@ -32,12 +33,11 @@ class MockQuicSpdyClientSession : public QuicSpdyClientSession {
   explicit MockQuicSpdyClientSession(
       QuicConnection* connection,
       QuicClientPushPromiseIndex* push_promise_index)
-      : QuicSpdyClientSession(
-            DefaultQuicConfig(),
-            connection,
-            QuicServerId("example.com", 443, net::PRIVACY_MODE_DISABLED),
-            &crypto_config_,
-            push_promise_index),
+      : QuicSpdyClientSession(DefaultQuicConfig(),
+                              connection,
+                              QuicServerId("example.com", 443, false),
+                              &crypto_config_,
+                              push_promise_index),
         crypto_config_(crypto_test_utils::ProofVerifierForTesting(),
                        TlsClientHandshaker::CreateSslCtx()),
         authorized_(true) {}
@@ -115,12 +115,12 @@ class QuicClientPromisedInfoTest : public QuicTest {
   std::unique_ptr<QuicSpdyClientStream> stream_;
   std::unique_ptr<StreamVisitor> stream_visitor_;
   std::unique_ptr<QuicSpdyClientStream> promised_stream_;
-  spdy::SpdyHeaderBlock headers_;
+  SpdyHeaderBlock headers_;
   QuicString body_;
-  spdy::SpdyHeaderBlock push_promise_;
+  SpdyHeaderBlock push_promise_;
   QuicStreamId promise_id_;
   QuicString promise_url_;
-  spdy::SpdyHeaderBlock client_request_;
+  SpdyHeaderBlock client_request_;
 };
 
 TEST_F(QuicClientPromisedInfoTest, PushPromise) {
