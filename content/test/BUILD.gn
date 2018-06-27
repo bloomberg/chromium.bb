@@ -786,6 +786,7 @@ test("content_browsertests") {
     "../browser/network_service_restart_browsertest.cc",
     "../browser/oop_browsertest.cc",
     "../browser/payments/payment_app_browsertest.cc",
+    "../browser/performance_memory_browsertest.cc",
     "../browser/pointer_lock_browsertest.cc",
     "../browser/pointer_lock_browsertest.h",
     "../browser/pointer_lock_browsertest_mac.mm",
