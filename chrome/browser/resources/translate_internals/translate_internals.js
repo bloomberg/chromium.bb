@@ -212,6 +212,18 @@ cr.define('cr.translateInternals', function() {
     p.appendChild(createDismissingButton(
         chrome.send.bind(null, 'removePrefItem', ['too_often_denied'])));
 
+    if ('translate_recent_target' in detail) {
+      var recentTarget = detail['translate_recent_target'];
+
+      p = $('recent-override');
+
+      p.innerHTML = '';
+
+      appendTextFieldWithButton(p, recentTarget, function(value) {
+        chrome.send('setRecentTargetLanguage', [value]);
+      });
+    }
+
     p = document.querySelector('#prefs-dump p');
     var content = JSON.stringify(detail, null, 2);
     p.textContent = content;
@@ -264,18 +276,9 @@ cr.define('cr.translateInternals', function() {
            'with a new value received from the variations server when ' +
            'Chrome is updated.');
 
-      var input = document.createElement('input');
-      input.type = 'text';
-      input.value = country;
-
-      var button = document.createElement('button');
-      button.textContent = 'update';
-      button.addEventListener('click', function() {
-        chrome.send('overrideCountry', [input.value]);
-      }, false);
-      p.appendChild(input);
-      p.appendChild(document.createElement('br'));
-      p.appendChild(button);
+      appendTextFieldWithButton(p, country, function(value) {
+        chrome.send('overrideCountry', [value]);
+      });
 
       if ('update' in details && details['update']) {
         var div1 = document.createElement('div');
@@ -429,6 +432,32 @@ cr.define('cr.translateInternals', function() {
 
     var tbody = $('tabpanel-event-logs').getElementsByTagName('tbody')[0];
     tbody.appendChild(tr);
+  }
+
+  /**
+   * Appends an <input type="text" /> and a button to `elt`, and sets the value
+   * of the <input> to `value`. When the button is clicked,
+   * `buttonClickCallback` is called with the value of the <input> field.
+   *
+   * @param {HTMLElement} elt Container element to append to.
+   * @param {string} value Initial value of the <input> element.
+   * @param {Function} buttonClickCallback Function to call when the button is
+   *                                       clicked.
+   */
+  function appendTextFieldWithButton(elt, value, buttonClickCallback) {
+    var input = document.createElement('input');
+    input.type = 'text';
+    input.value = value;
+
+    var button = document.createElement('button');
+    button.textContent = 'update';
+    button.addEventListener('click', function() {
+      buttonClickCallback(input.value);
+    }, false);
+
+    elt.appendChild(input);
+    elt.appendChild(document.createElement('br'));
+    elt.appendChild(button);
   }
 
   /**
