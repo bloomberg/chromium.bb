@@ -279,7 +279,7 @@ aom_codec_err_t av1_set_reference_dec(AV1_COMMON *cm, int idx,
       ref_buf->y_buffer = sd->y_buffer;
       ref_buf->u_buffer = sd->u_buffer;
       ref_buf->v_buffer = sd->v_buffer;
-      ref_buf->use_external_refernce_buffers = 1;
+      ref_buf->use_external_reference_buffers = 1;
     }
   }
 
