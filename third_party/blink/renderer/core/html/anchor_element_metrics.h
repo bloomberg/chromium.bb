@@ -9,14 +9,10 @@
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
-class Document;
 class HTMLAnchorElement;
-class IntRect;
-class LayoutObject;
 
 class CORE_EXPORT AnchorElementMetrics {
   STACK_ALLOCATED();
@@ -51,35 +47,6 @@ class CORE_EXPORT AnchorElementMetrics {
   bool GetIsUrlIncrementedByOne() const { return is_url_incremented_by_one_; }
 
  private:
-  // Friend class for testing.
-  friend class AnchorElementMetricsTest;
-
-  // Accumulated scroll offset of all frames up to the local root frame.
-  static int AccumulatedScrollOffset(const HTMLAnchorElement&);
-
-  // Whether the element is inside an iframe.
-  static bool IsInIFrame(const HTMLAnchorElement&);
-
-  // Whether the anchor element contains an image element.
-  static bool ContainsImage(const HTMLAnchorElement&);
-
-  // Whether the link target has the same host as the root document.
-  static bool IsSameHost(const HTMLAnchorElement&);
-
-  // Returns true if the two strings only differ by one number, and
-  // the second number equals the first number plus one. Examples:
-  // example.com/page9/cat5, example.com/page10/cat5 => true
-  // example.com/page9/cat5, example.com/page10/cat10 => false
-  static bool IsUrlIncrementedByOne(const HTMLAnchorElement&);
-  static bool IsStringIncrementedByOne(const String&, const String&);
-
-  // Helper function that returns the root document the anchor element is in.
-  static Document* GetRootDocument(const HTMLAnchorElement&);
-
-  // Returns the bounding box rect of a layout object, including visual
-  // overflows.
-  static IntRect AbsoluteElementBoundingBoxRect(const LayoutObject*);
-
   // The anchor element that this class is associated with.
   Member<const HTMLAnchorElement> anchor_element_;
 
