@@ -232,6 +232,11 @@ SignedExchangeSignatureHeaderField::ParseSignature(
           devtools_proxy, "'cert-url' parameter is not a valid URL.");
       return base::nullopt;
     }
+    if (!sig.cert_url.SchemeIs("https") && !sig.cert_url.SchemeIs("data")) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'cert-url' should have 'https' or 'data' scheme.");
+      return base::nullopt;
+    }
     const std::string cert_sha256_string = value.params[kCertSha256Key];
     if (cert_sha256_string.size() != crypto::kSHA256Length) {
       // TODO(https://crbug.com/819467) : When we will support "ed25519Key", the
@@ -254,6 +259,11 @@ SignedExchangeSignatureHeaderField::ParseSignature(
     if (sig.validity_url.has_ref()) {
       signed_exchange_utils::ReportErrorAndTraceEvent(
           devtools_proxy, "'validity-url' parameter can't have a fragment.");
+      return base::nullopt;
+    }
+    if (!sig.validity_url.SchemeIs("https")) {
+      signed_exchange_utils::ReportErrorAndTraceEvent(
+          devtools_proxy, "'validity-url' should have 'https' scheme.");
       return base::nullopt;
     }
     if (!base::StringToUint64(value.params[kDateKey], &sig.date)) {

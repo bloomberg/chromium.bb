@@ -147,6 +147,21 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, CertURLWithFragment) {
   EXPECT_FALSE(signatures.has_value());
 }
 
+TEST_F(SignedExchangeSignatureHeaderFieldTest, CertURLHttpShouldFail) {
+  const char hdr_string[] =
+      "sig1;"
+      " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
+      " integrity=\"mi\";"
+      " validity-url=\"https://example.com/resource.validity.1511128380\";"
+      " cert-url=\"http://example.com/oldcerts#test\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
+      " date=1511128380; expires=1511733180";
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
+      hdr_string, nullptr /* devtools_proxy */);
+  EXPECT_FALSE(signatures.has_value());
+}
+
 TEST_F(SignedExchangeSignatureHeaderFieldTest, RelativeCertURL) {
   const char hdr_string[] =
       "sig1;"
@@ -184,6 +199,21 @@ TEST_F(SignedExchangeSignatureHeaderFieldTest, ValidityUrlWithFragment) {
       "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
       " integrity=\"mi\";"
       " validity-url=\"https://example.com/resource.validity.1511128380#test\";"
+      " cert-url=\"https://example.com/oldcerts\";"
+      " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
+      " date=1511128380; expires=1511733180";
+  auto signatures = SignedExchangeSignatureHeaderField::ParseSignature(
+      hdr_string, nullptr /* devtools_proxy */);
+  EXPECT_FALSE(signatures.has_value());
+}
+
+TEST_F(SignedExchangeSignatureHeaderFieldTest, ValidityUrlHttpShouldFail) {
+  const char hdr_string[] =
+      "sig1;"
+      " sig=*MEUCIQDXlI2gN3RNBlgFiuRNFpZXcDIaUpX6HIEwcZEc0cZYLAIga9DsVOMM+"
+      "g5YpwEBdGW3sS+bvnmAJJiSMwhuBdqp5UY=*;"
+      " integrity=\"mi\";"
+      " validity-url=\"http://example.com/resource.validity.1511128380#test\";"
       " cert-url=\"https://example.com/oldcerts\";"
       " cert-sha256=*W7uB969dFW3Mb5ZefPS9Tq5ZbH5iSmOILpjv2qEArmI=*;"
       " date=1511128380; expires=1511733180";
