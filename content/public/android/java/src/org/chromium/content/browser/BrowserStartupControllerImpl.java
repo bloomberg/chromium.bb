@@ -395,8 +395,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
             public void run() {
                 if (!mPostResourceExtractionTasksCompleted) {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
-                    DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch(
-                            ContextUtils.getApplicationContext());
+                    DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch();
                     nativeSetCommandLineFlags(
                             singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
                     mPostResourceExtractionTasksCompleted = true;
