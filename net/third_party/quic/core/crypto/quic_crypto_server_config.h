@@ -487,7 +487,8 @@ class QUIC_EXPORT_PRIVATE QuicCryptoServerConfig {
 
   // SelectNewPrimaryConfig reevaluates the primary config based on the
   // "primary_time" deadlines contained in each.
-  void SelectNewPrimaryConfig(QuicWallTime now) const;
+  void SelectNewPrimaryConfig(QuicWallTime now) const
+      EXCLUSIVE_LOCKS_REQUIRED(configs_lock_);
 
   // EvaluateClientHello checks |client_hello| for gross errors and determines
   // whether it can be shown to be fresh (i.e. not a replay). The results are

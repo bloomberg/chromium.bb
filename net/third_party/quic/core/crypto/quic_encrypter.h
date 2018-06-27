@@ -22,7 +22,7 @@ class QUIC_EXPORT_PRIVATE QuicEncrypter {
 
   // Creates an IETF QuicEncrypter based on |cipher_suite| which must be an id
   // returned by SSL_CIPHER_get_id. The caller is responsible for taking
-  // ownership of the nwe QuicEncrypter.
+  // ownership of the new QuicEncrypter.
   static std::unique_ptr<QuicEncrypter> CreateFromCipherSuite(
       uint32_t cipher_suite);
 
