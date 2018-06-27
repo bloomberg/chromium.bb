@@ -10,6 +10,9 @@
 
 namespace tests_hook {
 
+bool DisableAppGroupAccess() {
+  return false;
+}
 bool DisableContentSuggestions() {
   return false;
 }
