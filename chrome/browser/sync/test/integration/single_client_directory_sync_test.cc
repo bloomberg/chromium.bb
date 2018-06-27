@@ -13,7 +13,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "build/build_config.h"
 #include "chrome/browser/sync/test/integration/bookmarks_helper.h"
 #include "chrome/browser/sync/test/integration/single_client_status_change_checker.h"
 #include "chrome/browser/sync/test/integration/sync_test.h"
@@ -101,14 +100,9 @@ IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
 
 // Verify that when the sync directory's backing store becomes corrupted, we
 // trigger an unrecoverable error and delete the database.
-// Flaky on ChromeOS, https://crbug.com/850980.
-#if defined(OS_CHROMEOS)
-#define MAYBE_DeleteDirectoryWhenCorrupted DISABLED_DeleteDirectoryWhenCorrupted
-#else
-#define MAYBE_DeleteDirectoryWhenCorrupted DeleteDirectoryWhenCorrupted
-#endif
+// Flaky everywhere; see https://crbug.com/850980.
 IN_PROC_BROWSER_TEST_F(SingleClientDirectorySyncTest,
-                       MAYBE_DeleteDirectoryWhenCorrupted) {
+                       DISABLED_DeleteDirectoryWhenCorrupted) {
   ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
   // Sync and wait for syncing to complete.
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
