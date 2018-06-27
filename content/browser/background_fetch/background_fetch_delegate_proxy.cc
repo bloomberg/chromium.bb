@@ -157,6 +157,7 @@ class BackgroundFetchDelegateProxy::Core
       const std::string& job_unique_id,
       const std::string& guid,
       std::unique_ptr<content::BackgroundFetchResponse> response) override;
+  void OnUIActivated(const std::string& unique_id) override;
   void OnDelegateShutdown() override;
 
  private:
@@ -216,6 +217,16 @@ void BackgroundFetchDelegateProxy::Core::OnDownloadStarted(
                      job_unique_id, guid, std::move(response)));
 }
 
+void BackgroundFetchDelegateProxy::Core::OnUIActivated(
+    const std::string& job_unique_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(&BackgroundFetchDelegateProxy::DidActivateUI, io_parent_,
+                     job_unique_id));
+}
+
 void BackgroundFetchDelegateProxy::Core::OnDelegateShutdown() {
   delegate_ = nullptr;
 }
@@ -246,6 +257,11 @@ BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
 
 BackgroundFetchDelegateProxy::~BackgroundFetchDelegateProxy() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+void BackgroundFetchDelegateProxy::SetClickEventDispatcher(
+    const DispatchClickEventCallback callback) {
+  click_event_dispatcher_callback_ = std::move(callback);
 }
 
 void BackgroundFetchDelegateProxy::GetIconDisplaySize(
@@ -348,6 +364,12 @@ void BackgroundFetchDelegateProxy::DidStartRequest(
 
   if (job_details.controller)
     job_details.controller->DidStartRequest(request_info);
+}
+
+void BackgroundFetchDelegateProxy::DidActivateUI(
+    const std::string& job_unique_id) {
+  DCHECK(click_event_dispatcher_callback_);
+  click_event_dispatcher_callback_.Run(job_unique_id);
 }
 
 void BackgroundFetchDelegateProxy::OnDownloadUpdated(

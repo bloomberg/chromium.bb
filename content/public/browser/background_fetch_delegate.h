@@ -80,6 +80,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
         const std::string& download_guid,
         std::unique_ptr<BackgroundFetchResult> result) = 0;
 
+    // Called when the UI of a background fetch job is activated.
+    virtual void OnUIActivated(const std::string& job_unique_id) = 0;
+
     // Called by the delegate when it's shutting down to signal that the
     // delegate is no longer valid.
     virtual void OnDelegateShutdown() = 0;

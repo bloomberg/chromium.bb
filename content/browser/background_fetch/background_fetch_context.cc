@@ -42,6 +42,8 @@ BackgroundFetchContext::BackgroundFetchContext(
                           weak_factory_.GetWeakPtr(),
                           blink::mojom::kInvalidServiceWorkerRegistrationId));
   scheduler_ = std::make_unique<BackgroundFetchScheduler>(data_manager_.get());
+  delegate_proxy_.SetClickEventDispatcher(base::BindRepeating(
+      &BackgroundFetchContext::DispatchClickEvent, weak_factory_.GetWeakPtr()));
 }
 
 BackgroundFetchContext::~BackgroundFetchContext() {
@@ -349,7 +351,8 @@ void BackgroundFetchContext::DidMarkForDeletion(
   switch (reason_to_abort) {
     case BackgroundFetchReasonToAbort::ABORTED_BY_DEVELOPER:
     case BackgroundFetchReasonToAbort::CANCELLED_FROM_UI:
-      CleanupRegistration(registration_id, {});
+      CleanupRegistration(registration_id, {},
+                          mojom::BackgroundFetchState::FAILED);
       // TODO(rayankans): Send fetches to the event dispatcher.
       event_dispatcher_.DispatchBackgroundFetchAbortEvent(
           registration_id, {} /* settled_fetches */, base::DoNothing());
@@ -375,7 +378,9 @@ void BackgroundFetchContext::DidGetSettledFetches(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (error != blink::mojom::BackgroundFetchError::NONE) {
-    CleanupRegistration(registration_id, {} /* fetches */);
+    CleanupRegistration(registration_id, {} /* fetches */,
+                        mojom::BackgroundFetchState::FAILED,
+                        true /* preserve_info_to_dispatch_click_event */);
     return;
   }
 
@@ -391,7 +396,9 @@ void BackgroundFetchContext::DidGetSettledFetches(
             // The blob uuid is sent as part of |settled_fetches|. Bind
             // |blob_data_handles| to the callback to keep them alive
             // until the waitUntil event is resolved.
-            std::move(blob_data_handles)));
+            std::move(blob_data_handles),
+            mojom::BackgroundFetchState::SUCCEEDED,
+            true /* preserve_info_to_dispatch_click_event */));
   } else {
     event_dispatcher_.DispatchBackgroundFetchFailEvent(
         registration_id, std::move(settled_fetches),
@@ -401,20 +408,28 @@ void BackgroundFetchContext::DidGetSettledFetches(
             // The blob uuid is sent as part of |settled_fetches|. Bind
             // |blob_data_handles| to the callback to keep them alive
             // until the waitUntil event is resolved.
-            std::move(blob_data_handles)));
+            std::move(blob_data_handles), mojom::BackgroundFetchState::FAILED,
+            true /* preserve_info_to_dispatch_click_event */));
   }
 }
 
 void BackgroundFetchContext::CleanupRegistration(
     const BackgroundFetchRegistrationId& registration_id,
-    const std::vector<std::unique_ptr<storage::BlobDataHandle>>& blob_handles) {
+    const std::vector<std::unique_ptr<storage::BlobDataHandle>>& blob_handles,
+    mojom::BackgroundFetchState background_fetch_state,
+    bool preserve_info_to_dispatch_click_event) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // If we had an active JobController, it is no longer necessary, as the
   // notification's UI can no longer be updated after the fetch is aborted, or
   // after the waitUntil promise of the backgroundfetched/backgroundfetchfail
-  // event has been resolved.
+  // event has been resolved. Store the information we want to persist after
+  // the controller is gone, in completed_fetches_.
   scheduler_->RemoveJobController(registration_id);
+  if (preserve_info_to_dispatch_click_event) {
+    completed_fetches_[registration_id.unique_id()] = {registration_id,
+                                                       background_fetch_state};
+  }
   job_controllers_.erase(registration_id.unique_id());
 
   // At this point, JavaScript can no longer obtain BackgroundFetchRegistration
@@ -429,6 +444,26 @@ void BackgroundFetchContext::CleanupRegistration(
       registration_id.unique_id(),
       base::BindOnce(&BackgroundFetchContext::LastObserverGarbageCollected,
                      weak_factory_.GetWeakPtr(), registration_id));
+}
+
+void BackgroundFetchContext::DispatchClickEvent(const std::string& unique_id) {
+  auto iter = completed_fetches_.find(unique_id);
+  if (iter != completed_fetches_.end()) {
+    // The fetch has succeeded or failed. (not aborted/cancelled).
+    event_dispatcher_.DispatchBackgroundFetchClickEvent(
+        iter->second.first /* registration_id */,
+        iter->second.second /* background_fetch_state */, base::DoNothing());
+    completed_fetches_.erase(iter);
+    return;
+  }
+
+  // The fetch is active, or has been aborted/cancelled.
+  auto controllers_iter = job_controllers_.find(unique_id);
+  if (controllers_iter == job_controllers_.end())
+    return;
+  event_dispatcher_.DispatchBackgroundFetchClickEvent(
+      controllers_iter->second->registration_id(),
+      mojom::BackgroundFetchState::PENDING, base::DoNothing());
 }
 
 void BackgroundFetchContext::LastObserverGarbageCollected(
