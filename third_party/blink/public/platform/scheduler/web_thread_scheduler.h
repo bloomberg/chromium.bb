@@ -154,6 +154,10 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   // If set to true, then the scheduler should not freeze the renderer.
   virtual void SetSchedulerKeepActive(bool keep_active);
 
+  // Tells the scheduler when a begin main frame is requested due to input
+  // handling.
+  virtual void OnMainFrameRequestedForInput();
+
 #if defined(OS_ANDROID)
   // Android WebView has very strange WebView.pauseTimers/resumeTimers API.
   // It's very old and very inconsistent. The API promises that this

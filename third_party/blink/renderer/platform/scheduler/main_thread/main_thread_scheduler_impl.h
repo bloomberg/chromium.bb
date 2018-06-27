@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/main_thread/prioritize_compositing_after_input_experiment.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/queueing_time_estimator.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/render_widget_signals.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/task_cost_estimator.h"
@@ -145,6 +146,7 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   void SetRendererBackgrounded(bool backgrounded) override;
   void SetSchedulerKeepActive(bool keep_active) override;
   bool SchedulerKeepActive();
+  void OnMainFrameRequestedForInput() override;
 #if defined(OS_ANDROID)
   void PauseTimersForAndroidWebView() override;
   void ResumeTimersForAndroidWebView() override;
@@ -345,6 +347,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   UseCase current_use_case() const;
 
   const SchedulingSettings& scheduling_settings() const;
+
+  void SetShouldPrioritizeCompositing(bool should_prioritize_compositing);
 
   base::WeakPtr<MainThreadSchedulerImpl> GetWeakPtr();
 
@@ -567,6 +571,11 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
   void EndIdlePeriod();
 
+  // Update a policy which increases priority for the next beginMainFrame after
+  // an input event.
+  void UpdatePrioritizeCompositingAfterInputAfterTaskCompleted(
+      MainThreadTaskQueue* queue);
+
   // Returns the serialized scheduler state for tracing.
   std::unique_ptr<base::trace_event::ConvertableToTraceFormat> AsValue(
       base::TimeTicks optional_now) const;
@@ -702,6 +711,8 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
                          size_t page_schedulers_to_attribute);
 
   void InitWakeUpBudgetPoolIfNeeded();
+
+  void SetNumberOfCompositingTasksToPrioritize(int number_of_tasks);
 
   // Indicates that scheduler has been shutdown.
   // It should be accessed only on the main thread, but couldn't be a member
@@ -857,6 +868,10 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
 
     std::mt19937_64 random_generator;
     std::uniform_real_distribution<double> uniform_distribution;
+
+    // High-priority for compositing events after input experiment.
+    PrioritizeCompositingAfterInputExperiment compositing_experiment;
+    bool should_prioritize_compositing;
   };
 
   struct AnyThread {

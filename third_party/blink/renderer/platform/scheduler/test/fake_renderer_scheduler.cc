@@ -100,6 +100,8 @@ void FakeRendererScheduler::SetRAILModeObserver(RAILModeObserver* observer) {}
 
 void FakeRendererScheduler::SetRendererProcessType(RendererProcessType type) {}
 
+void FakeRendererScheduler::OnMainFrameRequestedForInput() {}
+
 WebScopedVirtualTimePauser
 FakeRendererScheduler::CreateWebScopedVirtualTimePauser(
     const char* name,

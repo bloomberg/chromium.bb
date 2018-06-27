@@ -168,5 +168,9 @@ WebScopedVirtualTimePauser WebThreadScheduler::CreateWebScopedVirtualTimePauser(
   return WebScopedVirtualTimePauser();
 }
 
+void WebThreadScheduler::OnMainFrameRequestedForInput() {
+  NOTREACHED();
+}
+
 }  // namespace scheduler
 }  // namespace blink

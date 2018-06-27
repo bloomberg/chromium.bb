@@ -89,6 +89,8 @@ blink_platform_sources("scheduler") {
     "main_thread/page_scheduler_impl.h",
     "main_thread/page_visibility_state.cc",
     "main_thread/page_visibility_state.h",
+    "main_thread/prioritize_compositing_after_input_experiment.cc",
+    "main_thread/prioritize_compositing_after_input_experiment.h",
     "main_thread/queueing_time_estimator.cc",
     "main_thread/queueing_time_estimator.h",
     "main_thread/render_widget_signals.cc",

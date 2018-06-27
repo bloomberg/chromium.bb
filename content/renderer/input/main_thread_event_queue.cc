@@ -526,6 +526,8 @@ void MainThreadEventQueue::SetNeedsMainFrame() {
     }
     if (client_)
       client_->SetNeedsMainFrame();
+    if (main_thread_scheduler_)
+      main_thread_scheduler_->OnMainFrameRequestedForInput();
     return;
   }
 

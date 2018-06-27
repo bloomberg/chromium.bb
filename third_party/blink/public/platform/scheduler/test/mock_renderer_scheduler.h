@@ -66,6 +66,7 @@ class MockRendererScheduler : public WebThreadScheduler {
                WebScopedVirtualTimePauser(
                    const char* name,
                    WebScopedVirtualTimePauser::VirtualTaskDuration));
+  MOCK_METHOD0(OnMainFrameRequestedForInput, void());
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockRendererScheduler);
