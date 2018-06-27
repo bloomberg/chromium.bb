@@ -650,9 +650,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // Used on the render thread.
   std::unique_ptr<VideoCaptureImplManager> vc_manager_;
 
-  // The time Blink was initialized. Used for UMA.
-  base::TimeTicks blink_initialized_time_;
-
   // The count of RenderWidgets running through this thread.
   int widget_count_;
 

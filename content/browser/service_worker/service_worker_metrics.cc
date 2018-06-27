@@ -828,11 +828,6 @@ void ServiceWorkerMetrics::RecordStartMessageLatencyType(
       CrossProcessTimeDelta::NUM_TYPES);
 }
 
-void ServiceWorkerMetrics::RecordWaitedForRendererSetup(bool waited) {
-  UMA_HISTOGRAM_BOOLEAN("EmbeddedWorkerInstance.Start.WaitedForRendererSetup",
-                        waited);
-}
-
 void ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
     mojom::EmbeddedWorkerStartTimingPtr start_timing,
     base::TimeTicks start_worker_sent_time,
@@ -856,15 +851,6 @@ void ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
   RecordSuffixedMediumTimeHistogram(
       "EmbeddedWorkerInstance.Start.StartMessageLatency",
       StartSituationToSuffix(situation), start_worker_message_latency);
-
-  if (start_worker_sent_time < start_timing->blink_initialized_time) {
-    RecordWaitedForRendererSetup(true);
-    UMA_HISTOGRAM_MEDIUM_TIMES(
-        "EmbeddedWorkerInstance.Start.WaitedForRendererSetup.Time",
-        (start_timing->blink_initialized_time - start_worker_sent_time));
-  } else {
-    RecordWaitedForRendererSetup(false);
-  }
 }
 
 void ServiceWorkerMetrics::RecordStartStatusAfterFailure(

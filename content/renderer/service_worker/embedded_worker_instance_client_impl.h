@@ -59,7 +59,6 @@ class EmbeddedWorkerInstanceClientImpl
   // TODO(shimazu): Create a service worker's execution context by this method
   // instead of just creating an instance of EmbeddedWorkerInstanceClient.
   static void Create(
-      base::TimeTicks blink_initialized_time,
       scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner,
       mojom::EmbeddedWorkerInstanceClientRequest request);
 
@@ -112,9 +111,6 @@ class EmbeddedWorkerInstanceClientImpl
 
   // nullptr means the worker is not running.
   std::unique_ptr<WorkerWrapper> wrapper_;
-
-  // For UMA.
-  base::TimeTicks blink_initialized_time_;
 
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_runner_;
 
