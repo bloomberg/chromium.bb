@@ -37,7 +37,7 @@ class GattClientManagerImpl
       base::OnceCallback<void(scoped_refptr<RemoteDevice>)> cb) override;
   scoped_refptr<RemoteDevice> GetDeviceSync(
       const bluetooth_v2_shlib::Addr& addr) override;
-  size_t GetNumConnected() const override;
+  void GetNumConnected(base::OnceCallback<void(size_t)> cb) const override;
   void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) override;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner() override;
 

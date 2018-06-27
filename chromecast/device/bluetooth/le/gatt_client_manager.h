@@ -70,9 +70,8 @@ class GattClientManager {
   virtual scoped_refptr<RemoteDevice> GetDeviceSync(
       const bluetooth_v2_shlib::Addr& addr) = 0;
 
-  // TODO(bcf): Make async.
   // Returns the number of devices which are currently connected.
-  virtual size_t GetNumConnected() const = 0;
+  virtual void GetNumConnected(base::OnceCallback<void(size_t)> cb) const = 0;
 
   virtual void NotifyConnect(const bluetooth_v2_shlib::Addr& addr) = 0;
 

@@ -24,7 +24,6 @@ using ::testing::Return;
 namespace chromecast {
 namespace bluetooth {
 
-using MockStatusCallback = base::MockCallback<RemoteDevice::StatusCallback>;
 
 namespace {
 
@@ -171,7 +170,7 @@ class GattClientManagerTest : public ::testing::Test {
     ASSERT_TRUE(device->IsConnected());
   }
 
-  MockStatusCallback cb_;
+  base::MockCallback<RemoteDevice::StatusCallback> cb_;
   std::unique_ptr<base::MessageLoop> message_loop_;
   std::unique_ptr<GattClientManagerImpl> gatt_client_manager_;
   std::unique_ptr<bluetooth_v2_shlib::MockGattClient> gatt_client_;
@@ -213,6 +212,12 @@ TEST_F(GattClientManagerTest, RemoteDeviceConnect) {
   delegate->OnGetServices(kTestAddr1, {});
 
   EXPECT_TRUE(device->IsConnected());
+
+  base::MockCallback<base::OnceCallback<void(size_t)>>
+      get_num_connected_callback;
+  EXPECT_CALL(get_num_connected_callback, Run(1));
+  gatt_client_manager_->GetNumConnected(get_num_connected_callback.Get());
+
   base::RunLoop().RunUntilIdle();
 
   EXPECT_CALL(*gatt_client_, Disconnect(kTestAddr1)).WillOnce(Return(true));
