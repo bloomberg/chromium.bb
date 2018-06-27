@@ -137,6 +137,7 @@
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 #include "third_party/blink/public/platform/web_security_style.h"
@@ -433,6 +434,20 @@ class WebContentsImpl::DisplayCutoutHostImpl
 
   // Removes any state built up by a render frame.
   void RenderFrameDeleted(RenderFrameHost* rfh) override { values_.erase(rfh); }
+
+  // Updates the safe area insets on the current frame.
+  void SetDisplayCutoutSafeArea(gfx::Insets insets) {
+    RenderFrameHost* frame = web_contents_impl()->GetMainFrame();
+    blink::AssociatedInterfaceProvider* provider =
+        frame->GetRemoteAssociatedInterfaces();
+    if (!provider)
+      return;
+
+    blink::mojom::DisplayCutoutClientAssociatedPtr client;
+    provider->GetInterface(&client);
+    client->SetSafeArea(blink::mojom::DisplayCutoutSafeArea::New(
+        insets.top(), insets.left(), insets.bottom(), insets.right()));
+  }
 
  private:
   // Notify observers about a new viewport fit value.
@@ -1322,6 +1337,14 @@ const PageImportanceSignals& WebContentsImpl::GetPageImportanceSignals() const {
 const std::string& WebContentsImpl::GetMediaDeviceGroupIDSaltBase() const {
   return media_device_group_id_salt_base_;
 }
+
+#if defined(OS_ANDROID)
+
+void WebContentsImpl::SetDisplayCutoutSafeArea(gfx::Insets insets) {
+  display_cutout_host_impl_->SetDisplayCutoutSafeArea(insets);
+}
+
+#endif
 
 const base::string16& WebContentsImpl::GetTitle() const {
   // Transient entries take precedence. They are used for interstitial pages

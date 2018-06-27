@@ -247,6 +247,13 @@ class CONTENT_EXPORT WebContentsAndroid
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 
+  void SetDisplayCutoutSafeArea(JNIEnv* env,
+                                const base::android::JavaParamRef<jobject>& obj,
+                                int top,
+                                int left,
+                                int bottom,
+                                int right);
+
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 

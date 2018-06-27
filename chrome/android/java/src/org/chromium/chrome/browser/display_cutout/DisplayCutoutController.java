@@ -135,10 +135,11 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
         if (webContents == null) return;
 
         float dipScale = getDipScale();
-        nativeSetSafeAreaOnWebContents(webContents, adjustInsetForScale(area.top, dipScale),
-                adjustInsetForScale(area.left, dipScale),
-                adjustInsetForScale(area.bottom, dipScale),
-                adjustInsetForScale(area.right, dipScale));
+        area.set(adjustInsetForScale(area.left, dipScale), adjustInsetForScale(area.top, dipScale),
+                adjustInsetForScale(area.right, dipScale),
+                adjustInsetForScale(area.bottom, dipScale));
+
+        webContents.setDisplayCutoutSafeArea(area);
     }
 
     @Override
@@ -209,11 +210,4 @@ public class DisplayCutoutController implements InsetObserverView.WindowInsetObs
             return;
         }
     }
-
-    // This is a breakglass that calls native code to send the safe area to the
-    // main frame of a WebContents.
-    // TODO(beccahughes): Remove when mojo associated interfaces are accessible
-    // from Java.
-    private static native void nativeSetSafeAreaOnWebContents(
-            WebContents contents, int top, int left, int bottom, int right);
 }

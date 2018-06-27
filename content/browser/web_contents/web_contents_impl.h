@@ -960,6 +960,12 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // enumerations.
   const std::string& GetMediaDeviceGroupIDSaltBase() const;
 
+#if defined(OS_ANDROID)
+  // Called by WebContentsAndroid to send the Display Cutout safe area to
+  // DisplayCutoutHostImpl.
+  void SetDisplayCutoutSafeArea(gfx::Insets insets);
+#endif
+
  private:
   friend class WebContentsObserver;
   friend class WebContents;  // To implement factory methods.

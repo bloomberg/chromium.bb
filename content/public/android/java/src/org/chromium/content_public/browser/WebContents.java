@@ -496,4 +496,12 @@ public interface WebContents extends Parcelable {
      * @return The width of the view.
      */
     int getHeight();
+
+    /**
+     * Sets the Display Cutout safe area of the WebContents. These are insets from each edge
+     * in physical pixels
+     *
+     * @param insets The insets stored in a Rect.
+     */
+    void setDisplayCutoutSafeArea(Rect insets);
 }

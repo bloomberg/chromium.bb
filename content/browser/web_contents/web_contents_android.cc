@@ -870,4 +870,15 @@ int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(
              : 0;
 }
 
+void WebContentsAndroid::SetDisplayCutoutSafeArea(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    int top,
+    int left,
+    int bottom,
+    int right) {
+  web_contents()->SetDisplayCutoutSafeArea(
+      gfx::Insets(top, left, bottom, right));
+}
+
 }  // namespace content

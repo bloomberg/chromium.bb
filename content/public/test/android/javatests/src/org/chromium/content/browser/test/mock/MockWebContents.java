@@ -269,4 +269,7 @@ public class MockWebContents implements WebContents {
     public int getHeight() {
         return 0;
     }
+
+    @Override
+    public void setDisplayCutoutSafeArea(Rect insets) {}
 }

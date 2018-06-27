@@ -160,8 +160,7 @@ void BlinkInitializer::RegisterInterfaces(
 }
 
 void BlinkInitializer::InitLocalFrame(LocalFrame& frame) const {
-  if (frame.IsMainFrame() &&
-      RuntimeEnabledFeatures::DisplayCutoutAPIEnabled()) {
+  if (RuntimeEnabledFeatures::DisplayCutoutAPIEnabled()) {
     frame.GetInterfaceRegistry()->AddAssociatedInterface(WTF::BindRepeating(
         &DisplayCutoutClientImpl::BindMojoRequest, WrapWeakPersistent(&frame)));
   }
