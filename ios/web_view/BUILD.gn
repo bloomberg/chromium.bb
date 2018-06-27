@@ -429,7 +429,7 @@ if (additional_toolchains == [] || current_toolchain == default_toolchain) {
 
     script = "//tools/licenses.py"
     inputs = [
-      "//third_party/gn/gn",
+      "//buildtools/$host_os/gn",
     ]
     outputs = [
       _license_path,
