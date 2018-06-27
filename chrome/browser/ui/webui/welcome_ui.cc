@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/ui/webui/welcome_handler.h"
@@ -14,16 +15,15 @@
 #include "chrome/grit/chrome_unscaled_resources.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
-#include "components/nux_google_apps/buildflags.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "net/base/url_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
-#if BUILDFLAG(ENABLE_NUX_GOOGLE_APPS)
+#if defined(OS_WIN)
 #include "components/nux_google_apps/constants.h"
 #include "components/nux_google_apps/webui.h"
-#endif  // ENABLE_NUX_GOOGLE_APPS
+#endif  // OS_WIN
 
 namespace {
   const bool kIsBranded =
@@ -105,11 +105,11 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
     html_source->SetDefaultResource(IDR_WELCOME_HTML);
   }
 
-#if BUILDFLAG(ENABLE_NUX_GOOGLE_APPS)
+#if defined(OS_WIN)
   if (base::FeatureList::IsEnabled(nux_google_apps::kNuxGoogleAppsFeature)) {
     nux_google_apps::AddSources(html_source);
   }
-#endif  // ENABLE_NUX_GOOGLE_APPS
+#endif  // OS_WIN
 
   content::WebUIDataSource::Add(profile, html_source);
 }
