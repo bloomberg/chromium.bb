@@ -9,6 +9,7 @@ import optparse
 import os
 import platform
 import sys
+from string import Template
 from subprocess import call
 
 VULKAN_UNASSOCIATED_FUNCTIONS = [
@@ -109,6 +110,11 @@ LICENSE_AND_HEADER = """\
 
 """
 
+def WriteFunctionDeclarations(file, functions):
+  template = Template('  PFN_$name $name = nullptr;\n')
+  for func in functions:
+    file.write(template.substitute(func));
+
 def GenerateHeaderFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
                        queue_functions, command_buffer_functions,
@@ -152,16 +158,14 @@ struct VulkanFunctionPointers {
   PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = nullptr;
 """)
 
-  for func in unassociated_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, unassociated_functions)
 
   file.write("""\
 
   // Instance functions
 """)
 
-  for func in instance_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, instance_functions)
 
   file.write("""\
   PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
@@ -169,8 +173,7 @@ struct VulkanFunctionPointers {
   // Physical Device functions
 """)
 
-  for func in physical_device_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, physical_device_functions)
 
   file.write("""\
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
@@ -183,32 +186,28 @@ struct VulkanFunctionPointers {
   // Device functions
 """)
 
-  for func in device_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, device_functions)
 
   file.write("""\
 
   // Queue functions
 """)
 
-  for func in queue_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, queue_functions)
 
   file.write("""\
 
   // Command Buffer functions
 """)
 
-  for func in command_buffer_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, command_buffer_functions)
 
   file.write("""\
 
   // Swapchain functions
 """)
 
-  for func in swapchain_functions:
-    file.write('  PFN_' + func['name'] + ' ' + func['name'] + ' = nullptr;\n')
+  WriteFunctionDeclarations(file, swapchain_functions)
 
   file.write("""\
 };
@@ -217,6 +216,31 @@ struct VulkanFunctionPointers {
 
 #endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
 """)
+
+def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
+                                       functions):
+  template = Template("""  $name = reinterpret_cast<PFN_$name>(
+    $get_proc_addr($parent, "$name"));
+  if (!$name)
+    return false;
+
+""")
+
+  for func in functions:
+    file.write(template.substitute(name=func['name'], get_proc_addr =
+                                   proc_addr_function, parent=parent))
+
+def WriteUnassociatedFunctionPointerInitialization(file, functions):
+  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr', 'nullptr',
+                                     functions)
+
+def WriteInstanceFunctionPointerInitialization(file, functions):
+  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr',
+                                     'vk_instance', functions)
+
+def WriteDeviceFunctionPointerInitialization(file, functions):
+  WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddr', 'vk_device',
+                                     functions)
 
 def GenerateSourceFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
@@ -253,11 +277,7 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
 
 """)
 
-  for func in unassociated_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name']
-      + '>(vkGetInstanceProcAddr(nullptr, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteUnassociatedFunctionPointerInitialization(file, unassociated_functions)
 
   file.write("""\
 
@@ -268,11 +288,7 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     VkInstance vk_instance) {
 """)
 
-  for func in instance_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name']
-      + '>(vkGetInstanceProcAddr(vk_instance, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteInstanceFunctionPointerInitialization(file, instance_functions)
 
   file.write("""\
 
@@ -283,11 +299,7 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
     VkInstance vk_instance) {
 """)
 
-  for func in physical_device_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name']
-      + '>(vkGetInstanceProcAddr(vk_instance, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteInstanceFunctionPointerInitialization(file, physical_device_functions)
 
   file.write("""\
 
@@ -297,31 +309,19 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
 bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   // Device functions
 """)
-  for func in device_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name'] +
-      '>(vkGetDeviceProcAddr(vk_device, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteDeviceFunctionPointerInitialization(file, device_functions)
 
   file.write("""\
 
   // Queue functions
 """)
-  for func in queue_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name'] +
-      '>(vkGetDeviceProcAddr(vk_device, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteDeviceFunctionPointerInitialization(file, queue_functions)
 
   file.write("""\
 
   // Command Buffer functions
 """)
-  for func in command_buffer_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name'] +
-      '>(vkGetDeviceProcAddr(vk_device, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteDeviceFunctionPointerInitialization(file, command_buffer_functions)
 
   file.write("""\
 
@@ -332,11 +332,7 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
 bool VulkanFunctionPointers::BindSwapchainFunctionPointers(VkDevice vk_device) {
 """)
 
-  for func in swapchain_functions:
-    file.write('  ' + func['name'] + ' = reinterpret_cast<PFN_' + func['name'] +
-      '>(vkGetDeviceProcAddr(vk_device, "' + func['name'] + '"));\n')
-    file.write('  if (!' + func['name'] + ')\n')
-    file.write('    return false;\n\n')
+  WriteDeviceFunctionPointerInitialization(file, swapchain_functions)
 
   file.write("""\
 
