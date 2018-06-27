@@ -43,12 +43,18 @@ class ManualFillingMediator
          * If the observed provider serves a currently visible tab, the data is immediately sent on.
          * @param tab The {@link Tab} which the given Provider should affect immediately.
          * @param provider The {@link Provider} to observe and whose data to cache.
+         * @param defaultItems The items to be notified about if the Provider hasn't provided any.
          */
-        ProviderCacheAdapter(Tab tab, Provider<T> provider) {
+        ProviderCacheAdapter(Tab tab, Provider<T> provider, T[] defaultItems) {
             mTab = tab;
             provider.addObserver(this);
+            mLastItems = defaultItems;
         }
 
+        /**
+         * Calls {@link #onItemsAvailable} with the last used items again. If there haven't been
+         * any calls, call it with an empty list to avoid putting observers in an undefined state.
+         */
         void notifyAboutCachedItems() {
             notifyObservers(mLastItems);
         }
@@ -131,8 +137,8 @@ class ManualFillingMediator
     }
 
     void registerActionProvider(Provider<KeyboardAccessoryData.Action> actionProvider) {
-        ProviderCacheAdapter<KeyboardAccessoryData.Action> adapter =
-                new ProviderCacheAdapter<>(mActiveBrowserTab, actionProvider);
+        ProviderCacheAdapter<KeyboardAccessoryData.Action> adapter = new ProviderCacheAdapter<>(
+                mActiveBrowserTab, actionProvider, new KeyboardAccessoryData.Action[0]);
         mModel.get(mActiveBrowserTab).mActionsProvider = adapter;
         getKeyboardAccessory().registerActionListProvider(adapter);
     }
