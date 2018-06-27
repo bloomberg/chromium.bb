@@ -106,25 +106,15 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
     return mapped_range_.get();
   }
 
-  void OnBind(GLenum target) {
-    ++binding_count_;
-    if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
-      ++transform_feedback_binding_count_;
-    }
-  }
-
-  void OnUnbind(GLenum target) {
-    --binding_count_;
-    if (target == GL_TRANSFORM_FEEDBACK_BUFFER) {
-      --transform_feedback_binding_count_;
-    }
-    DCHECK(binding_count_ >= 0);
-    DCHECK(transform_feedback_binding_count_ >= 0);
-  }
+  // These maintain the reference counts for checking whether a buffer is
+  // double-bound to transform feedback and non-transform-feedback binding
+  // points.
+  void OnBind(GLenum target, bool indexed);
+  void OnUnbind(GLenum target, bool indexed);
 
   bool IsBoundForTransformFeedbackAndOther() const {
-    return transform_feedback_binding_count_ > 0 &&
-           transform_feedback_binding_count_ != binding_count_;
+    return transform_feedback_indexed_binding_count_ > 0 &&
+           non_transform_feedback_binding_count_ > 0;
   }
 
   void SetReadbackShadowAllocation(scoped_refptr<gpu::Buffer> shm,
@@ -220,8 +210,8 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
   // feedback in a WebGL context. Used as an optimization when validating WebGL
   // draw calls for compliance with binding restrictions.
   // http://crbug.com/696345
-  int binding_count_;
-  int transform_feedback_binding_count_;
+  int non_transform_feedback_binding_count_ = 0;
+  int transform_feedback_indexed_binding_count_ = 0;
 
   // Service side buffer id.
   GLuint service_id_;

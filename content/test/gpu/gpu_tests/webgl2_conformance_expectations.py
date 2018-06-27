@@ -10,6 +10,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     super(WebGL2ConformanceExpectations, self).__init__(is_asan=is_asan)
 
   def SetExpectations(self):
+    # Temporarily disabled until WebGL conformance changes are rolled in.
+    self.Skip('conformance2/transform_feedback/simultaneous_binding.html',
+        bug=853978)
+
     # ===================================
     # Extension availability expectations
     # ===================================

@@ -129,8 +129,6 @@ Buffer::Buffer(BufferManager* manager, GLuint service_id)
       size_(0),
       deleted_(false),
       is_client_side_array_(false),
-      binding_count_(0),
-      transform_feedback_binding_count_(0),
       service_id_(service_id),
       initial_target_(0),
       usage_(GL_STATIC_DRAW) {
@@ -147,6 +145,28 @@ Buffer::~Buffer() {
     manager_->StopTracking(this);
     manager_ = nullptr;
   }
+}
+
+void Buffer::OnBind(GLenum target, bool indexed) {
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER && indexed) {
+    ++transform_feedback_indexed_binding_count_;
+  } else if (target != GL_TRANSFORM_FEEDBACK_BUFFER) {
+    ++non_transform_feedback_binding_count_;
+  }
+  // Note that the transform feedback generic (non-indexed) binding point does
+  // not count as a transform feedback indexed binding point *or* a non-
+  // transform- feedback binding point, so no reference counts need to change in
+  // that case. See https://crbug.com/853978
+}
+
+void Buffer::OnUnbind(GLenum target, bool indexed) {
+  if (target == GL_TRANSFORM_FEEDBACK_BUFFER && indexed) {
+    --transform_feedback_indexed_binding_count_;
+  } else if (target != GL_TRANSFORM_FEEDBACK_BUFFER) {
+    --non_transform_feedback_binding_count_;
+  }
+  DCHECK(transform_feedback_indexed_binding_count_ >= 0);
+  DCHECK(non_transform_feedback_binding_count_ >= 0);
 }
 
 const GLvoid* Buffer::StageShadow(bool use_shadow,

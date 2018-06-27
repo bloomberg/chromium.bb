@@ -659,57 +659,57 @@ void ContextState::SetBoundBuffer(GLenum target, Buffer* buffer) {
   switch (target) {
     case GL_ARRAY_BUFFER:
       if (do_refcounting && bound_array_buffer)
-        bound_array_buffer->OnUnbind(target);
+        bound_array_buffer->OnUnbind(target, false);
       bound_array_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       break;
     case GL_ELEMENT_ARRAY_BUFFER:
       vertex_attrib_manager->SetElementArrayBuffer(buffer);
       break;
     case GL_COPY_READ_BUFFER:
       if (do_refcounting && bound_copy_read_buffer)
-        bound_copy_read_buffer->OnUnbind(target);
+        bound_copy_read_buffer->OnUnbind(target, false);
       bound_copy_read_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       break;
     case GL_COPY_WRITE_BUFFER:
       if (do_refcounting && bound_copy_write_buffer)
-        bound_copy_write_buffer->OnUnbind(target);
+        bound_copy_write_buffer->OnUnbind(target, false);
       bound_copy_write_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       break;
     case GL_PIXEL_PACK_BUFFER:
       if (do_refcounting && bound_pixel_pack_buffer)
-        bound_pixel_pack_buffer->OnUnbind(target);
+        bound_pixel_pack_buffer->OnUnbind(target, false);
       bound_pixel_pack_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       UpdatePackParameters();
       break;
     case GL_PIXEL_UNPACK_BUFFER:
       if (do_refcounting && bound_pixel_unpack_buffer)
-        bound_pixel_unpack_buffer->OnUnbind(target);
+        bound_pixel_unpack_buffer->OnUnbind(target, false);
       bound_pixel_unpack_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       UpdateUnpackParameters();
       break;
     case GL_TRANSFORM_FEEDBACK_BUFFER:
       if (do_refcounting && bound_transform_feedback_buffer)
-        bound_transform_feedback_buffer->OnUnbind(target);
+        bound_transform_feedback_buffer->OnUnbind(target, false);
       bound_transform_feedback_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       break;
     case GL_UNIFORM_BUFFER:
       if (do_refcounting && bound_uniform_buffer)
-        bound_uniform_buffer->OnUnbind(target);
+        bound_uniform_buffer->OnUnbind(target, false);
       bound_uniform_buffer = buffer;
       if (do_refcounting && buffer)
-        buffer->OnBind(target);
+        buffer->OnBind(target, false);
       break;
     default:
       NOTREACHED();
@@ -723,7 +723,7 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   if (bound_array_buffer.get() == buffer) {
     bound_array_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_ARRAY_BUFFER);
+      buffer->OnUnbind(GL_ARRAY_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_ARRAY_BUFFER, 0);
   }
@@ -732,21 +732,21 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   if (bound_copy_read_buffer.get() == buffer) {
     bound_copy_read_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_COPY_READ_BUFFER);
+      buffer->OnUnbind(GL_COPY_READ_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_COPY_READ_BUFFER, 0);
   }
   if (bound_copy_write_buffer.get() == buffer) {
     bound_copy_write_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_COPY_WRITE_BUFFER);
+      buffer->OnUnbind(GL_COPY_WRITE_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_COPY_WRITE_BUFFER, 0);
   }
   if (bound_pixel_pack_buffer.get() == buffer) {
     bound_pixel_pack_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_PIXEL_PACK_BUFFER);
+      buffer->OnUnbind(GL_PIXEL_PACK_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_PIXEL_PACK_BUFFER, 0);
     UpdatePackParameters();
@@ -754,7 +754,7 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   if (bound_pixel_unpack_buffer.get() == buffer) {
     bound_pixel_unpack_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_PIXEL_UNPACK_BUFFER);
+      buffer->OnUnbind(GL_PIXEL_UNPACK_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
     UpdateUnpackParameters();
@@ -762,7 +762,7 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   if (bound_transform_feedback_buffer.get() == buffer) {
     bound_transform_feedback_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_TRANSFORM_FEEDBACK_BUFFER);
+      buffer->OnUnbind(GL_TRANSFORM_FEEDBACK_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
   }
@@ -775,7 +775,7 @@ void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   if (bound_uniform_buffer.get() == buffer) {
     bound_uniform_buffer = nullptr;
     if (do_refcounting)
-      buffer->OnUnbind(GL_UNIFORM_BUFFER);
+      buffer->OnUnbind(GL_UNIFORM_BUFFER, false);
     if (!context_lost_)
       api()->glBindBufferFn(GL_UNIFORM_BUFFER, 0);
   }
