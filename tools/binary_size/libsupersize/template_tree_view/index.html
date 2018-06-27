@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang='en'>
+<!--
+ Copyright 2018 The Chromium Authors. All rights reserved.
+ Use of this source code is governed by a BSD-style license that can be
+ found in the LICENSE file.
+-->
+
+<head>
+    <title>Binary Size Analysis</title>
+    <style>
+        @font-face {
+            font-family: 'Roboto';
+            font-display: fallback;
+            src: local('Roboto Regular'), local('Roboto-Regular'), url(https://fonts.gstatic.com/s/roboto/v18/KFOmCnqEu92Fr1Mu4mxK.woff2)format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Roboto';
+            font-weight: 500;
+            font-display: fallback;
+            src: local('Roboto Medium'), local('Roboto-Medium'), url(https://fonts.gstatic.com/s/roboto/v18/KFOlCnqEu92Fr1MmEU9fBBc4.woff2)format('woff2');
+        }
+
+        @font-face {
+            font-family: 'Google Sans';
+            font-display: swap;
+            src: local('Google Sans Regular'), local('GoogleSans-Regular'), url(https://fonts.gstatic.com/s/googlesans/v5/4UaGrENHsxJlGDuGo1OIlL3Owp4.woff2)format('woff2');
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: grid;
+            grid-template-columns: auto 0;
+            grid-template-rows: 64px 1fr;
+            grid-template-areas: 'appbar options' 'symbols options';
+            color: #3c4043;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        .show-options {
+            grid-template-columns: auto 256px;
+        }
+
+        .show-options .options {
+            display: block;
+        }
+
+        .scrim {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: #00000050;
+        }
+
+        .appbar {
+            grid-area: appbar;
+            padding: 0 48px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .options {
+            display: none;
+            grid-area: options;
+            padding: 0 16px;
+            position: fixed;
+            right: 0;
+            top: 0;
+            height: 100vh;
+            width: 224px;
+            background: #fffffff5;
+            box-shadow: 0 1px 2px #3c40434d, 0 2px 6px 2px #3c404326;
+
+        }
+
+        .symbols {
+            grid-area: symbols;
+            padding: 0 48px;
+        }
+
+        .headline {
+            margin: 0;
+            font-family: 'Google Sans', Arial, sans-serif;
+            font-weight: normal;
+            color: #202124;
+            font-size: 22px;
+            line-height: 64px;
+        }
+
+        .subtitle {
+            font-weight: 500;
+            color: #5f6368;
+            font-size: 13px;
+        }
+
+        .icon-button {
+            background: transparent;
+            border: 0;
+            height: 40px;
+            width: 40px;
+            border-radius: 50%;
+        }
+
+        .icon-button:hover {
+            background: #0000001f;
+        }
+
+        ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        .tree {
+            font-size: 13px;
+        }
+
+        .tree-header {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            margin-left: 48px;
+            line-height: 24px;
+            border-bottom: 1px solid #dadce0;
+        }
+
+        [role='group'] {
+            padding-left: 13px;
+            border-left: 1px solid #dadce0;
+            margin-left: 10px;
+        }
+
+        .icon {
+            margin-right: 6px;
+        }
+
+        .node {
+            display: flex;
+            align-items: center;
+            margin: 8px 0;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .node::before {
+            content: '';
+            display: inline-block;
+            margin: 10px;
+            width: 0;
+            height: 0;
+        }
+
+        [aria-expanded]>.node::before {
+            /** Draw a 5x10 triangle */
+            margin: 5px 7px 5px 8px;
+            border-style: solid;
+            border-width: 5px 0 5px 5px;
+            border-color: transparent transparent transparent currentColor;
+            transition: transform .1s ease-out;
+        }
+
+        [aria-expanded='true']>.node::before {
+            transform: rotate(90deg);
+        }
+
+        .symbol-name {
+            font-weight: 500;
+            word-break: break-word;
+            margin-right: auto;
+        }
+
+        .size {
+            margin-left: 16px;
+            text-align: right;
+            color: #5f6368;
+            white-space: nowrap;
+        }
+
+        .form-bar {
+            display: flex;
+            justify-content: flex-end;
+            height: 64px;
+            align-items: center;
+        }
+
+        .select-wrapper {
+            position: relative;
+            border-top-left-radius: 4px;
+            border-top-right-radius: 4px;
+            background: rgba(0, 0, 0, 0.04);
+        }
+
+        select {
+            font: inherit;
+            background: transparent;
+            border: 0;
+            padding: 20px 8px 13px;
+            width: 100%;
+        }
+
+        .select-label {
+            position: absolute;
+            z-index: -1;
+            top: 0;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            font-size: 12px;
+            line-height: 20px;
+            padding: 0 12px;
+            color: #5f6368;
+            border-bottom: 1px solid currentColor;
+        }
+
+        select:focus+.select-label {
+            color: #1a73e8;
+            bottom: -2px;
+            border-width: 2px;
+        }
+
+
+        @media (max-width: 700px) {
+            .show-options {
+                grid-template-columns: auto 0;
+            }
+            .show-options .scrim {
+                display: block;
+            }
+            .appbar,
+            .symbols {
+                padding: 0 16px;
+            }
+        }
+    </style>
+    <script defer src='state.js'></script>
+    <script defer src='tree.js'></script>
+    <script defer async onload='loadTree(tree_data);' src='data.js'></script>
+</head>
+
+<body>
+    <div class='scrim toggle-options' hidden></div>
+    <header class='appbar'>
+        <h1 class='headline'>Binary Size Analysis</h1>
+        <button type='button' class='icon-button toggle-options' title='Settings'>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill='#5f6368'>
+                <!--
+                 Icons from https://material.io/tools/icons/?style=outline
+                 with some custom icons designed in the same style
+                -->
+                <path d="M19.43,12.98c0.04-0.32,0.07-0.64,0.07-0.98c0-0.34-0.03-0.66-0.07-0.98l2.11-1.65c0.19-0.15,0.24-0.42,0.12-0.64l-2-3.46
+                         c-0.09-0.16-0.26-0.25-0.44-0.25c-0.06,0-0.12,0.01-0.17,0.03l-2.49,1c-0.52-0.4-1.08-0.73-1.69-0.98l-0.38-2.65
+                         C14.46,2.18,14.25,2,14,2h-4C9.75,2,9.54,2.18,9.51,2.42L9.13,5.07C8.52,5.32,7.96,5.66,7.44,6.05l-2.49-1
+                         C4.89,5.03,4.83,5.02,4.77,5.02c-0.17,0-0.34,0.09-0.43,0.25l-2,3.46C2.21,8.95,2.27,9.22,2.46,9.37l2.11,1.65
+                         C4.53,11.34,4.5,11.67,4.5,12c0,0.33,0.03,0.66,0.07,0.98l-2.11,1.65c-0.19,0.15-0.24,0.42-0.12,0.64l2,3.46
+                         c0.09,0.16,0.26,0.25,0.44,0.25c0.06,0,0.12-0.01,0.17-0.03l2.49-1c0.52,0.4,1.08,0.73,1.69,0.98l0.38,2.65
+                         C9.54,21.82,9.75,22,10,22h4c0.25,0,0.46-0.18,0.49-0.42l0.38-2.65c0.61-0.25,1.17-0.59,1.69-0.98l2.49,1
+                         c0.06,0.02,0.12,0.03,0.18,0.03c0.17,0,0.34-0.09,0.43-0.25l2-3.46c0.12-0.22,0.07-0.49-0.12-0.64L19.43,12.98z M17.45,11.27
+                         c0.04,0.31,0.05,0.52,0.05,0.73c0,0.21-0.02,0.43-0.05,0.73l-0.14,1.13l0.89,0.7l1.08,0.84l-0.7,1.21l-1.27-0.51l-1.04-0.42
+                         l-0.9,0.68c-0.43,0.32-0.84,0.56-1.25,0.73l-1.06,0.43l-0.16,1.13L12.7,20H11.3l-0.19-1.35l-0.16-1.13l-1.06-0.43
+                         c-0.43-0.18-0.83-0.41-1.23-0.71l-0.91-0.7l-1.06,0.43l-1.27,0.51l-0.7-1.21l1.08-0.84l0.89-0.7l-0.14-1.13
+                         C6.52,12.43,6.5,12.2,6.5,12s0.02-0.43,0.05-0.73l0.14-1.13L5.8,9.44L4.72,8.6l0.7-1.21l1.27,0.51l1.04,0.42l0.9-0.68
+                         c0.43-0.32,0.84-0.56,1.25-0.73l1.06-0.43l0.16-1.13L11.3,4h1.39l0.19,1.35l0.16,1.13l1.06,0.43c0.43,0.18,0.83,0.41,1.23,0.71
+                         l0.91,0.7l1.06-0.43l1.27-0.51l0.7,1.21L18.2,9.44l-0.89,0.7L17.45,11.27z" />
+                <path d="M12,8c-2.21,0-4,1.79-4,4s1.79,4,4,4s4-1.79,4-4S14.21,8,12,8z M12,14c-1.1,0-2-0.9-2-2s0.9-2,2-2s2,0.9,2,2
+                         S13.1,14,12,14z" />
+            </svg>
+        </button>
+    </header>
+    <form id='options' class='options' method='GET'>
+        <div class='form-bar'>
+            <button type='button' class='icon-button toggle-options' title='Close'>
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill='#5f6368'>
+                    <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+            </button>
+        </div>
+        <div class='select-wrapper'>
+            <select id='byteunit' name='byteunit' data-dynamic>
+                <option value='B'>B - bytes</option>
+                <option value='KiB'>KiB - kilibytes</option>
+                <option value='MiB' selected>MiB - megabytes</option>
+                <option value='GiB'>GiB - gigabytes</option>
+            </select>
+            <label class='select-label' for='byteunit'>Byte unit</label>
+        </div>
+    </form>
+    <main class='symbols'>
+        <div hidden id='icons'>
+            <svg class='icon foldericon' height='24' width='24' fill='#5f6368'>
+                <title>Directory</title>
+                <path d='M9.17,6l2,2H20v10L4,18V6H9.17 M10,4H4C2.9,4,2.01,4.9,2.01,6L2,18c0,1.1,0.9,2,2,2h16c1.1,0,2-0.9,2-2V8c0-1.1-0.9-2-2-2
+                         h-8L10,4L10,4z' />
+            </svg>
+            <svg class='icon fileicon' height='24' width='24' fill='#5f6368'>
+                <title>File</title>
+                <path d='M14,2H6C4.9,2,4.01,2.9,4.01,4L4,20c0,1.1,0.89,2,1.99,2H18c1.1,0,2-0.9,2-2V8L14,2z M6,20V4h7v5h5v11
+                         L6,20z' />
+            </svg>
+            <svg class='icon bssicon' height='24' width='24' fill='#a142f4'>
+                <title>Uninitialized data (.bss)</title>
+                <path d='M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm4 6v4h2v-4h-2zm0 6v2h2v-2h-2z'
+                />
+            </svg>
+            <svg class='icon dataicon' height='24' width='24' fill='#fa7b17'>
+                <title>Initialized data (.data)</title>
+                <path d='M6 2a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6H6m0 2h7v5h5v11H6V4m2 8v2h8v-2H8m0 4v2h5v-2z' />
+            </svg>
+            <svg class='icon readonlyicon' height='24' width='24' fill='#24c1e0'>
+                <title>Read-only data (.rodata)</title>
+                <path d='M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm5.9 8c-2 0-3.7 1.2-4.4 3a4.7 4.7 0 0 0 8.8 0c-.7-1.8-2.4-3-4.4-3zm0 1a2 2 0 0 1 2 2 2 2 0 0 1-2 2 2 2 0 0 1-2-2 2 2 0 0 1 2-2zm0 .8a1.2 1.2 0 0 0-1.2 1.2 1.2 1.2 0 0 0 1.2 1.2 1.2 1.2 0 0 0 1.2-1.2 1.2 1.2 0 0 0-1.2-1.2z'
+                />
+            </svg>
+            <svg class='icon codeicon' height='24' width='24' fill='#1a73e8'>
+                <title>Code (.text)</title>
+                <path d='M9.4,16.6L4.8,12l4.6-4.6L8,6l-6,6l6,6L9.4,16.6z M14.6,16.6l4.6-4.6l-4.6-4.6L16,6l6,6l-6,6L14.6,16.6z' />
+            </svg>
+            <svg class='icon vtableicon' height='24' width='24' fill='#fbbc04'>
+                <title>Vtable entries</title>
+                <path d='M20,3H5C3.9,3,3,3.9,3,5v14c0,1.1,0.9,2,2,2h15c1.1,0,2-0.9,2-2V5C22,3.9,21.1,3,20,3z M20,5v3H5V5H20z M15,19h-5v-9h5V19z
+                         M5,10h3v9H5V10z M17,19v-9h3v9H17z' />
+            </svg>
+            <svg class='icon generatedicon' height='24' width='24' fill='#f439a0'>
+                <title>Generated Symbols (typeinfo, thunks, etc)</title>
+                <path d='M6 2a2 2 0 0 0-2 2v16c0 1.1.9 2 2 2h12a2 2 0 0 0 2-2V8l-6-6H6zm0 2h7v5h5v11H6V4zm9.5 8l-.6 1.4-1.4.6 1.4.6.6 1.4.6-1.4 1.4-.6-1.4-.6-.6-1.4zm-6 1l-1 2-2 1 2 1 1 2 1-2 2-1-2-1-1-2z'
+                />
+            </svg>
+            <svg class='icon dexicon' height='24' width='24' fill='#ea4335'>
+                <title>Dex non-method entries</title>
+                <path d='M6.6 1.4l-.8.9 2 2A6.3 6.3 0 0 0 5 9.4v.8a.8.8 0 0 0 .8.8h12.4a.8.8 0 0 0 .8-.8v-.8c0-2-1.1-4-2.8-5.1l2-2-.8-.9-2.3 2.3a7.4 7.4 0 0 0-6.2 0L6.6 1.4zM12 4.5c.9 0 1.7.2 2.5.5l.8.5c1.3.9 2.2 2.3 2.2 4h-11c0-1.7.9-3.1 2.2-4l.9-.5c.7-.3 1.5-.5 2.4-.5zM9 7a1 1 0 0 0-1 1c0 .5.4 1 1 1s1-.4 1-1c0-.5-.4-1-1-1zm6 0a1 1 0 0 0-1 1c0 .5.4 1 1 1s1-.4 1-1c0-.5-.4-1-1-1zm-9.3 5a.8.8 0 0 0-.7.8v3.4a7 7 0 0 0 7 6.8c3.8 0 7-3 7-6.8v-3.4a.8.8 0 0 0-.8-.8H5.8zm.8 1.5h11v2.7c0 3-2.4 5.3-5.5 5.3-3 0-5.5-2.4-5.5-5.3v-2.7z'
+                />
+            </svg>
+            <svg class='icon dexmethodicon' height='24' width='24' fill='#a50e0e'>
+                <title>Dex methods</title>
+                <path d='M6.6 1.4l-.8.9 2 2A6.3 6.3 0 0 0 5 9.4v.8a.8.8 0 0 0 .8.8h12.4a.8.8 0 0 0 .8-.8v-.8c0-2-1.1-4-2.8-5.1l2-2-.8-.9-2.3 2.3a7.4 7.4 0 0 0-6.2 0L6.6 1.4zM12 4.5c.9 0 1.7.2 2.5.5l.8.5c1.3.9 2.2 2.3 2.2 4h-11c0-1.7.9-3.1 2.2-4l.9-.5c.7-.3 1.5-.5 2.4-.5zM9 7a1 1 0 0 0-1 1c0 .5.4 1 1 1s1-.4 1-1c0-.5-.4-1-1-1zm6 0a1 1 0 0 0-1 1c0 .5.4 1 1 1s1-.4 1-1c0-.5-.4-1-1-1zm-9.3 5a.8.8 0 0 0-.7.8v3.4a7 7 0 0 0 7 6.8c3.8 0 7-3 7-6.8v-3.4a.8.8 0 0 0-.8-.8H5.8zm.8 1.5h11v2.7c0 3-2.4 5.3-5.5 5.3-3 0-5.5-2.4-5.5-5.3v-2.7z'
+                />
+            </svg>
+            <svg class='icon localpakicon' height='24' width='24' fill='#34a853'>
+                <title>Locale Pak Entries</title>
+                <path d='M5 3a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm0 2h5v2h2V5h7v14H5V5zm7 2v2h2V7h-2zm0 2h-2v2h2V9zm0 2v2h2v-2h-2zm0 2h-2v2h2v-2zm0 2v2h2v-2h-2z'
+                />
+            </svg>
+            <svg class='icon nonlocalpakicon' height='24' width='24' fill='#0d652d'>
+                <title>Non-Locale Pak Entries</title>
+                <path d='M5 3a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V5a2 2 0 0 0-2-2H5zm0 2h5v2h2V5h7v14H5V5zm7 2v2h2V7h-2zm0 2h-2v2h2V9zm0 2v2h2v-2h-2zm0 2h-2v2h2v-2zm0 2v2h2v-2h-2z'
+                />
+            </svg>
+            <svg class='icon othericon' height='24' width='24' fill='#5f6368'>
+                <title>Other Entries</title>
+                <path d='M10.88 2l-.85 1.36L4 13h6v-2H7.6l3.28-5.23L12.28 8h2.35l-3.75-6zM12 10v10h10V10H12zm2 2h6v6h-6v-6zM2.21 15A5.52 5.52 0 0 0 10 21.4v-2.45A3.48 3.48 0 0 1 7.5 20a3.48 3.48 0 0 1-3.15-5H2.2z'
+                />
+            </svg>
+        </div>
+        <template id='treefolder'>
+            <li role='treeitem' aria-expanded='false'>
+                <a class='node' href='#'>
+                    <span class='symbol-name'></span>
+                    <span class='size'></span>
+                </a>
+                <ul role='group' hidden></ul>
+            </li>
+        </template>
+        <template id='treeitem'>
+            <li role='treeitem'>
+                <span class='node'>
+                    <span class='symbol-name'></span>
+                    <span class='size'></span>
+                </span>
+            </li>
+        </template>
+        <header class='tree-header'>
+            <span class='subtitle'>Name</span>
+            <span class='subtitle'>Size</span>
+        </header>
+        <ul id='symboltree' class='tree' role='tree' aria-labelledby='headline'></ul>
+    </main>
+</body>
+
+</html>
