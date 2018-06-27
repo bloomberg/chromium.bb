@@ -98,14 +98,17 @@ std::vector<NetworkInterface> NetInterfaceToNetworkInterfaces(
 bool GetNetworkList(NetworkInterfaceList* networks, int policy) {
   DCHECK(networks);
 
-  fuchsia::netstack::NetstackSyncPtr netstack =
+  fuchsia::netstack::NetstackSync2Ptr netstack =
       base::fuchsia::ComponentContext::GetDefault()
           ->ConnectToServiceSync<fuchsia::netstack::Netstack>();
 
   // TODO(kmarshall): Use NetworkChangeNotifier's cached interface list.
   fidl::VectorPtr<fuchsia::netstack::NetInterface> interfaces;
-  if (!netstack->GetInterfaces(&interfaces))
+  auto status = netstack->GetInterfaces(&interfaces);
+  if (status.statvs != ZX_OK) {
+    ZX_LOG(ERROR, status.statvs) << "fuchsia::netstack::GetInterfaces()";
     return false;
+  }
 
   for (auto& interface : interfaces.get()) {
     auto converted = internal::NetInterfaceToNetworkInterfaces(interface);
