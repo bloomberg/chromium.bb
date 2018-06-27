@@ -6,6 +6,7 @@
 #define MEDIA_BASE_SCOPEDFD_HELPER_H_
 
 #include "base/files/scoped_file.h"
+#include "media/base/media_export.h"
 
 namespace media {
 
@@ -17,7 +18,7 @@ namespace media {
 
 // Return a new vector containing duplicates of |fds|, or an empty vector in
 // case of error.
-std::vector<base::ScopedFD> DuplicateFDs(
+MEDIA_EXPORT std::vector<base::ScopedFD> DuplicateFDs(
     const std::vector<base::ScopedFD>& fds);
 
 #endif  // OS_LINUX
