@@ -66,7 +66,7 @@ void QuicChromiumClientStream::Handle::OnInitialHeadersAvailable() {
   if (!stream_->DeliverInitialHeaders(read_headers_buffer_, &rv))
     rv = ERR_QUIC_PROTOCOL_ERROR;
 
-  ResetAndRun(&read_headers_callback_, rv);
+  ResetAndRun(std::move(read_headers_callback_), rv);
 }
 
 void QuicChromiumClientStream::Handle::OnTrailingHeadersAvailable() {
@@ -77,7 +77,7 @@ void QuicChromiumClientStream::Handle::OnTrailingHeadersAvailable() {
   if (!stream_->DeliverTrailingHeaders(read_headers_buffer_, &rv))
     rv = ERR_QUIC_PROTOCOL_ERROR;
 
-  ResetAndRun(&read_headers_callback_, rv);
+  ResetAndRun(std::move(read_headers_callback_), rv);
 }
 
 void QuicChromiumClientStream::Handle::OnDataAvailable() {
@@ -90,14 +90,14 @@ void QuicChromiumClientStream::Handle::OnDataAvailable() {
 
   read_body_buffer_ = nullptr;
   read_body_buffer_len_ = 0;
-  ResetAndRun(&read_body_callback_, rv);
+  ResetAndRun(std::move(read_body_callback_), rv);
 }
 
 void QuicChromiumClientStream::Handle::OnCanWrite() {
   if (!write_callback_)
     return;
 
-  ResetAndRun(&write_callback_, OK);
+  ResetAndRun(std::move(write_callback_), OK);
 }
 
 void QuicChromiumClientStream::Handle::OnClose() {
@@ -136,7 +136,7 @@ void QuicChromiumClientStream::Handle::InvokeCallbacksOnClose(int error) {
   for (auto* callback :
        {&read_headers_callback_, &read_body_callback_, &write_callback_}) {
     if (*callback)
-      ResetAndRun(callback, error);
+      ResetAndRun(std::move(*callback), error);
     if (!guard.get())
       return;
   }
@@ -144,7 +144,7 @@ void QuicChromiumClientStream::Handle::InvokeCallbacksOnClose(int error) {
 
 int QuicChromiumClientStream::Handle::ReadInitialHeaders(
     spdy::SpdyHeaderBlock* header_block,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
     return net_error_;
@@ -154,14 +154,14 @@ int QuicChromiumClientStream::Handle::ReadInitialHeaders(
     return frame_len;
 
   read_headers_buffer_ = header_block;
-  SetCallback(callback, &read_headers_callback_);
+  SetCallback(std::move(callback), &read_headers_callback_);
   return ERR_IO_PENDING;
 }
 
 int QuicChromiumClientStream::Handle::ReadBody(
     IOBuffer* buffer,
     int buffer_len,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (IsDoneReading())
     return OK;
@@ -173,7 +173,7 @@ int QuicChromiumClientStream::Handle::ReadBody(
   if (rv != ERR_IO_PENDING)
     return rv;
 
-  SetCallback(callback, &read_body_callback_);
+  SetCallback(std::move(callback), &read_body_callback_);
   read_body_buffer_ = buffer;
   read_body_buffer_len_ = buffer_len;
   return ERR_IO_PENDING;
@@ -181,7 +181,7 @@ int QuicChromiumClientStream::Handle::ReadBody(
 
 int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
     spdy::SpdyHeaderBlock* header_block,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
     return net_error_;
@@ -191,7 +191,7 @@ int QuicChromiumClientStream::Handle::ReadTrailingHeaders(
     return frame_len;
 
   read_headers_buffer_ = header_block;
-  SetCallback(callback, &read_headers_callback_);
+  SetCallback(std::move(callback), &read_headers_callback_);
   return ERR_IO_PENDING;
 }
 
@@ -209,7 +209,7 @@ int QuicChromiumClientStream::Handle::WriteHeaders(
 int QuicChromiumClientStream::Handle::WriteStreamData(
     base::StringPiece data,
     bool fin,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
     return net_error_;
@@ -217,7 +217,7 @@ int QuicChromiumClientStream::Handle::WriteStreamData(
   if (stream_->WriteStreamData(data, fin))
     return HandleIOComplete(OK);
 
-  SetCallback(callback, &write_callback_);
+  SetCallback(std::move(callback), &write_callback_);
   return ERR_IO_PENDING;
 }
 
@@ -225,7 +225,7 @@ int QuicChromiumClientStream::Handle::WritevStreamData(
     const std::vector<scoped_refptr<IOBuffer>>& buffers,
     const std::vector<int>& lengths,
     bool fin,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   ScopedBoolSaver saver(&may_invoke_callbacks_, false);
   if (!stream_)
     return net_error_;
@@ -233,7 +233,7 @@ int QuicChromiumClientStream::Handle::WritevStreamData(
   if (stream_->WritevStreamData(buffers, lengths, fin))
     return HandleIOComplete(OK);
 
-  SetCallback(callback, &write_callback_);
+  SetCallback(std::move(callback), &write_callback_);
   return ERR_IO_PENDING;
 }
 
@@ -365,20 +365,21 @@ void QuicChromiumClientStream::Handle::SaveState() {
 }
 
 void QuicChromiumClientStream::Handle::SetCallback(
-    const CompletionCallback& new_callback,
-    CompletionCallback* callback) {
+    CompletionOnceCallback new_callback,
+    CompletionOnceCallback* callback) {
   // TODO(rch): Convert this to a DCHECK once we ensure the API is stable and
   // bug free.
   CHECK(!may_invoke_callbacks_);
-  *callback = new_callback;
+  *callback = std::move(new_callback);
 }
 
-void QuicChromiumClientStream::Handle::ResetAndRun(CompletionCallback* callback,
-                                                   int rv) {
+void QuicChromiumClientStream::Handle::ResetAndRun(
+    CompletionOnceCallback callback,
+    int rv) {
   // TODO(rch): Convert this to a DCHECK once we ensure the API is stable and
   // bug free.
   CHECK(may_invoke_callbacks_);
-  ResetAndReturn(callback).Run(rv);
+  std::move(callback).Run(rv);
 }
 
 int QuicChromiumClientStream::Handle::HandleIOComplete(int rv) {

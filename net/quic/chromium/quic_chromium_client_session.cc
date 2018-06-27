@@ -386,7 +386,7 @@ bool QuicChromiumClientSession::Handle::SharesSameSession(
 
 int QuicChromiumClientSession::Handle::RendezvousWithPromised(
     const spdy::SpdyHeaderBlock& headers,
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   if (!session_)
     return ERR_CONNECTION_CLOSED;
 
@@ -399,7 +399,7 @@ int QuicChromiumClientSession::Handle::RendezvousWithPromised(
     case quic::QUIC_SUCCESS:
       return OK;
     case quic::QUIC_PENDING:
-      push_callback_ = callback;
+      push_callback_ = std::move(callback);
       return ERR_IO_PENDING;
   }
   NOTREACHED();
@@ -408,7 +408,7 @@ int QuicChromiumClientSession::Handle::RendezvousWithPromised(
 
 int QuicChromiumClientSession::Handle::RequestStream(
     bool requires_confirmation,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetworkTrafficAnnotationTag& traffic_annotation) {
   DCHECK(!stream_request_);
 
@@ -419,7 +419,7 @@ int QuicChromiumClientSession::Handle::RequestStream(
   // is private.
   stream_request_ = std::unique_ptr<StreamRequest>(
       new StreamRequest(this, requires_confirmation, traffic_annotation));
-  return stream_request_->StartRequest(callback);
+  return stream_request_->StartRequest(std::move(callback));
 }
 
 std::unique_ptr<QuicChromiumClientStream::Handle>
@@ -438,11 +438,11 @@ QuicChromiumClientSession::Handle::ReleasePromisedStream() {
 }
 
 int QuicChromiumClientSession::Handle::WaitForHandshakeConfirmation(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   if (!session_)
     return ERR_CONNECTION_CLOSED;
 
-  return session_->WaitForHandshakeConfirmation(callback);
+  return session_->WaitForHandshakeConfirmation(std::move(callback));
 }
 
 void QuicChromiumClientSession::Handle::CancelRequest(StreamRequest* request) {
@@ -554,14 +554,14 @@ QuicChromiumClientSession::StreamRequest::~StreamRequest() {
 }
 
 int QuicChromiumClientSession::StreamRequest::StartRequest(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   if (!session_->IsConnected())
     return ERR_CONNECTION_CLOSED;
 
   next_state_ = STATE_WAIT_FOR_CONFIRMATION;
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
 
   return rv;
 }
@@ -985,14 +985,14 @@ ConnectionMigrationMode QuicChromiumClientSession::connection_migration_mode()
 }
 
 int QuicChromiumClientSession::WaitForHandshakeConfirmation(
-    const CompletionCallback& callback) {
+    CompletionOnceCallback callback) {
   if (!connection()->connected())
     return ERR_CONNECTION_CLOSED;
 
   if (IsCryptoHandshakeConfirmed())
     return OK;
 
-  waiting_for_confirmation_callbacks_.push_back(callback);
+  waiting_for_confirmation_callbacks_.push_back(std::move(callback));
   return ERR_IO_PENDING;
 }
 
@@ -1197,8 +1197,7 @@ Error QuicChromiumClientSession::GetTokenBindingSignature(
   return OK;
 }
 
-int QuicChromiumClientSession::CryptoConnect(
-    const CompletionCallback& callback) {
+int QuicChromiumClientSession::CryptoConnect(CompletionOnceCallback callback) {
   connect_timing_.connect_start = base::TimeTicks::Now();
   RecordHandshakeState(STATE_STARTED);
   DCHECK(flow_controller());
@@ -1216,7 +1215,7 @@ int QuicChromiumClientSession::CryptoConnect(
   if (!require_confirmation_ && IsEncryptionEstablished())
     return OK;
 
-  callback_ = callback;
+  callback_ = std::move(callback);
   return ERR_IO_PENDING;
 }
 
@@ -2129,8 +2128,9 @@ void QuicChromiumClientSession::CancelAllRequests(int net_error) {
 
 void QuicChromiumClientSession::NotifyRequestsOfConfirmation(int net_error) {
   // Post tasks to avoid reentrancy.
-  for (auto callback : waiting_for_confirmation_callbacks_)
-    task_runner_->PostTask(FROM_HERE, base::Bind(callback, net_error));
+  for (auto& callback : waiting_for_confirmation_callbacks_)
+    task_runner_->PostTask(FROM_HERE,
+                           base::BindOnce(std::move(callback), net_error));
 
   waiting_for_confirmation_callbacks_.clear();
 }

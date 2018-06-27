@@ -10,7 +10,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "net/base/completion_callback.h"
 #include "net/quic/chromium/quic_server_info.h"
 #include "net/third_party/quic/platform/api/quic_export.h"
 

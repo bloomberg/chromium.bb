@@ -59,7 +59,6 @@ class PropertiesBasedQuicServerInfoTest : public ::testing::Test {
   HttpServerPropertiesImpl http_server_properties_;
   quic::QuicServerId server_id_;
   PropertiesBasedQuicServerInfo server_info_;
-  CompletionCallback callback_;
 };
 
 // Test persisting, reading and verifying and then updating and verifing.

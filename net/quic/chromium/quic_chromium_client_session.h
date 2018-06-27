@@ -21,7 +21,7 @@
 #include "base/containers/mru_cache.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_error_details.h"
 #include "net/base/net_export.h"
@@ -154,14 +154,14 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // stream.  If ERR_IO_PENDING is returned, then when the rendezvous is
     // eventually completed |callback| will be called.
     int RendezvousWithPromised(const spdy::SpdyHeaderBlock& headers,
-                               const CompletionCallback& callback);
+                               CompletionOnceCallback callback);
 
     // Starts a request to create a stream.  If OK is returned, then
     // |stream_| will be updated with the newly created stream.  If
     // ERR_IO_PENDING is returned, then when the request is eventuallly
     // complete |callback| will be called.
     int RequestStream(bool requires_confirmation,
-                      const CompletionCallback& callback,
+                      CompletionOnceCallback callback,
                       const NetworkTrafficAnnotationTag& traffic_annotation);
 
     // Releases |stream_| to the caller. Returns nullptr if the underlying
@@ -244,7 +244,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // If the connection has already been closed, returns a net error. If the
     // connection closes before the handshake is confirmed, |callback| will
     // be invoked with an error.
-    int WaitForHandshakeConfirmation(const CompletionCallback& callback);
+    int WaitForHandshakeConfirmation(CompletionOnceCallback callback);
 
     // Called when the handshake is confirmed.
     void OnCryptoHandshakeConfirmed();
@@ -288,7 +288,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // until |OnRendezvouResult()| fires or |push_handle_->Cancel()| is
     // invoked.
     quic::QuicClientPushPromiseIndex::TryHandle* push_handle_;
-    CompletionCallback push_callback_;
+    CompletionOnceCallback push_callback_;
     std::unique_ptr<QuicChromiumClientStream::Handle> push_stream_;
 
     bool was_ever_used_;
@@ -305,7 +305,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     // |stream_| will be updated with the newly created stream.  If
     // ERR_IO_PENDING is returned, then when the request is eventuallly
     // complete |callback| will be called.
-    int StartRequest(const CompletionCallback& callback);
+    int StartRequest(CompletionOnceCallback callback);
 
     // Releases |stream_| to the caller.
     std::unique_ptr<QuicChromiumClientStream::Handle> ReleaseStream();
@@ -351,7 +351,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
 
     QuicChromiumClientSession::Handle* session_;
     const bool requires_confirmation_;
-    CompletionCallback callback_;
+    CompletionOnceCallback callback_;
     std::unique_ptr<QuicChromiumClientStream::Handle> stream_;
     // For tracking how much time pending stream requests wait.
     base::TimeTicks pending_start_time_;
@@ -411,7 +411,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   // If the connection has already been closed, returns a net error. If the
   // connection closes before the handshake is confirmed, |callback| will
   // be invoked with an error.
-  int WaitForHandshakeConfirmation(const CompletionCallback& callback);
+  int WaitForHandshakeConfirmation(CompletionOnceCallback callback);
 
   // Attempts to create a new stream.  If the stream can be
   // created immediately, returns OK.  If the open stream limit
@@ -509,7 +509,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
                                  std::vector<uint8_t>* out) override;
 
   // Performs a crypto handshake with the server.
-  int CryptoConnect(const CompletionCallback& callback);
+  int CryptoConnect(CompletionOnceCallback callback);
 
   // Causes the QuicConnectionHelper to start reading from all sockets
   // and passing the data along to the quic::QuicConnection.
@@ -746,8 +746,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   bool is_fatal_cert_error_;
   HandleSet handles_;
   StreamRequestQueue stream_requests_;
-  std::vector<CompletionCallback> waiting_for_confirmation_callbacks_;
-  CompletionCallback callback_;
+  std::vector<CompletionOnceCallback> waiting_for_confirmation_callbacks_;
+  CompletionOnceCallback callback_;
   size_t num_total_streams_;
   base::SequencedTaskRunner* task_runner_;
   NetLogWithSource net_log_;

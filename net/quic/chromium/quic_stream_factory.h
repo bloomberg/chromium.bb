@@ -20,7 +20,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "net/base/address_list.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -125,7 +125,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
               const GURL& url,
               const NetLogWithSource& net_log,
               NetErrorDetails* net_error_details,
-              const CompletionCallback& callback);
+              CompletionOnceCallback callback);
 
   // This function must be called after Request() returns ERR_IO_PENDING.
   // Returns true if Request() requires host resolution and it hasn't completed
@@ -134,7 +134,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // the connection process. For example, if host resolution returns OK and then
   // crypto handshake returns ERR_IO_PENDING, then |callback| will run with
   // ERR_IO_PENDING.
-  bool WaitForHostResolution(const CompletionCallback& callback);
+  bool WaitForHostResolution(CompletionOnceCallback callback);
 
   // Tells QuicStreamRequest it should expect OnHostResolutionComplete()
   // to be called in the future.
@@ -166,7 +166,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   QuicStreamFactory* factory_;
   QuicSessionKey session_key_;
   NetLogWithSource net_log_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   NetErrorDetails* net_error_details_;  // Unowned.
   std::unique_ptr<QuicChromiumClientSession::Handle> session_;
 
@@ -174,7 +174,7 @@ class NET_EXPORT_PRIVATE QuicStreamRequest {
   // be called in the future.
   bool expect_on_host_resolution_;
   // Callback passed to WaitForHostResolution().
-  CompletionCallback host_resolution_callback_;
+  CompletionOnceCallback host_resolution_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicStreamRequest);
 };

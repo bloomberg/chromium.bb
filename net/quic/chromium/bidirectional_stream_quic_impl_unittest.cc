@@ -12,6 +12,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/ip_address.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/load_timing_info_test_util.h"
@@ -220,14 +221,14 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   }
 
   // Calls ReadData on the |stream_| and updates |data_received_|.
-  int ReadData(const CompletionCallback& callback) {
+  int ReadData(CompletionOnceCallback callback) {
     not_expect_callback_ = true;
     int rv = stream_->ReadData(read_buf_.get(), read_buf_len_);
     not_expect_callback_ = false;
     if (rv > 0)
       data_received_.append(read_buf_->data(), rv);
     if (rv == ERR_IO_PENDING)
-      callback_ = callback;
+      callback_ = std::move(callback);
     return rv;
   }
 
@@ -309,7 +310,7 @@ class TestDelegateBase : public BidirectionalStreamImpl::Delegate {
   // calling into |stream_|.
   bool not_expect_callback_;
   bool on_failed_called_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   bool send_request_headers_automatically_;
   bool is_ready_;
   bool trailers_expected_;

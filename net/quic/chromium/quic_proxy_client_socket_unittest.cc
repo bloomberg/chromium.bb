@@ -5,6 +5,7 @@
 #include "net/quic/chromium/quic_proxy_client_socket.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -459,13 +460,14 @@ class QuicProxyClientSocketTest
   void AssertSyncWriteSucceeds(const char* data, int len) {
     scoped_refptr<IOBufferWithSize> buf(new IOBufferWithSize(len));
     memcpy(buf->data(), data, len);
-    EXPECT_EQ(len, sock_->Write(buf.get(), buf->size(), CompletionCallback(),
-                                TRAFFIC_ANNOTATION_FOR_TESTS));
+    EXPECT_EQ(len,
+              sock_->Write(buf.get(), buf->size(), CompletionOnceCallback(),
+                           TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
   void AssertSyncReadEquals(const char* data, int len) {
     scoped_refptr<IOBuffer> buf(new IOBuffer(len));
-    ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionCallback()));
+    ASSERT_EQ(len, sock_->Read(buf.get(), len, CompletionOnceCallback()));
     ASSERT_EQ(spdy::SpdyString(data, len), spdy::SpdyString(buf->data(), len));
     ASSERT_TRUE(sock_->IsConnected());
   }
@@ -1035,7 +1037,7 @@ TEST_P(QuicProxyClientSocketTest, MultipleReadsFromSameLargeFrame) {
 
   // Now attempt to do a read of more data than remains buffered
   scoped_refptr<IOBuffer> buf(new IOBuffer(kLen33));
-  ASSERT_EQ(kLen3, sock_->Read(buf.get(), kLen33, CompletionCallback()));
+  ASSERT_EQ(kLen3, sock_->Read(buf.get(), kLen33, CompletionOnceCallback()));
   ASSERT_EQ(spdy::SpdyString(kMsg3, kLen3),
             spdy::SpdyString(buf->data(), kLen3));
   ASSERT_TRUE(sock_->IsConnected());
@@ -1199,9 +1201,9 @@ TEST_P(QuicProxyClientSocketTest, ReadOnClosedSocketReturnsZero) {
   ResumeAndRun();
 
   ASSERT_FALSE(sock_->IsConnected());
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
   ASSERT_FALSE(sock_->IsConnectedAndIdle());
 }
 
@@ -1242,7 +1244,7 @@ TEST_P(QuicProxyClientSocketTest, ReadOnDisconnectSocketReturnsNotConnected) {
   sock_->Disconnect();
 
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Read(nullptr, 1, CompletionCallback()));
+            sock_->Read(nullptr, 1, CompletionOnceCallback()));
 }
 
 // Reading data after receiving FIN should return buffered data received before
@@ -1267,12 +1269,12 @@ TEST_P(QuicProxyClientSocketTest, ReadAfterFinReceivedReturnsBufferedData) {
   ResumeAndRun();
 
   AssertSyncReadEquals(kMsg1, kLen1);
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
-  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
+  ASSERT_EQ(0, sock_->Read(NULL, 1, CompletionOnceCallback()));
 
   sock_->Disconnect();
   ASSERT_EQ(ERR_SOCKET_NOT_CONNECTED,
-            sock_->Read(nullptr, 1, CompletionCallback()));
+            sock_->Read(nullptr, 1, CompletionOnceCallback()));
 }
 
 // Calling Write() on a closed socket is an error.

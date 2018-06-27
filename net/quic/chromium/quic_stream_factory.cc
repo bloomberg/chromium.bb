@@ -261,7 +261,7 @@ class QuicStreamFactory::CertVerifierJob {
 
   // Starts verification of certs cached in the |crypto_config|.
   quic::QuicAsyncStatus Run(quic::QuicCryptoClientConfig* crypto_config,
-                            const CompletionCallback& callback) {
+                            CompletionOnceCallback callback) {
     quic::QuicCryptoClientConfig::CachedState* cached =
         crypto_config->LookupOrCreate(server_id_);
     auto verify_callback = std::make_unique<ProofVerifierCallbackImpl>(this);
@@ -273,7 +273,7 @@ class QuicStreamFactory::CertVerifierJob {
             std::move(verify_callback));
     if (status == quic::QUIC_PENDING) {
       verify_callback_ = verify_callback_ptr;
-      callback_ = callback;
+      callback_ = std::move(callback);
     }
     return status;
   }
@@ -301,7 +301,7 @@ class QuicStreamFactory::CertVerifierJob {
   std::string verify_error_details_;
   const base::TimeTicks start_time_;
   const NetLogWithSource net_log_;
-  CompletionCallback callback_;
+  CompletionOnceCallback callback_;
   base::WeakPtrFactory<CertVerifierJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CertVerifierJob);
@@ -322,8 +322,8 @@ class QuicStreamFactory::Job {
 
   ~Job();
 
-  int Run(const CompletionCallback& host_resolution_callback,
-          const CompletionCallback& callback);
+  int Run(CompletionOnceCallback host_resolution_callback,
+          CompletionOnceCallback callback);
 
   int DoLoop(int rv);
   int DoResolveHost();
@@ -390,8 +390,8 @@ class QuicStreamFactory::Job {
   const NetLogWithSource net_log_;
   int num_sent_client_hellos_;
   QuicChromiumClientSession* session_;
-  CompletionCallback host_resolution_callback_;
-  CompletionCallback callback_;
+  CompletionOnceCallback host_resolution_callback_;
+  CompletionOnceCallback callback_;
   AddressList address_list_;
   base::TimeTicks dns_resolution_start_time_;
   base::TimeTicks dns_resolution_end_time_;
@@ -442,13 +442,12 @@ QuicStreamFactory::Job::~Job() {
   // non-null.
 }
 
-int QuicStreamFactory::Job::Run(
-    const CompletionCallback& host_resolution_callback,
-    const CompletionCallback& callback) {
+int QuicStreamFactory::Job::Run(CompletionOnceCallback host_resolution_callback,
+                                CompletionOnceCallback callback) {
   int rv = DoLoop(OK);
   if (rv == ERR_IO_PENDING) {
-    host_resolution_callback_ = host_resolution_callback;
-    callback_ = callback;
+    host_resolution_callback_ = std::move(host_resolution_callback);
+    callback_ = std::move(callback);
   }
 
   return rv > 0 ? OK : rv;
@@ -640,7 +639,7 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
                                const GURL& url,
                                const NetLogWithSource& net_log,
                                NetErrorDetails* net_error_details,
-                               const CompletionCallback& callback) {
+                               CompletionOnceCallback callback) {
   DCHECK_NE(quic_version, quic::QUIC_VERSION_UNSUPPORTED);
   DCHECK(net_error_details);
   DCHECK(callback_.is_null());
@@ -655,7 +654,7 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
                             cert_verify_flags, url, net_log, this);
   if (rv == ERR_IO_PENDING) {
     net_log_ = net_log;
-    callback_ = callback;
+    callback_ = std::move(callback);
   } else {
     DCHECK(!expect_on_host_resolution_);
     factory_ = nullptr;
@@ -666,11 +665,10 @@ int QuicStreamRequest::Request(const HostPortPair& destination,
   return rv;
 }
 
-bool QuicStreamRequest::WaitForHostResolution(
-    const CompletionCallback& callback) {
+bool QuicStreamRequest::WaitForHostResolution(CompletionOnceCallback callback) {
   DCHECK(host_resolution_callback_.is_null());
   if (expect_on_host_resolution_) {
-    host_resolution_callback_ = callback;
+    host_resolution_callback_ = std::move(callback);
   }
   return expect_on_host_resolution_;
 }

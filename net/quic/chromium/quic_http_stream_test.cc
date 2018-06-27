@@ -1230,7 +1230,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequest) {
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
   request_.upload_data_stream = upload_data_stream_.get();
-  ASSERT_THAT(request_.upload_data_stream->Init(CompletionCallback(),
+  ASSERT_THAT(request_.upload_data_stream->Init(CompletionOnceCallback(),
                                                 NetLogWithSource()),
               IsOk());
 
@@ -1300,7 +1300,7 @@ TEST_P(QuicHttpStreamTest, SendPostRequestAndReceiveSoloFin) {
   request_.method = "POST";
   request_.url = GURL("https://www.example.org/");
   request_.upload_data_stream = upload_data_stream_.get();
-  ASSERT_THAT(request_.upload_data_stream->Init(CompletionCallback(),
+  ASSERT_THAT(request_.upload_data_stream->Init(CompletionOnceCallback(),
                                                 NetLogWithSource()),
               IsOk());
 
