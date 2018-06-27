@@ -242,6 +242,21 @@ void CompositingRequirementsUpdater::Update(
                   absolute_descendant_bounding_box, compositing_reasons_stats);
 }
 
+#if DCHECK_IS_ON()
+static void CheckSubtreeHasNoCompositing(PaintLayer* layer) {
+  if (!layer->StackingNode())
+    return;
+  PaintLayerStackingNodeIterator iterator(
+      *layer->StackingNode(),
+      kNegativeZOrderChildren | kNormalFlowChildren | kPositiveZOrderChildren);
+  while (PaintLayer* cur_layer = iterator.Next()) {
+    DCHECK(cur_layer->GetCompositingState() == kNotComposited);
+    DCHECK(!cur_layer->DirectCompositingReasons());
+    CheckSubtreeHasNoCompositing(cur_layer);
+  }
+}
+#endif
+
 void CompositingRequirementsUpdater::UpdateRecursive(
     PaintLayer* ancestor_layer,
     PaintLayer* layer,
@@ -489,6 +504,11 @@ void CompositingRequirementsUpdater::UpdateRecursive(
           absolute_child_descendant_bounding_box);
     }
   }
+
+#if DCHECK_IS_ON()
+  if (skip_children)
+    CheckSubtreeHasNoCompositing(layer);
+#endif
 
   // Now that the subtree has been traversed, we can check for compositing
   // reasons that depended on the state of the subtree.

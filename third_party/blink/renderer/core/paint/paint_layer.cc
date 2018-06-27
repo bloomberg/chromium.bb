@@ -2377,7 +2377,7 @@ void PaintLayer::ClearNeedsCompositingLayerAssignment() {
 }
 
 void PaintLayer::SetNeedsCompositingRequirementsUpdate() {
-  for (PaintLayer* curr = Parent();
+  for (PaintLayer* curr = this;
        curr && !curr->DescendantMayNeedCompositingRequirementsUpdate();
        curr = curr->Parent()) {
     curr->descendant_may_need_compositing_requirements_update_ = true;
