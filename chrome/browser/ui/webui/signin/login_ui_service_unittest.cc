@@ -7,11 +7,22 @@
 #include "base/compiler_specific.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/test/base/browser_with_test_window_test.h"
+#include "content/public/browser/web_contents.h"
+#endif
 
 class LoginUIServiceTest : public testing::Test {
  public:
@@ -84,3 +95,34 @@ TEST_F(LoginUIServiceTest, SetProfileBlockingErrorMessage) {
   EXPECT_EQ(base::string16(), service.GetLastLoginErrorEmail());
   EXPECT_TRUE(service.IsDisplayingProfileBlockedErrorMessage());
 }
+
+#if !defined(OS_CHROMEOS)
+class LoginUIServiceLoginPopupTest : public BrowserWithTestWindowTest {
+ public:
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+
+    service_ = std::make_unique<LoginUIService>(profile());
+    model_ = browser()->tab_strip_model();
+    ASSERT_EQ(0, model_->count());
+  }
+
+  std::unique_ptr<LoginUIService> service_;
+  TabStripModel* model_;
+};
+
+TEST_F(LoginUIServiceLoginPopupTest, ShowLoginPop) {
+  service_->ShowLoginPopup();
+  EXPECT_EQ(1, model_->count());
+}
+
+TEST_F(LoginUIServiceLoginPopupTest, NotShowLoginPopAsLockedProfile) {
+  ProfileAttributesEntry* entry;
+  ASSERT_TRUE(g_browser_process->profile_manager()
+                  ->GetProfileAttributesStorage()
+                  .GetProfileAttributesWithPath(profile()->GetPath(), &entry));
+  entry->SetIsSigninRequired(true);
+  service_->ShowLoginPopup();
+  EXPECT_EQ(0, model_->count());
+}
+#endif

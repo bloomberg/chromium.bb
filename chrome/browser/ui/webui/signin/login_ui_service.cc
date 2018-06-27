@@ -5,7 +5,11 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_attributes_entry.h"
+#include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -206,6 +210,18 @@ void LoginUIService::ShowLoginPopup() {
 #if defined(OS_CHROMEOS)
   NOTREACHED();
 #else
+  // There is no sign-in flow for guest or system profile.
+  if (profile_->IsGuestSession() || profile_->IsSystemProfile())
+    return;
+  // Locked profile should be unlocked with UserManager only.
+  ProfileAttributesEntry* entry;
+  if (g_browser_process->profile_manager()
+          ->GetProfileAttributesStorage()
+          .GetProfileAttributesWithPath(profile_->GetPath(), &entry) &&
+      entry->IsSigninRequired()) {
+    return;
+  }
+
   chrome::ScopedTabbedBrowserDisplayer displayer(profile_);
   chrome::ShowBrowserSignin(
       displayer.browser(),
