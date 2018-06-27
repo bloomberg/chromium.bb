@@ -33,7 +33,9 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   TouchDevicesController();
   ~TouchDevicesController() override;
 
-  static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+  static void RegisterLocalStatePrefs(PrefRegistrySimple* registry,
+                                      bool for_test);
+  static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
   // Toggles the status of touchpad between enabled and disabled.
   void ToggleTouchpad();
@@ -55,6 +57,7 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   void SetTouchscreenEnabled(bool enabled, TouchDeviceEnabledSource source);
 
   bool tap_dragging_enabled_for_test() { return tap_dragging_enabled_; }
+  bool tap_to_click_enabled_for_test() { return tap_to_click_enabled_; }
 
  private:
   // Overridden from SessionObserver:
@@ -69,6 +72,9 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   // Updates tap dragging enabled state from prefs.
   void UpdateTapDraggingEnabled();
 
+  // Updates tap to click enabled state from prefs.
+  void UpdateTapToClickEnabled();
+
   // Updates the actual enabled/disabled status of the touchpad.
   void UpdateTouchpadEnabled();
 
@@ -82,6 +88,9 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
 
   // Saves the tap dragging enabled state from prefs.
   bool tap_dragging_enabled_ = false;
+
+  // Saves the tap to click enabled state from prefs.
+  bool tap_to_click_enabled_ = true;
 
   // The touchscreen state which is associated with the global touch device
   // enabled source.

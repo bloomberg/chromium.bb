@@ -9,6 +9,7 @@
 
 #include "ash/accessibility/focus_ring_controller.h"
 #include "ash/public/cpp/ash_features.h"
+#include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
@@ -1204,8 +1205,11 @@ void ShowLoginWizard(OobeScreen first_screen) {
     // login screen.
     system::InputDeviceSettings::Get()->SetPrimaryButtonRight(
         prefs->GetBoolean(prefs::kOwnerPrimaryMouseButtonRight));
+    // TODO(jamescook): move to ash in OnLocalStatePrefServiceInitialized() once
+    // user session info could distinguish between owner and non-owner
+    // (http://crbug.com/857103).
     system::InputDeviceSettings::Get()->SetTapToClick(
-        prefs->GetBoolean(prefs::kOwnerTapToClickEnabled));
+        prefs->GetBoolean(ash::prefs::kOwnerTapToClickEnabled));
   }
   system::InputDeviceSettings::Get()->SetNaturalScroll(
       base::CommandLine::ForCurrentProcess()->HasSwitch(
