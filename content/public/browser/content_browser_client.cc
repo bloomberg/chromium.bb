@@ -173,7 +173,7 @@ bool ContentBrowserClient::ShouldSwapBrowsingInstancesForNavigation(
 }
 
 bool ContentBrowserClient::ShouldIsolateErrorPage(bool in_main_frame) {
-  return false;
+  return in_main_frame;
 }
 
 std::unique_ptr<media::AudioManager> ContentBrowserClient::CreateAudioManager(
