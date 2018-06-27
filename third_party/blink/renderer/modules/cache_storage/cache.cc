@@ -762,9 +762,15 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
 
     if (ShouldGenerateV8CodeCache(script_state, responses[i])) {
       FetchDataLoader* loader = FetchDataLoader::CreateLoaderAsArrayBuffer();
-      buffer->StartLoading(loader, new CodeCacheHandleCallbackForPut(
-                                       script_state, i, barrier_callback,
-                                       requests[i], responses[i]));
+      buffer->StartLoading(
+          loader,
+          new CodeCacheHandleCallbackForPut(script_state, i, barrier_callback,
+                                            requests[i], responses[i]),
+          exception_state);
+      if (exception_state.HadException()) {
+        barrier_callback->OnError("Could not inspect response body state");
+        return promise;
+      }
       continue;
     }
 
@@ -773,9 +779,14 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
       // the blob handle and dispatch the put batch asynchronously.
       FetchDataLoader* loader = FetchDataLoader::CreateLoaderAsBlobHandle(
           responses[i]->InternalMIMEType());
-      buffer->StartLoading(
-          loader, new BlobHandleCallbackForPut(i, barrier_callback, requests[i],
-                                               responses[i]));
+      buffer->StartLoading(loader,
+                           new BlobHandleCallbackForPut(
+                               i, barrier_callback, requests[i], responses[i]),
+                           exception_state);
+      if (exception_state.HadException()) {
+        barrier_callback->OnError("Could not inspect response body state");
+        return promise;
+      }
       continue;
     }
 

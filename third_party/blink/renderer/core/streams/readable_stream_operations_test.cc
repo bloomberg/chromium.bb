@@ -370,15 +370,15 @@ TEST(ReadableStreamOperationsTest, IsReadable) {
   ASSERT_FALSE(closed.IsEmpty());
   ASSERT_FALSE(errored.IsEmpty());
 
-  EXPECT_TRUE(
-      ReadableStreamOperations::IsReadable(scope.GetScriptState(), readable)
-          .value_or(false));
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsReadable(scope.GetScriptState(), closed)
-          .value_or(true));
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsReadable(scope.GetScriptState(), errored)
-          .value_or(true));
+  EXPECT_TRUE(ReadableStreamOperations::IsReadable(
+                  scope.GetScriptState(), readable, ASSERT_NO_EXCEPTION)
+                  .value_or(false));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadable(scope.GetScriptState(),
+                                                    closed, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
+  EXPECT_FALSE(ReadableStreamOperations::IsReadable(
+                   scope.GetScriptState(), errored, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
 }
 
 TEST(ReadableStreamOperationsTest, IsClosed) {

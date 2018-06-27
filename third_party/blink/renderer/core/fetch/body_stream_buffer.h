@@ -44,9 +44,12 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
 
   // Callable only when neither locked nor disturbed.
   scoped_refptr<BlobDataHandle> DrainAsBlobDataHandle(
-      BytesConsumer::BlobSizePolicy);
-  scoped_refptr<EncodedFormData> DrainAsFormData();
-  void StartLoading(FetchDataLoader*, FetchDataLoader::Client* /* client */);
+      BytesConsumer::BlobSizePolicy,
+      ExceptionState&);
+  scoped_refptr<EncodedFormData> DrainAsFormData(ExceptionState&);
+  void StartLoading(FetchDataLoader*,
+                    FetchDataLoader::Client* /* client */,
+                    ExceptionState&);
   void Tee(BodyStreamBuffer**, BodyStreamBuffer**, ExceptionState&);
 
   // UnderlyingSourceBase
@@ -59,13 +62,13 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void OnStateChange() override;
   String DebugName() const override { return "BodyStreamBuffer"; }
 
-  bool IsStreamReadable();
+  base::Optional<bool> IsStreamReadable(ExceptionState&);
   bool IsStreamClosed();
   bool IsStreamErrored();
   bool IsStreamLocked();
   base::Optional<bool> IsStreamDisturbed(ExceptionState&);
   bool IsStreamDisturbedForDCheck();
-  void CloseAndLockAndDisturb();
+  void CloseAndLockAndDisturb(ExceptionState&);
   ScriptState* GetScriptState() { return script_state_.get(); }
 
   bool IsAborted();
@@ -80,7 +83,7 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
  private:
   class LoaderClient;
 
-  BytesConsumer* ReleaseHandle();
+  BytesConsumer* ReleaseHandle(ExceptionState&);
   void Abort();
   void Close();
   void GetError();

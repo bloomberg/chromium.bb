@@ -209,9 +209,9 @@ void CheckResponseStream(ScriptState* script_state,
   EXPECT_CALL(*client2, DidFetchDataLoadedString(String("Hello, world")));
 
   response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client1);
+      FetchDataLoader::CreateLoaderAsString(), client1, ASSERT_NO_EXCEPTION);
   cloned_response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client2);
+      FetchDataLoader::CreateLoaderAsString(), client2, ASSERT_NO_EXCEPTION);
   blink::test::RunPendingTasks();
 }
 
@@ -310,9 +310,9 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
   EXPECT_CALL(*client2, DidFetchDataLoadFailed());
 
   response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client1);
+      FetchDataLoader::CreateLoaderAsString(), client1, ASSERT_NO_EXCEPTION);
   cloned_response->InternalBodyBuffer()->StartLoading(
-      FetchDataLoader::CreateLoaderAsString(), client2);
+      FetchDataLoader::CreateLoaderAsString(), client2, ASSERT_NO_EXCEPTION);
   blink::test::RunPendingTasks();
 }
 

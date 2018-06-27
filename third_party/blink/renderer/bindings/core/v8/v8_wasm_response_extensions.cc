@@ -25,7 +25,7 @@ class FetchDataLoaderAsWasmModule final : public FetchDataLoader,
   USING_GARBAGE_COLLECTED_MIXIN(FetchDataLoaderAsWasmModule);
 
  public:
-  FetchDataLoaderAsWasmModule(ScriptState* script_state)
+  explicit FetchDataLoaderAsWasmModule(ScriptState* script_state)
       : builder_(script_state->GetIsolate()), script_state_(script_state) {}
 
   void Start(BytesConsumer* consumer,
@@ -123,7 +123,7 @@ class WasmDataLoaderClient final
   USING_GARBAGE_COLLECTED_MIXIN(WasmDataLoaderClient);
 
  public:
-  explicit WasmDataLoaderClient() = default;
+  WasmDataLoaderClient() = default;
   void DidFetchDataLoadedCustomFormat() override {}
   void DidFetchDataLoadFailed() override { NOTREACHED(); }
   void Abort() override {
@@ -189,7 +189,10 @@ void CompileFromResponseCallback(
   FetchDataLoaderAsWasmModule* loader =
       new FetchDataLoaderAsWasmModule(script_state);
   v8::Local<v8::Value> promise = loader->GetPromise();
-  response->BodyBuffer()->StartLoading(loader, new WasmDataLoaderClient());
+  response->BodyBuffer()->StartLoading(loader, new WasmDataLoaderClient(),
+                                       exception_state);
+  if (exception_state.HadException())
+    return;
 
   V8SetReturnValue(args, promise);
 }

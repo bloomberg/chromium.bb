@@ -173,7 +173,8 @@ ScriptValue BodyStreamBuffer::Stream() {
 }
 
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
-    BytesConsumer::BlobSizePolicy policy) {
+    BytesConsumer::BlobSizePolicy policy,
+    ExceptionState& exception_state) {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbedForDCheck());
   if (IsStreamClosed() || IsStreamErrored())
@@ -185,13 +186,16 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
   scoped_refptr<BlobDataHandle> blob_data_handle =
       consumer_->DrainAsBlobDataHandle(policy);
   if (blob_data_handle) {
-    CloseAndLockAndDisturb();
+    CloseAndLockAndDisturb(exception_state);
+    if (exception_state.HadException())
+      return nullptr;
     return blob_data_handle;
   }
   return nullptr;
 }
 
-scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
+scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
+    ExceptionState& exception_state) {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbedForDCheck());
   if (IsStreamClosed() || IsStreamErrored())
@@ -202,14 +206,17 @@ scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData() {
 
   scoped_refptr<EncodedFormData> form_data = consumer_->DrainAsFormData();
   if (form_data) {
-    CloseAndLockAndDisturb();
+    CloseAndLockAndDisturb(exception_state);
+    if (exception_state.HadException())
+      return nullptr;
     return form_data;
   }
   return nullptr;
 }
 
 void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
-                                    FetchDataLoader::Client* client) {
+                                    FetchDataLoader::Client* client,
+                                    ExceptionState& exception_state) {
   DCHECK(!loader_);
   DCHECK(script_state_->ContextIsValid());
   loader_ = loader;
@@ -221,7 +228,10 @@ void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
     signal_->AddAlgorithm(
         WTF::Bind(&FetchDataLoader::Client::Abort, WrapWeakPersistent(client)));
   }
-  loader->Start(ReleaseHandle(),
+  auto* handle = ReleaseHandle(exception_state);
+  if (exception_state.HadException())
+    return;
+  loader->Start(handle,
                 new LoaderClient(ExecutionContext::From(script_state_.get()),
                                  this, client));
 }
@@ -267,8 +277,13 @@ void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
   }
   BytesConsumer* dest1 = nullptr;
   BytesConsumer* dest2 = nullptr;
-  BytesConsumer::Tee(ExecutionContext::From(script_state_.get()),
-                     ReleaseHandle(), &dest1, &dest2);
+  auto* handle = ReleaseHandle(exception_state);
+  if (exception_state.HadException()) {
+    stream_broken_ = true;
+    return;
+  }
+  BytesConsumer::Tee(ExecutionContext::From(script_state_.get()), handle,
+                     &dest1, &dest2);
   *branch1 = new BodyStreamBuffer(script_state_.get(), dest1, signal_);
   *branch2 = new BodyStreamBuffer(script_state_.get(), dest2, signal_);
 }
@@ -328,9 +343,10 @@ void BodyStreamBuffer::ContextDestroyed(ExecutionContext* destroyed_context) {
   UnderlyingSourceBase::ContextDestroyed(destroyed_context);
 }
 
-bool BodyStreamBuffer::IsStreamReadable() {
-  return BooleanStreamOperationOrFallback(ReadableStreamOperations::IsReadable,
-                                          false);
+base::Optional<bool> BodyStreamBuffer::IsStreamReadable(
+    ExceptionState& exception_state) {
+  return BooleanStreamOperation(ReadableStreamOperations::IsReadable,
+                                exception_state);
 }
 
 bool BodyStreamBuffer::IsStreamClosed() {
@@ -359,14 +375,17 @@ bool BodyStreamBuffer::IsStreamDisturbedForDCheck() {
                                                         Stream());
 }
 
-void BodyStreamBuffer::CloseAndLockAndDisturb() {
-  if (IsStreamReadable()) {
+void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
+  base::Optional<bool> is_readable = IsStreamReadable(exception_state);
+  if (exception_state.HadException())
+    return;
+  DCHECK(is_readable.has_value());
+  if (is_readable.value()) {
     // Note that the stream cannot be "draining", because it doesn't have
     // the internal buffer.
     Close();
   }
-  if (stream_broken_)
-    return;
+  DCHECK(!stream_broken_);
 
   ScriptState::Scope scope(script_state_.get());
   ScriptValue reader =
@@ -500,13 +519,16 @@ base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
   return result;
 }
 
-BytesConsumer* BodyStreamBuffer::ReleaseHandle() {
+BytesConsumer* BodyStreamBuffer::ReleaseHandle(
+    ExceptionState& exception_state) {
   DCHECK(!IsStreamLocked());
   DCHECK(!IsStreamDisturbedForDCheck());
 
   if (stream_broken_) {
-    return BytesConsumer::CreateErrored(
-        BytesConsumer::Error("ReleaseHandle called with broken stream"));
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Body stream has suffered a fatal error and cannot be inspected");
+    return nullptr;
   }
 
   if (made_from_readable_stream_) {
@@ -519,6 +541,8 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle() {
     // , we don't need to keep the reader explicitly.
     ScriptValue reader =
         ReadableStreamOperations::GetReader(script_state_.get(), Stream());
+    // TODO(ricea): Make GetReader take an ExceptionState& and raise the
+    // exception.
     if (reader.IsEmpty()) {
       stream_broken_ = true;
       return BytesConsumer::CreateErrored(
@@ -531,7 +555,9 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle() {
   const bool is_errored = IsStreamErrored();
   BytesConsumer* consumer = consumer_.Release();
 
-  CloseAndLockAndDisturb();
+  CloseAndLockAndDisturb(exception_state);
+  if (exception_state.HadException())
+    return nullptr;
 
   if (is_closed) {
     // Note that the stream cannot be "draining", because it doesn't have

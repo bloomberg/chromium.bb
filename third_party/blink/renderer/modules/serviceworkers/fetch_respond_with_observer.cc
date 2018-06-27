@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/inspector/console_types.h"
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 
@@ -163,6 +164,9 @@ FetchRespondWithObserver* FetchRespondWithObserver::Create(
                                       request_context, observer);
 }
 
+// This function may be called when an exception is scheduled. Thus, it must
+// never invoke any code that might throw. In particular, it must never invoke
+// JavaScript.
 void FetchRespondWithObserver::OnResponseRejected(
     ServiceWorkerResponseError error) {
   DCHECK(GetExecutionContext());
@@ -262,7 +266,12 @@ void FetchRespondWithObserver::OnResponseFulfilled(
   if (buffer) {
     scoped_refptr<BlobDataHandle> blob_data_handle =
         buffer->DrainAsBlobDataHandle(
-            BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize);
+            BytesConsumer::BlobSizePolicy::kAllowBlobWithInvalidSize,
+            exception_state);
+    if (exception_state.HadException()) {
+      OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
+      return;
+    }
     if (blob_data_handle) {
       // Handle the blob response body.
       web_response.SetBlobDataHandle(blob_data_handle);
@@ -290,7 +299,12 @@ void FetchRespondWithObserver::OnResponseFulfilled(
 
     buffer->StartLoading(FetchDataLoader::CreateLoaderAsDataPipe(
                              std::move(producer), task_runner_),
-                         new FetchLoaderClient(std::move(body_stream_handle)));
+                         new FetchLoaderClient(std::move(body_stream_handle)),
+                         exception_state);
+    if (exception_state.HadException()) {
+      OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
+      return;
+    }
     return;
   }
   ServiceWorkerGlobalScopeClient::From(GetExecutionContext())
