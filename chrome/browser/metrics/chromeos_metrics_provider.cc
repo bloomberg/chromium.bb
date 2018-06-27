@@ -85,9 +85,6 @@ void IncrementPrefValue(const char* path) {
   pref->SetInteger(path, value + 1);
 }
 
-const base::Feature kUmaShortHWClass{"UmaShortHWClass",
-                                     base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Called on a background thread to load hardware class information.
 std::string GetFullHardwareClassOnBackgroundThread() {
   std::string full_hardware_class;
@@ -97,6 +94,16 @@ std::string GetFullHardwareClassOnBackgroundThread() {
 }
 
 }  // namespace
+
+namespace features {
+
+// Populates hardware class field in system_profile proto with the
+// short hardware class if enabled. If disabled, hardware class will have same
+// value as full hardware class.
+const base::Feature kUmaShortHWClass{"UmaShortHWClass",
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
+
+}  // namespace features
 
 ChromeOSMetricsProvider::ChromeOSMetricsProvider()
     : registered_user_count_at_log_initialization_(false),
@@ -140,7 +147,7 @@ ChromeOSMetricsProvider::GetEnrollmentStatus() {
 }
 
 void ChromeOSMetricsProvider::Init() {
-  if (base::FeatureList::IsEnabled(kUmaShortHWClass)) {
+  if (base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
     hardware_class_ =
         variations::VariationsFieldTrialCreator::GetShortHardwareClass();
   }
@@ -330,7 +337,7 @@ void ChromeOSMetricsProvider::SetBluetoothAdapter(
 void ChromeOSMetricsProvider::SetFullHardwareClass(
     base::Closure callback,
     std::string full_hardware_class) {
-  if (!base::FeatureList::IsEnabled(kUmaShortHWClass)) {
+  if (!base::FeatureList::IsEnabled(features::kUmaShortHWClass)) {
     DCHECK(hardware_class_.empty());
     hardware_class_ = full_hardware_class;
   }

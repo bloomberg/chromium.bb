@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/metrics/perf/perf_provider_chromeos.h"
@@ -14,6 +15,10 @@
 
 namespace device {
 class BluetoothAdapter;
+}
+
+namespace features {
+extern const base::Feature kUmaShortHWClass;
 }
 
 namespace metrics {
