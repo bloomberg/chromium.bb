@@ -42,6 +42,10 @@ class FormGroup {
   virtual void SetRawInfo(ServerFieldType type,
                           const base::string16& value) = 0;
 
+  // Returns true iff the string associated with |type| is nonempty (without
+  // canonicalizing its value).
+  bool HasRawInfo(ServerFieldType type) const;
+
   // Returns the string that should be auto-filled into a text field given the
   // type of that field, localized to the given |app_locale| if appropriate.
   base::string16 GetInfo(ServerFieldType type,

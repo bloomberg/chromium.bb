@@ -403,6 +403,12 @@ bool AutofillProfile::EqualsForSyncPurposes(const AutofillProfile& profile)
          EqualsSansGuid(profile);
 }
 
+bool AutofillProfile::EqualsIncludingUsageStatsForTesting(
+    const AutofillProfile& profile) const {
+  return use_count() == profile.use_count() &&
+         use_date() == profile.use_date() && *this == profile;
+}
+
 bool AutofillProfile::operator==(const AutofillProfile& profile) const {
   return guid() == profile.guid() && EqualsSansGuid(profile);
 }
@@ -959,9 +965,9 @@ bool AutofillProfile::EqualsSansGuid(const AutofillProfile& profile) const {
          Compare(profile) == 0;
 }
 
-// So we can compare AutofillProfiles with EXPECT_EQ().
 std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
   return os << profile.guid() << " " << profile.origin() << " "
+            << UTF16ToUTF8(profile.GetRawInfo(NAME_FULL)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(NAME_FIRST)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(NAME_MIDDLE)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(NAME_LAST)) << " "
@@ -969,6 +975,7 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
             << UTF16ToUTF8(profile.GetRawInfo(COMPANY_NAME)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE1)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE2)) << " "
+            << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_LINE3)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_DEPENDENT_LOCALITY))
             << " " << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_CITY)) << " "
             << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_STATE)) << " "
@@ -977,7 +984,8 @@ std::ostream& operator<<(std::ostream& os, const AutofillProfile& profile) {
             << UTF16ToUTF8(profile.GetRawInfo(ADDRESS_HOME_COUNTRY)) << " "
             << profile.language_code() << " "
             << UTF16ToUTF8(profile.GetRawInfo(PHONE_HOME_WHOLE_NUMBER)) << " "
-            << profile.GetValidityBitfieldValue();
+            << profile.GetValidityBitfieldValue() << " " << profile.use_count()
+            << " " << profile.use_date();
 }
 
 }  // namespace autofill

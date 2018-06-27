@@ -45,6 +45,10 @@ void FormGroup::GetNonEmptyTypes(const std::string& app_locale,
   }
 }
 
+bool FormGroup::HasRawInfo(ServerFieldType type) const {
+  return !GetRawInfo(type).empty();
+}
+
 base::string16 FormGroup::GetInfo(ServerFieldType type,
                                   const std::string& app_locale) const {
   return GetInfoImpl(AutofillType(type), app_locale);

@@ -99,8 +99,12 @@ class AutofillProfile : public AutofillDataModel,
   bool EqualsSansOrigin(const AutofillProfile& profile) const;
 
   // Same as operator==, but ignores differences in guid and cares about
-  // differences in usage stats and validity state.
+  // differences in usage stats.
   bool EqualsForSyncPurposes(const AutofillProfile& profile) const;
+
+  // Same as operator==, but cares about differences in usage stats.
+  bool EqualsIncludingUsageStatsForTesting(
+      const AutofillProfile& profile) const;
 
   // Equality operators compare GUIDs, origins, language code, and the contents
   // in the comparison. Usage metadata (use count, use date, modification date)
