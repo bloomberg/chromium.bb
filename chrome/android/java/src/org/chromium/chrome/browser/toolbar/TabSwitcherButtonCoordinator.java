@@ -122,8 +122,8 @@ public class TabSwitcherButtonCoordinator {
     }
 
     public void destroy() {
-        mTabModelSelector.removeObserver(mTabModelSelectorObserver);
-        mTabModelSelectorTabModelObserver.destroy();
+        if (mTabModelSelector != null) mTabModelSelector.removeObserver(mTabModelSelectorObserver);
+        if (mTabModelSelectorTabModelObserver != null) mTabModelSelectorTabModelObserver.destroy();
     }
 
     private void updateTabCount() {
