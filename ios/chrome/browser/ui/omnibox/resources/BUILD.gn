@@ -30,3 +30,48 @@ imageset("omnibox_clear_icon") {
     "omnibox_clear_icon.imageset/omnibox_clear_icon@3x.png",
   ]
 }
+
+imageset("omnibox_completion_default_favicon") {
+  sources = [
+    "omnibox_completion_default_favicon.imageset/Contents.json",
+    "omnibox_completion_default_favicon.imageset/omnibox_completion_default_favicon.png",
+    "omnibox_completion_default_favicon.imageset/omnibox_completion_default_favicon@2x.png",
+    "omnibox_completion_default_favicon.imageset/omnibox_completion_default_favicon@3x.png",
+  ]
+}
+
+imageset("omnibox_completion_bookmark") {
+  sources = [
+    "omnibox_completion_bookmark.imageset/Contents.json",
+    "omnibox_completion_bookmark.imageset/omnibox_completion_bookmark.png",
+    "omnibox_completion_bookmark.imageset/omnibox_completion_bookmark@2x.png",
+    "omnibox_completion_bookmark.imageset/omnibox_completion_bookmark@3x.png",
+  ]
+}
+
+imageset("omnibox_completion_calculator") {
+  sources = [
+    "omnibox_completion_calculator.imageset/Contents.json",
+    "omnibox_completion_calculator.imageset/omnibox_completion_calculator.png",
+    "omnibox_completion_calculator.imageset/omnibox_completion_calculator@2x.png",
+    "omnibox_completion_calculator.imageset/omnibox_completion_calculator@3x.png",
+  ]
+}
+
+imageset("omnibox_completion_history") {
+  sources = [
+    "omnibox_completion_history.imageset/Contents.json",
+    "omnibox_completion_history.imageset/omnibox_completion_history.png",
+    "omnibox_completion_history.imageset/omnibox_completion_history@2x.png",
+    "omnibox_completion_history.imageset/omnibox_completion_history@3x.png",
+  ]
+}
+
+imageset("omnibox_completion_search") {
+  sources = [
+    "omnibox_completion_search.imageset/Contents.json",
+    "omnibox_completion_search.imageset/omnibox_completion_search.png",
+    "omnibox_completion_search.imageset/omnibox_completion_search@2x.png",
+    "omnibox_completion_search.imageset/omnibox_completion_search@3x.png",
+  ]
+}

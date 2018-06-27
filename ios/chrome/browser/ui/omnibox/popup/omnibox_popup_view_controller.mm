@@ -229,8 +229,13 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)updateRow:(OmniboxPopupRow*)row
         withMatch:(id<AutocompleteSuggestion>)match {
-  const CGFloat kTextCellLeadingPadding =
+  CGFloat kTextCellLeadingPadding =
       IsIPadIdiom() ? (!IsCompactTablet() ? 192 : 100) : 16;
+  if (IsUIRefreshPhase1Enabled()) {
+    kTextCellLeadingPadding =
+        IsIPadIdiom() ? (!IsCompactTablet() ? 221 : 100) : 24;
+  }
+
   const CGFloat kTextCellTopPadding = 6;
   const CGFloat kDetailCellTopPadding = 26;
   const CGFloat kTextLabelHeight = 24;
@@ -337,7 +342,14 @@ UIColor* BackgroundColorIncognito() {
   // The leading image (e.g. magnifying glass, star, clock) is only shown on
   // iPad.
   if (IsIPadIdiom()) {
-    [row updateLeadingImage:match.imageID];
+    UIImage* image = nil;
+    if (IsUIRefreshPhase1Enabled()) {
+      image = match.suggestionTypeIcon;
+    } else {
+      image = NativeImage(match.imageID);
+    }
+    DCHECK(image);
+    [row updateLeadingImage:image];
   }
 
   // Show append button for search history/search suggestions as the right

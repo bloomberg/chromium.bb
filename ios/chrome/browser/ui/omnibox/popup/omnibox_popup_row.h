@@ -33,7 +33,7 @@
 
 // Update the match type icon with the supplied image ID and adjust its position
 // based on the current size of the row.
-- (void)updateLeadingImage:(int)imageID;
+- (void)updateLeadingImage:(UIImage*)image;
 
 @end
 

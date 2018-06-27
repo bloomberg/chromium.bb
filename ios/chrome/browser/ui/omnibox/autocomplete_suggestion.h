@@ -24,6 +24,10 @@ class GURL;
 // The leading image for this suggestion type (loupe, globe, etc). Values are
 // described in AutocompleteMatchType enum.
 - (int)imageID;
+// The leading image for this suggestion type (loupe, globe, etc). The returned
+// image is in template rendering mode, it is expected to be tinted by the image
+// view.
+- (UIImage*)suggestionTypeIcon;
 
 // Text of the suggestion.
 - (NSAttributedString*)text;

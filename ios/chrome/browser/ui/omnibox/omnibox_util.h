@@ -14,6 +14,12 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
                                     bool is_starred,
                                     bool is_incognito);
 
+// Converts |type| to a resource identifier for the appropriate icon for this
+// type to show in the omnibox. Returns UI Refresh icons.
+std::string GetResourceNameForAutocompleteMatchType(
+    AutocompleteMatchType::Type type,
+    bool is_starred);
+
 // Converts |security_level| to a resource identifier for the appropriate icon
 // for this security level in the omnibox.
 int GetIconForSecurityState(security_state::SecurityLevel security_level);

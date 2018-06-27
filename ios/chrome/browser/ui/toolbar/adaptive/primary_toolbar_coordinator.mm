@@ -117,6 +117,11 @@
 }
 
 - (void)transitionToLocationBarFocusedState:(BOOL)focused {
+  if (self.viewController.traitCollection.verticalSizeClass ==
+      UIUserInterfaceSizeClassUnspecified) {
+    return;
+  }
+
   [self.orchestrator
       transitionToStateOmniboxFocused:focused
                       toolbarExpanded:focused && !IsRegularXRegularSizeClass(

@@ -55,6 +55,47 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
   }
 }
 
+std::string GetResourceNameForAutocompleteMatchType(
+    AutocompleteMatchType::Type type,
+    bool is_starred) {
+  if (is_starred)
+    return "omnibox_completion_bookmark";
+
+  switch (type) {
+    case AutocompleteMatchType::BOOKMARK_TITLE:
+    case AutocompleteMatchType::CLIPBOARD:
+    case AutocompleteMatchType::NAVSUGGEST:
+    case AutocompleteMatchType::NAVSUGGEST_PERSONALIZED:
+    case AutocompleteMatchType::PHYSICAL_WEB_DEPRECATED:
+    case AutocompleteMatchType::PHYSICAL_WEB_OVERFLOW_DEPRECATED:
+    case AutocompleteMatchType::URL_WHAT_YOU_TYPED:
+      return "omnibox_completion_default_favicon";
+    case AutocompleteMatchType::HISTORY_BODY:
+    case AutocompleteMatchType::HISTORY_KEYWORD:
+    case AutocompleteMatchType::HISTORY_TITLE:
+    case AutocompleteMatchType::HISTORY_URL:
+    case AutocompleteMatchType::SEARCH_HISTORY:
+    case AutocompleteMatchType::TAB_SEARCH_DEPRECATED:
+      return "omnibox_completion_history";
+    case AutocompleteMatchType::CONTACT_DEPRECATED:
+    case AutocompleteMatchType::SEARCH_OTHER_ENGINE:
+    case AutocompleteMatchType::SEARCH_SUGGEST:
+    case AutocompleteMatchType::SEARCH_SUGGEST_ENTITY:
+    case AutocompleteMatchType::SEARCH_SUGGEST_PERSONALIZED:
+    case AutocompleteMatchType::SEARCH_SUGGEST_PROFILE:
+    case AutocompleteMatchType::SEARCH_SUGGEST_TAIL:
+    case AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED:
+    case AutocompleteMatchType::VOICE_SUGGEST:
+      return "omnibox_completion_search";
+    case AutocompleteMatchType::CALCULATOR:
+      return "omnibox_completion_calculator";
+    case AutocompleteMatchType::EXTENSION_APP_DEPRECATED:
+    case AutocompleteMatchType::NUM_TYPES:
+      NOTREACHED();
+      return "omnibox_completion_default_favicon";
+  }
+}
+
 int GetIconForSecurityState(security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
