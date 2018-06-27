@@ -12,25 +12,25 @@
 
 namespace blink {
 
-class DOMRect;
+class DOMRectReadOnly;
 
 class MODULES_EXPORT DetectedText final : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
   static DetectedText* Create();
-  static DetectedText* Create(String, DOMRect*, HeapVector<Point2D>);
+  static DetectedText* Create(String, DOMRectReadOnly*, HeapVector<Point2D>);
 
   const String& rawValue() const;
-  DOMRect* boundingBox() const;
+  DOMRectReadOnly* boundingBox() const;
   const HeapVector<Point2D>& cornerPoints() const;
   void Trace(blink::Visitor*) override;
 
  private:
-  DetectedText(String, DOMRect*, HeapVector<Point2D>);
+  DetectedText(String, DOMRectReadOnly*, HeapVector<Point2D>);
 
   const String raw_value_;
-  const Member<DOMRect> bounding_box_;
+  const Member<DOMRectReadOnly> bounding_box_;
   const HeapVector<Point2D> corner_points_;
 };
 
