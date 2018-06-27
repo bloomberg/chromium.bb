@@ -774,7 +774,7 @@ TEST_F(LockContentsViewUnitTest, ShowGaiaAuthAfterManyFailedLoginAttempts) {
 
   // The final attempt triggers ShowGaiaSignin.
   EXPECT_CALL(*client,
-              ShowGaiaSignin(false /*can_close*/,
+              ShowGaiaSignin(true /*can_close*/,
                              base::Optional<AccountId>(
                                  users()[0]->basic_user_info->account_id)))
       .Times(1);

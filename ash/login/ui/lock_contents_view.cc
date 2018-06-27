@@ -1107,7 +1107,7 @@ void LockContentsView::ShowAuthErrorMessage() {
   if (screen_type_ == LockScreen::ScreenType::kLogin &&
       unlock_attempt_ >= kLoginAttemptsBeforeGaiaDialog) {
     Shell::Get()->login_screen_controller()->ShowGaiaSignin(
-        false /*can_close*/,
+        true /*can_close*/,
         big_view->auth_user()->current_user()->basic_user_info->account_id);
     return;
   }
