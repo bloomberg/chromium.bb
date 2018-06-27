@@ -92,10 +92,10 @@ void MtpDeviceManager::GetStorageInfoFromDevice(
   get_storage_info_from_device_callbacks_.push(std::move(callback));
   mtp_client_->GetStorageInfoFromDevice(
       storage_name,
-      base::Bind(&MtpDeviceManager::OnGetStorageInfoFromDevice,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&MtpDeviceManager::OnGetStorageInfoFromDeviceError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MtpDeviceManager::OnGetStorageInfoFromDevice,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnGetStorageInfoFromDeviceError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::OpenStorage(const std::string& storage_name,
@@ -108,10 +108,10 @@ void MtpDeviceManager::OpenStorage(const std::string& storage_name,
   }
   open_storage_callbacks_.push(std::move(callback));
   mtp_client_->OpenStorage(storage_name, mode,
-                           base::Bind(&MtpDeviceManager::OnOpenStorage,
-                                      weak_ptr_factory_.GetWeakPtr()),
-                           base::Bind(&MtpDeviceManager::OnOpenStorageError,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&MtpDeviceManager::OnOpenStorage,
+                                          weak_ptr_factory_.GetWeakPtr()),
+                           base::BindOnce(&MtpDeviceManager::OnOpenStorageError,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::CloseStorage(const std::string& storage_handle,
@@ -123,11 +123,12 @@ void MtpDeviceManager::CloseStorage(const std::string& storage_handle,
   }
   close_storage_callbacks_.push(
       std::make_pair(std::move(callback), storage_handle));
-  mtp_client_->CloseStorage(storage_handle,
-                            base::Bind(&MtpDeviceManager::OnCloseStorage,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                            base::Bind(&MtpDeviceManager::OnCloseStorageError,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  mtp_client_->CloseStorage(
+      storage_handle,
+      base::BindOnce(&MtpDeviceManager::OnCloseStorage,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnCloseStorageError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::CreateDirectory(const std::string& storage_handle,
@@ -142,10 +143,10 @@ void MtpDeviceManager::CreateDirectory(const std::string& storage_handle,
   create_directory_callbacks_.push(std::move(callback));
   mtp_client_->CreateDirectory(
       storage_handle, parent_id, directory_name,
-      base::Bind(&MtpDeviceManager::OnCreateDirectory,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&MtpDeviceManager::OnCreateDirectoryError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MtpDeviceManager::OnCreateDirectory,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnCreateDirectoryError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::ReadDirectoryEntryIds(
@@ -160,10 +161,10 @@ void MtpDeviceManager::ReadDirectoryEntryIds(
   read_directory_callbacks_.push(std::move(callback));
   mtp_client_->ReadDirectoryEntryIds(
       storage_handle, file_id,
-      base::Bind(&MtpDeviceManager::OnReadDirectoryEntryIds,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&MtpDeviceManager::OnReadDirectoryError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MtpDeviceManager::OnReadDirectoryEntryIds,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnReadDirectoryError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,
@@ -177,11 +178,11 @@ void MtpDeviceManager::ReadFileChunk(const std::string& storage_handle,
     return;
   }
   read_file_callbacks_.push(std::move(callback));
-  mtp_client_->ReadFileChunk(
-      storage_handle, file_id, offset, count,
-      base::Bind(&MtpDeviceManager::OnReadFile, weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&MtpDeviceManager::OnReadFileError,
-                 weak_ptr_factory_.GetWeakPtr()));
+  mtp_client_->ReadFileChunk(storage_handle, file_id, offset, count,
+                             base::BindOnce(&MtpDeviceManager::OnReadFile,
+                                            weak_ptr_factory_.GetWeakPtr()),
+                             base::BindOnce(&MtpDeviceManager::OnReadFileError,
+                                            weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::GetFileInfo(const std::string& storage_handle,
@@ -195,10 +196,10 @@ void MtpDeviceManager::GetFileInfo(const std::string& storage_handle,
   }
   get_file_info_callbacks_.push(std::move(callback));
   mtp_client_->GetFileInfo(storage_handle, file_ids,
-                           base::Bind(&MtpDeviceManager::OnGetFileInfo,
-                                      weak_ptr_factory_.GetWeakPtr()),
-                           base::Bind(&MtpDeviceManager::OnGetFileInfoError,
-                                      weak_ptr_factory_.GetWeakPtr()));
+                           base::BindOnce(&MtpDeviceManager::OnGetFileInfo,
+                                          weak_ptr_factory_.GetWeakPtr()),
+                           base::BindOnce(&MtpDeviceManager::OnGetFileInfoError,
+                                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::RenameObject(const std::string& storage_handle,
@@ -211,11 +212,12 @@ void MtpDeviceManager::RenameObject(const std::string& storage_handle,
     return;
   }
   rename_object_callbacks_.push(std::move(callback));
-  mtp_client_->RenameObject(storage_handle, object_id, new_name,
-                            base::Bind(&MtpDeviceManager::OnRenameObject,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                            base::Bind(&MtpDeviceManager::OnRenameObjectError,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  mtp_client_->RenameObject(
+      storage_handle, object_id, new_name,
+      base::BindOnce(&MtpDeviceManager::OnRenameObject,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnRenameObjectError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::CopyFileFromLocal(const std::string& storage_handle,
@@ -231,10 +233,10 @@ void MtpDeviceManager::CopyFileFromLocal(const std::string& storage_handle,
   copy_file_from_local_callbacks_.push(std::move(callback));
   mtp_client_->CopyFileFromLocal(
       storage_handle, source_file_descriptor, parent_id, file_name,
-      base::Bind(&MtpDeviceManager::OnCopyFileFromLocal,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::Bind(&MtpDeviceManager::OnCopyFileFromLocalError,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&MtpDeviceManager::OnCopyFileFromLocal,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnCopyFileFromLocalError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void MtpDeviceManager::DeleteObject(const std::string& storage_handle,
@@ -246,20 +248,22 @@ void MtpDeviceManager::DeleteObject(const std::string& storage_handle,
     return;
   }
   delete_object_callbacks_.push(std::move(callback));
-  mtp_client_->DeleteObject(storage_handle, object_id,
-                            base::Bind(&MtpDeviceManager::OnDeleteObject,
-                                       weak_ptr_factory_.GetWeakPtr()),
-                            base::Bind(&MtpDeviceManager::OnDeleteObjectError,
-                                       weak_ptr_factory_.GetWeakPtr()));
+  mtp_client_->DeleteObject(
+      storage_handle, object_id,
+      base::BindOnce(&MtpDeviceManager::OnDeleteObject,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::BindOnce(&MtpDeviceManager::OnDeleteObjectError,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 // private methods
 void MtpDeviceManager::OnStorageAttached(const std::string& storage_name) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  mtp_client_->GetStorageInfo(storage_name,
-                              base::Bind(&MtpDeviceManager::OnGetStorageInfo,
-                                         weak_ptr_factory_.GetWeakPtr()),
-                              base::DoNothing());
+  mtp_client_->GetStorageInfo(
+      storage_name,
+      base::BindOnce(&MtpDeviceManager::OnGetStorageInfo,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::DoNothing::Once());
 }
 
 void MtpDeviceManager::OnStorageDetached(const std::string& storage_name) {
@@ -504,9 +508,9 @@ void MtpDeviceManager::FinishSetupOnOriginThread(
   mtp_client_->ListenForChanges(base::Bind(&MtpDeviceManager::OnStorageChanged,
                                            weak_ptr_factory_.GetWeakPtr()));
   mtp_client_->EnumerateStorages(
-      base::Bind(&MtpDeviceManager::OnEnumerateStorages,
-                 weak_ptr_factory_.GetWeakPtr()),
-      base::DoNothing());
+      base::BindOnce(&MtpDeviceManager::OnEnumerateStorages,
+                     weak_ptr_factory_.GetWeakPtr()),
+      base::DoNothing::Once());
 }
 
 // static

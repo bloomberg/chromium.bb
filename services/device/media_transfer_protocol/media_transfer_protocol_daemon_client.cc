@@ -67,53 +67,51 @@ class MediaTransferProtocolDaemonClientImpl
   }
 
   // MediaTransferProtocolDaemonClient override.
-  void EnumerateStorages(const EnumerateStoragesCallback& callback,
-                         const ErrorCallback& error_callback) override {
+  void EnumerateStorages(EnumerateStoragesCallback callback,
+                         ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kEnumerateStorages);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnEnumerateStorages,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   error_callback));
+        base::BindOnce(
+            &MediaTransferProtocolDaemonClientImpl::OnEnumerateStorages,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+            std::move(error_callback)));
   }
 
   // MediaTransferProtocolDaemonClient override.
   void GetStorageInfo(const std::string& storage_name,
-                      const GetStorageInfoCallback& callback,
-                      const ErrorCallback& error_callback) override {
+                      GetStorageInfoCallback callback,
+                      ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kGetStorageInfo);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnGetStorageInfo,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   storage_name,
-                   callback,
-                   error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnGetStorageInfo,
+                       weak_ptr_factory_.GetWeakPtr(), storage_name,
+                       std::move(callback), std::move(error_callback)));
   }
 
   void GetStorageInfoFromDevice(const std::string& storage_name,
-                                const GetStorageInfoCallback& callback,
-                                const ErrorCallback& error_callback) override {
+                                GetStorageInfoCallback callback,
+                                ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kGetStorageInfoFromDevice);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnGetStorageInfo,
-                   weak_ptr_factory_.GetWeakPtr(), storage_name, callback,
-                   error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnGetStorageInfo,
+                       weak_ptr_factory_.GetWeakPtr(), storage_name,
+                       std::move(callback), std::move(error_callback)));
   }
 
   // MediaTransferProtocolDaemonClient override.
   void OpenStorage(const std::string& storage_name,
                    const std::string& mode,
-                   const OpenStorageCallback& callback,
-                   const ErrorCallback& error_callback) override {
+                   OpenStorageCallback callback,
+                   ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kOpenStorage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(storage_name);
@@ -121,32 +119,30 @@ class MediaTransferProtocolDaemonClientImpl
     writer.AppendString(mode);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnOpenStorage,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnOpenStorage,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   // MediaTransferProtocolDaemonClient override.
   void CloseStorage(const std::string& handle,
-                    const CloseStorageCallback& callback,
-                    const ErrorCallback& error_callback) override {
+                    CloseStorageCallback callback,
+                    ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kCloseStorage);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnCloseStorage,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnCloseStorage,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   void CreateDirectory(const std::string& handle,
                        const uint32_t parent_id,
                        const std::string& directory_name,
-                       const CreateDirectoryCallback& callback,
-                       const ErrorCallback& error_callback) override {
+                       CreateDirectoryCallback callback,
+                       ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kCreateDirectory);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
@@ -154,15 +150,17 @@ class MediaTransferProtocolDaemonClientImpl
     writer.AppendString(directory_name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnCreateDirectory,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(
+            &MediaTransferProtocolDaemonClientImpl::OnCreateDirectory,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+            std::move(error_callback)));
   }
 
   // MediaTransferProtocolDaemonClient override.
   void ReadDirectoryEntryIds(const std::string& handle,
                              uint32_t file_id,
-                             const ReadDirectoryEntryIdsCallback& callback,
-                             const ErrorCallback& error_callback) override {
+                             ReadDirectoryEntryIdsCallback callback,
+                             ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kReadDirectoryEntryIds);
     dbus::MessageWriter writer(&method_call);
@@ -170,16 +168,16 @@ class MediaTransferProtocolDaemonClientImpl
     writer.AppendUint32(file_id);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnReadDirectoryIds,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   error_callback));
+        base::BindOnce(
+            &MediaTransferProtocolDaemonClientImpl::OnReadDirectoryIds,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+            std::move(error_callback)));
   }
 
   void GetFileInfo(const std::string& handle,
                    const std::vector<uint32_t>& file_ids,
-                   const GetFileInfoCallback& callback,
-                   const ErrorCallback& error_callback) override {
+                   GetFileInfoCallback callback,
+                   ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kGetFileInfo);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
@@ -194,10 +192,9 @@ class MediaTransferProtocolDaemonClientImpl
     }
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnGetFileInfo,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnGetFileInfo,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   // MediaTransferProtocolDaemonClient override.
@@ -205,8 +202,8 @@ class MediaTransferProtocolDaemonClientImpl
                      uint32_t file_id,
                      uint32_t offset,
                      uint32_t bytes_to_read,
-                     const ReadFileCallback& callback,
-                     const ErrorCallback& error_callback) override {
+                     ReadFileCallback callback,
+                     ErrorCallback error_callback) override {
     DCHECK_LE(bytes_to_read, kMaxChunkSize);
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kReadFileChunk);
     dbus::MessageWriter writer(&method_call);
@@ -216,17 +213,16 @@ class MediaTransferProtocolDaemonClientImpl
     writer.AppendUint32(bytes_to_read);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnReadFile,
-                   weak_ptr_factory_.GetWeakPtr(),
-                   callback,
-                   error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnReadFile,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   void RenameObject(const std::string& handle,
                     const uint32_t object_id,
                     const std::string& new_name,
-                    const RenameObjectCallback& callback,
-                    const ErrorCallback& error_callback) override {
+                    RenameObjectCallback callback,
+                    ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kRenameObject);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
@@ -234,16 +230,17 @@ class MediaTransferProtocolDaemonClientImpl
     writer.AppendString(new_name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnRenameObject,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnRenameObject,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   void CopyFileFromLocal(const std::string& handle,
                          const int source_file_descriptor,
                          const uint32_t parent_id,
                          const std::string& file_name,
-                         const CopyFileFromLocalCallback& callback,
-                         const ErrorCallback& error_callback) override {
+                         CopyFileFromLocalCallback callback,
+                         ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface,
                                  mtpd::kCopyFileFromLocal);
     dbus::MessageWriter writer(&method_call);
@@ -253,22 +250,25 @@ class MediaTransferProtocolDaemonClientImpl
     writer.AppendString(file_name);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_INFINITE,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnCopyFileFromLocal,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(
+            &MediaTransferProtocolDaemonClientImpl::OnCopyFileFromLocal,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+            std::move(error_callback)));
   }
 
   void DeleteObject(const std::string& handle,
                     const uint32_t object_id,
-                    const DeleteObjectCallback& callback,
-                    const ErrorCallback& error_callback) override {
+                    DeleteObjectCallback callback,
+                    ErrorCallback error_callback) override {
     dbus::MethodCall method_call(mtpd::kMtpdInterface, mtpd::kDeleteObject);
     dbus::MessageWriter writer(&method_call);
     writer.AppendString(handle);
     writer.AppendUint32(object_id);
     proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::Bind(&MediaTransferProtocolDaemonClientImpl::OnDeleteObject,
-                   weak_ptr_factory_.GetWeakPtr(), callback, error_callback));
+        base::BindOnce(&MediaTransferProtocolDaemonClientImpl::OnDeleteObject,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                       std::move(error_callback)));
   }
 
   // MediaTransferProtocolDaemonClient override.
@@ -300,31 +300,31 @@ class MediaTransferProtocolDaemonClientImpl
 
   // Handles the result of EnumerateStorages and calls |callback| or
   // |error_callback|.
-  void OnEnumerateStorages(const EnumerateStoragesCallback& callback,
-                           const ErrorCallback& error_callback,
+  void OnEnumerateStorages(EnumerateStoragesCallback callback,
+                           ErrorCallback error_callback,
                            dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
     dbus::MessageReader reader(response);
     std::vector<std::string> storage_names;
     if (!reader.PopArrayOfStrings(&storage_names)) {
       LOG(ERROR) << kInvalidResponseMsg << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
-    callback.Run(storage_names);
+    std::move(callback).Run(storage_names);
   }
 
   // Handles the result of GetStorageInfo and calls |callback| or
   // |error_callback|.
   void OnGetStorageInfo(const std::string& storage_name,
-                        const GetStorageInfoCallback& callback,
-                        const ErrorCallback& error_callback,
+                        GetStorageInfoCallback callback,
+                        ErrorCallback error_callback,
                         dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -332,59 +332,59 @@ class MediaTransferProtocolDaemonClientImpl
     MtpStorageInfo protobuf;
     if (!reader.PopArrayOfBytesAsProto(&protobuf)) {
       LOG(ERROR) << kInvalidResponseMsg << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
-    callback.Run(GetMojoMtpStorageInfoFromProtobuf(protobuf));
+    std::move(callback).Run(GetMojoMtpStorageInfoFromProtobuf(protobuf));
   }
 
   // Handles the result of OpenStorage and calls |callback| or |error_callback|.
-  void OnOpenStorage(const OpenStorageCallback& callback,
-                     const ErrorCallback& error_callback,
+  void OnOpenStorage(OpenStorageCallback callback,
+                     ErrorCallback error_callback,
                      dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
     dbus::MessageReader reader(response);
     std::string handle;
     if (!reader.PopString(&handle)) {
       LOG(ERROR) << kInvalidResponseMsg << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
-    callback.Run(handle);
+    std::move(callback).Run(handle);
   }
 
   // Handles the result of CloseStorage and calls |callback| or
   // |error_callback|.
-  void OnCloseStorage(const CloseStorageCallback& callback,
-                      const ErrorCallback& error_callback,
+  void OnCloseStorage(CloseStorageCallback callback,
+                      ErrorCallback error_callback,
                       dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void OnCreateDirectory(const CreateDirectoryCallback& callback,
-                         const ErrorCallback& error_callback,
+  void OnCreateDirectory(CreateDirectoryCallback callback,
+                         ErrorCallback error_callback,
                          dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // Handles the result of ReadDirectoryEntryIds and calls |callback| or
   // |error_callback|.
-  void OnReadDirectoryIds(const ReadDirectoryEntryIdsCallback& callback,
-                          const ErrorCallback& error_callback,
+  void OnReadDirectoryIds(ReadDirectoryEntryIdsCallback callback,
+                          ErrorCallback error_callback,
                           dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -392,7 +392,7 @@ class MediaTransferProtocolDaemonClientImpl
     dbus::MessageReader array_reader(nullptr);
     if (!reader.PopArray(&array_reader) || reader.HasMoreData()) {
       LOG(ERROR) << kInvalidResponseMsg << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -401,20 +401,20 @@ class MediaTransferProtocolDaemonClientImpl
       uint32_t file_id;
       if (!array_reader.PopUint32(&file_id)) {
         LOG(ERROR) << kInvalidResponseMsg << response->ToString();
-        error_callback.Run();
+        std::move(error_callback).Run();
         return;
       }
       file_ids.push_back(file_id);
     }
-    callback.Run(file_ids);
+    std::move(callback).Run(file_ids);
   }
 
   // Handles the result of GetFileInfo and calls |callback| or |error_callback|.
-  void OnGetFileInfo(const GetFileInfoCallback& callback,
-                     const ErrorCallback& error_callback,
+  void OnGetFileInfo(GetFileInfoCallback callback,
+                     ErrorCallback error_callback,
                      dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -422,7 +422,7 @@ class MediaTransferProtocolDaemonClientImpl
     MtpFileEntries entries_protobuf;
     if (!reader.PopArrayOfBytesAsProto(&entries_protobuf)) {
       LOG(ERROR) << kInvalidResponseMsg << response->ToString();
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -433,16 +433,16 @@ class MediaTransferProtocolDaemonClientImpl
       file_entries.push_back(
           GetMojoMtpFileEntryFromProtobuf(entry));
     }
-    callback.Run(file_entries);
+    std::move(callback).Run(file_entries);
   }
 
   // Handles the result of ReadFileChunk and calls |callback| or
   // |error_callback|.
-  void OnReadFile(const ReadFileCallback& callback,
-                  const ErrorCallback& error_callback,
+  void OnReadFile(ReadFileCallback callback,
+                  ErrorCallback error_callback,
                   dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
@@ -450,44 +450,44 @@ class MediaTransferProtocolDaemonClientImpl
     size_t data_length = 0;
     dbus::MessageReader reader(response);
     if (!reader.PopArrayOfBytes(&data_bytes, &data_length)) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
     std::string data(reinterpret_cast<const char*>(data_bytes), data_length);
-    callback.Run(data);
+    std::move(callback).Run(data);
   }
 
-  void OnRenameObject(const RenameObjectCallback& callback,
-                      const ErrorCallback& error_callback,
+  void OnRenameObject(RenameObjectCallback callback,
+                      ErrorCallback error_callback,
                       dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void OnCopyFileFromLocal(const CopyFileFromLocalCallback& callback,
-                           const ErrorCallback& error_callback,
+  void OnCopyFileFromLocal(CopyFileFromLocalCallback callback,
+                           ErrorCallback error_callback,
                            dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
-    callback.Run();
+    std::move(callback).Run();
   }
 
-  void OnDeleteObject(const DeleteObjectCallback& callback,
-                      const ErrorCallback& error_callback,
+  void OnDeleteObject(DeleteObjectCallback callback,
+                      ErrorCallback error_callback,
                       dbus::Response* response) {
     if (!response) {
-      error_callback.Run();
+      std::move(error_callback).Run();
       return;
     }
 
-    callback.Run();
+    std::move(callback).Run();
   }
 
   // Handles MTPStorageAttached/Dettached signals and calls |handler|.
