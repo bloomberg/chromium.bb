@@ -32,6 +32,14 @@ base::SharedMemoryHandle CreateHandle(const uint8_t* data, size_t size) {
   return shm.TakeHandle();
 }
 
+base::UnsafeSharedMemoryRegion CreateRegion(const uint8_t* data, size_t size) {
+  auto region = base::UnsafeSharedMemoryRegion::Create(size);
+  auto mapping = region.Map();
+  EXPECT_TRUE(mapping.IsValid());
+  memcpy(mapping.memory(), data, size);
+  return region;
+}
+
 }  // namespace
 
 TEST(UnalignedSharedMemoryTest, CreateAndDestroy) {
@@ -81,6 +89,63 @@ TEST(UnalignedSharedMemoryTest, UnmappedIsNullptr) {
   auto handle = CreateHandle(kData, kDataSize);
   UnalignedSharedMemory shm(handle, kDataSize, true);
   ASSERT_EQ(shm.memory(), nullptr);
+}
+
+TEST(WritableUnalignedMappingTest, CreateAndDestroy) {
+  auto region = CreateRegion(kData, kDataSize);
+  WritableUnalignedMapping shm(region, kDataSize, 0);
+  EXPECT_TRUE(shm.IsValid());
+}
+
+TEST(WritableUnalignedMappingTest, CreateAndDestroy_InvalidHandle) {
+  base::SharedMemoryHandle handle;
+  WritableUnalignedMapping shm(handle, kDataSize, 0);
+  EXPECT_FALSE(shm.IsValid());
+}
+
+TEST(WritableUnalignedMappingTest, CreateAndDestroyHandle) {
+  auto handle = CreateHandle(kData, kDataSize);
+  WritableUnalignedMapping shm(handle, kDataSize, 0);
+  EXPECT_TRUE(shm.IsValid());
+}
+
+TEST(WritableUnalignedMappingTest, CreateAndDestroy_InvalidRegion) {
+  base::UnsafeSharedMemoryRegion region;
+  WritableUnalignedMapping shm(region, kDataSize, 0);
+  EXPECT_FALSE(shm.IsValid());
+}
+
+TEST(WritableUnalignedMappingTest, Map) {
+  auto region = CreateRegion(kData, kDataSize);
+  WritableUnalignedMapping shm(region, kDataSize, 0);
+  ASSERT_TRUE(shm.IsValid());
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(WritableUnalignedMappingTest, Map_Unaligned) {
+  auto region = CreateRegion(kUnalignedData, kUnalignedDataSize);
+  WritableUnalignedMapping shm(region, kDataSize, kUnalignedOffset);
+  ASSERT_TRUE(shm.IsValid());
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
+TEST(WritableUnalignedMappingTest, Map_InvalidRegion) {
+  base::UnsafeSharedMemoryRegion region;
+  WritableUnalignedMapping shm(region, kDataSize, 0);
+  ASSERT_FALSE(shm.IsValid());
+  EXPECT_EQ(shm.memory(), nullptr);
+}
+
+TEST(WritableUnalignedMappingTest, Map_NegativeOffset) {
+  auto region = CreateRegion(kData, kDataSize);
+  WritableUnalignedMapping shm(region, kDataSize, -1);
+  ASSERT_FALSE(shm.IsValid());
+}
+
+TEST(WritableUnalignedMappingTest, Map_SizeOverflow) {
+  auto region = CreateRegion(kData, kDataSize);
+  WritableUnalignedMapping shm(region, std::numeric_limits<size_t>::max(), 1);
+  ASSERT_FALSE(shm.IsValid());
 }
 
 }  // namespace media
