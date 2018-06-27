@@ -68,6 +68,8 @@ class BaseScreen {
 
   void set_model_view_channel(ModelViewChannel* channel) { channel_ = channel; }
 
+  virtual void SetConfiguration(base::DictionaryValue* configuration);
+
  protected:
   // Scoped context editor, which automatically commits all pending
   // context changes on destruction.
@@ -114,6 +116,16 @@ class BaseScreen {
   // current BaseScreen instance.
   ContextEditor GetContextEditor();
 
+  // Global configuration for OOBE screens, that can be used to automate some
+  // screens.
+  // Screens can use values in Configuration to fill in UI values or
+  // automatically finish.
+  // Configuration is guaranteed to exist between pair of OnShow/OnHide calls,
+  // no external changes will be made to configuration during that time.
+  // Do not confuse it with Context, which is a way to communicate with
+  // JS-based UI part of the screen.
+  base::DictionaryValue* GetConfiguration() const { return configuration_; }
+
   BaseScreenDelegate* get_base_screen_delegate() const {
     return base_screen_delegate_;
   }
@@ -141,6 +153,8 @@ class BaseScreen {
   // changed. Notification about this event comes from the JS
   // counterpart.
   void OnContextChanged(const base::DictionaryValue& diff);
+
+  base::DictionaryValue* configuration_ = nullptr;
 
   ModelViewChannel* channel_ = nullptr;
 

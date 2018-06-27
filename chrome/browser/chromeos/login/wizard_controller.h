@@ -444,6 +444,9 @@ class WizardController : public BaseScreenDelegate,
   std::unique_ptr<pairing_chromeos::SharkConnectionListener>
       shark_connection_listener_;
 
+  // Configuration for automating OOBE screens.
+  std::unique_ptr<base::DictionaryValue> oobe_configuration_;
+
   BaseScreen* hid_screen_ = nullptr;
 
   base::WeakPtrFactory<WizardController> weak_factory_;

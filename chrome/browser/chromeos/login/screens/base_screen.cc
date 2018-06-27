@@ -119,4 +119,8 @@ void BaseScreen::OnContextChanged(const base::DictionaryValue& diff) {
     OnContextKeyUpdated(key);
 }
 
+void BaseScreen::SetConfiguration(base::DictionaryValue* configuration) {
+  configuration_ = configuration;
+}
+
 }  // namespace chromeos
