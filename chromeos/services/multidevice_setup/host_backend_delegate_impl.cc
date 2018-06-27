@@ -119,6 +119,9 @@ void HostBackendDelegateImpl::AttemptToSetMultiDeviceHostOnBackend(
     return;
   }
 
+  // Stop the timer, since a new attempt is being started.
+  timer_->Stop();
+
   if (host_device)
     SetPendingHostRequest(host_device->GetDeviceId());
   else
