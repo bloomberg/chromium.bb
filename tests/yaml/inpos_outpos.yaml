@@ -295,3 +295,24 @@ tests:
   - - Fussball-Vereinigung
     - FUSSBALL-V7EINIGUNG
     - inputPos: [0,1,2,3,4,5,6,7,8,9,9,12,13,14,15,16,17,18,19]
+
+# Converted from pass2_inpos.c
+
+table: [tests/tables/pass2.ctb]
+tests:
+
+# First check a plain word to see if inpos handling generally works
+  - - Rene
+    - rene
+    - inputPos: [0,1,2,3]
+
+# then try a word which uses pass2 and makes the output longer
+  - - Reno
+    - ren'o
+    - inputPos: [0,1,2,3,3]
+
+# Finally try a word also uses pass2, deletes a char from the
+# output and essentially shortens the output
+  - - xRen
+    - ren
+    - inputPos: [1,2,3]

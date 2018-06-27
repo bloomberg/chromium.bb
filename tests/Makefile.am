@@ -28,7 +28,6 @@ letterDefTest_SOURCES = letterDefTest.c
 logging_SOURCES = logging.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
 pass2_SOURCES = pass2.c
-pass2_inpos_SOURCES = pass2_inpos.c
 present_progressive_SOURCES = default_table.h present_progressive.c
 resolve_table_SOURCES = resolve_table.c
 squash_space_SOURCES = squash_space.c
@@ -55,7 +54,6 @@ program_TESTS =					\
 	logging					\
 	pass0_typebuf				\
 	pass2					\
-	pass2_inpos				\
 	present_progressive			\
 	resolve_table				\
 	squash_space				\
