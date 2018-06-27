@@ -133,6 +133,8 @@ struct ParseResult {
   const FormFieldData* confirmation_password_field = nullptr;
 
   bool IsEmpty() {
+    DCHECK(!confirmation_password_field || new_password_field)
+        << "There is no password to confirm if there is no new password field.";
     return password_field == nullptr && new_password_field == nullptr;
   }
 };
@@ -179,6 +181,11 @@ std::unique_ptr<ParseResult> ParseUsingPredictions(
         break;
     }
   }
+  // If the server suggests there is a confirmation field but no new password,
+  // something went wrong. Sanitize the result.
+  if (result->confirmation_password_field && !result->new_password_field)
+    result->confirmation_password_field = nullptr;
+
   return result->IsEmpty() ? nullptr : std::move(result);
 }
 
