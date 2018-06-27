@@ -938,10 +938,6 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 }
 
 - (void)openPrivacySettings {
-  // Ignore the button tap if |self| is presenting another ViewController.
-  if ([self presentedViewController]) {
-    return;
-  }
   base::RecordAction(
       base::UserMetricsAction("HistoryPage_InitClearBrowsingData"));
   [self.localDispatcher displayPrivacySettings];
