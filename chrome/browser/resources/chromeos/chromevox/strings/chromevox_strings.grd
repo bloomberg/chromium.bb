@@ -2993,6 +2993,9 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Shown to the user in braille and speech when the device goes into portrait orientation." name="IDS_CHROMEVOX_DEVICE_PORTRAIT">
         portrait
       </message>
+      <message desc="A hint to the user for how to interact with math content using the keyboard." name="IDS_CHROMEVOX_HINT_MATH_KEYBOARD">
+        Press up, down, left, or right to explore math.
+      </message>
     </messages>
   </release>
 </grit>

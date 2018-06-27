@@ -20,6 +20,7 @@ goog.require('DesktopAutomationHandler');
 goog.require('FindHandler');
 goog.require('GestureCommandHandler');
 goog.require('LiveRegions');
+goog.require('MathHandler');
 goog.require('MediaAutomationHandler');
 goog.require('NextEarcons');
 goog.require('Notifications');
@@ -210,6 +211,15 @@ Background.prototype = {
     opt_focus = opt_focus === undefined ? true : opt_focus;
     opt_speechProps = opt_speechProps || {};
     var prevRange = this.currentRange_;
+
+    // Specialization for math output.
+    var forceQueue = false;
+    if (MathHandler.init(range)) {
+      MathHandler.instance.speak();
+      opt_focus = false;
+      forceQueue = true;
+    }
+
     if (opt_focus)
       this.setFocusToRange_(range, prevRange);
 
@@ -269,8 +279,9 @@ Background.prototype = {
     }
 
     o.withRichSpeechAndBraille(
-         selectedRange || range, prevRange, Output.EventType.NAVIGATE)
-        .withQueueMode(cvox.QueueMode.FLUSH);
+        selectedRange || range, prevRange, Output.EventType.NAVIGATE);
+
+    o.withQueueMode(forceQueue ? cvox.QueueMode.QUEUE : cvox.QueueMode.FLUSH);
 
     if (msg)
       o.format(msg);
