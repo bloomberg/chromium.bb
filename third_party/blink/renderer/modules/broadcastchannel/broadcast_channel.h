@@ -14,7 +14,6 @@
 
 namespace blink {
 
-class EventQueue;
 class ScriptValue;
 
 class BroadcastChannel final : public EventTargetWithInlineData,
@@ -64,7 +63,6 @@ class BroadcastChannel final : public EventTargetWithInlineData,
   void OnError();
 
   scoped_refptr<const SecurityOrigin> origin_;
-  Member<EventQueue> event_queue_;
   String name_;
 
   mojo::AssociatedBinding<mojom::blink::BroadcastChannelClient> binding_;

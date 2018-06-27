@@ -291,6 +291,8 @@ void FrameSelection::DidSetSelectionDeprecated(
   NotifyAccessibilityForSelectionChange();
   NotifyCompositorForSelectionChange();
   NotifyEventHandlerForSelectionChange();
+  // The task source should be kDOMManipulation, but the spec doesn't say
+  // anything about this.
   frame_->DomWindow()->EnqueueDocumentEvent(
       Event::Create(EventTypeNames::selectionchange),
       TaskType::kMiscPlatformAPI);

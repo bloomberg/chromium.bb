@@ -25,7 +25,6 @@
 
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
 
-#include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/inband_text_track.h"
 #include "third_party/blink/renderer/core/html/track/loadable_text_track.h"
@@ -35,10 +34,7 @@
 
 namespace blink {
 
-TextTrackList::TextTrackList(HTMLMediaElement* owner)
-    : owner_(owner),
-      async_event_queue_(EventQueue::Create(GetExecutionContext(),
-                                            TaskType::kMediaElementEvent)) {}
+TextTrackList::TextTrackList(HTMLMediaElement* owner) : owner_(owner) {}
 
 TextTrackList::~TextTrackList() = default;
 
@@ -249,9 +245,8 @@ ExecutionContext* TextTrackList::GetExecutionContext() const {
 
 void TextTrackList::ScheduleTrackEvent(const AtomicString& event_name,
                                        TextTrack* track) {
-  Event* event = TrackEvent::Create(event_name, track);
-  event->SetTarget(this);
-  async_event_queue_->EnqueueEvent(FROM_HERE, event);
+  EnqueueAsyncEvent(TrackEvent::Create(event_name, track),
+                    TaskType::kMediaElementEvent);
 }
 
 void TextTrackList::ScheduleAddTrackEvent(TextTrack* track) {
@@ -272,10 +267,8 @@ void TextTrackList::ScheduleChangeEvent() {
   // ...
   // Fire a simple event named change at the media element's textTracks
   // attribute's TextTrackList object.
-
-  Event* event = Event::Create(EventTypeNames::change);
-  event->SetTarget(this);
-  async_event_queue_->EnqueueEvent(FROM_HERE, event);
+  EnqueueAsyncEvent(Event::Create(EventTypeNames::change),
+                    TaskType::kMediaElementEvent);
 }
 
 void TextTrackList::ScheduleRemoveTrackEvent(TextTrack* track) {
@@ -305,7 +298,6 @@ HTMLMediaElement* TextTrackList::Owner() const {
 
 void TextTrackList::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
-  visitor->Trace(async_event_queue_);
   visitor->Trace(add_track_tracks_);
   visitor->Trace(element_tracks_);
   visitor->Trace(inband_tracks_);
