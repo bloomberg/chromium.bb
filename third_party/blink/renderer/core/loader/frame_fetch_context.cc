@@ -898,40 +898,37 @@ void FrameFetchContext::AddClientHintsIfNecessary(
 
   bool is_1p_origin = false;
 
-  if (blink::RuntimeEnabledFeatures::ClientHintsPersistentEnabled()) {
-    // If the feature is enabled, then client hints are allowed only on secure
-    // URLs.
-    if (!ClientHintsPreferences::IsClientHintsAllowed(request.Url()))
-      return;
+  // If the feature is enabled, then client hints are allowed only on secure
+  // URLs.
+  if (!ClientHintsPreferences::IsClientHintsAllowed(request.Url()))
+    return;
 
-    // Check if |url| is allowed to run JavaScript. If not, client hints are not
-    // attached to the requests that initiate on the render side.
-    if (!AllowScriptFromSourceWithoutNotifying(request.Url())) {
-      return;
-    }
+  // Check if |url| is allowed to run JavaScript. If not, client hints are not
+  // attached to the requests that initiate on the render side.
+  if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
+    return;
 
-    if (IsDetached())
-      return;
+  if (IsDetached())
+    return;
 
-    is_1p_origin =
-        GetFrame()
-            ->Tree()
-            .Top()
-            .GetSecurityContext()
-            ->GetSecurityOrigin()
-            ->IsSameSchemeHostPort(SecurityOrigin::Create(request.Url()).get());
+  is_1p_origin =
+      GetFrame()
+          ->Tree()
+          .Top()
+          .GetSecurityContext()
+          ->GetSecurityOrigin()
+          ->IsSameSchemeHostPort(SecurityOrigin::Create(request.Url()).get());
 
-    if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
-        !is_1p_origin) {
-      // No client hints for 3p origins.
-      return;
-    }
-    // Persisted client hints preferences should be read for only the first
-    // party origins.
-    if (is_1p_origin && GetContentSettingsClient()) {
-      GetContentSettingsClient()->GetAllowedClientHintsFromSource(
-          request.Url(), &enabled_hints);
-    }
+  if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
+      !is_1p_origin) {
+    // No client hints for 3p origins.
+    return;
+  }
+  // Persisted client hints preferences should be read for only the first
+  // party origins.
+  if (is_1p_origin && GetContentSettingsClient()) {
+    GetContentSettingsClient()->GetAllowedClientHintsFromSource(request.Url(),
+                                                                &enabled_hints);
   }
 
   if (ShouldSendClientHint(mojom::WebClientHintsType::kDeviceMemory,
