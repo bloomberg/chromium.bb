@@ -19,7 +19,8 @@ UserCommandsFactoryChromeOS::UserCommandsFactoryChromeOS(Profile* profile)
 UserCommandsFactoryChromeOS::~UserCommandsFactoryChromeOS() = default;
 
 std::unique_ptr<RemoteCommandJob> UserCommandsFactoryChromeOS::BuildJobForType(
-    em::RemoteCommand_Type type) {
+    em::RemoteCommand_Type type,
+    RemoteCommandsService* service) {
   switch (type) {
     case em::RemoteCommand_Type_USER_ARC_COMMAND:
       return std::make_unique<UserCommandArcJob>(profile_);

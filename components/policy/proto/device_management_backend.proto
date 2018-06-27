@@ -1411,6 +1411,9 @@ message RemoteCommand {
     // Forwards a user command received from the management server to the ARC++
     // side. The payload is opaque to Chrome OS.
     USER_ARC_COMMAND = 4;
+
+    // Wipe all the users off of the device.
+    DEVICE_WIPE_USERS = 5;
   }
 
   // The command type.

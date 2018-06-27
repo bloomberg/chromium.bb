@@ -9,6 +9,7 @@
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_reboot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_screenshot_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/device_command_set_volume_job.h"
+#include "chrome/browser/chromeos/policy/remote_commands/device_command_wipe_users_job.h"
 #include "chrome/browser/chromeos/policy/remote_commands/screenshot_delegate.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
@@ -23,7 +24,8 @@ DeviceCommandsFactoryChromeOS::DeviceCommandsFactoryChromeOS() = default;
 DeviceCommandsFactoryChromeOS::~DeviceCommandsFactoryChromeOS() = default;
 
 std::unique_ptr<RemoteCommandJob>
-DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type) {
+DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type,
+                                               RemoteCommandsService* service) {
   switch (type) {
     case em::RemoteCommand_Type_DEVICE_REBOOT:
       return std::make_unique<DeviceCommandRebootJob>(
@@ -35,6 +37,8 @@ DeviceCommandsFactoryChromeOS::BuildJobForType(em::RemoteCommand_Type type) {
       return std::make_unique<DeviceCommandSetVolumeJob>();
     case em::RemoteCommand_Type_DEVICE_FETCH_STATUS:
       return std::make_unique<DeviceCommandFetchStatusJob>();
+    case em::RemoteCommand_Type_DEVICE_WIPE_USERS:
+      return std::make_unique<DeviceCommandWipeUsersJob>(service);
     default:
       // Other types of commands should be sent to UserCommandsFactoryChromeOS
       // instead of here.
