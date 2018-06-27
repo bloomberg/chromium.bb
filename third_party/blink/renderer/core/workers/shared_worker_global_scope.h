@@ -49,7 +49,7 @@ class SharedWorkerGlobalScope final : public WorkerGlobalScope {
   SharedWorkerGlobalScope(const String& name,
                           std::unique_ptr<GlobalScopeCreationParams>,
                           SharedWorkerThread*,
-                          double time_origin);
+                          base::TimeTicks time_origin);
   ~SharedWorkerGlobalScope() override;
 
   bool IsSharedWorkerGlobalScope() const override { return true; }

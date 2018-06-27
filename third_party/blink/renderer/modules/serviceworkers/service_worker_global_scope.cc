@@ -75,7 +75,7 @@ namespace blink {
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     ServiceWorkerThread* thread,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
-    double time_origin) {
+    base::TimeTicks time_origin) {
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
   if (thread->GetInstalledScriptsManager() &&
@@ -94,7 +94,7 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     ServiceWorkerThread* thread,
-    double time_origin)
+    base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {}
 
 ServiceWorkerGlobalScope::~ServiceWorkerGlobalScope() = default;

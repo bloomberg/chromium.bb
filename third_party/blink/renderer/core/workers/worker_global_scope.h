@@ -141,7 +141,7 @@ class CORE_EXPORT WorkerGlobalScope
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       network::mojom::FetchCredentialsMode) = 0;
 
-  double TimeOrigin() const { return time_origin_; }
+  base::TimeTicks TimeOrigin() const { return time_origin_; }
   WorkerSettings* GetWorkerSettings() const { return worker_settings_.get(); }
 
   void Trace(blink::Visitor*) override;
@@ -160,7 +160,7 @@ class CORE_EXPORT WorkerGlobalScope
  protected:
   WorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
                     WorkerThread*,
-                    double time_origin);
+                    base::TimeTicks time_origin);
   void ApplyContentSecurityPolicyFromHeaders(
       const ContentSecurityPolicyResponseHeaders&);
 
@@ -217,7 +217,7 @@ class CORE_EXPORT WorkerGlobalScope
 
   DOMTimerCoordinator timers_;
 
-  const double time_origin_;
+  const base::TimeTicks time_origin_;
 
   HeapHashMap<int, Member<ErrorEvent>> pending_error_events_;
   int last_pending_error_event_id_ = 0;

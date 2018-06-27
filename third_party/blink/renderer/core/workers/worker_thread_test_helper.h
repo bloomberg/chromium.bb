@@ -63,7 +63,7 @@ class FakeWorkerGlobalScope : public WorkerGlobalScope {
       WorkerThread* thread)
       : WorkerGlobalScope(std::move(creation_params),
                           thread,
-                          CurrentTimeTicksInSeconds()) {}
+                          CurrentTimeTicks()) {}
 
   ~FakeWorkerGlobalScope() override = default;
 
