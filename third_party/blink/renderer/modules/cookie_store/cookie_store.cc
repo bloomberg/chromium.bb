@@ -166,20 +166,15 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
 
   const String path = options.hasPath() ? options.path() : String("/");
 
-  const bool is_secure_origin = SecurityOrigin::IsSecure(cookie_url);
-  const bool secure = options.hasSecure() ? options.secure() : is_secure_origin;
+  // The cookie store API is only exposed on secure origins. If this changes:
+  // 1) The secure option must default to false for insecure origins.
+  // 2) Only secure origins can set the "secure" option to true.
+  DCHECK(SecurityOrigin::IsSecure(cookie_url));
 
-  if (name.StartsWith("__Secure-") || name.StartsWith("__Host-")) {
-    if (!secure) {
-      exception_state.ThrowTypeError(
-          "__Secure- and __Host- cookies must be secure");
-      return base::nullopt;
-    }
-    if (!is_secure_origin) {
-      exception_state.ThrowTypeError(
-          "__Secure- and __Host- cookies must be written from secure origin");
-      return base::nullopt;
-    }
+  const bool secure = options.secure();
+  if (!secure && (name.StartsWith("__Secure-") || name.StartsWith("__Host-"))) {
+    exception_state.ThrowTypeError(
+        "__Secure- and __Host- cookies must be secure");
   }
 
   return WebCanonicalCookie::Create(

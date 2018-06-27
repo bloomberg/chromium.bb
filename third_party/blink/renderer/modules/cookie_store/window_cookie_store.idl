@@ -6,7 +6,8 @@
 
 [
     RuntimeEnabled=AsyncCookies,
-    ImplementedAs=GlobalCookieStore
+    ImplementedAs=GlobalCookieStore,
+    SecureContext
 ] partial interface Window {
     [Replaceable, SameObject] readonly attribute CookieStore cookieStore;
 };

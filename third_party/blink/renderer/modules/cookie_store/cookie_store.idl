@@ -6,7 +6,8 @@
 
 [
   Exposed=(ServiceWorker,Window),
-  RuntimeEnabled=AsyncCookies
+  RuntimeEnabled=AsyncCookies,
+  SecureContext
 ] interface CookieStore : EventTarget {
   // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md#reading
   [CallWith=ScriptState, Measure, RaisesException] Promise<CookieList?> getAll(
