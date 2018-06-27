@@ -227,7 +227,8 @@ void NavigatorVR::EnqueueVREvent(VRDisplayEvent* event) {
   if (!GetSupplementable()->GetFrame())
     return;
 
-  GetSupplementable()->GetFrame()->DomWindow()->EnqueueWindowEvent(event);
+  GetSupplementable()->GetFrame()->DomWindow()->EnqueueWindowEvent(
+      event, TaskType::kMiscPlatformAPI);
 }
 
 void NavigatorVR::DispatchVREvent(VRDisplayEvent* event) {
