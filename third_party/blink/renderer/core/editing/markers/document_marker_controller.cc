@@ -524,6 +524,82 @@ DocumentMarkerVector DocumentMarkerController::Markers() {
   return result;
 }
 
+DocumentMarkerVector DocumentMarkerController::ComputeMarkersToPaint(
+    const Node& node) {
+  // We don't render composition or spelling markers that overlap suggestion
+  // markers.
+  // Note: DocumentMarkerController::MarkersFor() returns markers sorted by
+  // start offset.
+  const DocumentMarkerVector& suggestion_markers =
+      MarkersFor(&node, DocumentMarker::kSuggestion);
+  if (suggestion_markers.IsEmpty()) {
+    // If there are no suggestion markers, we can return early as a minor
+    // performance optimization.
+    DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
+    remaining_types.Remove(DocumentMarker::kSuggestion);
+    return MarkersFor(&node, remaining_types);
+  }
+
+  const DocumentMarkerVector& markers_overridden_by_suggestion_markers =
+      MarkersFor(&node,
+                 DocumentMarker::kComposition | DocumentMarker::kSpelling);
+
+  Vector<unsigned> suggestion_starts;
+  Vector<unsigned> suggestion_ends;
+  for (const DocumentMarker* suggestion_marker : suggestion_markers) {
+    suggestion_starts.push_back(suggestion_marker->StartOffset());
+    suggestion_ends.push_back(suggestion_marker->EndOffset());
+  }
+
+  std::sort(suggestion_starts.begin(), suggestion_starts.end());
+  std::sort(suggestion_ends.begin(), suggestion_ends.end());
+
+  unsigned suggestion_starts_index = 0;
+  unsigned suggestion_ends_index = 0;
+  unsigned number_suggestions_currently_inside = 0;
+
+  DocumentMarkerVector markers_to_paint;
+  for (DocumentMarker* marker : markers_overridden_by_suggestion_markers) {
+    while (suggestion_starts_index < suggestion_starts.size() &&
+           suggestion_starts[suggestion_starts_index] <=
+               marker->StartOffset()) {
+      ++suggestion_starts_index;
+      ++number_suggestions_currently_inside;
+    }
+    while (suggestion_ends_index < suggestion_ends.size() &&
+           suggestion_ends[suggestion_ends_index] <= marker->StartOffset()) {
+      ++suggestion_ends_index;
+      --number_suggestions_currently_inside;
+    }
+
+    // At this point, number_suggestions_currently_inside should be equal to the
+    // number of suggestion markers overlapping the point marker->StartOffset()
+    // (marker endpoints don't count as overlapping).
+
+    // Marker is overlapped by a suggestion marker, do not paint.
+    if (number_suggestions_currently_inside)
+      continue;
+
+    // Verify that no suggestion marker starts before the current marker ends.
+    if (suggestion_starts_index < suggestion_starts.size() &&
+        suggestion_starts[suggestion_starts_index] < marker->EndOffset())
+      continue;
+
+    markers_to_paint.push_back(marker);
+  }
+
+  markers_to_paint.AppendVector(suggestion_markers);
+
+  DocumentMarker::MarkerTypes remaining_types = DocumentMarker::AllMarkers();
+  remaining_types.Remove(DocumentMarker::kComposition |
+                         DocumentMarker::kSpelling |
+                         DocumentMarker::kSuggestion);
+
+  markers_to_paint.AppendVector(MarkersFor(&node, remaining_types));
+
+  return markers_to_paint;
+}
+
 Vector<IntRect> DocumentMarkerController::LayoutRectsForTextMatchMarkers() {
   DCHECK(!document_->View()->NeedsLayout());
   DCHECK(!document_->NeedsLayoutTreeUpdate());

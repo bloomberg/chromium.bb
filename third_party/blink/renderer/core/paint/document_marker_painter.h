@@ -14,7 +14,10 @@ class ComputedStyle;
 class FloatRect;
 class GraphicsContext;
 class LayoutPoint;
+class LayoutRect;
+class LayoutUnit;
 class StyleableMarker;
+class TextMatchMarker;
 struct TextPaintStyle;
 
 // Document marker painter for both LayoutNG and legacy layout.

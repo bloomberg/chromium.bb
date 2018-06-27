@@ -74,6 +74,7 @@ blink_core_sources("paint") {
     "decoration_info.h",
     "details_marker_painter.cc",
     "details_marker_painter.h",
+    "document_marker_painter.cc",
     "document_marker_painter.h",
     "ellipsis_box_painter.cc",
     "ellipsis_box_painter.h",
