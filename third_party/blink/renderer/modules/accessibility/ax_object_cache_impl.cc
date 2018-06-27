@@ -699,6 +699,20 @@ void AXObjectCacheImpl::UpdateCacheAfterNodeIsAttached(Node* node) {
   MaybeNewRelationTarget(node, obj);
 }
 
+void AXObjectCacheImpl::DidInsertChildrenOfNode(Node* node) {
+  // If a node is inserted that is a descendant of a leaf node in the
+  // accessibility tree, notify the root of that subtree that its children have
+  // changed.
+  if (!node)
+    return;
+
+  if (AXObject* obj = Get(node)) {
+    TextChanged(obj, node);
+  } else {
+    DidInsertChildrenOfNode(NodeTraversal::Parent(*node));
+  }
+}
+
 void AXObjectCacheImpl::ChildrenChanged(Node* node) {
   ChildrenChanged(Get(node), node);
 }
