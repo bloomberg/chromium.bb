@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/dom/element_visibility_observer.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/intersection_observer/intersection_observer_entry.h"

@@ -28,6 +28,7 @@
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
 
 #include <memory>
+#include "cc/layers/layer.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_provider_client.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -85,6 +86,9 @@ void EmptyChromeClient::AttachRootGraphicsLayer(GraphicsLayer* layer,
   if (!page)
     return;
   page->GetVisualViewport().AttachLayerTree(layer);
+}
+
+void EmptyChromeClient::AttachRootLayer(scoped_refptr<cc::Layer>, LocalFrame*) {
 }
 
 String EmptyChromeClient::AcceptLanguages() {

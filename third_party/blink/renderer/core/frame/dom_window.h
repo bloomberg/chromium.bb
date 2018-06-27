@@ -22,6 +22,7 @@ class InputDeviceCapabilitiesConstants;
 class LocalDOMWindow;
 class Location;
 class MessageEvent;
+class SecurityOrigin;
 class SerializedScriptValue;
 class WindowProxyManager;
 

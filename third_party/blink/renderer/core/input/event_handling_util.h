@@ -13,9 +13,12 @@
 
 namespace blink {
 
+class ContainerNode;
+class EventTarget;
 class LocalFrame;
 class ScrollableArea;
 class PaintLayer;
+enum class DispatchEventResult;
 
 namespace EventHandlingUtil {
 

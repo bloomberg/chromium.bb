@@ -16,6 +16,7 @@ class CrossThreadAudioParamInfo;
 class CrossThreadAudioWorkletProcessorInfo;
 class ExecutionContext;
 class MessagePortChannel;
+class SerializedScriptValue;
 class WorkerThread;
 
 // AudioWorkletMessagingProxy is a main thread interface for

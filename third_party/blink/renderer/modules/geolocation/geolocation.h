@@ -29,6 +29,7 @@
 
 #include "services/device/public/mojom/geolocation.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/geolocation/geolocation_service.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_callback.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_position_error_callback.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"

@@ -34,6 +34,7 @@
 #include <memory>
 #include "base/macros.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/document_lifecycle.h"
 #include "third_party/blink/renderer/core/inspector/thread_debugger.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -46,7 +47,6 @@ class ErrorEvent;
 class LocalFrame;
 class SecurityOrigin;
 class SourceLocation;
-class DocumentLifecycle;
 
 class CORE_EXPORT MainThreadDebugger final : public ThreadDebugger {
  public:

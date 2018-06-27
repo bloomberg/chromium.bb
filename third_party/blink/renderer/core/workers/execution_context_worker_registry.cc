@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/workers/execution_context_worker_registry.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 
 namespace blink {

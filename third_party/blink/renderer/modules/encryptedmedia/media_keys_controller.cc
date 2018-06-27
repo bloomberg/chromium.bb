@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/web/web_local_frame_client.h"
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 
 namespace blink {

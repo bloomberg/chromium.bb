@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/html/track/cue_timeline.h"
 
 #include <algorithm>
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/html_track_element.h"

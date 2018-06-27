@@ -20,6 +20,7 @@ namespace blink {
 class NFCPushOptions;
 using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;
+class ScriptPromiseResolver;
 
 class NFC final : public ScriptWrappable,
                   public PageVisibilityObserver,
