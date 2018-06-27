@@ -185,6 +185,11 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         "/without_accept_ch_without_lifetime_img_foo_com.html");
     accept_ch_without_lifetime_with_iframe_url_ =
         https_server_.GetURL("/accept_ch_without_lifetime_with_iframe.html");
+    accept_ch_without_lifetime_with_subresource_url_ = https_server_.GetURL(
+        "/accept_ch_without_lifetime_with_subresource.html");
+    accept_ch_without_lifetime_with_subresource_iframe_url_ =
+        https_server_.GetURL(
+            "/accept_ch_without_lifetime_with_subresource_iframe.html");
     accept_ch_without_lifetime_img_localhost_ =
         https_server_.GetURL("/accept_ch_without_lifetime_img_localhost.html");
   }
@@ -272,6 +277,20 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
   // headers. The response loads accept_ch_with_lifetime_url() in an iframe.
   const GURL& accept_ch_without_lifetime_with_iframe_url() const {
     return accept_ch_without_lifetime_with_iframe_url_;
+  }
+
+  // A URL whose response does not include Accept-CH or Accept-CH-Lifetime
+  // headers. The response loads accept_ch_with_lifetime_url() as a subresource
+  // in the main frame.
+  const GURL& accept_ch_without_lifetime_with_subresource_url() const {
+    return accept_ch_without_lifetime_with_subresource_url_;
+  }
+
+  // A URL whose response does not include Accept-CH or Accept-CH-Lifetime
+  // headers. The response loads accept_ch_with_lifetime_url() as a subresource
+  // in the iframe.
+  const GURL& accept_ch_without_lifetime_with_subresource_iframe_url() const {
+    return accept_ch_without_lifetime_with_subresource_iframe_url_;
   }
 
   // A URL whose response headers includes only Accept-CH header. Navigating to
@@ -448,6 +467,8 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
   GURL without_accept_ch_without_lifetime_url_;
   GURL without_accept_ch_without_lifetime_local_url_;
   GURL accept_ch_without_lifetime_with_iframe_url_;
+  GURL accept_ch_without_lifetime_with_subresource_url_;
+  GURL accept_ch_without_lifetime_with_subresource_iframe_url_;
   GURL without_accept_ch_without_lifetime_img_foo_com_;
   GURL without_accept_ch_without_lifetime_img_localhost_;
   GURL accept_ch_without_lifetime_img_localhost_;
@@ -656,6 +677,64 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   // accept_ch_without_lifetime_with_iframe_url() loads
   // accept_ch_with_lifetime() in an iframe. The request to persist client
   // hints from accept_ch_with_lifetime() should be disregarded.
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
+}
+
+// Loads a HTTPS webpage that does not request persisting of client hints.
+// A subresource loaded by the webpage requests persistence of client hints.
+// Verify that the request from the subresource is not honored, and client hints
+// preference is not persisted.
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       DisregardPersistenceRequestSubresource) {
+  base::HistogramTester histogram_tester;
+  ContentSettingsForOneType host_settings;
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  ui_test_utils::NavigateToURL(
+      browser(), accept_ch_without_lifetime_with_subresource_url());
+
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // accept_ch_without_lifetime_with_subresource_url() loads
+  // accept_ch_with_lifetime() as a subresource. The request to persist client
+  // hints from accept_ch_with_lifetime() should be disregarded.
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
+  histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
+}
+
+// Loads a HTTPS webpage that does not request persisting of client hints.
+// A subresource loaded by the webpage in an iframe requests persistence of
+// client hints. Verify that the request from the subresource in the iframe
+// is not honored, and client hints preference is not persisted.
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       DisregardPersistenceRequestSubresourceIframe) {
+  base::HistogramTester histogram_tester;
+  ContentSettingsForOneType host_settings;
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  ui_test_utils::NavigateToURL(
+      browser(), accept_ch_without_lifetime_with_subresource_iframe_url());
+
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 0);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // accept_ch_without_lifetime_with_subresource_iframe_url() loads
+  // accept_ch_with_lifetime() as a subresource in an iframe. The request to
+  // persist client hints from accept_ch_with_lifetime() should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
   histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
 }
