@@ -18,10 +18,11 @@ namespace {
 void CallStringCallbackFromIO(
     const PushMessagingService::StringCallback& callback,
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode service_worker_status) {
+    blink::ServiceWorkerStatusCode service_worker_status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  bool success = service_worker_status == SERVICE_WORKER_OK;
-  bool not_found = service_worker_status == SERVICE_WORKER_ERROR_NOT_FOUND;
+  bool success = service_worker_status == blink::SERVICE_WORKER_OK;
+  bool not_found =
+      service_worker_status == blink::SERVICE_WORKER_ERROR_NOT_FOUND;
   std::string result;
   if (success) {
     DCHECK_EQ(1u, data.size());
@@ -32,7 +33,7 @@ void CallStringCallbackFromIO(
 }
 
 void CallClosureFromIO(const base::Closure& callback,
-                       ServiceWorkerStatusCode status) {
+                       blink::ServiceWorkerStatusCode status) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
 }

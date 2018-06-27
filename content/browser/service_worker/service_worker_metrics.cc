@@ -479,23 +479,23 @@ void ServiceWorkerMetrics::CountControlledPageLoad(Site site,
 }
 
 void ServiceWorkerMetrics::RecordStartWorkerStatus(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     EventType purpose,
     bool is_installed) {
   if (!is_installed) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartNewWorker.Status", status,
-                              SERVICE_WORKER_ERROR_MAX_VALUE);
+                              blink::SERVICE_WORKER_ERROR_MAX_VALUE);
     return;
   }
 
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Status", status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
+                            blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   RecordHistogramEnum(std::string("ServiceWorker.StartWorker.StatusByPurpose") +
                           EventTypeToSuffix(purpose),
-                      status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                      status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Purpose", purpose,
                             EventType::NUM_TYPES);
-  if (status == SERVICE_WORKER_ERROR_TIMEOUT) {
+  if (status == blink::SERVICE_WORKER_ERROR_TIMEOUT) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.Timeout.StartPurpose",
                               purpose, EventType::NUM_TYPES);
   }
@@ -604,23 +604,23 @@ void ServiceWorkerMetrics::RecordStopWorkerTime(base::TimeDelta time) {
 }
 
 void ServiceWorkerMetrics::RecordActivateEventStatus(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     bool is_shutdown) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus", status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
+                            blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   if (is_shutdown) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus_InShutdown",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   } else {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.ActivateEventStatus_NotInShutdown",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   }
 }
 
 void ServiceWorkerMetrics::RecordInstallEventStatus(
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   UMA_HISTOGRAM_ENUMERATION("ServiceWorker.InstallEventStatus", status,
-                            SERVICE_WORKER_ERROR_MAX_VALUE);
+                            blink::SERVICE_WORKER_ERROR_MAX_VALUE);
 }
 
 void ServiceWorkerMetrics::RecordEventDispatchingDelay(EventType event_type,
@@ -742,13 +742,13 @@ void ServiceWorkerMetrics::RecordEventDuration(EventType event,
 
 void ServiceWorkerMetrics::RecordFetchEventStatus(
     bool is_main_resource,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   if (is_main_resource) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.MainResource.Status",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   } else {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.FetchEvent.Subresource.Status",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   }
 }
 
@@ -855,10 +855,10 @@ void ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
 
 void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
     int failure_count,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   DCHECK_GT(failure_count, 0);
 
-  if (status == SERVICE_WORKER_OK) {
+  if (status == blink::SERVICE_WORKER_OK) {
     UMA_HISTOGRAM_COUNTS_1000("ServiceWorker.StartWorker.FailureStreakEnded",
                               failure_count);
   } else if (failure_count < std::numeric_limits<int>::max()) {
@@ -868,13 +868,13 @@ void ServiceWorkerMetrics::RecordStartStatusAfterFailure(
 
   if (failure_count == 1) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.AfterFailureStreak_1",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   } else if (failure_count == 2) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.AfterFailureStreak_2",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   } else if (failure_count == 3) {
     UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartWorker.AfterFailureStreak_3",
-                              status, SERVICE_WORKER_ERROR_MAX_VALUE);
+                              status, blink::SERVICE_WORKER_ERROR_MAX_VALUE);
   }
 }
 

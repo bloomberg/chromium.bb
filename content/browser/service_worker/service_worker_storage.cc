@@ -44,11 +44,11 @@ void RunSoon(const base::Location& from_here, base::OnceClosure closure) {
 }
 
 void CompleteFindNow(scoped_refptr<ServiceWorkerRegistration> registration,
-                     ServiceWorkerStatusCode status,
+                     blink::ServiceWorkerStatusCode status,
                      ServiceWorkerStorage::FindRegistrationCallback callback) {
   if (registration && registration->is_deleted()) {
     // It's past the point of no return and no longer findable.
-    std::move(callback).Run(SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
+    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_NOT_FOUND, nullptr);
     return;
   }
   std::move(callback).Run(status, std::move(registration));
@@ -56,7 +56,7 @@ void CompleteFindNow(scoped_refptr<ServiceWorkerRegistration> registration,
 
 void CompleteFindSoon(const base::Location& from_here,
                       scoped_refptr<ServiceWorkerRegistration> registration,
-                      ServiceWorkerStatusCode status,
+                      blink::ServiceWorkerStatusCode status,
                       ServiceWorkerStorage::FindRegistrationCallback callback) {
   RunSoon(from_here, base::BindOnce(&CompleteFindNow, std::move(registration),
                                     status, std::move(callback)));
@@ -70,18 +70,18 @@ const base::FilePath::CharType kDiskCacheName[] =
 const int kMaxServiceWorkerStorageMemDiskCacheSize = 10 * 1024 * 1024;
 const int kMaxServiceWorkerStorageDiskCacheSize = 250 * 1024 * 1024;
 
-ServiceWorkerStatusCode DatabaseStatusToStatusCode(
+blink::ServiceWorkerStatusCode DatabaseStatusToStatusCode(
     ServiceWorkerDatabase::Status status) {
   switch (status) {
     case ServiceWorkerDatabase::STATUS_OK:
-      return SERVICE_WORKER_OK;
+      return blink::SERVICE_WORKER_OK;
     case ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND:
-      return SERVICE_WORKER_ERROR_NOT_FOUND;
+      return blink::SERVICE_WORKER_ERROR_NOT_FOUND;
     case ServiceWorkerDatabase::STATUS_ERROR_MAX:
       NOTREACHED();
       FALLTHROUGH;
     default:
-      return SERVICE_WORKER_ERROR_FAILED;
+      return blink::SERVICE_WORKER_ERROR_FAILED;
   }
 }
 
@@ -148,7 +148,7 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
   switch (state_) {
     case DISABLED:
       CompleteFindNow(scoped_refptr<ServiceWorkerRegistration>(),
-                      SERVICE_WORKER_ERROR_ABORT, std::move(callback));
+                      blink::SERVICE_WORKER_ERROR_ABORT, std::move(callback));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -169,9 +169,9 @@ void ServiceWorkerStorage::FindRegistrationForDocument(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
-    ServiceWorkerStatusCode status = installing_registration
-                                         ? SERVICE_WORKER_OK
-                                         : SERVICE_WORKER_ERROR_NOT_FOUND;
+    blink::ServiceWorkerStatusCode status =
+        installing_registration ? blink::SERVICE_WORKER_OK
+                                : blink::SERVICE_WORKER_ERROR_NOT_FOUND;
     TRACE_EVENT_INSTANT2(
         "ServiceWorker",
         "ServiceWorkerStorage::FindRegistrationForDocument:CheckInstalling",
@@ -205,7 +205,7 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
   switch (state_) {
     case DISABLED:
       CompleteFindSoon(FROM_HERE, scoped_refptr<ServiceWorkerRegistration>(),
-                       SERVICE_WORKER_ERROR_ABORT, std::move(callback));
+                       blink::SERVICE_WORKER_ERROR_ABORT, std::move(callback));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -222,9 +222,9 @@ void ServiceWorkerStorage::FindRegistrationForPattern(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
-    ServiceWorkerStatusCode installing_status =
-        installing_registration ? SERVICE_WORKER_OK
-                                : SERVICE_WORKER_ERROR_NOT_FOUND;
+    blink::ServiceWorkerStatusCode installing_status =
+        installing_registration ? blink::SERVICE_WORKER_OK
+                                : blink::SERVICE_WORKER_ERROR_NOT_FOUND;
     CompleteFindSoon(FROM_HERE, std::move(installing_registration),
                      installing_status, std::move(callback));
     return;
@@ -260,7 +260,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
   switch (state_) {
     case DISABLED:
       CompleteFindNow(scoped_refptr<ServiceWorkerRegistration>(),
-                      SERVICE_WORKER_ERROR_ABORT, std::move(callback));
+                      blink::SERVICE_WORKER_ERROR_ABORT, std::move(callback));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -279,8 +279,9 @@ void ServiceWorkerStorage::FindRegistrationForId(
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForId(registration_id);
     CompleteFindNow(installing_registration,
-                    installing_registration ? SERVICE_WORKER_OK
-                                            : SERVICE_WORKER_ERROR_NOT_FOUND,
+                    installing_registration
+                        ? blink::SERVICE_WORKER_OK
+                        : blink::SERVICE_WORKER_ERROR_NOT_FOUND,
                     std::move(callback));
     return;
   }
@@ -288,7 +289,7 @@ void ServiceWorkerStorage::FindRegistrationForId(
   scoped_refptr<ServiceWorkerRegistration> registration =
       context_->GetLiveRegistration(registration_id);
   if (registration) {
-    CompleteFindNow(std::move(registration), SERVICE_WORKER_OK,
+    CompleteFindNow(std::move(registration), blink::SERVICE_WORKER_OK,
                     std::move(callback));
     return;
   }
@@ -307,7 +308,8 @@ void ServiceWorkerStorage::FindRegistrationForIdOnly(
     FindRegistrationCallback callback) {
   switch (state_) {
     case DISABLED:
-      CompleteFindNow(nullptr, SERVICE_WORKER_ERROR_ABORT, std::move(callback));
+      CompleteFindNow(nullptr, blink::SERVICE_WORKER_ERROR_ABORT,
+                      std::move(callback));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -347,7 +349,7 @@ void ServiceWorkerStorage::GetRegistrationsForOrigin(
     case DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(
-                  std::move(callback), SERVICE_WORKER_ERROR_ABORT,
+                  std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT,
                   std::vector<scoped_refptr<ServiceWorkerRegistration>>()));
       return;
     case INITIALIZING:  // Fall-through.
@@ -377,9 +379,10 @@ void ServiceWorkerStorage::GetAllRegistrationsInfos(
     GetRegistrationsInfosCallback callback) {
   switch (state_) {
     case DISABLED:
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT,
-                             std::vector<ServiceWorkerRegistrationInfo>()));
+      RunSoon(
+          FROM_HERE,
+          base::BindOnce(std::move(callback), blink::SERVICE_WORKER_ERROR_ABORT,
+                         std::vector<ServiceWorkerRegistrationInfo>()));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -410,8 +413,8 @@ void ServiceWorkerStorage::StoreRegistration(
 
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -438,8 +441,8 @@ void ServiceWorkerStorage::StoreRegistration(
   version->script_cache_map()->GetResources(&resources);
 
   if (resources.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
@@ -470,8 +473,8 @@ void ServiceWorkerStorage::UpdateToActiveState(
 
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -507,7 +510,7 @@ void ServiceWorkerStorage::UpdateNavigationPreloadEnabled(
     StatusCallback callback) {
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT);
     return;
   }
 
@@ -526,7 +529,7 @@ void ServiceWorkerStorage::UpdateNavigationPreloadHeader(
     StatusCallback callback) {
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    std::move(callback).Run(SERVICE_WORKER_ERROR_ABORT);
+    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_ABORT);
     return;
   }
 
@@ -543,8 +546,8 @@ void ServiceWorkerStorage::DeleteRegistration(int64_t registration_id,
                                               StatusCallback callback) {
   DCHECK(state_ == INITIALIZED || state_ == DISABLED) << state_;
   if (IsDisabled()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_ABORT));
     return;
   }
 
@@ -635,8 +638,8 @@ void ServiceWorkerStorage::StoreUserData(
     StatusCallback callback) {
   switch (state_) {
     case DISABLED:
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT));
+      RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                        blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -650,14 +653,14 @@ void ServiceWorkerStorage::StoreUserData(
 
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       key_value_pairs.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   for (const auto& kv : key_value_pairs) {
     if (kv.first.empty()) {
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+      RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                        blink::SERVICE_WORKER_ERROR_FAILED));
       return;
     }
   }
@@ -678,7 +681,7 @@ void ServiceWorkerStorage::GetUserData(int64_t registration_id,
     case DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback), std::vector<std::string>(),
-                             SERVICE_WORKER_ERROR_ABORT));
+                             blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -694,14 +697,14 @@ void ServiceWorkerStorage::GetUserData(int64_t registration_id,
       keys.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback), std::vector<std::string>(),
-                           SERVICE_WORKER_ERROR_FAILED));
+                           blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   for (const std::string& key : keys) {
     if (key.empty()) {
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback), std::vector<std::string>(),
-                             SERVICE_WORKER_ERROR_FAILED));
+                             blink::SERVICE_WORKER_ERROR_FAILED));
       return;
     }
   }
@@ -723,7 +726,7 @@ void ServiceWorkerStorage::GetUserDataByKeyPrefix(
     case DISABLED:
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback), std::vector<std::string>(),
-                             SERVICE_WORKER_ERROR_ABORT));
+                             blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -739,13 +742,13 @@ void ServiceWorkerStorage::GetUserDataByKeyPrefix(
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback), std::vector<std::string>(),
-                           SERVICE_WORKER_ERROR_FAILED));
+                           blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   if (key_prefix.empty()) {
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback), std::vector<std::string>(),
-                           SERVICE_WORKER_ERROR_FAILED));
+                           blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
@@ -767,7 +770,7 @@ void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefix(
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
                              base::flat_map<std::string, std::string>(),
-                             SERVICE_WORKER_ERROR_ABORT));
+                             blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -785,7 +788,7 @@ void ServiceWorkerStorage::GetUserKeysAndDataByKeyPrefix(
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            base::flat_map<std::string, std::string>(),
-                           SERVICE_WORKER_ERROR_FAILED));
+                           blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
@@ -804,8 +807,8 @@ void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
                                          StatusCallback callback) {
   switch (state_) {
     case DISABLED:
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT));
+      RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                        blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -819,14 +822,14 @@ void ServiceWorkerStorage::ClearUserData(int64_t registration_id,
 
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       keys.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   for (const std::string& key : keys) {
     if (key.empty()) {
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+      RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                        blink::SERVICE_WORKER_ERROR_FAILED));
       return;
     }
   }
@@ -845,8 +848,8 @@ void ServiceWorkerStorage::ClearUserDataByKeyPrefixes(
     StatusCallback callback) {
   switch (state_) {
     case DISABLED:
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_ABORT));
+      RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                        blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -861,14 +864,14 @@ void ServiceWorkerStorage::ClearUserDataByKeyPrefixes(
 
   if (registration_id == blink::mojom::kInvalidServiceWorkerRegistrationId ||
       key_prefixes.empty()) {
-    RunSoon(FROM_HERE,
-            base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+    RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                      blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   for (const std::string& key_prefix : key_prefixes) {
     if (key_prefix.empty()) {
-      RunSoon(FROM_HERE,
-              base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+      RunSoon(FROM_HERE, base::BindOnce(std::move(callback),
+                                        blink::SERVICE_WORKER_ERROR_FAILED));
       return;
     }
   }
@@ -890,7 +893,7 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
                              std::vector<std::pair<int64_t, std::string>>(),
-                             SERVICE_WORKER_ERROR_ABORT));
+                             blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -906,7 +909,7 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrations(
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            std::vector<std::pair<int64_t, std::string>>(),
-                           SERVICE_WORKER_ERROR_FAILED));
+                           blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
@@ -928,7 +931,7 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix(
       RunSoon(FROM_HERE,
               base::BindOnce(std::move(callback),
                              std::vector<std::pair<int64_t, std::string>>(),
-                             SERVICE_WORKER_ERROR_ABORT));
+                             blink::SERVICE_WORKER_ERROR_ABORT));
       return;
     case INITIALIZING:  // Fall-through.
     case UNINITIALIZED:
@@ -944,7 +947,7 @@ void ServiceWorkerStorage::GetUserDataForAllRegistrationsByKeyPrefix(
     RunSoon(FROM_HERE,
             base::BindOnce(std::move(callback),
                            std::vector<std::pair<int64_t, std::string>>(),
-                           SERVICE_WORKER_ERROR_FAILED));
+                           blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
 
@@ -1012,11 +1015,11 @@ void ServiceWorkerStorage::NotifyInstallingRegistration(
 }
 
 void ServiceWorkerStorage::NotifyDoneInstallingRegistration(
-      ServiceWorkerRegistration* registration,
-      ServiceWorkerVersion* version,
-      ServiceWorkerStatusCode status) {
+    ServiceWorkerRegistration* registration,
+    ServiceWorkerVersion* version,
+    blink::ServiceWorkerStatusCode status) {
   installing_registrations_.erase(registration->id());
-  if (status != SERVICE_WORKER_OK && version) {
+  if (status != blink::SERVICE_WORKER_OK && version) {
     ResourceList resources;
     version->script_cache_map()->GetResources(&resources);
 
@@ -1160,20 +1163,18 @@ void ServiceWorkerStorage::DidFindRegistrationForDocument(
     // Look for something currently being installed.
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForDocument(document_url);
-    ServiceWorkerStatusCode installing_status =
-        installing_registration ? SERVICE_WORKER_OK
-                                : SERVICE_WORKER_ERROR_NOT_FOUND;
+    blink::ServiceWorkerStatusCode installing_status =
+        installing_registration ? blink::SERVICE_WORKER_OK
+                                : blink::SERVICE_WORKER_ERROR_NOT_FOUND;
     std::move(callback).Run(installing_status,
                             std::move(installing_registration));
     TRACE_EVENT_ASYNC_END2(
-        "ServiceWorker",
-        "ServiceWorkerStorage::FindRegistrationForDocument",
-        callback_id,
-        "Status", ServiceWorkerDatabase::StatusToString(status),
+        "ServiceWorker", "ServiceWorkerStorage::FindRegistrationForDocument",
+        callback_id, "Status", ServiceWorkerDatabase::StatusToString(status),
         "Info",
-        (installing_status == SERVICE_WORKER_OK) ?
-            "Installing registration is found" :
-            "Any registrations are not found");
+        (installing_status == blink::SERVICE_WORKER_OK)
+            ? "Installing registration is found"
+            : "Any registrations are not found");
     return;
   }
 
@@ -1201,9 +1202,9 @@ void ServiceWorkerStorage::DidFindRegistrationForPattern(
   if (status == ServiceWorkerDatabase::STATUS_ERROR_NOT_FOUND) {
     scoped_refptr<ServiceWorkerRegistration> installing_registration =
         FindInstallingRegistrationForPattern(scope);
-    ServiceWorkerStatusCode installing_status =
-        installing_registration ? SERVICE_WORKER_OK
-                                : SERVICE_WORKER_ERROR_NOT_FOUND;
+    blink::ServiceWorkerStatusCode installing_status =
+        installing_registration ? blink::SERVICE_WORKER_OK
+                                : blink::SERVICE_WORKER_ERROR_NOT_FOUND;
     std::move(callback).Run(installing_status,
                             std::move(installing_registration));
     return;
@@ -1243,7 +1244,7 @@ void ServiceWorkerStorage::ReturnFoundRegistration(
   DCHECK(!resources.empty());
   scoped_refptr<ServiceWorkerRegistration> registration =
       GetOrCreateRegistration(data, resources);
-  CompleteFindNow(std::move(registration), SERVICE_WORKER_OK,
+  CompleteFindNow(std::move(registration), blink::SERVICE_WORKER_OK,
                   std::move(callback));
 }
 
@@ -1284,7 +1285,7 @@ void ServiceWorkerStorage::DidGetRegistrationsForOrigin(
       registrations.push_back(registration.second);
   }
 
-  std::move(callback).Run(SERVICE_WORKER_OK, std::move(registrations));
+  std::move(callback).Run(blink::SERVICE_WORKER_OK, std::move(registrations));
 }
 
 void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
@@ -1359,7 +1360,7 @@ void ServiceWorkerStorage::DidGetAllRegistrationsInfos(
       infos.push_back(registration.second->GetInfo());
   }
 
-  std::move(callback).Run(SERVICE_WORKER_OK, infos);
+  std::move(callback).Run(blink::SERVICE_WORKER_OK, infos);
 }
 
 void ServiceWorkerStorage::DidStoreRegistration(
@@ -1393,7 +1394,7 @@ void ServiceWorkerStorage::DidStoreRegistration(
 
   context_->NotifyRegistrationStored(new_version.registration_id,
                                      new_version.scope);
-  std::move(callback).Run(SERVICE_WORKER_OK);
+  std::move(callback).Run(blink::SERVICE_WORKER_OK);
 
   if (!context_->GetLiveVersion(deleted_version.version_id))
     StartPurgingResources(newly_purgeable_resources);
@@ -1431,7 +1432,7 @@ void ServiceWorkerStorage::DidDeleteRegistration(
   }
   if (origin_state == OriginState::kDelete)
     registered_origins_.erase(params->origin);
-  std::move(params->callback).Run(SERVICE_WORKER_OK);
+  std::move(params->callback).Run(blink::SERVICE_WORKER_OK);
 
   if (!context_->GetLiveVersion(deleted_version.version_id))
     StartPurgingResources(newly_purgeable_resources);
@@ -2112,13 +2113,13 @@ void ServiceWorkerStorage::DidDeleteDiskCache(StatusCallback callback,
     LOG(ERROR) << "Failed to delete the diskcache.";
     ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
         ServiceWorkerMetrics::DELETE_DISK_CACHE_ERROR);
-    std::move(callback).Run(SERVICE_WORKER_ERROR_FAILED);
+    std::move(callback).Run(blink::SERVICE_WORKER_ERROR_FAILED);
     return;
   }
   DVLOG(1) << "Deleted ServiceWorkerDiskCache successfully.";
   ServiceWorkerMetrics::RecordDeleteAndStartOverResult(
       ServiceWorkerMetrics::DELETE_OK);
-  std::move(callback).Run(SERVICE_WORKER_OK);
+  std::move(callback).Run(blink::SERVICE_WORKER_OK);
 }
 
 }  // namespace content

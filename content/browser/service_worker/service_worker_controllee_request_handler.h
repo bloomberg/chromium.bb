@@ -94,7 +94,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // For main resource case.
   void PrepareForMainResource(const GURL& url, const GURL& site_for_cookies);
   void DidLookupRegistrationForMainResource(
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void OnVersionStatusChanged(
       ServiceWorkerRegistration* registration,
@@ -102,7 +102,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
 
   void DidUpdateRegistration(
       const scoped_refptr<ServiceWorkerRegistration>& original_registration,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       const std::string& status_message,
       int64_t registration_id);
   void OnUpdatedVersionStatusChanged(

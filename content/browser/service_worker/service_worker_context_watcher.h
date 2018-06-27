@@ -52,7 +52,7 @@ class CONTENT_EXPORT ServiceWorkerContextWatcher
 
   void GetStoredRegistrationsOnIOThread();
   void OnStoredRegistrationsOnIOThread(
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& stored_registrations);
   void StopOnIOThread();
 

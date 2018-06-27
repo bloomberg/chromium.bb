@@ -10,8 +10,8 @@
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "storage/browser/blob/blob_data_handle.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -41,7 +41,7 @@ class GetSettledFetchesTask : public DatabaseTask {
 
   void DidGetCompletedRequests(base::OnceClosure done_closure,
                                const std::vector<std::string>& data,
-                               ServiceWorkerStatusCode status);
+                               blink::ServiceWorkerStatusCode status);
 
   void GetResponses();
 

@@ -11,13 +11,13 @@
 #include "base/scoped_observer.h"
 #include "base/time/time.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_stream_handle.mojom.h"
@@ -69,7 +69,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
                             base::Time dispatch_event_time);
   // Called when this loader no longer needs to restart dispatching the fetch
   // event on failure. Null |status| means the event dispatch was not attempted.
-  void SettleFetchEventDispatch(base::Optional<ServiceWorkerStatusCode> status);
+  void SettleFetchEventDispatch(
+      base::Optional<blink::ServiceWorkerStatusCode> status);
 
   // mojom::ServiceWorkerFetchResponseCallback overrides:
   void OnResponse(const ServiceWorkerResponse& response,

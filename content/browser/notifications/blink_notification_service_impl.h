@@ -81,7 +81,7 @@ class CONTENT_EXPORT BlinkNotificationServiceImpl
       const PlatformNotificationData& platform_notification_data,
       const NotificationResources& notification_resources,
       DisplayPersistentNotificationCallback callback,
-      ServiceWorkerStatusCode service_worker_status,
+      blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   void DidGetNotificationsOnIOThread(

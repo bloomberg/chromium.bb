@@ -40,8 +40,8 @@ void TestBackgroundSyncManager::StoreDataInBackend(
   EXPECT_FALSE(continuation_);
   if (corrupt_backend_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::BindOnce(std::move(callback), SERVICE_WORKER_ERROR_FAILED));
+        FROM_HERE, base::BindOnce(std::move(callback),
+                                  blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   continuation_ =
@@ -63,7 +63,7 @@ void TestBackgroundSyncManager::GetDataFromBackend(
         FROM_HERE,
         base::BindOnce(std::move(callback),
                        std::vector<std::pair<int64_t, std::string>>(),
-                       SERVICE_WORKER_ERROR_FAILED));
+                       blink::SERVICE_WORKER_ERROR_FAILED));
     return;
   }
   continuation_ =

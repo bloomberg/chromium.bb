@@ -11,7 +11,7 @@
 
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 namespace content {
@@ -37,11 +37,11 @@ class CreateMetadataTask : public DatabaseTask {
 
  private:
   void DidGetUniqueId(const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
+                      blink::ServiceWorkerStatusCode status);
 
   void StoreMetadata();
 
-  void DidStoreMetadata(ServiceWorkerStatusCode status);
+  void DidStoreMetadata(blink::ServiceWorkerStatusCode status);
 
   void InitializeMetadataProto();
 

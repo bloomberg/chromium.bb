@@ -16,11 +16,11 @@
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 
 namespace content {
@@ -29,17 +29,19 @@ namespace {
 
 void RegisterServiceWorkerCallback(bool* called,
                                    int64_t* out_registration_id,
-                                   ServiceWorkerStatusCode status,
+                                   blink::ServiceWorkerStatusCode status,
                                    const std::string& status_message,
                                    int64_t registration_id) {
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
+      << ServiceWorkerStatusToString(status);
   *called = true;
   *out_registration_id = registration_id;
 }
 
 void UnregisterServiceWorkerCallback(bool* called,
-                                     ServiceWorkerStatusCode status) {
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+                                     blink::ServiceWorkerStatusCode status) {
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
+      << ServiceWorkerStatusToString(status);
   *called = true;
 }
 

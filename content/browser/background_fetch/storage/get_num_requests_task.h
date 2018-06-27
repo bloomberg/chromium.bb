@@ -8,7 +8,7 @@
 #include "base/callback_forward.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/common/content_export.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -35,7 +35,7 @@ class CONTENT_EXPORT GetNumRequestsTask : public DatabaseTask {
   void GetMetadata();
   void GetRequests(const std::string& key_prefix);
   void DidGetRequests(const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
+                      blink::ServiceWorkerStatusCode status);
 
   BackgroundFetchRegistrationId registration_id_;
   RequestType type_;

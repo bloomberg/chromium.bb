@@ -94,7 +94,7 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       ServiceWorkerMetrics::EventType event,
       base::OnceClosure finished_closure,
       ServiceWorkerLoadedCallback loaded_callback,
-      ServiceWorkerStatusCode service_worker_status,
+      blink::ServiceWorkerStatusCode service_worker_status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   // Dispatches the actual event after the Service Worker has been started.
@@ -103,13 +103,14 @@ class CONTENT_EXPORT BackgroundFetchEventDispatcher {
       base::OnceClosure finished_closure,
       ServiceWorkerLoadedCallback loaded_callback,
       scoped_refptr<ServiceWorkerVersion> service_worker_version,
-      ServiceWorkerStatusCode start_worker_status);
+      blink::ServiceWorkerStatusCode start_worker_status);
 
   // Called when an event of type |event| has finished dispatching.
-  static void DidDispatchEvent(ServiceWorkerMetrics::EventType event,
-                               base::OnceClosure finished_closure,
-                               DispatchPhase dispatch_phase,
-                               ServiceWorkerStatusCode service_worker_status);
+  static void DidDispatchEvent(
+      ServiceWorkerMetrics::EventType event,
+      base::OnceClosure finished_closure,
+      DispatchPhase dispatch_phase,
+      blink::ServiceWorkerStatusCode service_worker_status);
 
   // Methods that actually invoke the event on an activated Service Worker.
   static void DoDispatchBackgroundFetchAbortEvent(

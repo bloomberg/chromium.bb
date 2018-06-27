@@ -77,7 +77,7 @@ void GetNumRequestsTask::GetRequests(const std::string& key_prefix) {
 }
 
 void GetNumRequestsTask::DidGetRequests(const std::vector<std::string>& data,
-                                        ServiceWorkerStatusCode status) {
+                                        blink::ServiceWorkerStatusCode status) {
   DCHECK_EQ(ToDatabaseStatus(status), DatabaseStatus::kOk);
   std::move(callback_).Run(data.size());
   Finished();  // Destroys |this|.

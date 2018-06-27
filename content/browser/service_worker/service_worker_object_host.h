@@ -96,7 +96,7 @@ class CONTENT_EXPORT ServiceWorkerObjectHost
   // observe the dispatch result in unit tests.
   void DispatchExtendableMessageEvent(
       ::blink::TransferableMessage message,
-      base::OnceCallback<void(ServiceWorkerStatusCode)> callback);
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback);
 
   void OnConnectionError();
 

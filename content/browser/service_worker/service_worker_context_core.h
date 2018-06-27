@@ -59,17 +59,17 @@ class CONTENT_EXPORT ServiceWorkerContextCore
  public:
   using BoolCallback = base::OnceCallback<void(bool)>;
   using StatusCallback =
-      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
   using RegistrationCallback =
-      base::OnceCallback<void(ServiceWorkerStatusCode status,
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status,
                               const std::string& status_message,
                               int64_t registration_id)>;
   using UpdateCallback =
-      base::OnceCallback<void(ServiceWorkerStatusCode status,
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status,
                               const std::string& status_message,
                               int64_t registration_id)>;
   using UnregistrationCallback =
-      base::OnceCallback<void(ServiceWorkerStatusCode status)>;
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
   using ProviderMap = base::IDMap<std::unique_ptr<ServiceWorkerProviderHost>>;
   using ProcessToProviderMap = base::IDMap<std::unique_ptr<ProviderMap>>;
 
@@ -202,7 +202,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
                                UnregistrationCallback callback);
 
   // Callback is called after all deletions occured. The status code is
-  // SERVICE_WORKER_OK if all succeed, or SERVICE_WORKER_FAILED
+  // blink::SERVICE_WORKER_OK if all succeed, or SERVICE_WORKER_FAILED
   // if any did not succeed.
   void DeleteForOrigin(const GURL& origin, StatusCallback callback);
 
@@ -268,7 +268,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
       const ServiceWorkerContext::CheckHasServiceWorkerCallback callback);
 
   void UpdateVersionFailureCount(int64_t version_id,
-                                 ServiceWorkerStatusCode status);
+                                 blink::ServiceWorkerStatusCode status);
   // Returns the count of consecutive start worker failures for the given
   // version. The count resets to zero when the worker successfully starts.
   int GetVersionFailureCount(int64_t version_id);
@@ -293,37 +293,37 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   struct FailureInfo {
     int count;
-    ServiceWorkerStatusCode last_failure;
+    blink::ServiceWorkerStatusCode last_failure;
   };
 
   ProviderMap* GetProviderMapForProcess(int process_id);
 
   void RegistrationComplete(const GURL& pattern,
                             RegistrationCallback callback,
-                            ServiceWorkerStatusCode status,
+                            blink::ServiceWorkerStatusCode status,
                             const std::string& status_message,
                             ServiceWorkerRegistration* registration);
 
   void UpdateComplete(UpdateCallback callback,
-                      ServiceWorkerStatusCode status,
+                      blink::ServiceWorkerStatusCode status,
                       const std::string& status_message,
                       ServiceWorkerRegistration* registration);
 
   void UnregistrationComplete(const GURL& pattern,
                               UnregistrationCallback callback,
                               int64_t registration_id,
-                              ServiceWorkerStatusCode status);
+                              blink::ServiceWorkerStatusCode status);
 
   void DidGetRegistrationsForDeleteForOrigin(
-      base::OnceCallback<void(ServiceWorkerStatusCode)> callback,
-      ServiceWorkerStatusCode status,
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)> callback,
+      blink::ServiceWorkerStatusCode status,
       const std::vector<scoped_refptr<ServiceWorkerRegistration>>&
           registrations);
 
   void DidFindRegistrationForCheckHasServiceWorker(
       const GURL& other_url,
       ServiceWorkerContext::CheckHasServiceWorkerCallback callback,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void OnRegistrationFinishedForCheckHasServiceWorker(
       ServiceWorkerContext::CheckHasServiceWorkerCallback callback,

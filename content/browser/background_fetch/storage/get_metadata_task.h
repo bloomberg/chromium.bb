@@ -12,7 +12,7 @@
 #include "base/callback_forward.h"
 #include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/origin.h"
 
 namespace content {
@@ -39,10 +39,10 @@ class GetMetadataTask : public DatabaseTask {
 
  private:
   void DidGetUniqueId(const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
+                      blink::ServiceWorkerStatusCode status);
 
   void DidGetMetadata(const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
+                      blink::ServiceWorkerStatusCode status);
 
   void ProcessMetadata(const std::string& metadata);
 

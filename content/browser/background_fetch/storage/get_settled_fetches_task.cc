@@ -60,7 +60,7 @@ void GetSettledFetchesTask::DidOpenCache(
 void GetSettledFetchesTask::DidGetCompletedRequests(
     base::OnceClosure done_closure,
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;

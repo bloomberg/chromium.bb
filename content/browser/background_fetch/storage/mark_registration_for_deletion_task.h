@@ -9,7 +9,7 @@
 #include <vector>
 
 #include "content/browser/background_fetch/storage/database_task.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -31,9 +31,9 @@ class MarkRegistrationForDeletionTask : public background_fetch::DatabaseTask {
 
  private:
   void DidGetActiveUniqueId(const std::vector<std::string>& data,
-                            ServiceWorkerStatusCode status);
+                            blink::ServiceWorkerStatusCode status);
 
-  void DidDeactivate(ServiceWorkerStatusCode status);
+  void DidDeactivate(blink::ServiceWorkerStatusCode status);
 
   BackgroundFetchRegistrationId registration_id_;
   HandleBackgroundFetchErrorCallback callback_;

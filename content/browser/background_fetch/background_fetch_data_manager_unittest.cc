@@ -63,12 +63,13 @@ void DidGetError(base::Closure quit_closure,
   std::move(quit_closure).Run();
 }
 
-void DidGetRegistrationUserDataByKeyPrefix(base::Closure quit_closure,
-                                           std::vector<std::string>* out_data,
-                                           const std::vector<std::string>& data,
-                                           ServiceWorkerStatusCode status) {
+void DidGetRegistrationUserDataByKeyPrefix(
+    base::OnceClosure quit_closure,
+    std::vector<std::string>* out_data,
+    const std::vector<std::string>& data,
+    blink::ServiceWorkerStatusCode status) {
   DCHECK(out_data);
-  DCHECK_EQ(SERVICE_WORKER_OK, status);
+  DCHECK_EQ(blink::SERVICE_WORKER_OK, status);
   *out_data = data;
   std::move(quit_closure).Run();
 }
@@ -100,9 +101,9 @@ void AnnotateRequestInfoWithFakeDownloadManagerData(
 void GetNumUserData(base::Closure quit_closure,
                     int* out_size,
                     const std::vector<std::string>& data,
-                    ServiceWorkerStatusCode status) {
+                    blink::ServiceWorkerStatusCode status) {
   DCHECK(out_size);
-  DCHECK_EQ(SERVICE_WORKER_OK, status);
+  DCHECK_EQ(blink::SERVICE_WORKER_OK, status);
   *out_size = data.size();
   std::move(quit_closure).Run();
 }

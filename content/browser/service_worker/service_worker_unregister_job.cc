@@ -40,7 +40,7 @@ void ServiceWorkerUnregisterJob::Start() {
 
 void ServiceWorkerUnregisterJob::Abort() {
   CompleteInternal(blink::mojom::kInvalidServiceWorkerRegistrationId,
-                   SERVICE_WORKER_ERROR_ABORT);
+                   blink::SERVICE_WORKER_ERROR_ABORT);
 }
 
 bool ServiceWorkerUnregisterJob::Equals(
@@ -55,16 +55,16 @@ RegistrationJobType ServiceWorkerUnregisterJob::GetType() const {
 }
 
 void ServiceWorkerUnregisterJob::OnRegistrationFound(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  if (status == SERVICE_WORKER_ERROR_NOT_FOUND) {
+  if (status == blink::SERVICE_WORKER_ERROR_NOT_FOUND) {
     DCHECK(!registration.get());
     Complete(blink::mojom::kInvalidServiceWorkerRegistrationId,
-             SERVICE_WORKER_ERROR_NOT_FOUND);
+             blink::SERVICE_WORKER_ERROR_NOT_FOUND);
     return;
   }
 
-  if (status != SERVICE_WORKER_OK || registration->is_uninstalling()) {
+  if (status != blink::SERVICE_WORKER_OK || registration->is_uninstalling()) {
     Complete(blink::mojom::kInvalidServiceWorkerRegistrationId, status);
     return;
   }
@@ -72,29 +72,30 @@ void ServiceWorkerUnregisterJob::OnRegistrationFound(
   // TODO: "7. If registration.updatePromise is not null..."
 
   // "8. Resolve promise."
-  ResolvePromise(registration->id(), SERVICE_WORKER_OK);
+  ResolvePromise(registration->id(), blink::SERVICE_WORKER_OK);
 
   registration->ClearWhenReady();
 
-  Complete(registration->id(), SERVICE_WORKER_OK);
+  Complete(registration->id(), blink::SERVICE_WORKER_OK);
 }
 
-void ServiceWorkerUnregisterJob::Complete(int64_t registration_id,
-                                          ServiceWorkerStatusCode status) {
+void ServiceWorkerUnregisterJob::Complete(
+    int64_t registration_id,
+    blink::ServiceWorkerStatusCode status) {
   CompleteInternal(registration_id, status);
   context_->job_coordinator()->FinishJob(pattern_, this);
 }
 
 void ServiceWorkerUnregisterJob::CompleteInternal(
     int64_t registration_id,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   if (!is_promise_resolved_)
     ResolvePromise(registration_id, status);
 }
 
 void ServiceWorkerUnregisterJob::ResolvePromise(
     int64_t registration_id,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   DCHECK(!is_promise_resolved_);
   is_promise_resolved_ = true;
   for (UnregistrationCallback& callback : callbacks_)

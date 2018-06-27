@@ -10,7 +10,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 
 class GURL;
@@ -24,7 +24,7 @@ class ServiceWorkerVersion;
 namespace service_worker_client_utils {
 
 using NavigationCallback = base::OnceCallback<void(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     blink::mojom::ServiceWorkerClientInfoPtr client_info)>;
 using ClientCallback = base::OnceCallback<void(
     blink::mojom::ServiceWorkerClientInfoPtr client_info)>;

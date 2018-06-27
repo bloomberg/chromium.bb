@@ -7,8 +7,8 @@
 
 #include <string>
 
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -50,7 +50,7 @@ std::string CompletedRequestKey(const std::string& unique_id,
 
 enum class DatabaseStatus { kOk, kFailed, kNotFound };
 
-DatabaseStatus ToDatabaseStatus(ServiceWorkerStatusCode status);
+DatabaseStatus ToDatabaseStatus(blink::ServiceWorkerStatusCode status);
 
 }  // namespace background_fetch
 

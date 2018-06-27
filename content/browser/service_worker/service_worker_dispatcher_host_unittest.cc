@@ -37,8 +37,8 @@ namespace content {
 namespace service_worker_dispatcher_host_unittest {
 
 static void SaveStatusCallback(bool* called,
-                               ServiceWorkerStatusCode* out,
-                               ServiceWorkerStatusCode status) {
+                               blink::ServiceWorkerStatusCode* out,
+                               blink::ServiceWorkerStatusCode status) {
   *called = true;
   *out = status;
 }
@@ -124,13 +124,14 @@ class ServiceWorkerDispatcherHostTest : public testing::Test {
     context()->storage()->LazyInitializeForTest(base::DoNothing());
     base::RunLoop().RunUntilIdle();
     bool called = false;
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+    blink::ServiceWorkerStatusCode status =
+        blink::SERVICE_WORKER_ERROR_MAX_VALUE;
     context()->storage()->StoreRegistration(
         registration_.get(), version_.get(),
         base::BindOnce(&SaveStatusCallback, &called, &status));
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(called);
-    EXPECT_EQ(SERVICE_WORKER_OK, status);
+    EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   }
 
   RemoteProviderInfo SendProviderCreated(
@@ -253,12 +254,12 @@ TEST_F(ServiceWorkerDispatcherHostTest, CleanupOnRendererCrash) {
 
   // Start up the worker.
   bool called = false;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_ABORT;
+  blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_ABORT;
   version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
                         base::BindOnce(&SaveStatusCallback, &called, &status));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   EXPECT_TRUE(context()->GetProviderHost(process_id, kProviderId));
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 

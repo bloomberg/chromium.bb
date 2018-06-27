@@ -48,7 +48,8 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
       public ServiceWorkerContextCoreObserver,
       public base::RefCountedThreadSafe<ServiceWorkerContextWrapper> {
  public:
-  using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
+  using StatusCallback =
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using BoolCallback = base::OnceCallback<void(bool)>;
   using FindRegistrationCallback =
       ServiceWorkerStorage::FindRegistrationCallback;
@@ -303,29 +304,29 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void DidFindRegistrationForFindReady(
       FindRegistrationCallback callback,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void DidFindRegistrationForFindImpl(
       bool include_installing_version,
       FindRegistrationCallback callback,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void OnStatusChangedForFindReadyRegistration(
       FindRegistrationCallback callback,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
-  void DidDeleteAndStartOver(ServiceWorkerStatusCode status);
+  void DidDeleteAndStartOver(blink::ServiceWorkerStatusCode status);
 
   void DidGetAllRegistrationsForGetAllOrigins(
       GetUsageInfoCallback callback,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       const std::vector<ServiceWorkerRegistrationInfo>& registrations);
 
   void DidCheckHasServiceWorker(CheckHasServiceWorkerCallback callback,
                                 content::ServiceWorkerCapability status);
 
   void DidFindRegistrationForUpdate(
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<content::ServiceWorkerRegistration> registration);
 
   void CountExternalRequests(const GURL& url,
@@ -337,13 +338,13 @@ class CONTENT_EXPORT ServiceWorkerContextWrapper
 
   void DidFindRegistrationForNavigationHint(
       StartServiceWorkerForNavigationHintCallback callback,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   void DidStartServiceWorkerForNavigationHint(
       const GURL& pattern,
       StartServiceWorkerForNavigationHintCallback callback,
-      ServiceWorkerStatusCode code);
+      blink::ServiceWorkerStatusCode code);
 
   void RecordStartServiceWorkerForNavigationHintResult(
       StartServiceWorkerForNavigationHintCallback callback,

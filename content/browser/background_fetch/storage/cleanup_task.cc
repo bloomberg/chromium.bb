@@ -34,7 +34,7 @@ void CleanupTask::Start() {
 
 void CleanupTask::DidGetRegistrations(
     const std::vector<std::pair<int64_t, std::string>>& registration_data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   if (ToDatabaseStatus(status) != DatabaseStatus::kOk ||
       registration_data.empty()) {
     Finished();  // Destroys |this|.
@@ -50,7 +50,7 @@ void CleanupTask::DidGetRegistrations(
 void CleanupTask::DidGetActiveUniqueIds(
     const std::vector<std::pair<int64_t, std::string>>& registration_data,
     const std::vector<std::pair<int64_t, std::string>>& active_unique_id_data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
     case DatabaseStatus::kNotFound:

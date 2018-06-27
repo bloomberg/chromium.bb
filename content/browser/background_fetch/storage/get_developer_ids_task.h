@@ -11,7 +11,7 @@
 #include "base/callback_forward.h"
 #include "base/containers/flat_map.h"
 #include "content/browser/background_fetch/storage/database_task.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/platform/modules/background_fetch/background_fetch.mojom.h"
 #include "url/origin.h"
 
@@ -36,7 +36,7 @@ class GetDeveloperIdsTask : public DatabaseTask {
 
  private:
   void DidGetUniqueIds(const base::flat_map<std::string, std::string>& data_map,
-                       ServiceWorkerStatusCode status);
+                       blink::ServiceWorkerStatusCode status);
 
   int64_t service_worker_registration_id_;
   url::Origin origin_;

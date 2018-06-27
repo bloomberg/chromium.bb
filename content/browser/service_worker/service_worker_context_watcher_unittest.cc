@@ -18,16 +18,16 @@ namespace content {
 namespace {
 
 void DidRegisterServiceWorker(int64_t* registration_id_out,
-                              ServiceWorkerStatusCode status,
+                              blink::ServiceWorkerStatusCode status,
                               const std::string& status_message,
                               int64_t registration_id) {
   ASSERT_TRUE(registration_id_out);
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   *registration_id_out = registration_id;
 }
 
-void DidUnregisterServiceWorker(ServiceWorkerStatusCode* status_out,
-                                ServiceWorkerStatusCode status) {
+void DidUnregisterServiceWorker(blink::ServiceWorkerStatusCode* status_out,
+                                blink::ServiceWorkerStatusCode status) {
   ASSERT_TRUE(status_out);
   *status_out = status;
 }
@@ -151,8 +151,8 @@ class ServiceWorkerContextWatcherTest : public testing::Test {
     return registration_id;
   }
 
-  ServiceWorkerStatusCode UnregisterServiceWorker(const GURL& scope) {
-    ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_FAILED;
+  blink::ServiceWorkerStatusCode UnregisterServiceWorker(const GURL& scope) {
+    blink::ServiceWorkerStatusCode status = blink::SERVICE_WORKER_ERROR_FAILED;
     context()->UnregisterServiceWorker(
         scope, base::BindOnce(&DidUnregisterServiceWorker, &status));
     base::RunLoop().RunUntilIdle();
@@ -297,7 +297,7 @@ TEST_F(ServiceWorkerContextWatcherTest, UnregisteredServiceWorker) {
             watcher_callback.registrations().at(registration_id_2).pattern);
   ASSERT_EQ(2u, watcher_callback.versions().size());
 
-  ASSERT_EQ(SERVICE_WORKER_OK, UnregisterServiceWorker(scope_1));
+  ASSERT_EQ(blink::SERVICE_WORKER_OK, UnregisterServiceWorker(scope_1));
 
   ASSERT_EQ(1u, watcher_callback.registrations().size());
   EXPECT_EQ(scope_2,

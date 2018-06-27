@@ -175,11 +175,12 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
 
   void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                                 base::OnceClosure quit_closure,
-                                ServiceWorkerStatusCode status,
+                                blink::ServiceWorkerStatusCode status,
                                 const std::string& status_message,
                                 int64_t service_worker_registration_id) {
     DCHECK(out_service_worker_registration_id);
-    EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+    EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
+        << ServiceWorkerStatusToString(status);
 
     *out_service_worker_registration_id = service_worker_registration_id;
 
@@ -189,10 +190,11 @@ class BlinkNotificationServiceImplTest : public ::testing::Test {
   void DidFindServiceWorkerRegistration(
       scoped_refptr<ServiceWorkerRegistration>* out_service_worker_registration,
       base::OnceClosure quit_closure,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
     DCHECK(out_service_worker_registration);
-    EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+    EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
+        << ServiceWorkerStatusToString(status);
 
     *out_service_worker_registration = service_worker_registration;
 

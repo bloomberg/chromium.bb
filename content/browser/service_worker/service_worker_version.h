@@ -36,12 +36,12 @@
 #include "content/common/content_export.h"
 #include "content/common/service_worker/controller_service_worker.mojom.h"
 #include "content/common/service_worker/service_worker_event_dispatcher.mojom.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_client.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_event_status.mojom.h"
@@ -110,7 +110,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
       public base::RefCounted<ServiceWorkerVersion>,
       public EmbeddedWorkerInstance::Listener {
  public:
-  using StatusCallback = base::OnceCallback<void(ServiceWorkerStatusCode)>;
+  using StatusCallback =
+      base::OnceCallback<void(blink::ServiceWorkerStatusCode)>;
   using SimpleEventCallback =
       base::OnceCallback<void(blink::mojom::ServiceWorkerEventStatus,
                               base::Time)>;
@@ -260,10 +261,10 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void StartUpdate();
 
   // Starts the worker if it isn't already running. Calls |callback| with
-  // SERVICE_WORKER_OK when the worker started up successfully or if it is
-  // already running. Otherwise, calls |callback| with an error code.
-  // If the worker is already running, |callback| is executed synchronously
-  // (before this method returns). |purpose| is used for UMA.
+  // blink::SERVICE_WORKER_OK when the worker started up successfully or if it
+  // is already running. Otherwise, calls |callback| with an error code. If the
+  // worker is already running, |callback| is executed synchronously (before
+  // this method returns). |purpose| is used for UMA.
   void RunAfterStartWorker(ServiceWorkerMetrics::EventType purpose,
                            StatusCallback callback);
 
@@ -379,13 +380,13 @@ class CONTENT_EXPORT ServiceWorkerVersion
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
   // Reports the error message to |listeners_|.
-  void ReportError(ServiceWorkerStatusCode status,
+  void ReportError(blink::ServiceWorkerStatusCode status,
                    const std::string& status_message);
 
   void ReportForceUpdateToDevTools();
 
   // Sets the status code to pass to StartWorker callbacks if start fails.
-  void SetStartWorkerStatusCode(ServiceWorkerStatusCode status);
+  void SetStartWorkerStatusCode(blink::ServiceWorkerStatusCode status);
 
   // Sets this version's status to REDUNDANT and deletes its resources.
   void Doom();
@@ -620,7 +621,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                               int line_number,
                               const GURL& source_url) override;
 
-  void OnStartSentAndScriptEvaluated(ServiceWorkerStatusCode status);
+  void OnStartSentAndScriptEvaluated(blink::ServiceWorkerStatusCode status);
 
   // Implements blink::mojom::ServiceWorkerHost.
   void SetCachedMetadata(const GURL& url,
@@ -659,7 +660,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
       Status prestart_status,
       bool is_browser_startup_complete,
       StatusCallback callback,
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
   void StartWorkerInternal();
 
@@ -687,7 +688,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                Status prestart_status,
                                int trace_id,
                                bool is_browser_startup_complete,
-                               ServiceWorkerStatusCode status);
+                               blink::ServiceWorkerStatusCode status);
 
   bool MaybeTimeoutRequest(const InflightRequestTimeoutInfo& info);
   void SetAllRequestExpirations(const base::TimeTicks& expiration);
@@ -695,26 +696,26 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Returns the reason the embedded worker failed to start, using information
   // inaccessible to EmbeddedWorkerInstance. Returns |default_code| if it can't
   // deduce a reason.
-  ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
-      ServiceWorkerStatusCode default_code);
+  blink::ServiceWorkerStatusCode DeduceStartWorkerFailureReason(
+      blink::ServiceWorkerStatusCode default_code);
 
   // Sets |stale_time_| if this worker is stale, causing an update to eventually
   // occur once the worker stops or is running too long.
   void MarkIfStale();
 
   void FoundRegistrationForUpdate(
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   void OnStoppedInternal(EmbeddedWorkerStatus old_status);
 
   // Resets |start_worker_first_purpose_| and fires and clears all start
   // callbacks.
-  void FinishStartWorker(ServiceWorkerStatusCode status);
+  void FinishStartWorker(blink::ServiceWorkerStatusCode status);
 
   // Removes any pending external request that has GUID of |request_uuid|.
   void CleanUpExternalRequest(const std::string& request_uuid,
-                              ServiceWorkerStatusCode status);
+                              blink::ServiceWorkerStatusCode status);
 
   // Called if no inflight events exist on the browser process.
   // Non-S13nServiceWorker: Triggers OnNoWork().
@@ -837,7 +838,8 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.
-  ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
+  blink::ServiceWorkerStatusCode start_worker_status_ =
+      blink::SERVICE_WORKER_OK;
 
   // The clock used to vend tick time.
   const base::TickClock* tick_clock_;

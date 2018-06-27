@@ -105,7 +105,7 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
   void ProcessOnDiskSubscriptions(
       base::OnceCallback<void(bool)> load_callback,
       const std::vector<std::pair<int64_t, std::string>>& user_data,
-      ServiceWorkerStatusCode status);
+      blink::ServiceWorkerStatusCode status);
 
   // Runs all the callbacks waiting for on-disk subscription data.
   //
@@ -145,7 +145,7 @@ class CookieStoreManager : public ServiceWorkerContextCoreObserver,
       scoped_refptr<ServiceWorkerRegistration> registration,
       const net::CanonicalCookie& cookie,
       ::network::mojom::CookieChangeCause cause,
-      ServiceWorkerStatusCode start_worker_status);
+      blink::ServiceWorkerStatusCode start_worker_status);
 
   // Used to efficiently implement OnRegistrationDeleted().
   //

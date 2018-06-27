@@ -179,7 +179,7 @@ void MarkRequestCompleteTask::CreateAndStoreCompletedRequest(
 
 void MarkRequestCompleteTask::DidStoreCompletedRequest(
     base::OnceClosure done_closure,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;
@@ -201,7 +201,7 @@ void MarkRequestCompleteTask::DidStoreCompletedRequest(
 
 void MarkRequestCompleteTask::DidDeleteActiveRequest(
     base::OnceClosure done_closure,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   // TODO(crbug.com/780025): Log failures to UMA.
   std::move(done_closure).Run();
 }
@@ -222,7 +222,7 @@ void MarkRequestCompleteTask::UpdateMetadata(base::OnceClosure done_closure) {
 void MarkRequestCompleteTask::DidGetMetadata(
     base::OnceClosure done_closure,
     const std::vector<std::string>& data,
-    ServiceWorkerStatusCode status) {
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
     case DatabaseStatus::kFailed:
@@ -251,8 +251,9 @@ void MarkRequestCompleteTask::DidGetMetadata(
                      weak_factory_.GetWeakPtr(), std::move(done_closure)));
 }
 
-void MarkRequestCompleteTask::DidStoreMetadata(base::OnceClosure done_closure,
-                                               ServiceWorkerStatusCode status) {
+void MarkRequestCompleteTask::DidStoreMetadata(
+    base::OnceClosure done_closure,
+    blink::ServiceWorkerStatusCode status) {
   // TODO(crbug.com/780025): Log failures to UMA.
   std::move(done_closure).Run();
 }

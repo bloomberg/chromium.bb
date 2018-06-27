@@ -21,9 +21,9 @@
 #include "content/browser/background_fetch/background_fetch_registration_id.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"
-#include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -35,11 +35,11 @@ const char kTestScriptUrl[] = "https://example.com/sw.js";
 
 void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
                               base::Closure quit_closure,
-                              ServiceWorkerStatusCode status,
+                              blink::ServiceWorkerStatusCode status,
                               const std::string& status_message,
                               int64_t service_worker_registration_id) {
   DCHECK(out_service_worker_registration_id);
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << status_message;
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status) << status_message;
 
   *out_service_worker_registration_id = service_worker_registration_id;
 
@@ -49,10 +49,11 @@ void DidRegisterServiceWorker(int64_t* out_service_worker_registration_id,
 void DidFindServiceWorkerRegistration(
     scoped_refptr<ServiceWorkerRegistration>* out_service_worker_registration,
     base::Closure quit_closure,
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     scoped_refptr<ServiceWorkerRegistration> service_worker_registration) {
   DCHECK(out_service_worker_registration);
-  EXPECT_EQ(SERVICE_WORKER_OK, status) << ServiceWorkerStatusToString(status);
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status)
+      << ServiceWorkerStatusToString(status);
 
   *out_service_worker_registration = service_worker_registration;
 
@@ -61,8 +62,8 @@ void DidFindServiceWorkerRegistration(
 
 // Callback for UnregisterServiceWorker.
 void DidUnregisterServiceWorker(base::Closure quit_closure,
-                                ServiceWorkerStatusCode status) {
-  EXPECT_EQ(SERVICE_WORKER_OK, status);
+                                blink::ServiceWorkerStatusCode status) {
+  EXPECT_EQ(blink::SERVICE_WORKER_OK, status);
   std::move(quit_closure).Run();
 }
 

@@ -34,7 +34,8 @@ void UpdateRegistrationUITask::Start() {
                      weak_factory_.GetWeakPtr()));
 }
 
-void UpdateRegistrationUITask::DidUpdateTitle(ServiceWorkerStatusCode status) {
+void UpdateRegistrationUITask::DidUpdateTitle(
+    blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kOk:
       break;

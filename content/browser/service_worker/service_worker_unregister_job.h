@@ -13,7 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/service_worker/service_worker_register_job_base.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "url/gurl.h"
 
 namespace content {
@@ -29,7 +29,7 @@ class ServiceWorkerRegistration;
 class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
  public:
   typedef base::OnceCallback<void(int64_t registration_id,
-                                  ServiceWorkerStatusCode status)>
+                                  blink::ServiceWorkerStatusCode status)>
       UnregistrationCallback;
 
   ServiceWorkerUnregisterJob(base::WeakPtr<ServiceWorkerContextCore> context,
@@ -48,12 +48,13 @@ class ServiceWorkerUnregisterJob : public ServiceWorkerRegisterJobBase {
 
  private:
   void OnRegistrationFound(
-      ServiceWorkerStatusCode status,
+      blink::ServiceWorkerStatusCode status,
       scoped_refptr<ServiceWorkerRegistration> registration);
-  void Complete(int64_t registration_id, ServiceWorkerStatusCode status);
+  void Complete(int64_t registration_id, blink::ServiceWorkerStatusCode status);
   void CompleteInternal(int64_t registration_id,
-                        ServiceWorkerStatusCode status);
-  void ResolvePromise(int64_t registration_id, ServiceWorkerStatusCode status);
+                        blink::ServiceWorkerStatusCode status);
+  void ResolvePromise(int64_t registration_id,
+                      blink::ServiceWorkerStatusCode status);
 
   base::WeakPtr<ServiceWorkerContextCore> context_;
   const GURL pattern_;

@@ -37,7 +37,7 @@ void GetMetadataTask::Start() {
 }
 
 void GetMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
-                                     ServiceWorkerStatusCode status) {
+                                     blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
       std::move(callback_).Run(blink::mojom::BackgroundFetchError::INVALID_ID,
@@ -61,7 +61,7 @@ void GetMetadataTask::DidGetUniqueId(const std::vector<std::string>& data,
 }
 
 void GetMetadataTask::DidGetMetadata(const std::vector<std::string>& data,
-                                     ServiceWorkerStatusCode status) {
+                                     blink::ServiceWorkerStatusCode status) {
   switch (ToDatabaseStatus(status)) {
     case DatabaseStatus::kNotFound:
       // The database is corrupt as there's no registration data despite there

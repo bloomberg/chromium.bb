@@ -6,14 +6,14 @@
 #define CONTENT_BROWSER_SERVICE_WORKER_SERVICE_WORKER_REGISTRATION_STATUS_H_
 
 #include "base/strings/string16.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_error.h"
 
 namespace content {
 
 // This should only be called for errors, where status != OK.
 void GetServiceWorkerErrorTypeForRegistration(
-    ServiceWorkerStatusCode status,
+    blink::ServiceWorkerStatusCode status,
     const std::string& status_message,
     blink::mojom::ServiceWorkerErrorType* out_error,
     std::string* out_message);

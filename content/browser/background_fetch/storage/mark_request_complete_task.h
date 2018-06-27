@@ -11,7 +11,7 @@
 #include "content/browser/background_fetch/background_fetch_request_info.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/browser/cache_storage/cache_storage_cache_handle.h"
-#include "content/common/service_worker/service_worker_status_code.h"
+#include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 
 namespace content {
 
@@ -51,19 +51,19 @@ class MarkRequestCompleteTask : public DatabaseTask {
   void CreateAndStoreCompletedRequest(base::OnceClosure done_closure);
 
   void DidStoreCompletedRequest(base::OnceClosure done_closure,
-                                ServiceWorkerStatusCode status);
+                                blink::ServiceWorkerStatusCode status);
 
   void DidDeleteActiveRequest(base::OnceClosure done_closure,
-                              ServiceWorkerStatusCode status);
+                              blink::ServiceWorkerStatusCode status);
 
   void UpdateMetadata(base::OnceClosure done_closure);
 
   void DidGetMetadata(base::OnceClosure done_closure,
                       const std::vector<std::string>& data,
-                      ServiceWorkerStatusCode status);
+                      blink::ServiceWorkerStatusCode status);
 
   void DidStoreMetadata(base::OnceClosure done_closure,
-                        ServiceWorkerStatusCode status);
+                        blink::ServiceWorkerStatusCode status);
 
   void CheckAndCallFinished();
 

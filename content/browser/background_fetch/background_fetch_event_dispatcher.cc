@@ -51,14 +51,14 @@ void RecordDispatchResult(
 // Records the failure reason of a failed dispatch for |metric_name|.
 void RecordFailureResult(ServiceWorkerMetrics::EventType event,
                          const char* metric_name,
-                         ServiceWorkerStatusCode service_worker_status) {
+                         blink::ServiceWorkerStatusCode service_worker_status) {
   std::string histogram_name = base::StringPrintf(
       "BackgroundFetch.EventDispatchFailure.%s.%s", metric_name,
       HistogramSuffixForEventType(event).c_str());
 
   // Used because the |histogram_name| is not a constant.
   base::UmaHistogramEnumeration(histogram_name, service_worker_status,
-                                SERVICE_WORKER_ERROR_MAX_VALUE);
+                                blink::SERVICE_WORKER_ERROR_MAX_VALUE);
 }
 
 }  // namespace
@@ -193,9 +193,9 @@ void BackgroundFetchEventDispatcher::StartActiveWorkerForDispatch(
     ServiceWorkerMetrics::EventType event,
     base::OnceClosure finished_closure,
     ServiceWorkerLoadedCallback loaded_callback,
-    ServiceWorkerStatusCode service_worker_status,
+    blink::ServiceWorkerStatusCode service_worker_status,
     scoped_refptr<ServiceWorkerRegistration> registration) {
-  if (service_worker_status != SERVICE_WORKER_OK) {
+  if (service_worker_status != blink::SERVICE_WORKER_OK) {
     DidDispatchEvent(event, std::move(finished_closure), DispatchPhase::FINDING,
                      service_worker_status);
     return;
@@ -216,8 +216,8 @@ void BackgroundFetchEventDispatcher::DispatchEvent(
     base::OnceClosure finished_closure,
     ServiceWorkerLoadedCallback loaded_callback,
     scoped_refptr<ServiceWorkerVersion> service_worker_version,
-    ServiceWorkerStatusCode start_worker_status) {
-  if (start_worker_status != SERVICE_WORKER_OK) {
+    blink::ServiceWorkerStatusCode start_worker_status) {
+  if (start_worker_status != blink::SERVICE_WORKER_OK) {
     DidDispatchEvent(event, std::move(finished_closure),
                      DispatchPhase::STARTING, start_worker_status);
     return;
@@ -235,7 +235,7 @@ void BackgroundFetchEventDispatcher::DidDispatchEvent(
     ServiceWorkerMetrics::EventType event,
     base::OnceClosure finished_closure,
     DispatchPhase dispatch_phase,
-    ServiceWorkerStatusCode service_worker_status) {
+    blink::ServiceWorkerStatusCode service_worker_status) {
   // Record the histograms tracking event dispatching success.
   switch (dispatch_phase) {
     case DispatchPhase::FINDING:
@@ -247,7 +247,7 @@ void BackgroundFetchEventDispatcher::DidDispatchEvent(
       RecordFailureResult(event, "StartWorker", service_worker_status);
       break;
     case DispatchPhase::DISPATCHING:
-      if (service_worker_status != SERVICE_WORKER_OK) {
+      if (service_worker_status != blink::SERVICE_WORKER_OK) {
         RecordDispatchResult(event, DISPATCH_RESULT_CANNOT_DISPATCH_EVENT);
         RecordFailureResult(event, "Dispatch", service_worker_status);
       } else {
