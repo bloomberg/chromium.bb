@@ -10,7 +10,8 @@ import org.chromium.chrome.browser.customtabs.dynamicmodule.IModuleHost;
 
 interface IModuleEntryPoint {
   void init(in IModuleHost moduleHost) = 0;
-  IActivityDelegate createActivityDelegate(in IActivityHost activityHost) = 1;
-  int getVersion() = 2;
-  int getMinimumHostVersion() = 3;
+  int getModuleVersion() = 1;
+  int getMinimumHostVersion() = 2;
+  IActivityDelegate createActivityDelegate(in IActivityHost activityHost, in Bundle data) = 3;
+  void onDestroy() = 4;
 }

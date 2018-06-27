@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
 import android.os.Bundle;
 import android.os.RemoteException;
-import android.view.View;
 
 /**
  * A wrapper around a {@link IActivityDelegate}.
@@ -107,23 +106,5 @@ public class ActivityDelegate {
             assert false;
         }
         return false;
-    }
-
-    public View getBottomBarView() {
-        try {
-            return ObjectWrapper.unwrap(mActivityDelegate.getBottomBarView(), View.class);
-        } catch (RemoteException e) {
-            assert false;
-        }
-        return null;
-    }
-
-    public View getOverlayView() {
-        try {
-            return ObjectWrapper.unwrap(mActivityDelegate.getOverlayView(), View.class);
-        } catch (RemoteException e) {
-            assert false;
-        }
-        return null;
     }
 }

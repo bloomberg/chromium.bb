@@ -4,20 +4,32 @@
 
 package org.chromium.chrome.browser.customtabs.dynamicmodule;
 
-import android.content.Context;
+import android.view.View;
+
+import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 
 /**
  * The implementation of {@link IActivityHost}.
  */
 public class ActivityHostImpl extends IActivityHost.Stub {
-    private final Context mActivityContext;
+    private final CustomTabActivity mActivity;
 
-    public ActivityHostImpl(Context activityContext) {
-        mActivityContext = activityContext;
+    public ActivityHostImpl(CustomTabActivity activity) {
+        mActivity = activity;
     }
 
     @Override
     public IObjectWrapper getActivityContext() {
-        return ObjectWrapper.wrap(mActivityContext);
+        return ObjectWrapper.wrap(mActivity);
+    }
+
+    @Override
+    public void setBottomBarView(IObjectWrapper bottomBarView) {
+        mActivity.setBottomBarContentView(ObjectWrapper.unwrap(bottomBarView, View.class));
+    }
+
+    @Override
+    public void setOverlayView(IObjectWrapper overlayView) {
+        mActivity.setOverlayView(ObjectWrapper.unwrap(overlayView, View.class));
     }
 }

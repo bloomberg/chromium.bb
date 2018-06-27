@@ -46,10 +46,10 @@ public final class ModuleLoader {
 
             if (!isCompatible(moduleHost, entryPoint)) {
                 Log.w(TAG, "Incompatible module due to version mismatch: host version %s, "
-                        + "minimum required host version %s, entry point version %s, minimum "
-                        + "required entry point version %s.",
-                        moduleHost.getVersion(), entryPoint.getMinimumHostVersion(),
-                        entryPoint.getVersion(), moduleHost.getMinimumModuleVersion());
+                                + "minimum required host version %s, entry point version %s, "
+                                + "minimum required entry point version %s.",
+                        moduleHost.getHostVersion(), entryPoint.getMinimumHostVersion(),
+                        entryPoint.getModuleVersion(), moduleHost.getMinimumModuleVersion());
                 return null;
             }
 
@@ -77,7 +77,7 @@ public final class ModuleLoader {
     }
 
     private static boolean isCompatible(ModuleHostImpl moduleHost, ModuleEntryPoint entryPoint) {
-        return entryPoint.getVersion() >= moduleHost.getMinimumModuleVersion()
-                && moduleHost.getVersion() >= entryPoint.getMinimumHostVersion();
+        return entryPoint.getModuleVersion() >= moduleHost.getMinimumModuleVersion()
+                && moduleHost.getHostVersion() >= entryPoint.getMinimumHostVersion();
     }
 }
