@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 
+#include "cc/layers/layer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"

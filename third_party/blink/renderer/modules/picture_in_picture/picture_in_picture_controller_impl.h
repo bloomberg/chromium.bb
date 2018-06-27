@@ -11,6 +11,8 @@ namespace blink {
 
 class HTMLVideoElement;
 class PictureInPictureWindow;
+class TreeScope;
+struct WebSize;
 
 // The PictureInPictureControllerImpl is keeping the state and implementing the
 // logic around the Picture-in-Picture feature. It is meant to be used as well

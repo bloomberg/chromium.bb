@@ -41,6 +41,7 @@ namespace blink {
 class DOMWrapperWorld;
 class EventTarget;
 class ScriptState;
+class ScriptValue;
 
 class CORE_EXPORT Event : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();

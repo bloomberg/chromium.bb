@@ -12,6 +12,7 @@
 namespace blink {
 
 class HTMLVideoElement;
+class ScriptPromiseResolver;
 
 // PictureInPictureController allows to know if Picture-in-Picture is allowed
 // for a video element in Blink outside of modules/ module. It

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/webusb/navigator_usb.h"
 
+#include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/navigator.h"
 #include "third_party/blink/renderer/modules/webusb/usb.h"

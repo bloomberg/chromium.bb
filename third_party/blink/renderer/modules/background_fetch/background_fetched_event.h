@@ -17,6 +17,7 @@ namespace blink {
 
 class BackgroundFetchSettledFetch;
 class BackgroundFetchedEventInit;
+class ScriptPromiseResolver;
 class ScriptState;
 class ServiceWorkerRegistration;
 struct WebBackgroundFetchSettledFetch;
