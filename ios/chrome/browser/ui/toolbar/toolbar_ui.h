@@ -18,6 +18,10 @@
 // This should be broadcast using |-broadcastExpandedToolbarHeight:|.
 @property(nonatomic, readonly) CGFloat expandedHeight;
 
+// The height of the bottom toolbar relative to the browser content area.
+// This should be broadcast using |-broadcastBottomToolbarHeight:|.
+@property(nonatomic, readonly) CGFloat bottomToolbarHeight;
+
 @end
 
 // Simple implementation of ToolbarUI that allows readwrite access to broadcast
@@ -27,6 +31,7 @@
 // Redefine properties as readwrite.
 @property(nonatomic, assign) CGFloat collapsedHeight;
 @property(nonatomic, assign) CGFloat expandedHeight;
+@property(nonatomic, assign) CGFloat bottomToolbarHeight;
 
 @end
 

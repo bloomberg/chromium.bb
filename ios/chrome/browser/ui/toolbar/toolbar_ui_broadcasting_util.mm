@@ -19,6 +19,9 @@ void StartBroadcastingToolbarUI(id<ToolbarUI> toolbar,
   [broadcaster broadcastValue:@"expandedHeight"
                      ofObject:toolbar
                      selector:@selector(broadcastExpandedToolbarHeight:)];
+  [broadcaster broadcastValue:@"bottomToolbarHeight"
+                     ofObject:toolbar
+                     selector:@selector(broadcastBottomToolbarHeight:)];
 }
 
 void StopBroadcastingToolbarUI(ChromeBroadcaster* broadcaster) {
@@ -26,4 +29,6 @@ void StopBroadcastingToolbarUI(ChromeBroadcaster* broadcaster) {
       stopBroadcastingForSelector:@selector(broadcastCollapsedToolbarHeight:)];
   [broadcaster
       stopBroadcastingForSelector:@selector(broadcastExpandedToolbarHeight:)];
+  [broadcaster
+      stopBroadcastingForSelector:@selector(broadcastBottomToolbarHeight:)];
 }

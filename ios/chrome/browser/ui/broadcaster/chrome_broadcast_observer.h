@@ -62,6 +62,13 @@
 // toolbar overlap distance will be reduced to the collapsed height.
 - (void)broadcastExpandedToolbarHeight:(CGFloat)height;
 
+// Observer method for objects that care about the height of the bottom toolbar.
+// The value broadcast by this method is the distance by which the toolbar
+// overlaps the browser content area after the toolbar when the toolbar is fully
+// visible (i.e. after a page load).  When scrolling occurs, the toolbar overlap
+// distance will be reduced to the collapsed height.
+- (void)broadcastBottomToolbarHeight:(CGFloat)height;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BROADCASTER_CHROME_BROADCAST_OBSERVER_H_

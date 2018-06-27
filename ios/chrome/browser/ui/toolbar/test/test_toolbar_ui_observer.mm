@@ -12,17 +12,22 @@
 @synthesize broadcaster = _broadcaster;
 @synthesize collapsedHeight = _collapsedHeight;
 @synthesize expandedHeight = _expandedHeight;
+@synthesize bottomToolbarHeight = _bottomToolbarHeight;
 
 - (void)setBroadcaster:(ChromeBroadcaster*)broadcaster {
   [_broadcaster removeObserver:self
                    forSelector:@selector(broadcastCollapsedToolbarHeight:)];
   [_broadcaster removeObserver:self
                    forSelector:@selector(broadcastExpandedToolbarHeight:)];
+  [_broadcaster removeObserver:self
+                   forSelector:@selector(broadcastBottomToolbarHeight:)];
   _broadcaster = broadcaster;
   [_broadcaster addObserver:self
                 forSelector:@selector(broadcastCollapsedToolbarHeight:)];
   [_broadcaster addObserver:self
                 forSelector:@selector(broadcastExpandedToolbarHeight:)];
+  [_broadcaster addObserver:self
+                forSelector:@selector(broadcastBottomToolbarHeight:)];
 }
 
 - (void)broadcastCollapsedToolbarHeight:(CGFloat)toolbarHeight {
@@ -31,6 +36,10 @@
 
 - (void)broadcastExpandedToolbarHeight:(CGFloat)toolbarHeight {
   _expandedHeight = toolbarHeight;
+}
+
+- (void)broadcastBottomToolbarHeight:(CGFloat)toolbarHeight {
+  _bottomToolbarHeight = toolbarHeight;
 }
 
 @end

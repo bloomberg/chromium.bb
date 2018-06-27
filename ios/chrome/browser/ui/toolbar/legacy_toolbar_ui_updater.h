@@ -16,6 +16,8 @@ class WebStateList;
 // content area.
 - (CGFloat)collapsedTopToolbarHeight;
 - (CGFloat)expandedTopToolbarHeight;
+// Height of the bottom toolbar.
+- (CGFloat)bottomToolbarHeight;
 @end
 
 // Helper object that uses navigation events to update a ToolbarUIState.
