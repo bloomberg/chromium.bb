@@ -15764,6 +15764,13 @@
         "test": "headless_unittests"
       },
       {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
+      },
+      {
         "args": [
           "--enable-features=NetworkService"
         ],
@@ -23942,6 +23949,13 @@
           "can_use_on_swarming_builders": true
         },
         "test": "headless_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "shards": 3
+        },
+        "test": "interactive_ui_tests"
       },
       {
         "args": [

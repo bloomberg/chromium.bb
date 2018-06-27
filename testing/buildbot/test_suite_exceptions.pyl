@@ -1470,11 +1470,6 @@
     ],
   },
   'interactive_ui_tests': {
-    'remove_from': [
-      # chromium.clang
-      'ToTLinuxUBSanVptr',  # https://crbug.com/815190
-      'UBSanVptr Linux',  # https://crbug.com/815190
-    ],
     'modifications': {
       # chromium.win
       'Win7 Tests (dbg)(1)': {
