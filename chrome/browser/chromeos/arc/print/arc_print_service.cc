@@ -196,8 +196,9 @@ class PrinterDiscoverySessionHostImpl
       : binding_(this, std::move(request)),
         instance_(std::move(instance)),
         service_(service),
-        printers_manager_(chromeos::CupsPrintersManagerFactory::GetInstance()
-                              ->GetForBrowserContext(profile)),
+        printers_manager_(
+            chromeos::CupsPrintersManagerFactory::GetForBrowserContext(
+                profile)),
         configurer_(chromeos::PrinterConfigurer::Create(profile)),
         weak_ptr_factory_(this) {
     printers_manager_->AddObserver(this);

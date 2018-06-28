@@ -220,8 +220,7 @@ CupsPrintersHandler::CupsPrintersHandler(content::WebUI* webui)
       ppd_provider_(CreatePpdProvider(profile_)),
       printer_configurer_(PrinterConfigurer::Create(profile_)),
       printers_manager_(
-          CupsPrintersManagerFactory::GetInstance()->GetForBrowserContext(
-              profile_)),
+          CupsPrintersManagerFactory::GetForBrowserContext(profile_)),
       printers_manager_observer_(this),
       weak_factory_(this) {}
 
