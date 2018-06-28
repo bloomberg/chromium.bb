@@ -646,6 +646,85 @@ void aom_lpf_vertical_8_neon(uint8_t *src, int stride, const uint8_t *blimit,
   store_u8_8x4(src - 4, stride, p3q0, p2q1, p1q2, p0q3);
 }
 
+void aom_lpf_vertical_6_neon(uint8_t *src, int stride, const uint8_t *blimit,
+                             const uint8_t *limit, const uint8_t *thresh) {
+  uint32x2x2_t p2q2_p1q1, pxqy_p0q0;
+  uint32x2_t pq_rev;
+  uint8x8_t pxq0, p2q1, p1q2, p0qy;
+  uint8x8_t p0q0, p1q1, p2q2, pxqy;
+
+  // row0: px p2 p1 p0 | q0 q1 q2 qy
+  // row1: px p2 p1 p0 | q0 q1 q2 qy
+  // row2: px p2 p1 p0 | q0 q1 q2 qy
+  // row3: px p2 p1 p0 | q0 q1 q2 qy
+  load_u8_8x4(src - 4, stride, &pxq0, &p2q1, &p1q2, &p0qy);
+
+  transpose_u8_8x4(&pxq0, &p2q1, &p1q2, &p0qy);
+
+  pq_rev = vrev64_u32(vreinterpret_u32_u8(p0qy));
+  pxqy_p0q0 = vtrn_u32(vreinterpret_u32_u8(pxq0), pq_rev);
+
+  pq_rev = vrev64_u32(vreinterpret_u32_u8(p1q2));
+  p2q2_p1q1 = vtrn_u32(vreinterpret_u32_u8(p2q1), pq_rev);
+
+  p0q0 = vreinterpret_u8_u32(vrev64_u32(pxqy_p0q0.val[1]));
+  p1q1 = vreinterpret_u8_u32(vrev64_u32(p2q2_p1q1.val[1]));
+  p2q2 = vreinterpret_u8_u32(p2q2_p1q1.val[0]);
+  pxqy = vreinterpret_u8_u32(pxqy_p0q0.val[0]);
+
+  lpf_6_neon(&p2q2, &p1q1, &p0q0, *blimit, *limit, *thresh);
+
+  pq_rev = vrev64_u32(vreinterpret_u32_u8(p0q0));
+  pxqy_p0q0 = vtrn_u32(vreinterpret_u32_u8(pxqy), pq_rev);
+
+  pq_rev = vrev64_u32(vreinterpret_u32_u8(p1q1));
+  p2q2_p1q1 = vtrn_u32(vreinterpret_u32_u8(p2q2), pq_rev);
+
+  p0qy = vreinterpret_u8_u32(vrev64_u32(pxqy_p0q0.val[1]));
+  p1q2 = vreinterpret_u8_u32(vrev64_u32(p2q2_p1q1.val[1]));
+  p2q1 = vreinterpret_u8_u32(p2q2_p1q1.val[0]);
+  pxq0 = vreinterpret_u8_u32(pxqy_p0q0.val[0]);
+  transpose_u8_8x4(&pxq0, &p2q1, &p1q2, &p0qy);
+
+  store_u8_8x4(src - 4, stride, pxq0, p2q1, p1q2, p0qy);
+}
+
+void aom_lpf_horizontal_14_neon(uint8_t *src, int stride, const uint8_t *blimit,
+                                const uint8_t *limit, const uint8_t *thresh) {
+  uint8x8_t p0q0, p1q1, p2q2, p3q3, p4q4, p5q5, p6q6;
+
+  load_u8_4x1(src - 7 * stride, &p6q6, 0);
+  load_u8_4x1(src - 6 * stride, &p5q5, 0);
+  load_u8_4x1(src - 5 * stride, &p4q4, 0);
+  load_u8_4x1(src - 4 * stride, &p3q3, 0);
+  load_u8_4x1(src - 3 * stride, &p2q2, 0);
+  load_u8_4x1(src - 2 * stride, &p1q1, 0);
+  load_u8_4x1(src - 1 * stride, &p0q0, 0);
+  load_u8_4x1(src + 0 * stride, &p0q0, 1);
+  load_u8_4x1(src + 1 * stride, &p1q1, 1);
+  load_u8_4x1(src + 2 * stride, &p2q2, 1);
+  load_u8_4x1(src + 3 * stride, &p3q3, 1);
+  load_u8_4x1(src + 4 * stride, &p4q4, 1);
+  load_u8_4x1(src + 5 * stride, &p5q5, 1);
+  load_u8_4x1(src + 6 * stride, &p6q6, 1);
+
+  lpf_14_neon(&p6q6, &p5q5, &p4q4, &p3q3, &p2q2, &p1q1, &p0q0, *blimit, *limit,
+              *thresh);
+
+  store_u8_4x1(src - 6 * stride, p5q5, 0);
+  store_u8_4x1(src - 5 * stride, p4q4, 0);
+  store_u8_4x1(src - 4 * stride, p3q3, 0);
+  store_u8_4x1(src - 3 * stride, p2q2, 0);
+  store_u8_4x1(src - 2 * stride, p1q1, 0);
+  store_u8_4x1(src - 1 * stride, p0q0, 0);
+  store_u8_4x1(src + 0 * stride, p0q0, 1);
+  store_u8_4x1(src + 1 * stride, p1q1, 1);
+  store_u8_4x1(src + 2 * stride, p2q2, 1);
+  store_u8_4x1(src + 3 * stride, p3q3, 1);
+  store_u8_4x1(src + 4 * stride, p4q4, 1);
+  store_u8_4x1(src + 5 * stride, p5q5, 1);
+}
+
 void aom_lpf_horizontal_8_neon(uint8_t *src, int stride, const uint8_t *blimit,
                                const uint8_t *limit, const uint8_t *thresh) {
   uint8x8_t p0q0, p1q1, p2q2, p3q3;

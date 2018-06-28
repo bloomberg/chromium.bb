@@ -581,6 +581,8 @@ INSTANTIATE_TEST_CASE_P(SSE2, Loop8Test9Param_hbd,
 const loop_param_t kLoop8Test6[] = {
   make_tuple(&aom_lpf_vertical_14_neon, &aom_lpf_vertical_14_c, 8),
   make_tuple(&aom_lpf_vertical_8_neon, &aom_lpf_vertical_8_c, 8),
+  make_tuple(&aom_lpf_vertical_6_neon, &aom_lpf_vertical_6_c, 8),
+  make_tuple(&aom_lpf_horizontal_14_neon, &aom_lpf_horizontal_14_c, 8),
   make_tuple(&aom_lpf_horizontal_8_neon, &aom_lpf_horizontal_8_c, 8),
   make_tuple(&aom_lpf_horizontal_6_neon, &aom_lpf_horizontal_6_c, 8)
 };
