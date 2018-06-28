@@ -2666,8 +2666,8 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
       td->xd = pbi->mb;
       td->xd.corrupted = 0;
-      td->xd.mc_buf[0] = pbi->td.mc_buf[0];
-      td->xd.mc_buf[1] = pbi->td.mc_buf[1];
+      td->xd.mc_buf[0] = td->mc_buf[0];
+      td->xd.mc_buf[1] = td->mc_buf[1];
       td->bit_reader = &tile_data->bit_reader;
       av1_zero(td->dqcoeff);
       av1_tile_init(&td->xd.tile, cm, row, col);
@@ -2690,7 +2690,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
       td->xd.tile_ctx = &tile_data->tctx;
 
       // decode tile
-      decode_tile(pbi, &pbi->td, row, col);
+      decode_tile(pbi, td, row, col);
       aom_merge_corrupted_flag(&pbi->mb.corrupted, td->xd.corrupted);
       if (pbi->mb.corrupted)
         aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
