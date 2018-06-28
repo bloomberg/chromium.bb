@@ -8,8 +8,6 @@
 
 #include <algorithm>
 
-#include "base/logging.h"
-
 namespace base {
 
 void RandBytes(void* output, size_t output_length) {
@@ -19,14 +17,10 @@ void RandBytes(void* output, size_t output_length) {
     // The syscall has a maximum number of bytes that can be read at once.
     size_t read_len =
         std::min(remaining, static_cast<size_t>(ZX_CPRNG_DRAW_MAX_LEN));
+    zx_cprng_draw(cur, read_len);
 
-    size_t actual;
-    zx_status_t status = zx_cprng_draw(cur, read_len, &actual);
-    CHECK(status == ZX_OK && read_len == actual);
-
-    CHECK(remaining >= actual);
-    remaining -= actual;
-    cur += actual;
+    remaining -= read_len;
+    cur += read_len;
   }
 }
 
