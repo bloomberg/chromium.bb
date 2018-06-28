@@ -408,7 +408,6 @@
         # By default, CrOS VMs' ssh servers listen on local port 9222.
         '--remote=127.0.0.1',
         '--remote-ssh-port=9222',
-        '--skip=telemetry.core.cros_interface_unittest.CrOSInterfaceTest.testGetFileNonExistent',
         '--skip=telemetry.internal.app.android_app_unittest.AndroidAppTest.testWebView',
       ],
       'swarming': {
