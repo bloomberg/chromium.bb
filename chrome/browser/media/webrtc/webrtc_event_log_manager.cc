@@ -64,18 +64,6 @@ inline void MaybeReply(const base::Location& location,
   }
 }
 
-// No style-guide-permited way of forcing const-ref inference at the moment.
-inline void MaybeReply(const base::Location& location,
-                       base::OnceCallback<void(bool, const std::string&)> reply,
-                       bool bool_val,
-                       const std::string& str_val) {
-  if (reply) {
-    BrowserThread::PostTask(
-        BrowserThread::UI, location,
-        base::BindOnce(std::move(reply), bool_val, str_val));
-  }
-}
-
 }  // namespace
 
 const size_t kWebRtcEventLogManagerUnlimitedFileSize = 0;
@@ -312,6 +300,7 @@ void WebRtcEventLogManager::StartRemoteLogging(
     size_t max_file_size_bytes,
     base::OnceCallback<void(bool, const std::string&)> reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  DCHECK(reply);
 
   const BrowserContext* browser_context = GetBrowserContext(render_process_id);
   const char* error = nullptr;
@@ -328,7 +317,9 @@ void WebRtcEventLogManager::StartRemoteLogging(
   }
 
   if (error) {
-    MaybeReply(FROM_HERE, std::move(reply), false, std::string(error));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(std::move(reply), false, std::string(error)));
     return;
   }
 
@@ -624,8 +615,9 @@ void WebRtcEventLogManager::StartRemoteLoggingInternal(
       browser_context_dir, max_file_size_bytes, &error_message);
   DCHECK_EQ(result, error_message.empty());  // Error set iff has failed.
 
-  MaybeReply(FROM_HERE,
-             base::BindOnce(std::move(reply), result, error_message));
+  BrowserThread::PostTask(
+      BrowserThread::UI, FROM_HERE,
+      base::BindOnce(std::move(reply), result, error_message));
 }
 
 void WebRtcEventLogManager::ClearCacheForBrowserContextInternal(

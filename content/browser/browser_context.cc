@@ -570,7 +570,7 @@ void BrowserContext::Initialize(
   if (!browser_context->IsOffTheRecord()) {
     WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
     if (logger) {
-      logger->EnableForBrowserContext(browser_context);
+      logger->EnableForBrowserContext(browser_context, base::OnceClosure());
     }
   }
 }
@@ -627,7 +627,7 @@ BrowserContext::~BrowserContext() {
 
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->DisableForBrowserContext(this);
+    logger->DisableForBrowserContext(this, base::OnceClosure());
   }
 
   RemoveBrowserContextFromUserIdMap(this);
