@@ -4,6 +4,7 @@
 
 #include "ui/aura/mus/window_port_mus.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "components/viz/client/local_surface_id_provider.h"
 #include "components/viz/host/host_frame_sink_manager.h"
@@ -18,6 +19,7 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/aura/window_observer.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/class_property.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches_util.h"
@@ -114,6 +116,7 @@ void WindowPortMus::EmbedUsingToken(
 std::unique_ptr<cc::mojo_embedder::AsyncLayerTreeFrameSink>
 WindowPortMus::RequestLayerTreeFrameSink(
     scoped_refptr<viz::ContextProvider> context_provider,
+    scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager) {
   viz::mojom::CompositorFrameSinkPtrInfo sink_info;
   viz::mojom::CompositorFrameSinkRequest sink_request =
@@ -123,6 +126,8 @@ WindowPortMus::RequestLayerTreeFrameSink(
       mojo::MakeRequest(&client);
 
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
+  params.context_provider = std::move(context_provider);
+  params.compositor_task_runner = std::move(compositor_task_runner);
   params.gpu_memory_buffer_manager = gpu_memory_buffer_manager;
   params.pipes.compositor_frame_sink_info = std::move(sink_info);
   params.pipes.client_request = std::move(client_request);
@@ -134,8 +139,7 @@ WindowPortMus::RequestLayerTreeFrameSink(
 
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), nullptr /* worker_context_provider */,
-          &params);
+          std::move(params));
   window_tree_client_->AttachCompositorFrameSink(
       server_id(), std::move(sink_request), std::move(client));
   return layer_tree_frame_sink;
@@ -585,9 +589,15 @@ WindowPortMus::CreateLayerTreeFrameSink() {
   DCHECK_EQ(window_mus_type(), WindowMusType::LOCAL);
   DCHECK(!local_layer_tree_frame_sink_);
 
+  // Tests do not necessarily have an associated WindowTreeHost.
+  scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  if (window_->GetHost())
+    compositor_task_runner = window_->GetHost()->compositor()->task_runner();
+
   std::unique_ptr<cc::LayerTreeFrameSink> frame_sink;
   auto client_layer_tree_frame_sink = RequestLayerTreeFrameSink(
-      nullptr,
+      nullptr /* context_provider */, compositor_task_runner,
       aura::Env::GetInstance()->context_factory()->GetGpuMemoryBufferManager());
   local_layer_tree_frame_sink_ = client_layer_tree_frame_sink->GetWeakPtr();
   frame_sink = std::move(client_layer_tree_frame_sink);

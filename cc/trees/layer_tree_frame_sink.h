@@ -56,15 +56,11 @@ class CC_EXPORT LayerTreeFrameSink : public viz::SharedBitmapReporter,
   };
 
   // Constructor for GL-based and/or software resources.
-  //
-  // |compositor_task_runner| is used to post worker context lost callback and
-  // must belong to the same thread where all calls to or from client are made.
-  // Optional and won't be used unless |worker_context_provider| is present.
-  //
-  // |gpu_memory_buffer_manager| and |shared_bitmap_manager| must outlive the
-  // LayerTreeFrameSink. |shared_bitmap_manager| is optional (won't be used) if
-  // |context_provider| is present. |gpu_memory_buffer_manager| is optional
-  // (won't be used) unless |context_provider| is present.
+  // Uses GL compositing if |context_provider| is provided.
+  // |worker_context_provider| is optional and only used with GL compositing.
+  // |compositor_task_runner| must be provided if worker context is used.
+  // |gpu_memory_buffer_manager|, if provided, is only used with GL compositing,
+  // and must outlive the frame sink.
   LayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
       scoped_refptr<viz::RasterContextProvider> worker_context_provider,

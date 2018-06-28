@@ -1234,6 +1234,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
+  params.context_provider = std::move(context_provider);
   params.compositor_task_runner = task_runner;
   params.gpu_memory_buffer_manager = BrowserMainLoop::GetInstance()
                                          ->gpu_channel_establish_factory()
@@ -1248,7 +1249,7 @@ void CompositorImpl::InitializeVizLayerTreeFrameSink(
           /*should_ask_for_child_region=*/false);
   auto layer_tree_frame_sink =
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(context_provider), nullptr, &params);
+          std::move(params));
   host_->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
   display_private_->SetDisplayVisible(true);
   display_private_->Resize(size_);

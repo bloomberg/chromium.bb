@@ -278,6 +278,10 @@ class VIZ_COMMON_EXPORT ExternalBeginFrameSource : public BeginFrameSource {
   void OnSetBeginFrameSourcePaused(bool paused);
   void OnBeginFrame(const BeginFrameArgs& args);
 
+  const BeginFrameArgs& last_begin_frame_args_for_testing() const {
+    return last_begin_frame_args_;
+  }
+
  protected:
   // Called on AddObserver and gets missed BeginFrameArgs for the given
   // observer. The missed BeginFrame is sent only if the returned
