@@ -249,7 +249,7 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   for symbol in symbols:
     symbol_type = _GetSymbolType(symbol)
     symbol_size = symbol.pss
-    if abs(symbol_size) >= min_symbol_size:
+    if abs(symbol_size) >= min_symbol_size or symbol_type == 'm':
       path = symbol.source_path or symbol.object_path
       file_node = file_nodes.get(path)
       if file_node is None:
@@ -315,6 +315,7 @@ def _CopyTemplateFiles(template_src, dest_dir):
 
 def _CopyTreeViewTemplateFiles(template_src, dest_dir, size_header):
   _MakeDirIfDoesNotExist(dest_dir)
+  shutil.copy(os.path.join(template_src, 'options.css'), dest_dir)
   shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
 
   with open(os.path.join(dest_dir, 'index.html'), 'w') as out_html, \
@@ -354,6 +355,9 @@ def Run(args, parser):
     parser.error('Diff input must end with ".size"')
   elif args.diff_with and not args.tree_view_ui:
     parser.error('Diffs only supported in --tree-view-ui mode')
+  if args.tree_view_ui and args.method_count:
+    parser.error('--method-count is no longer supported as a command line '
+                 'flag, use the client-side options instead.')
 
   logging.info('Reading .size file')
   size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
@@ -368,10 +372,7 @@ def Run(args, parser):
     symbols = symbols.WhereInSection('b').Inverted()
 
   if args.tree_view_ui:
-    if args.diff_with:
-      size_header = 'Delta size'
-    else:
-      size_header = 'Size'
+    size_header = 'Delta size' if args.diff_with else 'Size'
 
     template_src = os.path.join(os.path.dirname(__file__), 'template_tree_view')
     _CopyTreeViewTemplateFiles(template_src, args.report_dir,size_header)

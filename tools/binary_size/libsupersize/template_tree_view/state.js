@@ -36,7 +36,7 @@ const dom = {
   },
 };
 
-{
+function _initState() {
   /**
    * State is represented in the query string and
    * can be manipulated by this object. Keys in the query match with
@@ -44,7 +44,6 @@ const dom = {
    */
   const _filterParams = new URLSearchParams(location.search.slice(1));
 
-  /** Utilities for working with the state */
   const state = {
     /**
      * Returns a string from the current query string state.
@@ -60,14 +59,40 @@ const dom = {
      * @returns {string | null}
      */
     get(key, options = {}) {
-      let val = _filterParams.get(key);
-      if (options.valid != null && !options.valid.has(val)) {
-        val = null;
-      }
-      if (options.default != null && val == null) {
-        val = options.default;
-      }
+      const [val = null] = state.getAll(key, {
+        default: options.default ? [options.default] : null,
+        valid: options.value,
+      });
       return val;
+    },
+    /**
+     * Returns all string values for a key from the current query string state.
+     * Can optionally provide default values used if there are no values.
+     * @param {string} key
+     * @param {object} [options]
+     * @param {string[]} [options.default] Default to use if key is not present
+     * in the state.
+     * @param {Set<string>} [options.valid] If provided, values must be in this
+     * set to be returned. Invalid values will be omitted.
+     * @returns {string[]}
+     */
+    getAll(key, options = {}) {
+      let vals = _filterParams.getAll(key);
+      if (options.valid != null) {
+        vals = vals.filter(val => options.valid.has(val));
+      }
+      if (options.default != null && vals.length === 0) {
+        vals = options.default;
+      }
+      return vals;
+    },
+    /**
+     * Checks if a key is present in the query string state.
+     * @param {string} key
+     * @returns {boolean}
+     */
+    has(key) {
+      return _filterParams.has(key);
     },
     /**
      * Set the value in the state, overriding any existing value. Afterwards
@@ -82,10 +107,23 @@ const dom = {
   };
 
   // Update form inputs to reflect the state from URL.
-  for (const [name, value] of _filterParams) {
-    if (form[name] != null) form[name].value = value;
+  for (const input of form.elements) {
+    if (input.name) {
+      const value = _filterParams.get(input.name);
+      if (value) {
+        if (input.type === 'checkbox') {
+          input.checked = value === input.value;
+        } else {
+          input.value = value;
+        }
+      }
+    }
   }
 
+  return state;
+}
+
+function _startListeners(state) {
   /**
    * Some form inputs can be changed without needing to refresh the tree.
    * When these inputs change, update the state and the change event can
@@ -100,5 +138,28 @@ const dom = {
     dynamicInput.addEventListener('change', _onDynamicValueChange);
   }
 
-  self.state = state;
+  /**
+   * The settings dialog on the side can be toggled on and off by elements with
+   * a 'toggle-options' class.
+   */
+  function _toggleOptions() {
+    const openedOptions = document.body.classList.toggle('show-options');
+    localStorage.setItem('show-options', openedOptions);
+  }
+  for (const button of document.getElementsByClassName('toggle-options')) {
+    button.addEventListener('click', _toggleOptions);
+  }
+  if (localStorage.getItem('show-options') === 'true') {
+    document.body.classList.add('show-options');
+  }
+
+  // Disable some fields when method_count is set
+  if (state.has('method_count')) {
+    document.getElementById('size-header').textContent = 'Methods';
+    form.byteunit.setAttribute('disabled', '');
+  }
 }
+
+/** Utilities for working with the state */
+const state = _initState();
+_startListeners(state);
