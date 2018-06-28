@@ -4776,6 +4776,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "wayland_client_perftests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "webkit_unit_tests"
       },
       {

@@ -2610,12 +2610,6 @@
       'Win7 Tests (dbg)(1)',
     ],
   },
-  'wayland_client_perftests': {
-    'remove_from': [
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)',  # https://crbug.com/855583
-    ],
-  },
   'webgl_conformance_d3d9_passthrough_tests': {
     'remove_from': [
       # TODO(jdarpinian): Re-enable when http://crbug.com/841789 is fixed.
