@@ -53,15 +53,15 @@ class PLATFORM_EXPORT TimeDomain {
   // Returns the name of this time domain for tracing.
   virtual const char* GetName() const = 0;
 
-  // If there is a scheduled delayed task, |out_time| is set to the scheduled
-  // runtime for the next one and it returns true.  Returns false otherwise.
-  bool NextScheduledRunTime(TimeTicks* out_time) const;
-
  protected:
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerImpl;
 
   void AsValueInto(trace_event::TracedValue* state) const;
+
+  // If there is a scheduled delayed task, |out_time| is set to the scheduled
+  // runtime for the next one and it returns true. Returns false otherwise.
+  bool NextScheduledRunTime(TimeTicks* out_time) const;
 
   // If there is a scheduled delayed task, |out_task_queue| is set to the queue
   // the next task was posted to and it returns true.  Returns false otherwise.

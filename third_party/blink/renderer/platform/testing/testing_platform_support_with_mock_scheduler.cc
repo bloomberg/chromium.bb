@@ -101,12 +101,16 @@ void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
     // If we've run out of immediate work then fast forward to the next delayed
     // task, but don't pass |deadline|.
     if (!task_queue_manager_->HasImmediateWork()) {
-      base::TimeTicks next_delayed_task;
-      if (!task_queue_manager_->GetRealTimeDomain()->NextScheduledRunTime(
-              &next_delayed_task) ||
-          next_delayed_task > deadline) {
+      base::sequence_manager::LazyNow lazy_now(&clock_);
+      base::Optional<base::TimeDelta> delay =
+          task_queue_manager_->GetRealTimeDomain()->DelayTillNextTask(
+              &lazy_now);
+      if (!delay)
         break;
-      }
+
+      base::TimeTicks next_delayed_task = lazy_now.Now() + *delay;
+      if (next_delayed_task > deadline)
+        break;
 
       clock_.SetNowTicks(next_delayed_task);
     }

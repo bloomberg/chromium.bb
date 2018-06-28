@@ -113,10 +113,11 @@ class TaskQueueManagerTest : public TaskQueueManagerTestBase {
     for (;;) {
       // Advance time if we've run out of immediate work to do.
       if (!manager_->HasImmediateWork()) {
-        TimeTicks run_time;
-        if (manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time)) {
-          test_task_runner_->AdvanceMockTickClock(run_time -
-                                                  GetTickClock()->NowTicks());
+        LazyNow lazy_now(GetTickClock());
+        Optional<TimeDelta> delay =
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now);
+        if (delay) {
+          test_task_runner_->AdvanceMockTickClock(*delay);
           per_run_time_callback.Run();
         } else {
           break;
@@ -1194,43 +1195,44 @@ TEST_F(TaskQueueManagerTest, ThreadCheckAfterTermination) {
 TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime) {
   CreateTaskQueues(2u);
   test_task_runner_->AdvanceMockTickClock(TimeDelta::FromMicroseconds(10000));
+  LazyNow lazy_now_1(GetTickClock());
 
   // With no delayed tasks.
-  TimeTicks run_time;
-  EXPECT_FALSE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
+  EXPECT_FALSE(manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_1));
 
   // With a non-delayed task.
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
-  EXPECT_FALSE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
+  EXPECT_FALSE(manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_1));
 
   // With a delayed task.
   TimeDelta expected_delay = TimeDelta::FromMilliseconds(50);
   runners_[0]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask), expected_delay);
-  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
-  EXPECT_EQ(GetTickClock()->NowTicks() + expected_delay, run_time);
+  EXPECT_EQ(expected_delay,
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_1));
 
   // With another delayed task in the same queue with a longer delay.
   runners_[0]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask),
                                TimeDelta::FromMilliseconds(100));
-  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
-  EXPECT_EQ(GetTickClock()->NowTicks() + expected_delay, run_time);
+  EXPECT_EQ(expected_delay,
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_1));
 
   // With another delayed task in the same queue with a shorter delay.
   expected_delay = TimeDelta::FromMilliseconds(20);
   runners_[0]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask), expected_delay);
-  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
-  EXPECT_EQ(GetTickClock()->NowTicks() + expected_delay, run_time);
+  EXPECT_EQ(expected_delay,
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_1));
 
   // With another delayed task in a different queue with a shorter delay.
   expected_delay = TimeDelta::FromMilliseconds(10);
   runners_[1]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask), expected_delay);
-  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
-  EXPECT_EQ(GetTickClock()->NowTicks() + expected_delay, run_time);
+  EXPECT_EQ(expected_delay,
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_1));
 
   // Test it updates as time progresses
   test_task_runner_->AdvanceMockTickClock(expected_delay);
-  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
-  EXPECT_EQ(GetTickClock()->NowTicks(), run_time);
+  LazyNow lazy_now_2(GetTickClock());
+  EXPECT_EQ(TimeDelta(),
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now_2));
 }
 
 TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime_MultipleQueues) {
@@ -1244,9 +1246,9 @@ TEST_F(TaskQueueManagerTest, TimeDomain_NextScheduledRunTime_MultipleQueues) {
   runners_[2]->PostDelayedTask(FROM_HERE, BindOnce(&NopTask), delay3);
   runners_[0]->PostTask(FROM_HERE, BindOnce(&NopTask));
 
-  TimeTicks run_time;
-  EXPECT_TRUE(manager_->GetRealTimeDomain()->NextScheduledRunTime(&run_time));
-  EXPECT_EQ(GetTickClock()->NowTicks() + delay2, run_time);
+  LazyNow lazy_now(GetTickClock());
+  EXPECT_EQ(delay2,
+            manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now));
 }
 
 TEST_F(TaskQueueManagerTest, DeleteTaskQueueManagerInsideATask) {
