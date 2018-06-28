@@ -3,4 +3,6 @@ include_rules = [
   "+components/data_use_measurement/core",
   "+components/previews/core",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
 ]
