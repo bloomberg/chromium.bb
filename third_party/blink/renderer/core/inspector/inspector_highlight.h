@@ -51,6 +51,9 @@ class CORE_EXPORT InspectorHighlight {
   ~InspectorHighlight();
 
   static bool GetBoxModel(Node*, std::unique_ptr<protocol::DOM::BoxModel>*);
+  static bool GetContentQuads(
+      Node*,
+      std::unique_ptr<protocol::Array<protocol::Array<double>>>*);
   static InspectorHighlightConfig DefaultConfig();
 
   void AppendPath(std::unique_ptr<protocol::ListValue> path,
