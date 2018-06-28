@@ -12,8 +12,11 @@
 #include "base/strings/string_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
+#include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "chrome/browser/infobars/infobar_service.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -21,6 +24,8 @@
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "components/infobars/core/infobar_delegate.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_remover.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
@@ -409,6 +414,47 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   ui_test_utils::NavigateToURL(
       browser(), https_test_server_->GetURL("/page_capping.html"));
   ASSERT_EQ(0u, InfoBarService::FromWebContents(contents)->infobar_count());
+
+  https_test_server_.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
+                       NavigationDataREmovedFromBlacklist) {
+  https_test_server_->RegisterRequestHandler(base::BindRepeating(
+      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
+  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+
+  ASSERT_TRUE(https_test_server_->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // Load a page and ignore the InfoBar.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+
+  // Load a page and ignore the InfoBar.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+
+  // Load a page and due to session policy blacklisting, the InfoBar should not
+  // show.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(0u, InfoBarService::FromWebContents(contents)->infobar_count());
+
+  // Clear the navigation history.
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
+  remover->Remove(base::Time(), base::Time::Max(),
+                  ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
+
+  // After clearing history, the InfoBar should be allowed again.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
 
   https_test_server_.reset();
 }
