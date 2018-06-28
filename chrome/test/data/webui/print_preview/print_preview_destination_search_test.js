@@ -6,6 +6,8 @@ const ROOT_PATH = '../../../../../';
 
 GEN_INCLUDE(
     [ROOT_PATH + 'chrome/test/data/webui/polymer_browser_test_base.js']);
+GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "ui/base/ui_base_features.h"');
 
 /**
  * Test fixture for DestinationSearch of Print Preview.
@@ -22,6 +24,9 @@ PrintPreviewDestinationSearchTest.prototype = {
 
   /** @override */
   runAccessibilityChecks: false,
+
+  /** @override */
+  featureList: ['', 'features::kNewPrintPreview, features::kExperimentalUi'],
 
   /** @override */
   extraLibraries: PolymerTest.getLibraries(ROOT_PATH).concat([
