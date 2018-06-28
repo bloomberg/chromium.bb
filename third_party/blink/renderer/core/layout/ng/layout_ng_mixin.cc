@@ -346,7 +346,7 @@ bool LayoutNGMixin<Base>::NodeAtPoint(
     return true;
 
   return NGBlockFlowPainter(*this).NodeAtPoint(result, location_in_container,
-                                               accumulated_offset, action);
+                                               adjusted_location, action);
 }
 
 template <typename Base>
