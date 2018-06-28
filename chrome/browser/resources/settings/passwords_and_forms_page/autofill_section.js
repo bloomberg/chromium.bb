@@ -269,7 +269,10 @@ Polymer({
 
     /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
      https://github.com/Polymer/polymer/issues/2574 */
-    const item = menuEvent.model['dataHost']['dataHost'].item;
+    // TODO(dpapad): The [dataHost][dataHost] workaround is only necessary for
+    // Polymer 1. Remove once migration to Polymer 2 has completed.
+    const item = Polymer.DomIf ? menuEvent.model.item :
+                                 menuEvent.model['dataHost']['dataHost'].item;
 
     // Copy item so dialog won't update model on cancel.
     this.activeAddress = /** @type {!chrome.autofillPrivate.AddressEntry} */ (
@@ -336,7 +339,10 @@ Polymer({
 
     /* TODO(scottchen): drop the [dataHost][dataHost] once this bug is fixed:
      https://github.com/Polymer/polymer/issues/2574 */
-    const item = menuEvent.model['dataHost']['dataHost'].item;
+    // TODO(dpapad): The [dataHost][dataHost] workaround is only necessary for
+    // Polymer 1. Remove once migration to Polymer 2 has completed.
+    const item = Polymer.DomIf ? menuEvent.model.item :
+                                 menuEvent.model['dataHost']['dataHost'].item;
 
     // Copy item so dialog won't update model on cancel.
     this.activeCreditCard =

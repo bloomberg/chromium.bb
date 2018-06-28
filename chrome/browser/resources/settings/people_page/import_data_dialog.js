@@ -71,6 +71,9 @@ Polymer({
 
   /** @private */
   prefsChanged_: function() {
+    if (this.selected_ == undefined || this.prefs == undefined)
+      return;
+
     this.noImportDataTypeSelected_ =
         !(this.getPref('import_dialog_history').value &&
           this.selected_.history) &&
