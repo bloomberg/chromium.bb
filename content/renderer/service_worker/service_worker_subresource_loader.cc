@@ -439,18 +439,9 @@ void ServiceWorkerSubresourceLoader::StartResponse(
   if (body_as_blob) {
     DCHECK(!body_as_stream);
     body_as_blob_ = std::move(body_as_blob);
-    mojo::ScopedDataPipeConsumerHandle data_pipe;
-    int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
-        &body_as_blob_, resource_request_.headers,
-        base::BindOnce(&ServiceWorkerSubresourceLoader::OnBlobReadingComplete,
-                       weak_factory_.GetWeakPtr()),
-        &data_pipe);
-    if (error != net::OK) {
-      CommitCompleted(error);
-      return;
-    }
-    url_loader_client_->OnStartLoadingResponseBody(std::move(data_pipe));
-    // We continue in OnBlobReadingComplete().
+    body_as_blob_->ReadSideData(base::BindOnce(
+        &ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete,
+        base::Unretained(this)));
     return;
   }
 
@@ -521,6 +512,25 @@ void ServiceWorkerSubresourceLoader::SetPriority(net::RequestPriority priority,
 void ServiceWorkerSubresourceLoader::PauseReadingBodyFromNet() {}
 
 void ServiceWorkerSubresourceLoader::ResumeReadingBodyFromNet() {}
+
+void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
+    const base::Optional<std::vector<uint8_t>>& metadata) {
+  DCHECK(url_loader_client_);
+  if (metadata.has_value())
+    url_loader_client_->OnReceiveCachedMetadata(metadata.value());
+  mojo::ScopedDataPipeConsumerHandle data_pipe;
+  int error = ServiceWorkerLoaderHelpers::ReadBlobResponseBody(
+      &body_as_blob_, resource_request_.headers,
+      base::BindOnce(&ServiceWorkerSubresourceLoader::OnBlobReadingComplete,
+                     weak_factory_.GetWeakPtr()),
+      &data_pipe);
+  if (error != net::OK) {
+    CommitCompleted(error);
+    return;
+  }
+  url_loader_client_->OnStartLoadingResponseBody(std::move(data_pipe));
+  // We continue in OnBlobReadingComplete().
+}
 
 void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
   CommitCompleted(net_error);

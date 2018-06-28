@@ -99,6 +99,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   void PauseReadingBodyFromNet() override;
   void ResumeReadingBodyFromNet() override;
 
+  void OnBlobSideDataReadingComplete(
+      const base::Optional<std::vector<uint8_t>>& metadata);
   void OnBlobReadingComplete(int net_error);
 
   // Calls url_loader_client_->OnReceiveResponse() with |response_head_|.
