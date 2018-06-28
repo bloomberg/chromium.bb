@@ -62,6 +62,7 @@ import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
+import org.chromium.ui.base.PageTransition;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Date;
@@ -324,12 +325,16 @@ public class HistoryActivityTest {
         Assert.assertEquals(mItem1.getUrl(), intent.getDataString());
         Assert.assertFalse(intent.hasExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB));
         Assert.assertFalse(intent.hasExtra(Browser.EXTRA_CREATE_NEW_TAB));
+        Assert.assertEquals(PageTransition.AUTO_BOOKMARK,
+                intent.getIntExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, -1));
 
         intent = mHistoryManager.getOpenUrlIntent(mItem2.getUrl(), true, true);
         Assert.assertEquals(mItem2.getUrl(), intent.getDataString());
         Assert.assertTrue(
                 intent.getBooleanExtra(IntentHandler.EXTRA_OPEN_NEW_INCOGNITO_TAB, false));
         Assert.assertTrue(intent.getBooleanExtra(Browser.EXTRA_CREATE_NEW_TAB, false));
+        Assert.assertEquals(PageTransition.AUTO_BOOKMARK,
+                intent.getIntExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, -1));
     }
 
     @Test
