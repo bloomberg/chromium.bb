@@ -247,16 +247,6 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void SetRemoteLogsObserverInternal(WebRtcRemoteEventLogsObserver* observer,
                                      base::OnceClosure reply);
 
-  // Non-empty replies get posted to BrowserThread::UI.
-  void MaybeReply(base::OnceClosure reply);
-  void MaybeReply(base::OnceCallback<void(bool)> reply, bool value);
-  void MaybeReply(base::OnceCallback<void(bool, const std::string&)> reply,
-                  bool bool_val,
-                  const std::string& str_val);
-  void MaybeReply(base::OnceCallback<void(std::pair<bool, bool>)> reply,
-                  bool first,
-                  bool second);
-
   // Injects a fake clock, to be used by tests. For example, this could be
   // used to inject a frozen clock, thereby allowing unit tests to know what a
   // local log's filename would end up being.

@@ -250,49 +250,50 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
     run_loop_.reset(new base::RunLoop);  // Allow re-blocking.
   }
 
-  void VoidReply() { run_loop_->QuitWhenIdle(); }
+  void Reply() { run_loop_->QuitWhenIdle(); }
 
-  base::OnceClosure VoidReplyClosure() {
-    return base::BindOnce(&WebRtcEventLogManagerTestBase::VoidReply,
-                          base::Unretained(this));
+  base::OnceClosure ReplyClosure() {
+    // Intermediary pointer used to help the compiler distinguish between
+    // the overloaded Reply() functions.
+    void (WebRtcEventLogManagerTestBase::*function)() =
+        &WebRtcEventLogManagerTestBase::Reply;
+    return base::BindOnce(function, base::Unretained(this));
   }
 
-  void BoolReply(bool* output, bool value) {
-    *output = value;
+  template <typename T>
+  void Reply(T* output, T val) {
+    *output = val;
     run_loop_->QuitWhenIdle();
   }
 
-  base::OnceCallback<void(bool)> BoolReplyClosure(bool* output) {
-    return base::BindOnce(&WebRtcEventLogManagerTestBase::BoolReply,
-                          base::Unretained(this), output);
+  template <typename T>
+  base::OnceCallback<void(T)> ReplyClosure(T* output) {
+    // Intermediary pointer used to help the compiler distinguish between
+    // the overloaded Reply() functions.
+    void (WebRtcEventLogManagerTestBase::*function)(T*, T) =
+        &WebRtcEventLogManagerTestBase::Reply;
+    return base::BindOnce(function, base::Unretained(this), output);
   }
 
-  void BoolAndStringReply(bool* output_bool,
-                          std::string* output_str,
-                          bool bool_val,
-                          const std::string& str_val) {
+  void Reply(bool* output_bool,
+             std::string* output_str,
+             bool bool_val,
+             const std::string& str_val) {
     *output_bool = bool_val;
     *output_str = str_val;
     run_loop_->QuitWhenIdle();
   }
 
-  base::OnceCallback<void(bool, const std::string&)> BoolAndStringReplyClosure(
+  base::OnceCallback<void(bool, const std::string&)> ReplyClosure(
       bool* output_bool,
       std::string* output_str) {
-    return base::BindOnce(&WebRtcEventLogManagerTestBase::BoolAndStringReply,
-                          base::Unretained(this), output_bool, output_str);
-  }
-
-  void BoolPairReply(std::pair<bool, bool>* output,
-                     std::pair<bool, bool> value) {
-    *output = value;
-    run_loop_->QuitWhenIdle();
-  }
-
-  base::OnceCallback<void(std::pair<bool, bool>)> BoolPairReplyClosure(
-      std::pair<bool, bool>* output) {
-    return base::BindOnce(&WebRtcEventLogManagerTestBase::BoolPairReply,
-                          base::Unretained(this), output);
+    // Intermediary pointer used to help the compiler distinguish between
+    // the overloaded Reply() functions.
+    void (WebRtcEventLogManagerTestBase::*function)(bool*, std::string*, bool,
+                                                    const std::string&) =
+        &WebRtcEventLogManagerTestBase::Reply;
+    return base::BindOnce(function, base::Unretained(this), output_bool,
+                          output_str);
   }
 
   bool PeerConnectionAdded(int render_process_id,
@@ -306,7 +307,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
 
     bool result;
     event_log_manager_->PeerConnectionAdded(
-        render_process_id, lid, peer_connection_id, BoolReplyClosure(&result));
+        render_process_id, lid, peer_connection_id, ReplyClosure(&result));
     WaitForReply();
     return result;
   }
@@ -314,7 +315,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
   bool PeerConnectionRemoved(int render_process_id, int lid) {
     bool result;
     event_log_manager_->PeerConnectionRemoved(render_process_id, lid,
-                                              BoolReplyClosure(&result));
+                                              ReplyClosure(&result));
     WaitForReply();
     return result;
   }
@@ -322,7 +323,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
   bool PeerConnectionStopped(int render_process_id, int lid) {
     bool result;
     event_log_manager_->PeerConnectionStopped(render_process_id, lid,
-                                              BoolReplyClosure(&result));
+                                              ReplyClosure(&result));
     WaitForReply();
     return result;
   }
@@ -337,14 +338,14 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
       size_t max_size_bytes = kWebRtcEventLogManagerUnlimitedFileSize) {
     bool result;
     event_log_manager_->EnableLocalLogging(local_logs_base_path, max_size_bytes,
-                                           BoolReplyClosure(&result));
+                                           ReplyClosure(&result));
     WaitForReply();
     return result;
   }
 
   bool DisableLocalLogging() {
     bool result;
-    event_log_manager_->DisableLocalLogging(BoolReplyClosure(&result));
+    event_log_manager_->DisableLocalLogging(ReplyClosure(&result));
     WaitForReply();
     return result;
   }
@@ -355,14 +356,19 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
                           std::string* error_message_output = nullptr) {
     bool result;
     std::string error_message;
+
     event_log_manager_->StartRemoteLogging(
         render_process_id, peer_connection_id, max_size_bytes,
-        BoolAndStringReplyClosure(&result, &error_message));
+        ReplyClosure(&result, &error_message));
+
     WaitForReply();
+
     DCHECK_EQ(result, error_message.empty());  // Error report iff call failed.
+
     if (error_message_output) {
       *error_message_output = error_message;
     }
+
     return result;
   }
 
@@ -378,24 +384,24 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
       const base::Time& delete_begin,
       const base::Time& delete_end) {
     event_log_manager_->ClearCacheForBrowserContext(
-        browser_context, delete_begin, delete_end, VoidReplyClosure());
+        browser_context, delete_begin, delete_end, ReplyClosure());
     WaitForReply();
   }
 
   void SetLocalLogsObserver(WebRtcLocalEventLogsObserver* observer) {
-    event_log_manager_->SetLocalLogsObserver(observer, VoidReplyClosure());
+    event_log_manager_->SetLocalLogsObserver(observer, ReplyClosure());
     WaitForReply();
   }
 
   void SetRemoteLogsObserver(WebRtcRemoteEventLogsObserver* observer) {
-    event_log_manager_->SetRemoteLogsObserver(observer, VoidReplyClosure());
+    event_log_manager_->SetRemoteLogsObserver(observer, ReplyClosure());
     WaitForReply();
   }
 
   void SetWebRtcEventLogUploaderFactoryForTesting(
       std::unique_ptr<WebRtcEventLogUploader::Factory> factory) {
     event_log_manager_->SetWebRtcEventLogUploaderFactoryForTesting(
-        std::move(factory), VoidReplyClosure());
+        std::move(factory), ReplyClosure());
     WaitForReply();
   }
 
@@ -404,7 +410,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
                                               const std::string& message) {
     std::pair<bool, bool> result;
     event_log_manager_->OnWebRtcEventLogWrite(render_process_id, lid, message,
-                                              BoolPairReplyClosure(&result));
+                                              ReplyClosure(&result));
     WaitForReply();
     return result;
   }
@@ -414,7 +420,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
     ASSERT_TRUE(
         base::Time::FromLocalExploded(frozen_time_exploded, &frozen_time));
     frozen_clock_.SetNow(frozen_time);
-    event_log_manager_->SetClockForTesting(&frozen_clock_, VoidReplyClosure());
+    event_log_manager_->SetClockForTesting(&frozen_clock_, ReplyClosure());
     WaitForReply();
   }
 
@@ -438,7 +444,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
       std::unique_ptr<WebRtcEventLogManager::PeerConnectionTrackerProxy>
           pc_tracker_proxy) {
     event_log_manager_->SetPeerConnectionTrackerProxyForTesting(
-        std::move(pc_tracker_proxy), VoidReplyClosure());
+        std::move(pc_tracker_proxy), ReplyClosure());
     WaitForReply();
   }
 
