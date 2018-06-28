@@ -321,7 +321,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
                     mActivity.getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
         }
         if (component != null) {
-            ChromeTabbedActivity.setNonAliasedComponent(viewIntent, component, mActivity);
+            ChromeTabbedActivity.setNonAliasedComponent(viewIntent, component);
         } else {
             viewIntent.setClass(mActivity, ChromeLauncherActivity.class);
         }
