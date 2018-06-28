@@ -1292,7 +1292,7 @@ CommandHandler.COMMANDS_['open-with'] = /** @type {Command} */ ({
           tasks.showTaskPicker(
               fileManager.ui.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
               '', function(task) {
-                tasks.execute(task.taskId);
+                tasks.execute(task);
               }, FileTasks.TaskPickerType.OpenWith);
         })
         .catch(function(error) {
@@ -1326,7 +1326,7 @@ CommandHandler.COMMANDS_['more-actions'] = /** @type {Command} */ ({
           tasks.showTaskPicker(
               fileManager.ui.defaultTaskPicker,
               str('MORE_ACTIONS_BUTTON_LABEL'), '', function(task) {
-                tasks.execute(task.taskId);
+                tasks.execute(task);
               }, FileTasks.TaskPickerType.MoreActions);
         })
         .catch(function(error) {
@@ -1491,9 +1491,11 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
           .then(function(tasks) {
             if (fileManager.directoryModel.isOnDrive() ||
                 fileManager.directoryModel.isOnMTP()) {
-              tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID);
+              tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ (
+                  {taskId: FileTasks.ZIP_ARCHIVER_ZIP_USING_TMP_TASK_ID}));
             } else {
-              tasks.execute(FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID);
+              tasks.execute(/** @type {chrome.fileManagerPrivate.FileTask} */ (
+                  {taskId: FileTasks.ZIP_ARCHIVER_ZIP_TASK_ID}));
             }
           })
           .catch(function(error) {

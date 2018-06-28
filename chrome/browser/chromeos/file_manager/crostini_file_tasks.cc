@@ -40,17 +40,6 @@ void FindCrostiniTasks(Profile* profile,
     return;
   }
 
-  // We currently don't support opening directories or files not already inside
-  // the Crostini directories.
-  base::FilePath crostini_mount = util::GetCrostiniMountDirectory(profile);
-  for (const extensions::EntryInfo& entry : entries) {
-    if (!crostini_mount.IsParent(entry.path) ||
-        entry.path.EndsWithSeparator()) {
-      std::move(completion_closure).Run();
-      return;
-    }
-  }
-
   std::set<std::string> target_mime_types;
   for (const extensions::EntryInfo& entry : entries)
     target_mime_types.insert(entry.mime_type);
