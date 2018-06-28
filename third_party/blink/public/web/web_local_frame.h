@@ -242,16 +242,16 @@ class WebLocalFrame : public WebFrame {
   // unreachableURL is reported via WebDocumentLoader::unreachableURL.  If
   // replace is false, then this data will be loaded as a normal
   // navigation.  Otherwise, the current history item will be replaced.
-  // TODO(dgozman): rename to CommitDataNavigation.
-  virtual void LoadData(const WebData&,
-                        const WebString& mime_type,
-                        const WebString& text_encoding,
-                        const WebURL& base_url,
-                        const WebURL& unreachable_url = WebURL(),
-                        bool replace = false,
-                        WebFrameLoadType = WebFrameLoadType::kStandard,
-                        const WebHistoryItem& = WebHistoryItem(),
-                        bool is_client_redirect = false) = 0;
+  virtual void CommitDataNavigation(
+      const WebData&,
+      const WebString& mime_type,
+      const WebString& text_encoding,
+      const WebURL& base_url,
+      const WebURL& unreachable_url = WebURL(),
+      bool replace = false,
+      WebFrameLoadType = WebFrameLoadType::kStandard,
+      const WebHistoryItem& = WebHistoryItem(),
+      bool is_client_redirect = false) = 0;
 
   // Returns the document loader that is currently loading.  May be null.
   virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;

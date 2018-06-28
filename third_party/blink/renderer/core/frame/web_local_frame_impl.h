@@ -270,15 +270,15 @@ class CORE_EXPORT WebLocalFrameImpl final
       const WebHistoryItem&,
       bool is_client_redirect) override;
   void LoadJavaScriptURL(const WebURL&) override;
-  void LoadData(const WebData&,
-                const WebString& mime_type,
-                const WebString& text_encoding,
-                const WebURL& base_url,
-                const WebURL& unreachable_url,
-                bool replace,
-                WebFrameLoadType,
-                const WebHistoryItem&,
-                bool is_client_redirect) override;
+  void CommitDataNavigation(const WebData&,
+                            const WebString& mime_type,
+                            const WebString& text_encoding,
+                            const WebURL& base_url,
+                            const WebURL& unreachable_url,
+                            bool replace,
+                            WebFrameLoadType,
+                            const WebHistoryItem&,
+                            bool is_client_redirect) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
   void ReportContentSecurityPolicyViolation(
