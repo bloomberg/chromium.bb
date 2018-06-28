@@ -8,12 +8,12 @@ from telemetry import story
 
 class NoOpPage(page_module.Page):
 
-  def __init__(self, url, page_set):
+  def __init__(self, url, name, page_set):
     super(NoOpPage, self).__init__(
         url=url,
         page_set=page_set,
         shared_page_state_class=shared_page_state.SharedMobilePageState,
-        name=url.split('/')[-1])
+        name=name)
 
   def RunNavigateSteps(self, action_runner):
     super(NoOpPage, self).RunNavigateSteps(action_runner)
@@ -27,8 +27,9 @@ class NoOpPage(page_module.Page):
 
 
 class NoOpTouchScrollPage(NoOpPage):
-  def __init__(self, url, page_set):
-    super(NoOpTouchScrollPage, self).__init__(url=url, page_set=page_set)
+  def __init__(self, url, name, page_set):
+    super(NoOpTouchScrollPage, self).__init__(
+        url=url, name=name, page_set=page_set)
 
   def RunPageInteractions(self, action_runner):
     # The noop touch motion should last ~5 seconds.
@@ -46,17 +47,21 @@ class KeyNoOpCasesPageSet(story.StorySet):
 
     # Why: An infinite rAF loop which does not modify the page should incur
     # minimal activity.
-    self.AddStory(NoOpPage('file://key_noop_cases/no_op_raf.html', self))
+    self.AddStory(NoOpPage(url='file://key_noop_cases/no_op_raf.html',
+                           name='no_op_raf', page_set=self))
 
     # Why: An infinite setTimeout loop which does not modify the page should
     # incur minimal activity.
-    self.AddStory(NoOpPage('file://key_noop_cases/no_op_settimeout.html', self))
+    self.AddStory(NoOpPage(url='file://key_noop_cases/no_op_settimeout.html',
+                           name='no_op_settimeout', page_set=self))
 
     # Why: Scrolling an empty, unscrollable page should have no expensive side
     # effects, as overscroll is suppressed in such cases.
     self.AddStory(NoOpTouchScrollPage(
-        'file://key_noop_cases/no_op_scroll.html', self))
+        url='file://key_noop_cases/no_op_scroll.html',
+        name='no_op_scroll', page_set=self))
 
     # Why: Feeding a stream of touch events to a no-op handler should be cheap.
     self.AddStory(NoOpTouchScrollPage(
-        'file://key_noop_cases/no_op_touch_handler.html', self))
+        url='file://key_noop_cases/no_op_touch_handler.html',
+        name='no_op_touch_handler', page_set=self))
