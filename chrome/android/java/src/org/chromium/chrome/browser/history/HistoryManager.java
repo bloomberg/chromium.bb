@@ -52,6 +52,7 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionO
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.base.Clipboard;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.base.PageTransition;
 
 import java.util.List;
 
@@ -65,6 +66,9 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
             10 * ConversionUtils.BYTES_PER_MEGABYTE; // 10MB
     private static final String METRICS_PREFIX = "Android.HistoryPage.";
     private static final String PREF_SHOW_HISTORY_INFO = "history_home_show_info";
+
+    // PageTransition value to use for all URL requests triggered by the history page.
+    private static final int PAGE_TRANSITION_TYPE = PageTransition.AUTO_BOOKMARK;
 
     private static HistoryProvider sProviderForTests;
 
@@ -290,10 +294,10 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         if (createNewTab) {
             TabCreator tabCreator = (isIncognito == null) ? activity.getCurrentTabCreator()
                                                           : activity.getTabCreator(isIncognito);
-            tabCreator.createNewTab(
-                    new LoadUrlParams(url), TabLaunchType.FROM_LINK, activity.getActivityTab());
+            tabCreator.createNewTab(new LoadUrlParams(url, PAGE_TRANSITION_TYPE),
+                    TabLaunchType.FROM_LINK, activity.getActivityTab());
         } else {
-            activity.getActivityTab().loadUrl(new LoadUrlParams(url));
+            activity.getActivityTab().loadUrl(new LoadUrlParams(url, PAGE_TRANSITION_TYPE));
         }
     }
 
@@ -332,6 +336,7 @@ public class HistoryManager implements OnMenuItemClickListener, SignInStateObser
         }
         if (createNewTab) viewIntent.putExtra(Browser.EXTRA_CREATE_NEW_TAB, true);
 
+        viewIntent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PAGE_TRANSITION_TYPE);
         return viewIntent;
     }
 
