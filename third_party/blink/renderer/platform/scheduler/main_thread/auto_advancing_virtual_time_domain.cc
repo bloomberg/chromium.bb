@@ -63,8 +63,8 @@ AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
 base::Optional<base::TimeDelta>
 AutoAdvancingVirtualTimeDomain::DelayTillNextTask(
     base::sequence_manager::LazyNow* lazy_now) {
-  base::TimeTicks run_time;
-  if (!NextScheduledRunTime(&run_time))
+  base::Optional<base::TimeTicks> run_time = NextScheduledRunTime();
+  if (!run_time)
     return base::nullopt;
 
   // We may have advanced virtual time past the next task when a
@@ -75,7 +75,7 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(
   if (!can_advance_virtual_time_)
     return base::nullopt;
 
-  if (MaybeAdvanceVirtualTime(run_time)) {
+  if (MaybeAdvanceVirtualTime(*run_time)) {
     task_starvation_count_ = 0;
     return base::TimeDelta();  // Makes DoWork post an immediate continuation.
   }
@@ -158,8 +158,8 @@ void AutoAdvancingVirtualTimeDomain::DidProcessTask(
 
   // Delayed tasks are being excessively starved, so allow virtual time to
   // advance.
-  base::TimeTicks run_time;
-  if (NextScheduledRunTime(&run_time) && MaybeAdvanceVirtualTime(run_time))
+  base::Optional<base::TimeTicks> run_time = NextScheduledRunTime();
+  if (run_time && MaybeAdvanceVirtualTime(*run_time))
     task_starvation_count_ = 0;
 }
 

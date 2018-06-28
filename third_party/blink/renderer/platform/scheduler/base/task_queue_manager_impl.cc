@@ -123,7 +123,7 @@ TaskQueueManagerImpl::CreateOnCurrentThread() {
 
 void TaskQueueManagerImpl::RegisterTimeDomain(TimeDomain* time_domain) {
   main_thread_only().time_domains.insert(time_domain);
-  time_domain->OnRegisterWithTaskQueueManager(this);
+  time_domain->OnRegisterWithSequenceManager(this);
 }
 
 void TaskQueueManagerImpl::UnregisterTimeDomain(TimeDomain* time_domain) {

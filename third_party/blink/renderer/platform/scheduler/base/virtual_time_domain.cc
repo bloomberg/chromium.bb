@@ -12,15 +12,9 @@ namespace base {
 namespace sequence_manager {
 
 VirtualTimeDomain::VirtualTimeDomain(TimeTicks initial_time_ticks)
-    : now_ticks_(initial_time_ticks), task_queue_manager_(nullptr) {}
+    : now_ticks_(initial_time_ticks) {}
 
 VirtualTimeDomain::~VirtualTimeDomain() = default;
-
-void VirtualTimeDomain::OnRegisterWithTaskQueueManager(
-    TaskQueueManagerImpl* task_queue_manager) {
-  task_queue_manager_ = task_queue_manager;
-  DCHECK(task_queue_manager_);
-}
 
 LazyNow VirtualTimeDomain::CreateLazyNow() const {
   AutoLock lock(lock_);
@@ -33,9 +27,8 @@ TimeTicks VirtualTimeDomain::Now() const {
 }
 
 void VirtualTimeDomain::RequestWakeUpAt(TimeTicks now, TimeTicks run_time) {
-  // We don't need to do anything here because the caller of AdvanceTo is
-  // responsible for calling TaskQueueManagerImpl::MaybeScheduleImmediateWork if
-  // needed.
+  // Caller of AdvanceTo is responsible for telling SequenceManager to schedule
+  // immediate work if needed.
 }
 
 void VirtualTimeDomain::CancelWakeUpAt(TimeTicks run_time) {
@@ -46,17 +39,10 @@ Optional<TimeDelta> VirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   return nullopt;
 }
 
-void VirtualTimeDomain::AsValueIntoInternal(
-    trace_event::TracedValue* state) const {}
-
 void VirtualTimeDomain::AdvanceNowTo(TimeTicks now) {
   AutoLock lock(lock_);
   DCHECK_GE(now, now_ticks_);
   now_ticks_ = now;
-}
-
-void VirtualTimeDomain::RequestDoWork() {
-  task_queue_manager_->MaybeScheduleImmediateWork(FROM_HERE);
 }
 
 const char* VirtualTimeDomain::GetName() const {

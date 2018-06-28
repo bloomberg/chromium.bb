@@ -36,11 +36,10 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
   ~PerfTestTimeDomain() override = default;
 
   Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override {
-    TimeTicks run_time;
-    if (!NextScheduledRunTime(&run_time))
-      return Optional<TimeDelta>();
-
-    AdvanceNowTo(run_time);
+    Optional<TimeTicks> run_time = NextScheduledRunTime();
+    if (!run_time)
+      return nullopt;
+    AdvanceNowTo(*run_time);
     return TimeDelta();  // Makes DoWork post an immediate continuation.
   }
 
@@ -48,11 +47,6 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
     // De-dupe DoWorks.
     if (NumberOfScheduledWakeUps() == 1u)
       RequestDoWork();
-  }
-
-  void CancelWakeUpAt(TimeTicks run_time) override {
-    // We didn't post a delayed task in RequestWakeUpAt so there's no need to do
-    // anything here.
   }
 
   const char* GetName() const override { return "PerfTestTimeDomain"; }
