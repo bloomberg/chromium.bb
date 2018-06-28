@@ -310,10 +310,10 @@ class TouchExplorationController : public ui::EventRewriter,
 
   // Within this many dips of the screen edge, the release event generated will
   // reset the state to NoFingersDown.
-  const float kLeavingScreenEdge = 12;
+  // TODO: Unify with identical value in CastSystemGestureEventHandler.
+  const float kLeavingScreenEdge = 35;
 
-  // Swipe/scroll gestures within these bounds (in DIPs) will change preset
-  // settings.
+  // Touch within this distance from a corner can invoke corner passthrough.
   const float kMaxDistanceFromEdge = 75;
 
   // After a slide gesture has been triggered, if the finger is still within
@@ -323,6 +323,9 @@ class TouchExplorationController : public ui::EventRewriter,
   // The split tap slop  is a bit more generous since keeping two
   // fingers in place is a bit harder.
   float GetSplitTapTouchSlop();
+
+  // Convert a gfx::PointF from DIP back to raw screen coordinates.
+  gfx::PointF ConvertDIPToScreenInPixels(const gfx::PointF& location);
 
   enum State {
     // No fingers are down and no events are pending.
