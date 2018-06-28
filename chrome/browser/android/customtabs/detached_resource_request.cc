@@ -106,6 +106,10 @@ void DetachedResourceRequest::Start(
   request->url_loader_->SetOnRedirectCallback(
       base::BindRepeating(&DetachedResourceRequest::OnRedirectCallback,
                           base::Unretained(request.get())));
+  // Only retry on network changes, not HTTP 5xx codes. This is a client-side
+  // failure, and main requests are retried in this case.
+  request->url_loader_->SetRetryOptions(
+      1 /* max_retries */, network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
 
   // |url_loader_| is owned by the request, and must be kept alive to not cancel
   // the request. Pass the ownership of the request to the response callback,
