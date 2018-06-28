@@ -36,7 +36,7 @@ class ServiceWorkerActivationTest;
 // facilitate multiple controllees being associated with the same registration.
 class CONTENT_EXPORT ServiceWorkerRegistration
     : public base::RefCounted<ServiceWorkerRegistration>,
-      public ServiceWorkerVersion::Listener {
+      public ServiceWorkerVersion::Observer {
  public:
   using StatusCallback =
       base::OnceCallback<void(blink::ServiceWorkerStatusCode status)>;
@@ -91,7 +91,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
   // state. If you require an ACTIVATED version, use
   // ServiceWorkerContextWrapper::FindReadyRegistration* to get a registration
   // with such a version. Alternatively, use
-  // ServiceWorkerVersion::Listener::OnVersionStateChanged to wait for the
+  // ServiceWorkerVersion::Observer::OnVersionStateChanged to wait for the
   // ACTIVATING version to become ACTIVATED.
   ServiceWorkerVersion* active_version() const {
     return active_version_.get();
@@ -187,7 +187,7 @@ class CONTENT_EXPORT ServiceWorkerRegistration
       ServiceWorkerVersion* version,
       ChangedVersionAttributesMask* mask);
 
-  // ServiceWorkerVersion::Listener override.
+  // ServiceWorkerVersion::Observer override.
   void OnNoControllees(ServiceWorkerVersion* version) override;
   void OnNoWork(ServiceWorkerVersion* version) override;
 

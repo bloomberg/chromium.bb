@@ -883,10 +883,9 @@ void WriteStringResponse(ServiceWorkerStorage* storage,
   WriteResponse(storage, id, headers, body_buffer.get(), body.length());
 }
 
-class UpdateJobTestHelper
-    : public EmbeddedWorkerTestHelper,
-      public ServiceWorkerRegistration::Listener,
-      public ServiceWorkerVersion::Listener {
+class UpdateJobTestHelper : public EmbeddedWorkerTestHelper,
+                            public ServiceWorkerRegistration::Listener,
+                            public ServiceWorkerVersion::Observer {
  public:
   struct AttributeChangeLogEntry {
     int64_t registration_id;
@@ -904,7 +903,7 @@ class UpdateJobTestHelper
     if (observed_registration_.get())
       observed_registration_->RemoveListener(this);
     for (auto& version : observed_versions_)
-      version->RemoveListener(this);
+      version->RemoveObserver(this);
   }
 
   ServiceWorkerStorage* storage() { return context()->storage(); }
@@ -958,7 +957,7 @@ class UpdateJobTestHelper
 
     ASSERT_TRUE(version);
     observed_versions_.push_back(base::WrapRefCounted(version));
-    version->AddListener(this);
+    version->AddObserver(this);
 
     // Simulate network access.
     base::TimeDelta time_since_last_check =
@@ -1048,7 +1047,7 @@ class UpdateJobTestHelper
     update_found_ = true;
   }
 
-  // ServiceWorkerVersion::Listener overrides
+  // ServiceWorkerVersion::Observer overrides
   void OnVersionStateChanged(ServiceWorkerVersion* version) override {
     StateChangeLogEntry entry;
     entry.version_id = version->version_id();

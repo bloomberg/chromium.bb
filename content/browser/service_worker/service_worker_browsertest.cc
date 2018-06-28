@@ -2586,8 +2586,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerBrowserTest, ImportsBustMemcache) {
   EXPECT_EQ(kExpectedNumResources, num_resources);
 }
 
-// A listener that waits for the version to stop.
-class StopObserver : public ServiceWorkerVersion::Listener {
+// An observer that waits for the version to stop.
+class StopObserver : public ServiceWorkerVersion::Observer {
  public:
   explicit StopObserver(const base::Closure& quit_closure)
       : quit_closure_(quit_closure) {}
@@ -2612,14 +2612,14 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, RendererCrash) {
   // Crash the renderer process. The version should stop.
   base::RunLoop run_loop;
   StopObserver observer(run_loop.QuitClosure());
-  RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::AddListener,
+  RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::AddObserver,
                                base::Unretained(version_.get()), &observer));
   shell()->web_contents()->GetMainFrame()->GetProcess()->Shutdown(
       content::RESULT_CODE_KILLED);
   run_loop.Run();
 
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
-  RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::RemoveListener,
+  RunOnIOThread(base::BindOnce(&ServiceWorkerVersion::RemoveObserver,
                                base::Unretained(version_.get()), &observer));
 }
 
@@ -2783,7 +2783,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerSitePerProcessTest,
 
 class ServiceWorkerVersionBrowserV8CacheTest
     : public ServiceWorkerVersionBrowserTest,
-      public ServiceWorkerVersion::Listener {
+      public ServiceWorkerVersion::Observer {
  public:
   using self = ServiceWorkerVersionBrowserV8CacheTest;
   ServiceWorkerVersionBrowserV8CacheTest() {
@@ -2792,18 +2792,18 @@ class ServiceWorkerVersionBrowserV8CacheTest
   }
   ~ServiceWorkerVersionBrowserV8CacheTest() override {
     if (version_)
-      version_->RemoveListener(this);
+      version_->RemoveObserver(this);
   }
   void SetUpCommandLine(base::CommandLine* command_line) override {
     command_line->AppendSwitchASCII(switches::kV8CacheOptions, "code");
   }
   void SetUpRegistrationAndListenerOnIOThread(const std::string& worker_url) {
     SetUpRegistrationOnIOThread(worker_url);
-    version_->AddListener(this);
+    version_->AddObserver(this);
   }
 
  protected:
-  // ServiceWorkerVersion::Listener overrides
+  // ServiceWorkerVersion::Observer overrides
   void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
                                size_t size) override {
     metadata_size_ = size;
@@ -2861,7 +2861,7 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserV8CacheTest, Restart) {
 
 class ServiceWorkerVersionBrowserV8FullCodeCacheTest
     : public ServiceWorkerVersionBrowserTest,
-      public ServiceWorkerVersion::Listener {
+      public ServiceWorkerVersion::Observer {
  public:
   using self = ServiceWorkerVersionBrowserV8FullCodeCacheTest;
   ServiceWorkerVersionBrowserV8FullCodeCacheTest() {
@@ -2870,15 +2870,15 @@ class ServiceWorkerVersionBrowserV8FullCodeCacheTest
   }
   ~ServiceWorkerVersionBrowserV8FullCodeCacheTest() override {
     if (version_)
-      version_->RemoveListener(this);
+      version_->RemoveObserver(this);
   }
   void SetUpRegistrationAndListenerOnIOThread(const std::string& worker_url) {
     SetUpRegistrationOnIOThread(worker_url);
-    version_->AddListener(this);
+    version_->AddObserver(this);
   }
 
  protected:
-  // ServiceWorkerVersion::Listener overrides
+  // ServiceWorkerVersion::Observer overrides
   void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
                                size_t size) override {
     metadata_size_ = size;

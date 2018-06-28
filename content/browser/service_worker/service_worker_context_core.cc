@@ -318,7 +318,7 @@ ServiceWorkerContextCore::ServiceWorkerContextCore(
 ServiceWorkerContextCore::~ServiceWorkerContextCore() {
   DCHECK(storage_);
   for (const auto& it : live_versions_)
-    it.second->RemoveListener(this);
+    it.second->RemoveObserver(this);
   weak_factory_.InvalidateWeakPtrs();
 }
 
@@ -599,7 +599,7 @@ void ServiceWorkerContextCore::AddLiveVersion(ServiceWorkerVersion* version) {
   // the version ID conflict. Otherwise change CHECK to DCHECK.
   CHECK(!GetLiveVersion(version->version_id()));
   live_versions_[version->version_id()] = version;
-  version->AddListener(this);
+  version->AddObserver(this);
   ServiceWorkerVersionInfo version_info = version->GetInfo();
   observer_list_->Notify(FROM_HERE,
                          &ServiceWorkerContextCoreObserver::OnNewLiveVersion,

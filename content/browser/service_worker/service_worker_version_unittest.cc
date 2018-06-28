@@ -117,7 +117,7 @@ void StartWorker(ServiceWorkerVersion* version,
 
 class ServiceWorkerVersionTest : public testing::Test {
  protected:
-  struct RunningStateListener : public ServiceWorkerVersion::Listener {
+  struct RunningStateListener : public ServiceWorkerVersion::Observer {
     RunningStateListener() : last_status(EmbeddedWorkerStatus::STOPPED) {}
     ~RunningStateListener() override {}
     void OnRunningStateChanged(ServiceWorkerVersion* version) override {
@@ -126,7 +126,7 @@ class ServiceWorkerVersionTest : public testing::Test {
     EmbeddedWorkerStatus last_status;
   };
 
-  struct CachedMetadataUpdateListener : public ServiceWorkerVersion::Listener {
+  struct CachedMetadataUpdateListener : public ServiceWorkerVersion::Observer {
     CachedMetadataUpdateListener() = default;
     ~CachedMetadataUpdateListener() override = default;
     void OnCachedMetadataUpdated(ServiceWorkerVersion* version,
@@ -656,7 +656,7 @@ TEST_F(ServiceWorkerVersionTest, SetDevToolsAttached) {
 
 TEST_F(ServiceWorkerVersionTest, StoppingBeforeDestruct) {
   RunningStateListener listener;
-  version_->AddListener(&listener);
+  version_->AddObserver(&listener);
   StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, listener.last_status);
 
@@ -771,7 +771,7 @@ TEST_F(ServiceWorkerVersionTest, StaleUpdate_DoNotDeferTimer) {
 
 TEST_F(ServiceWorkerVersionTest, UpdateCachedMetadata) {
   CachedMetadataUpdateListener listener;
-  version_->AddListener(&listener);
+  version_->AddObserver(&listener);
   ASSERT_EQ(0, listener.updated_count);
   StartWorker(version_.get(), ServiceWorkerMetrics::EventType::UNKNOWN);
 
@@ -790,7 +790,7 @@ TEST_F(ServiceWorkerVersionTest, UpdateCachedMetadata) {
       version_->script_url());
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(2, listener.updated_count);
-  version_->RemoveListener(&listener);
+  version_->RemoveObserver(&listener);
 }
 
 TEST_F(ServiceWorkerVersionTest, RestartWorker) {

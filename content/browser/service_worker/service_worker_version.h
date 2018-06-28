@@ -142,7 +142,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
     DOES_NOT_EXIST,
   };
 
-  class Listener {
+  class Observer {
    public:
     virtual void OnRunningStateChanged(ServiceWorkerVersion* version) {}
     virtual void OnVersionStateChanged(ServiceWorkerVersion* version) {}
@@ -171,7 +171,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
                                          size_t size) {}
 
    protected:
-    virtual ~Listener() {}
+    virtual ~Observer() {}
   };
 
   ServiceWorkerVersion(ServiceWorkerRegistration* registration,
@@ -372,14 +372,14 @@ class CONTENT_EXPORT ServiceWorkerVersion
   void OnStreamResponseStarted();
   void OnStreamResponseFinished();
 
-  // Adds and removes Listeners.
-  void AddListener(Listener* listener);
-  void RemoveListener(Listener* listener);
+  // Adds and removes Observers.
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
 
   ServiceWorkerScriptCacheMap* script_cache_map() { return &script_cache_map_; }
   EmbeddedWorkerInstance* embedded_worker() { return embedded_worker_.get(); }
 
-  // Reports the error message to |listeners_|.
+  // Reports the error message to |observers_|.
   void ReportError(blink::ServiceWorkerStatusCode status,
                    const std::string& status_message);
 
@@ -801,7 +801,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
   std::map<std::string, ServiceWorkerProviderHost*> controllee_map_;
   // Will be null while shutting down.
   base::WeakPtr<ServiceWorkerContextCore> context_;
-  base::ObserverList<Listener> listeners_;
+  base::ObserverList<Observer> observers_;
   ServiceWorkerScriptCacheMap script_cache_map_;
   base::OneShotTimer update_timer_;
 
