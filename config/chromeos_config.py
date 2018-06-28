@@ -2518,6 +2518,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'nyan_big',
       'nyan_kitty',
       'oak',
+      'octopus',
       'panther',
       'peach_pit',
       'peppy',
@@ -2560,7 +2561,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
       'nocturne', # contact:moragues@
-      'octopus',
       'tael',
       'atlas',
   ])
