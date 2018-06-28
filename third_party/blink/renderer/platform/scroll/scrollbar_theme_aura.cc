@@ -30,9 +30,12 @@
 
 #include "third_party/blink/renderer/platform/scroll/scrollbar_theme_aura.h"
 
+#include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_theme_engine.h"
+#include "third_party/blink/renderer/platform/geometry/int_rect_outsets.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 #include "third_party/blink/renderer/platform/layout_test_support.h"
@@ -325,6 +328,58 @@ ScrollbarPart ScrollbarThemeAura::InvalidateOnThumbPositionChange(
       invalid_parts = static_cast<ScrollbarPart>(invalid_parts | part);
   }
   return invalid_parts;
+}
+
+bool ScrollbarThemeAura::ShouldCenterOnThumb(const Scrollbar& scrollbar,
+                                             const WebMouseEvent& event) {
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  if (event.button == WebPointerProperties::Button::kMiddle)
+    return true;
+#endif
+  bool shift_key_pressed = event.GetModifiers() & WebInputEvent::kShiftKey;
+  return (event.button == WebPointerProperties::Button::kLeft) &&
+         shift_key_pressed;
+}
+
+bool ScrollbarThemeAura::ShouldSnapBackToDragOrigin(
+    const Scrollbar& scrollbar,
+    const WebMouseEvent& event) {
+// Disable snapback on desktop Linux to better integrate with the desktop
+// behavior.  Typically, Linux apps do not implement scrollbar snapback (this is
+// true for at least GTK and QT apps).
+#if (defined(OS_LINUX) && !defined(OS_CHROMEOS))
+  return false;
+#endif
+
+  // Constants used to figure the drag rect outside which we should snap the
+  // scrollbar thumb back to its origin. These calculations are based on
+  // observing the behavior of the MSVC8 main window scrollbar + some
+  // guessing/extrapolation.
+  static const int kOffEndMultiplier = 3;
+  static const int kOffSideMultiplier = 8;
+  static const int kDefaultWinScrollbarThickness = 17;
+
+  // Find the rect within which we shouldn't snap, by expanding the track rect
+  // in both dimensions.
+  IntRect no_snap_rect(TrackRect(scrollbar));
+  bool is_horizontal = scrollbar.Orientation() == kHorizontalScrollbar;
+  int thickness = is_horizontal ? no_snap_rect.Height() : no_snap_rect.Width();
+  // Even if the platform's scrollbar is narrower than the default Windows one,
+  // we still want to provide at least as much slop area, since a slightly
+  // narrower scrollbar doesn't necessarily imply that users will drag
+  // straighter.
+  thickness = std::max(thickness, kDefaultWinScrollbarThickness);
+  int width_outset =
+      (is_horizontal ? kOffEndMultiplier : kOffSideMultiplier) * thickness;
+  int height_outset =
+      (is_horizontal ? kOffSideMultiplier : kOffEndMultiplier) * thickness;
+  no_snap_rect.Expand(
+      IntRectOutsets(height_outset, width_outset, height_outset, width_outset));
+
+  IntPoint mouse_position = scrollbar.ConvertFromRootFrame(
+      FlooredIntPoint(event.PositionInRootFrame()));
+  mouse_position.Move(scrollbar.X(), scrollbar.Y());
+  return !no_snap_rect.Contains(mouse_position);
 }
 
 bool ScrollbarThemeAura::HasScrollbarButtons(

@@ -121,7 +121,6 @@
 #if defined(OS_MACOSX)
 #include "content/child/child_process_sandbox_support_impl_mac.h"
 #include "content/common/mac/font_loader.h"
-#include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #endif
 
@@ -137,13 +136,6 @@
 #include "third_party/blink/public/platform/linux/web_sandbox_support.h"
 #include "third_party/icu/source/common/unicode/utf16.h"
 #endif
-#endif
-
-#if defined(USE_AURA)
-#include "content/renderer/webscrollbarbehavior_impl_aura.h"
-#elif !defined(OS_MACOSX)
-#include "third_party/blink/public/platform/web_scrollbar_behavior.h"
-#define WebScrollbarBehaviorImpl blink::WebScrollbarBehavior
 #endif
 
 #include "content/renderer/media/webrtc/peer_connection_dependency_factory.h"
@@ -255,7 +247,6 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
       sudden_termination_disables_(0),
       is_locked_to_site_(false),
       default_task_runner_(main_thread_scheduler->DefaultTaskRunner()),
-      web_scrollbar_behavior_(new WebScrollbarBehaviorImpl),
       main_thread_scheduler_(main_thread_scheduler) {
 #if !defined(OS_ANDROID) && !defined(OS_WIN) && !defined(OS_FUCHSIA)
   if (g_sandbox_enabled && sandboxEnabled()) {
@@ -773,12 +764,6 @@ RendererBlinkPlatformImpl::CreateMIDIAccessor(
 
 blink::WebPublicSuffixList* RendererBlinkPlatformImpl::PublicSuffixList() {
   return &public_suffix_list_;
-}
-
-//------------------------------------------------------------------------------
-
-blink::WebScrollbarBehavior* RendererBlinkPlatformImpl::ScrollbarBehavior() {
-  return web_scrollbar_behavior_.get();
 }
 
 //------------------------------------------------------------------------------

@@ -47,7 +47,8 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
                           float autoscroll_button_delay,
                           NSScrollerStyle preferred_scroller_style,
                           bool redraw,
-                          WebScrollbarButtonsPlacement);
+                          WebScrollbarButtonsPlacement,
+                          bool jump_on_track_click);
 
   bool SupportsControlTints() const override { return true; }
 
@@ -63,6 +64,8 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   void PaintTickmarks(GraphicsContext&,
                       const Scrollbar&,
                       const IntRect&) override;
+
+  bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&) override;
 
   bool ShouldRepaintAllPartsOnInvalidation() const override { return false; }
   ScrollbarPart InvalidateOnThumbPositionChange(
@@ -95,6 +98,7 @@ class PLATFORM_EXPORT ScrollbarThemeMac : public ScrollbarTheme {
   float ThumbOpacity(const Scrollbar&) const override;
 
   static NSScrollerStyle RecommendedScrollerStyle();
+  static void SetJumpOnTrackClick(bool);
 
  protected:
   int MaxOverlapBetweenPages() override { return 40; }

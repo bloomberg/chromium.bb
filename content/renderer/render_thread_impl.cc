@@ -180,7 +180,6 @@
 #if defined(OS_MACOSX)
 #include "base/mac/mac_util.h"
 #include "content/renderer/theme_helper_mac.h"
-#include "content/renderer/webscrollbarbehavior_impl_mac.h"
 #endif
 
 #if defined(OS_WIN)
@@ -2261,14 +2260,10 @@ void RenderThreadImpl::SetUserAgent(const std::string& user_agent) {
 void RenderThreadImpl::UpdateScrollbarTheme(
     mojom::UpdateScrollbarThemeParamsPtr params) {
 #if defined(OS_MACOSX)
-  static_cast<WebScrollbarBehaviorImpl*>(
-      blink_platform_impl_->ScrollbarBehavior())
-      ->set_jump_on_track_click(params->jump_on_track_click);
-
   blink::WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
       params->initial_button_delay, params->autoscroll_button_delay,
       params->preferred_scroller_style, params->redraw,
-      params->button_placement);
+      params->button_placement, params->jump_on_track_click);
 
   is_elastic_overscroll_enabled_ = params->scroll_view_rubber_banding;
 #else

@@ -118,7 +118,6 @@ class WebRTCCertificateGenerator;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 class WebSandboxSupport;
-class WebScrollbarBehavior;
 class WebSecurityOrigin;
 class WebSocketHandshakeThrottle;
 class WebSpeechSynthesizer;
@@ -419,11 +418,6 @@ class BLINK_PLATFORM_EXPORT Platform {
                                    size_t data_size) {
     return false;
   }
-
-  // Scrollbar ----------------------------------------------------------
-
-  // Must return non-null.
-  virtual WebScrollbarBehavior* ScrollbarBehavior() { return nullptr; }
 
   // Process lifetime management -----------------------------------------
 

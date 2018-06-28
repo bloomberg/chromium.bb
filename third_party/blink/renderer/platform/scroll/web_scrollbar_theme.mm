@@ -49,7 +49,8 @@ void WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
     float autoscroll_button_delay,
     ScrollerStyle preferred_scroller_style,
     bool redraw,
-    WebScrollbarButtonsPlacement button_placement) {
+    WebScrollbarButtonsPlacement button_placement,
+    bool jump_on_track_click) {
   ScrollbarTheme& theme = ScrollbarTheme::DeprecatedStaticGetTheme();
   if (theme.IsMockTheme())
     return;
@@ -57,7 +58,7 @@ void WebScrollbarTheme::UpdateScrollbarsWithNSDefaults(
   static_cast<ScrollbarThemeMac&>(theme).PreferencesChanged(
       initial_button_delay, autoscroll_button_delay,
       static_cast<NSScrollerStyle>(preferred_scroller_style), redraw,
-      button_placement);
+      button_placement, jump_on_track_click);
 }
 
 }  // namespace blink

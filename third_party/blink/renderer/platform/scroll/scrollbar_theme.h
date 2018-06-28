@@ -101,9 +101,13 @@ class PLATFORM_EXPORT ScrollbarTheme {
                               const Scrollbar&,
                               const IntRect&);
 
-  virtual bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&);
+  virtual bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&) {
+    return false;
+  }
   virtual bool ShouldSnapBackToDragOrigin(const Scrollbar&,
-                                          const WebMouseEvent&);
+                                          const WebMouseEvent&) {
+    return false;
+  }
   virtual bool ShouldDragDocumentInsteadOfThumb(const Scrollbar&,
                                                 const WebMouseEvent&) {
     return false;

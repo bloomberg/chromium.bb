@@ -31,7 +31,6 @@
 #include "third_party/blink/public/platform/web_mouse_event.h"
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/public/platform/web_rect.h"
-#include "third_party/blink/public/platform/web_scrollbar_behavior.h"
 #include "third_party/blink/renderer/platform/graphics/color.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_context_state_saver.h"
@@ -209,13 +208,6 @@ void ScrollbarTheme::PaintScrollCorner(
 #endif
 }
 
-bool ScrollbarTheme::ShouldCenterOnThumb(const Scrollbar& scrollbar,
-                                         const WebMouseEvent& evt) {
-  return Platform::Current()->ScrollbarBehavior()->ShouldCenterOnThumb(
-      evt.button, evt.GetModifiers() & WebInputEvent::kShiftKey,
-      evt.GetModifiers() & WebInputEvent::kAltKey);
-}
-
 void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
                                     const Scrollbar& scrollbar,
                                     const IntRect& rect) {
@@ -258,16 +250,6 @@ void ScrollbarTheme::PaintTickmarks(GraphicsContext& context,
     context.FillRect(tick_stroke, Color(0xFF, 0xDD, 0x00, 0xFF));
   }
 #endif
-}
-
-bool ScrollbarTheme::ShouldSnapBackToDragOrigin(const Scrollbar& scrollbar,
-                                                const WebMouseEvent& evt) {
-  IntPoint mouse_position = scrollbar.ConvertFromRootFrame(
-      FlooredIntPoint(evt.PositionInRootFrame()));
-  mouse_position.Move(scrollbar.X(), scrollbar.Y());
-  return Platform::Current()->ScrollbarBehavior()->ShouldSnapBackToDragOrigin(
-      mouse_position, TrackRect(scrollbar),
-      scrollbar.Orientation() == kHorizontalScrollbar);
 }
 
 double ScrollbarTheme::OverlayScrollbarFadeOutDelaySeconds() const {

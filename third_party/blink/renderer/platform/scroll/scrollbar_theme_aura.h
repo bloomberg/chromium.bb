@@ -72,6 +72,10 @@ class PLATFORM_EXPORT ScrollbarThemeAura : public ScrollbarTheme {
       float old_position,
       float new_position) const override;
 
+  bool ShouldCenterOnThumb(const Scrollbar&, const WebMouseEvent&) override;
+  bool ShouldSnapBackToDragOrigin(const Scrollbar&,
+                                  const WebMouseEvent&) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeHorizontal);
   FRIEND_TEST_ALL_PREFIXES(ScrollbarThemeAuraTest, ButtonSizeVertical);
