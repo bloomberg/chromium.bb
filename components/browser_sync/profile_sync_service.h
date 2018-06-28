@@ -383,14 +383,6 @@ class ProfileSyncService : public syncer::SyncService,
     return crypto_->passphrase_required_reason();
   }
 
-  // Returns true if sync is requested to be running by the user.
-  // Note that this does not mean that sync WILL be running; e.g. if
-  // IsSyncAllowed() is false then sync won't start, and if the user
-  // doesn't confirm their settings (IsFirstSetupComplete), sync will
-  // never become active. Use IsSyncActive to see if sync is running.
-  // DEPRECATED! Use GetDisableReasons instead.
-  virtual bool IsSyncRequested() const;
-
   // Record stats on various events.
   static void SyncEvent(SyncEventCodes code);
 

@@ -142,7 +142,9 @@ jboolean ProfileSyncServiceAndroid::IsSyncRequested(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->IsSyncRequested();
+  // Sync is considered requested if it's not explicitly disabled by the user.
+  return !sync_service_->HasDisableReason(
+      syncer::SyncService::DISABLE_REASON_USER_CHOICE);
 }
 
 void ProfileSyncServiceAndroid::RequestStart(JNIEnv* env,
