@@ -25,6 +25,11 @@ class URLRequest;
 class URLRequestJob;
 }
 
+namespace network {
+struct ResourceRequest;
+class TestURLLoaderFactory;
+}  // namespace network
+
 namespace policy {
 
 // Intercepts all requests to the given hostname while in scope, and allows
@@ -64,15 +69,17 @@ class TestRequestInterceptor {
   // "404 Not Found").
   static JobCallback HttpErrorJob(std::string error);
 
-  // Returns a JobCallback that will process a policy register request that
-  // should succeed. The request parameters are validated, and an appropriate
-  // response is sent back.
+  // Process a policy register request that should succeed. The request
+  // parameters are validated, and an appropriate response is registered with
+  // |factory|.
   // |expected_type| is the expected type in the register request.
   // If |expect_reregister| is true then the request must have the reregister
   // flag set; otherwise the flag must be not set.
-  static JobCallback RegisterJob(
+  static void RespondToRegisterWithSuccess(
       enterprise_management::DeviceRegisterRequest::Type expected_type,
-      bool expect_reregister);
+      bool expect_reregister,
+      const network::ResourceRequest& request,
+      network::TestURLLoaderFactory* factory);
 
   // Returns a JobCallback that will send the contents of |file_path|.
   static JobCallback FileJob(const base::FilePath& file_path);

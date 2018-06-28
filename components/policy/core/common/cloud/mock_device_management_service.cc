@@ -7,7 +7,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "net/base/net_errors.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 using testing::Action;
 

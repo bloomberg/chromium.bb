@@ -11,11 +11,10 @@
 #include "base/macros.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "net/http/http_status_code.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace network {
-
-class ResourceRequestBody;
 
 // A helper class to ease testing code that uses URLLoader interface. A test
 // would pass this factory instead of the production factory to code, and
@@ -28,10 +27,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     PendingRequest(PendingRequest&& other);
     PendingRequest& operator=(PendingRequest&& other);
 
-    GURL url;
-    int load_flags;
     mojom::URLLoaderClientPtr client;
-    scoped_refptr<ResourceRequestBody> request_body;
+    ResourceRequest request;
   };
 
   TestURLLoaderFactory();
@@ -82,6 +79,9 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   static void SimulateResponse(PendingRequest request,
                                std::string content,
                                int net_error = net::OK);
+
+  static ResourceResponseHead CreateResourceResponseHead(
+      net::HttpStatusCode http_status);
 
   // mojom::URLLoaderFactory implementation.
   void CreateLoaderAndStart(mojom::URLLoaderRequest request,

@@ -24,8 +24,8 @@
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "crypto/sha2.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -87,17 +87,18 @@ class AutoEnrollmentClientImplTest
     auto progress_callback =
         base::BindRepeating(&AutoEnrollmentClientImplTest::ProgressCallback,
                             base::Unretained(this));
-    auto* url_request_context_getter = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
+    shared_url_loader_factory_ =
+        base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+            &url_loader_factory_);
     if (GetParam() == AutoEnrollmentProtocol::kFRE) {
       client_ = AutoEnrollmentClientImpl::FactoryImpl().CreateForFRE(
           progress_callback, service_.get(), local_state_,
-          url_request_context_getter, kStateKey, power_initial, power_limit);
+          shared_url_loader_factory_, kStateKey, power_initial, power_limit);
     } else {
       client_ =
           AutoEnrollmentClientImpl::FactoryImpl().CreateForInitialEnrollment(
               progress_callback, service_.get(), local_state_,
-              url_request_context_getter, kSerialNumber, kBrandCode,
+              shared_url_loader_factory_, kSerialNumber, kBrandCode,
               power_initial, power_limit,
               kInitialEnrollmentModulusPowerOutdatedServer);
     }
@@ -296,6 +297,8 @@ class AutoEnrollmentClientImplTest
   AutoEnrollmentState state_;
 
  private:
+  network::TestURLLoaderFactory url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::unique_ptr<AutoEnrollmentClient> client_;
   DISALLOW_COPY_AND_ASSIGN(AutoEnrollmentClientImplTest);
 };

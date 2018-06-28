@@ -19,9 +19,8 @@
 #include "net/base/net_errors.h"
 #include "net/http/http_response_headers.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -32,10 +31,10 @@ namespace {
 
 const char kPostContentType[] = "application/protobuf";
 
-const char kServiceTokenAuthHeader[] = "Authorization: GoogleLogin auth=";
-const char kDMTokenAuthHeader[] = "Authorization: GoogleDMToken token=";
-const char kEnrollmentTokenAuthHeader[] =
-    "Authorization: GoogleEnrollmentToken token=";
+const char kAuthHeader[] = "Authorization";
+const char kServiceTokenAuthHeaderPrefix[] = "GoogleLogin auth=";
+const char kDMTokenAuthHeaderPrefix[] = "GoogleDMToken token=";
+const char kEnrollmentTokenAuthHeaderPrefix[] = "GoogleEnrollmentToken token=";
 
 // Number of times to retry on ERR_NETWORK_CHANGED errors.
 const int kMaxRetries = 3;
@@ -64,8 +63,8 @@ const int kArcDisabled = 904;
 // timeouts.
 long g_retry_delay_ms = 10000;
 
-bool IsProxyError(const net::URLRequestStatus status) {
-  switch (status.error()) {
+bool IsProxyError(int net_error) {
+  switch (net_error) {
     case net::ERR_PROXY_CONNECTION_FAILED:
     case net::ERR_TUNNEL_CONNECTION_FAILED:
     case net::ERR_PROXY_AUTH_UNSUPPORTED:
@@ -79,8 +78,8 @@ bool IsProxyError(const net::URLRequestStatus status) {
   return false;
 }
 
-bool IsConnectionError(const net::URLRequestStatus status) {
-  switch (status.error()) {
+bool IsConnectionError(int net_error) {
+  switch (net_error) {
     case net::ERR_NETWORK_CHANGED:
     case net::ERR_NAME_NOT_RESOLVED:
     case net::ERR_INTERNET_DISCONNECTED:
@@ -92,28 +91,21 @@ bool IsConnectionError(const net::URLRequestStatus status) {
   return false;
 }
 
-bool IsProtobufMimeType(const net::URLFetcher* fetcher) {
-  std::string mime_type;
-  return fetcher->GetResponseHeaders()->GetMimeType(&mime_type) &&
-         mime_type == "application/x-protobuffer";
+bool IsProtobufMimeType(const std::string& mime_type) {
+  return mime_type == "application/x-protobuffer";
 }
 
-bool FailedWithProxy(const net::URLFetcher* fetcher) {
-  if ((fetcher->GetLoadFlags() & net::LOAD_BYPASS_PROXY) != 0) {
-    // The request didn't use a proxy.
-    return false;
-  }
-
-  if (!fetcher->GetStatus().is_success() &&
-      IsProxyError(fetcher->GetStatus())) {
+bool FailedWithProxy(const std::string& mime_type,
+                     int response_code,
+                     int net_error,
+                     bool was_fetched_via_proxy) {
+  if (IsProxyError(net_error)) {
     LOG(WARNING) << "Proxy failed while contacting dmserver.";
     return true;
   }
 
-  if (fetcher->GetStatus().is_success() &&
-      fetcher->GetResponseCode() == kSuccess &&
-      fetcher->WasFetchedViaProxy() &&
-      !IsProtobufMimeType(fetcher)) {
+  if (net_error == net::OK && response_code == kSuccess &&
+      was_fetched_via_proxy && !IsProtobufMimeType(mime_type)) {
     // The proxy server can be misconfigured but pointing to an existing
     // server that replies to requests. Try to recover if a successful
     // request that went through a proxy returns an unexpected mime type.
@@ -184,19 +176,22 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
       const std::string& agent_parameter,
       const std::string& platform_parameter,
       DeviceManagementService* service,
-      const scoped_refptr<net::URLRequestContextGetter>& request_context);
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~DeviceManagementRequestJobImpl() override;
 
   // Handles the URL request response.
-  void HandleResponse(const net::URLRequestStatus& status,
+  void HandleResponse(int net_error,
                       int response_code,
                       const std::string& data);
 
   // Gets the URL to contact.
   GURL GetURL(const std::string& server_url);
 
-  // Configures the fetcher, setting up payload and headers.
-  void ConfigureRequest(net::URLFetcher* fetcher);
+  // Configures the headers and flags.
+  void ConfigureRequest(network::ResourceRequest* resource_request);
+
+  // Attaches the payload.
+  void AddPayload(network::SimpleURLLoader* loader);
 
   enum RetryMethod {
     // No retry required for this request.
@@ -207,16 +202,21 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
     RETRY_WITH_DELAY
   };
 
-  // Returns if and how this job should be retried. |fetcher| has just
-  // completed, and can be inspected to determine if the request failed and
-  // should be retried.
-  RetryMethod ShouldRetry(const net::URLFetcher* fetcher);
+  // Returns if and how this job should be retried.
+  RetryMethod ShouldRetry(const std::string& mime_type,
+                          int response_code,
+                          int net_error,
+                          bool was_fetched_via_proxy);
 
   // Returns the delay before the next retry with the specified RetryMethod.
   int GetRetryDelay(RetryMethod method);
 
   // Invoked right before retrying this job.
   void PrepareRetry();
+
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory() {
+    return url_loader_factory_;
+  }
 
   // Get weak pointer
   base::WeakPtr<DeviceManagementRequestJobImpl> GetWeakPtr() {
@@ -243,8 +243,8 @@ class DeviceManagementRequestJobImpl : public DeviceManagementRequestJob {
   // The last error why we had to retry.
   int last_error_ = 0;
 
-  // The request context to use for this job.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // The URLLoaderFactory to use for this job.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Used to get notified if the job has been canceled while waiting for retry.
   base::WeakPtrFactory<DeviceManagementRequestJobImpl> weak_ptr_factory_;
@@ -273,12 +273,12 @@ DeviceManagementRequestJobImpl::DeviceManagementRequestJobImpl(
     const std::string& agent_parameter,
     const std::string& platform_parameter,
     DeviceManagementService* service,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : DeviceManagementRequestJob(type, agent_parameter, platform_parameter),
       service_(service),
       bypass_proxy_(false),
       retries_count_(0),
-      request_context_(request_context),
+      url_loader_factory_(url_loader_factory),
       weak_ptr_factory_(this) {}
 
 DeviceManagementRequestJobImpl::~DeviceManagementRequestJobImpl() {
@@ -289,18 +289,16 @@ void DeviceManagementRequestJobImpl::Run() {
   service_->AddJob(this);
 }
 
-void DeviceManagementRequestJobImpl::HandleResponse(
-    const net::URLRequestStatus& status,
-    int response_code,
-    const std::string& data) {
-  if (status.status() != net::URLRequestStatus::SUCCESS) {
+void DeviceManagementRequestJobImpl::HandleResponse(int net_error,
+                                                    int response_code,
+                                                    const std::string& data) {
+  if (net_error != net::OK) {
     UMA_HISTOGRAM_ENUMERATION("Enterprise.DMServerRequestSuccess",
                               DMServerRequestSuccess::REQUEST_FAILED,
                               DMServerRequestSuccess::REQUEST_MAX);
-    LOG(WARNING) << "DMServer request failed, status: " << status.status()
-                 << ", error: " << status.error();
+    LOG(WARNING) << "DMServer request failed, error: " << net_error;
     em::DeviceManagementResponse dummy_response;
-    callback_.Run(DM_STATUS_REQUEST_FAILED, status.error(), dummy_response);
+    callback_.Run(DM_STATUS_REQUEST_FAILED, net_error, dummy_response);
     return;
   }
 
@@ -405,31 +403,40 @@ GURL DeviceManagementRequestJobImpl::GetURL(
 }
 
 void DeviceManagementRequestJobImpl::ConfigureRequest(
-    net::URLFetcher* fetcher) {
-  // TODO(dcheng): It might make sense to make this take a const
-  // scoped_refptr<T>& too eventually.
-  fetcher->SetRequestContext(request_context_.get());
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                        net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DISABLE_CACHE |
-                        (bypass_proxy_ ? net::LOAD_BYPASS_PROXY : 0));
+    network::ResourceRequest* resource_request) {
+  resource_request->load_flags =
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
+      net::LOAD_DISABLE_CACHE | (bypass_proxy_ ? net::LOAD_BYPASS_PROXY : 0);
+  if (!gaia_token_.empty()) {
+    resource_request->headers.SetHeader(
+        kAuthHeader, std::string(kServiceTokenAuthHeaderPrefix) + gaia_token_);
+  }
+  if (!dm_token_.empty()) {
+    resource_request->headers.SetHeader(
+        kAuthHeader, std::string(kDMTokenAuthHeaderPrefix) + dm_token_);
+  }
+  if (!enrollment_token_.empty()) {
+    resource_request->headers.SetHeader(
+        kAuthHeader,
+        std::string(kEnrollmentTokenAuthHeaderPrefix) + enrollment_token_);
+  }
+}
+
+void DeviceManagementRequestJobImpl::AddPayload(
+    network::SimpleURLLoader* loader) {
   std::string payload;
   CHECK(request_.SerializeToString(&payload));
-  fetcher->SetUploadData(kPostContentType, payload);
-  std::string extra_headers;
-  if (!gaia_token_.empty())
-    extra_headers += kServiceTokenAuthHeader + gaia_token_ + "\n";
-  if (!dm_token_.empty())
-    extra_headers += kDMTokenAuthHeader + dm_token_ + "\n";
-  if (!enrollment_token_.empty())
-    extra_headers += kEnrollmentTokenAuthHeader + enrollment_token_ + "\n";
-  fetcher->SetExtraRequestHeaders(extra_headers);
+  loader->AttachStringForUpload(payload, kPostContentType);
 }
 
 DeviceManagementRequestJobImpl::RetryMethod
-DeviceManagementRequestJobImpl::ShouldRetry(const net::URLFetcher* fetcher) {
-  last_error_ = fetcher->GetStatus().error();
-  if (FailedWithProxy(fetcher) && !bypass_proxy_) {
+DeviceManagementRequestJobImpl::ShouldRetry(const std::string& mime_type,
+                                            int response_code,
+                                            int net_error,
+                                            bool was_fetched_via_proxy) {
+  last_error_ = net_error;
+  if (!bypass_proxy_ && FailedWithProxy(mime_type, response_code, net_error,
+                                        was_fetched_via_proxy)) {
     // Retry the job immediately if it failed due to a broken proxy, by
     // bypassing the proxy on the next try.
     bypass_proxy_ = true;
@@ -440,7 +447,7 @@ DeviceManagementRequestJobImpl::ShouldRetry(const net::URLFetcher* fetcher) {
   // often interrupted during ChromeOS startup when network is not yet ready.
   // Allowing the fetcher to retry once after that is enough to recover; allow
   // it to retry up to 3 times just in case.
-  if (IsConnectionError(fetcher->GetStatus()) && retries_count_ < kMaxRetries) {
+  if (IsConnectionError(net_error) && retries_count_ < kMaxRetries) {
     ++retries_count_;
     if (type_ == DeviceManagementRequestJob::TYPE_POLICY_FETCH) {
       // We must not delay when retrying policy fetch, because it is a blocking
@@ -536,9 +543,6 @@ void DeviceManagementRequestJob::AddParameter(const std::string& name,
   query_params_.push_back(std::make_pair(name, value));
 }
 
-// A random value that other fetchers won't likely use.
-const int DeviceManagementService::kURLFetcherID = 0xde71ce1d;
-
 DeviceManagementService::~DeviceManagementService() {
   // All running jobs should have been cancelled by now.
   DCHECK(pending_jobs_.empty());
@@ -547,15 +551,12 @@ DeviceManagementService::~DeviceManagementService() {
 
 DeviceManagementRequestJob* DeviceManagementService::CreateJob(
     DeviceManagementRequestJob::JobType type,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context) {
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   return new DeviceManagementRequestJobImpl(
-      type,
-      configuration_->GetAgentParameter(),
-      configuration_->GetPlatformParameter(),
-      this,
-      request_context);
+      type, configuration_->GetAgentParameter(),
+      configuration_->GetPlatformParameter(), this, url_loader_factory);
 }
 
 void DeviceManagementService::ScheduleInitialization(
@@ -641,17 +642,22 @@ void DeviceManagementService::StartJob(DeviceManagementRequestJobImpl* job) {
             }
           }
         })");
-  net::URLFetcher* fetcher =
-      net::URLFetcher::Create(kURLFetcherID, std::move(url),
-                              net::URLFetcher::POST, this, traffic_annotation)
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = std::move(url);
+  resource_request->method = "POST";
+  job->ConfigureRequest(resource_request.get());
+  network::SimpleURLLoader* fetcher =
+      network::SimpleURLLoader::Create(std::move(resource_request),
+                                       traffic_annotation)
           .release();
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      fetcher, data_use_measurement::DataUseUserData::POLICY);
-  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SAVE_COOKIES |
-                        net::LOAD_DO_NOT_SEND_COOKIES);
-  job->ConfigureRequest(fetcher);
+  job->AddPayload(fetcher);
+  fetcher->SetAllowHttpErrorResults(true);
+  fetcher->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      job->url_loader_factory().get(),
+      base::BindOnce(&DeviceManagementService::OnURLLoaderComplete,
+                     base::Unretained(this), fetcher));
+
   pending_jobs_[fetcher] = job;
-  fetcher->Start();
 }
 
 void DeviceManagementService::StartJobAfterDelay(
@@ -674,19 +680,46 @@ void DeviceManagementService::SetRetryDelayForTesting(long retry_delay_ms) {
   g_retry_delay_ms = retry_delay_ms;
 }
 
-void DeviceManagementService::OnURLFetchComplete(
-    const net::URLFetcher* source) {
-  JobFetcherMap::iterator entry(pending_jobs_.find(source));
+void DeviceManagementService::OnURLLoaderComplete(
+    network::SimpleURLLoader* url_loader,
+    std::unique_ptr<std::string> response_body) {
+  int response_code = 0;
+  bool was_fetched_via_proxy = false;
+  std::string mime_type;
+  if (url_loader->ResponseInfo()) {
+    was_fetched_via_proxy = url_loader->ResponseInfo()->was_fetched_via_proxy;
+    mime_type = url_loader->ResponseInfo()->mime_type;
+    if (url_loader->ResponseInfo()->headers)
+      response_code = url_loader->ResponseInfo()->headers->response_code();
+  }
+
+  std::string response_body_str;
+  if (response_body.get())
+    response_body_str = std::move(*response_body.get());
+
+  OnURLLoaderCompleteInternal(url_loader, response_body_str, mime_type,
+                              url_loader->NetError(), response_code,
+                              was_fetched_via_proxy);
+}
+
+void DeviceManagementService::OnURLLoaderCompleteInternal(
+    network::SimpleURLLoader* url_loader,
+    const std::string& response_body,
+    const std::string& mime_type,
+    int net_error,
+    int response_code,
+    bool was_fetched_via_proxy) {
+  JobFetcherMap::iterator entry(pending_jobs_.find(url_loader));
   if (entry == pending_jobs_.end()) {
-    NOTREACHED() << "Callback from foreign URL fetcher";
+    NOTREACHED() << "Callback from foreign URL loader";
     return;
   }
 
   DeviceManagementRequestJobImpl* job = entry->second;
   pending_jobs_.erase(entry);
 
-  DeviceManagementRequestJobImpl::RetryMethod retry_method =
-      job->ShouldRetry(source);
+  DeviceManagementRequestJobImpl::RetryMethod retry_method = job->ShouldRetry(
+      mime_type, response_code, net_error, was_fetched_via_proxy);
   if (retry_method != DeviceManagementRequestJobImpl::RetryMethod::NO_RETRY) {
     job->PrepareRetry();
     int delay = job->GetRetryDelay(retry_method);
@@ -698,11 +731,15 @@ void DeviceManagementService::OnURLFetchComplete(
                    weak_ptr_factory_.GetWeakPtr(), job->GetWeakPtr()),
         base::TimeDelta::FromMilliseconds(delay));
   } else {
-    std::string data;
-    source->GetResponseAsString(&data);
-    job->HandleResponse(source->GetStatus(), source->GetResponseCode(), data);
+    job->HandleResponse(net_error, response_code, response_body);
   }
-  delete source;
+  delete url_loader;
+}
+
+network::SimpleURLLoader*
+DeviceManagementService::GetSimpleURLLoaderForTesting() {
+  DCHECK_EQ(1u, pending_jobs_.size());
+  return const_cast<network::SimpleURLLoader*>(pending_jobs_.begin()->first);
 }
 
 void DeviceManagementService::AddJob(DeviceManagementRequestJobImpl* job) {

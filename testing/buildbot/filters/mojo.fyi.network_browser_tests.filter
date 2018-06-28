@@ -24,20 +24,11 @@
 # https://crbug.com/844950
 # https://crbug.com/844951
 # https://crbug.com/844952
--CloudPolicyManagerTest.Register
--CloudPolicyManagerTest.RegisterFailsWithRetries
--CloudPolicyManagerTest.RegisterWithRetry
--CloudPolicyTest.FetchPolicy
--CloudPolicyTest.InvalidatePolicy
 -ComponentCloudPolicyTest.FetchExtensionPolicy
 -ComponentCloudPolicyTest.InstallNewExtension
 -ComponentCloudPolicyTest.SignOutAndBackIn
 -ComponentCloudPolicyTest.UpdateExtensionPolicy
 -KeyRotationComponentCloudPolicyTest.Basic
--MachineLevelUserCloudPolicyEnrollmentTest.Test/2
--MachineLevelUserCloudPolicyEnrollmentTest.Test/3
--MachineLevelUserCloudPolicyServiceIntegrationTestInstance/MachineLevelUserCloudPolicyServiceIntegrationTest.ChromeDesktopReport/0
--MachineLevelUserCloudPolicyServiceIntegrationTestInstance/MachineLevelUserCloudPolicyServiceIntegrationTest.Registration/0
 
 # These tests uses net::URLRequestFilter (through TestRequestInterceptor) to
 # mock out network responses. Unclear if the code being tested uses
@@ -53,21 +44,6 @@
 -PolicyUpdateServiceTest.Backoff
 -PolicyUpdateServiceTest.FailedUpdateRetries
 -PolicyUpdateServiceTest.PolicyCorruptedOnStartup
-
-# components/policy/core/common/cloud/device_management_service.cc still uses URLFetcher.
-# https://crbug.com/844950
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.ApiAuthCodeFetch/0
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.ApiAuthCodeFetch/1
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.AppInstallReport/0
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.AppInstallReport/1
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.AutoEnrollment/0
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.AutoEnrollment/1
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.PolicyFetch/0
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.PolicyFetch/1
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Registration/0
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Registration/1
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Unregistration/0
--DeviceManagementServiceIntegrationTestInstance/DeviceManagementServiceIntegrationTest.Unregistration/1
 
 # Domain Reliability has yet to be hookup to the NetworkService.
 # https://crbug.com/853251

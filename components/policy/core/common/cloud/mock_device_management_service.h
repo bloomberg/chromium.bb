@@ -48,7 +48,7 @@ class MockDeviceManagementService : public DeviceManagementService {
 
   typedef DeviceManagementRequestJob* CreateJobFunction(
       DeviceManagementRequestJob::JobType,
-      const scoped_refptr<net::URLRequestContextGetter>&);
+      scoped_refptr<network::SharedURLLoaderFactory>);
 
   MOCK_METHOD2(CreateJob, CreateJobFunction);
   MOCK_METHOD6(

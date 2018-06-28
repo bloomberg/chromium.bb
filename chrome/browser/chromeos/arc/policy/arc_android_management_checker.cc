@@ -13,10 +13,12 @@
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace arc {
 
@@ -43,10 +45,12 @@ ArcAndroidManagementChecker::ArcAndroidManagementChecker(
       account_id_(account_id),
       retry_on_error_(retry_on_error),
       retry_delay_(kRetryDelayMin),
-      android_management_client_(GetDeviceManagementService(),
-                                 g_browser_process->system_request_context(),
-                                 account_id,
-                                 token_service),
+      android_management_client_(
+          GetDeviceManagementService(),
+          g_browser_process->system_network_context_manager()
+              ->GetSharedURLLoaderFactory(),
+          account_id,
+          token_service),
       weak_ptr_factory_(this) {}
 
 ArcAndroidManagementChecker::~ArcAndroidManagementChecker() {

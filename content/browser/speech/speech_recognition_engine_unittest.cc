@@ -500,7 +500,7 @@ void SpeechRecognitionEngineTest::TearDown() {
 const network::TestURLLoaderFactory::PendingRequest*
 SpeechRecognitionEngineTest::GetUpstreamRequest() {
   for (const auto& pending_request : *url_loader_factory_.pending_requests()) {
-    if (pending_request.url.spec().find("/up") != std::string::npos)
+    if (pending_request.request.url.spec().find("/up") != std::string::npos)
       return &pending_request;
   }
   return nullptr;
@@ -509,7 +509,7 @@ SpeechRecognitionEngineTest::GetUpstreamRequest() {
 const network::TestURLLoaderFactory::PendingRequest*
 SpeechRecognitionEngineTest::GetDownstreamRequest() {
   for (const auto& pending_request : *url_loader_factory_.pending_requests()) {
-    if (pending_request.url.spec().find("/down") != std::string::npos)
+    if (pending_request.request.url.spec().find("/down") != std::string::npos)
       return &pending_request;
   }
   return nullptr;
@@ -708,16 +708,17 @@ std::string SpeechRecognitionEngineTest::ConsumeChunkedUploadData() {
       const network::TestURLLoaderFactory::PendingRequest* upstream_request =
           GetUpstreamRequest();
       EXPECT_TRUE(upstream_request);
-      EXPECT_TRUE(upstream_request->request_body);
-      EXPECT_EQ(1u, upstream_request->request_body->elements()->size());
-      EXPECT_EQ(network::DataElement::TYPE_CHUNKED_DATA_PIPE,
-                (*upstream_request->request_body->elements())[0].type());
+      EXPECT_TRUE(upstream_request->request.request_body);
+      EXPECT_EQ(1u, upstream_request->request.request_body->elements()->size());
+      EXPECT_EQ(
+          network::DataElement::TYPE_CHUNKED_DATA_PIPE,
+          (*upstream_request->request.request_body->elements())[0].type());
       network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
           const_cast<network::TestURLLoaderFactory::PendingRequest*>(
               upstream_request);
-      chunked_data_pipe_getter_ =
-          (*mutable_upstream_request->request_body->elements_mutable())[0]
-              .ReleaseChunkedDataPipeGetter();
+      chunked_data_pipe_getter_ = (*mutable_upstream_request->request
+                                        .request_body->elements_mutable())[0]
+                                      .ReleaseChunkedDataPipeGetter();
     }
     mojo::DataPipe data_pipe;
     chunked_data_pipe_getter_->StartReading(

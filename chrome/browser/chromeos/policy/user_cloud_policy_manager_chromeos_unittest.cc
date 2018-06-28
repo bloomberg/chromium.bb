@@ -261,7 +261,8 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
   void SimulateOAuth2TokenResponse(const std::string& content) {
     GURL url = GaiaUrls::GetInstance()->oauth2_token_url();
     ASSERT_TRUE(test_url_loader_factory_.IsPending(url.spec()));
-    ASSERT_EQ(url, (*test_url_loader_factory_.pending_requests())[0].url);
+    ASSERT_EQ(url,
+              (*test_url_loader_factory_.pending_requests())[0].request.url);
 
     network::TestURLLoaderFactory::PendingRequest request =
         std::move((*test_url_loader_factory_.pending_requests())[0]);

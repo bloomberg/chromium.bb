@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client_impl.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/server_backed_state_keys_broker.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/cryptohome/rpc.pb.h"
 #include "chromeos/dbus/cryptohome_client.h"
@@ -24,7 +25,7 @@
 #include "chromeos/system/factory_ping_embargo_check.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace chromeos {
 
@@ -678,8 +679,9 @@ void AutoEnrollmentController::StartClientForFRE(
       base::BindRepeating(&AutoEnrollmentController::UpdateState,
                           weak_ptr_factory_.GetWeakPtr()),
       service, g_browser_process->local_state(),
-      g_browser_process->system_request_context(), state_keys.front(),
-      power_initial, power_limit);
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      state_keys.front(), power_initial, power_limit);
 
   VLOG(1) << "Starting auto-enrollment client for FRE.";
   client_->Start();
@@ -717,8 +719,9 @@ void AutoEnrollmentController::StartClientForInitialEnrollment() {
       base::BindRepeating(&AutoEnrollmentController::UpdateState,
                           weak_ptr_factory_.GetWeakPtr()),
       service, g_browser_process->local_state(),
-      g_browser_process->system_request_context(), serial_number,
-      rlz_brand_code, power_initial, power_limit,
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory(),
+      serial_number, rlz_brand_code, power_initial, power_limit,
       kInitialEnrollmentModulusPowerOutdatedServer);
 
   VLOG(1) << "Starting auto-enrollment client for Initial Enrollment.";

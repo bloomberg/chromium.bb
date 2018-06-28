@@ -160,9 +160,8 @@ void CloudPolicyClient::Register(em::DeviceRegisterRequest::Type type,
 
   SetClientId(client_id);
 
-  policy_fetch_request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_REGISTRATION,
-                          GetRequestContext()));
+  policy_fetch_request_job_.reset(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_REGISTRATION, GetURLLoaderFactory()));
   policy_fetch_request_job_->SetOAuthToken(auth_token);
   policy_fetch_request_job_->SetClientID(client_id_);
 
@@ -248,8 +247,9 @@ void CloudPolicyClient::RegisterWithToken(const std::string& token,
 
   SetClientId(client_id);
 
-  policy_fetch_request_job_.reset(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT, GetRequestContext()));
+  policy_fetch_request_job_.reset(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT,
+                          GetURLLoaderFactory()));
   policy_fetch_request_job_->SetEnrollmentToken(token);
   policy_fetch_request_job_->SetClientID(client_id_);
 
@@ -276,10 +276,9 @@ void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(bool success,
     return;
   }
 
-  policy_fetch_request_job_.reset(
-      service_->CreateJob(
-          DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION,
-          GetRequestContext()));
+  policy_fetch_request_job_.reset(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_CERT_BASED_REGISTRATION,
+      GetURLLoaderFactory()));
   policy_fetch_request_job_->SetClientID(client_id_);
   em::SignedData* signed_request = policy_fetch_request_job_->GetRequest()->
       mutable_certificate_based_register_request()->mutable_signed_request();
@@ -304,9 +303,8 @@ void CloudPolicyClient::FetchPolicy() {
   CHECK(is_registered());
   CHECK(!types_to_fetch_.empty());
 
-  policy_fetch_request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
-                          GetRequestContext()));
+  policy_fetch_request_job_.reset(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_POLICY_FETCH, GetURLLoaderFactory()));
   policy_fetch_request_job_->SetDMToken(dm_token_);
   policy_fetch_request_job_->SetClientID(client_id_);
   if (!public_key_version_valid_)
@@ -368,9 +366,9 @@ void CloudPolicyClient::FetchPolicy() {
 void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
   CHECK(is_registered());
 
-  policy_fetch_request_job_.reset(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
-      GetRequestContext()));
+  policy_fetch_request_job_.reset(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
+                          GetURLLoaderFactory()));
   policy_fetch_request_job_->SetOAuthToken(auth_token);
   policy_fetch_request_job_->SetDMToken(dm_token_);
   policy_fetch_request_job_->SetClientID(client_id_);
@@ -390,9 +388,8 @@ void CloudPolicyClient::FetchRobotAuthCodes(const std::string& auth_token) {
 
 void CloudPolicyClient::Unregister() {
   DCHECK(service_);
-  policy_fetch_request_job_.reset(
-      service_->CreateJob(DeviceManagementRequestJob::TYPE_UNREGISTRATION,
-                          GetRequestContext()));
+  policy_fetch_request_job_.reset(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_UNREGISTRATION, GetURLLoaderFactory()));
   policy_fetch_request_job_->SetDMToken(dm_token_);
   policy_fetch_request_job_->SetClientID(client_id_);
   policy_fetch_request_job_->GetRequest()->mutable_unregister_request();
@@ -423,7 +420,7 @@ void CloudPolicyClient::UploadEnterpriseEnrollmentId(
   CHECK(is_registered());
   std::unique_ptr<DeviceManagementRequestJob> request_job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE,
-                          GetRequestContext()));
+                          GetURLLoaderFactory()));
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
 
@@ -448,7 +445,7 @@ void CloudPolicyClient::UploadDeviceStatus(
   // Should pass in at least one type of status.
   DCHECK(device_status || session_status);
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_UPLOAD_STATUS, GetRequestContext()));
+      DeviceManagementRequestJob::TYPE_UPLOAD_STATUS, GetURLLoaderFactory()));
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
 
@@ -474,7 +471,7 @@ void CloudPolicyClient::UploadChromeDesktopReport(
   DCHECK(chrome_desktop_report);
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT,
-      GetRequestContext()));
+      GetURLLoaderFactory()));
 
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
@@ -499,7 +496,7 @@ void CloudPolicyClient::UploadAppInstallReport(
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_UPLOAD_APP_INSTALL_REPORT,
-      GetRequestContext()));
+      GetURLLoaderFactory()));
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
 
@@ -529,7 +526,7 @@ void CloudPolicyClient::FetchRemoteCommands(
     const RemoteCommandCallback& callback) {
   CHECK(is_registered());
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS, GetRequestContext()));
+      DeviceManagementRequestJob::TYPE_REMOTE_COMMANDS, GetURLLoaderFactory()));
 
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
@@ -559,7 +556,7 @@ void CloudPolicyClient::GetDeviceAttributeUpdatePermission(
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE_PERMISSION,
-      GetRequestContext()));
+      GetURLLoaderFactory()));
 
   request_job->SetOAuthToken(auth_token);
   request_job->SetClientID(client_id_);
@@ -583,8 +580,9 @@ void CloudPolicyClient::UpdateDeviceAttributes(
   CHECK(is_registered());
   DCHECK(!auth_token.empty());
 
-  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE, GetRequestContext()));
+  std::unique_ptr<DeviceManagementRequestJob> request_job(
+      service_->CreateJob(DeviceManagementRequestJob::TYPE_ATTRIBUTE_UPDATE,
+                          GetURLLoaderFactory()));
 
   request_job->SetOAuthToken(auth_token);
   request_job->SetClientID(client_id_);
@@ -610,7 +608,7 @@ void CloudPolicyClient::RequestAvailableLicenses(
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
       DeviceManagementRequestJob::TYPE_REQUEST_LICENSE_TYPES,
-      GetRequestContext()));
+      GetURLLoaderFactory()));
 
   request_job->SetOAuthToken(auth_token);
 
@@ -630,7 +628,7 @@ void CloudPolicyClient::UpdateGcmId(
   CHECK(is_registered());
 
   std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
-      DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE, GetRequestContext()));
+      DeviceManagementRequestJob::TYPE_GCM_ID_UPDATE, GetURLLoaderFactory()));
 
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
@@ -694,6 +692,11 @@ int CloudPolicyClient::GetActiveRequestCountForTest() const {
   return request_jobs_.size();
 }
 
+void CloudPolicyClient::SetURLLoaderFactoryForTesting(
+    scoped_refptr<network::SharedURLLoaderFactory> factory) {
+  url_loader_factory_ = factory;
+}
+
 void CloudPolicyClient::UploadCertificate(
     const std::string& certificate_data,
     em::DeviceCertUploadRequest::CertificateType certificate_type,
@@ -701,7 +704,7 @@ void CloudPolicyClient::UploadCertificate(
   CHECK(is_registered());
   std::unique_ptr<DeviceManagementRequestJob> request_job(
       service_->CreateJob(DeviceManagementRequestJob::TYPE_UPLOAD_CERTIFICATE,
-                          GetRequestContext()));
+                          GetURLLoaderFactory()));
   request_job->SetDMToken(dm_token_);
   request_job->SetClientID(client_id_);
 

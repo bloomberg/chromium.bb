@@ -14,8 +14,9 @@
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
 #include "chrome/browser/chromeos/policy/dm_token_storage.h"
 #include "chrome/browser/chromeos/settings/install_attributes.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -90,7 +91,8 @@ void ArcActiveDirectoryEnrollmentTokenFetcher::DoFetchEnrollmentToken() {
   fetch_request_job_.reset(
       service->CreateJob(policy::DeviceManagementRequestJob::
                              TYPE_ACTIVE_DIRECTORY_ENROLL_PLAY_USER,
-                         g_browser_process->system_request_context()));
+                         g_browser_process->system_network_context_manager()
+                             ->GetSharedURLLoaderFactory()));
 
   fetch_request_job_->SetDMToken(dm_token_);
   fetch_request_job_->SetClientID(GetClientId());
