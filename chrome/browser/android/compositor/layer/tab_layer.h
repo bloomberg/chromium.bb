@@ -93,8 +93,7 @@ class TabLayer : public Layer {
                      float toolbar_textbox_alpha,
                      float toolbar_alpha,
                      float toolbar_y_offset,
-                     float side_border_scale,
-                     bool inset_border);
+                     float side_border_scale);
 
   bool is_incognito() const { return incognito_; }
 
