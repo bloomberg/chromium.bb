@@ -342,6 +342,10 @@ URLLoader::URLLoader(
   url_request_->SetUserData(kUserDataKey,
                             std::make_unique<UnownedPointer>(this));
 
+  is_nocors_corb_excluded_request_ =
+      resource_type_ == factory_params_->corb_excluded_resource_type &&
+      request.fetch_request_mode == mojom::FetchRequestMode::kNoCORS;
+
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
@@ -610,8 +614,7 @@ void URLLoader::OnResponseStarted(net::URLRequest* url_request, int net_error) {
                  base::Unretained(this)));
 
   // Figure out if we need to sniff (for MIME type detection or for CORB).
-  if (factory_params_->is_corb_enabled &&
-      resource_type_ != factory_params_->corb_excluded_resource_type) {
+  if (factory_params_->is_corb_enabled && !is_nocors_corb_excluded_request_) {
     CrossOriginReadBlocking::LogAction(
         CrossOriginReadBlocking::Action::kResponseStarted);
 

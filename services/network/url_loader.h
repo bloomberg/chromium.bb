@@ -226,6 +226,11 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // encoded body size was reported to the client.
   int64_t reported_total_encoded_bytes_ = 0;
 
+  // Indicates whether this request was made by a CORB-excluded request type and
+  // was not using CORS. Such requests are exempt from blocking, while other
+  // CORB-excluded requests must be blocked if the CORS check fails.
+  bool is_nocors_corb_excluded_request_ = false;
+
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   mojom::SSLPrivateKeyPtr ssl_private_key_;

@@ -2073,4 +2073,74 @@ TEST_F(URLLoaderTest, HttpAuthResponseHeadersAvailable) {
   EXPECT_EQ(auth_required_headers->response_code(), 401);
 }
 
+// This simulates plugins without universal access, like PNaCl. These make
+// cross-origin fetches with CORS, and we expect CORB to block them.
+TEST_F(URLLoaderTest, CorbEffectiveWithCors) {
+  int kResourceType = 1;
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
+  request.resource_type = kResourceType;
+  request.fetch_request_mode = mojom::FetchRequestMode::kCORS;
+  request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.corb_excluded_resource_type = kResourceType;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilResponseBodyArrived();
+  std::string body = ReadBody();
+
+  client()->RunUntilComplete();
+
+  delete_run_loop.Run();
+
+  // Blocked because this is a cross-origin request made with a CORS request
+  // header, but without a valid CORS response header.
+  // params.corb_excluded_resource_type does not apply in that case.
+  ASSERT_EQ(std::string(), body);
+}
+
+// This simulates plugins with universal access, like Flash. These can make
+// cross-origin requests that are not subject to CORB.
+TEST_F(URLLoaderTest, CorbExcludedWithNoCors) {
+  int kResourceType = 1;
+  ResourceRequest request =
+      CreateResourceRequest("GET", test_server()->GetURL("/hello.html"));
+  request.resource_type = kResourceType;
+  request.fetch_request_mode = mojom::FetchRequestMode::kNoCORS;
+  request.request_initiator = url::Origin::Create(GURL("http://foo.com/"));
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  std::unique_ptr<URLLoader> url_loader;
+  mojom::URLLoaderFactoryParams params;
+  params.corb_excluded_resource_type = kResourceType;
+  url_loader = std::make_unique<URLLoader>(
+      context(), nullptr /* network_service_client */,
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  client()->RunUntilResponseBodyArrived();
+  std::string body = ReadBody();
+
+  client()->RunUntilComplete();
+
+  delete_run_loop.Run();
+
+  // The request body is allowed through because CORB isn't applied.
+  ASSERT_NE(std::string(), body);
+}
+
 }  // namespace network
