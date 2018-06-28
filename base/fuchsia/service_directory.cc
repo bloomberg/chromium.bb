@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/fuchsia/services_directory.h"
+#include "base/fuchsia/service_directory.h"
 
 #include <lib/async/default.h>
 #include <lib/svc/dir.h>
@@ -17,13 +17,13 @@
 namespace base {
 namespace fuchsia {
 
-ServicesDirectory::ServicesDirectory(zx::channel directory_request) {
+ServiceDirectory::ServiceDirectory(zx::channel directory_request) {
   zx_status_t status = svc_dir_create(async_get_default(),
                                       directory_request.release(), &svc_dir_);
   ZX_CHECK(status == ZX_OK, status);
 }
 
-ServicesDirectory::~ServicesDirectory() {
+ServiceDirectory::~ServiceDirectory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(services_.empty());
 
@@ -32,14 +32,14 @@ ServicesDirectory::~ServicesDirectory() {
 }
 
 // static
-ServicesDirectory* ServicesDirectory::GetDefault() {
-  static base::NoDestructor<ServicesDirectory> directory(
+ServiceDirectory* ServiceDirectory::GetDefault() {
+  static base::NoDestructor<ServiceDirectory> directory(
       zx::channel(zx_take_startup_handle(PA_DIRECTORY_REQUEST)));
   return directory.get();
 }
 
-void ServicesDirectory::AddService(StringPiece name,
-                                   ConnectServiceCallback connect_callback) {
+void ServiceDirectory::AddService(StringPiece name,
+                                  ConnectServiceCallback connect_callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(services_.find(name) == services_.end());
 
@@ -48,16 +48,16 @@ void ServicesDirectory::AddService(StringPiece name,
 
   zx_status_t status =
       svc_dir_add_service(svc_dir_, "public", name_str.c_str(), this,
-                          &ServicesDirectory::HandleConnectRequest);
+                          &ServiceDirectory::HandleConnectRequest);
   ZX_DCHECK(status == ZX_OK, status);
 
   // Publish to the legacy "flat" namespace, which is required by some clients.
   status = svc_dir_add_service(svc_dir_, nullptr, name_str.c_str(), this,
-                               &ServicesDirectory::HandleConnectRequest);
+                               &ServiceDirectory::HandleConnectRequest);
   ZX_DCHECK(status == ZX_OK, status);
 }
 
-void ServicesDirectory::RemoveService(StringPiece name) {
+void ServiceDirectory::RemoveService(StringPiece name) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   std::string name_str = name.as_string();
@@ -76,10 +76,10 @@ void ServicesDirectory::RemoveService(StringPiece name) {
 }
 
 // static
-void ServicesDirectory::HandleConnectRequest(void* context,
-                                             const char* service_name,
-                                             zx_handle_t service_request) {
-  auto* directory = reinterpret_cast<ServicesDirectory*>(context);
+void ServiceDirectory::HandleConnectRequest(void* context,
+                                            const char* service_name,
+                                            zx_handle_t service_request) {
+  auto* directory = reinterpret_cast<ServiceDirectory*>(context);
   DCHECK_CALLED_ON_VALID_THREAD(directory->thread_checker_);
 
   auto it = directory->services_.find(service_name);
