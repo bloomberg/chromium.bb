@@ -51,6 +51,8 @@ class TestNetworkQualityObserver
  public:
   explicit TestNetworkQualityObserver(NetworkQualityTracker* tracker)
       : num_notifications_(0),
+        run_loop_wait_effective_connection_type_(
+            net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN),
         run_loop_(std::make_unique<base::RunLoop>()),
         tracker_(tracker),
         effective_connection_type_(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN) {
@@ -81,6 +83,8 @@ class TestNetworkQualityObserver
       net::EffectiveConnectionType run_loop_wait_effective_connection_type) {
     if (effective_connection_type_ == run_loop_wait_effective_connection_type)
       return;
+    ASSERT_NE(net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN,
+              run_loop_wait_effective_connection_type);
     run_loop_wait_effective_connection_type_ =
         run_loop_wait_effective_connection_type;
     run_loop_->Run();
