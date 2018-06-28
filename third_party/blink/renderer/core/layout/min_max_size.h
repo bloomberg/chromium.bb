@@ -30,6 +30,7 @@ struct CORE_EXPORT MinMaxSize {
   }
 
   MinMaxSize& operator+=(const LayoutUnit);
+  MinMaxSize& operator-=(const LayoutUnit);
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const MinMaxSize&);

@@ -19,6 +19,15 @@ void NGBaseLayoutAlgorithmTest::SetUp() {
   EnableCompositing();
 }
 
+void NGBaseLayoutAlgorithmTest::AdvanceToLayoutPhase() {
+  if (GetDocument().Lifecycle().GetState() ==
+      DocumentLifecycle::kInPerformLayout)
+    return;
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInStyleRecalc);
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kStyleClean);
+  GetDocument().Lifecycle().AdvanceTo(DocumentLifecycle::kInPerformLayout);
+}
+
 std::pair<scoped_refptr<NGPhysicalBoxFragment>,
           scoped_refptr<NGConstraintSpace>>
 NGBaseLayoutAlgorithmTest::RunBlockLayoutAlgorithmForElement(Element* element) {

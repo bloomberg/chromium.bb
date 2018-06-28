@@ -337,6 +337,16 @@ MinMaxSize ComputeMinAndMaxContentContribution(
     NGLayoutInputNode node,
     const MinMaxSizeInput& input,
     const NGConstraintSpace* constraint_space) {
+  // Tables are special; even if a width is specified, they may end up being
+  // sized different. So we just always let the table code handle this.
+  // Replaced elements may size themselves using aspect ratios and block sizes,
+  // so we pass that on as well.
+  LayoutObject* layout_object = node.GetLayoutObject();
+  if (layout_object->IsTable() || layout_object->IsTablePart() ||
+      layout_object->IsLayoutReplaced()) {
+    LayoutBox* box = ToLayoutBox(layout_object);
+    return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
+  }
   base::Optional<MinMaxSize> minmax;
   if (NeedMinMaxSizeForContentContribution(writing_mode, node.Style())) {
     scoped_refptr<NGConstraintSpace> adjusted_constraint_space;

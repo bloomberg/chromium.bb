@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_floats_utils.h"
 
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_block_break_token.h"
@@ -221,6 +222,20 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
           style.GetWritingMode(), zero_input);
     }
     return ComputeInlineSizeForFragment(*space.get(), style, min_max_size);
+  }
+
+  // Here we need to lay out the float. However, it is possible that we are
+  // not inside Layout, in which case we may not be able to actually lay out
+  // the node. Instead, we have to fallback to legacy sizing.
+  if (!unpositioned_float->node.GetLayoutObject()
+           ->GetFrameView()
+           ->IsInPerformLayout()) {
+    LayoutObject* layout_object = unpositioned_float->node.GetLayoutObject();
+    SECURITY_DCHECK(layout_object->IsBox());
+    LayoutBox* box = ToLayoutBox(layout_object);
+    LayoutBox::LogicalExtentComputedValues values;
+    box->ComputeLogicalWidth(values);
+    return values.extent_;
   }
 
   // A float which has a different writing mode can't fragment, and we

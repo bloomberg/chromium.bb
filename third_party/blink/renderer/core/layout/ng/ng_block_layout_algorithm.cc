@@ -257,6 +257,10 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
           Style().GetWritingMode(), child, child_input,
           optional_constraint_space);
     }
+    // TODO(crbug.com/857185): The following DCHECK can't be enabled because
+    // tables keep hitting it.
+    // DCHECK_LE(child_sizes.min_size, child_sizes.max_size)
+    //     << child.ToString();
 
     // Determine the max inline contribution of the child.
     NGBoxStrut margins = ComputeMinMaxMargins(Style(), child);
@@ -323,7 +327,7 @@ base::Optional<MinMaxSize> NGBlockLayoutAlgorithm::ComputeMinMaxSize(
   }
 
   DCHECK_GE(sizes.min_size, LayoutUnit());
-  DCHECK_GE(sizes.max_size, sizes.min_size);
+  DCHECK_LE(sizes.min_size, sizes.max_size) << Node().ToString();
 
   sizes +=
       CalculateBorderScrollbarPadding(ConstraintSpace(), node_).InlineSum();

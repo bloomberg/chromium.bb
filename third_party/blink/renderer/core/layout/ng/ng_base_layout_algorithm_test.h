@@ -28,6 +28,10 @@ class NGBaseLayoutAlgorithmTest
  protected:
   void SetUp() override;
 
+  // Should be called before calling Layout(), if you're not using
+  // RunBlockLayoutAlgorithmForElement.
+  void AdvanceToLayoutPhase();
+
   std::pair<scoped_refptr<NGPhysicalBoxFragment>,
             scoped_refptr<NGConstraintSpace>>
   RunBlockLayoutAlgorithmForElement(Element* element);

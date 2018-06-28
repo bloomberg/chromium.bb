@@ -2019,6 +2019,8 @@ TEST_F(NGBlockLayoutAlgorithmTest, FloatFragmentationOrthogonalFlows) {
           NGLogicalSize(LayoutUnit(1000), NGSizeIndefinite), false, true,
           kFragmentainerSpaceAvailable);
 
+  AdvanceToLayoutPhase();
+
   scoped_refptr<const NGPhysicalFragment> fragment =
       NGBlockLayoutAlgorithm(node, *space).Layout()->PhysicalFragment();
   EXPECT_EQ(NGPhysicalSize(LayoutUnit(150), LayoutUnit(60)), fragment->Size());
