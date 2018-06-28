@@ -11,6 +11,8 @@ include_rules = [
   "+libxml",
   "+mojo",
   "+net",
+  "+services/network/public/cpp",
+  "+services/network/test",
   "+services/service_manager/public",
   "+third_party/libxml",
   "+third_party/zlib",

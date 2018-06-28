@@ -24,9 +24,12 @@ class FilePath;
 
 namespace net {
 class URLFetcher;
-class URLFetcherDelegate;
-class URLRequestContextGetter;
 }
+
+namespace network {
+class SharedURLLoaderFactory;
+class SimpleURLLoader;
+}  // namespace network
 
 namespace update_client {
 
@@ -38,15 +41,18 @@ struct CrxComponent;
 // in an update check request.
 using InstallerAttribute = std::pair<std::string, std::string>;
 
+using LoadCompleteCallback =
+    base::OnceCallback<void(std::unique_ptr<std::string> response_body)>;
+
 // Sends a protocol request to the the service endpoint specified by |url|.
 // The body of the request is provided by |protocol_request| and it is
 // expected to contain XML data. The caller owns the returned object.
-std::unique_ptr<net::URLFetcher> SendProtocolRequest(
+std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
     const GURL& url,
     const std::map<std::string, std::string>& protocol_request_extra_headers,
     const std::string& protocol_request,
-    net::URLFetcherDelegate* url_fetcher_delegate,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter);
+    LoadCompleteCallback callback,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
 
 // Returns true if the url request of |fetcher| was succesful.
 bool FetchSuccess(const net::URLFetcher& fetcher);
