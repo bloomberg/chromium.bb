@@ -2414,11 +2414,8 @@
   <message name="IDS_SETTINGS_SAFEBROWSING_ENABLEPROTECTION_DESC" desc="Checkbox label: should Chrome protect user and user's device from dangerous sites">
     Protects you and your device from dangerous sites
   </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING" desc="The section title of the 'Sends some system information and page content to Google' checkbox">
-    Help improve Safe Browsing
-  </message>
-  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Checkbox label: should Chrome upload some system information and page content to Safe Browsing">
-    Sends some system information and page content to Google
+  <message name="IDS_SETTINGS_SAFEBROWSING_ENABLE_REPORTING_DESC" desc="Checkbox label: should Chrome upload some system information and page content to detect dangerous apps and sites">
+    Sends some system information and page content to Google to help detect dangerous apps and sites
   </message>
   <message name="IDS_SETTINGS_SPELLING_PREF" desc="The documentation string of the 'Use Spelling' preference">
     Use a web service to help resolve spelling errors
