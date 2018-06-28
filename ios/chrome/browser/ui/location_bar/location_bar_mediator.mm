@@ -191,7 +191,10 @@
 }
 
 - (void)notifyConsumerOfChangedSecurityIcon {
-  [self.consumer updateLocationIcon:[self currentLocationIcon]];
+  [self.consumer
+      updateLocationIcon:[self currentLocationIcon]
+      securityStatusText:base::SysUTF16ToNSString(
+                             self.toolbarModel->GetSecureVerboseText())];
 }
 
 #pragma mark Location helpers

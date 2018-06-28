@@ -23,7 +23,7 @@
 @end
 
 // A simple view displaying the current URL and security status icon.
-@interface LocationBarSteadyView : UIButton
+@interface LocationBarSteadyView : UIView
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithFrame:(CGRect)frame NS_UNAVAILABLE;
@@ -34,10 +34,14 @@
 // Sets the location image. If |locationImage| is nil, hides the image view.
 - (void)setLocationImage:(UIImage*)locationImage;
 
+// The tappable button representing the location bar.
+@property(nonatomic, strong) UIButton* locationButton;
 // The label displaying the current location URL.
 @property(nonatomic, strong) UILabel* locationLabel;
 // The button displayed in the trailing corner of the view, i.e. share button.
 @property(nonatomic, strong) UIButton* trailingButton;
+// The string that describes the current security level. Used for a11y.
+@property(nonatomic, copy) NSString* securityLevelAccessibilityString;
 
 @end
 

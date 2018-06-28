@@ -68,9 +68,10 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self = [super init];
   if (self) {
     _locationBarSteadyView = [[LocationBarSteadyView alloc] init];
-    [_locationBarSteadyView addTarget:self
-                               action:@selector(locationBarSteadyViewTapped)
-                     forControlEvents:UIControlEventTouchUpInside];
+    [_locationBarSteadyView.locationButton
+               addTarget:self
+                  action:@selector(locationBarSteadyViewTapped)
+        forControlEvents:UIControlEventTouchUpInside];
   }
   return self;
 }
@@ -195,10 +196,12 @@ typedef NS_ENUM(int, TrailingButtonState) {
   self.locationBarSteadyView.locationLabel.text = text;
 }
 
-- (void)updateLocationIcon:(UIImage*)icon {
+- (void)updateLocationIcon:(UIImage*)icon
+        securityStatusText:(NSString*)statusText {
   [self.locationBarSteadyView
       setLocationImage:
           [icon imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
+  self.locationBarSteadyView.securityLevelAccessibilityString = statusText;
 }
 
 - (void)updateForNTP:(BOOL)isNTP {

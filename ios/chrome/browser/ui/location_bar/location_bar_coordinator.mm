@@ -289,8 +289,9 @@ const int kLocationAuthorizationStatusCount = 4;
   [self cancelOmniboxEdit];
 }
 
-- (void)updateLocationIcon:(UIImage*)icon {
-  [self.viewController updateLocationIcon:icon];
+- (void)updateLocationIcon:(UIImage*)icon
+        securityStatusText:(NSString*)statusText {
+  [self.viewController updateLocationIcon:icon securityStatusText:statusText];
 }
 
 - (void)updateAfterNavigatingToNTP {
