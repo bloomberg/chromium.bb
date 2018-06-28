@@ -162,8 +162,14 @@ def GetSourcesFromDeps(deps_list, build_dir):
 
 
 def GNPath():
-  exe = 'gn.exe' if sys.platform.startswith('win') else 'gn'
-  return os.path.join(CHROMIUM_SRC_DIR, 'third_party', 'gn', exe)
+  if sys.platform.startswith('linux'):
+    subdir, exe = 'linux64', 'gn'
+  elif sys.platform == 'darwin':
+    subdir, exe = 'mac', 'gn'
+  else:
+    subdir, exe = 'win', 'gn.exe'
+
+  return os.path.join(CHROMIUM_SRC_DIR, 'buildtools', subdir, exe)
 
 
 def SubStringExistsIn(substring_list, string):

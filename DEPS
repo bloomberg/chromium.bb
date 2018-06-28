@@ -121,7 +121,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling build tools
   # and whatever else without interference from each other.
-  'buildtools_revision': '506ae1c7367053eaa6bc9c8d956c2f6fd765940d',
+  'buildtools_revision': '9c9fd97928dd45a0d9738af90f7c03b082f1216f',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling SwiftShader
   # and whatever else without interference from each other.
@@ -647,16 +647,6 @@ deps = {
 
   'src/third_party/googletest/src':
     Var('chromium_git') + '/external/github.com/google/googletest.git' + '@' + 'ce468a17c434e4e79724396ee1b51d86bfc8a88b',
-
-  'src/third_party/gn': {
-      'packages': [
-          {
-              'package': 'gn/gn/${{platform}}',
-              'version': 'git_revision:f30b5738e20fdd2f00eba6298c536d66c13b09e3',
-          },
-      ],
-      'dep_type': 'cipd',
-  },
 
   # GNU binutils assembler for x86-32.
   'src/third_party/gnu_binutils': {
@@ -1579,12 +1569,7 @@ hooks = [
                '-s', 'src/third_party/skia',
                '--header', 'src/skia/ext/skia_commit_hash.h'],
   },
-  # Downloads a old stub where the GN binary used to live. This is *not* the GN
-  # binary that anything should use any more (see third_party/gn, which is
-  # pulled by cipd above). This stub simply prints that it's the wrong location,
-  # and returns with an exit code of 1, so that we: a) notice that the wrong
-  # binary is being used; 2) help users who rely on gn's automatic regeneration
-  # so that they know to re-run `gn gen`.
+  # Pull GN binaries. This needs to be before running GYP below.
   {
     'name': 'gn_win',
     'pattern': '.',
