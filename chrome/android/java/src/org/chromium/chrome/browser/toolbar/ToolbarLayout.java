@@ -158,7 +158,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
         if (FeatureUtilities.isBottomToolbarEnabled()) {
-            UiUtils.removeViewFromParent(mMenuButtonWrapper);
+            if (mMenuButtonWrapper != null) UiUtils.removeViewFromParent(mMenuButtonWrapper);
             mMenuButtonWrapper = null;
             mMenuButton = null;
             mMenuBadge = null;
