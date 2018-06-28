@@ -1400,8 +1400,8 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   resource_request.SetFrameType(
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
-  Document* origin_document = frame_load_request.OriginDocument();
 
+  Document* origin_document = frame_load_request.OriginDocument();
   if (origin_document && origin_document->GetContentSecurityPolicy()
                              ->ExperimentalFeaturesEnabled()) {
     WebContentSecurityPolicyList initiator_csp =
@@ -1409,9 +1409,6 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
             ->ExposeForNavigationalChecks();
     resource_request.SetInitiatorCSP(initiator_csp);
   }
-
-  bool had_placeholder_client_document_loader =
-      provisional_document_loader_ && !provisional_document_loader_->DidStart();
 
   // Record the latest requiredCSP value that will be used when sending this
   // request.
@@ -1442,34 +1439,20 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
       frame_load_request.TriggeringEventInfo(), frame_load_request.Form(),
       frame_load_request.GetBlobURLToken(), check_with_client);
 
-  if (navigation_policy == kNavigationPolicyIgnore) {
-    if (had_placeholder_client_document_loader &&
-        !resource_request.CheckForBrowserSideNavigation()) {
-      DetachDocumentLoader(provisional_document_loader_);
-    }
-    return;
-  }
-
-  // For PlzNavigate placeholder DocumentLoaders, don't send failure callbacks
-  // for a placeholder simply being replaced with a new DocumentLoader.
-  if (had_placeholder_client_document_loader)
-    provisional_document_loader_->SetSentDidFinishLoad();
-  DetachDocumentLoader(provisional_document_loader_);
-
-  // Detaching the provisional DocumentLoader above may leave the frame without
-  // any loading DocumentLoader. It can causes the 'load' event to fire, which
-  // can be used to detach this frame.
+  // 'beforeunload' can be fired above, which can detach this frame from inside
+  // the event handler.
   if (!frame_->GetPage())
     return;
 
-  progress_tracker_->ProgressStarted();
-  // TODO(japhet): This case wants to flag the frame as loading and do nothing
-  // else. It'd be nice if it could go through the placeholder DocumentLoader
-  // path, too.
-  if (navigation_policy == kNavigationPolicyHandledByClientForInitialHistory)
+  if (navigation_policy == kNavigationPolicyIgnore) {
+    // This could only happen from StartNavigation, which must not clear
+    // CheckForBrowserSideNavigation bit.
+    CHECK(resource_request.CheckForBrowserSideNavigation());
     return;
-  DCHECK(navigation_policy == kNavigationPolicyCurrentTab ||
-         navigation_policy == kNavigationPolicyHandledByClient);
+  }
+
+  if (!CancelProvisionalLoaderForNewNavigation(navigation_policy))
+    return;
 
   provisional_document_loader_ = CreateDocumentLoader(
       resource_request, frame_load_request, type, navigation_type);
@@ -1485,13 +1468,6 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   // 2) Stop the provisional DocumentLoader (i.e window.stop())
   if (!frame_->GetPage() || !provisional_document_loader_)
     return;
-
-  // PlzNavigate: We need to ensure that script initiated navigations are
-  // honored.
-  if (!had_placeholder_client_document_loader ||
-      navigation_policy == kNavigationPolicyHandledByClient) {
-    frame_->GetNavigationScheduler().Cancel();
-  }
 
   if (frame_load_request.Form())
     Client()->DispatchWillSubmitForm(frame_load_request.Form());
@@ -1524,6 +1500,41 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   }
 
   TakeObjectSnapshot();
+}
+
+bool FrameLoader::CancelProvisionalLoaderForNewNavigation(
+    NavigationPolicy navigation_policy) {
+  bool had_placeholder_client_document_loader =
+      provisional_document_loader_ && !provisional_document_loader_->DidStart();
+
+  // For placeholder DocumentLoaders, don't send failure callbacks
+  // for a placeholder simply being replaced with a new DocumentLoader.
+  if (had_placeholder_client_document_loader)
+    provisional_document_loader_->SetSentDidFinishLoad();
+  DetachDocumentLoader(provisional_document_loader_);
+
+  // Detaching the provisional DocumentLoader above may leave the frame without
+  // any loading DocumentLoader. It can causes the 'load' event to fire, which
+  // can be used to detach this frame.
+  if (!frame_->GetPage())
+    return false;
+
+  progress_tracker_->ProgressStarted();
+  // TODO(japhet): This case wants to flag the frame as loading and do nothing
+  // else. It'd be nice if it could go through the placeholder DocumentLoader
+  // path, too.
+  if (navigation_policy == kNavigationPolicyHandledByClientForInitialHistory)
+    return false;
+  DCHECK(navigation_policy == kNavigationPolicyCurrentTab ||
+         navigation_policy == kNavigationPolicyHandledByClient);
+
+  // We need to ensure that script initiated navigations are honored.
+  if (!had_placeholder_client_document_loader ||
+      navigation_policy == kNavigationPolicyHandledByClient) {
+    frame_->GetNavigationScheduler().Cancel();
+  }
+
+  return true;
 }
 
 bool FrameLoader::ShouldTreatURLAsSameAsCurrent(const KURL& url) const {

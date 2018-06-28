@@ -249,6 +249,9 @@ class CORE_EXPORT FrameLoader final {
                                        const KURL&);
   void ProcessFragment(const KURL&, WebFrameLoadType, LoadStartType);
 
+  // Returns whether we should continue with new navigation.
+  bool CancelProvisionalLoaderForNewNavigation(NavigationPolicy);
+
   void StartLoad(FrameLoadRequest&,
                  WebFrameLoadType,
                  NavigationPolicy,
