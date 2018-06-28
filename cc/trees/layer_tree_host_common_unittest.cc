@@ -3060,7 +3060,7 @@ TEST_F(LayerTreeHostCommonTest, OcclusionBySiblingOfTarget) {
   root->test_properties()->AddChild(std::move(child));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
@@ -3106,7 +3106,7 @@ TEST_F(LayerTreeHostCommonTest, TextureLayerSnapping) {
   root->test_properties()->AddChild(std::move(child));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
@@ -3168,7 +3168,7 @@ TEST_F(LayerTreeHostCommonTest,
   root->test_properties()->AddChild(std::move(occluding_child));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 

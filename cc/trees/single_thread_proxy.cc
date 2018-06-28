@@ -139,7 +139,7 @@ void SingleThreadProxy::SetLayerTreeFrameSink(
   {
     DebugScopedSetMainThreadBlocked main_thread_blocked(task_runner_provider_);
     DebugScopedSetImplThread impl(task_runner_provider_);
-    success = host_impl_->InitializeRenderer(layer_tree_frame_sink);
+    success = host_impl_->InitializeFrameSink(layer_tree_frame_sink);
   }
 
   if (success) {

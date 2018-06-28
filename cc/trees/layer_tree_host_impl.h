@@ -465,8 +465,7 @@ class CC_EXPORT LayerTreeHostImpl
 
   int RequestedMSAASampleCount() const;
 
-  // TODO(danakj): Rename this, there is no renderer.
-  virtual bool InitializeRenderer(LayerTreeFrameSink* layer_tree_frame_sink);
+  virtual bool InitializeFrameSink(LayerTreeFrameSink* layer_tree_frame_sink);
   TileManager* tile_manager() { return &tile_manager_; }
 
   void SetHasGpuRasterizationTrigger(bool flag);

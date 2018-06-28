@@ -122,7 +122,7 @@ TEST(LayerImplTest, VerifyPendingLayerChangesAreTrackedProperly) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
   host_impl.CreatePendingTree();
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.pending_tree(), 2);
@@ -208,7 +208,7 @@ TEST(LayerImplTest, VerifyActiveLayerChangesAreTrackedProperly) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
   std::unique_ptr<LayerImpl> root_ptr =
       LayerImpl::Create(host_impl.active_tree(), 2);
   LayerImpl* root = root_ptr.get();
@@ -285,7 +285,7 @@ TEST(LayerImplTest, VerifyNeedsUpdateDrawProperties) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
   host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* root = host_impl.active_tree()->root_layer_for_testing();
@@ -397,7 +397,7 @@ TEST(LayerImplTest, SafeOpaqueBackgroundColor) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
   host_impl.active_tree()->SetRootLayerForTesting(
       LayerImpl::Create(host_impl.active_tree(), 1));
   LayerImpl* layer = host_impl.active_tree()->root_layer_for_testing();

@@ -98,7 +98,7 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
   host_impl.active_tree()->ResetAllChangeTracking();
   host_impl.active_tree()->SetRootLayerForTesting(std::move(owning_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
@@ -158,7 +158,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectSharedQuadState) {
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
@@ -216,7 +216,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceCreatesCorrectRenderPass) {
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
@@ -272,7 +272,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceDropsOccludedRenderPassDrawQuads) {
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 
@@ -341,7 +341,7 @@ TEST(RenderSurfaceTest, SanityCheckSurfaceIgnoreMaskLayerOcclusion) {
   root_layer->test_properties()->AddChild(std::move(owning_layer));
   host_impl.active_tree()->SetRootLayerForTesting(std::move(root_layer));
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
   host_impl.active_tree()->UpdateDrawProperties();
 

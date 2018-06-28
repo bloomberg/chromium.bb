@@ -27,7 +27,7 @@ void TestLayerTreeHostBase::SetUp() {
   task_graph_runner_ = CreateTaskGraphRunner();
   host_impl_ = CreateHostImpl(CreateSettings(), &task_runner_provider_,
                               task_graph_runner_.get());
-  InitializeRenderer();
+  InitializeFrameSink();
   SetInitialTreePriority();
 }
 
@@ -54,16 +54,16 @@ TestLayerTreeHostBase::CreateTaskGraphRunner() {
   return base::WrapUnique(new TestTaskGraphRunner);
 }
 
-void TestLayerTreeHostBase::InitializeRenderer() {
+void TestLayerTreeHostBase::InitializeFrameSink() {
   host_impl_->SetVisible(true);
-  host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+  host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
 }
 
 void TestLayerTreeHostBase::ResetLayerTreeFrameSink(
     std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink) {
   host_impl()->DidLoseLayerTreeFrameSink();
   host_impl()->SetVisible(true);
-  host_impl()->InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl()->InitializeFrameSink(layer_tree_frame_sink.get());
   layer_tree_frame_sink_ = std::move(layer_tree_frame_sink);
 }
 

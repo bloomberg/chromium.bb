@@ -320,8 +320,9 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
     test_hooks_->DidActivateTreeOnThread(this);
   }
 
-  bool InitializeRenderer(LayerTreeFrameSink* layer_tree_frame_sink) override {
-    bool success = LayerTreeHostImpl::InitializeRenderer(layer_tree_frame_sink);
+  bool InitializeFrameSink(LayerTreeFrameSink* layer_tree_frame_sink) override {
+    bool success =
+        LayerTreeHostImpl::InitializeFrameSink(layer_tree_frame_sink);
     test_hooks_->InitializedRendererOnThread(this, success);
     return success;
   }

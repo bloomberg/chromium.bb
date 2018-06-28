@@ -760,7 +760,7 @@ class TextureLayerImplWithResourceTest : public TextureLayerTest {
     layer_tree_host_ = MockLayerTreeHost::Create(
         &fake_client_, &task_graph_runner_, animation_host_.get());
     host_impl_.SetVisible(true);
-    EXPECT_TRUE(host_impl_.InitializeRenderer(layer_tree_frame_sink_.get()));
+    EXPECT_TRUE(host_impl_.InitializeFrameSink(layer_tree_frame_sink_.get()));
   }
 
   bool WillDraw(TextureLayerImpl* layer, DrawMode mode) {

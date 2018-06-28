@@ -71,7 +71,7 @@ TEST(UIResourceLayerImplTest, VerifyDrawQuads) {
   FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
                                             &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
 
   // Make sure we're appending quads when there are valid values.
   gfx::Size bitmap_size(100, 100);
@@ -126,7 +126,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnSkBitmap) {
   FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
                                             &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
 
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(100, 100);
@@ -155,7 +155,7 @@ TEST(UIResourceLayerImplTest, VerifySetOpaqueOnLayer) {
   FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
                                             &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
 
   gfx::Size bitmap_size(100, 100);
   gfx::Size layer_size(100, 100);

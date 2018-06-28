@@ -50,7 +50,7 @@ void NinePatchLayerLayoutTest(const gfx::Size& bitmap_size,
   FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
                                             &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
 
   std::unique_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
@@ -163,7 +163,7 @@ void NinePatchLayerLayoutTestWithOcclusion(const gfx::Size& bitmap_size,
   FakeUIResourceLayerTreeHostImpl host_impl(&task_runner_provider,
                                             &task_graph_runner);
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
 
   std::unique_ptr<NinePatchLayerImpl> layer =
       NinePatchLayerImpl::Create(host_impl.active_tree(), 1);
