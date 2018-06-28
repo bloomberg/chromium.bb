@@ -143,8 +143,7 @@ class VR_EXPORT Ui : public BrowserUiInterface, public KeyboardUiInterface {
       UiElementRenderer::TextureLocation content_location,
       unsigned int content_overlay_texture_id,
       UiElementRenderer::TextureLocation content_overlay_location,
-      unsigned int ui_texture_id,
-      bool use_ganesh);
+      unsigned int ui_texture_id);
 
   void OnAppButtonClicked();
   void OnAppButtonSwipePerformed(PlatformController::SwipeDirection direction);

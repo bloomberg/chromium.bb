@@ -461,7 +461,7 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   ui_->OnGlInitialized(
       content_texture_id_, UiElementRenderer::kTextureLocationExternal,
       content_overlay_texture_id_, UiElementRenderer::kTextureLocationExternal,
-      ui_texture_id, true);
+      ui_texture_id);
 
   webvr_vsync_align_ = base::FeatureList::IsEnabled(features::kWebVrVsyncAlign);
 

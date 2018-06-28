@@ -11,7 +11,6 @@
 #include "base/strings/string16.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
-#include "chrome/browser/vr/cpu_surface_provider.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
@@ -327,16 +326,11 @@ void Ui::OnGlInitialized(
     UiElementRenderer::TextureLocation content_location,
     unsigned int content_overlay_texture_id,
     UiElementRenderer::TextureLocation content_overlay_location,
-    unsigned int ui_texture_id,
-    bool use_ganesh) {
+    unsigned int ui_texture_id) {
   ui_element_renderer_ = std::make_unique<UiElementRenderer>();
   ui_renderer_ =
       std::make_unique<UiRenderer>(scene_.get(), ui_element_renderer_.get());
-  if (use_ganesh) {
-    provider_ = std::make_unique<GaneshSurfaceProvider>();
-  } else {
-    provider_ = std::make_unique<CpuSurfaceProvider>();
-  }
+  provider_ = std::make_unique<GaneshSurfaceProvider>();
   scene_->OnGlInitialized(provider_.get());
   model_->content_texture_id = content_texture_id;
   model_->content_overlay_texture_id = content_overlay_texture_id;
