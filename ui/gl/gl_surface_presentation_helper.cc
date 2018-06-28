@@ -158,9 +158,8 @@ void GLSurfacePresentationHelper::CheckPendingFrames() {
   if (pending_frames_.empty())
     return;
 
-  // If the |gl_context_| is not current anymore, we assume SwapBuffers issued
-  // for previous context will be discarded.
-  if (gl_context_ && !gl_context_->IsCurrent(surface_)) {
+  if (!gl_context_->MakeCurrent(surface_)) {
+    gl_context_ = nullptr;
     gpu_timing_client_ = nullptr;
     for (auto& frame : pending_frames_)
       frame.Destroy();
