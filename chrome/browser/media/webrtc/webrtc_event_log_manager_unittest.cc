@@ -763,37 +763,6 @@ void RemoveWritePermissionsFromDirectory(const base::FilePath& path) {
 }
 #endif  // defined(OS_POSIX) && !defined(OS_FUCHSIA)
 
-// Production code uses the WebRtcEventLogUploaderObserver interface to
-// pass notifications of an upload's completion from the concrete uploader
-// to the remote-logs-manager. In unit tests, these notifications are
-// intercepted, inspected and then passed onwards to the remote-logs-manager.
-// This class simplifies this by getting a hold of the message, sending it
-// to the unit test's observer, then allowing it to proceed to its normal
-// destination.
-class InterceptingWebRtcEventLogUploaderObserver
-    : public WebRtcEventLogUploaderObserver {
- public:
-  InterceptingWebRtcEventLogUploaderObserver(
-      WebRtcEventLogUploaderObserver* intercpeting_observer,
-      WebRtcEventLogUploaderObserver* normal_observer)
-      : intercpeting_observer_(intercpeting_observer),
-        normal_observer_(normal_observer) {}
-
-  ~InterceptingWebRtcEventLogUploaderObserver() override = default;
-
-  void OnWebRtcEventLogUploadComplete(const base::FilePath& file_path,
-                                      bool upload_successful) override {
-    intercpeting_observer_->OnWebRtcEventLogUploadComplete(file_path,
-                                                           upload_successful);
-    normal_observer_->OnWebRtcEventLogUploadComplete(file_path,
-                                                     upload_successful);
-  }
-
- private:
-  WebRtcEventLogUploaderObserver* const intercpeting_observer_;
-  WebRtcEventLogUploaderObserver* const normal_observer_;
-};
-
 // The factory for the following fake uploader produces a sequence of uploaders
 // which fail the test if given a file other than that which they expect. The
 // factory itself likewise fails the test if destroyed before producing all
