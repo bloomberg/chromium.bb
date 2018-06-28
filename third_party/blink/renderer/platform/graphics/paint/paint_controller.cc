@@ -14,6 +14,21 @@
 
 namespace blink {
 
+PaintController::PaintController(Usage usage)
+    : usage_(usage), new_display_item_list_(0) {
+  // frame_first_paints_ should have one null frame since the beginning, so
+  // that PaintController is robust even if it paints outside of BeginFrame
+  // and EndFrame cycles. It will also enable us to combine the first paint
+  // data in this PaintController into another PaintController on which we
+  // replay the recorded results in the future.
+  frame_first_paints_.push_back(FrameFirstPaint(nullptr));
+}
+
+PaintController::~PaintController() {
+  // New display items should be committed before PaintController is destroyed.
+  DCHECK(new_display_item_list_.IsEmpty());
+}
+
 void PaintController::SetTracksRasterInvalidations(bool value) {
   if (value) {
     raster_invalidation_tracking_info_ =
@@ -48,6 +63,9 @@ bool PaintController::UseCachedDrawingIfPossible(
     const DisplayItemClient& client,
     DisplayItem::Type type) {
   DCHECK(DisplayItem::IsDrawingType(type));
+
+  if (usage_ == kTransient)
+    return false;
 
   if (DisplayItemConstructionIsDisabled())
     return false;
@@ -99,6 +117,9 @@ bool PaintController::UseCachedDrawingIfPossible(
 
 bool PaintController::UseCachedSubsequenceIfPossible(
     const DisplayItemClient& client) {
+  if (usage_ == kTransient)
+    return false;
+
   if (DisplayItemConstructionIsDisabled() || SubsequenceCachingIsDisabled())
     return false;
 
@@ -226,8 +247,11 @@ const DisplayItem* PaintController::LastDisplayItem(unsigned offset) {
 void PaintController::ProcessNewItem(DisplayItem& display_item) {
   DCHECK(!construction_disabled_);
 
-  if (IsSkippingCache())
-    display_item.SetSkippedCache();
+  if (IsSkippingCache()) {
+    DCHECK_EQ(usage_, kMultiplePaints);
+    display_item.Client().SetDisplayItemsUncached(
+        PaintInvalidationReason::kUncacheable);
+  }
 
   if (raster_invalidation_tracking_info_) {
     raster_invalidation_tracking_info_->new_client_debug_names.insert(
@@ -257,7 +281,7 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
                display_item.OutsetForRasterEffects());
 
 #if DCHECK_IS_ON()
-  if (display_item.IsCacheable()) {
+  if (usage_ == kMultiplePaints && !IsSkippingCache()) {
     size_t index = FindMatchingItemFromIndex(
         display_item.GetId(), new_display_item_indices_by_client_,
         new_display_item_list_);
@@ -275,7 +299,8 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
   }
 #endif  // DCHECK_IS_ON()
 
-  if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
+  if (usage_ == kMultiplePaints &&
+      RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled())
     CheckUnderInvalidation();
 
   if (!frame_first_paints_.back().first_painted && display_item.IsDrawing() &&
@@ -363,26 +388,22 @@ void PaintController::AddToIndicesByClientMap(const DisplayItemClient& client,
 size_t PaintController::FindCachedItem(const DisplayItem::Id& id) {
   DCHECK(ClientCacheIsValid(id.client));
 
-  // Try to find the item sequentially first. This is fast if the current list
-  // and the new list are in the same order around the new item. If found, we
-  // don't need to update and lookup the index.
-  for (size_t i = next_item_to_match_;
-       i < current_paint_artifact_.GetDisplayItemList().size(); ++i) {
+  if (next_item_to_match_ <
+      current_paint_artifact_.GetDisplayItemList().size()) {
+    // If current_list[next_item_to_match_] matches the new item, we don't need
+    // to update and lookup the index, which is fast. This is the common case
+    // that the current list and the new list are in the same order around the
+    // new item.
+    const DisplayItem& item =
+        current_paint_artifact_.GetDisplayItemList()[next_item_to_match_];
     // We encounter an item that has already been copied which indicates we
     // can't do sequential matching.
-    const DisplayItem& item = current_paint_artifact_.GetDisplayItemList()[i];
-    if (item.IsTombstone())
-      break;
-    if (id == item.GetId()) {
+    if (!item.IsTombstone() && id == item.GetId()) {
 #if DCHECK_IS_ON()
       ++num_sequential_matches_;
 #endif
-      return i;
+      return next_item_to_match_;
     }
-    // We encounter a different cacheable item which also indicates we can't do
-    // sequential matching.
-    if (item.IsCacheable())
-      break;
   }
 
   size_t found_index =
@@ -531,41 +552,12 @@ void PaintController::CommitNewDisplayItems() {
   if (!new_display_item_list_.IsEmpty())
     GenerateRasterInvalidations(new_paint_chunks_.LastChunk());
 
-  auto old_cache_generation = current_cache_generation_;
   current_cache_generation_ =
       DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
 
   new_cached_subsequences_.swap(current_cached_subsequences_);
   new_cached_subsequences_.clear();
   last_cached_subsequence_end_ = 0;
-  for (auto& item : current_cached_subsequences_)
-    item.key->SetDisplayItemsCached(current_cache_generation_);
-
-  Vector<const DisplayItemClient*> skipped_cache_clients;
-  for (const auto& item : new_display_item_list_) {
-    const auto& client = item.Client();
-    client.ClearPartialInvalidationVisualRect();
-
-    if (item.IsCacheable()) {
-      client.SetDisplayItemsCached(current_cache_generation_);
-    } else {
-      if (client.IsJustCreated())
-        client.ClearIsJustCreated();
-      if (item.SkippedCache())
-        skipped_cache_clients.push_back(&item.Client());
-    }
-  }
-
-  for (auto* client : skipped_cache_clients) {
-    // Set client uncached only if it is cached by this PaintController. The
-    // client may be still validly cached in another PaintController which
-    // should not be affected by skipping cache in this PaintController.
-    if (client->DisplayItemsAreCached(old_cache_generation) ||
-        // The client was set cached because it just painted some cacheable
-        // items in this PaintController. Need to set it uncached.
-        client->DisplayItemsAreCached(current_cache_generation_))
-      client->SetDisplayItemsUncached();
-  }
 
   // The new list will not be appended to again so we can release unused memory.
   new_display_item_list_.ShrinkToFit();
@@ -573,15 +565,30 @@ void PaintController::CommitNewDisplayItems() {
   current_paint_artifact_ = PaintArtifact(std::move(new_display_item_list_),
                                           new_paint_chunks_.ReleaseData());
 
+  if (usage_ == kMultiplePaints) {
+    // Validate caching of the display item clients.
+    for (auto& item : current_cached_subsequences_) {
+      if (item.key->IsCacheable())
+        item.key->SetDisplayItemsCached(current_cache_generation_);
+    }
+    for (const auto& item : current_paint_artifact_.GetDisplayItemList()) {
+      const auto& client = item.Client();
+      client.ClearPartialInvalidationVisualRect();
+      if (client.IsCacheable() && item.IsCacheable())
+        client.SetDisplayItemsCached(current_cache_generation_);
+      else if (client.IsJustCreated())
+        client.ClearIsJustCreated();
+    }
+    for (const auto& chunk : current_paint_artifact_.PaintChunks()) {
+      if (chunk.id.client.IsJustCreated())
+        chunk.id.client.ClearIsJustCreated();
+    }
+  }
+
   ResetCurrentListIndices();
   out_of_order_item_indices_.clear();
   out_of_order_chunk_indices_.clear();
   items_moved_into_new_list_.clear();
-
-  for (const auto& chunk : current_paint_artifact_.PaintChunks()) {
-    if (chunk.id.client.IsJustCreated())
-      chunk.id.client.ClearIsJustCreated();
-  }
 
   // We'll allocate the initial buffer when we start the next paint.
   new_display_item_list_ = DisplayItemList(0);
@@ -649,17 +656,32 @@ size_t PaintController::ApproximateUnsharedMemoryUsage() const {
   return memory_usage;
 }
 
+namespace {
+
+class DebugDrawingClient final : public DisplayItemClient {
+ public:
+  DebugDrawingClient() {
+    SetDisplayItemsUncached(PaintInvalidationReason::kUncacheable);
+  }
+  String DebugName() const final { return "DebugDrawing"; }
+  LayoutRect VisualRect() const final {
+    return LayoutRect(LayoutRect::InfiniteIntRect());
+  }
+};
+
+}  // anonymous namespace
+
 void PaintController::AppendDebugDrawingAfterCommit(
-    const DisplayItemClient& display_item_client,
     sk_sp<const PaintRecord> record,
     const PropertyTreeState& property_tree_state) {
+  DEFINE_STATIC_LOCAL(DebugDrawingClient, debug_drawing_client, ());
+
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
   DCHECK(new_display_item_list_.IsEmpty());
   auto& display_item_list = current_paint_artifact_.GetDisplayItemList();
   auto& display_item =
       display_item_list.AllocateAndConstruct<DrawingDisplayItem>(
-          display_item_client, DisplayItem::kDebugDrawing, std::move(record));
-  display_item.SetSkippedCache();
+          debug_drawing_client, DisplayItem::kDebugDrawing, std::move(record));
 
   // Create a PaintChunk for the debug drawing.
   current_paint_artifact_.PaintChunks().emplace_back(
@@ -992,13 +1014,13 @@ void PaintController::ShowSequenceUnderInvalidationError(
 }
 
 void PaintController::CheckUnderInvalidation() {
+  DCHECK_EQ(usage_, kMultiplePaints);
   DCHECK(RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled());
 
   if (!IsCheckingUnderInvalidation())
     return;
 
-  const DisplayItem& new_item = new_display_item_list_.Last();
-  if (new_item.SkippedCache()) {
+  if (IsSkippingCache()) {
     // We allow cache skipping and temporary under-invalidation in cached
     // subsequences. See the usage of DisplayItemCacheSkipper in BoxPainter.
     under_invalidation_checking_end_ = 0;
@@ -1008,6 +1030,7 @@ void PaintController::CheckUnderInvalidation() {
     return;
   }
 
+  const DisplayItem& new_item = new_display_item_list_.Last();
   size_t old_item_index = under_invalidation_checking_begin_;
   DisplayItem* old_item =
       old_item_index < current_paint_artifact_.GetDisplayItemList().size()

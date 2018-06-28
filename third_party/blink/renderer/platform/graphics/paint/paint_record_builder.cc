@@ -22,7 +22,8 @@ PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
   if (paint_controller) {
     paint_controller_ = paint_controller;
   } else {
-    own_paint_controller_ = PaintController::Create();
+    own_paint_controller_ =
+        PaintController::Create(PaintController::kTransient);
     paint_controller_ = own_paint_controller_.get();
   }
 
@@ -41,10 +42,9 @@ PaintRecordBuilder::PaintRecordBuilder(SkMetaData* meta_data,
     context_->SetDeviceScaleFactor(containing_context->DeviceScaleFactor());
     context_->SetPrinting(containing_context->Printing());
   }
-
-  if (!paint_controller)
-    cache_skipper_.emplace(*context_);
 }
+
+PaintRecordBuilder::~PaintRecordBuilder() = default;
 
 sk_sp<PaintRecord> PaintRecordBuilder::EndRecording(
     const PropertyTreeState& replay_state) {

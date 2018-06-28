@@ -170,8 +170,6 @@ void DisplayItem::PropertiesAsJSON(JSONObject& json) const {
   json.SetString("visualRect", VisualRect().ToString());
   if (OutsetForRasterEffects())
     json.SetDouble("outset", OutsetForRasterEffects());
-  if (skipped_cache_)
-    json.SetBoolean("skippedCache", true);
 }
 
 #endif

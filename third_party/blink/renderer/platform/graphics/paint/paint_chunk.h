@@ -28,23 +28,17 @@ struct PLATFORM_EXPORT PaintChunk {
 
   using Id = DisplayItem::Id;
 
-  enum Cacheable {
-    kCacheable,
-    kUncacheable,
-  };
-
   PaintChunk(size_t begin,
              size_t end,
              const Id& id,
-             const PropertyTreeState& props,
-             Cacheable cacheable = kCacheable)
+             const PropertyTreeState& props)
       : begin_index(begin),
         end_index(end),
         id(id),
         properties(props),
         outset_for_raster_effects(0),
         known_to_be_opaque(false),
-        is_cacheable(cacheable == kCacheable),
+        is_cacheable(id.client.IsCacheable()),
         client_is_just_created(id.client.IsJustCreated()),
         hit_test_data(nullptr) {}
 

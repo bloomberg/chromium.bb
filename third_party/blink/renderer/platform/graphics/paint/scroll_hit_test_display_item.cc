@@ -12,12 +12,10 @@ namespace blink {
 
 ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
     const DisplayItemClient& client,
-    Type type,
     const TransformPaintPropertyNode& scroll_offset_node)
-    : DisplayItem(client, type, sizeof(*this)),
+    : DisplayItem(client, kScrollHitTest, sizeof(*this)),
       scroll_offset_node_(scroll_offset_node) {
   DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-  DCHECK(IsScrollHitTestType(type));
   // The scroll offset transform node should have an associated scroll node.
   DCHECK(scroll_offset_node_.ScrollNode());
 }
@@ -51,7 +49,6 @@ void ScrollHitTestDisplayItem::PropertiesAsJSON(JSONObject& json) const {
 void ScrollHitTestDisplayItem::Record(
     GraphicsContext& context,
     const DisplayItemClient& client,
-    DisplayItem::Type type,
     const TransformPaintPropertyNode& scroll_offset_node) {
   PaintController& paint_controller = context.GetPaintController();
 
@@ -64,7 +61,7 @@ void ScrollHitTestDisplayItem::Record(
     return;
 
   paint_controller.CreateAndAppend<ScrollHitTestDisplayItem>(
-      client, type, scroll_offset_node);
+      client, scroll_offset_node);
 }
 
 }  // namespace blink

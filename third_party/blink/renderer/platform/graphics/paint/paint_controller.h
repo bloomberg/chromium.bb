@@ -55,15 +55,22 @@ class PLATFORM_EXPORT PaintController {
   USING_FAST_MALLOC(PaintController);
 
  public:
-  static std::unique_ptr<PaintController> Create() {
-    return base::WrapUnique(new PaintController());
+  enum Usage {
+    // The PaintController will be used for multiple paint cycles. It caches
+    // display item and subsequence of the previous paint which can be used in
+    // subsequent paints.
+    kMultiplePaints,
+    // The PaintController will be used for one paint cycle only. It doesn't
+    // cache or invalidate cache.
+    kTransient,
+  };
+
+  static std::unique_ptr<PaintController> Create(
+      Usage usage = kMultiplePaints) {
+    return base::WrapUnique(new PaintController(usage));
   }
 
-  ~PaintController() {
-    // New display items should be committed before PaintController is
-    // destructed.
-    DCHECK(new_display_item_list_.IsEmpty());
-  }
+  ~PaintController();
 
   // For SPv1 only.
   void InvalidateAll();
@@ -140,8 +147,14 @@ class PLATFORM_EXPORT PaintController {
 
   const DisplayItem* LastDisplayItem(unsigned offset);
 
-  void BeginSkippingCache() { ++skipping_cache_count_; }
+  void BeginSkippingCache() {
+    if (usage_ == kTransient)
+      return;
+    ++skipping_cache_count_;
+  }
   void EndSkippingCache() {
+    if (usage_ == kTransient)
+      return;
     DCHECK(skipping_cache_count_ > 0);
     --skipping_cache_count_;
   }
@@ -169,13 +182,17 @@ class PLATFORM_EXPORT PaintController {
     return GetPaintArtifact().PaintChunks();
   }
 
-  // For micro benchmarking of record time.
+  // For micro benchmarking of record time. If true, display item construction
+  // is disabled to isolate the costs of construction in performance metrics.
   bool DisplayItemConstructionIsDisabled() const {
     return construction_disabled_;
   }
-  void SetDisplayItemConstructionIsDisabled(const bool disable) {
+  void SetDisplayItemConstructionIsDisabled(bool disable) {
     construction_disabled_ = disable;
   }
+
+  // For micro benchmarking of record time. If true, subsequence caching is
+  // disabled to test the cost of display item caching.
   bool SubsequenceCachingIsDisabled() const {
     return subsequence_caching_disabled_;
   }
@@ -191,8 +208,7 @@ class PLATFORM_EXPORT PaintController {
   // the last CommitNewDisplayItems(). Use with care.
   DisplayItemList& NewDisplayItemList() { return new_display_item_list_; }
 
-  void AppendDebugDrawingAfterCommit(const DisplayItemClient&,
-                                     sk_sp<const PaintRecord>,
+  void AppendDebugDrawingAfterCommit(sk_sp<const PaintRecord>,
                                      const PropertyTreeState&);
 
 #if DCHECK_IS_ON()
@@ -213,35 +229,11 @@ class PLATFORM_EXPORT PaintController {
   unsigned CurrentFragment() const { return current_fragment_; }
   void SetCurrentFragment(unsigned fragment) { current_fragment_ = fragment; }
 
- protected:
-  PaintController()
-      : new_display_item_list_(0),
-        construction_disabled_(false),
-        subsequence_caching_disabled_(false),
-        skipping_cache_count_(0),
-        num_cached_new_items_(0),
-        current_cached_subsequence_begin_index_in_new_list_(kNotFound),
-#if DCHECK_IS_ON()
-        num_sequential_matches_(0),
-        num_out_of_order_matches_(0),
-        num_indexed_items_(0),
-#endif
-        under_invalidation_checking_begin_(0),
-        under_invalidation_checking_end_(0),
-        last_cached_subsequence_end_(0),
-        current_fragment_(0) {
-    ResetCurrentListIndices();
-    // frame_first_paints_ should have one null frame since the beginning, so
-    // that PaintController is robust even if it paints outside of BeginFrame
-    // and EndFrame cycles. It will also enable us to combine the first paint
-    // data in this PaintController into another PaintController on which we
-    // replay the recorded results in the future.
-    frame_first_paints_.push_back(FrameFirstPaint(nullptr));
-  }
-
  private:
   friend class PaintControllerTestBase;
   friend class PaintControllerPaintTestBase;
+
+  PaintController(Usage);
 
   // True if all display items associated with the client are validly cached.
   // However, the current algorithm allows the following situations even if
@@ -358,6 +350,8 @@ class PLATFORM_EXPORT PaintController {
   void ShowDebugDataInternal(DisplayItemList::JsonFlags) const;
 #endif
 
+  Usage usage_;
+
   // The last complete paint artifact.
   // In SPv2, this includes paint chunks as well as display items.
   PaintArtifact current_paint_artifact_;
@@ -372,20 +366,15 @@ class PLATFORM_EXPORT PaintController {
   // for display items that are not moved.
   Vector<size_t> items_moved_into_new_list_;
 
-  // Allows display item construction to be disabled to isolate the costs of
-  // construction in performance metrics.
-  bool construction_disabled_;
-
-  // Allows subsequence caching to be disabled to test the cost of display item
-  // caching.
-  bool subsequence_caching_disabled_;
+  bool construction_disabled_ = false;
+  bool subsequence_caching_disabled_ = false;
 
   // A stack recording current frames' first paints.
   Vector<FrameFirstPaint> frame_first_paints_;
 
-  int skipping_cache_count_;
+  int skipping_cache_count_ = 0;
 
-  int num_cached_new_items_;
+  int num_cached_new_items_ = 0;
 
   // Stores indices to valid cacheable display items in
   // current_paint_artifact_.GetDisplayItemList() that have not been matched by
@@ -399,11 +388,11 @@ class PLATFORM_EXPORT PaintController {
   IndicesByClientMap out_of_order_item_indices_;
 
   // The next item in the current list for sequential match.
-  size_t next_item_to_match_;
+  size_t next_item_to_match_ = 0;
 
   // The next item in the current list to be indexed for out-of-order cache
   // requests.
-  size_t next_item_to_index_;
+  size_t next_item_to_index_ = 0;
 
   // Similar to out_of_order_item_indices_ but
   // - the indices are chunk indices in current_paint_artifacts_.PaintChunks();
@@ -411,16 +400,16 @@ class PLATFORM_EXPORT PaintController {
   //   also non-cached display items.
   IndicesByClientMap out_of_order_chunk_indices_;
 
-  size_t current_cached_subsequence_begin_index_in_new_list_;
-  size_t next_chunk_to_match_;
+  size_t current_cached_subsequence_begin_index_in_new_list_ = kNotFound;
+  size_t next_chunk_to_match_ = 0;
 
   DisplayItemClient::CacheGenerationOrInvalidationReason
       current_cache_generation_;
 
 #if DCHECK_IS_ON()
-  int num_sequential_matches_;
-  int num_out_of_order_matches_;
-  int num_indexed_items_;
+  int num_sequential_matches_ = 0;
+  int num_out_of_order_matches_ = 0;
+  int num_indexed_items_ = 0;
 
   // This is used to check duplicated ids during CreateAndAppend().
   IndicesByClientMap new_display_item_indices_by_client_;
@@ -434,8 +423,8 @@ class PLATFORM_EXPORT PaintController {
   // end of the cached drawing or subsequence in the current list. The functions
   // return false to let the client do actual painting, and PaintController will
   // check if the actual painting results are the same as the cached.
-  size_t under_invalidation_checking_begin_;
-  size_t under_invalidation_checking_end_;
+  size_t under_invalidation_checking_begin_ = 0;
+  size_t under_invalidation_checking_end_ = 0;
 
   String under_invalidation_message_prefix_;
 
@@ -451,9 +440,9 @@ class PLATFORM_EXPORT PaintController {
       HashMap<const DisplayItemClient*, SubsequenceMarkers>;
   CachedSubsequenceMap current_cached_subsequences_;
   CachedSubsequenceMap new_cached_subsequences_;
-  size_t last_cached_subsequence_end_;
+  size_t last_cached_subsequence_end_ = 0;
 
-  unsigned current_fragment_;
+  unsigned current_fragment_ = 0;
 
   class DisplayItemListAsJSON;
 

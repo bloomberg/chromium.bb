@@ -26,7 +26,6 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
  public:
   ScrollHitTestDisplayItem(
       const DisplayItemClient&,
-      Type,
       const TransformPaintPropertyNode& scroll_offset_node);
   ~ScrollHitTestDisplayItem() override;
 
@@ -48,7 +47,6 @@ class PLATFORM_EXPORT ScrollHitTestDisplayItem final : public DisplayItem {
   // item.
   static void Record(GraphicsContext&,
                      const DisplayItemClient&,
-                     DisplayItem::Type,
                      const TransformPaintPropertyNode& scroll_offset_node);
 
  private:

@@ -171,7 +171,6 @@ void BlockPainter::PaintScrollHitTestDisplayItem(const PaintInfo& paint_info) {
         fragment->LocalBorderBoxProperties(), layout_block_,
         DisplayItem::kScrollHitTest);
     ScrollHitTestDisplayItem::Record(paint_info.context, layout_block_,
-                                     DisplayItem::kScrollHitTest,
                                      *properties->ScrollTranslation());
   }
 }

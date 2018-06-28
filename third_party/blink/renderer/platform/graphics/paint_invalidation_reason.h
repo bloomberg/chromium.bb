@@ -19,14 +19,17 @@ enum class PaintInvalidationReason : unsigned {
   // Hit test changes do not require raster invalidation.
   kHitTest,
   // The following reasons will all cause full paint invalidation.
-  kFull,  // Any unspecified reason of full invalidation.
+  // Any unspecified reason of full invalidation.
+  kFull,
   kStyle,
-  kGeometry,  // Layout or visual geometry change.
+  // Layout or visual geometry change.
+  kGeometry,
   kCompositing,
   kAppeared,
   kDisappeared,
   kScroll,
-  kScrollControl,  // scroll bars, scroll corner, etc.
+  // Scroll bars, scroll corner, etc.
+  kScrollControl,
   kOutline,
   kSubtree,
   kSVGResource,
@@ -35,6 +38,7 @@ enum class PaintInvalidationReason : unsigned {
   kCaret,
   kDocumentMarker,
   kImage,
+  kUncacheable,
   kChunkAppeared,
   kChunkDisappeared,
   kChunkUncacheable,

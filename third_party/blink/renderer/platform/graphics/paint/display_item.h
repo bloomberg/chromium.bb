@@ -57,18 +57,6 @@ class PLATFORM_EXPORT DisplayItem {
   //     <Category>[<Subset>]PaintPhaseFirst + PaintPhaseMax;
   // - DEFINE_PAINT_PHASE_CONVERSION_METHOD(<Category>[<Subset>]) to define
   //   paintPhaseTo<Category>[<Subset>]Type(PaintPhase) method.
-  //
-  // A category can be derived from another category, containing types each of
-  // which corresponds to a value of the latter category:
-  // - In enum Type:
-  //   - enum value <Category>First;
-  //   - enum value <Category>Last =
-  //     <Category>First + <BaseCategory>Last - <BaseCategory>First;
-  // - DEFINE_CONVERSION_METHODS(<Category>,
-  //                             <category>,
-  //                             <BaseCategory>,
-  //                             <baseCategory>)
-  //   to define methods to convert types between the categories.
   enum Type {
     kDrawingFirst,
     kDrawingPaintPhaseFirst = kDrawingFirst,
@@ -154,6 +142,8 @@ class PLATFORM_EXPORT DisplayItem {
     kTypeLast = kUninitializedType
   };
 
+  // Some fields are copied from |client|, because we need to access them in
+  // later paint cycles when |client| may have been destroyed.
   DisplayItem(const DisplayItemClient& client, Type type, size_t derived_size)
       : client_(&client),
         visual_rect_(client.VisualRect()),
@@ -161,7 +151,8 @@ class PLATFORM_EXPORT DisplayItem {
         type_(type),
         derived_size_(derived_size),
         fragment_(0),
-        skipped_cache_(false),
+        // TODO(pdr): Should this return true for IsScrollHitTestType too?
+        is_cacheable_(client.IsCacheable() && IsDrawingType(type)),
         is_tombstone_(false) {
     // |derived_size| must fit in |derived_size_|.
     // If it doesn't, enlarge |derived_size_| and fix this assert.
@@ -223,11 +214,6 @@ class PLATFORM_EXPORT DisplayItem {
     fragment_ = fragment;
   }
 
-  // For PaintController only. Painters should use DisplayItemCacheSkipper
-  // instead.
-  void SetSkippedCache() { skipped_cache_ = true; }
-  bool SkippedCache() const { return skipped_cache_; }
-
   // Appends this display item to the cc::DisplayItemList, if applicable.
   // |visual_rect_offset| is the offset between the space of the GraphicsLayer
   // which owns the display item and the coordinate space of VisualRect().
@@ -241,23 +227,6 @@ class PLATFORM_EXPORT DisplayItem {
     return type >= k##Category##First && type <= k##Category##Last; \
   }                                                                 \
   bool Is##Category() const { return Is##Category##Type(GetType()); }
-
-#define DEFINE_CONVERSION_METHODS(Category1, category1, Category2, category2) \
-  static Type Category1##TypeTo##Category2##Type(Type type) {                 \
-    static_assert(k##Category1##Last - k##Category1##First ==                 \
-                      k##Category2##Last - k##Category2##First,               \
-                  "Categories " #Category1 " and " #Category2                 \
-                  " should have same number of enum values. See comments of " \
-                  "DisplayItem::Type");                                       \
-    DCHECK(Is##Category1##Type(type));                                        \
-    return static_cast<Type>(type - k##Category1##First +                     \
-                             k##Category2##First);                            \
-  }                                                                           \
-  static Type category2##TypeTo##Category1##Type(Type type) {                 \
-    DCHECK(Is##Category2##Type(type));                                        \
-    return static_cast<Type>(type - k##Category2##First +                     \
-                             k##Category1##First);                            \
-  }
 
 #define DEFINE_PAINT_PHASE_CONVERSION_METHOD(Category)                \
   static Type PaintPhaseTo##Category##Type(PaintPhase paint_phase) {  \
@@ -280,22 +249,15 @@ class PLATFORM_EXPORT DisplayItem {
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGTransform)
   DEFINE_PAINT_PHASE_CONVERSION_METHOD(SVGEffect)
 
-  static bool IsScrollHitTestType(Type type) { return type == kScrollHitTest; }
-  bool IsScrollHitTest() const { return IsScrollHitTestType(GetType()); }
+  bool IsScrollHitTest() const { return type_ == kScrollHitTest; }
 
-  // TODO(pdr): Should this return true for IsScrollHitTestType too?
-  static bool IsCacheableType(Type type) { return IsDrawingType(type); }
-  bool IsCacheable() const {
-    return !SkippedCache() && IsCacheableType(GetType());
-  }
+  bool IsCacheable() const { return is_cacheable_; }
 
   virtual bool Equals(const DisplayItem& other) const {
     // Failure of this DCHECK would cause bad casts in subclasses.
     SECURITY_CHECK(!is_tombstone_);
     return client_ == other.client_ && type_ == other.type_ &&
-           fragment_ == other.fragment_ &&
-           derived_size_ == other.derived_size_ &&
-           skipped_cache_ == other.skipped_cache_;
+           fragment_ == other.fragment_ && derived_size_ == other.derived_size_;
   }
 
   // True if this DisplayItem is the tombstone/"dead display item" as part of
@@ -319,7 +281,7 @@ class PLATFORM_EXPORT DisplayItem {
   // The default DisplayItem constructor is only used by ContiguousContainer::
   // AppendByMoving() where a tombstone DisplayItem is constructed at the source
   // location. Only set is_tombstone_ to true, leaving other fields as-is so
-  // that we can get their original values for debugging. |visual_rect_| and
+  // that we can get their original values. |visual_rect_| and
   // |outset_for_raster_effects_| are special, see DisplayItemList::
   // AppendByMoving().
   DisplayItem() : is_tombstone_(true) {}
@@ -332,7 +294,7 @@ class PLATFORM_EXPORT DisplayItem {
   unsigned type_ : 8;
   unsigned derived_size_ : 8;  // size of the actual derived class
   unsigned fragment_ : 14;
-  unsigned skipped_cache_ : 1;
+  unsigned is_cacheable_ : 1;
   unsigned is_tombstone_ : 1;
 };
 
