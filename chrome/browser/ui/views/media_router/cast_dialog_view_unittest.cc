@@ -120,16 +120,14 @@ class CastDialogViewTest : public ChromeViewsTestBase {
 
   views::View* no_sinks_view() { return dialog_->no_sinks_view_for_test(); }
 
-  views::Button* sources_button() {
-    return dialog_->alternative_sources_button_for_test();
-  }
+  views::Button* sources_button() { return dialog_->sources_button_for_test(); }
 
   ui::SimpleMenuModel* sources_menu_model() {
-    return dialog_->alternative_sources_menu_model_for_test();
+    return dialog_->sources_menu_model_for_test();
   }
 
   views::MenuRunner* sources_menu_runner() {
-    return dialog_->alternative_sources_menu_runner_for_test();
+    return dialog_->sources_menu_runner_for_test();
   }
 
   content::TestBrowserThreadBundle test_thread_bundle_;
@@ -220,39 +218,44 @@ TEST_F(CastDialogViewTest, UpdateModel) {
 }
 
 TEST_F(CastDialogViewTest, ShowAlternativeSources) {
-  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
-  media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION, LOCAL_FILE};
+  std::vector<UIMediaSink> media_sinks = {CreateAvailableSink()};
+  media_sinks[0].cast_modes = {TAB_MIRROR, PRESENTATION, DESKTOP_MIRROR};
   CastDialogModel model = CreateModelWithSinks(media_sinks);
   InitializeDialogWithModel(model);
-  // Press the button to show the alternative sources menu.
+  // Press the button to show the sources menu.
   dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
-  EXPECT_EQ(1, sources_menu_model()->GetItemCount());
-  EXPECT_EQ(LOCAL_FILE, sources_menu_model()->GetCommandIdAt(0));
+  // The items should be "tab" (includes tab mirroring and presentation) and
+  // "desktop".
+  EXPECT_EQ(2, sources_menu_model()->GetItemCount());
+  EXPECT_EQ(PRESENTATION | TAB_MIRROR, sources_menu_model()->GetCommandIdAt(0));
+  EXPECT_EQ(DESKTOP_MIRROR, sources_menu_model()->GetCommandIdAt(1));
 
-  media_sinks[0].cast_modes = {TAB_MIRROR, DESKTOP_MIRROR, LOCAL_FILE};
+  // When there are no alternative sources, the sources button should be
+  // disabled.
+  media_sinks[0].cast_modes = {TAB_MIRROR};
   model.set_media_sinks(std::move(media_sinks));
   dialog_->OnModelUpdated(model);
-  dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
-  EXPECT_EQ(2, sources_menu_model()->GetItemCount());
-  EXPECT_EQ(DESKTOP_MIRROR, sources_menu_model()->GetCommandIdAt(0));
-  EXPECT_EQ(LOCAL_FILE, sources_menu_model()->GetCommandIdAt(1));
+  EXPECT_FALSE(sources_button()->enabled());
 }
 
 TEST_F(CastDialogViewTest, CastToAlternativeSources) {
-  std::vector<UIMediaSink> media_sinks = {CreateConnectedSink()};
-  media_sinks[0].cast_modes = {DESKTOP_MIRROR, LOCAL_FILE};
+  std::vector<UIMediaSink> media_sinks = {CreateAvailableSink()};
+  media_sinks[0].cast_modes = {TAB_MIRROR, DESKTOP_MIRROR};
   CastDialogModel model = CreateModelWithSinks(std::move(media_sinks));
   InitializeDialogWithModel(model);
   // Press the button to show the alternative sources menu.
   dialog_->ButtonPressed(sources_button(), CreateMouseEvent());
   ASSERT_EQ(2, sources_menu_model()->GetItemCount());
 
+  EXPECT_CALL(controller_, StartCasting(model.media_sinks()[0].id, TAB_MIRROR));
+  sources_menu_model()->ActivatedAt(0);
+  dialog_->Accept();
+  Mock::VerifyAndClearExpectations(&controller_);
+
   EXPECT_CALL(controller_,
               StartCasting(model.media_sinks()[0].id, DESKTOP_MIRROR));
-  sources_menu_model()->ActivatedAt(0);
-  Mock::VerifyAndClearExpectations(&controller_);
-  EXPECT_CALL(controller_, StartCasting(model.media_sinks()[0].id, LOCAL_FILE));
   sources_menu_model()->ActivatedAt(1);
+  dialog_->Accept();
 }
 
 TEST_F(CastDialogViewTest, DisableAlternativeSourcesPicker) {

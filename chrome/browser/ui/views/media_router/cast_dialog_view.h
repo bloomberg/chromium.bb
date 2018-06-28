@@ -81,14 +81,12 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   }
   views::ScrollView* scroll_view_for_test() { return scroll_view_; }
   views::View* no_sinks_view_for_test() { return no_sinks_view_; }
-  views::Button* alternative_sources_button_for_test() {
-    return alternative_sources_button_;
+  views::Button* sources_button_for_test() { return sources_button_; }
+  ui::SimpleMenuModel* sources_menu_model_for_test() {
+    return sources_menu_model_.get();
   }
-  ui::SimpleMenuModel* alternative_sources_menu_model_for_test() {
-    return alternative_sources_menu_model_.get();
-  }
-  views::MenuRunner* alternative_sources_menu_runner_for_test() {
-    return alternative_sources_menu_runner_.get();
+  views::MenuRunner* sources_menu_runner_for_test() {
+    return sources_menu_runner_.get();
   }
 
  private:
@@ -104,16 +102,21 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   void ShowNoSinksView();
   void ShowScrollView();
 
-  // Apply the stored sink selection and scroll state.
+  // Applies the stored sink selection and scroll state.
   void RestoreSinkListState();
 
-  // Populate the scroll view containing sinks using the data in |model|.
+  // Populates the scroll view containing sinks using the data in |model|.
   void PopulateScrollView(const std::vector<UIMediaSink>& sinks);
 
-  // Show the pull-down options to cast sources other than tabs.
-  void ShowAlternativeSources();
+  // Shows the sources menu that allows the user to choose a source to cast.
+  void ShowSourcesMenu();
+
+  // Populates the sources menu with the sources supported by |sink|.
+  void UpdateSourcesMenu(const UIMediaSink& sink);
 
   void SelectSinkAtIndex(size_t index);
+
+  const UIMediaSink& GetSelectedSink() const;
 
   void MaybeSizeToContents();
 
@@ -126,6 +129,12 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // The index of the selected item on the sink list.
   size_t selected_sink_index_ = 0;
+
+  // The source selected in the sources menu. This defaults to "tab"
+  // (presentation or tab mirroring) under the assumption that all sinks support
+  // at least one of them. "Tab" is represented by a single item in the sources
+  // menu.
+  int selected_source_;
 
   // Contains references to sink buttons in the order they appear.
   std::vector<CastDialogSinkButton*> sink_buttons_;
@@ -145,11 +154,10 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // it to this value.
   int scroll_position_ = 0;
 
-  // The alternative sources menu shows items that start casting sources other
-  // than tabs.
-  views::Button* alternative_sources_button_ = nullptr;
-  std::unique_ptr<ui::SimpleMenuModel> alternative_sources_menu_model_;
-  std::unique_ptr<views::MenuRunner> alternative_sources_menu_runner_;
+  // The sources menu allows the user to choose a source to cast.
+  views::Button* sources_button_ = nullptr;
+  std::unique_ptr<ui::SimpleMenuModel> sources_menu_model_;
+  std::unique_ptr<views::MenuRunner> sources_menu_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogView);
 };
