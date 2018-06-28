@@ -131,8 +131,8 @@ void FrameViewAutoSizeInfo::AutoSizeIfNeeded() {
     // causing them to be needed. For example, a vertical scrollbar may cause
     // text to wrap and thus increase the height (which is the only reason the
     // scollbar is needed).
-    layout_viewport->SetAutosizeScrollbarModes(vertical_scrollbar_mode,
-                                               horizontal_scrollbar_mode);
+    frame_view_->GetLayoutView()->SetAutosizeScrollbarModes(
+        horizontal_scrollbar_mode, vertical_scrollbar_mode);
   }
   did_run_autosize_ = true;
 }

@@ -262,9 +262,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
     return scrollbar_manager_.VerticalScrollbar();
   }
 
-  void CalculateScrollbarModes(ScrollbarMode& h_mode,
-                               ScrollbarMode& v_mode) const;
-
   PlatformChromeClient* GetChromeClient() const override;
 
   SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
