@@ -91,10 +91,17 @@ void ContentLayer::SetProperties(int id,
   }
   if (static_layer.get()) {
     static_layer->layer()->SetIsDrawable(true);
-    if (should_clip)
+
+    if (should_clip) {
       static_layer->Clip(clip);
-    else
-      static_layer->ClearClip();
+    } else {
+      // Clipping to the computed size of the layer fixes an issue where the tab
+      // contents briefly jump back-and-forth when transitioning from a
+      // TabListSceneLayer to a StaticTabSceneLayer.
+      const gfx::Size& size = ComputeSize(id);
+      static_layer->Clip(gfx::Rect(0, 0, size.width(), size.height()));
+    }
+
     SetOpacityOnLeaf(static_layer->layer(), static_opacity);
 
     cc::FilterOperations static_filter_operations;
