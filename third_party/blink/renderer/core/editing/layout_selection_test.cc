@@ -76,20 +76,18 @@ using IsTypeOfSimple = bool(const LayoutObject& layout_object);
     return layout_object.member_func();                        \
   }
 
-USING_LAYOUTOBJECT_FUNC(IsBR);
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlock);
 USING_LAYOUTOBJECT_FUNC(IsLayoutBlockFlow);
-USING_LAYOUTOBJECT_FUNC(IsLayoutButton);
-USING_LAYOUTOBJECT_FUNC(IsLayoutEmbeddedContent);
-USING_LAYOUTOBJECT_FUNC(IsLayoutImage);
-USING_LAYOUTOBJECT_FUNC(IsLayoutInline);
 USING_LAYOUTOBJECT_FUNC(IsLayoutNGBlockFlow);
+USING_LAYOUTOBJECT_FUNC(IsLayoutInline);
+USING_LAYOUTOBJECT_FUNC(IsBR);
 USING_LAYOUTOBJECT_FUNC(IsListItem);
 USING_LAYOUTOBJECT_FUNC(IsListMarker);
-USING_LAYOUTOBJECT_FUNC(IsRuby);
-USING_LAYOUTOBJECT_FUNC(IsRubyText);
+USING_LAYOUTOBJECT_FUNC(IsLayoutImage);
+USING_LAYOUTOBJECT_FUNC(IsLayoutButton);
 USING_LAYOUTOBJECT_FUNC(IsSVGRoot);
 USING_LAYOUTOBJECT_FUNC(IsSVGText);
+USING_LAYOUTOBJECT_FUNC(IsLayoutEmbeddedContent);
 
 static IsTypeOf IsLayoutTextFragmentOf(const String& text) {
   return WTF::BindRepeating(
@@ -685,41 +683,6 @@ TEST_F(LayoutSelectionTest, Embed) {
   Selection().CommitAppearanceIfNeeded();
   TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
   TEST_NEXT(IsLayoutEmbeddedContent, kStartAndEnd, ShouldInvalidate);
-  TEST_NO_NEXT_LAYOUT_OBJECT();
-}
-
-// http:/crbug.com/843144
-TEST_F(LayoutSelectionTest, Ruby) {
-  Selection().SetSelectionAndEndTyping(
-      SetSelectionTextToBody("^<ruby>foo<rt>bar</rt></ruby>|"));
-  Selection().CommitAppearanceIfNeeded();
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsRuby, kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsRubyText, kContain, NotInvalidate);
-  TEST_NEXT("bar", kEnd, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT("foo", kStart, ShouldInvalidate);
-  TEST_NO_NEXT_LAYOUT_OBJECT();
-
-  UpdateAllLifecyclePhases();
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsRuby, kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT(IsRubyText, kContain, NotInvalidate);
-  TEST_NEXT("bar", kEnd, NotInvalidate);
-  TEST_NEXT(IsLayoutBlock, kContain, NotInvalidate);
-  TEST_NEXT("foo", kStart, NotInvalidate);
-  TEST_NO_NEXT_LAYOUT_OBJECT();
-
-  Selection().ClearLayoutSelection();
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
-  TEST_NEXT(IsRuby, kNone, NotInvalidate);
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
-  TEST_NEXT(IsRubyText, kNone, NotInvalidate);
-  TEST_NEXT("bar", kNone, ShouldInvalidate);
-  TEST_NEXT(IsLayoutBlock, kNone, NotInvalidate);
-  TEST_NEXT("foo", kNone, ShouldInvalidate);
   TEST_NO_NEXT_LAYOUT_OBJECT();
 }
 
