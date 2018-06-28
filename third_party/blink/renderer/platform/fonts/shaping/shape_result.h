@@ -61,6 +61,12 @@ enum class AdjustMidCluster {
   kToStart
 };
 
+struct ShapeResultCharacterData {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+  float x_position;
+  unsigned safe_to_break_before : 1;
+};
+
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:
   static scoped_refptr<ShapeResult> Create(const Font* font,
@@ -109,11 +115,14 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   // break without reshaping.
   // The |offset| given and the return value is for the original string, between
   // |StartIndexForResult| and |EndIndexForResult|.
+  // TODO(eae): Remove these ones the cached versions are used everywhere.
   unsigned NextSafeToBreakOffset(unsigned offset) const;
   unsigned PreviousSafeToBreakOffset(unsigned offset) const;
 
-  // Returns the offset whose (origin, origin+advance) contains |x|.
+  // Returns the offset, relative to StartIndexForResult, whose (origin,
+  // origin+advance) contains |x|.
   unsigned OffsetForPosition(float x) const;
+
   // Returns the offset whose glyph boundary is nearest to |x|. Depends on
   // whether |x| is on the left-half or the right-half of the glyph, it
   // determines the left-boundary or the right-boundary, then computes the
@@ -126,6 +135,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
     return !include_partial_glyphs ? OffsetForPosition(x) : OffsetForHitTest(x);
   }
 
+  // Returns the position for a given offset, relative to StartIndexForResult.
   float PositionForOffset(unsigned offset,
                           AdjustMidCluster = AdjustMidCluster::kToEnd) const;
   LayoutUnit SnappedStartPositionForOffset(unsigned offset) const {
@@ -134,6 +144,23 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   LayoutUnit SnappedEndPositionForOffset(unsigned offset) const {
     return LayoutUnit::FromFloatCeil(PositionForOffset(offset));
   }
+
+  // Computes and caches a position data object as needed.
+  void EnsurePositionData() const;
+
+  // Fast versions of OffsetForPosition and PositionForOffset that operates on
+  // a cache (that needs to be pre-computed using EnsurePositionData) and that
+  // does not take partial glyphs into account.
+  unsigned CachedOffsetForPosition(float x) const;
+  float CachedPositionForOffset(unsigned offset) const;
+
+  // Returns the next or previous offsets respectively at which it is safe to
+  // break without reshaping. Operates on a cache (that needs to be pre-computed
+  // using EnsurePositionData) and does not take partial glyphs into account.
+  // The |offset| given and the return value is for the original string, between
+  // |StartIndexForResult| and |EndIndexForResult|.
+  unsigned CachedNextSafeToBreakOffset(unsigned offset) const;
+  unsigned CachedPreviousSafeToBreakOffset(unsigned offset) const;
 
   // Apply spacings (letter-spacing, word-spacing, and justification) as
   // configured to |ShapeResultSpacing|.
@@ -215,6 +242,40 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
 
   void OffsetForPosition(float target_x, GlyphIndexResult*) const;
 
+  // Helper class storing a map between offsets and x-positions.
+  // Unlike the RunInfo and GlyphData structures in ShapeResult, which operates
+  // in glyph order, this class stores a map between character index and the
+  // total accumulated advance for each character. Allowing constant time
+  // mapping from character index to x-position and O(log n) time, using binary
+  // search, from x-position to character index.
+  class CharacterPositionData {
+   public:
+    CharacterPositionData(unsigned num_characters, float width)
+        : data_(num_characters), width_(width) {}
+
+    // Returns the next or previous offsets respectively at which it is safe to
+    // break without reshaping.
+    unsigned NextSafeToBreakOffset(unsigned offset) const;
+    unsigned PreviousSafeToBreakOffset(unsigned offset) const;
+
+    // Returns the offset of the last character that fully fits before the given
+    // x-position.
+    unsigned OffsetForPosition(float x) const;
+
+    // Returns the x-position for a given offset.
+    float PositionForOffset(unsigned offset) const;
+
+   private:
+    Vector<ShapeResultCharacterData> data_;
+    unsigned start_offset_;
+    float width_;
+
+    friend class ShapeResult;
+  };
+
+  template <bool>
+  void ComputePositionData() const;
+
   template <typename TextContainerType>
   void ApplySpacingImpl(ShapeResultSpacing<TextContainerType>&,
                         int text_start_offset = 0);
@@ -238,6 +299,7 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   FloatRect glyph_bounding_box_;
   Vector<std::unique_ptr<RunInfo>> runs_;
   scoped_refptr<const SimpleFontData> primary_font_;
+  mutable std::unique_ptr<CharacterPositionData> character_position_;
 
   unsigned num_characters_;
   unsigned num_glyphs_ : 30;

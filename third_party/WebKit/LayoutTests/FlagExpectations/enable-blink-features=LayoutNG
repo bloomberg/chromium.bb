@@ -28,6 +28,14 @@ crbug.com/636993 fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]
 
+# Fails to layout everything with 'position:absolute' inside inline block
+crbug.com/855749 fast/block/positioning/rtl-static-positioning-inline-block.html [ Crash ]
+
+# Fails due to incorrect offset mapping using cache.
+crbug.com/636993 external/wpt/css/css-text/word-break/word-break-break-all-005.html [ Failure ]
+crbug.com/636993 external/wpt/css/css-text/word-break/word-break-normal-hi-000.html [ Failure ]
+crbug.com/636993 transforms/2d/hindi-rotated.html [ Failure ]
+
 # New passes
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]

@@ -311,7 +311,11 @@ TEST_P(BreakOpportunityTest, Next) {
   const BreakOpportunityTestData& data = GetParam();
   String string(data.string);
   LazyLineBreakIterator break_iterator(string);
-  ShapingLineBreaker breaker(nullptr, &font, nullptr, &break_iterator);
+
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   EXPECT_THAT(BreakPositionsByNext(breaker, string),
               testing::ElementsAreArray(data.break_positions));
 
@@ -327,7 +331,10 @@ TEST_P(BreakOpportunityTest, Previous) {
   const BreakOpportunityTestData& data = GetParam();
   String string(data.string);
   LazyLineBreakIterator break_iterator(string);
-  ShapingLineBreaker breaker(nullptr, &font, nullptr, &break_iterator);
+  HarfBuzzShaper shaper(string.Characters16(), string.length());
+  scoped_refptr<ShapeResult> result = shaper.Shape(&font, TextDirection::kLtr);
+
+  ShapingLineBreaker breaker(&shaper, &font, result.get(), &break_iterator);
   EXPECT_THAT(BreakPositionsByPrevious(breaker, string),
               testing::ElementsAreArray(data.break_positions));
 
