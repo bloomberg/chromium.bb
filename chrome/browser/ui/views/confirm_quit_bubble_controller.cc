@@ -103,6 +103,7 @@ void ConfirmQuitBubbleController::OnKeyEvent(ui::KeyEvent* event) {
              accelerator.key_state() == ui::Accelerator::KeyState::RELEASED) {
     if (state_ == State::kPressed) {
       state_ = State::kReleased;
+      event->SetHandled();
     } else if (state_ == State::kConfirmed) {
       if (!second_press_start_time_.is_null()) {
         if (accelerator.time_stamp() - second_press_start_time_ <
@@ -113,8 +114,8 @@ void ConfirmQuitBubbleController::OnKeyEvent(ui::KeyEvent* event) {
         }
       }
       Quit();
+      event->SetHandled();
     }
-    event->SetHandled();
   }
 }
 

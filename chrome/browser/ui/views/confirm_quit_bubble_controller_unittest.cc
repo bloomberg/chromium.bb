@@ -84,6 +84,8 @@ class ConfirmQuitBubbleControllerTest : public testing::Test {
 
   void TearDown() override { controller_.reset(); }
 
+  void SendKeyEvent(ui::KeyEvent* event) { controller_->OnKeyEvent(event); }
+
   void SendAccelerator(bool quit, bool press, bool repeat) {
     ui::KeyboardCode key = quit ? ui::VKEY_Q : ui::VKEY_P;
     int modifiers = ui::EF_SHIFT_DOWN | ui::EF_CONTROL_DOWN;
@@ -91,7 +93,7 @@ class ConfirmQuitBubbleControllerTest : public testing::Test {
       modifiers |= ui::EF_IS_REPEAT;
     ui::EventType type = press ? ui::ET_KEY_PRESSED : ui::ET_KEY_RELEASED;
     ui::KeyEvent event(type, key, modifiers);
-    controller_->OnKeyEvent(&event);
+    SendKeyEvent(&event);
   }
 
   void PressQuitAccelerator() { SendAccelerator(true, true, false); }
@@ -194,4 +196,16 @@ TEST_F(ConfirmQuitBubbleControllerTest, BrowserLosesFocus) {
   controller_->DeactivateBrowser();
   ReleaseQuitAccelerator();
   EXPECT_FALSE(controller_->quit_called());
+}
+
+// The controller should not consume keyup events on the 'Q' key
+// (https://crbug.com/856868).
+TEST_F(ConfirmQuitBubbleControllerTest, ControllerDoesNotHandleQKeyUp) {
+  ui::KeyEvent press_event(ui::ET_KEY_PRESSED, ui::VKEY_Q, 0);
+  SendKeyEvent(&press_event);
+  EXPECT_FALSE(press_event.handled());
+
+  ui::KeyEvent release_event(ui::ET_KEY_RELEASED, ui::VKEY_Q, 0);
+  SendKeyEvent(&release_event);
+  EXPECT_FALSE(release_event.handled());
 }
