@@ -109,7 +109,7 @@ class ThirdPartyConflictsManager
 
   // Called when |module_list_filter_| finishes its initialization.
   void OnModuleListFilterCreated(
-      std::unique_ptr<ModuleListFilter> module_list_filter);
+      scoped_refptr<ModuleListFilter> module_list_filter);
 
   // Called when |installed_applications_| finishes its initialization.
   void OnInstalledApplicationsCreated(
@@ -165,8 +165,10 @@ class ThirdPartyConflictsManager
                  component_updater::ComponentUpdateService::Observer>
       component_update_service_observer_;
 
-  // Filters third-party modules against a whitelist and a blacklist.
-  std::unique_ptr<ModuleListFilter> module_list_filter_;
+  // Filters third-party modules against a whitelist and a blacklist. This
+  // instance is ref counted because the |module_blacklist_cache_updater_| must
+  // use it on a background sequence.
+  scoped_refptr<ModuleListFilter> module_list_filter_;
 
   // Retrieves the list of installed applications.
   std::unique_ptr<InstalledApplications> installed_applications_;

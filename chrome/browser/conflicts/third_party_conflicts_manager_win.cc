@@ -43,9 +43,9 @@ std::unique_ptr<CertificateInfo> CreateExeCertificateInfo() {
   return certificate_info;
 }
 
-std::unique_ptr<ModuleListFilter> CreateModuleListFilter(
+scoped_refptr<ModuleListFilter> CreateModuleListFilter(
     const base::FilePath& module_list_path) {
-  auto module_list_filter = std::make_unique<ModuleListFilter>();
+  auto module_list_filter = base::MakeRefCounted<ModuleListFilter>();
 
   if (!module_list_filter->Initialize(module_list_path))
     return nullptr;
@@ -77,7 +77,8 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
 }
 
 ThirdPartyConflictsManager::~ThirdPartyConflictsManager() {
-  SetTerminalState(State::kDestroyed);
+  if (!terminal_state_.has_value())
+    SetTerminalState(State::kDestroyed);
   module_database_event_source_->RemoveObserver(this);
 }
 
@@ -242,7 +243,7 @@ void ThirdPartyConflictsManager::OnExeCertificateCreated(
 }
 
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
-    std::unique_ptr<ModuleListFilter> module_list_filter) {
+    scoped_refptr<ModuleListFilter> module_list_filter) {
   module_list_filter_ = std::move(module_list_filter);
 
   // A valid |module_list_filter_| is critical to the blocking of third-party
@@ -284,7 +285,7 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
     incompatible_applications_updater_ =
         std::make_unique<IncompatibleApplicationsUpdater>(
             module_database_event_source_, *exe_certificate_info_,
-            *module_list_filter_, *installed_applications_);
+            module_list_filter_, *installed_applications_);
   }
 
   if (base::FeatureList::IsEnabled(features::kThirdPartyModulesBlocking)) {
@@ -293,7 +294,7 @@ void ThirdPartyConflictsManager::InitializeIfReady() {
     module_blacklist_cache_updater_ =
         std::make_unique<ModuleBlacklistCacheUpdater>(
             module_database_event_source_, *exe_certificate_info_,
-            *module_list_filter_,
+            module_list_filter_,
             base::BindRepeating(
                 &ThirdPartyConflictsManager::OnModuleBlacklistCacheUpdated,
                 base::Unretained(this)));

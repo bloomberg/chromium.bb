@@ -141,7 +141,10 @@ constexpr wchar_t kDllPath2[] = L"c:\\some\\shellextension.dll";
 
 class ModuleListFilterTest : public ::testing::Test {
  protected:
-  ModuleListFilterTest() : dll1_(kDllPath1), dll2_(kDllPath2) {}
+  ModuleListFilterTest()
+      : dll1_(kDllPath1),
+        dll2_(kDllPath2),
+        module_list_filter_(base::MakeRefCounted<ModuleListFilter>()) {}
 
   ~ModuleListFilterTest() override = default;
 
@@ -151,7 +154,7 @@ class ModuleListFilterTest : public ::testing::Test {
   }
 
   const base::FilePath& module_list_path() { return module_list_path_; }
-  ModuleListFilter& module_list_filter() { return module_list_filter_; }
+  ModuleListFilter& module_list_filter() { return *module_list_filter_; }
 
   const base::FilePath dll1_;
   const base::FilePath dll2_;
@@ -161,7 +164,7 @@ class ModuleListFilterTest : public ::testing::Test {
 
   base::FilePath module_list_path_;
 
-  ModuleListFilter module_list_filter_;
+  scoped_refptr<ModuleListFilter> module_list_filter_;
 
   DISALLOW_COPY_AND_ASSIGN(ModuleListFilterTest);
 };

@@ -57,10 +57,12 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   // Creates an instance of the updater. The callback will be invoked every time
   // the cache is updated.
   // The parameters must outlive the lifetime of this class.
+  // The ModuleListFilter is taken by scoped_refptr since it will be used in a
+  // background sequence.
   ModuleBlacklistCacheUpdater(
       ModuleDatabaseEventSource* module_database_event_source,
       const CertificateInfo& exe_certificate_info,
-      const ModuleListFilter& module_list_filter,
+      scoped_refptr<ModuleListFilter> module_list_filter,
       OnCacheUpdatedCallback on_cache_updated_callback);
   ~ModuleBlacklistCacheUpdater() override;
 
@@ -96,7 +98,7 @@ class ModuleBlacklistCacheUpdater : public ModuleDatabaseObserver {
   ModuleDatabaseEventSource* const module_database_event_source_;
 
   const CertificateInfo& exe_certificate_info_;
-  const ModuleListFilter& module_list_filter_;
+  scoped_refptr<ModuleListFilter> module_list_filter_;
 
   OnCacheUpdatedCallback on_cache_updated_callback_;
 

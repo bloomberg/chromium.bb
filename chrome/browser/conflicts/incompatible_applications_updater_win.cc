@@ -209,11 +209,11 @@ IncompatibleApplicationsUpdater::IncompatibleApplication::operator=(
 IncompatibleApplicationsUpdater::IncompatibleApplicationsUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
-    const ModuleListFilter& module_list_filter,
+    scoped_refptr<ModuleListFilter> module_list_filter,
     const InstalledApplications& installed_applications)
     : module_database_event_source_(module_database_event_source),
       exe_certificate_info_(exe_certificate_info),
-      module_list_filter_(module_list_filter),
+      module_list_filter_(std::move(module_list_filter)),
       installed_applications_(installed_applications) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   module_database_event_source_->AddObserver(this);
@@ -299,7 +299,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   }
 
   // Skip modules whitelisted by the Module List component.
-  if (module_list_filter_.IsWhitelisted(module_key, module_data))
+  if (module_list_filter_->IsWhitelisted(module_key, module_data))
     return;
 
   // Also skip a module if it cannot be associated with an installed application
@@ -311,7 +311,7 @@ void IncompatibleApplicationsUpdater::OnNewModuleFound(
   }
 
   std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action =
-      module_list_filter_.IsBlacklisted(module_key, module_data);
+      module_list_filter_->IsBlacklisted(module_key, module_data);
   if (!blacklist_action) {
     // The default behavior is to suggest to uninstall.
     blacklist_action = std::make_unique<chrome::conflicts::BlacklistAction>();

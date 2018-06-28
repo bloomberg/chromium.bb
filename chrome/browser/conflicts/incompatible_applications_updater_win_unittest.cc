@@ -25,7 +25,6 @@ namespace {
 class MockModuleListFilter : public ModuleListFilter {
  public:
   MockModuleListFilter() = default;
-  ~MockModuleListFilter() override = default;
 
   bool IsWhitelisted(base::StringPiece module_basename_hash,
                      base::StringPiece module_code_id_hash) const override {
@@ -39,6 +38,8 @@ class MockModuleListFilter : public ModuleListFilter {
   }
 
  private:
+  ~MockModuleListFilter() override = default;
+
   DISALLOW_COPY_AND_ASSIGN(MockModuleListFilter);
 };
 
@@ -108,7 +109,8 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   IncompatibleApplicationsUpdaterTest()
       : dll1_(kDllPath1),
         dll2_(kDllPath2),
-        scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()) {
+        scoped_testing_local_state_(TestingBrowserProcess::GetGlobal()),
+        module_list_filter_(base::MakeRefCounted<MockModuleListFilter>()) {
     exe_certificate_info_.type = CertificateType::CERTIFICATE_IN_FILE;
     exe_certificate_info_.path = base::FilePath(kCertificatePath);
     exe_certificate_info_.subject = kCertificateSubject;
@@ -162,7 +164,7 @@ class IncompatibleApplicationsUpdaterTest : public testing::Test,
   registry_util::RegistryOverrideManager registry_override_manager_;
 
   CertificateInfo exe_certificate_info_;
-  MockModuleListFilter module_list_filter_;
+  scoped_refptr<MockModuleListFilter> module_list_filter_;
   MockInstalledApplications installed_applications_;
 
   DISALLOW_COPY_AND_ASSIGN(IncompatibleApplicationsUpdaterTest);

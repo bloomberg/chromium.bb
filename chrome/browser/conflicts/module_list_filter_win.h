@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/strings/string_piece.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 
@@ -20,10 +21,9 @@ class FilePath;
 
 // This class is used to determine if a module should be blacklisted or
 // whitelisted depending on the ModuleList component (See module_list.proto).
-class ModuleListFilter {
+class ModuleListFilter : public base::RefCountedThreadSafe<ModuleListFilter> {
  public:
   ModuleListFilter();
-  virtual ~ModuleListFilter();
 
   bool Initialize(const base::FilePath& module_list_path);
 
@@ -57,7 +57,12 @@ class ModuleListFilter {
       const ModuleInfoKey& module_key,
       const ModuleInfoData& module_data) const;
 
+ protected:
+  virtual ~ModuleListFilter();
+
  private:
+  friend class base::RefCountedThreadSafe<ModuleListFilter>;
+
   chrome::conflicts::ModuleList module_list_;
 
   // Indicates if Initalize() has been succesfully called.
