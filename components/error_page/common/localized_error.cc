@@ -84,7 +84,7 @@ struct LocalizedErrorMap {
   // mouse over when the error is in a frame.
   unsigned int summary_resource_id;
   int suggestions;  // Bitmap of SUGGEST_* values.
-  int buttons; // Which buttons if any to show.
+  int buttons;      // Bitmap of which buttons if any to show.
 };
 
 // clang-format off
@@ -972,7 +972,7 @@ void LocalizedError::GetStrings(
   // If no parameters were provided, use the defaults.
   if (!params) {
     params.reset(new error_page::ErrorPageParams());
-    params->suggest_reload = !!(options.buttons && SHOW_BUTTON_RELOAD);
+    params->suggest_reload = !!(options.buttons & SHOW_BUTTON_RELOAD);
   }
 
   base::ListValue* suggestions_details = nullptr;
