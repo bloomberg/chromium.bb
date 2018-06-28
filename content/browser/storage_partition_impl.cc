@@ -1235,9 +1235,12 @@ void StoragePartitionImpl::GetQuotaSettings(
 
 network::mojom::URLLoaderFactory*
 StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
-  // Create the URLLoaderFactory as needed.
+  // Create the URLLoaderFactory as needed, but make sure not to reuse a
+  // previously created one if the test override has changed.
   if (url_loader_factory_for_browser_process_ &&
-      !url_loader_factory_for_browser_process_.encountered_error()) {
+      !url_loader_factory_for_browser_process_.encountered_error() &&
+      is_test_url_loader_factory_for_browser_process_ !=
+          g_url_loader_factory_callback_for_test.Get().is_null()) {
     return url_loader_factory_for_browser_process_.get();
   }
 
@@ -1251,6 +1254,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
         browser_context(), nullptr, false /* is_navigation */, &request);
     GetNetworkContext()->CreateURLLoaderFactory(std::move(request),
                                                 std::move(params));
+    is_test_url_loader_factory_for_browser_process_ = false;
     return url_loader_factory_for_browser_process_.get();
   }
 
@@ -1260,6 +1264,7 @@ StoragePartitionImpl::GetURLLoaderFactoryForBrowserProcessInternal() {
   url_loader_factory_for_browser_process_ =
       g_url_loader_factory_callback_for_test.Get().Run(
           std::move(original_factory));
+  is_test_url_loader_factory_for_browser_process_ = true;
   return url_loader_factory_for_browser_process_.get();
 }
 
