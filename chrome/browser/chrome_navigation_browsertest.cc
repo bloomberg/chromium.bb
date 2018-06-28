@@ -843,14 +843,7 @@ IN_PROC_BROWSER_TEST_F(ChromeNavigationBrowserTest, CrossSiteRedirectionToPDF) {
 
 // TODO(csharrison): These tests should become tentative WPT, once the feature
 // is enabled by default.
-class NavigationConsumingTest : public ChromeNavigationBrowserTest {
-  void SetUpCommandLine(base::CommandLine* cmd_line) override {
-    ChromeNavigationBrowserTest::SetUpCommandLine(cmd_line);
-    scoped_feature_.InitFromCommandLine("ConsumeGestureOnNavigation",
-                                        std::string());
-  }
-  base::test::ScopedFeatureList scoped_feature_;
-};
+using NavigationConsumingTest = ChromeNavigationBrowserTest;
 
 // The fullscreen API is spec'd to require a user activation (aka user gesture),
 // so use that API to test if navigation consumes the activation.
@@ -929,4 +922,36 @@ IN_PROC_BROWSER_TEST_F(NavigationConsumingTest,
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       contents, different_document_script, &did_open));
   EXPECT_FALSE(did_open);
+}
+
+// Regression test for https://crbug.com/856779, where a navigation to a
+// top-level, same process frame in another tab fails to focus that tab.
+IN_PROC_BROWSER_TEST_F(NavigationConsumingTest, TargetNavigationFocus) {
+  content::WebContents* opener =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL("/link_with_target.html"));
+
+  {
+    content::TestNavigationObserver new_tab_observer(nullptr, 1);
+    new_tab_observer.StartWatchingNewWebContents();
+    ASSERT_TRUE(ExecuteScript(
+        opener, "document.getElementsByTagName('a')[0].click();"));
+    new_tab_observer.Wait();
+  }
+
+  content::WebContents* new_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  EXPECT_NE(new_contents, opener);
+
+  // Re-focusing the opener and clicking again should re-focus the popup.
+  opener->GetDelegate()->ActivateContents(opener);
+  EXPECT_EQ(opener, browser()->tab_strip_model()->GetActiveWebContents());
+  {
+    content::TestNavigationObserver new_tab_observer(new_contents, 1);
+    ASSERT_TRUE(ExecuteScript(
+        opener, "document.getElementsByTagName('a')[0].click();"));
+    new_tab_observer.Wait();
+  }
+  EXPECT_EQ(new_contents, browser()->tab_strip_model()->GetActiveWebContents());
 }

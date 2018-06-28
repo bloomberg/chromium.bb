@@ -334,9 +334,6 @@ struct PendingNavigationParams {
 
 namespace {
 
-const base::Feature kConsumeGestureOnNavigation = {
-    "ConsumeGestureOnNavigation", base::FEATURE_ENABLED_BY_DEFAULT};
-
 const int kExtraCharsBeforeAndAfterSelection = 100;
 
 const PreviewsState kDisabledPreviewsBits =
@@ -4048,9 +4045,6 @@ void RenderFrameImpl::DidStartProvisionalLoad(
   std::vector<GURL> redirect_chain;
   GetRedirectChain(document_loader, &redirect_chain);
 
-  if (ConsumeGestureOnNavigation())
-    WebUserGestureIndicator::ConsumeUserGesture(frame_);
-
   Send(new FrameHostMsg_DidStartProvisionalLoad(
       routing_id_, document_loader->GetRequest().Url(), redirect_chain,
       navigation_start));
@@ -6430,8 +6424,7 @@ void RenderFrameImpl::OpenURL(const NavigationPolicyInfo& info,
   if (GetContentClient()->renderer()->AllowPopup())
     params.user_gesture = true;
 
-  if (ConsumeGestureOnNavigation() ||
-      policy == blink::kWebNavigationPolicyNewBackgroundTab ||
+  if (is_main_frame_ || policy == blink::kWebNavigationPolicyNewBackgroundTab ||
       policy == blink::kWebNavigationPolicyNewForegroundTab ||
       policy == blink::kWebNavigationPolicyNewWindow ||
       policy == blink::kWebNavigationPolicyNewPopup) {
@@ -7219,11 +7212,6 @@ void RenderFrameImpl::RenderWidgetWillHandleMouseEvent() {
   // |pepper_last_mouse_event_target_|.
   pepper_last_mouse_event_target_ = nullptr;
 #endif
-}
-
-bool RenderFrameImpl::ConsumeGestureOnNavigation() const {
-  return is_main_frame_ &&
-         base::FeatureList::IsEnabled(kConsumeGestureOnNavigation);
 }
 
 blink::mojom::ControllerServiceWorkerMode
