@@ -45,14 +45,14 @@ namespace {
 const int64_t kMaxSparseDataSizeDivisor = 10;
 
 // Used in histograms, please only add entries at the end.
-enum WriteResult {
-  WRITE_RESULT_SUCCESS = 0,
-  WRITE_RESULT_INVALID_ARGUMENT = 1,
-  WRITE_RESULT_OVER_MAX_SIZE = 2,
-  WRITE_RESULT_BAD_STATE = 3,
-  WRITE_RESULT_SYNC_WRITE_FAILURE = 4,
-  WRITE_RESULT_FAST_EMPTY_RETURN = 5,
-  WRITE_RESULT_MAX = 6,
+enum SimpleEntryWriteResult {
+  SIMPLE_ENTRY_WRITE_RESULT_SUCCESS = 0,
+  SIMPLE_ENTRY_WRITE_RESULT_INVALID_ARGUMENT = 1,
+  SIMPLE_ENTRY_WRITE_RESULT_OVER_MAX_SIZE = 2,
+  SIMPLE_ENTRY_WRITE_RESULT_BAD_STATE = 3,
+  SIMPLE_ENTRY_WRITE_RESULT_SYNC_WRITE_FAILURE = 4,
+  SIMPLE_ENTRY_WRITE_RESULT_FAST_EMPTY_RETURN = 5,
+  SIMPLE_ENTRY_WRITE_RESULT_MAX = 6,
 };
 
 void RecordReadResult(net::CacheType cache_type, SimpleReadResult result) {
@@ -60,9 +60,10 @@ void RecordReadResult(net::CacheType cache_type, SimpleReadResult result) {
                    "ReadResult", cache_type, result, READ_RESULT_MAX);
 }
 
-void RecordWriteResult(net::CacheType cache_type, WriteResult result) {
-  SIMPLE_CACHE_UMA(ENUMERATION,
-                   "WriteResult2", cache_type, result, WRITE_RESULT_MAX);
+void RecordWriteResult(net::CacheType cache_type,
+                       SimpleEntryWriteResult result) {
+  SIMPLE_CACHE_UMA(ENUMERATION, "WriteResult2", cache_type, result,
+                   SIMPLE_ENTRY_WRITE_RESULT_MAX);
 }
 
 void RecordHeaderSize(net::CacheType cache_type, int size) {
@@ -428,7 +429,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
           net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
           CreateNetLogReadWriteCompleteCallback(net::ERR_INVALID_ARGUMENT));
     }
-    RecordWriteResult(cache_type_, WRITE_RESULT_INVALID_ARGUMENT);
+    RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
   }
   if (backend_.get() && offset + buf_len > backend_->GetMaxFileSize()) {
@@ -436,7 +437,7 @@ int SimpleEntryImpl::WriteData(int stream_index,
       net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
                         CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
     }
-    RecordWriteResult(cache_type_, WRITE_RESULT_OVER_MAX_SIZE);
+    RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_OVER_MAX_SIZE);
     return net::ERR_FAILED;
   }
   ScopedOperationRunner operation_runner(this);
@@ -949,7 +950,7 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   }
 
   if (state_ == STATE_FAILURE || state_ == STATE_UNINITIALIZED) {
-    RecordWriteResult(cache_type_, WRITE_RESULT_BAD_STATE);
+    RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_BAD_STATE);
     if (net_log_.IsCapturing()) {
       net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
                         CreateNetLogReadWriteCompleteCallback(net::ERR_FAILED));
@@ -978,7 +979,8 @@ void SimpleEntryImpl::WriteDataInternal(int stream_index,
   if (buf_len == 0) {
     int32_t data_size = data_size_[stream_index];
     if (truncate ? (offset == data_size) : (offset <= data_size)) {
-      RecordWriteResult(cache_type_, WRITE_RESULT_FAST_EMPTY_RETURN);
+      RecordWriteResult(cache_type_,
+                        SIMPLE_ENTRY_WRITE_RESULT_FAST_EMPTY_RETURN);
       if (!callback.is_null()) {
         base::ThreadTaskRunnerHandle::Get()->PostTask(
             FROM_HERE, base::BindOnce(std::move(callback), 0));
@@ -1400,9 +1402,10 @@ void SimpleEntryImpl::WriteOperationComplete(
     net::IOBuffer* buf) {
   int result = write_result->result;
   if (result >= 0)
-    RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
+    RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_SUCCESS);
   else
-    RecordWriteResult(cache_type_, WRITE_RESULT_SYNC_WRITE_FAILURE);
+    RecordWriteResult(cache_type_,
+                      SIMPLE_ENTRY_WRITE_RESULT_SYNC_WRITE_FAILURE);
   if (net_log_.IsCapturing()) {
     net_log_.AddEvent(net::NetLogEventType::SIMPLE_CACHE_ENTRY_WRITE_END,
                       CreateNetLogReadWriteCompleteCallback(result));
@@ -1657,7 +1660,7 @@ int SimpleEntryImpl::SetStream0Data(net::IOBuffer* buf,
   UpdateDataFromEntryStat(
       SimpleEntryStat(modification_time, modification_time, data_size_,
                       sparse_data_size_));
-  RecordWriteResult(cache_type_, WRITE_RESULT_SUCCESS);
+  RecordWriteResult(cache_type_, SIMPLE_ENTRY_WRITE_RESULT_SUCCESS);
   return buf_len;
 }
 
