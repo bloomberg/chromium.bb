@@ -434,24 +434,31 @@ void DriveInternalsWebUIHandler::OnPageLoaded(const base::ListValue* args) {
   if (!integration_service)
     return;
 
-  drive::DriveServiceInterface* drive_service =
-      integration_service->drive_service();
-  DCHECK(drive_service);
-  drive::DebugInfoCollector* debug_info_collector =
-      integration_service->debug_info_collector();
-  DCHECK(debug_info_collector);
-
   UpdateDriveRelatedPreferencesSection();
-  UpdateConnectionStatusSection(drive_service);
-  UpdateAboutResourceSection(drive_service);
-  UpdateAppListSection(drive_service);
-  UpdateLocalMetadataSection(debug_info_collector);
-  UpdateDeltaUpdateStatusSection(debug_info_collector);
-  UpdateInFlightOperationsSection(integration_service->job_list());
   UpdateGCacheContentsSection();
-  UpdateCacheContentsSection(debug_info_collector);
   UpdateLocalStorageUsageSection();
   UpdatePathConfigurationsSection();
+
+  drive::DriveServiceInterface* drive_service =
+      integration_service->drive_service();
+  if (drive_service) {
+    UpdateConnectionStatusSection(drive_service);
+    UpdateAboutResourceSection(drive_service);
+    UpdateAppListSection(drive_service);
+  }
+
+  drive::DebugInfoCollector* debug_info_collector =
+      integration_service->debug_info_collector();
+  if (debug_info_collector) {
+    UpdateLocalMetadataSection(debug_info_collector);
+    UpdateDeltaUpdateStatusSection(debug_info_collector);
+    UpdateCacheContentsSection(debug_info_collector);
+  }
+
+  drive::JobListInterface* job_list = integration_service->job_list();
+  if (job_list) {
+    UpdateInFlightOperationsSection(job_list);
+  }
 
   // When the drive-internals page is reloaded by the reload key, the page
   // content is recreated, but this WebUI object is not (instead, OnPageLoaded
@@ -887,8 +894,12 @@ void DriveInternalsWebUIHandler::OnPeriodicUpdate(const base::ListValue* args) {
   if (!integration_service)
     return;
 
-  UpdateInFlightOperationsSection(integration_service->job_list());
   UpdateEventLogSection();
+
+  drive::JobListInterface* job_list = integration_service->job_list();
+  if (job_list) {
+    UpdateInFlightOperationsSection(job_list);
+  }
 }
 
 }  // namespace
