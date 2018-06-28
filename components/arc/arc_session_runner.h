@@ -81,9 +81,7 @@ class ArcSessionRunner : public ArcSession::Observer {
 
   // Starts the full ARC instance, then it will connect the Mojo channel. When
   // the bridge becomes ready, registered Observer's OnSessionReady() is called.
-  void RequestUpgrade(const std::string& locale,
-                      const std::vector<std::string>& preferred_languages,
-                      const base::FilePath& demo_session_apps_path);
+  void RequestUpgrade(ArcSession::UpgradeParams params);
 
   // Stops the ARC service.
   void RequestStop();
@@ -138,13 +136,8 @@ class ArcSessionRunner : public ArcSession::Observer {
   // nullptr if the state is STOPPED, otherwise non-nullptr.
   std::unique_ptr<ArcSession> arc_session_;
 
-  // Locale and preferred languages to set in Android container during the boot.
-  std::string locale_;
-  std::vector<std::string> preferred_languages_;
-
-  // Path to demo session apps image that should be loaded in Android container
-  // during the boot for demo sessions.
-  base::FilePath demo_session_apps_path_;
+  // Parameters to upgrade request.
+  ArcSession::UpgradeParams upgrade_params_;
 
   // WeakPtrFactory to use callbacks.
   base::WeakPtrFactory<ArcSessionRunner> weak_ptr_factory_;

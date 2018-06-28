@@ -16,10 +16,7 @@ FakeArcSession::~FakeArcSession() = default;
 
 void FakeArcSession::StartMiniInstance() {}
 
-void FakeArcSession::RequestUpgrade(
-    const std::string& locale,
-    const std::vector<std::string>& preferred_languages,
-    const base::FilePath& demo_session_apps_path) {
+void FakeArcSession::RequestUpgrade(UpgradeParams params) {
   upgrade_requested_ = true;
   if (boot_failure_emulation_enabled_) {
     for (auto& observer : observer_list_)
