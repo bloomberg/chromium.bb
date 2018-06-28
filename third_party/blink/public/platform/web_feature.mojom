@@ -1953,6 +1953,7 @@ enum WebFeature {
   kCSSEnvironmentVariable_SafeAreaInsetLeft = 2490,
   kCSSEnvironmentVariable_SafeAreaInsetBottom = 2491,
   kCSSEnvironmentVariable_SafeAreaInsetRight = 2492,
+  kMediaControlsDisplayCutoutGesture = 2493,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

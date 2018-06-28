@@ -6,6 +6,8 @@
 
 #include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/core/input/touch.h"
@@ -180,6 +182,10 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, CombinedGesture) {
   // Check the viewport fit value has been correctly set.
   EXPECT_EQ(mojom::ViewportFit::kAuto,
             GetDocument().GetCurrentViewportFitForTests());
+
+  // Make sure we recorded a UseCounter metric.
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture) {
@@ -195,6 +201,10 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture) {
   SimulateContractingGesture();
   EXPECT_EQ(mojom::ViewportFit::kAuto,
             GetDocument().GetCurrentViewportFitForTests());
+
+  // Make sure we recorded a UseCounter metric.
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ContractingGesture_Noop) {
@@ -220,6 +230,10 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture) {
   SimulateExitFullscreen();
   EXPECT_EQ(mojom::ViewportFit::kAuto,
             GetDocument().GetCurrentViewportFitForTests());
+
+  // Make sure we recorded a UseCounter metric.
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, ExpandingGesture_DoubleNoop) {
@@ -252,6 +266,11 @@ TEST_F(MediaControlsDisplayCutoutDelegateTest, IncompleteGestureClearsState) {
   list = CreateTouchListWithTwoPoints(3, 3, -3, -3);
   SimulateEvent(CreateTouchEventWithList(EventTypeNames::touchstart, list));
   EXPECT_TRUE(DirectionIsUnknown());
+}
+
+TEST_F(MediaControlsDisplayCutoutDelegateTest, MetricsNoop) {
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kMediaControlsDisplayCutoutGesture));
 }
 
 TEST_F(MediaControlsDisplayCutoutDelegateTest, NoFullscreen_Noop) {

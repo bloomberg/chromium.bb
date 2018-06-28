@@ -46,6 +46,7 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kCSSEnvironmentVariable_SafeAreaInsetLeft,
           WebFeature::kCSSEnvironmentVariable_SafeAreaInsetRight,
           WebFeature::kCSSEnvironmentVariable_SafeAreaInsetBottom,
+          WebFeature::kMediaControlsDisplayCutoutGesture,
       }));
   return opt_in_features.count(feature);
 }

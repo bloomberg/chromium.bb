@@ -7,6 +7,8 @@
 #include "third_party/blink/public/platform/web_point.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/fullscreen/fullscreen.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
@@ -142,6 +144,9 @@ void MediaControlsDisplayCutoutDelegate::HandleTouchEvent(TouchEvent* event) {
   // direction has changed. In either case we should update the display cutout.
   if (previous_.has_value() && previous_->second != direction) {
     DCHECK(direction != Direction::kUnknown);
+
+    UseCounter::Count(GetDocument(),
+                      WebFeature::kMediaControlsDisplayCutoutGesture);
     GetDocument().SetExpandIntoDisplayCutout(direction ==
                                              Direction::kExpanding);
   }
