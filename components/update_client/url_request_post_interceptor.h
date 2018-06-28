@@ -1,44 +1,49 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_UPDATE_CLIENT_URL_LOADER_POST_INTERCEPTOR_H_
-#define COMPONENTS_UPDATE_CLIENT_URL_LOADER_POST_INTERCEPTOR_H_
+#ifndef COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_
+#define COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_
+
+#include <stdint.h>
+#include <map>
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/containers/queue.h"
-#include "base/files/file_path.h"
 #include "base/macros.h"
-#include "net/http/http_request_headers.h"
-#include "net/http/http_status_code.h"
+#include "base/memory/ref_counted.h"
+#include "base/synchronization/lock.h"
 #include "url/gurl.h"
 
-namespace network {
-class TestURLLoaderFactory;
+namespace base {
+class FilePath;
+class SequencedTaskRunner;
 }
 
 namespace net {
-namespace test_server {
-class EmbeddedTestServer;
-class HttpResponse;
-struct HttpRequest;
-}  // namespace test_server
-}  // namespace net
+class HttpRequestHeaders;
+}
 
 namespace update_client {
+
+class URLRequestMockJob;
 
 // Intercepts requests to a file path, counts them, and captures the body of
 // the requests. Optionally, for each request, it can return a canned response
 // from a given file. The class maintains a queue of expectations, and returns
 // one and only one response for each request that matches the expectation.
 // Then, the expectation is removed from the queue.
-class URLLoaderPostInterceptor {
+class URLRequestPostInterceptor
+    : public base::RefCountedThreadSafe<URLRequestPostInterceptor> {
  public:
-  using InterceptedRequest =
-      std::tuple<std::string, net::HttpRequestHeaders, GURL>;
+  using InterceptedRequest = std::pair<std::string, net::HttpRequestHeaders>;
 
-  // Called when the load associated with the url request is intercepted
-  // by this object:.
+  // Called when the job associated with the url request which is intercepted
+  // by this object has been created.
   using UrlJobRequestReadyCallback = base::OnceCallback<void()>;
 
   // Allows a generic string maching interface when setting up expectations.
@@ -48,14 +53,8 @@ class URLLoaderPostInterceptor {
     virtual ~RequestMatcher() {}
   };
 
-  explicit URLLoaderPostInterceptor(
-      network::TestURLLoaderFactory* url_loader_factory);
-  URLLoaderPostInterceptor(std::vector<GURL> supported_urls,
-                           network::TestURLLoaderFactory* url_loader_factory);
-  URLLoaderPostInterceptor(std::vector<GURL> supported_urls,
-                           net::test_server::EmbeddedTestServer*);
-
-  ~URLLoaderPostInterceptor();
+  // Returns the url that is intercepted.
+  GURL GetUrl() const;
 
   // Sets an expection for the body of the POST request and optionally,
   // provides a canned response identified by a |file_path| to be returned when
@@ -64,10 +63,8 @@ class URLLoaderPostInterceptor {
   // response body with that response code is returned.
   // Returns |true| if the expectation was set.
   bool ExpectRequest(std::unique_ptr<RequestMatcher> request_matcher);
-
   bool ExpectRequest(std::unique_ptr<RequestMatcher> request_matcher,
-                     net::HttpStatusCode response_code);
-
+                     int response_code);
   bool ExpectRequest(std::unique_ptr<RequestMatcher> request_matcher,
                      const base::FilePath& filepath);
 
@@ -106,28 +103,38 @@ class URLLoaderPostInterceptor {
   void url_job_request_ready_callback(
       UrlJobRequestReadyCallback url_job_request_ready_callback);
 
-  int GetHitCountForURL(const GURL& url);
-
  private:
-  void InitializeWithInterceptor();
-  void InitializeWithRequestHandler();
+  class Delegate;
+  class URLRequestMockJob;
 
-  std::unique_ptr<net::test_server::HttpResponse> RequestHandler(
-      const net::test_server::HttpRequest& request);
+  friend class URLRequestPostInterceptorFactory;
+  friend class base::RefCountedThreadSafe<URLRequestPostInterceptor>;
+
+  static const int kResponseCode200 = 200;
 
   struct ExpectationResponse {
-    ExpectationResponse(net::HttpStatusCode code, const std::string& body)
+    ExpectationResponse(int code, const std::string& body)
         : response_code(code), response_body(body) {}
-    const net::HttpStatusCode response_code;
+    const int response_code;
     const std::string response_body;
   };
   using Expectation =
       std::pair<std::unique_ptr<RequestMatcher>, ExpectationResponse>;
 
-  using PendingExpectation = std::pair<GURL, ExpectationResponse>;
+  URLRequestPostInterceptor(
+      const GURL& url,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  ~URLRequestPostInterceptor();
+
+  void ClearExpectations();
+
+  const GURL url_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
+  mutable base::Lock interceptor_lock_;
 
   // Contains the count of the request matching expectations.
-  int hit_count_ = 0;
+  int hit_count_;
 
   // Contains the request body and the extra headers of the intercepted
   // requests.
@@ -136,21 +143,59 @@ class URLLoaderPostInterceptor {
   // Contains the expectations which this interceptor tries to match.
   base::queue<Expectation> expectations_;
 
-  base::queue<PendingExpectation> pending_expectations_;
-
-  network::TestURLLoaderFactory* url_loader_factory_ = nullptr;
-  net::test_server::EmbeddedTestServer* embedded_test_server_ = nullptr;
+  URLRequestMockJob* request_job_ = nullptr;
 
   bool is_paused_ = false;
 
-  std::vector<GURL> filtered_urls_;
-
   UrlJobRequestReadyCallback url_job_request_ready_callback_;
 
-  DISALLOW_COPY_AND_ASSIGN(URLLoaderPostInterceptor);
+  DISALLOW_COPY_AND_ASSIGN(URLRequestPostInterceptor);
 };
 
-class PartialMatch : public URLLoaderPostInterceptor::RequestMatcher {
+class URLRequestPostInterceptorFactory {
+ public:
+  URLRequestPostInterceptorFactory(
+      const std::string& scheme,
+      const std::string& hostname,
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  ~URLRequestPostInterceptorFactory();
+
+  // Creates an interceptor object for the specified url path.
+  scoped_refptr<URLRequestPostInterceptor> CreateInterceptor(
+      const base::FilePath& filepath);
+
+ private:
+  const std::string scheme_;
+  const std::string hostname_;
+  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
+
+  // After creation, |delegate_| lives on the IO thread and it is owned by
+  // a URLRequestFilter after registration. A task to unregister it and
+  // implicitly destroy it is posted from ~URLRequestPostInterceptorFactory().
+  URLRequestPostInterceptor::Delegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(URLRequestPostInterceptorFactory);
+};
+
+// Intercepts HTTP POST requests sent to "localhost2".
+class InterceptorFactory : public URLRequestPostInterceptorFactory {
+ public:
+  explicit InterceptorFactory(
+      scoped_refptr<base::SequencedTaskRunner> io_task_runner);
+  ~InterceptorFactory();
+
+  // Creates an interceptor for the url path defined by POST_INTERCEPT_PATH.
+  scoped_refptr<URLRequestPostInterceptor> CreateInterceptor();
+
+  // Creates an interceptor for the given url path.
+  scoped_refptr<URLRequestPostInterceptor> CreateInterceptorForPath(
+      const char* url_path);
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InterceptorFactory);
+};
+
+class PartialMatch : public URLRequestPostInterceptor::RequestMatcher {
  public:
   explicit PartialMatch(const std::string& expected) : expected_(expected) {}
   bool Match(const std::string& actual) const override;
@@ -161,7 +206,7 @@ class PartialMatch : public URLLoaderPostInterceptor::RequestMatcher {
   DISALLOW_COPY_AND_ASSIGN(PartialMatch);
 };
 
-class AnyMatch : public URLLoaderPostInterceptor::RequestMatcher {
+class AnyMatch : public URLRequestPostInterceptor::RequestMatcher {
  public:
   AnyMatch() = default;
   bool Match(const std::string& actual) const override;
@@ -172,4 +217,4 @@ class AnyMatch : public URLLoaderPostInterceptor::RequestMatcher {
 
 }  // namespace update_client
 
-#endif  // COMPONENTS_UPDATE_CLIENT_URL_LOADER_POST_INTERCEPTOR_H_
+#endif  // COMPONENTS_UPDATE_CLIENT_URL_REQUEST_POST_INTERCEPTOR_H_

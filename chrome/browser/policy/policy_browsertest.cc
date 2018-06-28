@@ -118,7 +118,6 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/component_updater_switches.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_pattern.h"
@@ -150,7 +149,7 @@
 #include "components/translate/core/browser/translate_infobar_delegate.h"
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
-#include "components/update_client/url_loader_post_interceptor.h"
+#include "components/update_client/url_request_post_interceptor.h"
 #include "components/user_prefs/user_prefs.h"
 #include "components/variations/service/variations_service.h"
 #include "components/variations/variations_params_manager.h"
@@ -4813,9 +4812,6 @@ class ComponentUpdaterPolicyTest : public PolicyTest {
   ComponentUpdaterPolicyTest();
   ~ComponentUpdaterPolicyTest() override;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override;
-  void SetUpOnMainThread() override;
-
  protected:
   using TestCaseAction = void (ComponentUpdaterPolicyTest::*)();
   using TestCase = std::pair<TestCaseAction, TestCaseAction>;
@@ -4862,12 +4858,13 @@ class ComponentUpdaterPolicyTest : public PolicyTest {
  private:
   void OnDemandComplete(update_client::Error error);
 
-  std::unique_ptr<update_client::URLLoaderPostInterceptor> post_interceptor_;
+  std::unique_ptr<update_client::URLRequestPostInterceptorFactory>
+      interceptor_factory_;
+
+  scoped_refptr<update_client::URLRequestPostInterceptor> post_interceptor_;
 
   // This member is owned by g_browser_process;
   component_updater::ComponentUpdateService* cus_ = nullptr;
-
-  net::EmbeddedTestServer https_server_;
 
   DISALLOW_COPY_AND_ASSIGN(ComponentUpdaterPolicyTest);
 };
@@ -4875,32 +4872,9 @@ class ComponentUpdaterPolicyTest : public PolicyTest {
 const char ComponentUpdaterPolicyTest::component_id_[] =
     "jebgalgnebhfojomionfpkfelancnnkf";
 
-ComponentUpdaterPolicyTest::ComponentUpdaterPolicyTest()
-    : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+ComponentUpdaterPolicyTest::ComponentUpdaterPolicyTest() {}
 
 ComponentUpdaterPolicyTest::~ComponentUpdaterPolicyTest() {}
-
-void ComponentUpdaterPolicyTest::SetUpCommandLine(
-    base::CommandLine* command_line) {
-  // Set up the mock server, for the network requests.
-  ASSERT_TRUE(https_server_.InitializeAndListen());
-  const std::string val = base::StringPrintf(
-      "url-source=%s", https_server_.GetURL("/service/update2").spec().c_str());
-  command_line->AppendSwitchASCII(switches::kComponentUpdater, val.c_str());
-  PolicyTest::SetUpCommandLine(command_line);
-}
-
-void ComponentUpdaterPolicyTest::SetUpOnMainThread() {
-  const auto config = component_updater::MakeChromeComponentUpdaterConfigurator(
-      base::CommandLine::ForCurrentProcess(), g_browser_process->local_state());
-  const auto urls = config->UpdateUrl();
-  ASSERT_EQ(1u, urls.size());
-  post_interceptor_ = std::make_unique<update_client::URLLoaderPostInterceptor>(
-      urls, &https_server_);
-
-  https_server_.StartAcceptingConnections();
-  PolicyTest::SetUpOnMainThread();
-}
 
 void ComponentUpdaterPolicyTest::SetEnableComponentUpdates(
     bool enable_component_updates) {
@@ -4984,6 +4958,14 @@ void ComponentUpdaterPolicyTest::BeginTest() {
   ASSERT_TRUE(urls.size());
   const GURL url = urls.front();
 
+  interceptor_factory_ =
+      std::make_unique<update_client::URLRequestPostInterceptorFactory>(
+          url.scheme(), url.host(),
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
+
+  post_interceptor_ = interceptor_factory_->CreateInterceptor(
+      base::FilePath(FILE_PATH_LITERAL("service/update2")));
+
   cur_test_case_ = std::make_pair(
       &ComponentUpdaterPolicyTest::DefaultPolicy_GroupPolicySupported,
       &ComponentUpdaterPolicyTest::FinishDefaultPolicy_GroupPolicySupported);
@@ -4992,7 +4974,8 @@ void ComponentUpdaterPolicyTest::BeginTest() {
 }
 
 void ComponentUpdaterPolicyTest::EndTest() {
-  post_interceptor_.reset();
+  post_interceptor_ = nullptr;
+  interceptor_factory_ = nullptr;
   cus_ = nullptr;
 
   base::RunLoop::QuitCurrentWhenIdleDeprecated();

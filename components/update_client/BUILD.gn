@@ -76,7 +76,6 @@ static_library("update_client") {
     "//courgette:courgette_lib",
     "//crypto",
     "//net",
-    "//services/network/public/cpp:cpp",
     "//third_party/libxml",
     "//url",
   ]
@@ -93,8 +92,8 @@ static_library("test_support") {
     "test_configurator.h",
     "test_installer.cc",
     "test_installer.h",
-    "url_loader_post_interceptor.cc",
-    "url_loader_post_interceptor.h",
+    "url_request_post_interceptor.cc",
+    "url_request_post_interceptor.h",
   ]
 
   public_deps = [
@@ -108,7 +107,6 @@ static_library("test_support") {
     "//components/services/unzip:lib",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
-    "//services/network:test_support",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//services/service_manager/public/mojom",
@@ -177,7 +175,6 @@ source_set("unit_tests") {
     "//components/version_info:version_info",
     "//courgette:courgette_lib",
     "//net:test_support",
-    "//services/network/public/cpp:cpp_base",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp/test:test_support",
     "//testing/gmock",
