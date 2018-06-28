@@ -33,10 +33,8 @@
 
 #include <string.h>
 #include "base/allocator/partition_allocator/partition_alloc.h"
-#include "base/allocator/partition_allocator/spin_lock.h"
+#include "base/logging.h"
 #include "base/numerics/checked_math.h"
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
-#include "third_party/blink/renderer/platform/wtf/wtf.h"
 #include "third_party/blink/renderer/platform/wtf/wtf_export.h"
 
 namespace WTF {
@@ -132,30 +130,6 @@ class WTF_EXPORT Partitions {
   static base::SizeSpecificPartitionAllocator<1024>* layout_allocator_;
   static ReportPartitionAllocSizeFunction report_size_function_;
 };
-
-using base::kGenericMaxDirectMapped;
-using base::kPageAllocationGranularity;
-using base::kPageAllocationGranularityBaseMask;
-using base::kPageAllocationGranularityOffsetMask;
-using base::kSystemPageSize;
-
-using base::AllocPages;
-using base::DecommitSystemPages;
-using base::DiscardSystemPages;
-using base::PartitionFree;
-using base::FreePages;
-using base::GetAllocPageErrorCode;
-using base::RecommitSystemPages;
-using base::RoundDownToSystemPage;
-using base::RoundUpToSystemPage;
-using base::SetSystemPagesAccess;
-
-using base::PageInaccessible;
-using base::PageReadWrite;
-using base::PartitionStatsDumper;
-using base::PartitionMemoryStats;
-using base::PartitionBucketMemoryStats;
-using base::PartitionAllocHooks;
 
 }  // namespace WTF
 

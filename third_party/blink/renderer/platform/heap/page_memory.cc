@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/heap/page_memory.h"
 
 #include "base/allocator/partition_allocator/oom.h"
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
 #include "third_party/blink/renderer/platform/wtf/address_sanitizer.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -13,18 +14,18 @@
 namespace blink {
 
 void MemoryRegion::Release() {
-  WTF::FreePages(base_, size_);
+  base::FreePages(base_, size_);
 }
 
 bool MemoryRegion::Commit() {
-  CHECK(WTF::RecommitSystemPages(base_, size_, WTF::PageReadWrite));
-  return WTF::SetSystemPagesAccess(base_, size_, WTF::PageReadWrite);
+  CHECK(base::RecommitSystemPages(base_, size_, base::PageReadWrite));
+  return base::SetSystemPagesAccess(base_, size_, base::PageReadWrite);
 }
 
 void MemoryRegion::Decommit() {
   ASAN_UNPOISON_MEMORY_REGION(base_, size_);
-  WTF::DecommitSystemPages(base_, size_);
-  CHECK(WTF::SetSystemPagesAccess(base_, size_, WTF::PageInaccessible));
+  base::DecommitSystemPages(base_, size_);
+  CHECK(base::SetSystemPagesAccess(base_, size_, base::PageInaccessible));
 }
 
 PageMemoryRegion::PageMemoryRegion(Address base,
@@ -63,10 +64,9 @@ PageMemoryRegion* PageMemoryRegion::Allocate(size_t size,
                                              unsigned num_pages,
                                              RegionTree* region_tree) {
   // Round size up to the allocation granularity.
-  size = (size + WTF::kPageAllocationGranularityOffsetMask) &
-         WTF::kPageAllocationGranularityBaseMask;
+  size = base::RoundUpToPageAllocationGranularity(size);
   Address base = static_cast<Address>(
-      WTF::AllocPages(nullptr, size, kBlinkPageSize, WTF::PageInaccessible));
+      base::AllocPages(nullptr, size, kBlinkPageSize, base::PageInaccessible));
   if (!base)
     BlinkGCOutOfMemory();
   return new PageMemoryRegion(base, size, num_pages, region_tree);
@@ -154,16 +154,12 @@ PageMemory* PageMemory::SetupPageMemoryInRegion(PageMemoryRegion* region,
   return new PageMemory(region, MemoryRegion(payload_address, payload_size));
 }
 
-static size_t RoundToOsPageSize(size_t size) {
-  return (size + WTF::kSystemPageSize - 1) & ~(WTF::kSystemPageSize - 1);
-}
-
 PageMemory* PageMemory::Allocate(size_t payload_size, RegionTree* region_tree) {
   DCHECK_GT(payload_size, 0u);
 
   // Virtual memory allocation routines operate in OS page sizes.
   // Round up the requested size to nearest os page size.
-  payload_size = RoundToOsPageSize(payload_size);
+  payload_size = base::RoundUpToSystemPage(payload_size);
 
   // Overallocate by 2 times OS page size to have space for a
   // guard page at the beginning and end of blink heap page.

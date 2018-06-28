@@ -1349,7 +1349,7 @@ void* PaintLayer::operator new(size_t sz) {
 }
 
 void PaintLayer::operator delete(void* ptr) {
-  WTF::PartitionFree(ptr);
+  base::PartitionFree(ptr);
 }
 
 void PaintLayer::AddChild(PaintLayer* child, PaintLayer* before_child) {

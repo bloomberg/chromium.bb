@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/platform/heap/heap_page.h"
 
+#include "base/allocator/partition_allocator/page_allocator.h"
 #include "base/auto_reset.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -1316,12 +1317,13 @@ void NormalPage::RemoveFromHeap() {
 #if !DCHECK_IS_ON() && !defined(LEAK_SANITIZER) && !defined(ADDRESS_SANITIZER)
 static void DiscardPages(Address begin, Address end) {
   uintptr_t begin_address =
-      WTF::RoundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
+      base::RoundUpToSystemPage(reinterpret_cast<uintptr_t>(begin));
   uintptr_t end_address =
-      WTF::RoundDownToSystemPage(reinterpret_cast<uintptr_t>(end));
-  if (begin_address < end_address)
-    WTF::DiscardSystemPages(reinterpret_cast<void*>(begin_address),
-                            end_address - begin_address);
+      base::RoundDownToSystemPage(reinterpret_cast<uintptr_t>(end));
+  if (begin_address < end_address) {
+    base::DiscardSystemPages(reinterpret_cast<void*>(begin_address),
+                             end_address - begin_address);
+  }
 }
 #endif
 

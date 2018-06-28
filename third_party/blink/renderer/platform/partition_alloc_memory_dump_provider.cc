@@ -6,6 +6,7 @@
 
 #include <unordered_map>
 
+#include "base/allocator/partition_allocator/partition_alloc.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
@@ -26,7 +27,7 @@ std::string GetPartitionDumpName(const char* partition_name) {
 // This class is used to invert the dependency of PartitionAlloc on the
 // PartitionAllocMemoryDumpProvider. This implements an interface that will
 // be called with memory statistics for each bucket in the allocator.
-class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
+class PartitionStatsDumperImpl final : public base::PartitionStatsDumper {
   DISALLOW_NEW();
   WTF_MAKE_NONCOPYABLE(PartitionStatsDumperImpl);
 
@@ -38,10 +39,10 @@ class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
 
   // PartitionStatsDumper implementation.
   void PartitionDumpTotals(const char* partition_name,
-                           const WTF::PartitionMemoryStats*) override;
+                           const base::PartitionMemoryStats*) override;
   void PartitionsDumpBucketStats(
       const char* partition_name,
-      const WTF::PartitionBucketMemoryStats*) override;
+      const base::PartitionBucketMemoryStats*) override;
 
   size_t TotalActiveBytes() const { return total_active_bytes_; }
 
@@ -53,7 +54,7 @@ class PartitionStatsDumperImpl final : public WTF::PartitionStatsDumper {
 
 void PartitionStatsDumperImpl::PartitionDumpTotals(
     const char* partition_name,
-    const WTF::PartitionMemoryStats* memory_stats) {
+    const base::PartitionMemoryStats* memory_stats) {
   total_active_bytes_ += memory_stats->total_active_bytes;
   std::string dump_name = GetPartitionDumpName(partition_name);
   base::trace_event::MemoryAllocatorDump* allocator_dump =
@@ -74,7 +75,7 @@ void PartitionStatsDumperImpl::PartitionDumpTotals(
 
 void PartitionStatsDumperImpl::PartitionsDumpBucketStats(
     const char* partition_name,
-    const WTF::PartitionBucketMemoryStats* memory_stats) {
+    const base::PartitionBucketMemoryStats* memory_stats) {
   DCHECK(memory_stats->is_valid);
   std::string dump_name = GetPartitionDumpName(partition_name);
   if (memory_stats->is_direct_map) {
