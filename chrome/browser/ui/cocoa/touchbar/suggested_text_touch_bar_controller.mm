@@ -8,7 +8,6 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #import "ui/base/cocoa/touch_bar_util.h"
-#include "ui/gfx/range/range.h"
 
 namespace {
 // Touch bar identifier.
@@ -25,18 +24,11 @@ class WebContentsTextObserver : public content::WebContentsObserver {
                           SuggestedTextTouchBarController* owner)
       : WebContentsObserver(web_contents), owner_(owner) {}
 
-  void DidChangeTextSelection(const base::string16& text,
-                              const gfx::Range& range) override {
+  void DidChangeTextSelection(
+      const base::string16& new_selected_text) override {
     if (@available(macOS 10.12.2, *)) {
-      [owner_ webContentsTextSelectionChanged:base::SysUTF16ToNSString(text)
-                                        range:range.ToNSRange()];
-    }
-  }
-
-  void DidFinishLoad(content::RenderFrameHost* render_frame_host,
-                     const GURL& validated_url) override {
-    if (@available(macOS 10.12.2, *)) {
-      [owner_ webContentsFinishedLoading];
+      [owner_ webContentsTextSelectionChanged:base::SysUTF16ToNSString(
+                                                  new_selected_text)];
     }
   }
 
@@ -58,13 +50,8 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   // The text on which suggestions are based.
   base::scoped_nsobject<NSString> text_;
 
-  // A list of NSTextCheckingResults containing text suggestions for |text_| at
-  // |selectionRange_|.
+  // A list of NSTextCheckingResults containing text suggestions for |text_|.
   base::scoped_nsobject<NSArray> suggestions_;
-
-  // The currently selected range. If the range has length = 0, it is simply a
-  // cursor position.
-  NSRange selectionRange_;
 }
 @end
 
@@ -87,7 +74,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (NSTouchBar*)makeTouchBar {
-  if (!webContents_->IsFocusedElementEditable())
+  if (!webContents_->IsFocusedElementEditable() || ![text_ length])
     return nil;
 
   base::scoped_nsobject<NSTouchBar> touchBar([[ui::NSTouchBar() alloc] init]);
@@ -113,7 +100,7 @@ class WebContentsTextObserver : public content::WebContentsObserver {
           initWithIdentifier:kSuggestedTextItemsTouchId];
   candidateListItem.delegate = self;
   [candidateListItem setCandidates:suggestions_
-                  forSelectedRange:selectionRange_
+                  forSelectedRange:NSMakeRange(0, [text_ length])
                           inString:text_];
   return candidateListItem;
 }
@@ -127,29 +114,19 @@ class WebContentsTextObserver : public content::WebContentsObserver {
   [self replaceSelectedText:[selectedResult replacementString]];
 }
 
-- (void)webContentsTextSelectionChanged:(NSString*)text range:(NSRange)range {
+- (void)webContentsTextSelectionChanged:(NSString*)text {
   if (webContents_->IsFocusedElementEditable()) {
     [self setText:text];
-    selectionRange_ = range;
-    [self requestSuggestionsForText:text inRange:range];
+    [self requestSuggestionsForText:text];
   } else {
     [controller_ invalidateTouchBar];
   }
 }
 
-- (void)webContentsFinishedLoading {
-  if (webContents_->IsFocusedElementEditable()) {
-    // TODO(tnijssen): Actually request the current text and cursor position.
-    [self setText:@""];
-    selectionRange_ = NSMakeRange(0, 0);
-    [self requestSuggestionsForText:@"" inRange:NSMakeRange(0, 0)];
-  }
-}
-
-- (void)requestSuggestionsForText:(NSString*)text inRange:(NSRange)range {
+- (void)requestSuggestionsForText:(NSString*)text {
   NSSpellChecker* spell_checker = [NSSpellChecker sharedSpellChecker];
   [spell_checker
-      requestCandidatesForSelectedRange:range
+      requestCandidatesForSelectedRange:NSMakeRange(0, [text length])
                                inString:text
                                   types:NSTextCheckingAllSystemTypes
                                 options:nil
@@ -163,8 +140,10 @@ class WebContentsTextObserver : public content::WebContentsObserver {
 }
 
 - (void)replaceSelectedText:(NSString*)text {
-  // TODO(tnijssen): Create a method that replaces a range of text within
-  // WebContents rather than relying on WebContents::Replace() which doesn't.
+  // Strip the string of leading and trailing whitespace for replacement.
+  text = [text
+      stringByTrimmingCharactersInSet:[NSCharacterSet
+                                          whitespaceAndNewlineCharacterSet]];
   webContents_->Replace(base::SysNSStringToUTF16(text));
 }
 
