@@ -86,9 +86,9 @@ class ServiceFontManager::SkiaDiscardableManager
     UMA_HISTOGRAM_ENUMERATION("GPU.OopRaster.GlyphCacheMiss", type,
                               SkStrikeClient::CacheMissType::kLast + 1);
 
-    const bool no_fallback = SkStrikeClient::kGlyphMetrics ||
-                             SkStrikeClient::kGlyphPath ||
-                             SkStrikeClient::kGlyphImage;
+    const bool no_fallback = (type == SkStrikeClient::kGlyphMetrics ||
+                              type == SkStrikeClient::kGlyphPath ||
+                              type == SkStrikeClient::kGlyphImage);
     constexpr int kMaxDumps = 10;
     if (no_fallback && dump_count_ < kMaxDumps) {
       ++dump_count_;
