@@ -137,7 +137,7 @@ void ProxyImpl::InitializeLayerTreeFrameSinkOnImpl(
   proxy_main_frame_sink_bound_weak_ptr_ = proxy_main_frame_sink_bound_weak_ptr;
 
   LayerTreeHostImpl* host_impl = host_impl_.get();
-  bool success = host_impl->InitializeRenderer(layer_tree_frame_sink);
+  bool success = host_impl->InitializeFrameSink(layer_tree_frame_sink);
   MainThreadTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce(&ProxyMain::DidInitializeLayerTreeFrameSink,
                                 proxy_main_weak_ptr_, success));

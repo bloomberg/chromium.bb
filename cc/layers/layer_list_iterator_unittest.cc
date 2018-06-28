@@ -207,7 +207,7 @@ TEST(LayerListIteratorTest, VerifyTraversalOrderImpl) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
 
   // This test constructs the following tree.
   // 1
@@ -260,7 +260,7 @@ TEST(LayerListIteratorTest, VerifySingleLayerImpl) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
 
   // This test constructs a tree consisting of a single layer.
   std::unique_ptr<LayerImpl> layer1 =
@@ -295,7 +295,7 @@ TEST(LayerListReverseIteratorTest, VerifyTraversalOrderImpl) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
 
   // This test constructs the following tree.
   // 1
@@ -350,7 +350,7 @@ TEST(LayerListReverseIteratorTest, VerifySingleLayerImpl) {
       FakeLayerTreeFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.SetVisible(true);
-  EXPECT_TRUE(host_impl.InitializeRenderer(layer_tree_frame_sink.get()));
+  EXPECT_TRUE(host_impl.InitializeFrameSink(layer_tree_frame_sink.get()));
 
   // This test constructs a tree consisting of a single layer.
   std::unique_ptr<LayerImpl> layer1 =

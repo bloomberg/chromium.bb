@@ -52,7 +52,7 @@ class PictureLayerImplPerfTest : public testing::Test {
 
   void SetUp() override {
     host_impl_.SetVisible(true);
-    host_impl_.InitializeRenderer(layer_tree_frame_sink_.get());
+    host_impl_.InitializeFrameSink(layer_tree_frame_sink_.get());
   }
 
   void SetupPendingTree(const gfx::Size& layer_bounds) {

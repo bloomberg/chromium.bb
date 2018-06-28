@@ -45,9 +45,9 @@ class TileManagerPerfTest : public TestLayerTreeHostBase {
                base::TimeDelta::FromMilliseconds(kTimeLimitMillis),
                kTimeCheckInterval) {}
 
-  void InitializeRenderer() override {
+  void InitializeFrameSink() override {
     host_impl()->SetVisible(true);
-    host_impl()->InitializeRenderer(layer_tree_frame_sink());
+    host_impl()->InitializeFrameSink(layer_tree_frame_sink());
     tile_manager()->SetTileTaskManagerForTesting(
         std::make_unique<FakeTileTaskManagerImpl>());
   }

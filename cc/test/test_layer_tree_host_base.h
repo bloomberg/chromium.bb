@@ -32,7 +32,7 @@ class TestLayerTreeHostBase : public testing::Test {
       TaskRunnerProvider* task_runner_provider,
       TaskGraphRunner* task_graph_runner);
   virtual std::unique_ptr<TaskGraphRunner> CreateTaskGraphRunner();
-  virtual void InitializeRenderer();
+  virtual void InitializeFrameSink();
 
   void ResetLayerTreeFrameSink(
       std::unique_ptr<LayerTreeFrameSink> layer_tree_frame_sink);

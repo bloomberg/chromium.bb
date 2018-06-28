@@ -242,7 +242,7 @@ class LayerTreeHostImplTest : public testing::Test,
         image_worker_ ? image_worker_->task_runner() : nullptr);
     layer_tree_frame_sink_ = std::move(layer_tree_frame_sink);
     host_impl_->SetVisible(true);
-    bool init = host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+    bool init = host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 1.f);
     host_impl_->active_tree()->SetLocalSurfaceIdFromParent(
@@ -3600,7 +3600,7 @@ class LayerTreeHostImplTestScrollbarAnimation : public LayerTreeHostImplTest {
     host_impl_ = base::WrapUnique(host_impl_override_time);
     layer_tree_frame_sink_ = CreateLayerTreeFrameSink();
     host_impl_->SetVisible(true);
-    host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+    host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
 
     SetupScrollAndContentsLayers(content_size);
     host_impl_->active_tree()->PushPageScaleFromMainThread(1.f, 1.f, 4.f);
@@ -9198,7 +9198,7 @@ TEST_F(LayerTreeHostImplTest, PartialSwapReceivesDamageRect) {
           &task_graph_runner_,
           AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
   layer_tree_host_impl->SetVisible(true);
-  layer_tree_host_impl->InitializeRenderer(layer_tree_frame_sink.get());
+  layer_tree_host_impl->InitializeFrameSink(layer_tree_frame_sink.get());
   layer_tree_host_impl->WillBeginImplFrame(
       viz::CreateBeginFrameArgsForTesting(BEGINFRAME_FROM_HERE, 0, 2));
   layer_tree_host_impl->SetViewportSize(gfx::Size(500, 500));
@@ -9669,7 +9669,7 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   // Gpu compositing.
   layer_tree_frame_sink_ = FakeLayerTreeFrameSink::Create3d();
   host_impl_->SetVisible(true);
-  host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+  host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
   {
     const auto& state = host_impl_->global_tile_state();
     EXPECT_EQ(kGpuByteLimit, state.hard_memory_limit_in_bytes);
@@ -9697,7 +9697,7 @@ TEST_F(LayerTreeHostImplTest, MemoryLimits) {
   // Software compositing.
   host_impl_->ReleaseLayerTreeFrameSink();
   layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
-  host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+  host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
   {
     const auto& state = host_impl_->global_tile_state();
     EXPECT_EQ(kGpuByteLimit, state.hard_memory_limit_in_bytes);
@@ -9814,7 +9814,7 @@ class LayerTreeHostImplTestPrepareTiles : public LayerTreeHostImplTest {
     host_impl_.reset(fake_host_impl_);
     layer_tree_frame_sink_ = CreateLayerTreeFrameSink();
     host_impl_->SetVisible(true);
-    host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+    host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
     host_impl_->SetViewportSize(gfx::Size(10, 10));
   }
 
@@ -13609,14 +13609,14 @@ TEST_F(LayerTreeHostImplTest, RecomputeGpuRasterOnLayerTreeFrameSinkChange) {
       AnimationHost::CreateForTesting(ThreadInstance::IMPL), 0, nullptr);
   host_impl_->SetVisible(true);
 
-  // InitializeRenderer with a gpu-raster enabled output surface.
+  // InitializeFrameSink with a gpu-raster enabled output surface.
   auto gpu_raster_layer_tree_frame_sink = FakeLayerTreeFrameSink::Create3d();
-  host_impl_->InitializeRenderer(gpu_raster_layer_tree_frame_sink.get());
+  host_impl_->InitializeFrameSink(gpu_raster_layer_tree_frame_sink.get());
   EXPECT_TRUE(host_impl_->use_gpu_rasterization());
 
   // Re-initialize with a software output surface.
   layer_tree_frame_sink_ = FakeLayerTreeFrameSink::CreateSoftware();
-  host_impl_->InitializeRenderer(layer_tree_frame_sink_.get());
+  host_impl_->InitializeFrameSink(layer_tree_frame_sink_.get());
   EXPECT_FALSE(host_impl_->use_gpu_rasterization());
 }
 

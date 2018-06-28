@@ -154,7 +154,7 @@ LayerTestCommon::LayerImplTest::LayerImplTest(
   host_->host_impl()->active_tree()->SetRootLayerForTesting(std::move(root));
   host_->host_impl()->SetVisible(true);
   EXPECT_TRUE(
-      host_->host_impl()->InitializeRenderer(layer_tree_frame_sink_.get()));
+      host_->host_impl()->InitializeFrameSink(layer_tree_frame_sink_.get()));
 
   const int timeline_id = AnimationIdProvider::NextTimelineId();
   timeline_ = AnimationTimeline::Create(timeline_id);

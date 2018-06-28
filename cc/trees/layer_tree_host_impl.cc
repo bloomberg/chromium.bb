@@ -3137,9 +3137,9 @@ void LayerTreeHostImpl::ReleaseLayerTreeFrameSink() {
   use_gpu_rasterization_ = false;
 }
 
-bool LayerTreeHostImpl::InitializeRenderer(
+bool LayerTreeHostImpl::InitializeFrameSink(
     LayerTreeFrameSink* layer_tree_frame_sink) {
-  TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeRenderer");
+  TRACE_EVENT0("cc", "LayerTreeHostImpl::InitializeFrameSink");
 
   ReleaseLayerTreeFrameSink();
   if (!layer_tree_frame_sink->BindToClient(this)) {
@@ -3162,8 +3162,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
   }
 
   resource_pool_ = std::make_unique<ResourcePool>(
-      &resource_provider_, layer_tree_frame_sink_->context_provider(),
-      GetTaskRunner(), ResourcePool::kDefaultExpirationDelay,
+      &resource_provider_, context_provider, GetTaskRunner(),
+      ResourcePool::kDefaultExpirationDelay,
       settings_.disallow_non_exact_resource_reuse);
 
   auto* context = layer_tree_frame_sink_->worker_context_provider();

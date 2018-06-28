@@ -47,7 +47,7 @@ TEST(HeadsUpDisplayLayerImplTest, ResourcelessSoftwareDrawAfterResourceLoss) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   std::unique_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
       HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer_ptr->SetBounds(gfx::Size(100, 100));
@@ -80,7 +80,7 @@ TEST(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   host_impl.CreatePendingTree();
   host_impl.SetVisible(true);
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
   std::unique_ptr<HeadsUpDisplayLayerImpl> layer_ptr =
       HeadsUpDisplayLayerImpl::Create(host_impl.pending_tree(), 1);
   layer_ptr->SetBounds(gfx::Size(100, 100));
@@ -97,7 +97,7 @@ TEST(HeadsUpDisplayLayerImplTest, CPUAndGPURasterCanvas) {
 
   host_impl.ReleaseLayerTreeFrameSink();
   layer_tree_frame_sink = FakeLayerTreeFrameSink::CreateSoftware();
-  host_impl.InitializeRenderer(layer_tree_frame_sink.get());
+  host_impl.InitializeFrameSink(layer_tree_frame_sink.get());
 
   // Check SW canvas drawing is ok.
   CheckDrawLayer(layer, host_impl.layer_tree_frame_sink(),
