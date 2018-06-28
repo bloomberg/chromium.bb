@@ -50,6 +50,7 @@ class TestBluetoothLocalGattServiceDelegate
                                 const ErrorCallback& error_callback) override;
   void OnNotificationsStart(
       const BluetoothDevice* device,
+      device::BluetoothGattCharacteristic::NotificationType notification_type,
       const BluetoothLocalGattCharacteristic* characteristic) override;
   void OnNotificationsStop(
       const BluetoothDevice* device,

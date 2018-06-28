@@ -10,6 +10,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_service_bluez.h"
@@ -40,8 +41,11 @@ class BluetoothGattDescriptorDelegateWrapper
       const base::Closure& callback,
       const device::BluetoothLocalGattService::Delegate::ErrorCallback&
           error_callback) override;
-  void StartNotifications() override {}
-  void StopNotifications() override {}
+
+  void StartNotifications(const dbus::ObjectPath& device_path,
+                          device::BluetoothGattCharacteristic::NotificationType
+                              notification_type) override {}
+  void StopNotifications(const dbus::ObjectPath& device_path) override {}
 
  private:
   BluetoothLocalGattDescriptorBlueZ* descriptor_;

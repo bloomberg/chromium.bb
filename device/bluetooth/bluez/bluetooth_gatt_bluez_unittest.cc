@@ -18,6 +18,7 @@
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_filter.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
@@ -1972,7 +1973,7 @@ TEST_F(BluetoothGattBlueZTest, NotificationType) {
 
   // Request to start notifications.
   characteristic->StartNotifySession(
-      BluetoothRemoteGattCharacteristic::NotificationType::kNotification,
+      device::BluetoothGattCharacteristic::NotificationType::kNotification,
       base::Bind(&BluetoothGattBlueZTest::NotifySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,
@@ -1988,7 +1989,7 @@ TEST_F(BluetoothGattBlueZTest, NotificationType) {
       base::Bind(&BluetoothGattBlueZTest::DBusErrorCallback,
                  base::Unretained(this)));
   characteristic->StartNotifySession(
-      BluetoothRemoteGattCharacteristic::NotificationType::kIndication,
+      device::BluetoothGattCharacteristic::NotificationType::kIndication,
       base::Bind(&BluetoothGattBlueZTest::NotifySessionCallback,
                  base::Unretained(this)),
       base::Bind(&BluetoothGattBlueZTest::ServiceErrorCallback,

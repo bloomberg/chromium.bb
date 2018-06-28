@@ -15,7 +15,7 @@
 #include "dbus/object_path.h"
 #include "dbus/property.h"
 #include "device/bluetooth/bluetooth_export.h"
-#include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/dbus/bluez_dbus_client.h"
 
 namespace bluez {
@@ -124,8 +124,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothGattCharacteristicClient
 #if defined(OS_CHROMEOS)
   virtual void StartNotify(
       const dbus::ObjectPath& object_path,
-      device::BluetoothRemoteGattCharacteristic::NotificationType
-          notification_type,
+      device::BluetoothGattCharacteristic::NotificationType notification_type,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 #else

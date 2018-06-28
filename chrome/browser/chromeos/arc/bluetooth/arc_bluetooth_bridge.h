@@ -27,6 +27,7 @@
 #include "device/bluetooth/bluetooth_advertisement.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_discovery_session.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor.h"
@@ -178,6 +179,7 @@ class ArcBluetoothBridge
 
   void OnNotificationsStart(
       const device::BluetoothDevice* device,
+      device::BluetoothGattCharacteristic::NotificationType notification_type,
       const device::BluetoothLocalGattCharacteristic* characteristic) override;
 
   void OnNotificationsStop(

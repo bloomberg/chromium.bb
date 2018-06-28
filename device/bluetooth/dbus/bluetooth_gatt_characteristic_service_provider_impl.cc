@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_attribute_helpers.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -339,8 +340,29 @@ void BluetoothGattCharacteristicServiceProviderImpl::StartNotify(
   VLOG(3) << "BluetoothGattCharacteristicServiceProvider::StartNotify: "
           << object_path_.value();
   DCHECK(OnOriginThread());
+
+  dbus::MessageReader reader(method_call);
+  uint8_t cccd_value = 0;
+  if (!reader.PopByte(&cccd_value)) {
+    LOG(WARNING) << "Error reading cccd_value parameter. StartNotify called "
+                 << "with incorrect parameters: " << method_call->ToString();
+  }
+
+  std::map<std::string, dbus::MessageReader> options;
+  dbus::ObjectPath device_path;
+  ReadOptions(&reader, &options);
+  auto it = options.find(bluetooth_gatt_characteristic::kOptionDevice);
+  if (it != options.end())
+    it->second.PopObjectPath(&device_path);
+
   DCHECK(delegate_);
-  delegate_->StartNotifications();
+  delegate_->StartNotifications(
+      device_path,
+      cccd_value == static_cast<uint8_t>(device::BluetoothGattCharacteristic::
+                                             NotificationType::kIndication)
+          ? device::BluetoothGattCharacteristic::NotificationType::kIndication
+          : device::BluetoothGattCharacteristic::NotificationType::
+                kNotification);
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::StopNotify(
@@ -350,8 +372,16 @@ void BluetoothGattCharacteristicServiceProviderImpl::StopNotify(
           << object_path_.value();
   DCHECK(OnOriginThread());
 
+  dbus::MessageReader reader(method_call);
+  std::map<std::string, dbus::MessageReader> options;
+  dbus::ObjectPath device_path;
+  ReadOptions(&reader, &options);
+  auto it = options.find(bluetooth_gatt_characteristic::kOptionDevice);
+  if (it != options.end())
+    it->second.PopObjectPath(&device_path);
+
   DCHECK(delegate_);
-  delegate_->StopNotifications();
+  delegate_->StopNotifications(device_path);
 }
 
 void BluetoothGattCharacteristicServiceProviderImpl::OnExported(

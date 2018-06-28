@@ -36,12 +36,17 @@ void BluetoothGattCharacteristicDelegateWrapper::SetValue(
       error_callback);
 }
 
-void BluetoothGattCharacteristicDelegateWrapper::StartNotifications() {
-  service()->GetDelegate()->OnNotificationsStart(nullptr, characteristic_);
+void BluetoothGattCharacteristicDelegateWrapper::StartNotifications(
+    const dbus::ObjectPath& device_path,
+    device::BluetoothGattCharacteristic::NotificationType notification_type) {
+  service()->GetDelegate()->OnNotificationsStart(
+      GetDeviceWithPath(device_path), notification_type, characteristic_);
 }
 
-void BluetoothGattCharacteristicDelegateWrapper::StopNotifications() {
-  service()->GetDelegate()->OnNotificationsStop(nullptr, characteristic_);
+void BluetoothGattCharacteristicDelegateWrapper::StopNotifications(
+    const dbus::ObjectPath& device_path) {
+  service()->GetDelegate()->OnNotificationsStop(GetDeviceWithPath(device_path),
+                                                characteristic_);
 }
 
 }  // namespace bluez

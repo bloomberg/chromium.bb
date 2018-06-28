@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/dbus/bluetooth_gatt_attribute_value_delegate.h"
 #include "device/bluetooth/dbus/bluez_dbus_manager.h"
 #include "device/bluetooth/dbus/fake_bluetooth_gatt_manager_client.h"
@@ -189,7 +190,10 @@ bool FakeBluetoothGattCharacteristicServiceProvider::NotificationsChange(
 
   // Pass on to the delegate.
   DCHECK(delegate_);
-  start ? delegate_->StartNotifications() : delegate_->StopNotifications();
+  start ? delegate_->StartNotifications(object_path_,
+                                        device::BluetoothGattCharacteristic::
+                                            NotificationType::kNotification)
+        : delegate_->StopNotifications(object_path_);
 
   return true;
 }
