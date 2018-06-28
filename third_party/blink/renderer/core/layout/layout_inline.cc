@@ -908,10 +908,10 @@ bool LayoutInline::NodeAtPoint(HitTestResult& result,
     for (const NGPaintFragment* fragment :
          NGPaintFragment::InlineFragmentsFor(this)) {
       // NGBoxFragmentPainter::NodeAtPoint() takes an offset that is accumulated
-      // up to its parent fragment. Compute this offset.
+      // up to the fragment itself. Compute this offset.
       LayoutPoint adjusted_location =
           accumulated_offset +
-          fragment->Parent()->InlineOffsetToContainerBox().ToLayoutPoint();
+          fragment->InlineOffsetToContainerBox().ToLayoutPoint();
       if (NGBoxFragmentPainter(*fragment).NodeAtPoint(
               result, location_in_container, adjusted_location,
               hit_test_action))

@@ -36,6 +36,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintInlineBox(const PaintInfo&, const LayoutPoint& paint_offset);
 
+  // |accumulated_offset| is the offset of the current fragment itself in the
+  // paint layer. Note that this is different from legacy, where it stands for
+  // the offset of the parent context instead.
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
