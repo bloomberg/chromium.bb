@@ -1995,11 +1995,6 @@ void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {
   StopImpl(data_fate);
 }
 
-bool ProfileSyncService::IsSyncRequested() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return !HasDisableReason(DISABLE_REASON_USER_CHOICE);
-}
-
 void ProfileSyncService::RequestStart() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) ||

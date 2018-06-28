@@ -457,20 +457,17 @@ TEST_F(ProfileSyncServiceTest, EarlyRequestStop) {
   SignIn();
 
   service()->RequestStop(ProfileSyncService::KEEP_DATA);
-  EXPECT_FALSE(service()->IsSyncRequested());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
 
   // Because sync is not requested, this should fail.
   InitializeForNthSync();
-  EXPECT_FALSE(service()->IsSyncRequested());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
   EXPECT_FALSE(service()->IsSyncActive());
 
   // Request start. This should be enough to allow init to happen.
   service()->RequestStart();
-  EXPECT_TRUE(service()->IsSyncRequested());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   EXPECT_TRUE(service()->IsSyncActive());
