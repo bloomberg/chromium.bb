@@ -7725,6 +7725,7 @@ static INLINE int is_interp_filter_match(const INTERPOLATION_FILTER_STATS *st,
       return 0;
     }
   }
+  if (has_second_ref(mi) && st->comp_type != mi->interinter_comp.type) return 0;
   return 1;
 }
 
@@ -7747,11 +7748,11 @@ static INLINE void save_interp_filter_search_stat(MACROBLOCK *x,
   const int comp_idx = mbmi->compound_idx;
   const int offset = x->interp_filter_stats_idx[comp_idx];
   if (offset < MAX_INTERP_FILTER_STATS) {
-    INTERPOLATION_FILTER_STATS stat = {
-      mbmi->interp_filters,
-      { mbmi->mv[0], mbmi->mv[1] },
-      { mbmi->ref_frame[0], mbmi->ref_frame[1] },
-    };
+    INTERPOLATION_FILTER_STATS stat = { mbmi->interp_filters,
+                                        { mbmi->mv[0], mbmi->mv[1] },
+                                        { mbmi->ref_frame[0],
+                                          mbmi->ref_frame[1] },
+                                        mbmi->interinter_comp.type };
     x->interp_filter_stats[comp_idx][offset] = stat;
     x->interp_filter_stats_idx[comp_idx]++;
   }
@@ -7762,7 +7763,8 @@ static int64_t interpolation_filter_search(
     int mi_row, int mi_col, const BUFFER_SET *const tmp_dst,
     BUFFER_SET *const orig_dst, InterpFilter (*const single_filter)[REF_FRAMES],
     int64_t *const rd, int *const switchable_rate, int *const skip_txfm_sb,
-    int64_t *const skip_sse_sb) {
+    int64_t *const skip_sse_sb, const int skip_build_pred,
+    HandleInterModeArgs *args, int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -7786,7 +7788,8 @@ static int64_t interpolation_filter_search(
   switchable_ctx[1] = av1_get_pred_context_switchable_interp(xd, 1);
   *switchable_rate =
       get_switchable_rate(x, mbmi->interp_filters, switchable_ctx);
-  av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
+  if (!skip_build_pred)
+    av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
   for (int plane = 0; plane < num_planes; ++plane)
     av1_subtract_plane(x, bsize, plane);
 #if DNN_BASED_RD_INTERP_FILTER
@@ -7807,6 +7810,29 @@ static int64_t interpolation_filter_search(
            av1_broadcast_interp_filter(EIGHTTAP_REGULAR));
     return 0;
   }
+
+  if (args->modelled_rd != NULL) {
+    if (has_second_ref(mbmi)) {
+      int refs[2] = { mbmi->ref_frame[0],
+                      (mbmi->ref_frame[1] < 0 ? 0 : mbmi->ref_frame[1]) };
+      const int mode0 = compound_ref0_mode(mbmi->mode);
+      const int mode1 = compound_ref1_mode(mbmi->mode);
+      const int64_t mrd = AOMMIN(args->modelled_rd[mode0][refs[0]],
+                                 args->modelled_rd[mode1][refs[1]]);
+      if ((*rd >> 1) > mrd && ref_best_rd < INT64_MAX) {
+        return INT64_MAX;
+      }
+    }
+  }
+
+  if (cpi->sf.use_rd_breakout && ref_best_rd < INT64_MAX) {
+    // if current pred_error modeled rd is substantially more than the best
+    // so far, do not bother doing full rd
+    if ((*rd >> 2) > ref_best_rd) {
+      return INT64_MAX;
+    }
+  }
+
   int skip_hor = 1;
   int skip_ver = 1;
   const int is_compound = has_second_ref(mbmi);
@@ -8595,9 +8621,6 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       aom_subtract_block(bh, bw, diff10, bw, pred1, bw, pred0, bw);
     }
   }
-  const int orig_is_best = xd->plane[0].dst.buf == orig_dst->plane[0];
-  const BUFFER_SET *backup_buf = orig_is_best ? tmp_dst : orig_dst;
-  const BUFFER_SET *best_buf = orig_is_best ? orig_dst : tmp_dst;
   for (cur_type = COMPOUND_AVERAGE; cur_type < COMPOUND_TYPES; cur_type++) {
     if (cur_type != COMPOUND_AVERAGE && !masked_compound_used) break;
     if (!is_interinter_compound_used(cur_type, bsize)) continue;
@@ -8616,15 +8639,12 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       }
       masked_type_cost += x->comp_idx_cost[comp_index_ctx][1];
       rs2 = masked_type_cost;
-      // No need to call av1_build_inter_predictors_sby here
-      // 1. COMPOUND_AVERAGE is always the first candidate
-      // 2. av1_build_inter_predictors_sby has been called by
-      // interpolation_filter_search
+      av1_build_inter_predictors_sby(cm, xd, mi_row, mi_col, orig_dst, bsize);
       int64_t est_rd =
           estimate_yrd_for_sb(cpi, bsize, x, &rate_sum, &dist_sum,
                               &tmp_skip_txfm_sb, &tmp_skip_sse_sb, INT64_MAX);
       // use spare buffer for following compound type try
-      restore_dst_buf(xd, *backup_buf, 1);
+      restore_dst_buf(xd, *tmp_dst, 1);
       if (est_rd != INT64_MAX)
         best_rd_cur = RDCOST(x->rdmult, rs2 + *rate_mv + rate_sum, dist_sum);
     } else {
@@ -8676,7 +8696,7 @@ static INLINE int compound_type_rd(const AV1_COMP *const cpi, MACROBLOCK *x,
       *rate_mv = best_tmp_rate_mv;
     }
   }
-  restore_dst_buf(xd, *best_buf, 1);
+  restore_dst_buf(xd, *orig_dst, 1);
   return best_compmode_interinter_cost;
 }
 
@@ -8732,9 +8752,6 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   MB_MODE_INFO best_mbmi = *mbmi;
   int best_disable_skip;
   int best_xskip;
-  int plane_rate[MAX_MB_PLANE] = { 0 };
-  int64_t plane_sse[MAX_MB_PLANE] = { 0 };
-  int64_t plane_dist[MAX_MB_PLANE] = { 0 };
   int64_t newmv_ret_val = INT64_MAX;
   int_mv backup_mv[2] = { { 0 } };
   int backup_rate_mv = 0;
@@ -8879,20 +8896,20 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
         continue;
       }
 
-      ret_val = interpolation_filter_search(
-          x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
-          args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb);
-      if (ret_val != 0) {
-        restore_dst_buf(xd, orig_dst, num_planes);
-        continue;
-      } else if (cpi->sf.model_based_post_interp_filter_breakout &&
-                 ref_best_rd != INT64_MAX && (rd / 6 > ref_best_rd)) {
-        restore_dst_buf(xd, orig_dst, num_planes);
-        if ((rd >> 4) > ref_best_rd) break;
-        continue;
-      }
-
+      int skip_build_pred = 0;
       if (is_comp_pred && comp_idx) {
+        // Find matching interp filter or set to default interp filter
+        const int need_search =
+            av1_is_interp_needed(xd) && av1_is_interp_search_needed(xd);
+        int match_found = -1;
+        const InterpFilter assign_filter = cm->interp_filter;
+        if (cpi->sf.skip_repeat_interpolation_filter_search && need_search) {
+          match_found = find_interp_filter_in_stats(x, mbmi);
+        }
+        if (!need_search || match_found == -1) {
+          set_default_interp_filters(mbmi, assign_filter);
+        }
+
         int64_t best_rd_compound;
         compmode_interinter_cost = compound_type_rd(
             cpi, x, bsize, mi_col, mi_row, cur_mv, masked_compound_used,
@@ -8902,18 +8919,30 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
           restore_dst_buf(xd, orig_dst, num_planes);
           continue;
         }
-        if (mbmi->interinter_comp.type != COMPOUND_AVERAGE) {
-          int tmp_rate;
-          int64_t tmp_dist;
-          av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, &orig_dst,
-                                        bsize);
-          for (int plane = 0; plane < num_planes; ++plane)
-            av1_subtract_plane(x, bsize, plane);
-          model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &tmp_rate,
-                          &tmp_dist, &skip_txfm_sb, &skip_sse_sb, plane_rate,
-                          plane_sse, plane_dist);
-          rd = RDCOST(x->rdmult, rs + tmp_rate, tmp_dist);
+        // No need to call av1_build_inter_predictors_sby if
+        // COMPOUND_AVERAGE is selected because it is the first
+        // candidate in compound_type_rd, and the following
+        // compound types searching uses tmp_dst buffer
+        if (mbmi->interinter_comp.type == COMPOUND_AVERAGE) {
+          if (num_planes > 1)
+            av1_build_inter_predictors_sbuv(cm, xd, mi_row, mi_col, &orig_dst,
+                                            bsize);
+          skip_build_pred = 1;
         }
+      }
+
+      ret_val = interpolation_filter_search(
+          x, cpi, bsize, mi_row, mi_col, &tmp_dst, &orig_dst,
+          args->single_filter, &rd, &rs, &skip_txfm_sb, &skip_sse_sb,
+          skip_build_pred, args, ref_best_rd);
+      if (ret_val != 0) {
+        restore_dst_buf(xd, orig_dst, num_planes);
+        continue;
+      } else if (cpi->sf.model_based_post_interp_filter_breakout &&
+                 ref_best_rd != INT64_MAX && (rd / 6 > ref_best_rd)) {
+        restore_dst_buf(xd, orig_dst, num_planes);
+        if ((rd >> 4) > ref_best_rd) break;
+        continue;
       }
 
       if (search_jnt_comp) {
@@ -8958,6 +8987,16 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
       if (search_jnt_comp && cpi->sf.jnt_comp_fast_tx_search && comp_idx == 0) {
         // TODO(chengchen): this speed feature introduces big loss.
         // Need better estimation of rate distortion.
+        int dummy_rate;
+        int64_t dummy_dist;
+        int plane_rate[MAX_MB_PLANE] = { 0 };
+        int64_t plane_sse[MAX_MB_PLANE] = { 0 };
+        int64_t plane_dist[MAX_MB_PLANE] = { 0 };
+
+        model_rd_for_sb(cpi, bsize, x, xd, 0, num_planes - 1, &dummy_rate,
+                        &dummy_dist, &skip_txfm_sb, &skip_sse_sb, plane_rate,
+                        plane_sse, plane_dist);
+
         rd_stats->rate += rs;
         rd_stats->rate += plane_rate[0] + plane_rate[1] + plane_rate[2];
         rd_stats_y->rate = plane_rate[0];
