@@ -1,0 +1,20 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("test_support") {
+  testonly = true
+
+  sources = [
+    "fake_multidevice_setup.cc",
+    "fake_multidevice_setup.h",
+  ]
+
+  public_deps = [
+    "//chromeos/services/multidevice_setup/public/mojom",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
