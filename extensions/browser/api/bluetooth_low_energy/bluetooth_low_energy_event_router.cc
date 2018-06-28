@@ -1207,6 +1207,7 @@ void BluetoothLowEnergyEventRouter::OnDescriptorWriteRequest(
 
 void BluetoothLowEnergyEventRouter::OnNotificationsStart(
     const device::BluetoothDevice* device,
+    device::BluetoothGattCharacteristic::NotificationType notification_type,
     const device::BluetoothLocalGattCharacteristic* characteristic) {}
 
 void BluetoothLowEnergyEventRouter::OnNotificationsStop(

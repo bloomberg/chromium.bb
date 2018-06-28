@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_export.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_service.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
@@ -126,10 +127,12 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothLocalGattService
         const ErrorCallback& error_callback) = 0;
 
     // Called when a remote device |device| requests notifications to start for
-    // |characteristic|. This is only called if the characteristic has
-    // specified the notify or indicate property.
+    // |characteristic|. |notification_type| is either notify or indicate,
+    // depending on the request from |device|. This is only called if the
+    // characteristic has specified the notify or indicate property.
     virtual void OnNotificationsStart(
         const BluetoothDevice* device,
+        device::BluetoothGattCharacteristic::NotificationType notification_type,
         const BluetoothLocalGattCharacteristic* characteristic) = 0;
 
     // Called when a remote device |device| requests notifications to stop for

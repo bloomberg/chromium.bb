@@ -313,8 +313,7 @@ void FakeBluetoothGattCharacteristicClient::PrepareWriteValue(
 void FakeBluetoothGattCharacteristicClient::StartNotify(
     const dbus::ObjectPath& object_path,
 #if defined(OS_CHROMEOS)
-    device::BluetoothRemoteGattCharacteristic::NotificationType
-        notification_type,
+    device::BluetoothGattCharacteristic::NotificationType notification_type,
 #endif
     const base::Closure& callback,
     const ErrorCallback& error_callback) {

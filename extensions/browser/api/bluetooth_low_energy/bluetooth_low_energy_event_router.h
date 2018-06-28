@@ -19,6 +19,7 @@
 #include "base/scoped_observer.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 #include "device/bluetooth/bluetooth_device.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_gatt_connection.h"
 #include "device/bluetooth/bluetooth_gatt_notify_session.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
@@ -333,6 +334,7 @@ class BluetoothLowEnergyEventRouter
       const Delegate::ErrorCallback& error_callback) override;
   void OnNotificationsStart(
       const device::BluetoothDevice* device,
+      device::BluetoothGattCharacteristic::NotificationType notification_type,
       const device::BluetoothLocalGattCharacteristic* characteristic) override;
   void OnNotificationsStop(
       const device::BluetoothDevice* device,

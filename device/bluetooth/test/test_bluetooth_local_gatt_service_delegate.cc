@@ -87,6 +87,7 @@ void TestBluetoothLocalGattServiceDelegate::OnDescriptorWriteRequest(
 
 void TestBluetoothLocalGattServiceDelegate::OnNotificationsStart(
     const BluetoothDevice* device,
+    device::BluetoothGattCharacteristic::NotificationType notification_type,
     const BluetoothLocalGattCharacteristic* characteristic) {
   EXPECT_EQ(expected_characteristic_->GetIdentifier(),
             characteristic->GetIdentifier());

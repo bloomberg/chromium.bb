@@ -896,6 +896,7 @@ void ArcBluetoothBridge::OnDescriptorWriteRequest(
 
 void ArcBluetoothBridge::OnNotificationsStart(
     const BluetoothDevice* device,
+    device::BluetoothGattCharacteristic::NotificationType notification_type,
     const BluetoothLocalGattCharacteristic* characteristic) {}
 
 void ArcBluetoothBridge::OnNotificationsStop(
@@ -1712,8 +1713,7 @@ void ArcBluetoothBridge::WriteGattDescriptor(
       return;
     case ENABLE_NOTIFICATION_VALUE:
       characteristic->StartNotifySession(
-          bluez::BluetoothRemoteGattCharacteristicBlueZ::NotificationType::
-              kNotification,
+          device::BluetoothGattCharacteristic::NotificationType::kNotification,
           base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
                      weak_factory_.GetWeakPtr(), repeating_callback,
                      char_id_str),
@@ -1721,8 +1721,7 @@ void ArcBluetoothBridge::WriteGattDescriptor(
       return;
     case ENABLE_INDICATION_VALUE:
       characteristic->StartNotifySession(
-          bluez::BluetoothRemoteGattCharacteristicBlueZ::NotificationType::
-              kIndication,
+          device::BluetoothGattCharacteristic::NotificationType::kIndication,
           base::Bind(&ArcBluetoothBridge::OnGattNotifyStartDone,
                      weak_factory_.GetWeakPtr(), repeating_callback,
                      char_id_str),

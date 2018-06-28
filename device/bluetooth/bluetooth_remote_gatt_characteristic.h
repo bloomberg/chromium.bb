@@ -41,9 +41,6 @@ class BluetoothRemoteGattService;
 class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattCharacteristic
     : public virtual BluetoothGattCharacteristic {
  public:
-  // Bluetooth Spec Vol 3, Part G, 3.3.3.3 Client Characteristic Configuration.
-  enum class NotificationType { kNotification = 1, kIndication };
-
   // The ValueCallback is used to return the value of a remote characteristic
   // upon a read request.
   typedef base::Callback<void(const std::vector<uint8_t>&)> ValueCallback;

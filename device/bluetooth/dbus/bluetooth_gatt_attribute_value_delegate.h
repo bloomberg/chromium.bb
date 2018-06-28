@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "device/bluetooth/bluetooth_gatt_characteristic.h"
 #include "device/bluetooth/bluetooth_local_gatt_service.h"
 
 namespace dbus {
@@ -62,12 +63,15 @@ class BluetoothGattAttributeValueDelegate {
   // This method will be called, when a remote device requests to start sending
   // notifications for this characteristic. This will never be called for
   // descriptors.
-  virtual void StartNotifications() = 0;
+  virtual void StartNotifications(
+      const dbus::ObjectPath& device_path,
+      device::BluetoothGattCharacteristic::NotificationType
+          notification_type) = 0;
 
   // This method will be called, when a remote device requests to stop sending
   // notifications for this characteristic. This will never be called for
   // descriptors.
-  virtual void StopNotifications() = 0;
+  virtual void StopNotifications(const dbus::ObjectPath& device_path) = 0;
 
  protected:
   // Gets the Bluetooth device object on the current service's adapter with
