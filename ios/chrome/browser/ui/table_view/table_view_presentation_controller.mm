@@ -215,7 +215,7 @@ const CGFloat kTableViewMaxWidth = 414.0;
 // if it is called from within an animation block.
 - (void)updateDimmingShieldForModal:(BOOL)modal {
   if (modal) {
-    self.dimmingShield.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.3];
+    self.dimmingShield.backgroundColor = [UIColor colorWithWhite:0.0 alpha:0.4];
     self.shadowImage.alpha = 0.0;
   } else {
     self.dimmingShield.backgroundColor = [UIColor clearColor];
