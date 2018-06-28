@@ -17,6 +17,7 @@
 #include "ash/app_list/views/horizontal_page_container.h"
 #include "ash/app_list/views/page_switcher.h"
 #include "ash/app_list/views/search_box_view.h"
+#include "ash/app_list/views/suggestion_chip_container_view.h"
 #include "ash/app_list/views/suggestions_container_view.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/app_list/app_list_switches.h"
@@ -38,9 +39,18 @@ constexpr int kSearchBoxPeekingTopPadding = 24;
 // Minimum top padding of search box in fullscreen state.
 constexpr int kSearchBoxMinimumTopPadding = 24;
 
+// Height of suggestion chip container.
+constexpr int kSuggestionChipContainerHeight = 32;
+
 AppsContainerView::AppsContainerView(ContentsView* contents_view,
                                      AppListModel* model)
     : contents_view_(contents_view) {
+  if (features::IsNewStyleLauncherEnabled()) {
+    suggestion_chip_container_view_ =
+        new SuggestionChipContainerView(contents_view);
+    AddChildView(suggestion_chip_container_view_);
+    UpdateSuggestionChips();
+  }
   apps_grid_view_ = new AppsGridView(contents_view_, nullptr);
   apps_grid_view_->SetLayout(kPreferredCols, kPreferredRows);
   AddChildView(apps_grid_view_);
@@ -164,6 +174,13 @@ void AppsContainerView::Layout() {
 
   switch (show_state_) {
     case SHOW_APPS: {
+      if (suggestion_chip_container_view_) {
+        gfx::Rect chip_container_rect(rect);
+        chip_container_rect.set_height(kSuggestionChipContainerHeight);
+        suggestion_chip_container_view_->SetBoundsRect(chip_container_rect);
+        rect.Inset(0, kSuggestionChipContainerHeight, 0, 0);
+      }
+
       gfx::Rect grid_rect = rect;
       grid_rect.Inset(kAppsGridLeftRightPadding, 0);
       apps_grid_view_->SetBoundsRect(grid_rect);
@@ -387,6 +404,15 @@ void AppsContainerView::SetShowState(ShowState show_state,
     default:
       NOTREACHED();
   }
+}
+
+void AppsContainerView::UpdateSuggestionChips() {
+  DCHECK(suggestion_chip_container_view_);
+  suggestion_chip_container_view_->SetResults(
+      contents_view_->GetAppListMainView()
+          ->view_delegate()
+          ->GetSearchModel()
+          ->results());
 }
 
 }  // namespace app_list

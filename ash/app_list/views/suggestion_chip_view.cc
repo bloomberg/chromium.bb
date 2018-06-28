@@ -6,8 +6,14 @@
 
 #include <memory>
 
+#include "ash/public/cpp/app_list/app_list_config.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/views/animation/flood_fill_ink_drop_ripple.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/animation/ink_drop_painted_layer_delegates.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -17,16 +23,25 @@ namespace app_list {
 
 namespace {
 
-// Colors.
-constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-constexpr SkColor kStrokeColor = SkColorSetA(gfx::kGoogleGrey900, 0x24);
-constexpr SkColor kTextColor = gfx::kGoogleGrey900;
+// Assistant specific style:
+constexpr SkColor kAssistantBackgroundColor = SK_ColorWHITE;
+constexpr SkColor kAssistantStrokeColor =
+    SkColorSetA(gfx::kGoogleGrey900, 0x24);
+constexpr SkColor kAssistantTextColor = gfx::kGoogleGrey900;
+constexpr int kAssistantStrokeWidthDip = 1;
 
-// Dimensions.
+// App list specific style:
+constexpr SkColor kAppListBackgroundColor =
+    SkColorSetA(gfx::kGoogleGrey900, 0x33);
+constexpr SkColor kAppListTextColor = gfx::kGoogleGrey100;
+constexpr SkColor kAppListRippleColor = SkColorSetA(gfx::kGoogleGrey100, 0x0F);
+constexpr SkColor kAppListFocusColor = SkColorSetA(gfx::kGoogleGrey100, 0x14);
+
+// Shared style:
 constexpr int kIconMarginDip = 8;
 constexpr int kPaddingDip = 16;
 constexpr int kPreferredHeightDip = 32;
-constexpr int kStrokeWidthDip = 1;
+constexpr int kIconSizeDip = 16;
 
 }  // namespace
 
@@ -39,10 +54,15 @@ SuggestionChipView::Params::~Params() = default;
 // SuggestionChipView ----------------------------------------------------------
 
 SuggestionChipView::SuggestionChipView(const Params& params,
-                                       SuggestionChipListener* listener)
-    : icon_view_(new views::ImageView()),
+                                       views::ButtonListener* listener)
+    : Button(listener),
+      icon_view_(new views::ImageView()),
       text_view_(new views::Label()),
-      listener_(listener) {
+      assistant_style_(params.assistant_style) {
+  if (!assistant_style_) {
+    SetFocusBehavior(FocusBehavior::ALWAYS);
+    SetInkDropMode(InkDropHostView::InkDropMode::ON);
+  }
   InitLayout(params);
 }
 
@@ -92,8 +112,11 @@ void SuggestionChipView::InitLayout(const Params& params) {
 
   // Text.
   text_view_->SetAutoColorReadabilityEnabled(false);
-  text_view_->SetEnabledColor(kTextColor);
-  text_view_->SetFontList(text_view_->font_list().DeriveWithSizeDelta(2));
+  text_view_->SetEnabledColor(assistant_style_ ? kAssistantTextColor
+                                               : kAppListTextColor);
+  text_view_->SetFontList(assistant_style_
+                              ? text_view_->font_list().DeriveWithSizeDelta(2)
+                              : AppListConfig::instance().app_title_font());
   text_view_->SetText(params.text);
   AddChildView(text_view_);
 }
@@ -105,31 +128,66 @@ void SuggestionChipView::OnPaintBackground(gfx::Canvas* canvas) {
   gfx::Rect bounds = GetContentsBounds();
 
   // Background.
-  flags.setColor(kBackgroundColor);
+  flags.setColor(assistant_style_ ? kAssistantBackgroundColor
+                                  : kAppListBackgroundColor);
   canvas->DrawRoundRect(bounds, height() / 2, flags);
 
-  // Stroke should be drawn within our contents bounds.
-  bounds.Inset(gfx::Insets(kStrokeWidthDip));
+  if (assistant_style_) {
+    // Stroke should be drawn within our contents bounds.
+    bounds.Inset(gfx::Insets(kAssistantStrokeWidthDip));
 
-  // Stroke.
-  flags.setColor(kStrokeColor);
-  flags.setStrokeWidth(kStrokeWidthDip);
-  flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
-  canvas->DrawRoundRect(bounds, height() / 2, flags);
-}
+    // Stroke.
+    flags.setColor(kAssistantStrokeColor);
+    flags.setStrokeWidth(kAssistantStrokeWidthDip);
+    flags.setStyle(cc::PaintFlags::Style::kStroke_Style);
+    canvas->DrawRoundRect(bounds, height() / 2, flags);
+    return;
+  }
 
-void SuggestionChipView::OnGestureEvent(ui::GestureEvent* event) {
-  if (event->type() == ui::ET_GESTURE_TAP) {
-    if (listener_)
-      listener_->OnSuggestionChipPressed(this);
-    event->SetHandled();
+  if (HasFocus()) {
+    flags.setColor(kAppListFocusColor);
+    canvas->DrawRoundRect(bounds, height() / 2, flags);
   }
 }
 
-bool SuggestionChipView::OnMousePressed(const ui::MouseEvent& event) {
-  if (listener_)
-    listener_->OnSuggestionChipPressed(this);
-  return true;
+void SuggestionChipView::OnFocus() {
+  SchedulePaint();
+  NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
+}
+
+void SuggestionChipView::OnBlur() {
+  SchedulePaint();
+}
+
+void SuggestionChipView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kButton;
+  node_data->SetName(GetText());
+}
+
+std::unique_ptr<views::InkDrop> SuggestionChipView::CreateInkDrop() {
+  std::unique_ptr<views::InkDropImpl> ink_drop =
+      Button::CreateDefaultInkDropImpl();
+  ink_drop->SetShowHighlightOnHover(false);
+  ink_drop->SetShowHighlightOnFocus(false);
+  ink_drop->SetAutoHighlightMode(views::InkDropImpl::AutoHighlightMode::NONE);
+  return std::move(ink_drop);
+}
+
+std::unique_ptr<views::InkDropMask> SuggestionChipView::CreateInkDropMask()
+    const {
+  return std::make_unique<views::RoundRectInkDropMask>(size(), gfx::InsetsF(),
+                                                       height() / 2);
+}
+
+std::unique_ptr<views::InkDropRipple> SuggestionChipView::CreateInkDropRipple()
+    const {
+  const gfx::Point center = GetLocalBounds().CenterPoint();
+  const int ripple_radius = width() / 2;
+  gfx::Rect bounds(center.x() - ripple_radius, center.y() - ripple_radius,
+                   2 * ripple_radius, 2 * ripple_radius);
+  return std::make_unique<views::FloodFillInkDropRipple>(
+      size(), GetLocalBounds().InsetsFrom(bounds),
+      GetInkDropCenterBasedOnLastEvent(), kAppListRippleColor, 1.0f);
 }
 
 void SuggestionChipView::SetIcon(const gfx::ImageSkia& icon) {

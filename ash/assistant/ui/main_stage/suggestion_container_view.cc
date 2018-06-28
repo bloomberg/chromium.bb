@@ -90,6 +90,7 @@ void SuggestionContainerView::OnSuggestionsAdded(
     const int id = suggestion.first;
 
     app_list::SuggestionChipView::Params params;
+    params.assistant_style = true;
     params.text = base::UTF8ToUTF16(suggestion.second->text);
 
     if (!suggestion.second->icon_url.is_empty()) {
@@ -140,10 +141,10 @@ void SuggestionContainerView::OnSuggestionChipIconDownloaded(
     suggestion_chip_views_[id]->SetIcon(icon);
 }
 
-void SuggestionContainerView::OnSuggestionChipPressed(
-    app_list::SuggestionChipView* suggestion_chip_view) {
+void SuggestionContainerView::ButtonPressed(views::Button* sender,
+                                            const ui::Event& event) {
   assistant_controller_->interaction_controller()->OnSuggestionChipPressed(
-      suggestion_chip_view->id());
+      static_cast<app_list::SuggestionChipView*>(sender)->id());
 }
 
 void SuggestionContainerView::UpdateContentsBounds() {

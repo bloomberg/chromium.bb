@@ -21,7 +21,7 @@ class AssistantController;
 // suggestion events.
 class SuggestionContainerView : public views::ScrollView,
                                 public AssistantInteractionModelObserver,
-                                public app_list::SuggestionChipListener {
+                                public views::ButtonListener {
  public:
   using AssistantSuggestion = chromeos::assistant::mojom::AssistantSuggestion;
 
@@ -37,9 +37,8 @@ class SuggestionContainerView : public views::ScrollView,
       const std::map<int, AssistantSuggestion*>& suggestions) override;
   void OnSuggestionsCleared() override;
 
-  // app_list::SuggestionChipListener:
-  void OnSuggestionChipPressed(
-      app_list::SuggestionChipView* suggestion_chip_view) override;
+  // views::ButtonListener:
+  void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
  private:
   void InitLayout();

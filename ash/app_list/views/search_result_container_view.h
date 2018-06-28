@@ -59,11 +59,11 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // Updates the distance_from_origin() properties of the results in this
   // container. |y_index| is the absolute y-index of the first result of this
   // container (counting from the top of the app list).
-  virtual void NotifyFirstResultYIndex(int y_index) = 0;
+  virtual void NotifyFirstResultYIndex(int y_index);
 
   // Gets the number of down keystrokes from the beginning to the end of this
   // container.
-  virtual int GetYSize() = 0;
+  virtual int GetYSize();
 
   // Batching method that actually performs the update and updates layout.
   void Update();
@@ -85,15 +85,14 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // above. |directional_movement| is true if the navigation was caused by
   // directional controls (eg, arrow keys), as opposed to linear controls (eg,
   // Tab).
-  virtual void OnContainerSelected(bool from_bottom,
-                                   bool directional_movement) = 0;
+  virtual void OnContainerSelected(bool from_bottom, bool directional_movement);
 
   // Returns selected view in this container view.
-  virtual views::View* GetSelectedView() = 0;
+  virtual views::View* GetSelectedView();
 
   // Returns the first result in the container view. Returns NULL if it does not
   // exist.
-  virtual SearchResultBaseView* GetFirstResultView() = 0;
+  virtual SearchResultBaseView* GetFirstResultView();
 
  private:
   // Schedules an Update call using |update_factory_|. Do nothing if there is a
@@ -104,7 +103,7 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   virtual int DoUpdate() = 0;
 
   // Updates UI for a change in the selected index.
-  virtual void UpdateSelectedIndex(int old_selected, int new_selected) = 0;
+  virtual void UpdateSelectedIndex(int old_selected, int new_selected);
 
   Delegate* delegate_;
 

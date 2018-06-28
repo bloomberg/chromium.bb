@@ -74,32 +74,10 @@ int SuggestionsContainerView::DoUpdate() {
   return display_results.size();
 }
 
-void SuggestionsContainerView::UpdateSelectedIndex(int old_selected,
-                                                   int new_selected) {}
-
-void SuggestionsContainerView::OnContainerSelected(
-    bool /*from_bottom*/,
-    bool /*directional_movement*/) {
-  NOTREACHED();
-}
-
-void SuggestionsContainerView::NotifyFirstResultYIndex(int /*y_index*/) {
-  NOTREACHED();
-}
-
-int SuggestionsContainerView::GetYSize() {
-  NOTREACHED();
-  return 0;
-}
-
 views::View* SuggestionsContainerView::GetSelectedView() {
   return IsValidSelectionIndex(selected_index())
              ? search_result_tile_views_[selected_index()]
              : nullptr;
-}
-
-SearchResultBaseView* SuggestionsContainerView::GetFirstResultView() {
-  return nullptr;
 }
 
 const char* SuggestionsContainerView::GetClassName() const {

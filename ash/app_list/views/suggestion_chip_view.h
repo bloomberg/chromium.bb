@@ -8,11 +8,14 @@
 #include "ash/app_list/app_list_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
-#include "ui/views/view.h"
+#include "ui/views/controls/button/button.h"
 
 namespace views {
 class BoxLayout;
 class ImageView;
+class InkDrop;
+class InkDropMask;
+class InkDropRipple;
 class Label;
 }  // namespace views
 
@@ -20,21 +23,9 @@ namespace app_list {
 
 class SuggestionChipView;
 
-// Listener which receives notification of suggestion chip events.
-class APP_LIST_EXPORT SuggestionChipListener {
- public:
-  // Invoked when the specified |sender| is pressed.
-  virtual void OnSuggestionChipPressed(SuggestionChipView* sender) = 0;
-
- protected:
-  virtual ~SuggestionChipListener() = default;
-};
-
 // View representing a suggestion chip.
-class APP_LIST_EXPORT SuggestionChipView : public views::View {
+class APP_LIST_EXPORT SuggestionChipView : public views::Button {
  public:
-  static constexpr int kIconSizeDip = 16;
-
   // Initialization parameters.
   struct Params {
     Params();
@@ -44,19 +35,26 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
     base::string16 text;
     // Optional icon.
     base::Optional<gfx::ImageSkia> icon;
+    // True if the chip should use assistant style.
+    bool assistant_style = false;
   };
 
-  SuggestionChipView(const Params& params,
-                     SuggestionChipListener* listener = nullptr);
+  SuggestionChipView(const Params& params, views::ButtonListener* listener);
   ~SuggestionChipView() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void ChildVisibilityChanged(views::View* child) override;
   int GetHeightForWidth(int width) const override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-  bool OnMousePressed(const ui::MouseEvent& event) override;
   void OnPaintBackground(gfx::Canvas* canvas) override;
+  void OnFocus() override;
+  void OnBlur() override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  // views::InkDropHost:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
 
   void SetIcon(const gfx::ImageSkia& icon);
 
@@ -67,9 +65,11 @@ class APP_LIST_EXPORT SuggestionChipView : public views::View {
 
   views::ImageView* icon_view_;  // Owned by view hierarchy.
   views::Label* text_view_;      // Owned by view hierarchy.
-  SuggestionChipListener* listener_;
 
   views::BoxLayout* layout_manager_;  // Owned by view hierarchy.
+
+  // True if this chip should use assistant style.
+  bool assistant_style_;
 
   DISALLOW_COPY_AND_ASSIGN(SuggestionChipView);
 };
