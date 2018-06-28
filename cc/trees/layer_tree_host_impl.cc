@@ -370,9 +370,6 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   DCHECK(!image_decode_cache_);
   DCHECK(!single_thread_synchronous_task_graph_runner_);
 
-  // All resources should already be removed, so lose anything still exported.
-  resource_provider_.ShutdownAndReleaseAllResources();
-
   if (input_handler_client_) {
     input_handler_client_->WillShutdown();
     input_handler_client_ = nullptr;
@@ -380,7 +377,9 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   if (scroll_elasticity_helper_)
     scroll_elasticity_helper_.reset();
 
-  // The layer trees must be destroyed before the layer tree host.
+  // The layer trees must be destroyed before the LayerTreeHost. Also, if they
+  // are holding onto any resources, destroying them will release them, before
+  // we mark any leftover resources as lost.
   if (recycle_tree_)
     recycle_tree_->Shutdown();
   if (pending_tree_)
@@ -389,6 +388,9 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   recycle_tree_ = nullptr;
   pending_tree_ = nullptr;
   active_tree_ = nullptr;
+
+  // All resources should already be removed, so lose anything still exported.
+  resource_provider_.ShutdownAndReleaseAllResources();
 
   mutator_host_->ClearMutators();
   mutator_host_->SetMutatorHostClient(nullptr);
