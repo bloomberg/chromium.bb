@@ -25,7 +25,6 @@
 #include "net/base/net_errors.h"
 #include "net/disk_cache/cache_util.h"
 #include "net/disk_cache/simple/simple_backend_version.h"
-#include "net/disk_cache/simple/simple_experiment.h"
 #include "net/disk_cache/simple/simple_histogram_enums.h"
 #include "net/disk_cache/simple/simple_histogram_macros.h"
 #include "net/disk_cache/simple/simple_util.h"
