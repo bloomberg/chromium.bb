@@ -211,7 +211,6 @@ TEST_F(WebStateTest, MessageFromMainFrame) {
 
 // Tests that message sent from main frame triggers the ScriptCommandCallback
 // with |is_main_frame| = false.
-// TODO(crbug.com/857129): Re-enable this test.
 TEST_F(WebStateTest, MessageFromIFrame) {
   // Add a script command handler.
   __block bool message_received = false;
