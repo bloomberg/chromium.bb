@@ -209,7 +209,8 @@ std::string FormStructureBrowserTest::FormStructuresToString(
   return forms_string;
 }
 
-TEST_P(FormStructureBrowserTest, DataDrivenHeuristics) {
+// Crashes on iPhone 6 Plus.  https://crbug.com/857488
+TEST_P(FormStructureBrowserTest, DISABLED_DataDrivenHeuristics) {
   bool is_expected_to_pass =
       !base::ContainsKey(GetFailingTestNames(), GetParam().BaseName().value());
   RunOneDataDrivenTest(GetParam(), GetIOSOutputDirectory(),
