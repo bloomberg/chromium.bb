@@ -26,7 +26,6 @@ hyphenate_xxx_SOURCES = hyphenate_xxx.c
 lastworditalafter_SOURCES = default_table.h lastworditalafter.c
 logging_SOURCES = logging.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
-pass2_SOURCES = pass2.c
 present_progressive_SOURCES = default_table.h present_progressive.c
 resolve_table_SOURCES = resolve_table.c
 squash_space_SOURCES = squash_space.c
@@ -50,7 +49,6 @@ program_TESTS =					\
 	lastworditalafter			\
 	logging					\
 	pass0_typebuf				\
-	pass2					\
 	present_progressive			\
 	resolve_table				\
 	squash_space				\

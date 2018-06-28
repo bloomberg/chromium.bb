@@ -43,3 +43,11 @@ flags: {testmode: backward}
 tests:
   - - fu
     - foo
+
+# Converted from pass2.c
+table: [tests/tables/pass2.ctb]
+tests:
+  # First check a plain word to see if the table works 
+  - [Rene, rene]
+  # then try a word which uses pass2
+  - [Reno, "ren'o"]
