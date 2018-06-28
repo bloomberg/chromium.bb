@@ -294,7 +294,7 @@ void BaseArena::SweepUnsweptPage() {
   }
 }
 
-bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
+bool BaseArena::LazySweepWithDeadline(TimeTicks deadline) {
   // It might be heavy to call
   // Platform::current()->monotonicallyIncreasingTimeSeconds() per page (i.e.,
   // 128 KB sweep or one LargeObject sweep), so we check the deadline per 10
@@ -317,7 +317,7 @@ bool BaseArena::LazySweepWithDeadline(double deadline_seconds) {
   while (!SweepingCompleted()) {
     SweepUnsweptPage();
     if (page_count % kDeadlineCheckInterval == 0) {
-      if (deadline_seconds <= CurrentTimeTicksInSeconds()) {
+      if (deadline <= CurrentTimeTicks()) {
         // Deadline has come.
         if (normal_arena)
           normal_arena->SetIsLazySweeping(false);

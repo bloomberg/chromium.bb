@@ -718,8 +718,7 @@ void ThreadState::PerformIdleLazySweep(TimeTicks deadline) {
     ThreadHeapStatsCollector::EnabledScope stats_scope(
         Heap().stats_collector(), ThreadHeapStatsCollector::kLazySweepInIdle,
         "idleDeltaInSeconds", (deadline - CurrentTimeTicks()).InSecondsF());
-    sweep_completed =
-        Heap().AdvanceLazySweep(deadline.since_origin().InSecondsF());
+    sweep_completed = Heap().AdvanceLazySweep(deadline);
     // We couldn't finish the sweeping within the deadline.
     // We request another idle task for the remaining sweeping.
     if (!sweep_completed)
@@ -1683,8 +1682,8 @@ void ThreadState::MarkPhaseVisitRoots() {
 bool ThreadState::MarkPhaseAdvanceMarking(TimeTicks deadline) {
   StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
   // 3. Transitive closure to trace objects including ephemerons.
-  return Heap().AdvanceMarkingStackProcessing(
-      current_gc_data_.visitor.get(), deadline.since_origin().InSecondsF());
+  return Heap().AdvanceMarkingStackProcessing(current_gc_data_.visitor.get(),
+                                              deadline);
 }
 
 bool ThreadState::ShouldVerifyMarking() const {
@@ -1700,8 +1699,7 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   Visitor* visitor = current_gc_data_.visitor.get();
   // Finish marking of not-fully-constructed objects.
   Heap().MarkNotFullyConstructedObjects(visitor);
-  CHECK(Heap().AdvanceMarkingStackProcessing(
-      visitor, std::numeric_limits<double>::infinity()));
+  CHECK(Heap().AdvanceMarkingStackProcessing(visitor, TimeTicks::Max()));
 
   {
     // See ProcessHeap::CrossThreadPersistentMutex().

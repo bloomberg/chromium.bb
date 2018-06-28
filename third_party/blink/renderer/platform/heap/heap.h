@@ -290,7 +290,7 @@ class PLATFORM_EXPORT ThreadHeap {
   void ProcessMarkingStack(Visitor*);
   void WeakProcessing(Visitor*);
   void MarkNotFullyConstructedObjects(Visitor*);
-  bool AdvanceMarkingStackProcessing(Visitor*, double deadline_seconds);
+  bool AdvanceMarkingStackProcessing(Visitor*, TimeTicks deadline);
   void VerifyMarking();
 
   // Conservatively checks whether an address is a pointer in any of the
@@ -387,7 +387,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   void Compact();
 
-  bool AdvanceLazySweep(double deadline_seconds);
+  bool AdvanceLazySweep(TimeTicks deadline);
 
   void PrepareForSweep();
   void RemoveAllPages();
