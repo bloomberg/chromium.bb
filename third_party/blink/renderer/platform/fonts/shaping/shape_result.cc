@@ -38,6 +38,7 @@
 #include <utility>
 
 #include "base/containers/adapters.h"
+#include "base/memory/ptr_util.h"
 #include "third_party/blink/renderer/platform/fonts/character_range.h"
 #include "third_party/blink/renderer/platform/fonts/font.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_buffer.h"
@@ -1120,6 +1121,199 @@ String ShapeResult::ToString() const {
 std::ostream& operator<<(std::ostream& ostream,
                          const ShapeResult& shape_result) {
   return ostream << shape_result.ToString();
+}
+
+template <bool rtl>
+void ShapeResult::ComputePositionData() const {
+  auto& data = character_position_->data_;
+  unsigned start_offset = StartIndexForResult();
+  unsigned next_character_index;
+  float run_advance;
+
+  if (!rtl) {
+    next_character_index = 0;
+    run_advance = 0;
+  } else {
+    DCHECK_GE(EndIndexForResult(), start_offset + 1);
+    next_character_index = EndIndexForResult() - (start_offset + 1);
+    run_advance = width_;
+  }
+
+  for (const auto& run : runs_) {
+    if (!run)
+      continue;
+
+    float total_advance = run_advance;
+    for (const auto& glyph_data : run->glyph_data_) {
+      DCHECK_GE(run->start_index_ + glyph_data.character_index, start_offset);
+      unsigned character_index =
+          run->start_index_ + glyph_data.character_index - start_offset;
+
+      // Multiple glyphs may have the same character index and not all character
+      // indices may have glyphs.
+      // For character indices without glyps set the x-position to that of the
+      // nearest preceding glyph.
+      if (!rtl) {
+        for (unsigned i = next_character_index; i < character_index; i++) {
+          DCHECK_LT(i, num_characters_);
+          data[i] = {total_advance, false};
+        }
+
+        // TODO(layout-dev): This is a bit of a hack, need to represent next
+        // better for RTL. Perhaps by storing last index instead and subtracting
+        // one here instead.
+      } else if (next_character_index != static_cast<unsigned>(-1)) {
+        for (unsigned i = next_character_index; i > character_index; i--) {
+          DCHECK_LT(i, num_characters_);
+          data[i] = {total_advance, false};
+        }
+      }
+
+      // For glyphs with the same character index the last logical one wins.
+      // This is the last visual one in LTR, no need to do anything speical.
+      // For RTL this is the first visual one so skip subsequent ones with the
+      // same character index.
+      if (rtl && next_character_index + 1 == character_index)
+        continue;
+
+      // For glyphs with the same character index the first one wins in LTR so
+      // no need to do anything special.
+      DCHECK_LT(character_index, num_characters_);
+      data[character_index] = {total_advance, glyph_data.safe_to_break_before};
+
+      total_advance += glyph_data.advance;
+      next_character_index = character_index + (!rtl ? 1 : -1);
+    }
+    if (!rtl)
+      run_advance += run->width_;
+    else
+      run_advance -= run->width_;
+  }
+
+  character_position_->start_offset_ = start_offset;
+}
+
+void ShapeResult::EnsurePositionData() const {
+  if (character_position_)
+    return;
+
+  character_position_ =
+      std::make_unique<CharacterPositionData>(num_characters_, width_);
+  if (Direction() == TextDirection::kLtr)
+    ComputePositionData<false>();
+  else
+    ComputePositionData<true>();
+}
+
+unsigned ShapeResult::CachedOffsetForPosition(float x) const {
+  // TODO(layout-dev): Remove once CharacterPositionData::OffsetForPosition
+  // properly supports RTL.
+  if (Rtl())
+    return OffsetForPosition(x);
+
+  DCHECK(character_position_);
+  return character_position_->OffsetForPosition(x);
+}
+
+float ShapeResult::CachedPositionForOffset(unsigned offset) const {
+  // TODO(layout-dev): Remove once CharacterPositionData::PositionForOffset
+  // properly supports RTL.
+  if (Rtl())
+    return PositionForOffset(offset);
+
+  DCHECK(character_position_);
+  return character_position_->PositionForOffset(offset);
+}
+
+unsigned ShapeResult::CachedNextSafeToBreakOffset(unsigned offset) const {
+  // TODO(layout-dev): Use character_position_->NextSafeToBreakOffset(index)
+  // once fully implemented. Fails fast/text/trailing_whitespace_wrapping.html
+  return NextSafeToBreakOffset(offset);
+}
+
+unsigned ShapeResult::CachedPreviousSafeToBreakOffset(unsigned offset) const {
+  DCHECK(character_position_);
+  // TODO(layout-dev): Use character_position_->PreviousSafeToBreakOffset(index)
+  // once implemented.
+  return PreviousSafeToBreakOffset(offset);
+}
+
+// TODO(eae): Might be worth trying to set midpoint to ~50% more than the number
+// of characters in the previous line for the first try. Would cut the number
+// of tries in the majority of cases for long strings.
+unsigned ShapeResult::CharacterPositionData::OffsetForPosition(float x) const {
+  // At or before start, return offset *before* the first character.
+  if (x <= 0)
+    return 0;
+
+  // At or beyond the end, return offset *after* the last character.
+  if (x >= width_)
+    return data_.size();
+
+  // Do a binary search to find the largest x-position that is less than or
+  // equal to the supplied x value.
+  unsigned length = data_.size();
+  unsigned low = 0;
+  unsigned high = length - 1;
+  while (low <= high) {
+    unsigned midpoint = low + (high - low) / 2;
+    if (data_[midpoint].x_position <= x &&
+        (midpoint + 1 == length || data_[midpoint + 1].x_position > x)) {
+      return midpoint;
+    }
+    if (x < data_[midpoint].x_position)
+      high = midpoint - 1;
+    else
+      low = midpoint + 1;
+  }
+
+  return 0;
+}
+
+float ShapeResult::CharacterPositionData::PositionForOffset(
+    unsigned offset) const {
+  DCHECK_GT(data_.size(), 0u);
+  if (offset >= data_.size())
+    return width_;
+  return data_[offset].x_position;
+}
+
+unsigned ShapeResult::CharacterPositionData::NextSafeToBreakOffset(
+    unsigned offset) const {
+  DCHECK_LE(start_offset_, offset);
+  unsigned adjusted_offset = offset - start_offset_;
+  DCHECK_LT(adjusted_offset, data_.size());
+
+  // Assume it is always safe to break at the start. While not strictly correct
+  // the text has already been segmented at that offset. This also matches the
+  // non-CharacterPositionData implementation.
+  if (adjusted_offset == 0)
+    return start_offset_;
+
+  unsigned length = data_.size() - 1;
+  for (unsigned i = adjusted_offset; i < length; i++) {
+    if (data_[i + 1].safe_to_break_before)
+      return start_offset_ + i;
+  }
+
+  // Next safe break is at the end of the run.
+  return start_offset_ + length;
+}
+
+unsigned ShapeResult::CharacterPositionData::PreviousSafeToBreakOffset(
+    unsigned offset) const {
+  if (offset >= data_.size())
+    return data_.size();
+
+  unsigned length = data_.size();
+  for (unsigned i = offset; i < length; i++) {
+    if (data_[i].safe_to_break_before) {
+      return start_offset_ + i;
+    }
+  }
+
+  // Previous safe break is at the start of the run.
+  return 0;
 }
 
 }  // namespace blink

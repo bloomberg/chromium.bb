@@ -809,6 +809,58 @@ TEST_P(IncludePartialGlyphs, OffsetForPositionMatchesPositionForOffsetMixed) {
                                           include_partial_glyphs));
 }
 
+TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingForOffsetLatin) {
+  String string = To16Bit("Hello World!", 12);
+  TextDirection direction = TextDirection::kLtr;
+
+  HarfBuzzShaper shaper(string.Characters16(), 12);
+  scoped_refptr<ShapeResult> sr = shaper.Shape(&font, direction);
+  sr->EnsurePositionData();
+
+  EXPECT_EQ(0u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(0)));
+  EXPECT_EQ(1u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(1)));
+  EXPECT_EQ(2u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(2)));
+  EXPECT_EQ(3u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(3)));
+  EXPECT_EQ(4u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(4)));
+  EXPECT_EQ(5u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(5)));
+  EXPECT_EQ(6u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(6)));
+  EXPECT_EQ(7u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(7)));
+  EXPECT_EQ(8u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(8)));
+  EXPECT_EQ(9u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(9)));
+  EXPECT_EQ(10u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(10)));
+  EXPECT_EQ(11u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(11)));
+  EXPECT_EQ(12u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(12)));
+}
+
+TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingArabic) {
+  UChar arabic_string[] = {0x628, 0x64A, 0x629};
+  TextDirection direction = TextDirection::kRtl;
+
+  HarfBuzzShaper shaper(arabic_string, 3);
+  scoped_refptr<ShapeResult> sr = shaper.Shape(&font, direction);
+  sr->EnsurePositionData();
+
+  EXPECT_EQ(0u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(0)));
+  EXPECT_EQ(1u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(1)));
+  EXPECT_EQ(2u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(2)));
+  EXPECT_EQ(3u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(3)));
+}
+
+TEST_F(HarfBuzzShaperTest, CachedOffsetPositionMappingMixed) {
+  UChar mixed_string[] = {0x628, 0x64A, 0x629, 0xE20, 0x65E5, 0x62};
+  HarfBuzzShaper shaper(mixed_string, 6);
+  scoped_refptr<ShapeResult> sr = shaper.Shape(&font, TextDirection::kLtr);
+  sr->EnsurePositionData();
+
+  EXPECT_EQ(0u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(0)));
+  EXPECT_EQ(1u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(1)));
+  EXPECT_EQ(2u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(2)));
+  EXPECT_EQ(3u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(3)));
+  EXPECT_EQ(4u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(4)));
+  EXPECT_EQ(5u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(5)));
+  EXPECT_EQ(6u, sr->CachedOffsetForPosition(sr->CachedPositionForOffset(6)));
+}
+
 TEST_F(HarfBuzzShaperTest, PositionForOffsetMissingGlyph) {
   String string(u"\u0633\u0644\u0627\u0645");
   HarfBuzzShaper shaper(string.Characters16(), string.length());
@@ -1232,7 +1284,7 @@ TEST_F(HarfBuzzShaperTest, DISABLED_SafeToBreakArabicCommonLigatures) {
 
 // Test when some characters are missing in |runs_|.
 // RTL on Mac may not have runs for all characters. crbug.com/774034
-TEST_P(ShapeParameterTest, SafeToBreakMissingRun) {
+TEST_P(ShapeParameterTest, DISABLED_SafeToBreakMissingRun) {
   TextDirection direction = GetParam();
   scoped_refptr<ShapeResult> result = ShapeResult::Create(&font, 8, direction);
   result->InsertRunForTesting(2, 1, direction, {0});

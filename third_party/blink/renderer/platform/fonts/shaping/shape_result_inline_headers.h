@@ -240,8 +240,6 @@ struct ShapeResult::RunInfo {
   CanvasRotationInVertical canvas_rotation_;
   hb_script_t script_;
   Vector<HarfBuzzRunGlyphData> glyph_data_;
-  // List of character indecies before which it's safe to break without
-  // reshaping.
   unsigned start_index_;
   unsigned num_characters_;
   float width_;

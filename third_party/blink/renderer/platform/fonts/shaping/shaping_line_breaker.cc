@@ -32,6 +32,11 @@ ShapingLineBreaker::ShapingLineBreaker(
   // ShapeResultSpacing is stateful when it has expansions. We may use it in
   // arbitrary order that it cannot have expansions.
   DCHECK(!spacing_ || !spacing_->HasExpansion());
+
+  // Line breaking performance relies on high-performance x-position to
+  // character offset lookup. Ensure that the desired cache has been computed.
+  DCHECK(result_);
+  result_->EnsurePositionData();
 }
 
 namespace {
@@ -224,7 +229,8 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
   const String& text = GetText();
 
   // The start position in the original shape results.
-  float start_position_float = result_->PositionForOffset(start - range_start);
+  float start_position_float =
+      result_->CachedPositionForOffset(start - range_start);
   TextDirection direction = result_->Direction();
   LayoutUnit start_position = SnapStart(start_position_float, direction);
 
@@ -235,10 +241,10 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
                             FlipRtl(available_space, direction);
   DCHECK_GE(FlipRtl(end_position - start_position, direction), LayoutUnit(0));
   unsigned candidate_break =
-      result_->OffsetForPosition(end_position, false) + range_start;
+      result_->CachedOffsetForPosition(end_position) + range_start;
 
   unsigned first_safe = (options & kStartShouldBeSafe)
-                            ? result_->NextSafeToBreakOffset(start)
+                            ? result_->CachedNextSafeToBreakOffset(start)
                             : start;
   DCHECK_GE(first_safe, start);
   if (candidate_break >= range_end) {
@@ -282,11 +288,11 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
       result_out->break_offset = break_opportunity.offset;
       return Shape(direction, start, break_opportunity.offset);
     }
-    LayoutUnit original_width =
-        FlipRtl(SnapEnd(result_->PositionForOffset(first_safe - range_start),
-                        direction) -
-                    start_position,
-                direction);
+    LayoutUnit original_width = FlipRtl(
+        SnapEnd(result_->CachedPositionForOffset(first_safe - range_start),
+                direction) -
+            start_position,
+        direction);
     line_start_result = Shape(direction, start, first_safe);
     available_space += line_start_result->SnappedWidth() - original_width;
   }
@@ -302,9 +308,9 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
     // preceding boundary is tried until the available space is sufficient.
     while (true) {
       DCHECK_LE(first_safe, break_opportunity.offset);
-      last_safe =
-          std::max(result_->PreviousSafeToBreakOffset(break_opportunity.offset),
-                   first_safe);
+      last_safe = std::max(
+          result_->CachedPreviousSafeToBreakOffset(break_opportunity.offset),
+          first_safe);
       DCHECK_LE(last_safe, break_opportunity.offset);
       DCHECK_GE(last_safe, first_safe);
       if (last_safe == break_opportunity.offset)
@@ -315,7 +321,7 @@ scoped_refptr<ShapeResult> ShapingLineBreaker::ShapeLine(
         break;
       }
       LayoutUnit safe_position = SnapStart(
-          result_->PositionForOffset(last_safe - range_start), direction);
+          result_->CachedPositionForOffset(last_safe - range_start), direction);
       line_end_result = Shape(direction, last_safe, break_opportunity.offset);
       if (line_end_result->SnappedWidth() <=
           FlipRtl(end_position - safe_position, direction))
