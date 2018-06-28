@@ -197,6 +197,15 @@ void HoverHighlightView::Reset() {
   is_populated_ = false;
 }
 
+void HoverHighlightView::OnSetTooltipText(const base::string16& tooltip_text) {
+  if (text_label_)
+    text_label_->SetTooltipText(tooltip_text);
+  if (sub_text_label_)
+    sub_text_label_->SetTooltipText(tooltip_text);
+  if (left_icon_)
+    left_icon_->SetTooltipText(tooltip_text);
+}
+
 bool HoverHighlightView::PerformAction(const ui::Event& event) {
   if (!listener_)
     return false;

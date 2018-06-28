@@ -91,6 +91,7 @@ void Button::SetTooltipText(const base::string16& tooltip_text) {
   tooltip_text_ = tooltip_text;
   if (accessible_name_.empty())
     accessible_name_ = tooltip_text_;
+  OnSetTooltipText(tooltip_text);
   TooltipTextChanged();
 }
 
@@ -514,6 +515,8 @@ void Button::OnClickCanceled(const ui::Event& event) {
     }
   }
 }
+
+void Button::OnSetTooltipText(const base::string16& tooltip_text) {}
 
 void Button::StateChanged(ButtonState old_state) {}
 
