@@ -26,7 +26,12 @@ Polymer({
 
     value: Number,
     maxMarkers: Number,
-    immediateValue: Number,
+
+    immediateValue: {
+      type: Number,
+      observer: 'onImmediateValueChanged_',
+    },
+
     dragging: Boolean,
   },
 
@@ -115,6 +120,15 @@ Polymer({
       knob.style.width = '10px';
       knob.style.transform = 'unset';
     }
+  },
+
+  /** @private */
+  onImmediateValueChanged_: function() {
+    // TODO(dpapad): Need to catch and refire the property changed event in
+    // Polymer 2 only, since it does not bubble by default. Remove the
+    // condition when migration to Polymer 2 is completed.
+    if (Polymer.DomIf)
+      this.fire('immediate-value-changed', this.immediateValue);
   },
 
   /**
