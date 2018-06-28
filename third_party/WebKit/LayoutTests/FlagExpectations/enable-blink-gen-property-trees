@@ -496,6 +496,7 @@ crbug.com/854195 images/color-profile-layer.html [ Failure ]
 crbug.com/854195 images/pixelated-composited.html [ Failure ]
 
 # Paint invalidation test failures. Needs investigation.
+crbug.com/857322 paint/invalidation/background/obscured-background-no-repaint.html [ Failure Crash ]
 crbug.com/854196 paint/invalidation/compositing/clipping-should-not-repaint-composited-descendants.html [ Failure ]
 crbug.com/854196 paint/invalidation/compositing/overlap-test-with-filter.html [ Failure ]
 crbug.com/854196 paint/invalidation/compositing/repaint-overflow-scrolled-squashed-content.html [ Failure ]

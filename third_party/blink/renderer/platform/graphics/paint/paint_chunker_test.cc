@@ -410,8 +410,7 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   simple_transform.SetTransform(simple_transform_node.get());
 
   TestDisplayItemClient uncacheable_client;
-  uncacheable_client.SetDisplayItemsUncached(
-      PaintInvalidationReason::kUncacheable);
+  uncacheable_client.Invalidate(PaintInvalidationReason::kUncacheable);
   PaintChunk::Id id2(uncacheable_client, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(id2, simple_transform);
 

@@ -11,7 +11,7 @@
 
 namespace blink {
 
-enum class PaintInvalidationReason : unsigned {
+enum class PaintInvalidationReason : uint8_t {
   kNone,
   kIncremental,
   kRectangle,
@@ -39,6 +39,8 @@ enum class PaintInvalidationReason : unsigned {
   kDocumentMarker,
   kImage,
   kUncacheable,
+  // The initial PaintInvalidationReason of a DisplayItemClient.
+  kJustCreated,
   kChunkAppeared,
   kChunkDisappeared,
   kChunkUncacheable,

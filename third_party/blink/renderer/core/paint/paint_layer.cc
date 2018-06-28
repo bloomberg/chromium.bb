@@ -104,8 +104,10 @@ static CompositingQueryMode g_compositing_query_mode =
     kCompositingQueriesAreOnlyAllowedInCertainDocumentLifecyclePhases;
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
-  int bit_fields;
-  int bit_fields2;
+  // The bit fields may fit into the machine word of DisplayItemClient which
+  // has only 8-bit data.
+  unsigned bit_fields1 : 24;
+  unsigned bit_fields2;
   void* pointers[11];
 #if DCHECK_IS_ON()
   void* pointer;
@@ -3383,7 +3385,7 @@ void PaintLayer::SetNeedsRepaint() {
 void PaintLayer::SetNeedsRepaintInternal() {
   needs_repaint_ = true;
   // Invalidate as a display item client.
-  SetDisplayItemsUncached();
+  static_cast<DisplayItemClient*>(this)->Invalidate();
 }
 
 void PaintLayer::MarkCompositingContainerChainForNeedsRepaint() {

@@ -13,7 +13,7 @@ namespace blink {
 TEST(PaintChunkTest, MatchesSame) {
   auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
-  client.UpdateCacheGeneration();
+  client.Validate();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
   EXPECT_TRUE(PaintChunk(0, 1, id, properties)
                   .Matches(PaintChunk(0, 1, id, properties)));
@@ -22,7 +22,7 @@ TEST(PaintChunkTest, MatchesSame) {
 TEST(PaintChunkTest, MatchesEqual) {
   auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
-  client.UpdateCacheGeneration();
+  client.Validate();
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
   DisplayItem::Id id_equal = id;
   EXPECT_TRUE(PaintChunk(0, 1, id, properties)
@@ -34,11 +34,11 @@ TEST(PaintChunkTest, MatchesEqual) {
 TEST(PaintChunkTest, IdNotMatches) {
   auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client1;
-  client1.UpdateCacheGeneration();
+  client1.Validate();
   DisplayItem::Id id1(client1, DisplayItem::kDrawingFirst);
 
   FakeDisplayItemClient client2;
-  client2.UpdateCacheGeneration();
+  client2.Validate();
   DisplayItem::Id id2(client2, DisplayItem::kDrawingFirst);
   EXPECT_FALSE(PaintChunk(0, 1, id2, properties)
                    .Matches(PaintChunk(0, 1, id1, properties)));
@@ -47,7 +47,7 @@ TEST(PaintChunkTest, IdNotMatches) {
 TEST(PaintChunkTest, IdNotMatchesUncacheable) {
   auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
-  client.SetDisplayItemsUncached(PaintInvalidationReason::kUncacheable);
+  client.Invalidate(PaintInvalidationReason::kUncacheable);
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
   EXPECT_FALSE(PaintChunk(0, 1, id, properties)
                    .Matches(PaintChunk(0, 1, id, properties)));
@@ -59,7 +59,7 @@ TEST(PaintChunkTest, IdNotMatchesJustCreated) {
   client.emplace();
   EXPECT_TRUE(client->IsJustCreated());
   // Invalidation won't change the "just created" status.
-  client->SetDisplayItemsUncached();
+  client->Invalidate();
   EXPECT_TRUE(client->IsJustCreated());
 
   DisplayItem::Id id(*client, DisplayItem::kDrawingFirst);
@@ -68,7 +68,7 @@ TEST(PaintChunkTest, IdNotMatchesJustCreated) {
   EXPECT_FALSE(PaintChunk(0, 1, id, properties)
                    .Matches(PaintChunk(0, 1, id, properties)));
 
-  client->UpdateCacheGeneration();
+  client->Validate();
   EXPECT_TRUE(PaintChunk(0, 1, id, properties)
                   .Matches(PaintChunk(0, 1, id, properties)));
 

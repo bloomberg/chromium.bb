@@ -17,20 +17,26 @@ namespace blink {
 // DisplayItemClient object should live at least longer than the document cycle
 // in which its display items are created during painting. After the document
 // cycle, a pointer/reference to DisplayItemClient should be no longer
-// dereferenced unless we can make sure the client is still valid.
+// dereferenced unless we can make sure the client is still alive.
 class PLATFORM_EXPORT DisplayItemClient {
  public:
+  DisplayItemClient()
+      : paint_invalidation_reason_(PaintInvalidationReason::kJustCreated) {
 #if DCHECK_IS_ON()
-  DisplayItemClient();
-  virtual ~DisplayItemClient();
+    OnCreate();
+#endif
+  }
+  virtual ~DisplayItemClient() {
+#if DCHECK_IS_ON()
+    OnDestroy();
+#endif
+  }
 
+#if DCHECK_IS_ON()
   // Tests if this DisplayItemClient object has been created and has not been
   // deleted yet.
   bool IsAlive() const;
   static String SafeDebugName(const DisplayItemClient&, bool known_to_be_safe);
-#else
-  DisplayItemClient() {}
-  virtual ~DisplayItemClient() {}
 #endif
 
   virtual String DebugName() const = 0;
@@ -52,8 +58,7 @@ class PLATFORM_EXPORT DisplayItemClient {
     return LayoutRect();
   }
 
-  // Called by PaintController::CommitNewDisplayItems() for all clients after
-  // painting.
+  // Called by PaintController::FinishCycle() for all clients after painting.
   virtual void ClearPartialInvalidationVisualRect() const {}
 
   // This is declared here instead of in LayoutObject for verifying the
@@ -75,120 +80,54 @@ class PLATFORM_EXPORT DisplayItemClient {
   // paint new display items that are not cached or to no longer paint some
   // cached display items without calling this method.
   // See PaintController::ClientCacheIsValid() for more details.
-  void SetDisplayItemsUncached(
+  void Invalidate(
       PaintInvalidationReason reason = PaintInvalidationReason::kFull) const {
-    cache_generation_or_invalidation_reason_.Invalidate(reason);
+    // If a full invalidation reason is already set, do not overwrite it with
+    // a new reason.
+    if (IsFullPaintInvalidationReason(GetPaintInvalidationReason()) &&
+        // However, kUncacheable overwrites any other reason.
+        reason != PaintInvalidationReason::kUncacheable)
+      return;
+    paint_invalidation_reason_ = reason;
   }
 
   PaintInvalidationReason GetPaintInvalidationReason() const {
-    return cache_generation_or_invalidation_reason_
-        .GetPaintInvalidationReason();
+    return paint_invalidation_reason_;
   }
 
   // A client is considered "just created" if its display items have never been
-  // committed.
+  // validated by any PaintController since it's created.
   bool IsJustCreated() const {
-    return cache_generation_or_invalidation_reason_.IsJustCreated();
-  }
-  void ClearIsJustCreated() const {
-    cache_generation_or_invalidation_reason_.ClearIsJustCreated();
+    return paint_invalidation_reason_ == PaintInvalidationReason::kJustCreated;
   }
 
   // Whether the client is cacheable. The uncacheable status is set when the
   // client produces any display items that skipped caching of any
   // PaintController.
   bool IsCacheable() const {
-    return GetPaintInvalidationReason() !=
-           PaintInvalidationReason::kUncacheable;
+    return paint_invalidation_reason_ != PaintInvalidationReason::kUncacheable;
+  }
+
+  // True if the client's display items are cached in PaintControllers without
+  // needing to update.
+  bool IsValid() const {
+    return paint_invalidation_reason_ == PaintInvalidationReason::kNone;
   }
 
  private:
   friend class FakeDisplayItemClient;
   friend class PaintController;
 
-  // Holds a unique cache generation id of DisplayItemClients and
-  // PaintControllers, or PaintInvalidationReason if the DisplayItemClient or
-  // PaintController is invalidated.
-  //
-  // A paint controller sets its cache generation to
-  // DisplayItemCacheGeneration::next() at the end of each
-  // commitNewDisplayItems, and updates the cache generation of each client with
-  // cached drawings by calling DisplayItemClient::setDisplayItemsCached(). A
-  // display item is treated as validly cached in a paint controller if its
-  // cache generation matches the paint controller's cache generation.
-  //
-  // SPv1 only: If a display item is painted on multiple paint controllers,
-  // because cache generations are unique, the client's cache generation matches
-  // the last paint controller only. The client will be treated as invalid on
-  // other paint controllers regardless if it's validly cached by these paint
-  // controllers. This situation is very rare (about 0.07% of clients were
-  // painted on multiple paint controllers) so the performance penalty is
-  // trivial.
-  class PLATFORM_EXPORT CacheGenerationOrInvalidationReason {
-    DISALLOW_NEW();
-
-   public:
-    CacheGenerationOrInvalidationReason() : value_(kJustCreated) {}
-
-    void Invalidate(
-        PaintInvalidationReason reason = PaintInvalidationReason::kFull) {
-      // If a full invalidation reason is already set, do not overwrite it with
-      // a new reason.
-      if (IsFullPaintInvalidationReason(GetPaintInvalidationReason()) &&
-          // However, kUncacheable overwrites any other reason.
-          reason != PaintInvalidationReason::kUncacheable)
-        return;
-      value_ = static_cast<ValueType>(reason);
-    }
-
-    static CacheGenerationOrInvalidationReason Next() {
-      // In case the value overflowed in the previous call.
-      if (next_generation_ < kFirstValidGeneration)
-        next_generation_ = kFirstValidGeneration;
-      return CacheGenerationOrInvalidationReason(next_generation_++);
-    }
-
-    bool Matches(const CacheGenerationOrInvalidationReason& other) const {
-      return value_ >= kFirstValidGeneration &&
-             other.value_ >= kFirstValidGeneration && value_ == other.value_;
-    }
-
-    PaintInvalidationReason GetPaintInvalidationReason() const {
-      if (value_ == kJustCreated)
-        return PaintInvalidationReason::kAppeared;
-      if (value_ < kJustCreated)
-        return static_cast<PaintInvalidationReason>(value_);
-      return PaintInvalidationReason::kNone;
-    }
-
-    bool IsJustCreated() const { return value_ == kJustCreated; }
-    void ClearIsJustCreated() {
-      value_ = static_cast<ValueType>(PaintInvalidationReason::kFull);
-    }
-
-   private:
-    typedef uint32_t ValueType;
-    explicit CacheGenerationOrInvalidationReason(ValueType value)
-        : value_(value) {}
-
-    static const ValueType kJustCreated =
-        static_cast<ValueType>(PaintInvalidationReason::kMax) + 1;
-    static const ValueType kFirstValidGeneration =
-        static_cast<ValueType>(PaintInvalidationReason::kMax) + 2;
-    static ValueType next_generation_;
-    ValueType value_;
-  };
-
-  bool DisplayItemsAreCached(CacheGenerationOrInvalidationReason other) const {
-    return cache_generation_or_invalidation_reason_.Matches(other);
-  }
-  void SetDisplayItemsCached(
-      CacheGenerationOrInvalidationReason cache_generation) const {
-    cache_generation_or_invalidation_reason_ = cache_generation;
+  void Validate() const {
+    paint_invalidation_reason_ = PaintInvalidationReason::kNone;
   }
 
-  mutable CacheGenerationOrInvalidationReason
-      cache_generation_or_invalidation_reason_;
+#if DCHECK_IS_ON()
+  void OnCreate();
+  void OnDestroy();
+#endif
+
+  mutable PaintInvalidationReason paint_invalidation_reason_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayItemClient);
 };

@@ -166,6 +166,9 @@ class PLATFORM_EXPORT PaintController {
   // Called when the caller finishes updating a full document life cycle.
   // The PaintController will cleanup data that will no longer be used for the
   // next cycle, and update status to be ready for the next cycle.
+  // It updates caching status of DisplayItemClients, so if there are
+  // DisplayItemClients painting on multiple PaintControllers, we should call
+  // there FinishCycle() at the same time to ensure consistent caching status.
   void FinishCycle();
 
   // Returns the approximate memory usage, excluding memory likely to be
@@ -369,6 +372,8 @@ class PLATFORM_EXPORT PaintController {
   bool construction_disabled_ = false;
   bool subsequence_caching_disabled_ = false;
 
+  bool cache_is_all_invalid_ = true;
+
   // A stack recording current frames' first paints.
   Vector<FrameFirstPaint> frame_first_paints_;
 
@@ -402,9 +407,6 @@ class PLATFORM_EXPORT PaintController {
 
   size_t current_cached_subsequence_begin_index_in_new_list_ = kNotFound;
   size_t next_chunk_to_match_ = 0;
-
-  DisplayItemClient::CacheGenerationOrInvalidationReason
-      current_cache_generation_;
 
 #if DCHECK_IS_ON()
   int num_sequential_matches_ = 0;

@@ -981,7 +981,7 @@ void GraphicsLayer::SetSize(const IntSize& size) {
 
   size_ = clamped_size;
 
-  SetDisplayItemsUncached(PaintInvalidationReason::kIncremental);
+  Invalidate(PaintInvalidationReason::kIncremental);  // as DisplayItemClient.
 
   layer_->SetBounds(static_cast<gfx::Size>(size_));
   // Note that we don't resize m_contentsLayer. It's up the caller to do that.

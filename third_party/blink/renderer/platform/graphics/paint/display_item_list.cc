@@ -55,7 +55,7 @@ void DisplayItemList::AppendSubsequenceAsJSON(size_t begin_index,
       item.PropertiesAsJSON(*json);
     }
 
-#ifndef NDEBUG
+#if DCHECK_IS_ON()
     if ((flags & kShowPaintRecords) && item.IsDrawing()) {
       const auto& drawing_item = static_cast<const DrawingDisplayItem&>(item);
       if (const auto* record = drawing_item.GetPaintRecord().get())

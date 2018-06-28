@@ -786,8 +786,8 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
 
   EXPECT_EQ(PaintInvalidationReason::kFull,
             real_rect->GetPaintInvalidationReason());
-  // mask_rect has kAppeared because it is not cached by any PaintController.
-  EXPECT_EQ(PaintInvalidationReason::kAppeared,
+  // mask_rect is not cached and validated by any PaintController.
+  EXPECT_EQ(PaintInvalidationReason::kJustCreated,
             mask_rect->GetPaintInvalidationReason());
 
   GetDocument().View()->UpdateAllLifecyclePhases();

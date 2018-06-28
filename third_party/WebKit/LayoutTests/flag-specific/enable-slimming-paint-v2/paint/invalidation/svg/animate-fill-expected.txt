@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGRect rect id='rect'",
           "rect": [0, 0, 110, 110],
-          "reason": "full"
+          "reason": "SVG resource change"
         }
       ]
     }

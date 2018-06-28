@@ -11,21 +11,17 @@
 
 namespace blink {
 
-DisplayItemClient::CacheGenerationOrInvalidationReason::ValueType
-    DisplayItemClient::CacheGenerationOrInvalidationReason::next_generation_ =
-        kFirstValidGeneration;
-
 #if DCHECK_IS_ON()
 
 HashSet<const DisplayItemClient*>* g_live_display_item_clients = nullptr;
 
-DisplayItemClient::DisplayItemClient() {
+void DisplayItemClient::OnCreate() {
   if (!g_live_display_item_clients)
     g_live_display_item_clients = new HashSet<const DisplayItemClient*>();
   g_live_display_item_clients->insert(this);
 }
 
-DisplayItemClient::~DisplayItemClient() {
+void DisplayItemClient::OnDestroy() {
   g_live_display_item_clients->erase(this);
 }
 

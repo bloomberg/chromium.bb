@@ -236,6 +236,11 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Do not call VisualRect directly outside of the DisplayItemClient
   // interface, use a per-fragment one on FragmentData instead.
  private:
+  // Hide DisplayItemClient methods whose names are too generic for
+  // LayoutObject. Use LayoutObject methods instead, or explicitly cast.
+  using DisplayItemClient::Invalidate;
+  using DisplayItemClient::IsValid;
+
   LayoutRect VisualRect() const final;
 
   void ClearPartialInvalidationVisualRect() const final {

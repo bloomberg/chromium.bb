@@ -187,7 +187,7 @@ void ObjectPaintInvalidator::InvalidateDisplayItemClient(
         InspectorPaintInvalidationTrackingEvent::Data(object_));
   }
 
-  client.SetDisplayItemsUncached(reason);
+  client.Invalidate(reason);
 
   if (LocalFrameView* frame_view = object_.GetFrameView())
     frame_view->TrackObjectPaintInvalidation(client, reason);

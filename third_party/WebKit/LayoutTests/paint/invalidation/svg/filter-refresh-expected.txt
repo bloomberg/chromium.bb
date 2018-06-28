@@ -30,12 +30,12 @@
         {
           "object": "LayoutSVGRect rect id='separate2'",
           "rect": [140, 140, 36, 36],
-          "reason": "full"
+          "reason": "SVG resource change"
         },
         {
           "object": "LayoutSVGRect rect id='filtered'",
           "rect": [140, 100, 36, 36],
-          "reason": "full"
+          "reason": "style change"
         },
         {
           "object": "LayoutSVGContainer g",

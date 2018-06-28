@@ -26,7 +26,7 @@ class RasterInvalidatorTest : public testing::Test,
 
   RasterInvalidatorTest& Chunk(int type) {
     DEFINE_STATIC_LOCAL(FakeDisplayItemClient, fake_client, ());
-    fake_client.ClearIsJustCreated();
+    fake_client.Validate();
     // The enum arithmetics and magic numbers are to produce different values
     // of paint chunk and raster invalidation properties.
     PaintChunk::Id id(fake_client, static_cast<DisplayItem::Type>(
