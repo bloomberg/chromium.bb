@@ -4337,7 +4337,7 @@
     Oops!  There was a problem contacting the logon server. Please check your network connection and the domain name, then try again.
   </message>
   <message name="IDS_AD_JOIN_CONFIG_NOT_PARSED" desc="Alert message to say unlocked configuration could not be parsed.">
-    Oops!  Can't parse domain join configuration. Please contact your administrator.
+    Can't parse the configuration to join domain. Please contact your administrator.
   </message>
   <message name="IDS_AD_AUTH_NOT_SUPPORTED_ENCRYPTION" desc="Alert message that user could not sign in due to not supported encryption types.">
     Failed to login. The server does not support specified Kerberos encryption types. Please contact your administrator.
