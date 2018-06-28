@@ -23,6 +23,12 @@ const mockVolumeManager = new MockVolumeManager();
  * @suppress {checkTypes}
  */
 chrome.fileManagerPrivate = {
+  Verb: {
+    OPEN_WITH: 'open_with',
+    ADD_TO: 'add_to',
+    PACK_WITH: 'pack_with',
+    SHARE_WITH: 'share_with',
+  },
   currentId_: 'test@example.com',
   displayedId_: 'test@example.com',
   preferences_: {
@@ -76,7 +82,7 @@ chrome.fileManagerPrivate = {
     if (entries.length == 1 &&
         entries[0].metadata.contentMimeType == 'text/plain') {
       results.push({
-        taskId: '|file|view-in-browser',
+        taskId: 'hhaomjibdihmijegdhdafkllkbggdgoj|file|view-in-browser',
         title: '__MSG_OPEN_ACTION__',
         isDefault: true,
       });

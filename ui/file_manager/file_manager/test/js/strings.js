@@ -11,6 +11,7 @@ loadTimeData.data = new Proxy(
     {
       AUDIO_FILE_TYPE: '$1 audio',
       CANCEL_LABEL: 'Cancel',
+      CHANGE_DEFAULT_MENU_ITEM: 'Change default...',
       CHROMEOS_RELEASE_BOARD: 'unknown',
       COPY_FILE_NAME: 'Copying $1...',
       COPY_ITEMS_REMAINING: 'Copying $1 items...',
@@ -68,6 +69,7 @@ loadTimeData.data = new Proxy(
       MOVE_ITEMS_REMAINING: 'Moving $1 items...',
       NAME_COLUMN_LABEL: 'Name',
       OFFLINE_COLUMN_LABEL: 'Available offline',
+      OPEN_WITH_VERB_BUTTON_LABEL: 'Open with $1',
       OK_LABEL: 'OK',
       ONE_DIRECTORY_SELECTED: '1 folder selected',
       ONE_FILE_SELECTED: '1 file selected',
@@ -97,7 +99,11 @@ loadTimeData.data = new Proxy(
       SUGGEST_DIALOG_LOADING_SPINNER_ALT: 'Loading',
       SUGGEST_DIALOG_TITLE: 'Select an app to open this file',
       TASK_OPEN: 'Open',
+      TASK_VIEW: 'View',
       TOGGLE_HIDDEN_FILES_COMMAND_LABEL: 'Show hidden files',
+      UNABLE_TO_OPEN_CROSTINI_TITLE: 'Unable to open with $1',
+      UNABLE_TO_OPEN_CROSTINI:
+          'To open files with $1, first copy to Linux Files folder.',
       VIDEO_FILE_TYPE: '$1 video',
       WAITING_FOR_SPACE_INFO: 'Waiting for space info...',
       language: 'en',

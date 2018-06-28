@@ -186,7 +186,7 @@ TaskController.prototype.onTaskItemClicked_ = function(event) {
             this.ui_.taskMenuButton.showMenu(false);
             break;
           case FileTasks.TaskMenuButtonItemType.RunTask:
-            tasks.execute(item.task.taskId);
+            tasks.execute(item.task);
             break;
           case FileTasks.TaskMenuButtonItemType.ChangeDefaultTask:
             var selection = this.selectionHandler_.selection;
@@ -269,7 +269,7 @@ TaskController.prototype.changeDefaultTask_ = function(selection, task) {
 TaskController.prototype.executeDefaultTask = function() {
   this.getFileTasks()
       .then(function(tasks) {
-        tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem.taskId);
+        tasks.execute(this.ui_.fileContextMenu.defaultTaskMenuItem);
       }.bind(this))
       .catch(function(error) {
         if (error)

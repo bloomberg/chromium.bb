@@ -12,8 +12,8 @@
  * @param {!FileManagerUI} ui
  * @param {!Array<!Entry>} entries
  * @param {!Array<?string>} mimeTypes
- * @param {!Array<!Object>} tasks
- * @param {Object} defaultTask
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
+ * @param {chrome.fileManagerPrivate.FileTask} defaultTask
  * @param {!TaskHistory} taskHistory
  * @constructor
  * @struct
@@ -58,13 +58,13 @@ function FileTasks(
   this.mimeTypes_ = mimeTypes;
 
   /**
-   * @private {!Array<!Object>}
+   * @private {!Array<!chrome.fileManagerPrivate.FileTask>}
    * @const
    */
   this.tasks_ = tasks;
 
   /**
-   * @private {Object}
+   * @private {chrome.fileManagerPrivate.FileTask}
    * @const
    */
   this.defaultTask_ = defaultTask;
@@ -230,7 +230,7 @@ FileTasks.create = function(
 
 /**
  * Obtains the task items.
- * @return {!Array<!Object>}
+ * @return {!Array<!chrome.fileManagerPrivate.FileTask>}
  */
 FileTasks.prototype.getTaskItems = function() {
   return this.tasks_;
@@ -238,7 +238,7 @@ FileTasks.prototype.getTaskItems = function() {
 
 /**
  * Obtain tasks which are categorized as OPEN tasks.
- * @return {!Array<!Object>}
+ * @return {!Array<!chrome.fileManagerPrivate.FileTask>}
  */
 FileTasks.prototype.getOpenTaskItems = function() {
   return this.tasks_.filter(FileTasks.isOpenTask);
@@ -246,7 +246,7 @@ FileTasks.prototype.getOpenTaskItems = function() {
 
 /**
  * Obtain tasks which are not categorized as OPEN tasks.
- * @return {!Array<!Object>}
+ * @return {!Array<!chrome.fileManagerPrivate.FileTask>}
  */
 FileTasks.prototype.getNonOpenTaskItems = function() {
   return this.tasks_.filter(task => !FileTasks.isOpenTask(task));
@@ -409,7 +409,7 @@ FileTasks.isInternalTask_ = function(taskId) {
 /**
  * Returns true if the given task is categorized as an OPEN task.
  *
- * @param {!Object} task
+ * @param {!chrome.fileManagerPrivate.FileTask} task
  * @return {boolean} True if the given task is an OPEN task.
  */
 FileTasks.isOpenTask = function(task) {
@@ -420,11 +420,31 @@ FileTasks.isOpenTask = function(task) {
 };
 
 /**
+ * @param {string} taskId Task identifier.
+ * @return {boolean} True if the task ID is for crostini.
+ * @private
+ */
+FileTasks.isCrostiniTask_ = function(taskId) {
+  return taskId.split('|', 2)[1] === 'crostini';
+};
+
+/**
+ * @return {boolean} True if all entries are crostini.
+ * @private
+ */
+FileTasks.prototype.allCrostiniEntries_ = function() {
+  return this.entries_.every(
+      entry => this.volumeManager_.getLocationInfo(entry).rootType ===
+          VolumeManagerCommon.RootType.CROSTINI);
+};
+
+/**
  * Annotates tasks returned from the API.
  *
- * @param {!Array<!Object>} tasks Input tasks from the API.
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks Input tasks from
+ *     the API.
  * @param {!Array<!Entry>} entries List of entries for the tasks.
- * @return {!Array<!Object>} Annotated tasks.
+ * @return {!Array<!chrome.fileManagerPrivate.FileTask>} Annotated tasks.
  * @private
  */
 FileTasks.annotateTasks_ = function(tasks, entries) {
@@ -513,7 +533,7 @@ FileTasks.annotateTasks_ = function(tasks, entries) {
           console.error('Invalid task verb: ' + task.verb + '.');
       }
       if (verbButtonLabel)
-        task.title = loadTimeData.getStringF(verbButtonLabel, task.title);
+        task.label = loadTimeData.getStringF(verbButtonLabel, task.title);
     }
 
     result.push(task);
@@ -546,7 +566,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
   var callback = opt_callback || function(arg1, arg2) {};
 
   if (this.defaultTask_ !== null) {
-    this.executeInternal_(this.defaultTask_.taskId);
+    this.executeInternal_(this.defaultTask_);
     callback(true, this.entries_);
     return;
   }
@@ -560,7 +580,7 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
     this.showTaskPicker(
         this.ui_.defaultTaskPicker, str('OPEN_WITH_BUTTON_LABEL'),
         '', function(task) {
-          this.execute(task.taskId);
+          this.execute(task);
         }.bind(this), FileTasks.TaskPickerType.OpenWith);
     return;
   }
@@ -661,38 +681,42 @@ FileTasks.prototype.executeDefaultInternal_ = function(opt_callback) {
 /**
  * Executes a single task.
  *
- * @param {string} taskId Task identifier.
+ * @param {chrome.fileManagerPrivate.FileTask} task FileTask.
  */
-FileTasks.prototype.execute = function(taskId) {
+FileTasks.prototype.execute = function(task) {
   FileTasks.recordViewingFileTypeUMA_(this.entries_);
   FileTasks.recordViewingRootTypeUMA_(
       this.directoryModel_.getCurrentRootType());
-  this.executeInternal_(taskId);
+  this.executeInternal_(task);
 };
 
 /**
  * The core implementation to execute a single task.
  *
- * @param {string} taskId Task identifier.
+ * @param {chrome.fileManagerPrivate.FileTask} task FileTask.
  * @private
  */
-FileTasks.prototype.executeInternal_ = function(taskId) {
+FileTasks.prototype.executeInternal_ = function(task) {
   this.checkAvailability_(function() {
-    this.taskHistory_.recordTaskExecuted(taskId);
-    if (FileTasks.isInternalTask_(taskId)) {
-      this.executeInternalTask_(taskId);
+    this.taskHistory_.recordTaskExecuted(task.taskId);
+    if (FileTasks.isInternalTask_(task.taskId)) {
+      this.executeInternalTask_(task.taskId);
+    } else if (
+        FileTasks.isCrostiniTask_(task.taskId) && !this.allCrostiniEntries_()) {
+      this.ui_.alertDialog.showHtml(
+          strf('UNABLE_TO_OPEN_CROSTINI_TITLE', task.title),
+          strf('UNABLE_TO_OPEN_CROSTINI', task.title));
     } else {
-      FileTasks.recordZipHandlerUMA_(taskId);
-      chrome.fileManagerPrivate.executeTask(taskId,
-          this.entries_,
-          function(result) {
+      FileTasks.recordZipHandlerUMA_(task.taskId);
+      chrome.fileManagerPrivate.executeTask(
+          task.taskId, this.entries_, function(result) {
             if (result !== 'message_sent')
               return;
             util.isTeleported(window).then(function(teleported) {
               if (teleported)
                 this.ui_.showOpenInOtherDesktopAlert(this.entries_);
             }.bind(this));
-      }.bind(this));
+          }.bind(this));
     }
   }.bind(this));
 };
@@ -878,7 +902,7 @@ FileTasks.prototype.display = function(openCombobutton, shareMenuButton) {
 /**
  * Setup a task picker combobutton based on the given tasks.
  * @param {!cr.ui.ComboButton} combobutton
- * @param {!Array<!Object>} tasks
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
  */
 FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
   combobutton.hidden = tasks.length == 0;
@@ -923,7 +947,7 @@ FileTasks.prototype.updateOpenComboButton_ = function(combobutton, tasks) {
 /**
  * Setup a menu button for sharing options based on the given tasks.
  * @param {!cr.ui.MenuButton} shareMenuButton
- * @param {!Array<!Object>} tasks
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks
  */
 FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
   var driveShareCommand =
@@ -964,9 +988,10 @@ FileTasks.prototype.updateShareMenuButton_ = function(shareMenuButton, tasks) {
 /**
  * Creates sorted array of available task descriptions such as title and icon.
  *
- * @param {!Array<!Object>} tasks Tasks to create items.
- * @return {!Array<!Object>} Created array can be used to feed combobox, menus
- *     and so on.
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks Tasks to create
+ *     items.
+ * @return {!Array<!FileTasks.ComboButtonItem>} Created array can be used to
+ *     feed combobox, menus and so on.
  * @private
  */
 FileTasks.prototype.createItems_ = function(tasks) {
@@ -1005,23 +1030,37 @@ FileTasks.prototype.createItems_ = function(tasks) {
 };
 
 /**
+ * @typedef {{
+ *   type: !FileTasks.TaskMenuButtonItemType,
+ *   label: string,
+ *   iconUrl: string,
+ *   iconType: string,
+ *   task: !chrome.fileManagerPrivate.FileTask,
+ *   bold: boolean,
+ *   isDefault: boolean,
+ *   isGenericFileHandler: boolean,
+ * }}
+ */
+FileTasks.ComboButtonItem;
+
+/**
  * Creates combobutton item based on task.
  *
- * @param {Object} task Task to convert.
+ * @param {!chrome.fileManagerPrivate.FileTask} task Task to convert.
  * @param {string=} opt_title Title.
  * @param {boolean=} opt_bold Make a menu item bold.
  * @param {boolean=} opt_isDefault Mark the item as default item.
- * @return {Object} Item appendable to combobutton drop-down list.
+ * @return {!FileTasks.ComboButtonItem} Item appendable to combobutton drop-down
+ *     list.
  * @private
  */
-FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
-                                                      opt_bold,
-                                                      opt_isDefault) {
+FileTasks.prototype.createCombobuttonItem_ = function(
+    task, opt_title, opt_bold, opt_isDefault) {
   return {
     type: FileTasks.TaskMenuButtonItemType.RunTask,
-    label: opt_title || task.title,
+    label: opt_title || task.label || task.title,
     iconUrl: task.iconUrl,
-    iconType: task.iconType,
+    iconType: task.iconType || '',
     task: task,
     bold: opt_bold || false,
     isDefault: opt_isDefault || false,
@@ -1036,7 +1075,8 @@ FileTasks.prototype.createCombobuttonItem_ = function(task, opt_title,
  *     update.
  * @param {string} title Title to use.
  * @param {string} message Message to use.
- * @param {function(Object)} onSuccess Callback to pass selected task.
+ * @param {function(!chrome.fileManagerPrivate.FileTask)} onSuccess Callback to
+ *     pass selected task.
  * @param {FileTasks.TaskPickerType} pickerType Task picker type.
  */
 FileTasks.prototype.showTaskPicker = function(
@@ -1067,10 +1107,11 @@ FileTasks.prototype.showTaskPicker = function(
  * Gets the default task from tasks. In case there is no such task (i.e. all
  * tasks are generic file handlers), then return null.
  *
- * @param {!Array<!Object>} tasks The list of tasks from where to choose the
- *     default task.
+ * @param {!Array<!chrome.fileManagerPrivate.FileTask>} tasks The list of tasks
+ *     from where to choose the default task.
  * @param {!TaskHistory} taskHistory
- * @return {Object} the default task, or null if no default task found.
+ * @return {?chrome.fileManagerPrivate.FileTask} the default task, or null if
+ *     no default task found.
  */
 FileTasks.getDefaultTask = function(tasks, taskHistory) {
   // 1. Default app set for MIME or file extension by user, or built-in app.
