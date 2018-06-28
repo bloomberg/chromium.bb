@@ -21,29 +21,29 @@ void LockOrientationCallback::OnSuccess() {
 }
 
 void LockOrientationCallback::OnError(WebLockOrientationError error) {
-  ExceptionCode code = 0;
-  String msg = "";
+  DOMExceptionCode code = DOMExceptionCode::kUnknownError;
+  String message = "";
 
   switch (error) {
     case kWebLockOrientationErrorNotAvailable:
       code = DOMExceptionCode::kNotSupportedError;
-      msg = "screen.orientation.lock() is not available on this device.";
+      message = "screen.orientation.lock() is not available on this device.";
       break;
     case kWebLockOrientationErrorFullscreenRequired:
       code = DOMExceptionCode::kSecurityError;
-      msg =
+      message =
           "The page needs to be fullscreen in order to call "
           "screen.orientation.lock().";
       break;
     case kWebLockOrientationErrorCanceled:
       code = DOMExceptionCode::kAbortError;
-      msg =
+      message =
           "A call to screen.orientation.lock() or screen.orientation.unlock() "
           "canceled this call.";
       break;
   }
 
-  resolver_->Reject(DOMException::Create(code, msg));
+  resolver_->Reject(DOMException::Create(code, message));
 }
 
 }  // namespace blink

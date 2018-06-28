@@ -474,9 +474,10 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
   const int kMaxSqliteBusyWaitTime = 30000;
 
   if (!sqlite_database_.Open(filename_)) {
-    ReportOpenDatabaseResult(1, DOMExceptionCode::kInvalidStateError,
-                             sqlite_database_.LastError(),
-                             WTF::CurrentTimeTicks() - call_start_time);
+    ReportOpenDatabaseResult(
+        1, static_cast<int>(DOMExceptionCode::kInvalidStateError),
+        sqlite_database_.LastError(),
+        WTF::CurrentTimeTicks() - call_start_time);
     error_message = FormatErrorMessage("unable to open database",
                                        sqlite_database_.LastError(),
                                        sqlite_database_.LastErrorMsg());
@@ -520,9 +521,10 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
       SQLiteTransaction transaction(sqlite_database_);
       transaction.begin();
       if (!transaction.InProgress()) {
-        ReportOpenDatabaseResult(2, DOMExceptionCode::kInvalidStateError,
-                                 sqlite_database_.LastError(),
-                                 WTF::CurrentTimeTicks() - call_start_time);
+        ReportOpenDatabaseResult(
+            2, static_cast<int>(DOMExceptionCode::kInvalidStateError),
+            sqlite_database_.LastError(),
+            WTF::CurrentTimeTicks() - call_start_time);
         error_message = FormatErrorMessage(
             "unable to open database, failed to start transaction",
             sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -538,9 +540,10 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                 "CREATE TABLE " + table_name +
                 " (key TEXT NOT NULL ON CONFLICT FAIL UNIQUE ON CONFLICT "
                 "REPLACE,value TEXT NOT NULL ON CONFLICT FAIL);")) {
-          ReportOpenDatabaseResult(3, DOMExceptionCode::kInvalidStateError,
-                                   sqlite_database_.LastError(),
-                                   WTF::CurrentTimeTicks() - call_start_time);
+          ReportOpenDatabaseResult(
+              3, static_cast<int>(DOMExceptionCode::kInvalidStateError),
+              sqlite_database_.LastError(),
+              WTF::CurrentTimeTicks() - call_start_time);
           error_message = FormatErrorMessage(
               "unable to open database, failed to create 'info' table",
               sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -549,9 +552,10 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
           return false;
         }
       } else if (!GetVersionFromDatabase(current_version, false)) {
-        ReportOpenDatabaseResult(4, DOMExceptionCode::kInvalidStateError,
-                                 sqlite_database_.LastError(),
-                                 WTF::CurrentTimeTicks() - call_start_time);
+        ReportOpenDatabaseResult(
+            4, static_cast<int>(DOMExceptionCode::kInvalidStateError),
+            sqlite_database_.LastError(),
+            WTF::CurrentTimeTicks() - call_start_time);
         error_message = FormatErrorMessage(
             "unable to open database, failed to read current version",
             sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -568,9 +572,10 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
                          << " in database " << DatabaseDebugName()
                          << " that was just created";
         if (!SetVersionInDatabase(expected_version_, false)) {
-          ReportOpenDatabaseResult(5, DOMExceptionCode::kInvalidStateError,
-                                   sqlite_database_.LastError(),
-                                   WTF::CurrentTimeTicks() - call_start_time);
+          ReportOpenDatabaseResult(
+              5, static_cast<int>(DOMExceptionCode::kInvalidStateError),
+              sqlite_database_.LastError(),
+              WTF::CurrentTimeTicks() - call_start_time);
           error_message = FormatErrorMessage(
               "unable to open database, failed to write current version",
               sqlite_database_.LastError(), sqlite_database_.LastErrorMsg());
@@ -598,8 +603,9 @@ bool Database::PerformOpenAndVerify(bool should_set_version_in_new_database,
   // whatever version of the database we have.
   if ((!new_ || should_set_version_in_new_database) &&
       expected_version_.length() && expected_version_ != current_version) {
-    ReportOpenDatabaseResult(6, DOMExceptionCode::kInvalidStateError, 0,
-                             WTF::CurrentTimeTicks() - call_start_time);
+    ReportOpenDatabaseResult(
+        6, static_cast<int>(DOMExceptionCode::kInvalidStateError), 0,
+        WTF::CurrentTimeTicks() - call_start_time);
     error_message =
         "unable to open database, version mismatch, '" + expected_version_ +
         "' does not match the currentVersion of '" + current_version + "'";

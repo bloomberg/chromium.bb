@@ -127,7 +127,8 @@ void SensorProxyImpl::SensorReadingChanged() {
     UpdateSensorReading();
 }
 
-void SensorProxyImpl::ReportError(ExceptionCode code, const String& message) {
+void SensorProxyImpl::ReportError(DOMExceptionCode code,
+                                  const String& message) {
   state_ = kUninitialized;
   active_frequencies_.clear();
   reading_ = device::SensorReading();

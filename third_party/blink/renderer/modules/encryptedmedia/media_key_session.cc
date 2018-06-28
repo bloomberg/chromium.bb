@@ -27,6 +27,7 @@
 
 #include <cmath>
 #include <limits>
+
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_content_decryption_module.h"
 #include "third_party/blink/public/platform/web_content_decryption_module_exception.h"
@@ -226,8 +227,14 @@ class MediaKeySession::PendingAction final
 // is not expected to be called, and will reject the promise.
 class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
  public:
-  NewSessionResultPromise(ScriptState* script_state, MediaKeySession* session)
-      : ContentDecryptionModuleResultPromise(script_state), session_(session) {}
+  NewSessionResultPromise(ScriptState* script_state,
+                          MediaKeySession* session,
+                          const char* interface_name,
+                          const char* property_name)
+      : ContentDecryptionModuleResultPromise(script_state,
+                                             interface_name,
+                                             property_name),
+        session_(session) {}
 
   ~NewSessionResultPromise() override = default;
 
@@ -258,8 +265,14 @@ class NewSessionResultPromise : public ContentDecryptionModuleResultPromise {
 // is not expected to be called, and will reject the promise.
 class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
  public:
-  LoadSessionResultPromise(ScriptState* script_state, MediaKeySession* session)
-      : ContentDecryptionModuleResultPromise(script_state), session_(session) {}
+  LoadSessionResultPromise(ScriptState* script_state,
+                           MediaKeySession* session,
+                           const char* interface_name,
+                           const char* property_name)
+      : ContentDecryptionModuleResultPromise(script_state,
+                                             interface_name,
+                                             property_name),
+        session_(session) {}
 
   ~LoadSessionResultPromise() override = default;
 
@@ -294,8 +307,14 @@ class LoadSessionResultPromise : public ContentDecryptionModuleResultPromise {
 // promise).
 class SimpleResultPromise : public ContentDecryptionModuleResultPromise {
  public:
-  SimpleResultPromise(ScriptState* script_state, MediaKeySession* session)
-      : ContentDecryptionModuleResultPromise(script_state), session_(session) {}
+  SimpleResultPromise(ScriptState* script_state,
+                      MediaKeySession* session,
+                      const char* interface_name,
+                      const char* property_name)
+      : ContentDecryptionModuleResultPromise(script_state,
+                                             interface_name,
+                                             property_name),
+        session_(session) {}
 
   ~SimpleResultPromise() override = default;
 
@@ -477,8 +496,8 @@ ScriptPromise MediaKeySession::generateRequest(
   //    (Done in constructor.)
 
   // 9. Let promise be a new promise.
-  NewSessionResultPromise* result =
-      new NewSessionResultPromise(script_state, this);
+  NewSessionResultPromise* result = new NewSessionResultPromise(
+      script_state, this, "MediaKeySession", "generateRequest");
   ScriptPromise promise = result->Promise();
 
   // 10. Run the following steps asynchronously (done in generateRequestTask())
@@ -572,8 +591,8 @@ ScriptPromise MediaKeySession::load(ScriptState* script_state,
   //    (Available as getExecutionContext()->getSecurityOrigin() anytime.)
 
   // 7. Let promise be a new promise.
-  LoadSessionResultPromise* result =
-      new LoadSessionResultPromise(script_state, this);
+  LoadSessionResultPromise* result = new LoadSessionResultPromise(
+      script_state, this, "MediaKeySession", "load");
   ScriptPromise promise = result->Promise();
 
   // 8. Run the following steps asynchronously (done in loadTask())
@@ -692,7 +711,8 @@ ScriptPromise MediaKeySession::update(ScriptState* script_state,
       DOMArrayBuffer::Create(response.Data(), response.ByteLength());
 
   // 5. Let promise be a new promise.
-  SimpleResultPromise* result = new SimpleResultPromise(script_state, this);
+  SimpleResultPromise* result =
+      new SimpleResultPromise(script_state, this, "MediaKeySession", "update");
   ScriptPromise promise = result->Promise();
 
   // 6. Run the following steps asynchronously (done in updateTask())
@@ -737,7 +757,8 @@ ScriptPromise MediaKeySession::close(ScriptState* script_state) {
     return CreateRejectedPromiseNotCallable(script_state);
 
   // 4. Let promise be a new promise.
-  SimpleResultPromise* result = new SimpleResultPromise(script_state, this);
+  SimpleResultPromise* result =
+      new SimpleResultPromise(script_state, this, "MediaKeySession", "close");
   ScriptPromise promise = result->Promise();
 
   // 5. Run the following steps in parallel (done in closeTask()).
@@ -777,7 +798,8 @@ ScriptPromise MediaKeySession::remove(ScriptState* script_state) {
     return CreateRejectedPromiseNotCallable(script_state);
 
   // 3. Let promise be a new promise.
-  SimpleResultPromise* result = new SimpleResultPromise(script_state, this);
+  SimpleResultPromise* result =
+      new SimpleResultPromise(script_state, this, "MediaKeySession", "remove");
   ScriptPromise promise = result->Promise();
 
   // 4. Run the following steps asynchronously (done in removeTask()).

@@ -43,12 +43,12 @@ namespace blink {
 namespace {
 
 struct ExceptionParams {
-  ExceptionParams(ExceptionCode code,
+  ExceptionParams(DOMExceptionCode code,
                   const String& default_message = String(),
                   const String& message = String())
       : code(code), message(message.IsEmpty() ? default_message : message) {}
 
-  ExceptionCode code;
+  DOMExceptionCode code;
   String message;
 };
 

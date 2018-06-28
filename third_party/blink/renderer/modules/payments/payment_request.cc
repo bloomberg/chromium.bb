@@ -1088,18 +1088,18 @@ void PaymentRequest::OnPaymentResponse(PaymentResponsePtr response) {
 }
 
 void PaymentRequest::OnError(PaymentErrorReason error) {
-  ExceptionCode ec = DOMExceptionCode::kUnknownError;
+  DOMExceptionCode exception_code = DOMExceptionCode::kUnknownError;
   String message;
 
   switch (error) {
     case PaymentErrorReason::USER_CANCEL: {
-      ec = DOMExceptionCode::kAbortError;
+      exception_code = DOMExceptionCode::kAbortError;
       message = "Request cancelled";
       break;
     }
 
     case PaymentErrorReason::NOT_SUPPORTED: {
-      ec = DOMExceptionCode::kNotSupportedError;
+      exception_code = DOMExceptionCode::kNotSupportedError;
       DCHECK_LE(1U, method_names_.size());
       auto it = method_names_.begin();
       if (method_names_.size() == 1U) {
@@ -1121,7 +1121,7 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
     }
 
     case PaymentErrorReason::UNKNOWN: {
-      ec = DOMExceptionCode::kUnknownError;
+      exception_code = DOMExceptionCode::kUnknownError;
       message = "Request failed";
       break;
     }
@@ -1139,13 +1139,15 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
   }
 
   if (show_resolver_)
-    show_resolver_->Reject(DOMException::Create(ec, message));
+    show_resolver_->Reject(DOMException::Create(exception_code, message));
 
   if (abort_resolver_)
-    abort_resolver_->Reject(DOMException::Create(ec, message));
+    abort_resolver_->Reject(DOMException::Create(exception_code, message));
 
-  if (can_make_payment_resolver_)
-    can_make_payment_resolver_->Reject(DOMException::Create(ec, message));
+  if (can_make_payment_resolver_) {
+    can_make_payment_resolver_->Reject(
+        DOMException::Create(exception_code, message));
+  }
 
   ClearResolversAndCloseMojoConnection();
 }

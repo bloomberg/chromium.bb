@@ -82,7 +82,8 @@ void WebIDBCallbacksImpl::OnError(const WebIDBDatabaseError& error) {
     return;
 
   probe::AsyncTask async_task(request_->GetExecutionContext(), this, "error");
-  request_->HandleResponse(DOMException::Create(error.Code(), error.Message()));
+  request_->HandleResponse(DOMException::Create(
+      static_cast<DOMExceptionCode>(error.Code()), error.Message()));
 }
 
 void WebIDBCallbacksImpl::OnSuccess(

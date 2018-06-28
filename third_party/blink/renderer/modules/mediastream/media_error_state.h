@@ -45,7 +45,7 @@ class MediaErrorState {
  public:
   MediaErrorState();
   void ThrowTypeError(const String& message);
-  void ThrowDOMException(ExceptionCode, const String& message);
+  void ThrowDOMException(DOMExceptionCode, const String& message);
   void ThrowConstraintError(const String& message, const String& constraint);
   void Reset();
 
@@ -59,7 +59,7 @@ class MediaErrorState {
   enum ErrorType { kNoError, kTypeError, kDOMException, kConstraintError };
   ErrorType error_type_;
   String name_;
-  ExceptionCode code_;
+  DOMExceptionCode code_;
   String message_;
   String constraint_;
 };

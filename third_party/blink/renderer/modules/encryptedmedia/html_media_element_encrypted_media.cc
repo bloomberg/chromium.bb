@@ -79,21 +79,24 @@ class SetContentDecryptionModuleResult final
       WebContentDecryptionModule*) override {
     NOTREACHED();
     std::move(failure_callback_)
-        .Run(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+        .Run(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+             "Unexpected completion.");
   }
 
   void CompleteWithSession(
       WebContentDecryptionModuleResult::SessionStatus status) override {
     NOTREACHED();
     std::move(failure_callback_)
-        .Run(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+        .Run(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+             "Unexpected completion.");
   }
 
   void CompleteWithKeyStatus(
       WebEncryptedMediaKeyInformation::KeyStatus key_status) override {
     NOTREACHED();
     std::move(failure_callback_)
-        .Run(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+        .Run(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+             "Unexpected completion.");
   }
 
   void CompleteWithError(WebContentDecryptionModuleException code,
@@ -169,7 +172,7 @@ void SetMediaKeysHandler::ClearExistingMediaKeys() {
   if (new_media_keys_) {
     if (!new_media_keys_->ReserveForMediaElement(element_.Get())) {
       this_element.is_attaching_media_keys_ = false;
-      Fail(DOMExceptionCode::kQuotaExceededError,
+      Fail(ToExceptionCode(DOMExceptionCode::kQuotaExceededError),
            "The MediaKeys object is already in use by another media element.");
       return;
     }
@@ -273,8 +276,11 @@ void SetMediaKeysHandler::Fail(ExceptionCode code,
 
   // Reject promise with an appropriate error.
   ScriptState::Scope scope(GetScriptState());
-  v8::Isolate* isolate = GetScriptState()->GetIsolate();
-  Reject(V8ThrowDOMException::CreateDOMException(isolate, code, error_message));
+  ExceptionState exception_state(GetScriptState()->GetIsolate(),
+                                 ExceptionState::kExecutionContext,
+                                 "HTMLMediaElement", "setMediaKeys");
+  exception_state.ThrowException(code, error_message);
+  Reject(exception_state);
 }
 
 void SetMediaKeysHandler::ClearFailed(ExceptionCode code,

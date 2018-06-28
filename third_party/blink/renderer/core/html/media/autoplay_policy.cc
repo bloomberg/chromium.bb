@@ -251,7 +251,7 @@ bool AutoplayPolicy::RequestAutoplayByAttribute() {
   return false;
 }
 
-base::Optional<ExceptionCode> AutoplayPolicy::RequestPlay() {
+base::Optional<DOMExceptionCode> AutoplayPolicy::RequestPlay() {
   if (!Frame::HasTransientUserActivation(element_->GetDocument().GetFrame())) {
     autoplay_uma_helper_->OnAutoplayInitiated(AutoplaySource::kMethod);
     if (IsGestureNeededForPlayback()) {

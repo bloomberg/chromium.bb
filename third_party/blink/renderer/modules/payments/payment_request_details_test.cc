@@ -19,12 +19,13 @@ namespace {
 
 class DetailsTestCase {
  public:
-  DetailsTestCase(PaymentTestDetailToChange detail,
-                  PaymentTestDataToChange data,
-                  PaymentTestModificationType mod_type,
-                  const char* value_to_use,
-                  bool expect_exception = false,
-                  ExceptionCode expected_exception_code = 0)
+  DetailsTestCase(
+      PaymentTestDetailToChange detail,
+      PaymentTestDataToChange data,
+      PaymentTestModificationType mod_type,
+      const char* value_to_use,
+      bool expect_exception = false,
+      ESErrorType expected_exception_code = static_cast<ESErrorType>(0))
       : detail_(detail),
         data_(data),
         mod_type_(mod_type),
@@ -41,7 +42,7 @@ class DetailsTestCase {
 
   bool ExpectException() const { return expect_exception_; }
 
-  ExceptionCode GetExpectedExceptionCode() const {
+  ESErrorType GetExpectedExceptionCode() const {
     return expected_exception_code_;
   }
 
@@ -52,7 +53,7 @@ class DetailsTestCase {
   PaymentTestModificationType mod_type_;
   const char* value_to_use_;
   bool expect_exception_;
-  ExceptionCode expected_exception_code_;
+  ESErrorType expected_exception_code_;
 };
 
 std::ostream& operator<<(std::ostream& out, DetailsTestCase test_case) {
@@ -135,9 +136,10 @@ TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
 
   EXPECT_EQ(GetParam().ExpectException(),
             scope.GetExceptionState().HadException());
-  if (GetParam().ExpectException())
+  if (GetParam().ExpectException()) {
     EXPECT_EQ(GetParam().GetExpectedExceptionCode(),
-              scope.GetExceptionState().Code());
+              scope.GetExceptionState().CodeAs<ESErrorType>());
+  }
 }
 
 INSTANTIATE_TEST_CASE_P(

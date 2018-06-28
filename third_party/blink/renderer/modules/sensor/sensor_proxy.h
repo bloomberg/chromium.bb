@@ -36,7 +36,7 @@ class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
     // event if needed.
     virtual void OnSensorReadingChanged() {}
     // An error has occurred.
-    virtual void OnSensorError(ExceptionCode,
+    virtual void OnSensorError(DOMExceptionCode,
                                const String& sanitized_message,
                                const String& unsanitized_message) {}
   };
@@ -58,7 +58,7 @@ class SensorProxy : public GarbageCollectedFinalized<SensorProxy>,
   virtual std::pair<double, double> GetFrequencyLimits() const = 0;
   virtual void SetReadingForInspector(const device::SensorReading&) {}
 
-  virtual void ReportError(ExceptionCode code, const String& description);
+  virtual void ReportError(DOMExceptionCode code, const String& description);
   // Getters.
   bool IsInitializing() const { return state_ == kInitializing; }
   bool IsInitialized() const { return state_ == kInitialized; }

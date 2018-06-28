@@ -112,7 +112,6 @@ class MIDIPort : public EventTargetWithInlineData,
   void CloseAsynchronously(ScriptPromiseResolver*);
 
   ScriptPromise Accept(ScriptState*);
-  ScriptPromise Reject(ScriptState*, ExceptionCode, const String& message);
 
   void SetStates(midi::mojom::PortState, ConnectionState);
 

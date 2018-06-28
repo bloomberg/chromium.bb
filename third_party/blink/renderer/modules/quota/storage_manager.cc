@@ -39,7 +39,7 @@ void QueryStorageUsageAndQuotaCallback(ScriptPromiseResolver* resolver,
     // TODO(sashab): Replace this with a switch statement, and remove the enum
     // values from QuotaStatusCode.
     resolver->Reject(
-        DOMException::Create(static_cast<ExceptionCode>(status_code)));
+        DOMException::Create(static_cast<DOMExceptionCode>(status_code)));
     return;
   }
 

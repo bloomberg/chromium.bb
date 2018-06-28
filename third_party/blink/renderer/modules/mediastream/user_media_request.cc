@@ -555,38 +555,38 @@ void UserMediaRequest::Fail(WebUserMediaRequest::Error name,
   if (!GetExecutionContext())
     return;
 
-  ExceptionCode ec = DOMExceptionCode::kNotSupportedError;
+  DOMExceptionCode exception_code = DOMExceptionCode::kNotSupportedError;
   switch (name) {
     case WebUserMediaRequest::Error::kPermissionDenied:
     case WebUserMediaRequest::Error::kPermissionDismissed:
     case WebUserMediaRequest::Error::kInvalidState:
     case WebUserMediaRequest::Error::kFailedDueToShutdown:
     case WebUserMediaRequest::Error::kKillSwitchOn:
-      ec = DOMExceptionCode::kNotAllowedError;
+      exception_code = DOMExceptionCode::kNotAllowedError;
       break;
     case WebUserMediaRequest::Error::kDevicesNotFound:
-      ec = DOMExceptionCode::kNotFoundError;
+      exception_code = DOMExceptionCode::kNotFoundError;
       break;
     case WebUserMediaRequest::Error::kTabCapture:
     case WebUserMediaRequest::Error::kScreenCapture:
     case WebUserMediaRequest::Error::kCapture:
-      ec = DOMExceptionCode::kAbortError;
+      exception_code = DOMExceptionCode::kAbortError;
       break;
     case WebUserMediaRequest::Error::kTrackStart:
-      ec = DOMExceptionCode::kNotReadableError;
+      exception_code = DOMExceptionCode::kNotReadableError;
       break;
     case WebUserMediaRequest::Error::kNotSupported:
-      ec = DOMExceptionCode::kNotSupportedError;
+      exception_code = DOMExceptionCode::kNotSupportedError;
       break;
     case WebUserMediaRequest::Error::kSecurityError:
-      ec = DOMExceptionCode::kSecurityError;
+      exception_code = DOMExceptionCode::kSecurityError;
       break;
     default:
       NOTREACHED();
   }
   callbacks_->OnError(nullptr,
                       DOMExceptionOrOverconstrainedError::FromDOMException(
-                          DOMException::Create(ec, message)));
+                          DOMException::Create(exception_code, message)));
 }
 
 void UserMediaRequest::ContextDestroyed(ExecutionContext*) {

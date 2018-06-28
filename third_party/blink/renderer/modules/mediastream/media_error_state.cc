@@ -34,14 +34,15 @@
 
 namespace blink {
 
-MediaErrorState::MediaErrorState() : error_type_(kNoError), code_(0) {}
+MediaErrorState::MediaErrorState()
+    : error_type_(kNoError), code_(DOMExceptionCode::kNoError) {}
 
 void MediaErrorState::ThrowTypeError(const String& message) {
   error_type_ = kTypeError;
   message_ = message;
 }
 
-void MediaErrorState::ThrowDOMException(ExceptionCode code,
+void MediaErrorState::ThrowDOMException(DOMExceptionCode code,
                                         const String& message) {
   error_type_ = kDOMException;
   code_ = code;

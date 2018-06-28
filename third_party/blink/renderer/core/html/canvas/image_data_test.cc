@@ -23,7 +23,7 @@ TEST_F(ImageDataTest, CreateImageDataTooBig) {
       ImageData::Create(32767, 32767, exception_state);
   if (!too_big_image_data) {
     EXPECT_TRUE(exception_state.HadException());
-    EXPECT_EQ(exception_state.Code(), ESErrorType::kRangeError);
+    EXPECT_EQ(exception_state.CodeAs<ESErrorType>(), ESErrorType::kRangeError);
   }
 }
 

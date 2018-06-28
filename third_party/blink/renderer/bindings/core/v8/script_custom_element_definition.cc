@@ -224,10 +224,11 @@ bool ScriptCustomElementDefinition::RunConstructor(Element* element) {
     const String& message =
         "custom element constructors must call super() first and must "
         "not return a different object";
-    v8::Local<v8::Value> exception = V8ThrowDOMException::CreateDOMException(
+    v8::Local<v8::Value> exception = V8ThrowDOMException::CreateOrEmpty(
         script_state_->GetIsolate(), DOMExceptionCode::kInvalidStateError,
         message);
-    V8ScriptRunner::ReportException(isolate, exception);
+    if (!exception.IsEmpty())
+      V8ScriptRunner::ReportException(isolate, exception);
     return false;
   }
 

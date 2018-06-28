@@ -71,8 +71,8 @@ void DeprecatedQueryStorageUsageAndQuotaCallback(
     int64_t quota_in_bytes) {
   if (status_code != mojom::QuotaStatusCode::kOk) {
     if (error_callback) {
-      error_callback->InvokeAndReportException(
-          nullptr, DOMError::Create(static_cast<ExceptionCode>(status_code)));
+      error_callback->InvokeAndReportException(nullptr,
+                                               DOMError::Create(status_code));
     }
     return;
   }
@@ -91,8 +91,8 @@ void RequestStorageQuotaCallback(
     int64_t granted_quota_in_bytes) {
   if (status_code != mojom::QuotaStatusCode::kOk) {
     if (error_callback) {
-      error_callback->InvokeAndReportException(
-          nullptr, DOMError::Create(static_cast<ExceptionCode>(status_code)));
+      error_callback->InvokeAndReportException(nullptr,
+                                               DOMError::Create(status_code));
     }
     return;
   }
@@ -107,7 +107,7 @@ void RequestStorageQuotaCallback(
 void DeprecatedStorageQuota::EnqueueStorageErrorCallback(
     ScriptState* script_state,
     V8StorageErrorCallback* error_callback,
-    ExceptionCode exception_code) {
+    DOMExceptionCode exception_code) {
   if (!error_callback)
     return;
 

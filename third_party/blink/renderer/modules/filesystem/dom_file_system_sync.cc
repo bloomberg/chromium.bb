@@ -146,8 +146,9 @@ File* DOMFileSystemSync::CreateFile(const FileEntrySync* file_entry,
       file_system_url, CreateFileHelper::Create(result, file_entry->name(),
                                                 file_system_url, GetType()));
   if (result->failed_) {
-    exception_state.ThrowDOMException(
-        result->code_, "Could not create '" + file_entry->name() + "'.");
+    FileError::ThrowDOMException(
+        exception_state, static_cast<FileError::ErrorCode>(result->code_),
+        "Could not create '" + file_entry->name() + "'.");
     return nullptr;
   }
   return result->file_.Get();

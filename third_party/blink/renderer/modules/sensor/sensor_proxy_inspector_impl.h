@@ -31,7 +31,7 @@ class SensorProxyInspectorImpl final : public SensorProxy {
   std::pair<double, double> GetFrequencyLimits() const override;
   void SetReadingForInspector(const device::SensorReading&) override;
 
-  void ReportError(ExceptionCode, const String&) override;
+  void ReportError(DOMExceptionCode, const String&) override;
 
  private:
   void OnSensorCreated();

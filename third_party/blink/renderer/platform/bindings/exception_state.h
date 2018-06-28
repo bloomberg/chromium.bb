@@ -67,7 +67,7 @@ class PLATFORM_EXPORT ExceptionState {
   // A function pointer type that creates a DOMException.
   using CreateDOMExceptionFunction =
       v8::Local<v8::Value> (*)(v8::Isolate*,
-                               ExceptionCode,
+                               DOMExceptionCode,
                                const String& sanitized_message,
                                const String& unsanitized_message);
 
@@ -108,15 +108,12 @@ class PLATFORM_EXPORT ExceptionState {
     }
   }
 
-  // Throws an appropriate exception due to the given exception code.
-  //
-  // Despite of its name, this function may and may not throw a DOMException.
-  // The thrown exception can be either of ECMAScript Error object or
-  // DOMException.
-  // TODO(yukishiino): Rename this function to "ThrowException" or something
-  // better. Exact distinction between ECMAScript Error and Web IDL DOMException
-  // might be a good option.
-  virtual void ThrowDOMException(ExceptionCode, const String& message);
+  // Throws an appropriate exception due to the given exception code. The
+  // exception will be either of ECMAScript Error object or DOMException.
+  void ThrowException(ExceptionCode, const String& message);
+
+  // Throws a DOMException due to the given exception code.
+  virtual void ThrowDOMException(DOMExceptionCode, const String& message);
 
   // Throws a DOMException with SECURITY_ERR.
   virtual void ThrowSecurityError(const String& sanitized_message,
@@ -131,7 +128,7 @@ class PLATFORM_EXPORT ExceptionState {
   // call site. As there are many call sites that pass in a const char*, this
   // size optimization is effective (32kb reduction as of June 2018).
   // See also https://crbug.com/849743
-  void ThrowDOMException(ExceptionCode, const char* message);
+  void ThrowDOMException(DOMExceptionCode, const char* message);
   void ThrowSecurityError(const char* sanitized_message,
                           const char* unsanitized_message = nullptr);
   void ThrowRangeError(const char* message);
@@ -140,11 +137,23 @@ class PLATFORM_EXPORT ExceptionState {
   // Rethrows a v8::Value as an exception.
   virtual void RethrowV8Exception(v8::Local<v8::Value>);
 
+  // Returns true if there is a pending exception.
+  //
+  // Note that this function returns true even when |exception_| is empty, and
+  // that V8ThrowDOMException::CreateOrEmpty may return an empty handle.
   bool HadException() const { return code_; }
+
   void ClearException();
 
   ExceptionCode Code() const { return code_; }
+
+  template <typename T>
+  T CodeAs() const {
+    return static_cast<T>(Code());
+  }
+
   const String& Message() const { return message_; }
+
   v8::Local<v8::Value> GetException() {
     DCHECK(!exception_.IsEmpty());
     return exception_.NewLocal(isolate_);
@@ -154,12 +163,12 @@ class PLATFORM_EXPORT ExceptionState {
   const char* PropertyName() const { return property_name_; }
   const char* InterfaceName() const { return interface_name_; }
 
-  String AddExceptionContext(const String&) const;
-
  protected:
   void SetException(ExceptionCode, const String&, v8::Local<v8::Value>);
 
  private:
+  String AddExceptionContext(const String&) const;
+
   // Since DOMException is defined in core/, we need a dependency injection in
   // order to create a DOMException in platform/.
   static CreateDOMExceptionFunction s_create_dom_exception_func_;
@@ -182,7 +191,7 @@ class PLATFORM_EXPORT NonThrowableExceptionState final : public ExceptionState {
   NonThrowableExceptionState();
   NonThrowableExceptionState(const char*, int);
 
-  void ThrowDOMException(ExceptionCode, const String& message) override;
+  void ThrowDOMException(DOMExceptionCode, const String& message) override;
   void ThrowTypeError(const String& message) override;
   void ThrowSecurityError(const String& sanitized_message,
                           const String& unsanitized_message) override;
@@ -225,7 +234,7 @@ class PLATFORM_EXPORT DummyExceptionStateForTesting final
       ClearException();
     }
   }
-  void ThrowDOMException(ExceptionCode, const String& message) override;
+  void ThrowDOMException(DOMExceptionCode, const String& message) override;
   void ThrowTypeError(const String& message) override;
   void ThrowSecurityError(const String& sanitized_message,
                           const String& unsanitized_message) override;

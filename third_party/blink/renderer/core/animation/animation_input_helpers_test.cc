@@ -61,7 +61,7 @@ class AnimationAnimationInputHelpersTest : public PageTestBase {
     scoped_refptr<TimingFunction> timing_function =
         ParseTimingFunction(string, exception_state);
     EXPECT_TRUE(exception_state.HadException());
-    EXPECT_EQ(ESErrorType::kTypeError, exception_state.Code());
+    EXPECT_EQ(ESErrorType::kTypeError, exception_state.CodeAs<ESErrorType>());
     exception_state.ClearException();
   }
 

@@ -19,24 +19,28 @@ ExceptionCode WebCdmExceptionToExceptionCode(
     WebContentDecryptionModuleException cdm_exception) {
   switch (cdm_exception) {
     case kWebContentDecryptionModuleExceptionTypeError:
-      return ESErrorType::kTypeError;
+      return ToExceptionCode(ESErrorType::kTypeError);
     case kWebContentDecryptionModuleExceptionNotSupportedError:
-      return DOMExceptionCode::kNotSupportedError;
+      return ToExceptionCode(DOMExceptionCode::kNotSupportedError);
     case kWebContentDecryptionModuleExceptionInvalidStateError:
-      return DOMExceptionCode::kInvalidStateError;
+      return ToExceptionCode(DOMExceptionCode::kInvalidStateError);
     case kWebContentDecryptionModuleExceptionQuotaExceededError:
-      return DOMExceptionCode::kQuotaExceededError;
+      return ToExceptionCode(DOMExceptionCode::kQuotaExceededError);
     case kWebContentDecryptionModuleExceptionUnknownError:
-      return DOMExceptionCode::kUnknownError;
+      return ToExceptionCode(DOMExceptionCode::kUnknownError);
   }
 
   NOTREACHED();
-  return DOMExceptionCode::kUnknownError;
+  return ToExceptionCode(DOMExceptionCode::kUnknownError);
 }
 
 ContentDecryptionModuleResultPromise::ContentDecryptionModuleResultPromise(
-    ScriptState* script_state)
-    : resolver_(ScriptPromiseResolver::Create(script_state)) {}
+    ScriptState* script_state,
+    const char* interface_name,
+    const char* property_name)
+    : resolver_(ScriptPromiseResolver::Create(script_state)),
+      interface_name_(interface_name),
+      property_name_(property_name) {}
 
 ContentDecryptionModuleResultPromise::~ContentDecryptionModuleResultPromise() =
     default;
@@ -45,7 +49,8 @@ void ContentDecryptionModuleResultPromise::Complete() {
   NOTREACHED();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+         "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithContentDecryptionModule(
@@ -53,7 +58,8 @@ void ContentDecryptionModuleResultPromise::CompleteWithContentDecryptionModule(
   NOTREACHED();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+         "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithSession(
@@ -61,14 +67,16 @@ void ContentDecryptionModuleResultPromise::CompleteWithSession(
   NOTREACHED();
   if (!IsValidToFulfillPromise())
     return;
-  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+         "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithKeyStatus(
     WebEncryptedMediaKeyInformation::KeyStatus) {
   if (!IsValidToFulfillPromise())
     return;
-  Reject(DOMExceptionCode::kInvalidStateError, "Unexpected completion.");
+  Reject(ToExceptionCode(DOMExceptionCode::kInvalidStateError),
+         "Unexpected completion.");
 }
 
 void ContentDecryptionModuleResultPromise::CompleteWithError(
@@ -102,9 +110,12 @@ void ContentDecryptionModuleResultPromise::Reject(ExceptionCode code,
   DCHECK(IsValidToFulfillPromise());
 
   ScriptState::Scope scope(resolver_->GetScriptState());
-  v8::Isolate* isolate = resolver_->GetScriptState()->GetIsolate();
-  resolver_->Reject(
-      V8ThrowDOMException::CreateDOMException(isolate, code, error_message));
+  ExceptionState exception_state(resolver_->GetScriptState()->GetIsolate(),
+                                 ExceptionState::kExecutionContext,
+                                 interface_name_, property_name_);
+  exception_state.ThrowException(code, error_message);
+  resolver_->Reject(exception_state);
+
   resolver_.Clear();
 }
 

@@ -240,13 +240,6 @@ ScriptPromise MIDIPort::Accept(ScriptState* script_state) {
                                   script_state->GetIsolate()));
 }
 
-ScriptPromise MIDIPort::Reject(ScriptState* script_state,
-                               ExceptionCode ec,
-                               const String& message) {
-  return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(ec, message));
-}
-
 void MIDIPort::SetStates(PortState state, ConnectionState connection) {
   DCHECK(state != PortState::DISCONNECTED ||
          connection != kConnectionStateOpen);
