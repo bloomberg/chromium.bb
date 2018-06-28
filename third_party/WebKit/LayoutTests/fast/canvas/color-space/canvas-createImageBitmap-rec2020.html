@@ -8,6 +8,8 @@
 // SkColorSpaceXform() may generate slightly different results.
 // Please see: https://fiddle.skia.org/c/94578944d9d52c2b4c2cadda88a4e204
 
+var transparentBlack = [0, 0, 0, 0];
+
 var rec2020Red =   [0.627441, 0.070557, 0.015686, 1]; // SRGB(255,0,0,255)
 var rec2020Green = [0.329346, 0.917480, 0.086243, 1]; // SRGB(0,255,0,255)
 var rec2020Blue =  [0.043121, 0.011765, 0.894043, 1]; // SRGB(0,0,255,255)
@@ -60,7 +62,7 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                  [39, 0, rec2020Green, "This pixel should be Rec2020 green."],
                  [0, 39, rec2020Blue, "This pixel should be Rec2020 blue."],
                  [39, 39, rec2020Black, "This pixel should be Rec2020 black."],
-                 [41, 41, rec2020Black, "This pixel should be Rec2020 black."]];
+                 [41, 41, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo == 'opaque')
         tests = [[0, 0, rec2020OpaqueRed,
                      "This pixel should be Rec2020 like red."],
@@ -70,8 +72,7 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be Rec2020 like blue."],
                  [39, 39, rec2020OpaqueBlack,
                      "This pixel should be Rec2020 like black."],
-                 [41, 41, rec2020Black,
-                     "This pixel should be Rec2020 black."]];
+                 [41, 41, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo == 'transparent')
         tests = [[0, 0, rec2020TransparentRed,
                      "This pixel should be Rec2020 transparent red."],
@@ -81,7 +82,8 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be Rec2020 transparent blue."],
                  [39, 39, rec2020TransparentBlack,
                      "This pixel should be Rec2020 transparent black."],
-                 [41, 41, rec2020Black, "This pixel should be Rec2020 black."]];
+                 [41, 41, transparentBlack,
+                     "This pixel should be transparent black."]];
     testPixels(ctx, tests, sourceType);
 }
 
@@ -100,7 +102,7 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                  [19, 0, rec2020Green, "This pixel should be Rec2020 green."],
                  [0, 19, rec2020Blue, "This pixel should be Rec2020 blue."],
                  [19, 19, rec2020Black, "This pixel should be Rec2020 black."],
-                 [21, 21, rec2020Black, "This pixel should be Rec2020 black."]];
+                 [21, 21, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo === 'opaque')
         tests = [[0, 0, rec2020OpaqueRed,
                      "This pixel should be Rec2020 like red."],
@@ -110,7 +112,8 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be Rec2020 like blue."],
                  [19, 19, rec2020OpaqueBlack,
                      "This pixel should be Rec2020 like black."],
-                 [21, 21, rec2020Black, "This pixel should be Rec2020 black."]];
+                 [21, 21, transparentBlack,
+                     "This pixel should be transparent black."]];
     else if (colorInfo === 'transparent')
         tests = [[0, 0, rec2020TransparentRed,
                      "This pixel should be Rec2020 transparent red."],
@@ -120,7 +123,8 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be Rec2020 transparent blue."],
                  [19, 19, rec2020TransparentBlack,
                      "This pixel should be Rec2020 transparent black."],
-                 [21, 21, rec2020Black, "This pixel should be Rec2020 black."]];
+                 [21, 21, transparentBlack,
+                     "This pixel should be transparent black."]];
     testPixels(ctx, tests, sourceType);
 }
 

@@ -8,6 +8,8 @@
 // SkColorSpaceXform() may generate slightly different results.
 // Please see: https://fiddle.skia.org/c/94578944d9d52c2b4c2cadda88a4e204
 
+var transparentBlack = [0, 0, 0, 0];
+
 var p3Red =   [0.823242, 0.031372, 0.015686, 1]; // SRGB(255,0,0,255)
 var p3Green = [0.176392, 0.968262, 0.070557, 1]; // SRGB(0,255,0,255)
 var p3Blue =  [0, 0, 0.909668, 1];               // SRGB(0,0,255,255)
@@ -56,13 +58,13 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                  [39, 0, p3Green, "This pixel should be P3 green."],
                  [0, 39, p3Blue, "This pixel should be P3 blue."],
                  [39, 39, p3Black, "This pixel should be P3 black."],
-                 [41, 41, p3Black, "This pixel should be P3 black."]];
+                 [41, 41, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo == 'opaque')
         tests = [[0, 0, p3OpaqueRed, "This pixel should be P3 like red."],
                  [39, 0, p3OpaqueGreen, "This pixel should be P3 like green."],
                  [0, 39, p3OpaqueBlue, "This pixel should be P3 like blue."],
                  [39, 39, p3OpaqueBlack, "This pixel should be P3 like black."],
-                 [41, 41, p3Black, "This pixel should be P3 black."]];
+                 [41, 41, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo == 'transparent')
         tests = [[0, 0, p3TransparentRed,
                      "This pixel should be P3 transparent red."],
@@ -72,7 +74,8 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be P3 transparent blue."],
                  [39, 39, p3TransparentBlack,
                      "This pixel should be P3 transparent black."],
-                 [41, 41, p3Black, "This pixel should be P3 black."]];
+                 [41, 41, transparentBlack,
+                     "This pixel should be transparent black."]];
     testPixels(ctx, tests, sourceType);
 }
 
@@ -91,13 +94,13 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                  [19, 0, p3Green, "This pixel should be P3 green."],
                  [0, 19, p3Blue, "This pixel should be P3 blue."],
                  [19, 19, p3Black, "This pixel should be P3 black."],
-                 [21, 21, p3Black, "This pixel should be P3 black."]];
+                 [21, 21, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo === 'opaque')
         tests = [[0, 0, p3OpaqueRed, "This pixel should be P3 like red."],
                  [19, 0, p3OpaqueGreen, "This pixel should be P3 like green."],
                  [0, 19, p3OpaqueBlue, "This pixel should be P3 like blue."],
                  [19, 19, p3OpaqueBlack, "This pixel should be P3 like black."],
-                 [21, 21, p3Black, "This pixel should be P3 black."]];
+                 [21, 21, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo === 'transparent')
         tests = [[0, 0, p3TransparentRed,
                      "This pixel should be P3 transparent red."],
@@ -107,7 +110,8 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be P3 transparent blue."],
                  [19, 19, p3TransparentBlack,
                      "This pixel should be P3 transparent black."],
-                 [21, 21, p3Black, "This pixel should be P3 black."]];
+                 [21, 21, transparentBlack,
+                     "This pixel should be transparent black."]];
     testPixels(ctx, tests, sourceType);
 }
 
