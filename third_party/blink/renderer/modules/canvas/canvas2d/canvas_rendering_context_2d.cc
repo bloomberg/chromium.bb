@@ -1025,7 +1025,7 @@ void CanvasRenderingContext2D::addHitRegion(const HitRegionOptions& options,
     return;
   }
 
-  Path hit_region_path = options.hasPath() ? options.path()->GetPath() : path_;
+  Path hit_region_path = options.path() ? options.path()->GetPath() : path_;
 
   cc::PaintCanvas* c = DrawingCanvas();
 

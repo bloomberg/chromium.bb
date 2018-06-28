@@ -13,7 +13,11 @@ namespace blink {
 {# Constructor #}
 {{cpp_class}}::{{cpp_class}}() {
   {% for member in members if member.cpp_default_value %}
+  {% if member.is_default_value_null and member.null_setter_name %}
+  {{member.null_setter_name}}();
+  {% else %}
   {{member.setter_name}}({{member.cpp_default_value}});
+  {% endif %}
   {% endfor %}
 }
 

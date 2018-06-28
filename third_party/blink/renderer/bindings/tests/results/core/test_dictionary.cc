@@ -106,6 +106,7 @@ void TestDictionary::setObjectMember(ScriptValue value) {
 void TestDictionary::setObjectOrNullMember(ScriptValue value) {
   object_or_null_member_ = value;
 }
+
 void TestDictionary::setObjectOrNullMemberToNull() {
   object_or_null_member_ = ScriptValue();
 }

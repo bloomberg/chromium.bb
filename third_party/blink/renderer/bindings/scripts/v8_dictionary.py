@@ -211,8 +211,16 @@ def member_impl_context(member, interfaces_info, header_includes,
     idl_type = unwrap_nullable_if_needed(member.idl_type)
     cpp_name = to_snake_case(v8_utilities.cpp_name(member))
 
+    # In most cases, we don't have to distinguish `null` and `not present`,
+    # and use null-states (e.g. nullptr, foo.IsUndefinedOrNull()) to show such
+    # states for some types for memory usage and performance.
+    # For types whose |has_explicit_presence| is True, we provide explicit
+    # states of presence.
+    has_explicit_presence = (
+        member.idl_type.is_nullable and member.idl_type.inner_type.is_interface_type)
+
     nullable_indicator_name = None
-    if not idl_type.cpp_type_has_null_value:
+    if not idl_type.cpp_type_has_null_value or has_explicit_presence:
         nullable_indicator_name = 'has_' + cpp_name + '_'
 
     def has_method_expression():
@@ -229,8 +237,9 @@ def member_impl_context(member, interfaces_info, header_includes,
         return '%s_' % cpp_name
 
     cpp_default_value = None
-    if member.default_value and not member.default_value.is_null:
-        cpp_default_value = idl_type.literal_cpp_value(member.default_value)
+    if member.default_value:
+        if not member.default_value.is_null or has_explicit_presence:
+            cpp_default_value = idl_type.literal_cpp_value(member.default_value)
 
     forward_decl_name = idl_type.impl_forward_declaration_name
     if forward_decl_name:
@@ -252,6 +261,7 @@ def member_impl_context(member, interfaces_info, header_includes,
     return {
         'cpp_default_value': cpp_default_value,
         'cpp_name': cpp_name,
+        'has_explicit_presence': has_explicit_presence,
         'getter_expression': cpp_name + '_',
         'getter_name': getter_name_for_dictionary_member(member),
         'has_method_expression': has_method_expression(),

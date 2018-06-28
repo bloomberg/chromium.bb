@@ -27,7 +27,7 @@ class {{exported}}{{cpp_class}}{% if parent_cpp_class %} : public {{parent_cpp_c
   {% for member in members %}
   bool {{member.has_method_name}}() const { return {{member.has_method_expression}}; }
   {{member.rvalue_cpp_type}} {{member.getter_name}}() const {
-    {% if member.nullable_indicator_name %}
+    {% if member.nullable_indicator_name and not member.has_explicit_presence %}
     DCHECK({{member.nullable_indicator_name}});
     {% endif %}
     return {{member.getter_expression}};
