@@ -26,10 +26,48 @@
 #include "services/network/test/test_data_pipe_getter.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/mojom/blob/blob.mojom.h"
 #include "url/origin.h"
 
 namespace content {
 namespace service_worker_subresource_loader_unittest {
+
+// A simple blob implementation for serving data stored in a vector.
+class FakeBlob final : public blink::mojom::Blob {
+ public:
+  FakeBlob(base::Optional<std::vector<uint8_t>> side_data, std::string body)
+      : side_data_(std::move(side_data)), body_(std::move(body)) {}
+
+ private:
+  // Implements blink::mojom::Blob.
+  void Clone(blink::mojom::BlobRequest) override { NOTREACHED(); }
+  void AsDataPipeGetter(network::mojom::DataPipeGetterRequest) override {
+    NOTREACHED();
+  }
+  void ReadRange(uint64_t offset,
+                 uint64_t length,
+                 mojo::ScopedDataPipeProducerHandle handle,
+                 blink::mojom::BlobReaderClientPtr client) override {
+    NOTREACHED();
+  }
+  void ReadAll(mojo::ScopedDataPipeProducerHandle handle,
+               blink::mojom::BlobReaderClientPtr client) override {
+    EXPECT_TRUE(mojo::BlockingCopyFromString(body_, handle));
+    if (client) {
+      client->OnCalculatedSize(body_.size(), body_.size());
+      client->OnComplete(net::OK, body_.size());
+    }
+  }
+  void ReadSideData(ReadSideDataCallback callback) override {
+    std::move(callback).Run(side_data_);
+  }
+  void GetInternalUUID(GetInternalUUIDCallback callback) override {
+    NOTREACHED();
+  }
+
+  base::Optional<std::vector<uint8_t>> side_data_;
+  std::string body_;
+};
 
 // A simple URLLoaderFactory that responds with status 200 to every request.
 // This is the default network loader factory for
@@ -155,6 +193,14 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     redirect_location_header_ = redirect_location_header;
   }
 
+  void RespondWithBlob(base::Optional<std::vector<uint8_t>> metadata,
+                       std::string body) {
+    response_mode_ = ResponseMode::kBlob;
+    mojo::MakeStrongBinding(
+        std::make_unique<FakeBlob>(std::move(metadata), std::move(body)),
+        mojo::MakeRequest(&blob_));
+  }
+
   void ReadRequestBody(std::string* out_string) {
     ASSERT_TRUE(request_body_);
     std::vector<network::DataElement>* elements =
@@ -211,6 +257,12 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
         std::move(callback).Run(
             blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
         break;
+      case ResponseMode::kBlob:
+        response_callback->OnResponseBlob(OkResponse(), std::move(blob_),
+                                          base::Time::Now());
+        std::move(callback).Run(
+            blink::mojom::ServiceWorkerEventStatus::COMPLETED, base::Time());
+        break;
       case ResponseMode::kFallbackResponse:
         response_callback->OnFallback(base::Time::Now());
         std::move(callback).Run(
@@ -255,6 +307,7 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     kDefault,
     kAbort,
     kStream,
+    kBlob,
     kFallbackResponse,
     kErrorResponse,
     kRedirectResponse
@@ -270,6 +323,9 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
 
   // For ResponseMode::kStream.
   blink::mojom::ServiceWorkerStreamHandlePtr stream_handle_;
+
+  // For ResponseMode::kBlob.
+  blink::mojom::BlobPtr blob_;
 
   // For ResponseMode::kRedirectResponse
   std::string redirect_location_header_;
@@ -792,6 +848,85 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
   EXPECT_TRUE(
       mojo::BlockingCopyToString(client->response_body_release(), &response));
   EXPECT_EQ(kResponseBody, response);
+
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      blink::SERVICE_WORKER_OK, 1);
+}
+
+TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
+  base::HistogramTester histogram_tester;
+
+  // Construct the Blob to respond with.
+  const std::string kResponseBody = "Here is sample text for the Blob.";
+  const std::vector<uint8_t> kMetadata = {0xE3, 0x81, 0x8F, 0xE3, 0x82,
+                                          0x8D, 0xE3, 0x81, 0xBF, 0xE3,
+                                          0x81, 0x86, 0xE3, 0x82, 0x80};
+  fake_controller_.RespondWithBlob(kMetadata, kResponseBody);
+
+  network::mojom::URLLoaderFactoryPtr factory =
+      CreateSubresourceLoaderFactory();
+
+  // Perform the request.
+  network::ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  network::mojom::URLLoaderPtr loader;
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  StartRequest(factory, request, &loader, &client);
+  client->RunUntilResponseReceived();
+
+  const network::ResourceResponseHead& info = client->response_head();
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+
+  // Test the cached metadata.
+  client->RunUntilCachedMetadataReceived();
+  EXPECT_EQ(client->cached_metadata(),
+            std::string(kMetadata.begin(), kMetadata.end()));
+
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Test the body.
+  std::string response;
+  EXPECT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
+  EXPECT_EQ(kResponseBody, response);
+
+  histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
+                                      blink::SERVICE_WORKER_OK, 1);
+}
+
+TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
+  base::HistogramTester histogram_tester;
+
+  // Construct the Blob to respond with.
+  const std::string kResponseBody = "Here is sample text for the Blob.";
+  fake_controller_.RespondWithBlob(base::nullopt, kResponseBody);
+
+  network::mojom::URLLoaderFactoryPtr factory =
+      CreateSubresourceLoaderFactory();
+
+  // Perform the request.
+  network::ResourceRequest request =
+      CreateRequest(GURL("https://www.example.com/foo.png"));
+  network::mojom::URLLoaderPtr loader;
+  std::unique_ptr<network::TestURLLoaderClient> client;
+  StartRequest(factory, request, &loader, &client);
+  client->RunUntilResponseReceived();
+
+  const network::ResourceResponseHead& info = client->response_head();
+  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+
+  client->RunUntilComplete();
+  EXPECT_EQ(net::OK, client->completion_status().error_code);
+
+  // Test the body.
+  std::string response;
+  EXPECT_TRUE(client->response_body().is_valid());
+  EXPECT_TRUE(
+      mojo::BlockingCopyToString(client->response_body_release(), &response));
+  EXPECT_EQ(kResponseBody, response);
+  EXPECT_FALSE(client->has_received_cached_metadata());
 
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
                                       blink::SERVICE_WORKER_OK, 1);
