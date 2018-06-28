@@ -23,11 +23,6 @@ crbug.com/851075 fast/writing-mode/vertical-inline-block-hittest.html [ Failure 
 # Wrong image alignment in vertical-rl writing mode
 crbug.com/636993 fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
 
-# Need bidi inline fragmentation
-crbug.com/636993 fast/text/international/unicode-bidi-isolate-nested-with-removes-not-adjacent.html [ Crash ]
-crbug.com/636993 fast/text/international/unicode-bidi-isolate-nested-with-removes.html [ Crash ]
-crbug.com/636993 fast/text/nested-bidi-with-continuation-crash.html [ Crash ]
-
 # Wrong quirks mode line height for pattern <div><a><img></a></div>
 crbug.com/854840 fast/table/backgr_border-table-quirks-collapsed-border.html [ Failure ]
 crbug.com/854840 fast/table/backgr_border-table-quirks.html [ Failure ]

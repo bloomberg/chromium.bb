@@ -22,6 +22,7 @@ struct NGPositionedFloat;
 class CORE_EXPORT NGLineBoxFragmentBuilder final
     : public NGContainerFragmentBuilder {
   STACK_ALLOCATED();
+
  public:
   NGLineBoxFragmentBuilder(NGInlineNode,
                            scoped_refptr<const ComputedStyle>,
@@ -106,6 +107,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
       return HasInFlowFragment() || HasOutOfFlowFragment();
     }
     bool HasBidiLevel() const { return bidi_level != 0xff; }
+    bool IsPlaceholder() const { return !HasFragment() && !HasBidiLevel(); }
     const NGPhysicalFragment* PhysicalFragment() const;
   };
 

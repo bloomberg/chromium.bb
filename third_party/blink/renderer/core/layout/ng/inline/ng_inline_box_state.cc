@@ -66,7 +66,7 @@ void NGInlineBoxState::AccumulateUsedFonts(const ShapeResult* shape_result,
                                            FontBaseline baseline_type) {
   HashSet<const SimpleFontData*> fallback_fonts;
   shape_result->FallbackFonts(&fallback_fonts);
-  for (auto* const fallback_font : fallback_fonts) {
+  for (const SimpleFontData* const fallback_font : fallback_fonts) {
     NGLineHeightMetrics fallback_metrics(fallback_font->GetFontMetrics(),
                                          baseline_type);
     fallback_metrics.AddLeading(
@@ -90,7 +90,7 @@ LayoutObject*
 NGInlineLayoutStateStack::ContainingLayoutObjectForAbsolutePositionObjects()
     const {
   for (unsigned i = stack_.size(); i-- > 1;) {
-    const auto& box = stack_[i];
+    const NGInlineBoxState& box = stack_[i];
     DCHECK(box.style);
     if (box.style->CanContainAbsolutePositionObjects()) {
       DCHECK(box.item->GetLayoutObject());
@@ -111,7 +111,7 @@ NGInlineBoxState* NGInlineLayoutStateStack::OnBeginPlaceItems(
     box->fragment_start = 0;
   } else {
     // For the following lines, clear states that are not shared across lines.
-    for (auto& box : stack_) {
+    for (NGInlineBoxState& box : stack_) {
       box.fragment_start = 0;
       if (!line_height_quirk)
         box.metrics = box.text_metrics;
@@ -339,7 +339,7 @@ void NGInlineLayoutStateStack::PrepareForReorder(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   // Set indexes of BoxData to the children of the line box.
   unsigned box_data_index = 0;
-  for (const auto& box_data : box_data_list_) {
+  for (const BoxData& box_data : box_data_list_) {
     box_data_index++;
     for (unsigned i = box_data.fragment_start; i < box_data.fragment_end; i++) {
       NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
@@ -350,7 +350,7 @@ void NGInlineLayoutStateStack::PrepareForReorder(
 
   // When boxes are nested, placeholders have indexes to which box it should be
   // added. Copy them to BoxData.
-  for (auto& box_data : box_data_list_) {
+  for (BoxData& box_data : box_data_list_) {
     const NGLineBoxFragmentBuilder::Child& placeholder =
         (*line_box)[box_data.fragment_end];
     DCHECK(!placeholder.HasFragment());
@@ -362,11 +362,11 @@ void NGInlineLayoutStateStack::PrepareForReorder(
 void NGInlineLayoutStateStack::UpdateAfterReorder(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   // Compute start/end of boxes from the children of the line box.
-  for (auto& box_data : box_data_list_)
+  for (BoxData& box_data : box_data_list_)
     box_data.fragment_start = box_data.fragment_end = 0;
   for (unsigned i = 0; i < line_box->size(); i++) {
-    const auto& child = (*line_box)[i];
-    if (!child.HasFragment())
+    const NGLineBoxFragmentBuilder::Child& child = (*line_box)[i];
+    if (child.IsPlaceholder())
       continue;
     if (unsigned box_data_index = child.box_data_index) {
       BoxData& box_data = box_data_list_[box_data_index - 1];
@@ -377,7 +377,7 @@ void NGInlineLayoutStateStack::UpdateAfterReorder(
   }
 
   // Extend start/end of boxes when they are nested.
-  for (auto& box_data : box_data_list_) {
+  for (BoxData& box_data : box_data_list_) {
     if (box_data.box_data_index) {
       BoxData& parent_box_data = box_data_list_[box_data.box_data_index - 1];
       if (!parent_box_data.fragment_end) {
@@ -394,7 +394,7 @@ void NGInlineLayoutStateStack::UpdateAfterReorder(
 
 #if DCHECK_IS_ON()
   // Check all BoxData have ranges.
-  for (const auto& box_data : box_data_list_) {
+  for (const BoxData& box_data : box_data_list_) {
     DCHECK_NE(box_data.fragment_end, 0u);
     DCHECK_GT(box_data.fragment_end, box_data.fragment_start);
   }
@@ -406,7 +406,7 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
   // At this point, children are in the visual order, and they have their
   // origins at (0, 0). Accumulate inline offset from left to right.
   LayoutUnit position;
-  for (auto& child : *line_box) {
+  for (NGLineBoxFragmentBuilder::Child& child : *line_box) {
     child.offset.inline_offset += position;
     // Box margins/boders/paddings will be processed later.
     // TODO(kojii): we could optimize this if the reordering did not occur.
@@ -419,7 +419,7 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     return position;
 
   // Adjust child offsets for margin/border/padding of inline boxes.
-  for (auto& box_data : box_data_list_) {
+  for (BoxData& box_data : box_data_list_) {
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
@@ -446,7 +446,7 @@ LayoutUnit NGInlineLayoutStateStack::ComputeInlinePositions(
     LayoutUnit line_right;
   };
   Vector<LinePadding, 32> accumulated_padding(line_box->size());
-  for (auto& box_data : box_data_list_) {
+  for (BoxData& box_data : box_data_list_) {
     // Compute line-left and line-right edge of this box by accomodating
     // border/padding of this box and margin/border/padding of descendants
     // boxes, while accumulating its margin/border/padding.
@@ -477,7 +477,7 @@ void NGInlineLayoutStateStack::CreateBoxFragments(
     NGLineBoxFragmentBuilder::ChildList* line_box) {
   DCHECK(!box_data_list_.IsEmpty());
 
-  for (auto& box_data : box_data_list_) {
+  for (BoxData& box_data : box_data_list_) {
     unsigned start = box_data.fragment_start;
     unsigned end = box_data.fragment_end;
     DCHECK_GT(end, start);
@@ -545,7 +545,7 @@ NGInlineLayoutStateStack::ApplyBaselineShift(
   // |pending_descendants|.
   LayoutUnit baseline_shift;
   if (!box->pending_descendants.IsEmpty()) {
-    for (auto& child : box->pending_descendants) {
+    for (NGPendingPositions& child : box->pending_descendants) {
       if (child.metrics.IsEmpty()) {
         // This can happen with boxes with no content in quirks mode
         child.metrics = NGLineHeightMetrics(LayoutUnit(), LayoutUnit());

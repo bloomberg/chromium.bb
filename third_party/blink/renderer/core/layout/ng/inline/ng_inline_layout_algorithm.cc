@@ -188,7 +188,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
   NGInlineBoxState* box =
       box_states_->OnBeginPlaceItems(&line_style, baseline_type_, quirks_mode_);
 
-  for (auto& item_result : *line_items) {
+  for (NGInlineItemResult& item_result : *line_items) {
     DCHECK(item_result.item);
     const NGInlineItem& item = *item_result.item;
     if (item.Type() == NGInlineItem::kText) {
@@ -442,7 +442,7 @@ bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
     const NGLineInfo& line_info,
     const NGLineHeightMetrics& line_box_metrics) {
   bool has_fragments = false;
-  for (auto& child : line_box_) {
+  for (NGLineBoxFragmentBuilder::Child& child : line_box_) {
     if (LayoutObject* box = child.out_of_flow_positioned_box) {
       // The static position is at the line-top. Ignore the block_offset.
       NGLogicalOffset static_offset(child.offset.inline_offset, LayoutUnit());
@@ -800,17 +800,18 @@ unsigned NGInlineLayoutAlgorithm::PositionLeadingItems(
 
   unsigned index = BreakToken() ? BreakToken()->ItemIndex() : 0;
   for (; index < items.size(); ++index) {
-    const auto& item = items[index];
+    const NGInlineItem& item = items[index];
 
     if (item.Type() == NGInlineItem::kFloating) {
       NGBlockNode node(ToLayoutBox(item.GetLayoutObject()));
       NGBoxStrut margins =
           ComputeMarginsForContainer(ConstraintSpace(), node.Style());
 
-      auto unpositioned_float = NGUnpositionedFloat::Create(
-          ConstraintSpace().AvailableSize(),
-          ConstraintSpace().PercentageResolutionSize(), bfc_line_offset,
-          bfc_line_offset, margins, node, /* break_token */ nullptr);
+      scoped_refptr<NGUnpositionedFloat> unpositioned_float =
+          NGUnpositionedFloat::Create(
+              ConstraintSpace().AvailableSize(),
+              ConstraintSpace().PercentageResolutionSize(), bfc_line_offset,
+              bfc_line_offset, margins, node, /* break_token */ nullptr);
       AddUnpositionedFloat(&unpositioned_floats_, &container_builder_,
                            std::move(unpositioned_float));
     } else if (is_empty_inline &&
@@ -851,7 +852,7 @@ void NGInlineLayoutAlgorithm::PositionPendingFloats(
   LayoutUnit origin_block_offset = bfc_offset.block_offset + content_size;
   LayoutUnit from_block_offset = bfc_offset.block_offset;
 
-  const auto positioned_floats =
+  const Vector<NGPositionedFloat> positioned_floats =
       PositionFloats(origin_block_offset, from_block_offset,
                      unpositioned_floats_, ConstraintSpace(), exclusion_space);
 
@@ -873,8 +874,8 @@ void NGInlineLayoutAlgorithm::BidiReorder() {
   Vector<UBiDiLevel, 32> levels;
   logical_items.ReserveInitialCapacity(line_box_.size());
   levels.ReserveInitialCapacity(line_box_.size());
-  for (auto& item : line_box_) {
-    if (!item.HasFragment() && !item.HasBidiLevel())
+  for (NGLineBoxFragmentBuilder::Child& item : line_box_) {
+    if (item.IsPlaceholder())
       continue;
     levels.push_back(item.bidi_level);
     logical_items.AddChild(std::move(item));
