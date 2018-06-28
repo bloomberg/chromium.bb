@@ -35,9 +35,7 @@ class ACCELERATED_WIDGET_MAC_EXPORT DisplayCALayerTree
   void UpdateCALayerTree(const gfx::CALayerParams& ca_layer_params) override;
 
  private:
-  void GotCALayerFrame(base::scoped_nsobject<CALayerHost> remote_layer,
-                       const gfx::Size& pixel_size,
-                       float scale_factor);
+  void GotCALayerFrame(uint32_t ca_context_id);
   void GotIOSurfaceFrame(base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
                          const gfx::Size& pixel_size,
                          float scale_factor);

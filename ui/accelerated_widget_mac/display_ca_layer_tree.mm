@@ -58,55 +58,66 @@ DisplayCALayerTree::~DisplayCALayerTree() {
 
 void DisplayCALayerTree::UpdateCALayerTree(
     const gfx::CALayerParams& ca_layer_params) {
-  ScopedCAActionDisabler disabler;
-
+  // Remote layers are the most common case.
   if (ca_layer_params.ca_context_id) {
-    base::scoped_nsobject<CALayerHost> remote_layer;
-    if ([remote_layer_ contextId] == ca_layer_params.ca_context_id) {
-      remote_layer = remote_layer_;
-    } else {
-      remote_layer.reset([[CALayerHost alloc] init]);
-      [remote_layer setContextId:ca_layer_params.ca_context_id];
-      [remote_layer
-          setAutoresizingMask:kCALayerMaxXMargin | kCALayerMaxYMargin];
-    }
-    GotCALayerFrame(remote_layer, ca_layer_params.pixel_size,
-                    ca_layer_params.scale_factor);
-  } else if (ca_layer_params.io_surface_mach_port) {
+    GotCALayerFrame(ca_layer_params.ca_context_id);
+    return;
+  }
+
+  // IOSurfaces can be sent from software compositing, or if remote layers are
+  // manually disabled.
+  if (ca_layer_params.io_surface_mach_port) {
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface(
         IOSurfaceLookupFromMachPort(ca_layer_params.io_surface_mach_port));
-    if (!io_surface) {
-      LOG(ERROR) << "Unable to open IOSurface for frame.";
-      static int dump_counter = kMaxCrashDumps;
-      if (dump_counter) {
-        dump_counter -= 1;
-        base::debug::DumpWithoutCrashing();
-      }
+    if (io_surface) {
+      GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
+                        ca_layer_params.scale_factor);
+      return;
     }
-    GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
-                      ca_layer_params.scale_factor);
-  } else {
+    LOG(ERROR) << "Unable to open IOSurface for frame.";
+    static int dump_counter = kMaxCrashDumps;
+    if (dump_counter) {
+      dump_counter -= 1;
+      base::debug::DumpWithoutCrashing();
+    }
+  }
+
+  // Warn if the frame specified neither.
+  if (ca_layer_params.io_surface_mach_port && !ca_layer_params.ca_context_id)
     LOG(ERROR) << "Frame had neither valid CAContext nor valid IOSurface.";
-    base::ScopedCFTypeRef<IOSurfaceRef> io_surface;
-    GotIOSurfaceFrame(io_surface, ca_layer_params.pixel_size,
-                      ca_layer_params.scale_factor);
+
+  // If there was an error or if the frame specified nothing, then clear all
+  // contents.
+  if (io_surface_layer_ || remote_layer_) {
+    ScopedCAActionDisabler disabler;
+    [io_surface_layer_ removeFromSuperlayer];
+    io_surface_layer_.reset();
+    [remote_layer_ removeFromSuperlayer];
+    remote_layer_.reset();
   }
 }
 
-void DisplayCALayerTree::GotCALayerFrame(
-    base::scoped_nsobject<CALayerHost> remote_layer,
-    const gfx::Size& pixel_size,
-    float scale_factor) {
-  TRACE_EVENT0("ui", "DisplayCALayerTree::GotCAContextFrame");
-  // Ensure that the content is in the CALayer hierarchy, and update fullscreen
-  // low power state.
-  if (remote_layer_ != remote_layer) {
-    [flipped_layer_ addSublayer:remote_layer];
-    [remote_layer_ removeFromSuperlayer];
-    remote_layer_ = remote_layer;
-  }
+void DisplayCALayerTree::GotCALayerFrame(uint32_t ca_context_id) {
+  // Early-out if the remote layer has not changed.
+  if ([remote_layer_ contextId] == ca_context_id)
+    return;
 
-  // Ensure the IOSurface is removed.
+  TRACE_EVENT0("ui", "DisplayCALayerTree::GotCAContextFrame");
+  ScopedCAActionDisabler disabler;
+
+  // Create the new CALayerHost.
+  base::scoped_nsobject<CALayerHost> new_remote_layer(
+      [[CALayerHost alloc] init]);
+  [new_remote_layer setContextId:ca_context_id];
+  [new_remote_layer
+      setAutoresizingMask:kCALayerMaxXMargin | kCALayerMaxYMargin];
+
+  // Update the local CALayer tree.
+  [flipped_layer_ addSublayer:new_remote_layer];
+  [remote_layer_ removeFromSuperlayer];
+  remote_layer_ = new_remote_layer;
+
+  // Ensure that the IOSurface layer be removed.
   if (io_surface_layer_) {
     [io_surface_layer_ removeFromSuperlayer];
     io_surface_layer_.reset();
@@ -117,8 +128,9 @@ void DisplayCALayerTree::GotIOSurfaceFrame(
     base::ScopedCFTypeRef<IOSurfaceRef> io_surface,
     const gfx::Size& pixel_size,
     float scale_factor) {
+  DCHECK(io_surface);
   TRACE_EVENT0("ui", "DisplayCALayerTree::GotIOSurfaceFrame");
-  gfx::Size bounds_dip = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
+  ScopedCAActionDisabler disabler;
 
   // Create (if needed) and update the IOSurface layer with new content.
   if (!io_surface_layer_) {
@@ -132,12 +144,13 @@ void DisplayCALayerTree::GotIOSurfaceFrame(
     [io_surface_layer_ setContentsChanged];
   else
     [io_surface_layer_ setContents:new_contents];
+  gfx::Size bounds_dip = gfx::ConvertSizeToDIP(scale_factor, pixel_size);
   [io_surface_layer_
       setBounds:CGRectMake(0, 0, bounds_dip.width(), bounds_dip.height())];
   if ([io_surface_layer_ contentsScale] != scale_factor)
     [io_surface_layer_ setContentsScale:scale_factor];
 
-  // Ensure that the remote layer is removed.
+  // Ensure that the remote layer be removed.
   if (remote_layer_) {
     [remote_layer_ removeFromSuperlayer];
     remote_layer_.reset();
