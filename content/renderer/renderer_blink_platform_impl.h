@@ -123,7 +123,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   bool IsLockedToSite() const override;
 
   blink::WebPublicSuffixList* PublicSuffixList() override;
-  blink::WebScrollbarBehavior* ScrollbarBehavior() override;
   blink::WebIDBFactory* IdbFactory() override;
   blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
@@ -304,8 +303,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
 
   std::unique_ptr<WebDatabaseObserverImpl> web_database_observer_impl_;
-
-  std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
   base::IDMap<std::unique_ptr<PlatformEventObserverBase>>
       platform_event_observers_;

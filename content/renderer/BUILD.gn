@@ -628,10 +628,6 @@ target(link_target_type, "renderer") {
     "webgraphicscontext3d_provider_impl.h",
     "webpublicsuffixlist_impl.cc",
     "webpublicsuffixlist_impl.h",
-    "webscrollbarbehavior_impl_aura.cc",
-    "webscrollbarbehavior_impl_aura.h",
-    "webscrollbarbehavior_impl_mac.h",
-    "webscrollbarbehavior_impl_mac.mm",
     "worker_thread_registry.cc",
     "worker_thread_registry.h",
   ]
@@ -795,13 +791,6 @@ target(link_target_type, "renderer") {
     sources += [
       "external_popup_menu.cc",
       "external_popup_menu.h",
-    ]
-  }
-
-  if (is_mac || !use_aura) {
-    sources -= [
-      "webscrollbarbehavior_impl_aura.cc",
-      "webscrollbarbehavior_impl_aura.h",
     ]
   }
 
