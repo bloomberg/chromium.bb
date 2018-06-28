@@ -8,6 +8,7 @@
 
 <head>
     <title>Binary Size Analysis</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         @font-face {
             font-family: 'Roboto';
@@ -170,7 +171,7 @@
         .symbol-name {
             font-weight: 500;
             word-break: break-word;
-            margin-right: auto;
+            flex: 1;
         }
 
         .size {
@@ -178,6 +179,9 @@
             text-align: right;
             color: #5f6368;
             white-space: nowrap;
+        }
+        .negative {
+            color: #ea4335;
         }
 
         .form-bar {
@@ -373,7 +377,7 @@
         </template>
         <header class='tree-header'>
             <span class='subtitle'>Name</span>
-            <span class='subtitle'>Size</span>
+            <span class='subtitle'>{{size_header}}</span>
         </header>
         <ul id='symboltree' class='tree' role='tree' aria-labelledby='headline'></ul>
     </main>
