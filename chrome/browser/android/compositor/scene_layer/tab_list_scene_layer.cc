@@ -139,8 +139,7 @@ void TabListSceneLayer::PutTabLayer(JNIEnv* env,
                                     jfloat toolbar_textbox_alpha,
                                     jfloat toolbar_alpha,
                                     jfloat toolbar_y_offset,
-                                    jfloat side_border_scale,
-                                    jboolean inset_border) {
+                                    jfloat side_border_scale) {
   scoped_refptr<TabLayer> layer;
   auto iter = tab_map_.find(id);
   if (iter != tab_map_.end()) {
@@ -178,7 +177,7 @@ void TabListSceneLayer::PutTabLayer(JNIEnv* env,
         default_theme_color, toolbar_background_color, close_button_color,
         anonymize_toolbar, show_tab_title, toolbar_textbox_resource_id,
         toolbar_textbox_background_color, toolbar_textbox_alpha, toolbar_alpha,
-        toolbar_y_offset, side_border_scale, inset_border);
+        toolbar_y_offset, side_border_scale);
   }
 
   gfx::RectF self(own_tree_->position(), gfx::SizeF(own_tree_->bounds()));
