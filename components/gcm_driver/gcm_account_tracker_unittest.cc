@@ -513,13 +513,20 @@ TEST_F(GCMAccountTrackerTest, IsTokenFetchingRequired) {
   IssueAccessToken(kAccountId1);
   EXPECT_FALSE(IsFetchingRequired());
 
-  driver()->SetConnected(false);
   StartAccountAddition(kAccountId2);
   FinishAccountAddition(kAccountId2);
-  EXPECT_TRUE(IsFetchingRequired());
+  EXPECT_FALSE(IsFetchingRequired());  // Indicates that fetching has started.
 
+  // Disconnect the driver again so that the access token request being
+  // fulfilled doesn't immediately cause another access token request (which
+  // then would cause IsFetchingRequired() to be false, preventing us from
+  // distinguishing this case from the case where IsFetchingRequired() is false
+  // because GCMAccountTracker didn't detect that a new access token needs to be
+  // fetched).
+  driver()->SetConnected(false);
   IssueExpiredAccessToken(kAccountId2);
-  // Make sure that if the token was expired it is still needed.
+
+  // Make sure that if the token was expired it is marked as being needed again.
   EXPECT_TRUE(IsFetchingRequired());
 }
 
