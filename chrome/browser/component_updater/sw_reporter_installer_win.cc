@@ -449,7 +449,9 @@ SwReporterOnDemandFetcher::SwReporterOnDemandFetcher(
     base::OnceClosure on_error_callback)
     : cus_(cus), on_error_callback_(std::move(on_error_callback)) {
   cus_->AddObserver(this);
-  cus_->GetOnDemandUpdater().OnDemandUpdate(kSwReporterComponentId, Callback());
+  cus_->GetOnDemandUpdater().OnDemandUpdate(
+      kSwReporterComponentId, OnDemandUpdater::Priority::FOREGROUND,
+      Callback());
 }
 
 SwReporterOnDemandFetcher::~SwReporterOnDemandFetcher() {

@@ -60,7 +60,9 @@ class CrxUpdateService : public ComponentUpdateService,
   void OnEvent(Events event, const std::string& id) override;
 
   // Overrides for OnDemandUpdater.
-  void OnDemandUpdate(const std::string& id, Callback callback) override;
+  void OnDemandUpdate(const std::string& id,
+                      Priority priority,
+                      Callback callback) override;
 
  private:
   void Start();
@@ -68,8 +70,9 @@ class CrxUpdateService : public ComponentUpdateService,
 
   bool CheckForUpdates(UpdateScheduler::OnFinishedCallback on_finished);
 
-  void OnDemandUpdateInternal(const std::string& id, Callback callback);
-
+  void OnDemandUpdateInternal(const std::string& id,
+                              Priority priority,
+                              Callback callback);
   bool OnDemandUpdateWithCooldown(const std::string& id);
 
   bool DoUnregisterComponent(const CrxComponent& component);

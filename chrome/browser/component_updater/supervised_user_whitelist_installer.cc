@@ -669,7 +669,8 @@ void SupervisedUserWhitelistInstaller::TriggerComponentUpdate(
     OnDemandUpdater* updater,
     const std::string& crx_id) {
   // TODO(sorin): use a callback to check the result (crbug.com/639189).
-  updater->OnDemandUpdate(crx_id, component_updater::Callback());
+  updater->OnDemandUpdate(crx_id, OnDemandUpdater::Priority::FOREGROUND,
+                          component_updater::Callback());
 }
 
 }  // namespace component_updater
