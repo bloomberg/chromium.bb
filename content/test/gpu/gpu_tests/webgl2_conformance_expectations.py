@@ -10,10 +10,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     super(WebGL2ConformanceExpectations, self).__init__(is_asan=is_asan)
 
   def SetExpectations(self):
-    # Temporarily disabled until WebGL conformance changes are rolled in.
-    self.Skip('conformance2/transform_feedback/simultaneous_binding.html',
-        bug=853978)
-
     # ===================================
     # Extension availability expectations
     # ===================================
@@ -38,6 +34,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # ========================
     # Conformance expectations
     # ========================
+
+    # Failing new test added in https://github.com/KhronosGroup/WebGL/pull/2654
+    self.Fail('conformance2/context/incorrect-context-object-behaviour.html',
+        bug=857303)
 
     # Need to fix test, which uses a bad interpretation of the spec
     self.Fail('conformance/offscreencanvas/offscreencanvas-resize.html',
