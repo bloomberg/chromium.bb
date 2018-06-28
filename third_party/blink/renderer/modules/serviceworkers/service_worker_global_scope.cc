@@ -222,7 +222,7 @@ void ServiceWorkerGlobalScope::DidEvaluateClassicScript() {
 
 ScriptPromise ServiceWorkerGlobalScope::fetch(ScriptState* script_state,
                                               const RequestInfo& input,
-                                              const Dictionary& init,
+                                              const RequestInit& init,
                                               ExceptionState& exception_state) {
   return GlobalFetch::fetch(script_state, *this, input, init, exception_state);
 }

@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/global_fetch.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/fetch/response_init.h"
 #include "third_party/blink/renderer/core/frame/frame.h"
@@ -57,7 +58,7 @@ class ScopedFetcherForTests final
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& request_info,
-                      const Dictionary&,
+                      const RequestInit&,
                       ExceptionState&) override {
     ++fetch_count_;
     if (expected_url_) {

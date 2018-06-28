@@ -41,8 +41,8 @@
 
 namespace blink {
 
-class Dictionary;
 class RespondWithObserver;
+class RequestInit;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerClients;
@@ -91,7 +91,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final : public WorkerGlobalScope {
 
   ScriptPromise fetch(ScriptState*,
                       const RequestInfo&,
-                      const Dictionary&,
+                      const RequestInit&,
                       ExceptionState&);
 
   ScriptPromise skipWaiting(ScriptState*);

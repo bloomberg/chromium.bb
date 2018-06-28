@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/fetch/fetch_manager.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/use_counter.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
@@ -41,7 +42,7 @@ class GlobalFetchImpl final
 
   ScriptPromise Fetch(ScriptState* script_state,
                       const RequestInfo& input,
-                      const Dictionary& init,
+                      const RequestInit& init,
                       ExceptionState& exception_state) override {
     ExecutionContext* execution_context = fetch_manager_->GetExecutionContext();
     if (!script_state->ContextIsValid() || !execution_context) {
@@ -105,7 +106,7 @@ void GlobalFetch::ScopedFetcher::Trace(blink::Visitor* visitor) {}
 ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
                                  LocalDOMWindow& window,
                                  const RequestInfo& input,
-                                 const Dictionary& init,
+                                 const RequestInit& init,
                                  ExceptionState& exception_state) {
   UseCounter::Count(window.GetExecutionContext(), WebFeature::kFetch);
   if (!window.GetFrame()) {
@@ -119,7 +120,7 @@ ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
 ScriptPromise GlobalFetch::fetch(ScriptState* script_state,
                                  WorkerGlobalScope& worker,
                                  const RequestInfo& input,
-                                 const Dictionary& init,
+                                 const RequestInit& init,
                                  ExceptionState& exception_state) {
   UseCounter::Count(worker.GetExecutionContext(), WebFeature::kFetch);
   return ScopedFetcher::From(worker)->Fetch(script_state, input, init,

@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/core/fetch/body_stream_buffer.h"
 #include "third_party/blink/renderer/core/fetch/fetch_data_loader.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/core/fetch/response.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/core/inspector/console_message.h"
@@ -662,7 +663,7 @@ ScriptPromise Cache::AddAllImpl(ScriptState* script_state,
     request_infos[i].SetRequest(requests[i]);
 
     promises[i] = scoped_fetcher_->Fetch(script_state, request_infos[i],
-                                         Dictionary(), exception_state);
+                                         RequestInit(), exception_state);
   }
 
   return ScriptPromise::All(script_state, promises)
