@@ -136,11 +136,11 @@ struct CommonResourceObjects {
         mailbox_name2_, GL_LINEAR, arbitrary_target2, sync_token2_);
     gfx::Size size(128, 128);
     shared_bitmap_id_ = viz::SharedBitmap::GenerateId();
-    release_callback3_ =
+    sw_release_callback_ =
         base::Bind(&MockReleaseCallback::Release2,
                    base::Unretained(&mock_callback_), shared_bitmap_id_);
-    resource3_ = viz::TransferableResource::MakeSoftware(shared_bitmap_id_,
-                                                         size, viz::RGBA_8888);
+    sw_resource_ = viz::TransferableResource::MakeSoftware(
+        shared_bitmap_id_, size, viz::RGBA_8888);
   }
 
   using RepeatingReleaseCallback =
@@ -152,13 +152,13 @@ struct CommonResourceObjects {
   MockReleaseCallback mock_callback_;
   RepeatingReleaseCallback release_callback1_;
   RepeatingReleaseCallback release_callback2_;
-  RepeatingReleaseCallback release_callback3_;
+  RepeatingReleaseCallback sw_release_callback_;
   gpu::SyncToken sync_token1_;
   gpu::SyncToken sync_token2_;
   viz::SharedBitmapId shared_bitmap_id_;
   viz::TransferableResource resource1_;
   viz::TransferableResource resource2_;
-  viz::TransferableResource resource3_;
+  viz::TransferableResource sw_resource_;
 };
 
 class TextureLayerTest : public testing::Test {
@@ -215,6 +215,93 @@ TEST_F(TextureLayerTest, CheckPropertyChangeCausesCorrectBehavior) {
       0.5f, 0.5f, 0.5f, 0.5f));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetPremultipliedAlpha(false));
   EXPECT_SET_NEEDS_COMMIT(1, test_layer->SetBlendBackgroundColor(true));
+}
+
+class RunOnCommitLayerTreeHostClient : public FakeLayerTreeHostClient {
+ public:
+  void set_run_on_commit_and_draw(base::OnceClosure c) {
+    run_on_commit_and_draw_ = std::move(c);
+  }
+
+  void DidCommitAndDrawFrame() override {
+    if (run_on_commit_and_draw_)
+      std::move(run_on_commit_and_draw_).Run();
+  }
+
+ private:
+  base::OnceClosure run_on_commit_and_draw_;
+};
+
+// If the compositor is destroyed while TextureLayer has a resource in it, the
+// resource should be returned to the client. https://crbug.com/857262
+TEST_F(TextureLayerTest, ShutdownWithResource) {
+  for (int i = 0; i < 2; ++i) {
+    bool gpu = i == 0;
+    SCOPED_TRACE(gpu);
+    // Make our own LayerTreeHost for this test so we can control the lifetime.
+    StubLayerTreeHostSingleThreadClient single_thread_client;
+    RunOnCommitLayerTreeHostClient client;
+    LayerTreeHost::InitParams params;
+    params.client = &client;
+    params.task_graph_runner = &task_graph_runner_;
+    params.mutator_host = animation_host_.get();
+    LayerTreeSettings settings;
+    params.settings = &settings;
+    params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+    auto host =
+        LayerTreeHost::CreateSingleThreaded(&single_thread_client, &params);
+
+    client.SetLayerTreeHost(host.get());
+    client.SetUseSoftwareCompositing(!gpu);
+
+    scoped_refptr<TextureLayer> layer = TextureLayer::CreateForMailbox(nullptr);
+    layer->SetIsDrawable(true);
+    layer->SetBounds(gfx::Size(10, 10));
+    if (gpu) {
+      layer->SetTransferableResource(
+          test_data_.resource1_,
+          viz::SingleReleaseCallback::Create(test_data_.release_callback1_));
+    } else {
+      layer->SetTransferableResource(
+          test_data_.sw_resource_,
+          viz::SingleReleaseCallback::Create(test_data_.sw_release_callback_));
+    }
+
+    host->SetViewportSizeAndScale(gfx::Size(10, 10), 1.f,
+                                  viz::LocalSurfaceId());
+    host->SetVisible(true);
+    host->SetRootLayer(layer);
+
+    // Commit and activate the TransferableResource in the TextureLayer.
+    {
+      base::RunLoop loop;
+      client.set_run_on_commit_and_draw(loop.QuitClosure());
+      loop.Run();
+    }
+
+    // Destroy the LayerTreeHost and the compositor-thread LayerImpl trees
+    // while the resource is still in the layer. The resource should be released
+    // back to the TextureLayer's client, but is post-tasked back so...
+    host = nullptr;
+
+    // We have to wait for the posted ReleaseCallback to run.
+    // Our LayerTreeHostClient makes a FakeLayerTreeFrameSink which returns all
+    // resources when its detached, so the resources will not be in use in the
+    // display compositor, and will be returned as not lost.
+    if (gpu) {
+      EXPECT_CALL(test_data_.mock_callback_,
+                  Release(test_data_.mailbox_name1_, _, false))
+          .Times(1);
+    } else {
+      EXPECT_CALL(test_data_.mock_callback_,
+                  Release2(test_data_.shared_bitmap_id_, _, false))
+          .Times(1);
+    }
+    {
+      base::RunLoop loop;
+      loop.RunUntilIdle();
+    }
+  }
 }
 
 class TestMailboxHolder : public TextureLayer::TransferableResourceHolder {
@@ -274,8 +361,8 @@ TEST_F(TextureLayerWithResourceTest, ReplaceMailboxOnMainThreadBeforeCommit) {
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(AtLeast(1));
   test_layer->SetTransferableResource(
-      test_data_.resource3_,
-      viz::SingleReleaseCallback::Create(test_data_.release_callback3_));
+      test_data_.sw_resource_,
+      viz::SingleReleaseCallback::Create(test_data_.sw_release_callback_));
   Mock::VerifyAndClearExpectations(layer_tree_host_.get());
   Mock::VerifyAndClearExpectations(&test_data_.mock_callback_);
 
@@ -823,8 +910,8 @@ TEST_F(TextureLayerImplWithResourceTest, TestWillDraw) {
     std::unique_ptr<TextureLayerImpl> impl_layer =
         TextureLayerImpl::Create(host_impl_.active_tree(), 1);
     impl_layer->SetTransferableResource(
-        test_data_.resource3_,
-        viz::SingleReleaseCallback::Create(test_data_.release_callback3_));
+        test_data_.sw_resource_,
+        viz::SingleReleaseCallback::Create(test_data_.sw_release_callback_));
     EXPECT_TRUE(WillDraw(impl_layer.get(), DRAW_MODE_SOFTWARE));
   }
 

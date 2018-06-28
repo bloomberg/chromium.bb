@@ -14,7 +14,9 @@ FakeLayerTreeHostClient::~FakeLayerTreeHostClient() = default;
 
 void FakeLayerTreeHostClient::RequestNewLayerTreeFrameSink() {
   DCHECK(host_);
-  host_->SetLayerTreeFrameSink(FakeLayerTreeFrameSink::Create3d());
+  host_->SetLayerTreeFrameSink(software_comp_
+                                   ? FakeLayerTreeFrameSink::CreateSoftware()
+                                   : FakeLayerTreeFrameSink::Create3d());
 }
 
 void FakeLayerTreeHostClient::DidFailToInitializeLayerTreeFrameSink() {

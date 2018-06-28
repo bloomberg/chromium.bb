@@ -22,7 +22,10 @@ class FakeLayerTreeHostClient : public StubLayerTreeHostClient {
   void RequestNewLayerTreeFrameSink() override;
   void DidFailToInitializeLayerTreeFrameSink() override;
 
+  void SetUseSoftwareCompositing(bool sw) { software_comp_ = sw; }
+
  private:
+  bool software_comp_ = true;
   LayerTreeHost* host_ = nullptr;
 };
 
