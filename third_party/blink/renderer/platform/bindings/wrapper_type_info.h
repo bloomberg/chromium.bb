@@ -32,15 +32,14 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_BINDINGS_WRAPPER_TYPE_INFO_H_
 
 #include "gin/public/wrapper_info.h"
-#include "third_party/blink/renderer/platform/bindings/active_script_wrappable_base.h"
-#include "third_party/blink/renderer/platform/heap/handle.h"
-#include "third_party/blink/renderer/platform/heap/heap_stats_collector.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
 #include "v8/include/v8.h"
 
 namespace blink {
 
+class ActiveScriptWrappableBase;
 class DOMWrapperWorld;
 class ScriptWrappable;
 
@@ -100,16 +99,8 @@ struct WrapperTypeInfo {
         v8::External::Cast(*type_info_wrapper)->Value());
   }
 
-  static void WrapperCreated() {
-    ThreadState::Current()->Heap().stats_collector()->IncreaseWrapperCount(1);
-  }
-
-  static void WrapperDestroyed() {
-    ThreadHeapStatsCollector* stats_collector =
-        ThreadState::Current()->Heap().stats_collector();
-    stats_collector->DecreaseWrapperCount(1);
-    stats_collector->IncreaseCollectedWrapperCount(1);
-  }
+  PLATFORM_EXPORT static void WrapperCreated();
+  PLATFORM_EXPORT static void WrapperDestroyed();
 
   bool Equals(const WrapperTypeInfo* that) const { return this == that; }
 
