@@ -284,6 +284,36 @@ std::unique_ptr<protocol::DictionaryValue> BuildGridInfo(
   return grid_info;
 }
 
+void CollectQuadsRecursive(Node* node, Vector<FloatQuad>& out_quads) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return;
+
+  // For inline elements, absoluteQuads will return a line box based on the
+  // line-height and font metrics, which is technically incorrect as replaced
+  // elements like images should use their intristic height and expand the
+  // linebox  as needed. To get an appropriate quads we descend
+  // into the children and have them add their boxes.
+  if (layout_object->IsLayoutInline()) {
+    for (Node* child = LayoutTreeBuilderTraversal::FirstChild(*node); child;
+         child = LayoutTreeBuilderTraversal::NextSibling(*child))
+      CollectQuadsRecursive(child, out_quads);
+  } else {
+    layout_object->AbsoluteQuads(out_quads);
+  }
+}
+
+void CollectQuads(Node* node, Vector<FloatQuad>& out_quads) {
+  CollectQuadsRecursive(node, out_quads);
+  LocalFrameView* containing_view =
+      node->GetLayoutObject() ? node->GetLayoutObject()->GetFrameView()
+                              : nullptr;
+  if (containing_view) {
+    for (FloatQuad& quad : out_quads)
+      FrameQuadToViewport(containing_view, quad);
+  }
+}
+
 }  // namespace
 
 InspectorHighlight::InspectorHighlight(float scale)
@@ -531,16 +561,32 @@ bool InspectorHighlight::BuildSVGQuads(Node* node, Vector<FloatQuad>& quads) {
   if (!layout_object->GetNode() || !layout_object->GetNode()->IsSVGElement() ||
       layout_object->IsSVGRoot())
     return false;
-  layout_object->AbsoluteQuads(quads);
-  LocalFrameView* containing_view = layout_object->GetFrameView();
-  if (containing_view) {
-    for (size_t i = 0; i < quads.size(); ++i)
-      FrameQuadToViewport(containing_view, quads[i]);
-  }
+  CollectQuads(node, quads);
   return true;
 }
 
 // static
+bool InspectorHighlight::GetContentQuads(
+    Node* node,
+    std::unique_ptr<protocol::Array<protocol::Array<double>>>* result) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  LocalFrameView* view = node->GetDocument().View();
+  if (!layout_object || !view)
+    return false;
+  Vector<FloatQuad> quads;
+  CollectQuads(node, quads);
+  float scale = 1 / view->GetPage()->GetVisualViewport().Scale();
+  for (FloatQuad& quad : quads) {
+    AdjustForAbsoluteZoom::AdjustFloatQuad(quad, *layout_object);
+    quad.Scale(scale, scale);
+  }
+
+  result->reset(new protocol::Array<protocol::Array<double>>());
+  for (FloatQuad& quad : quads)
+    (*result)->addItem(BuildArrayForQuad(quad));
+  return true;
+}
+
 bool InspectorHighlight::BuildNodeQuads(Node* node,
                                         FloatQuad* content,
                                         FloatQuad* padding,

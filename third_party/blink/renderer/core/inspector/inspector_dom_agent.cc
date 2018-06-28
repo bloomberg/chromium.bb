@@ -1297,6 +1297,21 @@ Response InspectorDOMAgent::getBoxModel(
   return Response::OK();
 }
 
+Response InspectorDOMAgent::getContentQuads(
+    Maybe<int> node_id,
+    Maybe<int> backend_node_id,
+    Maybe<String> object_id,
+    std::unique_ptr<protocol::Array<protocol::Array<double>>>* quads) {
+  Node* node = nullptr;
+  Response response = AssertNode(node_id, backend_node_id, object_id, node);
+  if (!response.isSuccess())
+    return response;
+  bool result = InspectorHighlight::GetContentQuads(node, quads);
+  if (!result)
+    return Response::Error("Could not compute content quads.");
+  return Response::OK();
+}
+
 Response InspectorDOMAgent::getNodeForLocation(
     int x,
     int y,
