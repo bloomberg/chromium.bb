@@ -23,7 +23,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
  protected:
   LayoutView& GetLayoutView() const { return *GetDocument().GetLayoutView(); }
 
-  enum Flags { ContainsEnclosingIntRect = 1 << 0, AdjustForBacking = 1 << 1 };
+  enum Flags { kContainsEnclosingIntRect = 1 << 0 };
 
   void CheckPaintInvalidationVisualRect(
       const LayoutObject& object,
@@ -36,8 +36,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
       EXPECT_EQ(&ancestor, &object.ContainerForPaintInvalidation());
 
-    CheckVisualRect(object, ancestor, rect, expected_visual_rect_in_ancestor,
-                    AdjustForBacking);
+    CheckVisualRect(object, ancestor, rect, expected_visual_rect_in_ancestor);
   }
 
   void CheckVisualRect(const LayoutObject& object,
@@ -67,7 +66,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
     // The following condition can be false if paintInvalidationContainer is
     // a LayoutView and compositing is not enabled.
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-        (flags & AdjustForBacking) && ancestor.IsPaintInvalidationContainer()) {
+        ancestor.IsPaintInvalidationContainer()) {
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor,
                                                                slow_map_rect);
       LayoutRect temp(geometry_mapper_rect.Rect());
@@ -75,7 +74,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
       geometry_mapper_rect = FloatClipRect(FloatRect(temp));
     }
 
-    if (flags & ContainsEnclosingIntRect) {
+    if (flags & kContainsEnclosingIntRect) {
       EXPECT_TRUE(
           EnclosingIntRect(slow_map_rect)
               .Contains(EnclosingIntRect(expected_visual_rect_in_ancestor)));
@@ -802,7 +801,7 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3d) {
   LayoutRect output(matrix.MapRect(FloatRect(original_rect)));
 
   CheckVisualRect(*target, *target->View(), original_rect, output,
-                  ContainsEnclosingIntRect);
+                  kContainsEnclosingIntRect);
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPreserve3dNested) {
@@ -866,7 +865,7 @@ TEST_P(VisualRectMappingTest, ShouldAccountForPerspective) {
   LayoutRect output(matrix.MapRect(FloatRect(original_rect)));
 
   CheckVisualRect(*target, *target->View(), original_rect, output,
-                  ContainsEnclosingIntRect);
+                  kContainsEnclosingIntRect);
 }
 
 TEST_P(VisualRectMappingTest, ShouldAccountForPerspectiveNested) {
