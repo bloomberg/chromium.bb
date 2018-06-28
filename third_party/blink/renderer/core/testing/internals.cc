@@ -3372,8 +3372,10 @@ bool Internals::setScrollbarVisibilityInScrollableArea(Node* node,
 double Internals::monotonicTimeToZeroBasedDocumentTime(
     double platform_time,
     ExceptionState& exception_state) {
-  return document_->Loader()->GetTiming().MonotonicTimeToZeroBasedDocumentTime(
-      TimeTicksFromSeconds(platform_time));
+  return document_->Loader()
+      ->GetTiming()
+      .MonotonicTimeToZeroBasedDocumentTime(TimeTicksFromSeconds(platform_time))
+      .InSecondsF();
 }
 
 String Internals::getScrollAnimationState(Node* node) const {

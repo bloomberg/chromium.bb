@@ -45,23 +45,23 @@ class DocumentParserTiming final
   void MarkParserDetached();
 
   // Record a duration of time that the parser yielded due to loading a
-  // script, in seconds. scriptInsertedViaDocumentWrite indicates whether the
+  // script. scriptInsertedViaDocumentWrite indicates whether the
   // script causing blocking was inserted via document.write. This may be
   // called multiple times, once for each time the parser yields on a script
   // load.
   void RecordParserBlockedOnScriptLoadDuration(
-      double duration,
+      TimeDelta duration,
       bool script_inserted_via_document_write);
 
-  // Record a duration of time that the parser spent executing a script, in
-  // seconds. scriptInsertedViaDocumentWrite indicates whether the script
-  // being executed was inserted via document.write. This may be called
-  // multiple times, once for each time the parser executes a script.
+  // Record a duration of time that the parser spent executing a script.
+  // scriptInsertedViaDocumentWrite indicates whether the script being executed
+  // was inserted via document.write. This may be called multiple times, once
+  // for each time the parser executes a script.
   void RecordParserBlockedOnScriptExecutionDuration(
-      double duration,
+      TimeDelta duration,
       bool script_inserted_via_document_write);
 
-  // The getters below return monotonically-increasing seconds, or zero if the
+  // The getters below return monotonically-increasing time, or zero if the
   // given parser event has not yet occurred.  See the comments for
   // monotonicallyIncreasingTime in wtf/Time.h for additional details.
 
@@ -70,7 +70,7 @@ class DocumentParserTiming final
 
   // Returns the sum of all blocking script load durations reported via
   // recordParseBlockedOnScriptLoadDuration.
-  double ParserBlockedOnScriptLoadDuration() const {
+  TimeDelta ParserBlockedOnScriptLoadDuration() const {
     return parser_blocked_on_script_load_duration_;
   }
 
@@ -78,13 +78,13 @@ class DocumentParserTiming final
   // document.write reported via recordParseBlockedOnScriptLoadDuration. Note
   // that some uncommon cases are not currently covered by this method. See
   // crbug/600711 for details.
-  double ParserBlockedOnScriptLoadFromDocumentWriteDuration() const {
+  TimeDelta ParserBlockedOnScriptLoadFromDocumentWriteDuration() const {
     return parser_blocked_on_script_load_from_document_write_duration_;
   }
 
   // Returns the sum of all script execution durations reported via
   // recordParseBlockedOnScriptExecutionDuration.
-  double ParserBlockedOnScriptExecutionDuration() const {
+  TimeDelta ParserBlockedOnScriptExecutionDuration() const {
     return parser_blocked_on_script_execution_duration_;
   }
 
@@ -92,7 +92,7 @@ class DocumentParserTiming final
   // document.write reported via recordParseBlockedOnScriptExecutionDuration.
   // Note that some uncommon cases are not currently covered by this method. See
   // crbug/600711 for details.
-  double ParserBlockedOnScriptExecutionFromDocumentWriteDuration() const {
+  TimeDelta ParserBlockedOnScriptExecutionFromDocumentWriteDuration() const {
     return parser_blocked_on_script_execution_from_document_write_duration_;
   }
 
@@ -104,10 +104,10 @@ class DocumentParserTiming final
 
   TimeTicks parser_start_;
   TimeTicks parser_stop_;
-  double parser_blocked_on_script_load_duration_ = 0.0;
-  double parser_blocked_on_script_load_from_document_write_duration_ = 0.0;
-  double parser_blocked_on_script_execution_duration_ = 0.0;
-  double parser_blocked_on_script_execution_from_document_write_duration_ = 0.0;
+  TimeDelta parser_blocked_on_script_load_duration_;
+  TimeDelta parser_blocked_on_script_load_from_document_write_duration_;
+  TimeDelta parser_blocked_on_script_execution_duration_;
+  TimeDelta parser_blocked_on_script_execution_from_document_write_duration_;
   bool parser_detached_ = false;
   DISALLOW_COPY_AND_ASSIGN(DocumentParserTiming);
 };

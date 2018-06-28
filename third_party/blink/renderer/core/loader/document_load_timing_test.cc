@@ -22,10 +22,10 @@ TEST_F(DocumentLoadTimingTest, ensureValidNavigationStartAfterEmbedder) {
   timing.SetNavigationStart(TimeTicksFromSeconds(embedder_navigation_start));
 
   double real_wall_time = CurrentTime();
-  double adjusted_wall_time =
+  TimeDelta adjusted_wall_time =
       timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
 
-  EXPECT_NEAR(adjusted_wall_time, real_wall_time + delta, .001);
+  EXPECT_NEAR(adjusted_wall_time.InSecondsF(), real_wall_time + delta, .001);
 }
 
 TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
@@ -43,15 +43,17 @@ TEST_F(DocumentLoadTimingTest, correctTimingDeltas) {
   // dominated by the navigationStartDelta, but similar to currentTime().
   timing.MarkLoadEventEnd();
   double real_wall_load_event_end = CurrentTime();
-  double adjusted_load_event_end =
+  TimeDelta adjusted_load_event_end =
       timing.MonotonicTimeToPseudoWallTime(timing.LoadEventEnd());
 
-  EXPECT_NEAR(adjusted_load_event_end, real_wall_load_event_end, .001);
+  EXPECT_NEAR(adjusted_load_event_end.InSecondsF(), real_wall_load_event_end,
+              .001);
 
-  double adjusted_navigation_start =
+  TimeDelta adjusted_navigation_start =
       timing.MonotonicTimeToPseudoWallTime(timing.NavigationStart());
-  EXPECT_NEAR(adjusted_load_event_end - adjusted_navigation_start,
-              -navigation_start_delta, .001);
+  EXPECT_NEAR(
+      (adjusted_load_event_end - adjusted_navigation_start).InSecondsF(),
+      -navigation_start_delta, .001);
 }
 
 }  // namespace blink

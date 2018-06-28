@@ -43,9 +43,8 @@ class CORE_EXPORT DocumentLoadTiming final {
  public:
   explicit DocumentLoadTiming(DocumentLoader&);
 
-  double MonotonicTimeToZeroBasedDocumentTime(TimeTicks) const;
-  double MonotonicTimeToPseudoWallTime(TimeTicks) const;
-  TimeTicks PseudoWallTimeToMonotonicTime(double) const;
+  TimeDelta MonotonicTimeToZeroBasedDocumentTime(TimeTicks) const;
+  TimeDelta MonotonicTimeToPseudoWallTime(TimeTicks) const;
 
   void MarkNavigationStart();
   void SetNavigationStart(TimeTicks);
@@ -100,7 +99,7 @@ class CORE_EXPORT DocumentLoadTiming final {
   std::unique_ptr<TracedValue> GetNavigationStartTracingData() const;
 
   TimeTicks reference_monotonic_time_;
-  double reference_wall_time_;
+  TimeDelta reference_wall_time_;
   TimeTicks navigation_start_;
   TimeTicks unload_event_start_;
   TimeTicks unload_event_end_;

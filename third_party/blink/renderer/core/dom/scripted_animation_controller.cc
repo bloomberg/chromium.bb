@@ -133,12 +133,15 @@ void ScriptedAnimationController::ExecuteCallbacks(
     return;
 
   double high_res_now_ms =
-      1000.0 *
-      document_->Loader()->GetTiming().MonotonicTimeToZeroBasedDocumentTime(
-          monotonic_time_now);
+      document_->Loader()
+          ->GetTiming()
+          .MonotonicTimeToZeroBasedDocumentTime(monotonic_time_now)
+          .InMillisecondsF();
   double legacy_high_res_now_ms =
-      1000.0 * document_->Loader()->GetTiming().MonotonicTimeToPseudoWallTime(
-                   monotonic_time_now);
+      document_->Loader()
+          ->GetTiming()
+          .MonotonicTimeToPseudoWallTime(monotonic_time_now)
+          .InMillisecondsF();
   callback_collection_.ExecuteCallbacks(high_res_now_ms,
                                         legacy_high_res_now_ms);
 }

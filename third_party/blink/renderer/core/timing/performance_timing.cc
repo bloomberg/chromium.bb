@@ -48,14 +48,11 @@
 // Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {
 
-static unsigned long long ToIntegerMilliseconds(double seconds) {
-  DCHECK_GE(seconds, 0);
-  double clamped_seconds = Performance::ClampTimeResolution(seconds);
+static unsigned long long ToIntegerMilliseconds(TimeDelta duration) {
+  DCHECK_GE(duration, TimeDelta());
+  double clamped_seconds =
+      Performance::ClampTimeResolution(duration.InSecondsF());
   return static_cast<unsigned long long>(clamped_seconds * 1000.0);
-}
-
-static double ToDoubleSeconds(unsigned long long integer_milliseconds) {
-  return integer_milliseconds / 1000.0;
 }
 
 PerformanceTiming::PerformanceTiming(LocalFrame* frame)
@@ -391,8 +388,7 @@ unsigned long long PerformanceTiming::FirstInputDelay() const {
   if (!interactive_detector)
     return 0;
 
-  return ToIntegerMilliseconds(
-      interactive_detector->GetFirstInputDelay().InSecondsF());
+  return ToIntegerMilliseconds(interactive_detector->GetFirstInputDelay());
 }
 
 unsigned long long PerformanceTiming::FirstInputTimestamp() const {
@@ -560,16 +556,6 @@ unsigned long long PerformanceTiming::MonotonicTimeToIntegerMilliseconds(
     return 0;
 
   return ToIntegerMilliseconds(timing->MonotonicTimeToPseudoWallTime(time));
-}
-
-TimeTicks PerformanceTiming::IntegerMillisecondsToMonotonicTime(
-    unsigned long long integer_milliseconds) const {
-  const DocumentLoadTiming* timing = GetDocumentLoadTiming();
-  if (!timing)
-    return TimeTicks();
-
-  return timing->PseudoWallTimeToMonotonicTime(
-      ToDoubleSeconds(integer_milliseconds));
 }
 
 void PerformanceTiming::Trace(blink::Visitor* visitor) {
