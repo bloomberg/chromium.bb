@@ -29,7 +29,10 @@ import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
 import java.io.IOException;
 import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
+import java.util.List;
 
 /**
  * A custom AndroidJUnitRunner that supports multidex installer and list out test information.
@@ -194,10 +197,18 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
      * Wraps TestRequestBuilder to make it work with incremental install.
      */
     private static class IncrementalInstallTestRequestBuilder extends TestRequestBuilder {
+        List<String> mExcludedPrefixes = new ArrayList<String>();
         boolean mHasClassList;
 
         public IncrementalInstallTestRequestBuilder(Instrumentation instr, Bundle bundle) {
             super(instr, bundle);
+        }
+
+        @Override
+        public TestRequestBuilder addFromRunnerArgs(RunnerArgs runnerArgs) {
+            mExcludedPrefixes.addAll(runnerArgs.notTestPackages);
+            runnerArgs.notTestPackages.clear();
+            return super.addFromRunnerArgs(runnerArgs);
         }
 
         @Override
@@ -244,7 +255,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
             }
         }
 
-        private boolean startsWithAny(String str, String[] prefixes) {
+        private boolean startsWithAny(String str, List<String> prefixes) {
             for (String prefix : prefixes) {
                 if (str.startsWith(prefix)) {
                     return true;
@@ -255,12 +266,11 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
 
         private void addTestClasses(DexFile[] dexFiles, TestRequestBuilder builder) {
             Log.i(TAG, "Scanning incremental classpath.");
-            String[] excludedPrefixes;
             try {
                 Field excludedPackagesField =
                         TestRequestBuilder.class.getDeclaredField("DEFAULT_EXCLUDED_PACKAGES");
                 excludedPackagesField.setAccessible(true);
-                excludedPrefixes = (String[]) excludedPackagesField.get(null);
+                mExcludedPrefixes.addAll(Arrays.asList((String[]) excludedPackagesField.get(null)));
             } catch (Exception e) {
                 throw new RuntimeException(e);
             }
@@ -271,7 +281,7 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
                 Enumeration<String> classNames = dexFile.entries();
                 while (classNames.hasMoreElements()) {
                     String className = classNames.nextElement();
-                    if (!className.contains("$") && !startsWithAny(className, excludedPrefixes)
+                    if (!className.contains("$") && !startsWithAny(className, mExcludedPrefixes)
                             && loader.loadIfTest(className) != null) {
                         addTestClass(className);
                     }
