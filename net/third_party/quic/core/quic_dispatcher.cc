@@ -22,7 +22,6 @@
 #include "net/third_party/quic/platform/api/quic_stack_trace.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
-#include "net/third_party/quic/tools/quic_simple_server_session.h"
 
 namespace quic {
 
@@ -123,7 +122,7 @@ class StatelessConnectionTerminator {
   // Generates a packet containing a CONNECTION_CLOSE frame specifying
   // |error_code| and |error_details| and add the connection to time wait.
   void CloseConnection(QuicErrorCode error_code,
-                       const std::string& error_details) {
+                       const QuicString& error_details) {
     QuicConnectionCloseFrame* frame = new QuicConnectionCloseFrame;
     frame->error_code = error_code;
     frame->error_details = error_details;
@@ -933,7 +932,6 @@ void QuicDispatcher::ProcessChlo() {
       std::make_pair(current_connection_id_, QuicWrapUnique(session)));
   std::list<BufferedPacket> packets =
       buffered_packets_.DeliverPackets(current_connection_id_).buffered_packets;
-
   // Process CHLO at first.
   session->ProcessUdpPacket(current_self_address_, current_peer_address_,
                             *current_packet_);

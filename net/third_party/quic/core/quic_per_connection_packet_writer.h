@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_PER_CONNECTION_PACKET_WRITER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_PER_CONNECTION_PACKET_WRITER_H_
 
-#include <stddef.h>
+#include <cstddef>
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_connection.h"

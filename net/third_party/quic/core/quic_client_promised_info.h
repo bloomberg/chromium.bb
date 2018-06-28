@@ -5,7 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_CLIENT_PROMISED_INFO_H_
 
-#include <sys/types.h>
+#include <cstddef>
 
 #include "net/third_party/quic/core/quic_alarm.h"
 #include "net/third_party/quic/core/quic_client_push_promise_index.h"

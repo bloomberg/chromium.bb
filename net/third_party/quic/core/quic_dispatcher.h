@@ -19,15 +19,14 @@
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_crypto_server_stream.h"
 #include "net/third_party/quic/core/quic_packets.h"
+#include "net/third_party/quic/core/quic_process_packet_interface.h"
 #include "net/third_party/quic/core/quic_session.h"
+#include "net/third_party/quic/core/quic_time_wait_list_manager.h"
 #include "net/third_party/quic/core/quic_version_manager.h"
+#include "net/third_party/quic/core/stateless_rejector.h"
 #include "net/third_party/quic/platform/api/quic_containers.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_string.h"
-
-#include "net/third_party/quic/core/quic_process_packet_interface.h"
-#include "net/third_party/quic/core/quic_time_wait_list_manager.h"
-#include "net/third_party/quic/core/stateless_rejector.h"
 
 namespace quic {
 namespace test {

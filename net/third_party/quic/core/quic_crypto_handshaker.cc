@@ -8,10 +8,8 @@
 
 namespace quic {
 
-#define ENDPOINT                                                   \
-  (session()->perspective() == Perspective::IS_SERVER ? "Server: " \
-                                                      : "Client:"  \
-                                                        " ")
+#define ENDPOINT \
+  (session()->perspective() == Perspective::IS_SERVER ? "Server: " : "Client: ")
 
 QuicCryptoHandshaker::QuicCryptoHandshaker(QuicCryptoStream* stream,
                                            QuicSession* session)

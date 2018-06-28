@@ -5,9 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_CONNECTION_STATS_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_CONNECTION_STATS_H_
 
-#include <stddef.h>
-#include <stdint.h>
-
+#include <cstdint>
 #include <ostream>
 
 #include "net/third_party/quic/core/quic_bandwidth.h"
