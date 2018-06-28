@@ -1012,6 +1012,19 @@
     },
   },
 
+  'gpu_angle_deqp_egl_vulkan_tests': {
+    'angle_deqp_egl_vulkan_tests': {
+      'args': [
+        '--test-launcher-batch-limit=400',
+        '--deqp-egl-display-type=angle-vulkan',
+      ],
+      'swarming': {
+        'shards': 4,
+      },
+      'test': 'angle_deqp_egl_tests',
+    },
+  },
+
   'gpu_angle_deqp_egl_gles_tests': {
     'angle_deqp_egl_gles_tests': {
       # Only pass the display type to desktop. The Android runner doesn't support
@@ -2495,6 +2508,7 @@
 
   'gpu_angle_deqp_linux_nvidia_gtests': [
     'gpu_angle_deqp_egl_gl_tests',
+    'gpu_angle_deqp_egl_vulkan_tests',
     'gpu_angle_deqp_gles2_gl_tests',
     'gpu_angle_deqp_gles2_vulkan_tests',
     'gpu_angle_deqp_gles3_gl_tests',
@@ -2515,6 +2529,7 @@
   'gpu_angle_deqp_win_nvidia_gtests': [
     'gpu_angle_deqp_egl_d3d11_tests',
     'gpu_angle_deqp_egl_gl_tests',
+    'gpu_angle_deqp_egl_vulkan_tests',
     'gpu_angle_deqp_gles2_d3d11_tests',
     # TODO(kbr): why is gpu_angle_deqp_gles2_gl_tests not here?
     'gpu_angle_deqp_gles2_vulkan_tests',
