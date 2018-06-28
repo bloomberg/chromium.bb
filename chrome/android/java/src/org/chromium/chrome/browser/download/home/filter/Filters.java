@@ -5,7 +5,9 @@
 package org.chromium.chrome.browser.download.home.filter;
 
 import android.support.annotation.IntDef;
+import android.text.TextUtils;
 
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 
@@ -25,6 +27,7 @@ public class Filters {
     public static final int SITES = 4;
     public static final int OTHER = 5;
     public static final int PREFETCHED = 6;
+    public static final int FILTER_BOUNDARY = 7;
 
     /**
      * Converts from a {@link OfflineItem#filter} to a {@link FilterType}.  Note that not all
@@ -69,6 +72,34 @@ public class Filters {
             default:
                 return DownloadFilter.FILTER_OTHER;
         }
+    }
+
+    /**
+     * Converts {@code filter} into a url.
+     * @see DownloadFilter#getUrlForFilter(int)
+     */
+    public static String toUrl(@FilterType int filter) {
+        if (filter == NONE) return UrlConstants.DOWNLOADS_URL;
+        return UrlConstants.DOWNLOADS_FILTER_URL + filter;
+    }
+
+    /**
+     * Converts {@code url} to a {@link FilterType}.
+     * @see DownloadFilter#getFilterFromUrl(String)
+     */
+    public static @FilterType int fromUrl(String url) {
+        if (TextUtils.isEmpty(url)) return NONE;
+        if (!url.startsWith(UrlConstants.DOWNLOADS_FILTER_URL)) return NONE;
+
+        @FilterType
+        int filter = NONE;
+        try {
+            filter = Integer.parseInt(url.substring(UrlConstants.DOWNLOADS_FILTER_URL.length()));
+            if (filter < 0 || filter >= FILTER_BOUNDARY) filter = NONE;
+        } catch (NumberFormatException ex) {
+        }
+
+        return filter;
     }
 
     private Filters() {}

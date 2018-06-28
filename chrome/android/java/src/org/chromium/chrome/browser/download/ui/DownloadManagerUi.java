@@ -35,6 +35,7 @@ import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
 import org.chromium.chrome.browser.feature_engagement.TrackerFactory;
 import org.chromium.chrome.browser.preferences.PreferencesLauncher;
@@ -66,25 +67,8 @@ import java.util.Set;
  * Displays and manages the UI for the download manager.
  */
 
-public class DownloadManagerUi
-        implements OnMenuItemClickListener, SearchDelegate,
-                   BackendProvider.UIDelegate {
-    /**
-     * Interface to observe the changes in the download manager ui. This should be implemented by
-     * the ui components that is shown, in order to let them get proper notifications.
-     */
-    public interface DownloadUiObserver {
-        /**
-         * Called when the filter has been changed by the user.
-         */
-        public void onFilterChanged(int filter);
-
-        /**
-         * Called when the download manager is not shown anymore.
-         */
-        public void onManagerDestroyed();
-    }
-
+public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegate,
+                                          BackendProvider.UIDelegate, DownloadManagerCoordinator {
     private static class DownloadBackendProvider implements BackendProvider {
         private final SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
         private final UIDelegate mUIDelegate;
@@ -197,7 +181,7 @@ public class DownloadManagerUi
 
     private final DownloadHistoryAdapter mHistoryAdapter;
     private final FilterAdapter mFilterAdapter;
-    private final ObserverList<DownloadUiObserver> mObservers = new ObserverList<>();
+    private final ObserverList<Observer> mObservers = new ObserverList<>();
     private final BackendProvider mBackendProvider;
     private final SnackbarManager mSnackbarManager;
 
@@ -261,7 +245,6 @@ public class DownloadManagerUi
 
         mFilterAdapter = new FilterAdapter();
         mFilterAdapter.initialize(this);
-        addObserver(mFilterAdapter);
 
         boolean isLocationEnabled =
                 ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOADS_LOCATION_CHANGE);
@@ -281,7 +264,6 @@ public class DownloadManagerUi
         mToolbar.initializeSearchView(this, R.string.download_manager_search, mSearchMenuId);
 
         mToolbar.setInfoMenuItem(mInfoMenuId);
-        addObserver(mToolbar);
 
         if (isLocationEnabled) {
             final Tracker tracker =
@@ -292,7 +274,6 @@ public class DownloadManagerUi
 
         mSelectableListLayout.configureWideDisplayStyle();
         mHistoryAdapter.initialize(mBackendProvider, mSelectableListLayout.getUiConfig());
-        addObserver(mHistoryAdapter);
 
         mUndoDeletionSnackbarController = new UndoDeletionSnackbarController();
         enableStorageInfoHeader(mHistoryAdapter.shouldShowStorageInfoHeader());
@@ -324,11 +305,12 @@ public class DownloadManagerUi
     /**
      * Called when the activity/native page is destroyed.
      */
-    public void onDestroyed() {
-        for (DownloadUiObserver observer : mObservers) {
-            observer.onManagerDestroyed();
-            removeObserver(observer);
-        }
+    @Override
+    public void destroy() {
+        mObservers.clear();
+
+        mFilterAdapter.destroy();
+        mHistoryAdapter.destroy();
 
         dismissUndoDeletionSnackbars();
 
@@ -343,6 +325,7 @@ public class DownloadManagerUi
      *
      * @return Whether the back button was handled.
      */
+    @Override
     public boolean onBackPressed() {
         if (mBackendProvider.getSelectionDelegate().isSelectionEnabled()) {
             mBackendProvider.getSelectionDelegate().clearSelection();
@@ -354,6 +337,7 @@ public class DownloadManagerUi
     /**
      * @return The view that shows the main download UI.
      */
+    @Override
     public ViewGroup getView() {
         return mMainView;
     }
@@ -361,6 +345,7 @@ public class DownloadManagerUi
     /**
      * Sets the download manager to the state that the url represents.
      */
+    @Override
     public void updateForUrl(String url) {
         int filter = DownloadFilter.getFilterFromUrl(url);
         onFilterChanged(filter);
@@ -369,10 +354,21 @@ public class DownloadManagerUi
     /**
      * Performs an animated expansion of the prefetch section.
      */
-    public void expandPrefetchSection() {
+    @Override
+    public void showPrefetchSection() {
         new Handler().postDelayed(() -> {
             mHistoryAdapter.setPrefetchSectionExpanded(true);
         }, PREFETCH_BUNDLE_OPEN_DELAY_MS);
+    }
+
+    @Override
+    public void addObserver(Observer observer) {
+        mObservers.addObserver(observer);
+    }
+
+    @Override
+    public void removeObserver(Observer observer) {
+        mObservers.removeObserver(observer);
     }
 
     @Override
@@ -433,21 +429,6 @@ public class DownloadManagerUi
     }
 
     /**
-     * Adds a {@link DownloadUiObserver} to observe the changes in the download manager.
-     */
-    public void addObserver(DownloadUiObserver observer) {
-        mObservers.addObserver(observer);
-    }
-
-    /**
-     * Removes a {@link DownloadUiObserver} that were added in
-     * {@link #addObserver(DownloadUiObserver)}
-     */
-    public void removeObserver(DownloadUiObserver observer) {
-        mObservers.removeObserver(observer);
-    }
-
-    /**
      * @return The activity that holds the download UI.
      */
     Activity getActivity() {
@@ -465,10 +446,11 @@ public class DownloadManagerUi
     void onFilterChanged(@DownloadFilter.Type int filter) {
         mBackendProvider.getSelectionDelegate().clearSelection();
         mToolbar.hideSearchView();
+        mToolbar.onFilterChanged(filter);
+        mHistoryAdapter.onFilterChanged(filter);
 
-        for (DownloadUiObserver observer : mObservers) {
-            observer.onFilterChanged(filter);
-        }
+        String url = DownloadFilter.getUrlForFilter(filter);
+        for (Observer observer : mObservers) observer.onUrlChanged(url);
 
         if (mNativePage != null) {
             mNativePage.onStateChange(DownloadFilter.getUrlForFilter(filter));

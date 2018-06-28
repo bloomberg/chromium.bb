@@ -146,7 +146,8 @@ public class SelectableListToolbar<E>
     /**
      * Destroys and cleans up itself.
      */
-    void destroy() {
+    @CallSuper
+    public void destroy() {
         mIsDestroyed = true;
         if (mSelectionDelegate != null) mSelectionDelegate.removeObserver(this);
         UiUtils.hideKeyboard(mSearchEditText);

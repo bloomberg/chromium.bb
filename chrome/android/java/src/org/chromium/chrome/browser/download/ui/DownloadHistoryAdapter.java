@@ -27,7 +27,6 @@ import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.DownloadItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
@@ -48,9 +47,9 @@ import java.util.Locale;
 import java.util.Set;
 
 /** Bridges the user's download history and the UI used to display it. */
-public class DownloadHistoryAdapter extends DateDividedAdapter
-        implements DownloadUiObserver, DownloadSharedPreferenceHelper.Observer,
-                   OfflineContentProvider.Observer, DownloadObserver {
+public class DownloadHistoryAdapter
+        extends DateDividedAdapter implements DownloadSharedPreferenceHelper.Observer,
+                                              OfflineContentProvider.Observer, DownloadObserver {
     private static final String TAG = "DownloadAdapter";
 
     /** Alerted about changes to internal state. */
@@ -515,8 +514,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         }
     }
 
-    @Override
-    public void onFilterChanged(int filter) {
+    /** Called when the filter representing which items can show has changed. */
+    public void onFilterChanged(@DownloadFilter.Type int filter) {
         if (mLoadingDelegate.isLoaded()) {
             filter(filter);
         } else {
@@ -525,8 +524,8 @@ public class DownloadHistoryAdapter extends DateDividedAdapter
         }
     }
 
-    @Override
-    public void onManagerDestroyed() {
+    /** Called when this object should be destroyed. */
+    public void destroy() {
         getDownloadDelegate().removeDownloadObserver(this);
         getOfflineContentProvider().removeObserver(this);
         sDeletedFileTracker.decrementInstanceCount();

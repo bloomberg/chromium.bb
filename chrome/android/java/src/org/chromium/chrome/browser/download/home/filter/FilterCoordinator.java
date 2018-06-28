@@ -70,8 +70,20 @@ public class FilterCoordinator {
         mObserverList.removeObserver(observer);
     }
 
-    /** Selects the tab identified by {@code selectedTab}. */
-    public void selectTab(@TabType int selectedTab) {
+    /**
+     * Pushes a selected filter onto this {@link FilterCoordinator}.  This is used when external
+     * components might need to update the UI state.
+     */
+    public void setSelectedFilter(@FilterType int filter) {
+        if (filter == Filters.PREFETCHED) {
+            selectTab(TAB_PREFETCH);
+        } else {
+            mChipsProvider.setFilterSelected(filter);
+            selectTab(TAB_FILES);
+        }
+    }
+
+    private void selectTab(@TabType int selectedTab) {
         mModel.setSelectedTab(selectedTab);
 
         if (selectedTab == TAB_FILES) {

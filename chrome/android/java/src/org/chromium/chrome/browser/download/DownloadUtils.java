@@ -36,8 +36,6 @@ import org.chromium.chrome.browser.FileProviderHelper;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
-import org.chromium.chrome.browser.download.ui.BackendProvider;
-import org.chromium.chrome.browser.download.ui.BackendProvider.DownloadDelegate;
 import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper;
 import org.chromium.chrome.browser.download.ui.DownloadHistoryItemWrapper.OfflineItemWrapper;
@@ -252,20 +250,18 @@ public class DownloadUtils {
     }
 
     /**
-     * Issues a request to the {@link DownloadDelegate} associated with backendProvider to check
-     * for externally removed downloads.
+     * Issues a request to the {@link DownloadManagerService} associated to check for externally
+     * removed downloads.
      * See {@link DownloadManagerService#checkForExternallyRemovedDownloads}.
-     *
-     * @param backendProvider The {@link BackendProvider} associated with the DownloadDelegate used
-     *                        to check for externally removed downloads.
      * @param isOffTheRecord  Whether to check downloads for the off the record profile.
      */
-    public static void checkForExternallyRemovedDownloads(BackendProvider backendProvider,
-            boolean isOffTheRecord) {
+    public static void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
         if (isOffTheRecord) {
-            backendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(true);
+            DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
+                    true);
         }
-        backendProvider.getDownloadDelegate().checkForExternallyRemovedDownloads(false);
+        DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
+                false);
         RecordUserAction.record(
                 "Android.DownloadManager.CheckForExternallyRemovedItems");
     }

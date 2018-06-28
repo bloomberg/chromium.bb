@@ -12,10 +12,10 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.UrlConstants;
+import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
+import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
-import org.chromium.chrome.browser.download.ui.DownloadFilter;
 import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.ui.base.ActivityAndroidPermissionDelegate;
 import org.chromium.ui.base.AndroidPermissionDelegate;
@@ -28,25 +28,20 @@ import java.util.LinkedList;
  * Activity for managing downloads handled through Chrome.
  */
 public class DownloadActivity extends SnackbarActivity {
-    private DownloadManagerUi mDownloadManagerUi;
+    private DownloadManagerCoordinator mDownloadCoordinator;
     private boolean mIsOffTheRecord;
     private AndroidPermissionDelegate mPermissionDelegate;
 
     /** Caches the stack of filters applied to let the user backtrack through their history. */
     private final Deque<String> mBackStack = new LinkedList<>();
 
-    private final DownloadUiObserver mUiObserver = new DownloadUiObserver() {
-        @Override
-        public void onManagerDestroyed() { }
-
-        @Override
-        public void onFilterChanged(int filter) {
-            String url = DownloadFilter.getUrlForFilter(filter);
-            if (mBackStack.isEmpty() || !mBackStack.peek().equals(url)) {
-                mBackStack.push(url);
-            }
-        }
-    };
+    private final DownloadManagerCoordinator.Observer mUiObserver =
+            new DownloadManagerCoordinator.Observer() {
+                @Override
+                public void onUrlChanged(String url) {
+                    if (!url.equals(mBackStack.peek())) mBackStack.push(url);
+                }
+            };
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -59,32 +54,31 @@ public class DownloadActivity extends SnackbarActivity {
                 getIntent(), IntentHandler.EXTRA_PARENT_COMPONENT);
         mPermissionDelegate =
                 new ActivityAndroidPermissionDelegate(new WeakReference<Activity>(this));
-        mDownloadManagerUi = new DownloadManagerUi(
-                this, isOffTheRecord, parentComponent, true, getSnackbarManager());
-        setContentView(mDownloadManagerUi.getView());
+        mDownloadCoordinator = DownloadManagerCoordinatorFactory.create(
+                this, isOffTheRecord, getSnackbarManager(), parentComponent, true);
+        setContentView(mDownloadCoordinator.getView());
         mIsOffTheRecord = isOffTheRecord;
-        mDownloadManagerUi.addObserver(mUiObserver);
+        mDownloadCoordinator.addObserver(mUiObserver);
         // Call updateForUrl() to align with how DownloadPage interacts with DownloadManagerUi.
-        mDownloadManagerUi.updateForUrl(UrlConstants.DOWNLOADS_URL);
-        if (showPrefetchContent) mDownloadManagerUi.expandPrefetchSection();
+        mDownloadCoordinator.updateForUrl(UrlConstants.DOWNLOADS_URL);
+        if (showPrefetchContent) mDownloadCoordinator.showPrefetchSection();
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        DownloadUtils.checkForExternallyRemovedDownloads(mDownloadManagerUi.getBackendProvider(),
-                mIsOffTheRecord);
+        DownloadUtils.checkForExternallyRemovedDownloads(mIsOffTheRecord);
     }
 
     @Override
     public void onBackPressed() {
-        if (mDownloadManagerUi.onBackPressed()) return;
+        if (mDownloadCoordinator.onBackPressed()) return;
         // The top of the stack always represents the current filter. When back is pressed,
         // the top is popped off and the new top indicates what filter to use. If there are
         // no filters remaining, the Activity itself is closed.
         if (mBackStack.size() > 1) {
             mBackStack.pop();
-            mDownloadManagerUi.updateForUrl(mBackStack.peek());
+            mDownloadCoordinator.updateForUrl(mBackStack.peek());
         } else {
             if (!mBackStack.isEmpty()) mBackStack.pop();
             super.onBackPressed();
@@ -93,13 +87,18 @@ public class DownloadActivity extends SnackbarActivity {
 
     @Override
     protected void onDestroy() {
-        mDownloadManagerUi.onDestroyed();
+        mDownloadCoordinator.removeObserver(mUiObserver);
+        mDownloadCoordinator.destroy();
         super.onDestroy();
     }
 
     @VisibleForTesting
     DownloadManagerUi getDownloadManagerUiForTests() {
-        return mDownloadManagerUi;
+        // TODO(856383): Generalize/fix download home tests for the new DownloadManagerCoordinator.
+        if (mDownloadCoordinator instanceof DownloadManagerUi) {
+            return (DownloadManagerUi) mDownloadCoordinator;
+        }
+        return null;
     }
 
     public AndroidPermissionDelegate getAndroidPermissionDelegate() {
