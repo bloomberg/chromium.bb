@@ -7,6 +7,7 @@
 
 #include <queue>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/public/cpp/client/client_channel.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
@@ -31,6 +32,10 @@ class FakeClientChannel : public ClientChannel {
     return sent_messages_;
   }
 
+  void set_destructor_callback(base::OnceClosure callback) {
+    destructor_callback_ = std::move(callback);
+  }
+
  private:
   friend class SecureChannelClientChannelImplTest;
 
@@ -45,6 +50,7 @@ class FakeClientChannel : public ClientChannel {
   std::queue<base::OnceCallback<void(mojom::ConnectionMetadataPtr)>>
       get_connection_metadata_callback_queue_;
   std::vector<std::pair<std::string, base::OnceClosure>> sent_messages_;
+  base::OnceClosure destructor_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeClientChannel);
 };

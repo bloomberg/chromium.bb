@@ -152,6 +152,8 @@ SynchronousShutdownObjectContainerImpl::SynchronousShutdownObjectContainerImpl(
               active_host_.get(),
               base::DefaultClock::GetInstance())),
       connection_preserver_(std::make_unique<ConnectionPreserverImpl>(
+          device_sync_client,
+          secure_channel_client,
           asychronous_container->ble_connection_manager(),
           network_state_handler_,
           active_host_.get(),

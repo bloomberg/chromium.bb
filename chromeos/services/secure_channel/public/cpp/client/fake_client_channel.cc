@@ -12,7 +12,10 @@ namespace secure_channel {
 
 FakeClientChannel::FakeClientChannel() = default;
 
-FakeClientChannel::~FakeClientChannel() = default;
+FakeClientChannel::~FakeClientChannel() {
+  if (destructor_callback_)
+    std::move(destructor_callback_).Run();
+}
 
 void FakeClientChannel::InvokePendingGetConnectionMetadataCallback(
     mojom::ConnectionMetadataPtr connection_metadata) {

@@ -11,7 +11,9 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/simple_test_clock.h"
+#include "base/test/test_simple_task_runner.h"
 #include "chromeos/components/tether/fake_ble_connection_manager.h"
 #include "chromeos/components/tether/fake_connection_preserver.h"
 #include "chromeos/components/tether/host_scan_device_prioritizer.h"
@@ -162,7 +164,8 @@ class HostScannerOperationTest : public testing::Test {
         remote_devices, operation_->remote_devices());
 
     test_clock_.SetNow(base::Time::UnixEpoch());
-    operation_->SetClockForTest(&test_clock_);
+    test_task_runner_ = base::MakeRefCounted<base::TestSimpleTaskRunner>();
+    operation_->SetTestDoubles(&test_clock_, test_task_runner_);
 
     EXPECT_FALSE(test_observer_->has_received_update());
     operation_->Initialize();
@@ -204,6 +207,7 @@ class HostScannerOperationTest : public testing::Test {
     fake_ble_connection_manager_->ReceiveMessage(
         remote_device.GetDeviceId(), CreateTetherAvailabilityResponseString(
                                          response_code, cell_provider_name));
+    test_task_runner_->RunUntilIdle();
 
     bool tether_available =
         response_code ==
@@ -261,6 +265,8 @@ class HostScannerOperationTest : public testing::Test {
         "InstantTethering.Performance.TetherAvailabilityResponseDuration", 0);
   }
 
+  base::test::ScopedTaskEnvironment scoped_task_environment_;
+
   const std::string tether_availability_request_string_;
   const cryptauth::RemoteDeviceRefList test_devices_;
 
@@ -275,6 +281,7 @@ class HostScannerOperationTest : public testing::Test {
   std::unique_ptr<FakeConnectionPreserver> fake_connection_preserver_;
   std::unique_ptr<TestObserver> test_observer_;
   base::SimpleTestClock test_clock_;
+  scoped_refptr<base::TestSimpleTaskRunner> test_task_runner_;
   std::unique_ptr<HostScannerOperation> operation_;
 
   base::HistogramTester histogram_tester_;

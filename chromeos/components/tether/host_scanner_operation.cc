@@ -152,7 +152,9 @@ HostScannerOperation::HostScannerOperation(
           connection_manager),
       tether_host_response_recorder_(tether_host_response_recorder),
       connection_preserver_(connection_preserver),
-      clock_(base::DefaultClock::GetInstance()) {}
+      clock_(base::DefaultClock::GetInstance()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      weak_ptr_factory_(this) {}
 
 HostScannerOperation::~HostScannerOperation() = default;
 
@@ -237,7 +239,11 @@ void HostScannerOperation::OnMessageReceived(
   RecordTetherAvailabilityResponseDuration(remote_device.GetDeviceId());
 
   // Unregister the device after a TetherAvailabilityResponse has been received.
-  UnregisterDevice(remote_device);
+  // Delay this in order to let |connection_preserver_| fully preserve the
+  // connection, if necessary, before attempting to tear down the connection.
+  task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&HostScannerOperation::UnregisterDevice,
+                                weak_ptr_factory_.GetWeakPtr(), remote_device));
 }
 
 void HostScannerOperation::OnOperationStarted() {
@@ -256,8 +262,11 @@ MessageType HostScannerOperation::GetMessageTypeForConnection() {
   return MessageType::TETHER_AVAILABILITY_REQUEST;
 }
 
-void HostScannerOperation::SetClockForTest(base::Clock* clock_for_test) {
+void HostScannerOperation::SetTestDoubles(
+    base::Clock* clock_for_test,
+    scoped_refptr<base::TaskRunner> test_task_runner) {
   clock_ = clock_for_test;
+  task_runner_ = test_task_runner;
 }
 
 void HostScannerOperation::RecordTetherAvailabilityResponseDuration(

@@ -123,18 +123,24 @@ class HostScannerOperation : public MessageTransferOperation {
  private:
   friend class HostScannerOperationTest;
 
-  void SetClockForTest(base::Clock* clock_for_test);
+  using MessageTransferOperation::UnregisterDevice;
+
+  void SetTestDoubles(base::Clock* clock_for_test,
+                      scoped_refptr<base::TaskRunner> test_task_runner);
   void RecordTetherAvailabilityResponseDuration(const std::string device_id);
 
   TetherHostResponseRecorder* tether_host_response_recorder_;
   ConnectionPreserver* connection_preserver_;
   base::Clock* clock_;
+  scoped_refptr<base::TaskRunner> task_runner_;
   base::ObserverList<Observer> observer_list_;
 
   cryptauth::RemoteDeviceRefList gms_core_notifications_disabled_devices_;
 
   std::map<std::string, base::Time>
       device_id_to_tether_availability_request_start_time_map_;
+
+  base::WeakPtrFactory<HostScannerOperation> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(HostScannerOperation);
 };
