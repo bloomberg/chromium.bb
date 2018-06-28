@@ -18,7 +18,7 @@ namespace views {
 class View;
 }
 
-struct LocationBarDecoration;
+struct DecorationInfo;
 
 // Helper class used to layout a list of decorations inside the omnibox.
 class LocationBarLayout {
@@ -84,7 +84,7 @@ class LocationBarLayout {
   int item_edit_padding_;
 
   // The list of decorations to layout.
-  std::vector<std::unique_ptr<LocationBarDecoration>> decorations_;
+  std::vector<std::unique_ptr<DecorationInfo>> decorations_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarLayout);
 };
