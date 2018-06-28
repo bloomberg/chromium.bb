@@ -43,6 +43,23 @@ CookieChangeEvent::CookieChangeEvent(const AtomicString& type,
     deleted_ = initializer.deleted();
 }
 
+namespace {
+
+String ToCookieListItemSameSite(network::mojom::CookieSameSite same_site) {
+  switch (same_site) {
+    case network::mojom::CookieSameSite::STRICT_MODE:
+      return "strict";
+    case network::mojom::CookieSameSite::LAX_MODE:
+      return "lax";
+    case network::mojom::CookieSameSite::NO_RESTRICTION:
+      return "unrestricted";
+  }
+
+  NOTREACHED();
+}
+
+}  // namespace
+
 // static
 void CookieChangeEvent::ToCookieListItem(
     const WebCanonicalCookie& canonical_cookie,
@@ -51,6 +68,7 @@ void CookieChangeEvent::ToCookieListItem(
   list_item.setName(canonical_cookie.Name());
   list_item.setPath(canonical_cookie.Path());
   list_item.setSecure(canonical_cookie.IsSecure());
+  list_item.setSameSite(ToCookieListItemSameSite(canonical_cookie.SameSite()));
 
   // The domain of host-only cookies is the host name, without a dot (.) prefix.
   String cookie_domain = canonical_cookie.Domain();
