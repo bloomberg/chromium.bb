@@ -6,6 +6,7 @@
 
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -156,9 +157,14 @@ void AssistantController::OnOpenUrlFromTab(const GURL& url) {
 }
 
 void AssistantController::OpenUrl(const GURL& url) {
-  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
+  if (assistant::util::IsDeepLinkUrl(url)) {
+    // TODO(dmblack): Handle deep links.
+    NOTIMPLEMENTED();
+    return;
+  }
 
   // We dismiss Assistant UI when opening a new browser tab.
+  Shell::Get()->new_window_controller()->NewTabWithUrl(url);
   assistant_ui_controller_->HideUi(AssistantSource::kUnspecified);
 }
 
