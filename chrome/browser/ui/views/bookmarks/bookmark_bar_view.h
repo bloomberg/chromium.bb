@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
 #define CHROME_BROWSER_UI_VIEWS_BOOKMARKS_BOOKMARK_BAR_VIEW_H_
 
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
@@ -113,6 +114,10 @@ class BookmarkBarView : public views::AccessiblePaneView,
 
   // Returns the MenuButton for node.
   views::MenuButton* GetMenuButtonForNode(const bookmarks::BookmarkNode* node);
+
+  // Returns the LabelButton for node.
+  views::LabelButton* GetBookmarkButtonForNode(
+      const bookmarks::BookmarkNode* node);
 
   // Returns the position to anchor the menu for |button| at.
   void GetAnchorPositionForButton(views::MenuButton* button,
