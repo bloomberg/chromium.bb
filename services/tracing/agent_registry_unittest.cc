@@ -36,12 +36,14 @@ class AgentRegistryTest : public testing::Test {
                      mojom::TraceDataType type,
                      bool supports_explicit_clock_sync) {
     registry_->RegisterAgent(std::move(agent), label, type,
-                             supports_explicit_clock_sync);
+                             supports_explicit_clock_sync,
+                             base::kNullProcessId);
   }
 
   void RegisterAgent(mojom::AgentPtr agent) {
     registry_->RegisterAgent(std::move(agent), "label",
-                             mojom::TraceDataType::ARRAY, false);
+                             mojom::TraceDataType::ARRAY, false,
+                             base::kNullProcessId);
   }
 
   std::unique_ptr<AgentRegistry> registry_;

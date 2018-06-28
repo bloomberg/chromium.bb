@@ -42,9 +42,9 @@ TEST_F(TracingServiceTest, TracingServiceInstantiate) {
                              mojo::MakeRequest(&agent_registry));
 
   MockAgent agent1;
-  agent_registry->RegisterAgent(agent1.CreateAgentPtr(), "FOO",
-                                mojom::TraceDataType::STRING,
-                                false /*supports_explicit_clock_sync*/);
+  agent_registry->RegisterAgent(
+      agent1.CreateAgentPtr(), "FOO", mojom::TraceDataType::STRING,
+      false /*supports_explicit_clock_sync*/, base::kNullProcessId);
 
   run_loop.RunUntilIdle();
 }

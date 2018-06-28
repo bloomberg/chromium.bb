@@ -51,6 +51,9 @@ const char kEventFiltersParam[] = "event_filters";
 const char kFilterPredicateParam[] = "filter_predicate";
 const char kFilterArgsParam[] = "filter_args";
 
+// String parameter used to parse process filter.
+const char kIncludedProcessesParam[] = "included_process_ids";
+
 class ConvertableTraceConfigToTraceFormat
     : public base::trace_event::ConvertableToTraceFormat {
  public:
@@ -113,6 +116,56 @@ void TraceConfig::MemoryDumpConfig::Merge(
   heap_profiler_options.breakdown_threshold_bytes =
       std::min(heap_profiler_options.breakdown_threshold_bytes,
                config.heap_profiler_options.breakdown_threshold_bytes);
+}
+
+TraceConfig::ProcessFilterConfig::ProcessFilterConfig() = default;
+
+TraceConfig::ProcessFilterConfig::ProcessFilterConfig(
+    const ProcessFilterConfig& other) = default;
+
+TraceConfig::ProcessFilterConfig::ProcessFilterConfig(
+    const std::unordered_set<base::ProcessId>& included_process_ids)
+    : included_process_ids_(included_process_ids) {}
+
+TraceConfig::ProcessFilterConfig::~ProcessFilterConfig() = default;
+
+void TraceConfig::ProcessFilterConfig::Clear() {
+  included_process_ids_.clear();
+}
+
+void TraceConfig::ProcessFilterConfig::Merge(
+    const ProcessFilterConfig& config) {
+  included_process_ids_.insert(config.included_process_ids_.begin(),
+                               config.included_process_ids_.end());
+}
+
+void TraceConfig::ProcessFilterConfig::InitializeFromConfigDict(
+    const base::DictionaryValue& dict) {
+  included_process_ids_.clear();
+  const Value* value =
+      dict.FindKeyOfType(kIncludedProcessesParam, Value::Type::LIST);
+  if (!value)
+    return;
+  for (auto& pid_value : value->GetList()) {
+    if (pid_value.is_int())
+      included_process_ids_.insert(pid_value.GetInt());
+  }
+}
+
+void TraceConfig::ProcessFilterConfig::ToDict(DictionaryValue* dict) const {
+  if (included_process_ids_.empty())
+    return;
+  Value* list = dict->SetKey(kIncludedProcessesParam, Value(Value::Type::LIST));
+  std::set<base::ProcessId> ordered_set(included_process_ids_.begin(),
+                                        included_process_ids_.end());
+  for (auto process_id : ordered_set)
+    list->GetList().emplace_back(static_cast<int>(process_id));
+}
+
+bool TraceConfig::ProcessFilterConfig::IsEnabled(
+    base::ProcessId process_id) const {
+  return included_process_ids_.empty() ||
+         included_process_ids_.count(process_id);
 }
 
 TraceConfig::EventFilterConfig::EventFilterConfig(
@@ -237,6 +290,7 @@ TraceConfig& TraceConfig::operator=(const TraceConfig& rhs) {
   enable_systrace_ = rhs.enable_systrace_;
   enable_argument_filter_ = rhs.enable_argument_filter_;
   category_filter_ = rhs.category_filter_;
+  process_filter_config_ = rhs.process_filter_config_;
   memory_dump_config_ = rhs.memory_dump_config_;
   event_filters_ = rhs.event_filters_;
   return *this;
@@ -274,8 +328,8 @@ void TraceConfig::Merge(const TraceConfig& config) {
   }
 
   category_filter_.Merge(config.category_filter_);
-
   memory_dump_config_.Merge(config.memory_dump_config_);
+  process_filter_config_.Merge(config.process_filter_config_);
 
   event_filters_.insert(event_filters_.end(), config.event_filters().begin(),
                         config.event_filters().end());
@@ -287,6 +341,7 @@ void TraceConfig::Clear() {
   enable_argument_filter_ = false;
   category_filter_.Clear();
   memory_dump_config_.Clear();
+  process_filter_config_.Clear();
   event_filters_.clear();
 }
 
@@ -317,6 +372,7 @@ void TraceConfig::InitializeFromConfigDict(const DictionaryValue& dict) {
       dict.GetBoolean(kEnableArgumentFilterParam, &val) ? val : false;
 
   category_filter_.InitializeFromConfigDict(dict);
+  process_filter_config_.InitializeFromConfigDict(dict);
 
   const base::ListValue* category_event_filters = nullptr;
   if (dict.GetList(kEventFiltersParam, &category_event_filters))
@@ -447,6 +503,10 @@ void TraceConfig::SetDefaultMemoryDumpConfig() {
   memory_dump_config_.allowed_dump_modes = GetDefaultAllowedMemoryDumpModes();
 }
 
+void TraceConfig::SetProcessFilterConfig(const ProcessFilterConfig& config) {
+  process_filter_config_ = config;
+}
+
 void TraceConfig::SetEventFiltersFromConfigList(
     const base::ListValue& category_event_filters) {
   event_filters_.clear();
@@ -477,6 +537,7 @@ std::unique_ptr<DictionaryValue> TraceConfig::ToDict() const {
   dict->SetBoolean(kEnableArgumentFilterParam, enable_argument_filter_);
 
   category_filter_.ToDict(dict.get());
+  process_filter_config_.ToDict(dict.get());
 
   if (!event_filters_.empty()) {
     std::unique_ptr<base::ListValue> filter_list(new base::ListValue());

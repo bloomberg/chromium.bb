@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
+#include "base/trace_event/trace_config.h"
 #include "base/values.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/tracing/agent_registry.h"
@@ -94,6 +95,7 @@ class Coordinator : public mojom::Coordinator {
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
   AgentRegistry* agent_registry_;
   std::string config_;
+  base::trace_event::TraceConfig parsed_config_;
   bool is_tracing_ = false;
 
   std::unique_ptr<TraceStreamer> trace_streamer_;

@@ -23,7 +23,6 @@
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "base/trace_event/trace_config.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -326,14 +325,15 @@ void Coordinator::BindCoordinatorRequest(
 
 void Coordinator::StartTracing(const std::string& config,
                                StartTracingCallback callback) {
-  if (is_tracing_) {
-    // Cannot change the config while tracing is enabled.
+  bool is_initializing = !start_tracing_callback_.is_null();
+  if (is_initializing || (is_tracing_ && config == config_)) {
     std::move(callback).Run(config == config_);
     return;
   }
 
   is_tracing_ = true;
   config_ = config;
+  parsed_config_ = base::trace_event::TraceConfig(config);
   agent_registry_->SetAgentInitializationCallback(base::BindRepeating(
       &Coordinator::SendStartTracingToAgent, weak_ptr_factory_.GetWeakPtr()));
   if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName)) {
@@ -345,7 +345,12 @@ void Coordinator::StartTracing(const std::string& config,
 
 void Coordinator::SendStartTracingToAgent(
     AgentRegistry::AgentEntry* agent_entry) {
-  DCHECK(!agent_entry->is_tracing());
+  if (agent_entry->is_tracing())
+    return;
+  if (agent_entry->HasDisconnectClosure(&kStartTracingClosureName))
+    return;
+  if (!parsed_config_.process_filter_config().IsEnabled(agent_entry->pid()))
+    return;
   agent_entry->AddDisconnectClosure(
       &kStartTracingClosureName,
       base::BindOnce(&Coordinator::OnTracingStarted,
@@ -367,7 +372,7 @@ void Coordinator::OnTracingStarted(AgentRegistry::AgentEntry* agent_entry,
 
   if (!agent_registry_->HasDisconnectClosure(&kStartTracingClosureName) &&
       !start_tracing_callback_.is_null()) {
-    base::ResetAndReturn(&start_tracing_callback_).Run(true);
+    std::move(start_tracing_callback_).Run(true);
   }
 }
 
@@ -487,7 +492,7 @@ void Coordinator::SendRecorder(
 }
 
 void Coordinator::OnFlushDone() {
-  base::ResetAndReturn(&stop_and_flush_callback_)
+  std::move(stop_and_flush_callback_)
       .Run(std::move(*trace_streamer_->GetMetadata()));
   background_task_runner_->DeleteSoon(FROM_HERE, trace_streamer_.release());
   agent_registry_->ForAllAgents([this](AgentRegistry::AgentEntry* agent_entry) {
@@ -539,7 +544,7 @@ void Coordinator::OnRequestBufferStatusResponse(
   }
 
   if (!agent_registry_->HasDisconnectClosure(&kRequestBufferUsageClosureName)) {
-    base::ResetAndReturn(&request_buffer_usage_callback_)
+    std::move(request_buffer_usage_callback_)
         .Run(true, maximum_trace_buffer_usage_, approximate_event_count_);
   }
 }
@@ -582,7 +587,7 @@ void Coordinator::OnGetCategoriesResponse(
   if (!agent_registry_->HasDisconnectClosure(&kGetCategoriesClosureName)) {
     std::vector<std::string> category_vector(category_set_.begin(),
                                              category_set_.end());
-    base::ResetAndReturn(&get_categories_callback_)
+    std::move(get_categories_callback_)
         .Run(true, base::JoinString(category_vector, ","));
     is_tracing_ = false;
   }

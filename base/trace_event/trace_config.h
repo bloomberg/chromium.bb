@@ -88,6 +88,32 @@ class BASE_EXPORT TraceConfig {
     HeapProfiler heap_profiler_options;
   };
 
+  class BASE_EXPORT ProcessFilterConfig {
+   public:
+    ProcessFilterConfig();
+    explicit ProcessFilterConfig(
+        const std::unordered_set<base::ProcessId>& included_process_ids);
+    ProcessFilterConfig(const ProcessFilterConfig&);
+    ~ProcessFilterConfig();
+
+    bool empty() const { return included_process_ids_.empty(); }
+
+    void Clear();
+    void Merge(const ProcessFilterConfig&);
+
+    void InitializeFromConfigDict(const base::DictionaryValue&);
+    void ToDict(DictionaryValue*) const;
+
+    bool IsEnabled(base::ProcessId) const;
+
+    bool operator==(const ProcessFilterConfig& other) const {
+      return included_process_ids_ == other.included_process_ids_;
+    }
+
+   private:
+    std::unordered_set<base::ProcessId> included_process_ids_;
+  };
+
   class BASE_EXPORT EventFilterConfig {
    public:
     EventFilterConfig(const std::string& predicate_name);
@@ -238,6 +264,11 @@ class BASE_EXPORT TraceConfig {
     return memory_dump_config_;
   }
 
+  const ProcessFilterConfig& process_filter_config() const {
+    return process_filter_config_;
+  }
+  void SetProcessFilterConfig(const ProcessFilterConfig&);
+
   const EventFilters& event_filters() const { return event_filters_; }
   void SetEventFilters(const EventFilters& filter_configs) {
     event_filters_ = filter_configs;
@@ -279,6 +310,7 @@ class BASE_EXPORT TraceConfig {
   TraceConfigCategoryFilter category_filter_;
 
   MemoryDumpConfig memory_dump_config_;
+  ProcessFilterConfig process_filter_config_;
 
   EventFilters event_filters_;
 };

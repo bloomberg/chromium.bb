@@ -4,6 +4,7 @@
 
 module tracing.mojom;
 
+import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 
@@ -29,7 +30,8 @@ enum TraceDataType {
 // to collect traces from other processes using the |Coordinator| interface.
 interface AgentRegistry {
   RegisterAgent(Agent agent, string label, TraceDataType type,
-                bool supports_explicit_clock_sync_);
+                bool supports_explicit_clock_sync,
+                mojo_base.mojom.ProcessId pid);
 };
 
 // When the tracing service calls |StopAndFlush| on an agent, the agent begins

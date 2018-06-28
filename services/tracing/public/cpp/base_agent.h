@@ -25,7 +25,8 @@ class COMPONENT_EXPORT(TRACING_CPP) BaseAgent : public mojom::Agent {
   BaseAgent(service_manager::Connector* connector,
             const std::string& label,
             mojom::TraceDataType type,
-            bool supports_explicit_clock_sync);
+            bool supports_explicit_clock_sync,
+            base::ProcessId pid);
   ~BaseAgent() override;
 
  private:

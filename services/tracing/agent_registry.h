@@ -35,7 +35,8 @@ class AgentRegistry : public mojom::AgentRegistry {
                mojom::AgentPtr agent,
                const std::string& label,
                mojom::TraceDataType type,
-               bool supports_explicit_clock_sync);
+               bool supports_explicit_clock_sync,
+               base::ProcessId pid);
     ~AgentEntry();
 
     void AddDisconnectClosure(const void* closure_name,
@@ -54,6 +55,7 @@ class AgentRegistry : public mojom::AgentRegistry {
     }
     bool is_tracing() const { return is_tracing_; }
     void set_is_tracing(bool is_tracing) { is_tracing_ = is_tracing; }
+    base::ProcessId pid() const { return pid_; }
 
    private:
     void OnConnectionError();
@@ -64,6 +66,7 @@ class AgentRegistry : public mojom::AgentRegistry {
     const std::string label_;
     const mojom::TraceDataType type_;
     const bool supports_explicit_clock_sync_;
+    const base::ProcessId pid_;
     std::map<const void*, base::OnceClosure> closures_;
     bool is_tracing_;
     std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
@@ -107,7 +110,8 @@ class AgentRegistry : public mojom::AgentRegistry {
   void RegisterAgent(mojom::AgentPtr agent,
                      const std::string& label,
                      mojom::TraceDataType type,
-                     bool supports_explicit_clock_sync) override;
+                     bool supports_explicit_clock_sync,
+                     base::ProcessId pid) override;
 
   void UnregisterAgent(size_t agent_id);
 

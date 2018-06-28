@@ -76,7 +76,8 @@ ArcTracingBridge::ArcTracingBridge(content::BrowserContext* context,
           content::ServiceManagerConnection::GetForProcess()->GetConnector(),
           kChromeTraceEventLabel,
           tracing::mojom::TraceDataType::ARRAY,
-          false /* supports_explicit_clock_sync */),
+          false /* supports_explicit_clock_sync */,
+          base::kNullProcessId),
       arc_bridge_service_(bridge_service),
       weak_ptr_factory_(this) {
   arc_bridge_service_->tracing()->AddObserver(this);

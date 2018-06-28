@@ -14,7 +14,8 @@ namespace tracing {
 BaseAgent::BaseAgent(service_manager::Connector* connector,
                      const std::string& label,
                      mojom::TraceDataType type,
-                     bool supports_explicit_clock_sync)
+                     bool supports_explicit_clock_sync,
+                     base::ProcessId pid)
     : binding_(this) {
   // |connector| can be null in tests.
   if (!connector)
@@ -25,7 +26,7 @@ BaseAgent::BaseAgent(service_manager::Connector* connector,
   tracing::mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
   agent_registry->RegisterAgent(std::move(agent), label, type,
-                                supports_explicit_clock_sync);
+                                supports_explicit_clock_sync, pid);
 }
 
 BaseAgent::~BaseAgent() = default;
