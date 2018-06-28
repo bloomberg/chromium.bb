@@ -6,8 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_STUB_CHROME_CLIENT_FOR_SPV2_H_
 
 #include "third_party/blink/renderer/core/loader/empty_clients.h"
-#include "third_party/blink/renderer/core/paint/layer_tree_host_for_paint_artifact_test.h"
-#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
+#include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 
 namespace cc {
 class Layer;
@@ -30,7 +29,7 @@ class StubChromeClientForSPv2 : public EmptyChromeClient {
   }
 
  private:
-  LayerTreeHostForPaintArtifactTest layer_tree_;
+  LayerTreeHostEmbedder layer_tree_;
 };
 
 }  // namespace blink

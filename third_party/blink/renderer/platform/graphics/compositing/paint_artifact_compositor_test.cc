@@ -6,11 +6,13 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/layers/layer.h"
 #include "cc/test/fake_impl_task_runner_provider.h"
 #include "cc/test/fake_layer_tree_frame_sink.h"
+#include "cc/test/fake_layer_tree_host_client.h"
 #include "cc/test/fake_layer_tree_host_impl.h"
 #include "cc/test/geometry_test_utils.h"
 #include "cc/trees/clip_node.h"
@@ -25,11 +27,11 @@
 #include "third_party/blink/renderer/platform/graphics/paint/paint_artifact.h"
 #include "third_party/blink/renderer/platform/graphics/paint/scroll_paint_property_node.h"
 #include "third_party/blink/renderer/platform/testing/fake_display_item_client.h"
+#include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/picture_matchers.h"
 #include "third_party/blink/renderer/platform/testing/runtime_enabled_features_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/test_paint_artifact.h"
-#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
 
 namespace blink {
@@ -51,19 +53,6 @@ gfx::Transform Translation(SkMScalar x, SkMScalar y) {
   return transform;
 }
 
-class WebLayerTreeViewWithLayerTreeFrameSink
-    : public WebLayerTreeViewImplForTesting {
- public:
-  WebLayerTreeViewWithLayerTreeFrameSink(const cc::LayerTreeSettings& settings)
-      : WebLayerTreeViewImplForTesting(settings) {}
-
-  // cc::LayerTreeHostClient
-  void RequestNewLayerTreeFrameSink() override {
-    GetLayerTreeHost()->SetLayerTreeFrameSink(
-        cc::FakeLayerTreeFrameSink::Create3d());
-  }
-};
-
 class FakeScrollClient {
  public:
   FakeScrollClient() : did_scroll_count(0) {}
@@ -82,7 +71,7 @@ class PaintArtifactCompositorTest : public testing::Test,
  protected:
   PaintArtifactCompositorTest()
       : ScopedSlimmingPaintV2ForTest(true),
-        task_runner_(new base::TestSimpleTaskRunner),
+        task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
         task_runner_handle_(task_runner_) {}
 
   void SetUp() override {
@@ -92,13 +81,15 @@ class PaintArtifactCompositorTest : public testing::Test,
             &FakeScrollClient::DidScroll, WTF::Unretained(&scroll_client_)));
     paint_artifact_compositor_->EnableExtraDataForTesting();
 
-    cc::LayerTreeSettings settings =
-        WebLayerTreeViewImplForTesting::DefaultLayerTreeSettings();
-    settings.single_thread_proxy_scheduler = false;
-    settings.use_layer_lists = true;
-    web_layer_tree_view_ =
-        std::make_unique<WebLayerTreeViewWithLayerTreeFrameSink>(settings);
-    web_layer_tree_view_->SetRootLayer(paint_artifact_compositor_->RootLayer());
+    // Uses a LayerTreeHostClient that will make a LayerTreeFrameSink to allow
+    // the compositor to run and submit frames.
+    layer_tree_ = std::make_unique<LayerTreeHostEmbedder>(
+        &layer_tree_host_client_,
+        /*single_thread_client=*/nullptr,
+        /*use_layer_lists=*/true);
+    layer_tree_host_client_.SetLayerTreeHost(layer_tree_->layer_tree_host());
+    layer_tree_->layer_tree_host()->SetRootLayer(
+        paint_artifact_compositor_->RootLayer());
   }
 
   void TearDown() override {
@@ -108,34 +99,31 @@ class PaintArtifactCompositorTest : public testing::Test,
   }
 
   cc::PropertyTrees& GetPropertyTrees() {
-    return *web_layer_tree_view_->GetLayerTreeHost()->property_trees();
-  }
-
-  const cc::LayerTreeHost& GetLayerTreeHost() {
-    return *web_layer_tree_view_->GetLayerTreeHost();
-  }
-
-  int ElementIdToEffectNodeIndex(CompositorElementId element_id) {
-    return web_layer_tree_view_->GetLayerTreeHost()
-        ->property_trees()
-        ->element_id_to_effect_node_index[element_id];
-  }
-
-  int ElementIdToTransformNodeIndex(CompositorElementId element_id) {
-    return web_layer_tree_view_->GetLayerTreeHost()
-        ->property_trees()
-        ->element_id_to_transform_node_index[element_id];
-  }
-
-  int ElementIdToScrollNodeIndex(CompositorElementId element_id) {
-    return web_layer_tree_view_->GetLayerTreeHost()
-        ->property_trees()
-        ->element_id_to_scroll_node_index[element_id];
+    return *layer_tree_->layer_tree_host()->property_trees();
   }
 
   const cc::TransformNode& GetTransformNode(const cc::Layer* layer) {
-    return *GetPropertyTrees().transform_tree.Node(
-        layer->transform_tree_index());
+    auto* property_trees = layer_tree_->layer_tree_host()->property_trees();
+    return *property_trees->transform_tree.Node(layer->transform_tree_index());
+  }
+
+  const cc::LayerTreeHost& GetLayerTreeHost() {
+    return *layer_tree_->layer_tree_host();
+  }
+
+  int ElementIdToEffectNodeIndex(CompositorElementId element_id) {
+    auto* property_trees = layer_tree_->layer_tree_host()->property_trees();
+    return property_trees->element_id_to_effect_node_index[element_id];
+  }
+
+  int ElementIdToTransformNodeIndex(CompositorElementId element_id) {
+    auto* property_trees = layer_tree_->layer_tree_host()->property_trees();
+    return property_trees->element_id_to_transform_node_index[element_id];
+  }
+
+  int ElementIdToScrollNodeIndex(CompositorElementId element_id) {
+    auto* property_trees = layer_tree_->layer_tree_host()->property_trees();
+    return property_trees->element_id_to_scroll_node_index[element_id];
   }
 
   void Update(const PaintArtifact& artifact) {
@@ -155,7 +143,7 @@ class PaintArtifactCompositorTest : public testing::Test,
               TransformPaintPropertyNode* viewport_scale_transform_node) {
     paint_artifact_compositor_->Update(artifact, element_ids,
                                        viewport_scale_transform_node);
-    web_layer_tree_view_->GetLayerTreeHost()->LayoutAndUpdateLayers();
+    layer_tree_->layer_tree_host()->LayoutAndUpdateLayers();
   }
 
   void WillBeRemovedFromFrame() {
@@ -238,7 +226,8 @@ class PaintArtifactCompositorTest : public testing::Test,
   std::unique_ptr<PaintArtifactCompositor> paint_artifact_compositor_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
-  std::unique_ptr<WebLayerTreeViewWithLayerTreeFrameSink> web_layer_tree_view_;
+  cc::FakeLayerTreeHostClient layer_tree_host_client_;
+  std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
 };
 
 const auto kNotScrollingOnMain = MainThreadScrollingReason::kNotScrollingOnMain;

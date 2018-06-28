@@ -33,7 +33,6 @@
 #include "cc/trees/mutator_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_layer_tree_view.h"
 #include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation.h"
 #include "third_party/blink/renderer/platform/animation/compositor_animation_client.h"
@@ -51,9 +50,9 @@
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer.h"
 #include "third_party/blink/renderer/platform/testing/fake_graphics_layer_client.h"
+#include "third_party/blink/renderer/platform/testing/layer_tree_host_embedder.h"
 #include "third_party/blink/renderer/platform/testing/paint_property_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
-#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 #include "third_party/blink/renderer/platform/transforms/matrix_3d_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/rotate_transform_operation.h"
 #include "third_party/blink/renderer/platform/transforms/translate_transform_operation.h"
@@ -73,27 +72,27 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     page_scale_layer_->AddChild(graphics_layer_.get());
     graphics_layer_->CcLayer()->SetScrollable(clip_layer_->CcLayer()->bounds());
     cc_layer_ = graphics_layer_->CcLayer();
-    layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
-    DCHECK(layer_tree_view_);
-    layer_tree_view_->SetRootLayer(clip_layer_->CcLayer());
-    WebLayerTreeView::ViewportLayers viewport_layers;
+    layer_tree_ = std::make_unique<LayerTreeHostEmbedder>();
+    layer_tree_->layer_tree_host()->SetRootLayer(clip_layer_->CcLayer());
+    cc::LayerTreeHost::ViewportLayers viewport_layers;
     viewport_layers.overscroll_elasticity = scroll_elasticity_layer_->CcLayer();
     viewport_layers.page_scale = page_scale_layer_->CcLayer();
     viewport_layers.inner_viewport_container = clip_layer_->CcLayer();
     viewport_layers.inner_viewport_scroll = graphics_layer_->CcLayer();
-    layer_tree_view_->RegisterViewportLayers(viewport_layers);
-    layer_tree_view_->SetViewportSize(WebSize(1, 1));
+    layer_tree_->layer_tree_host()->RegisterViewportLayers(viewport_layers);
+    layer_tree_->layer_tree_host()->SetViewportSizeAndScale(
+        gfx::Size(1, 1), /*device_scale_factor=*/1.f, viz::LocalSurfaceId());
 
-      graphics_layer_->SetLayerState(
-          PropertyTreeState(PropertyTreeState::Root()), IntPoint());
+    graphics_layer_->SetLayerState(PropertyTreeState(PropertyTreeState::Root()),
+                                   IntPoint());
   }
 
-  ~GraphicsLayerTest() override {
-    graphics_layer_.reset();
-    layer_tree_view_.reset();
-  }
+  ~GraphicsLayerTest() = default;
 
-  WebLayerTreeView* LayerTreeView() { return layer_tree_view_.get(); }
+  cc::LayerTreeHost* layer_tree_host() {
+    return layer_tree_->layer_tree_host();
+  }
+  cc::AnimationHost* animation_host() { return layer_tree_->animation_host(); }
 
  protected:
   bool PaintWithoutCommit(GraphicsLayer& layer, const IntRect* interest_rect) {
@@ -114,10 +113,6 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     return layer.paint_controller_.get();
   }
 
-  cc::LayerTreeHost* layer_tree_host() {
-    return layer_tree_view_->GetLayerTreeHost();
-  }
-
   cc::Layer* cc_layer_;
   std::unique_ptr<FakeGraphicsLayer> graphics_layer_;
   std::unique_ptr<FakeGraphicsLayer> page_scale_layer_;
@@ -126,7 +121,7 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
   FakeGraphicsLayerClient client_;
 
  private:
-  std::unique_ptr<WebLayerTreeViewImplForTesting> layer_tree_view_;
+  std::unique_ptr<LayerTreeHostEmbedder> layer_tree_;
 };
 
 INSTANTIATE_TEST_CASE_P(All,
@@ -173,7 +168,7 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
       CompositorAnimationTimeline::Create();
   AnimationForTesting animation;
 
-  CompositorAnimationHost host(LayerTreeView()->CompositorAnimationHost());
+  CompositorAnimationHost host(animation_host());
 
   host.AddTimeline(*compositor_timeline);
   compositor_timeline->AnimationAttached(animation);
