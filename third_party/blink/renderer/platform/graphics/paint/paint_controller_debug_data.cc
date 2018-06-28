@@ -113,9 +113,17 @@ void PaintController::DisplayItemListAsJSON::AppendSubsequenceAsJSON(
     size_t end_item,
     JSONArray& json_array) {
   DCHECK(end_item > start_item);
-  DCHECK(current_chunk_ != chunks_.end());
-  DCHECK(current_chunk_->begin_index == start_item);
+  if (current_chunk_ == chunks_.end()) {
+    // We are in the middle of painting with incomplete chunks.
+    auto json_object = JSONObject::Create();
+    json_object->SetString("chunk", "incomplete");
+    json_object->SetArray(
+        "displayItems", list_.SubsequenceAsJSON(start_item, end_item, flags_));
+    json_array.PushObject(std::move(json_object));
+    return;
+  }
 
+  DCHECK(current_chunk_->begin_index == start_item);
   while (current_chunk_ != chunks_.end() &&
          current_chunk_->end_index <= end_item) {
     const auto& chunk = *current_chunk_;

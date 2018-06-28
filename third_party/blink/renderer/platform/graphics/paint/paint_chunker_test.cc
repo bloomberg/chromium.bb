@@ -408,17 +408,19 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
       t0(), TransformationMatrix(0, 1, 2, 3, 4, 5), FloatPoint3D(9, 8, 7));
   auto simple_transform = DefaultPaintChunkProperties();
   simple_transform.SetTransform(simple_transform_node.get());
-  PaintChunk::Id id2(client_, DisplayItemType(2));
+
+  TestDisplayItemClient uncacheable_client;
+  uncacheable_client.SetDisplayItemsUncached(
+      PaintInvalidationReason::kUncacheable);
+  PaintChunk::Id id2(uncacheable_client, DisplayItemType(2));
   chunker.UpdateCurrentPaintChunkProperties(id2, simple_transform);
 
-  TestChunkerDisplayItem uncacheable_item(client_);
-  uncacheable_item.SetSkippedCache();
+  TestChunkerDisplayItem uncacheable_item(uncacheable_client);
   chunker.IncrementDisplayItemIndex(uncacheable_item);
   chunker.IncrementDisplayItemIndex(TestChunkerDisplayItem(client_));
 
   TestDisplayItemRequiringSeparateChunk uncacheable_separate_chunk_item(
-      client_);
-  uncacheable_separate_chunk_item.SetSkippedCache();
+      uncacheable_client);
   chunker.IncrementDisplayItemIndex(uncacheable_separate_chunk_item);
 
   TestChunkerDisplayItem after_separate_chunk(client_, DisplayItemType(3));
@@ -432,14 +434,18 @@ TEST_F(PaintChunkerTest, ChunkIdsSkippingCache) {
   const auto& chunks = chunker.PaintChunks();
   EXPECT_EQ(chunks.size(), 5u);
   EXPECT_EQ(chunks[0], PaintChunk(0, 2, id1, DefaultPaintChunkProperties()));
-  EXPECT_EQ(chunks[1],
-            PaintChunk(2, 4, id2, simple_transform, PaintChunk::kUncacheable));
+  EXPECT_TRUE(chunks[0].is_cacheable);
+  EXPECT_EQ(chunks[1], PaintChunk(2, 4, id2, simple_transform));
+  EXPECT_FALSE(chunks[1].is_cacheable);
   EXPECT_EQ(chunks[2], PaintChunk(4, 5, uncacheable_separate_chunk_item.GetId(),
-                                  simple_transform, PaintChunk::kUncacheable));
+                                  simple_transform));
+  EXPECT_FALSE(chunks[2].is_cacheable);
   EXPECT_EQ(chunks[3],
             PaintChunk(5, 6, after_separate_chunk.GetId(), simple_transform));
+  EXPECT_TRUE(chunks[3].is_cacheable);
   EXPECT_EQ(chunks[4], PaintChunk(6, 7, after_restore.GetId(),
                                   DefaultPaintChunkProperties()));
+  EXPECT_TRUE(chunks[4].is_cacheable);
 }
 
 }  // namespace

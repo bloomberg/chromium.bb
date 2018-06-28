@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/geometry/float_rect.h"
-#include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_client.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record.h"
 #include "third_party/blink/renderer/platform/graphics/paint/property_tree_state.h"
@@ -26,24 +25,22 @@ namespace blink {
 class GraphicsContext;
 class PaintController;
 
-// TODO(enne): rename this class to not be named SkPicture
-// When slimming paint ships we can remove this PaintRecord abstraction and
-// rely on PaintController here.
 class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
 
  public:
-  // Constructs a new builder for the resulting recorded picture. If |metadata|
+  // Constructs a new builder for the resulting paint record. If |metadata|
   // is specified, that metadata is propagated to the builder's internal canvas.
   // If |containing_context| is specified, the device scale factor, printing,
   // and disabled state are propagated to the builder's internal context.
   // If a PaintController is passed, it is used as the PaintController for
   // painting the picture (and hence we can use its cache). Otherwise, a new
-  // PaintController is used for the duration of the picture building, which
-  // therefore has no caching. It also resets paint chunk state to
+  // transient PaintController is used for the duration of the picture building,
+  // which therefore has no caching. It also resets paint chunk state to
   // PropertyTreeState::Root() before beginning to record.
-  PaintRecordBuilder(SkMetaData* = nullptr,
+  PaintRecordBuilder(SkMetaData* metadata = nullptr,
                      GraphicsContext* containing_context = nullptr,
                      PaintController* = nullptr);
+  ~PaintRecordBuilder() override;
 
   GraphicsContext& Context() { return *context_; }
 
@@ -67,7 +64,6 @@ class PLATFORM_EXPORT PaintRecordBuilder final : public DisplayItemClient {
   PaintController* paint_controller_;
   std::unique_ptr<PaintController> own_paint_controller_;
   std::unique_ptr<GraphicsContext> context_;
-  base::Optional<DisplayItemCacheSkipper> cache_skipper_;
 
   DISALLOW_COPY_AND_ASSIGN(PaintRecordBuilder);
 };

@@ -94,6 +94,14 @@ class PLATFORM_EXPORT DisplayItemClient {
     cache_generation_or_invalidation_reason_.ClearIsJustCreated();
   }
 
+  // Whether the client is cacheable. The uncacheable status is set when the
+  // client produces any display items that skipped caching of any
+  // PaintController.
+  bool IsCacheable() const {
+    return GetPaintInvalidationReason() !=
+           PaintInvalidationReason::kUncacheable;
+  }
+
  private:
   friend class FakeDisplayItemClient;
   friend class PaintController;
@@ -126,7 +134,9 @@ class PLATFORM_EXPORT DisplayItemClient {
         PaintInvalidationReason reason = PaintInvalidationReason::kFull) {
       // If a full invalidation reason is already set, do not overwrite it with
       // a new reason.
-      if (IsFullPaintInvalidationReason(GetPaintInvalidationReason()))
+      if (IsFullPaintInvalidationReason(GetPaintInvalidationReason()) &&
+          // However, kUncacheable overwrites any other reason.
+          reason != PaintInvalidationReason::kUncacheable)
         return;
       value_ = static_cast<ValueType>(reason);
     }

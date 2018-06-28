@@ -1572,7 +1572,7 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
 
   // Content's cache is invalid because it has display items skipped cache.
   EXPECT_FALSE(ClientCacheIsValid(content));
-  EXPECT_EQ(PaintInvalidationReason::kFull,
+  EXPECT_EQ(PaintInvalidationReason::kUncacheable,
             content.GetPaintInvalidationReason());
 
   InitRootChunk();
@@ -1767,6 +1767,41 @@ TEST_P(PaintControllerTest, InvalidateAll) {
   EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());
 }
 
+TEST_P(PaintControllerTest, TransientPaintController) {
+  FakeDisplayItemClient client("client", LayoutRect(100, 100, 300, 300));
+  GraphicsContext context(GetPaintController());
+  InitRootChunk();
+  DrawRect(context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
+  GetPaintController().CommitNewDisplayItems();
+  EXPECT_TRUE(client.IsCacheable());
+  EXPECT_TRUE(ClientCacheIsValid(GetPaintController(), client));
+
+  auto transient_controller =
+      PaintController::Create(PaintController::kTransient);
+  GraphicsContext transient_context(*transient_controller);
+  InitRootChunk(*transient_controller);
+  DrawRect(transient_context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
+  transient_controller->CommitNewDisplayItems();
+
+  // Painting on a transient PaintController doesn't affect cache status in a
+  // multi-paint PaintController.
+  EXPECT_TRUE(client.IsCacheable());
+  EXPECT_TRUE(ClientCacheIsValid(GetPaintController(), client));
+  EXPECT_FALSE(ClientCacheIsValid(*transient_controller, client));
+
+  InitRootChunk(*transient_controller);
+  transient_controller->BeginSkippingCache();
+  DrawRect(transient_context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
+  transient_controller->EndSkippingCache();
+  transient_controller->CommitNewDisplayItems();
+
+  // Skipping cache on a transient PaintController doesn't affect cache status
+  // in a multi-paint PaintController.
+  EXPECT_TRUE(client.IsCacheable());
+  EXPECT_TRUE(ClientCacheIsValid(GetPaintController(), client));
+  EXPECT_FALSE(ClientCacheIsValid(*transient_controller, client));
+}
+
 // Death tests don't work properly on Android.
 #if defined(GTEST_HAS_DEATH_TEST) && !defined(OS_ANDROID)
 
@@ -1811,6 +1846,32 @@ TEST_P(PaintControllerTest, DuplicatedSubsequences) {
     DrawRect(context, client, kForegroundType, FloatRect(100, 100, 100, 100));
   }
   GetPaintController().CommitNewDisplayItems();
+}
+
+TEST_P(PaintControllerTest, DisplayItemIsCacheable) {
+  GraphicsContext context(GetPaintController());
+
+  {
+    auto client =
+        std::make_unique<FakeDisplayItemClient>("test", LayoutRect(1, 2, 3, 4));
+    auto uncacheable_client =
+        std::make_unique<FakeDisplayItemClient>("test", LayoutRect(1, 2, 3, 4));
+    uncacheable_client->SetDisplayItemsUncached(
+        PaintInvalidationReason::kUncacheable);
+
+    InitRootChunk();
+    DrawRect(context, *client, kForegroundType, FloatRect(1, 2, 3, 4));
+    DrawRect(context, *uncacheable_client, kForegroundType,
+             FloatRect(1, 2, 3, 4));
+    GetPaintController().CommitNewDisplayItems();
+    EXPECT_TRUE(GetPaintController().GetDisplayItemList()[0].IsCacheable());
+    EXPECT_FALSE(GetPaintController().GetDisplayItemList()[1].IsCacheable());
+  }
+
+  // We can still access DisplayItem::IsCacheable() after the clients are
+  // destroyed.
+  EXPECT_TRUE(GetPaintController().GetDisplayItemList()[0].IsCacheable());
+  EXPECT_FALSE(GetPaintController().GetDisplayItemList()[1].IsCacheable());
 }
 
 class PaintControllerUnderInvalidationTest

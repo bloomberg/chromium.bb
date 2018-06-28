@@ -47,16 +47,10 @@ TEST(PaintChunkTest, IdNotMatches) {
 TEST(PaintChunkTest, IdNotMatchesUncacheable) {
   auto properties = PropertyTreeState::Root();
   FakeDisplayItemClient client;
-  client.UpdateCacheGeneration();
+  client.SetDisplayItemsUncached(PaintInvalidationReason::kUncacheable);
   DisplayItem::Id id(client, DisplayItem::kDrawingFirst);
-  EXPECT_FALSE(PaintChunk(0, 1, id, properties, PaintChunk::kUncacheable)
+  EXPECT_FALSE(PaintChunk(0, 1, id, properties)
                    .Matches(PaintChunk(0, 1, id, properties)));
-  EXPECT_FALSE(
-      PaintChunk(0, 1, id, properties)
-          .Matches(PaintChunk(0, 1, id, properties, PaintChunk::kUncacheable)));
-  EXPECT_FALSE(
-      PaintChunk(0, 1, id, properties, PaintChunk::kUncacheable)
-          .Matches(PaintChunk(0, 1, id, properties, PaintChunk::kUncacheable)));
 }
 
 TEST(PaintChunkTest, IdNotMatchesJustCreated) {

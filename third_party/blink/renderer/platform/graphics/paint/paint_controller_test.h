@@ -42,9 +42,10 @@ class PaintControllerTestBase : public testing::Test {
     context.DrawRect(RoundedIntRect(FloatRect(bounds)));
   }
 
-  void InitRootChunk() {
-      GetPaintController().UpdateCurrentPaintChunkProperties(
-          root_paint_chunk_id_, DefaultPaintChunkProperties());
+  void InitRootChunk() { InitRootChunk(GetPaintController()); }
+  void InitRootChunk(PaintController& paint_controller) {
+    paint_controller.UpdateCurrentPaintChunkProperties(
+        root_paint_chunk_id_, DefaultPaintChunkProperties());
   }
 
  protected:
