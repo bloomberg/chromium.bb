@@ -19,7 +19,7 @@
 #include "components/update_client/protocol_builder.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/update_engine.h"
-#include "components/update_client/url_request_post_interceptor.h"
+#include "components/update_client/url_loader_post_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -103,9 +103,8 @@ scoped_refptr<UpdateContext> PingManagerTest::MakeMockUpdateContext() const {
 }
 
 TEST_F(PingManagerTest, SendPing) {
-  auto interceptor_factory =
-      std::make_unique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
-  auto interceptor = interceptor_factory->CreateInterceptor();
+  auto interceptor = std::make_unique<URLLoaderPostInterceptor>(
+      config_->test_url_loader_factory());
   EXPECT_TRUE(interceptor);
 
   // Test eventresult="1" is sent for successful updates.
@@ -133,12 +132,12 @@ TEST_F(PingManagerTest, SendPing) {
     EXPECT_NE(string::npos, interceptor->GetRequestBody(0).find(" sessionid="));
 
     // Check the ping request does not carry the specific extra request headers.
-    EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
-        "X-Goog-Update-Interactivity"));
-    EXPECT_FALSE(interceptor->GetRequests()[0].second.HasHeader(
-        "X-Goog-Update-Updater"));
-    EXPECT_FALSE(
-        interceptor->GetRequests()[0].second.HasHeader("X-Goog-Update-AppId"));
+    EXPECT_FALSE(std::get<1>(interceptor->GetRequests()[0])
+                     .HasHeader("X-Goog-Update-Interactivity"));
+    EXPECT_FALSE(std::get<1>(interceptor->GetRequests()[0])
+                     .HasHeader("X-Goog-Update-Updater"));
+    EXPECT_FALSE(std::get<1>(interceptor->GetRequests()[0])
+                     .HasHeader("X-Goog-Update-AppId"));
 
     interceptor->Reset();
   }

@@ -14,7 +14,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
-#include "components/update_client/url_request_post_interceptor.h"
+#include "components/update_client/url_loader_post_interceptor.h"
 #include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/content_verifier.h"
 #include "extensions/browser/extension_registry.h"
@@ -102,7 +102,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, NoUpdate) {
       << ping_interceptor_->GetRequestsAsString();
 
   const std::string update_request =
-      update_interceptor_->GetRequests()[0].first;
+      std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="1")", kExtensionId)));
@@ -117,7 +117,8 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
 
   // Mock an update check error.
   ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"), 403));
+      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+      net::HTTP_FORBIDDEN));
 
   const base::FilePath crx_path = test_data_dir_.AppendASCII("updater/v1.crx");
   const Extension* extension =
@@ -159,7 +160,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, UpdateCheckError) {
       << ping_interceptor_->GetRequestsAsString();
 
   const std::string update_request =
-      update_interceptor_->GetRequests()[0].first;
+      std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="1")", kExtensionId)));
@@ -174,9 +175,11 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, TwoUpdateCheckErrors) {
 
   // Mock update check errors.
   ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"), 304));
+      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+      net::HTTP_NOT_MODIFIED));
   ASSERT_TRUE(update_interceptor_->ExpectRequest(
-      std::make_unique<update_client::PartialMatch>("<updatecheck/>"), 305));
+      std::make_unique<update_client::PartialMatch>("<updatecheck/>"),
+      net::HTTP_USE_PROXY));
 
   const base::FilePath crx_path1 = test_data_dir_.AppendASCII("updater/v1.crx");
   const base::FilePath crx_path2 = test_data_dir_.AppendASCII("updater/v2.crx");
@@ -283,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, SuccessfulUpdate) {
   EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
   const std::string update_request =
-      update_interceptor_->GetRequests()[0].first;
+      std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="1")", kExtensionId)));
@@ -360,7 +363,7 @@ IN_PROC_BROWSER_TEST_F(UpdateServiceTest, PolicyCorrupted) {
   // - enabled="0"
   // - <disabled reason="1024"/>
   const std::string update_request =
-      update_interceptor_->GetRequests()[0].first;
+      std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="0.0.0.0")", kExtensionId)));
@@ -481,11 +484,12 @@ class PolicyUpdateServiceTest : public ExtensionUpdateClientBaseTest {
   }
 
   std::vector<GURL> GetUpdateUrls() const override {
-    return {GURL("https://policy-updatehost/service/update")};
+    return {
+        https_server_for_update_.GetURL("/policy-updatehost/service/update")};
   }
 
   std::vector<GURL> GetPingUrls() const override {
-    return {GURL("https://policy-pinghost/service/ping")};
+    return {https_server_for_ping_.GetURL("/policy-pinghost/service/ping")};
   }
 
  protected:
@@ -546,7 +550,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, FailedUpdateRetries) {
   // - enabled="0"
   // - <disabled reason="1024"/>
   const std::string update_request =
-      update_interceptor_->GetRequests()[0].first;
+      std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));
@@ -664,7 +668,7 @@ IN_PROC_BROWSER_TEST_F(PolicyUpdateServiceTest, PolicyCorruptedOnStartup) {
   EXPECT_EQ(1, get_interceptor_->GetHitCount());
 
   const std::string update_request =
-      update_interceptor_->GetRequests()[0].first;
+      std::get<0>(update_interceptor_->GetRequests()[0]);
   EXPECT_THAT(update_request,
               ::testing::HasSubstr(base::StringPrintf(
                   R"(<app appid="%s" version="0.0.0.0")", id_.c_str())));

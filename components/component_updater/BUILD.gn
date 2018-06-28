@@ -32,6 +32,7 @@ static_library("component_updater") {
     "//base",
     "//components/update_client",
     "//components/version_info",
+    "//third_party/boringssl:boringssl",
     "//ui/base",
     "//url",
   ]
@@ -79,5 +80,6 @@ source_set("unit_tests") {
     "//services/service_manager/public/cpp",
     "//testing/gmock",
     "//testing/gtest",
+    "//third_party/boringssl:boringssl",
   ]
 }

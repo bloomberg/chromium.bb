@@ -16,6 +16,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/update_client/chrome_update_query_params_delegate.h"
 #include "chrome/common/channel_info.h"
 #include "chrome/common/pref_names.h"
@@ -60,6 +61,8 @@ class ChromeConfigurator : public update_client::Configurator {
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
+  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
+      const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -162,6 +165,16 @@ std::string ChromeConfigurator::GetDownloadPreference() const {
 scoped_refptr<net::URLRequestContextGetter> ChromeConfigurator::RequestContext()
     const {
   return g_browser_process->system_request_context();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+ChromeConfigurator::URLLoaderFactory() const {
+  SystemNetworkContextManager* system_network_context_manager =
+      g_browser_process->system_network_context_manager();
+  // Manager will be null if called from InitializeForTesting.
+  if (!system_network_context_manager)
+    return nullptr;
+  return system_network_context_manager->GetSharedURLLoaderFactory();
 }
 
 std::unique_ptr<service_manager::Connector>
