@@ -4,12 +4,12 @@
 
 #include "net/third_party/quic/core/tls_handshaker.h"
 
-#include "base/no_destructor.h"
 #include "net/third_party/quic/core/quic_crypto_stream.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
+#include "third_party/boringssl/src/include/openssl/ssl.h"
 
 namespace quic {
 

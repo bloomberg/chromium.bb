@@ -7,7 +7,6 @@
 #include <algorithm>
 #include <sstream>
 
-#include "net/quic/chromium/quic_utils_chromium.h"
 #include "net/third_party/quic/core/congestion_control/general_loss_algorithm.h"
 #include "net/third_party/quic/core/congestion_control/pacing_sender.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"

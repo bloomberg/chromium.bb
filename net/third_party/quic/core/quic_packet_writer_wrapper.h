@@ -5,8 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKET_WRITER_WRAPPER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_PACKET_WRITER_WRAPPER_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 
 #include "base/macros.h"

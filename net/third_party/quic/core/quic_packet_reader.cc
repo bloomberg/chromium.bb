@@ -6,15 +6,17 @@
 
 #include <errno.h>
 #ifndef __APPLE__
-// This is a GNU header that is not present in /usr/include on MacOS
+// This is a GNU header that is not present on Apple platforms
 #include <features.h>
 #endif
+#include <netinet/in.h>
 #include <string.h>
+#include <sys/socket.h>
 
-#include "net/third_party/quic/core/quic_dispatcher.h"
+#include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_process_packet_interface.h"
+#include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
-#include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/impl/quic_socket_utils.h"
@@ -100,7 +102,7 @@ bool QuicPacketReader::ReadAndDispatchManyPackets(
       continue;
     }
 
-    if (mmsg_hdr_[i].msg_hdr.msg_flags & MSG_CTRUNC) {
+    if (QUIC_PREDICT_FALSE(mmsg_hdr_[i].msg_hdr.msg_flags & MSG_CTRUNC)) {
       QUIC_BUG << "Incorrectly set control length: "
                << mmsg_hdr_[i].msg_hdr.msg_controllen << ", expected "
                << kCmsgSpaceForReadPacket;
@@ -163,7 +165,7 @@ bool QuicPacketReader::ReadAndDispatchSinglePacket(
   QuicIpAddress server_ip;
   QuicWallTime walltimestamp = QuicWallTime::Zero();
   int bytes_read =
-      QuicSocketUtils::ReadPacket(fd, buf, arraysize(buf), packets_dropped,
+      QuicSocketUtils::ReadPacket(fd, buf, QUIC_ARRAYSIZE(buf), packets_dropped,
                                   &server_ip, &walltimestamp, &client_address);
   if (bytes_read < 0) {
     return false;  // ReadPacket failed.

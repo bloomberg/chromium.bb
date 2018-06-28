@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "base/callback.h"
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -16,9 +15,7 @@
 #include "net/third_party/quic/test_tools/quic_config_peer.h"
 #include "net/third_party/quic/test_tools/quic_sent_packet_manager_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "testing/gmock_mutant.h"
 
-using base::Unretained;
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;

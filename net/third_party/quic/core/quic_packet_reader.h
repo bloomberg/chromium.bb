@@ -65,14 +65,12 @@ class QuicPacketReader {
                                           ProcessPacketInterface* processor,
                                           QuicPacketCount* packets_dropped);
 
-// Storage only used when recvmmsg is available.
-
 #if MMSG_MORE
+  // Storage only used when recvmmsg is available.
   // TODO(danzh): change it to be a pointer to avoid the allocation on the stack
   // from exceeding maximum allowed frame size.
   // packets_ and mmsg_hdr_ are used to supply cbuf and buf to the recvmmsg
   // call.
-
   struct PacketData {
     iovec iov;
     // raw_address is used for address information provided by the recvmmsg

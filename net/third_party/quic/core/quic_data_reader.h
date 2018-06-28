@@ -79,7 +79,6 @@ class QUIC_EXPORT_PRIVATE QuicDataReader {
   // indicating reading in little/big endian.
   bool ReadConnectionId(uint64_t* connection_id);
 
-  // Returns the remaining payload as a QuicStringPiece.
   // Reads tag represented as 32-bit unsigned integer into given output
   // parameter. Tags are in big endian on the wire (e.g., CHLO is
   // 'C','H','L','O') and are read in byte order, so tags in memory are in big

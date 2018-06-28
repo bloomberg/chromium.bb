@@ -5,8 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_SENT_PACKET_MANAGER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_SENT_PACKET_MANAGER_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <map>
 #include <memory>
 #include <set>
@@ -19,6 +18,7 @@
 #include "net/third_party/quic/core/congestion_control/pacing_sender.h"
 #include "net/third_party/quic/core/congestion_control/rtt_stats.h"
 #include "net/third_party/quic/core/congestion_control/send_algorithm_interface.h"
+#include "net/third_party/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/third_party/quic/core/quic_debug_info_provider_interface.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_pending_retransmission.h"
