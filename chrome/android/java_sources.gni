@@ -435,6 +435,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/download/OMADownloadHandler.java",
   "java/src/org/chromium/chrome/browser/download/SystemDownloadNotifier.java",
   "java/src/org/chromium/chrome/browser/download/SystemDownloadNotifier2.java",
+  "java/src/org/chromium/chrome/browser/download/home/DownloadManagerCoordinator.java",
+  "java/src/org/chromium/chrome/browser/download/home/DownloadManagerCoordinatorFactory.java",
   "java/src/org/chromium/chrome/browser/download/home/DownloadManagerCoordinatorImpl.java",
   "java/src/org/chromium/chrome/browser/download/home/OfflineItemSource.java",
   "java/src/org/chromium/chrome/browser/download/home/filter/DeleteUndoOfflineItemFilter.java",

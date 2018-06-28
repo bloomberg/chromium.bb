@@ -85,16 +85,13 @@ class DateOrderedListMediator {
                 ((ChromeApplication) ContextUtils.getApplicationContext()).getReferencePool());
 
         mModel.getProperties().setEnableItemAnimations(true);
-        mModel.getProperties().setOpenCallback(item -> mProvider.openItem(item));
-        mModel.getProperties().setPauseCallback(item -> mProvider.pauseDownload(item));
+        mModel.getProperties().setOpenCallback(mProvider::openItem);
+        mModel.getProperties().setPauseCallback(mProvider::pauseDownload);
         mModel.getProperties().setResumeCallback(item -> mProvider.resumeDownload(item, true));
-        mModel.getProperties().setCancelCallback(item -> mProvider.cancelDownload(item));
+        mModel.getProperties().setCancelCallback(mProvider::cancelDownload);
         mModel.getProperties().setShareCallback(item -> {});
-        // TODO(dtrainor): Pipe into the undo snackbar and the DeleteUndoOfflineItemFilter.
-        mModel.getProperties().setRemoveCallback(
-                item -> onDeleteItems(CollectionUtil.newArrayList(item)));
-        mModel.getProperties().setVisualsProvider(
-                (item, w, h, callback) -> { return getVisuals(item, w, h, callback); });
+        mModel.getProperties().setRemoveCallback(this::onDeleteItem);
+        mModel.getProperties().setVisualsProvider(this::getVisuals);
     }
 
     /** Tears down this mediator. */
@@ -130,6 +127,10 @@ class DateOrderedListMediator {
      */
     public OfflineItemFilterSource getFilterSource() {
         return mDeleteUndoFilter;
+    }
+
+    private void onDeleteItem(OfflineItem item) {
+        onDeleteItems(CollectionUtil.newArrayList(item));
     }
 
     private void onDeleteItems(List<OfflineItem> items) {

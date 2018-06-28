@@ -15,12 +15,10 @@ import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /** An adapter that allows selecting an item from a dropdown spinner. */
-class FilterAdapter
-        extends BaseAdapter implements AdapterView.OnItemSelectedListener, DownloadUiObserver {
+class FilterAdapter extends BaseAdapter implements AdapterView.OnItemSelectedListener {
     private DownloadManagerUi mManagerUi;
 
     @Override
@@ -89,11 +87,8 @@ class FilterAdapter
         mManagerUi = manager;
     }
 
-    @Override
-    public void onFilterChanged(int filter) {}
-
-    @Override
-    public void onManagerDestroyed() {
+    /** Called when this object should be destroyed. */
+    public void destroy() {
         mManagerUi = null;
     }
 

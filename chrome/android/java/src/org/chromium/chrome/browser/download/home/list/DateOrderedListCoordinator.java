@@ -9,6 +9,7 @@ import android.view.View;
 
 import org.chromium.base.Callback;
 import org.chromium.chrome.browser.download.home.filter.FilterCoordinator;
+import org.chromium.chrome.browser.download.home.filter.Filters.FilterType;
 import org.chromium.chrome.browser.download.home.list.ListItem.ViewListItem;
 import org.chromium.components.offline_items_collection.OfflineContentProvider;
 import org.chromium.components.offline_items_collection.OfflineItem;
@@ -51,9 +52,13 @@ public class DateOrderedListCoordinator {
      * @param offTheRecord     Whether or not to include off the record items.
      * @param provider         The {@link OfflineContentProvider} to visually represent.
      * @param deleteController A class to manage whether or not items can be deleted.
+     * @param filterObserver   A {@link FilterCoordinator.Observer} that should be notified of
+     *                         filter changes.  This is meant to be used for external components
+     *                         that need to take action based on the visual state of the list.
      */
     public DateOrderedListCoordinator(Context context, Boolean offTheRecord,
-            OfflineContentProvider provider, DeleteController deleteController) {
+            OfflineContentProvider provider, DeleteController deleteController,
+            FilterCoordinator.Observer filterObserver) {
         ListItemModel model = new ListItemModel();
         DecoratedListItemModel decoratedModel = new DecoratedListItemModel(model);
         mView = new DateOrderedListView(context, decoratedModel);
@@ -62,6 +67,7 @@ public class DateOrderedListCoordinator {
         // Hook up the FilterCoordinator with our mediator.
         mFilterCoordinator = new FilterCoordinator(context, mMediator.getFilterSource());
         mFilterCoordinator.addObserver(mMediator::onFilterTypeSelected);
+        mFilterCoordinator.addObserver(filterObserver);
         decoratedModel.setHeader(new ViewListItem(Long.MAX_VALUE, mFilterCoordinator.getView()));
     }
 
@@ -78,5 +84,10 @@ public class DateOrderedListCoordinator {
     /** Sets the string filter query to {@code query}. */
     public void setSearchQuery(String query) {
         mMediator.onFilterStringChanged(query);
+    }
+
+    /** Sets the UI and list to filter based on the {@code filter} {@link FilterType}. */
+    public void setSelectedFilter(@FilterType int filter) {
+        mFilterCoordinator.setSelectedFilter(filter);
     }
 }

@@ -257,7 +257,7 @@ public class DownloadHistoryAdapterTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mAdapter.onManagerDestroyed();
+                mAdapter.destroy();
             }
         });
 

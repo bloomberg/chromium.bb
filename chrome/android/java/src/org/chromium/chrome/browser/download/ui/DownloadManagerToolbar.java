@@ -13,7 +13,6 @@ import android.widget.Spinner;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi.DownloadUiObserver;
 import org.chromium.chrome.browser.widget.selection.SelectableListToolbar;
 
 import java.util.List;
@@ -21,8 +20,7 @@ import java.util.List;
 /**
  * Handles toolbar functionality for the {@link DownloadManagerUi}.
  */
-public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistoryItemWrapper>
-        implements DownloadUiObserver {
+public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistoryItemWrapper> {
     private Spinner mSpinner;
     private DownloadManagerUi mManager;
 
@@ -58,9 +56,16 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
         getMenu().removeItem(R.id.close_menu_id);
     }
 
-    @Override
+    /** Called whenever the selected filter on this adapter should change. */
     public void onFilterChanged(int filter) {
         mSpinner.setSelection(filter);
+    }
+
+    /** Called when this object should be destroyed. */
+    @Override
+    public void destroy() {
+        super.destroy();
+        mSpinner.setAdapter(null);
     }
 
     @Override
@@ -99,11 +104,6 @@ public class DownloadManagerToolbar extends SelectableListToolbar<DownloadHistor
         super.onDataChanged(numItems);
         MenuItem item = getMenu().findItem(mInfoMenuItemId);
         if (item != null) item.setVisible(!mIsSearching && !mIsSelectionEnabled && numItems > 0);
-    }
-
-    @Override
-    public void onManagerDestroyed() {
-        mSpinner.setAdapter(null);
     }
 
     @Override

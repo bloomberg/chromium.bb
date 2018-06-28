@@ -70,11 +70,9 @@ public class DownloadActivityTest {
             new ActivityTestRule<>(DownloadActivity.class);
 
     private static class TestObserver extends RecyclerView.AdapterDataObserver
-            implements SelectionObserver<DownloadHistoryItemWrapper>,
-                    DownloadManagerUi.DownloadUiObserver, SpaceDisplay.Observer {
+            implements SelectionObserver<DownloadHistoryItemWrapper>, SpaceDisplay.Observer {
         public final CallbackHelper onChangedCallback = new CallbackHelper();
         public final CallbackHelper onSelectionCallback = new CallbackHelper();
-        public final CallbackHelper onFilterCallback = new CallbackHelper();
         public final CallbackHelper onSpaceDisplayUpdatedCallback = new CallbackHelper();
 
         private List<DownloadHistoryItemWrapper> mOnSelectionItems;
@@ -98,17 +96,8 @@ public class DownloadActivityTest {
         }
 
         @Override
-        public void onFilterChanged(int filter) {
-            mHandler.post(() -> onFilterCallback.notifyCalled());
-        }
-
-        @Override
         public void onSpaceDisplayUpdated(SpaceDisplay display) {
             mHandler.post(() -> onSpaceDisplayUpdatedCallback.notifyCalled());
-        }
-
-        @Override
-        public void onManagerDestroyed() {
         }
     }
 
