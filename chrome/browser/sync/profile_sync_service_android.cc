@@ -333,15 +333,6 @@ void ProfileSyncServiceAndroid::FlushDirectory(JNIEnv* env,
   sync_service_->FlushDirectory();
 }
 
-ScopedJavaLocalRef<jstring> ProfileSyncServiceAndroid::QuerySyncStatusSummary(
-    JNIEnv* env,
-    const JavaParamRef<jobject>&) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(profile_);
-  std::string status(sync_service_->QuerySyncStatusSummaryString());
-  return ConvertUTF8ToJavaString(env, status);
-}
-
 void ProfileSyncServiceAndroid::GetAllNodes(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

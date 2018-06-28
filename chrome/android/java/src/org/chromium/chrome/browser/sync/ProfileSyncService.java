@@ -145,11 +145,6 @@ public class ProfileSyncService {
         nativeSignOutSync(mNativeProfileSyncServiceAndroid);
     }
 
-    public String querySyncStatus() {
-        ThreadUtils.assertOnUiThread();
-        return nativeQuerySyncStatusSummary(mNativeProfileSyncServiceAndroid);
-    }
-
     /**
      * Sets the the machine tag used by session sync.
      */
@@ -546,7 +541,6 @@ public class ProfileSyncService {
     private native void nativeFlushDirectory(long nativeProfileSyncServiceAndroid);
     private native void nativeSignOutSync(long nativeProfileSyncServiceAndroid);
     private native void nativeSetSyncSessionsId(long nativeProfileSyncServiceAndroid, String tag);
-    private native String nativeQuerySyncStatusSummary(long nativeProfileSyncServiceAndroid);
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
     private native int nativeGetProtocolErrorClientAction(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEngineInitialized(long nativeProfileSyncServiceAndroid);
