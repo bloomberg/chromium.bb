@@ -48,10 +48,14 @@ using input_method::InputMethodEngineBase;
 using chromeos::InputMethodEngine;
 
 namespace {
-const char kErrorEngineNotAvailable[] = "Engine is not available";
-const char kErrorSetMenuItemsFail[] = "Could not create menu Items";
-const char kErrorUpdateMenuItemsFail[] = "Could not update menu Items";
-const char kErrorEngineNotActive[] = "The engine is not active.";
+const char kInputImeApiChromeOSErrorEngineNotAvailable[] =
+    "Engine is not available";
+const char kInputImeApiChromeOSErrorSetMenuItemsFail[] =
+    "Could not create menu Items";
+const char kInputImeApiChromeOSErrorUpdateMenuItemsFail[] =
+    "Could not update menu Items";
+const char kInputImeApiChromeOSErrorEngineNotActive[] =
+    "The engine is not active.";
 
 void SetMenuItemToMenu(
     const input_ime::MenuItem& input,
@@ -618,7 +622,7 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
       event_router ? event_router->GetEngine(extension_id(), params.engine_id)
                    : nullptr;
   if (!engine)
-    return RespondNow(Error(kErrorEngineNotAvailable));
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
   for (const input_ime::MenuItem& item_in : params.items) {
@@ -627,7 +631,7 @@ ExtensionFunction::ResponseAction InputImeSetMenuItemsFunction::Run() {
   }
 
   if (!engine->SetMenuItems(items_out))
-    return RespondNow(Error(kErrorSetMenuItemsFail));
+    return RespondNow(Error(kInputImeApiChromeOSErrorSetMenuItemsFail));
   return RespondNow(NoArguments());
 }
 
@@ -643,7 +647,7 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
       event_router ? event_router->GetEngine(extension_id(), params.engine_id)
                    : nullptr;
   if (!engine)
-    return RespondNow(Error(kErrorEngineNotAvailable));
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
   std::vector<chromeos::input_method::InputMethodManager::MenuItem> items_out;
   for (const input_ime::MenuItem& item_in : params.items) {
@@ -652,7 +656,7 @@ ExtensionFunction::ResponseAction InputImeUpdateMenuItemsFunction::Run() {
   }
 
   if (!engine->UpdateMenuItems(items_out))
-    return RespondNow(Error(kErrorUpdateMenuItemsFail));
+    return RespondNow(Error(kInputImeApiChromeOSErrorUpdateMenuItemsFail));
   return RespondNow(NoArguments());
 }
 
@@ -668,7 +672,7 @@ ExtensionFunction::ResponseAction InputImeDeleteSurroundingTextFunction::Run() {
       event_router ? event_router->GetEngine(extension_id(), params.engine_id)
                    : nullptr;
   if (!engine)
-    return RespondNow(Error(kErrorEngineNotAvailable));
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
   std::string error;
   engine->DeleteSurroundingText(params.context_id, params.offset, params.length,
@@ -688,12 +692,12 @@ InputMethodPrivateNotifyImeMenuItemActivatedFunction::Run() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), active_extension_id);
   if (!engine)
-    return RespondNow(Error(kErrorEngineNotAvailable));
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
   std::unique_ptr<NotifyImeMenuItemActivated::Params> params(
       NotifyImeMenuItemActivated::Params::Create(*args_));
   if (params->engine_id != engine->GetActiveComponentId())
-    return RespondNow(Error(kErrorEngineNotActive));
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotActive));
   engine->PropertyActivate(params->name);
   return RespondNow(NoArguments());
 }
@@ -703,7 +707,7 @@ InputMethodPrivateGetCompositionBoundsFunction::Run() {
   InputMethodEngine* engine = GetActiveEngine(
       Profile::FromBrowserContext(browser_context()), extension_id());
   if (!engine)
-    return RespondNow(Error(kErrorEngineNotAvailable));
+    return RespondNow(Error(kInputImeApiChromeOSErrorEngineNotAvailable));
 
   auto bounds_list = std::make_unique<base::ListValue>();
   for (const auto& bounds : engine->composition_bounds()) {
