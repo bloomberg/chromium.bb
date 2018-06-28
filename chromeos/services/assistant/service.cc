@@ -159,14 +159,16 @@ void Service::RetryRefreshToken() {
                               &Service::RequestAccessToken);
 }
 
-void Service::Init(mojom::ClientPtr client) {
+void Service::Init(mojom::ClientPtr client,
+                   mojom::DeviceActionsPtr device_actions) {
   client_ = std::move(client);
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   device::mojom::BatteryMonitorPtr battery_monitor;
   context()->connector()->BindInterface(device::mojom::kServiceName,
                                         mojo::MakeRequest(&battery_monitor));
   assistant_manager_service_ = std::make_unique<AssistantManagerServiceImpl>(
-      context()->connector(), std::move(battery_monitor), client_.get());
+      context()->connector(), std::move(battery_monitor), client_.get(),
+      std::move(device_actions));
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();

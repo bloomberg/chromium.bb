@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "chrome/browser/ui/ash/assistant/device_actions.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -36,7 +37,11 @@ class AssistantClient : chromeos::assistant::mojom::Client {
 
  private:
   mojo::Binding<chromeos::assistant::mojom::Client> client_binding_;
+  mojo::Binding<chromeos::assistant::mojom::DeviceActions>
+      device_actions_binding_;
   chromeos::assistant::mojom::AssistantPlatformPtr assistant_connection_;
+
+  DeviceActions device_actions_;
 
   std::unique_ptr<AssistantImageDownloader> assistant_image_downloader_;
   std::unique_ptr<AssistantSetup> assistant_setup_;

@@ -17,6 +17,7 @@
 #include "build/util/webkit_version.h"
 #include "chromeos/assistant/internal/internal_constants.h"
 #include "chromeos/assistant/internal/internal_util.h"
+#include "chromeos/assistant/internal/proto/google3/assistant/api/client_op/device_args.pb.h"
 #include "chromeos/services/assistant/public/proto/assistant_device_settings_ui.pb.h"
 #include "chromeos/services/assistant/public/proto/settings_ui.pb.h"
 #include "chromeos/services/assistant/service.h"
@@ -29,6 +30,8 @@
 
 using assistant_client::ActionModule;
 
+namespace api = ::assistant::api;
+
 namespace chromeos {
 namespace assistant {
 
@@ -38,10 +41,12 @@ const char kBluetoothDeviceSettingId[] = "BLUETOOTH";
 AssistantManagerServiceImpl::AssistantManagerServiceImpl(
     service_manager::Connector* connector,
     device::mojom::BatteryMonitorPtr battery_monitor,
-    mojom::Client* client)
+    mojom::Client* client,
+    mojom::DeviceActionsPtr device_actions)
     : platform_api_(CreateLibAssistantConfig(),
                     connector,
                     std::move(battery_monitor)),
+      device_actions_(std::move(device_actions)),
       action_module_(std::make_unique<action::CrosActionModule>(this)),
       display_connection_(std::make_unique<CrosDisplayConnection>(this)),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -277,10 +282,42 @@ void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
           weak_factory_.GetWeakPtr(), speech_level));
 }
 
+void AssistantManagerServiceImpl::OnModifySettingsAction(
+    const std::string& modify_setting_args_proto) {
+  api::client_op::ModifySettingArgs modify_setting_args;
+  modify_setting_args.ParseFromString(modify_setting_args_proto);
+  DCHECK(IsSettingSupported(modify_setting_args.setting_id()));
+
+  // TODO(rcui): Add support for bluetooth, etc.
+  if (modify_setting_args.setting_id() == kWiFiDeviceSettingId) {
+    switch (modify_setting_args.change()) {
+      case api::client_op::ModifySettingArgs_Change_ON:
+        device_actions_->SetWifiEnabled(true);
+        return;
+      case api::client_op::ModifySettingArgs_Change_OFF:
+        device_actions_->SetWifiEnabled(false);
+        return;
+
+      case api::client_op::ModifySettingArgs_Change_TOGGLE:
+      case api::client_op::ModifySettingArgs_Change_INCREASE:
+      case api::client_op::ModifySettingArgs_Change_DECREASE:
+      case api::client_op::ModifySettingArgs_Change_SET:
+      case api::client_op::ModifySettingArgs_Change_UNSPECIFIED:
+        break;
+    }
+    DLOG(ERROR) << "Unsupported change operation: "
+                << modify_setting_args.change() << " for setting "
+                << modify_setting_args.setting_id();
+  }
+}
+
 ActionModule::Result AssistantManagerServiceImpl::HandleModifySettingClientOp(
     const std::string& modify_setting_args_proto) {
   DVLOG(2) << "HandleModifySettingClientOp=" << modify_setting_args_proto;
-  // TODO(b/78184487): Wire up to Chrome API to update device setting.
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AssistantManagerServiceImpl::OnModifySettingsAction,
+                     weak_factory_.GetWeakPtr(), modify_setting_args_proto));
   return ActionModule::Result::Ok();
 }
 
@@ -289,6 +326,10 @@ bool AssistantManagerServiceImpl::IsSettingSupported(
   DVLOG(2) << "IsSettingSupported=" << setting_id;
   return (setting_id == kWiFiDeviceSettingId ||
           setting_id == kBluetoothDeviceSettingId);
+}
+
+bool AssistantManagerServiceImpl::SupportsModifySettings() {
+  return true;
 }
 
 void AssistantManagerServiceImpl::OnVoiceInteractionSettingsEnabled(

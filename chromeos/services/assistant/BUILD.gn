@@ -65,6 +65,7 @@ source_set("lib") {
 
     deps += [
       "//chromeos/assistant/internal/action",
+      "//chromeos/assistant/internal/proto/google3",
       "//libassistant/contrib/core",
       "//libassistant/contrib/platform/audio",
       "//libassistant/shared/internal_api/c:api_wrappers_for_caller_no_chromium",

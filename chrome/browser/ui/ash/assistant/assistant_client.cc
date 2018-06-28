@@ -26,7 +26,8 @@ AssistantClient* AssistantClient::Get() {
   return g_instance;
 }
 
-AssistantClient::AssistantClient() : client_binding_(this) {
+AssistantClient::AssistantClient()
+    : client_binding_(this), device_actions_binding_(&device_actions_) {
   DCHECK_EQ(nullptr, g_instance);
   g_instance = this;
 }
@@ -46,7 +47,12 @@ void AssistantClient::MaybeInit(service_manager::Connector* connector) {
 
   chromeos::assistant::mojom::ClientPtr client_ptr;
   client_binding_.Bind(mojo::MakeRequest(&client_ptr));
-  assistant_connection_->Init(std::move(client_ptr));
+
+  chromeos::assistant::mojom::DeviceActionsPtr device_actions_ptr;
+  device_actions_binding_.Bind(mojo::MakeRequest(&device_actions_ptr));
+
+  assistant_connection_->Init(std::move(client_ptr),
+                              std::move(device_actions_ptr));
 
   assistant_image_downloader_ =
       std::make_unique<AssistantImageDownloader>(connector);
