@@ -64,6 +64,8 @@ executable("ozone_demo") {
 
   if (enable_vulkan) {
     sources += [
+      "vulkan_overlay_renderer.cc",
+      "vulkan_overlay_renderer.h",
       "vulkan_renderer.cc",
       "vulkan_renderer.h",
     ]
