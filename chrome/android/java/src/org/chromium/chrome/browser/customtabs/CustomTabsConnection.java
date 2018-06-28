@@ -235,6 +235,7 @@ public class CustomTabsConnection {
 
     /** The module package name and class name. */
     private Pair<String, String> mModuleNames;
+    private int mModuleUseCount;
 
     /** The module entry point. */
     private ModuleEntryPoint mModuleEntryPoint;
@@ -1432,12 +1433,27 @@ public class CustomTabsConnection {
                     || !mModuleNames.second.equals(className))) {
                 throw new IllegalStateException("Only one module can be loaded at a time.");
             }
+            mModuleUseCount++;
             return mModuleEntryPoint;
         }
 
-        // TODO(https://crbug.com/853732): Add cleanup mechanism to unload the module.
         mModuleNames = new Pair<>(packageName, className);
         mModuleEntryPoint = ModuleLoader.loadModule(packageName, className);
+        if (mModuleEntryPoint != null) mModuleUseCount++;
         return mModuleEntryPoint;
+    }
+
+    public void maybeUnloadModule(String packageName, String className) {
+        if (mModuleEntryPoint == null || mModuleNames == null) return;
+        if ((!mModuleNames.first.equals(packageName) || !mModuleNames.second.equals(className))) {
+            throw new IllegalStateException(
+                    "There is no module for package " + packageName + " and class " + className);
+        }
+        mModuleUseCount--;
+        if (mModuleUseCount == 0) {
+            mModuleEntryPoint.onDestroy();
+            mModuleEntryPoint = null;
+            mModuleNames = null;
+        }
     }
 }
