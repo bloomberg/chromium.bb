@@ -194,6 +194,7 @@ void UnifiedSystemTrayView::ResetDetailedView() {
   detailed_view_container_->RemoveAllChildViews(true /* delete_children */);
   detailed_view_container_->SetVisible(false);
   system_tray_container_->SetVisible(true);
+  sliders_container_->UpdateOpacity();
   PreferredSizeChanged();
   Layout();
 }
