@@ -13,6 +13,9 @@
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/views/scoped_macviews_browser_mode.h"
+#include "components/zoom/zoom_controller.h"
+#include "extensions/browser/extension_zoom_request_client.h"
+#include "extensions/common/extension_builder.h"
 #include "ui/base/ui_features.h"
 #include "ui/views/test/test_widget_observer.h"
 
@@ -214,6 +217,60 @@ IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest, DestroyedWebContents) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(observer.widget_closed());
+}
+
+namespace {
+
+class TestZoomRequestClient : public extensions::ExtensionZoomRequestClient {
+ public:
+  TestZoomRequestClient(scoped_refptr<const extensions::Extension> extension,
+                        bool should_suppress_bubble)
+      : extensions::ExtensionZoomRequestClient(extension),
+        should_suppress_bubble_(should_suppress_bubble) {}
+
+  bool ShouldSuppressBubble() const override { return should_suppress_bubble_; }
+
+ protected:
+  ~TestZoomRequestClient() override = default;
+
+ private:
+  const bool should_suppress_bubble_;
+};
+
+}  // namespace
+
+// Extensions may be whitelisted to not show a bubble when they perform a zoom
+// change. However, if a zoom bubble is already showing, zoom changes performed
+// by the extension should update the bubble.
+IN_PROC_BROWSER_TEST_F(ZoomBubbleBrowserTest,
+                       BubbleSuppressingExtensionRefreshesExistingBubble) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  zoom::ZoomController* zoom_controller =
+      zoom::ZoomController::FromWebContents(web_contents);
+  ASSERT_TRUE(zoom_controller);
+
+  // Extension zoom bubble suppression only happens in manual mode.
+  zoom_controller->SetZoomMode(zoom::ZoomController::ZOOM_MODE_MANUAL);
+
+  ShowInActiveTab(browser());
+  const ZoomBubbleView* bubble = ZoomBubbleView::GetZoomBubble();
+  ASSERT_TRUE(bubble);
+
+  const double old_zoom_level = zoom_controller->GetZoomLevel();
+  const base::string16 old_label = bubble->label_->text();
+
+  scoped_refptr<const extensions::Extension> extension =
+      extensions::ExtensionBuilder("Test").Build();
+  scoped_refptr<const TestZoomRequestClient> client =
+      base::MakeRefCounted<const TestZoomRequestClient>(extension, true);
+  const double new_zoom_level = old_zoom_level + 0.5;
+  zoom_controller->SetZoomLevelByClient(new_zoom_level, client);
+
+  ASSERT_EQ(ZoomBubbleView::GetZoomBubble(), bubble);
+  const base::string16 new_label = bubble->label_->text();
+
+  EXPECT_NE(new_label, old_label);
 }
 
 class ZoomBubbleDialogTest : public DialogBrowserTest {
