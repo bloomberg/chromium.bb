@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/layout/ng/ng_physical_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_relative_utils.h"
 #include "third_party/blink/renderer/core/page/scrolling/root_scroller_util.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_block_flow_painter.h"
 #include "third_party/blink/renderer/core/paint/ng/ng_paint_fragment.h"
 
@@ -293,9 +294,25 @@ void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
 template <typename Base>
 void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info,
                                 const LayoutPoint& paint_offset) const {
-  if (PaintFragment())
-    NGBlockFlowPainter(*this).Paint(paint_info, paint_offset);
-  else
+  if (PaintFragment()) {
+    LayoutPoint flipped_offset(paint_offset);
+    // HACK: Legacy paints all FlippedBlocks Elements with an offset that
+    // is incorrect by VerticalScrollbarWidth. This happens because vertical-rl
+    // Location() does not include Scrollbar size (but does include border!).
+    // Paint corrects for incorrect LayoutObject.Location() by applyiing
+    // scroll transformation to all children of FlippedBlocks().
+    // See LayoutBox::ScrolledContentOffset() and
+    // paint_property_tree_builder VisualOffsetFromPaintOffsetRoot() for
+    // details.
+    // For NG, we modify paint_offset to correct for this transformation.
+    if (UNLIKELY(Base::Parent()->HasFlippedBlocksWritingMode() &&
+                 !AdjustPaintOffsetScope::WillUseLegacyLocation(this) &&
+                 Base::Parent()->IsBox())) {
+      flipped_offset.Move(ToLayoutBox(Base::Parent())->VerticalScrollbarWidth(),
+                          0);
+    }
+    NGBlockFlowPainter(*this).Paint(paint_info, flipped_offset);
+  } else
     LayoutBlockFlow::Paint(paint_info, paint_offset);
 }
 
