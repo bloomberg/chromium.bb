@@ -1948,6 +1948,11 @@ enum WebFeature {
   kLegacySymantecCertInSubresource = 2485,
   kLegacySymantecCertInSubframeMainResource = 2486,
   kEventTimingExplicitlyRequested = 2487,
+  kCSSEnvironmentVariable = 2488,
+  kCSSEnvironmentVariable_SafeAreaInsetTop = 2489,
+  kCSSEnvironmentVariable_SafeAreaInsetLeft = 2490,
+  kCSSEnvironmentVariable_SafeAreaInsetBottom = 2491,
+  kCSSEnvironmentVariable_SafeAreaInsetRight = 2492,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -17,6 +17,9 @@ class Document;
 class CORE_EXPORT DocumentStyleEnvironmentVariables
     : public StyleEnvironmentVariables {
  public:
+  // Generate a hash from the provided name.
+  static unsigned GenerateHashFromName(const AtomicString&);
+
   // Create an instance bound to |parent| that will invalidate |document|'s
   // style when a variable is changed.
   static scoped_refptr<DocumentStyleEnvironmentVariables> Create(
@@ -36,7 +39,10 @@ class CORE_EXPORT DocumentStyleEnvironmentVariables
  private:
   DocumentStyleEnvironmentVariables(Document& document);
 
-  HashSet<AtomicString> seen_variables_;
+  // Record variable usage using |UseCounter|.
+  void RecordVariableUsage(unsigned id);
+
+  HashSet<unsigned> seen_variables_;
   Persistent<Document> document_;
 };
 

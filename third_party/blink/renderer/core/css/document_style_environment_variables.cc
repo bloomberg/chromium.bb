@@ -6,8 +6,27 @@
 
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/document.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
+#include "third_party/blink/renderer/platform/wtf/string_hasher.h"
 
 namespace blink {
+
+// static
+unsigned DocumentStyleEnvironmentVariables::GenerateHashFromName(
+    const AtomicString& name) {
+  StringHasher hasher;
+
+  if (name.Is8Bit()) {
+    String name_str = String(name);
+    name_str.Ensure16Bit();
+    hasher.AddCharacters(name_str.Characters16(), name_str.length());
+  } else {
+    hasher.AddCharacters(name.Characters16(), name.length());
+  }
+
+  return hasher.GetHash();
+}
 
 // static
 scoped_refptr<DocumentStyleEnvironmentVariables>
@@ -24,8 +43,11 @@ DocumentStyleEnvironmentVariables::Create(StyleEnvironmentVariables& parent,
 
 CSSVariableData* DocumentStyleEnvironmentVariables::ResolveVariable(
     const AtomicString& name) {
+  unsigned id = GenerateHashFromName(name);
+  RecordVariableUsage(id);
+
   // Mark the variable as seen so we will invalidate the style if we change it.
-  seen_variables_.insert(name);
+  seen_variables_.insert(id);
   return StyleEnvironmentVariables::ResolveVariable(name);
 }
 
@@ -34,7 +56,7 @@ void DocumentStyleEnvironmentVariables::InvalidateVariable(
   DCHECK(document_);
 
   // Invalidate the document if we have seen this variable on this document.
-  if (seen_variables_.Contains(name))
+  if (seen_variables_.Contains(GenerateHashFromName(name)))
     document_->GetStyleEngine().EnvironmentVariableChanged();
 
   StyleEnvironmentVariables::InvalidateVariable(name);
@@ -43,5 +65,33 @@ void DocumentStyleEnvironmentVariables::InvalidateVariable(
 DocumentStyleEnvironmentVariables::DocumentStyleEnvironmentVariables(
     Document& document)
     : document_(&document) {}
+
+void DocumentStyleEnvironmentVariables::RecordVariableUsage(unsigned id) {
+  UseCounter::Count(document_, WebFeature::kCSSEnvironmentVariable);
+
+  // See the unittest DISABLED_PrintExpectedVariableNameHashes() for how these
+  // values are computed.
+  switch (id) {
+    case 0x3eb492df:
+      UseCounter::Count(document_,
+                        WebFeature::kCSSEnvironmentVariable_SafeAreaInsetTop);
+      break;
+    case 0xe0994c83:
+      UseCounter::Count(document_,
+                        WebFeature::kCSSEnvironmentVariable_SafeAreaInsetLeft);
+      break;
+    case 0x898873a2:
+      UseCounter::Count(
+          document_, WebFeature::kCSSEnvironmentVariable_SafeAreaInsetBottom);
+      break;
+    case 0xd99fe75b:
+      UseCounter::Count(document_,
+                        WebFeature::kCSSEnvironmentVariable_SafeAreaInsetRight);
+      break;
+    default:
+      // Do nothing if this is an unknown variable.
+      break;
+  }
+}
 
 }  // namespace blink

@@ -7,6 +7,8 @@
 #include "third_party/blink/renderer/core/css/document_style_environment_variables.h"
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
+#include "third_party/blink/renderer/core/frame/use_counter.h"
+#include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
@@ -15,15 +17,6 @@
 namespace blink {
 
 namespace {
-
-static const char kTestHTML[] = R"HTML(
-      <style>
-        #target { background-color: env(test); }
-      </style>
-      <div>
-        <div id=target></div>
-      </div>
-    )HTML";
 
 static const char kVariableName[] = "test";
 
@@ -62,6 +55,19 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
     frame.GetDocument()->View()->UpdateAllLifecyclePhases();
   }
 
+  void InitializeTestPageWithVariableNamed(LocalFrame& frame,
+                                           const String& name) {
+    InitializeWithHTML(frame,
+                       "<style>"
+                       "  #target { background-color: env(" +
+                           name +
+                           "); }"
+                           "</style>"
+                           "<div>"
+                           "  <div id=target></div>"
+                           "</div>");
+  }
+
   void SimulateNavigation() {
     const KURL& url = KURL(NullURL(), "https://www.example.com");
     FrameLoadRequest request(nullptr, ResourceRequest(url),
@@ -73,7 +79,7 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
 };
 
 TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_AfterLoad) {
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
   GetDocumentVariables().SetVariable(kVariableName, kVariableTestColor);
 
   // Ensure that the document has been invalidated.
@@ -88,7 +94,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_AfterLoad) {
 
 TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Change) {
   GetDocumentVariables().SetVariable(kVariableName, kVariableAltTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Change the variable value after we have loaded the page.
   GetDocumentVariables().SetVariable(kVariableName, kVariableTestColor);
@@ -108,7 +114,7 @@ TEST_F(StyleEnvironmentVariablesTest,
   // Set the variable globally.
   StyleEnvironmentVariables::GetRootInstance().SetVariable(
       kVariableName, kVariableAltTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has the background color provided by the global
   // variable.
@@ -145,7 +151,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Override_RemoveGlobal) {
   // Set the variable globally.
   StyleEnvironmentVariables::GetRootInstance().SetVariable(
       kVariableName, kVariableAltTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has the background color provided by the global
   // variable.
@@ -174,7 +180,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Override_RemoveGlobal) {
 
 TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Preset) {
   GetDocumentVariables().SetVariable(kVariableName, kVariableTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -184,7 +190,7 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Preset) {
 
 TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Remove) {
   GetDocumentVariables().SetVariable(kVariableName, kVariableTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -204,12 +210,12 @@ TEST_F(StyleEnvironmentVariablesTest, DocumentVariable_Remove) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, MultiDocumentInvalidation_FromRoot) {
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Create a second page that uses the variable.
   std::unique_ptr<DummyPageHolder> new_page =
       DummyPageHolder::Create(IntSize(800, 600));
-  InitializeWithHTML(new_page->GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(new_page->GetFrame(), kVariableName);
 
   // Create an empty page that does not use the variable.
   std::unique_ptr<DummyPageHolder> empty_page =
@@ -226,12 +232,12 @@ TEST_F(StyleEnvironmentVariablesTest, MultiDocumentInvalidation_FromRoot) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, MultiDocumentInvalidation_FromDocument) {
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Create a second page that uses the variable.
   std::unique_ptr<DummyPageHolder> new_page =
       DummyPageHolder::Create(IntSize(800, 600));
-  InitializeWithHTML(new_page->GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(new_page->GetFrame(), kVariableName);
 
   GetDocumentVariables().SetVariable(kVariableName, kVariableTestColor);
 
@@ -245,7 +251,7 @@ TEST_F(StyleEnvironmentVariablesTest, NavigateToClear) {
 
   // Simulate a navigation to clear the variables.
   SimulateNavigation();
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has no background color.
   Element* target = GetDocument().getElementById("target");
@@ -254,7 +260,7 @@ TEST_F(StyleEnvironmentVariablesTest, NavigateToClear) {
 }
 
 TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_AfterLoad) {
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
   StyleEnvironmentVariables::GetRootInstance().SetVariable(kVariableName,
                                                            kVariableTestColor);
 
@@ -271,7 +277,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_AfterLoad) {
 TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Change) {
   StyleEnvironmentVariables::GetRootInstance().SetVariable(
       kVariableName, kVariableAltTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Change the variable value after we have loaded the page.
   StyleEnvironmentVariables::GetRootInstance().SetVariable(kVariableName,
@@ -290,7 +296,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Change) {
 TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Preset) {
   StyleEnvironmentVariables::GetRootInstance().SetVariable(kVariableName,
                                                            kVariableTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -301,7 +307,7 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Preset) {
 TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
   StyleEnvironmentVariables::GetRootInstance().SetVariable(kVariableName,
                                                            kVariableTestColor);
-  InitializeWithHTML(GetFrame(), kTestHTML);
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
 
   // Check that the element has the background color provided by the variable.
   Element* target = GetDocument().getElementById("target");
@@ -318,6 +324,65 @@ TEST_F(StyleEnvironmentVariablesTest, GlobalVariable_Remove) {
   // Check that the element does not have the background color any more.
   EXPECT_NE(kTestColorRed, target->ComputedStyleRef().VisitedDependentColor(
                                GetCSSPropertyBackgroundColor()));
+}
+
+TEST_F(StyleEnvironmentVariablesTest,
+       DISABLED_PrintExpectedVariableNameHashes) {
+  const AtomicString kVariableNames[] = {
+      "safe-area-inset-top", "safe-area-inset-left", "safe-area-inset-bottom",
+      "safe-area-inset-right"};
+  for (const auto& name : kVariableNames) {
+    printf("0x%x\n",
+           DocumentStyleEnvironmentVariables::GenerateHashFromName(name));
+  }
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_InvalidProperty) {
+  InitializeTestPageWithVariableNamed(GetFrame(), kVariableName);
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kCSSEnvironmentVariable));
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_NoVariable) {
+  InitializeWithHTML(GetFrame(), "");
+  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
+                                     WebFeature::kCSSEnvironmentVariable));
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetBottom) {
+  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-bottom");
+
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kCSSEnvironmentVariable));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetBottom));
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetLeft) {
+  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-left");
+
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kCSSEnvironmentVariable));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetLeft));
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetRight) {
+  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-right");
+
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kCSSEnvironmentVariable));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetRight));
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_SafeAreaInsetTop) {
+  InitializeTestPageWithVariableNamed(GetFrame(), "safe-area-inset-top");
+
+  EXPECT_TRUE(UseCounter::IsCounted(GetDocument(),
+                                    WebFeature::kCSSEnvironmentVariable));
+  EXPECT_TRUE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetTop));
 }
 
 }  // namespace blink

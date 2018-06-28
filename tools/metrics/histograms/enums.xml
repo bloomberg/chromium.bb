@@ -19067,6 +19067,11 @@ Called by update_net_error_codes.py.-->
   <int value="2485" label="LegacySymantecCertInSubresource"/>
   <int value="2486" label="LegacySymantecCertInSubframeMainResource"/>
   <int value="2487" label="EventTimingExplicitlyRequested"/>
+  <int value="2488" label="CSSEnvironmentVariable"/>
+  <int value="2489" label="CSSEnvironmentVariable_SafeAreaInsetTop"/>
+  <int value="2490" label="CSSEnvironmentVariable_SafeAreaInsetLeft"/>
+  <int value="2491" label="CSSEnvironmentVariable_SafeAreaInsetBottom"/>
+  <int value="2492" label="CSSEnvironmentVariable_SafeAreaInsetRight"/>
 </enum>
 
 <enum name="FeedbackSource">

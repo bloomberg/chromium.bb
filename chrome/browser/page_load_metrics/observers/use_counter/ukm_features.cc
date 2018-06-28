@@ -41,6 +41,11 @@ bool IsAllowedUkmFeature(blink::mojom::WebFeature feature) {
           WebFeature::kCustomElementRegistryDefine,
           WebFeature::kTextToSpeech_Speak,
           WebFeature::kTextToSpeech_SpeakDisallowedByAutoplay,
+          WebFeature::kCSSEnvironmentVariable,
+          WebFeature::kCSSEnvironmentVariable_SafeAreaInsetTop,
+          WebFeature::kCSSEnvironmentVariable_SafeAreaInsetLeft,
+          WebFeature::kCSSEnvironmentVariable_SafeAreaInsetRight,
+          WebFeature::kCSSEnvironmentVariable_SafeAreaInsetBottom,
       }));
   return opt_in_features.count(feature);
 }
