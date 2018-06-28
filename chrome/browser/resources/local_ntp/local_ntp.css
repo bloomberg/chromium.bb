@@ -599,11 +599,11 @@ html[dir=rtl] #mv-notice-x {
   padding: 0 16px;
 }
 
-.default-theme.dark #mv-msg {
+.default-theme.dark #mv-msg :not(.md-icons) {
   color: #fff;
 }
 
-.default-theme.dark #mv-notice-links span {
+.default-theme.dark #mv-notice-links :not(.md-icons) span {
   color: #fff;
 }
 
