@@ -34,8 +34,7 @@
 namespace blink {
 
 DocumentLoadTiming::DocumentLoadTiming(DocumentLoader& document_loader)
-    : reference_wall_time_(0.0),
-      redirect_count_(0),
+    : redirect_count_(0),
       has_cross_origin_redirect_(false),
       has_same_origin_as_previous_document_(false),
       document_loader_(document_loader) {}
@@ -55,37 +54,24 @@ void DocumentLoadTiming::NotifyDocumentTimingChanged() {
 }
 
 void DocumentLoadTiming::EnsureReferenceTimesSet() {
-  if (!reference_wall_time_)
-    reference_wall_time_ = CurrentTime();
+  if (reference_wall_time_.is_zero())
+    reference_wall_time_ = TimeDelta::FromSecondsD(CurrentTime());
   if (reference_monotonic_time_.is_null())
     reference_monotonic_time_ = CurrentTimeTicks();
 }
 
-double DocumentLoadTiming::MonotonicTimeToZeroBasedDocumentTime(
+TimeDelta DocumentLoadTiming::MonotonicTimeToZeroBasedDocumentTime(
     TimeTicks monotonic_time) const {
   if (monotonic_time.is_null() || reference_monotonic_time_.is_null())
-    return 0.0;
-  return (monotonic_time - reference_monotonic_time_).InSecondsF();
+    return TimeDelta();
+  return monotonic_time - reference_monotonic_time_;
 }
 
-double DocumentLoadTiming::MonotonicTimeToPseudoWallTime(
+TimeDelta DocumentLoadTiming::MonotonicTimeToPseudoWallTime(
     TimeTicks monotonic_time) const {
   if (monotonic_time.is_null() || reference_monotonic_time_.is_null())
-    return 0.0;
-  return (monotonic_time + TimeDelta::FromSecondsD(reference_wall_time_) -
-          reference_monotonic_time_)
-      .InSecondsF();
-}
-
-TimeTicks DocumentLoadTiming::PseudoWallTimeToMonotonicTime(
-    double pseudo_wall_time) const {
-  if (!pseudo_wall_time)
-    return TimeTicks();
-  DCHECK_GE(TimeTicksInSeconds(reference_monotonic_time_) + pseudo_wall_time -
-                reference_wall_time_,
-            0);
-  return reference_monotonic_time_ +
-         TimeDelta::FromSecondsD(pseudo_wall_time - reference_wall_time_);
+    return TimeDelta();
+  return monotonic_time + reference_wall_time_ - reference_monotonic_time_;
 }
 
 void DocumentLoadTiming::MarkNavigationStart() {
@@ -93,11 +79,11 @@ void DocumentLoadTiming::MarkNavigationStart() {
   // they have a more accurate timestamp.
   if (!navigation_start_.is_null()) {
     DCHECK(!reference_monotonic_time_.is_null());
-    DCHECK(reference_wall_time_);
+    DCHECK(!reference_wall_time_.is_zero());
     return;
   }
   DCHECK(reference_monotonic_time_.is_null());
-  DCHECK(!reference_wall_time_);
+  DCHECK(reference_wall_time_.is_zero());
   EnsureReferenceTimesSet();
   navigation_start_ = reference_monotonic_time_;
   TRACE_EVENT_MARK_WITH_TIMESTAMP2(
@@ -128,7 +114,7 @@ void DocumentLoadTiming::SetNavigationStart(TimeTicks navigation_start) {
 
   // The reference times are adjusted based on the embedder's navigationStart.
   DCHECK(!reference_monotonic_time_.is_null());
-  DCHECK(reference_wall_time_);
+  DCHECK(!reference_wall_time_.is_zero());
   reference_wall_time_ = MonotonicTimeToPseudoWallTime(navigation_start);
   reference_monotonic_time_ = navigation_start;
   NotifyDocumentTimingChanged();

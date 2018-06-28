@@ -203,7 +203,7 @@ void PendingScript::ExecuteScriptBlockInternal(
   if (parser_blocking_load_start_time > TimeTicks()) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptLoadDuration(
-            (CurrentTimeTicks() - parser_blocking_load_start_time).InSecondsF(),
+            CurrentTimeTicks() - parser_blocking_load_start_time,
             created_during_document_write);
   }
 
@@ -285,7 +285,7 @@ void PendingScript::ExecuteScriptBlockInternal(
   if (!is_controlled_by_script_runner) {
     DocumentParserTiming::From(element_document)
         .RecordParserBlockedOnScriptExecutionDuration(
-            (CurrentTimeTicks() - script_exec_start_time).InSecondsF(),
+            CurrentTimeTicks() - script_exec_start_time,
             created_during_document_write);
   }
 

@@ -136,7 +136,6 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   void Trace(blink::Visitor*) override;
 
   unsigned long long MonotonicTimeToIntegerMilliseconds(TimeTicks) const;
-  TimeTicks IntegerMillisecondsToMonotonicTime(unsigned long long) const;
 
  private:
   explicit PerformanceTiming(LocalFrame*);
