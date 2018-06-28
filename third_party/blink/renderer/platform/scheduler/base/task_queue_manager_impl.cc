@@ -313,7 +313,7 @@ Optional<PendingTask> TaskQueueManagerImpl::TakeTask() {
   // It's important we call ReloadEmptyWorkQueues out side of the lock to
   // avoid a lock order inversion.
   ReloadEmptyWorkQueues();
-  LazyNow lazy_now(main_thread_only().real_time_domain->CreateLazyNow());
+  LazyNow lazy_now(controller_->GetClock());
   WakeUpReadyDelayedQueues(&lazy_now);
 
   while (true) {
@@ -360,7 +360,7 @@ Optional<PendingTask> TaskQueueManagerImpl::TakeTask() {
 }
 
 void TaskQueueManagerImpl::DidRunTask() {
-  LazyNow lazy_now(main_thread_only().real_time_domain->CreateLazyNow());
+  LazyNow lazy_now(controller_->GetClock());
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
   NotifyDidProcessTask(executing_task, &lazy_now);
@@ -568,10 +568,6 @@ internal::EnqueueOrder TaskQueueManagerImpl::GetNextSequenceNumber() {
   return enqueue_order_generator_.GenerateNext();
 }
 
-LazyNow TaskQueueManagerImpl::CreateLazyNow() const {
-  return LazyNow(controller_->GetClock());
-}
-
 std::unique_ptr<trace_event::ConvertableToTraceFormat>
 TaskQueueManagerImpl::AsValueWithSelectorResult(
     bool should_run,
@@ -579,7 +575,7 @@ TaskQueueManagerImpl::AsValueWithSelectorResult(
   DCHECK_CALLED_ON_VALID_THREAD(main_thread_checker_);
   std::unique_ptr<trace_event::TracedValue> state(
       new trace_event::TracedValue());
-  TimeTicks now = main_thread_only().real_time_domain->CreateLazyNow().Now();
+  TimeTicks now = NowTicks();
   state->BeginArray("active_queues");
   for (auto* const queue : main_thread_only().active_queues)
     queue->AsValueInto(now, state.get());

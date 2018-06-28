@@ -22,7 +22,7 @@ void RealTimeDomain::OnRegisterWithTaskQueueManager(
 }
 
 LazyNow RealTimeDomain::CreateLazyNow() const {
-  return task_queue_manager_->CreateLazyNow();
+  return LazyNow(task_queue_manager_->GetTickClock());
 }
 
 TimeTicks RealTimeDomain::Now() const {
