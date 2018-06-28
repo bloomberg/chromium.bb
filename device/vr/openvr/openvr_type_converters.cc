@@ -10,6 +10,7 @@
 
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/openvr/src/headers/openvr.h"
+#include "ui/gfx/transform_util.h"
 
 namespace mojo {
 
@@ -22,11 +23,17 @@ TypeConverter<device::mojom::VRPosePtr, vr::TrackedDevicePose_t>::Convert(
 
   if (hmd_pose.bPoseIsValid && hmd_pose.bDeviceIsConnected) {
     const float(&m)[3][4] = hmd_pose.mDeviceToAbsoluteTracking.m;
-    float w = sqrt(1 + m[0][0] + m[1][1] + m[2][2]) / 2;
-    pose->orientation.value()[0] = (m[2][1] - m[1][2]) / (4 * w);
-    pose->orientation.value()[1] = (m[0][2] - m[2][0]) / (4 * w);
-    pose->orientation.value()[2] = (m[1][0] - m[0][1]) / (4 * w);
-    pose->orientation.value()[3] = w;
+
+    gfx::Transform transform = gfx::Transform(
+        m[0][0], m[0][1], m[0][2], 0.0f, m[1][0], m[1][1], m[1][2], 0.0f,
+        m[2][0], m[2][1], m[2][2], 0.0f, 0.0f, 0.0f, 0.0f, 1.0f);
+    gfx::DecomposedTransform decomposed;
+    if (gfx::DecomposeTransform(&decomposed, transform)) {
+      pose->orientation.value()[0] = decomposed.quaternion.x();
+      pose->orientation.value()[1] = decomposed.quaternion.y();
+      pose->orientation.value()[2] = decomposed.quaternion.z();
+      pose->orientation.value()[3] = decomposed.quaternion.w();
+    }
 
     pose->position.value()[0] = m[0][3];
     pose->position.value()[1] = m[1][3];
