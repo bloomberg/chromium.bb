@@ -69,6 +69,21 @@
   [super viewDidLoad];
   [self addStandardActionsForAllButtons];
 
+  if (@available(iOS 11.0, *)) {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(voiceOverChanged:)
+               name:UIAccessibilityVoiceOverStatusDidChangeNotification
+             object:nil];
+  } else {
+    [[NSNotificationCenter defaultCenter]
+        addObserver:self
+           selector:@selector(voiceOverChanged:)
+               name:UIAccessibilityVoiceOverStatusChanged
+             object:nil];
+  }
+  [self makeViewAccessibilityTraitsContainer];
+
   // Adds the layout guide to the buttons.
   self.view.toolsMenuButton.guideName = kToolsMenuGuide;
   self.view.tabGridButton.guideName = kTabSwitcherGuide;
@@ -221,6 +236,36 @@
 
   for (ToolbarButton* button in self.view.allButtons) {
     button.dimmed = NO;
+  }
+}
+
+#pragma mark - Accessibility
+
+// Callback called when the voice over value is changed.
+- (void)voiceOverChanged:(NSNotification*)notification {
+  if (!UIAccessibilityIsVoiceOverRunning())
+    return;
+
+  __weak AdaptiveToolbarViewController* weakSelf = self;
+  dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)),
+                 dispatch_get_main_queue(), ^{
+                   // The accessibility traits of the UIToolbar is only
+                   // available after a certain amount of time after voice over
+                   // activation.
+                   [weakSelf makeViewAccessibilityTraitsContainer];
+                 });
+}
+
+// Updates the accessibility traits of the view to have it interpreted as a
+// container by voice over.
+- (void)makeViewAccessibilityTraitsContainer {
+  if (self.view.accessibilityTraits == UIAccessibilityTraitNone) {
+    // TODO(crbug.com/857475): Remove this workaround once it is possible to set
+    // elements as voice over container. For now, set the accessibility traits
+    // of the toolbar to the accessibility traits of a UIToolbar allows it to
+    // act as a voice over container.
+    UIToolbar* toolbar = [[UIToolbar alloc] init];
+    self.view.accessibilityTraits = toolbar.accessibilityTraits;
   }
 }
 
