@@ -4,11 +4,13 @@
 
 #include "media/gpu/android/texture_pool.h"
 
+#include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/texture_manager.h"
-#include "media/gpu/android/texture_wrapper.h"
 #include "media/gpu/command_buffer_helper.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/scoped_make_current.h"
+
+using gpu::gles2::AbstractTexture;
 
 namespace media {
 
@@ -21,36 +23,21 @@ TexturePool::TexturePool(scoped_refptr<CommandBufferHelper> helper)
 }
 
 TexturePool::~TexturePool() {
-  // Note that the size of |pool_| doesn't, in general, tell us if there are any
-  // textures.  If the stub has been destroyed, then we will drop the
-  // TextureRefs but leave null entries in the map.  So, we check |stub_| too.
-  if (pool_.size() && helper_) {
-    // TODO(liberato): consider using ScopedMakeCurrent here, though if we are
-    // ever called as part of decoder teardown, then using ScopedMakeCurrent
-    // isn't safe.  For now, we preserve the old behavior (MakeCurrent).
-    //
-    // We check IsContextCurrent, even though that only checks for the
-    // underlying shared context if |context| is a virtual context.  Assuming
-    // that all TextureRef does is to delete a texture, this is enough.  Of
-    // course, we shouldn't assume that this is all it does.
-    bool have_context =
-        helper_->IsContextCurrent() || helper_->MakeContextCurrent();
-    DestroyAllPlatformTextures(have_context);
-  }
+  // We'll drop all textures from the pool, if any.  It's okay if we don't have
+  // a current context, since AbstractTexture handles it.
 }
 
-void TexturePool::AddTexture(std::unique_ptr<TextureWrapper> texture) {
+void TexturePool::AddTexture(std::unique_ptr<AbstractTexture> texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(pool_.find(texture.get()) == pool_.end());
   // Don't permit additions after we've lost the stub.
   // TODO(liberato): consider making this fail gracefully.  However, nobody
   // should be doing this, so for now it's a DCHECK.
   DCHECK(helper_);
-  TextureWrapper* texture_raw = texture.get();
-  pool_[texture_raw] = std::move(texture);
+  pool_.insert(std::move(texture));
 }
 
-void TexturePool::ReleaseTexture(TextureWrapper* texture,
+void TexturePool::ReleaseTexture(AbstractTexture* texture,
                                  const gpu::SyncToken& sync_token) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
@@ -70,49 +57,27 @@ void TexturePool::ReleaseTexture(TextureWrapper* texture,
                                  scoped_refptr<TexturePool>(this), texture));
 }
 
-void TexturePool::OnSyncTokenReleased(TextureWrapper* texture) {
+void TexturePool::OnSyncTokenReleased(AbstractTexture* texture) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   auto iter = pool_.find(texture);
   DCHECK(iter != pool_.end());
 
-  // If we can't make the context current, then notify the texture.  Note that
-  // the wrapper might already have been destroyed, which is fine.  We elide
-  // the MakeContextCurrent if our underlying physical context is current, which
-  // only works if we don't do much besides delete the texture.
-  bool have_context =
-      helper_ && (helper_->IsContextCurrent() || helper_->MakeContextCurrent());
-  if (iter->second && !have_context)
-    texture->ForceContextLost();
+  // Drop the texture.  This is safe without the context being current.  It's
+  // also safe if the stub has been destroyed.
+
+  // We release the image immediately, which will free any codec buffers etc.
+  // that it might be holding.  We don't really know how long the texture will
+  // stick around.
+  texture->ReleaseImage();
 
   pool_.erase(iter);
-}
-
-void TexturePool::DestroyAllPlatformTextures(bool have_context) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-
-  // Destroy the wrapper, but keep the entry around in the map.  We do this so
-  // that ReleaseTexture can still check that at least the texture was, at some
-  // point, in the map.  Hopefully, since nobody should be adding textures to
-  // the pool after we've lost the stub, there's no issue with aliasing if the
-  // ptr is re-used; it won't be given to us, so it's okay.
-  for (auto& it : pool_) {
-    std::unique_ptr<TextureWrapper> texture = std::move(it.second);
-    if (!texture)
-      continue;
-
-    // If we can't make the context current, then notify all the textures that
-    // they can't delete the underlying platform textures.
-    if (!have_context)
-      texture->ForceContextLost();
-
-    // |texture| will be destroyed.
-  }
 }
 
 void TexturePool::OnWillDestroyStub(bool have_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(helper_);
-  DestroyAllPlatformTextures(have_context);
+  // Note that we don't have to do anything with |pool_|, since AbstractTextures
+  // can outlive the stub that created them.  They just don't have a texture.
   helper_ = nullptr;
 }
 

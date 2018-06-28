@@ -109,7 +109,7 @@ class MEDIA_GPU_EXPORT D3D11PictureBuffer
               Microsoft::WRL::ComPtr<ID3D11Texture2D> angle_texture,
               int textures_per_picture);
 
-    std::vector<scoped_refptr<gpu::gles2::TextureRef>> texture_refs_;
+    std::vector<std::unique_ptr<gpu::gles2::AbstractTexture>> textures_;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(GpuResources);

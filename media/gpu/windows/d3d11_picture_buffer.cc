@@ -111,13 +111,13 @@ bool D3D11PictureBuffer::GpuResources::Init(
   // Create the textures and attach them to the mailboxes.
   std::vector<uint32_t> service_ids;
   for (int texture_idx = 0; texture_idx < textures_per_picture; texture_idx++) {
-    texture_refs_.push_back(decoder_helper->CreateTexture(
+    textures_.push_back(decoder_helper->CreateTexture(
         target, GL_RGBA, size.width(), size.height(), GL_RGBA,
         GL_UNSIGNED_BYTE));
-    service_ids.push_back(texture_refs_[texture_idx]->service_id());
+    service_ids.push_back(textures_[texture_idx]->service_id());
 
     mailbox_manager->ProduceTexture(mailboxes[texture_idx],
-                                    texture_refs_[texture_idx]->texture());
+                                    textures_[texture_idx]->GetTextureBase());
   }
 
   // Create the stream for zero-copy use by gl.
@@ -184,11 +184,9 @@ bool D3D11PictureBuffer::GpuResources::Init(
   gl_image_dxgi->SetTexture(angle_texture, level);
 
   // Bind the image to each texture.
-  for (size_t texture_idx = 0; texture_idx < texture_refs_.size();
-       texture_idx++) {
-    texture_manager->SetLevelImage(texture_refs_[texture_idx].get(),
-                                   GL_TEXTURE_EXTERNAL_OES, 0, gl_image.get(),
-                                   gpu::gles2::Texture::ImageState::BOUND);
+  for (size_t texture_idx = 0; texture_idx < textures_.size(); texture_idx++) {
+    textures_[texture_idx]->BindImage(gl_image.get(),
+                                      false /* client_managed */);
   }
 
   return true;
