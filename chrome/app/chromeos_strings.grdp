@@ -1810,6 +1810,18 @@
   <message name="IDS_OOBE_EULA_ACCEPT_AND_CONTINUE_BUTTON_TEXT" desc="Label on a button on the Title of Terms of Service OOBE screen to accept EULA and continue.">
     Accept and continue
   </message>
+  <message name="IDS_OOBE_DEMO_SETUP_PROGRESS_SCREEN_TITLE" desc="The title of the dialog that is shown when demo mode setup is in progress.">
+    Starting demo mode
+  </message>
+  <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_TITLE" desc="The title of the dialog that is shown when demo mode setup failed.">
+    Couldn't start demo mode
+  </message>
+  <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_SUBTITLE" desc="The subtitle of the dialog that is shown when demo mode setup failed.">
+    Please try again
+  </message>
+  <message name="IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_RETRY_BUTTON_LABEL" desc="The label of the button that is shown on error screen and that retries demo mode setup with the previously chosen configuration.">
+    OK
+  </message>
   <message name="IDS_LOGIN_SYNC_CONSENT_SCREEN_TITLE" desc="The title of the dialog that welcomes the user on the first log in, and explains Chrome Sync and privacy options.">
     You're signed in!
   </message>
