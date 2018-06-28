@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_FUCHSIA_SERVICES_DIRECTORY_H_
-#define BASE_FUCHSIA_SERVICES_DIRECTORY_H_
+#ifndef BASE_FUCHSIA_SERVICE_DIRECTORY_H_
+#define BASE_FUCHSIA_SERVICE_DIRECTORY_H_
 
 #include <lib/zx/channel.h>
 
@@ -24,12 +24,12 @@ namespace fuchsia {
 // Normally this class should be used by creating a ScopedServiceBinding
 // instance. This ensures that the service is unregistered when the
 // implementation is destroyed. GetDefault() should be used to get the default
-// ServicesDirectory for the current process. The default instance exports
+// ServiceDirectory for the current process. The default instance exports
 // services via a channel supplied at process creation time.
 //
 // Not thread-safe. All methods must be called on the thread that created the
 // object.
-class BASE_EXPORT ServicesDirectory {
+class BASE_EXPORT ServiceDirectory {
  public:
   // Callback called to connect incoming requests.
   using ConnectServiceCallback =
@@ -37,13 +37,13 @@ class BASE_EXPORT ServicesDirectory {
 
   // Creates services directory that will be served over the
   // |directory_channel|.
-  explicit ServicesDirectory(zx::channel directory_channel);
+  explicit ServiceDirectory(zx::channel directory_channel);
 
-  ~ServicesDirectory();
+  ~ServiceDirectory();
 
   // Returns default ServiceDirectory instance for the current process. It
   // publishes services to the directory provided by the process creator.
-  static ServicesDirectory* GetDefault();
+  static ServiceDirectory* GetDefault();
 
   void AddService(StringPiece name, ConnectServiceCallback connect_callback);
   void RemoveService(StringPiece name);
@@ -59,10 +59,10 @@ class BASE_EXPORT ServicesDirectory {
   svc_dir_t* svc_dir_ = nullptr;
   base::flat_map<std::string, ConnectServiceCallback> services_;
 
-  DISALLOW_COPY_AND_ASSIGN(ServicesDirectory);
+  DISALLOW_COPY_AND_ASSIGN(ServiceDirectory);
 };
 
 }  // namespace fuchsia
 }  // namespace base
 
-#endif  // BASE_FUCHSIA_SERVICES_DIRECTORY_H_
+#endif  // BASE_FUCHSIA_SERVICE_DIRECTORY_H_

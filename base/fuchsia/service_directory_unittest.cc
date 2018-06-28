@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "base/fuchsia/services_directory.h"
+#include "base/fuchsia/service_directory.h"
 
 #include <lib/fdio/util.h>
 #include <lib/zx/channel.h>
@@ -25,9 +25,9 @@ class TestInterfaceImpl : public test_fidl::TestInterface {
   }
 };
 
-// Verifies that a service connected by ServicesDirectory can be imported from
-// another ServicesDirectory.
-TEST(ServicesDirectoryTest, Connect) {
+// Verifies that a service connected by ServiceDirectory can be imported from
+// another ServiceDirectory.
+TEST(ServiceDirectoryTest, Connect) {
   MessageLoopForIO message_loop_;
 
   zx::channel dir_service_channel;
@@ -36,7 +36,7 @@ TEST(ServicesDirectoryTest, Connect) {
             ZX_OK);
 
   // Mount service dir and publish the service.
-  ServicesDirectory service_dir(std::move(dir_service_channel));
+  ServiceDirectory service_dir(std::move(dir_service_channel));
   TestInterfaceImpl test_service;
   ScopedServiceBinding<test_fidl::TestInterface> service_binding(&service_dir,
                                                                  &test_service);
@@ -75,7 +75,7 @@ TEST(ServicesDirectoryTest, Connect) {
 }
 
 // Verify that services are also exported to the legacy flat service namespace.
-TEST(ServicesDirectoryTest, ConnectLegacy) {
+TEST(ServiceDirectoryTest, ConnectLegacy) {
   MessageLoopForIO message_loop_;
 
   zx::channel dir_service_channel;
@@ -84,7 +84,7 @@ TEST(ServicesDirectoryTest, ConnectLegacy) {
             ZX_OK);
 
   // Mount service dir and publish the service.
-  ServicesDirectory service_dir(std::move(dir_service_channel));
+  ServiceDirectory service_dir(std::move(dir_service_channel));
   TestInterfaceImpl test_service;
   ScopedServiceBinding<test_fidl::TestInterface> service_binding(&service_dir,
                                                                  &test_service);

@@ -15,7 +15,6 @@
 #include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/fuchsia/file_utils.h"
-#include "base/fuchsia/services_directory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/multiprocess_test.h"
 #include "testing/gmock/include/gmock/gmock-actions.h"
