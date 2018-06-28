@@ -56,8 +56,28 @@ public class PrivacyPreferences extends PreferenceFragment
         getActivity().setTitle(R.string.prefs_privacy);
         setHasOptionsMenu(true);
         PrefServiceBridge prefServiceBridge = PrefServiceBridge.getInstance();
+        PreferenceScreen preferenceScreen = getPreferenceScreen();
 
         mManagedPreferenceDelegate = createManagedPreferenceDelegate();
+
+        ChromeBaseCheckBoxPreference canMakePaymentPref =
+                (ChromeBaseCheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
+        canMakePaymentPref.setOnPreferenceChangeListener(this);
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            // Remove preferences that were migrated to SyncAndServicesPreferences.
+            preferenceScreen.removePreference(findPreference(PREF_NAVIGATION_ERROR));
+            preferenceScreen.removePreference(findPreference(PREF_SEARCH_SUGGESTIONS));
+            preferenceScreen.removePreference(
+                    findPreference(PREF_SAFE_BROWSING_EXTENDED_REPORTING));
+            preferenceScreen.removePreference(findPreference(PREF_SAFE_BROWSING_SCOUT_REPORTING));
+            preferenceScreen.removePreference(findPreference(PREF_SAFE_BROWSING));
+            preferenceScreen.removePreference(findPreference(PREF_NETWORK_PREDICTIONS));
+            preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
+            preferenceScreen.removePreference(findPreference(PREF_USAGE_AND_CRASH_REPORTING));
+            updateSummaries();
+            return;
+        }
 
         ChromeBaseCheckBoxPreference networkPredictionPref =
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_NETWORK_PREDICTIONS);
@@ -79,7 +99,6 @@ public class PrivacyPreferences extends PreferenceFragment
             searchSuggestionsPref.setSummary(R.string.search_site_suggestions_summary);
         }
 
-        PreferenceScreen preferenceScreen = getPreferenceScreen();
         if (!ContextualSearchFieldTrial.isEnabled()) {
             preferenceScreen.removePreference(findPreference(PREF_CONTEXTUAL_SEARCH));
         }
@@ -104,10 +123,6 @@ public class PrivacyPreferences extends PreferenceFragment
                 (ChromeBaseCheckBoxPreference) findPreference(PREF_SAFE_BROWSING);
         safeBrowsingPref.setOnPreferenceChangeListener(this);
         safeBrowsingPref.setManagedPreferenceDelegate(mManagedPreferenceDelegate);
-
-        ChromeBaseCheckBoxPreference canMakePaymentPref =
-                (ChromeBaseCheckBoxPreference) findPreference(PREF_CAN_MAKE_PAYMENT);
-        canMakePaymentPref.setOnPreferenceChangeListener(this);
 
         updateSummaries();
     }
