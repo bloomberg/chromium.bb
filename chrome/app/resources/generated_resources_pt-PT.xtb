@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">Adicionar ID de requisição a este dispositivo</translation>
 <translation id="2175042898143291048">Fazer sempre isto</translation>
 <translation id="2175607476662778685">Barra de início rápido</translation>
-<translation id="2176087259161165020">Outras fontes</translation>
 <translation id="2177950615300672361">Separador de navegação anónima: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">O <ph name="PEPPER_PLUGIN_NAME" /> em <ph name="PEPPER_PLUGIN_DOMAIN" /> pretende aceder ao seu computador.</translation>
 <translation id="2178614541317717477">AC comprometida</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">Não é possível criar a pasta "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Clique para ver o doodle de hoje</translation>
 <translation id="2231238007119540260">Se eliminar um certificado de servidor, restaurará as verificações de segurança normais para esse servidor e será necessário que o servidor utilize um certificado válido.</translation>
-<translation id="2232379019872353004">Enviar algumas informações do sistema e conteúdo da página para a Google</translation>
 <translation id="2232876851878324699">O ficheiro continha um certificado que não foi importado:</translation>
 <translation id="2233502537820838181">&amp;Mais informações</translation>
 <translation id="2238379619048995541">Dados do estado de frequência</translation>
@@ -2021,7 +2019,6 @@ Pretende pará-lo?</translation>
 <translation id="4147897805161313378">Google Fotos</translation>
 <translation id="4150201353443180367">Visualização</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 separador}other{# separadores}}</translation>
-<translation id="4153038609398984088">Ups! Não é possível analisar a configuração de associação do domínio. Contacte o administrador.</translation>
 <translation id="4154664944169082762">Impressões digitais</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">Abrir lista de reprodução</translation>
@@ -2646,7 +2643,7 @@ Pretende pará-lo?</translation>
 <translation id="5209518306177824490">Impressão digital SHA-1</translation>
 <translation id="5210365745912300556">Fechar separador</translation>
 <translation id="5213891612754844763">Mostrar definições de proxy</translation>
-<translation id="5214416042594875361">Aceda ao Assistente sempre que disser "Ok Google" quando o ecrã estiver ativado.</translation>
+<translation id="5214416042594875361">Aceda ao Assistente sempre que disser "Ok Google" quando o ecrã estiver ligado.</translation>
 <translation id="521582610500777512">A foto foi rejeitada</translation>
 <translation id="5222676887888702881">Terminar sessão</translation>
 <translation id="52232769093306234">Falha no acondicionamento.</translation>
@@ -5063,7 +5060,6 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8978154919215542464">Ativar – sincronizar tudo</translation>
 <translation id="897939795688207351">Em <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – falhou</translation>
-<translation id="8983677657449185470">Ajudar a melhorar a Navegação segura</translation>
 <translation id="8984654317541110628">URL de partilha de ficheiros</translation>
 <translation id="8986362086234534611">Esquecer</translation>
 <translation id="8986494364107987395">Enviar automaticamente estatísticas de utilização e relatórios de falhas para a Google</translation>

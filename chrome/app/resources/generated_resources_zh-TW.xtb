@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">新增這部裝置的申請 ID</translation>
 <translation id="2175042898143291048">一律執行這項操作</translation>
 <translation id="2175607476662778685">快速啟動列</translation>
-<translation id="2176087259161165020">其他來源</translation>
 <translation id="2177950615300672361">無痕式分頁：<ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 的「<ph name="PEPPER_PLUGIN_NAME" />」要求存取你的電腦</translation>
 <translation id="2178614541317717477">CA 洩露</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">無法建立資料夾「<ph name="FOLDER_NAME" />」。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">按一下即可瀏覽今日 doodle</translation>
 <translation id="2231238007119540260">如果你刪除了伺服器憑證，系統便會還原對該伺服器的定期安全性檢查，並要求使用有效的憑證。</translation>
-<translation id="2232379019872353004">將部分系統資訊和網頁內容傳送給 Google</translation>
 <translation id="2232876851878324699">檔案含有一個憑證，但無法匯入：</translation>
 <translation id="2233502537820838181">更多資訊(&amp;M)</translation>
 <translation id="2238379619048995541">頻率狀態資料</translation>
@@ -2019,7 +2017,6 @@
 <translation id="4147897805161313378">Google 相簿</translation>
 <translation id="4150201353443180367">顯示設定</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 個分頁}other{# 個分頁}}</translation>
-<translation id="4153038609398984088">糟糕！無法剖析網域加入設定，請與你的管理員聯絡。</translation>
 <translation id="4154664944169082762">指紋</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">開啟播放清單</translation>
@@ -5057,7 +5054,6 @@
 <translation id="8978154919215542464">開啟 - 同步處理所有資料</translation>
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已當機</translation>
-<translation id="8983677657449185470">協助改善「安全瀏覽」的品質</translation>
 <translation id="8984654317541110628">檔案共用網址</translation>
 <translation id="8986362086234534611">清除</translation>
 <translation id="8986494364107987395">自動傳送使用統計資料及當機報告給 Google</translation>

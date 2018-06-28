@@ -1290,7 +1290,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
           Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> não irá delegar as credenciais de utilizador, mesmo que um servidor seja detetado como Intranet.</translation>
 <translation id="4752880493649142945">Certificado de cliente para estabelecer ligação a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4757671984625088193">Se esta política estiver definida como verdadeira ou não estiver definida, <ph name="PRODUCT_NAME" /> irá sugerir páginas relacionadas com a página atual.
+<translation id="4757671984625088193">Se esta política estiver definida como verdadeira ou não estiver definida, o <ph name="PRODUCT_NAME" /> irá sugerir páginas relacionadas com a página atual.
       Essas sugestões são obtidas remotamente a partir dos servidores da Google.
 
       Se esta definição estiver definida como falsa, as sugestões não serão obtidas nem apresentadas.</translation>
@@ -2869,7 +2869,7 @@ A forma recomendada para configurar a política no Windows é através do GPO, e
 <translation id="982497069985795632">Ativar a verificação ortográfica</translation>
 <translation id="988537626274109600">Esta política controla os intervalos de tempo durante os quais o dispositivo <ph name="PRODUCT_OS_NAME" /> não está autorizado a realizar verificações automáticas de atualizações.
       Quando esta política está definida para uma lista não vazia de intervalos de tempo:
-      Os dispositivos não poderão realizar verificações automáticas de atualizações durante os intervalos de tempo especificados. Os dispositivos que requerem uma reversão ou anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política devido a possíveis problemas de segurança. Além disso, esta política não bloqueia as verificações de atualizações solicitadas pelos utilizadores ou administradores.
+      Os dispositivos não poderão realizar verificações automáticas de atualizações durante os intervalos de tempo especificados. Os dispositivos que requerem uma reversão ou que sejam anteriores à versão mínima do <ph name="PRODUCT_OS_NAME" /> não serão afetados por esta política devido a possíveis problemas de segurança. Além disso, esta política não bloqueia as verificações de atualizações solicitadas pelos utilizadores ou administradores.
       Quando esta política não está definida ou não contém quaisquer intervalos de tempo:
       Esta política não bloqueará quaisquer verificações automáticas de atualizações, contudo, estas podem ser bloqueadas por outras políticas.</translation>
 </translationbundle>

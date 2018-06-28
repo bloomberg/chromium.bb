@@ -765,7 +765,6 @@
 <translation id="2173801458090845390">向此设备添加申请 ID</translation>
 <translation id="2175042898143291048">一律执行此操作</translation>
 <translation id="2175607476662778685">快速启动栏</translation>
-<translation id="2176087259161165020">其他来源</translation>
 <translation id="2177950615300672361">隐身标签页：<ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" /> 上的“<ph name="PEPPER_PLUGIN_NAME" />”想访问您的计算机</translation>
 <translation id="2178614541317717477">CA 泄漏</translation>
@@ -805,7 +804,6 @@
 <translation id="2230062665678605299">无法创建文件夹“<ph name="FOLDER_NAME" />”。<ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">点击即可查看今日的涂鸦</translation>
 <translation id="2231238007119540260">如果您删除了某个服务器的证书，则会恢复对该服务器的常规安全检查，并要求其使用有效证书。</translation>
-<translation id="2232379019872353004">将一些系统信息和网页内容发送至 Google</translation>
 <translation id="2232876851878324699">该文件包含一个证书，但未导入：</translation>
 <translation id="2233502537820838181">详细信息(&amp;M)</translation>
 <translation id="2238379619048995541">频率状态数据</translation>
@@ -2013,7 +2011,6 @@
 <translation id="4147897805161313378">Google 照片</translation>
 <translation id="4150201353443180367">显示</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 个标签页}other{# 个标签页}}</translation>
-<translation id="4153038609398984088">糟糕！无法解析网域加入配置。请与您的管理员联系。</translation>
 <translation id="4154664944169082762">指纹</translation>
 <translation id="4157869833395312646">Microsoft 服务器网关加密</translation>
 <translation id="4158739975813877944">打开播放列表</translation>
@@ -4958,7 +4955,7 @@
 <translation id="8837103518490433332">希望<ph name="PASSWORD_MANAGER_BRAND" />保存您在访问 <ph name="ORIGIN" /> 时使用的密码吗？</translation>
 <translation id="8838770651474809439">汉堡</translation>
 <translation id="883911313571074303">为图片添加注释</translation>
-<translation id="8844690305858050198">大功告成！有害软件已被移除。要重新开启扩展程序，请前往&lt;a href="chrome://extensions"&gt;扩展程序&lt;/a&gt;部分。</translation>
+<translation id="8844690305858050198">好了！有害软件已被移除。要重新开启扩展程序，请前往&lt;a href="chrome://extensions"&gt;扩展程序&lt;/a&gt;部分。</translation>
 <translation id="8845001906332463065">获取帮助</translation>
 <translation id="8846141544112579928">正在搜索键盘…</translation>
 <translation id="8847988622838149491">USB</translation>
@@ -5045,7 +5042,6 @@
 <translation id="8978154919215542464">开启 - 同步所有内容</translation>
 <translation id="897939795688207351">在 <ph name="ORIGIN" /> 上</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 已崩溃</translation>
-<translation id="8983677657449185470">帮助我们改进安全浏览功能</translation>
 <translation id="8984654317541110628">文件共享网址</translation>
 <translation id="8986362086234534611">不保存</translation>
 <translation id="8986494364107987395">将使用情况统计信息和崩溃报告自动发送给 Google</translation>
@@ -5196,7 +5192,7 @@
 <translation id="930268624053534560">详细时间戳</translation>
 <translation id="932327136139879170">首页</translation>
 <translation id="932508678520956232">无法开始打印。</translation>
-<translation id="93343527085570547">要出于法律原因请求更改内容，请前往<ph name="BEGIN_LINK1" />法律帮助页面<ph name="END_LINK1" />。系统可能会将部分帐号和系统信息发送给 Google。我们将依照<ph name="BEGIN_LINK2" />隐私权政策<ph name="END_LINK2" />和<ph name="BEGIN_LINK3" />服务条款<ph name="END_LINK3" />的规定利用您提供的信息，以便解决技术问题并改进我们的服务。</translation>
+<translation id="93343527085570547">要出于法律原因请求更改内容，请前往<ph name="BEGIN_LINK1" />法律帮助页面<ph name="END_LINK1" />。系统可能会将部分帐号和系统信息发送给 Google。我们将依照<ph name="BEGIN_LINK2" />隐私权政策<ph name="END_LINK2" />和<ph name="BEGIN_LINK3" />服务条款<ph name="END_LINK3" />的规定，使用您提供的信息解决技术问题并改进我们的服务。</translation>
 <translation id="93393615658292258">仅限密码</translation>
 <translation id="934503638756687833">如有必要，此处未列出的内容也会被移除。请参阅 Chrome 隐私权政策白皮书，详细了解&lt;a href="<ph name="URL" />"&gt;垃圾软件防护&lt;/a&gt;。</translation>
 <translation id="935490618240037774">您的书签、历史记录、密码及其他设置均将同步到您的 Google 帐号，以便您在自己所有的设备上使用。</translation>

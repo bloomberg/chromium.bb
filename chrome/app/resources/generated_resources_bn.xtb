@@ -799,7 +799,6 @@
 <translation id="2230062665678605299">"<ph name="FOLDER_NAME" /> " ফোল্ডার তৈরী করতে ব্যর্থ৷<ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">আজকের ডুডল দেখার জন্য ক্লিক করুন</translation>
 <translation id="2231238007119540260">যদি আপনি কোনও সার্ভার শংসাপত্র মুছে থাকেন তবে আপনি সেই সার্ভারের জন্য স্বাভাবিক সুরক্ষা যাচাইগুলি পুনরুদ্ধার করতে পারেন এবং এটির একটি বৈধ শংসাপত্র হিসাবে ব্যবহারের প্রয়োজন হতে পারে৷</translation>
-<translation id="2232379019872353004">সিস্টেমের কিছু তথ্য এবং পৃষ্ঠার কন্টেন্ট Google-কে পাঠায়</translation>
 <translation id="2232876851878324699">ফাইলটিতে একটি শংসাপত্র রয়েছে, এটি আমদানি করা হয়নি:</translation>
 <translation id="2233502537820838181">&amp;আরো তথ্য</translation>
 <translation id="2238379619048995541">ফ্রিকোয়েন্সি স্থিতি ডেটা</translation>
@@ -902,7 +901,7 @@
 <translation id="2408955596600435184">আপনার পিন লিখুন</translation>
 <translation id="241082044617551207">অজানা প্ল্যাগ ইন</translation>
 <translation id="2413749388954403953">বুকমার্ক ইউজার ইন্টারফেস পরিবর্তন করুন</translation>
-<translation id="2419706071571366386">নিরাপত্তার কারণে, আপনার কম্পিউটার যখন ব্যবহার হচ্ছে না তখন সাইন-আউট করুন।</translation>
+<translation id="2419706071571366386">নিরাপত্তার কারণে, আপনার কম্পিউটার ব্যবহার করা না হলে সাইন-আউট করুন।</translation>
 <translation id="2422426094670600218">&lt;নামবিহীন&gt;</translation>
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
 <translation id="2425665904502185219">ফাইলের মোট আকার</translation>
@@ -2003,7 +2002,6 @@
 <translation id="4147897805161313378">Google ফটো</translation>
 <translation id="4150201353443180367">প্রদর্শন</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{১টি ট্যাব}one{#টি ট্যাব}other{#টি ট্যাব}}</translation>
-<translation id="4153038609398984088">ওহো!  ডোমেন যোগ কনফিগারেশন পার্স করতে পারছে না। অনুগ্রহ করে অ্যাডমিনিস্ট্রেটরের সাথে যোগাযোগ করুন।</translation>
 <translation id="4154664944169082762">আঙ্গুলের ছাপ</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">প্লে তালিকা খুলুন</translation>
@@ -2367,7 +2365,7 @@
 <translation id="4813136279048157860">আমার ছবি</translation>
 <translation id="4813512666221746211">নেটওয়ার্ক  ত্রুটি</translation>
 <translation id="4816492930507672669">পৃষ্ঠাতে মানানসই</translation>
-<translation id="481772197699992679">পাসওয়ার্ড আনলক করা হচ্ছে</translation>
+<translation id="481772197699992679">আনলক করার পাসওয়ার্ড</translation>
 <translation id="4820334425169212497">না, আমি এটা দেখিনি</translation>
 <translation id="4821935166599369261">&amp;প্রোফাইলিং সক্ষমিত</translation>
 <translation id="4823484602432206655">ব্যবহারকারী এবং ডিভাইস সেটিংস পড়ুন ও পরিবর্তন করুন</translation>
@@ -3107,7 +3105,7 @@
   সর্বজনীন প্রকাশক (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> বিট):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">চালু</translation>
-<translation id="5916878242223710315">কনফিগারেশন আনলক করুন</translation>
+<translation id="5916878242223710315">আনলক কনফিগারেশন</translation>
 <translation id="59174027418879706">সক্ষম করা হযেছে</translation>
 <translation id="5920543303088087579">এই নেটওয়ার্কের সাথে সংযোগ আপনার প্রশাসক দ্বারা অক্ষম করা হয়েছে</translation>
 <translation id="5920835625712313205">ChromeOS সিস্টেম ইমেজ রাইটার</translation>
@@ -5037,7 +5035,6 @@
 <translation id="8978154919215542464">চালু - সবকিছু সিঙ্ক করুন</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" />-এ</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ক্র্যাশ করেছে</translation>
-<translation id="8983677657449185470">নিরাপদ ব্রাউজিং বৈশিষ্ট্যটি আরও উন্নত করে তুলতে সাহায্য করুন</translation>
 <translation id="8984654317541110628">ফাইল শেয়ার করার ইউআরএল</translation>
 <translation id="8986362086234534611">ভুলে যান</translation>
 <translation id="8986494364107987395">ব্যবহারের পরিসংখ্যান এবং ক্র্যাশ প্রতিবেদনগুলি স্বয়ংক্রিয়ভাবে Google-এ পাঠান</translation>
@@ -5184,11 +5181,11 @@
 <translation id="9219103736887031265">ছবিগুলি</translation>
 <translation id="9220525904950070496">অ্যাকাউন্ট সরান</translation>
 <translation id="923467487918828349">সকল দেখান</translation>
-<translation id="928985544179707652">এক্সটেনশনগুলি:</translation>
+<translation id="928985544179707652">এক্সটেনশন:</translation>
 <translation id="930268624053534560">বিস্তারিত টাইমস্ট্যাম্প</translation>
 <translation id="932327136139879170">হোম</translation>
 <translation id="932508678520956232">প্রিন্ট সূচনা করা যায়নি</translation>
-<translation id="93343527085570547">আইনি কারণের জন্য কন্টেন্ট পরিবর্তনগুলির অনুরোধ করতে <ph name="BEGIN_LINK1" />আইন সংক্রান্ত হেল্প পেজে<ph name="END_LINK1" />-এ যান।  কিছু অ্যাকাউন্ট এবং সিস্টেমের তথ্য Google-এ পাঠানো হবে। আমাদের <ph name="BEGIN_LINK2" />গোপনীয়তা নীতি<ph name="END_LINK2" /> এবং <ph name="BEGIN_LINK3" />পরিষেবার শর্তাবলী<ph name="END_LINK3" /> অনুযায়ী আপনার দেওয়া তথ্য আমাদের প্রযুক্তিগত সমস্যার সমাধান করতে এবং পরিষেবা আরও উন্নত করতে ব্যবহার করা হবে।</translation>
+<translation id="93343527085570547">আইনি কারণের জন্য কন্টেন্টে কোনও পরিবর্তন করার অনুরোধ করতে <ph name="BEGIN_LINK1" />আইন সংক্রান্ত হেল্প পেজে<ph name="END_LINK1" /> যান।  কিছু অ্যাকাউন্ট এবং সিস্টেমের তথ্য Google-এ পাঠানো হবে।  আমাদের <ph name="BEGIN_LINK2" />গোপনীয়তা নীতি<ph name="END_LINK2" /> এবং <ph name="BEGIN_LINK3" />পরিষেবার শর্তাবলী<ph name="END_LINK3" /> অনুযায়ী আপনার দেওয়া তথ্য আমাদের প্রযুক্তিগত সমস্যার সমাধান করতে এবং পরিষেবা আরও উন্নত করতে ব্যবহার করা হবে।</translation>
 <translation id="93393615658292258">শুধুমাত্র পাসওয়ার্ড</translation>
 <translation id="934503638756687833">কোনও আইটেম এখানে উল্লেখ করা না থাকলেও সেটি প্রয়োজন অনুযায়ী সরিয়ে দেওয়া হবে। &lt;a href="<ph name="URL" />"&gt;অবাঞ্ছিত সফ্টওয়্যার থেকে সুরক্ষার&lt;/a&gt; বিষয়ে আরও জানতে Chrome এর গোপনীয়তা বিষয়ক শ্বেতপত্র পড়ুন।</translation>
 <translation id="935490618240037774">আপনার বুকমার্ক, ইতিহাস এবং অন্যান্য সেটিংস আপনার Google অ্যাকাউন্টে সিঙ্ক হবে যাতে আপনি আপনার সমস্ত ডিভাইসে সেগুলি ব্যবহার করতে পারেন।</translation>

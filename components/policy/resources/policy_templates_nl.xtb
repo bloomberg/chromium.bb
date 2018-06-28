@@ -42,6 +42,9 @@
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.
 
       Als dit beleid niet wordt ingesteld, wordt de standaardcachedirectory gebruikt en kan de gebruiker deze overschrijven met de opdrachtregelmarkering '--disk-cache-dir'.</translation>
+<translation id="1135264353752122851">Configureert welke toetsenbordindelingen zijn toegestaan voor <ph name="PRODUCT_OS_NAME" />-gebruikerssessies.
+
+      Als dit beleid is ingesteld, kan de gebruiker alleen een van de invoermethoden selecteren die worden gespecificeerd door dit beleid. Als dit beleid niet is ingesteld of is ingesteld op een lege lijst, kan de gebruiker alle ondersteunde invoermethoden selecteren. Als de huidige invoermethode niet is toegestaan op basis van dit beleid, wordt de invoermethode overgeschakeld naar het hardwaretoetsenbord (indien toegestaan) of het eerste geldige item in deze lijst. Alle ongeldige of niet-ondersteunde invoermethoden in deze lijst worden genegeerd.</translation>
 <translation id="1138294736309071213">Dit beleid is alleen ingeschakeld in de winkelmodus.
 
       Bepaalt de periode waarna de schermbeveiliging wordt weergegeven in het inlogvenster voor apparaten in de winkelmodus.
@@ -68,6 +71,7 @@
 <translation id="1221359380862872747">Gespecificeerde URL's laden in demo-aanmeldvenster</translation>
 <translation id="1223789468190631420">Inschakelstatus van Safe Browsing voor vertrouwde bronnen</translation>
 <translation id="123081309365616809">Casten van content naar het apparaat inschakelen</translation>
+<translation id="1243570869342663665">SafeSites-filters voor content voor volwassenen beheren.</translation>
 <translation id="1257550411839719984">Standaardmap voor downloads instellen</translation>
 <translation id="1265053460044691532">De offline inlogtijd beperken voor een gebruiker die is geverifieerd via SAML</translation>
 <translation id="1291880496936992484">Waarschuwing: RC4 wordt volledig verwijderd van <ph name="PRODUCT_NAME" /> na versie 52 (rond september 2016) en dit beleid werkt vanaf dan niet meer.
@@ -257,6 +261,7 @@
       De notatie van de waarde volgt de naamgeving van tijdzones in de 'IANA Time Zone Database' (zie https://en.wikipedia.org/wiki/Tz_database). Je kunt naar veel tijdzones verwijzen via 'continent/grote_stad' of 'oceaan/grote_stad'.
 
       Als je dit beleid instelt, wordt automatische bepaling van de tijdzone op basis van de apparaatlocatie volledig uitgeschakeld. Ook wordt het beleid SystemTimezoneAutomaticDetection overschreven.</translation>
+<translation id="1885782360784839335">Weergave van promotiecontent op volledig tabblad inschakelen</translation>
 <translation id="1888871729456797026">De inschrijvingstoken van het cloudbeleid op een desktop</translation>
 <translation id="1897365952389968758">Alle sites toestaan JavaScript uit te voeren</translation>
 <translation id="1906888171268104594">Hiermee wordt beheerd of gebruiksstatistieken en diagnostische gegevens, waaronder crashrapporten, worden gerapporteerd aan Google.
@@ -371,6 +376,7 @@
       en kan de gebruiker dit naar wens wijzigen. In dit geval wordt
       de standaardwaarde niet opnieuw toegepast na opnieuw opstarten.</translation>
 <translation id="2156132677421487971">Stel beleid voor <ph name="PRODUCT_NAME" /> in, een functie waarmee gebruikers de content van tabbladen, sites of hun bureaublad vanuit de browser naar externe schermen en geluidssystemen kunnen sturen.</translation>
+<translation id="2166472654199325139">Sites niet filteren op content voor volwassenen</translation>
 <translation id="2168397434410358693">Inactieve vertraging wanneer op netstroom wordt gewerkt</translation>
 <translation id="2170233653554726857">WPAD-optimalisatie inschakelen</translation>
 <translation id="2176565653304920879">Als dit beleid is ingesteld, wordt het proces voor automatische tijdzonedetectie op een van de volgende manieren uitgevoerd, afhankelijk van de waarde van de instelling:
@@ -516,6 +522,12 @@
 <translation id="2466131534462628618">Captive portal-verificatie negeert proxyserver</translation>
 <translation id="2482676533225429905">Systeemeigen berichten</translation>
 <translation id="2483146640187052324">Netwerkacties voorspellen voor elke netwerkverbinding</translation>
+<translation id="2484208301968418871">Met dit beleid wordt de toepassing van het SafeSites URL-filter beheerd.
+      Dit filter gebruikt de Google Safe Search API om URL's al dan niet te classificeren als pornografisch.
+
+      Wanneer dit beleid niet is geconfigureerd of is ingesteld op 'Sites niet filteren op content voor volwassenen', worden de sites niet gefilterd.
+
+      Wanneer dit beleid is ingesteld op 'Sites op hoofdniveau filteren op content voor volwassenen', worden de sites gefilterd die zijn geclassificeerd als pornografisch.</translation>
 <translation id="2485721741875148980">Als dit beleid is ingesteld op 'true' (waar), moet de gebruiker inloggen op <ph name="PRODUCT_NAME" /> met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'false' (onwaar). Houd er rekening mee dat bestaande, niet-ingelogde profielen worden vergrendeld en niet toegankelijk zijn na inschakeling van dit beleid. Raadpleeg het Helpcentrum-artikel voor meer informatie.
 
       Als dit beleid is ingesteld op 'false' (onwaar) of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen op <ph name="PRODUCT_NAME" />.</translation>
@@ -1055,7 +1067,7 @@
 
       Als dit beleid is ingesteld op 'waar', worden netwerkpakketten voor bijhouden (zogenaamde <ph name="HEARTBEATS_TERM" />) verzonden.
       Als dit beleid is ingesteld op 'onwaar' of niet is ingesteld, worden er geen pakketten verzonden.</translation>
-<translation id="3950239119790560549">Tijdbeperkingen voor updates</translation>
+<translation id="3950239119790560549">Tijdsbeperkingen voor updates</translation>
 <translation id="3958586912393694012">Toestaan dat Smart Lock wordt gebruikt</translation>
 <translation id="3963602271515417124">Als dit beleid is ingesteld op 'waar', wordt bevestiging op afstand toegestaan voor het apparaat en wordt er automatisch een certificaat gegenereerd en naar de Device Management Server geüpload.
 
@@ -1351,6 +1363,7 @@
 <translation id="4834526953114077364">De gebruikers die het langst geleden gebruikt zijn en gedurende de laatste drie maanden niet zijn ingelogd, worden verwijderd totdat er voldoende vrije ruimte is</translation>
 <translation id="4838572175671839397">Bevat een reguliere expressie die wordt gebruikt om te bepalen welke gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" />. Er wordt een fout weergegeven als een gebruiker probeert in te loggen met een gebruikersnaam die niet overeenkomt met dit patroon. Als dit beleid niet wordt ingesteld of leeg blijft, kan elke gebruiker inloggen op <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Modus voor volledig scherm toestaan</translation>
+<translation id="4861767323695239729">De toegestane invoermethoden in een gebruikerssessie configureren</translation>
 <translation id="4869787217450099946">Geeft aan of schermactiveringsvergrendeling is toegestaan. Deze kan worden aangevraagd door extensies via de API voor de stroombeheerextensie.
 
           Als dit beleid is ingesteld als 'true' of als het niet is ingesteld, wordt schermactiveringsvergrendeling ingesteld voor stroombeheer.
@@ -1941,6 +1954,7 @@
       Als dit beleid is uitgeschakeld of niet wordt ingesteld, worden alleen de gewone lokale profielen gebruikt.
 
       Met het beleid <ph name="SYNC_DISABLED_POLICY_NAME" /> wordt alle gegevenssynchronisatie uitgeschakeld (RoamingProfileSupportEnabled wordt overschreven).</translation>
+<translation id="6731757988219967594">Sites op hoofdniveau (maar geen ingesloten iframes) filteren op content voor volwassenen</translation>
 <translation id="6735701345096330595">Inschakelen van spellingcontrole voor talen afdwingen</translation>
 <translation id="673699536430961464">Deze instelling biedt gebruikers de mogelijkheid om in het contentgedeelte van hun browservenster tussen Google-accounts te schakelen nadat ze zijn ingelogd op hun <ph name="PRODUCT_OS_NAME" />-apparaat.
 
@@ -1963,6 +1977,13 @@
 <translation id="6757438632136860443">Hiermee kun je een lijst met URL-patronen opgeven voor sites die de <ph name="FLASH_PLUGIN_NAME" />-plug-in mogen uitvoeren.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites. Je vindt deze in het beleid 'DefaultPluginsSetting' (als dit is ingesteld), of in de persoonlijke configuratie van de gebruiker.</translation>
+<translation id="6762235610019366960">Hiermee kun je de presentatie van promotie- en/of educatieve content op een volledig tabblad beheren in <ph name="PRODUCT_NAME" />.
+
+      Als dit beleid niet is geconfigureerd of als het is ingeschakeld (ingesteld op 'true'), kan <ph name="PRODUCT_NAME" /> content op een volledig tabblad aan gebruikers laten zien om productinformatie te leveren.
+
+      Als dit beleid is uitgeschakeld (ingesteld op 'false'), laat <ph name="PRODUCT_NAME" /> geen content op een volledig tabblad aan gebruikers zien om productinformatie te leveren.
+
+      Deze instelling beheert de presentatie van de welkomstpagina's waar gebruikers kunnen inloggen bij <ph name="PRODUCT_NAME" />, de browser kunnen instellen als hun standaardbrowser of anderszins informatie krijgen over productfuncties.</translation>
 <translation id="6766216162565713893">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een Bluetooth-apparaat in de buurt</translation>
 <translation id="6770454900105963262">Informatie over actieve kiosk-sessies melden</translation>
 <translation id="6786747875388722282">Extensies</translation>
@@ -2177,7 +2198,7 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7249828445670652637">CA-certificaten van <ph name="PRODUCT_OS_NAME" /> voor ARC-apps inschakelen</translation>
 <translation id="725322441686394886">Als dit niet is ingesteld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De gebruiker kan ervoor kiezen de resultaten van de opschoning met Google te delen, zodat Google de detectie van ongewenste software kan verbeteren. Deze resultaten bevatten metadata van bestanden, automatisch geïnstalleerde extensies en registersleutels, zoals wordt beschreven in de whitepaper over Chrome en privacy.
 
-      Als dit is uitgeschakeld en Chrome Cleanup ongewenste software detecteert, worden er geen metadata van de scan met Google gedeeld. Het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled wordt genegeerd. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden niet met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te doen.
+      Als dit is uitgeschakeld en Chrome Cleanup ongewenste software detecteert, worden er geen metadata van de scan met Google gedeeld. Het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled wordt genegeerd. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden niet met Google gedeeld, en de gebruiker krijgt niet de keuze om dit wel te doen.
 
       Als dit is ingeschakeld en Chrome Cleanup ongewenste software detecteert, kan Chrome Cleanup metadata over de scan doorgeven aan Google in overeenstemming met het beleid dat is ingesteld door SafeBrowsingExtendedReportingEnabled. Chrome Cleanup vraagt de gebruiker of de ongewenste software moet worden verwijderd. De resultaten van de opschoning worden met Google gedeeld, en de gebruiker krijgt niet de keuze om dit te voorkomen.
 

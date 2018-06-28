@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">Lisa seadmesse nõude ID</translation>
 <translation id="2175042898143291048">Tee seda alati</translation>
 <translation id="2175607476662778685">Kiirkäivitusriba</translation>
-<translation id="2176087259161165020">Muud allikad</translation>
 <translation id="2177950615300672361">Inkognito vaheleht: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> domeenil <ph name="PEPPER_PLUGIN_DOMAIN" /> soovib juurdepääsu teie arvutile</translation>
 <translation id="2178614541317717477">CA turvarike</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">Kausta „<ph name="FOLDER_NAME" />” ei saa luua. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Klõpsake tänase vigurlogo vaatamiseks</translation>
 <translation id="2231238007119540260">Serveri sertifikaadi kustutamisel taastate selle serveri tavapärased turvalisuse kontrollid ja selle taotlemine vajab kehtivat sertifikaati.</translation>
-<translation id="2232379019872353004">Saadab Google'ile teatud süsteemiteavet ja lehe sisu</translation>
 <translation id="2232876851878324699">Fail sisaldas ühte sertifikaati, mida ei imporditud:</translation>
 <translation id="2233502537820838181">&amp;Lisateave</translation>
 <translation id="2238379619048995541">Sageduse oleku andmed</translation>
@@ -2020,7 +2018,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="4147897805161313378">Google Photos</translation>
 <translation id="4150201353443180367">Kuva</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 vaheleht}other{# vahelehte}}</translation>
-<translation id="4153038609398984088">Vabandust, ei saa domeeniga liitumise seadistust sõeluda. Võtke ühendust administraatoriga.</translation>
 <translation id="4154664944169082762">Sõrmejäljed</translation>
 <translation id="4157869833395312646">Microsofti Server Gated Cryptography</translation>
 <translation id="4158739975813877944">Ava esitusloend</translation>
@@ -3128,7 +3125,7 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
   Avalik eksponent (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bitti):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">Sees</translation>
-<translation id="5916878242223710315">Avamise seadistus</translation>
+<translation id="5916878242223710315">Ava seadistus</translation>
 <translation id="59174027418879706">Lubatud</translation>
 <translation id="5920543303088087579">Administraator on selle võrguga ühenduse loomise keelanud</translation>
 <translation id="5920835625712313205">Chrome OS-i süsteemi pildikirjutaja</translation>
@@ -5063,7 +5060,6 @@ Inimesed, kelle ühendus on aeglane, ei pruugi teie sisu näha.</translation>
 <translation id="8978154919215542464">Sees – sünkrooni kõik</translation>
 <translation id="897939795688207351">Saidil <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – jooksis kokku</translation>
-<translation id="8983677657449185470">Aidake ohutut sirvimist paremaks muuta</translation>
 <translation id="8984654317541110628">Failide jagamise URL</translation>
 <translation id="8986362086234534611">Unusta</translation>
 <translation id="8986494364107987395">Saada kasutusstatistika ja krahhiaruanded automaatselt Google'ile</translation>

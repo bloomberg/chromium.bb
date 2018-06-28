@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">ఈ పరికరానికి అభ్యర్థన IDను జోడించండి</translation>
 <translation id="2175042898143291048">ఎల్లప్పుడూ దీన్ని చేయి</translation>
 <translation id="2175607476662778685">శీఘ్ర ప్రాయోగిక పట్టీ</translation>
-<translation id="2176087259161165020">ఇతర మూలాధారాలు</translation>
 <translation id="2177950615300672361">అజ్ఞాత ట్యాబ్: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" />లోని <ph name="PEPPER_PLUGIN_NAME" /> మీ కంప్యూటర్‌ని యాక్సెస్ చేయాలనుకుంటోంది</translation>
 <translation id="2178614541317717477">CA రాజీ</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" ఫోల్డర్‌ను సృష్టించడం సాధ్యపడలేదు. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">నేటి డూడుల్‌ని వీక్షించడం కోసం క్లిక్ చేయండి</translation>
 <translation id="2231238007119540260">మీరు సర్వర్ ప్రమాణపత్రాన్ని తొలగిస్తే, సర్వర్ కోసం మీరు సాధారణ భద్రతా తనిఖీలను పునరుద్ధరించండి మరియు చెల్లుబాటు అయ్యే ప్రమాణపత్రాన్ని ఉపయోగించడానికి ఇది అవసరం.</translation>
-<translation id="2232379019872353004">కొంత సిస్టమ్ సమాచారం మరియు పేజీ కంటెంట్‌ను Googleకి పంపుతుంది</translation>
 <translation id="2232876851878324699">ఫైల్ దిగుమతి చెయ్యని ఒక ప్రమాణపత్రాన్ని కలిగి ఉంది:</translation>
 <translation id="2233502537820838181">&amp;మరింత సమాచారం</translation>
 <translation id="2238379619048995541">తరచుదనం స్థితి డేటా</translation>
@@ -2020,7 +2018,6 @@
 <translation id="4147897805161313378">Google ఫోటోలు</translation>
 <translation id="4150201353443180367">ప్రదర్శన</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 ట్యాబ్}other{# ట్యాబ్‌లు}}</translation>
-<translation id="4153038609398984088">అయ్యో! డొమైన్ చేరిక కాన్ఫిగరేషన్‌ను అన్వయించడం సాధ్యపడలేదు. దయచేసి మీ నిర్వాహకుడిని సంప్రదించండి.</translation>
 <translation id="4154664944169082762">వేలిముద్రలు</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">ప్లే జాబితాను తెరువు</translation>
@@ -5058,7 +5055,6 @@
 <translation id="8978154919215542464">ఆన్‌లో ఉంది - ప్రతిదీ సమకాలీకరిస్తుంది</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" />లో</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - క్రాష్ అయ్యింది</translation>
-<translation id="8983677657449185470">సురక్షిత బ్రౌజింగ్‌ను మెరుగుపరచడంలో సహాయపడండి</translation>
 <translation id="8984654317541110628">ఫైల్ షేర్ URL</translation>
 <translation id="8986362086234534611">మరిచిపోయారా</translation>
 <translation id="8986494364107987395">Googleకు స్వయంచాలకంగా ఉపయోగ గణాంకాలను మరియు క్రాష్ నివేదికలను పంపు</translation>

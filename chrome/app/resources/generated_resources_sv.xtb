@@ -767,7 +767,6 @@
 <translation id="2173801458090845390">Lägg till rekvirerings-id på enheten</translation>
 <translation id="2175042898143291048">Gör alltid det</translation>
 <translation id="2175607476662778685">Fältet Snabbstart</translation>
-<translation id="2176087259161165020">Andra källor</translation>
 <translation id="2177950615300672361">Fliken Inkognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> på <ph name="PEPPER_PLUGIN_DOMAIN" /> vill ha åtkomst till datorn</translation>
 <translation id="2178614541317717477">CA-kompromiss</translation>
@@ -807,7 +806,6 @@
 <translation id="2230062665678605299">Det går inte att skapa mappen <ph name="FOLDER_NAME" />. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Klicka här om du vill visa dagens doodle</translation>
 <translation id="2231238007119540260">Om du tar bort ett servercertifikat återställer du de vanliga säkerhetskontrollerna för servern. Därefter måste servern använda ett giltigt certifikat.</translation>
-<translation id="2232379019872353004">Skickar viss information om systemet och sidors innehåll till Google</translation>
 <translation id="2232876851878324699">Filen innehöll ett certifikat och det importerades inte:</translation>
 <translation id="2233502537820838181">Mer information</translation>
 <translation id="2238379619048995541">Data för frekvenstillstånd</translation>
@@ -2019,7 +2017,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="4147897805161313378">Google Foto</translation>
 <translation id="4150201353443180367">Skärm</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 flik}other{# flikar}}</translation>
-<translation id="4153038609398984088">Hoppsan. Det gick inte att analysera konfigurationen för domänanslutningar. Kontakta administratören.</translation>
 <translation id="4154664944169082762">Fingeravtryck</translation>
 <translation id="4157869833395312646">Microsofts serverstyrda kryptografi</translation>
 <translation id="4158739975813877944">Öppna spellistan</translation>
@@ -5060,7 +5057,6 @@ Spara nyckelfilen på ett säkert ställe. Den behövs om du ska skapa nya versi
 <translation id="8978154919215542464">På – synkronisera allt</translation>
 <translation id="897939795688207351">På <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – kraschat</translation>
-<translation id="8983677657449185470">Bidra till att förbättra Säker webbsökning</translation>
 <translation id="8984654317541110628">Webbadress för filresurs</translation>
 <translation id="8986362086234534611">Glöm</translation>
 <translation id="8986494364107987395">Skicka användningsstatistik och kraschrapporter till Google automatiskt</translation>

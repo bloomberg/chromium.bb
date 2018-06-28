@@ -42,6 +42,9 @@
       Vai alla pagina https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco delle variabili che possono essere utilizzate.
 
       Se la norma non viene impostata, viene utilizzata la directory della cache predefinita e l'utente può ignorarla con il flag della riga di comando "--disk-cache-dir".</translation>
+<translation id="1135264353752122851">Consente di configurare i layout da tastiera consentiti per le sessioni utente di <ph name="PRODUCT_OS_NAME" />.
+
+      Se questa norma viene impostata, l'utente potrà scegliere soltanto uno dei metodi di immissione specificati in questa norma. Se la norma non viene impostata o viene impostato un elenco vuoto, l'utente potrà selezionare tutti i metodi di immissione supportati. Se il metodo di immissione corrente non è consentito da questa norma, verrà sostituito dal layout della tastiera hardware (se consentito) o dalla prima voce valida di questo elenco. Tutti i metodi di immissione non validi o non supportati di questo elenco verranno ignorati.</translation>
 <translation id="1138294736309071213">Questa norma è attiva soltanto in modalità retail.
 
       Consente di stabilire il periodo di tempo che deve trascorrere prima della visualizzazione dello screensaver nella schermata di accesso dei dispositivi in modalità retail.
@@ -66,6 +69,7 @@
 <translation id="1221359380862872747">Carica gli URL specificati all'accesso demo</translation>
 <translation id="1223789468190631420">Stato attivazione Navigazione sicura per origini attendibili</translation>
 <translation id="123081309365616809">Attiva la trasmissione di contenuti al dispositivo</translation>
+<translation id="1243570869342663665">Controlla il filtro dei contenuti per adulti di SafeSites.</translation>
 <translation id="1257550411839719984">Imposta directory di download predefinita</translation>
 <translation id="1265053460044691532">Limita il tempo per cui un utente autenticato tramite SAML può eseguire l'accesso offline</translation>
 <translation id="1291880496936992484">Avviso. RC4 sarà rimosso completamente da <ph name="PRODUCT_NAME" /> dopo la versione 52 (nel periodo di settembre 2016), dopodiché questa norma non sarà più attiva.
@@ -246,6 +250,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
       Il formato del valore segue quello dei nomi dei fusi orari dello "IANA Time Zone Database" (visita il sito "https://en.wikipedia.org/wiki/Tz_database"). In particolare, gran parte dei fusi orari può essere indicata come "continent/large_city" o "ocean/large_city".
 
       Se questa norma viene impostata la scelta automatica del fuso orario in base alla posizione del dispositivo viene completamente disattivata. Sostituisce anche la norma SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Attiva la visualizzazione di contenuti promozionali a scheda intera</translation>
 <translation id="1888871729456797026">Il token di registrazione della norma relativa alla cloud su desktop</translation>
 <translation id="1897365952389968758">Consenti l'esecuzione di JavaScript in tutti i siti</translation>
 <translation id="1906888171268104594">Consente di stabilire se riferire o meno le metriche sull'utilizzo e i dati diagnostici, inclusi i rapporti sugli arresti anomali, a Google.
@@ -352,6 +357,7 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 
       Se la norma non viene impostata, il valore predefinito è 0° e l'utente può modificarlo liberamente. In questo caso, il valore predefinito non viene applicato nuovamente al riavvio.</translation>
 <translation id="2156132677421487971">Consente di configurare le norme per <ph name="PRODUCT_NAME" />, una funzione che permette agli utenti di inviare i contenuti di schede, siti o del desktop dal browser a schermi remoti e sistemi audio.</translation>
+<translation id="2166472654199325139">Non filtrare i siti di contenuti per adulti</translation>
 <translation id="2168397434410358693">Ritardo inattività in caso di utilizzo di CA</translation>
 <translation id="2170233653554726857">Attiva ottimizzazione WPAD</translation>
 <translation id="2176565653304920879">Se questa norma viene impostata, il flusso di rilevamento automatico del fuso orario sarà uno dei seguenti, a seconda del valore dell'impostazione:
@@ -500,6 +506,12 @@ Questa norma viene rispettata soltanto se la norma "DefaultSearchProviderEnabled
 <translation id="2466131534462628618">L'autenticazione tramite captive portal ignora il proxy</translation>
 <translation id="2482676533225429905">Messaggi nativi</translation>
 <translation id="2483146640187052324">Prevedi le azioni di rete su qualsiasi connessione di rete</translation>
+<translation id="2484208301968418871">Questa norma consente di gestire l'applicazione del filtro di URL di SafeSites.
+      Questo filtro usa l'API Google SafeSearch per classificare gli URL come pornografici o meno.
+
+      Se questa norma non viene configurata o viene impostata su "Non filtrare i siti di contenuti per adulti", i siti non verranno filtrati.
+
+      Se questa norma viene impostata su "Filtra i siti di contenuti per adulti di primo livello", i siti classificati come pornografici verranno filtrati.</translation>
 <translation id="2485721741875148980">Se la norma viene impostata su true, l'utente deve accedere a <ph name="PRODUCT_NAME" /> con il proprio profilo prima di utilizzare il browser e il valore predefinito di BrowserGuestModeEnabled viene impostato su false. Tieni presente che i profili non firmati esistenti saranno bloccati e inaccessibili dopo l'attivazione di questa norma. Per ulteriori informazioni, consulta l'articolo del Centro assistenza.
 
       Se la norma viene impostata su false o non viene configurata, l'utente può utilizzare il browser senza accedere a <ph name="PRODUCT_NAME" />.</translation>
@@ -1252,10 +1264,10 @@ Se questa norma non viene impostata, l'impostazione verrà attivata ma gli utent
 
           Se questa norma non è impostata, <ph name="PRODUCT_NAME" /> non delegherà le credenziali utente, anche se viene rilevato un server sulla Intranet.</translation>
 <translation id="4752880493649142945">Certificato client per la connessione a RemoteAccessHostTokenValidationUrl</translation>
-<translation id="4757671984625088193">Se questa norma viene impostata su vero o non viene impostata, <ph name="PRODUCT_NAME" /> ti suggerirà pagine correlate alla pagina corrente.
+<translation id="4757671984625088193">Se questa norma viene impostata su true o non viene impostata, <ph name="PRODUCT_NAME" /> ti suggerirà pagine correlate alla pagina corrente.
       Questi suggerimenti vengono recuperati da remoto dai server di Google.
 
-      Se la norma è impostata su falso non verranno recuperati o mostrati suggerimenti.</translation>
+      Se la norma è impostata su false, non verranno recuperati o mostrati suggerimenti.</translation>
 <translation id="4791031774429044540">Consente di attivare la funzione di accessibilità del puntatore grande.
 
 Se la norma viene impostata su true, il puntatore grande sarà sempre attivo.
@@ -1292,6 +1304,7 @@ Viene visualizzato un errore appropriato se un utente tenta di accedere con un n
 
 Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente potrà accedere a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
+<translation id="4861767323695239729">Configura i metodi di immissione consentiti in una sessione utente</translation>
 <translation id="4869787217450099946">Specifica se sono consentiti i Wakelock dello schermo. I Wakelock dello schermo possono essere richiesti dalle estensioni tramite l'API dell'estensione di gestione dell'alimentazione.
 
           Se questa norma è impostata su True o non è impostata, verranno rispettati i Wakelock dello schermo nella gestione dell'alimentazione.
@@ -1834,6 +1847,7 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
       Se questa norma viene disattivata o non viene impostata, saranno utilizzati solo i normali profili locali.
 
       La norma <ph name="SYNC_DISABLED_POLICY_NAME" /> consente di disattivare la sincronizzazione di tutti i dati e sostituisce la norma RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtra i siti di contenuti per adulti di primo livello (ma non gli iframe incorporati)</translation>
 <translation id="6735701345096330595">Forza attivazione lingue per controllo ortografico</translation>
 <translation id="673699536430961464">Questa impostazione consente agli utenti di passare da un account Google a un altro all'interno dell'area dei contenuti della finestra del browser dopo avere eseguito l'accesso al dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -1856,6 +1870,13 @@ Se questa norma non viene impostata o se l'elenco è vuoto, sarà possibile acce
 <translation id="6757438632136860443">Consente di impostare un elenco di pattern URL che specificano i siti che possono eseguire il plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se questa norma non viene impostata, per tutti i siti verrà utilizzato il valore predefinito globale della norma "DefaultPluginsSetting", se impostata, oppure la configurazione personale dell'utente..</translation>
+<translation id="6762235610019366960">Ti consente di gestire la presentazione dei contenuti promozionali e/o informativi a scheda intera in <ph name="PRODUCT_NAME" />.
+
+      Se la norma non viene configurata o viene attivata (impostata su true), <ph name="PRODUCT_NAME" /> potrebbe mostrare agli utenti i contenuti a scheda intera per fornire informazioni sul prodotto.
+
+      Se viene disattivata (impostata su false), <ph name="PRODUCT_NAME" /> non mostrerà agli utenti i contenuti a scheda intera per fornire informazioni sul prodotto.
+
+      Questa impostazione consente di gestire la presentazione delle pagine di benvenuto che consentono agli utenti di accedere a <ph name="PRODUCT_NAME" /> o sceglierlo come browser predefinito oppure che danno agli utenti informazioni sulle funzionalità del prodotto.</translation>
 <translation id="6766216162565713893">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo Bluetooth nelle vicinanze.</translation>
 <translation id="6770454900105963262">Segnala informazioni sulle sessioni kiosk attive</translation>
 <translation id="6786747875388722282">Estensioni</translation>
@@ -2056,7 +2077,7 @@ Se la norma viene impostata, gli utenti possono ignorarla temporaneamente attiva
 
 Se la norma non viene impostata, l'ingrandimento dello schermo viene disattivato alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare l'ingrandimento dello schermo in qualsiasi momento e il relativo stato nella schermata di accesso persiste per tutti gli utenti.</translation>
 <translation id="7249828445670652637">Attiva i certificati CA <ph name="PRODUCT_OS_NAME" /> per le app ARC</translation>
-<translation id="725322441686394886">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente potrà decidere di condividere i risultati della pulizia con Google per contribuire a rilevare software indesiderato in futuro. Questi risultati contengono metadati di file e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
+<translation id="725322441686394886">Se questa norma non viene impostata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google potrebbero essere segnalati metadati relativi alla scansione in base alla norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà poi all'utente se vuole ripulire il software indesiderato. L'utente potrà decidere di condividere i risultati della pulizia con Google per contribuire a rilevare software indesiderato in futuro. Questi risultati contengono metadati di file, estensioni installate automaticamente e chiavi del registro di sistema, come spiegato nel Whitepaper sulla privacy di Chrome.
 
       Se la norma viene disattivata, nel caso in cui Chrome Software Cleaner dovesse rilevare software indesiderato, a Google non verranno segnalati metadati relativi alla scansione, ignorando qualsiasi norma stabilita da SafeBrowsingExtendedReportingEnabled. Chrome Software Cleaner chiederà all'utente se vuole ripulire il software indesiderato. I risultati della pulizia non verranno segnalati a Google e l'utente non avrà la possibilità di segnalarli.
 
@@ -2796,9 +2817,9 @@ Il valore della norma deve essere specificato in millisecondi. I valori devono e
 <translation id="944817693306670849">Imposta dimensioni cache su disco</translation>
 <translation id="981346395360763138">Servizi di geolocalizzazione di Google disabilitati</translation>
 <translation id="982497069985795632">Attiva il controllo ortografico</translation>
-<translation id="988537626274109600">Questa norma consente di regolare i tempi di intervallo durante i quali al dispositivo <ph name="PRODUCT_OS_NAME" /> non è consentito verificare automaticamente la disponibilità di aggiornamenti.
+<translation id="988537626274109600">Questa norma consente di regolare gli intervalli di tempo durante i quali al dispositivo <ph name="PRODUCT_OS_NAME" /> non è consentito verificare automaticamente la disponibilità di aggiornamenti.
       Quando questa norma è impostata su un elenco valido di intervalli di tempo:
-      Ai dispositivi non sarà consentito verificare automaticamente la disponibilità di aggiornamenti durante l'intervallo di tempo specificato. A causa di possibili motivi di sicurezza, questa norma non avrà conseguenze sui dispositivi che richiedono il rollback o sono inferiori alla versione minima <ph name="PRODUCT_OS_NAME" />. Inoltre questa norma non impedirà le verifiche degli aggiornamenti richieste dagli utenti o dagli amministratori.
-      Quando la norma non viene impostata o non contiene tempi di intervallo:
-      Questa norma non bloccherà nessuna verifica degli aggiornamenti automatica, ma altre norme potrebbero farlo.</translation>
+      Ai dispositivi non sarà consentito verificare automaticamente la disponibilità di aggiornamenti durante gli intervalli di tempo specificati. A causa di possibili motivi di sicurezza, questa norma non avrà conseguenze sui dispositivi che richiedono il rollback o dispongono di una versione inferiore alla versione minima di <ph name="PRODUCT_OS_NAME" />. Inoltre questa norma non impedirà le verifiche degli aggiornamenti richieste dagli utenti o dagli amministratori.
+      Quando la norma non viene impostata o non contiene intervalli di tempo:
+      Le verifiche automatiche degli aggiornamenti non verranno bloccate da questa norma, ma potrebbero essere bloccate da altre norme.</translation>
 </translationbundle>

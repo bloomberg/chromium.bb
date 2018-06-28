@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">إضافة معرّف الطلبات إلى هذا الجهاز</translation>
 <translation id="2175042898143291048">أجرِ ذلك دائمًا</translation>
 <translation id="2175607476662778685">شريط التشغيل السريع</translation>
-<translation id="2176087259161165020">مصادر أخرى</translation>
 <translation id="2177950615300672361">علامة تبويب التصفح المتخفي: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">يريد <ph name="PEPPER_PLUGIN_NAME" /> الموجود على <ph name="PEPPER_PLUGIN_DOMAIN" /> الوصول إلى جهاز الكمبيوتر.</translation>
 <translation id="2178614541317717477">‏اختراق المرجع المصدق (CA)</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">تعذر إنشاء المجلد "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">انقر لعرض رسومات الشعار المبتكرة لهذا اليوم.</translation>
 <translation id="2231238007119540260">في حالة حذف شهادة الخادم، تتم استعادة العمليات المعتادة للتحقق من الأمان لذلك الخادم وسيتطلب الأمر استخدامه لشهادة صالحة.</translation>
-<translation id="2232379019872353004">‏يُرسِل بعض معلومات النظام ومحتوى الصفحة إلى Google.</translation>
 <translation id="2232876851878324699">احتوى الملف على شهادة واحدة، لم يتم استيرادها:</translation>
 <translation id="2233502537820838181">&amp;مزيد من المعلومات</translation>
 <translation id="2238379619048995541">بيانات حالة التردد</translation>
@@ -2015,7 +2013,6 @@
 <translation id="4147897805161313378">‏صور Google‏‏</translation>
 <translation id="4150201353443180367">عرض</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{علامة تبويب واحدة}zero{# من علامات التبويب}two{علامتا تبويب (#)}few{# علامات تبويب}many{# علامة تبويب}other{# من علامات التبويب}}</translation>
-<translation id="4153038609398984088">عفوًا، يتعذَّر تحليل تهيئة انضمام النطاق. يُرجى الاتصال بالمشرف.</translation>
 <translation id="4154664944169082762">بصمات الأصابع</translation>
 <translation id="4157869833395312646">‏تشفير عن طريق بوابة خادم Microsoft</translation>
 <translation id="4158739975813877944">فتح قائمة التشغيل</translation>
@@ -2573,7 +2570,7 @@
 <translation id="5099354524039520280">لأعلى</translation>
 <translation id="5100114659116077956">‏لكي تحصل على أحدث العناصر، يلزم تحديث Chromebox.</translation>
 <translation id="5101042277149003567">فتح  جميع الإشارات المرجعية</translation>
-<translation id="5104546332954397226">استخدام الهاتف بصفته "مفتاح أمان"</translation>
+<translation id="5104546332954397226">استخدام الهاتف كـ "مفتاح أمان"</translation>
 <translation id="5105855035535475848">تثبيت علامات التبويب</translation>
 <translation id="5108967062857032718">‏الإعدادات - إزالة تطبيقات Android</translation>
 <translation id="5109044022078737958">Mia</translation>
@@ -2770,7 +2767,7 @@
 <translation id="5390100381392048184">السماح للمواقع بتشغيل الصوت</translation>
 <translation id="5390284375844109566">قاعدة بيانات مفهرسة</translation>
 <translation id="5390743329570580756">الإرسال إلى</translation>
-<translation id="5392327114396848796">استخدام "مفتاح أمان" مُضمَّن</translation>
+<translation id="5392327114396848796">استخدام "مفتاح أمان" مُدمَج</translation>
 <translation id="5397794290049113714">أنت</translation>
 <translation id="5398572795982417028">مرجع صفحة خارج الحدود المفروضة، الحد الأقصى هو <ph name="MAXIMUM_PAGE" /></translation>
 <translation id="5398772614898833570">تم حظر الإعلانات</translation>
@@ -3122,7 +3119,7 @@
   الأس العام (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> بت):
   <ph name="EXPONENT_HEX_DUMP" /></translation>
 <translation id="5916664084637901428">تشغيل</translation>
-<translation id="5916878242223710315">إلغاء قفل التهيئة</translation>
+<translation id="5916878242223710315">فتح قفل التهيئة</translation>
 <translation id="59174027418879706">تم التمكين</translation>
 <translation id="5920543303088087579">تم إيقاف الربط بهذه الشبكة بواسطة المشرف</translation>
 <translation id="5920835625712313205">‏كاتب الصور لنظام التشغيل Chrome</translation>
@@ -5057,7 +5054,6 @@
 <translation id="8978154919215542464">تشغيل - مزامنة كل شيء</translation>
 <translation id="897939795688207351">على <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - تعطُّل</translation>
-<translation id="8983677657449185470">المساعدة في تحسين التصفُّح الآمن</translation>
 <translation id="8984654317541110628">‏عنوان URL لخادم مشاركة الملفات</translation>
 <translation id="8986362086234534611">حذف</translation>
 <translation id="8986494364107987395">‏إرسال إحصائيات الاستخدام وتقارير الأعطال إلى Google تلقائيًا</translation>

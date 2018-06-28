@@ -714,7 +714,7 @@ Ikiwa sera imewekwa kuwa sivyo au haijawekwa, matukio hayatarekodiwa.</translati
           Ikiwa sera hii itasalia kama haijawekwa, 'AllowJavaScript' itatumiwa na mtumiaji ataweza kuibadilisha.</translation>
 <translation id="3038323923255997294">Endelea kuendesha programu za mandharinyuma wakati <ph name="PRODUCT_NAME" /> imefungwa</translation>
 <translation id="3046192273793919231">Tuma vifurushi vya mtandao kwenye seva ya udhibiti ili kufuatilia hali ya mtandao</translation>
-<translation id="3047732214002457234">Hudhibiti jinsi Kipengele cha Kulinda Chrome huripoti data kwa Google</translation>
+<translation id="3047732214002457234">Hudhibiti jinsi Kipengele cha Kusafisha Chrome huripoti data kwa Google</translation>
 <translation id="3048744057455266684">Sera hii ikiwekwa na URL ya utafutaji inayopendekezwa kutoka kwenye sandukuu iwe na kigezo hiki katika mtiririko wa hoja au katika kitambulishi cha kipande, basi pendekezo litaonyesha maneno ya utafutaji na mtoa huduma ya utafutaji badala ya URL ya utafutaji ghafi.
 
           Sera hii ni ya hiari. Isipowekwa, mabadiliko ya hoja ya utafutaji hayatatekelezwa.
@@ -2168,11 +2168,11 @@ Kama umeweka sera hii, watumiaji wanaweza kuipuuza kwa muda kwa kuwasha au kuzim
 
 Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika akaunti itakapoonyeshwa kwanza. Watumiaji wanaweza kuwasha au kuzima kikuza skrini wakati wowote na hali yake kwenye skrini ya kuingia katika akaunti inaendelea kati ya watumiaji.</translation>
 <translation id="7249828445670652637">Washa kipengele cha vyeti vya CA vya <ph name="PRODUCT_OS_NAME" /> kwenye programu za ARC</translation>
-<translation id="725322441686394886">Iwapo sera haijawekwa na Kipengele cha Kulinda Chrome kitambue programu isiyotakikana, kinaweza kuripoti metadata kuhusu uchanganuzi kwa Google kulingana na sera zilizowekwa na SafeBrowsingExtendedReportingEnabled. Kisha, Kipengele cha Kulinda Chrome kitamwuliza mtumiaji iwapo angependa kuondoa programu isiyotakikana. Mtumiaji anaweza kuchagua kushiriki matokeo ya uondoaji na Google ili kusaidia utambuzi wa programu zisizotakikana baadaye. Matokeo haya yana metadata ya faili, viendelezi vilivyosakinishwa kiotomatiki na funguo za sajili kama ilivyobainishwa na Nakala ya Faragha ya Chrome.
+<translation id="725322441686394886">Iwapo sera haijawekwa na Kipengele cha Kusafisha Chrome kitambue programu isiyotakikana, kinaweza kuripoti metadata kuhusu uchanganuzi kwa Google kulingana na sera zilizowekwa na SafeBrowsingExtendedReportingEnabled. Kisha, Kipengele cha Kusafisha Chrome kitamwuliza mtumiaji iwapo angependa kuondoa programu isiyotakikana. Mtumiaji anaweza kuchagua kushiriki matokeo ya uondoaji na Google ili kusaidia utambuzi wa programu zisizotakikana baadaye. Matokeo haya yana metadata ya faili, viendelezi vilivyosakinishwa kiotomatiki na funguo za sajili kama ilivyobainishwa na Nakala ya Faragha ya Chrome.
 
-      Iwapo sera imezimwa na Kipengee cha Kulinda Chrome kitambue programu isiyotakikana, hakitaripoti metadata inayohusu uchanguzi kwa Google, hali itakayobatilisha sera zozote zilizowekwa na SafeBrowsingExtendedReportingEnabled. Kipengele cha Kulinda Chrome kitamwuliza mtumiaji iwapo angependa kuondoa programu isiyotakikana. Matokeo ya uondoaji hayataripotiwa kwa Google na mtumiaji hatakuwa na chaguo la kufanya hivyo.
+      Iwapo sera imezimwa na Kipengee cha Kusafisha Chrome kitambue programu isiyotakikana, hakitaripoti metadata inayohusu uchanguzi kwa Google, hali itakayobatilisha sera zozote zilizowekwa na SafeBrowsingExtendedReportingEnabled. Kipengele cha Kusafisha Chrome kitamwuliza mtumiaji iwapo angependa kuondoa programu isiyotakikana. Matokeo ya uondoaji hayataripotiwa kwa Google na mtumiaji hatakuwa na chaguo la kufanya hivyo.
 
-      Iwapo sera imewashwa na Kipengele cha Kulinda Chrome kitambue programu isiyotakikana, kinaweza kuripoti metadata kuhusu uchanganuzi kwa Google kulingana na sera zilizowekwa na SafeBrowsingExtendedReportingEnabled. Kipengele cha Kulinda Chrome kitamwuliza mtumiaji iwapo angependa kuondoa programu isiyotakikana. Matokeo ya uondoaji yataripotiwa kwa Google na mtumiaji hatakuwa na chaguo la kuzuia hali hii.
+      Iwapo sera imewashwa na Kipengele cha Kusafisha Chrome kitambue programu isiyotakikana, kinaweza kuripoti metadata kuhusu uchanganuzi kwa Google kulingana na sera zilizowekwa na SafeBrowsingExtendedReportingEnabled. Kipengele cha Kusafisha Chrome kitamwuliza mtumiaji iwapo angependa kuondoa programu isiyotakikana. Matokeo ya uondoaji yataripotiwa kwa Google na mtumiaji hatakuwa na chaguo la kuzuia hali hii.
 
       Sera hii haipatikani katika matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />.</translation>
 <translation id="7258823566580374486">Wezesha uzuiaji wa wapangishaji wa ufikiaji mbali.</translation>
@@ -2240,9 +2240,9 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
       Ikiwa mipangilio hii itazimwa au haitawekwa basi watumiaji wataweza kuchagua kuenda kwenye tovuti iliyoripotiwa baada ya kuonyeshwa onyo.
 
       Angalia https://developers.google.com/safe-browsing ili upate maelezo zaidi kuhusu Kuvinjari Salama.</translation>
-<translation id="7417728346887499628">Ikiwa sera imezimwa, itazuia Kipengele cha Kulinda Chrome kisichanganue mfumo kubaini programu zisizotakikana na kuziondoa. Uwezo wa kuanzisha Kipengele cha Kulinda Chrome kutoka chrome://settings/cleanup umezimwa.
+<translation id="7417728346887499628">Ikiwa sera imezimwa, itazuia Kipengele cha Kusafisha Chrome kisichanganue mfumo kubaini programu zisizotakikana na kuziondoa. Uwezo wa kuanzisha Kipengele cha Kusafisha Chrome kutoka chrome://settings/cleanup umezimwa.
 
-      Ikiwa sera imewekwa kuwa ndivyo au haijawekwa, Kipengele cha Kulinda Chrome kitakagua mfumo mara kwa mara ili kubaini programu zisizotakikana. Ikiwa programu yoyote itapatikana, kitamwuliza mtumiaji iwapo angependa kuiondoa. Uwezo wa kuanzisha Kipengele cha Kulinda Chrome kutoka chrome://settings umewashwa.
+      Ikiwa sera imewekwa kuwa ndivyo au haijawekwa, Kipengele cha Kusafisha Chrome kitakagua mfumo mara kwa mara ili kubaini programu zisizotakikana. Ikiwa programu yoyote itapatikana, kitamwuliza mtumiaji iwapo angependa kuiondoa. Uwezo wa kuanzisha Kipengele cha Kusafisha Chrome kutoka chrome://settings umewashwa.
 
     Sera hii haipatikani kwenye matukio ya Windows ambayo hayajaunganishwa kwenye kikoa cha <ph name="MS_AD_NAME" />.</translation>
 <translation id="7417972229667085380">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho (kimewacha kuendesha huduma)</translation>
@@ -2625,7 +2625,7 @@ Njia inayopendekezwa ya kuweka mipangilio ya sera kwenye Windows ni kupitia GPO,
 <translation id="8339420913453596618">Uthibitishaji wa hatua mbili umezimwa</translation>
 <translation id="8344454543174932833">Ingiza alamisho kutoka kivinjari chaguomsingi wakati wa uendeshaji wa kwanza</translation>
 <translation id="8359734107661430198">Washa API ya ExampleDeprecatedFeature kupitia 2008/09/02</translation>
-<translation id="8367209241899435947">Washa Kipengele cha Kulinda Chrome kwenye Windows</translation>
+<translation id="8367209241899435947">Washa Kipengele cha Kusafisha Chrome kwenye Windows</translation>
 <translation id="8369602308428138533">Kuchelewa kwa kuzima skirini wakati nishati ya AC inapotumika</translation>
 <translation id="8382184662529825177">Washa matumizi ya usahihishaji wa mbali wa kulinda maudhui ya kifaa</translation>
 <translation id="838870586332499308">Wezesha utumiaji wa data nje ya mtandao wako wa kawaida</translation>

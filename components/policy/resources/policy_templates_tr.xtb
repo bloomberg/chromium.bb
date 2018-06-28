@@ -1318,7 +1318,7 @@ politikayı geçersiz kılamaz.
 <translation id="4757671984625088193">Doğru (true) değerine ayarlanır veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" />, geçerli sayfayla ilişkilendirilen sayfalar önerir.
       Bu öneriler uzaktaki Google sunucularından getirilir.
 
-      Bu ayar yanlış (false) değerine ayarlanırsa öneriler getirilmez veya görüntülenmez.</translation>
+      Bu ayar yanlış (false) değerine ayarlanırsa öneri getirilmez veya görüntülenmez.</translation>
 <translation id="4791031774429044540">Büyük imleç erişilebilirlik özelliğini etkinleştir.
 
           Bu politika true (doğru) olarak ayarlanırsa, büyük imleç her zaman etkinleştirilir.

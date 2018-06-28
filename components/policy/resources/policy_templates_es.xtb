@@ -42,6 +42,9 @@
       Para consultar una lista de variables que se pueden utilizar, accede a la página https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Si no se establece esta política, se utilizará la ruta predeterminada de almacenamiento de los archivos, aunque el usuario podrá anularla con el indicador de línea de comandos "--disk-cache-dir".</translation>
+<translation id="1135264353752122851">Establece los diseños de teclado que se permiten en las sesiones de usuario de <ph name="PRODUCT_OS_NAME" />.
+
+      Si se habilita esta política, el usuario solo puede seleccionar uno de los métodos de introducción especificados por la política. Si no se habilita o se le asigna una lista vacía, el usuario puede seleccionar todos los métodos de introducción admitidos. Si la política no admite el método de introducción actual, se cambiará al diseño de teclado del hardware (si se permite) o a la primera entrada válida de esta lista. Se ignorarán todos los métodos de introducción no válidos o no admitidos de esta lista.</translation>
 <translation id="1138294736309071213">Esta política solo se encuentra activa en el modo de venta.
 
       Permite determinar el tiempo que debe transcurrir antes de que se muestre el protector de pantalla en la página de inicio de sesión para dispositivos que se encuentren en el modo de venta.
@@ -68,6 +71,7 @@ Si no se establece ningún valor para esta política, la frecuencia predetermina
 <translation id="1221359380862872747">Cargar URL especificadas en el inicio de sesión de demostración</translation>
 <translation id="1223789468190631420">Estado habilitado de Navegación Segura con fuentes de confianza</translation>
 <translation id="123081309365616809">Habilita el envío de contenido al dispositivo</translation>
+<translation id="1243570869342663665">Controlar el filtrado de contenido para adultos de SafeSites.</translation>
 <translation id="1257550411839719984">Establecer directorio de descargas predeterminado</translation>
 <translation id="1265053460044691532">Limitar el tiempo durante el que un usuario autenticado a través de SAML puede iniciar sesión sin conexión</translation>
 <translation id="1291880496936992484">Advertencia: RC4 se eliminará completamente de <ph name="PRODUCT_NAME" /> después de la versión 52 (en torno a septiembre de 2016) y dejará de funcionar.
@@ -260,6 +264,7 @@ Si esta política está establecida en "false" o no está establecida, se inhabi
       El formato del valor sigue los nombres de zonas horarias de la base de datos de zonas horarias (Time Zone Database o TZ Database) de IANA (https://es.wikipedia.org/wiki/TZ_Database). En concreto, la mayoría de las zonas horarias pueden corresponder a "continent/large_city" o "ocean/large_city".
 
       Si se establece esta política, se inhabilita completamente la detección automática de la zona horaria según la ubicación del dispositivo. Además, se anula la política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Permitir que se muestre contenido promocional que ocupe toda la pestaña</translation>
 <translation id="1888871729456797026">El token de registro de la política de la nube en ordenadores</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
 <translation id="1906888171268104594">Permite  controlar el envío a Google de datos de diagnóstico y métricas de uso, como los informes sobre fallos.
@@ -372,6 +377,7 @@ Si esta política se establece en True, <ph name="PRODUCT_OS_NAME" /> intentará
       cambiarlo. En este caso, el valor predeterminado no se volverá a aplicar
       cuando se reinicie el dispositivo.</translation>
 <translation id="2156132677421487971">Configura las políticas de <ph name="PRODUCT_NAME" />, una función que permite que los usuarios envíen contenido de las pestañas, los sitios web o el escritorio desde el navegador a pantallas y sistemas de sonido remotos.</translation>
+<translation id="2166472654199325139">No filtrar el contenido para adultos de los sitios web</translation>
 <translation id="2168397434410358693">Retraso de inactividad cuando el dispositivo está conectado a la red</translation>
 <translation id="2170233653554726857">Habilitar optimización de WPAD</translation>
 <translation id="2176565653304920879">El flujo de detección automática de la zona horaria puede ser de una de las siguientes formas, en función del valor que se asigne a esta política:
@@ -526,6 +532,12 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 <translation id="2466131534462628618">La autenticación del portal cautivo ignora el proxy</translation>
 <translation id="2482676533225429905">Mensajes nativos</translation>
 <translation id="2483146640187052324">Predecir las acciones de red en cualquier conexión de red</translation>
+<translation id="2484208301968418871">Esta política controla la aplicación del filtro de URLs SafeSites.
+      Este filtro usa la API de la Búsqueda Segura de Google para clasificar las URL como pornográficas o no.
+
+      Si esta política no se habilita o se le asigna el valor "No filtrar contenido para adultos de los sitios web", no se filtrarán los sitios web.
+
+      Si se le asigna el valor "Filtrar contenido para adultos de sitios web de nivel superior", se filtrarán los sitios web clasificados como pornográficos.</translation>
 <translation id="2485721741875148980">Si se asigna el valor "True" a esta política, el usuario deberá iniciar sesión en <ph name="PRODUCT_NAME" /> con su perfil antes de utilizar el navegador. El valor predeterminado que se asigna a BrowserGuestModeEnabled es "False". Ten en cuenta que los perfiles con los que no se haya iniciado sesión se bloquearán y no se podrá acceder a ellos tras habilitar esta política. Para obtener más información, consulta el artículo del Centro de Ayuda.
 
       Si se asigna el valor "False" a esta política o no se configura, el usuario podrá utilizar el navegador sin iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
@@ -1370,6 +1382,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 
       Si esta política se deja en blanco o no se establece, cualquier usuario podrá iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de pantalla completa</translation>
+<translation id="4861767323695239729">Configurar los métodos de introducción admitidos en una sesión de usuario</translation>
 <translation id="4869787217450099946">Especifica si se permiten los bloqueos de activación de pantalla. Los bloqueos de activación de pantalla pueden solicitarlos las extensiones a través de la API de extensión de administración de energía.
 
           Si se utiliza el valor True para esta política o no se establece la política, los bloqueos de activación de pantalla serán válidos para la administración de energía.
@@ -1961,6 +1974,7 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
       Si esta política se inhabilita o no se establece, solo se utilizarán los perfiles locales habituales.
 
       La política <ph name="SYNC_DISABLED_POLICY_NAME" /> inhabilita todas las sincronizaciones de datos y anula RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtrar contenido para adultos de sitios web de nivel superior (y no de los iframes insertados)</translation>
 <translation id="6735701345096330595">Forzar que se habilite el corrector ortográfico de idiomas</translation>
 <translation id="673699536430961464">Esta opción permite que los usuarios cambien de una cuenta de Google a otra en el área de contenido de la ventana de su navegador después de haber iniciado sesión en su dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -1983,6 +1997,13 @@ Al habilitar esta política, se inhabilita la sincronización en la nube.
 <translation id="6757438632136860443">Permite configurar una lista de patrones de URL que especifican los sitios web que pueden ejecutar el complemento <ph name="FLASH_PLUGIN_NAME" />.
 
           Si esta política no se configura, se usará para todos los sitios web el valor general predeterminado que se indique en la política "DefaultPluginsSetting" (si se ha configurado) o las preferencias personales del usuario (en caso contrario).</translation>
+<translation id="6762235610019366960">Permite controlar la presentación de contenido promocional y educativo que ocupe toda la pestaña en <ph name="PRODUCT_NAME" />.
+
+      Si se habilita (si se le asigna el valor "True"), <ph name="PRODUCT_NAME" /> podrá mostrar a los usuarios contenido que ocupe toda la pestaña para proporcionarles información del producto.
+
+      Si se inhabilita (si se le asigna el valor "False"), <ph name="PRODUCT_NAME" /> no mostrará a los usuarios contenido que ocupe toda la pestaña para proporcionarles información del producto.
+
+      Esta opción controla la presentación de páginas de bienvenida que ayudan a los usuarios a iniciar sesión en <ph name="PRODUCT_NAME" />, les permiten elegirlo como navegador predeterminado o les informan de funciones del producto.</translation>
 <translation id="6766216162565713893">Permitir que los sitios web le pidan permiso al usuario para acceder a dispositivos Bluetooth cercanos</translation>
 <translation id="6770454900105963262">Informar sobre sesiones del kiosco activas</translation>
 <translation id="6786747875388722282">Extensiones</translation>

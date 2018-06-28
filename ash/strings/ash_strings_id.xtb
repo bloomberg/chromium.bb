@@ -166,7 +166,7 @@
 <translation id="397105322502079400">Menghitung...</translation>
 <translation id="3995138139523574647">Perangkat USB-C (port belakang sebelah kanan)</translation>
 <translation id="4017989525502048489">Penunjuk laser</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk sebuah aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Nonaktif untuk 1 aplikasi}other{Nonaktif untuk # aplikasi}}</translation>
 <translation id="4072264167173457037">Sinyal sedang</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk kaca pembesar yang terpasang di dok. Ingin mengaktifkannya?</translation>
 <translation id="4217571870635786043">Dikte</translation>
