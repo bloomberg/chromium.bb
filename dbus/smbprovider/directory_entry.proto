@@ -36,6 +36,8 @@ enum ErrorType {
   // SmbProvider. The jump in int value is to account for possible future
   // additions to ProviderError.
   ERROR_DBUS_PARSE_FAILED = 50;
+  ERROR_COPY_PENDING = 51;
+  ERROR_COPY_FAILED = 52;
 }
 
 message DirectoryEntryProto {
