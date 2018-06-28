@@ -141,15 +141,13 @@ void PerUserTopicRegistrationManager::TryToRegisterId(
   }
   PerUserTopicRegistrationRequest::Builder builder;
 
-  it->second->request =
-      builder.SetToken(token_)
-          .SetScope(kInvalidationRegistrationScope)
-          .SetPublicTopicName(id.name())
-          .SetAuthenticationHeader(base::StringPrintf(
-              "%s: Bearer %s", net::HttpRequestHeaders::kAuthorization,
-              access_token_.c_str()))
-          .SetProjectId(kProjectId)
-          .Build();
+  it->second->request = builder.SetToken(token_)
+                            .SetScope(kInvalidationRegistrationScope)
+                            .SetPublicTopicName(id.name())
+                            .SetAuthenticationHeader(base::StringPrintf(
+                                "Bearer %s", access_token_.c_str()))
+                            .SetProjectId(kProjectId)
+                            .Build();
 
   it->second->request->Start(
       base::BindOnce(&PerUserTopicRegistrationManager::RegistrationEntry::
