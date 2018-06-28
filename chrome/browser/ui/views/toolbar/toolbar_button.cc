@@ -72,6 +72,7 @@ void ToolbarButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
     path.addOval(gfx::RectToSkRect(GetLocalBounds()));
     focus_ring()->SetPath(path);
   }
+  ImageButton::OnBoundsChanged(previous_bounds);
 }
 
 bool ToolbarButton::OnMousePressed(const ui::MouseEvent& event) {
