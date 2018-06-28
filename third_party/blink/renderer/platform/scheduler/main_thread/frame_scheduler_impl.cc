@@ -117,6 +117,7 @@ FrameSchedulerImpl::FrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context,
     FrameScheduler::FrameType frame_type)
     : frame_type_(frame_type),
+      is_ad_frame_(false),
       main_thread_scheduler_(main_thread_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
@@ -265,6 +266,15 @@ void FrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
     frame_origin_type_ = FrameOriginType::kSameOriginFrame;
   }
   UpdatePolicy();
+}
+
+void FrameSchedulerImpl::SetIsAdFrame() {
+  is_ad_frame_ = true;
+  UpdateQueuePriorities();
+}
+
+bool FrameSchedulerImpl::IsAdFrame() const {
+  return is_ad_frame_;
 }
 
 bool FrameSchedulerImpl::IsCrossOrigin() const {
@@ -755,6 +765,16 @@ TaskQueue::QueuePriority FrameSchedulerImpl::ComputePriority(
             .low_priority_throttleable &&
         is_throttleable_task_queue)
       return TaskQueue::QueuePriority::kLowPriority;
+
+    if (main_thread_scheduler_->scheduling_settings().low_priority_ad_frame &&
+        IsAdFrame()) {
+      return TaskQueue::QueuePriority::kLowPriority;
+    }
+
+    if (main_thread_scheduler_->scheduling_settings().best_effort_ad_frame &&
+        IsAdFrame()) {
+      return TaskQueue::QueuePriority::kBestEffortPriority;
+    }
   }
 
   // TODO(farahcharab) Change highest priority to high priority for frame

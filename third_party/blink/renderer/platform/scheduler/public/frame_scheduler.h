@@ -49,6 +49,10 @@ class FrameScheduler : public FrameOrWorkerScheduler {
   // frames.
   virtual void SetCrossOrigin(bool) = 0;
   virtual bool IsCrossOrigin() const = 0;
+
+  virtual void SetIsAdFrame() = 0;
+  virtual bool IsAdFrame() const = 0;
+
   virtual void TraceUrlChange(const String&) = 0;
 
   // Returns the frame type, which currently determines whether this frame is

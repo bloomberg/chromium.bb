@@ -46,6 +46,7 @@
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/instance_counters.h"
+#include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/supplementable.h"
 
 namespace base {
@@ -72,7 +73,7 @@ class FetchParameters;
 class FloatSize;
 class FrameConsole;
 class FrameResourceCoordinator;
-class FrameScheduler;
+// class FrameScheduler;
 class FrameSelection;
 class InputMethodController;
 class InspectorTraceEvents;
@@ -343,6 +344,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
     if (is_ad_subframe_)
       return;
     is_ad_subframe_ = true;
+    frame_scheduler_->SetIsAdFrame();
     InstanceCounters::IncrementCounter(InstanceCounters::kAdSubframeCounter);
   }
 
@@ -356,10 +358,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
  private:
   friend class FrameNavigationDisabler;
 
-  LocalFrame(LocalFrameClient*,
-             Page&,
-             FrameOwner*,
-             InterfaceRegistry*);
+  LocalFrame(LocalFrameClient*, Page&, FrameOwner*, InterfaceRegistry*);
 
   // Intentionally private to prevent redundant checks when the type is
   // already LocalFrame.

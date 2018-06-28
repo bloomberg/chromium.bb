@@ -155,6 +155,8 @@ class EmptyFrameScheduler final : public FrameScheduler {
   void SetPaused(bool) override {}
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return false; }
+  void SetIsAdFrame() override {}
+  bool IsAdFrame() const override { return false; }
   void TraceUrlChange(const String& override) override {}
   FrameScheduler::FrameType GetFrameType() const override {
     return FrameScheduler::FrameType::kSubframe;

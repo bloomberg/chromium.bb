@@ -68,6 +68,10 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
 
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
+
+  void SetIsAdFrame() override;
+  bool IsAdFrame() const override;
+
   void TraceUrlChange(const String& url) override;
   FrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
@@ -177,6 +181,8 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   scoped_refptr<base::sequence_manager::TaskQueue> UnpausableTaskQueue();
 
   const FrameScheduler::FrameType frame_type_;
+
+  bool is_ad_frame_;
 
   TraceableVariableController tracing_controller_;
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
