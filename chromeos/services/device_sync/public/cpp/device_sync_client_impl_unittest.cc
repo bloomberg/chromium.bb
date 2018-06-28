@@ -522,8 +522,11 @@ TEST_F(DeviceSyncClientImplTest, TestOnEnrollmentFinished) {
 
   SendPendingMojoMessages();
 
-  // Update the local device metadata.
+  // Update the local device metadata. The last update time must also be later
+  // than the previous version, otherwise the update will be ignored by the
+  // remote device cache.
   test_remote_device_list_[0].name = "new name";
+  test_remote_device_list_[0].last_update_time_millis++;
 
   base::RunLoop run_loop;
   test_observer_->set_closure_for_enrollment_finished(run_loop.QuitClosure());
