@@ -2728,6 +2728,49 @@ static TileJobsDec *get_dec_job_info(AV1DecTileMT *tile_mt_info) {
   return cur_job_info;
 }
 
+static void tile_worker_hook_init(AV1Decoder *const pbi,
+                                  DecWorkerData *const thread_data,
+                                  const TileBufferDec *const tile_buffer,
+                                  TileDataDec *const tile_data,
+                                  uint8_t allow_update_cdf) {
+  AV1_COMMON *cm = &pbi->common;
+  ThreadData *const td = thread_data->td;
+  volatile int tile_row = tile_data->tile_info.tile_row;
+  volatile int tile_col = tile_data->tile_info.tile_col;
+
+  td->xd = pbi->mb;
+  td->xd.corrupted = 0;
+  td->xd.mc_buf[0] = td->mc_buf[0];
+  td->xd.mc_buf[1] = td->mc_buf[1];
+  td->bit_reader = &tile_data->bit_reader;
+  av1_zero(td->dqcoeff);
+  av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
+  setup_bool_decoder(tile_buffer->data, thread_data->data_end,
+                     tile_buffer->size, &cm->error, td->bit_reader,
+                     allow_update_cdf);
+#if CONFIG_ACCOUNTING
+  if (pbi->acct_enabled) {
+    td->bit_reader->accounting = &pbi->accounting;
+    td->bit_reader->accounting->last_tell_frac =
+        aom_reader_tell_frac(td->bit_reader);
+  } else {
+    td->bit_reader->accounting = NULL;
+  }
+#endif
+  av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+  av1_init_above_context(cm, &td->xd, tile_row);
+
+  // Initialise the tile context from the frame context
+  tile_data->tctx = *cm->fc;
+  td->xd.tile_ctx = &tile_data->tctx;
+#if CONFIG_ACCOUNTING
+  if (pbi->acct_enabled) {
+    tile_data->bit_reader.accounting->last_tell_frac =
+        aom_reader_tell_frac(&tile_data->bit_reader);
+  }
+#endif
+}
+
 static int tile_worker_hook(void *arg1, void *arg2) {
   DecWorkerData *const thread_data = (DecWorkerData *)arg1;
   AV1Decoder *const pbi = (AV1Decoder *)arg2;
@@ -2750,41 +2793,11 @@ static int tile_worker_hook(void *arg1, void *arg2) {
     if (cur_job_info != NULL && !td->xd.corrupted) {
       const TileBufferDec *const tile_buffer = cur_job_info->tile_buffer;
       TileDataDec *const tile_data = cur_job_info->tile_data;
+      tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
+                            allow_update_cdf);
+      // decode tile
       volatile int tile_row = tile_data->tile_info.tile_row;
       volatile int tile_col = tile_data->tile_info.tile_col;
-
-      td->xd = pbi->mb;
-      td->xd.corrupted = 0;
-      td->xd.mc_buf[0] = td->mc_buf[0];
-      td->xd.mc_buf[1] = td->mc_buf[1];
-      td->bit_reader = &tile_data->bit_reader;
-      av1_zero(td->dqcoeff);
-      av1_tile_init(&td->xd.tile, cm, tile_row, tile_col);
-      setup_bool_decoder(tile_buffer->data, thread_data->data_end,
-                         tile_buffer->size, &cm->error, td->bit_reader,
-                         allow_update_cdf);
-#if CONFIG_ACCOUNTING
-      if (pbi->acct_enabled) {
-        td->bit_reader->accounting = &pbi->accounting;
-        td->bit_reader->accounting->last_tell_frac =
-            aom_reader_tell_frac(td->bit_reader);
-      } else {
-        td->bit_reader->accounting = NULL;
-      }
-#endif
-      av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
-      av1_init_above_context(cm, &td->xd, tile_row);
-
-      // Initialise the tile context from the frame context
-      tile_data->tctx = *cm->fc;
-      td->xd.tile_ctx = &tile_data->tctx;
-#if CONFIG_ACCOUNTING
-      if (pbi->acct_enabled) {
-        tile_data->bit_reader.accounting->last_tell_frac =
-            aom_reader_tell_frac(&tile_data->bit_reader);
-      }
-#endif
-      // decode tile
       decode_tile(pbi, td, tile_row, tile_col);
     } else {
       break;
