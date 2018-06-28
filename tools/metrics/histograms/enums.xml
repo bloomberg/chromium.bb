@@ -34199,6 +34199,15 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Destination missing"/>
 </enum>
 
+<enum name="OfflinePagesPublishSource">
+  <int value="0" label="Published By Offline ID">
+    Reported when the publishing path finds the page by Offline Id
+  </int>
+  <int value="1" label="Published By Guid">
+    Reported when the publishing path finds the page by Guid.
+  </int>
+</enum>
+
 <enum name="OfflinePagesRedirectResult">
   <obsolete>
     Deprecated 2016-08.

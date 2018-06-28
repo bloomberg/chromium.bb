@@ -17,6 +17,7 @@
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
 #include "base/strings/string_number_conversions.h"
@@ -677,7 +678,8 @@ void OfflinePageBridge::PublishInternalPageByOfflineId(
   offline_page_model->GetPageByOfflineId(
       j_offline_id,
       base::Bind(&OfflinePageBridge::PublishInternalArchive,
-                 weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref));
+                 weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref,
+                 PublishSource::kPublishByOfflineId));
 }
 
 void OfflinePageBridge::PublishInternalPageByGuid(
@@ -695,15 +697,19 @@ void OfflinePageBridge::PublishInternalPageByGuid(
   offline_page_model->GetPageByGuid(
       ConvertJavaStringToUTF8(env, j_guid),
       base::BindOnce(&OfflinePageBridge::PublishInternalArchive,
-                     weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref));
+                     weak_ptr_factory_.GetWeakPtr(), j_published_callback_ref,
+                     PublishSource::kPublishByGuid));
 }
 
 void OfflinePageBridge::PublishInternalArchive(
     const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const PublishSource publish_source,
     const OfflinePageItem* offline_page) {
   if (!offline_page) {
     PublishPageDone(j_callback_obj, base::FilePath(),
                     SavePageResult::CANCELLED);
+    base::UmaHistogramEnumeration("OfflinePages.PublishArchive.PublishSource",
+                                  publish_source);
     return;
   }
 
