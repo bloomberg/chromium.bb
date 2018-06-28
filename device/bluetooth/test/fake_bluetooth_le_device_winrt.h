@@ -11,18 +11,23 @@
 
 #include <stdint.h>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "device/bluetooth/bluetooth_device.h"
 
 namespace device {
+
+class BluetoothTestWinrt;
 
 class FakeBluetoothLEDeviceWinrt
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice,
-          ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3> {
+          ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice3,
+          ABI::Windows::Foundation::IClosable> {
  public:
-  FakeBluetoothLEDeviceWinrt();
+  explicit FakeBluetoothLEDeviceWinrt(BluetoothTestWinrt* bluetooth_test_winrt);
   ~FakeBluetoothLEDeviceWinrt() override;
 
   // IBluetoothLEDevice:
@@ -90,7 +95,31 @@ class FakeBluetoothLEDeviceWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               GattDeviceServicesResult*>** operation) override;
 
+  // IClosable:
+  IFACEMETHODIMP Close() override;
+
+  void SimulateGattConnection();
+  void SimulateGattConnectionError(
+      BluetoothDevice::ConnectErrorCode error_code);
+  void SimulateGattDisconnection();
+
  private:
+  BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
+
+  ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus status_ =
+      ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Connected;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Foundation::ITypedEventHandler<
+      ABI::Windows::Devices::Bluetooth::BluetoothLEDevice*,
+      IInspectable*>>
+      handler_;
+
+  base::OnceCallback<void(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              IGattDeviceServicesResult>)>
+      gatt_services_callback_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEDeviceWinrt);
 };
 
@@ -100,7 +129,8 @@ class FakeBluetoothLEDeviceStaticsWinrt
               Microsoft::WRL::WinRt | Microsoft::WRL::InhibitRoOriginateError>,
           ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics> {
  public:
-  FakeBluetoothLEDeviceStaticsWinrt();
+  explicit FakeBluetoothLEDeviceStaticsWinrt(
+      BluetoothTestWinrt* bluetooth_test_winrt);
   ~FakeBluetoothLEDeviceStaticsWinrt() override;
 
   // IBluetoothLEDeviceStatics:
@@ -117,6 +147,8 @@ class FakeBluetoothLEDeviceStaticsWinrt
   IFACEMETHODIMP GetDeviceSelector(HSTRING* device_selector) override;
 
  private:
+  BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(FakeBluetoothLEDeviceStaticsWinrt);
 };
 

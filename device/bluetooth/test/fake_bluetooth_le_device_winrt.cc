@@ -4,28 +4,55 @@
 
 #include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
 
+#include <wrl/client.h>
+
+#include <utility>
+
+#include "base/bind.h"
+#include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/win/async_operation.h"
+#include "device/bluetooth/test/bluetooth_test_win.h"
+#include "device/bluetooth/test/fake_gatt_device_services_result_winrt.h"
+
 namespace device {
 
 namespace {
 
 using ABI::Windows::Devices::Bluetooth::BluetoothCacheMode;
 using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus;
+using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Connected;
+using ABI::Windows::Devices::Bluetooth::BluetoothConnectionStatus_Disconnected;
 using ABI::Windows::Devices::Bluetooth::BluetoothLEDevice;
-using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
-using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_AccessDenied;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_ProtocolError;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_Success;
+using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+    GattCommunicationStatus_Unreachable;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceService;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     GattDeviceServicesResult;
 using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
     IGattDeviceService;
+using ABI::Windows::Devices::Enumeration::DeviceAccessStatus;
+using ABI::Windows::Devices::Enumeration::IDeviceAccessInformation;
 using ABI::Windows::Foundation::Collections::IVectorView;
 using ABI::Windows::Foundation::IAsyncOperation;
 using ABI::Windows::Foundation::ITypedEventHandler;
+using Microsoft::WRL::Make;
 
 }  // namespace
 
-FakeBluetoothLEDeviceWinrt::FakeBluetoothLEDeviceWinrt() = default;
+FakeBluetoothLEDeviceWinrt::FakeBluetoothLEDeviceWinrt(
+    BluetoothTestWinrt* bluetooth_test_winrt)
+    : bluetooth_test_winrt_(bluetooth_test_winrt) {}
 
 FakeBluetoothLEDeviceWinrt::~FakeBluetoothLEDeviceWinrt() = default;
 
@@ -44,7 +71,8 @@ HRESULT FakeBluetoothLEDeviceWinrt::get_GattServices(
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_ConnectionStatus(
     BluetoothConnectionStatus* value) {
-  return E_NOTIMPL;
+  *value = status_;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_BluetoothAddress(uint64_t* value) {
@@ -82,12 +110,14 @@ HRESULT FakeBluetoothLEDeviceWinrt::remove_GattServicesChanged(
 HRESULT FakeBluetoothLEDeviceWinrt::add_ConnectionStatusChanged(
     ITypedEventHandler<BluetoothLEDevice*, IInspectable*>* handler,
     EventRegistrationToken* token) {
-  return E_NOTIMPL;
+  handler_ = handler;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::remove_ConnectionStatusChanged(
     EventRegistrationToken token) {
-  return E_NOTIMPL;
+  handler_ = nullptr;
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::get_DeviceAccessInformation(
@@ -102,7 +132,11 @@ HRESULT FakeBluetoothLEDeviceWinrt::RequestAccessAsync(
 
 HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesAsync(
     IAsyncOperation<GattDeviceServicesResult*>** operation) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<GattDeviceServicesResult*>>();
+  gatt_services_callback_ = async_op->callback();
+  *operation = async_op.Detach();
+  bluetooth_test_winrt_->OnFakeBluetoothDeviceConnectGattCalled();
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesWithCacheModeAsync(
@@ -124,8 +158,47 @@ HRESULT FakeBluetoothLEDeviceWinrt::GetGattServicesForUuidWithCacheModeAsync(
   return E_NOTIMPL;
 }
 
-FakeBluetoothLEDeviceStaticsWinrt::FakeBluetoothLEDeviceStaticsWinrt() =
-    default;
+HRESULT FakeBluetoothLEDeviceWinrt::Close() {
+  bluetooth_test_winrt_->OnFakeBluetoothGattDisconnect();
+  return S_OK;
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattConnection() {
+  if (gatt_services_callback_) {
+    std::move(gatt_services_callback_)
+        .Run(Make<FakeGattDeviceServicesResultWinrt>(
+            GattCommunicationStatus_Success));
+  }
+
+  status_ = BluetoothConnectionStatus_Connected;
+  handler_->Invoke(this, nullptr);
+}
+
+void FakeBluetoothLEDeviceWinrt ::SimulateGattConnectionError(
+    BluetoothDevice::ConnectErrorCode error_code) {
+  if (!gatt_services_callback_)
+    return;
+
+  std::move(gatt_services_callback_)
+      .Run(Make<FakeGattDeviceServicesResultWinrt>(
+          GattCommunicationStatus_ProtocolError));
+}
+
+void FakeBluetoothLEDeviceWinrt::SimulateGattDisconnection() {
+  if (gatt_services_callback_) {
+    std::move(gatt_services_callback_)
+        .Run(Make<FakeGattDeviceServicesResultWinrt>(
+            GattCommunicationStatus_Unreachable));
+    return;
+  }
+
+  status_ = BluetoothConnectionStatus_Disconnected;
+  handler_->Invoke(this, nullptr);
+}
+
+FakeBluetoothLEDeviceStaticsWinrt::FakeBluetoothLEDeviceStaticsWinrt(
+    BluetoothTestWinrt* bluetooth_test_winrt)
+    : bluetooth_test_winrt_(bluetooth_test_winrt) {}
 
 FakeBluetoothLEDeviceStaticsWinrt::~FakeBluetoothLEDeviceStaticsWinrt() =
     default;
@@ -139,7 +212,13 @@ HRESULT FakeBluetoothLEDeviceStaticsWinrt::FromIdAsync(
 HRESULT FakeBluetoothLEDeviceStaticsWinrt::FromBluetoothAddressAsync(
     uint64_t bluetooth_address,
     IAsyncOperation<BluetoothLEDevice*>** operation) {
-  return E_NOTIMPL;
+  auto async_op = Make<base::win::AsyncOperation<BluetoothLEDevice*>>();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(async_op->callback(),
+                     Make<FakeBluetoothLEDeviceWinrt>(bluetooth_test_winrt_)));
+  *operation = async_op.Detach();
+  return S_OK;
 }
 
 HRESULT FakeBluetoothLEDeviceStaticsWinrt::GetDeviceSelector(

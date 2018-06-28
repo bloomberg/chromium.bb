@@ -25,6 +25,8 @@ class ScopedClosureRunner;
 
 namespace device {
 
+class BluetoothDeviceWinrt;
+
 class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
  public:
   // BluetoothAdapter:
@@ -61,7 +63,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
 
  protected:
   friend class BluetoothAdapterWin;
-  friend class BluetoothTestWin;
+  friend class BluetoothTestWinrt;
 
   BluetoothAdapterWinrt();
   ~BluetoothAdapterWinrt() override;
@@ -100,6 +102,9 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothAdapterWinrt : public BluetoothAdapter {
   virtual HRESULT ActivateBluetoothAdvertisementLEWatcherInstance(
       ABI::Windows::Devices::Bluetooth::Advertisement::
           IBluetoothLEAdvertisementWatcher** instance) const;
+  virtual std::unique_ptr<BluetoothDeviceWinrt> CreateDevice(
+      uint64_t raw_address,
+      base::Optional<std::string> local_name);
 
  private:
   void OnGetDefaultAdapter(

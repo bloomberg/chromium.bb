@@ -390,7 +390,7 @@ void BluetoothAdapterWinrt::AddDiscoverySession(
       ble_advertisement_watcher_.Get(),
       &IBluetoothLEAdvertisementWatcher::add_Received,
       base::BindRepeating(&BluetoothAdapterWinrt::OnAdvertisementReceived,
-                          base::Unretained(this)));
+                          weak_ptr_factory_.GetWeakPtr()));
   if (!advertisement_received_token) {
     ui_task_runner_->PostTask(
         FROM_HERE,
@@ -526,6 +526,13 @@ BluetoothAdapterWinrt::ActivateBluetoothAdvertisementLEWatcherInstance(
   }
 
   return watcher.CopyTo(instance);
+}
+
+std::unique_ptr<BluetoothDeviceWinrt> BluetoothAdapterWinrt::CreateDevice(
+    uint64_t raw_address,
+    base::Optional<std::string> local_name) {
+  return std::make_unique<BluetoothDeviceWinrt>(this, raw_address,
+                                                std::move(local_name));
 }
 
 void BluetoothAdapterWinrt::OnGetDefaultAdapter(
@@ -703,8 +710,7 @@ void BluetoothAdapterWinrt::OnAdvertisementReceived(
     bool was_inserted = false;
     std::tie(it, was_inserted) = devices_.emplace(
         std::move(bluetooth_address),
-        std::make_unique<BluetoothDeviceWinrt>(this, raw_bluetooth_address,
-                                               GetDeviceName(received)));
+        CreateDevice(raw_bluetooth_address, GetDeviceName(received)));
     DCHECK(was_inserted);
   }
 

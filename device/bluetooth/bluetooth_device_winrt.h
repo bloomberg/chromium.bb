@@ -5,13 +5,18 @@
 #ifndef DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_WINRT_H_
 #define DEVICE_BLUETOOTH_BLUETOOTH_DEVICE_WINRT_H_
 
+#include <windows.devices.bluetooth.h>
+#include <wrl/client.h>
+
 #include <stdint.h>
 
 #include <string>
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/optional.h"
+#include "base/threading/thread_checker.h"
 #include "device/bluetooth/bluetooth_device.h"
 #include "device/bluetooth/bluetooth_export.h"
 
@@ -23,7 +28,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
  public:
   BluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
                        uint64_t raw_address,
-                       base::Optional<std::string> name);
+                       base::Optional<std::string> local_name);
   ~BluetoothDeviceWinrt() override;
 
   // BluetoothDevice:
@@ -77,9 +82,39 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothDeviceWinrt : public BluetoothDevice {
   void CreateGattConnectionImpl() override;
   void DisconnectGatt() override;
 
+  // This is declared virtual so that they can be overridden by tests.
+  virtual HRESULT GetBluetoothLEDeviceStaticsActivationFactory(
+      ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics** statics)
+      const;
+
+  Microsoft::WRL::ComPtr<ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice>
+      ble_device_;
+
  private:
+  void OnFromBluetoothAddress(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice> ble_device);
+
+  void OnConnectionStatusChanged(
+      ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice* ble_device,
+      IInspectable* object);
+
+  void OnGetGattServices(
+      Microsoft::WRL::ComPtr<
+          ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+              IGattDeviceServicesResult> result);
+
+  uint64_t raw_address_;
   std::string address_;
-  base::Optional<std::string> name_;
+  base::Optional<std::string> local_name_;
+
+  base::Optional<EventRegistrationToken> connection_changed_token_;
+
+  THREAD_CHECKER(thread_checker_);
+
+  // Note: This should remain the last member so it'll be destroyed and
+  // invalidate its weak pointers before any other members are destroyed.
+  base::WeakPtrFactory<BluetoothDeviceWinrt> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BluetoothDeviceWinrt);
 };

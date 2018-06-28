@@ -905,7 +905,11 @@ TEST_F(BluetoothTest, MAYBE_GetName_NullName) {
 #define MAYBE_CreateGattConnection DISABLED_CreateGattConnection
 #endif
 // Basic CreateGattConnection test.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, CreateGattConnection) {
+#else
 TEST_F(BluetoothTest, MAYBE_CreateGattConnection) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -932,7 +936,11 @@ TEST_F(BluetoothTest, MAYBE_CreateGattConnection) {
 #define MAYBE_DisconnectionNotifiesDeviceChanged \
   DISABLED_DisconnectionNotifiesDeviceChanged
 #endif
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, DisconnectionNotifiesDeviceChanged) {
+#else
 TEST_F(BluetoothTest, MAYBE_DisconnectionNotifiesDeviceChanged) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -964,7 +972,11 @@ TEST_F(BluetoothTest, MAYBE_DisconnectionNotifiesDeviceChanged) {
 #endif
 // Creates BluetoothGattConnection instances and tests that the interface
 // functions even when some Disconnect and the BluetoothDevice is destroyed.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection) {
+#else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -978,6 +990,7 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection) {
   ResetEventCounts();
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_connection_attempts_);
 
   SimulateGattConnection(device);
@@ -1085,7 +1098,11 @@ TEST_F(BluetoothTest,
   DISABLED_BluetoothGattConnection_AlreadyConnected
 #endif
 // Calls CreateGattConnection after already connected.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_AlreadyConnected) {
+#else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_AlreadyConnected) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1117,8 +1134,13 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_AlreadyConnected) {
   DISABLED_BluetoothGattConnection_NewConnectionLeavesPreviousDisconnected
 #endif
 // Creates BluetoothGattConnection after one exists that has disconnected.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly,
+       BluetoothGattConnection_NewConnectionLeavesPreviousDisconnected) {
+#else
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_NewConnectionLeavesPreviousDisconnected) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1158,8 +1180,13 @@ TEST_F(BluetoothTest,
   DISABLED_BluetoothGattConnection_DisconnectWhenObjectsDestroyed
 #endif
 // Deletes BluetoothGattConnection causing disconnection.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly,
+       BluetoothGattConnection_DisconnectWhenObjectsDestroyed) {
+#else
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_DisconnectWhenObjectsDestroyed) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1190,7 +1217,11 @@ TEST_F(BluetoothTest,
   DISABLED_BluetoothGattConnection_DisconnectInProgress
 #endif
 // Starts process of disconnecting and then calls BluetoothGattConnection.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_DisconnectInProgress) {
+#else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_DisconnectInProgress) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1239,7 +1270,11 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_DisconnectInProgress) {
 #endif
 // Calls CreateGattConnection but receives notice that the device disconnected
 // before it ever connects.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_SimulateDisconnect) {
+#else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_SimulateDisconnect) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1251,6 +1286,7 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_SimulateDisconnect) {
   ResetEventCounts();
   device->CreateGattConnection(GetGattConnectionCallback(Call::NOT_EXPECTED),
                                GetConnectErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_connection_attempts_);
   SimulateGattDisconnection(device);
   base::RunLoop().RunUntilIdle();
@@ -1267,8 +1303,13 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_SimulateDisconnect) {
   DISABLED_BluetoothGattConnection_DisconnectGatt_SimulateConnect
 #endif
 // Calls CreateGattConnection & DisconnectGatt, then simulates connection.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly,
+       BluetoothGattConnection_DisconnectGatt_SimulateConnect) {
+#else
 TEST_F(BluetoothTest,
        MAYBE_BluetoothGattConnection_DisconnectGatt_SimulateConnect) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1280,9 +1321,14 @@ TEST_F(BluetoothTest,
   ResetEventCounts();
   device->CreateGattConnection(GetGattConnectionCallback(Call::EXPECTED),
                                GetConnectErrorCallback(Call::NOT_EXPECTED));
-  device->DisconnectGatt();
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_connection_attempts_);
+#if !defined(OS_WIN)
+  // On Windows there is currently no way to cancel a pending GATT connection
+  // from the callers site.
+  device->DisconnectGatt();
   EXPECT_EQ(1, gatt_disconnection_attempts_);
+#endif
 
   SimulateGattConnection(device);
   base::RunLoop().RunUntilIdle();
@@ -1398,7 +1444,11 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_DisconnectGatt_Cleanup) {
 #endif
 // Calls CreateGattConnection, but simulate errors connecting. Also, verifies
 // multiple errors should only invoke callbacks once.
+#if defined(OS_WIN)
+TEST_P(BluetoothTestWinrtOnly, BluetoothGattConnection_ErrorAfterConnection) {
+#else
 TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_ErrorAfterConnection) {
+#endif
   if (!PlatformSupportsLowEnergy()) {
     LOG(WARNING) << "Low Energy Bluetooth unavailable, skipping unit test.";
     return;
@@ -1410,15 +1460,17 @@ TEST_F(BluetoothTest, MAYBE_BluetoothGattConnection_ErrorAfterConnection) {
   ResetEventCounts();
   device->CreateGattConnection(GetGattConnectionCallback(Call::NOT_EXPECTED),
                                GetConnectErrorCallback(Call::EXPECTED));
+  base::RunLoop().RunUntilIdle();
   EXPECT_EQ(1, gatt_connection_attempts_);
   SimulateGattConnectionError(device, BluetoothDevice::ERROR_AUTH_FAILED);
   SimulateGattConnectionError(device, BluetoothDevice::ERROR_FAILED);
   base::RunLoop().RunUntilIdle();
-#if defined(OS_ANDROID)
+#if defined(OS_ANDROID) || defined(OS_WIN)
   // TODO: Change to ERROR_AUTH_FAILED. We should be getting a callback
   // only with the first error, but our android framework doesn't yet
   // support sending different errors.
   // http://crbug.com/578191
+  // On Windows, any GattConnectioError will result in ERROR_FAILED.
   EXPECT_EQ(BluetoothDevice::ERROR_FAILED, last_connect_error_code_);
 #else
   EXPECT_EQ(BluetoothDevice::ERROR_AUTH_FAILED, last_connect_error_code_);

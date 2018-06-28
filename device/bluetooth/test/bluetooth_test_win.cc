@@ -9,6 +9,7 @@
 #include <wrl/implements.h>
 
 #include <algorithm>
+#include <memory>
 #include <utility>
 #include <vector>
 
@@ -19,6 +20,7 @@
 #include "base/run_loop.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/test_pending_task.h"
 #include "base/time/time.h"
 #include "base/win/vector.h"
@@ -26,6 +28,7 @@
 #include "device/base/features.h"
 #include "device/bluetooth/bluetooth_adapter_win.h"
 #include "device/bluetooth/bluetooth_adapter_winrt.h"
+#include "device/bluetooth/bluetooth_device_winrt.h"
 #include "device/bluetooth/bluetooth_low_energy_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_characteristic_win.h"
 #include "device/bluetooth/bluetooth_remote_gatt_descriptor_win.h"
@@ -34,6 +37,7 @@
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_received_event_args_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_watcher_winrt.h"
 #include "device/bluetooth/test/fake_bluetooth_le_advertisement_winrt.h"
+#include "device/bluetooth/test/fake_bluetooth_le_device_winrt.h"
 #include "device/bluetooth/test/fake_device_information_winrt.h"
 
 // Note: As UWP does not provide int specializations for IObservableVector and
@@ -57,39 +61,66 @@ struct __declspec(uuid("94844fba-ddf9-475c-be6e-ebb87039cef6"))
 }  // namespace Windows
 }  // namespace ABI
 
+namespace device {
+
 namespace {
 
 using ABI::Windows::Devices::Bluetooth::Advertisement::
     IBluetoothLEAdvertisementWatcher;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapter;
 using ABI::Windows::Devices::Bluetooth::IBluetoothAdapterStatics;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDevice;
+using ABI::Windows::Devices::Bluetooth::IBluetoothLEDeviceStatics;
 using ABI::Windows::Devices::Enumeration::IDeviceInformation;
 using ABI::Windows::Devices::Enumeration::IDeviceInformationStatics;
 using Microsoft::WRL::ComPtr;
 using Microsoft::WRL::Make;
 
-class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
+class TestBluetoothDeviceWinrt : public BluetoothDeviceWinrt {
+ public:
+  TestBluetoothDeviceWinrt(BluetoothAdapterWinrt* adapter,
+                           uint64_t raw_address,
+                           base::Optional<std::string> local_name,
+                           BluetoothTestWinrt* bluetooth_test_winrt)
+      : BluetoothDeviceWinrt(adapter, raw_address, std::move(local_name)),
+        bluetooth_test_winrt_(bluetooth_test_winrt) {}
+
+  HRESULT GetBluetoothLEDeviceStaticsActivationFactory(
+      IBluetoothLEDeviceStatics** statics) const override {
+    auto device_statics =
+        Make<FakeBluetoothLEDeviceStaticsWinrt>(bluetooth_test_winrt_);
+    return device_statics.CopyTo(statics);
+  }
+
+  FakeBluetoothLEDeviceWinrt* ble_device() {
+    return static_cast<FakeBluetoothLEDeviceWinrt*>(ble_device_.Get());
+  }
+
+ private:
+  BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
+};
+
+class TestBluetoothAdapterWinrt : public BluetoothAdapterWinrt {
  public:
   TestBluetoothAdapterWinrt(ComPtr<IBluetoothAdapter> adapter,
                             ComPtr<IDeviceInformation> device_information,
-                            InitCallback init_cb)
+                            InitCallback init_cb,
+                            BluetoothTestWinrt* bluetooth_test_winrt)
       : adapter_(std::move(adapter)),
         device_information_(std::move(device_information)),
-        watcher_(Make<device::FakeBluetoothLEAdvertisementWatcherWinrt>()) {
+        watcher_(Make<FakeBluetoothLEAdvertisementWatcherWinrt>()),
+        bluetooth_test_winrt_(bluetooth_test_winrt) {
     Init(std::move(init_cb));
   }
 
-  device::FakeBluetoothLEAdvertisementWatcherWinrt* watcher() {
-    return watcher_.Get();
-  }
+  FakeBluetoothLEAdvertisementWatcherWinrt* watcher() { return watcher_.Get(); }
 
  protected:
   ~TestBluetoothAdapterWinrt() override = default;
 
   HRESULT GetBluetoothAdapterStaticsActivationFactory(
       IBluetoothAdapterStatics** statics) const override {
-    auto adapter_statics =
-        Make<device::FakeBluetoothAdapterStaticsWinrt>(adapter_);
+    auto adapter_statics = Make<FakeBluetoothAdapterStaticsWinrt>(adapter_);
     return adapter_statics.CopyTo(statics);
   };
 
@@ -97,7 +128,7 @@ class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
   GetDeviceInformationStaticsActivationFactory(
       IDeviceInformationStatics** statics) const override {
     auto device_information_statics =
-        Make<device::FakeDeviceInformationStaticsWinrt>(device_information_);
+        Make<FakeDeviceInformationStaticsWinrt>(device_information_);
     return device_information_statics.CopyTo(statics);
   };
 
@@ -106,14 +137,22 @@ class TestBluetoothAdapterWinrt : public device::BluetoothAdapterWinrt {
     return watcher_.CopyTo(instance);
   }
 
+  std::unique_ptr<BluetoothDeviceWinrt> CreateDevice(
+      uint64_t raw_address,
+      base::Optional<std::string> local_name) override {
+    return std::make_unique<TestBluetoothDeviceWinrt>(
+        this, raw_address, std::move(local_name), bluetooth_test_winrt_);
+  }
+
  private:
   ComPtr<IBluetoothAdapter> adapter_;
   ComPtr<IDeviceInformation> device_information_;
-  ComPtr<device::FakeBluetoothLEAdvertisementWatcherWinrt> watcher_;
+  ComPtr<FakeBluetoothLEAdvertisementWatcherWinrt> watcher_;
+  BluetoothTestWinrt* bluetooth_test_winrt_ = nullptr;
 };
 
-BLUETOOTH_ADDRESS CanonicalStringToBLUETOOTH_ADDRESS(
-    std::string device_address) {
+BLUETOOTH_ADDRESS
+CanonicalStringToBLUETOOTH_ADDRESS(std::string device_address) {
   BLUETOOTH_ADDRESS win_addr;
   unsigned int data[6];
   int result =
@@ -156,8 +195,6 @@ BTH_LE_UUID CanonicalStringToBTH_LE_UUID(base::StringPiece uuid) {
 
 }  // namespace
 
-namespace device {
-
 BluetoothTestWin::BluetoothTestWin()
     : ui_task_runner_(new base::TestSimpleTaskRunner()),
       bluetooth_task_runner_(new base::TestSimpleTaskRunner()),
@@ -172,15 +209,6 @@ bool BluetoothTestWin::PlatformSupportsLowEnergy() {
 }
 
 void BluetoothTestWin::InitWithDefaultAdapter() {
-  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
-    base::RunLoop run_loop;
-    auto adapter = base::WrapRefCounted(new BluetoothAdapterWinrt());
-    adapter->Init(run_loop.QuitClosure());
-    adapter_ = std::move(adapter);
-    run_loop.Run();
-    return;
-  }
-
   auto adapter =
       base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
   adapter->Init();
@@ -188,14 +216,6 @@ void BluetoothTestWin::InitWithDefaultAdapter() {
 }
 
 void BluetoothTestWin::InitWithoutDefaultAdapter() {
-  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
-    base::RunLoop run_loop;
-    adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
-        nullptr, nullptr, run_loop.QuitClosure());
-    run_loop.Run();
-    return;
-  }
-
   auto adapter =
       base::WrapRefCounted(new BluetoothAdapterWin(base::DoNothing()));
   adapter->InitForTest(ui_task_runner_, bluetooth_task_runner_);
@@ -203,16 +223,6 @@ void BluetoothTestWin::InitWithoutDefaultAdapter() {
 }
 
 void BluetoothTestWin::InitWithFakeAdapter() {
-  if (BluetoothAdapterWin::UseNewBLEWinImplementation()) {
-    base::RunLoop run_loop;
-    adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
-        Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress),
-        Make<FakeDeviceInformationWinrt>(kTestAdapterName),
-        run_loop.QuitClosure());
-    run_loop.Run();
-    return;
-  }
-
   fake_bt_classic_wrapper_ = new win::BluetoothClassicWrapperFake();
   fake_bt_le_wrapper_ = new win::BluetoothLowEnergyWrapperFake();
   fake_bt_le_wrapper_->AddObserver(this);
@@ -607,9 +617,50 @@ BluetoothTestWinrt::BluetoothTestWinrt() {
   }
 }
 
+BluetoothTestWinrt::~BluetoothTestWinrt() = default;
+
 bool BluetoothTestWinrt::PlatformSupportsLowEnergy() {
   return GetParam() ? base::win::GetVersion() >= base::win::VERSION_WIN10
                     : BluetoothTestWin::PlatformSupportsLowEnergy();
+}
+
+void BluetoothTestWinrt::InitWithDefaultAdapter() {
+  if (!GetParam()) {
+    BluetoothTestWin::InitWithDefaultAdapter();
+    return;
+  }
+
+  base::RunLoop run_loop;
+  auto adapter = base::WrapRefCounted(new BluetoothAdapterWinrt());
+  adapter->Init(run_loop.QuitClosure());
+  adapter_ = std::move(adapter);
+  run_loop.Run();
+}
+
+void BluetoothTestWinrt::InitWithoutDefaultAdapter() {
+  if (!GetParam()) {
+    BluetoothTestWin::InitWithoutDefaultAdapter();
+    return;
+  }
+
+  base::RunLoop run_loop;
+  adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
+      nullptr, nullptr, run_loop.QuitClosure(), this);
+  run_loop.Run();
+}
+
+void BluetoothTestWinrt::InitWithFakeAdapter() {
+  if (!GetParam()) {
+    BluetoothTestWin::InitWithFakeAdapter();
+    return;
+  }
+
+  base::RunLoop run_loop;
+  adapter_ = base::MakeRefCounted<TestBluetoothAdapterWinrt>(
+      Make<FakeBluetoothAdapterWinrt>(kTestAdapterAddress),
+      Make<FakeDeviceInformationWinrt>(kTestAdapterName),
+      run_loop.QuitClosure(), this);
+  run_loop.Run();
 }
 
 BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
@@ -634,6 +685,47 @@ BluetoothDevice* BluetoothTestWinrt::SimulateLowEnergyDevice(
   return adapter_->GetDevice(data.address);
 }
 
-BluetoothTestWinrt::~BluetoothTestWinrt() = default;
+void BluetoothTestWinrt::SimulateGattConnection(BluetoothDevice* device) {
+  // Spin the message loop to make sure a device instance was obtained.
+  base::RunLoop().RunUntilIdle();
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattConnection();
+}
+
+void BluetoothTestWinrt::SimulateGattConnectionError(
+    BluetoothDevice* device,
+    BluetoothDevice::ConnectErrorCode error_code) {
+  // Spin the message loop to make sure a device instance was obtained.
+  base::RunLoop().RunUntilIdle();
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattConnectionError(error_code);
+}
+
+void BluetoothTestWinrt::SimulateGattDisconnection(BluetoothDevice* device) {
+  // Spin the message loop to make sure a device instance was obtained.
+  base::RunLoop().RunUntilIdle();
+  auto* const ble_device =
+      static_cast<TestBluetoothDeviceWinrt*>(device)->ble_device();
+  DCHECK(ble_device);
+  ble_device->SimulateGattDisconnection();
+}
+
+void BluetoothTestWinrt::DeleteDevice(BluetoothDevice* device) {
+  (!GetParam() || !PlatformSupportsLowEnergy())
+      ? BluetoothTestWin::DeleteDevice(device)
+      : BluetoothTestBase::DeleteDevice(device);
+}
+
+void BluetoothTestWinrt::OnFakeBluetoothDeviceConnectGattCalled() {
+  ++gatt_connection_attempts_;
+}
+
+void BluetoothTestWinrt::OnFakeBluetoothGattDisconnect() {
+  ++gatt_disconnection_attempts_;
+}
 
 }  // namespace device

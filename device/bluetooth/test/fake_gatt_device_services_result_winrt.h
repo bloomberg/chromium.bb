@@ -23,7 +23,9 @@ class FakeGattDeviceServicesResultWinrt
           ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
               IGattDeviceServicesResult> {
  public:
-  FakeGattDeviceServicesResultWinrt();
+  explicit FakeGattDeviceServicesResultWinrt(
+      ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+          GattCommunicationStatus status);
   ~FakeGattDeviceServicesResultWinrt() override;
 
   // IGattDeviceServicesResult:
@@ -38,6 +40,9 @@ class FakeGattDeviceServicesResultWinrt
               GattDeviceService*>** value) override;
 
  private:
+  ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+      GattCommunicationStatus status_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeGattDeviceServicesResultWinrt);
 };
 
