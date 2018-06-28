@@ -120,7 +120,7 @@ int RoundedOmniboxResultsFrame::GetNonResultSectionHeight() {
 
 // static
 gfx::Insets RoundedOmniboxResultsFrame::GetLocationBarAlignmentInsets() {
-  return ui::MaterialDesignController::IsRefreshUi() ? gfx::Insets(5, 6, 4, 6)
+  return ui::MaterialDesignController::IsRefreshUi() ? gfx::Insets(4, 6)
                                                      : gfx::Insets(4);
 }
 
