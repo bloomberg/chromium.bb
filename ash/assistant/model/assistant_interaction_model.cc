@@ -67,7 +67,7 @@ void AssistantInteractionModel::ClearCommittedQuery() {
 
 void AssistantInteractionModel::SetPendingQuery(
     std::unique_ptr<AssistantQuery> pending_query) {
-  DCHECK(!pending_query->Empty());
+  DCHECK(pending_query->type() != AssistantQueryType::kEmpty);
   pending_query_ = std::move(pending_query);
   NotifyPendingQueryChanged();
 }
