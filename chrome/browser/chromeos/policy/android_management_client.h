@@ -15,10 +15,13 @@
 #include "base/memory/weak_ptr.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "google_apis/gaia/oauth2_token_service.h"
-#include "net/url_request/url_request_context_getter.h"
 
 namespace enterprise_management {
 class DeviceManagementResponse;
+}
+
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace policy {
@@ -43,7 +46,7 @@ class AndroidManagementClient : public OAuth2TokenService::Consumer {
 
   AndroidManagementClient(
       DeviceManagementService* service,
-      scoped_refptr<net::URLRequestContextGetter> request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       const std::string& account_id,
       OAuth2TokenService* token_service);
   ~AndroidManagementClient() override;
@@ -79,7 +82,7 @@ class AndroidManagementClient : public OAuth2TokenService::Consumer {
 
   // Used to communicate with the device management service.
   DeviceManagementService* const device_management_service_;
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   std::unique_ptr<DeviceManagementRequestJob> request_job_;
 
   // The account ID that will be used for the access token fetch.

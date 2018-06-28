@@ -20,6 +20,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/policy/browser_dm_token_storage.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/machine_level_user_cloud_policy_controller.h"
@@ -38,10 +39,6 @@
 #include "content/public/browser/browser_thread.h"
 #include "net/base/upload_bytes_element_reader.h"
 #include "net/base/upload_data_stream.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request.h"
-#include "net/url_request/url_request_context_getter.h"
-#include "net/url_request/url_request_test_job.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/test/widget_test.h"
@@ -187,7 +184,8 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
     }
     std::unique_ptr<DeviceManagementRequestJob> job(
         service_->CreateJob(DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT,
-                            g_browser_process->system_request_context()));
+                            g_browser_process->system_network_context_manager()
+                                ->GetSharedURLLoaderFactory()));
     job->GetRequest()->mutable_register_browser_request();
     if (!machine_name.empty()) {
       job->GetRequest()->mutable_register_browser_request()->set_machine_name(
@@ -213,7 +211,8 @@ class MachineLevelUserCloudPolicyServiceIntegrationTest
 
     std::unique_ptr<DeviceManagementRequestJob> job(service_->CreateJob(
         DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT,
-        g_browser_process->system_request_context()));
+        g_browser_process->system_network_context_manager()
+            ->GetSharedURLLoaderFactory()));
 
     em::DeviceManagementRequest* request = job->GetRequest();
     if (chrome_desktop_report) {

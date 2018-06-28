@@ -9,10 +9,11 @@
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "google_apis/gaia/gaia_urls.h"
-#include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -49,7 +50,8 @@ void ArcRobotAuthCodeFetcher::Fetch(const FetchCallback& callback) {
   policy::DeviceManagementService* service = GetDeviceManagementService();
   fetch_request_job_.reset(service->CreateJob(
       policy::DeviceManagementRequestJob::TYPE_API_AUTH_CODE_FETCH,
-      g_browser_process->system_request_context()));
+      g_browser_process->system_network_context_manager()
+          ->GetSharedURLLoaderFactory()));
 
   fetch_request_job_->SetDMToken(client->dm_token());
   fetch_request_job_->SetClientID(client->client_id());

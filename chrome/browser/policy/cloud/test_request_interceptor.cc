@@ -25,6 +25,8 @@
 #include "net/url_request/url_request_filter.h"
 #include "net/url_request/url_request_interceptor.h"
 #include "net/url_request/url_request_test_job.h"
+#include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -68,85 +70,21 @@ net::URLRequestJob* FileJobCallback(const base::FilePath& file_path,
 // request. The query string in the URL must contain the |expected_type| for
 // the "request" parameter. Returns true if all checks succeeded, and the
 // request data has been parsed into |request_msg|.
-bool ValidRequest(net::URLRequest* request,
+bool ValidRequest(const std::string& method,
+                  const GURL& url,
+                  const std::string& data,
                   const std::string& expected_type,
                   em::DeviceManagementRequest* request_msg) {
-  if (request->method() != "POST")
+  if (method != "POST")
     return false;
-  std::string spec = request->url().spec();
+  std::string spec = url.spec();
   if (spec.find("request=" + expected_type) == std::string::npos)
     return false;
 
-  // This assumes that the payload data was set from a single string. In that
-  // case the UploadDataStream has a single UploadBytesElementReader with the
-  // data in memory.
-  const net::UploadDataStream* stream = request->get_upload();
-  if (!stream)
-    return false;
-  const std::vector<std::unique_ptr<net::UploadElementReader>>* readers =
-      stream->GetElementReaders();
-  if (!readers || readers->size() != 1u)
-    return false;
-  const net::UploadBytesElementReader* reader = (*readers)[0]->AsBytesReader();
-  if (!reader)
-    return false;
-  std::string data(reader->bytes(), reader->length());
   if (!request_msg->ParseFromString(data))
     return false;
 
   return true;
-}
-
-// Helper callback for register jobs that should suceed. Validates the request
-// parameters and returns an appropriate response job. If |expect_reregister|
-// is true then the reregister flag must be set in the DeviceRegisterRequest
-// protobuf.
-net::URLRequestJob* RegisterJobCallback(
-    em::DeviceRegisterRequest::Type expected_type,
-    bool expect_reregister,
-    net::URLRequest* request,
-    net::NetworkDelegate* network_delegate) {
-  em::DeviceManagementRequest request_msg;
-  if (!ValidRequest(request, "register", &request_msg))
-    return BadRequestJobCallback(request, network_delegate);
-
-  if (!request_msg.has_register_request() ||
-      request_msg.has_unregister_request() ||
-      request_msg.has_policy_request() ||
-      request_msg.has_device_status_report_request() ||
-      request_msg.has_session_status_report_request() ||
-      request_msg.has_auto_enrollment_request()) {
-    return BadRequestJobCallback(request, network_delegate);
-  }
-
-  const em::DeviceRegisterRequest& register_request =
-      request_msg.register_request();
-  if (expect_reregister &&
-      (!register_request.has_reregister() || !register_request.reregister())) {
-    return BadRequestJobCallback(request, network_delegate);
-  } else if (!expect_reregister &&
-             register_request.has_reregister() &&
-             register_request.reregister()) {
-    return BadRequestJobCallback(request, network_delegate);
-  }
-
-  if (!register_request.has_type() || register_request.type() != expected_type)
-    return BadRequestJobCallback(request, network_delegate);
-
-  em::DeviceManagementResponse response;
-  em::DeviceRegisterResponse* register_response =
-      response.mutable_register_response();
-  register_response->set_device_management_token("s3cr3t70k3n");
-  std::string data;
-  response.SerializeToString(&data);
-
-  static const char kGoodHeaders[] =
-      "HTTP/1.1 200 OK\n"
-      "Content-type: application/protobuf\n"
-      "\n";
-  std::string headers(kGoodHeaders, arraysize(kGoodHeaders));
-  return new net::URLRequestTestJob(
-      request, network_delegate, headers, data, true);
 }
 
 void RegisterHttpInterceptor(
@@ -158,6 +96,14 @@ void RegisterHttpInterceptor(
 
 void UnregisterHttpInterceptor(const std::string& hostname) {
   net::URLRequestFilter::GetInstance()->RemoveHostnameHandler("http", hostname);
+}
+
+void RespondWithBadResponse(const network::ResourceRequest& request,
+                            network::TestURLLoaderFactory* factory) {
+  network::URLLoaderCompletionStatus status;
+  factory->AddResponse(
+      request.url, network::ResourceResponseHead(), std::string(),
+      network::URLLoaderCompletionStatus(net::ERR_NETWORK_CHANGED));
 }
 
 }  // namespace
@@ -320,10 +266,63 @@ TestRequestInterceptor::JobCallback TestRequestInterceptor::HttpErrorJob(
 }
 
 // static
-TestRequestInterceptor::JobCallback TestRequestInterceptor::RegisterJob(
+void TestRequestInterceptor::RespondToRegisterWithSuccess(
     em::DeviceRegisterRequest::Type expected_type,
-    bool expect_reregister) {
-  return base::Bind(&RegisterJobCallback, expected_type, expect_reregister);
+    bool expect_reregister,
+    const network::ResourceRequest& request,
+    network::TestURLLoaderFactory* factory) {
+  em::DeviceManagementRequest request_msg;
+  if (!ValidRequest(request.method, request.url,
+                    network::GetUploadData(request), "register",
+                    &request_msg)) {
+    RespondWithBadResponse(request, factory);
+    return;
+  }
+
+  if (!request_msg.has_register_request() ||
+      request_msg.has_unregister_request() ||
+      request_msg.has_policy_request() ||
+      request_msg.has_device_status_report_request() ||
+      request_msg.has_session_status_report_request() ||
+      request_msg.has_auto_enrollment_request()) {
+    RespondWithBadResponse(request, factory);
+    return;
+  }
+
+  const em::DeviceRegisterRequest& register_request =
+      request_msg.register_request();
+  if (expect_reregister &&
+      (!register_request.has_reregister() || !register_request.reregister())) {
+    RespondWithBadResponse(request, factory);
+    return;
+  } else if (!expect_reregister && register_request.has_reregister() &&
+             register_request.reregister()) {
+    RespondWithBadResponse(request, factory);
+    return;
+  }
+
+  if (!register_request.has_type() ||
+      register_request.type() != expected_type) {
+    RespondWithBadResponse(request, factory);
+    return;
+  }
+
+  std::string content;
+  network::URLLoaderCompletionStatus status;
+
+  em::DeviceManagementResponse response;
+  em::DeviceRegisterResponse* register_response =
+      response.mutable_register_response();
+  register_response->set_device_management_token("s3cr3t70k3n");
+  response.SerializeToString(&content);
+
+  status.decoded_body_length = content.size();
+
+  network::ResourceResponseHead head =
+      network::TestURLLoaderFactory::CreateResourceResponseHead(net::HTTP_OK);
+  head.mime_type = "application/protobuf";
+
+  factory->AddResponse(request.url, head, content, status);
 }
 
 // static

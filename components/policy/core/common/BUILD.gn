@@ -376,6 +376,7 @@ source_set("unit_tests") {
     "//extensions/buildflags",
     "//google_apis",
     "//net:test_support",
+    "//services/network:test_support",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/libxml",

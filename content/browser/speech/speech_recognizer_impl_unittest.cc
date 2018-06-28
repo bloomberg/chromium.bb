@@ -142,7 +142,8 @@ class SpeechRecognizerImplTest : public SpeechRecognitionEventListener,
       const char* url_substring) WARN_UNUSED_RESULT {
     for (const auto& pending_request :
          *url_loader_factory_.pending_requests()) {
-      if (pending_request.url.spec().find(url_substring) != std::string::npos) {
+      if (pending_request.request.url.spec().find(url_substring) !=
+          std::string::npos) {
         *pending_request_out = &pending_request;
         return true;
       }
@@ -419,16 +420,17 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
       base::RunLoop().RunUntilIdle();
       const network::TestURLLoaderFactory::PendingRequest* upstream_request;
       ASSERT_TRUE(GetUpstreamRequest(&upstream_request));
-      ASSERT_TRUE(upstream_request->request_body);
-      ASSERT_EQ(1u, upstream_request->request_body->elements()->size());
-      ASSERT_EQ(network::DataElement::TYPE_CHUNKED_DATA_PIPE,
-                (*upstream_request->request_body->elements())[0].type());
+      ASSERT_TRUE(upstream_request->request.request_body);
+      ASSERT_EQ(1u, upstream_request->request.request_body->elements()->size());
+      ASSERT_EQ(
+          network::DataElement::TYPE_CHUNKED_DATA_PIPE,
+          (*upstream_request->request.request_body->elements())[0].type());
       network::TestURLLoaderFactory::PendingRequest* mutable_upstream_request =
           const_cast<network::TestURLLoaderFactory::PendingRequest*>(
               upstream_request);
-      chunked_data_pipe_getter =
-          (*mutable_upstream_request->request_body->elements_mutable())[0]
-              .ReleaseChunkedDataPipeGetter();
+      chunked_data_pipe_getter = (*mutable_upstream_request->request
+                                       .request_body->elements_mutable())[0]
+                                     .ReleaseChunkedDataPipeGetter();
       chunked_data_pipe_getter->StartReading(
           std::move(data_pipe.producer_handle));
     }
@@ -485,7 +487,8 @@ TEST_F(SpeechRecognizerImplTest, StopWithData) {
   // Issue the network callback to complete the process.
   const network::TestURLLoaderFactory::PendingRequest* downstream_request;
   ASSERT_TRUE(GetDownstreamRequest(&downstream_request));
-  url_loader_factory_.AddResponse(downstream_request->url.spec(), msg_string);
+  url_loader_factory_.AddResponse(downstream_request->request.url.spec(),
+                                  msg_string);
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(recognition_ended_);
@@ -539,7 +542,7 @@ TEST_F(SpeechRecognizerImplTest, ConnectionError) {
   const network::TestURLLoaderFactory::PendingRequest* pending_request;
   ASSERT_TRUE(GetUpstreamRequest(&pending_request));
   url_loader_factory_.AddResponse(
-      pending_request->url, network::ResourceResponseHead(), "",
+      pending_request->request.url, network::ResourceResponseHead(), "",
       network::URLLoaderCompletionStatus(net::ERR_CONNECTION_REFUSED));
 
   base::RunLoop().RunUntilIdle();
@@ -576,7 +579,7 @@ TEST_F(SpeechRecognizerImplTest, ServerError) {
   const char kHeaders[] = "HTTP/1.0 500 Internal Server Error";
   response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(kHeaders, base::size(kHeaders)));
-  url_loader_factory_.AddResponse(pending_request->url, response, "",
+  url_loader_factory_.AddResponse(pending_request->request.url, response, "",
                                   network::URLLoaderCompletionStatus());
 
   base::RunLoop().RunUntilIdle();

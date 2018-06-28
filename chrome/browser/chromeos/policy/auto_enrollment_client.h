@@ -13,8 +13,8 @@
 
 class PrefService;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace policy {
@@ -67,7 +67,7 @@ class AutoEnrollmentClient {
         const ProgressCallback& progress_callback,
         DeviceManagementService* device_management_service,
         PrefService* local_state,
-        scoped_refptr<net::URLRequestContextGetter> system_request_context,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         const std::string& server_backed_state_key,
         int power_initial,
         int power_limit) = 0;
@@ -87,7 +87,7 @@ class AutoEnrollmentClient {
         const ProgressCallback& progress_callback,
         DeviceManagementService* device_management_service,
         PrefService* local_state,
-        scoped_refptr<net::URLRequestContextGetter> system_request_context,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         const std::string& device_serial_number,
         const std::string& device_brand_code,
         int power_initial,

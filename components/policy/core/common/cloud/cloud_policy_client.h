@@ -360,6 +360,9 @@ class POLICY_EXPORT CloudPolicyClient {
   // Returns the number of active requests.
   int GetActiveRequestCountForTest() const;
 
+  void SetURLLoaderFactoryForTesting(
+      scoped_refptr<network::SharedURLLoaderFactory> factory);
+
  protected:
   // A set of (policy type, settings entity ID) pairs to fetch.
   typedef std::set<std::pair<std::string, std::string>> PolicyTypeSet;

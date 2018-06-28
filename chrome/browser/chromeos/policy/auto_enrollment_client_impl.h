@@ -25,10 +25,6 @@ namespace enterprise_management {
 class DeviceManagementResponse;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace policy {
 
 class DeviceManagementService;
@@ -59,7 +55,7 @@ class AutoEnrollmentClientImpl
         const ProgressCallback& progress_callback,
         DeviceManagementService* device_management_service,
         PrefService* local_state,
-        scoped_refptr<net::URLRequestContextGetter> system_request_context,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         const std::string& server_backed_state_key,
         int power_initial,
         int power_limit) override;
@@ -68,7 +64,7 @@ class AutoEnrollmentClientImpl
         const ProgressCallback& progress_callback,
         DeviceManagementService* device_management_service,
         PrefService* local_state,
-        scoped_refptr<net::URLRequestContextGetter> system_request_context,
+        scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
         const std::string& device_serial_number,
         const std::string& device_brand_code,
         int power_initial,
@@ -104,7 +100,7 @@ class AutoEnrollmentClientImpl
       const ProgressCallback& progress_callback,
       DeviceManagementService* device_management_service,
       PrefService* local_state,
-      scoped_refptr<net::URLRequestContextGetter> system_request_context,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<DeviceIdentifierProvider> device_identifier_provider,
       std::unique_ptr<StateDownloadMessageProcessor>
           state_download_message_processor,
@@ -202,8 +198,8 @@ class AutoEnrollmentClientImpl
   // PrefService where the protocol's results are cached.
   PrefService* local_state_;
 
-  // The request context to use to perform the auto enrollment request.
-  scoped_refptr<net::URLRequestContextGetter> request_context_;
+  // The loader factory to use to perform the auto enrollment request.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   // Specifies the identifier set and the hash of the device's current
   // identifier.

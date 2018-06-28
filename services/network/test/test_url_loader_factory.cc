@@ -14,21 +14,6 @@
 
 namespace network {
 
-namespace {
-
-ResourceResponseHead CreateResourceResponseHead(
-    net::HttpStatusCode http_status) {
-  ResourceResponseHead head;
-  std::string headers(base::StringPrintf(
-      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
-      static_cast<int>(http_status), net::GetHttpReasonPhrase(http_status)));
-  head.headers = new net::HttpResponseHeaders(
-      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
-  return head;
-}
-
-}  // namespace
-
 TestURLLoaderFactory::PendingRequest::PendingRequest() = default;
 TestURLLoaderFactory::PendingRequest::~PendingRequest() = default;
 
@@ -59,7 +44,7 @@ void TestURLLoaderFactory::AddResponse(const GURL& url,
   responses_[url] = response;
 
   for (auto it = pending_requests_.begin(); it != pending_requests_.end();) {
-    if (CreateLoaderAndStartInternal(it->url, it->client.get())) {
+    if (CreateLoaderAndStartInternal(it->request.url, it->client.get())) {
       it = pending_requests_.erase(it);
     } else {
       ++it;
@@ -81,9 +66,9 @@ bool TestURLLoaderFactory::IsPending(const std::string& url,
                                      int* load_flags_out) {
   base::RunLoop().RunUntilIdle();
   for (const auto& candidate : pending_requests_) {
-    if (candidate.url == url) {
+    if (candidate.request.url == url) {
       if (load_flags_out)
-        *load_flags_out = candidate.load_flags;
+        *load_flags_out = candidate.request.load_flags;
       return !candidate.client.encountered_error();
     }
   }
@@ -123,10 +108,8 @@ void TestURLLoaderFactory::CreateLoaderAndStart(
     return;
 
   PendingRequest pending_request;
-  pending_request.url = url_request.url;
-  pending_request.load_flags = url_request.load_flags;
   pending_request.client = std::move(client);
-  pending_request.request_body = std::move(url_request.request_body);
+  pending_request.request = url_request;
   pending_requests_.push_back(std::move(pending_request));
 }
 
@@ -157,6 +140,18 @@ void TestURLLoaderFactory::SimulateResponse(
   SimulateResponseImpl(request.client.get(), TestURLLoaderFactory::Redirects(),
                        head, content, status);
   base::RunLoop().RunUntilIdle();
+}
+
+// static
+ResourceResponseHead TestURLLoaderFactory::CreateResourceResponseHead(
+    net::HttpStatusCode http_status) {
+  ResourceResponseHead head;
+  std::string headers(base::StringPrintf(
+      "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
+      static_cast<int>(http_status), net::GetHttpReasonPhrase(http_status)));
+  head.headers = new net::HttpResponseHeaders(
+      net::HttpUtil::AssembleRawHeaders(headers.c_str(), headers.size()));
+  return head;
 }
 
 // static
