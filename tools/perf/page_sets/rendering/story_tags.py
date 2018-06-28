@@ -26,6 +26,8 @@ IMAGE_DECODING = Tag(
     'image_decoding', 'Stories with accelerated jpeg decoding')
 KEY_DESKTOP_MOVE = Tag(
     'key_desktop_move', 'Key desktop move stories')
+KEY_HIT_TEST = Tag(
+    'key_hit_test', 'Key hit test stories')
 KEY_SILK = Tag(
     'key_silk', 'Key silk stories')
 MAPS = Tag(

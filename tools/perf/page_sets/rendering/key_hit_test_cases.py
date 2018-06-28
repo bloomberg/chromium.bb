@@ -1,21 +1,33 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-
+from telemetry.page import shared_page_state
 from telemetry import story
 
-from page_sets import polymer
+from page_sets.rendering import polymer
+from page_sets.rendering import story_tags
+
 
 class PaperCalculatorHitTest(polymer.PolymerPage):
+  # Generated from https://github.com/zqureshi/paper-calculator
+  # vulcanize --inline --strip paper-calculator/demo.html
+  URL = 'file://../key_hit_test_cases/paper-calculator-no-rendering.html'
+  BASE_NAME = 'paper_calculator_hit_test'
+  TAGS = [story_tags.KEY_HIT_TEST]
 
-  def __init__(self, page_set):
+  def __init__(self,
+               page_set,
+               shared_page_state_class=shared_page_state.SharedPageState,
+               name_suffix='',
+               extra_browser_args=None):
     super(PaperCalculatorHitTest, self).__init__(
-      # Generated from https://github.com/zqureshi/paper-calculator
-      # vulcanize --inline --strip paper-calculator/demo.html
-      url='file://key_hit_test_cases/paper-calculator-no-rendering.html',
-      page_set=page_set, run_no_page_interactions=False,
-      name='paper_calculator_hit_test')
+        page_set=page_set,
+        shared_page_state_class=shared_page_state_class,
+        name_suffix=name_suffix,
+        extra_browser_args=['--disable-top-sites', '--report-silk-details'])
 
+  def RunPageInteractions(self, action_runner):
+    return
 
   def PerformPageInteractions(self, action_runner):
     # pay cost of selecting tap target only once
@@ -37,7 +49,8 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
     with action_runner.CreateInteraction('Action_TapAction'):
       action_runner.TapElement(element_function='''window.__tapTarget''')
 
-
+# TODO(crbug.com/760553):remove this class once thread_times.key_hit_test_cases
+# benchmark is completely replaced by rendering benchmarks
 class KeyHitTestCasesPageSet(story.StorySet):
 
   def __init__(self):
