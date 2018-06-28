@@ -2611,9 +2611,10 @@ void RenderFrameImpl::LoadNavigationErrorPageInternal(
     bool replace,
     blink::WebFrameLoadType frame_load_type,
     const blink::WebHistoryItem& history_item) {
-  frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
-                   WebString::FromUTF8("UTF-8"), error_page_url, error_url,
-                   replace, frame_load_type, history_item, false);
+  frame_->CommitDataNavigation(error_html, WebString::FromUTF8("text/html"),
+                               WebString::FromUTF8("UTF-8"), error_page_url,
+                               error_url, replace, frame_load_type,
+                               history_item, false);
 }
 
 void RenderFrameImpl::DidMeaningfulLayout(
@@ -2736,10 +2737,10 @@ void RenderFrameImpl::LoadErrorPage(int reason) {
       this, frame_->GetDocumentLoader()->GetRequest(), error, &error_html,
       nullptr);
 
-  frame_->LoadData(error_html, WebString::FromUTF8("text/html"),
-                   WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL),
-                   error.url(), true, blink::WebFrameLoadType::kStandard,
-                   blink::WebHistoryItem(), true);
+  frame_->CommitDataNavigation(
+      error_html, WebString::FromUTF8("text/html"),
+      WebString::FromUTF8("UTF-8"), GURL(kUnreachableWebDataURL), error.url(),
+      true, blink::WebFrameLoadType::kStandard, blink::WebHistoryItem(), true);
 }
 
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
@@ -6821,7 +6822,7 @@ void RenderFrameImpl::LoadDataURL(
     bool replace = load_type == WebFrameLoadType::kReloadBypassingCache ||
                    load_type == WebFrameLoadType::kReload;
 
-    frame->LoadData(
+    frame->CommitDataNavigation(
         WebData(data.c_str(), data.length()), WebString::FromUTF8(mime_type),
         WebString::FromUTF8(charset), base_url,
         // Needed so that history-url-only changes don't become reloads.

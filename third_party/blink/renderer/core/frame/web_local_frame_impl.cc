@@ -935,9 +935,10 @@ void WebLocalFrameImpl::LoadHTMLString(const WebData& data,
                                        const WebURL& unreachable_url,
                                        bool replace) {
   DCHECK(GetFrame());
-  LoadData(data, WebString::FromUTF8("text/html"), WebString::FromUTF8("UTF-8"),
-           base_url, unreachable_url, replace, WebFrameLoadType::kStandard,
-           WebHistoryItem(), false);
+  CommitDataNavigation(data, WebString::FromUTF8("text/html"),
+                       WebString::FromUTF8("UTF-8"), base_url, unreachable_url,
+                       replace, WebFrameLoadType::kStandard, WebHistoryItem(),
+                       false);
 }
 
 void WebLocalFrameImpl::StopLoading() {
@@ -2096,15 +2097,16 @@ void WebLocalFrameImpl::LoadJavaScriptURL(const WebURL& url) {
   }
 }
 
-void WebLocalFrameImpl::LoadData(const WebData& data,
-                                 const WebString& mime_type,
-                                 const WebString& text_encoding,
-                                 const WebURL& base_url,
-                                 const WebURL& unreachable_url,
-                                 bool replace,
-                                 WebFrameLoadType web_frame_load_type,
-                                 const WebHistoryItem& item,
-                                 bool is_client_redirect) {
+void WebLocalFrameImpl::CommitDataNavigation(
+    const WebData& data,
+    const WebString& mime_type,
+    const WebString& text_encoding,
+    const WebURL& base_url,
+    const WebURL& unreachable_url,
+    bool replace,
+    WebFrameLoadType web_frame_load_type,
+    const WebHistoryItem& item,
+    bool is_client_redirect) {
   DCHECK(GetFrame());
 
   // If we are loading substitute data to replace an existing load, then

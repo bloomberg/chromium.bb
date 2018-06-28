@@ -138,7 +138,8 @@ class MAYBE_DomSerializerTests : public ContentBrowserTest,
       // Do not use WebFrame.LoadHTMLString because it assumes that input
       // html contents use UTF-8 encoding.
       WebData data(contents.data(), contents.length());
-      GetMainFrame()->LoadData(data, "text/html", encoding_info, base_url);
+      GetMainFrame()->CommitDataNavigation(data, "text/html", encoding_info,
+                                           base_url);
     }
     base::MessageLoopCurrent::ScopedNestableTaskAllower allow;
     waiter.Wait();
