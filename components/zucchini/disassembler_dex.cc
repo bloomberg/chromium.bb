@@ -1591,7 +1591,8 @@ bool DisassemblerDex::ParseHeader() {
       return false;
     code_item_offsets_[i] = code_item_offset;
   }
-  return true;
+  // DEX files are required to have parsable code items.
+  return !code_item_offsets_.empty();
 }
 
 }  // namespace zucchini
