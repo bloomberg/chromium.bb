@@ -110,14 +110,16 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   // Start logging a peer connection's WebRTC events to a file, which will
   // later be uploaded to a remote server. If a reply is provided, it will be
-  // posted back to BrowserThread::UI with the return value provided by
-  // WebRtcRemoteEventLogManager::StartRemoteLogging - see the comment there
-  // for more details.
+  // posted back to BrowserThread::UI with the log-identifier (if successful)
+  // of the created log or (if unsuccessful) the error message.
+  // See the comment in  WebRtcRemoteEventLogManager::StartRemoteLogging for
+  // more details.
   void StartRemoteLogging(
       int render_process_id,
       const std::string& peer_connection_id,
       size_t max_file_size_bytes,
-      base::OnceCallback<void(bool, const std::string&)> reply);
+      base::OnceCallback<void(bool, const std::string&, const std::string&)>
+          reply);
 
   // Clear WebRTC event logs associated with a given browser context, in a given
   // time range (|delete_begin| inclusive, |delete_end| exclusive), then
@@ -223,7 +225,8 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       const std::string& peer_connection_id,
       const base::FilePath& browser_context_dir,
       size_t max_file_size_bytes,
-      base::OnceCallback<void(bool, const std::string&)> reply);
+      base::OnceCallback<void(bool, const std::string&, const std::string&)>
+          reply);
 
   void ClearCacheForBrowserContextInternal(BrowserContextId browser_context_id,
                                            const base::Time& delete_begin,

@@ -55,6 +55,13 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
       LogsDirectoryCallback;
   typedef base::Callback<void(const std::string&)> LogsDirectoryErrorCallback;
 
+  // Argument #1: Indicate success/failure.
+  // Argument #2: If success, the log's ID. Otherwise, empty.
+  // Argument #3: If failure, the error message. Otherwise, empty.
+  typedef base::RepeatingCallback<
+      void(bool, const std::string&, const std::string&)>
+      StartEventLoggingCallback;
+
   // Key used to attach the handler to the RenderProcessHost.
   static const char kWebRtcLoggingHandlerHostKey[];
 
@@ -124,14 +131,17 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
                    size_t packet_length,
                    bool incoming);
 
-  // Start remote-bound event logging for a specific peer connection,
-  // indicated by its ID, for which remote-bound event logging was not active.
+  // Start remote-bound event logging for a specific peer connection
+  // (indicated by its peer connection ID), for which remote-bound event
+  // logging was not active.
   // The callback will be posted back, indicating |true| if and only if an
-  // event log was successfully started.
+  // event log was successfully started, in which case the first of the string
+  // arguments will be set to the log-ID. Otherwise, the second of the string
+  // arguments will contain the error message.
   // This function must be called on the UI thread.
   void StartEventLogging(const std::string& peer_connection_id,
                          size_t max_log_size_bytes,
-                         const GenericDoneCallback& callback);
+                         const StartEventLoggingCallback& callback);
 
 #if defined(OS_LINUX) || defined(OS_CHROMEOS)
   // Ensures that the WebRTC Logs directory exists and then grants render

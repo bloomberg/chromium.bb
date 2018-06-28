@@ -17,9 +17,10 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
-#include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/unguessable_token.h"
 #include "chrome/common/chrome_switches.h"
 #include "content/public/browser/browser_thread.h"
 
@@ -79,6 +80,16 @@ bool TimePointInRange(const base::Time& time_point,
          (range_end.is_null() || time_point < range_end);
 }
 
+// Create a random identifier of 32 hexadecimal (uppercase) characters.
+std::string CreateLogId() {
+  // UnguessableToken's interface makes no promisses over case. We therefore
+  // convert, even if the current implementation does not require it.
+  std::string log_id =
+      base::ToUpperASCII(base::UnguessableToken::Create().ToString());
+  DCHECK_EQ(log_id.size(), 32u);
+  DCHECK_EQ(log_id.find_first_not_of("0123456789ABCDEF"), std::string::npos);
+  return log_id;
+}
 }  // namespace
 
 const size_t kMaxActiveRemoteBoundWebRtcEventLogs = 3;
@@ -90,7 +101,9 @@ static_assert(kMaxActiveRemoteBoundWebRtcEventLogs <=
 const base::TimeDelta kRemoteBoundWebRtcEventLogsMaxRetention =
     base::TimeDelta::FromDays(7);
 
-const base::FilePath::CharType kRemoteBoundLogExtension[] =
+const base::FilePath::CharType kRemoteBoundWebRtcEventLogFileNamePrefix[] =
+    FILE_PATH_LITERAL("webrtc_event_log_");
+const base::FilePath::CharType kRemoteBoundWebRtcEventLogExtension[] =
     FILE_PATH_LITERAL("log");
 
 WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
@@ -215,8 +228,11 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     const std::string& peer_connection_id,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
+    std::string* log_id,
     std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(log_id);
+  DCHECK(log_id->empty());
   DCHECK(error_message);
   DCHECK(error_message->empty());
 
@@ -259,7 +275,7 @@ bool WebRtcRemoteEventLogManager::StartRemoteLogging(
     return false;
   }
 
-  return StartWritingLog(key, browser_context_dir, max_file_size_bytes,
+  return StartWritingLog(key, browser_context_dir, max_file_size_bytes, log_id,
                          error_message);
 }
 
@@ -411,7 +427,7 @@ void WebRtcRemoteEventLogManager::AddPendingLogs(
 
   base::FilePath::StringType pattern =
       base::FilePath::StringType(FILE_PATH_LITERAL("*")) +
-      base::FilePath::kExtensionSeparator + kRemoteBoundLogExtension;
+      base::FilePath::kExtensionSeparator + kRemoteBoundWebRtcEventLogExtension;
   base::FileEnumerator enumerator(remote_bound_logs_dir,
                                   /*recursive=*/false,
                                   base::FileEnumerator::FILES, pattern);
@@ -429,19 +445,23 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
     const PeerConnectionKey& key,
     const base::FilePath& browser_context_dir,
     size_t max_file_size_bytes,
+    std::string* log_id,
     std::string* error_message) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  // Randomize a new filename. In the highly unlikely event that this filename
-  // is already taken, it will be treated the same way as any other failure
-  // to start the log file.
+  // The log is assigned a universally unique ID (with high probability).
+  const std::string id = CreateLogId();
+
+  // Use the log ID as part of the filename. In the highly unlikely event that
+  // this filename is already taken, it will be treated the same way as any
+  // other failure to start the log file.
   // TODO(crbug.com/775415): Add a unit test for above comment.
-  const std::string unique_filename =
-      "event_log_" + std::to_string(base::RandUint64());
   const base::FilePath base_path =
       GetRemoteBoundWebRtcEventLogsDir(browser_context_dir);
-  const base::FilePath file_path = base_path.AppendASCII(unique_filename)
-                                       .AddExtension(kRemoteBoundLogExtension);
+  const base::FilePath file_path =
+      base_path.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
+          .InsertBeforeExtensionASCII(id)
+          .AddExtension(kRemoteBoundWebRtcEventLogExtension);
 
   // Attempt to create the file.
   constexpr int file_flags = base::File::FLAG_CREATE | base::File::FLAG_WRITE |
@@ -462,6 +482,7 @@ bool WebRtcRemoteEventLogManager::StartWritingLog(
 
   observer_->OnRemoteLogStarted(key, it.first->second.path());
 
+  *log_id = id;
   return true;
 }
 

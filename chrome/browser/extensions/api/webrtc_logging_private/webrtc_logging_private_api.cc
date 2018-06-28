@@ -570,8 +570,9 @@ bool WebrtcLoggingPrivateStartEventLoggingFunction::RunAsync() {
     return false;
   }
 
-  WebRtcLoggingHandlerHost::GenericDoneCallback callback = base::Bind(
-      &WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback, this);
+  WebRtcLoggingHandlerHost::StartEventLoggingCallback callback =
+      base::BindRepeating(
+          &WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback, this);
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -582,14 +583,19 @@ bool WebrtcLoggingPrivateStartEventLoggingFunction::RunAsync() {
   return true;
 }
 
-// TODO(crbug.com/829748): Merge with super-class's FireCallback().
 void WebrtcLoggingPrivateStartEventLoggingFunction::FireCallback(
     bool success,
+    const std::string& log_id,
     const std::string& error_message) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (success) {
+    DCHECK(!log_id.empty());
     DCHECK(error_message.empty());
+    api::webrtc_logging_private::StartEventLoggingResult result;
+    result.log_id = log_id;
+    SetResult(result.ToValue());
   } else {
+    DCHECK(log_id.empty());
     DCHECK(!error_message.empty());
     SetError(error_message);
   }

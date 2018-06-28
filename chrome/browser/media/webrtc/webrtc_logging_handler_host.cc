@@ -253,7 +253,7 @@ void WebRtcLoggingHandlerHost::StopRtpDump(
 void WebRtcLoggingHandlerHost::StartEventLogging(
     const std::string& peer_connection_id,
     size_t max_log_size_bytes,
-    const GenericDoneCallback& callback) {
+    const StartEventLoggingCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   WebRtcEventLogManager::GetInstance()->StartRemoteLogging(
       render_process_id_, peer_connection_id, max_log_size_bytes, callback);

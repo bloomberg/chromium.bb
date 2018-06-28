@@ -22,9 +22,6 @@ namespace {
 const char kUploadContentType[] = "multipart/form-data";
 const char kBoundary[] = "----**--yradnuoBgoLtrapitluMklaTelgooG--**----";
 
-const char kLogFilename[] = "webrtc_event_log";
-const char kLogExtension[] = "log";
-
 constexpr size_t kExpectedMimeOverheadBytes = 1000;  // Intentional overshot.
 
 // TODO(crbug.com/817495): Eliminate the duplication with other uploaders.
@@ -72,13 +69,14 @@ constexpr net::NetworkTrafficAnnotationTag
           "Not applicable."
       })");
 
-void AddFileContents(const std::string& file_contents,
+void AddFileContents(const char* filename,
+                     const std::string& file_contents,
                      const std::string& content_type,
                      std::string* post_data) {
   // net::AddMultipartValueForUpload does almost what we want to do here, except
   // that it does not add the "filename" attribute. We hack it to force it to.
-  std::string mime_value_name = base::StringPrintf(
-      "%s\"; filename=\"%s.%s\"", kLogFilename, kLogFilename, kLogExtension);
+  std::string mime_value_name =
+      base::StringPrintf("%s\"; filename=\"%s\"", filename, filename);
   net::AddMultipartValueForUpload(mime_value_name, file_contents, kBoundary,
                                   content_type, post_data);
 }
@@ -233,14 +231,22 @@ bool WebRtcEventLogUploaderImpl::PrepareUploadData(std::string* upload_data) {
 
   DCHECK(upload_data->empty());
   upload_data->reserve(log_file_contents.size() + kExpectedMimeOverheadBytes);
+
+  const std::string filename_str = log_file_.path.BaseName().MaybeAsASCII();
+  if (filename_str.empty()) {
+    LOG(WARNING) << "Log filename is not according to acceptable format.";
+    return false;
+  }
+
+  const char* filename = filename_str.c_str();
+
   net::AddMultipartValueForUpload("prod", kProduct, kBoundary, "", upload_data);
   net::AddMultipartValueForUpload("ver",
                                   version_info::GetVersionNumber() + "-webrtc",
                                   kBoundary, "", upload_data);
   net::AddMultipartValueForUpload("guid", "0", kBoundary, "", upload_data);
-  net::AddMultipartValueForUpload("type", kLogFilename, kBoundary, "",
-                                  upload_data);
-  AddFileContents(log_file_contents, "application/log", upload_data);
+  net::AddMultipartValueForUpload("type", filename, kBoundary, "", upload_data);
+  AddFileContents(filename, log_file_contents, "application/log", upload_data);
   net::AddMultipartFinalDelimiterForUpload(kBoundary, upload_data);
 
   return true;
