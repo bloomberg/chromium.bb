@@ -102,17 +102,17 @@ class ClearKeyProperties : public KeySystemProperties {
            init_data_type == EmeInitDataType::KEYIDS;
   }
 
-  bool IsEncryptionSchemeSupported(
-      EncryptionMode encryption_scheme) const override {
+  media::EmeConfigRule GetEncryptionSchemeConfigRule(
+      media::EncryptionMode encryption_scheme) const override {
     switch (encryption_scheme) {
-      case EncryptionMode::kCenc:
-      case EncryptionMode::kCbcs:
-        return true;
-      case EncryptionMode::kUnencrypted:
+      case media::EncryptionMode::kCenc:
+      case media::EncryptionMode::kCbcs:
+        return media::EmeConfigRule::SUPPORTED;
+      case media::EncryptionMode::kUnencrypted:
         break;
     }
     NOTREACHED();
-    return false;
+    return media::EmeConfigRule::NOT_SUPPORTED;
   }
 
   SupportedCodecs GetSupportedCodecs() const override {
@@ -128,19 +128,24 @@ class ClearKeyProperties : public KeySystemProperties {
     return requested_robustness.empty() ? EmeConfigRule::SUPPORTED
                                         : EmeConfigRule::NOT_SUPPORTED;
   }
+
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
+
   EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
       const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
+
   EmeFeatureSupport GetPersistentStateSupport() const override {
     return EmeFeatureSupport::NOT_SUPPORTED;
   }
+
   EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
     return EmeFeatureSupport::NOT_SUPPORTED;
   }
+
   bool UseAesDecryptor() const override { return true; }
 };
 
@@ -214,7 +219,7 @@ class KeySystemsImpl : public KeySystems {
   bool IsSupportedInitDataType(const std::string& key_system,
                                EmeInitDataType init_data_type) const override;
 
-  bool IsEncryptionSchemeSupported(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
       EncryptionMode encryption_scheme) const override;
 
@@ -500,7 +505,7 @@ bool KeySystemsImpl::IsSupportedInitDataType(
   return key_system_iter->second->IsSupportedInitDataType(init_data_type);
 }
 
-bool KeySystemsImpl::IsEncryptionSchemeSupported(
+EmeConfigRule KeySystemsImpl::GetEncryptionSchemeConfigRule(
     const std::string& key_system,
     EncryptionMode encryption_scheme) const {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -509,9 +514,9 @@ bool KeySystemsImpl::IsEncryptionSchemeSupported(
       key_system_properties_map_.find(key_system);
   if (key_system_iter == key_system_properties_map_.end()) {
     NOTREACHED();
-    return false;
+    return EmeConfigRule::NOT_SUPPORTED;
   }
-  return key_system_iter->second->IsEncryptionSchemeSupported(
+  return key_system_iter->second->GetEncryptionSchemeConfigRule(
       encryption_scheme);
 }
 

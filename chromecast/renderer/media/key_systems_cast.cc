@@ -155,16 +155,17 @@ void AddCmaKeySystems(
 #if defined(WIDEVINE_CDM_AVAILABLE)
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
 
-  base::flat_set<::media::EncryptionMode> supported_encryption_schemes = {
+  base::flat_set<::media::EncryptionMode> encryption_schemes = {
       ::media::EncryptionMode::kCenc, ::media::EncryptionMode::kCbcs};
 
   key_systems_properties->emplace_back(new cdm::WidevineKeySystemProperties(
-      supported_encryption_schemes,          // Encryption schemes.
-      codecs,                                // Regular codecs.
-      codecs,                                // Hardware secure codecs.
-      Robustness::HW_SECURE_ALL,             // Max audio robustness.
-      Robustness::HW_SECURE_ALL,             // Max video robustness.
-      EmeSessionTypeSupport::SUPPORTED,      // persistent-license.
+      codecs,                            // Regular codecs.
+      encryption_schemes,                // Encryption schemes.
+      codecs,                            // Hardware secure codecs.
+      encryption_schemes,                // Hardware secure encryption schemes.
+      Robustness::HW_SECURE_ALL,         // Max audio robustness.
+      Robustness::HW_SECURE_ALL,         // Max video robustness.
+      EmeSessionTypeSupport::SUPPORTED,  // persistent-license.
       EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
       // Note: On Chromecast, all CDMs may have persistent state.
       EmeFeatureSupport::ALWAYS_ENABLED,    // Persistent state.

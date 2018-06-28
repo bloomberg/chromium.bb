@@ -24,6 +24,8 @@
 
 namespace media {
 
+namespace {
+
 // These are the (fake) key systems that are registered for these tests.
 // kUsesAes uses the AesDecryptor like Clear Key.
 // kExternal uses an external CDM, such as library CDM or Android platform CDM.
@@ -89,10 +91,12 @@ class AesKeySystemProperties : public TestKeySystemPropertiesBase {
 
   std::string GetKeySystemName() const override { return name_; }
 
-  bool IsEncryptionSchemeSupported(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       EncryptionMode encryption_scheme) const override {
-    return encryption_scheme == EncryptionMode::kUnencrypted ||
-           encryption_scheme == EncryptionMode::kCenc;
+    return (encryption_scheme == EncryptionMode::kUnencrypted ||
+            encryption_scheme == EncryptionMode::kCenc)
+               ? EmeConfigRule::SUPPORTED
+               : EmeConfigRule::NOT_SUPPORTED;
   }
 
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport() const override {
@@ -117,9 +121,19 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
  public:
   std::string GetKeySystemName() const override { return kExternal; }
 
-  bool IsEncryptionSchemeSupported(
+  // Pretend clear (unencrypted) and 'cenc' content are always supported. But
+  // 'cbcs' is not supported by hardware secure codecs.
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       EncryptionMode encryption_scheme) const override {
-    return encryption_scheme != EncryptionMode::kUnencrypted;
+    switch (encryption_scheme) {
+      case media::EncryptionMode::kUnencrypted:
+      case media::EncryptionMode::kCenc:
+        return media::EmeConfigRule::SUPPORTED;
+      case media::EncryptionMode::kCbcs:
+        return media::EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
+    }
+    NOTREACHED();
+    return media::EmeConfigRule::NOT_SUPPORTED;
   }
 
   // We have hardware secure codec support for FOO_VIDEO and FOO_SECURE_VIDEO.
@@ -154,13 +168,15 @@ class ExternalKeySystemProperties : public TestKeySystemPropertiesBase {
   }
 };
 
-static bool IsEncryptionSchemeSupported(const std::string& key_system,
-                                        EncryptionMode encryption_scheme) {
-  return KeySystems::GetInstance()->IsEncryptionSchemeSupported(
-      key_system, encryption_scheme);
+void ExpectEncryptionSchemeConfigRule(const std::string& key_system,
+                                      EncryptionMode encryption_scheme,
+                                      EmeConfigRule expected_rule) {
+  EXPECT_EQ(expected_rule,
+            KeySystems::GetInstance()->GetEncryptionSchemeConfigRule(
+                key_system, encryption_scheme));
 }
 
-static EmeConfigRule GetVideoContentTypeConfigRule(
+EmeConfigRule GetVideoContentTypeConfigRule(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
@@ -170,7 +186,7 @@ static EmeConfigRule GetVideoContentTypeConfigRule(
 
 // Adapt IsSupportedKeySystemWithMediaMimeType() to the new API,
 // IsSupportedCodecCombination().
-static bool IsSupportedKeySystemWithMediaMimeType(
+bool IsSupportedKeySystemWithMediaMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
@@ -178,7 +194,7 @@ static bool IsSupportedKeySystemWithMediaMimeType(
           EmeConfigRule::NOT_SUPPORTED);
 }
 
-static bool IsSupportedKeySystemWithAudioMimeType(
+bool IsSupportedKeySystemWithAudioMimeType(
     const std::string& mime_type,
     const std::vector<std::string>& codecs,
     const std::string& key_system) {
@@ -187,12 +203,11 @@ static bool IsSupportedKeySystemWithAudioMimeType(
           EmeConfigRule::NOT_SUPPORTED);
 }
 
-static bool IsSupportedKeySystem(const std::string& key_system) {
+bool IsSupportedKeySystem(const std::string& key_system) {
   return KeySystems::GetInstance()->IsSupportedKeySystem(key_system);
 }
 
-static EmeConfigRule GetRobustnessConfigRule(
-    const std::string& requested_robustness) {
+EmeConfigRule GetRobustnessConfigRule(const std::string& requested_robustness) {
   return KeySystems::GetInstance()->GetRobustnessConfigRule(
       kExternal, EmeMediaType::VIDEO, requested_robustness);
 }
@@ -205,7 +220,7 @@ static EmeConfigRule GetRobustnessConfigRule(
 // systems. In test code, the MediaClient is set by SetMediaClient().
 // Therefore, SetMediaClient() must be called before this function to make sure
 // MediaClient in effect when constructing KeySystems.
-static void AddContainerAndCodecMasksForTest() {
+void AddContainerAndCodecMasksForTest() {
   // Since KeySystems is a singleton. Make sure we only add test container and
   // codec masks once per process.
   static bool is_test_masks_added = false;
@@ -223,7 +238,7 @@ static void AddContainerAndCodecMasksForTest() {
   is_test_masks_added = true;
 }
 
-static bool CanRunExternalKeySystemTests() {
+bool CanRunExternalKeySystemTests() {
 #if defined(OS_ANDROID)
   if (HasPlatformDecoderSupport())
     return true;
@@ -301,6 +316,8 @@ void TestMediaClient::SetKeySystemsUpdateNeeded() {
 void TestMediaClient::DisableExternalKeySystemSupport() {
   supports_external_key_system_ = false;
 }
+
+}  // namespace
 
 class KeySystemsTest : public testing::Test {
  protected:
@@ -599,10 +616,12 @@ TEST_F(KeySystemsTest,
 
 TEST_F(KeySystemsTest,
        IsSupportedKeySystem_UsesAesDecryptor_EncryptionSchemes) {
-  EXPECT_TRUE(
-      IsEncryptionSchemeSupported(kUsesAes, EncryptionMode::kUnencrypted));
-  EXPECT_TRUE(IsEncryptionSchemeSupported(kUsesAes, EncryptionMode::kCenc));
-  EXPECT_FALSE(IsEncryptionSchemeSupported(kUsesAes, EncryptionMode::kCbcs));
+  ExpectEncryptionSchemeConfigRule(kUsesAes, EncryptionMode::kUnencrypted,
+                                   EmeConfigRule::SUPPORTED);
+  ExpectEncryptionSchemeConfigRule(kUsesAes, EncryptionMode::kCenc,
+                                   EmeConfigRule::SUPPORTED);
+  ExpectEncryptionSchemeConfigRule(kUsesAes, EncryptionMode::kCbcs,
+                                   EmeConfigRule::NOT_SUPPORTED);
 }
 
 //
@@ -731,10 +750,12 @@ TEST_F(KeySystemsTest,
   if (!CanRunExternalKeySystemTests())
     return;
 
-  EXPECT_FALSE(
-      IsEncryptionSchemeSupported(kExternal, EncryptionMode::kUnencrypted));
-  EXPECT_TRUE(IsEncryptionSchemeSupported(kExternal, EncryptionMode::kCenc));
-  EXPECT_TRUE(IsEncryptionSchemeSupported(kExternal, EncryptionMode::kCbcs));
+  ExpectEncryptionSchemeConfigRule(kExternal, EncryptionMode::kUnencrypted,
+                                   EmeConfigRule::SUPPORTED);
+  ExpectEncryptionSchemeConfigRule(kExternal, EncryptionMode::kCenc,
+                                   EmeConfigRule::SUPPORTED);
+  ExpectEncryptionSchemeConfigRule(kExternal, EncryptionMode::kCbcs,
+                                   EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED);
 }
 
 TEST_F(KeySystemsTest, KeySystemNameForUMA) {

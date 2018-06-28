@@ -347,18 +347,22 @@ class EncryptedMediaSupportedTypesTest : public InProcessBrowserTest {
                                   robustness);
   }
 
-  std::string IsAudioEncryptionSchemeSupported(const std::string& key_system,
-                                               const char* encryption_scheme) {
+  std::string IsAudioEncryptionSchemeSupported(
+      const std::string& key_system,
+      const char* encryption_scheme,
+      const char* robustness = nullptr) {
     return IsSupportedByKeySystem(key_system, kAudioWebMMimeType,
                                   audio_webm_codecs(), SessionType::kTemporary,
-                                  nullptr, encryption_scheme);
+                                  robustness, encryption_scheme);
   }
 
-  std::string IsVideoEncryptionSchemeSupported(const std::string& key_system,
-                                               const char* encryption_scheme) {
+  std::string IsVideoEncryptionSchemeSupported(
+      const std::string& key_system,
+      const char* encryption_scheme,
+      const char* robustness = nullptr) {
     return IsSupportedByKeySystem(key_system, kVideoWebMMimeType,
                                   video_webm_codecs(), SessionType::kTemporary,
-                                  nullptr, encryption_scheme);
+                                  robustness, encryption_scheme);
   }
 
  private:
@@ -1116,12 +1120,15 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineTest,
 }
 
 //
-// Widevine with hardware secure decryption support. Note that for the test
-// suite EncryptedMediaSupportedTypesWidevineHwSecureTest, feature
-// media::kHardwareSecureDecryption is enabled, and command line switch
-// kOverrideHardwareSecureCodecsForTesting is used to always enable vp8 and vp9,
-// and disable avc1. With the switch, real hardware capabilities are not checked
-// for the stability of tests.
+// EncryptedMediaSupportedTypesWidevineHwSecureTest tests Widevine with hardware
+// secure decryption support.
+// - ChromeOS: HW_SECURE_ALL are supported by default which is not affected by
+// feature media::kHardwareSecureDecryption.
+// - Linux/Mac/Windows: Feature media::kHardwareSecureDecryption is enabled, and
+// command line switch kOverrideHardwareSecureCodecsForTesting is used to always
+// enable vp8 and vp9, and disable avc1; always enable 'cenc' and disable
+// 'cbcs', for HW_SECURE* robustness levels. With the switch, real hardware
+// capabilities are not checked for the stability of tests.
 
 IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
                        Robustness) {
@@ -1192,8 +1199,43 @@ IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
 #endif
 }
 
-// TODO(crbug.com/853261): Add a test for hardware secure encryption scheme
-// support.
+IN_PROC_BROWSER_TEST_F(EncryptedMediaSupportedTypesWidevineHwSecureTest,
+                       EncryptionScheme) {
+  // Both encryption schemes are supported when no robustness is specified.
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cenc"));
+  EXPECT_WV_SUCCESS(IsAudioEncryptionSchemeSupported(kWidevine, "cbcs"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cenc"));
+  EXPECT_WV_SUCCESS(IsVideoEncryptionSchemeSupported(kWidevine, "cbcs"));
+
+  // Both encryption schemes are supported when SW_SECURE* robustness is
+  // specified.
+  EXPECT_WV_SUCCESS(
+      IsAudioEncryptionSchemeSupported(kWidevine, "cenc", "SW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(
+      IsAudioEncryptionSchemeSupported(kWidevine, "cbcs", "SW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cenc", "SW_SECURE_DECODE"));
+  EXPECT_WV_SUCCESS(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cbcs", "SW_SECURE_DECODE"));
+
+  // For HW_SECURE* robustness levels. 'cenc' is always supported. 'cbcs' is
+  // supported on ChromeOS, but not on other platforms.
+  EXPECT_WV_SUCCESS(
+      IsAudioEncryptionSchemeSupported(kWidevine, "cenc", "HW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cenc", "HW_SECURE_ALL"));
+#if defined(OS_CHROMEOS)
+  EXPECT_WV_SUCCESS(
+      IsAudioEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_CRYPTO"));
+  EXPECT_WV_SUCCESS(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_ALL"));
+#else
+  EXPECT_UNSUPPORTED(
+      IsAudioEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_CRYPTO"));
+  EXPECT_UNSUPPORTED(
+      IsVideoEncryptionSchemeSupported(kWidevine, "cbcs", "HW_SECURE_ALL"));
+#endif
+}
 
 //
 // Misc failure test cases.

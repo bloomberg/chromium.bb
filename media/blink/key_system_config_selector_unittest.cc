@@ -75,7 +75,7 @@ const char kUnsupportedByAesDecryptorCodec[] = "unsupported_by_aes_decryptor";
 // Note that WebMediaKeySystemMediaCapability defaults to kNotSpecified,
 // which is treated as 'cenc' by KeySystemConfigSelector.
 constexpr EncryptionScheme kSupportedEncryptionScheme = EncryptionScheme::kCenc;
-constexpr EncryptionScheme kUnSupportedEncryptionScheme =
+constexpr EncryptionScheme kDisallowHwSecureCodecEncryptionScheme =
     EncryptionScheme::kCbcs;
 
 EncryptionMode ConvertEncryptionScheme(EncryptionScheme encryption_scheme) {
@@ -214,11 +214,20 @@ class FakeKeySystems : public KeySystems {
     return false;
   }
 
-  bool IsEncryptionSchemeSupported(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
       EncryptionMode encryption_scheme) const override {
-    return encryption_scheme ==
-           ConvertEncryptionScheme(kSupportedEncryptionScheme);
+    if (encryption_scheme ==
+        ConvertEncryptionScheme(kSupportedEncryptionScheme)) {
+      return EmeConfigRule::SUPPORTED;
+    }
+
+    if (encryption_scheme ==
+        ConvertEncryptionScheme(kDisallowHwSecureCodecEncryptionScheme)) {
+      return EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
+    }
+
+    return EmeConfigRule::NOT_SUPPORTED;
   }
 
   EmeConfigRule GetContentTypeConfigRule(
@@ -1082,18 +1091,22 @@ TEST_F(KeySystemConfigSelectorTest,
 }
 
 TEST_F(KeySystemConfigSelectorTest,
-       VideoCapabilities_EncryptionScheme_Unsupported) {
+       VideoCapabilities_EncryptionScheme_DisallowHwSecureCodec) {
   std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
   video_capabilities[0].content_type = "a";
   video_capabilities[0].mime_type = kSupportedVideoContainer;
   video_capabilities[0].codecs = kSupportedVideoCodec;
-  video_capabilities[0].encryption_scheme = kUnSupportedEncryptionScheme;
+  video_capabilities[0].encryption_scheme =
+      kDisallowHwSecureCodecEncryptionScheme;
 
   blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
   config.video_capabilities = video_capabilities;
   configs_.push_back(config);
 
-  SelectConfigReturnsError();
+  SelectConfigReturnsConfig();
+  ASSERT_EQ(1u, config_.video_capabilities.size());
+  EXPECT_EQ(kDisallowHwSecureCodecEncryptionScheme,
+            config_.video_capabilities[0].encryption_scheme);
 }
 
 // --- HW Secure Codecs and Robustness ---
@@ -1271,6 +1284,40 @@ TEST_F(KeySystemConfigSelectorTest,
   EXPECT_EQ("require_hw_secure_codec",
             config_.video_capabilities[0].content_type);
   EXPECT_TRUE(cdm_config_.use_hw_secure_codecs);
+}
+
+TEST_F(KeySystemConfigSelectorTest, HwSecureCodec_EncryptionScheme_Supported) {
+  std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].content_type = "a";
+  video_capabilities[0].mime_type = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kRequireHwSecureCodec;
+  video_capabilities[0].encryption_scheme = kSupportedEncryptionScheme;
+
+  blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
+  config.video_capabilities = video_capabilities;
+  configs_.push_back(config);
+
+  SelectConfigReturnsConfig();
+  ASSERT_EQ(1u, config_.video_capabilities.size());
+  EXPECT_EQ(kSupportedEncryptionScheme,
+            config_.video_capabilities[0].encryption_scheme);
+  EXPECT_TRUE(cdm_config_.use_hw_secure_codecs);
+}
+
+TEST_F(KeySystemConfigSelectorTest,
+       HwSecureCodec_EncryptionScheme_DisallowHwSecureCodec) {
+  std::vector<blink::WebMediaKeySystemMediaCapability> video_capabilities(1);
+  video_capabilities[0].content_type = "a";
+  video_capabilities[0].mime_type = kSupportedVideoContainer;
+  video_capabilities[0].codecs = kRequireHwSecureCodec;
+  video_capabilities[0].encryption_scheme =
+      kDisallowHwSecureCodecEncryptionScheme;
+
+  blink::WebMediaKeySystemConfiguration config = EmptyConfiguration();
+  config.video_capabilities = video_capabilities;
+  configs_.push_back(config);
+
+  SelectConfigReturnsError();
 }
 
 // --- audioCapabilities ---
