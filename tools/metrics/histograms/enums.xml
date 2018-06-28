@@ -27072,6 +27072,7 @@ from previous Chrome versions.
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
   <int value="-1812579951" label="ContentSuggestionsCategoryRanker:enabled"/>
+  <int value="-1811887751" label="ChromeModernFullRoll:disabled"/>
   <int value="-1811394154" label="disable-webrtc-hw-vp8-encoding"/>
   <int value="-1810294310" label="AndroidPaymentApps:enabled"/>
   <int value="-1808576075" label="SystemTrayUnified:enabled"/>
@@ -27553,6 +27554,7 @@ from previous Chrome versions.
   <int value="-812461825" label="AutofillCreditCardSigninPromo:enabled"/>
   <int value="-810684526"
       label="AutofillToolkitViewsCreditCardDialogsMac:disabled"/>
+  <int value="-810373609" label="ChromeModernFullRoll:enabled"/>
   <int value="-808486493" label="NewWallpaperPicker:disabled"/>
   <int value="-802348444" label="disable-site-engagement-service"/>
   <int value="-798187384" label="try-supported-channel-layouts"/>

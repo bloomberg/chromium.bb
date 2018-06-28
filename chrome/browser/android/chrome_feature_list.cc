@@ -83,6 +83,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kChromeMemexFeature,
     &kChromeModernAlternateCardLayout,
     &kChromeModernDesign,
+    &kChromeModernFullRoll,
     &kCommandLineOnNonRooted,
     &kContentSuggestionsScrollToLoad,
     &kContentSuggestionsSettings,
@@ -219,6 +220,9 @@ const base::Feature kChromeModernAlternateCardLayout{
 
 const base::Feature kChromeModernDesign{"ChromeModernDesign",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeModernFullRoll{"ChromeModernFullRoll",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

@@ -2088,6 +2088,10 @@ const char kChromeModernDesignDescription[] =
     "Enable modern design for Chrome. Chrome must be restarted twice for this "
     "flag to take effect.";
 
+const char kChromeModernFullRollName[] = "Chrome Modern Full-Roll";
+const char kChromeModernFullRollDescription[] =
+    "Enable modern full-roll animation for Chrome.";
+
 const char kChromeMemexName[] = "Chrome Memex";
 const char kChromeMemexDescription[] =
     "Enables Chrome Memex homepage on Android. Restricted to opted-in "
