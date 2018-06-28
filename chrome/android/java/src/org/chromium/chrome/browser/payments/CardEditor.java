@@ -659,7 +659,7 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 int endIndex = builder.length();
 
                 Object foregroundSpanner = new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                        mContext.getResources(), R.color.google_blue_700));
+                        mContext.getResources(), R.color.default_text_color_link));
                 builder.setSpan(foregroundSpanner, startIndex, endIndex, 0);
 
                 // The text size in the dropdown is 14dp.

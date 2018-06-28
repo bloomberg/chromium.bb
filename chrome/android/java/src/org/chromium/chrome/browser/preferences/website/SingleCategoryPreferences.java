@@ -237,7 +237,7 @@ public class SingleCategoryPreferences extends PreferenceFragment
 
         // Color the first part of the title blue.
         ForegroundColorSpan blueSpan = new ForegroundColorSpan(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.google_blue_700));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color_link));
         spannable.setSpan(blueSpan, 0, spannable.length() - prefCount.length(),
                 Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
 

@@ -64,11 +64,13 @@ public final class DualControlLayout extends ViewGroup {
      */
     public static Button createButtonForLayout(
             Context context, boolean isPrimary, String text, OnClickListener listener) {
-        int lightActiveColor =
+        int textColorLink = ApiCompatibilityUtils.getColor(
+                context.getResources(), R.color.default_text_color_link);
+        int buttonColor =
                 ApiCompatibilityUtils.getColor(context.getResources(), R.color.light_active_color);
 
         if (isPrimary) {
-            ButtonCompat primaryButton = new ButtonCompat(context, lightActiveColor, false);
+            ButtonCompat primaryButton = new ButtonCompat(context, buttonColor, false);
             primaryButton.setId(R.id.button_primary);
             primaryButton.setOnClickListener(listener);
             primaryButton.setText(text);
@@ -79,7 +81,7 @@ public final class DualControlLayout extends ViewGroup {
             secondaryButton.setId(R.id.button_secondary);
             secondaryButton.setOnClickListener(listener);
             secondaryButton.setText(text);
-            secondaryButton.setTextColor(lightActiveColor);
+            secondaryButton.setTextColor(textColorLink);
             return secondaryButton;
         }
     }

@@ -87,8 +87,7 @@
         android:paddingStart="@dimen/fre_button_padding"
         android:paddingEnd="@dimen/fre_button_padding"
         android:text="@string/fre_accept_continue"
-        android:textAllCaps="true"
-        style="@style/WhiteBody"
+        android:textAppearance="@style/WhiteButtonText"
         app:buttonColor="@color/light_active_color"
         app:buttonRaised="false"/>
 

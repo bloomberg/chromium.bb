@@ -8,7 +8,6 @@ import static android.view.View.IMPORTANT_FOR_ACCESSIBILITY_NO;
 
 import android.content.res.Resources;
 import android.graphics.Bitmap;
-import android.util.TypedValue;
 import android.view.Gravity;
 import android.view.View;
 import android.widget.ImageView;
@@ -51,8 +50,7 @@ public class InstallableAmbientBadgeInfoBar extends InfoBar implements View.OnCl
 
         Resources res = layout.getResources();
         prompt.setText(mMessageText);
-        prompt.setTextSize(TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.infobar_text_size));
-        prompt.setTextColor(ApiCompatibilityUtils.getColor(res, R.color.google_blue_700));
+        ApiCompatibilityUtils.setTextAppearance(prompt, R.style.BlueLink1);
         prompt.setGravity(Gravity.CENTER_VERTICAL);
         prompt.setOnClickListener(this);
 

@@ -87,9 +87,7 @@
         android:layout_marginTop="8dp"
         android:paddingEnd="@dimen/page_info_popup_button_padding_sides"
         android:paddingStart="@dimen/page_info_popup_button_padding_sides"
-        android:text="@string/page_info_site_settings_button"
-        android:textColor="@color/light_active_color"
-        style="@style/ButtonCompatBorderless" />
+        android:text="@string/page_info_site_settings_button" />
 
     <Button
         android:id="@+id/page_info_open_online_button"
@@ -101,7 +99,5 @@
         android:layout_marginTop="8dp"
         android:paddingEnd="@dimen/page_info_popup_button_padding_sides"
         android:paddingStart="@dimen/page_info_popup_button_padding_sides"
-        android:text="@string/page_info_open_online_button"
-        android:textColor="@color/light_active_color"
-        style="@style/ButtonCompatBorderless" />
+        android:text="@string/page_info_open_online_button" />
 </LinearLayout>

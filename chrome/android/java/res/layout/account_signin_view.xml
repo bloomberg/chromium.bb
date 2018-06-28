@@ -190,14 +190,10 @@
         <!--suppress ButtonStyle -->
         <Button
             android:id="@+id/negative_button"
-            style="@style/ButtonCompatBorderless"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:paddingStart="@dimen/fre_button_padding"
-            android:paddingEnd="@dimen/fre_button_padding"
-            android:textAllCaps="true"
-            android:textColor="@color/light_active_color"
-            android:textSize="14sp"/>
+            android:paddingEnd="@dimen/fre_button_padding" />
 
         <View
             android:layout_width="0dp"
@@ -212,19 +208,14 @@
             android:layout_height="36dp"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
-            android:textAllCaps="true"
-            style="@style/WhiteBody"
+            android:textAppearance="@style/WhiteButtonText"
             app:buttonColor="@color/light_active_color"
             app:buttonRaised="false"/>
 
         <Button
             android:id="@+id/more_button"
-            style="@style/ButtonCompatBorderless"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
-            android:textAllCaps="true"
-            android:textColor="@color/light_active_color"
-            android:textSize="@dimen/text_size_medium"
             android:drawableEnd="@drawable/down_arrow"
             android:drawablePadding="8dp"
             android:visibility="gone"/>

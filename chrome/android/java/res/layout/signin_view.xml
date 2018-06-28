@@ -201,46 +201,34 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp">
-        <!-- TODO(https://crbug.com/819142): Use textAppearance instead of text* attributes. -->
         <Button
             android:id="@+id/negative_button"
-            style="@style/ButtonCompatBorderless"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
-            android:textAllCaps="true"
-            android:textColor="@color/light_active_color"
-            android:textSize="14sp"
             tools:text="@string/no_thanks"/>
         <View
             android:layout_width="0dp"
             android:layout_height="0dp"
             android:layout_weight="1"
             android:visibility="invisible"/>
-        <!-- TODO(https://crbug.com/819142): Specify WhiteBody as textAppearance. -->
         <org.chromium.ui.widget.ButtonCompat
             android:id="@+id/positive_button"
-            style="@style/WhiteBody"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:paddingStart="@dimen/fre_button_padding"
             android:paddingEnd="@dimen/fre_button_padding"
-            android:textAllCaps="true"
+            android:textAppearance="@style/WhiteButtonText"
             app:buttonColor="@color/light_active_color"
             app:buttonRaised="false"
             tools:text="@string/signin_accept_button"/>
-        <!-- TODO(https://crbug.com/819142): Use textAppearance instead of text* attributes. -->
         <Button
             android:id="@+id/more_button"
-            style="@style/ButtonCompatBorderless"
             android:layout_width="wrap_content"
             android:layout_height="36dp"
             android:drawableEnd="@drawable/down_arrow"
             android:drawablePadding="8dp"
-            android:textAllCaps="true"
-            android:textColor="@color/light_active_color"
-            android:textSize="@dimen/text_size_medium"
             android:visibility="gone"
             tools:text="@string/more"/>
         <View

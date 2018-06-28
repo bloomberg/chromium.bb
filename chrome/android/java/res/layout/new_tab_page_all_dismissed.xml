@@ -51,15 +51,11 @@
 
     <Button
         android:id="@+id/action_button"
-        style="@style/ButtonCompatBorderless"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_below="@id/body_text"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="24dp"
-        android:text="@string/ntp_all_dismissed_refresh"
-        android:textAllCaps="true"
-        android:textColor="@color/light_active_color"
-        android:textSize="15sp" />
+        android:text="@string/ntp_all_dismissed_refresh" />
 
 </RelativeLayout>

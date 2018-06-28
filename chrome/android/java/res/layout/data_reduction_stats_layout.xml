@@ -31,7 +31,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:singleLine="true"
-                    android:textColor="@color/light_active_color"
+                    android:textColor="@color/default_text_color_link"
                     android:textSize="23sp" />
 
                 <TextView
@@ -97,10 +97,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="24dp"
-        android:text="@string/data_reduction_usage_reset_statistics_button"
-        android:textAllCaps="true"
-        android:textColor="@color/light_active_color"
-        android:textSize="14sp"
-        style="@style/ButtonCompatBorderless" />
+        android:text="@string/data_reduction_usage_reset_statistics_button" />
 
 </LinearLayout>

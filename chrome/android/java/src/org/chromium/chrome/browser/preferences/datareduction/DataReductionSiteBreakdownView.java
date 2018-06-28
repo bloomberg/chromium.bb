@@ -301,12 +301,12 @@ public class DataReductionSiteBreakdownView extends LinearLayout {
             dataSavedView.setText(
                     Formatter.formatFileSize(getContext(), everythingElseDataSavings));
 
-            int lightActiveColor = ApiCompatibilityUtils.getColor(
-                    getContext().getResources(), R.color.light_active_color);
+            int textColorLink = ApiCompatibilityUtils.getColor(
+                    getContext().getResources(), R.color.default_text_color_link);
 
-            hostnameView.setTextColor(lightActiveColor);
-            dataUsedView.setTextColor(lightActiveColor);
-            dataSavedView.setTextColor(lightActiveColor);
+            hostnameView.setTextColor(textColorLink);
+            dataUsedView.setTextColor(textColorLink);
+            dataSavedView.setTextColor(textColorLink);
 
             row.setOnClickListener(new OnClickListener() {
                 @Override
