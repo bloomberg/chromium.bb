@@ -335,6 +335,7 @@
 #include "chrome/browser/android/app_hooks.h"
 #include "chrome/browser/android/chrome_context_util.h"
 #include "chrome/browser/android/devtools_manager_delegate_android.h"
+#include "chrome/browser/android/download/download_manager_service.h"
 #include "chrome/browser/android/download/intercept_oma_download_navigation_throttle.h"
 #include "chrome/browser/android/ntp/new_tab_page_url_handler.h"
 #include "chrome/browser/android/service_tab_launcher.h"
@@ -807,6 +808,10 @@ float GetDeviceScaleAdjustment() {
   return ratio * (kMaxFSM - kMinFSM) + kMinFSM;
 }
 
+std::unique_ptr<service_manager::Service> StartDownloadManager() {
+  return DownloadManagerService::GetInstance()
+      ->CreateServiceManagerServiceInstance();
+}
 #endif  // defined(OS_ANDROID)
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -874,7 +879,8 @@ bool GetDataSaverEnabledPref(const PrefService* prefs) {
              .compare("Disabled");
 }
 
-WebContents* GetWebContents(int render_process_id, int render_frame_id) {
+WebContents* GetWebContentsFromProcessAndFrameId(int render_process_id,
+                                                 int render_frame_id) {
   if (render_process_id) {
     RenderFrameHost* rfh =
         RenderFrameHost::FromID(render_process_id, render_frame_id);
@@ -2344,7 +2350,8 @@ void ChromeContentBrowserClient::OnCookiesRead(
     const net::CookieList& cookie_list,
     bool blocked_by_policy) {
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
-      base::BindRepeating(&GetWebContents, process_id, routing_id);
+      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
+                          routing_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&TabSpecificContentSettings::CookiesRead, wc_getter, url,
@@ -2359,7 +2366,8 @@ void ChromeContentBrowserClient::OnCookieChange(
     const net::CanonicalCookie& cookie,
     bool blocked_by_policy) {
   base::RepeatingCallback<content::WebContents*(void)> wc_getter =
-      base::BindRepeating(&GetWebContents, process_id, routing_id);
+      base::BindRepeating(&GetWebContentsFromProcessAndFrameId, process_id,
+                          routing_id);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&TabSpecificContentSettings::CookieChanged, wc_getter, url,
@@ -3549,6 +3557,12 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
     services->insert(
         std::make_pair(proxy_resolver::mojom::kProxyResolverServiceName, info));
   }
+
+  {
+    service_manager::EmbeddedServiceInfo info;
+    info.factory = base::BindRepeating(&StartDownloadManager);
+    services->emplace("download_manager", info);
+  }
 #endif
 
 #if defined(OS_CHROMEOS)
@@ -3684,6 +3698,11 @@ ChromeContentBrowserClient::GetExtraServiceManifests() {
         {chrome::mojom::kRendererServiceName,
          IDR_CHROME_RENDERER_SERVICE_MANIFEST},
   });
+}
+
+std::vector<service_manager::Identity>
+ChromeContentBrowserClient::GetStartupServices() {
+  return {service_manager::Identity("download_manager")};
 }
 
 void ChromeContentBrowserClient::OpenURL(

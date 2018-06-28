@@ -599,6 +599,11 @@ ContentBrowserClient::GetExtraServiceManifests() {
   return std::vector<ContentBrowserClient::ServiceManifestInfo>();
 }
 
+std::vector<service_manager::Identity>
+ContentBrowserClient::GetStartupServices() {
+  return std::vector<service_manager::Identity>();
+}
+
 std::unique_ptr<MemoryCoordinatorDelegate>
 ContentBrowserClient::GetMemoryCoordinatorDelegate() {
   return std::unique_ptr<MemoryCoordinatorDelegate>();

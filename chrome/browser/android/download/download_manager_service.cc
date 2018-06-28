@@ -26,6 +26,7 @@
 #include "jni/DownloadInfo_jni.h"
 #include "jni/DownloadItem_jni.h"
 #include "jni/DownloadManagerService_jni.h"
+#include "services/service_manager/public/cpp/service_context.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 using base::android::JavaParamRef;
@@ -54,6 +55,21 @@ ScopedJavaLocalRef<jobject> JNI_DownloadManagerService_CreateJavaDownloadItem(
       env, DownloadManagerService::CreateJavaDownloadInfo(env, item),
       item->GetStartTime().ToJavaTime(), item->GetFileExternallyRemoved());
 }
+
+class ServiceImpl : public service_manager::Service {
+ public:
+  ServiceImpl() = default;
+  ~ServiceImpl() override = default;
+
+ private:
+  // service_manager::Service:
+  void OnStart() override {
+    DownloadManagerService::GetInstance()->NotifyServiceStarted(
+        context()->connector()->Clone());
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ServiceImpl);
+};
 
 }  // namespace
 
@@ -139,15 +155,26 @@ static jlong JNI_DownloadManagerService_Init(
 DownloadManagerService::DownloadManagerService()
     : is_history_query_complete_(false),
       pending_get_downloads_actions_(NONE) {
-  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                 content::NotificationService::AllSources());
 }
 
 DownloadManagerService::~DownloadManagerService() {}
 
+std::unique_ptr<service_manager::Service>
+DownloadManagerService::CreateServiceManagerServiceInstance() {
+  return std::make_unique<ServiceImpl>();
+}
+
+void DownloadManagerService::NotifyServiceStarted(
+    std::unique_ptr<service_manager::Connector> connector) {
+  // TODO: Additional initialization, e.g. connect to Network Service using
+  // |connector| if the minimal download manager path is enabled by flag.
+}
+
 void DownloadManagerService::Init(
     JNIEnv* env,
     jobject obj) {
+  registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
+                 content::NotificationService::AllSources());
   java_ref_.Reset(env, obj);
 }
 

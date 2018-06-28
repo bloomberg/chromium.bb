@@ -395,6 +395,12 @@ service_manifest("chrome_renderer_manifest") {
   source = "chrome_renderer_manifest.json"
 }
 
+if (is_android) {
+  service_manifest("chrome_download_manager_manifest") {
+    source = "//chrome/browser/android/download/manifest.json"
+  }
+}
+
 # Singleton services shared across profiles.
 service_manifest("chrome_content_packaged_services_manifest_overlay") {
   source =
@@ -427,7 +433,9 @@ service_manifest("chrome_content_packaged_services_manifest_overlay") {
       "//chrome/services/wifi_util_win:manifest",
     ]
   }
-  if (!is_android) {
+  if (is_android) {
+    packaged_services += [ ":chrome_download_manager_manifest" ]
+  } else {
     packaged_services += [ "//chrome/utility:profile_import_manifest" ]
   }
   if (is_chromeos) {

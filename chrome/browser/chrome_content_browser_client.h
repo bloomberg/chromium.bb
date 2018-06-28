@@ -365,6 +365,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       base::StringPiece name) override;
   std::vector<content::ContentBrowserClient::ServiceManifestInfo>
   GetExtraServiceManifests() override;
+  std::vector<service_manager::Identity> GetStartupServices() override;
   void OpenURL(content::BrowserContext* browser_context,
                const content::OpenURLParams& params,
                const base::Callback<void(content::WebContents*)>& callback)
