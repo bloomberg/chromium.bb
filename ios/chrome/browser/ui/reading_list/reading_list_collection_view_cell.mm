@@ -40,20 +40,15 @@ const CGFloat kInfoTextTransparency = 0.38;
   UIImageView* _downloadIndicator;
   UILayoutGuide* _textGuide;
 
-  UILabel* _distillationSizeLabel;
-  UILabel* _distillationDateLabel;
-
   // View containing |_distillationSizeLabel| and |_distillationDateLabel|.
   UIView* _infoView;
-
-  // Whether |_infoView| is visible.
-  BOOL _showInfo;
 }
 @synthesize faviconView = _faviconView;
 @synthesize titleLabel = _titleLabel;
 @synthesize subtitleLabel = _subtitleLabel;
-@synthesize distillationDate = _distillationDate;
-@synthesize distillationSize = _distillationSize;
+@synthesize distillationDateLabel = _distillationDateLabel;
+@synthesize distillationSizeLabel = _distillationSizeLabel;
+@synthesize showDistillationInfo = _showDistillationInfo;
 @synthesize distillationState = _distillationState;
 
 - (instancetype)initWithFrame:(CGRect)frame {
@@ -201,12 +196,12 @@ const CGFloat kInfoTextTransparency = 0.38;
   }
 }
 
-- (void)setShowInfo:(BOOL)show {
-  if (_showInfo == show) {
+- (void)setShowDistillationInfo:(BOOL)showDistillationInfo {
+  if (_showDistillationInfo == showDistillationInfo)
     return;
-  }
-  _showInfo = show;
-  if (!show) {
+
+  _showDistillationInfo = showDistillationInfo;
+  if (!_showDistillationInfo) {
     [_infoView removeFromSuperview];
     return;
   }
@@ -228,45 +223,15 @@ const CGFloat kInfoTextTransparency = 0.38;
   ]];
 }
 
-- (void)setDistillationSize:(int64_t)distillationSize {
-  [_distillationSizeLabel
-      setText:[NSByteCountFormatter
-                  stringFromByteCount:distillationSize
-                           countStyle:NSByteCountFormatterCountStyleFile]];
-  _distillationSize = distillationSize;
-  BOOL showInfo = _distillationSize != 0 && _distillationDate != 0;
-  [self setShowInfo:showInfo];
-}
-
-- (void)setDistillationDate:(int64_t)distillationDate {
-  int64_t now = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
-  int64_t elapsed = now - distillationDate;
-  NSString* text;
-  if (elapsed < base::Time::kMicrosecondsPerMinute) {
-    // This will also catch items added in the future. In that case, show the
-    // "just now" string.
-    text = l10n_util::GetNSString(IDS_IOS_READING_LIST_JUST_NOW);
-  } else {
-    text = base::SysUTF16ToNSString(ui::TimeFormat::SimpleWithMonthAndYear(
-        ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_LONG,
-        base::TimeDelta::FromMicroseconds(elapsed), true));
-  }
-
-  [_distillationDateLabel setText:text];
-  _distillationDate = distillationDate;
-  BOOL showInfo = _distillationSize != 0 && _distillationDate != 0;
-  [self setShowInfo:showInfo];
-}
-
 #pragma mark - UICollectionViewCell
 
 - (void)prepareForReuse {
   self.titleLabel.text = nil;
   self.subtitleLabel.text = nil;
+  self.distillationDateLabel.text = nil;
+  self.distillationSizeLabel.text = nil;
+  self.showDistillationInfo = NO;
   self.distillationState = ReadingListUIDistillationStatusPending;
-  self.distillationDate = 0;
-  self.distillationSize = 0;
-  [self setShowInfo:NO];
   [self.faviconView configureWithAttributes:nil];
   self.accessibilityCustomActions = nil;
   [super prepareForReuse];

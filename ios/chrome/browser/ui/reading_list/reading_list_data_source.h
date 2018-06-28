@@ -9,7 +9,7 @@
 
 @class CollectionViewItem;
 @protocol ReadingListDataSink;
-@protocol ReadingListListViewItemAccessibilityDelegate;
+@class ReadingListListViewItemCustomActionFactory;
 
 // Data Source for the Reading List UI, providing the data sink with the data to
 // be displayed. Handle the interactions with the model.
@@ -38,10 +38,11 @@
 // Fills the |readArray| and |unreadArray| with the corresponding items from the
 // model. The items are sorted most recent first.
 - (void)fillReadItems:(nullable NSMutableArray<CollectionViewItem*>*)readArray
-          unreadItems:(nullable NSMutableArray<CollectionViewItem*>*)unreadArray
-         withDelegate:
-             (nullable id<ReadingListListViewItemAccessibilityDelegate>)
-                 delegate;
+                unreadItems:
+                    (nullable NSMutableArray<CollectionViewItem*>*)unreadArray
+    withCustomActionFactory:
+        (nullable ReadingListListViewItemCustomActionFactory*)
+            customActionFactory;
 
 // Fetches the |faviconURL| of this |item|, notifies the data sink when
 // receiving the favicon.

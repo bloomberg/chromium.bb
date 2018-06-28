@@ -18,9 +18,11 @@
 // Subtitle label.
 @property(nonatomic, readonly, strong) UILabel* subtitleLabel;
 // Timestamp of the distillation in microseconds since Jan 1st 1970.
-@property(nonatomic, assign) int64_t distillationDate;
+@property(nonatomic, readonly, strong) UILabel* distillationDateLabel;
 // Size of the distilled files.
-@property(nonatomic, assign) int64_t distillationSize;
+@property(nonatomic, readonly, strong) UILabel* distillationSizeLabel;
+// Whether to show |distillationDateLabel| and |distillationSizeLabel|.
+@property(nonatomic, assign) BOOL showDistillationInfo;
 // View for displaying the favicon for the reading list entry.
 @property(nonatomic, readonly, strong) FaviconViewNew* faviconView;
 // Status of the offline version. Updates the visual indicator when updated.
