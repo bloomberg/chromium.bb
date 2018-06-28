@@ -354,6 +354,13 @@ class ServiceManagerContext::InProcessServiceManagerContext
             this));
   }
 
+  void StartServices(std::vector<service_manager::Identity> identities) {
+    service_manager_thread_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&InProcessServiceManagerContext ::
+                                      StartServicesOnServiceManagerThread,
+                                  this, std::move(identities)));
+  }
+
  private:
   friend class base::RefCountedThreadSafe<InProcessServiceManagerContext>;
 
@@ -410,6 +417,15 @@ class ServiceManagerContext::InProcessServiceManagerContext
   void ShutDownOnServiceManagerThread() {
     service_manager_.reset();
     manifest_provider_.reset();
+  }
+
+  void StartServicesOnServiceManagerThread(
+      std::vector<service_manager::Identity> identities) {
+    if (!service_manager_)
+      return;
+
+    for (const auto& identity : identities)
+      service_manager_->StartService(identity);
   }
 
   scoped_refptr<base::SingleThreadTaskRunner>
@@ -665,6 +681,9 @@ ServiceManagerContext::ServiceManagerContext(
                  shape_detection::mojom::kServiceName));
 
   packaged_services_connection_->Start();
+
+  in_process_context_->StartServices(
+      GetContentClient()->browser()->GetStartupServices());
 }
 
 ServiceManagerContext::~ServiceManagerContext() {
