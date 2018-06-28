@@ -137,7 +137,8 @@ class WebRtcRemoteEventLogManager final
 
   // Closes an active log file, changing its state from ACTIVE to PENDING.
   // Returns an iterator to the next ACTIVE file.
-  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it);
+  LogFilesMap::iterator CloseLogFile(LogFilesMap::iterator it,
+                                     bool make_pending);
 
   // Attempts to create the directory where we'll write the logs, if it does
   // not already exist. Returns true if the directory exists (either it already

@@ -275,7 +275,7 @@ bool WebRtcRemoteEventLogManager::EventLogWrite(const PeerConnectionKey& key,
   const bool write_successful = it->second.Write(message);
 
   if (!write_successful || it->second.MaxSizeReached()) {
-    CloseLogFile(it);
+    CloseLogFile(it, /*make_pending=*/true);
     MaybeStartUploading();
   }
 
@@ -317,7 +317,7 @@ void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
   auto log_it = active_logs_.begin();
   while (log_it != active_logs_.end()) {
     if (log_it->first.render_process_id == render_process_id) {
-      log_it = CloseLogFile(log_it);
+      log_it = CloseLogFile(log_it, /*make_pending=*/true);
       MaybeStartUploading();
     } else {
       ++log_it;
@@ -357,12 +357,25 @@ bool WebRtcRemoteEventLogManager::BrowserContextEnabled(
 }
 
 WebRtcRemoteEventLogManager::LogFilesMap::iterator
-WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it) {
+WebRtcRemoteEventLogManager::CloseLogFile(LogFilesMap::iterator it,
+                                          bool make_pending) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
 
-  const PeerConnectionKey peer_connection = it->first;
+  const PeerConnectionKey peer_connection = it->first;  // Copy, not reference.
 
   it->second.Close();
+
+  if (make_pending) {
+    // The current time is a good enough approximation of the file's last
+    // modification time.
+    const base::Time last_modified = base::Time::Now();
+
+    // The stopped log becomes a pending log.
+    const auto emplace_result = pending_logs_.emplace(
+        peer_connection.browser_context_id, it->second.path(), last_modified);
+    DCHECK(emplace_result.second);  // No pre-existing entry.
+  }
+
   it = active_logs_.erase(it);
 
   if (observer_) {
@@ -461,17 +474,7 @@ void WebRtcRemoteEventLogManager::MaybeStopRemoteLogging(
     return;
   }
 
-  // The current time is a good enough approximation of the file's last
-  // modification time.
-  const base::Time last_modified = base::Time::Now();
-
-  // The stopped log becomes a pending log.
-  const auto emplace_result = pending_logs_.emplace(
-      key.browser_context_id, it->second.path(), last_modified);
-  DCHECK(emplace_result.second);  // No pre-existing entry.
-
-  // It is no longer an active log.
-  CloseLogFile(it);
+  CloseLogFile(it, /*make_pending=*/true);
 
   MaybeStartUploading();
 }
@@ -528,7 +531,7 @@ void WebRtcRemoteEventLogManager::MaybeCancelActiveLogs(
     if (LogFileMatchesFilter(it->first.browser_context_id, base::Time::Now(),
                              browser_context_id, delete_begin, delete_end)) {
       const base::FilePath log_file_path = it->second.path();
-      it = CloseLogFile(it);
+      it = CloseLogFile(it, /*make_pending=*/false);
       if (!base::DeleteFile(log_file_path, /*recursive=*/false)) {
         LOG(ERROR) << "Failed to delete " << log_file_path << ".";
       }

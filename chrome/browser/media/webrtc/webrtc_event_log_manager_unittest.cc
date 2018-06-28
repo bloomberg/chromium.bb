@@ -2135,7 +2135,8 @@ TEST_F(WebRtcEventLogManagerTest,
   WaitForPendingTasks(&run_loop);
 }
 
-TEST_P(WebRtcEventLogManagerTest, FinishedRemoteLogsUploadedAndFileDeleted) {
+TEST_P(WebRtcEventLogManagerTest,
+       WhenPeerConnectionRemovedFinishedRemoteLogUploadedAndFileDeleted) {
   // |upload_result| show that the files are deleted independent of the
   // upload's success / failure.
   const bool upload_result = GetParam();
@@ -2155,7 +2156,36 @@ TEST_P(WebRtcEventLogManagerTest, FinishedRemoteLogsUploadedAndFileDeleted) {
       std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
           &expected_files, upload_result, &run_loop));
 
+  // Peer connection removal triggers next upload.
   ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+
+  EXPECT_TRUE(base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_)));
+}
+
+TEST_P(WebRtcEventLogManagerTest, DestroyedRphTriggersLogUpload) {
+  // |upload_result| show that the files are deleted independent of the
+  // upload's success / failure.
+  const bool upload_result = GetParam();
+
+  const auto key = GetPeerConnectionKey(rph_.get(), 1);
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(log_file);
+
+  base::RunLoop run_loop;
+  std::list<WebRtcLogFileInfo> expected_files = {WebRtcLogFileInfo(
+      browser_context_id_, *log_file, GetLastModificationTime(*log_file))};
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files, upload_result, &run_loop));
+
+  // RPH destruction stops all active logs and triggers next upload.
+  rph_.reset();
+
+  WaitForPendingTasks(&run_loop);
 
   EXPECT_TRUE(base::IsDirectoryEmpty(RemoteBoundLogsDir(browser_context_)));
 }
