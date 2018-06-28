@@ -49,7 +49,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
   // ChannelIDStore implementation.
   int GetChannelID(const std::string& server_identifier,
                    std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                   const GetChannelIDCallback& callback) override;
+                   GetChannelIDCallback callback) override;
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override;
   void DeleteChannelID(const std::string& server_identifier,
                        base::OnceClosure callback) override;
@@ -59,7 +59,7 @@ class NET_EXPORT DefaultChannelIDStore : public ChannelIDStore {
       base::Time delete_end,
       base::OnceClosure callback) override;
   void DeleteAll(base::OnceClosure callback) override;
-  void GetAllChannelIDs(const GetChannelIDListCallback& callback) override;
+  void GetAllChannelIDs(GetChannelIDListCallback callback) override;
   void Flush() override;
   int GetChannelIDCount() override;
   void SetForceKeepSessionState() override;

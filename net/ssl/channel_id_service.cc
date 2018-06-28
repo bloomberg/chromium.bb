@@ -395,8 +395,9 @@ int ChannelIDService::LookupChannelID(
     Request* out_req) {
   // Check if a channel ID key already exists for this domain.
   int err = channel_id_store_->GetChannelID(
-      domain, key, base::Bind(&ChannelIDService::GotChannelID,
-                              weak_ptr_factory_.GetWeakPtr()));
+      domain, key,
+      base::BindOnce(&ChannelIDService::GotChannelID,
+                     weak_ptr_factory_.GetWeakPtr()));
 
   if (err == OK) {
     // Sync lookup found a valid channel ID.

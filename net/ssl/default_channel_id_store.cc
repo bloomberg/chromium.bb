@@ -49,7 +49,7 @@ class DefaultChannelIDStore::GetChannelIDTask
     : public DefaultChannelIDStore::Task {
  public:
   GetChannelIDTask(const std::string& server_identifier,
-                   const GetChannelIDCallback& callback);
+                   GetChannelIDCallback callback);
   ~GetChannelIDTask() override;
   void Run(DefaultChannelIDStore* store) override;
 
@@ -60,10 +60,8 @@ class DefaultChannelIDStore::GetChannelIDTask
 
 DefaultChannelIDStore::GetChannelIDTask::GetChannelIDTask(
     const std::string& server_identifier,
-    const GetChannelIDCallback& callback)
-    : server_identifier_(server_identifier),
-      callback_(callback) {
-}
+    GetChannelIDCallback callback)
+    : server_identifier_(server_identifier), callback_(std::move(callback)) {}
 
 DefaultChannelIDStore::GetChannelIDTask::~GetChannelIDTask() = default;
 
@@ -74,7 +72,7 @@ void DefaultChannelIDStore::GetChannelIDTask::Run(
                                 GetChannelIDCallback());
   DCHECK(err != ERR_IO_PENDING);
 
-  InvokeCallback(base::BindOnce(callback_, err, server_identifier_,
+  InvokeCallback(base::BindOnce(std::move(callback_), err, server_identifier_,
                                 std::move(key_result)));
 }
 
@@ -178,7 +176,7 @@ void DefaultChannelIDStore::DeleteForDomainsCreatedBetweenTask::Run(
 class DefaultChannelIDStore::GetAllChannelIDsTask
     : public DefaultChannelIDStore::Task {
  public:
-  explicit GetAllChannelIDsTask(const GetChannelIDListCallback& callback);
+  explicit GetAllChannelIDsTask(GetChannelIDListCallback callback);
   ~GetAllChannelIDsTask() override;
   void Run(DefaultChannelIDStore* store) override;
 
@@ -187,10 +185,9 @@ class DefaultChannelIDStore::GetAllChannelIDsTask
   GetChannelIDListCallback callback_;
 };
 
-DefaultChannelIDStore::GetAllChannelIDsTask::
-    GetAllChannelIDsTask(const GetChannelIDListCallback& callback)
-        : callback_(callback) {
-}
+DefaultChannelIDStore::GetAllChannelIDsTask::GetAllChannelIDsTask(
+    GetChannelIDListCallback callback)
+    : callback_(std::move(callback)) {}
 
 DefaultChannelIDStore::GetAllChannelIDsTask::~GetAllChannelIDsTask() = default;
 
@@ -215,13 +212,13 @@ DefaultChannelIDStore::DefaultChannelIDStore(
 int DefaultChannelIDStore::GetChannelID(
     const std::string& server_identifier,
     std::unique_ptr<crypto::ECPrivateKey>* key_result,
-    const GetChannelIDCallback& callback) {
+    GetChannelIDCallback callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   InitIfNecessary();
 
   if (!loaded_) {
     EnqueueTask(std::unique_ptr<Task>(
-        new GetChannelIDTask(server_identifier, callback)));
+        new GetChannelIDTask(server_identifier, std::move(callback))));
     return ERR_IO_PENDING;
   }
 
@@ -264,8 +261,9 @@ void DefaultChannelIDStore::DeleteAll(base::OnceClosure callback) {
 }
 
 void DefaultChannelIDStore::GetAllChannelIDs(
-    const GetChannelIDListCallback& callback) {
-  RunOrEnqueueTask(std::unique_ptr<Task>(new GetAllChannelIDsTask(callback)));
+    GetChannelIDListCallback callback) {
+  RunOrEnqueueTask(
+      std::unique_ptr<Task>(new GetAllChannelIDsTask(std::move(callback))));
 }
 
 void DefaultChannelIDStore::Flush() {

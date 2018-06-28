@@ -53,10 +53,10 @@ class NET_EXPORT ChannelIDStore {
 
   typedef std::list<ChannelID> ChannelIDList;
 
-  typedef base::RepeatingCallback<
+  typedef base::OnceCallback<
       void(int, const std::string&, std::unique_ptr<crypto::ECPrivateKey>)>
       GetChannelIDCallback;
-  typedef base::RepeatingCallback<void(const ChannelIDList&)>
+  typedef base::OnceCallback<void(const ChannelIDList&)>
       GetChannelIDListCallback;
 
   virtual ~ChannelIDStore();
@@ -69,7 +69,7 @@ class NET_EXPORT ChannelIDStore {
   // asynchronously.
   virtual int GetChannelID(const std::string& server_identifier,
                            std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                           const GetChannelIDCallback& callback) = 0;
+                           GetChannelIDCallback callback) = 0;
 
   // Adds the keypair for a hostname to the store.
   virtual void SetChannelID(std::unique_ptr<ChannelID> channel_id) = 0;
@@ -92,7 +92,7 @@ class NET_EXPORT ChannelIDStore {
   virtual void DeleteAll(base::OnceClosure completion_callback) = 0;
 
   // Returns all channel ID keypairs.
-  virtual void GetAllChannelIDs(const GetChannelIDListCallback& callback) = 0;
+  virtual void GetAllChannelIDs(GetChannelIDListCallback callback) = 0;
 
   // Signals to the backing store that any pending writes should be flushed.
   virtual void Flush() = 0;

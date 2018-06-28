@@ -48,7 +48,7 @@ class MockChannelIDStoreWithAsyncGet
 
   int GetChannelID(const std::string& server_identifier,
                    std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                   const GetChannelIDCallback& callback) override;
+                   GetChannelIDCallback callback) override;
 
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {
     channel_id_count_ = 1;
@@ -67,9 +67,9 @@ class MockChannelIDStoreWithAsyncGet
 int MockChannelIDStoreWithAsyncGet::GetChannelID(
     const std::string& server_identifier,
     std::unique_ptr<crypto::ECPrivateKey>* key_result,
-    const GetChannelIDCallback& callback) {
+    GetChannelIDCallback callback) {
   server_identifier_ = server_identifier;
-  callback_ = callback;
+  callback_ = std::move(callback);
   // Reset the cert count, it'll get incremented in either SetChannelID or
   // CallGetChannelIDCallbackWithResult.
   channel_id_count_ = 0;
@@ -84,8 +84,8 @@ void MockChannelIDStoreWithAsyncGet::CallGetChannelIDCallbackWithResult(
   if (err == OK)
     channel_id_count_ = 1;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(callback_, err, server_identifier_,
-                            base::Passed(key ? key->Copy() : nullptr)));
+      FROM_HERE, base::BindOnce(std::move(callback_), err, server_identifier_,
+                                base::Passed(key ? key->Copy() : nullptr)));
 }
 
 class ChannelIDServiceTest : public TestWithScopedTaskEnvironment {
