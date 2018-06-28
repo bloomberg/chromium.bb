@@ -112,7 +112,6 @@ jumbo_component("wtf") {
     "math_extras.h",
     "noncopyable.h",
     "not_found.h",
-    "process_metrics.h",
     "ref_counted.h",
     "ref_vector.h",
     "retain_ptr.h",
