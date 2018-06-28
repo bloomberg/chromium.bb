@@ -52,12 +52,7 @@ import("//build/config/pch.gni")
 config("blink_core_pch") {
   # Add precompiled header (pch) support when enabled, possible and
   # making sense.
-
-  # Precompiled headers are disabled for jumbo builds because they
-  # slow down the build since each pch file is only used 1-3
-  # times. Not nearly enough to make up for the long time spent
-  # creating them.
-  if (enable_precompiled_headers && !use_jumbo_build) {
+  if (enable_precompiled_headers) {
     if (is_win) {
       # This is a string rather than a file GN knows about. It has to match
       # exactly what's in the /FI flag below, and what might appear in the
