@@ -3052,7 +3052,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
             // ScrollingCoordinator.
             WrapWeakPersistent(page->GetScrollingCoordinator())));
     page->GetChromeClient().AttachRootLayer(
-        paint_artifact_compositor_->GetCcLayer(), &GetFrame());
+        paint_artifact_compositor_->RootLayer(), &GetFrame());
   }
 
   SCOPED_UMA_AND_UKM_TIMER("Blink.Compositing.UpdateTime",
