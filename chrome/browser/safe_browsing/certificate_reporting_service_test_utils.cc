@@ -15,7 +15,6 @@
 #include "net/base/upload_data_stream.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request_filter.h"
-#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
@@ -24,9 +23,18 @@ namespace {
 static const char kHkdfLabel[] = "certificate report";
 const uint32_t kServerPublicKeyTestVersion = 16;
 
+std::string GetUploadData(const network::ResourceRequest& request) {
+  auto body = request.request_body;
+  CHECK(body.get());
+  CHECK_EQ(1u, body->elements()->size());
+  const auto& element = body->elements()->at(0);
+  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+  return std::string(element.bytes(), element.length());
+}
+
 std::string GetReportContents(const network::ResourceRequest& request,
                               const uint8_t* server_private_key) {
-  std::string serialized_report(network::GetUploadData(request));
+  std::string serialized_report(GetUploadData(request));
   encrypted_messages::EncryptedMessage encrypted_message;
   EXPECT_TRUE(encrypted_message.ParseFromString(serialized_report));
   EXPECT_EQ(kServerPublicKeyTestVersion,

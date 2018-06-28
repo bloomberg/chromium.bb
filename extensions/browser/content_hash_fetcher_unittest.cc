@@ -95,6 +95,22 @@ class ContentHashWaiter {
   DISALLOW_COPY_AND_ASSIGN(ContentHashWaiter);
 };
 
+// Custom network::TestURLLoaderFactory that re-implements ::Clone.
+class ClonableTestURLLoaderFactory : public network::TestURLLoaderFactory {
+ public:
+  ClonableTestURLLoaderFactory() = default;
+  ~ClonableTestURLLoaderFactory() override = default;
+
+  void Clone(network::mojom::URLLoaderFactoryRequest request) override {
+    bindings_.AddBinding(this, std::move(request));
+  }
+
+ private:
+  mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  DISALLOW_COPY_AND_ASSIGN(ClonableTestURLLoaderFactory);
+};
+
 // Installs and tests various functionality of an extension loaded without
 // verified_contents.json file.
 class ContentHashFetcherTest : public ExtensionsTest {
@@ -211,7 +227,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   }
 
   scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
-  network::TestURLLoaderFactory test_url_loader_factory_;
+  ClonableTestURLLoaderFactory test_url_loader_factory_;
 
   base::ScopedTempDir temp_dir_;
 
