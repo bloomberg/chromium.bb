@@ -449,6 +449,7 @@ class RasterDecoderImpl final : public RasterDecoder,
     return false;
   }
   ServiceTransferCache* GetTransferCacheForTest() override;
+  void SetUpForRasterCHROMIUMForTest() override;
 
   // ErrorClientState implementation.
   void OnContextLostError() override;
@@ -1833,6 +1834,14 @@ ServiceTransferCache* RasterDecoderImpl::GetTransferCacheForTest() {
   return transfer_cache_.get();
 }
 
+void RasterDecoderImpl::SetUpForRasterCHROMIUMForTest() {
+  // Some tests use mock GL which doesn't work with skia. Just use a bitmap
+  // backed surface for OOP raster commands.
+  sk_surface_ = SkSurface::MakeRaster(SkImageInfo::MakeN32Premul(10, 10));
+  raster_canvas_ = SkCreateColorSpaceXformCanvas(sk_surface_->getCanvas(),
+                                                 SkColorSpace::MakeSRGB());
+}
+
 void RasterDecoderImpl::OnContextLostError() {
   if (!WasContextLost()) {
     // Need to lose current context before broadcasting!
@@ -3171,6 +3180,11 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
                        "Invalid font discardable handle.");
   }
   locked_handles_.clear();
+
+  // We just flushed a tile's worth of GPU work from the SkSurface in
+  // prepareForExternalIO above. Use kDeferLaterCommands to ensure we yield to
+  // the Scheduler before processing more commands.
+  current_decoder_error_ = error::kDeferLaterCommands;
 }
 
 void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(

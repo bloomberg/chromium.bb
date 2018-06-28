@@ -486,5 +486,12 @@ TEST_P(RasterDecoderTest, GLImageAttachedAfterClearLevel) {
   EXPECT_TRUE(texture->GetLevelImage(GL_TEXTURE_2D, 0) == image.get());
 }
 
+TEST_P(RasterDecoderTest, YieldAfterEndRasterCHROMIUM) {
+  GetDecoder()->SetUpForRasterCHROMIUMForTest();
+  cmds::EndRasterCHROMIUM end_raster_cmd;
+  end_raster_cmd.Init();
+  EXPECT_EQ(error::kDeferLaterCommands, ExecuteCmd(end_raster_cmd));
+}
+
 }  // namespace raster
 }  // namespace gpu
