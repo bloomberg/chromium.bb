@@ -77,6 +77,8 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
 
   virtual ServiceTransferCache* GetTransferCacheForTest() = 0;
 
+  virtual void SetUpForRasterCHROMIUMForTest() = 0;
+
  protected:
   RasterDecoder(CommandBufferServiceBase* command_buffer_service,
                 gles2::Outputter* outputter);
