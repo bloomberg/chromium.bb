@@ -23,6 +23,7 @@ class AppListModel;
 class ContentsView;
 class FolderBackgroundView;
 class PageSwitcher;
+class SuggestionChipContainerView;
 
 // AppsContainerView contains a root level AppsGridView to render the root level
 // app items, and a AppListFolderView to render the app items inside the
@@ -108,9 +109,13 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // Returns the bounds of the page in the parent view during dragging.
   gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
 
+  // Updates suggestion chips from app list model.
+  void UpdateSuggestionChips();
+
   ContentsView* contents_view_;  // Not owned.
 
   // The views below are owned by views hierarchy.
+  SuggestionChipContainerView* suggestion_chip_container_view_ = nullptr;
   AppsGridView* apps_grid_view_ = nullptr;
   AppListFolderView* app_list_folder_view_ = nullptr;
   PageSwitcher* page_switcher_ = nullptr;

@@ -314,10 +314,14 @@ AppsGridView::AppsGridView(ContentsView* contents_view,
   layer()->SetFillsBoundsOpaquely(false);
 
   if (!folder_delegate_) {
-    suggestions_container_ =
-        new SuggestionsContainerView(contents_view_, &pagination_model_);
-    AddChildView(suggestions_container_);
-    UpdateSuggestions();
+    // Suggestions container is replaced with suggestion chip container if new
+    // style launcher is enabled.
+    if (!features::IsNewStyleLauncherEnabled()) {
+      suggestions_container_ =
+          new SuggestionsContainerView(contents_view_, &pagination_model_);
+      AddChildView(suggestions_container_);
+      UpdateSuggestions();
+    }
 
     all_apps_indicator_ = new IndicatorChipView(
         l10n_util::GetStringUTF16(IDS_ALL_APPS_INDICATOR));
@@ -409,8 +413,10 @@ void AppsGridView::ResetForShowApps() {
 }
 
 void AppsGridView::DisableFocusForShowingActiveFolder(bool disabled) {
-  for (auto* v : suggestions_container_->tile_views())
-    v->SetEnabled(!disabled);
+  if (suggestions_container_) {
+    for (auto* v : suggestions_container_->tile_views())
+      v->SetEnabled(!disabled);
+  }
   for (int i = 0; i < view_model_.view_size(); ++i) {
     view_model_.view_at(i)->SetEnabled(!disabled);
   }
@@ -2487,9 +2493,12 @@ int AppsGridView::GetHeightOnTopOfAllAppsTiles(int page) const {
     return 0;
 
   if (page == 0) {
-    DCHECK(suggestions_container_ && all_apps_indicator_);
-    return kSearchBoxBottomPadding +
-           suggestions_container_->GetPreferredSize().height() +
+    const int suggestions_container_height =
+        suggestions_container_
+            ? suggestions_container_->GetPreferredSize().height()
+            : 0;
+    DCHECK(all_apps_indicator_);
+    return kSearchBoxBottomPadding + suggestions_container_height +
            kSuggestionsAllAppsIndicatorPadding +
            all_apps_indicator_->GetPreferredSize().height() +
            kAllAppsIndicatorBottomPadding;

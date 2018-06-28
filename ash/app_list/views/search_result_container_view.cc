@@ -52,6 +52,15 @@ bool SearchResultContainerView::IsValidSelectionIndex(int index) const {
   return index >= 0 && index <= num_results() - 1;
 }
 
+void SearchResultContainerView::NotifyFirstResultYIndex(int /*y_index*/) {
+  NOTREACHED();
+}
+
+int SearchResultContainerView::GetYSize() {
+  NOTREACHED();
+  return 0;
+}
+
 void SearchResultContainerView::Update() {
   update_factory_.InvalidateWeakPtrs();
   num_results_ = DoUpdate();
@@ -68,21 +77,38 @@ const char* SearchResultContainerView::GetClassName() const {
   return "SearchResultContainerView";
 }
 
-void SearchResultContainerView::ListItemsAdded(size_t start, size_t count) {
+void SearchResultContainerView::ListItemsAdded(size_t /*start*/,
+                                               size_t /*count*/) {
   ScheduleUpdate();
 }
 
-void SearchResultContainerView::ListItemsRemoved(size_t start, size_t count) {
+void SearchResultContainerView::ListItemsRemoved(size_t /*start*/,
+                                                 size_t /*count*/) {
   ScheduleUpdate();
 }
 
-void SearchResultContainerView::ListItemMoved(size_t index,
-                                              size_t target_index) {
+void SearchResultContainerView::ListItemMoved(size_t /*index*/,
+                                              size_t /*target_index*/) {
   ScheduleUpdate();
 }
 
-void SearchResultContainerView::ListItemsChanged(size_t start, size_t count) {
+void SearchResultContainerView::ListItemsChanged(size_t /*start*/,
+                                                 size_t /*count*/) {
   ScheduleUpdate();
+}
+
+void SearchResultContainerView::OnContainerSelected(
+    bool /*from_bottom*/,
+    bool /*directional_movement*/) {
+  NOTREACHED();
+}
+
+views::View* SearchResultContainerView::GetSelectedView() {
+  return nullptr;
+}
+
+SearchResultBaseView* SearchResultContainerView::GetFirstResultView() {
+  return nullptr;
 }
 
 void SearchResultContainerView::ScheduleUpdate() {
@@ -94,5 +120,8 @@ void SearchResultContainerView::ScheduleUpdate() {
                                   update_factory_.GetWeakPtr()));
   }
 }
+
+void SearchResultContainerView::UpdateSelectedIndex(int /*old_selected*/,
+                                                    int /*new_selected*/) {}
 
 }  // namespace app_list
