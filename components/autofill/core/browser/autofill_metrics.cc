@@ -744,7 +744,7 @@ void AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
     return;
   }
 
-  std::string histogram_name = "Security.SaveCardPromptMetric.";
+  std::string histogram_name = "Autofill.SaveCreditCardPrompt.";
   if (is_uploading) {
     histogram_name += "Upload";
   } else {
@@ -1006,7 +1006,7 @@ void AutofillMetrics::LogUserHappinessBySecurityLevel(
     return;
   }
 
-  std::string histogram_name = "Security.UserHappiness.";
+  std::string histogram_name = "Autofill.UserHappiness.";
   switch (form_type) {
     case CREDIT_CARD_FORM:
       histogram_name += "CreditCard";

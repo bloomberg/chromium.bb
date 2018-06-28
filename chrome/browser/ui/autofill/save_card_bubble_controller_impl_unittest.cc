@@ -691,11 +691,11 @@ TEST_F(SaveCardBubbleControllerImplTest,
   ShowLocalBubble();
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
-          "Security.SaveCardPromptMetric.Local.SECURE"),
+          "Autofill.SaveCreditCardPrompt.Local.SECURE"),
       ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
                   Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
   EXPECT_TRUE(histogram_tester
-                  .GetAllSamples("Security.SaveCardPromptMetric.Upload.SECURE")
+                  .GetAllSamples("Autofill.SaveCreditCardPrompt.Upload.SECURE")
                   .empty());
 }
 
@@ -706,12 +706,12 @@ TEST_F(SaveCardBubbleControllerImplTest,
   ShowUploadBubble();
   EXPECT_THAT(
       histogram_tester.GetAllSamples(
-          "Security.SaveCardPromptMetric.Upload.EV_SECURE"),
+          "Autofill.SaveCreditCardPrompt.Upload.EV_SECURE"),
       ElementsAre(Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOW_REQUESTED, 1),
                   Bucket(AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1)));
   EXPECT_TRUE(
       histogram_tester
-          .GetAllSamples("Security.SaveCardPromptMetric.Local.EV_SECURE")
+          .GetAllSamples("Autofill.SaveCreditCardPrompt.Local.EV_SECURE")
           .empty());
 }
 

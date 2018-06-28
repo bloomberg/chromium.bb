@@ -7363,7 +7363,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
         AutofillMetrics::USER_DID_AUTOFILL, CREDIT_CARD_FORM,
         security_state::SecurityLevel::SECURE);
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.CreditCard.SECURE",
+        "Autofill.UserHappiness.CreditCard.SECURE",
         AutofillMetrics::USER_DID_AUTOFILL, 1);
   }
 
@@ -7373,7 +7373,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
         AutofillMetrics::SUGGESTIONS_SHOWN, ADDRESS_FORM,
         security_state::SecurityLevel::DANGEROUS);
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.DANGEROUS",
+        "Autofill.UserHappiness.Address.DANGEROUS",
         AutofillMetrics::SUGGESTIONS_SHOWN, 1);
   }
 
@@ -7383,7 +7383,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
         AutofillMetrics::FIELD_WAS_AUTOFILLED, PASSWORD_FORM,
         security_state::SecurityLevel::HTTP_SHOW_WARNING);
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Password.HTTP_SHOW_WARNING",
+        "Autofill.UserHappiness.Password.HTTP_SHOW_WARNING",
         AutofillMetrics::FIELD_WAS_AUTOFILLED, 1);
   }
 
@@ -7393,7 +7393,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
         AutofillMetrics::USER_DID_AUTOFILL_ONCE, UNKNOWN_FORM_TYPE,
         security_state::SecurityLevel::EV_SECURE);
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Unknown.EV_SECURE",
+        "Autofill.UserHappiness.Unknown.EV_SECURE",
         AutofillMetrics::USER_DID_AUTOFILL_ONCE, 1);
   }
 
@@ -7404,7 +7404,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
     AutofillMetrics::LogUserHappinessBySecurityLevel(
         AutofillMetrics::SUBMITTED_FILLABLE_FORM_AUTOFILLED_SOME,
         CREDIT_CARD_FORM, security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
-    histogram_tester.ExpectTotalCount("Security.UserHappiness.CreditCard.OTHER",
+    histogram_tester.ExpectTotalCount("Autofill.UserHappiness.CreditCard.OTHER",
                                       0);
   }
 }
@@ -7436,7 +7436,7 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel_FromFormEvents) {
         security_state::SecurityLevel::DANGEROUS);
     autofill_manager_->OnFormsSeen(forms, TimeTicks());
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.DANGEROUS",
+        "Autofill.UserHappiness.Address.DANGEROUS",
         AutofillMetrics::FORMS_LOADED, 1);
   }
 
@@ -7448,10 +7448,10 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel_FromFormEvents) {
     autofill_manager_->DidShowSuggestions(true, form, field);
     autofill_manager_->DidShowSuggestions(true, form, field);
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.HTTP_SHOW_WARNING",
+        "Autofill.UserHappiness.Address.HTTP_SHOW_WARNING",
         AutofillMetrics::SUGGESTIONS_SHOWN, 2);
     histogram_tester.ExpectBucketCount(
-        "Security.UserHappiness.Address.HTTP_SHOW_WARNING",
+        "Autofill.UserHappiness.Address.HTTP_SHOW_WARNING",
         AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
   }
 }
@@ -7464,7 +7464,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, /*is_uploading=*/true,
         security_state::SecurityLevel::SECURE);
     histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Upload.SECURE",
+        "Autofill.SaveCreditCardPrompt.Upload.SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
   }
 
@@ -7474,7 +7474,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
         AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, /*is_uploading=*/false,
         security_state::SecurityLevel::DANGEROUS);
     histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Local.DANGEROUS",
+        "Autofill.SaveCreditCardPrompt.Local.DANGEROUS",
         AutofillMetrics::SAVE_CARD_PROMPT_END_DENIED, 1);
   }
 
@@ -7484,7 +7484,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
         AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, /*is_uploading=*/true,
         security_state::SecurityLevel::HTTP_SHOW_WARNING);
     histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Upload.HTTP_SHOW_WARNING",
+        "Autofill.SaveCreditCardPrompt.Upload.HTTP_SHOW_WARNING",
         AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
   }
 
@@ -7494,7 +7494,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING,
         /*is_uploading=*/false, security_state::SecurityLevel::EV_SECURE);
     histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Local.EV_SECURE",
+        "Autofill.SaveCreditCardPrompt.Local.EV_SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
   }
 
@@ -7507,7 +7507,7 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
         /*is_uploading=*/true,
         security_state::SecurityLevel::SECURITY_LEVEL_COUNT);
     histogram_tester.ExpectTotalCount(
-        "Security.SaveCardPromptMetric.Upload.OTHER", 0);
+        "Autofill.SaveCreditCardPrompt.Upload.OTHER", 0);
   }
 }
 
@@ -7523,7 +7523,7 @@ TEST_F(AutofillMetricsTest,
         /*previous_save_credit_card_prompt_user_decision=*/1,
         security_state::SecurityLevel::EV_SECURE);
     histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Upload.EV_SECURE",
+        "Autofill.SaveCreditCardPrompt.Upload.EV_SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_END_NAVIGATION_SHOWING, 1);
   }
 
@@ -7535,7 +7535,7 @@ TEST_F(AutofillMetricsTest,
         /*previous_save_credit_card_prompt_user_decision=*/0,
         security_state::SecurityLevel::SECURE);
     histogram_tester.ExpectBucketCount(
-        "Security.SaveCardPromptMetric.Local.SECURE",
+        "Autofill.SaveCreditCardPrompt.Local.SECURE",
         AutofillMetrics::SAVE_CARD_PROMPT_SHOWN, 1);
   }
 }
