@@ -111,9 +111,15 @@ LICENSE_AND_HEADER = """\
 """
 
 def WriteFunctionDeclarations(file, functions):
-  template = Template('  PFN_$name $name = nullptr;\n')
+  template = Template('  PFN_${name} ${name}Fn = nullptr;\n')
   for func in functions:
-    file.write(template.substitute(func));
+    file.write(template.substitute(func))
+
+def WriteMacros(file, functions):
+  template = Template(
+      '#define $name gpu::GetVulkanFunctionPointers()->${name}Fn\n')
+  for func in functions:
+    file.write(template.substitute(func))
 
 def GenerateHeaderFile(file, unassociated_functions, instance_functions,
                        physical_device_functions, device_functions,
@@ -155,7 +161,7 @@ struct VulkanFunctionPointers {
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
   // Unassociated functions
-  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = nullptr;
+  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn = nullptr;
 """)
 
   WriteFunctionDeclarations(file, unassociated_functions)
@@ -168,7 +174,7 @@ struct VulkanFunctionPointers {
   WriteFunctionDeclarations(file, instance_functions)
 
   file.write("""\
-  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
+  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHRFn = nullptr;
 
   // Physical Device functions
 """)
@@ -177,11 +183,11 @@ struct VulkanFunctionPointers {
 
   file.write("""\
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-      vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+      vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
-      vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+      vkGetPhysicalDeviceSurfaceFormatsKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceSupportKHR
-      vkGetPhysicalDeviceSurfaceSupportKHR = nullptr;
+      vkGetPhysicalDeviceSurfaceSupportKHRFn = nullptr;
 
   // Device functions
 """)
@@ -214,32 +220,87 @@ struct VulkanFunctionPointers {
 
 }  // namespace gpu
 
+// Unassociated functions
+""")
+
+  WriteMacros(file, [ { 'name': 'vkGetInstanceProcAddr' } ])
+  WriteMacros(file, unassociated_functions)
+
+  file.write("""\
+
+// Instance functions
+""")
+
+  WriteMacros(file, instance_functions)
+  WriteMacros(file, [ { 'name': 'vkDestroySurfaceKHR' } ])
+
+  file.write("""\
+
+// Physical Device functions
+""")
+
+  WriteMacros(file, physical_device_functions)
+  WriteMacros(file, [
+      { 'name': 'vkGetPhysicalDeviceSurfaceCapabilitiesKHR' },
+      { 'name': 'vkGetPhysicalDeviceSurfaceFormatsKHR' },
+      { 'name': 'vkGetPhysicalDeviceSurfaceSupportKHR' },
+  ])
+
+  file.write("""\
+
+// Device functions
+""")
+
+  WriteMacros(file, device_functions)
+
+  file.write("""\
+
+// Queue functions
+""")
+
+  WriteMacros(file, queue_functions)
+
+  file.write("""\
+
+// Command buffer functions
+""")
+
+  WriteMacros(file, command_buffer_functions)
+
+  file.write("""\
+
+// Swapchain functions
+""")
+
+  WriteMacros(file, swapchain_functions)
+
+  file.write("""\
+
 #endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_
 """)
 
 def WriteFunctionPointerInitialization(file, proc_addr_function, parent,
                                        functions):
-  template = Template("""  $name = reinterpret_cast<PFN_$name>(
+  template = Template("""  ${name}Fn = reinterpret_cast<PFN_${name}>(
     $get_proc_addr($parent, "$name"));
-  if (!$name)
+  if (!${name}Fn)
     return false;
 
 """)
-
   for func in functions:
     file.write(template.substitute(name=func['name'], get_proc_addr =
                                    proc_addr_function, parent=parent))
 
 def WriteUnassociatedFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr', 'nullptr',
+  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddrFn', 'nullptr',
                                      functions)
 
 def WriteInstanceFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddr',
+  WriteFunctionPointerInitialization(file, 'vkGetInstanceProcAddrFn',
                                      'vk_instance', functions)
 
 def WriteDeviceFunctionPointerInitialization(file, functions):
-  WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddr', 'vk_device',
+  WriteFunctionPointerInitialization(file, 'vkGetDeviceProcAddrFn', 'vk_device',
                                      functions)
 
 def GenerateSourceFile(file, unassociated_functions, instance_functions,
@@ -269,10 +330,10 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   // vkGetInstanceProcAddr must be handled specially since it gets its function
   // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
   // functions don't do this.
-  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+  vkGetInstanceProcAddrFn = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
       base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library_,
                                                 "vkGetInstanceProcAddr"));
-  if (!vkGetInstanceProcAddr)
+  if (!vkGetInstanceProcAddrFn)
     return false;
 
 """)

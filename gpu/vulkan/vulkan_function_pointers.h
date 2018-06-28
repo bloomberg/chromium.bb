@@ -39,88 +39,204 @@ struct VulkanFunctionPointers {
   base::NativeLibrary vulkan_loader_library_ = nullptr;
 
   // Unassociated functions
-  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddr = nullptr;
-  PFN_vkCreateInstance vkCreateInstance = nullptr;
+  PFN_vkGetInstanceProcAddr vkGetInstanceProcAddrFn = nullptr;
+  PFN_vkCreateInstance vkCreateInstanceFn = nullptr;
   PFN_vkEnumerateInstanceExtensionProperties
-      vkEnumerateInstanceExtensionProperties = nullptr;
-  PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerProperties =
+      vkEnumerateInstanceExtensionPropertiesFn = nullptr;
+  PFN_vkEnumerateInstanceLayerProperties vkEnumerateInstanceLayerPropertiesFn =
       nullptr;
 
   // Instance functions
-  PFN_vkDestroyInstance vkDestroyInstance = nullptr;
-  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevices = nullptr;
-  PFN_vkGetDeviceProcAddr vkGetDeviceProcAddr = nullptr;
-  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHR = nullptr;
+  PFN_vkDestroyInstance vkDestroyInstanceFn = nullptr;
+  PFN_vkEnumeratePhysicalDevices vkEnumeratePhysicalDevicesFn = nullptr;
+  PFN_vkGetDeviceProcAddr vkGetDeviceProcAddrFn = nullptr;
+  PFN_vkDestroySurfaceKHR vkDestroySurfaceKHRFn = nullptr;
 
   // Physical Device functions
-  PFN_vkCreateDevice vkCreateDevice = nullptr;
-  PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerProperties =
+  PFN_vkCreateDevice vkCreateDeviceFn = nullptr;
+  PFN_vkEnumerateDeviceLayerProperties vkEnumerateDeviceLayerPropertiesFn =
       nullptr;
   PFN_vkGetPhysicalDeviceQueueFamilyProperties
-      vkGetPhysicalDeviceQueueFamilyProperties = nullptr;
+      vkGetPhysicalDeviceQueueFamilyPropertiesFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceCapabilitiesKHR
-      vkGetPhysicalDeviceSurfaceCapabilitiesKHR = nullptr;
+      vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceFormatsKHR
-      vkGetPhysicalDeviceSurfaceFormatsKHR = nullptr;
+      vkGetPhysicalDeviceSurfaceFormatsKHRFn = nullptr;
   PFN_vkGetPhysicalDeviceSurfaceSupportKHR
-      vkGetPhysicalDeviceSurfaceSupportKHR = nullptr;
+      vkGetPhysicalDeviceSurfaceSupportKHRFn = nullptr;
 
   // Device functions
-  PFN_vkAllocateCommandBuffers vkAllocateCommandBuffers = nullptr;
-  PFN_vkAllocateDescriptorSets vkAllocateDescriptorSets = nullptr;
-  PFN_vkCreateCommandPool vkCreateCommandPool = nullptr;
-  PFN_vkCreateDescriptorPool vkCreateDescriptorPool = nullptr;
-  PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayout = nullptr;
-  PFN_vkCreateFence vkCreateFence = nullptr;
-  PFN_vkCreateFramebuffer vkCreateFramebuffer = nullptr;
-  PFN_vkCreateImageView vkCreateImageView = nullptr;
-  PFN_vkCreateRenderPass vkCreateRenderPass = nullptr;
-  PFN_vkCreateSampler vkCreateSampler = nullptr;
-  PFN_vkCreateSemaphore vkCreateSemaphore = nullptr;
-  PFN_vkCreateShaderModule vkCreateShaderModule = nullptr;
-  PFN_vkDestroyCommandPool vkDestroyCommandPool = nullptr;
-  PFN_vkDestroyDescriptorPool vkDestroyDescriptorPool = nullptr;
-  PFN_vkDestroyDescriptorSetLayout vkDestroyDescriptorSetLayout = nullptr;
-  PFN_vkDestroyDevice vkDestroyDevice = nullptr;
-  PFN_vkDestroyFramebuffer vkDestroyFramebuffer = nullptr;
-  PFN_vkDestroyFence vkDestroyFence = nullptr;
-  PFN_vkDestroyImage vkDestroyImage = nullptr;
-  PFN_vkDestroyImageView vkDestroyImageView = nullptr;
-  PFN_vkDestroyRenderPass vkDestroyRenderPass = nullptr;
-  PFN_vkDestroySampler vkDestroySampler = nullptr;
-  PFN_vkDestroySemaphore vkDestroySemaphore = nullptr;
-  PFN_vkDestroyShaderModule vkDestroyShaderModule = nullptr;
-  PFN_vkFreeCommandBuffers vkFreeCommandBuffers = nullptr;
-  PFN_vkFreeDescriptorSets vkFreeDescriptorSets = nullptr;
-  PFN_vkFreeMemory vkFreeMemory = nullptr;
-  PFN_vkGetDeviceQueue vkGetDeviceQueue = nullptr;
-  PFN_vkGetFenceStatus vkGetFenceStatus = nullptr;
-  PFN_vkResetFences vkResetFences = nullptr;
-  PFN_vkUpdateDescriptorSets vkUpdateDescriptorSets = nullptr;
-  PFN_vkWaitForFences vkWaitForFences = nullptr;
+  PFN_vkAllocateCommandBuffers vkAllocateCommandBuffersFn = nullptr;
+  PFN_vkAllocateDescriptorSets vkAllocateDescriptorSetsFn = nullptr;
+  PFN_vkCreateCommandPool vkCreateCommandPoolFn = nullptr;
+  PFN_vkCreateDescriptorPool vkCreateDescriptorPoolFn = nullptr;
+  PFN_vkCreateDescriptorSetLayout vkCreateDescriptorSetLayoutFn = nullptr;
+  PFN_vkCreateFence vkCreateFenceFn = nullptr;
+  PFN_vkCreateFramebuffer vkCreateFramebufferFn = nullptr;
+  PFN_vkCreateImageView vkCreateImageViewFn = nullptr;
+  PFN_vkCreateRenderPass vkCreateRenderPassFn = nullptr;
+  PFN_vkCreateSampler vkCreateSamplerFn = nullptr;
+  PFN_vkCreateSemaphore vkCreateSemaphoreFn = nullptr;
+  PFN_vkCreateShaderModule vkCreateShaderModuleFn = nullptr;
+  PFN_vkDestroyCommandPool vkDestroyCommandPoolFn = nullptr;
+  PFN_vkDestroyDescriptorPool vkDestroyDescriptorPoolFn = nullptr;
+  PFN_vkDestroyDescriptorSetLayout vkDestroyDescriptorSetLayoutFn = nullptr;
+  PFN_vkDestroyDevice vkDestroyDeviceFn = nullptr;
+  PFN_vkDestroyFramebuffer vkDestroyFramebufferFn = nullptr;
+  PFN_vkDestroyFence vkDestroyFenceFn = nullptr;
+  PFN_vkDestroyImage vkDestroyImageFn = nullptr;
+  PFN_vkDestroyImageView vkDestroyImageViewFn = nullptr;
+  PFN_vkDestroyRenderPass vkDestroyRenderPassFn = nullptr;
+  PFN_vkDestroySampler vkDestroySamplerFn = nullptr;
+  PFN_vkDestroySemaphore vkDestroySemaphoreFn = nullptr;
+  PFN_vkDestroyShaderModule vkDestroyShaderModuleFn = nullptr;
+  PFN_vkFreeCommandBuffers vkFreeCommandBuffersFn = nullptr;
+  PFN_vkFreeDescriptorSets vkFreeDescriptorSetsFn = nullptr;
+  PFN_vkFreeMemory vkFreeMemoryFn = nullptr;
+  PFN_vkGetDeviceQueue vkGetDeviceQueueFn = nullptr;
+  PFN_vkGetFenceStatus vkGetFenceStatusFn = nullptr;
+  PFN_vkResetFences vkResetFencesFn = nullptr;
+  PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
+  PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
   // Queue functions
-  PFN_vkQueueSubmit vkQueueSubmit = nullptr;
-  PFN_vkQueueWaitIdle vkQueueWaitIdle = nullptr;
+  PFN_vkQueueSubmit vkQueueSubmitFn = nullptr;
+  PFN_vkQueueWaitIdle vkQueueWaitIdleFn = nullptr;
 
   // Command Buffer functions
-  PFN_vkBeginCommandBuffer vkBeginCommandBuffer = nullptr;
-  PFN_vkCmdBeginRenderPass vkCmdBeginRenderPass = nullptr;
-  PFN_vkCmdEndRenderPass vkCmdEndRenderPass = nullptr;
-  PFN_vkCmdExecuteCommands vkCmdExecuteCommands = nullptr;
-  PFN_vkCmdNextSubpass vkCmdNextSubpass = nullptr;
-  PFN_vkCmdPipelineBarrier vkCmdPipelineBarrier = nullptr;
-  PFN_vkEndCommandBuffer vkEndCommandBuffer = nullptr;
-  PFN_vkResetCommandBuffer vkResetCommandBuffer = nullptr;
+  PFN_vkBeginCommandBuffer vkBeginCommandBufferFn = nullptr;
+  PFN_vkCmdBeginRenderPass vkCmdBeginRenderPassFn = nullptr;
+  PFN_vkCmdEndRenderPass vkCmdEndRenderPassFn = nullptr;
+  PFN_vkCmdExecuteCommands vkCmdExecuteCommandsFn = nullptr;
+  PFN_vkCmdNextSubpass vkCmdNextSubpassFn = nullptr;
+  PFN_vkCmdPipelineBarrier vkCmdPipelineBarrierFn = nullptr;
+  PFN_vkEndCommandBuffer vkEndCommandBufferFn = nullptr;
+  PFN_vkResetCommandBuffer vkResetCommandBufferFn = nullptr;
 
   // Swapchain functions
-  PFN_vkAcquireNextImageKHR vkAcquireNextImageKHR = nullptr;
-  PFN_vkCreateSwapchainKHR vkCreateSwapchainKHR = nullptr;
-  PFN_vkDestroySwapchainKHR vkDestroySwapchainKHR = nullptr;
-  PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHR = nullptr;
-  PFN_vkQueuePresentKHR vkQueuePresentKHR = nullptr;
+  PFN_vkAcquireNextImageKHR vkAcquireNextImageKHRFn = nullptr;
+  PFN_vkCreateSwapchainKHR vkCreateSwapchainKHRFn = nullptr;
+  PFN_vkDestroySwapchainKHR vkDestroySwapchainKHRFn = nullptr;
+  PFN_vkGetSwapchainImagesKHR vkGetSwapchainImagesKHRFn = nullptr;
+  PFN_vkQueuePresentKHR vkQueuePresentKHRFn = nullptr;
 };
 
 }  // namespace gpu
+
+// Unassociated functions
+#define vkGetInstanceProcAddr \
+  gpu::GetVulkanFunctionPointers()->vkGetInstanceProcAddrFn
+#define vkCreateInstance gpu::GetVulkanFunctionPointers()->vkCreateInstanceFn
+#define vkEnumerateInstanceExtensionProperties \
+  gpu::GetVulkanFunctionPointers()->vkEnumerateInstanceExtensionPropertiesFn
+#define vkEnumerateInstanceLayerProperties \
+  gpu::GetVulkanFunctionPointers()->vkEnumerateInstanceLayerPropertiesFn
+
+// Instance functions
+#define vkDestroyInstance gpu::GetVulkanFunctionPointers()->vkDestroyInstanceFn
+#define vkEnumeratePhysicalDevices \
+  gpu::GetVulkanFunctionPointers()->vkEnumeratePhysicalDevicesFn
+#define vkGetDeviceProcAddr \
+  gpu::GetVulkanFunctionPointers()->vkGetDeviceProcAddrFn
+#define vkDestroySurfaceKHR \
+  gpu::GetVulkanFunctionPointers()->vkDestroySurfaceKHRFn
+
+// Physical Device functions
+#define vkCreateDevice gpu::GetVulkanFunctionPointers()->vkCreateDeviceFn
+#define vkEnumerateDeviceLayerProperties \
+  gpu::GetVulkanFunctionPointers()->vkEnumerateDeviceLayerPropertiesFn
+#define vkGetPhysicalDeviceQueueFamilyProperties \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceQueueFamilyPropertiesFn
+#define vkGetPhysicalDeviceSurfaceCapabilitiesKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceCapabilitiesKHRFn
+#define vkGetPhysicalDeviceSurfaceFormatsKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceFormatsKHRFn
+#define vkGetPhysicalDeviceSurfaceSupportKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetPhysicalDeviceSurfaceSupportKHRFn
+
+// Device functions
+#define vkAllocateCommandBuffers \
+  gpu::GetVulkanFunctionPointers()->vkAllocateCommandBuffersFn
+#define vkAllocateDescriptorSets \
+  gpu::GetVulkanFunctionPointers()->vkAllocateDescriptorSetsFn
+#define vkCreateCommandPool \
+  gpu::GetVulkanFunctionPointers()->vkCreateCommandPoolFn
+#define vkCreateDescriptorPool \
+  gpu::GetVulkanFunctionPointers()->vkCreateDescriptorPoolFn
+#define vkCreateDescriptorSetLayout \
+  gpu::GetVulkanFunctionPointers()->vkCreateDescriptorSetLayoutFn
+#define vkCreateFence gpu::GetVulkanFunctionPointers()->vkCreateFenceFn
+#define vkCreateFramebuffer \
+  gpu::GetVulkanFunctionPointers()->vkCreateFramebufferFn
+#define vkCreateImageView gpu::GetVulkanFunctionPointers()->vkCreateImageViewFn
+#define vkCreateRenderPass \
+  gpu::GetVulkanFunctionPointers()->vkCreateRenderPassFn
+#define vkCreateSampler gpu::GetVulkanFunctionPointers()->vkCreateSamplerFn
+#define vkCreateSemaphore gpu::GetVulkanFunctionPointers()->vkCreateSemaphoreFn
+#define vkCreateShaderModule \
+  gpu::GetVulkanFunctionPointers()->vkCreateShaderModuleFn
+#define vkDestroyCommandPool \
+  gpu::GetVulkanFunctionPointers()->vkDestroyCommandPoolFn
+#define vkDestroyDescriptorPool \
+  gpu::GetVulkanFunctionPointers()->vkDestroyDescriptorPoolFn
+#define vkDestroyDescriptorSetLayout \
+  gpu::GetVulkanFunctionPointers()->vkDestroyDescriptorSetLayoutFn
+#define vkDestroyDevice gpu::GetVulkanFunctionPointers()->vkDestroyDeviceFn
+#define vkDestroyFramebuffer \
+  gpu::GetVulkanFunctionPointers()->vkDestroyFramebufferFn
+#define vkDestroyFence gpu::GetVulkanFunctionPointers()->vkDestroyFenceFn
+#define vkDestroyImage gpu::GetVulkanFunctionPointers()->vkDestroyImageFn
+#define vkDestroyImageView \
+  gpu::GetVulkanFunctionPointers()->vkDestroyImageViewFn
+#define vkDestroyRenderPass \
+  gpu::GetVulkanFunctionPointers()->vkDestroyRenderPassFn
+#define vkDestroySampler gpu::GetVulkanFunctionPointers()->vkDestroySamplerFn
+#define vkDestroySemaphore \
+  gpu::GetVulkanFunctionPointers()->vkDestroySemaphoreFn
+#define vkDestroyShaderModule \
+  gpu::GetVulkanFunctionPointers()->vkDestroyShaderModuleFn
+#define vkFreeCommandBuffers \
+  gpu::GetVulkanFunctionPointers()->vkFreeCommandBuffersFn
+#define vkFreeDescriptorSets \
+  gpu::GetVulkanFunctionPointers()->vkFreeDescriptorSetsFn
+#define vkFreeMemory gpu::GetVulkanFunctionPointers()->vkFreeMemoryFn
+#define vkGetDeviceQueue gpu::GetVulkanFunctionPointers()->vkGetDeviceQueueFn
+#define vkGetFenceStatus gpu::GetVulkanFunctionPointers()->vkGetFenceStatusFn
+#define vkResetFences gpu::GetVulkanFunctionPointers()->vkResetFencesFn
+#define vkUpdateDescriptorSets \
+  gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
+#define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
+
+// Queue functions
+#define vkQueueSubmit gpu::GetVulkanFunctionPointers()->vkQueueSubmitFn
+#define vkQueueWaitIdle gpu::GetVulkanFunctionPointers()->vkQueueWaitIdleFn
+
+// Command buffer functions
+#define vkBeginCommandBuffer \
+  gpu::GetVulkanFunctionPointers()->vkBeginCommandBufferFn
+#define vkCmdBeginRenderPass \
+  gpu::GetVulkanFunctionPointers()->vkCmdBeginRenderPassFn
+#define vkCmdEndRenderPass \
+  gpu::GetVulkanFunctionPointers()->vkCmdEndRenderPassFn
+#define vkCmdExecuteCommands \
+  gpu::GetVulkanFunctionPointers()->vkCmdExecuteCommandsFn
+#define vkCmdNextSubpass gpu::GetVulkanFunctionPointers()->vkCmdNextSubpassFn
+#define vkCmdPipelineBarrier \
+  gpu::GetVulkanFunctionPointers()->vkCmdPipelineBarrierFn
+#define vkEndCommandBuffer \
+  gpu::GetVulkanFunctionPointers()->vkEndCommandBufferFn
+#define vkResetCommandBuffer \
+  gpu::GetVulkanFunctionPointers()->vkResetCommandBufferFn
+
+// Swapchain functions
+#define vkAcquireNextImageKHR \
+  gpu::GetVulkanFunctionPointers()->vkAcquireNextImageKHRFn
+#define vkCreateSwapchainKHR \
+  gpu::GetVulkanFunctionPointers()->vkCreateSwapchainKHRFn
+#define vkDestroySwapchainKHR \
+  gpu::GetVulkanFunctionPointers()->vkDestroySwapchainKHRFn
+#define vkGetSwapchainImagesKHR \
+  gpu::GetVulkanFunctionPointers()->vkGetSwapchainImagesKHRFn
+#define vkQueuePresentKHR gpu::GetVulkanFunctionPointers()->vkQueuePresentKHRFn
 
 #endif  // GPU_VULKAN_VULKAN_FUNCTION_POINTERS_H_

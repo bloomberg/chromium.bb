@@ -43,11 +43,9 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
   device_queue_ = device_queue;
 
   VkResult result = VK_SUCCESS;
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
 
   VkBool32 present_support;
-  if (vulkan_function_pointers->vkGetPhysicalDeviceSurfaceSupportKHR(
+  if (vkGetPhysicalDeviceSurfaceSupportKHR(
           device_queue_->GetVulkanPhysicalDevice(),
           device_queue_->GetVulkanQueueIndex(), surface_,
           &present_support) != VK_SUCCESS) {
@@ -61,7 +59,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 
   // Get list of supported formats.
   uint32_t format_count = 0;
-  result = vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR(
+  result = vkGetPhysicalDeviceSurfaceFormatsKHR(
       device_queue_->GetVulkanPhysicalDevice(), surface_, &format_count,
       nullptr);
   if (VK_SUCCESS != result) {
@@ -70,7 +68,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
   }
 
   std::vector<VkSurfaceFormatKHR> formats(format_count);
-  result = vulkan_function_pointers->vkGetPhysicalDeviceSurfaceFormatsKHR(
+  result = vkGetPhysicalDeviceSurfaceFormatsKHR(
       device_queue_->GetVulkanPhysicalDevice(), surface_, &format_count,
       formats.data());
   if (VK_SUCCESS != result) {
@@ -111,7 +109,7 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 
   // Get Surface Information.
   VkSurfaceCapabilitiesKHR surface_caps;
-  result = vulkan_function_pointers->vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
+  result = vkGetPhysicalDeviceSurfaceCapabilitiesKHR(
       device_queue_->GetVulkanPhysicalDevice(), surface_, &surface_caps);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkGetPhysicalDeviceSurfaceCapabilitiesKHR() failed: "
@@ -135,11 +133,8 @@ bool VulkanSurface::Initialize(VulkanDeviceQueue* device_queue,
 }
 
 void VulkanSurface::Destroy() {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
   swap_chain_.Destroy();
-  vulkan_function_pointers->vkDestroySurfaceKHR(vk_instance_, surface_,
-                                                nullptr);
+  vkDestroySurfaceKHR(vk_instance_, surface_, nullptr);
   surface_ = VK_NULL_HANDLE;
 }
 
@@ -152,9 +147,7 @@ VulkanSwapChain* VulkanSurface::GetSwapChain() {
 }
 
 void VulkanSurface::Finish() {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-  vulkan_function_pointers->vkQueueWaitIdle(device_queue_->GetVulkanQueue());
+  vkQueueWaitIdle(device_queue_->GetVulkanQueue());
 }
 
 }  // namespace gpu

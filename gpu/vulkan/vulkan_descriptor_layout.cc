@@ -22,8 +22,6 @@ bool VulkanDescriptorLayout::Initialize(
     const std::vector<VkDescriptorSetLayoutBinding>& layout) {
   VkResult result = VK_SUCCESS;
   VkDevice device = device_queue_->GetVulkanDevice();
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
 
   VkDescriptorSetLayoutCreateInfo layout_create_info = {};
   layout_create_info.sType =
@@ -31,8 +29,8 @@ bool VulkanDescriptorLayout::Initialize(
   layout_create_info.bindingCount = static_cast<uint32_t>(layout.size());
   layout_create_info.pBindings = layout.data();
 
-  result = vulkan_function_pointers->vkCreateDescriptorSetLayout(
-      device, &layout_create_info, nullptr, &handle_);
+  result = vkCreateDescriptorSetLayout(device, &layout_create_info, nullptr,
+                                       &handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateDescriptorSetLayout() failed: " << result;
     return false;
@@ -43,11 +41,8 @@ bool VulkanDescriptorLayout::Initialize(
 
 void VulkanDescriptorLayout::Destroy() {
   if (VK_NULL_HANDLE != handle_) {
-    VulkanFunctionPointers* vulkan_function_pointers =
-        gpu::GetVulkanFunctionPointers();
-
-    vulkan_function_pointers->vkDestroyDescriptorSetLayout(
-        device_queue_->GetVulkanDevice(), handle_, nullptr);
+    vkDestroyDescriptorSetLayout(device_queue_->GetVulkanDevice(), handle_,
+                                 nullptr);
     handle_ = VK_NULL_HANDLE;
   }
 }

@@ -38,11 +38,8 @@ bool VulkanCommandBuffer::Initialize() {
                                        : VK_COMMAND_BUFFER_LEVEL_SECONDARY;
   command_buffer_info.commandBufferCount = 1;
 
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
-  result = vulkan_function_pointers->vkAllocateCommandBuffers(
-      device, &command_buffer_info, &command_buffer_);
+  result =
+      vkAllocateCommandBuffers(device, &command_buffer_info, &command_buffer_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkAllocateCommandBuffers() failed: " << result;
     return false;
@@ -52,8 +49,8 @@ bool VulkanCommandBuffer::Initialize() {
   fence_create_info.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
   fence_create_info.flags = VK_FENCE_CREATE_SIGNALED_BIT;
 
-  result = vulkan_function_pointers->vkCreateFence(device, &fence_create_info,
-                                                   nullptr, &submission_fence_);
+  result =
+      vkCreateFence(device, &fence_create_info, nullptr, &submission_fence_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateFence(submission) failed: " << result;
     return false;
@@ -64,20 +61,15 @@ bool VulkanCommandBuffer::Initialize() {
 }
 
 void VulkanCommandBuffer::Destroy() {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
   VkDevice device = device_queue_->GetVulkanDevice();
   if (VK_NULL_HANDLE != submission_fence_) {
     DCHECK(SubmissionFinished());
-    vulkan_function_pointers->vkDestroyFence(device, submission_fence_,
-                                             nullptr);
+    vkDestroyFence(device, submission_fence_, nullptr);
     submission_fence_ = VK_NULL_HANDLE;
   }
 
   if (VK_NULL_HANDLE != command_buffer_) {
-    vulkan_function_pointers->vkFreeCommandBuffers(
-        device, command_pool_->handle(), 1, &command_buffer_);
+    vkFreeCommandBuffers(device, command_pool_->handle(), 1, &command_buffer_);
     command_buffer_ = VK_NULL_HANDLE;
   }
 }
@@ -89,9 +81,6 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
   VkPipelineStageFlags wait_dst_stage_mask = VK_PIPELINE_STAGE_ALL_COMMANDS_BIT;
 
   DCHECK(primary_);
-
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
 
   VkSubmitInfo submit_info = {};
   submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -105,15 +94,15 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
 
   VkResult result = VK_SUCCESS;
 
-  result = vulkan_function_pointers->vkResetFences(
-      device_queue_->GetVulkanDevice(), 1, &submission_fence_);
+  result =
+      vkResetFences(device_queue_->GetVulkanDevice(), 1, &submission_fence_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkResetFences() failed: " << result;
     return false;
   }
 
-  result = vulkan_function_pointers->vkQueueSubmit(
-      device_queue_->GetVulkanQueue(), 1, &submit_info, submission_fence_);
+  result = vkQueueSubmit(device_queue_->GetVulkanQueue(), 1, &submit_info,
+                         submission_fence_);
 
   PostExecution();
   if (VK_SUCCESS != result) {
@@ -127,11 +116,7 @@ bool VulkanCommandBuffer::Submit(uint32_t num_wait_semaphores,
 void VulkanCommandBuffer::Enqueue(VkCommandBuffer primary_command_buffer) {
   DCHECK(!primary_);
 
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
-  vulkan_function_pointers->vkCmdExecuteCommands(primary_command_buffer, 1,
-                                                 &command_buffer_);
+  vkCmdExecuteCommands(primary_command_buffer, 1, &command_buffer_);
   PostExecution();
 }
 
@@ -142,20 +127,13 @@ void VulkanCommandBuffer::Clear() {
 }
 
 void VulkanCommandBuffer::Wait(uint64_t timeout) {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
   VkDevice device = device_queue_->GetVulkanDevice();
-  vulkan_function_pointers->vkWaitForFences(device, 1, &submission_fence_, true,
-                                            timeout);
+  vkWaitForFences(device, 1, &submission_fence_, true, timeout);
 }
 
 bool VulkanCommandBuffer::SubmissionFinished() {
   VkDevice device = device_queue_->GetVulkanDevice();
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-  return VK_SUCCESS ==
-         vulkan_function_pointers->vkGetFenceStatus(device, submission_fence_);
+  return VK_SUCCESS == vkGetFenceStatus(device, submission_fence_);
 }
 
 void VulkanCommandBuffer::PostExecution() {
@@ -171,16 +149,11 @@ void VulkanCommandBuffer::PostExecution() {
 void VulkanCommandBuffer::ResetIfDirty() {
   DCHECK(!recording_);
   if (record_type_ == RECORD_TYPE_DIRTY) {
-    VulkanFunctionPointers* vulkan_function_pointers =
-        gpu::GetVulkanFunctionPointers();
-
     // Block if command buffer is still in use. This can be externally avoided
     // using the asynchronous SubmissionFinished() function.
     VkDevice device = device_queue_->GetVulkanDevice();
-    vulkan_function_pointers->vkWaitForFences(device, 1, &submission_fence_,
-                                              true, UINT64_MAX);
-    VkResult result =
-        vulkan_function_pointers->vkResetCommandBuffer(command_buffer_, 0);
+    vkWaitForFences(device, 1, &submission_fence_, true, UINT64_MAX);
+    VkResult result = vkResetCommandBuffer(command_buffer_, 0);
     if (VK_SUCCESS != result) {
       DLOG(ERROR) << "vkResetCommandBuffer() failed: " << result;
     } else {
@@ -190,10 +163,7 @@ void VulkanCommandBuffer::ResetIfDirty() {
 }
 
 CommandBufferRecorderBase::~CommandBufferRecorderBase() {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
-  VkResult result = vulkan_function_pointers->vkEndCommandBuffer(handle_);
+  VkResult result = vkEndCommandBuffer(handle_);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkEndCommandBuffer() failed: " << result;
   }
@@ -202,14 +172,10 @@ CommandBufferRecorderBase::~CommandBufferRecorderBase() {
 ScopedMultiUseCommandBufferRecorder::ScopedMultiUseCommandBufferRecorder(
     VulkanCommandBuffer& command_buffer)
     : CommandBufferRecorderBase(command_buffer) {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
   ValidateMultiUse(command_buffer);
   VkCommandBufferBeginInfo begin_info = {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-  VkResult result =
-      vulkan_function_pointers->vkBeginCommandBuffer(handle_, &begin_info);
+  VkResult result = vkBeginCommandBuffer(handle_, &begin_info);
 
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;
@@ -219,15 +185,11 @@ ScopedMultiUseCommandBufferRecorder::ScopedMultiUseCommandBufferRecorder(
 ScopedSingleUseCommandBufferRecorder::ScopedSingleUseCommandBufferRecorder(
     VulkanCommandBuffer& command_buffer)
     : CommandBufferRecorderBase(command_buffer) {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
   ValidateSingleUse(command_buffer);
   VkCommandBufferBeginInfo begin_info = {};
   begin_info.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
   begin_info.flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT;
-  VkResult result =
-      vulkan_function_pointers->vkBeginCommandBuffer(handle_, &begin_info);
+  VkResult result = vkBeginCommandBuffer(handle_, &begin_info);
 
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkBeginCommandBuffer() failed: " << result;

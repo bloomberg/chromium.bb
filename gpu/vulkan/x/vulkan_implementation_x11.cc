@@ -41,7 +41,7 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
   // Initialize platform function pointers
   vkGetPhysicalDeviceXlibPresentationSupportKHR_ =
       reinterpret_cast<PFN_vkGetPhysicalDeviceXlibPresentationSupportKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
+          vkGetInstanceProcAddr(
               vulkan_instance_.vk_instance(),
               "vkGetPhysicalDeviceXlibPresentationSupportKHR"));
   if (!vkGetPhysicalDeviceXlibPresentationSupportKHR_) {
@@ -49,8 +49,8 @@ bool VulkanImplementationX11::InitializeVulkanInstance() {
     return false;
   }
 
-  vkCreateXlibSurfaceKHR_ = reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(
-      vulkan_function_pointers->vkGetInstanceProcAddr(
+  vkCreateXlibSurfaceKHR_ =
+      reinterpret_cast<PFN_vkCreateXlibSurfaceKHR>(vkGetInstanceProcAddr(
           vulkan_instance_.vk_instance(), "vkCreateXlibSurfaceKHR"));
   if (!vkCreateXlibSurfaceKHR_) {
     vulkan_instance_.Destroy();

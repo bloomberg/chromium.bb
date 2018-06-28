@@ -66,8 +66,8 @@ bool VulkanInProcessContextProvider::Initialize() {
   gpu::VulkanFunctionPointers* vulkan_function_pointers =
       gpu::GetVulkanFunctionPointers();
   auto interface = sk_make_sp<GrVkInterface>(
-      make_unified_getter(vulkan_function_pointers->vkGetInstanceProcAddr,
-                          vulkan_function_pointers->vkGetDeviceProcAddr),
+      make_unified_getter(vulkan_function_pointers->vkGetInstanceProcAddrFn,
+                          vulkan_function_pointers->vkGetDeviceProcAddrFn),
       backend_context.fInstance, backend_context.fDevice,
       backend_context.fExtensions);
   backend_context.fInterface.reset(interface.release());

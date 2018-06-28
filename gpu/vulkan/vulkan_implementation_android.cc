@@ -34,8 +34,8 @@ bool VulkanImplementationAndroid::InitializeVulkanInstance() {
   }
 
   // Initialize platform function pointers
-  vkCreateAndroidSurfaceKHR_ = reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(
-      vulkan_function_pointers->vkGetInstanceProcAddr(
+  vkCreateAndroidSurfaceKHR_ =
+      reinterpret_cast<PFN_vkCreateAndroidSurfaceKHR>(vkGetInstanceProcAddr(
           vulkan_instance_.vk_instance(), "vkCreateAndroidSurfaceKHR"));
   if (!vkCreateAndroidSurfaceKHR_) {
     vulkan_instance_.Destroy();
@@ -51,15 +51,12 @@ VkInstance VulkanImplementationAndroid::GetVulkanInstance() {
 
 std::unique_ptr<VulkanSurface> VulkanImplementationAndroid::CreateViewSurface(
     gfx::AcceleratedWidget window) {
-  VulkanFunctionPointers* vulkan_function_pointers =
-      gpu::GetVulkanFunctionPointers();
-
   VkSurfaceKHR surface;
   VkAndroidSurfaceCreateInfoKHR surface_create_info = {};
   surface_create_info.sType = VK_STRUCTURE_TYPE_ANDROID_SURFACE_CREATE_INFO_KHR;
   surface_create_info.window = window;
-  result = vulkan_function_pointers->vkCreateAndroidSurfaceKHR(
-      GetVulkanInstance(), &surface_create_info, nullptr, &surface);
+  result = vkCreateAndroidSurfaceKHR(GetVulkanInstance(), &surface_create_info,
+                                     nullptr, &surface);
   if (VK_SUCCESS != result) {
     DLOG(ERROR) << "vkCreateAndroidSurfaceKHR() failed: " << result;
     return nullptr;
