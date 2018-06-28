@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/feature_list.h"
+#include "base/stl_util.h"
 #include "components/feature_engagement/internal/availability_model.h"
 #include "components/feature_engagement/internal/configuration.h"
 #include "components/feature_engagement/internal/display_lock_controller.h"
@@ -79,8 +80,7 @@ void FeatureConfigConditionValidator::NotifyIsShowing(
       DCHECK(config.session_rate_impact.affected_features.has_value());
       for (const std::string& feature_name :
            config.session_rate_impact.affected_features.value()) {
-        DCHECK(std::find(all_feature_names.begin(), all_feature_names.end(),
-                         feature_name) != all_feature_names.end());
+        DCHECK(base::ContainsValue(all_feature_names, feature_name));
         ++times_shown_for_feature_[feature_name];
       }
       break;
