@@ -169,6 +169,9 @@ class ASH_EXPORT RootWindowController {
   // lead to a crash.
   SystemTray* GetSystemTray();
 
+  // Returns if system tray and its widget is visible.
+  bool IsSystemTrayVisible();
+
   // True if the window can receive events on this root window.
   bool CanWindowReceiveEvents(aura::Window* window);
 
