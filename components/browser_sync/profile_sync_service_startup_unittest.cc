@@ -431,11 +431,9 @@ TEST_F(ProfileSyncServiceStartupTest, ManagedStartup) {
   CreateSyncService(ProfileSyncService::MANUAL_START);
 
   // Disable sync through policy.
-  ASSERT_FALSE(sync_service()->IsManaged());
   ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
-  ASSERT_TRUE(sync_service()->IsManaged());
   ASSERT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             sync_service()->GetDisableReasons());
   EXPECT_CALL(*component_factory(), CreateSyncEngine(_, _, _, _)).Times(0);
@@ -467,7 +465,6 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
       .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop(syncer::DISABLE_SYNC));
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
-  ASSERT_TRUE(sync_service()->IsManaged());
   ASSERT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsEngineInitialized());
@@ -481,7 +478,6 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*component_factory(), CreateDataTypeManager(_, _, _, _, _, _))
       .Times(0);
   pref_service()->ClearPref(syncer::prefs::kSyncManaged);
-  ASSERT_FALSE(sync_service()->IsManaged());
   ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             sync_service()->GetDisableReasons());
   EXPECT_FALSE(sync_service()->IsEngineInitialized());

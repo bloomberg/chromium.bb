@@ -877,10 +877,13 @@ PeopleHandler::GetSyncStatusDictionary() {
   // makes Profile::IsSyncAllowed() false.
   ProfileSyncService* service =
       ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile_);
+  bool disallowed_by_policy =
+      service && service->HasDisableReason(
+                     syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY);
   sync_status->SetBoolean("signinAllowed", signin->IsSigninAllowed());
   sync_status->SetBoolean("syncSystemEnabled", (service != nullptr));
   sync_status->SetBoolean("setupInProgress",
-                          service && !service->IsManaged() &&
+                          service && !disallowed_by_policy &&
                               service->IsFirstSetupInProgress() &&
                               signin->IsAuthenticated());
 
@@ -896,7 +899,7 @@ PeopleHandler::GetSyncStatusDictionary() {
   sync_status->SetBoolean("hasError", status_has_error);
   sync_status->SetString("statusAction", GetSyncErrorAction(action_type));
 
-  sync_status->SetBoolean("managed", service && service->IsManaged());
+  sync_status->SetBoolean("managed", disallowed_by_policy);
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetString("signedInUsername",
                          signin_ui_util::GetAuthenticatedUsername(signin));

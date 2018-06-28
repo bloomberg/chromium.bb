@@ -325,7 +325,9 @@ void ProfileSyncService::Initialize() {
     // Only clear data if disallowed by policy.
     // TODO(crbug.com/839834): Should this call StopImpl, so that SyncRequested
     // doesn't get set to false?
-    RequestStop(IsManaged() ? CLEAR_DATA : KEEP_DATA);
+    RequestStop((disable_reasons & DISABLE_REASON_ENTERPRISE_POLICY)
+                    ? CLEAR_DATA
+                    : KEEP_DATA);
     return;
   }
 
@@ -756,7 +758,7 @@ int ProfileSyncService::GetDisableReasons() const {
   if (!IsSyncAllowedByFlag() || !IsSyncAllowedByPlatform()) {
     result = result | DISABLE_REASON_PLATFORM_OVERRIDE;
   }
-  if (IsManaged()) {
+  if (sync_prefs_.IsManaged() || sync_disabled_by_admin_) {
     result = result | DISABLE_REASON_ENTERPRISE_POLICY;
   }
   // Local sync doesn't require sign-in.
@@ -1302,7 +1304,8 @@ ProfileSyncService::GetSetupInProgressHandle() {
 
 bool ProfileSyncService::IsSyncAllowed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return IsSyncAllowedByFlag() && !IsManaged() && IsSyncAllowedByPlatform();
+  return !HasDisableReason(DISABLE_REASON_PLATFORM_OVERRIDE) &&
+         !HasDisableReason(DISABLE_REASON_ENTERPRISE_POLICY);
 }
 
 bool ProfileSyncService::IsSyncActive() const {
@@ -1984,11 +1987,6 @@ bool ProfileSyncService::IsSyncAllowedByPlatform() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return platform_sync_allowed_provider_.is_null() ||
          platform_sync_allowed_provider_.Run();
-}
-
-bool ProfileSyncService::IsManaged() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  return sync_prefs_.IsManaged() || sync_disabled_by_admin_;
 }
 
 void ProfileSyncService::RequestStop(SyncStopDataFate data_fate) {

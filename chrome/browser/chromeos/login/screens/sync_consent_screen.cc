@@ -128,8 +128,8 @@ SyncConsentScreen::SyncScreenBehavior SyncConsentScreen::GetSyncScreenBehavior()
   // Skip for sync-disabled case.
   const browser_sync::ProfileSyncService* sync_service =
       GetSyncService(profile_);
-  // IsManaged() is true for both 'sync is managed' and 'sync is disabled'.
-  if (sync_service->IsManaged()) {
+  if (sync_service->HasDisableReason(
+          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     return SyncScreenBehavior::SKIP;
   }
 

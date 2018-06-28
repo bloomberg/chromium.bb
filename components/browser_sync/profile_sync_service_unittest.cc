@@ -343,7 +343,6 @@ TEST_F(ProfileSyncServiceTest, SuccessfulInitialization) {
       .WillOnce(
           ReturnNewFakeDataTypeManager(GetDefaultConfigureCalledCallback()));
   InitializeForNthSync();
-  EXPECT_FALSE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   EXPECT_TRUE(service()->IsSyncActive());
@@ -357,7 +356,6 @@ TEST_F(ProfileSyncServiceTest, SuccessfulLocalBackendInitialization) {
       .WillOnce(
           ReturnNewFakeDataTypeManager(GetDefaultConfigureCalledCallback()));
   InitializeForNthSync();
-  EXPECT_FALSE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   EXPECT_TRUE(service()->IsSyncActive());
@@ -413,7 +411,6 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyBeforeInit) {
   SignIn();
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
-  EXPECT_TRUE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY |
                 syncer::SyncService::DISABLE_REASON_USER_CHOICE,
             service()->GetDisableReasons());
@@ -427,7 +424,6 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   CreateService(ProfileSyncService::AUTO_START);
   InitializeForNthSync();
 
-  ASSERT_FALSE(service()->IsManaged());
   ASSERT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   ASSERT_TRUE(service()->IsSyncActive());
@@ -435,7 +431,6 @@ TEST_F(ProfileSyncServiceTest, DisabledByPolicyAfterInit) {
   prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
                           std::make_unique<base::Value>(true));
 
-  EXPECT_TRUE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             service()->GetDisableReasons());
   EXPECT_FALSE(service()->IsSyncActive());
@@ -1175,7 +1170,6 @@ TEST_F(ProfileSyncServiceTest, LocalBackendDisabledByPolicy) {
                           std::make_unique<base::Value>(false));
   CreateServiceWithLocalSyncBackend();
   InitializeForNthSync();
-  EXPECT_FALSE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   EXPECT_TRUE(service()->IsSyncActive());
@@ -1183,7 +1177,6 @@ TEST_F(ProfileSyncServiceTest, LocalBackendDisabledByPolicy) {
   prefs()->SetManagedPref(syncer::prefs::kSyncManaged,
                           std::make_unique<base::Value>(true));
 
-  EXPECT_TRUE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY,
             service()->GetDisableReasons());
   EXPECT_FALSE(service()->IsSyncActive());
@@ -1192,7 +1185,6 @@ TEST_F(ProfileSyncServiceTest, LocalBackendDisabledByPolicy) {
                           std::make_unique<base::Value>(false));
 
   service()->RequestStart();
-  EXPECT_FALSE(service()->IsManaged());
   EXPECT_EQ(syncer::SyncService::DISABLE_REASON_NONE,
             service()->GetDisableReasons());
   EXPECT_TRUE(service()->IsSyncActive());

@@ -406,13 +406,6 @@ class ProfileSyncService : public syncer::SyncService,
   // TODO(crbug.com/839834): This method is somewhat misnamed.
   virtual bool IsSyncConfirmationNeeded() const;
 
-  // Returns whether sync is managed, i.e. controlled by configuration
-  // management. If so, the user is not allowed to configure sync.
-  // TODO(crbug.com/839834): This is misnamed, it means "is force-disabled by
-  // policy".
-  // DEPRECATED! Use GetDisableReasons instead.
-  bool IsManaged() const;
-
   // syncer::UnrecoverableErrorHandler implementation.
   void OnUnrecoverableError(const base::Location& from_here,
                             const std::string& message) override;
