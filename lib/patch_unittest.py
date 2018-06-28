@@ -1181,6 +1181,7 @@ class TestGerritPatch(TestGitRepoPatch):
         'id': j['change_id'],
         'lastUpdated': 1473894166,
         'number': str(j['_number']),
+        'private': False,
     }
     ret = cros_patch.GerritPatch.ConvertQueryResults(j, 'host')
     self.assertEqual(ret, exp)

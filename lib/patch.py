@@ -1873,6 +1873,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     # status - Current state of this change.  Can be one of
     # ['NEW', 'SUBMITTED', 'MERGED', 'ABANDONED'].
     self.status = patch_dict['status']
+    self.private = patch_dict.get('private', False)
     self._approvals = []
     if 'currentPatchSet' in self.patch_dict:
       self._approvals = self.patch_dict['currentPatchSet'].get('approvals', [])
@@ -1917,6 +1918,7 @@ class GerritPatch(GerritFetchOnlyPatch):
           'url': gob_util.GetChangePageUrl(host, change['_number']),
           'status': change['status'],
           'subject': change.get('subject'),
+          'private': change.get('is_private', False),
       }
       current_revision = change.get('current_revision', '')
       current_revision_info = change.get('revisions', {}).get(current_revision)
@@ -2041,6 +2043,10 @@ class GerritPatch(GerritFetchOnlyPatch):
     return all(self.HasApproval(field, value)
                for field, value in flags.iteritems())
 
+  def IsPrivate(self):
+    """Return whether this CL is currently marked Private."""
+    return self.private
+
   def WasVetoed(self):
     """Return whether this CL was vetoed with VRIF=-1 or CRVW=-2."""
     return self.HasApproval('VRIF', '-1') or self.HasApproval('CRVW', '-2')
@@ -2080,6 +2086,10 @@ class GerritPatch(GerritFetchOnlyPatch):
       return PatchNotSubmittable(self, 'is not marked Verified=+1.')
     elif not self.HasApproval('COMR', ('1', '2')):
       return PatchNotSubmittable(self, 'is not marked Commit-Queue>=+1.')
+    elif self.IsPrivate():
+      return PatchNotSubmittable(self, 'is marked private still.')
+
+    return None
 
   def GetLatestApproval(self, field):
     """Return most recent value of specific field on the current patchset.
