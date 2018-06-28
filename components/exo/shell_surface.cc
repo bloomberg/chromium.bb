@@ -6,15 +6,22 @@
 
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_state_type.h"
+#include "ash/shell.h"
+#include "ash/wm/toplevel_window_event_handler.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/exo/wm_helper.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
+#include "ui/aura/env.h"
 #include "ui/aura/window.h"
+#include "ui/aura/window_event_dispatcher.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/window_util.h"
 
 namespace exo {
@@ -151,8 +158,17 @@ void ShellSurface::Grab() {
   has_grab_ = true;
 }
 
-void ShellSurface::Resize(int component) {
-  TRACE_EVENT1("exo", "ShellSurface::Resize", "component", component);
+void ShellSurface::StartMove() {
+  TRACE_EVENT0("exo", "ShellSurface::StartMove");
+
+  if (!widget_)
+    return;
+
+  AttemptToStartDrag(HTCAPTION);
+}
+
+void ShellSurface::StartResize(int component) {
+  TRACE_EVENT1("exo", "ShellSurface::StartResize", "component", component);
 
   if (!widget_)
     return;
@@ -218,6 +234,61 @@ void ShellSurface::OnPostWindowStateTypeChange(
 
   // Re-enable animations if they were disabled in pre state change handler.
   scoped_animations_disabled_.reset();
+}
+
+void ShellSurface::AttemptToStartDrag(int component) {
+  ash::wm::WindowState* window_state =
+      ash::wm::GetWindowState(widget_->GetNativeWindow());
+
+  // Ignore if surface is already being dragged.
+  if (window_state->is_dragged())
+    return;
+
+  aura::Window* target = widget_->GetNativeWindow();
+  ash::ToplevelWindowEventHandler* toplevel_handler =
+      ash::Shell::Get()->toplevel_window_event_handler();
+  aura::Window* mouse_pressed_handler =
+      target->GetHost()->dispatcher()->mouse_pressed_handler();
+  // Start dragging only if:
+  // 1) touch guesture is in progress.
+  // 2) mouse was pressed on the target or its subsurfaces.
+  aura::Window* gesture_target = toplevel_handler->gesture_target();
+  if (!gesture_target && !mouse_pressed_handler &&
+      target->Contains(mouse_pressed_handler)) {
+    return;
+  }
+  auto end_drag = [](ShellSurface* shell_surface,
+                     ash::wm::WmToplevelWindowEventHandler::DragResult result) {
+    shell_surface->EndDrag();
+  };
+
+  if (gesture_target) {
+    gfx::Point location = toplevel_handler->event_location_in_gesture_target();
+    aura::Window::ConvertPointToTarget(
+        gesture_target, widget_->GetNativeWindow()->GetRootWindow(), &location);
+    toplevel_handler->AttemptToStartDrag(
+        target, location, component,
+        base::BindOnce(end_drag, base::Unretained(this)));
+  } else {
+    gfx::Point location = aura::Env::GetInstance()->last_mouse_location();
+    ::wm::ConvertPointFromScreen(widget_->GetNativeWindow()->GetRootWindow(),
+                                 &location);
+    toplevel_handler->AttemptToStartDrag(
+        target, location, component,
+        base::BindOnce(end_drag, base::Unretained(this)));
+  }
+  // Notify client that resizing state has changed.
+  if (IsResizing())
+    Configure();
+}
+
+void ShellSurface::EndDrag() {
+  if (resize_component_ != HTCAPTION) {
+    // Clear the drag details here as Configure uses it to decide if
+    // the window is being dragged.
+    ash::wm::GetWindowState(widget_->GetNativeWindow())->DeleteDragDetails();
+    Configure();
+  }
 }
 
 }  // namespace exo

@@ -74,8 +74,12 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   // Returns true if there is a drag in progress.
   bool is_drag_in_progress() const { return window_resizer_.get() != nullptr; }
 
-  // Returns the window that is currently handling gesture events.
+  // Returns the window that is currently handling gesture events and its
+  // location.
   aura::Window* gesture_target() { return gesture_target_; }
+  const gfx::Point& event_location_in_gesture_target() {
+    return event_location_in_gesture_target_;
+  }
 
  private:
   class ScopedWindowResizer;
@@ -121,8 +125,9 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Update the gesture target.
-  void UpdateGestureTarget(aura::Window* window);
+  // Update the gesture target and event location.
+  void UpdateGestureTarget(aura::Window* window,
+                           const gfx::Point& location = gfx::Point());
 
   // The hittest result for the first finger at the time that it initially
   // touched the screen. |first_finger_hittest_| is one of ui/base/hit_test.h
@@ -141,6 +146,7 @@ class ASH_EXPORT WmToplevelWindowEventHandler
   bool in_gesture_drag_ = false;
 
   aura::Window* gesture_target_ = nullptr;
+  gfx::Point event_location_in_gesture_target_;
 
   std::unique_ptr<ScopedWindowResizer> window_resizer_;
 

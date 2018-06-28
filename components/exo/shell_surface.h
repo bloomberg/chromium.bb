@@ -6,6 +6,7 @@
 #define COMPONENTS_EXO_SHELL_SURFACE_H_
 
 #include "ash/wm/window_state_observer.h"
+#include "ash/wm/wm_toplevel_window_event_handler.h"
 #include "base/macros.h"
 #include "components/exo/shell_surface_base.h"
 
@@ -52,7 +53,10 @@ class ShellSurface : public ShellSurfaceBase,
   // Start an interactive resize of surface. |component| is one of the windows
   // HT constants (see ui/base/hit_test.h) and describes in what direction the
   // surface should be resized.
-  void Resize(int component);
+  void StartResize(int component);
+
+  // Start an interactive move of surface.
+  void StartMove();
 
   // Overridden from ShellSurfaceBase:
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
@@ -67,6 +71,10 @@ class ShellSurface : public ShellSurfaceBase,
 
  private:
   class ScopedAnimationsDisabled;
+
+  void AttemptToStartDrag(int component);
+
+  void EndDrag();
 
   std::unique_ptr<ScopedAnimationsDisabled> scoped_animations_disabled_;
 

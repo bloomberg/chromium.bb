@@ -58,6 +58,10 @@ class ASH_EXPORT ToplevelWindowEventHandler : public ui::EventHandler,
     return wm_toplevel_window_event_handler_.gesture_target();
   }
 
+  const gfx::Point& event_location_in_gesture_target() {
+    return wm_toplevel_window_event_handler_.event_location_in_gesture_target();
+  }
+
  private:
   // Callback from WmToplevelWindowEventHandler once the drag completes.
   void OnDragCompleted(

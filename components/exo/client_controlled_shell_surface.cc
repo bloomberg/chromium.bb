@@ -408,7 +408,7 @@ void ClientControlledShellSurface::OnWindowStateChangeEvent(
 
 void ClientControlledShellSurface::StartDrag(int component,
                                              const gfx::Point& location) {
-  TRACE_EVENT2("exo", "ClientControlledShellSurface::StartResize", "component",
+  TRACE_EVENT2("exo", "ClientControlledShellSurface::StartDrag", "component",
                component, "location", location.ToString());
 
   if (!widget_ || (client_controlled_move_resize_ && component != HTCAPTION))
@@ -771,8 +771,7 @@ void ClientControlledShellSurface::CompositorLockTimedOut() {
 
 void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
   if ((!client_controlled_move_resize_ && !GetWindowState()->is_dragged()) ||
-      (client_controlled_move_resize_ &&
-       (!resizer_ || resizer_->details().window_component != HTCAPTION))) {
+      client_controlled_move_resize_) {
     {
       // Calculate a minimum window visibility required bounds.
       aura::Window* window = widget_->GetNativeWindow();
@@ -821,10 +820,6 @@ void ClientControlledShellSurface::SetWidgetBounds(const gfx::Rect& bounds) {
     widget_->GetNativeWindow()->SetBounds(gfx::Rect(origin, bounds.size()));
   }
   UpdateSurfaceBounds();
-
-  // Render phantom windows when beyond the current display.
-  if (resizer_)
-    resizer_->Drag(GetMouseLocation(), 0);
 }
 
 gfx::Rect ClientControlledShellSurface::GetShadowBounds() const {
@@ -873,41 +868,6 @@ void ClientControlledShellSurface::InitializeWindowState(
 
 float ClientControlledShellSurface::GetScale() const {
   return scale_;
-}
-
-aura::Window* ClientControlledShellSurface::GetDragWindow() {
-  // Set capture on the root surface rather than the focus surface, because
-  // the client may destroy the latter during dragging/resizing.
-  return root_surface() ? root_surface()->window() : nullptr;
-}
-
-std::unique_ptr<ash::WindowResizer>
-ClientControlledShellSurface::CreateWindowResizer(aura::Window* window,
-                                                  int component) {
-  ash::wm::WindowState* window_state = GetWindowState();
-  DCHECK(!window_state->drag_details());
-  window_state->CreateDragDetails(GetMouseLocation(), component,
-                                  wm::WINDOW_MOVE_SOURCE_MOUSE);
-
-  std::unique_ptr<ash::WindowResizer> resizer =
-      std::make_unique<CustomWindowResizer>(window_state);
-
-  if (component == HTCAPTION) {
-    // Chained with a CustomWindowResizer, DragWindowResizer does not handle
-    // dragging. It only renders phantom windows and moves the window to the
-    // target root window when dragging ends.
-    resizer.reset(
-        ash::DragWindowResizer::Create(resizer.release(), window_state));
-  }
-
-  return resizer;
-}
-
-bool ClientControlledShellSurface::OnMouseDragged(const ui::MouseEvent&) {
-  // TODO(domlaskowski): When VKEY_ESCAPE is pressed during dragging, the client
-  // destroys the window, but should instead revert the drag to be consistent
-  // with ShellSurface::OnKeyEvent. See crbug.com/699746.
-  return false;
 }
 
 gfx::Rect ClientControlledShellSurface::GetWidgetBounds() const {
