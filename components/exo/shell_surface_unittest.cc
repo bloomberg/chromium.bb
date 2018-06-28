@@ -144,6 +144,7 @@ TEST_F(ShellSurfaceTest, SetParent) {
       gfx::PointAtOffsetFromOrigin(gfx::Point(10, 10) - parent_origin));
   EXPECT_EQ(gfx::Rect(10, 10, 256, 256),
             shell_surface->GetWidget()->GetWindowBoundsInScreen());
+  EXPECT_FALSE(shell_surface->CanActivate());
 }
 
 TEST_F(ShellSurfaceTest, Maximize) {

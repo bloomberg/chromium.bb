@@ -1120,7 +1120,7 @@ void ShellSurfaceBase::OnWindowActivated(ActivationReason reason,
 
   if (gained_active == widget_->GetNativeWindow() ||
       lost_active == widget_->GetNativeWindow()) {
-    DCHECK(activatable_);
+    DCHECK(CanActivate());
     Configure();
     UpdateShadow();
   }
@@ -1167,6 +1167,9 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   // region is non-empty. See OnCommitSurface() for more details.
   if (container_ == ash::kShellWindowId_SystemModalContainer)
     activatable &= HasHitTestRegion();
+  // Transient child needs to have an application id to be activatable.
+  if (parent_)
+    activatable &= application_id_.has_value();
   params.activatable = activatable ? views::Widget::InitParams::ACTIVATABLE_YES
                                    : views::Widget::InitParams::ACTIVATABLE_NO;
   // Note: NativeWidget owns this widget.
@@ -1202,7 +1205,7 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
   window_state->SetHideShelfWhenFullscreen(false);
 
   // Fade visibility animations for non-activatable windows.
-  if (!activatable_) {
+  if (!CanActivate()) {
     wm::SetWindowVisibilityAnimationType(
         window, wm::WINDOW_VISIBILITY_ANIMATION_TYPE_FADE);
   }
@@ -1357,7 +1360,7 @@ void ShellSurfaceBase::UpdateShadow() {
     shadow->SetContentBounds(GetShadowBounds());
     // Surfaces that can't be activated are usually menus and tooltips. Use a
     // small style shadow for them.
-    if (!activatable_)
+    if (!CanActivate())
       shadow->SetElevation(wm::kShadowElevationMenuOrTooltip);
     // We don't have rounded corners unless frame is enabled.
     if (!frame_enabled())
