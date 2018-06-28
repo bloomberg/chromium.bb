@@ -41,6 +41,7 @@
 #include "third_party/blink/renderer/core/editing/markers/suggestion_marker_properties.h"
 #include "third_party/blink/renderer/core/editing/testing/editing_test_base.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
+#include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 
@@ -311,6 +312,24 @@ TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderWords) {
   EXPECT_EQ(0u, marker.StartOffset());
   EXPECT_EQ(3u, marker.EndOffset());
   EXPECT_EQ(DocumentMarker::kTextMatch, marker.GetType());
+}
+
+TEST_F(DocumentMarkerControllerTest, RemoveSpellingMarkersUnderAllWords) {
+  SetBodyContent("<div contenteditable>foo</div>");
+  Element* div = GetDocument().QuerySelector("div");
+  Node* text = div->firstChild();
+  ASSERT_NE(text->GetLayoutObject(), nullptr);
+
+  const EphemeralRange marker_range(Position(text, 0), Position(text, 3));
+  text->GetLayoutObject()->ClearPaintInvalidationFlags();
+  MarkerController().AddSpellingMarker(marker_range);
+  EXPECT_TRUE(text->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  ASSERT_EQ(1u, MarkerController().Markers().size());
+
+  text->GetLayoutObject()->ClearPaintInvalidationFlags();
+  MarkerController().RemoveSpellingMarkersUnderWords({"foo"});
+  EXPECT_TRUE(text->GetLayoutObject()->ShouldCheckForPaintInvalidation());
+  ASSERT_EQ(0u, MarkerController().Markers().size());
 }
 
 TEST_F(DocumentMarkerControllerTest, RemoveSuggestionMarkerByTag) {
