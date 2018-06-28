@@ -196,11 +196,15 @@ void TaskQueueManagerImpl::UnregisterTaskQueueImpl(
 
   main_thread_only().selector.RemoveQueue(task_queue.get());
 
+  // After UnregisterTaskQueue returns no new tasks can be posted.
+  // It's important to call it first to avoid race condition between removing
+  // the task queue from various lists here and adding it to the same lists
+  // when posting a task.
+  task_queue->UnregisterTaskQueue();
+
   // Remove |task_queue| from the linked list if present.
   // This is O(n).  We assume this will be a relatively infrequent operation.
   RemoveFromIncomingImmediateWorkList(task_queue.get());
-
-  task_queue->UnregisterTaskQueue();
 
   // Add |task_queue| to |main_thread_only().queues_to_delete| so we can prevent
   // it from being freed while any of our structures hold hold a raw pointer to
