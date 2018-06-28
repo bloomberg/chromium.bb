@@ -154,7 +154,6 @@ class QUIC_EXPORT_PRIVATE QuicStream {
   // Adjust the flow control window according to new offset in |frame|.
   virtual void OnWindowUpdateFrame(const QuicWindowUpdateFrame& frame);
 
-  // Used in Chrome.
   int num_frames_received() const;
   int num_duplicate_frames_received() const;
 

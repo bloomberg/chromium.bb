@@ -425,6 +425,20 @@ TEST_F(QuicStreamTest, StreamFlowControlMultipleWindowUpdates) {
       QuicFlowControllerPeer::SendWindowOffset(stream_->flow_controller()));
 }
 
+TEST_F(QuicStreamTest, FrameStats) {
+  Initialize(kShouldProcessData);
+
+  EXPECT_EQ(0, stream_->num_frames_received());
+  EXPECT_EQ(0, stream_->num_duplicate_frames_received());
+  QuicStreamFrame frame(stream_->id(), false, 0, QuicStringPiece("."));
+  stream_->OnStreamFrame(frame);
+  EXPECT_EQ(1, stream_->num_frames_received());
+  EXPECT_EQ(0, stream_->num_duplicate_frames_received());
+  stream_->OnStreamFrame(frame);
+  EXPECT_EQ(2, stream_->num_frames_received());
+  EXPECT_EQ(1, stream_->num_duplicate_frames_received());
+}
+
 // Verify that when we receive a packet which violates flow control (i.e. sends
 // too much data on the stream) that the stream sequencer never sees this frame,
 // as we check for violation and close the connection early.
