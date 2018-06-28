@@ -4669,7 +4669,6 @@ crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass
 crbug.com/851746 [ Linux ] fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]
 crbug.com/851746 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]
 
-crbug.com/853360 [ Mac ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/css/input-search-padding.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ Failure ]
