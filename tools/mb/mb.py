@@ -916,14 +916,8 @@ class MetaBuildWrapper(object):
     return err, labels
 
   def GNCmd(self, subcommand, path, *args):
-    if self.platform == 'linux2':
-      subdir, exe = 'linux64', 'gn'
-    elif self.platform == 'darwin':
-      subdir, exe = 'mac', 'gn'
-    else:
-      subdir, exe = 'win', 'gn.exe'
-
-    gn_path = self.PathJoin(self.chromium_src_dir, 'buildtools', subdir, exe)
+    exe = 'gn.exe' if self.platform == 'win32' else 'gn'
+    gn_path = self.PathJoin(self.chromium_src_dir, 'third_party', 'gn', exe)
     return [gn_path, subcommand, path] + list(args)
 
 
