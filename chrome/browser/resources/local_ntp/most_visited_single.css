@@ -481,25 +481,6 @@ body.dark-theme .md-tile:active .md-menu::after {
   display: none;
 }
 
-.md-favicon.fallback {
-  align-items: center;
-  border-radius: 50%;
-  display: flex;
-  height: 24px;
-  justify-content: center;
-  width: 24px;
-}
-
-.fallback-letter {
-  color: white;
-  font-family: 'Roboto', arial, sans-serif;
-  font-size: 12px;
-  height: 16px;
-  line-height: 16px;
-  text-align: center;
-  width: 16px;
-}
-
 .md-title-container {
   overflow: hidden;
 }

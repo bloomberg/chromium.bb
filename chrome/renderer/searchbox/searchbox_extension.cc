@@ -184,15 +184,6 @@ v8::Local<v8::Object> GenerateMostVisitedItemData(
   if (!mv_item.favicon.spec().empty())
     builder.Set("faviconUrl", mv_item.favicon.spec());
 
-  if (mv_item.has_fallback_style) {
-    builder.Set(
-        "fallbackBackgroundColorRgba",
-        internal::RGBAColorToArray(isolate, mv_item.fallback_background_color));
-    builder.Set(
-        "fallbackTextColorRgba",
-        internal::RGBAColorToArray(isolate, mv_item.fallback_text_color));
-  }
-
   return builder.Build();
 }
 

@@ -37,22 +37,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "ui/gfx/color_utils.h"
 
-namespace {
-
-const int kSectionBorderAlphaTransparency = 80;
-
-// Converts SkColor to RGBAColor
-RGBAColor SkColorToRGBAColor(const SkColor& skColor) {
-  RGBAColor color;
-  color.r = SkColorGetR(skColor);
-  color.g = SkColorGetG(skColor);
-  color.b = SkColorGetB(skColor);
-  color.a = SkColorGetA(skColor);
-  return color;
-}
-
-}  // namespace
-
 InstantService::InstantService(Profile* profile) : profile_(profile) {
   // The initialization below depends on a typical set of browser threads. Skip
   // it if we are running in a unit test without the full suite.
@@ -247,12 +231,6 @@ void InstantService::OnURLsAvailable(
     item.source = tile.source;
     item.title_source = tile.title_source;
     item.data_generation_time = tile.data_generation_time;
-    if (tile.has_fallback_style) {
-      item.has_fallback_style = true;
-      item.fallback_background_color =
-          SkColorToRGBAColor(tile.fallback_background_color);
-      item.fallback_text_color = SkColorToRGBAColor(tile.fallback_text_color);
-    }
     most_visited_items_.push_back(item);
   }
 
@@ -270,6 +248,22 @@ void InstantService::NotifyAboutThemeInfo() {
   for (InstantServiceObserver& observer : observers_)
     observer.ThemeInfoChanged(*theme_info_);
 }
+
+namespace {
+
+const int kSectionBorderAlphaTransparency = 80;
+
+// Converts SkColor to RGBAColor
+RGBAColor SkColorToRGBAColor(const SkColor& sKColor) {
+  RGBAColor color;
+  color.r = SkColorGetR(sKColor);
+  color.g = SkColorGetG(sKColor);
+  color.b = SkColorGetB(sKColor);
+  color.a = SkColorGetA(sKColor);
+  return color;
+}
+
+}  // namespace
 
 void InstantService::BuildThemeInfo() {
   // Get theme information from theme service.

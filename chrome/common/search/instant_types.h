@@ -116,8 +116,6 @@ struct InstantMostVisitedItem {
   InstantMostVisitedItem(const InstantMostVisitedItem& other);
   ~InstantMostVisitedItem();
 
-  bool IsEquivalentTo(const InstantMostVisitedItem& rhs) const;
-
   // The URL of the Most Visited item.
   GURL url;
 
@@ -130,15 +128,6 @@ struct InstantMostVisitedItem {
 
   // The external URL of the favicon associated with this page.
   GURL favicon;
-
-  // True if a fallback icon should be used.
-  bool has_fallback_style;
-
-  // The fallback icon background color in RGBA format.
-  RGBAColor fallback_background_color;
-
-  // The fallback icon text color in RGBA format.
-  RGBAColor fallback_text_color;
 
   // The source of the item's |title|.
   ntp_tiles::TileTitleSource title_source;
