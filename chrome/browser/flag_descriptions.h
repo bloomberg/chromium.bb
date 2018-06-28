@@ -1272,6 +1272,9 @@ extern const char kChromeModernAlternateCardLayoutDescription[];
 extern const char kChromeModernDesignName[];
 extern const char kChromeModernDesignDescription[];
 
+extern const char kChromeModernFullRollName[];
+extern const char kChromeModernFullRollDescription[];
+
 extern const char kChromeMemexName[];
 extern const char kChromeMemexDescription[];
 
