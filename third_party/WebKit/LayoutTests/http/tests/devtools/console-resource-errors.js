@@ -9,8 +9,14 @@
   await TestRunner.evaluateInPagePromise(`
       function performActions()
       {
-          loadXHR();
-          loadIframe();
+          var image = document.createElement('img');
+          image.onerror = step2;
+          image.src = "unknown-scheme://foo";
+      }
+
+      function step2() {
+        loadXHR();
+        loadIframe();
       }
 
       function loadXHR()
