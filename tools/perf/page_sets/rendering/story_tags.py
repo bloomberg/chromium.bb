@@ -48,6 +48,8 @@ TOUGH_ANIMATION = Tag(
     'tough_animation', 'Tough animation stories')
 TOUGH_CANVAS = Tag(
     'tough_canvas', 'Tough canvas stories')
+TOUGH_COMPOSITOR = Tag(
+    'tough_compositor', 'Tough compositor stories')
 TOUGH_FILTERS = Tag(
     'tough_filters', 'Tough filters stories')
 TOUGH_IMAGE_DECODE = Tag(
