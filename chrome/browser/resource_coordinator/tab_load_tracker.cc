@@ -164,11 +164,11 @@ void TabLoadTracker::DidFailLoad(content::WebContents* web_contents) {
 void TabLoadTracker::OnPageAlmostIdle(content::WebContents* web_contents) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(resource_coordinator::IsPageAlmostIdleSignalEnabled());
-  // PageAlmostIdle signals can be arbitrarily delayed as they are asynchronous.
-  // As such, they can arrive after the web contents in question no longer
-  // exists.
-  if (!base::ContainsKey(tabs_, web_contents))
-    return;
+  // TabManager::ResourceCoordinatorSignalObserver filters late notifications
+  // so here we can assume the event pertains to a live web_contents and
+  // its most recent navigation.
+  DCHECK(base::ContainsKey(tabs_, web_contents));
+
   MaybeTransitionToLoaded(web_contents);
 }
 
