@@ -3165,6 +3165,9 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kIframeRole:
     case kImageRole:
     case kInputTimeRole:
+    case kLayoutTableRole:
+    case kLayoutTableColumnRole:
+    case kLayoutTableRowRole:
     case kListBoxRole:
     case kLogRole:
     case kMainRole:
@@ -3224,9 +3227,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     case kImageMapRole:
     case kInlineTextBoxRole:
     case kLabelRole:
-    case kLayoutTableRole:
-    case kLayoutTableColumnRole:
-    case kLayoutTableRowRole:
     case kLegendRole:
     case kListRole:
     case kListItemRole:
