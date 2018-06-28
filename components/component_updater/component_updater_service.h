@@ -151,6 +151,11 @@ using ServiceObserver = ComponentUpdateService::Observer;
 
 class OnDemandUpdater {
  public:
+  // The priority of the on demand update. Calls with |BACKGROUND| priority may
+  // be queued up but calls with |FOREGROUND| priority may be processed right
+  // away.
+  enum class Priority { BACKGROUND = 0, FOREGROUND = 1 };
+
   virtual ~OnDemandUpdater() {}
 
  private:
@@ -171,7 +176,9 @@ class OnDemandUpdater {
   // the update will be applied. The caller can subscribe to component update
   // service notifications and provide an optional callback to get the result
   // of the call. The function does not implement any cooldown interval.
-  virtual void OnDemandUpdate(const std::string& id, Callback callback) = 0;
+  virtual void OnDemandUpdate(const std::string& id,
+                              Priority priority,
+                              Callback callback) = 0;
 };
 
 // Creates the component updater.

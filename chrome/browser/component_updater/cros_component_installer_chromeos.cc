@@ -300,7 +300,8 @@ void CrOSComponentManager::StartInstall(
     ComponentUpdateService* cus,
     const std::string& id,
     update_client::Callback install_callback) {
-  cus->GetOnDemandUpdater().OnDemandUpdate(id, std::move(install_callback));
+  cus->GetOnDemandUpdater().OnDemandUpdate(
+      id, OnDemandUpdater::Priority::FOREGROUND, std::move(install_callback));
 }
 
 void CrOSComponentManager::FinishInstall(const std::string& name,

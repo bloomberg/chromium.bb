@@ -79,7 +79,8 @@ void VrAssetsComponentInstallerPolicy::UpdateComponent(
   // Make sure the component is registered.
   DCHECK(base::ContainsValue(cus->GetComponentIDs(), crx_id));
   cus->GetOnDemandUpdater().OnDemandUpdate(
-      crx_id, base::BindOnce([](update_client::Error error) { return; }));
+      crx_id, OnDemandUpdater::Priority::FOREGROUND,
+      base::BindOnce([](update_client::Error error) { return; }));
 #endif  // BUILDFLAG(USE_VR_ASSETS_COMPONENT)
 }
 

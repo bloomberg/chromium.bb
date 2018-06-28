@@ -255,6 +255,7 @@ void CrxUpdateService::MaybeThrottle(const std::string& id,
 }
 
 void CrxUpdateService::OnDemandUpdate(const std::string& id,
+                                      Priority priority,
                                       Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -267,7 +268,7 @@ void CrxUpdateService::OnDemandUpdate(const std::string& id,
     return;
   }
 
-  OnDemandUpdateInternal(id, std::move(callback));
+  OnDemandUpdateInternal(id, priority, std::move(callback));
 }
 
 bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
@@ -284,23 +285,32 @@ bool CrxUpdateService::OnDemandUpdateWithCooldown(const std::string& id) {
       return false;
   }
 
-  OnDemandUpdateInternal(id, Callback());
+  OnDemandUpdateInternal(id, Priority::FOREGROUND, Callback());
   return true;
 }
 
 void CrxUpdateService::OnDemandUpdateInternal(const std::string& id,
+                                              Priority priority,
                                               Callback callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   UMA_HISTOGRAM_ENUMERATION("ComponentUpdater.Calls", UPDATE_TYPE_MANUAL,
                             UPDATE_TYPE_COUNT);
-  update_client_->Install(
-      id,
-      base::BindOnce(&CrxUpdateService::GetCrxComponents,
-                     base::Unretained(this)),
-      base::BindOnce(&CrxUpdateService::OnUpdateComplete,
-                     base::Unretained(this), std::move(callback),
-                     base::TimeTicks::Now()));
+
+  auto crx_data_callback = base::BindOnce(&CrxUpdateService::GetCrxComponents,
+                                          base::Unretained(this));
+  auto update_complete_callback = base::BindOnce(
+      &CrxUpdateService::OnUpdateComplete, base::Unretained(this),
+      std::move(callback), base::TimeTicks::Now());
+
+  if (priority == Priority::FOREGROUND)
+    update_client_->Install(id, std::move(crx_data_callback),
+                            std::move(update_complete_callback));
+  else if (priority == Priority::BACKGROUND)
+    update_client_->Update({id}, std::move(crx_data_callback), false,
+                           std::move(update_complete_callback));
+  else
+    NOTREACHED();
 }
 
 bool CrxUpdateService::CheckForUpdates(

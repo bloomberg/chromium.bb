@@ -225,7 +225,8 @@ void PluginObserver::BlockedComponentUpdatedPlugin(
   component_observers_[component_observer.get()] =
       std::move(component_observer);
   g_browser_process->component_updater()->GetOnDemandUpdater().OnDemandUpdate(
-      identifier, component_updater::Callback());
+      identifier, component_updater::OnDemandUpdater::Priority::FOREGROUND,
+      component_updater::Callback());
 }
 
 void PluginObserver::RemoveComponentObserver(

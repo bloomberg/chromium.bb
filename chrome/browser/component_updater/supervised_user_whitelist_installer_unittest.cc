@@ -143,7 +143,9 @@ class MockComponentUpdateService : public ComponentUpdateService,
   }
 
   // OnDemandUpdater implementation:
-  void OnDemandUpdate(const std::string& crx_id, Callback callback) override {
+  void OnDemandUpdate(const std::string& crx_id,
+                      Priority priority,
+                      Callback callback) override {
     on_demand_update_called_ = true;
 
     if (!component_) {
@@ -151,6 +153,7 @@ class MockComponentUpdateService : public ComponentUpdateService,
       return;
     }
 
+    EXPECT_EQ(OnDemandUpdater::Priority::FOREGROUND, priority);
     EXPECT_EQ(GetCrxComponentID(*component_), crx_id);
   }
 
