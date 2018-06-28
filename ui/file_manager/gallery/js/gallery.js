@@ -88,7 +88,7 @@ function Gallery(volumeManager) {
    * @const
    */
   this.filenameEdit_ = /** @type {HTMLInputElement} */
-      (queryRequiredElement('input', this.filenameSpacer_));
+      (queryRequiredElement('#rename-input', this.filenameSpacer_));
 
   this.filenameCanvas_ = document.createElement('canvas');
   this.filenameCanvasContext_ = this.filenameCanvas_.getContext('2d');

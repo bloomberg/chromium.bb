@@ -11,6 +11,8 @@
         --cr-input-error-color: var(--google-red-600);
         --cr-input-focus-color: var(--google-blue-600);
         display: block;
+        /* Avoid showing outline when focus() programmatically called multiple
+           times in a row. */
         outline: none;
       }
 
@@ -46,6 +48,7 @@
         line-height: inherit;
         outline: none;
         text-align: inherit;
+        text-overflow: ellipsis;
         width: 100%;
 
         /**

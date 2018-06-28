@@ -10,6 +10,7 @@
 
     <meta name="google" value="notranslate">
 
+    <link rel="import" href="chrome://resources/html/polymer.html">
     <link rel="stylesheet" href="chrome://resources/css/action_link.css">
     <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
     <link rel="stylesheet" href="foreground/css/list.css">
@@ -25,32 +26,38 @@
     <link rel="stylesheet" href="chrome-extension://fbjakikfhfdajcamjleinfciajelkpek/cws_widget/cws_widget_container.css">
 
     <style is="custom-style">
-      #search-box paper-input-container {
-        --paper-input-container-input: {
-          color: inherit;
-          font: inherit;
-          margin: 0.5em 0 0.25em;
-          padding: 0;
-        };
-        --paper-input-container-underline: {
-          background-color: rgba(255, 255, 0, 0.3);
-        };
-        --paper-input-container-underline-focus: {
-          background-color: white;
-          height: 1px;
-        };
+      #search-box cr-input {
+        --cr-input-focus-color: white;
+        --cr-input-container: {
+          border-radius: 0;
+        }
+        --cr-input-error-display: none;
+        --cr-input-input: {
+          background-color: transparent;
+          -webkit-padding-end: 20px;
+          -webkit-padding-start: 0;
+          border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        --cr-input-placeholder-color: rgba(255, 255, 255, 0.5);
+        display: inline-block;
+        transition: width 200ms ease;
+        vertical-align: middle;
+        width: 0;
       }
 
-      .dialog-footer paper-input-container {
-        --paper-input-container-input: {
-          font: inherit;
-        };
-        --paper-input-container-underline: {
-          background-color: rgb(207, 207, 207);
-        };
-        --paper-input-container-underline-focus: {
-          background-color: rgb(51, 103, 214);
-        };
+      .dialog-footer cr-input {
+        --cr-input-container: {
+          border-radius: 0;
+        }
+        --cr-input-error-display: none;
+        --cr-input-input: {
+          background-color: transparent;
+          border-bottom: 1px solid var(--paper-grey-800);
+          -webkit-padding-end: 0;
+          -webkit-padding-start: 0;
+          padding-bottom: 2px;
+        }
+        width: 100%;
       }
 
       paper-progress {
@@ -337,12 +344,10 @@
           <div class="icon"></div>
         </button>
         <div id="search-box">
-          <paper-input-container no-label-float>
-            <input is="iron-input" type="search" tabindex="14" slot="input"
-                   i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL"
-                   hidden>
+          <cr-input type="search" tabindex="14" hidden
+              i18n-values="aria-label:SEARCH_TEXT_LABEL;placeholder:SEARCH_TEXT_LABEL">
             <span class="clear" slot="suffix"></span>
-          </paper-input-container>
+          </cr-input>
         </div>
         <button id="refresh-button" class="icon-button menu-button" tabindex="15" hidden
                 i18n-values="aria-label:REFRESH_BUTTON_LABEL"
@@ -503,11 +508,9 @@
         </button>
         <select class="file-type" hidden tabindex="4"></select>
         <div id="filename-input-box" visibleif="saveas-file">
-          <paper-input-container no-label-float>
-            <input id="filename-input-textbox" is="iron-input" tabindex="5"
-                   class="entry-name" type="text" spellcheck="false"
-                   slot="input" i18n-values="placeholder:FILENAME_LABEL">
-          </paper-input-container>
+          <cr-input id="filename-input-textbox" tabindex="5" class="entry-name"
+              type="text" spellcheck="false"
+              i18n-values="placeholder:FILENAME_LABEL"></cr-input>
         </div>
         <div class="preparing-label" i18n-content="PREPARING_LABEL"></div>
         <div class="progress-bar"><div class="progress-track"></div></div>

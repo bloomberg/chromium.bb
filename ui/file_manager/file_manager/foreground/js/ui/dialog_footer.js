@@ -67,9 +67,9 @@ function DialogFooter(dialogType, container, filenameInput) {
 
   /**
    * @const
-   * @type {!Element}
+   * @type {!CrInputElement}
    */
-  this.filenameInput = filenameInput;
+  this.filenameInput = /** @type {!CrInputElement} */ (filenameInput);
 
   // Initialize the element styles.
   container.classList.add('button-panel');
@@ -104,9 +104,8 @@ DialogFooter.prototype = {
  */
 DialogFooter.findDialogFooter = function(dialogType, document) {
   return new DialogFooter(
-      dialogType,
-      queryRequiredElement('.dialog-footer'),
-      queryRequiredElement('#filename-input-box input'));
+      dialogType, queryRequiredElement('.dialog-footer'),
+      queryRequiredElement('#filename-input-box cr-input'));
 };
 
 /**
@@ -215,12 +214,13 @@ DialogFooter.prototype.onFilenameInputKeyDown_ = function(event) {
 };
 
 DialogFooter.prototype.selectTargetNameInFilenameInput = function() {
-  this.filenameInput.focus();
+  if (!this.filenameInput.hasAttribute('focused_'))
+    this.filenameInput.focus();
   var selectionEnd = this.filenameInput.value.lastIndexOf('.');
   if (selectionEnd == -1) {
-    this.filenameInput.select();
+    this.filenameInput.inputElement.select();
   } else {
-    this.filenameInput.selectionStart = 0;
-    this.filenameInput.selectionEnd = selectionEnd;
+    this.filenameInput.inputElement.selectionStart = 0;
+    this.filenameInput.inputElement.selectionEnd = selectionEnd;
   }
 };

@@ -44,8 +44,8 @@ function SearchBox(element, searchButton) {
    * Text input of the search box.
    * @type {!HTMLInputElement}
    */
-  this.inputElement = /** @type {!HTMLInputElement} */ (
-      element.querySelector('input'));
+  this.inputElement =
+      /** @type {!HTMLInputElement} */ (element.querySelector('cr-input'));
 
   /**
    * Clear button of the search box.

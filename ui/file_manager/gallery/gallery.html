@@ -5,6 +5,7 @@
   -->
 <html i18n-values="dir:textdirection">
 <head>
+  <link rel="import" href="chrome://resources/html/polymer.html">
   <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
   <link rel="stylesheet" href="../file_manager/foreground/css/list.css">
   <link rel="stylesheet" href="../file_manager/foreground/css/common.css">
@@ -12,12 +13,12 @@
   <link rel="stylesheet" href="../file_manager/foreground/css/share_dialog.css">
   <link rel="stylesheet" href="css/gallery.css">
 
-  <script src="chrome://resources/js/polymer_config.js"></script>
   <script src="chrome://resources/js/util.js"></script>
 
   <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+  <link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
+  <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
-  <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-progress/paper-progress.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-ripple/paper-ripple.html">
   <link rel="import" href="chrome://resources/polymer/v1_0/paper-slider/paper-slider.html">
@@ -41,13 +42,6 @@
       --cr-checkbox-size: 14px;
       --cr-checkbox-unchecked-box-color: white;
     }
-    paper-input-container {
-      --paper-input-container-color: rgba(255, 255, 255, 0.2);
-      --paper-input-container-focus-color: white;
-      --paper-input-container-underline-focus: {
-        height: 1px;
-      }
-    }
     paper-slider {
       --paper-slider-active-color: white;
       --paper-slider-container-color: rgba(255, 255, 255, 0.2);
@@ -66,27 +60,35 @@
         opacity: 0.4;
       };
     }
-    .edit-modal paper-input {
-      --paper-input-container-focus-color: white;
-      --paper-input-container-underline-focus: {
-        height: 1px;
-      };
-      --paper-input-container: {
-        color: rgba(255, 255, 0, 0.54);
-        padding: 7px 0 8px 0;
-      };
-      --paper-input-container-input: {
-        color: white;
-        font-size: 13px;
-        padding: 0;
-      };
-      --paper-input-container-label: {
+
+    cr-input {
+      --cr-form-field-label: {
         color: rgba(255, 255, 255, 0.54);
-        font-size: 16px;
-      };
-      --paper-font-caption: {
-        height: 17px;
-      };
+        display: block;
+        font-size: var(--cr-form-field-label-font-size);
+        letter-spacing: 0.4px;
+        line-height: var(--cr-form-field-label-font-size);
+        margin-bottom: 0;
+      }
+      --cr-input-container: {
+        border-radius: 0;
+      }
+      --cr-input-input: {
+        -webkit-padding-end: 0;
+        -webkit-padding-start: 0;
+        background-color: transparent;
+        border-bottom: 1px solid var(--paper-grey-800);
+      }
+      --cr-input-error-display: none;
+      --cr-input-focus-color: white;
+      color: white;
+    }
+
+    #rename-input {
+      font-size: 16px;
+      margin: 8px 0;
+      min-width: 160px;
+      text-overflow: ellipsis;
     }
   </style>
 </head>
@@ -97,10 +99,7 @@
     </div>
     <div id="top-toolbar" class="toolbar top tool dimmable">
       <div class="filename-spacer">
-        <!-- Change this to use paper-input after ChromeVox supports shadow DOM. -->
-        <paper-input-container id="rename-input" no-label-float>
-          <input spellcheck="false" slot="input">
-        </paper-input-container>
+        <cr-input id="rename-input" spellcheck="false"></cr-input>
       </div>
       <div class="button-spacer">
         <!-- Use button element for edit button to implement toggle button with

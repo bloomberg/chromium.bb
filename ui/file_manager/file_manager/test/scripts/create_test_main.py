@@ -94,6 +94,10 @@ def includes2scripts(include_filename):
 main_html = (read('main.html')
              .replace('chrome://resources/css/action_link.css',
                       '../../webui/resources/css/action_link.css')
+             .replace('<link rel="import" '
+                      'href="chrome://resources/html/polymer.html">',
+                      '<script src="../../webui/resources/js/'
+                      'polymer_config.js"></script>')
              .replace('href="', 'href="' + ROOT)
              .replace('src="', 'src="' + ROOT)
              .replace(ROOT + 'chrome://resources/css/text_defaults.css',

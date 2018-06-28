@@ -162,25 +162,19 @@ function searchDownloads(searchTerm, expectedResults) {
     // Focus the search box.
     function(results) {
       appId = results.windowId;
-      remoteCall.callRemoteTestUtil('fakeEvent',
-                                    appId,
-                                    ['#search-box input', 'focus'],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
     },
     // Input a text.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil('inputText',
-                                    appId,
-                                    ['#search-box input', searchTerm],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'inputText', appId, ['#search-box cr-input', searchTerm], this.next);
     },
     // Notify the element of the input.
     function() {
-      remoteCall.callRemoteTestUtil('fakeEvent',
-                                    appId,
-                                    ['#search-box input', 'input'],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId, ['#search-box cr-input', 'input'], this.next);
     },
     function(result) {
       remoteCall.waitForFileListChange(appId, BASIC_LOCAL_ENTRY_SET.length).
@@ -225,25 +219,19 @@ testcase.fileSearchNotFound = function() {
     // Focus the search box.
     function(results) {
       appId = results.windowId;
-      remoteCall.callRemoteTestUtil('fakeEvent',
-                                    appId,
-                                    ['#search-box input', 'focus'],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
     },
     // Input a text.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.callRemoteTestUtil('inputText',
-                                    appId,
-                                    ['#search-box input', searchTerm],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'inputText', appId, ['#search-box cr-input', searchTerm], this.next);
     },
     // Notify the element of the input.
     function() {
-      remoteCall.callRemoteTestUtil('fakeEvent',
-                                    appId,
-                                    ['#search-box input', 'input'],
-                                    this.next);
+      remoteCall.callRemoteTestUtil(
+          'fakeEvent', appId, ['#search-box cr-input', 'input'], this.next);
     },
     function(result) {
       remoteCall.waitForElement(appId, ['#empty-folder-label b']).

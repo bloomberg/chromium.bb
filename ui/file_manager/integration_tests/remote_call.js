@@ -434,27 +434,29 @@ RemoteCallGallery.prototype.waitForSlideImage =
 
   return repeatUntil(function() {
     var query = '.gallery[mode="slide"] .image-container > .image';
-    return Promise.all([
-        this.waitForElement(windowId, '.filename-spacer input'),
-        this.waitForElement(windowId, query)
-    ]).then(function(args) {
-      var nameBox = args[0];
-      var image = args[1];
-      var actual = {};
-      if (width && image)
-        actual.width = image.imageWidth;
-      if (height && image)
-        actual.height = image.imageHeight;
-      if (name && nameBox)
-        actual.name = nameBox.value;
+    return Promise
+        .all([
+          this.waitForElement(windowId, '#rename-input'),
+          this.waitForElement(windowId, query)
+        ])
+        .then(function(args) {
+          var nameBox = args[0];
+          var image = args[1];
+          var actual = {};
+          if (width && image)
+            actual.width = image.imageWidth;
+          if (height && image)
+            actual.height = image.imageHeight;
+          if (name && nameBox)
+            actual.name = nameBox.value;
 
-      if (!chrome.test.checkDeepEq(expected, actual)) {
-        return pending(
-            caller, 'Slide mode state, expected is %j, actual is %j.', expected,
-            actual);
-      }
-      return actual;
-    });
+          if (!chrome.test.checkDeepEq(expected, actual)) {
+            return pending(
+                caller, 'Slide mode state, expected is %j, actual is %j.',
+                expected, actual);
+          }
+          return actual;
+        });
   }.bind(this));
 };
 

@@ -48,7 +48,7 @@ function ImageEditorToolbar(
 
     this.wrapper_.appendChild(actionButtonsLayer);
   }
-};
+}
 
 ImageEditorToolbar.prototype.__proto__ = cr.EventTarget.prototype;
 
@@ -219,7 +219,7 @@ ImageEditorToolbar.prototype.addInput = function(
   var input = /** @type {!HTMLElement} */ (document.createElement('div'));
   input.classList.add('input', name);
 
-  var text = document.createElement('paper-input');
+  var text = document.createElement('cr-input');
   text.setAttribute('label', strf(title));
   text.classList.add('text', name);
   text.value = value;
@@ -231,10 +231,10 @@ ImageEditorToolbar.prototype.addInput = function(
   input.appendChild(text);
 
   if (opt_unit) {
-    var unit_label = document.createElement('span');
-    unit_label.textContent = opt_unit;
-    unit_label.classList.add('unit_label');
-    input.appendChild(unit_label);
+    var unitLabel = document.createElement('span');
+    unitLabel.textContent = opt_unit;
+    unitLabel.classList.add('unit_label');
+    input.appendChild(unitLabel);
   }
 
   input.name = name;
@@ -343,7 +343,7 @@ ImageEditorToolbar.prototype.show = function(on) {
   // Focus the first input on the toolbar.
   if (on) {
     var input = this.container_.querySelector(
-        'button, paper-button, input, paper-input, paper-slider');
+        'button, paper-button, input, paper-slider, cr-input');
     if (input)
       input.focus();
   }

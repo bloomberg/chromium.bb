@@ -300,7 +300,8 @@ testcase.checkContextMenusForInputElements = function() {
       appId = results.windowId;
       remoteCall.callRemoteTestUtil(
           'queryAllElements', appId,
-          ['input[type=text], input[type=search], textarea'], this.next);
+          ['input[type=text], input[type=search], textarea, cr-input'],
+          this.next);
     },
     // Focus the search box.
     function(elements) {
@@ -311,24 +312,24 @@ testcase.checkContextMenusForInputElements = function() {
       }
 
       remoteCall.callRemoteTestUtil(
-          'fakeEvent', appId, ['#search-box input', 'focus'], this.next);
+          'fakeEvent', appId, ['#search-box cr-input', 'focus'], this.next);
     },
     // Input a text.
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.callRemoteTestUtil(
-          'inputText', appId, ['#search-box input', 'test.pdf'], this.next);
+          'inputText', appId, ['#search-box cr-input', 'test.pdf'], this.next);
     },
     // Notify the element of the input.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeEvent', appId, ['#search-box input', 'input'], this.next);
+          'fakeEvent', appId, ['#search-box cr-input', 'input'], this.next);
     },
     // Do the touch.
     function(result) {
       chrome.test.assertTrue(result);
       remoteCall.callRemoteTestUtil(
-          'fakeTouchClick', appId, ['#search-box input'], this.next);
+          'fakeTouchClick', appId, ['#search-box cr-input'], this.next);
     },
     // Context menu must be hidden if touch induced.
     function(result) {
@@ -339,7 +340,7 @@ testcase.checkContextMenusForInputElements = function() {
     // Do the right click.
     function() {
       remoteCall.callRemoteTestUtil(
-          'fakeMouseRightClick', appId, ['#search-box input'], this.next);
+          'fakeMouseRightClick', appId, ['#search-box cr-input'], this.next);
     },
     // Context menu must be visible if mouse induced.
     function(result) {

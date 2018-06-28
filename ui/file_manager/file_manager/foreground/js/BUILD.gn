@@ -286,6 +286,7 @@ js_library("file_manager_commands") {
     ":volume_manager_wrapper",
     "ui:directory_tree",
     "ui:file_manager_ui",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
 }
 
