@@ -99,7 +99,9 @@ LayoutView::LayoutView(Document* document)
       layout_counter_count_(0),
       hit_test_count_(0),
       hit_test_cache_hits_(0),
-      hit_test_cache_(HitTestCache::Create()) {
+      hit_test_cache_(HitTestCache::Create()),
+      autosize_h_scrollbar_mode_(kScrollbarAuto),
+      autosize_v_scrollbar_mode_(kScrollbarAuto) {
   // init LayoutObject attributes
   SetInline(false);
 
@@ -629,12 +631,28 @@ LayoutRect LayoutView::OverflowClipRect(
   return rect;
 }
 
+void LayoutView::SetAutosizeScrollbarModes(ScrollbarMode h_mode,
+                                           ScrollbarMode v_mode) {
+  DCHECK_EQ(v_mode == kScrollbarAuto, h_mode == kScrollbarAuto);
+  autosize_v_scrollbar_mode_ = v_mode;
+  autosize_h_scrollbar_mode_ = h_mode;
+}
+
 void LayoutView::CalculateScrollbarModes(ScrollbarMode& h_mode,
                                          ScrollbarMode& v_mode) const {
 #define RETURN_SCROLLBAR_MODE(mode) \
   {                                 \
     h_mode = v_mode = mode;         \
     return;                         \
+  }
+
+  // FrameViewAutoSizeInfo manually controls the appearance of the main frame's
+  // scrollbars so defer to those if we're in AutoSize mode.
+  if (AutosizeVerticalScrollbarMode() != kScrollbarAuto ||
+      AutosizeHorizontalScrollbarMode() != kScrollbarAuto) {
+    h_mode = AutosizeHorizontalScrollbarMode();
+    v_mode = AutosizeVerticalScrollbarMode();
+    return;
   }
 
   LocalFrame* frame = GetFrame();

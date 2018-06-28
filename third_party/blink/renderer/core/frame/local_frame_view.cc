@@ -611,24 +611,6 @@ scoped_refptr<base::SingleThreadTaskRunner> LocalFrameView::GetTimerTaskRunner()
   return frame_->GetTaskRunner(TaskType::kInternalDefault);
 }
 
-void LocalFrameView::SetCanHaveScrollbars(bool can_have_scrollbars) {
-  can_have_scrollbars_ = can_have_scrollbars;
-
-  ScrollbarMode new_vertical_mode = EffectiveVerticalScrollbarMode();
-  if (can_have_scrollbars && new_vertical_mode == kScrollbarAlwaysOff)
-    new_vertical_mode = kScrollbarAuto;
-  else if (!can_have_scrollbars)
-    new_vertical_mode = kScrollbarAlwaysOff;
-
-  ScrollbarMode new_horizontal_mode = EffectiveHorizontalScrollbarMode();
-  if (can_have_scrollbars && new_horizontal_mode == kScrollbarAlwaysOff)
-    new_horizontal_mode = kScrollbarAuto;
-  else if (!can_have_scrollbars)
-    new_horizontal_mode = kScrollbarAlwaysOff;
-
-  SetScrollbarModes(new_horizontal_mode, new_vertical_mode);
-}
-
 bool LocalFrameView::ShouldUseCustomScrollbars(
     Element*& custom_scrollbar_element) const {
   custom_scrollbar_element = nullptr;
@@ -996,36 +978,19 @@ void LocalFrameView::UpdateLayout() {
           }
         }
 
-        ScrollbarMode h_mode;
-        ScrollbarMode v_mode;
-        GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
-
-        // Now set our scrollbar state for the layout.
-        ScrollbarMode current_h_mode = EffectiveHorizontalScrollbarMode();
-        ScrollbarMode current_v_mode = EffectiveVerticalScrollbarMode();
-
         if (first_layout_) {
           first_layout_ = false;
           last_viewport_size_ = GetLayoutSize(kIncludeScrollbars);
           last_zoom_factor_ = GetLayoutView()->Style()->Zoom();
 
-          // Set the initial vMode to AlwaysOn if we're auto.
+          ScrollbarMode h_mode;
+          ScrollbarMode v_mode;
+          GetLayoutView()->CalculateScrollbarModes(h_mode, v_mode);
           if (v_mode == kScrollbarAuto) {
-            // This causes a vertical scrollbar to appear.
-            SetVerticalScrollbarMode(kScrollbarAlwaysOn);
             GetLayoutView()
                 ->GetScrollableArea()
                 ->ForceVerticalScrollbarForFirstLayout();
           }
-          // Set the initial hMode to AlwaysOff if we're auto.
-          if (h_mode == kScrollbarAuto) {
-            // This causes a horizontal scrollbar to disappear.
-            SetHorizontalScrollbarMode(kScrollbarAlwaysOff);
-          }
-
-          SetScrollbarModes(h_mode, v_mode);
-        } else if (h_mode != current_h_mode || v_mode != current_v_mode) {
-          SetScrollbarModes(h_mode, v_mode);
         }
 
         LayoutSize old_size = size_;
@@ -3181,8 +3146,7 @@ void LocalFrameView::DisableAutoSizeMode() {
   ScheduleRelayout();
 
   // Since autosize mode forces the scrollbar mode, change them to being auto.
-  SetAutosizeScrollbarModes(kScrollbarAuto, kScrollbarAuto);
-  SetScrollbarModes(kScrollbarAuto, kScrollbarAuto);
+  GetLayoutView()->SetAutosizeScrollbarModes(kScrollbarAuto, kScrollbarAuto);
   auto_size_info_.Clear();
 }
 
@@ -3795,55 +3759,6 @@ PaintLayer* LocalFrameView::Layer() const {
 
 IntSize LocalFrameView::MaximumScrollOffsetInt() const {
   return IntSize();
-}
-
-void LocalFrameView::SetScrollbarModes(ScrollbarMode horizontal_mode,
-                                       ScrollbarMode vertical_mode) {
-  bool needs_update = false;
-
-  // If the page's overflow setting has disabled scrolling, do not allow
-  // anything to override that setting, http://crbug.com/426447
-  LayoutObject* viewport = ViewportLayoutObject();
-  if (viewport && !ShouldIgnoreOverflowHidden()) {
-    if (viewport->Style()->OverflowX() == EOverflow::kHidden)
-      horizontal_mode = kScrollbarAlwaysOff;
-    if (viewport->Style()->OverflowY() == EOverflow::kHidden)
-      vertical_mode = kScrollbarAlwaysOff;
-  }
-
-  if (horizontal_mode != horizontal_scrollbar_mode_) {
-    horizontal_scrollbar_mode_ = horizontal_mode;
-    needs_update = true;
-  }
-
-  if (vertical_mode != vertical_scrollbar_mode_) {
-    vertical_scrollbar_mode_ = vertical_mode;
-    needs_update = true;
-  }
-
-  if (!needs_update)
-    return;
-
-  if (GetScrollingCoordinator())
-    GetScrollingCoordinator()->UpdateUserInputScrollable(this);
-}
-
-ScrollbarMode LocalFrameView::EffectiveHorizontalScrollbarMode() const {
-  // If we're autosizing, override the current scrollbar mode to whatever the
-  // frame autosizer specifies.
-  if (AutosizeHorizontalScrollbarMode() != kScrollbarAuto)
-    return AutosizeHorizontalScrollbarMode();
-
-  return horizontal_scrollbar_mode_;
-}
-
-ScrollbarMode LocalFrameView::EffectiveVerticalScrollbarMode() const {
-  // If we're autosizing, override the current scrollbar mode to whatever the
-  // frame autosizer specifies.
-  if (AutosizeVerticalScrollbarMode() != kScrollbarAuto)
-    return AutosizeVerticalScrollbarMode();
-
-  return vertical_scrollbar_mode_;
 }
 
 IntSize LocalFrameView::VisibleContentSize(

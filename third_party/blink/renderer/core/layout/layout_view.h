@@ -158,6 +158,15 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
       OverlayScrollbarClipBehavior =
           kIgnorePlatformOverlayScrollbarSize) const override;
 
+  // If either direction has a non-auto mode, the other must as well.
+  void SetAutosizeScrollbarModes(ScrollbarMode h_mode, ScrollbarMode v_mode);
+  ScrollbarMode AutosizeHorizontalScrollbarMode() const {
+    return autosize_h_scrollbar_mode_;
+  }
+  ScrollbarMode AutosizeVerticalScrollbarMode() const {
+    return autosize_v_scrollbar_mode_;
+  }
+
   void CalculateScrollbarModes(ScrollbarMode& h_mode,
                                ScrollbarMode& v_mode) const;
 
@@ -316,6 +325,12 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   unsigned hit_test_count_;
   unsigned hit_test_cache_hits_;
   Persistent<HitTestCache> hit_test_cache_;
+
+  // FrameViewAutoSizeInfo controls scrollbar appearance manually rather than
+  // relying on layout. These members are used to override the ScrollbarModes
+  // calculated from style. kScrollbarAuto disables the override.
+  ScrollbarMode autosize_h_scrollbar_mode_;
+  ScrollbarMode autosize_v_scrollbar_mode_;
 
   Vector<IntRect> tickmarks_override_;
 };

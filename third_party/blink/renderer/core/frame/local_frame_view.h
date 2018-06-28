@@ -134,11 +134,9 @@ class CORE_EXPORT LocalFrameView final
 
   LayoutView* GetLayoutView() const;
 
-  // If false, prevents scrollbars on the viewport even if web content would
-  // make them appear. Also prevents user-input scrolls (but not programmatic
-  // scrolls).
-  // This API is root-layer-scrolling-aware (affects root PLSA in RLS mode).
-  void SetCanHaveScrollbars(bool);
+  void SetCanHaveScrollbars(bool can_have_scrollbars) {
+    can_have_scrollbars_ = can_have_scrollbars;
+  }
   bool CanHaveScrollbars() const { return can_have_scrollbars_; }
   bool VisualViewportSuppliesScrollbars();
 
@@ -484,24 +482,6 @@ class CORE_EXPORT LocalFrameView final
   // StyleChanged whenever window focus is changed.
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
-
-  // Functions for setting and retrieving the scrolling mode in each axis
-  // (horizontal/vertical). The mode has values of AlwaysOff, AlwaysOn, and
-  // Auto. AlwaysOff means never show a scrollbar, AlwaysOn means always show a
-  // scrollbar.  Auto means show a scrollbar only when one is needed.
-  // Note that for platforms with native widgets, these modes are considered
-  // advisory. In other words the underlying native widget may choose not to
-  // honor the requested modes.
-  void SetScrollbarModes(ScrollbarMode horizontal_mode,
-                         ScrollbarMode vertical_mode);
-  void SetHorizontalScrollbarMode(ScrollbarMode mode) {
-    SetScrollbarModes(mode, vertical_scrollbar_mode_);
-  }
-  void SetVerticalScrollbarMode(ScrollbarMode mode) {
-    SetScrollbarModes(horizontal_scrollbar_mode_, mode);
-  }
-  ScrollbarMode EffectiveHorizontalScrollbarMode() const;
-  ScrollbarMode EffectiveVerticalScrollbarMode() const;
 
   // The visible content rect has a location that is the scrolled offset of
   // the document. The width and height are the layout viewport width and
