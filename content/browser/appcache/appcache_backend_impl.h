@@ -59,13 +59,6 @@ class CONTENT_EXPORT AppCacheBackendImpl {
   using HostMap = base::hash_map<int, std::unique_ptr<AppCacheHost>>;
   const HostMap& hosts() { return hosts_; }
 
-  // Methods to support cross site navigations. Hosts are transferred
-  // from process to process accordingly, deparented from the old
-  // processes backend and reparented to the new.
-  std::unique_ptr<AppCacheHost> TransferHostOut(int host_id);
-  void TransferHostIn(int new_host_id, std::unique_ptr<AppCacheHost> host);
-
-  // PlzNavigate
   // The AppCacheHost is precreated by the AppCacheNavigationHandleCore class
   // when a navigation is initiated. We register the host with the backend in
   // this function and ignore registrations for this host id from the renderer.

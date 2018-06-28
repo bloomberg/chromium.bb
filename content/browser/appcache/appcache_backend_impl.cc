@@ -126,39 +126,8 @@ void AppCacheBackendImpl::GetResourceList(
   host->GetResourceList(resource_infos);
 }
 
-std::unique_ptr<AppCacheHost> AppCacheBackendImpl::TransferHostOut(
-    int host_id) {
-  auto found = hosts_.find(host_id);
-  if (found == hosts_.end()) {
-    NOTREACHED();
-    return std::unique_ptr<AppCacheHost>();
-  }
-
-  std::unique_ptr<AppCacheHost> transferree = std::move(found->second);
-
-  // Put a new empty host in its place.
-  found->second = std::make_unique<AppCacheHost>(host_id, frontend_, service_);
-
-  // We give up ownership.
-  transferree->PrepareForTransfer();
-  return transferree;
-}
-
-void AppCacheBackendImpl::TransferHostIn(int new_host_id,
-                                         std::unique_ptr<AppCacheHost> host) {
-  auto found = hosts_.find(new_host_id);
-  if (found == hosts_.end()) {
-    NOTREACHED();
-    return;
-  }
-
-  host->CompleteTransfer(new_host_id, frontend_);
-  found->second = std::move(host);
-}
-
 void AppCacheBackendImpl::RegisterPrecreatedHost(
     std::unique_ptr<AppCacheHost> host) {
-  DCHECK(IsBrowserSideNavigationEnabled());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   DCHECK(host.get());
