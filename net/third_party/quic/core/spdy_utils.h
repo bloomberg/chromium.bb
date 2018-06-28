@@ -25,12 +25,12 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
   static bool ExtractContentLengthFromHeaders(int64_t* content_length,
                                               spdy::SpdyHeaderBlock* headers);
 
-  // Copies a list of headers to a spdy::SpdyHeaderBlock.
+  // Copies a list of headers to a SpdyHeaderBlock.
   static bool CopyAndValidateHeaders(const QuicHeaderList& header_list,
                                      int64_t* content_length,
                                      spdy::SpdyHeaderBlock* headers);
 
-  // Copies a list of headers to a spdy::SpdyHeaderBlock.
+  // Copies a list of headers to a SpdyHeaderBlock.
   static bool CopyAndValidateTrailers(const QuicHeaderList& header_list,
                                       size_t* final_byte_offset,
                                       spdy::SpdyHeaderBlock* trailers);
@@ -42,7 +42,7 @@ class QUIC_EXPORT_PRIVATE SpdyUtils {
   static QuicString GetPromisedUrlFromHeaders(
       const spdy::SpdyHeaderBlock& headers);
 
-  // Returns hostname, or empty std::string if missing.
+  // Returns hostname, or empty string if missing.
   static QuicString GetPromisedHostNameFromHeaders(
       const spdy::SpdyHeaderBlock& headers);
 

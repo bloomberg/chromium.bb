@@ -34,8 +34,6 @@
 #include "net/third_party/quic/platform/api/quic_string_utils.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using std::string;
-
 namespace quic {
 
 namespace {
@@ -2878,7 +2876,7 @@ bool QuicFramer::ProcessConnectionCloseFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read connection close error details.");
     return false;
   }
-  frame->error_details = string(error_details);
+  frame->error_details = QuicString(error_details);
 
   return true;
 }
@@ -2909,7 +2907,7 @@ bool QuicFramer::ProcessGoAwayFrame(QuicDataReader* reader,
     set_detailed_error("Unable to read goaway reason.");
     return false;
   }
-  frame->reason_phrase = string(reason_phrase);
+  frame->reason_phrase = QuicString(reason_phrase);
 
   return true;
 }
@@ -4340,7 +4338,7 @@ bool QuicFramer::ProcessIetfConnectionCloseFrame(
     set_detailed_error("Unable to read connection close error details.");
     return false;
   }
-  frame->error_details = string(phrase);
+  frame->error_details = QuicString(phrase);
 
   return true;
 }
@@ -4365,7 +4363,7 @@ bool QuicFramer::ProcessApplicationCloseFrame(
     set_detailed_error("Unable to read application close error details.");
     return false;
   }
-  frame->error_details = string(phrase);
+  frame->error_details = QuicString(phrase);
 
   return true;
 }

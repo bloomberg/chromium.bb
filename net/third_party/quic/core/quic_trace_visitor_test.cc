@@ -15,8 +15,6 @@
 namespace quic {
 namespace {
 
-using std::string;
-
 const QuicByteCount kTransferSize = 1000 * kMaxPacketSize;
 const QuicByteCount kTestStreamNumber = 3;
 const QuicTime::Delta kDelay = QuicTime::Delta::FromMilliseconds(20);
@@ -76,12 +74,12 @@ class QuicTraceVisitorTest : public QuicTest {
 
 TEST_F(QuicTraceVisitorTest, ConnectionId) {
   char expected_cid[] = {0, 0, 0, 0, 0, 0, 0, 42};
-  EXPECT_EQ(string(expected_cid, sizeof(expected_cid)),
+  EXPECT_EQ(QuicString(expected_cid, sizeof(expected_cid)),
             trace_.destination_connection_id());
 }
 
 TEST_F(QuicTraceVisitorTest, Version) {
-  string version = trace_.protocol_version();
+  QuicString version = trace_.protocol_version();
   ASSERT_EQ(4u, version.size());
   EXPECT_EQ('Q', version[0]);
 }

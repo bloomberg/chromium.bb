@@ -729,7 +729,7 @@ void QuicSession::OnCryptoHandshakeMessageReceived(
 
 void QuicSession::RegisterStreamPriority(QuicStreamId id,
                                          bool is_static,
-                                         spdy::SpdyPriority priority) {
+                                         SpdyPriority priority) {
   write_blocked_streams()->RegisterStream(id, is_static, priority);
 }
 
@@ -738,7 +738,7 @@ void QuicSession::UnregisterStreamPriority(QuicStreamId id, bool is_static) {
 }
 
 void QuicSession::UpdateStreamPriority(QuicStreamId id,
-                                       spdy::SpdyPriority new_priority) {
+                                       SpdyPriority new_priority) {
   write_blocked_streams()->UpdateStreamPriority(id, new_priority);
 }
 

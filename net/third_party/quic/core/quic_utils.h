@@ -51,7 +51,7 @@ class QUIC_EXPORT_PRIVATE QuicUtils {
   // Returns TransmissionType as a char*
   static const char* TransmissionTypeToString(TransmissionType type);
 
-  // Returns AddressChangeType as a std::string.
+  // Returns AddressChangeType as a string.
   static QuicString AddressChangeTypeToString(AddressChangeType type);
 
   // Returns SentPacketState as a char*.

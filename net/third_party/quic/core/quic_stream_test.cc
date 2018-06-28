@@ -6,8 +6,6 @@
 
 #include <memory>
 
-#include "base/callback.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/core/quic_write_blocked_list.h"
@@ -26,8 +24,8 @@
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_stream_sequencer_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "testing/gmock_mutant.h"
 
+using spdy::SpdyHeaderBlock;
 using testing::_;
 using testing::AnyNumber;
 using testing::AtLeast;
@@ -157,7 +155,7 @@ class QuicStreamTest : public QuicTestWithParam<bool> {
   MockQuicConnection* connection_;
   std::unique_ptr<MockQuicSession> session_;
   TestStream* stream_;
-  spdy::SpdyHeaderBlock headers_;
+  SpdyHeaderBlock headers_;
   QuicWriteBlockedList* write_blocked_list_;
   uint32_t initial_flow_control_window_bytes_;
   QuicTime::Delta zero_;
@@ -898,7 +896,7 @@ TEST_F(QuicStreamTest, WriteBufferedData) {
   // Buffered data size < threshold, ask upper layer for more data.
   EXPECT_CALL(*stream_, OnCanWriteNewData()).Times(1);
   stream_->OnCanWrite();
-  EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1u,
+  EXPECT_EQ(GetQuicFlag(FLAGS_quic_buffered_data_threshold) - 1,
             stream_->BufferedDataBytes());
   EXPECT_TRUE(stream_->CanWriteNewData());
 

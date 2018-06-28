@@ -7,9 +7,7 @@
 #include <memory>
 #include <ostream>
 
-#include "base/callback.h"
 #include "base/macros.h"
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/chlo_extractor.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
@@ -39,11 +37,8 @@
 #include "net/third_party/quic/test_tools/quic_time_wait_list_manager_peer.h"
 #include "net/third_party/quic/tools/quic_simple_crypto_server_stream_helper.h"
 #include "net/tools/epoll_server/epoll_server.h"
-#include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gmock_mutant.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-using std::string;
+using net::EpollServer;
 using testing::_;
 using testing::InSequence;
 using testing::Invoke;
@@ -120,7 +115,7 @@ class TestDispatcher : public QuicDispatcher {
   TestDispatcher(const QuicConfig& config,
                  const QuicCryptoServerConfig* crypto_config,
                  QuicVersionManager* version_manager,
-                 net::EpollServer* eps)
+                 EpollServer* eps)
       : QuicDispatcher(
             config,
             crypto_config,
@@ -142,7 +137,7 @@ class TestDispatcher : public QuicDispatcher {
                bool(QuicConnectionId connection_id));
 
   struct TestQuicPerPacketContext : public PerPacketContext {
-    string custom_packet_context;
+    QuicString custom_packet_context;
   };
 
   std::unique_ptr<PerPacketContext> GetPerPacketContext() const override {
@@ -158,7 +153,7 @@ class TestDispatcher : public QuicDispatcher {
     custom_packet_context_ = test_context->custom_packet_context;
   }
 
-  string custom_packet_context_;
+  QuicString custom_packet_context_;
 
   using QuicDispatcher::current_client_address;
   using QuicDispatcher::current_peer_address;
@@ -345,13 +340,13 @@ class QuicDispatcherTest : public QuicTest {
     CryptoHandshakeMessage client_hello;
     client_hello.set_tag(kCHLO);
     client_hello.SetStringPiece(kALPN, "hq");
-    return string(
+    return QuicString(
         client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
   QuicString SerializeTlsClientHello() { return ""; }
 
-  net::EpollServer eps_;
+  EpollServer eps_;
   QuicEpollConnectionHelper helper_;
   MockQuicConnectionHelper mock_helper_;
   QuicEpollAlarmFactory alarm_factory_;
@@ -1102,7 +1097,7 @@ TEST_P(QuicDispatcherStatelessRejectTest, CheapRejects) {
   }
   ProcessPacket(
       client_address, connection_id, true,
-      string(
+      QuicString(
           client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece()));
 
   if (GetParam().enable_stateless_rejects_via_flag) {
@@ -1155,7 +1150,7 @@ TEST_P(QuicDispatcherStatelessRejectTest, BufferNonChlo) {
       .RetiresOnSaturation();
   ProcessPacket(
       client_address, connection_id, true,
-      string(
+      QuicString(
           client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece()));
   EXPECT_FALSE(
       time_wait_list_manager_->IsConnectionIdInTimeWait(connection_id));
@@ -1470,7 +1465,7 @@ class BufferedPacketStoreTest
   }
 
   QuicString SerializeFullCHLO() {
-    return string(
+    return QuicString(
         full_chlo_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
@@ -1913,7 +1908,8 @@ class AsyncGetProofTest : public QuicDispatcherTest {
   }
 
   QuicString SerializeCHLO() {
-    return string(chlo_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
+    return QuicString(
+        chlo_.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   }
 
   // Sets up a session, and crypto stream based on the test parameters.

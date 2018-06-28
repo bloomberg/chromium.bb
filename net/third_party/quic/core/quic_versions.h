@@ -183,7 +183,7 @@ QuicVersionToQuicVersionLabel(QuicTransportVersion transport_version);
 QUIC_EXPORT_PRIVATE QuicString
 QuicVersionLabelToString(QuicVersionLabel version_label);
 
-// Returns |separator|-separated list of std::string representations of
+// Returns |separator|-separated list of string representations of
 // QuicVersionLabel values in the supplied |version_labels| vector. The values
 // after the (0-based) |skip_after_nth_version|'th are skipped.
 QUIC_EXPORT_PRIVATE QuicString
@@ -191,8 +191,8 @@ QuicVersionLabelVectorToString(const QuicVersionLabelVector& version_labels,
                                const QuicString& separator,
                                size_t skip_after_nth_version);
 
-// Returns comma separated list of std::string representations of
-// QuicVersionLabel values in the supplied |version_labels| vector.
+// Returns comma separated list of string representations of QuicVersionLabel
+// values in the supplied |version_labels| vector.
 QUIC_EXPORT_PRIVATE inline QuicString QuicVersionLabelVectorToString(
     const QuicVersionLabelVector& version_labels) {
   return QuicVersionLabelVectorToString(version_labels, ",",
@@ -219,17 +219,17 @@ QuicVersionToString(QuicTransportVersion transport_version);
 QUIC_EXPORT_PRIVATE QuicString
 ParsedQuicVersionToString(ParsedQuicVersion version);
 
-// Returns comma separated list of string representations of QuicVersion enum
-// values in the supplied |versions| vector.
+// Returns comma separated list of string representations of
+// QuicTransportVersion enum values in the supplied |versions| vector.
 QUIC_EXPORT_PRIVATE QuicString
 QuicTransportVersionVectorToString(const QuicTransportVersionVector& versions);
 
-// Returns comma separated list of std::string representations of
-// ParsedQuicVersion values in the supplied |versions| vector.
-QUIC_EXPORT_PRIVATE std::string ParsedQuicVersionVectorToString(
-    const ParsedQuicVersionVector& versions);
+// Returns comma separated list of string representations of ParsedQuicVersion
+// values in the supplied |versions| vector.
+QUIC_EXPORT_PRIVATE QuicString
+ParsedQuicVersionVectorToString(const ParsedQuicVersionVector& versions);
 
-// Returns |separator|-separated list of std::string representations of
+// Returns |separator|-separated list of string representations of
 // ParsedQuicVersion values in the supplied |versions| vector. The values after
 // the (0-based) |skip_after_nth_version|'th are skipped.
 QUIC_EXPORT_PRIVATE QuicString
@@ -237,8 +237,8 @@ ParsedQuicVersionVectorToString(const ParsedQuicVersionVector& versions,
                                 const QuicString& separator,
                                 size_t skip_after_nth_version);
 
-// Returns comma separated list of std::string representations of
-// ParsedQuicVersion values in the supplied |versions| vector.
+// Returns comma separated list of string representations of ParsedQuicVersion
+// values in the supplied |versions| vector.
 QUIC_EXPORT_PRIVATE inline QuicString ParsedQuicVersionVectorToString(
     const ParsedQuicVersionVector& versions) {
   return ParsedQuicVersionVectorToString(versions, ",",
