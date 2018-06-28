@@ -361,16 +361,7 @@ void LayoutView::MapLocalToAncestor(const LayoutBoxModelObject* ancestor,
   if (mode & kTraverseDocumentBoundaries) {
     auto* parent_doc_layout_object = GetFrame()->OwnerLayoutObject();
     if (parent_doc_layout_object) {
-      if (!(mode & kInputIsInFrameCoordinates)) {
-        transform_state.Move(
-            LayoutSize(-GetFrame()->View()->GetScrollOffset()));
-      } else {
-        // The flag applies to immediate LayoutView only.
-        mode &= ~kInputIsInFrameCoordinates;
-      }
-
       transform_state.Move(parent_doc_layout_object->ContentBoxOffset());
-
       parent_doc_layout_object->MapLocalToAncestor(ancestor, transform_state,
                                                    mode);
     } else {
@@ -534,21 +525,16 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
 
   if (LayoutBox* obj = owner->GetLayoutBox()) {
     LayoutRect rect(transform_state.LastPlanarQuad().BoundingBox());
-    if (!(mode & kInputIsInFrameCoordinates)) {
-      // Intersect the viewport with the visual rect.
-      LayoutRect view_rectangle = ViewRect();
-      if (visual_rect_flags & kEdgeInclusive) {
-        if (!rect.InclusiveIntersect(view_rectangle)) {
-          transform_state.SetQuad(FloatQuad(FloatRect(rect)));
-          return false;
-        }
-      } else {
-        rect.Intersect(view_rectangle);
+    LayoutRect view_rectangle = ViewRect();
+    if (visual_rect_flags & kEdgeInclusive) {
+      if (!rect.InclusiveIntersect(view_rectangle)) {
+        transform_state.SetQuad(FloatQuad(FloatRect(rect)));
+        return false;
       }
-
-      // Adjust for scroll offset of the view.
-      rect.MoveBy(-view_rectangle.Location());
+    } else {
+      rect.Intersect(view_rectangle);
     }
+
     // Frames are painted at rounded-int position. Since we cannot efficiently
     // compute the subpixel offset of painting at this point in a a bottom-up
     // walk, round to the enclosing int rect, which will enclose the actual

@@ -19,20 +19,13 @@ enum MapCoordinatesMode {
   kApplyContainerFlip = 1 << 2,
   kTraverseDocumentBoundaries = 1 << 3,
 
-  // Applies to LayoutView::mapLocalToAncestor() and LayoutView::
-  // mapToVisualRectInAncestorSpace() only, to indicate the input point or rect
-  // is in frame coordinates instead of frame contents coordinates. This
-  // disables view clipping and scroll offset adjustment.
-  // TODO(wangxianzhu): Remove this when root-layer-scrolls launches.
-  kInputIsInFrameCoordinates = 1 << 4,
-
   // Ignore offset adjustments caused by position:sticky calculations when
   // walking the chain.
-  kIgnoreStickyOffset = 1 << 5,
+  kIgnoreStickyOffset = 1 << 4,
 
   // Ignore scroll offset from container, i.e. scrolling has no effect on mapped
   // position.
-  kIgnoreScrollOffset = 1 << 6,
+  kIgnoreScrollOffset = 1 << 5,
 };
 typedef unsigned MapCoordinatesFlags;
 
