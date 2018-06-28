@@ -491,11 +491,16 @@ void Shell::EnableKeyboard() {
     for (auto* const controller : GetAllRootWindowControllers())
       controller->DeactivateKeyboard(keyboard_controller_.get());
   }
-  keyboard_controller_->EnableKeyboard(shell_delegate_->CreateKeyboardUI(),
+
+  // TODO(crbug.com/646565): ShellDelegateMash does not support keyboard ui yet.
+  auto keyboard_ui = shell_delegate_->CreateKeyboardUI();
+  if (!keyboard_ui && !::features::IsAshInBrowserProcess())
+    return;
+
+  keyboard_controller_->EnableKeyboard(std::move(keyboard_ui),
                                        virtual_keyboard_controller_.get());
   for (auto& observer : shell_observers_)
     observer.OnKeyboardControllerCreated();
-
   GetPrimaryRootWindowController()->ActivateKeyboard(
       keyboard_controller_.get());
 }
