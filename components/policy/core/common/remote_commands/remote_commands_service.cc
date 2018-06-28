@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/stl_util.h"
 #include "base/syslog_logging.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -94,10 +95,8 @@ void RemoteCommandsService::EnqueueCommand(
   }
 
   // If the command is already fetched, ignore it.
-  if (std::find(fetched_command_ids_.begin(), fetched_command_ids_.end(),
-                command.command_id()) != fetched_command_ids_.end()) {
+  if (base::ContainsValue(fetched_command_ids_, command.command_id()))
     return;
-  }
 
   fetched_command_ids_.push_back(command.command_id());
 

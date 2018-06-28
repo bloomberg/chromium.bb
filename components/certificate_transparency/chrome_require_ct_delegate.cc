@@ -17,6 +17,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/sequenced_task_runner.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/values.h"
@@ -295,7 +296,7 @@ bool ChromeRequireCTDelegate::MatchSPKI(const net::X509Certificate* chain,
   // the organization information to itself.
   net::HashValue hash;
   if (net::x509_util::CalculateSha256SpkiHash(leaf_cert, &hash) &&
-      std::find(matches.begin(), matches.end(), hash) != matches.end()) {
+      base::ContainsValue(matches, hash)) {
     *ct_required = false;
     return true;
   }
@@ -305,7 +306,7 @@ bool ChromeRequireCTDelegate::MatchSPKI(const net::X509Certificate* chain,
   std::vector<CRYPTO_BUFFER*> candidates;
   for (const auto& buffer : chain->intermediate_buffers()) {
     if (net::x509_util::CalculateSha256SpkiHash(buffer.get(), &hash) &&
-        std::find(matches.begin(), matches.end(), hash) != matches.end()) {
+        base::ContainsValue(matches, hash)) {
       candidates.push_back(buffer.get());
     }
   }
