@@ -3674,6 +3674,18 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 - (BOOL)shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL {
+  // App specific pages have elevated privileges and WKWebView uses the same
+  // renderer process for all page frames. With that Chromium does not allow
+  // running App specific pages in the same process as a web site from the
+  // internet.
+  if (web::GetWebClient()->IsAppSpecificURL(url) &&
+      !web::GetWebClient()->IsAppSpecificURL(mainDocumentURL)) {
+    return NO;
+  }
+
+  // TODO(crbug.com/546402): Remove the call to CRWWebDelegate's method once
+  // kTabUrlMayStartLoadingNotificationForCrashReporting is reported from
+  // different place.
   if (![_delegate respondsToSelector:@selector
                   (webController:shouldOpenURL:mainDocumentURL:)]) {
     return YES;

@@ -500,16 +500,8 @@ NSString* const kTabUrlKey = @"url";
 - (BOOL)webController:(CRWWebController*)webController
         shouldOpenURL:(const GURL&)url
       mainDocumentURL:(const GURL&)mainDocumentURL {
-  // chrome:// URLs are only allowed if the mainDocumentURL is also a chrome://
-  // URL.
-  if (url.SchemeIs(kChromeUIScheme) &&
-      !mainDocumentURL.SchemeIs(kChromeUIScheme)) {
-    return NO;
-  }
-
   // Always allow frame loads.
-  BOOL isFrameLoad = (url != mainDocumentURL);
-  if (isFrameLoad)
+  if (url != mainDocumentURL)
     return YES;
 
   // TODO(crbug.com/546402): If this turns out to be useful, find a less hacky

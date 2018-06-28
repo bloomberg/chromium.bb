@@ -40,6 +40,7 @@
 #include "ios/web/public/web_state/url_verification_constants.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/web/test/fakes/crw_fake_back_forward_list.h"
+#import "ios/web/test/fakes/crw_fake_wk_navigation_action.h"
 #import "ios/web/test/fakes/crw_fake_wk_navigation_response.h"
 #include "ios/web/test/test_url_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
@@ -562,7 +563,8 @@ class CRWWebControllerDownloadTest : public CRWWebControllerTest {
     navigation_response.response = response;
     navigation_response.forMainFrame = for_main_frame;
 
-    // Wait for decidePolicyForNavigationResponse: callback.
+    // Call decidePolicyForNavigationResponse and wait for decisionHandler's
+    // callback.
     __block bool callback_called = false;
     if (for_main_frame) {
       // webView:didStartProvisionalNavigation: is not called for iframes.
@@ -749,6 +751,75 @@ TEST_F(CRWWebControllerTest, AbortNativeUrlNavigation) {
 
   EXPECT_FALSE(observer.did_start_navigation_info());
   EXPECT_FALSE(observer.did_finish_navigation_info());
+}
+
+// Test fixture to test decidePolicyForNavigationAction:decisionHandler:
+// decisionHandler's callback result.
+class CRWWebControllerPolicyDeciderTest : public CRWWebControllerTest {
+ protected:
+  void SetUp() override {
+    CRWWebControllerTest::SetUp();
+    mock_delegate_ = OCMProtocolMock(@protocol(CRWWebDelegate));
+    GURL test_gurl;
+    [[[[static_cast<id>(mock_delegate_) stub] ignoringNonObjectArgs]
+        andReturnBool:YES] webController:[OCMArg any]
+                           shouldOpenURL:test_gurl
+                         mainDocumentURL:test_gurl];
+    [web_controller() setDelegate:mock_delegate_];
+  }
+  // Calls webView:decidePolicyForNavigationAction:decisionHandler: callback
+  // and waits for decision handler call. Returns false if decision handler
+  // policy parameter didn't match |expected_policy| or if the call timed out.
+  bool VerifyDecidePolicyForNavigationAction(
+      NSURLRequest* request,
+      WKNavigationActionPolicy expected_policy) WARN_UNUSED_RESULT {
+    CRWFakeWKNavigationAction* navigation_action =
+        [[CRWFakeWKNavigationAction alloc] init];
+    navigation_action.request = request;
+
+    // Call decidePolicyForNavigationResponse and wait for decisionHandler's
+    // callback.
+    __block bool policy_match = false;
+    __block bool callback_called = false;
+    [navigation_delegate_ webView:mock_web_view_
+        decidePolicyForNavigationAction:navigation_action
+                        decisionHandler:^(WKNavigationActionPolicy policy) {
+                          policy_match = expected_policy == policy;
+                          callback_called = true;
+                        }];
+    callback_called = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+      return callback_called;
+    });
+    return policy_match;
+  }
+
+  id<CRWWebDelegate> mock_delegate_;
+};
+
+// Tests that App specific URLs in iframes are allowed if the main frame is App
+// specific URL. App specific pages have elevated privileges and WKWebView uses
+// the same renderer process for all page frames. With that running App specific
+// pages are not allowed in the same process as a web site from the internet.
+TEST_F(CRWWebControllerPolicyDeciderTest,
+       AllowAppSpecificIFrameFromAppSpecificPage) {
+  NSURL* app_url = [NSURL URLWithString:@(kTestAppSpecificURL)];
+  NSMutableURLRequest* app_url_request =
+      [NSMutableURLRequest requestWithURL:app_url];
+  app_url_request.mainDocumentURL = app_url;
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      app_url_request, WKNavigationActionPolicyAllow));
+}
+
+// Tests that App specific URLs in iframes are not allowed if the main frame is
+// not App specific URL.
+TEST_F(CRWWebControllerPolicyDeciderTest,
+       DisallowAppSpecificIFrameFromRegularPage) {
+  NSURL* app_url = [NSURL URLWithString:@(kTestAppSpecificURL)];
+  NSMutableURLRequest* app_url_request =
+      [NSMutableURLRequest requestWithURL:app_url];
+  app_url_request.mainDocumentURL = [NSURL URLWithString:@(kTestURLString)];
+  EXPECT_TRUE(VerifyDecidePolicyForNavigationAction(
+      app_url_request, WKNavigationActionPolicyCancel));
 }
 
 // Test fixture for testing CRWWebController presenting native content.
