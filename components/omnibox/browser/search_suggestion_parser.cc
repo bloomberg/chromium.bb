@@ -23,6 +23,7 @@
 #include "base/values.h"
 #include "components/omnibox/browser/autocomplete_i18n.h"
 #include "components/omnibox/browser/autocomplete_input.h"
+#include "components/omnibox/browser/omnibox_field_trial.h"
 #include "components/omnibox/browser/url_prefix.h"
 #include "components/url_formatter/url_fixer.h"
 #include "components/url_formatter/url_formatter.h"
@@ -30,6 +31,7 @@
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "ui/base/device_form_factor.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "url/url_constants.h"
 
 namespace {
@@ -531,21 +533,27 @@ bool SearchSuggestionParser::ParseSuggestResults(
             input.text()));
       }
     } else {
+      base::string16 annotation;
       base::string16 match_contents = suggestion;
-      if ((match_type == AutocompleteMatchType::CALCULATOR) &&
-          !suggestion.compare(0, 2, base::UTF8ToUTF16("= "))) {
-        // Calculator results include a "= " prefix but we don't want to include
-        // this in the search terms.
-        suggestion.erase(0, 2);
-        // Additionally, on larger (non-phone) form factors, we don't want to
-        // display it in the suggestion contents either, because those devices
-        // display a suggestion type icon that looks like a '='.
-        if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE)
-          match_contents.erase(0, 2);
+      if (match_type == AutocompleteMatchType::CALCULATOR) {
+        if (!suggestion.compare(0, 2, base::UTF8ToUTF16("= "))) {
+          // Calculator results include a "= " prefix but we don't want to
+          // include this in the search terms.
+          suggestion.erase(0, 2);
+          // Additionally, on larger (non-phone) form factors, we don't want to
+          // display it in the suggestion contents either, because those devices
+          // display a suggestion type icon that looks like a '='.
+          if (ui::GetDeviceFormFactor() != ui::DEVICE_FORM_FACTOR_PHONE)
+            match_contents.erase(0, 2);
+        }
+        if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP &&
+            OmniboxFieldTrial::IsNewAnswerLayoutEnabled()) {
+          annotation = match_contents;
+          match_contents = query;
+        }
       }
 
       base::string16 match_contents_prefix;
-      base::string16 annotation;
       base::string16 answer_contents;
       base::string16 answer_type_str;
       std::unique_ptr<SuggestionAnswer> answer;
