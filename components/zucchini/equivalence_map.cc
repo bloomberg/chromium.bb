@@ -15,6 +15,25 @@
 
 namespace zucchini {
 
+namespace {
+
+// TODO(haungs): Tune these numbers to improve pathological case results.
+
+// In pathological cases Zucchini can exhibit O(n^2) behavior if the seed
+// selection process runs to completion. To prevent this we impose a quota for
+// the total length of equivalences the seed selection process can perform
+// trials on. For regular use cases it is unlikely this quota will be exceeded,
+// and if it is the effects on patch size are expected to be small.
+constexpr uint64_t kSeedSelectionTotalVisitLengthQuota = 1 << 18;  // 256 KiB
+
+// The aforementioned quota alone is insufficient, as exploring backwards will
+// still be very successful resulting in O(n) behavior in the case of a limited
+// seed selection trials. This results in O(n^2) behavior returning. To mitigate
+// this we also impose a cap on the ExtendEquivalenceBackward() exploration.
+constexpr offset_t kBackwardsExtendLimit = 1 << 16;  // 64 KiB
+
+}  // namespace
+
 /******** Utility Functions ********/
 
 double GetTokenSimilarity(
@@ -133,8 +152,9 @@ EquivalenceCandidate ExtendEquivalenceBackward(
   double current_similarity = candidate.similarity;
   double best_similarity = current_similarity;
   double current_penalty = 0.0;
-  for (offset_t k = 1;
-       k <= equivalence.dst_offset && k <= equivalence.src_offset; ++k) {
+  offset_t k_min = std::min(
+      {equivalence.dst_offset, equivalence.src_offset, kBackwardsExtendLimit});
+  for (offset_t k = 1; k <= k_min; ++k) {
     // Mismatch in type, |candidate| cannot be extended further.
     if (old_image_index.LookupType(equivalence.src_offset - k) !=
         new_image_index.LookupType(equivalence.dst_offset - k)) {
@@ -413,6 +433,7 @@ void EquivalenceMap::CreateCandidates(
     offset_t next_dst_offset = dst_offset + 1;
     // TODO(huangs): Clean up.
     double best_similarity = min_similarity;
+    uint64_t total_visit_length = 0;
     EquivalenceCandidate best_candidate = {{0, 0, 0}, 0.0};
     for (auto it = match; it != old_sa.end(); ++it) {
       EquivalenceCandidate candidate = VisitEquivalenceSeed(
@@ -422,10 +443,15 @@ void EquivalenceMap::CreateCandidates(
         best_candidate = candidate;
         best_similarity = candidate.similarity;
         next_dst_offset = candidate.eq.dst_end();
+        total_visit_length += candidate.eq.length;
+        if (total_visit_length > kSeedSelectionTotalVisitLengthQuota) {
+          break;
+        }
       } else {
         break;
       }
     }
+    total_visit_length = 0;
     for (auto it = match; it != old_sa.begin(); --it) {
       EquivalenceCandidate candidate = VisitEquivalenceSeed(
           old_view.image_index(), new_view.image_index(), targets_affinities,
@@ -434,6 +460,10 @@ void EquivalenceMap::CreateCandidates(
         best_candidate = candidate;
         best_similarity = candidate.similarity;
         next_dst_offset = candidate.eq.dst_end();
+        total_visit_length += candidate.eq.length;
+        if (total_visit_length > kSeedSelectionTotalVisitLengthQuota) {
+          break;
+        }
       } else {
         break;
       }
