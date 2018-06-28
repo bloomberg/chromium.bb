@@ -98,6 +98,9 @@ class HoverHighlightView : public ActionableView {
   views::ImageView* left_icon() { return left_icon_; }
 
  protected:
+  // Override from Button to also set the tooltip for all child elements.
+  void OnSetTooltipText(const base::string16& tooltip_text) override;
+
   // views::View:
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 

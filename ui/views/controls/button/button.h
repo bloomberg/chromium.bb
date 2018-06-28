@@ -211,6 +211,9 @@ class VIEWS_EXPORT Button : public InkDropHostView,
   // events.
   virtual void OnClickCanceled(const ui::Event& event);
 
+  // Called when the tooltip is set.
+  virtual void OnSetTooltipText(const base::string16& tooltip_text);
+
   // Invoked from SetState() when SetState() is passed a value that differs from
   // the current node_data. Button's implementation of StateChanged() does
   // nothing; this method is provided for subclasses that wish to do something
