@@ -54,11 +54,29 @@ html[screen=oobe] .login-header-bar-animate-slow {
   vertical-align: middle;
 }
 
+#login-header-bar button {
+  color: white !important;
+}
+
+html[full-screen-dialog] #login-header-bar button {
+  color: var(--google-grey-600) !important;
+}
+
+#login-header-bar hd-iron-icon {
+  --iron-icon-fill-color: white;
+  --iron-icon-height: 20px;
+  --iron-icon-width: 20px;
+  -webkit-padding-end: 8px;
+}
+
+html[full-screen-dialog] #login-header-bar hd-iron-icon {
+  --iron-icon-fill-color: var(--google-grey-600);
+}
+
 #login-header-bar button:not(.button-restricted),
 #login-header-bar button:active:not(.button-restricted),
 #login-header-bar button:focus:not(.button-restricted),
 #login-header-bar button:hover:not(.button-restricted) {
-  color: white !important;
   opacity: 1 !important;
 }
 
@@ -96,33 +114,6 @@ html[dir=rtl] .header-bar-item {
   background-position: right center;
 }
 
-#login-header-bar #shutdown-button-text,
-#login-header-bar #restart-button-text,
-#login-header-bar #show-apps-button-text,
-#login-header-bar #add-user-button-text,
-#login-header-bar #guest-user-button-text,
-#login-header-bar #more-settings-button-text,
-#login-header-bar #cancel-multiple-sign-in-button-text,
-#login-header-bar #sign-out-user-button-text,
-#login-header-bar #unlock-user-button-text {
-  -webkit-padding-start: 28px;
-  background-position: left center;
-  background-repeat: no-repeat;
-  background-size: 20px;
-}
-
-html[dir=rtl] #login-header-bar #shutdown-button-text,
-html[dir=rtl] #login-header-bar #restart-button-text,
-html[dir=rtl] #login-header-bar #show-apps-button-text,
-html[dir=rtl] #login-header-bar #add-user-button-text,
-html[dir=rtl] #login-header-bar #more-settings-button-text,
-html[dir=rtl] #login-header-bar #guest-user-button-text,
-html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button-text,
-html[dir=rtl] #login-header-bar #sign-out-user-button-text,
-html[dir=rtl] #login-header-bar #unlock-user-button-text {
-  background-position: right center;
-}
-
 #login-header-bar #shutdown-button,
 #login-header-bar #restart-button,
 #login-header-bar #add-user-button,
@@ -137,55 +128,6 @@ html[dir=rtl] #login-header-bar #unlock-user-button-text {
 
 #login-header-bar #more-settings-header-bar-item {
   position: relative;
-}
-
-#login-header-bar #shutdown-button-text,
-#login-header-bar #restart-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/shutdown.svg) 1x,
-      url(images/2x/shutdown.svg) 2x );
-}
-
-#login-header-bar #show-apps-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/show-apps.svg) 1x,
-      url(images/2x/show-apps.svg) 2x );
-}
-
-#login-header-bar #add-user-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/add-person.svg) 1x,
-      url(images/2x/add-person.svg) 2x );
-}
-
-#login-header-bar #more-settings-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/more-settings.svg) 1x,
-      url(images/2x/more-settings.svg) 2x );
-}
-
-#login-header-bar #guest-user-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/browse-as-guest.svg) 1x,
-      url(images/2x/browse-as-guest.svg) 2x );
-}
-
-#login-header-bar #cancel-multiple-sign-in-button-text {
-    background-image: -webkit-image-set(
-      url(images/1x/cancel.svg) 1x,
-      url(images/2x/cancel.svg) 2x );
-}
-
-#login-header-bar #sign-out-user-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/signout.svg) 1x,
-      url(images/2x/signout.svg) 2x );
-}
-
-#login-header-bar #unlock-user-button-text {
-  background-image: -webkit-image-set(
-      url(images/1x/unlock.svg) 1x,
-      url(images/2x/unlock.svg) 2x );
 }
 
 .button-restricted {
