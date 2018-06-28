@@ -13,7 +13,6 @@
 #include "base/time/time.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_title_source.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "url/gurl.h"
 
 namespace ntp_tiles {
@@ -35,14 +34,6 @@ struct NTPTile {
   GURL thumbnail_url;
   // This won't be empty, but might 404 etc.
   GURL favicon_url;
-
-  // True if no favicon is associated with the URL or if the favicon is too
-  // small.
-  bool has_fallback_style;
-  // Color values for the fallback icon. May not be set if |has_fallback_colors|
-  // is false.
-  SkColor fallback_background_color;
-  SkColor fallback_text_color;
 
   // Timestamp representing when the tile was originally generated (produced by
   // a ranking algorithm).

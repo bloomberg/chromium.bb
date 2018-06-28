@@ -60,7 +60,6 @@ static_library("ntp_tiles") {
     "//components/variations",
     "//components/variations/service",
     "//services/network/public/cpp",
-    "//skia",
     "//ui/base",
   ]
 }
@@ -95,7 +94,6 @@ source_set("unit_tests") {
     ":ntp_tiles",
     "//base/test:test_support",
     "//components/favicon/core",
-    "//components/favicon/core/test:test_support",
     "//components/favicon_base",
     "//components/image_fetcher/core",
     "//components/image_fetcher/core:test_support",
@@ -105,7 +103,6 @@ source_set("unit_tests") {
     "//net:test_support",
     "//services/network:test_support",
     "//services/network/public/cpp",
-    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/base",

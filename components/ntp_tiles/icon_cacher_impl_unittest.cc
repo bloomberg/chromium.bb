@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/mock_callback.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -21,7 +20,6 @@
 #include "components/favicon/core/favicon_service_impl.h"
 #include "components/favicon/core/favicon_util.h"
 #include "components/favicon/core/large_icon_service.h"
-#include "components/favicon/core/test/mock_favicon_service.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/history/core/browser/history_database_params.h"
 #include "components/history/core/browser/history_service.h"
@@ -30,15 +28,11 @@
 #include "components/image_fetcher/core/mock_image_decoder.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
-#include "components/ntp_tiles/constants.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/skia/include/core/SkBitmap.h"
-#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
-#include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_unittest_util.h"
 
 using base::Bucket;
@@ -612,119 +606,6 @@ TEST_F(IconCacherTestMostLikely, NotCachedAndFetchPerformedOnlyOnce) {
 
   EXPECT_FALSE(IconIsCachedFor(page_url, favicon_base::IconType::kFavicon));
   EXPECT_TRUE(IconIsCachedFor(page_url, favicon_base::IconType::kTouchIcon));
-}
-
-class IconCacherTestGetFallbackStyle : public IconCacherTestBase {
- protected:
-  using FallbackStyleCallback = IconCacher::FallbackStyleCallback;
-  using FallbackIconStyle = favicon_base::FallbackIconStyle;
-
-  IconCacherTestGetFallbackStyle()
-      : fetcher_for_icon_cacher_(
-            std::make_unique<::testing::StrictMock<MockImageFetcher>>()),
-        fetcher_for_large_icon_service_(new NiceMock<MockImageFetcher>()),
-        large_icon_service_(&mock_favicon_service_,
-                            base::WrapUnique(fetcher_for_large_icon_service_)) {
-    feature_list_.InitAndEnableFeature(kNtpIcons);
-
-    // Expect uninteresting calls here, |fetcher_for_icon_cacher_| is not
-    // related to these tests. Keep it strict to make sure we do not use it in
-    // any other way.
-    EXPECT_CALL(*fetcher_for_icon_cacher_,
-                SetDataUseServiceName(
-                    data_use_measurement::DataUseUserData::NTP_TILES));
-    EXPECT_CALL(*fetcher_for_icon_cacher_,
-                SetDesiredImageFrameSize(gfx::Size(128, 128)));
-  }
-
-  favicon_base::FaviconRawBitmapResult CreateTestBitmapResult(GURL icon_url,
-                                                              int w,
-                                                              int h,
-                                                              SkColor color) {
-    favicon_base::FaviconRawBitmapResult result;
-    result.expired = false;
-
-    // Create bitmap and fill with |color|.
-    scoped_refptr<base::RefCountedBytes> data(new base::RefCountedBytes());
-    SkBitmap bitmap;
-    bitmap.allocN32Pixels(w, h);
-    bitmap.eraseColor(color);
-    gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &data->data());
-    result.bitmap_data = data;
-
-    result.pixel_size = gfx::Size(w, h);
-    result.icon_url = icon_url;
-    result.icon_type = favicon_base::IconType::kFavicon;
-    CHECK(result.is_valid());
-    return result;
-  }
-
-  void InjectMockResult(
-      const GURL& page_url,
-      const favicon_base::FaviconRawBitmapResult& mock_result) {
-    ON_CALL(mock_favicon_service_,
-            GetLargestRawFaviconForPageURL(page_url, _, _, _, _))
-        .WillByDefault(favicon::PostReply<5>(mock_result));
-  }
-
-  std::unique_ptr<MockImageFetcher> fetcher_for_icon_cacher_;
-  testing::NiceMock<MockImageFetcher>* fetcher_for_large_icon_service_;
-  testing::NiceMock<favicon::MockFaviconService> mock_favicon_service_;
-  favicon::LargeIconService large_icon_service_;
-
- private:
-  base::test::ScopedFeatureList feature_list_;
-};
-
-TEST_F(IconCacherTestGetFallbackStyle, DoNotReturnFallbackWhenIconAvailable) {
-  GURL page_url("http://www.site.com");
-  GURL icon_url("http://www.site.com/favicon.png");
-
-  base::MockCallback<FallbackStyleCallback> fallback_callback;
-  InjectMockResult(page_url,
-                   CreateTestBitmapResult(icon_url, 64, 64, SK_ColorRED));
-
-  IconCacherImpl cacher(&mock_favicon_service_, &large_icon_service_,
-                        std::move(fetcher_for_icon_cacher_));
-  EXPECT_CALL(fallback_callback,
-              Run(base::Optional<FallbackIconStyle>(base::nullopt)));
-  cacher.GetFallbackStyleForURL(page_url, fallback_callback.Get());
-  scoped_task_environment_.RunUntilIdle();
-}
-
-TEST_F(IconCacherTestGetFallbackStyle, ReturnFallbackWhenNoIconAvailable) {
-  GURL page_url("http://www.site.com");
-  GURL icon_url("http://www.site.com/favicon.png");
-
-  base::MockCallback<FallbackStyleCallback> fallback_callback;
-  InjectMockResult(page_url, favicon_base::FaviconRawBitmapResult());
-
-  IconCacherImpl cacher(&mock_favicon_service_, &large_icon_service_,
-                        std::move(fetcher_for_icon_cacher_));
-  EXPECT_CALL(fallback_callback,
-              Run(base::Optional<FallbackIconStyle>(FallbackIconStyle())));
-  cacher.GetFallbackStyleForURL(page_url, fallback_callback.Get());
-  scoped_task_environment_.RunUntilIdle();
-}
-
-TEST_F(IconCacherTestGetFallbackStyle, ReturnFallbackWhenIconTooSmall) {
-  GURL page_url("http://www.site.com");
-  GURL icon_url("http://www.site.com/favicon.png");
-
-  favicon_base::FaviconRawBitmapResult icon =
-      CreateTestBitmapResult(icon_url, 1, 1, SK_ColorRED);
-  FallbackIconStyle fallback;
-  favicon_base::SetDominantColorAsBackground(icon.bitmap_data, &fallback);
-
-  base::MockCallback<FallbackStyleCallback> fallback_callback;
-  InjectMockResult(page_url, icon);
-
-  IconCacherImpl cacher(&mock_favicon_service_, &large_icon_service_,
-                        std::move(fetcher_for_icon_cacher_));
-  EXPECT_CALL(fallback_callback,
-              Run(base::Optional<FallbackIconStyle>(fallback)));
-  cacher.GetFallbackStyleForURL(page_url, fallback_callback.Get());
-  scoped_task_environment_.RunUntilIdle();
 }
 
 }  // namespace

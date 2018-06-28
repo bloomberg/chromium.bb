@@ -57,10 +57,6 @@ class IconCacherImpl : public IconCacher {
   void StartFetchMostLikely(const GURL& page_url,
                             const base::Closure& icon_available) override;
 
-  void GetFallbackStyleForURL(
-      const GURL& page_url,
-      FallbackStyleCallback fallback_style_callback) override;
-
  private:
   using CancelableImageCallback =
       base::CancelableCallback<void(const gfx::Image&)>;

@@ -6,8 +6,6 @@
 #define COMPONENTS_NTP_TILES_ICON_CACHER_H_
 
 #include "base/callback.h"
-#include "base/optional.h"
-#include "components/favicon_base/fallback_icon_style.h"
 #include "components/ntp_tiles/popular_sites.h"
 
 namespace ntp_tiles {
@@ -20,9 +18,6 @@ namespace ntp_tiles {
 // FaviconService will be able to get you an icon (if it exists).
 class IconCacher {
  public:
-  using FallbackStyleCallback =
-      base::OnceCallback<void(base::Optional<favicon_base::FallbackIconStyle>)>;
-
   virtual ~IconCacher() = default;
 
   // Fetches the icon if necessary. If a new icon was fetched, the optional
@@ -39,13 +34,6 @@ class IconCacher {
   // newly fetched (false if it was already cached or could not be fetched).
   virtual void StartFetchMostLikely(const GURL& page_url,
                                     const base::Closure& icon_available) = 0;
-
-  // Returns fallback colors if the icon does not exist for the URL or if the
-  // icon is too small, otherwise returns nullopt. Does not fetch an icon if the
-  // icon is missing.
-  virtual void GetFallbackStyleForURL(
-      const GURL& page_url,
-      FallbackStyleCallback fallback_style_callback) = 0;
 };
 
 }  // namespace ntp_tiles
