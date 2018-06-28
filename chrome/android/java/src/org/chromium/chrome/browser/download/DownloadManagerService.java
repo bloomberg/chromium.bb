@@ -172,6 +172,9 @@ public class DownloadManagerService
     private int mAutoResumptionLimit = -1;
     private DownloadManagerRequestInterceptor mDownloadManagerRequestInterceptor;
 
+    // Whether any ChromeActivity is launched.
+    private boolean mActivityLaunched;
+
     /**
      * Interface to intercept download request to Android DownloadManager. This is implemented by
      * tests so that we don't need to actually enqueue a download into the Android DownloadManager.
@@ -267,8 +270,6 @@ public class DownloadManagerService
         mUpdateDelayInMillis = updateDelayInMillis;
         mHandler = handler;
         mDownloadSnackbarController = new DownloadSnackbarController(context);
-        mInfoBarController = new DownloadInfoBarController(false);
-        mIncognitoInfoBarController = new DownloadInfoBarController(true);
         mDownloadManagerDelegate = new DownloadManagerDelegate(mContext);
         mOMADownloadHandler = new OMADownloadHandler(
                 context, mDownloadManagerDelegate, mDownloadSnackbarController);
@@ -399,10 +400,16 @@ public class DownloadManagerService
      * will not be called.
      */
     public void onActivityLaunched() {
-        DownloadNotificationService.clearResumptionAttemptLeft();
+        if (!mActivityLaunched) {
+            mInfoBarController = new DownloadInfoBarController(false);
+            mIncognitoInfoBarController = new DownloadInfoBarController(true);
 
-        DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
-                /*isOffTheRecord=*/false);
+            DownloadNotificationService.clearResumptionAttemptLeft();
+
+            DownloadManagerService.getDownloadManagerService().checkForExternallyRemovedDownloads(
+                    /*isOffTheRecord=*/false);
+            mActivityLaunched = true;
+        }
     }
 
     /**
@@ -1120,8 +1127,11 @@ public class DownloadManagerService
             item.setSystemDownloadId(systemDownloadId);
             handleAutoOpenAfterDownload(item);
         } else {
-            getInfoBarController(info.isOffTheRecord())
-                    .onNotificationShown(info.getContentId(), notificationId);
+            DownloadInfoBarController infobarController =
+                    getInfoBarController(info.isOffTheRecord());
+            if (infobarController != null) {
+                infobarController.onNotificationShown(info.getContentId(), notificationId);
+            }
             mDownloadSnackbarController.onDownloadSucceeded(
                     info, notificationId, systemDownloadId, canResolve, false);
         }
@@ -1607,8 +1617,9 @@ public class DownloadManagerService
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemCreated(item);
         }
-
-        getInfoBarController(item.getDownloadInfo().isOffTheRecord()).onDownloadItemUpdated(item);
+        DownloadInfoBarController infobarController =
+                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
+        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     @CalledByNative
@@ -1617,13 +1628,18 @@ public class DownloadManagerService
             adapter.onDownloadItemUpdated(item);
         }
 
-        getInfoBarController(item.getDownloadInfo().isOffTheRecord()).onDownloadItemUpdated(item);
+        DownloadInfoBarController infobarController =
+                getInfoBarController(item.getDownloadInfo().isOffTheRecord());
+        if (infobarController != null) infobarController.onDownloadItemUpdated(item);
     }
 
     @CalledByNative
     private void onDownloadItemRemoved(String guid, boolean isOffTheRecord) {
-        getInfoBarController(isOffTheRecord)
-                .onDownloadItemRemoved(LegacyHelpers.buildLegacyContentId(false, guid));
+        DownloadInfoBarController infobarController = getInfoBarController(isOffTheRecord);
+        if (infobarController != null) {
+            infobarController.onDownloadItemRemoved(
+                    LegacyHelpers.buildLegacyContentId(false, guid));
+        }
 
         for (DownloadObserver adapter : mDownloadObservers) {
             adapter.onDownloadItemRemoved(guid, isOffTheRecord);
