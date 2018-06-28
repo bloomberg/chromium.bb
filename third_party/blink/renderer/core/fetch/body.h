@@ -36,6 +36,7 @@ class CORE_EXPORT Body : public ScriptWrappable,
 
  public:
   enum class BodyUsed { kUsed, kUnused, kBroken };
+  enum class BodyLocked { kLocked, kUnlocked, kBroken };
 
   explicit Body(ExecutionContext*);
 
@@ -58,7 +59,9 @@ class CORE_EXPORT Body : public ScriptWrappable,
   // pending and the caller should return to JavaScript immediately.
   virtual BodyUsed IsBodyUsed(ExceptionState&);
 
-  bool IsBodyLocked();
+  // Returns kLocked, kUnlocked or kBroken. kBroken implies there is an
+  // exception pending and the caller should return to JavaScript immediately.
+  BodyLocked IsBodyLocked(ExceptionState&);
 
   // ScriptWrappable override.
   bool HasPendingActivity() const override;

@@ -171,7 +171,7 @@ void CompileFromResponseCallback(
     return;
   }
 
-  if (response->IsBodyLocked() ||
+  if (response->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked ||
       response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
     DCHECK(!exception_state.HadException());
     exception_state.ThrowTypeError(

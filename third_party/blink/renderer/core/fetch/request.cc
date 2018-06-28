@@ -844,7 +844,8 @@ bool Request::isHistoryNavigation() const {
 
 Request* Request::clone(ScriptState* script_state,
                         ExceptionState& exception_state) {
-  if (IsBodyLocked() || IsBodyUsed(exception_state) == BodyUsed::kUsed) {
+  if (IsBodyLocked(exception_state) == BodyLocked::kLocked ||
+      IsBodyUsed(exception_state) == BodyUsed::kUsed) {
     DCHECK(!exception_state.HadException());
     exception_state.ThrowTypeError("Request body is already used");
     return nullptr;

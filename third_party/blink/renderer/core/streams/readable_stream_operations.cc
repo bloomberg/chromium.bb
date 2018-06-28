@@ -77,13 +77,6 @@ bool BooleanOperationForDCheck(ScriptState* script_state,
   return result.value();
 }
 
-// Performs IsReadableStreamLocked(stream), catching exceptions. Should only be
-// used in DCHECK(). Returns false on exception.
-bool IsLockedForDCheck(ScriptState* script_state, ScriptValue stream) {
-  return BooleanOperationForDCheck(script_state, stream,
-                                   "IsReadableStreamLocked", false);
-}
-
 // Performs IsReadableStreamDefaultReader(value), catching exceptions. Should
 // only be used in DCHECK(). Returns true on exception.
 bool IsDefaultReaderForDCheck(ScriptState* script_state, ScriptValue value) {
@@ -175,9 +168,18 @@ bool ReadableStreamOperations::IsDisturbedForDCheck(ScriptState* script_state,
 
 base::Optional<bool> ReadableStreamOperations::IsLocked(
     ScriptState* script_state,
-    ScriptValue stream) {
+    ScriptValue stream,
+    ExceptionState& exception_state) {
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
-  return BooleanOperation(script_state, stream, "IsReadableStreamLocked");
+  return BooleanOperationWithRethrow(script_state, stream,
+                                     "IsReadableStreamLocked", exception_state);
+}
+
+bool ReadableStreamOperations::IsLockedForDCheck(ScriptState* script_state,
+                                                 ScriptValue stream) {
+  DCHECK(IsReadableStreamForDCheck(script_state, stream));
+  return BooleanOperationForDCheck(script_state, stream,
+                                   "IsReadableStreamLocked", false);
 }
 
 base::Optional<bool> ReadableStreamOperations::IsReadable(

@@ -452,7 +452,8 @@ Headers* Response::headers() const {
 
 Response* Response::clone(ScriptState* script_state,
                           ExceptionState& exception_state) {
-  if (IsBodyLocked() || IsBodyUsed(exception_state) == BodyUsed::kUsed) {
+  if (IsBodyLocked(exception_state) == BodyLocked::kLocked ||
+      IsBodyUsed(exception_state) == BodyUsed::kUsed) {
     DCHECK(!exception_state.HadException());
     exception_state.ThrowTypeError("Response body is already used");
     return nullptr;

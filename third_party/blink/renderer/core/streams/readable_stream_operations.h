@@ -82,7 +82,14 @@ class CORE_EXPORT ReadableStreamOperations {
 
   // IsReadableStreamLocked.
   // This function assumes |IsReadableStream(stream)|.
-  static base::Optional<bool> IsLocked(ScriptState*, ScriptValue stream);
+  static base::Optional<bool> IsLocked(ScriptState*,
+                                       ScriptValue stream,
+                                       ExceptionState&);
+
+  // Performs IsReadableStreamLocked.
+  // Catches exceptions, and returns false if there are any. Should only be used
+  // in a DCHECK statement that passes when the return value is false.
+  static bool IsLockedForDCheck(ScriptState*, ScriptValue stream);
 
   // IsReadableStreamReadable.
   // This function assumes |IsReadableStream(stream)|.
