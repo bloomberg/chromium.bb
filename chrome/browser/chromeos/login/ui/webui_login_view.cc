@@ -573,10 +573,6 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
   if (!features::IsAshInBrowserProcess())
     return true;
 
-  // The old system tray is not available when UnifiedSystemTray is enabled.
-  if (ash::features::IsSystemTrayUnifiedEnabled())
-    return true;
-
   // The focus should not move to the system tray if voice interaction OOOBE is
   // active.
   if (LoginDisplayHost::default_host() &&
@@ -595,10 +591,9 @@ bool WebUILoginView::MoveFocusToSystemTray(bool reverse) {
     return true;
   }
 
-  ash::SystemTray* tray =
-      ash::RootWindowController::ForWindow(GetWidget()->GetNativeWindow())
-          ->GetSystemTray();
-  if (!tray || !tray->GetWidget()->IsVisible() || !tray->visible())
+  ash::RootWindowController* primary_controller =
+      ash::RootWindowController::ForWindow(GetWidget()->GetNativeWindow());
+  if (!primary_controller->IsSystemTrayVisible())
     return false;
 
   shelf->GetStatusAreaWidget()
