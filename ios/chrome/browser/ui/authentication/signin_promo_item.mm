@@ -48,9 +48,7 @@
   self = [super initWithFrame:frame];
   if (self) {
     UIView* contentView = self.contentView;
-    _signinPromoView =
-        [[SigninPromoView alloc] initWithFrame:self.bounds
-                                         style:SigninPromoViewUILegacy];
+    _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
     AddSameConstraints(_signinPromoView, contentView);

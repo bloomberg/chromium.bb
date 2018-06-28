@@ -5,7 +5,10 @@
 #import "ios/chrome/browser/ui/bookmarks/cells/bookmark_table_signin_promo_cell.h"
 
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
+#include "ios/chrome/grit/ios_chromium_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -35,11 +38,12 @@ const NSInteger kSigninPromoMargin = 8;
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     UIView* contentView = self.contentView;
-    _signinPromoView =
-        [[SigninPromoView alloc] initWithFrame:self.bounds
-                                         style:SigninPromoViewUIRefresh];
+    _signinPromoView = [[SigninPromoView alloc] initWithFrame:self.bounds];
     _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [contentView addSubview:_signinPromoView];
+    _signinPromoView.layer.borderColor =
+        [UIColor colorWithWhite:0.0 alpha:0.08].CGColor;
+    _signinPromoView.layer.borderWidth = 1.0f;
     NSArray* visualConstraints = @[
       @"V:|-(margin)-[signin_promo_view]-(margin)-|",
       @"H:|-(margin)-[signin_promo_view]-(margin)-|",
@@ -47,6 +51,9 @@ const NSInteger kSigninPromoMargin = 8;
     NSDictionary* views = @{@"signin_promo_view" : _signinPromoView};
     NSDictionary* metrics = @{ @"margin" : @(kSigninPromoMargin) };
     ApplyVisualConstraintsWithMetrics(visualConstraints, views, metrics);
+    _signinPromoView.backgroundColor = [UIColor whiteColor];
+    _signinPromoView.textLabel.text =
+        l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_BOOKMARKS);
   }
   return self;
 }

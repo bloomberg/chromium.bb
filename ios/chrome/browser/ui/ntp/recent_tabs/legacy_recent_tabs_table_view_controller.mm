@@ -792,8 +792,7 @@ enum CellType {
       }
       contentViewTopMargin = kSigninPromoViewTopMargin;
       SigninPromoView* signinPromoView =
-          [[SigninPromoView alloc] initWithFrame:CGRectZero
-                                           style:SigninPromoViewUILegacy];
+          [[SigninPromoView alloc] initWithFrame:CGRectZero];
       signinPromoView.delegate = _signinPromoViewMediator;
       signinPromoView.textLabel.text =
           l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);
