@@ -17,20 +17,6 @@ namespace blink {
 
 namespace {
 
-base::Optional<bool> BooleanOperation(ScriptState* script_state,
-                                      ScriptValue value,
-                                      const char* operation) {
-  v8::Local<v8::Value> args[] = {value.V8Value()};
-  v8::Local<v8::Value> result_value;
-  bool result_bool = false;
-  if (V8ScriptRunner::CallExtra(script_state, operation, args)
-          .ToLocal(&result_value) &&
-      result_value->BooleanValue(script_state->GetContext()).To(&result_bool)) {
-    return result_bool;
-  }
-  return base::nullopt;
-}
-
 base::Optional<bool> BooleanOperationWithRethrow(
     ScriptState* script_state,
     ScriptValue value,
@@ -66,15 +52,18 @@ bool BooleanOperationForDCheck(ScriptState* script_state,
                                ScriptValue value,
                                const char* operation,
                                bool fallback_value) {
+  v8::Local<v8::Value> args[] = {value.V8Value()};
+  v8::Local<v8::Value> result_value;
+  bool result_bool = false;
   v8::TryCatch block(script_state->GetIsolate());
-  base::Optional<bool> result =
-      BooleanOperation(script_state, value, operation);
-  if (block.HasCaught()) {
-    DCHECK(!result.has_value());
-    return fallback_value;
+  if (V8ScriptRunner::CallExtra(script_state, operation, args)
+          .ToLocal(&result_value) &&
+      result_value->BooleanValue(script_state->GetContext()).To(&result_bool)) {
+    DCHECK(!block.HasCaught());
+    return result_bool;
   }
-  DCHECK(result.has_value());
-  return result.value();
+  DCHECK(block.HasCaught());
+  return fallback_value;
 }
 
 // Performs IsReadableStreamDefaultReader(value), catching exceptions. Should
@@ -127,12 +116,6 @@ ScriptValue ReadableStreamOperations::GetReader(ScriptState* script_state,
                                 "AcquireReadableStreamDefaultReader", args));
   DCHECK(block.HasCaught() || !result.IsEmpty());
   return result;
-}
-
-base::Optional<bool> ReadableStreamOperations::IsReadableStream(
-    ScriptState* script_state,
-    ScriptValue value) {
-  return BooleanOperation(script_state, value, "IsReadableStream");
 }
 
 base::Optional<bool> ReadableStreamOperations::IsReadableStream(
@@ -211,8 +194,10 @@ base::Optional<bool> ReadableStreamOperations::IsErrored(
 
 base::Optional<bool> ReadableStreamOperations::IsReadableStreamDefaultReader(
     ScriptState* script_state,
-    ScriptValue value) {
-  return BooleanOperation(script_state, value, "IsReadableStreamDefaultReader");
+    ScriptValue value,
+    ExceptionState& exception_state) {
+  return BooleanOperationWithRethrow(
+      script_state, value, "IsReadableStreamDefaultReader", exception_state);
 }
 
 ScriptPromise ReadableStreamOperations::DefaultReaderRead(

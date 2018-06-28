@@ -55,9 +55,6 @@ class CORE_EXPORT ReadableStreamOperations {
   // This function assumes |IsReadableStream(stream)|.
   static ScriptValue GetReader(ScriptState*, ScriptValue stream);
 
-  // IsReadableStream. Exceptions are not caught.
-  static base::Optional<bool> IsReadableStream(ScriptState*, ScriptValue);
-
   // IsReadableStream, exception-catching version. Exceptions will be passed to
   // |exception_state|.
   static base::Optional<bool> IsReadableStream(ScriptState*,
@@ -110,8 +107,10 @@ class CORE_EXPORT ReadableStreamOperations {
                                         ExceptionState& exception_state);
 
   // IsReadableStreamDefaultReader.
-  static base::Optional<bool> IsReadableStreamDefaultReader(ScriptState*,
-                                                            ScriptValue);
+  static base::Optional<bool> IsReadableStreamDefaultReader(
+      ScriptState*,
+      ScriptValue,
+      ExceptionState& exception_state);
 
   // ReadableStreamDefaultReaderRead
   // This function assumes |IsReadableStreamDefaultReader(reader)|.
