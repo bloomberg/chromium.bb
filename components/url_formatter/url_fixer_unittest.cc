@@ -306,6 +306,7 @@ struct FixupCase {
     {"about:foo", "chrome://foo/"},
     {"about:version", "chrome://version/"},
     {"about:blank", "about:blank"},
+    {"About:blaNk", "about:blank"},
     {"about:usr:pwd@hst:20/pth?qry#ref", "chrome://hst/pth?qry#ref"},
     {"about://usr:pwd@hst/pth?qry#ref", "chrome://hst/pth?qry#ref"},
     {"chrome:usr:pwd@hst/pth?qry#ref", "chrome://hst/pth?qry#ref"},
