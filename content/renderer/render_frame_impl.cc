@@ -805,6 +805,70 @@ blink::mojom::BlobURLTokenPtrInfo CloneBlobURLToken(
   return result;
 }
 
+// Creates a fully functional DocumentState in the case where we do not have
+// pending_navigation_params_ available in the RenderFrameImpl.
+DocumentState* BuildDocumentState() {
+  DocumentState* document_state = new DocumentState();
+  document_state->set_navigation_state(
+      NavigationStateImpl::CreateContentInitiated());
+  return document_state;
+}
+
+// Creates a fully functional DocumentState in the case where we have
+// pending_navigation_params_ available in the RenderFrameImpl.
+DocumentState* BuildDocumentStateFromPending(
+    PendingNavigationParams* pending_navigation_params) {
+  DocumentState* document_state = new DocumentState();
+  InternalDocumentStateData* internal_data =
+      InternalDocumentStateData::FromDocumentState(document_state);
+
+  const CommonNavigationParams& common_params =
+      pending_navigation_params->common_params;
+  const RequestNavigationParams& request_params =
+      pending_navigation_params->request_params;
+
+  DCHECK(!common_params.navigation_start.is_null());
+  DCHECK(!common_params.url.SchemeIs(url::kJavaScriptScheme));
+
+  if (common_params.navigation_type == FrameMsg_Navigate_Type::RESTORE) {
+    // We're doing a load of a page that was restored from the last session.
+    // By default this prefers the cache over loading
+    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
+    // that are set to expire. We explicitly override that by setting the
+    // policy here so that as necessary we load from the network.
+    //
+    // TODO(davidben): Remove this in favor of passing a cache policy to the
+    // loadHistoryItem call in OnNavigate. That requires not overloading
+    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
+    // policy based on load type, etc".
+    internal_data->set_cache_policy_override(
+        blink::mojom::FetchCacheMode::kDefault);
+  }
+
+  internal_data->set_is_overriding_user_agent(
+      request_params.is_overriding_user_agent);
+  internal_data->set_must_reset_scroll_and_scale_state(
+      common_params.navigation_type ==
+      FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
+  document_state->set_can_load_local_resources(
+      request_params.can_load_local_resources);
+
+  bool load_data = !common_params.base_url_for_data_url.is_empty() &&
+                   !common_params.history_url_for_data_url.is_empty() &&
+                   common_params.url.SchemeIs(url::kDataScheme);
+  document_state->set_was_load_data_with_base_url_request(load_data);
+  if (load_data)
+    document_state->set_data_url(common_params.url);
+
+  document_state->set_navigation_state(
+      NavigationStateImpl::CreateBrowserInitiated(
+          pending_navigation_params->common_params,
+          pending_navigation_params->request_params,
+          pending_navigation_params->time_commit_requested,
+          std::move(pending_navigation_params->commit_callback_)));
+  return document_state;
+}
+
 }  // namespace
 
 class RenderFrameImpl::FrameURLLoaderFactory
@@ -3848,92 +3912,76 @@ void RenderFrameImpl::WillSubmitForm(const blink::WebFormElement& form) {
 
 void RenderFrameImpl::DidCreateDocumentLoader(
     blink::WebDocumentLoader* document_loader) {
-  bool content_initiated = !pending_navigation_params_.get();
+  // Ensure that the pending_navigation_params are destroyed when doing an
+  // early return.
+  std::unique_ptr<PendingNavigationParams> pending_navigation_params(
+      std::move(pending_navigation_params_));
+  bool has_pending_params = pending_navigation_params.get();
 
   DCHECK(!DocumentState::FromDocumentLoader(document_loader));
-  DocumentState* document_state = new DocumentState;
-  document_loader->SetExtraData(document_state);
-  if (!content_initiated)
-    PopulateDocumentStateFromPending(document_state);
-
-  // Carry over the user agent override flag, if it exists.
-  // TODO(lukasza): https://crbug.com/426555: Need OOPIF support for propagating
-  // user agent overrides.
-  blink::WebView* webview = render_view_->webview();
-  if (content_initiated && webview && webview->MainFrame() &&
-      webview->MainFrame()->IsWebLocalFrame() &&
-      webview->MainFrame()->ToWebLocalFrame()->GetDocumentLoader()) {
-    DocumentState* old_document_state = DocumentState::FromDocumentLoader(
-        webview->MainFrame()->ToWebLocalFrame()->GetDocumentLoader());
-    if (old_document_state) {
-      InternalDocumentStateData* internal_data =
-          InternalDocumentStateData::FromDocumentState(document_state);
-      InternalDocumentStateData* old_internal_data =
-          InternalDocumentStateData::FromDocumentState(old_document_state);
-      internal_data->set_is_overriding_user_agent(
-          old_internal_data->is_overriding_user_agent());
-    }
+  DocumentState* document_state = nullptr;
+  if (has_pending_params) {
+    document_state =
+        BuildDocumentStateFromPending(pending_navigation_params.get());
+  } else {
+    document_state = BuildDocumentState();
   }
-
-  // The rest of RenderView assumes that a WebDocumentLoader will always have a
-  // non-null NavigationState.
-  UpdateNavigationState(document_state, false /* was_within_same_document */,
-                        content_initiated);
-
-  NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
-      document_state->navigation_state());
+  document_loader->SetExtraData(document_state);
 
   // Set the navigation start time in blink.
   document_loader->SetNavigationStartTime(
-      navigation_state->common_params().navigation_start);
+      has_pending_params
+          ? pending_navigation_params->common_params.navigation_start
+          : base::TimeTicks::Now());
 
-  // If an actual navigation took place, inform the document loader of what
-  // happened in the browser.
-  if (!navigation_state->request_params()
-           .navigation_timing.fetch_start.is_null()) {
-    // Set timing of several events that happened during navigation.
-    // They will be used in blink for the Navigation Timing API.
-    base::TimeTicks redirect_start =
-        navigation_state->request_params().navigation_timing.redirect_start;
-    base::TimeTicks redirect_end =
-        navigation_state->request_params().navigation_timing.redirect_end;
-    base::TimeTicks fetch_start =
-        navigation_state->request_params().navigation_timing.fetch_start;
-
-    document_loader->UpdateNavigation(
-        redirect_start, redirect_end, fetch_start,
-        !navigation_state->request_params().redirects.empty());
-  }
-
-  // Update the source location before processing the navigation commit.
-  if (navigation_state->common_params().source_location.has_value()) {
-    blink::WebSourceLocation source_location;
-    source_location.url = WebString::FromLatin1(
-        navigation_state->common_params().source_location->url);
-    source_location.line_number =
-        navigation_state->common_params().source_location->line_number;
-    source_location.column_number =
-        navigation_state->common_params().source_location->column_number;
-    document_loader->SetSourceLocation(source_location);
-  }
-
-  if (navigation_state->request_params().was_activated)
-    document_loader->SetUserActivated();
-
-  // Create the serviceworker's per-document network observing object if it
-  // does not exist (When navigation happens within a page, the provider already
-  // exists).
-  if (document_loader->GetServiceWorkerNetworkProvider())
-    return;
-
+  // Create the serviceworker's per-document network observing object.
+  // Same document navigation do not go through here so it should never exist.
+  DCHECK(!document_loader->GetServiceWorkerNetworkProvider());
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory =
       network::SharedURLLoaderFactory::Create(
           GetLoaderFactoryBundle()->CloneWithoutDefaultFactory());
   document_loader->SetServiceWorkerNetworkProvider(
       ServiceWorkerNetworkProvider::CreateForNavigation(
-          routing_id_, navigation_state->request_params(), frame_,
-          content_initiated, std::move(controller_service_worker_info_),
+          routing_id_,
+          has_pending_params ? &(pending_navigation_params->request_params)
+                             : nullptr,
+          frame_, std::move(controller_service_worker_info_),
           std::move(fallback_factory)));
+
+  if (!has_pending_params)
+    return;
+
+  const CommonNavigationParams& common_params =
+      pending_navigation_params->common_params;
+  const RequestNavigationParams& request_params =
+      pending_navigation_params->request_params;
+
+  // Set timing of several events that happened during navigation.
+  // They will be used in blink for the Navigation Timing API.
+  if (!request_params.navigation_timing.fetch_start.is_null()) {
+    base::TimeTicks redirect_start =
+        request_params.navigation_timing.redirect_start;
+    base::TimeTicks redirect_end =
+        request_params.navigation_timing.redirect_end;
+    base::TimeTicks fetch_start = request_params.navigation_timing.fetch_start;
+
+    document_loader->UpdateNavigation(redirect_start, redirect_end, fetch_start,
+                                      !request_params.redirects.empty());
+  }
+
+  // Update the source location before processing the navigation commit.
+  if (pending_navigation_params->common_params.source_location.has_value()) {
+    blink::WebSourceLocation source_location;
+    source_location.url =
+        WebString::FromLatin1(common_params.source_location->url);
+    source_location.line_number = common_params.source_location->line_number;
+    source_location.column_number =
+        common_params.source_location->column_number;
+    document_loader->SetSourceLocation(source_location);
+  }
+
+  if (request_params.was_activated)
+    document_loader->SetUserActivated();
 }
 
 void RenderFrameImpl::DidStartProvisionalLoad(
@@ -4396,8 +4444,21 @@ void RenderFrameImpl::DidFinishSameDocumentNavigation(
                routing_id_);
   DocumentState* document_state =
       DocumentState::FromDocumentLoader(frame_->GetDocumentLoader());
-  UpdateNavigationState(document_state, true /* was_within_same_document */,
-                        content_initiated);
+
+  // If this was a browser-initiated navigation, then there could be pending
+  // navigation params, so use them. Otherwise, just reset the document state
+  // here, since if pending navigation params exist they are for some other
+  // navigation <https://crbug.com/597239>.
+  if (!pending_navigation_params_ || content_initiated) {
+    document_state->set_navigation_state(
+        NavigationStateImpl::CreateContentInitiated());
+  } else {
+    DCHECK(
+        !pending_navigation_params_->common_params.navigation_start.is_null());
+    document_state->set_navigation_state(CreateNavigationStateFromPending());
+    pending_navigation_params_.reset();
+  }
+
   static_cast<NavigationStateImpl*>(document_state->navigation_state())
       ->set_was_within_same_document(true);
 
@@ -6831,37 +6892,6 @@ GURL RenderFrameImpl::GetLoadingUrl() const {
   return request.Url();
 }
 
-void RenderFrameImpl::PopulateDocumentStateFromPending(
-    DocumentState* document_state) {
-  InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
-
-  if (!pending_navigation_params_->common_params.url.SchemeIs(
-          url::kJavaScriptScheme) &&
-      pending_navigation_params_->common_params.navigation_type ==
-          FrameMsg_Navigate_Type::RESTORE) {
-    // We're doing a load of a page that was restored from the last session.
-    // By default this prefers the cache over loading
-    // (LOAD_SKIP_CACHE_VALIDATION) which can result in stale data for pages
-    // that are set to expire. We explicitly override that by setting the
-    // policy here so that as necessary we load from the network.
-    //
-    // TODO(davidben): Remove this in favor of passing a cache policy to the
-    // loadHistoryItem call in OnNavigate. That requires not overloading
-    // UseProtocolCachePolicy to mean both "normal load" and "determine cache
-    // policy based on load type, etc".
-    internal_data->set_cache_policy_override(
-        blink::mojom::FetchCacheMode::kDefault);
-  }
-
-  internal_data->set_is_overriding_user_agent(
-      pending_navigation_params_->request_params.is_overriding_user_agent);
-  internal_data->set_must_reset_scroll_and_scale_state(
-      pending_navigation_params_->common_params.navigation_type ==
-      FrameMsg_Navigate_Type::RELOAD_ORIGINAL_REQUEST_URL);
-  document_state->set_can_load_local_resources(
-      pending_navigation_params_->request_params.can_load_local_resources);
-}
 
 NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
   if (IsBrowserInitiated(pending_navigation_params_.get())) {
@@ -6872,39 +6902,6 @@ NavigationState* RenderFrameImpl::CreateNavigationStateFromPending() {
         std::move(pending_navigation_params_->commit_callback_));
   }
   return NavigationStateImpl::CreateContentInitiated();
-}
-
-void RenderFrameImpl::UpdateNavigationState(DocumentState* document_state,
-                                            bool was_within_same_document,
-                                            bool content_initiated) {
-  // If this was a browser-initiated navigation, then there could be pending
-  // navigation params, so use them. Otherwise, just reset the document state
-  // here, since if pending navigation params exist they are for some other
-  // navigation <https://crbug.com/597239>.
-  if (!pending_navigation_params_ || content_initiated) {
-    document_state->set_navigation_state(
-        NavigationStateImpl::CreateContentInitiated());
-    return;
-  }
-
-  DCHECK(!pending_navigation_params_->common_params.navigation_start.is_null());
-  document_state->set_navigation_state(CreateNavigationStateFromPending());
-
-  // The |set_was_load_data_with_base_url_request| state should not change for
-  // same document navigation, so skip updating it from the same document
-  // navigation params in this case.
-  if (!was_within_same_document) {
-    const CommonNavigationParams& common_params =
-        pending_navigation_params_->common_params;
-    bool load_data = !common_params.base_url_for_data_url.is_empty() &&
-                     !common_params.history_url_for_data_url.is_empty() &&
-                     common_params.url.SchemeIs(url::kDataScheme);
-    document_state->set_was_load_data_with_base_url_request(load_data);
-    if (load_data)
-      document_state->set_data_url(common_params.url);
-  }
-
-  pending_navigation_params_.reset();
 }
 
 media::MediaPermission* RenderFrameImpl::GetMediaPermission() {
