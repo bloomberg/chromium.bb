@@ -2366,7 +2366,7 @@ crbug.com/613672 [ Mac ] virtual/threaded/fast/events/pointerevents/pinch/pointe
 crbug.com/613672 [ Mac ] external/wpt/pointerevents/compat/pointerevent_touch-action_two-finger_interaction-manual.html [ Skip ]
 # In addition to having no support on Mac, the following test times out
 # regularly on Windows.
-crbug.com/613672 [ Mac Win ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
+crbug.com/613672 [ Mac ] virtual/threaded/external/wpt/feature-policy/experimental-features/vertical-scroll-touch-block-manual.tentative.html [ Skip ]
 crbug.com/613672 [ Mac ] fast/events/pointerevents/multi-touch-events.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/user-activation-v2/fast/events/pointerevents/multi-touch-events.html [ Skip ]
 crbug.com/613672 [ Mac ] virtual/mouseevent_fractional/fast/events/pointerevents/multi-touch-events.html [ Skip ]
