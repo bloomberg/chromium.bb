@@ -58,7 +58,7 @@ suite('bookmarks.StoreClient', function() {
 
   suiteSetup(function() {
     document.body.innerHTML = `
-      <dom-module is="test-store-client">
+      <dom-module id="test-store-client">
         <template>
           <template is="dom-repeat" items="[[items]]">
             <div class="item">[[item]]</div>
