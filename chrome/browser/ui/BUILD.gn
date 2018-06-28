@@ -3446,6 +3446,13 @@ split_static_library("ui") {
     if (is_chrome_branded) {
       deps += [ "//chrome/browser/ui/media_router/internal/vector_icons" ]
     }
+
+    if (is_win) {
+      sources += [
+        "views/feature_promos/bookmark_bar_promo_bubble_view.cc",
+        "views/feature_promos/bookmark_bar_promo_bubble_view.h",
+      ]
+    }
   }
 
   if (use_aura) {

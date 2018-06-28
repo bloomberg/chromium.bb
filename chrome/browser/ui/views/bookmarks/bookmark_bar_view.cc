@@ -10,6 +10,7 @@
 #include <limits>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/bind.h"
@@ -736,6 +737,14 @@ views::MenuButton* BookmarkBarView::GetMenuButtonForNode(
   if (index == -1 || !node->is_folder())
     return nullptr;
   return static_cast<views::MenuButton*>(child_at(index));
+}
+
+views::LabelButton* BookmarkBarView::GetBookmarkButtonForNode(
+    const bookmarks::BookmarkNode* node) {
+  int index = model_->bookmark_bar_node()->GetIndexOf(node);
+  if (index == -1 || index >= GetBookmarkButtonCount())
+    return nullptr;
+  return GetBookmarkButton(index);
 }
 
 void BookmarkBarView::GetAnchorPositionForButton(

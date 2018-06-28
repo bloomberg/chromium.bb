@@ -1136,6 +1136,10 @@ test("browser_tests") {
         "../browser/ui/views/feature_promos/incognito_window_promo_dialog_browsertest.cc",
         "../browser/ui/views/feature_promos/new_tab_promo_dialog_browsertest.cc",
       ]
+
+      if (is_win) {
+        sources += [ "../browser/ui/views/feature_promos/bookmark_bar_promo_dialog_browsertest.cc" ]
+      }
     }
 
     if (enable_extensions) {
