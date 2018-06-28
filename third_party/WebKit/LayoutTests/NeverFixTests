@@ -364,9 +364,10 @@ external/wpt/encrypted-media/clearkey-mp4-playback-retrieve-persistent-license.h
 external/wpt/encrypted-media/clearkey-mp4-playback-retrieve-persistent-usage-record.https.html [ WontFix ]
 
 # content_shell doesn't support MP4 files by default.
+external/wpt/encrypted-media/clearkey-mp4-playback-temporary-clear-encrypted-segmented.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-playback-temporary-clear-encrypted.https.html [ WontFix ]
-external/wpt/encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear-sources.https.html [ WontFix ]
+external/wpt/encrypted-media/clearkey-mp4-playback-temporary-encrypted-clear.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-playback-temporary-events.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-playback-temporary.https.html [ WontFix ]
 external/wpt/encrypted-media/clearkey-mp4-playback-temporary-multikey.https.html [ WontFix ]
