@@ -4,10 +4,6 @@
 # Non-interoperable behavior not worth to fix.
 crbug.com/591099 fast/text/apply-start-width-after-skipped-text.html [ Skip ]
 
-# Failures due to 'bad' tests. These tests should be removed/change once we've landed LayoutNG.
-crbug.com/591099 fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-bottom-right.html [ Failure ]
-crbug.com/591099 fast/shapes/shape-outside-floats/shape-outside-floats-inset-rounded-top-right.html [ Failure ]
-
 # Ref does not match because ref uses tables (old layout) while test does not (NG)
 crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-006.html [ Skip ]
 crbug.com/714962 external/wpt/css/css-transforms/transform-abspos-007.html [ Skip ]
