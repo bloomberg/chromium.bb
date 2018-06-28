@@ -5,3 +5,9 @@
 [slot='bottom-buttons'] {
   padding: 0 6px;
 }
+
+/* Spinner shown on progress dialog. */
+paper-spinner-lite {
+  height: 164px;
+  width: 164px;
+}

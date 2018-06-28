@@ -7,6 +7,8 @@
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 #include "chrome/browser/chromeos/login/screens/demo_setup_screen.h"
 #include "chrome/browser/chromeos/login/wizard_controller.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/login/localized_values_builder.h"
 
 namespace {
 
@@ -45,6 +47,15 @@ void DemoSetupScreenHandler::OnSetupFinished(bool is_success,
 void DemoSetupScreenHandler::Initialize() {}
 
 void DemoSetupScreenHandler::DeclareLocalizedValues(
-    ::login::LocalizedValuesBuilder* builder) {}
+    ::login::LocalizedValuesBuilder* builder) {
+  builder->Add("demoSetupProgressScreenTitle",
+               IDS_OOBE_DEMO_SETUP_PROGRESS_SCREEN_TITLE);
+  builder->Add("demoSetupErrorScreenTitle",
+               IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_TITLE);
+  builder->Add("demoSetupErrorScreenSubtitle",
+               IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_SUBTITLE);
+  builder->Add("demoSetupErrorScreenRetryButtonLabel",
+               IDS_OOBE_DEMO_SETUP_ERROR_SCREEN_RETRY_BUTTON_LABEL);
+}
 
 }  // namespace chromeos

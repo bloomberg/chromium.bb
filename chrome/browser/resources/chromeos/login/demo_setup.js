@@ -10,6 +10,8 @@
 Polymer({
   is: 'demo-setup-md',
 
+  behaviors: [I18nBehavior, OobeDialogHostBehavior],
+
   properties: {
     /**
      * Whether offline demo setup was selected. Available setup types: online
