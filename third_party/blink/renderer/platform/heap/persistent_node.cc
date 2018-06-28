@@ -197,7 +197,9 @@ void CrossThreadPersistentRegion::PrepareForThreadStateTermination(
 
 #if defined(ADDRESS_SANITIZER)
 void CrossThreadPersistentRegion::UnpoisonCrossThreadPersistents() {
-  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+#if DCHECK_IS_ON()
+  DCHECK(ProcessHeap::CrossThreadPersistentMutex().Locked());
+#endif
   int persistent_count = 0;
   for (PersistentNodeSlots* slots = persistent_region_.slots_; slots;
        slots = slots->next_) {

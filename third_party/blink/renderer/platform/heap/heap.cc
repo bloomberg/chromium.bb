@@ -459,6 +459,10 @@ void ThreadHeap::PromptlyFreed(size_t gc_info_index) {
 
 #if defined(ADDRESS_SANITIZER)
 void ThreadHeap::PoisonAllHeaps() {
+  // This lock must be held because other threads may access cross-thread
+  // persistents and should not observe them in a poisoned state.
+  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+
   // Poisoning all unmarked objects in the other arenas.
   for (int i = 1; i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->PoisonArena();
@@ -470,6 +474,10 @@ void ThreadHeap::PoisonAllHeaps() {
 }
 
 void ThreadHeap::PoisonEagerArena() {
+  // This lock must be held because other threads may access cross-thread
+  // persistents and should not observe them in a poisoned state.
+  MutexLocker lock(ProcessHeap::CrossThreadPersistentMutex());
+
   arenas_[BlinkGC::kEagerSweepArenaIndex]->PoisonArena();
   // CrossThreadPersistents in unmarked objects may be accessed from other
   // threads (e.g. in CrossThreadPersistentRegion::shouldTracePersistent) and
