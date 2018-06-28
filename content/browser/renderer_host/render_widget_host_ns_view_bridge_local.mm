@@ -170,7 +170,7 @@ void RenderWidgetHostNSViewBridgeLocal::SetTextInputType(
 
 void RenderWidgetHostNSViewBridgeLocal::SetTextSelection(
     const base::string16& text,
-    size_t offset,
+    uint64_t offset,
     const gfx::Range& range) {
   [cocoa_view_ setTextSelectionText:text offset:offset range:range];
   // Updates markedRange when there is no marked text so that retrieving
@@ -217,7 +217,7 @@ void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlayForSelection() {
 
 void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlay(
     const mac::AttributedStringCoder::EncodedString& encoded_string,
-    gfx::Point baseline_point) {
+    const gfx::Point& baseline_point) {
   NSAttributedString* string =
       mac::AttributedStringCoder::Decode(&encoded_string);
   if ([string length] == 0)
@@ -230,7 +230,13 @@ void RenderWidgetHostNSViewBridgeLocal::ShowDictionaryOverlay(
 }
 
 void RenderWidgetHostNSViewBridgeLocal::LockKeyboard(
-    base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
+    const base::Optional<std::vector<uint32_t>>& uint_dom_codes) {
+  base::Optional<base::flat_set<ui::DomCode>> dom_codes;
+  if (uint_dom_codes) {
+    dom_codes.emplace();
+    for (const auto& uint_dom_code : *uint_dom_codes)
+      dom_codes->insert(static_cast<ui::DomCode>(uint_dom_code));
+  }
   [cocoa_view_ lockKeyboard:std::move(dom_codes)];
 }
 

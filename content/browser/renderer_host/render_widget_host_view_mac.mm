@@ -146,7 +146,9 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
                         this),
       weak_factory_(this) {
   // The NSView is on the other side of |ns_view_bridge_|.
-  ns_view_bridge_ = std::make_unique<RenderWidgetHostNSViewBridgeLocal>(this);
+  ns_view_bridge_local_ =
+      std::make_unique<RenderWidgetHostNSViewBridgeLocal>(this);
+  ns_view_bridge_ = ns_view_bridge_local_.get();
 
   // Guess that the initial screen we will be on is the screen of the current
   // window (since that's the best guess that we have, and is usually right).
@@ -222,7 +224,9 @@ void RenderWidgetHostViewMac::SetParentUiLayer(ui::Layer* parent_ui_layer) {
 }
 
 RenderWidgetHostViewCocoa* RenderWidgetHostViewMac::cocoa_view() const {
-  return ns_view_bridge_->GetRenderWidgetHostViewCocoa();
+  if (ns_view_bridge_local_)
+    return ns_view_bridge_local_->GetRenderWidgetHostViewCocoa();
+  return nullptr;
 }
 
 void RenderWidgetHostViewMac::SetDelegate(
@@ -608,7 +612,8 @@ void RenderWidgetHostViewMac::Destroy() {
 
   // Destroy the brige to the NSView. Note that the NSView on the other side
   // of |ns_view_bridge_| may outlive us due to other retains.
-  ns_view_bridge_.reset();
+  ns_view_bridge_ = nullptr;
+  ns_view_bridge_local_.reset();
 
   // Delete the delegated frame state, which will reach back into
   // host().
@@ -1045,8 +1050,14 @@ void RenderWidgetHostViewMac::UnlockMouse() {
 
 bool RenderWidgetHostViewMac::LockKeyboard(
     base::Optional<base::flat_set<ui::DomCode>> dom_codes) {
+  base::Optional<std::vector<uint32_t>> uint_dom_codes;
+  if (dom_codes) {
+    uint_dom_codes.emplace();
+    for (const auto& dom_code : *dom_codes)
+      uint_dom_codes->push_back(static_cast<uint32_t>(dom_code));
+  }
   is_keyboard_locked_ = true;
-  ns_view_bridge_->LockKeyboard(std::move(dom_codes));
+  ns_view_bridge_->LockKeyboard(uint_dom_codes);
   return true;
 }
 

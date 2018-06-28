@@ -21,21 +21,13 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
+#include "content/common/render_widget_host_ns_view.mojom.h"
 #include "ipc/ipc_sender.h"
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/ca_transaction_observer.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
 #include "ui/events/gesture_detection/filtered_gesture_provider.h"
-
-namespace content {
-class CursorManager;
-class RenderWidgetHost;
-class RenderWidgetHostNSViewBridge;
-class RenderWidgetHostViewMac;
-class WebContents;
-class WebCursor;
-}
 
 namespace ui {
 enum class DomCode;
@@ -47,6 +39,13 @@ class ScopedPasswordInputEnabler;
 @class RenderWidgetHostViewCocoa;
 
 namespace content {
+
+class CursorManager;
+class RenderWidgetHost;
+class RenderWidgetHostNSViewBridgeLocal;
+class RenderWidgetHostViewMac;
+class WebContents;
+class WebCursor;
 
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac
@@ -471,8 +470,15 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   using SpeechCallback = base::OnceCallback<void(const base::string16&)>;
   void GetPageTextForSpeech(SpeechCallback callback);
 
-  // Interface through which the NSView is to be manipulated.
-  std::unique_ptr<RenderWidgetHostNSViewBridge> ns_view_bridge_;
+  // Interface through which the NSView is to be manipulated. This points either
+  // to |ns_view_bridge_local_| or to (to-be-added) |ns_view_bridge_remote_|.
+  mojom::RenderWidgetHostNSViewBridge* ns_view_bridge_ = nullptr;
+
+  // If |ns_view_bridge_| is hosted in this process, then this will be non-null,
+  // and may be used to query the actual RenderWidgetHostViewCocoa that is being
+  // used for |this|. Any functionality that uses |new_view_bridge_local_| will
+  // not work when the RenderWidgetHostViewCocoa is hosted in an app process.
+  std::unique_ptr<RenderWidgetHostNSViewBridgeLocal> ns_view_bridge_local_;
 
   // State tracked by Show/Hide/IsShowing.
   bool is_visible_ = false;
