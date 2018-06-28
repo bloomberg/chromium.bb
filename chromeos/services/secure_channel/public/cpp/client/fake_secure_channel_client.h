@@ -58,6 +58,45 @@ class FakeSecureChannelClient : public SecureChannelClient {
         device_to_connect, local_device)] = std::move(attempt);
   }
 
+  ConnectionAttempt* peek_next_initiate_connection_attempt(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      cryptauth::RemoteDeviceRef local_device) {
+    auto device_id_pair = std::make_pair(device_to_connect, local_device);
+    if (!base::ContainsKey(device_pair_to_next_initiate_connection_attempt_,
+                           device_id_pair)) {
+      return nullptr;
+    }
+
+    return device_pair_to_next_initiate_connection_attempt_[device_id_pair]
+        .get();
+  }
+
+  ConnectionAttempt* peek_next_listen_connection_attempt(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      cryptauth::RemoteDeviceRef local_device) {
+    auto device_id_pair = std::make_pair(device_to_connect, local_device);
+    if (!base::ContainsKey(device_pair_to_next_listen_connection_attempt_,
+                           device_id_pair)) {
+      return nullptr;
+    }
+
+    return device_pair_to_next_listen_connection_attempt_[device_id_pair].get();
+  }
+
+  void clear_next_initiate_connection_attempt(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      cryptauth::RemoteDeviceRef local_device) {
+    device_pair_to_next_initiate_connection_attempt_.erase(
+        std::make_pair(device_to_connect, local_device));
+  }
+
+  void clear_next_listen_connection_attempt(
+      cryptauth::RemoteDeviceRef device_to_connect,
+      cryptauth::RemoteDeviceRef local_device) {
+    device_pair_to_next_listen_connection_attempt_.erase(
+        std::make_pair(device_to_connect, local_device));
+  }
+
   std::vector<ConnectionRequestArguments*>
   last_initiate_connection_request_arguments_list() {
     std::vector<ConnectionRequestArguments*> arguments_list_raw_;
