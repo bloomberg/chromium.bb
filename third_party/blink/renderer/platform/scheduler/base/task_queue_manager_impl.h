@@ -128,8 +128,6 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   void CancelDelayedWork(TimeDomain* requesting_time_domain,
                          TimeTicks run_time);
 
-  LazyNow CreateLazyNow() const;
-
   // Returns the currently executing TaskQueue if any. Must be called on the
   // thread this class was created on.
   internal::TaskQueueImpl* currently_executing_task_queue() const;
