@@ -92,29 +92,44 @@ static std::string SerializeMediaStreamComponent(
   return component.Source().Id().Utf8();
 }
 
-static std::string SerializeMediaDescriptor(
-    const blink::WebMediaStream& stream) {
-  std::string id = stream.Id().Utf8();
-  std::string result = "id: " + id;
-  blink::WebVector<blink::WebMediaStreamTrack> tracks = stream.AudioTracks();
-  if (!tracks.IsEmpty()) {
-    result += ", audio: [";
-    for (size_t i = 0; i < tracks.size(); ++i) {
-      result += SerializeMediaStreamComponent(tracks[i]);
-      if (i != tracks.size() - 1)
-        result += ", ";
-    }
-    result += "]";
+static std::string SerializeMediaStream(const blink::WebMediaStream& stream) {
+  return stream.Id().Utf8();
+}
+
+static std::string SerializeMediaStreamVector(
+    const blink::WebVector<blink::WebMediaStream> streams) {
+  if (!streams.size())
+    return "[]";
+  std::string result = "[ ";
+  for (const auto& stream : streams) {
+    if (result.size() > 2u)
+      result += ", ";
+    result += SerializeMediaStream(stream);
   }
-  tracks = stream.VideoTracks();
-  if (!tracks.IsEmpty()) {
-    result += ", video: [";
-    for (size_t i = 0; i < tracks.size(); ++i) {
-      result += SerializeMediaStreamComponent(tracks[i]);
-      if (i != tracks.size() - 1)
-        result += ", ";
-    }
-    result += "]";
+  result += " ]";
+  return result;
+}
+
+static std::string SerializeTransceiver(
+    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+  DCHECK((sender != nullptr) != (receiver != nullptr));
+  std::string result;
+  if (sender) {
+    result += "sender: { ";
+    if (sender->Track().IsNull())
+      result += "track: null";
+    else
+      result += "track: " + SerializeMediaStreamComponent(sender->Track());
+    result += ", streams: " + SerializeMediaStreamVector(sender->Streams());
+    result += " }";
+  } else {
+    DCHECK(receiver);
+    result += "receiver: { ";
+    DCHECK(!receiver->Track().IsNull());
+    result += "track: " + SerializeMediaStreamComponent(receiver->Track());
+    result += ", streams: " + SerializeMediaStreamVector(receiver->Streams());
+    result += " }";
   }
   return result;
 }
@@ -267,6 +282,20 @@ static const char* GetIceGatheringStateString(
       break;
   }
   return result;
+}
+
+static const char* GetTransceiverUpdatedReasonString(
+    PeerConnectionTracker::TransceiverUpdatedReason reason) {
+  switch (reason) {
+    case PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack:
+      return "addTrack";
+    case PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack:
+      return "removeTrack";
+    case PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription:
+      return "setRemoteDescription";
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 // Builds a DictionaryValue from the StatsReport.
@@ -618,30 +647,53 @@ void PeerConnectionTracker::TrackAddIceCandidate(
   SendPeerConnectionUpdate(id, event, value);
 }
 
-void PeerConnectionTracker::TrackAddStream(
+void PeerConnectionTracker::TrackAddTransceiver(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebMediaStream& stream,
-    Source source) {
-  DCHECK(main_thread_.CalledOnValidThread());
-  int id = GetLocalIDForHandler(pc_handler);
-  if (id == -1)
-    return;
-  SendPeerConnectionUpdate(
-      id, source == SOURCE_LOCAL ? "addStream" : "onAddStream",
-      SerializeMediaDescriptor(stream));
+    PeerConnectionTracker::TransceiverUpdatedReason reason,
+    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+  TrackTransceiver("Added", pc_handler, reason, sender, receiver);
 }
 
-void PeerConnectionTracker::TrackRemoveStream(
+void PeerConnectionTracker::TrackModifyTransceiver(
     RTCPeerConnectionHandler* pc_handler,
-    const blink::WebMediaStream& stream,
-    Source source) {
+    PeerConnectionTracker::TransceiverUpdatedReason reason,
+    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+  TrackTransceiver("Modified", pc_handler, reason, sender, receiver);
+}
+
+void PeerConnectionTracker::TrackRemoveTransceiver(
+    RTCPeerConnectionHandler* pc_handler,
+    PeerConnectionTracker::TransceiverUpdatedReason reason,
+    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
+  TrackTransceiver("Removed", pc_handler, reason, sender, receiver);
+}
+
+void PeerConnectionTracker::TrackTransceiver(
+    const char* callback_type_ending,
+    RTCPeerConnectionHandler* pc_handler,
+    PeerConnectionTracker::TransceiverUpdatedReason reason,
+    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver) {
   DCHECK(main_thread_.CalledOnValidThread());
   int id = GetLocalIDForHandler(pc_handler);
   if (id == -1)
     return;
-  SendPeerConnectionUpdate(
-      id, source == SOURCE_LOCAL ? "removeStream" : "onRemoveStream",
-      SerializeMediaDescriptor(stream));
+  std::string callback_type;
+  if (sender && receiver)
+    callback_type = "transceiver";
+  else if (sender)
+    callback_type = "sender";
+  else
+    callback_type = "receiver";
+  callback_type += callback_type_ending;
+  callback_type += " (";
+  callback_type += GetTransceiverUpdatedReasonString(reason);
+  callback_type += ")";
+  SendPeerConnectionUpdate(id, callback_type,
+                           SerializeTransceiver(sender, receiver));
 }
 
 void PeerConnectionTracker::TrackCreateDataChannel(
@@ -784,11 +836,11 @@ int PeerConnectionTracker::GetLocalIDForHandler(
 
 void PeerConnectionTracker::SendPeerConnectionUpdate(
     int local_id,
-    const char* callback_type,
+    const std::string& callback_type,
     const std::string& value) {
   DCHECK(main_thread_.CalledOnValidThread());
   GetPeerConnectionTrackerHost().get()->UpdatePeerConnection(
-      local_id, std::string(callback_type), value);
+      local_id, callback_type, value);
 }
 
 void PeerConnectionTracker::OverrideSendTargetForTesting(RenderThread* target) {

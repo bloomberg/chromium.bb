@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/testing/testing_platform_support_with_web_rtc.h"
 
 #include <memory>
+#include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_media_stream_track.h"
 #include "third_party/blink/public/platform/web_rtc_dtmf_sender_handler.h"
 #include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
@@ -26,6 +27,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
 
   uintptr_t Id() const override { return id_; }
   WebMediaStreamTrack Track() const override { return WebMediaStreamTrack(); }
+  WebVector<WebMediaStream> Streams() const override { return {}; }
   void ReplaceTrack(WebMediaStreamTrack, WebRTCVoidRequest) override {}
   std::unique_ptr<WebRTCDTMFSenderHandler> GetDtmfSender() const override {
     return nullptr;

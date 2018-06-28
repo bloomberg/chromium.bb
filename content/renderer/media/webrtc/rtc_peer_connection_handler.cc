@@ -1831,15 +1831,14 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
       native_peer_connection_, task_runner_, signaling_thread(),
       stream_adapter_map_, std::move(webrtc_sender), std::move(track_adapter),
       std::move(stream_adapters)));
+  if (peer_connection_tracker_) {
+    peer_connection_tracker_->TrackAddTransceiver(
+        this, PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack,
+        rtp_senders_.back()->ShallowCopy(), nullptr);
+  }
   for (const auto& stream_ref : rtp_senders_.back()->stream_refs()) {
     if (GetLocalStreamUsageCount(rtp_senders_,
                                  stream_ref->adapter().web_stream()) == 1u) {
-      // This is the first occurrence of this stream.
-      if (peer_connection_tracker_) {
-        peer_connection_tracker_->TrackAddStream(
-            this, stream_ref->adapter().web_stream(),
-            PeerConnectionTracker::SOURCE_LOCAL);
-      }
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
       track_metrics_.AddStream(MediaStreamTrackMetrics::SENT_STREAM,
                                stream_ref->adapter().webrtc_stream().get());
@@ -1857,6 +1856,11 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   if (!(*it)->RemoveFromPeerConnection(native_peer_connection_.get()))
     return false;
   auto stream_refs = (*it)->stream_refs();
+  if (peer_connection_tracker_) {
+    peer_connection_tracker_->TrackRemoveTransceiver(
+        this, PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack,
+        (*it)->ShallowCopy(), nullptr);
+  }
   // TODO(hbos): In Unified Plan, senders are never removed. The lower layer
   // needs to tell us what to do with the sender: Update its states and/or
   // remove it. https://crbug.com/799030
@@ -1864,12 +1868,6 @@ bool RTCPeerConnectionHandler::RemoveTrack(blink::WebRTCRtpSender* web_sender) {
   for (const auto& stream_ref : stream_refs) {
     if (GetLocalStreamUsageCount(rtp_senders_,
                                  stream_ref->adapter().web_stream()) == 0u) {
-      // This was the last occurrence of this stream.
-      if (peer_connection_tracker_) {
-        peer_connection_tracker_->TrackRemoveStream(
-            this, stream_ref->adapter().web_stream(),
-            PeerConnectionTracker::SOURCE_LOCAL);
-      }
       PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
       track_metrics_.RemoveStream(MediaStreamTrackMetrics::SENT_STREAM,
                                   stream_ref->adapter().webrtc_stream().get());
@@ -2071,13 +2069,6 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
             rtp_receivers_,
             remote_stream_adapter_ref->adapter().webrtc_stream().get()) == 0) {
       // Update metrics.
-      // TODO(hbos): Update metrics to correspond to track added/removed events,
-      // not streams. https://crbug.com/765170
-      if (peer_connection_tracker_) {
-        peer_connection_tracker_->TrackAddStream(
-            this, remote_stream_adapter_ref->adapter().web_stream(),
-            PeerConnectionTracker::SOURCE_REMOTE);
-      }
       PerSessionWebRTCAPIMetrics::GetInstance()->IncrementStreamCounter();
       track_metrics_.AddStream(
           MediaStreamTrackMetrics::RECEIVED_STREAM,
@@ -2096,6 +2087,12 @@ void RTCPeerConnectionHandler::OnAddRemoteTrack(
                   webrtc_receiver.get(), std::move(remote_track_adapter_ref),
                   std::move(remote_stream_adapter_refs))))
           .first->second;
+  if (peer_connection_tracker_) {
+    peer_connection_tracker_->TrackAddTransceiver(
+        this,
+        PeerConnectionTracker::TransceiverUpdatedReason::kSetRemoteDescription,
+        nullptr, rtp_receiver->ShallowCopy());
+  }
   if (!is_closed_)
     client_->DidAddRemoteTrack(rtp_receiver->ShallowCopy());
 }
@@ -2111,6 +2108,13 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
     uintptr_t receiver_id = RTCRtpReceiver::getId(webrtc_receiver.get());
     auto it = rtp_receivers_.find(receiver_id);
     DCHECK(it != rtp_receivers_.end());
+    if (peer_connection_tracker_) {
+      peer_connection_tracker_->TrackRemoveTransceiver(
+          this,
+          PeerConnectionTracker::TransceiverUpdatedReason::
+              kSetRemoteDescription,
+          nullptr /* sender */, it->second->ShallowCopy() /* receiver */);
+    }
     remote_stream_adapter_refs = it->second->StreamAdapterRefs();
     if (!is_closed_)
       client_->DidRemoveRemoteTrack(it->second->ShallowCopy());
@@ -2127,11 +2131,6 @@ void RTCPeerConnectionHandler::OnRemoveRemoteTrack(
           MediaStreamTrackMetrics::RECEIVED_STREAM,
           remote_stream_adapter_ref->adapter().webrtc_stream().get());
       PerSessionWebRTCAPIMetrics::GetInstance()->DecrementStreamCounter();
-      if (peer_connection_tracker_) {
-        peer_connection_tracker_->TrackRemoveStream(
-            this, remote_stream_adapter_ref->adapter().web_stream(),
-            PeerConnectionTracker::SOURCE_REMOTE);
-      }
     }
   }
 }

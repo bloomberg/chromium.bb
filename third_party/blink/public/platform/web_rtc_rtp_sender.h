@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class WebMediaStream;
 class WebMediaStreamTrack;
 class WebRTCDTMFSenderHandler;
 
@@ -29,6 +30,7 @@ class BLINK_PLATFORM_EXPORT WebRTCRtpSender {
   // allowed to be reused after a sender is destroyed.
   virtual uintptr_t Id() const = 0;
   virtual WebMediaStreamTrack Track() const = 0;
+  virtual WebVector<WebMediaStream> Streams() const = 0;
   // TODO(hbos): Replace WebRTCVoidRequest by something resolving promises based
   // on RTCError, as to surface both exception type and error message.
   // https://crbug.com/790007
