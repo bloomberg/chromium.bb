@@ -175,4 +175,54 @@ TEST(MojoSharedBufferVideoFrameTest, TestDestructionCallback) {
   EXPECT_TRUE(callback_called);
 }
 
+TEST(MojoSharedBufferVideoFrameTest, InterleavedData) {
+  const VideoPixelFormat format = PIXEL_FORMAT_I420;
+  const int kWidth = 32;
+  const int kHeight = 18;
+  const base::TimeDelta kTimestamp = base::TimeDelta::FromMicroseconds(1338);
+  gfx::Size size(kWidth, kHeight);
+  gfx::Rect visible_rect(size);
+
+  // Create interlaced UV data, which are each 1/4 the size of the Y data.
+  const size_t y_offset = 0;
+  const size_t u_offset =
+      VideoFrame::PlaneSize(format, VideoFrame::kYPlane, size).GetArea();
+  const size_t v_offset =
+      u_offset + VideoFrame::RowBytes(VideoFrame::kUPlane, format, kWidth);
+  const int32_t y_stride =
+      VideoFrame::RowBytes(VideoFrame::kYPlane, format, kWidth);
+  const int32_t u_stride = y_stride;
+  const int32_t v_stride = y_stride;
+
+  // Allocate some shared memory.
+  size_t requested_size = VideoFrame::AllocationSize(format, size);
+  mojo::ScopedSharedBufferHandle handle =
+      mojo::SharedBufferHandle::Create(requested_size);
+  ASSERT_TRUE(handle.is_valid());
+
+  // Allocate frame.
+  scoped_refptr<MojoSharedBufferVideoFrame> frame =
+      MojoSharedBufferVideoFrame::Create(format, size, visible_rect, size,
+                                         std::move(handle), requested_size,
+                                         y_offset, u_offset, v_offset, y_stride,
+                                         u_stride, v_stride, kTimestamp);
+  ASSERT_TRUE(frame.get());
+  EXPECT_EQ(frame->format(), format);
+
+  // The offsets should be set appropriately.
+  EXPECT_EQ(frame->PlaneOffset(VideoFrame::kYPlane), y_offset);
+  EXPECT_EQ(frame->PlaneOffset(VideoFrame::kUPlane), u_offset);
+  EXPECT_EQ(frame->PlaneOffset(VideoFrame::kVPlane), v_offset);
+
+  // The strides should be set appropriately.
+  EXPECT_EQ(frame->stride(VideoFrame::kYPlane), y_stride);
+  EXPECT_EQ(frame->stride(VideoFrame::kUPlane), u_stride);
+  EXPECT_EQ(frame->stride(VideoFrame::kVPlane), v_stride);
+
+  // The data pointers for each plane should be set.
+  EXPECT_TRUE(frame->data(VideoFrame::kYPlane));
+  EXPECT_TRUE(frame->data(VideoFrame::kUPlane));
+  EXPECT_TRUE(frame->data(VideoFrame::kVPlane));
+}
+
 }  // namespace media
