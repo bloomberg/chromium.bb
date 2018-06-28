@@ -777,6 +777,9 @@ LayoutSelectionStatus LayoutSelection::ComputeSelectionStatus(
     const NGPaintFragment& fragment) const {
   const NGPhysicalTextFragment& text_fragment =
       ToNGPhysicalTextFragmentOrDie(fragment.PhysicalFragment());
+  // We don't paint selection on ellipsis.
+  if (text_fragment.StyleVariant() == NGStyleVariant::kEllipsis)
+    return {0, 0, SelectLineBreak::kNotSelected};
   switch (text_fragment.GetLayoutObject()->GetSelectionState()) {
     case SelectionState::kStart: {
       DCHECK(SelectionStart().has_value());
