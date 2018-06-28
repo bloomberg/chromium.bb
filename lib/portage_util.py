@@ -989,7 +989,8 @@ class EBuild(object):
                    self.pkgname)
       return
 
-    logging.info('Creating new stable ebuild %s' % new_stable_ebuild_path)
+    logging.info('Determining whether to create new ebuild %s' %
+                 new_stable_ebuild_path)
     if not os.path.exists(self._unstable_ebuild_path):
       cros_build_lib.Die('Missing unstable ebuild: %s' %
                          self._unstable_ebuild_path)
@@ -1005,6 +1006,9 @@ class EBuild(object):
       os.unlink(new_stable_ebuild_path)
       return
     else:
+      logging.info('Creating new stable ebuild %s', new_stable_ebuild_path)
+      logging.info('New ebuild commit id: %s',
+                   self.FormatBashArray(commit_ids))
       ebuild_path_to_remove = old_ebuild_path if self.is_stable else None
       return ('%s-%s' % (self.package, new_version),
               new_stable_ebuild_path, ebuild_path_to_remove)
