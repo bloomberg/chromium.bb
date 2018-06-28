@@ -59,20 +59,10 @@ bool ThemeBackgroundInfo::operator==(const ThemeBackgroundInfo& rhs) const {
 }
 
 InstantMostVisitedItem::InstantMostVisitedItem()
-    : has_fallback_style(false),
-      title_source(ntp_tiles::TileTitleSource::UNKNOWN),
+    : title_source(ntp_tiles::TileTitleSource::UNKNOWN),
       source(ntp_tiles::TileSource::TOP_SITES) {}
 
 InstantMostVisitedItem::InstantMostVisitedItem(
     const InstantMostVisitedItem& other) = default;
 
 InstantMostVisitedItem::~InstantMostVisitedItem() {}
-
-bool InstantMostVisitedItem::IsEquivalentTo(
-    const InstantMostVisitedItem& rhs) const {
-  return url == rhs.url && title == rhs.title && thumbnail == rhs.thumbnail &&
-         favicon == rhs.favicon &&
-         has_fallback_style == rhs.has_fallback_style &&
-         fallback_background_color == rhs.fallback_background_color &&
-         fallback_text_color == rhs.fallback_text_color;
-}

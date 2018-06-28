@@ -14,8 +14,6 @@
  */
 const CLASSES = {
   FAILED_FAVICON: 'failed-favicon',  // Applied when the favicon fails to load.
-  FALLBACK: 'fallback',
-  FALLBACK_LETTER: 'fallback-letter',
   MATERIAL_DESIGN: 'md',  // Applies Material Design styles to the page.
   // Material Design classes.
   MD_EMPTY_TILE: 'md-empty-tile',
@@ -376,18 +374,6 @@ var isSchemeAllowed = function(url) {
 
 
 /**
- * Converts an Array of color components into RGBA format "rgba(R,G,B,A)".
- * @param {Array<number>} color Array of rgba color components.
- * @return {string} CSS color in RGBA format.
- * @private
- */
-function convertToRGBAColor(color) {
-  return 'rgba(' + color[0] + ',' + color[1] + ',' + color[2] + ',' +
-      color[3] / 255 + ')';
-}
-
-
-/**
  * Renders a MostVisited tile to the DOM.
  * @param {object} data Object containing rid, url, title, favicon, thumbnail.
  *     data is null if you want to construct an empty tile.
@@ -630,9 +616,8 @@ function renderMaterialDesignTile(data) {
     logMostVisitedImpression(
         position, data.tileTitleSource, data.tileSource, tileType,
         data.dataGenerationTime);
-    // Note: It's important to call countLoad last, because that might emit
-    // the NTP_ALL_TILES_LOADED event, which must happen after the impression
-    // log.
+    // Note: It's important to call countLoad last, because that might emit the
+    // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
     countLoad();
   });
   fi.addEventListener('error', function(ev) {
@@ -643,9 +628,8 @@ function renderMaterialDesignTile(data) {
     logMostVisitedImpression(
         position, data.tileTitleSource, data.tileSource, tileType,
         data.dataGenerationTime);
-    // Note: It's important to call countLoad last, because that might emit
-    // the NTP_ALL_TILES_LOADED event, which must happen after the impression
-    // log.
+    // Note: It's important to call countLoad last, because that might emit the
+    // NTP_ALL_TILES_LOADED event, which must happen after the impression log.
     countLoad();
   });
   mdFavicon.appendChild(fi);
