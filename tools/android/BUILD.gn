@@ -71,3 +71,10 @@ group("push_apps_to_background") {
     "//tools/android/push_apps_to_background:push_apps_to_background_apk",
   ]
 }
+
+group("io_benchmark") {
+  deps = [
+    "//tools/android/io_benchmark",
+  ]
+  testonly = true
+}
