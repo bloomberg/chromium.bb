@@ -90,6 +90,10 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @property(nonatomic, assign, getter=isLoading) BOOL loading;
 // YES if there is a search happening.
 @property(nonatomic, assign) BOOL searchInProgress;
+// NSMutableArray that holds all indexPaths for entries that will be filtered
+// out by the search controller.
+@property(nonatomic, strong)
+    NSMutableArray<NSIndexPath*>* filteredOutEntriesIndexPaths;
 // YES if there are no more history entries to load.
 @property(nonatomic, assign, getter=hasFinishedLoading) BOOL finishedLoading;
 // YES if the table should be filtered by the next received query result.
@@ -114,6 +118,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 @synthesize editButton = _editButton;
 @synthesize empty = _empty;
 @synthesize entryInserter = _entryInserter;
+@synthesize filteredOutEntriesIndexPaths = _filteredOutEntriesIndexPaths;
 @synthesize filterQueryResult = _filterQueryResult;
 @synthesize finishedLoading = _finishedLoading;
 @synthesize historyService = _historyService;
@@ -242,7 +247,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
 
   // If there are no results and no URLs have been loaded, report that no
   // history entries were found.
-  if (results.empty() && self.empty) {
+  if (results.empty() && self.empty && !self.searchInProgress) {
     [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
                                            IDS_HISTORY_NO_RESULTS)
                                  image:[UIImage imageNamed:@"empty_history"]];
@@ -286,8 +291,10 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
       // If in search mode, filter out entries that are not part of the
       // search result.
       [self filterForHistoryEntries:resultsItems];
-      NSArray* deletedIndexPaths = self.tableView.indexPathsForSelectedRows;
-      [self deleteItemsFromTableViewModelWithIndex:deletedIndexPaths];
+      [self deleteItemsFromTableViewModelWithIndex:
+                self.filteredOutEntriesIndexPaths];
+      // Clear all objects that were just deleted from the tableViewModel.
+      [self.filteredOutEntriesIndexPaths removeAllObjects];
       self.filterQueryResult = NO;
     }
     // Wait to insert until after the deletions are done, this is needed
@@ -598,9 +605,11 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
   // If only the header section remains, there are no history entries.
   if ([self.tableViewModel numberOfSections] == 1) {
     self.empty = YES;
-    [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
-                                           IDS_HISTORY_NO_RESULTS)
-                                 image:[UIImage imageNamed:@"empty_history"]];
+    if (!self.searchInProgress) {
+      [self addEmptyTableViewWithMessage:l10n_util::GetNSString(
+                                             IDS_HISTORY_NO_RESULTS)
+                                   image:[UIImage imageNamed:@"empty_history"]];
+    }
   }
   [self updateEntriesStatusMessage];
   [self updateToolbarButtons];
@@ -766,9 +775,7 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
         if (![entries containsObject:historyItem]) {
           NSIndexPath* indexPath =
               [self.tableViewModel indexPathForItem:historyItem];
-          [self.tableView selectRowAtIndexPath:indexPath
-                                      animated:NO
-                                scrollPosition:UITableViewScrollPositionNone];
+          [self.filteredOutEntriesIndexPaths addObject:indexPath];
         }
       }
     }
@@ -1006,6 +1013,12 @@ const CGFloat kSeparationSpaceBetweenSections = 9;
     _editButton.accessibilityIdentifier = kHistoryToolbarEditButtonIdentifier;
   }
   return _editButton;
+}
+
+- (NSMutableArray<NSIndexPath*>*)filteredOutEntriesIndexPaths {
+  if (!_filteredOutEntriesIndexPaths)
+    _filteredOutEntriesIndexPaths = [[NSMutableArray alloc] init];
+  return _filteredOutEntriesIndexPaths;
 }
 
 @end
