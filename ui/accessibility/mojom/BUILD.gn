@@ -8,6 +8,7 @@ mojom("mojom") {
   sources = [
     "ax_assistant_structure.mojom",
     "ax_event.mojom",
+    "ax_host.mojom",
     "ax_node_data.mojom",
     "ax_tree_data.mojom",
     "ax_tree_update.mojom",

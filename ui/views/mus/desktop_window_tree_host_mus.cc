@@ -362,6 +362,8 @@ void DesktopWindowTreeHostMus::OnWidgetInitDone() {
 
   MusClient::Get()->OnCaptureClientSet(
       aura::client::GetCaptureClient(window()));
+
+  MusClient::Get()->OnWidgetInitDone(native_widget_delegate_->AsWidget());
 }
 
 std::unique_ptr<corewm::Tooltip> DesktopWindowTreeHostMus::CreateTooltip() {

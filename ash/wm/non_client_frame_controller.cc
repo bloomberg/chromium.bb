@@ -28,6 +28,7 @@
 #include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws2/window_properties.h"
 #include "services/ui/ws2/window_service.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/transient_window_client.h"
 #include "ui/aura/mus/property_converter.h"
@@ -39,6 +40,7 @@
 #include "ui/base/hit_test.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/vector2d.h"
+#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/coordinate_conversion.h"
@@ -280,6 +282,14 @@ class ClientViewMus : public views::ClientView {
           frame_controller_->window());
     }
     return false;
+  }
+
+  // views::View:
+  const char* GetClassName() const override { return "ClientViewMus"; }
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override {
+    node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                               views::AXRemoteHost::kRemoteAXTreeID);
+    node_data->role = ax::mojom::Role::kClient;
   }
 
  private:

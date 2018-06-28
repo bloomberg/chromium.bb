@@ -18,10 +18,8 @@ namespace aura {
 class Window;
 }  // namespace aura
 
-namespace display {
-class Display;
-};
-
+// Provides the root AX desktop node for the chrome.automation.getDesktop() API
+// call. Each top-level desktop window is a child.
 class AXRootObjWrapper : public views::AXAuraObjWrapper,
                          display::DisplayObserver {
  public:

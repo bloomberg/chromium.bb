@@ -17,6 +17,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "chrome/browser/chromeos/prefs/pref_connector_service.h"
 #include "components/services/font/public/interfaces/constants.mojom.h"
 #include "content/public/common/service_manager_connection.h"
@@ -86,6 +87,17 @@ void RegisterInProcessServices(
         });
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     (*services)[ash::mojom::kPrefConnectorServiceName] = info;
+  }
+
+  {
+    // Register the accessibility host service.
+    service_manager::EmbeddedServiceInfo info;
+    info.task_runner = base::ThreadTaskRunnerHandle::Get();
+    info.factory =
+        base::BindRepeating([]() -> std::unique_ptr<service_manager::Service> {
+          return std::make_unique<AXHostService>();
+        });
+    (*services)[ax::mojom::kAXHostServiceName] = info;
   }
 
   if (base::FeatureList::IsEnabled(features::kMash) ||

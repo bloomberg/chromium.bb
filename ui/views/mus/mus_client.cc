@@ -26,6 +26,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/mojo/clipboard_client.h"
 #include "ui/views/mus/aura_init.h"
+#include "ui/views/mus/ax_remote_host.h"
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/mus_property_mirror.h"
 #include "ui/views/mus/pointer_watcher_event_router.h"
@@ -135,6 +136,11 @@ MusClient::MusClient(const InitParams& params) : identity_(params.identity) {
     connector->BindInterface(ui::mojom::kServiceName, &clipboard_host_ptr);
     ui::Clipboard::SetClipboardForCurrentThread(
         std::make_unique<ui::ClipboardClient>(std::move(clipboard_host_ptr)));
+
+    if (params.use_accessibility_host) {
+      ax_remote_host_ = std::make_unique<AXRemoteHost>();
+      ax_remote_host_->Init(connector);
+    }
   }
 
   ViewsDelegate::GetInstance()->set_native_widget_factory(
@@ -274,6 +280,12 @@ NativeWidget* MusClient::CreateNativeWidget(
   return native_widget;
 }
 
+void MusClient::OnWidgetInitDone(Widget* widget) {
+  // Start tracking the widget for accessibility.
+  if (ax_remote_host_)
+    ax_remote_host_->StartMonitoringWidget(widget);
+}
+
 void MusClient::OnCaptureClientSet(
     aura::client::CaptureClient* capture_client) {
   pointer_watcher_event_router_->AttachToCaptureClient(capture_client);
@@ -295,6 +307,7 @@ void MusClient::AddObserver(MusClientObserver* observer) {
 void MusClient::RemoveObserver(MusClientObserver* observer) {
   observer_list_.RemoveObserver(observer);
 }
+
 void MusClient::SetMusPropertyMirror(
     std::unique_ptr<MusPropertyMirror> mirror) {
   mus_property_mirror_ = std::move(mirror);

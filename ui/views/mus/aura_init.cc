@@ -55,6 +55,7 @@ bool AuraInit::Init(const InitParams& params) {
                                 ? aura::WindowTreeClient::Config::kMus2
                                 : aura::WindowTreeClient::Config::kMash;
     mus_params.create_wm_state = true;
+    mus_params.use_accessibility_host = params.use_accessibility_host;
     mus_client_ = std::make_unique<MusClient>(mus_params);
   }
   // MaterialDesignController may have initialized already (such as happens

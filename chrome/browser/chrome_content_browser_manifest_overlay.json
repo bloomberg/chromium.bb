@@ -4,6 +4,9 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
+        "app": [
+          "ax.mojom.AXHost"
+        ],
         "renderer": [
           "autofill.mojom.AutofillDriver",
           "autofill.mojom.PasswordManagerDriver",
