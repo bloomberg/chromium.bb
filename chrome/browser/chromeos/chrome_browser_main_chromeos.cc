@@ -1011,7 +1011,8 @@ void ChromeBrowserMainPartsChromeos::PostBrowserStart() {
     // TODO(mash): Support EventRewriterController; see crbug.com/647781
     ash::EventRewriterController* event_rewriter_controller =
         ash::Shell::Get()->event_rewriter_controller();
-    event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>();
+    event_rewriter_delegate_ = std::make_unique<EventRewriterDelegateImpl>(
+        ash::Shell::Get()->activation_client());
     event_rewriter_controller->AddEventRewriter(
         std::make_unique<ui::EventRewriterChromeOS>(
             event_rewriter_delegate_.get(),

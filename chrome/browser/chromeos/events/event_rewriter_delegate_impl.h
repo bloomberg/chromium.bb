@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "ui/chromeos/events/event_rewriter_chromeos.h"
+#include "ui/wm/public/activation_client.h"
 
 class PrefService;
 
@@ -14,7 +15,7 @@ namespace chromeos {
 
 class EventRewriterDelegateImpl : public ui::EventRewriterChromeOS::Delegate {
  public:
-  EventRewriterDelegateImpl();
+  explicit EventRewriterDelegateImpl(wm::ActivationClient* activation_client);
   ~EventRewriterDelegateImpl() override;
 
   void set_pref_service_for_testing(const PrefService* pref_service) {
@@ -28,11 +29,14 @@ class EventRewriterDelegateImpl : public ui::EventRewriterChromeOS::Delegate {
   bool TopRowKeysAreFunctionKeys() const override;
   bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
                                     int flags) const override;
+  bool IsSearchKeyAcceleratorReserved() const override;
 
  private:
   const PrefService* GetPrefService() const;
 
   const PrefService* pref_service_for_testing_;
+
+  wm::ActivationClient* activation_client_;
 
   DISALLOW_COPY_AND_ASSIGN(EventRewriterDelegateImpl);
 };

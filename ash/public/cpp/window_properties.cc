@@ -133,6 +133,7 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(gfx::Rect,
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
                              kRestoreWindowStateTypeOverrideKey,
                              mojom::WindowStateType::DEFAULT);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kSearchKeyAcceleratorReservedKey, false);
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kShelfIDKey, nullptr);
 DEFINE_UI_CLASS_PROPERTY_KEY(int32_t, kShelfItemTypeKey, TYPE_UNDEFINED);
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*,

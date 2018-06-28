@@ -91,6 +91,10 @@ class EventRewriterChromeOS : public ui::EventRewriter {
     virtual bool IsExtensionCommandRegistered(ui::KeyboardCode key_code,
                                               int flags) const = 0;
 
+    // Returns true if search key accelerator is reserved for current active
+    // window and EventRewriterChromeOS will not rewrite the event.
+    virtual bool IsSearchKeyAcceleratorReserved() const = 0;
+
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
   };
