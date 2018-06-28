@@ -9,8 +9,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_TIME_WAIT_LIST_MANAGER_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_TIME_WAIT_LIST_MANAGER_H_
 
-#include <stddef.h>
-
+#include <cstddef>
 #include <memory>
 
 #include "base/macros.h"
@@ -55,7 +54,7 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
 
   class Visitor : public QuicSession::Visitor {
    public:
-    // Called after the given connection is added to the time-wait std::list.
+    // Called after the given connection is added to the time-wait list.
     virtual void OnConnectionAddedToTimeWaitList(
         QuicConnectionId connection_id) = 0;
   };

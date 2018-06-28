@@ -4,7 +4,6 @@
 
 #include "net/third_party/quic/core/quic_config.h"
 
-#include "net/test/gtest_util.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake_message.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/quic_packets.h"

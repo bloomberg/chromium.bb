@@ -14,8 +14,6 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-using std::string;
-
 namespace quic {
 namespace test {
 namespace {
@@ -85,8 +83,8 @@ TEST_F(ChloExtractorTest, FindsValidChlo) {
   CryptoHandshakeMessage client_hello;
   client_hello.set_tag(kCHLO);
 
-  string client_hello_str((string(
-      client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece())));
+  QuicString client_hello_str(
+      client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   // Construct a CHLO with each supported version
   for (ParsedQuicVersion version : AllSupportedVersions()) {
     ParsedQuicVersionVector versions(SupportedVersions(version));
@@ -107,8 +105,8 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongStream) {
   CryptoHandshakeMessage client_hello;
   client_hello.set_tag(kCHLO);
 
-  string client_hello_str((string(
-      client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece())));
+  QuicString client_hello_str(
+      client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   MakePacket(
       new QuicStreamFrame(kCryptoStreamId + 1, false, 0, client_hello_str));
   EXPECT_FALSE(
@@ -119,8 +117,8 @@ TEST_F(ChloExtractorTest, DoesNotFindValidChloOnWrongOffset) {
   CryptoHandshakeMessage client_hello;
   client_hello.set_tag(kCHLO);
 
-  string client_hello_str((string(
-      client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece())));
+  QuicString client_hello_str(
+      client_hello.GetSerialized(Perspective::IS_CLIENT).AsStringPiece());
   MakePacket(new QuicStreamFrame(kCryptoStreamId, false, 1, client_hello_str));
   EXPECT_FALSE(
       ChloExtractor::Extract(*packet_, AllSupportedVersions(), {}, &delegate_));

@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#include "base/callback.h"
 #include "base/macros.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
@@ -18,7 +17,6 @@
 #include "net/third_party/quic/test_tools/crypto_test_utils.h"
 #include "net/third_party/quic/test_tools/quic_stream_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
-#include "testing/gmock_mutant.h"
 
 using testing::_;
 using testing::InSequence;

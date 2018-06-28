@@ -19,12 +19,13 @@
 #include "net/third_party/spdy/core/spdy_framer.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
+using spdy::SpdyHeaderBlock;
+
 namespace quic {
 
 // static
-bool SpdyUtils::ExtractContentLengthFromHeaders(
-    int64_t* content_length,
-    spdy::SpdyHeaderBlock* headers) {
+bool SpdyUtils::ExtractContentLengthFromHeaders(int64_t* content_length,
+                                                SpdyHeaderBlock* headers) {
   auto it = headers->find("content-length");
   if (it == headers->end()) {
     return false;
@@ -58,7 +59,7 @@ bool SpdyUtils::ExtractContentLengthFromHeaders(
 
 bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
                                        int64_t* content_length,
-                                       spdy::SpdyHeaderBlock* headers) {
+                                       SpdyHeaderBlock* headers) {
   for (const auto& p : header_list) {
     const QuicString& name = p.first;
     if (name.empty()) {
@@ -86,7 +87,7 @@ bool SpdyUtils::CopyAndValidateHeaders(const QuicHeaderList& header_list,
 
 bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
                                         size_t* final_byte_offset,
-                                        spdy::SpdyHeaderBlock* trailers) {
+                                        SpdyHeaderBlock* trailers) {
   bool found_final_byte_offset = false;
   for (const auto& p : header_list) {
     const QuicString& name = p.first;
@@ -129,7 +130,7 @@ bool SpdyUtils::CopyAndValidateTrailers(const QuicHeaderList& header_list,
 
 // static
 QuicString SpdyUtils::GetPromisedUrlFromHeaders(
-    const spdy::SpdyHeaderBlock& headers) {
+    const SpdyHeaderBlock& headers) {
   // RFC 7540, Section 8.1.2.3: All HTTP/2 requests MUST include exactly
   // one valid value for the ":method", ":scheme", and ":path" pseudo-header
   // fields, unless it is a CONNECT request.
@@ -147,7 +148,7 @@ QuicString SpdyUtils::GetPromisedUrlFromHeaders(
   // POST as cacheable, ...
   //
   // So the only methods allowed in a PUSH_PROMISE are GET and HEAD.
-  spdy::SpdyHeaderBlock::const_iterator it = headers.find(":method");
+  SpdyHeaderBlock::const_iterator it = headers.find(":method");
   if (it == headers.end() || (it->second != "GET" && it->second != "HEAD")) {
     return QuicString();
   }
@@ -183,21 +184,21 @@ QuicString SpdyUtils::GetPromisedUrlFromHeaders(
 
 // static
 QuicString SpdyUtils::GetPromisedHostNameFromHeaders(
-    const spdy::SpdyHeaderBlock& headers) {
+    const SpdyHeaderBlock& headers) {
   // TODO(fayang): Consider just checking out the value of the ":authority" key
   // in headers.
   return QuicUrlUtils::HostName(GetPromisedUrlFromHeaders(headers));
 }
 
 // static
-bool SpdyUtils::PromisedUrlIsValid(const spdy::SpdyHeaderBlock& headers) {
+bool SpdyUtils::PromisedUrlIsValid(const SpdyHeaderBlock& headers) {
   QuicString url(GetPromisedUrlFromHeaders(headers));
   return !url.empty() && QuicUrlUtils::IsValidUrl(url);
 }
 
 // static
 bool SpdyUtils::PopulateHeaderBlockFromUrl(const QuicString url,
-                                           spdy::SpdyHeaderBlock* headers) {
+                                           SpdyHeaderBlock* headers) {
   (*headers)[":method"] = "GET";
   size_t pos = url.find("://");
   if (pos == QuicString::npos) {

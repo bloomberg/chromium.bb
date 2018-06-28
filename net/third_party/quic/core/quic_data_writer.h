@@ -64,7 +64,7 @@ class QUIC_EXPORT_PRIVATE QuicDataWriter {
   // buffer.
   bool WriteVarInt62(uint64_t value);
 
-  // Writes a std::string piece as a consecutive length/content pair. The
+  // Writes a string piece as a consecutive length/content pair. The
   // length is VarInt62 encoded.
   bool WriteStringPieceVarInt62(const QuicStringPiece& string_piece);
 

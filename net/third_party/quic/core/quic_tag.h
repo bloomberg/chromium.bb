@@ -15,12 +15,12 @@ namespace quic {
 
 // A QuicTag is a 32-bit used as identifiers in the QUIC handshake.  The use of
 // a uint32_t seeks to provide a balance between the tyranny of magic number
-// registries and the verbosity of std::strings. As far as the wire protocol is
+// registries and the verbosity of strings. As far as the wire protocol is
 // concerned, these are opaque, 32-bit values.
 //
 // Tags will often be referred to by their ASCII equivalent, e.g. EXMP. This is
 // just a mnemonic for the value 0x504d5845 (little-endian version of the ASCII
-// std::string E X M P).
+// string E X M P).
 typedef uint32_t QuicTag;
 typedef std::map<QuicTag, QuicString> QuicTagValueMap;
 typedef std::vector<QuicTag> QuicTagVector;

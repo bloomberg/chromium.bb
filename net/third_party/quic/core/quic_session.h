@@ -72,7 +72,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
     // connection should resend any packets that were sent under
     // ENCRYPTION_INITIAL. (Client only.)
     ENCRYPTION_REESTABLISHED,
-    // HANDSHAKE_CONFIRMED, in a client, indicates the the server has accepted
+    // HANDSHAKE_CONFIRMED, in a client, indicates the server has accepted
     // our handshake. In a server it indicates that a full, valid client hello
     // has been received. (Client and server.)
     HANDSHAKE_CONFIRMED,
@@ -204,7 +204,7 @@ class QUIC_EXPORT_PRIVATE QuicSession : public QuicConnectionVisitorInterface,
   virtual void RegisterStreamPriority(QuicStreamId id,
                                       bool is_static,
                                       spdy::SpdyPriority priority);
-  // Called by the stream on deletion to clear priority crom the write blocked
+  // Called by the stream on deletion to clear priority from the write blocked
   // list.
   virtual void UnregisterStreamPriority(QuicStreamId id, bool is_static);
   // Called by the stream on SetPriority to update priority on the write blocked
