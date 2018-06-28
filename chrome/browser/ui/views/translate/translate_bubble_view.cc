@@ -359,11 +359,15 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
   // is not showing, which invalidates these text strings.
   options_menu_model_.reset(new ui::SimpleMenuModel(this));
 
-  options_menu_model_->AddCheckItem(
-      OptionsMenuItem::ALWAYS_TRANSLATE_LANGUAGE,
-      l10n_util::GetStringFUTF16(
-          IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
-          model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+  // Don't show "Always translate <language>" in incognito mode, because it
+  // doesn't do anything anyways.
+  if (!is_in_incognito_window_) {
+    options_menu_model_->AddCheckItem(
+        OptionsMenuItem::ALWAYS_TRANSLATE_LANGUAGE,
+        l10n_util::GetStringFUTF16(
+            IDS_TRANSLATE_BUBBLE_ALWAYS_TRANSLATE_LANG,
+            model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
+  }
 
   options_menu_model_->AddItem(
       OptionsMenuItem::NEVER_TRANSLATE_LANGUAGE,
@@ -371,8 +375,6 @@ void TranslateBubbleView::ShowOptionsMenu(views::Button* source) {
           IDS_TRANSLATE_BUBBLE_NEVER_TRANSLATE_LANG,
           model_->GetLanguageNameAt(model_->GetOriginalLanguageIndex())));
 
-  // TODO(https://crbug.com/793925): Blacklisting should probably not be
-  // possible in incognito mode as it leaves a trace of the user.
   if (model_->CanBlacklistSite()) {
     options_menu_model_->AddItemWithStringId(
         OptionsMenuItem::NEVER_TRANSLATE_SITE,
