@@ -50,6 +50,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/resource_scheduler_client.h"
 #include "services/network/test/test_data_pipe_getter.h"
+#include "services/network/test/test_network_service_client.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test_chunked_data_pipe_getter.h"
 #include "services/network/url_loader.h"
@@ -332,6 +333,10 @@ class URLLoaderTest : public testing::Test {
     if (send_ssl_for_cert_error_)
       options |= mojom::kURLLoadOptionSendSSLInfoForCertificateError;
 
+    std::unique_ptr<TestNetworkServiceClient> network_service_client;
+    if (allow_file_uploads_)
+      network_service_client = std::make_unique<TestNetworkServiceClient>();
+
     if (request_body_)
       request.request_body = request_body_;
 
@@ -342,7 +347,7 @@ class URLLoaderTest : public testing::Test {
     params.process_id = mojom::kBrowserProcessId;
     params.is_corb_enabled = false;
     url_loader = std::make_unique<URLLoader>(
-        context(), nullptr /* network_service_client */,
+        context(), network_service_client.get(),
         DeleteLoaderCallback(&delete_run_loop, &url_loader),
         mojo::MakeRequest(&loader), options, request, false,
         client_.CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
@@ -487,6 +492,10 @@ class URLLoaderTest : public testing::Test {
   }
 
   // Configure how Load() works.
+  void allow_file_uploads() {
+    DCHECK(!ran_);
+    allow_file_uploads_ = true;
+  }
   void set_sniff() {
     DCHECK(!ran_);
     sniff_ = true;
@@ -599,6 +608,7 @@ class URLLoaderTest : public testing::Test {
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   // Options applied to the created request in Load().
+  bool allow_file_uploads_ = false;
   bool sniff_ = false;
   bool send_ssl_with_response_ = false;
   bool send_ssl_for_cert_error_ = false;
@@ -1224,6 +1234,7 @@ TEST_F(URLLoaderTest, UploadBytes) {
 }
 
 TEST_F(URLLoaderTest, UploadFile) {
+  allow_file_uploads();
   base::FilePath file_path = GetTestFilePath("simple_page.html");
 
   std::string expected_body;
@@ -1241,6 +1252,7 @@ TEST_F(URLLoaderTest, UploadFile) {
 }
 
 TEST_F(URLLoaderTest, UploadFileWithRange) {
+  allow_file_uploads();
   base::FilePath file_path = GetTestFilePath("simple_page.html");
 
   std::string expected_body;
@@ -1256,6 +1268,108 @@ TEST_F(URLLoaderTest, UploadFileWithRange) {
   std::string response_body;
   EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
   EXPECT_EQ(expected_body, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadTwoFiles) {
+  allow_file_uploads();
+  base::FilePath file_path1 = GetTestFilePath("simple_page.html");
+  base::FilePath file_path2 = GetTestFilePath("hello.html");
+
+  std::string expected_body1;
+  std::string expected_body2;
+  ASSERT_TRUE(base::ReadFileToString(file_path1, &expected_body1))
+      << "File not found: " << file_path1.value();
+  ASSERT_TRUE(base::ReadFileToString(file_path2, &expected_body2))
+      << "File not found: " << file_path2.value();
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendFileRange(
+      file_path1, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  request_body->AppendFileRange(
+      file_path2, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  std::string response_body;
+  EXPECT_EQ(net::OK, Load(test_server()->GetURL("/echo"), &response_body));
+  EXPECT_EQ(expected_body1 + expected_body2, response_body);
+}
+
+TEST_F(URLLoaderTest, UploadInvalidFile) {
+  // Don't call allow_file_uploads();
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+
+  scoped_refptr<ResourceRequestBody> request_body(new ResourceRequestBody());
+  request_body->AppendFileRange(
+      file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+  set_request_body(std::move(request_body));
+
+  EXPECT_EQ(net::ERR_ACCESS_DENIED, Load(test_server()->GetURL("/echo")));
+}
+
+class CallbackSavingNetworkServiceClient : public TestNetworkServiceClient {
+ public:
+  void OnFileUploadRequested(
+      uint32_t process_id,
+      bool async,
+      const std::vector<base::FilePath>& file_paths,
+      OnFileUploadRequestedCallback callback) override {
+    file_upload_requested_callback_ = std::move(callback);
+    if (quit_closure_for_on_file_upload_requested_)
+      quit_closure_for_on_file_upload_requested_.Run();
+  }
+
+  void RunUntilUploadRequested(OnFileUploadRequestedCallback* callback) {
+    if (!file_upload_requested_callback_) {
+      base::RunLoop run_loop;
+      quit_closure_for_on_file_upload_requested_ = run_loop.QuitClosure();
+      run_loop.Run();
+      quit_closure_for_on_file_upload_requested_.Reset();
+    }
+    *callback = std::move(file_upload_requested_callback_);
+  }
+
+ private:
+  base::Closure quit_closure_for_on_file_upload_requested_;
+  OnFileUploadRequestedCallback file_upload_requested_callback_;
+};
+
+TEST_F(URLLoaderTest, UploadFileCanceled) {
+  base::FilePath file_path = GetTestFilePath("simple_page.html");
+  std::vector<base::File> opened_file;
+  opened_file.emplace_back(
+      file_path,
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC);
+  ASSERT_TRUE(opened_file.back().IsValid());
+
+  ResourceRequest request =
+      CreateResourceRequest("POST", test_server()->GetURL("/echo"));
+  request.request_body = new ResourceRequestBody();
+  request.request_body->AppendFileRange(
+      file_path, 0, std::numeric_limits<uint64_t>::max(), base::Time());
+
+  base::RunLoop delete_run_loop;
+  mojom::URLLoaderPtr loader;
+  static mojom::URLLoaderFactoryParams params;
+  params.process_id = mojom::kBrowserProcessId;
+  params.is_corb_enabled = false;
+  auto network_service_client =
+      std::make_unique<CallbackSavingNetworkServiceClient>();
+  std::unique_ptr<URLLoader> url_loader = std::make_unique<URLLoader>(
+      context(), network_service_client.get(),
+      DeleteLoaderCallback(&delete_run_loop, &url_loader),
+      mojo::MakeRequest(&loader), 0, request, false,
+      client()->CreateInterfacePtr(), TRAFFIC_ANNOTATION_FOR_TESTS, &params,
+      0 /* request_id */, resource_scheduler_client(), nullptr,
+      nullptr /* network_usage_accumulator */);
+
+  mojom::NetworkServiceClient::OnFileUploadRequestedCallback callback;
+  network_service_client->RunUntilUploadRequested(&callback);
+
+  // Check we can call the callback from a deleted URLLoader without crashing.
+  url_loader.reset();
+  base::RunLoop().RunUntilIdle();
+  std::move(callback).Run(net::OK, std::move(opened_file));
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(URLLoaderTest, UploadRawFile) {

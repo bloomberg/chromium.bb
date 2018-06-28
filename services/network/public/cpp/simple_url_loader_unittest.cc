@@ -48,6 +48,7 @@
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/test/test_network_service_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -548,6 +549,11 @@ class SimpleURLLoaderTestBase {
     network_service_ptr->CreateNetworkContext(
         mojo::MakeRequest(&network_context_), std::move(context_params));
 
+    network::mojom::NetworkServiceClientPtr network_service_client_ptr;
+    network_service_client_ = std::make_unique<TestNetworkServiceClient>(
+        mojo::MakeRequest(&network_service_client_ptr));
+    network_service_ptr->SetClient(std::move(network_service_client_ptr));
+
     mojom::URLLoaderFactoryParamsPtr params =
         mojom::URLLoaderFactoryParams::New();
     params->process_id = mojom::kBrowserProcessId;
@@ -592,6 +598,7 @@ class SimpleURLLoaderTestBase {
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
   std::unique_ptr<network::mojom::NetworkService> network_service_;
+  std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
   network::mojom::NetworkContextPtr network_context_;
   network::mojom::URLLoaderFactoryPtr url_loader_factory_;
 
