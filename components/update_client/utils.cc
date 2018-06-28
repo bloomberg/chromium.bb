@@ -20,7 +20,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/values.h"
 #include "components/crx_file/id_util.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
@@ -33,18 +32,19 @@
 #include "net/base/load_flags.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/resource_request.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 
 namespace update_client {
 
-std::unique_ptr<net::URLFetcher> SendProtocolRequest(
+std::unique_ptr<network::SimpleURLLoader> SendProtocolRequest(
     const GURL& url,
     const std::map<std::string, std::string>& protocol_request_extra_headers,
     const std::string& protocol_request,
-    net::URLFetcherDelegate* url_fetcher_delegate,
-    scoped_refptr<net::URLRequestContextGetter> url_request_context_getter) {
+    network::SimpleURLLoader::BodyAsStringCallback callback,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   net::NetworkTrafficAnnotationTag traffic_annotation =
       net::DefineNetworkTrafficAnnotation("component_updater_utils", R"(
         semantics {
@@ -73,26 +73,26 @@ std::unique_ptr<net::URLFetcher> SendProtocolRequest(
             }
           }
         })");
-  std::unique_ptr<net::URLFetcher> url_fetcher = net::URLFetcher::Create(
-      0, url, net::URLFetcher::POST, url_fetcher_delegate, traffic_annotation);
-  if (!url_fetcher)
-    return url_fetcher;
-
-  data_use_measurement::DataUseUserData::AttachToFetcher(
-      url_fetcher.get(), data_use_measurement::DataUseUserData::UPDATE_CLIENT);
-  url_fetcher->SetUploadData("application/xml", protocol_request);
-  url_fetcher->SetRequestContext(url_request_context_getter.get());
-  url_fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
-                            net::LOAD_DO_NOT_SAVE_COOKIES |
-                            net::LOAD_DISABLE_CACHE);
-  url_fetcher->SetAutomaticallyRetryOn5xx(false);
-  url_fetcher->SetAutomaticallyRetryOnNetworkChanges(3);
+  // Create and initialize URL loader.
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = url;
+  resource_request->method = "POST";
+  resource_request->load_flags = net::LOAD_DO_NOT_SEND_COOKIES |
+                                 net::LOAD_DO_NOT_SAVE_COOKIES |
+                                 net::LOAD_DISABLE_CACHE;
   for (const auto& header : protocol_request_extra_headers)
-    url_fetcher->AddExtraRequestHeader(base::StringPrintf(
-        "%s: %s", header.first.c_str(), header.second.c_str()));
+    resource_request->headers.SetHeader(header.first, header.second);
 
-  url_fetcher->Start();
-  return url_fetcher;
+  auto simple_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  const int max_retry_on_network_change = 3;
+  simple_loader->SetRetryOptions(
+      max_retry_on_network_change,
+      network::SimpleURLLoader::RETRY_ON_NETWORK_CHANGE);
+  simple_loader->AttachStringForUpload(protocol_request, "application/xml");
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      url_loader_factory.get(), std::move(callback));
+  return simple_loader;
 }
 
 bool FetchSuccess(const net::URLFetcher& fetcher) {
