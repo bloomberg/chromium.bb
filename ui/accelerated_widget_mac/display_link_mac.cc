@@ -8,6 +8,7 @@
 
 #include "base/location.h"
 #include "base/logging.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,20 +29,6 @@ struct ScopedTypeRefTraits<CVDisplayLinkRef> {
 
 }  // namespace base
 
-namespace {
-
-// Empty callback set during tear down.
-CVReturn VoidDisplayLinkCallback(CVDisplayLinkRef display_link,
-                                 const CVTimeStamp* now,
-                                 const CVTimeStamp* output_time,
-                                 CVOptionFlags flags_in,
-                                 CVOptionFlags* flags_out,
-                                 void* context) {
-  return kCVReturnSuccess;
-}
-
-}  // namespace
-
 namespace ui {
 
 // static
@@ -50,11 +37,14 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
   if (!display_id)
     return nullptr;
 
+  // Ensure the main thread is captured.
+  GetMainThreadTaskRunner();
+
   // Return the existing display link for this display, if it exists.
-  DisplayMap::iterator found = display_map_.Get().find(display_id);
-  if (found != display_map_.Get().end()) {
+  DisplayLinkMap& all_display_links = GetAllDisplayLinks();
+  auto found = all_display_links.find(display_id);
+  if (found != all_display_links.end())
     return found->second;
-  }
 
   CVReturn ret = kCVReturnSuccess;
 
@@ -64,18 +54,17 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
       display_link.InitializeInto());
   if (ret != kCVReturnSuccess) {
     LOG(ERROR) << "CVDisplayLinkCreateWithActiveCGDisplays failed: " << ret;
-    return NULL;
+    return nullptr;
   }
 
-  scoped_refptr<DisplayLinkMac> display_link_mac;
-  display_link_mac = new DisplayLinkMac(display_id, display_link);
-  ret = CVDisplayLinkSetOutputCallback(
-      display_link_mac->display_link_,
-      &DisplayLinkCallback,
-      display_link_mac.get());
+  scoped_refptr<DisplayLinkMac> display_link_mac(
+      new DisplayLinkMac(display_id, display_link));
+  ret = CVDisplayLinkSetOutputCallback(display_link_mac->display_link_,
+                                       &DisplayLinkCallback,
+                                       reinterpret_cast<void*>(display_id));
   if (ret != kCVReturnSuccess) {
     LOG(ERROR) << "CVDisplayLinkSetOutputCallback failed: " << ret;
-    return NULL;
+    return nullptr;
   }
 
   return display_link_mac;
@@ -84,37 +73,28 @@ scoped_refptr<DisplayLinkMac> DisplayLinkMac::GetForDisplay(
 DisplayLinkMac::DisplayLinkMac(
     CGDirectDisplayID display_id,
     base::ScopedTypeRef<CVDisplayLinkRef> display_link)
-    : main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      display_id_(display_id),
-      display_link_(display_link),
-      timebase_and_interval_valid_(false) {
-  DCHECK(display_map_.Get().find(display_id) == display_map_.Get().end());
-  if (display_map_.Get().empty()) {
+    : display_id_(display_id), display_link_(display_link) {
+  DisplayLinkMap& all_display_links = GetAllDisplayLinks();
+  DCHECK(all_display_links.find(display_id) == all_display_links.end());
+  if (all_display_links.empty()) {
     CGError register_error = CGDisplayRegisterReconfigurationCallback(
         DisplayReconfigurationCallBack, nullptr);
     DPLOG_IF(ERROR, register_error != kCGErrorSuccess)
         << "CGDisplayRegisterReconfigurationCallback: "
         << register_error;
   }
-  display_map_.Get().insert(std::make_pair(display_id_, this));
+  all_display_links.insert(std::make_pair(display_id_, this));
 }
 
 DisplayLinkMac::~DisplayLinkMac() {
   StopDisplayLink();
 
-  // Usually |display_link_| holds the last reference to CVDisplayLinkRef, but
-  // that's not guaranteed, so it might not free all resources after the
-  // destructor completes. Ensure the callback is cleared out regardless to
-  // avoid possible crashes (see http://crbug.com/564780).
-  CVReturn ret = CVDisplayLinkSetOutputCallback(
-      display_link_, VoidDisplayLinkCallback, nullptr);
-  DCHECK_EQ(kCGErrorSuccess, ret);
-
-  DisplayMap::iterator found = display_map_.Get().find(display_id_);
-  DCHECK(found != display_map_.Get().end());
+  DisplayLinkMap& all_display_links = GetAllDisplayLinks();
+  auto found = all_display_links.find(display_id_);
+  DCHECK(found != all_display_links.end());
   DCHECK(found->second == this);
-  display_map_.Get().erase(found);
-  if (display_map_.Get().empty()) {
+  all_display_links.erase(found);
+  if (all_display_links.empty()) {
     CGError remove_error = CGDisplayRemoveReconfigurationCallback(
         DisplayReconfigurationCallBack, nullptr);
     DPLOG_IF(ERROR, remove_error != kCGErrorSuccess)
@@ -140,16 +120,34 @@ void DisplayLinkMac::NotifyCurrentTime(const base::TimeTicks& now) {
     StartOrContinueDisplayLink();
 }
 
-void DisplayLinkMac::Tick(const CVTimeStamp& cv_time) {
-  TRACE_EVENT0("ui", "DisplayLinkMac::Tick");
+// static
+void DisplayLinkMac::DoUpdateVSyncParameters(CGDirectDisplayID display,
+                                             const CVTimeStamp& time) {
+  DisplayLinkMap& all_display_links = GetAllDisplayLinks();
+  auto found = all_display_links.find(display);
+  if (found == all_display_links.end()) {
+    // This might reasonably happen (and does; see https://crbug.com/564780). It
+    // occasionally happens that the CVDisplayLink calls back on the video
+    // thread, but by the time the callback makes it to the main thread for
+    // processing, the DisplayLinkMac object has lost all its references and
+    // has been deleted.
+    return;
+  }
 
-  // Verify that videoRefreshPeriod is 32 bits.
-  DCHECK((cv_time.videoRefreshPeriod & ~0xffffFFFFull) == 0ull);
+  DisplayLinkMac* display_link_mac = found->second;
+  display_link_mac->UpdateVSyncParameters(time);
+}
+
+void DisplayLinkMac::UpdateVSyncParameters(const CVTimeStamp& cv_time) {
+  TRACE_EVENT0("ui", "DisplayLinkMac::UpdateVSyncParameters");
+
+  // Verify that videoRefreshPeriod fits in 32 bits.
+  DCHECK((cv_time.videoRefreshPeriod & ~0xFFFF'FFFFull) == 0ull);
 
   // Verify that the numerator and denominator make some sense.
   uint32_t numerator = static_cast<uint32_t>(cv_time.videoRefreshPeriod);
   uint32_t denominator = cv_time.videoTimeScale;
-  if (numerator <= 0 || denominator <= 0) {
+  if (numerator == 0 || denominator == 0) {
     LOG(WARNING) << "Unexpected numerator or denominator, bailing.";
     return;
   }
@@ -179,9 +177,8 @@ void DisplayLinkMac::StartOrContinueDisplayLink() {
     return;
 
   CVReturn ret = CVDisplayLinkStart(display_link_);
-  if (ret != kCVReturnSuccess) {
+  if (ret != kCVReturnSuccess)
     LOG(ERROR) << "CVDisplayLinkStart failed: " << ret;
-  }
 }
 
 void DisplayLinkMac::StopDisplayLink() {
@@ -189,9 +186,23 @@ void DisplayLinkMac::StopDisplayLink() {
     return;
 
   CVReturn ret = CVDisplayLinkStop(display_link_);
-  if (ret != kCVReturnSuccess) {
+  if (ret != kCVReturnSuccess)
     LOG(ERROR) << "CVDisplayLinkStop failed: " << ret;
-  }
+}
+
+// static
+DisplayLinkMac::DisplayLinkMap& DisplayLinkMac::GetAllDisplayLinks() {
+  DCHECK_EQ(base::ThreadTaskRunnerHandle::Get(), GetMainThreadTaskRunner());
+  static base::NoDestructor<DisplayLinkMac::DisplayLinkMap> all_display_links;
+  return *all_display_links;
+}
+
+// static
+scoped_refptr<base::SingleThreadTaskRunner>
+DisplayLinkMac::GetMainThreadTaskRunner() {
+  static scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      base::ThreadTaskRunnerHandle::Get();
+  return task_runner;
 }
 
 // static
@@ -203,10 +214,11 @@ CVReturn DisplayLinkMac::DisplayLinkCallback(
     CVOptionFlags* flags_out,
     void* context) {
   TRACE_EVENT0("ui", "DisplayLinkMac::DisplayLinkCallback");
-  DisplayLinkMac* display_link_mac = static_cast<DisplayLinkMac*>(context);
-  display_link_mac->main_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&DisplayLinkMac::Tick, display_link_mac, *output_time));
+  CGDirectDisplayID display =
+      static_cast<CGDirectDisplayID>(reinterpret_cast<uintptr_t>(context));
+  GetMainThreadTaskRunner()->PostTask(
+      FROM_HERE, base::BindOnce(&DisplayLinkMac::DoUpdateVSyncParameters,
+                                display, *output_time));
   return kCVReturnSuccess;
 }
 
@@ -215,15 +227,13 @@ void DisplayLinkMac::DisplayReconfigurationCallBack(
     CGDirectDisplayID display,
     CGDisplayChangeSummaryFlags flags,
     void* user_info) {
-  DisplayMap::iterator found = display_map_.Get().find(display);
-  if (found == display_map_.Get().end())
+  DisplayLinkMap& all_display_links = GetAllDisplayLinks();
+  auto found = all_display_links.find(display);
+  if (found == all_display_links.end())
     return;
+
   DisplayLinkMac* display_link_mac = found->second;
   display_link_mac->timebase_and_interval_valid_ = false;
 }
-
-// static
-base::LazyInstance<DisplayLinkMac::DisplayMap>::DestructorAtExit
-    DisplayLinkMac::display_map_ = LAZY_INSTANCE_INITIALIZER;
 
 }  // ui
