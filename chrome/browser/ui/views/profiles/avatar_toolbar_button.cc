@@ -20,6 +20,7 @@
 #include "chrome/browser/signin/signin_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/view_ids.h"
 #include "chrome/grit/generated_resources.h"
@@ -33,10 +34,10 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/controls/button/label_button_border.h"
 
-AvatarToolbarButton::AvatarToolbarButton(Profile* profile,
-                                         views::ButtonListener* listener)
-    : ToolbarButton(listener, nullptr),
-      profile_(profile),
+AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
+    : ToolbarButton(nullptr, nullptr),
+      browser_(browser),
+      profile_(browser_->profile()),
 #if !defined(OS_CHROMEOS)
       error_controller_(this, profile_),
 #endif  // !defined(OS_CHROMEOS)
@@ -97,6 +98,17 @@ void AvatarToolbarButton::UpdateIcon() {
 
 void AvatarToolbarButton::UpdateTooltipText() {
   SetTooltipText(GetAvatarTooltipText());
+}
+
+void AvatarToolbarButton::NotifyClick(const ui::Event& event) {
+  Button::NotifyClick(event);
+  // TODO(bsep): Other toolbar buttons have ToolbarView as a listener and let it
+  // call ExecuteCommandWithDisposition on their behalf. Unfortunately, it's not
+  // possible to plumb IsKeyEvent through, so this has to be a special case.
+  browser_->window()->ShowAvatarBubbleFromAvatarButton(
+      BrowserWindow::AVATAR_BUBBLE_MODE_DEFAULT, signin::ManageAccountsParams(),
+      signin_metrics::AccessPoint::ACCESS_POINT_AVATAR_BUBBLE_SIGN_IN,
+      event.IsKeyEvent());
 }
 
 void AvatarToolbarButton::OnAvatarErrorChanged() {

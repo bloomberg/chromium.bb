@@ -205,7 +205,7 @@ void ToolbarView::Init() {
                                  browser_->profile()->IsGuestSession();
 #endif  // !defined(OS_CHROMEOS)
     if (show_avatar_toolbar_button)
-      avatar_ = new AvatarToolbarButton(browser_->profile(), this);
+      avatar_ = new AvatarToolbarButton(browser_);
   }
 
   app_menu_button_ = new BrowserAppMenuButton(this);
