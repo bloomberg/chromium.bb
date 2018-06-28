@@ -290,7 +290,7 @@ public class BookmarkUtils {
         intent.putExtra(IntentHandler.EXTRA_PAGE_TRANSITION_TYPE, PageTransition.AUTO_BOOKMARK);
 
         if (componentName != null) {
-            ChromeTabbedActivity.setNonAliasedComponent(intent, componentName, activity);
+            ChromeTabbedActivity.setNonAliasedComponent(intent, componentName);
         } else {
             // If the bookmark manager is shown in a tab on a phone (rather than in a separate
             // activity) the component name may be null. Send the intent through

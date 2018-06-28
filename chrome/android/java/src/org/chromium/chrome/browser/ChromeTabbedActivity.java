@@ -358,10 +358,10 @@ public class ChromeTabbedActivity
      * @param component The client generated component to be validated.
      * @param currentActivity The activity triggering the intent.
      */
-    public static void setNonAliasedComponent(
-            Intent intent, ComponentName component, Activity currentActivity) {
+    public static void setNonAliasedComponent(Intent intent, ComponentName component) {
         assert component != null;
-        if (!TextUtils.equals(component.getPackageName(), currentActivity.getPackageName())) {
+        Context appContext = ContextUtils.getApplicationContext();
+        if (!TextUtils.equals(component.getPackageName(), appContext.getPackageName())) {
             return;
         }
         if (component.getClassName() != null
@@ -370,9 +370,9 @@ public class ChromeTabbedActivity
             // Keep in sync with the activities that the .Main alias points to in
             // AndroidManifest.xml.
             if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
-                intent.setClass(currentActivity, ChromeLauncherActivity.class);
+                intent.setClass(appContext, ChromeLauncherActivity.class);
             } else {
-                intent.setClass(currentActivity, ChromeTabbedActivity.class);
+                intent.setClass(appContext, ChromeTabbedActivity.class);
             }
         } else {
             intent.setComponent(component);
