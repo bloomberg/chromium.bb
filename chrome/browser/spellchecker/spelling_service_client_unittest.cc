@@ -27,6 +27,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -111,17 +112,6 @@ class SpellingServiceClientTest : public testing::Test {
       }
     }
     return false;
-  }
-
-  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-    auto body = request.request_body;
-    if (!body)
-      return std::string();
-
-    CHECK_EQ(1u, body->elements()->size());
-    auto& element = body->elements()->at(0);
-    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-    return std::string(element.bytes(), element.length());
   }
 
   content::TestBrowserThreadBundle thread_bundle_;
@@ -249,7 +239,7 @@ TEST_F(SpellingServiceClientTest, RequestTextCheck) {
         base::BindLambdaForTesting(
             [&](const network::ResourceRequest& request) {
               intercepted_headers = request.headers;
-              intercepted_body = GetBodyFromRequest(request);
+              intercepted_body = network::GetUploadData(request);
             }));
     client_.SetExpectedTextCheckResult(kTests[i].success,
                                        kTests[i].sanitized_request_text,

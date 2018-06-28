@@ -24,6 +24,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
 
@@ -70,11 +71,7 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
         latest_report_uri = request.url;
         request.headers.GetHeader(net::HttpRequestHeaders::kContentType,
                                   &latest_content_type);
-        auto body = request.request_body;
-        CHECK_EQ(1u, body->elements()->size());
-        auto& element = body->elements()->at(0);
-        CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-        latest_report = std::string(element.bytes(), element.length());
+        latest_report = network::GetUploadData(request);
       }));
 
   // Data should not be encrypted when sent to an HTTPS URL.
