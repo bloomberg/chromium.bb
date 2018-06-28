@@ -207,7 +207,7 @@ bool AutomationAXTreeWrapper::OnAccessibilityEvents(
     if (is_active_profile) {
       owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
 
-      if (is_active_profile) {
+      if (update.nodes.size()) {
         ui::AXNode* target = tree_.GetFromId(update.nodes[0].id);
         if (target) {
           owner_->SendTreeChangeEvent(
