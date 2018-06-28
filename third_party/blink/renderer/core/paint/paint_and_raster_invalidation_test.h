@@ -5,11 +5,16 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_AND_RASTER_INVALIDATION_TEST_H_
 #define THIRD_PARTY_BLINK_RENDERER_CORE_PAINT_PAINT_AND_RASTER_INVALIDATION_TEST_H_
 
+#include "cc/animation/animation_host.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/test/stub_layer_tree_host_client.h"
+#include "cc/test/stub_layer_tree_host_single_thread_client.h"
+#include "cc/test/test_task_graph_runner.h"
+#include "cc/trees/layer_tree_host.h"
+#include "cc/trees/layer_tree_settings.h"
 #include "third_party/blink/renderer/core/paint/paint_controller_paint_test.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/content_layer_client_impl.h"
 #include "third_party/blink/renderer/platform/graphics/compositing/paint_artifact_compositor.h"
-#include "third_party/blink/renderer/platform/testing/web_layer_tree_view_impl_for_testing.h"
 
 namespace blink {
 
@@ -51,8 +56,20 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
     PaintControllerPaintTest::SetUp();
 
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-      web_layer_tree_view_ = std::make_unique<WebLayerTreeViewImplForTesting>();
-      web_layer_tree_view_->SetRootLayer(
+      cc::LayerTreeSettings settings;
+      settings.layer_transforms_should_scale_layer_contents = true;
+
+      animation_host_ = cc::AnimationHost::CreateMainInstance();
+      cc::LayerTreeHost::InitParams params;
+      params.client = &layer_tree_host_client_;
+      params.settings = &settings;
+      params.main_task_runner = base::ThreadTaskRunnerHandle::Get();
+      params.task_graph_runner = &task_graph_runner_;
+      params.mutator_host = animation_host_.get();
+
+      layer_tree_host_ = cc::LayerTreeHost::CreateSingleThreaded(
+          &layer_tree_host_single_thread_client_, &params);
+      layer_tree_host_->SetRootLayer(
           GetDocument()
               .View()
               ->GetPaintArtifactCompositorForTesting()
@@ -65,7 +82,11 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
   }
 
  private:
-  std::unique_ptr<WebLayerTreeViewImplForTesting> web_layer_tree_view_;
+  cc::StubLayerTreeHostSingleThreadClient layer_tree_host_single_thread_client_;
+  cc::StubLayerTreeHostClient layer_tree_host_client_;
+  cc::TestTaskGraphRunner task_graph_runner_;
+  std::unique_ptr<cc::AnimationHost> animation_host_;
+  std::unique_ptr<cc::LayerTreeHost> layer_tree_host_;
 };
 
 }  // namespace blink
