@@ -32,6 +32,8 @@ KEY_SILK = Tag(
     'key_silk', 'Key silk stories')
 KEY_NOOP = Tag(
     'key_noop', 'Key noop stories')
+KEY_IDLE_POWER = Tag(
+    'key_idle_power', 'Key idle power stories')
 MAPS = Tag(
     'maps', 'Maps stories')
 PATHOLOGICAL_MOBILE_SITES = Tag(
