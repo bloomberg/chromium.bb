@@ -977,7 +977,7 @@ class NamedCache(Cache):
         for unexpected in (actual - set(expected)):
           try:
             p = os.path.join(self.cache_dir, unexpected)
-            if fs.isdir(p):
+            if fs.isdir(p) and not fs.islink(p):
               file_path.rmtree(p)
             else:
               fs.remove(p)
@@ -1008,7 +1008,7 @@ class NamedCache(Cache):
                   name, link, expected_link)
             else:
               logging.warning('Unexpected non symlink for cache %s', name)
-            if fs.isdir(p):
+            if fs.isdir(p) and not fs.islink(p):
               file_path.rmtree(p)
             else:
               fs.remove(p)
