@@ -25,16 +25,15 @@ Polymer({
   },
 
   deny: function() {
-    var password = /** @type {!PaperInputElement} */ (this.$.password);
+    var password = /** @type {!CrInputElement} */ (this.$.password);
     password.disabled = false;
     this.$.submit.disabled = false;
     this.invalid = true;
-    password.focus();
-    password.inputElement.select();
+    password.select();
   },
 
   submit: function() {
-    var password = /** @type {!PaperInputElement} */ (this.$.password);
+    var password = /** @type {!CrInputElement} */ (this.$.password);
     if (password.value.length == 0)
       return;
     password.disabled = true;

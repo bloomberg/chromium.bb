@@ -131,7 +131,7 @@ Polymer({
     'input.blur': 'onInputFocusChange_',
     'input.change': 'onInputChange_',
     'input.keydown': 'onInputKeydown_',
-    'focus': 'onFocus_',
+    'focus': 'focusInput_',
     'pointerdown': 'onPointerDown_',
   },
 
@@ -196,7 +196,7 @@ Polymer({
   },
 
   /** @private */
-  onFocus_: function() {
+  focusInput_: function() {
     if (this.shadowRoot.activeElement != this.inputElement)
       this.inputElement.focus();
   },
@@ -277,6 +277,26 @@ Polymer({
       this.setAttribute('focused_', '');
     else
       this.removeAttribute('focused_');
+  },
+
+  /**
+   * Selects the text within the input. If no parameters are passed, it will
+   * select the entire string. Either no params or both params should be passed.
+   * Publicly, this function should be used instead of inputElement.select() or
+   * manipulating inputElement.selectionStart/selectionEnd because the order of
+   * execution between focus() and select() is sensitive.
+   * @param {number=} start
+   * @param {number=} end
+   */
+  select: function(start, end) {
+    this.focusInput_();
+    if (start !== undefined && end !== undefined) {
+      this.inputElement.setSelectionRange(start, end);
+    } else {
+      // Can't just pass one param.
+      assert(start === undefined && end === undefined);
+      this.inputElement.select();
+    }
   },
 
   /** @return {boolean} */
