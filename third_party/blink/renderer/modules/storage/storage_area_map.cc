@@ -27,14 +27,29 @@ String StorageAreaMap::GetKey(unsigned index) const {
   if (index >= GetLength())
     return String();
 
-  // TODO(mek): Figure out if we can support backwards iteration somewhat
-  // efficiently as well.
-  if (last_key_index_ > index) {
-    ResetKeyIterator();
+  // Decide if we should leave |key_iterator_| alone, or reset to either the
+  // beginning or end of the map for shortest iteration distance.
+  const unsigned distance_to_current = index > last_key_index_
+                                           ? index - last_key_index_
+                                           : last_key_index_ - index;
+  const unsigned distance_to_end = GetLength() - index;
+  if (index < distance_to_current && index < distance_to_end) {
+    // Distance from start is shortest, so reset iterator to begin.
+    last_key_index_ = 0;
+    key_iterator_ = keys_values_.begin();
+  } else if (distance_to_end < distance_to_current && distance_to_end < index) {
+    // Distance from end is shortest, so reset iterator to end.
+    last_key_index_ = GetLength();
+    key_iterator_ = keys_values_.end();
   }
-  while (last_key_index_ != index) {
+
+  while (last_key_index_ < index) {
     ++key_iterator_;
     ++last_key_index_;
+  }
+  while (last_key_index_ > index) {
+    --key_iterator_;
+    --last_key_index_;
   }
   return key_iterator_->key;
 }
