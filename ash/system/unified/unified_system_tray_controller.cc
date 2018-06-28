@@ -328,6 +328,9 @@ void UnifiedSystemTrayController::AddFeaturePodItem(
 
 void UnifiedSystemTrayController::ShowDetailedView(
     std::unique_ptr<DetailedViewController> controller) {
+  animation_->Reset(1.0);
+  UpdateExpandedAmount();
+
   unified_view_->SetDetailedView(controller->CreateView());
   unified_view_->SaveFeaturePodFocus();
   detailed_view_controller_ = std::move(controller);

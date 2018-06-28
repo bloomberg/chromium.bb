@@ -29,14 +29,14 @@ class UnifiedSlidersContainerView : public views::View {
   // Otherwise, it shows intermediate state.
   void SetExpandedAmount(double expanded_amount);
 
+  // Update opacity of each child slider views based on |expanded_amount_|.
+  void UpdateOpacity();
+
   // views::View:
   void Layout() override;
   gfx::Size CalculatePreferredSize() const override;
 
  private:
-  // Update opacity of each child slider views based on |expanded_amount_|.
-  void UpdateOpacity();
-
   double expanded_amount_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSlidersContainerView);
