@@ -83,9 +83,9 @@ mojom::RangePtr RetrieveControlRangeAndCurrent(
     control_range->max = max;
     control_range->step = step;
     if (supported_modes != nullptr) {
-      if (flags && CameraControl_Flags_Auto)
+      if (flags & CameraControl_Flags_Auto)
         supported_modes->push_back(mojom::MeteringMode::CONTINUOUS);
-      if (flags && CameraControl_Flags_Manual)
+      if (flags & CameraControl_Flags_Manual)
         supported_modes->push_back(mojom::MeteringMode::MANUAL);
     }
   }
@@ -95,9 +95,9 @@ mojom::RangePtr RetrieveControlRangeAndCurrent(
   if (SUCCEEDED(hr)) {
     control_range->current = current;
     if (current_mode != nullptr) {
-      if (flags && CameraControl_Flags_Auto)
+      if (flags & CameraControl_Flags_Auto)
         *current_mode = mojom::MeteringMode::CONTINUOUS;
-      else if (flags && CameraControl_Flags_Manual)
+      else if (flags & CameraControl_Flags_Manual)
         *current_mode = mojom::MeteringMode::MANUAL;
     }
   }
