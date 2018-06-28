@@ -14,6 +14,7 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -77,17 +78,6 @@ class SubscriptionJsonRequestTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
-    auto body = request.request_body;
-    if (!body)
-      return std::string();
-
-    CHECK_EQ(1u, body->elements()->size());
-    auto& element = body->elements()->at(0);
-    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
-    return std::string(element.bytes(), element.length());
-  }
-
  private:
   base::MessageLoop message_loop_;
   network::TestURLLoaderFactory test_url_loader_factory_;
@@ -117,7 +107,7 @@ TEST_F(SubscriptionJsonRequestTest, BuildRequest) {
         EXPECT_TRUE(request.headers.GetHeader(
             net::HttpRequestHeaders::kContentType, &header));
         EXPECT_EQ(header, "application/json; charset=UTF-8");
-        actual_body = GetBodyFromRequest(request);
+        actual_body = network::GetUploadData(request);
         EXPECT_THAT(actual_body, EqualsJSON(expected_body));
       }));
 

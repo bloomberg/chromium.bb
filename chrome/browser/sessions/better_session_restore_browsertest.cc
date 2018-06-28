@@ -54,6 +54,7 @@
 #include "net/base/upload_data_stream.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
+#include "services/network/test/test_utils.h"
 
 #if defined(OS_MACOSX)
 #include "base/mac/scoped_nsautorelease_pool.h"
@@ -136,14 +137,8 @@ class BetterSessionRestoreTest : public InProcessBrowserTest {
               }
               if (path == path_prefix + "posted.php") {
                 last_upload_bytes_.clear();
-                if (params->url_request.request_body) {
-                  auto* elements = params->url_request.request_body->elements();
-                  DCHECK_EQ(elements->size(), 1u);
-                  auto& element = (*elements)[0];
-                  DCHECK_EQ(element.type(), network::DataElement::TYPE_BYTES);
-                  last_upload_bytes_ =
-                      std::string(element.bytes(), element.length());
-                }
+                last_upload_bytes_ =
+                    network::GetUploadData(params->url_request);
                 content::URLLoaderInterceptor::WriteResponse(
                     kTestHeaders,
                     "<html><head><title>PASS</title></head><body>Data posted"
