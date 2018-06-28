@@ -7,6 +7,7 @@
 
 #include "cc/trees/render_frame_metadata.h"
 #include "cc/trees/render_frame_metadata_observer.h"
+#include "content/common/content_export.h"
 #include "content/common/render_frame_metadata.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
@@ -21,7 +22,7 @@ namespace content {
 // Mojo pipe is properly bound.
 //
 // Subsequent usage should only be from the Compositor thread.
-class RenderFrameMetadataObserverImpl
+class CONTENT_EXPORT RenderFrameMetadataObserverImpl
     : public cc::RenderFrameMetadataObserver,
       public mojom::RenderFrameMetadataObserver {
  public:
@@ -40,12 +41,18 @@ class RenderFrameMetadataObserverImpl
   void ReportAllFrameSubmissionsForTesting(bool enabled) override;
 
  private:
+  friend class RenderFrameMetadataObserverImplTest;
+
   // Certain fields should always have their changes reported. This will return
   // true when there is a difference between |rfm1| and |rfm2| for those fields.
   // These fields have a low frequency rate of change.
+  // |needs_activation_notification| indicates whether the browser process
+  // expects notification of activation of the assoicated CompositorFrame from
+  // Viz.
   static bool ShouldSendRenderFrameMetadata(
       const cc::RenderFrameMetadata& rfm1,
-      const cc::RenderFrameMetadata& rfm2);
+      const cc::RenderFrameMetadata& rfm2,
+      bool* needs_activation_notification);
 
   // When true this will notifiy |render_frame_metadata_observer_client_| of all
   // frame submissions.
