@@ -131,6 +131,7 @@ NativeWidgetMacNSWindow* BrowserFrameMac::CreateNSWindow(
                     backing:NSBackingStoreBuffered
                       defer:NO]);
   }
+  [ns_window setAnimationBehavior:NSWindowAnimationBehaviorDocumentWindow];
   [ns_window setCommandDispatcherDelegate:command_dispatcher_delegate_];
   [ns_window setCommandHandler:[[[BrowserWindowCommandHandler alloc] init]
                                    autorelease]];
