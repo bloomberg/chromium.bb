@@ -45,6 +45,8 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service_factory.h"
 #include "chrome/browser/dom_distiller/profile_utils.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
@@ -693,6 +695,9 @@ void ProfileImpl::DoFinalInit() {
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(this);
   model->AddObserver(new BookmarkModelLoadedObserver(this));
 #endif
+
+  PageLoadCappingServiceFactory::GetForBrowserContext(this)->Initialize(
+      GetPath());
 
   PushMessagingServiceImpl::InitializeForProfile(this);
 

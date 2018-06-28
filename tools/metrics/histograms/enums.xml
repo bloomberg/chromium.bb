@@ -34859,6 +34859,28 @@ Called by update_net_trust_anchors.py.-->
   <int value="3" label="FailedInvalidConfiguration"/>
 </enum>
 
+<enum name="OptOutBlacklistReason">
+  <int value="0" label="Not loaded">
+    The Blacklist was not loaded from disk when the page load committed and
+    prevented the page capping InfoBar.
+  </int>
+  <int value="1" label="Session policy">
+    The per-session policy prevented showing the page capping InfoBar.
+  </int>
+  <int value="2" label="Persistent policy">
+    The general persistent policy prevented showing the page capping InfoBar.
+  </int>
+  <int value="3" label="Host policy">
+    The per-host policy prevented showing the page capping InfoBar.
+  </int>
+  <int value="4" label="Type policy">
+    The per-type policy prevented showing the page capping InfoBar.
+  </int>
+  <int value="5" label="Allowed">
+    The page capping InfoBar was allowed to be shown.
+  </int>
+</enum>
+
 <enum name="OriginTrialEnableResult">
   <obsolete>
     Obsolete as of M54 and replaced by OriginTrialTokenStatus.

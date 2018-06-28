@@ -2363,6 +2363,7 @@ test("unit_tests") {
     "../browser/data_usage/tab_id_annotator_unittest.cc",
     "../browser/data_usage/tab_id_provider_unittest.cc",
     "../browser/data_use_measurement/chrome_data_use_ascriber_unittest.cc",
+    "../browser/data_use_measurement/page_load_capping/page_load_capping_blacklist_unittest.cc",
     "../browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate_unittest.cc",
     "../browser/download/chrome_download_manager_delegate_unittest.cc",
     "../browser/download/download_history_unittest.cc",

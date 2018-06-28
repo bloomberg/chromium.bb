@@ -10,12 +10,15 @@
 #include <stdint.h>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 
 namespace content {
 class WebContents;
 }  // namespace content
+
+class PageLoadCappingBlacklist;
 
 // A class that tracks the data usage of a page load and triggers an infobar
 // when the page load is above a certain threshold. The thresholds are field
@@ -56,6 +59,12 @@ class PageCappingPageLoadMetricsObserver
   // Gets the random offset for the capping threshold.
   virtual int64_t GetFuzzingOffset() const;
 
+  // Virtual for testing.
+  // Gets the page load capping blacklist from the page load capping service.
+  // This is null for incognito profiles, but this object should not created for
+  // incognito profiles.
+  virtual PageLoadCappingBlacklist* GetPageLoadCappingBlacklist() const;
+
  private:
   // page_load_metrics::PageLoadMetricsObserver:
   void OnLoadedResource(const page_load_metrics::ExtraRequestCompleteInfo&
@@ -75,6 +84,14 @@ class PageCappingPageLoadMetricsObserver
       const page_load_metrics::PageLoadExtraInfo& info) override;
   void OnComplete(const page_load_metrics::mojom::PageLoadTiming& timing,
                   const page_load_metrics::PageLoadExtraInfo& info) override;
+
+  // If this is the first time this is called, queries the page load capping
+  // blacklist for whether the InfoBar should be allowed and records UMA.
+  // Otherwise, this returns the cached value.
+  bool IsBlacklisted();
+
+  // Reports whether the page was an opt out or not to the blacklist.
+  void ReportOptOut();
 
   // Records a new estimate of data savings based on data used and field trial
   // params. Also records the PageCappingState to UKM.
@@ -120,6 +137,11 @@ class PageCappingPageLoadMetricsObserver
 
   // The randomly generated offset from the capping threshold.
   int64_t fuzzing_offset_ = 0;
+
+  // Empty until the blacklist is queried and UMA is recorded about blacklist
+  // reason. Once populated, whether the feature is blacklisted or not for the
+  // user on the URL of this page.
+  base::Optional<bool> blacklisted_;
 
   // If non-empty, a group of handles that are pausing subresource loads in the
   // render frames of this page.
