@@ -2628,7 +2628,6 @@ crbug.com/613659 external/wpt/quirks/percentage-height-calculation.html [ Failur
 crbug.com/613661 external/wpt/quirks/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
 crbug.com/613663 external/wpt/quirks/table-cell-width-calculation.html [ Failure ]
 
-crbug.com/646133 external/wpt/quirks/unitless-length.html [ Pass Timeout ]
 
 # Note: this test was previously marked as slow on Debug builds. Skipping until crash is fixed
 crbug.com/619978 fast/css/giant-stylesheet-crash.html [ Skip ]
@@ -2799,6 +2798,8 @@ crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-
 crbug.com/857271 external/wpt/encrypted-media/clearkey-mp4-playback-temporary-clear-encrypted-segmented.https.html [ Failure Timeout ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/cross-origin-resource-policy/fetch.any.html [ Timeout ]
+crbug.com/626703 external/wpt/fetch/cross-origin-resource-policy/fetch.any.html [ Timeout ]
 crbug.com/626703 virtual/outofblink-cors/external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 external/wpt/fetch/api/request/request-keepalive-quota.html?include=slow-2 [ Timeout ]
 crbug.com/626703 external/wpt/push-api/idlharness.https.any.serviceworker.html [ Skip ]
@@ -2809,8 +2810,6 @@ crbug.com/626703 external/wpt/svg/painting/reftests/paint-context-002.svg [ Fail
 crbug.com/626703 external/wpt/html/browsers/browsing-the-web/unloading-documents/unload/pagehide-manual.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-002.tentative.html [ Failure ]
 crbug.com/626703 external/wpt/css/css-scoping/shadow-directionality-001.tentative.html [ Failure ]
-crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodName-attribute.https.html [ Timeout ]
-crbug.com/626703 external/wpt/payment-request/PaymentMethodChangeEvent/methodDetails-attribute.https.html [ Timeout ]
 crbug.com/626703 external/wpt/screen-orientation/orientation-reading.html [ Timeout ]
 crbug.com/626703 external/wpt/css/vendor-imports/mozilla/mozilla-central-reftests/shapes1/float-retry-push-image.html [ Failure ]
 crbug.com/626703 external/wpt/html/browsers/the-window-object/window-open-noopener.html?_parent [ Timeout ]
