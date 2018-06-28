@@ -141,6 +141,10 @@ TEST_F(AdDelayThrottleTest, NoFeature_NoDelay) {
 TEST_F(AdDelayThrottleTest, NoAdTagging_NoDelay) {
   base::test::ScopedFeatureList scoped_disable;
   scoped_disable.InitAndDisableFeature(kAdTagging);
+  base::test::ScopedFeatureList scoped_params;
+  scoped_params.InitAndEnableFeatureWithParameters(
+      kDelayUnsafeAds,
+      {{kInsecureDelayParam, "50"}, {kNonIsolatedDelayParam, "100"}});
 
   AdDelayThrottle::Factory factory;
   auto throttle = factory.MaybeCreate(std::make_unique<MockMetadataProvider>());
@@ -152,6 +156,8 @@ TEST_F(AdDelayThrottleTest, NoAdTagging_NoDelay) {
   scoped_environment_.RunUntilIdle();
 
   EXPECT_TRUE(client_->has_received_completion());
+  EXPECT_FALSE(base::FieldTrialList::IsTrialActive(
+      base::FeatureList::GetFieldTrial(kDelayUnsafeAds)->trial_name()));
 }
 
 TEST_F(AdDelayThrottleTest, AdDelay) {
