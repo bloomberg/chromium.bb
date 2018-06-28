@@ -38,6 +38,8 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
 
   class Delegate {
    public:
+    virtual ~Delegate() {}
+
     virtual void OnChildWindowRemoved(AXAuraObjWrapper* parent) = 0;
     virtual void OnEvent(AXAuraObjWrapper* aura_obj,
                          ax::mojom::Event event_type) = 0;

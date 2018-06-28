@@ -7,6 +7,7 @@ import("//build/config/linux/pkg_config.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
+import("//services/service_manager/public/service_manifest.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
@@ -159,6 +160,11 @@ source_set("ax_assistant") {
   deps = [
     ":accessibility",
   ]
+}
+
+service_manifest("manifest") {
+  name = "ax_host_service"
+  source = "ax_host_service_manifest.json"
 }
 
 static_library("test_support") {

@@ -17,6 +17,10 @@ jumbo_component("mus") {
   sources = [
     "aura_init.cc",
     "aura_init.h",
+    "ax_remote_host.cc",
+    "ax_remote_host.h",
+    "ax_tree_source_mus.cc",
+    "ax_tree_source_mus.h",
     "desktop_window_tree_host_mus.cc",
     "desktop_window_tree_host_mus.h",
     "mus_client.cc",
@@ -60,6 +64,8 @@ jumbo_component("mus") {
     "//services/ui/public/interfaces",
     "//skia",
     "//third_party/icu",
+    "//ui/accessibility",
+    "//ui/accessibility/mojom",
     "//ui/aura",
     "//ui/base/mojo:lib",
     "//ui/compositor",
@@ -107,6 +113,7 @@ jumbo_static_library("test_support") {
 
   sources = [
     "../test/native_widget_factory_aura_mus.cc",
+    "mus_client_test_api.h",
     "views_mus_test_suite.cc",
     "views_mus_test_suite.h",
   ]
@@ -146,6 +153,8 @@ test("views_mus_unittests") {
   testonly = true
 
   sources = [
+    "ax_remote_host_unittest.cc",
+    "ax_tree_source_mus_unittest.cc",
     "desktop_window_tree_host_mus_unittest.cc",
     "pointer_watcher_event_router_unittest.cc",
     "run_all_unittests_mus.cc",
@@ -167,6 +176,7 @@ test("views_mus_unittests") {
     "//testing/gtest",
     "//third_party/icu",
     "//ui/accessibility",
+    "//ui/accessibility/mojom",
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/base",

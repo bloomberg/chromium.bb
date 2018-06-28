@@ -17,6 +17,10 @@ class VIEWS_MUS_EXPORT MusViewsDelegate : public ViewsDelegate {
   MusViewsDelegate();
   ~MusViewsDelegate() override;
 
+  // ViewsDelegate:
+  void NotifyAccessibilityEvent(View* view,
+                                ax::mojom::Event event_type) override;
+
  private:
   LayoutProvider layout_provider_;
 

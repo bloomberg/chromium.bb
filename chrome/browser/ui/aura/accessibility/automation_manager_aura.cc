@@ -31,6 +31,7 @@
 #if defined(OS_CHROMEOS)
 #include "ash/shell.h"
 #include "ash/wm/window_util.h"
+#include "chrome/browser/chromeos/accessibility/ax_host_service.h"
 #include "components/session_manager/core/session_manager.h"
 #include "ui/base/ui_base_features.h"
 #endif
@@ -97,12 +98,18 @@ void AutomationManagerAura::Enable(BrowserContext* context) {
       SendEvent(context, focus, ax::mojom::Event::kChildrenChanged);
     }
   }
+  // Gain access to out-of-process native windows.
+  AXHostService::SetAutomationEnabled(true);
 #endif
 }
 
 void AutomationManagerAura::Disable() {
   enabled_ = false;
   Reset(true);
+
+#if defined(OS_CHROMEOS)
+  AXHostService::SetAutomationEnabled(false);
+#endif
 }
 
 void AutomationManagerAura::HandleEvent(BrowserContext* context,

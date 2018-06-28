@@ -47,6 +47,7 @@ class WMState;
 
 namespace views {
 
+class AXRemoteHost;
 class DesktopNativeWidgetAura;
 class MusClientObserver;
 class MusPropertyMirror;
@@ -88,6 +89,10 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     // If provided, MusClient will not create the WindowTreeClient. Not owned.
     // Must outlive MusClient.
     aura::WindowTreeClient* window_tree_client = nullptr;
+
+    // Connect to the accessibility host service in the browser (e.g. to support
+    // ChromeVox).
+    bool use_accessibility_host = false;
   };
 
   // Most clients should use AuraInit, which creates a MusClient.
@@ -117,6 +122,8 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
     return pointer_watcher_event_router_.get();
   }
 
+  AXRemoteHost* ax_remote_host() { return ax_remote_host_.get(); }
+
   // Getter for type safety. Most code can use display::Screen::GetScreen().
   ScreenMus* screen() { return screen_.get(); }
 
@@ -125,6 +132,8 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
   //  NativeWidget has not been explicitly set.
   NativeWidget* CreateNativeWidget(const Widget::InitParams& init_params,
                                    internal::NativeWidgetDelegate* delegate);
+  void OnWidgetInitDone(Widget* widget);
+
   // Called when the capture client has been set for a window to notify
   // PointerWatcherEventRouter and CaptureSynchronizer.
   void OnCaptureClientSet(aura::client::CaptureClient* capture_client);
@@ -150,6 +159,7 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
  private:
   friend class AuraInit;
+  friend class MusClientTestApi;
 
   // Creates a DesktopWindowTreeHostMus. This is set as the factory function
   // ViewsDelegate such that if DesktopNativeWidgetAura is created without a
@@ -204,6 +214,11 @@ class VIEWS_MUS_EXPORT MusClient : public aura::WindowTreeClientDelegate,
 
   // Gives services transparent remote access the InputDeviceManager.
   std::unique_ptr<ui::InputDeviceClient> input_device_client_;
+
+  // Forwards accessibility events to extensions in the browser. Can be null for
+  // apps that do not need accessibility support and for the browser itself
+  // under OopAsh.
+  std::unique_ptr<AXRemoteHost> ax_remote_host_;
 
   ui::mojom::EventInjectorPtr event_injector_;
 

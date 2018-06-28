@@ -3567,7 +3567,7 @@ void ChromeContentBrowserClient::RegisterInProcessServices(
 // removed since the registeration could happen before |g_browser_process|
 // is created.
 #if defined(OS_CHROMEOS)
-  { ash_service_registry::RegisterInProcessServices(services, connection); }
+  ash_service_registry::RegisterInProcessServices(services, connection);
 #endif
 }
 

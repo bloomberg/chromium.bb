@@ -111,6 +111,7 @@ views::Widget* KeyboardShortcutView::Toggle(base::TimeTicks start_time) {
 
     views::Widget::InitParams params;
     params.delegate = new KeyboardShortcutView;
+    params.name = "KeyboardShortcutWidget";
     // Intentionally don't set bounds. The window will be sized and centered
     // based on CalculatePreferredSize().
     views::Widget* widget = new views::Widget;
