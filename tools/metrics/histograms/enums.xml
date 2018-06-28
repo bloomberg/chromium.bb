@@ -27577,6 +27577,7 @@ from previous Chrome versions.
   <int value="-758048639" label="InfiniteSessionRestore:enabled"/>
   <int value="-757946835"
       label="OmniboxUIExperimentShowSuggestionFavicons:enabled"/>
+  <int value="-757379927" label="Canvas2DImageChromium:enabled"/>
   <int value="-751273871" label="AutofillCreditCardBankNameDisplay:enabled"/>
   <int value="-750175757" label="ClientLoFi:enabled"/>
   <int value="-749048160" label="enable-panels"/>
@@ -27608,6 +27609,7 @@ from previous Chrome versions.
   <int value="-699767107" label="enable-sync-app-list"/>
   <int value="-699198009" label="KeyboardShortcutViewer:enabled"/>
   <int value="-697751423" label="disable-quickoffice-component-app"/>
+  <int value="-696693295" label="Canvas2DImageChromium:disabled"/>
   <int value="-684900739" label="disable-merge-key-char-events"/>
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
