@@ -76,7 +76,8 @@ interface AssistantEventSubscriber {
 interface AssistantPlatform {
   // Initiates assistant and provides interfaces for assistant to call into the
   // browser.
-  Init(Client assistant_client_interface);
+  Init(Client assistant_client_interface,
+       DeviceActions device_actions_interface);
 };
 
 // Interface for assistant to call into client.
@@ -108,6 +109,12 @@ interface AudioInputObserver {
                               mojo_base.mojom.TimeTicks timestamp);
   // Notifies that audio input stream is closed.
   OnAudioInputClosed();
+};
+
+// Interface for assistant to call into browser to perform device actions.
+interface DeviceActions {
+  // Enables or disables WiFi.
+  SetWifiEnabled(bool enabled);
 };
 
 // Enumeration of possible completions for an Assistant interaction.

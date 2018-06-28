@@ -57,7 +57,9 @@ class AssistantManagerServiceImpl
  public:
   AssistantManagerServiceImpl(service_manager::Connector* connector,
                               device::mojom::BatteryMonitorPtr battery_monitor,
-                              mojom::Client* client);
+                              mojom::Client* client,
+                              mojom::DeviceActionsPtr device_actions);
+
   ~AssistantManagerServiceImpl() override;
 
   // assistant::AssistantManagerService overrides
@@ -109,6 +111,7 @@ class AssistantManagerServiceImpl
   assistant_client::ActionModule::Result HandleModifySettingClientOp(
       const std::string& modify_setting_args_proto) override;
   bool IsSettingSupported(const std::string& setting_id) override;
+  bool SupportsModifySettings() override;
 
   // ash::mojom::VoiceInteractionObserver:
   void OnVoiceInteractionStatusChanged(
@@ -153,6 +156,7 @@ class AssistantManagerServiceImpl
       const assistant_client::ConversationStateListener::RecognitionResult&
           recognition_result);
   void OnSpeechLevelUpdatedOnMainThread(const float speech_level);
+  void OnModifySettingsAction(const std::string& modify_setting_args_proto);
 
   void IsVoiceInteractionSetupCompleted(
       ash::mojom::VoiceInteractionController::IsSetupCompletedCallback
@@ -172,6 +176,7 @@ class AssistantManagerServiceImpl
   std::unique_ptr<action::CrosActionModule> action_module_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
+  mojom::DeviceActionsPtr device_actions_;
   assistant_client::AssistantManagerInternal* assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;

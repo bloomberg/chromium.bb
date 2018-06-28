@@ -68,7 +68,8 @@ class Service : public service_manager::Service,
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
   // mojom::AssistantPlatform overrides:
-  void Init(mojom::ClientPtr client) override;
+  void Init(mojom::ClientPtr client,
+            mojom::DeviceActionsPtr device_actions) override;
 
   // ash::mojom::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
