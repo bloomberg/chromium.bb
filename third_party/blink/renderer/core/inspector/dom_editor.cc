@@ -446,8 +446,12 @@ bool DOMEditor::SetNodeValue(Node* node,
 
 static Response ToResponse(ExceptionState& exception_state) {
   if (exception_state.HadException()) {
-    return Response::Error(DOMException::GetErrorName(exception_state.Code()) +
-                           " " + exception_state.Message());
+    String name_prefix = IsDOMExceptionCode(exception_state.Code())
+                             ? DOMException::GetErrorName(
+                                   exception_state.CodeAs<DOMExceptionCode>()) +
+                                   " "
+                             : g_empty_string;
+    return Response::Error(name_prefix + exception_state.Message());
   }
   return Response::OK();
 }

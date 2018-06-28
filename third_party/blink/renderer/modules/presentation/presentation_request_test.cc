@@ -52,7 +52,8 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorInvalidUrl) {
   PresentationRequest::Create(scope.GetExecutionContext(), urls,
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMExceptionCode::kSyntaxError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSyntaxError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
 }
 
 TEST(PresentationRequestTest, TestMixedContentNotCheckedForNonHttpFamily) {
@@ -79,7 +80,8 @@ TEST(PresentationRequestTest, TestSingleUrlConstructorMixedContent) {
   PresentationRequest::Create(scope.GetExecutionContext(), "http://example.com",
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMExceptionCode::kSecurityError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSecurityError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorMixedContent) {
@@ -94,7 +96,8 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorMixedContent) {
   PresentationRequest::Create(scope.GetExecutionContext(), urls,
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(DOMExceptionCode::kSecurityError, scope.GetExceptionState().Code());
+  EXPECT_EQ(DOMExceptionCode::kSecurityError,
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorEmptySequence) {
@@ -105,7 +108,7 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorEmptySequence) {
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kNotSupportedError,
-            scope.GetExceptionState().Code());
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
 }
 
 TEST(PresentationRequestTest, TestSingleUrlConstructorUnknownScheme) {
@@ -114,7 +117,7 @@ TEST(PresentationRequestTest, TestSingleUrlConstructorUnknownScheme) {
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kNotSupportedError,
-            scope.GetExceptionState().Code());
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
 }
 
 TEST(PresentationRequestTest, TestMultipleUrlConstructorSomeUnknownSchemes) {
@@ -147,7 +150,7 @@ TEST(PresentationRequestTest, TestMultipleUrlConstructorAllUnknownSchemes) {
                               scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
   EXPECT_EQ(DOMExceptionCode::kNotSupportedError,
-            scope.GetExceptionState().Code());
+            scope.GetExceptionState().CodeAs<DOMExceptionCode>());
 }
 
 }  // anonymous namespace

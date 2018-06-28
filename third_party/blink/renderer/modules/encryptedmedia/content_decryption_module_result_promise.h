@@ -51,7 +51,10 @@ class ContentDecryptionModuleResultPromise
   void Trace(blink::Visitor*) override;
 
  protected:
-  explicit ContentDecryptionModuleResultPromise(ScriptState*);
+  // |interface_name| and |property_name| must have static life time.
+  explicit ContentDecryptionModuleResultPromise(ScriptState*,
+                                                const char* interface_name,
+                                                const char* property_name);
 
   // Resolves the promise with |value|. Used by subclasses to resolve the
   // promise.
@@ -73,6 +76,8 @@ class ContentDecryptionModuleResultPromise
 
  private:
   Member<ScriptPromiseResolver> resolver_;
+  const char* const interface_name_;
+  const char* const property_name_;
 };
 
 }  // namespace blink

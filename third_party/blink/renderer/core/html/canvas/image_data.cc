@@ -40,13 +40,17 @@
 
 namespace blink {
 
+namespace {
+
 bool RaiseDOMExceptionAndReturnFalse(ExceptionState* exception_state,
-                                     ExceptionCode exception_code,
+                                     DOMExceptionCode exception_code,
                                      const char* message) {
   if (exception_state)
     exception_state->ThrowDOMException(exception_code, message);
   return false;
 }
+
+}  // namespace
 
 bool ImageData::ValidateConstructorArguments(
     const unsigned& param_flags,
@@ -87,9 +91,11 @@ bool ImageData::ValidateConstructorArguments(
     }
 
     if (data_size.ValueOrDie() > v8::TypedArray::kMaxLength) {
-      return RaiseDOMExceptionAndReturnFalse(
-          exception_state, ESErrorType::kRangeError,
-          "Out of memory at ImageData creation.");
+      if (exception_state) {
+        exception_state->ThrowRangeError(
+            "Out of memory at ImageData creation.");
+      }
+      return false;
     }
   }
 

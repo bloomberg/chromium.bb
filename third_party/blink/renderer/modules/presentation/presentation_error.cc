@@ -9,7 +9,7 @@ namespace blink {
 
 DOMException* CreatePresentationError(
     const mojom::blink::PresentationError& error) {
-  ExceptionCode code = DOMExceptionCode::kUnknownError;
+  DOMExceptionCode code = DOMExceptionCode::kUnknownError;
   switch (error.error_type) {
     case mojom::blink::PresentationErrorType::NO_AVAILABLE_SCREENS:
     case mojom::blink::PresentationErrorType::NO_PRESENTATION_FOUND:

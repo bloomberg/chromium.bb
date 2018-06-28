@@ -475,10 +475,12 @@ bool V8ScriptValueSerializer::WriteFile(File* file,
 void V8ScriptValueSerializer::ThrowDataCloneError(
     v8::Local<v8::String> v8_message) {
   DCHECK(exception_state_);
-  String message = exception_state_->AddExceptionContext(
+  ExceptionState exception_state(
+      script_state_->GetIsolate(), exception_state_->Context(),
+      exception_state_->InterfaceName(), exception_state_->PropertyName());
+  exception_state.ThrowDOMException(
+      DOMExceptionCode::kDataCloneError,
       ToBlinkString<String>(v8_message, kDoNotExternalize));
-  V8ThrowDOMException::ThrowDOMException(
-      script_state_->GetIsolate(), DOMExceptionCode::kDataCloneError, message);
 }
 
 v8::Maybe<bool> V8ScriptValueSerializer::WriteHostObject(

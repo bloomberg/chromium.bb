@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_FILEAPI_FILE_ERROR_H_
 
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 namespace blink {
 
@@ -68,7 +69,9 @@ CORE_EXPORT extern const char kSecurityErrorMessage[];
 CORE_EXPORT extern const char kSyntaxErrorMessage[];
 CORE_EXPORT extern const char kTypeMismatchErrorMessage[];
 
-CORE_EXPORT void ThrowDOMException(ExceptionState&, ErrorCode);
+CORE_EXPORT void ThrowDOMException(ExceptionState&,
+                                   ErrorCode,
+                                   String message = String());
 CORE_EXPORT DOMException* CreateDOMException(ErrorCode);
 
 }  // namespace FileError

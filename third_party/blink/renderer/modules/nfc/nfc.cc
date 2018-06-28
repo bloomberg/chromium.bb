@@ -372,10 +372,10 @@ ScriptPromise RejectWithTypeError(ScriptState* script_state,
 }
 
 ScriptPromise RejectWithDOMException(ScriptState* script_state,
-                                     ExceptionCode ec,
+                                     DOMExceptionCode exception_code,
                                      const String& message) {
   return ScriptPromise::RejectWithDOMException(
-      script_state, DOMException::Create(ec, message));
+      script_state, DOMException::Create(exception_code, message));
 }
 
 ScriptPromise RejectIfInvalidTextRecord(ScriptState* script_state,

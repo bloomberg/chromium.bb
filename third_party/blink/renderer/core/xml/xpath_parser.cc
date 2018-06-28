@@ -489,7 +489,7 @@ Expression* Parser::ParseStatement(const String& statement,
 
     if (got_namespace_error_)
       exception_state.ThrowDOMException(
-          DOMExceptionCode::DOMExceptionCode::kNamespaceError,
+          DOMExceptionCode::kNamespaceError,
           "The string '" + statement + "' contains unresolvable namespaces.");
     else
       exception_state.ThrowDOMException(

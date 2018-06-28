@@ -73,10 +73,10 @@ const char kTypeMismatchErrorMessage[] =
 
 namespace {
 
-ExceptionCode ErrorCodeToExceptionCode(ErrorCode code) {
+DOMExceptionCode ErrorCodeToExceptionCode(ErrorCode code) {
   switch (code) {
     case kOK:
-      return 0;
+      return DOMExceptionCode::kNoError;
     case kNotFoundErr:
       return DOMExceptionCode::kNotFoundError;
     case kSecurityErr:
@@ -145,7 +145,9 @@ const char* ErrorCodeToMessage(ErrorCode code) {
 
 }  // namespace
 
-void ThrowDOMException(ExceptionState& exception_state, ErrorCode code) {
+void ThrowDOMException(ExceptionState& exception_state,
+                       ErrorCode code,
+                       String message) {
   if (code == kOK)
     return;
 
@@ -156,8 +158,11 @@ void ThrowDOMException(ExceptionState& exception_state, ErrorCode code) {
     return;
   }
 
-  exception_state.ThrowDOMException(ErrorCodeToExceptionCode(code),
-                                    ErrorCodeToMessage(code));
+  if (message.IsNull()) {
+    message = ErrorCodeToMessage(code);
+  }
+
+  exception_state.ThrowDOMException(ErrorCodeToExceptionCode(code), message);
 }
 
 DOMException* CreateDOMException(ErrorCode code) {

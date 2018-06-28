@@ -233,7 +233,7 @@ void Sensor::OnSensorReadingChanged() {
   }
 }
 
-void Sensor::OnSensorError(ExceptionCode code,
+void Sensor::OnSensorError(DOMExceptionCode code,
                            const String& sanitized_message,
                            const String& unsanitized_message) {
   HandleError(code, sanitized_message, unsanitized_message);
@@ -313,7 +313,7 @@ void Sensor::RequestAddConfiguration() {
                 WrapWeakPersistent(this)));
 }
 
-void Sensor::HandleError(ExceptionCode code,
+void Sensor::HandleError(DOMExceptionCode code,
                          const String& sanitized_message,
                          const String& unsanitized_message) {
   if (!GetExecutionContext()) {

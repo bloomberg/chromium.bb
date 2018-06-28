@@ -36,7 +36,7 @@ namespace {
 // Name, decription, and legacy code name and value of DOMExceptions.
 // https://heycam.github.io/webidl/#idl-DOMException-error-names
 const struct DOMExceptionEntry {
-  ExceptionCode code;
+  DOMExceptionCode code;
   const char* name;
   const char* message;
 } kDOMExceptionEntryTable[] = {
@@ -148,15 +148,15 @@ const struct DOMExceptionEntry {
      "PointerId was invalid."},
 };
 
-unsigned short ToLegacyErrorCode(ExceptionCode exception_code) {
+unsigned short ToLegacyErrorCode(DOMExceptionCode exception_code) {
   if (DOMExceptionCode::kLegacyErrorCodeMin <= exception_code &&
       exception_code <= DOMExceptionCode::kLegacyErrorCodeMax) {
-    return exception_code;
+    return static_cast<unsigned short>(exception_code);
   }
   return 0;
 }
 
-const DOMExceptionEntry* FindErrorEntry(ExceptionCode exception_code) {
+const DOMExceptionEntry* FindErrorEntry(DOMExceptionCode exception_code) {
   for (const auto& entry : kDOMExceptionEntryTable) {
     if (exception_code == entry.code)
       return &entry;
@@ -165,7 +165,7 @@ const DOMExceptionEntry* FindErrorEntry(ExceptionCode exception_code) {
   return nullptr;
 }
 
-ExceptionCode FindLegacyErrorCode(const String& name) {
+unsigned short FindLegacyErrorCode(const String& name) {
   for (const auto& entry : kDOMExceptionEntryTable) {
     if (name == entry.name)
       return ToLegacyErrorCode(entry.code);
@@ -175,24 +175,13 @@ ExceptionCode FindLegacyErrorCode(const String& name) {
 
 }  // namespace
 
-DOMException::DOMException(unsigned short code,
-                           const String& name,
-                           const String& sanitized_message,
-                           const String& unsanitized_message)
-    : code_(ToLegacyErrorCode(code)),
-      name_(name),
-      sanitized_message_(sanitized_message),
-      unsanitized_message_(unsanitized_message) {
-  DCHECK(name);
-}
-
 // static
-DOMException* DOMException::Create(ExceptionCode exception_code,
+DOMException* DOMException::Create(DOMExceptionCode exception_code,
                                    const String& sanitized_message,
                                    const String& unsanitized_message) {
   const DOMExceptionEntry* entry = FindErrorEntry(exception_code);
   return new DOMException(
-      entry->code, entry->name ? entry->name : "Error",
+      ToLegacyErrorCode(entry->code), entry->name ? entry->name : "Error",
       sanitized_message.IsNull() ? String(entry->message) : sanitized_message,
       unsanitized_message);
 }
@@ -203,7 +192,7 @@ DOMException* DOMException::Create(const String& message, const String& name) {
 }
 
 // static
-String DOMException::GetErrorName(ExceptionCode exception_code) {
+String DOMException::GetErrorName(DOMExceptionCode exception_code) {
   const DOMExceptionEntry* entry = FindErrorEntry(exception_code);
 
   DCHECK(entry);
@@ -214,7 +203,7 @@ String DOMException::GetErrorName(ExceptionCode exception_code) {
 }
 
 // static
-String DOMException::GetErrorMessage(ExceptionCode exception_code) {
+String DOMException::GetErrorMessage(DOMExceptionCode exception_code) {
   const DOMExceptionEntry* entry = FindErrorEntry(exception_code);
 
   DCHECK(entry);
@@ -222,6 +211,17 @@ String DOMException::GetErrorMessage(ExceptionCode exception_code) {
     return "Unknown error.";
 
   return entry->message;
+}
+
+DOMException::DOMException(unsigned short legacy_code,
+                           const String& name,
+                           const String& sanitized_message,
+                           const String& unsanitized_message)
+    : legacy_code_(legacy_code),
+      name_(name),
+      sanitized_message_(sanitized_message),
+      unsanitized_message_(unsanitized_message) {
+  DCHECK(name);
 }
 
 String DOMException::ToStringForConsole() const {

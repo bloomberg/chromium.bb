@@ -59,7 +59,7 @@ class DeprecatedStorageQuota final : public ScriptWrappable {
 
   static void EnqueueStorageErrorCallback(ScriptState*,
                                           V8StorageErrorCallback*,
-                                          ExceptionCode);
+                                          DOMExceptionCode);
 
   void queryUsageAndQuota(ScriptState*,
                           V8StorageUsageCallback*,

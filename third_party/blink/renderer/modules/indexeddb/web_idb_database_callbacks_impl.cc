@@ -70,8 +70,10 @@ void WebIDBDatabaseCallbacksImpl::OnVersionChange(long long old_version,
 void WebIDBDatabaseCallbacksImpl::OnAbort(long long transaction_id,
                                           const WebIDBDatabaseError& error) {
   if (callbacks_) {
-    callbacks_->OnAbort(transaction_id,
-                        DOMException::Create(error.Code(), error.Message()));
+    callbacks_->OnAbort(
+        transaction_id,
+        DOMException::Create(static_cast<DOMExceptionCode>(error.Code()),
+                             error.Message()));
   }
 }
 

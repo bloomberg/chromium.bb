@@ -972,16 +972,19 @@ void XMLHttpRequest::SendForInspectorXHRReplay(
     scoped_refptr<EncodedFormData> form_data,
     ExceptionState& exception_state) {
   CreateRequest(form_data ? form_data->DeepCopy() : nullptr, exception_state);
-  exception_code_ = exception_state.Code();
+  if (exception_state.HadException()) {
+    CHECK(IsDOMExceptionCode(exception_state.Code()));
+    exception_code_ = exception_state.CodeAs<DOMExceptionCode>();
+  }
 }
 
 void XMLHttpRequest::ThrowForLoadFailureIfNeeded(
     ExceptionState& exception_state,
     const String& reason) {
-  if (error_ && !exception_code_)
+  if (error_ && exception_code_ == DOMExceptionCode::kNoError)
     exception_code_ = DOMExceptionCode::kNetworkError;
 
-  if (!exception_code_)
+  if (exception_code_ == DOMExceptionCode::kNoError)
     return;
 
   String message = "Failed to load '" + url_.ElidedString() + "'";
@@ -1102,7 +1105,7 @@ void XMLHttpRequest::CreateRequest(scoped_refptr<EncodedFormData> http_body,
     resource_loader_options.data_buffering_policy = kDoNotBufferData;
   }
 
-  exception_code_ = 0;
+  exception_code_ = DOMExceptionCode::kNoError;
   error_ = false;
 
   if (async_) {
@@ -1174,8 +1177,8 @@ void XMLHttpRequest::abort() {
     if ((state_ == kOpened && send_flag_) || state_ == kHeadersReceived ||
         state_ == kLoading) {
       DCHECK(!loader_);
-      HandleRequestError(0, EventTypeNames::abort, received_length,
-                         expected_length);
+      HandleRequestError(DOMExceptionCode::kNoError, EventTypeNames::abort,
+                         received_length, expected_length);
     }
   }
   if (state_ == kDone)
@@ -1327,7 +1330,7 @@ void XMLHttpRequest::HandleDidCancel() {
                      received_length, expected_length);
 }
 
-void XMLHttpRequest::HandleRequestError(ExceptionCode exception_code,
+void XMLHttpRequest::HandleRequestError(DOMExceptionCode exception_code,
                                         const AtomicString& type,
                                         long long received_length,
                                         long long expected_length) {
@@ -1337,7 +1340,7 @@ void XMLHttpRequest::HandleRequestError(ExceptionCode exception_code,
 
   send_flag_ = false;
   if (!async_) {
-    DCHECK(exception_code);
+    DCHECK_NE(exception_code, DOMExceptionCode::kNoError);
     state_ = kDone;
     exception_code_ = exception_code;
     return;

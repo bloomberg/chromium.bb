@@ -81,7 +81,7 @@ void SensorProxyInspectorImpl::SetReadingForInspector(
     observer->OnSensorReadingChanged();
 }
 
-void SensorProxyInspectorImpl::ReportError(ExceptionCode code,
+void SensorProxyInspectorImpl::ReportError(DOMExceptionCode code,
                                            const String& message) {
   state_ = kUninitialized;
   reading_ = device::SensorReading();

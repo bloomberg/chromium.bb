@@ -68,7 +68,7 @@ class AutoplayPolicy final : public GarbageCollected<AutoplayPolicy> {
   // Request the playback via play() method. This method will check the autoplay
   // restrictions and record metrics. This method can only be called once
   // per call of play().
-  base::Optional<ExceptionCode> RequestPlay();
+  base::Optional<DOMExceptionCode> RequestPlay();
 
   // Returns whether an umute action should pause an autoplaying element. The
   // method will check autoplay restrictions and record metrics. This method can

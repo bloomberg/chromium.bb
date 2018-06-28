@@ -132,10 +132,10 @@ MediaSource::~MediaSource() {
 }
 
 void MediaSource::LogAndThrowDOMException(ExceptionState& exception_state,
-                                          ExceptionCode error,
+                                          DOMExceptionCode error,
                                           const String& message) {
-  BLINK_MSLOG << __func__ << " (error=" << error << ", message=" << message
-              << ")";
+  BLINK_MSLOG << __func__ << " (error=" << ToExceptionCode(error)
+              << ", message=" << message << ")";
   exception_state.ThrowDOMException(error, message);
 }
 
@@ -183,8 +183,10 @@ SourceBuffer* MediaSource::addSourceBuffer(const String& type,
       CreateWebSourceBuffer(content_type.GetType(), codecs, exception_state);
 
   if (!web_source_buffer) {
-    DCHECK(exception_state.Code() == DOMExceptionCode::kNotSupportedError ||
-           exception_state.Code() == DOMExceptionCode::kQuotaExceededError);
+    DCHECK(exception_state.CodeAs<DOMExceptionCode>() ==
+               DOMExceptionCode::kNotSupportedError ||
+           exception_state.CodeAs<DOMExceptionCode>() ==
+               DOMExceptionCode::kQuotaExceededError);
     // 2. If type contains a MIME type that is not supported ..., then throw a
     //    NotSupportedError exception and abort these steps.
     // 3. If the user agent can't handle any more SourceBuffer objects then

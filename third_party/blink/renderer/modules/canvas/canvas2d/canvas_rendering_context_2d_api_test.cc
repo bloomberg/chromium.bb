@@ -272,7 +272,7 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageDataTooBig) {
       Context2d()->createImageData(1000000, 1000000, exception_state);
   EXPECT_EQ(nullptr, too_big_image_data);
   EXPECT_TRUE(exception_state.HadException());
-  EXPECT_EQ(ESErrorType::kRangeError, exception_state.Code());
+  EXPECT_EQ(ESErrorType::kRangeError, exception_state.CodeAs<ESErrorType>());
 }
 
 TEST_F(CanvasRenderingContext2DAPITest, GetImageDataTooBig) {
@@ -282,7 +282,7 @@ TEST_F(CanvasRenderingContext2DAPITest, GetImageDataTooBig) {
       Context2d()->getImageData(0, 0, 1000000, 1000000, exception_state);
   EXPECT_EQ(nullptr, image_data);
   EXPECT_TRUE(exception_state.HadException());
-  EXPECT_EQ(ESErrorType::kRangeError, exception_state.Code());
+  EXPECT_EQ(ESErrorType::kRangeError, exception_state.CodeAs<ESErrorType>());
 }
 
 TEST_F(CanvasRenderingContext2DAPITest,
@@ -293,14 +293,14 @@ TEST_F(CanvasRenderingContext2DAPITest,
       1, -2147483647, 1, -2147483647, exception_state);
   EXPECT_EQ(nullptr, image_data);
   EXPECT_TRUE(exception_state.HadException());
-  EXPECT_EQ(ESErrorType::kRangeError, exception_state.Code());
+  EXPECT_EQ(ESErrorType::kRangeError, exception_state.CodeAs<ESErrorType>());
 
   exception_state.ClearException();
   image_data = Context2d()->getImageData(-2147483647, 1, -2147483647, 1,
                                          exception_state);
   EXPECT_EQ(nullptr, image_data);
   EXPECT_TRUE(exception_state.HadException());
-  EXPECT_EQ(ESErrorType::kRangeError, exception_state.Code());
+  EXPECT_EQ(ESErrorType::kRangeError, exception_state.CodeAs<ESErrorType>());
 }
 
 void ResetCanvasForAccessibilityRectTest(Document& document) {

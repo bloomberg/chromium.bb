@@ -120,8 +120,8 @@ ImageBitmap* OffscreenCanvas::transferToImageBitmap(
   ImageBitmap* image = context_->TransferToImageBitmap(script_state);
   if (!image) {
     // Undocumented exception (not in spec)
-    // TODO(yukishiino): Define ExceptionState::ThrowError for this purpose.
-    exception_state.ThrowDOMException(ESErrorType::kError, "Out of memory");
+    exception_state.ThrowDOMException(DOMExceptionCode::kUnknownError,
+                                      "Out of memory");
   }
   return image;
 }

@@ -70,7 +70,8 @@ TEST(AnimationEffectInputTest, UnsortedOffsets) {
   EffectInput::Convert(element, js_keyframes, EffectModel::kCompositeReplace,
                        scope.GetScriptState(), scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(ESErrorType::kTypeError, scope.GetExceptionState().Code());
+  EXPECT_EQ(ESErrorType::kTypeError,
+            scope.GetExceptionState().CodeAs<ESErrorType>());
 }
 
 TEST(AnimationEffectInputTest, LooslySorted) {
@@ -156,7 +157,8 @@ TEST(AnimationEffectInputTest, Invalid) {
   EffectInput::Convert(element, js_keyframes, EffectModel::kCompositeReplace,
                        scope.GetScriptState(), scope.GetExceptionState());
   EXPECT_TRUE(scope.GetExceptionState().HadException());
-  EXPECT_EQ(ESErrorType::kTypeError, scope.GetExceptionState().Code());
+  EXPECT_EQ(ESErrorType::kTypeError,
+            scope.GetExceptionState().CodeAs<ESErrorType>());
 }
 
 }  // namespace blink

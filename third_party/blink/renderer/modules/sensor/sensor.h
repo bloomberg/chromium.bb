@@ -92,7 +92,7 @@ class Sensor : public EventTargetWithInlineData,
   // SensorProxy::Observer overrides.
   void OnSensorInitialized() override;
   void OnSensorReadingChanged() override;
-  void OnSensorError(ExceptionCode,
+  void OnSensorError(DOMExceptionCode,
                      const String& sanitized_message,
                      const String& unsanitized_message) override;
 
@@ -109,7 +109,7 @@ class Sensor : public EventTargetWithInlineData,
 
   void RequestAddConfiguration();
 
-  void HandleError(ExceptionCode,
+  void HandleError(DOMExceptionCode,
                    const String& sanitized_message,
                    const String& unsanitized_message = String());
 
@@ -117,7 +117,6 @@ class Sensor : public EventTargetWithInlineData,
   void NotifyActivated();
   void NotifyError(DOMException* error);
 
- private:
   double frequency_;
   device::mojom::blink::SensorType type_;
   SensorState state_;

@@ -15,7 +15,7 @@ namespace blink {
 // static
 void V8ThrowDOMException::Init() {
   ExceptionState::SetCreateDOMExceptionFunction(
-      V8ThrowDOMException::CreateDOMException);
+      V8ThrowDOMException::CreateOrEmpty);
 }
 
 namespace {
@@ -42,30 +42,17 @@ void DomExceptionStackSetter(v8::Local<v8::Name> name,
 
 }  // namespace
 
-v8::Local<v8::Value> V8ThrowDOMException::CreateDOMException(
+v8::Local<v8::Value> V8ThrowDOMException::CreateOrEmpty(
     v8::Isolate* isolate,
-    ExceptionCode exception_code,
+    DOMExceptionCode exception_code,
     const String& sanitized_message,
     const String& unsanitized_message) {
-  DCHECK_GT(exception_code, 0);
+  DCHECK(IsDOMExceptionCode(ToExceptionCode(exception_code)));
   DCHECK(exception_code == DOMExceptionCode::kSecurityError ||
          unsanitized_message.IsNull());
 
   if (isolate->IsExecutionTerminating())
     return v8::Local<v8::Value>();
-
-  switch (exception_code) {
-    case ESErrorType::kError:
-      return V8ThrowException::CreateError(isolate, sanitized_message);
-    case ESErrorType::kTypeError:
-      return V8ThrowException::CreateTypeError(isolate, sanitized_message);
-    case ESErrorType::kRangeError:
-      return V8ThrowException::CreateRangeError(isolate, sanitized_message);
-    case ESErrorType::kSyntaxError:
-      return V8ThrowException::CreateSyntaxError(isolate, sanitized_message);
-    case ESErrorType::kReferenceError:
-      return V8ThrowException::CreateReferenceError(isolate, sanitized_message);
-  }
 
   DOMException* dom_exception = DOMException::Create(
       exception_code, sanitized_message, unsanitized_message);
@@ -86,17 +73,6 @@ v8::Local<v8::Value> V8ThrowDOMException::CreateDOMException(
   private_error.Set(exception_obj, error);
 
   return exception_obj;
-}
-
-void V8ThrowDOMException::ThrowDOMException(v8::Isolate* isolate,
-                                            ExceptionCode exception_code,
-                                            const String& sanitized_message,
-                                            const String& unsanitized_message) {
-  v8::Local<v8::Value> dom_exception = CreateDOMException(
-      isolate, exception_code, sanitized_message, unsanitized_message);
-  if (dom_exception.IsEmpty())
-    return;
-  V8ThrowException::ThrowException(isolate, dom_exception);
 }
 
 }  // namespace blink

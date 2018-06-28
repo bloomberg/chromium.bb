@@ -190,7 +190,7 @@ class CORE_EXPORT HTMLMediaElement
   bool Loop() const;
   void SetLoop(bool);
   ScriptPromise playForBindings(ScriptState*);
-  base::Optional<ExceptionCode> Play();
+  base::Optional<DOMExceptionCode> Play();
   void pause();
   void RequestRemotePlayback();
   void RequestRemotePlaybackControl();
@@ -552,12 +552,12 @@ class CORE_EXPORT HTMLMediaElement
   void AudioTracksTimerFired(TimerBase*);
 
   void ScheduleResolvePlayPromises();
-  void ScheduleRejectPlayPromises(ExceptionCode);
+  void ScheduleRejectPlayPromises(DOMExceptionCode);
   void ScheduleNotifyPlaying();
   void ResolveScheduledPlayPromises();
   void RejectScheduledPlayPromises();
-  void RejectPlayPromises(ExceptionCode, const String&);
-  void RejectPlayPromisesInternal(ExceptionCode, const String&);
+  void RejectPlayPromises(DOMExceptionCode, const String&);
+  void RejectPlayPromisesInternal(DOMExceptionCode, const String&);
 
   EnumerationHistogram& ShowControlsHistogram() const;
 
@@ -678,7 +678,7 @@ class CORE_EXPORT HTMLMediaElement
   TaskHandle play_promise_reject_task_handle_;
   HeapVector<Member<ScriptPromiseResolver>> play_promise_resolve_list_;
   HeapVector<Member<ScriptPromiseResolver>> play_promise_reject_list_;
-  ExceptionCode play_promise_error_code_;
+  DOMExceptionCode play_promise_error_code_;
 
   // This is a weak reference, since audio_source_node_ holds a reference to us.
   // TODO(Oilpan): Consider making this a strongly traced pointer with oilpan

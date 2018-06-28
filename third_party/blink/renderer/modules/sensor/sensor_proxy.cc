@@ -56,7 +56,7 @@ void SensorProxy::Detach() {
   }
 }
 
-void SensorProxy::ReportError(ExceptionCode code, const String& message) {
+void SensorProxy::ReportError(DOMExceptionCode code, const String& message) {
   auto copy = observers_;
   for (Observer* observer : copy) {
     observer->OnSensorError(code, message, String());

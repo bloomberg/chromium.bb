@@ -281,7 +281,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // Handles didFail() call for timeout.
   void HandleDidTimeout();
 
-  void HandleRequestError(ExceptionCode,
+  void HandleRequestError(DOMExceptionCode,
                           const AtomicString&,
                           long long,
                           long long);
@@ -340,7 +340,7 @@ class XMLHttpRequest final : public XMLHttpRequestEventTarget,
   // An exception to throw in synchronous mode. It's set when failure
   // notification is received from m_loader and thrown at the end of send() if
   // any.
-  ExceptionCode exception_code_ = 0;
+  DOMExceptionCode exception_code_ = DOMExceptionCode::kNoError;
 
   Member<XMLHttpRequestProgressEventThrottle> progress_event_throttle_;
 
