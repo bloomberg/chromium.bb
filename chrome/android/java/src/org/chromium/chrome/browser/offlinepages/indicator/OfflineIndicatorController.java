@@ -5,12 +5,19 @@
 package org.chromium.chrome.browser.offlinepages.indicator;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
+import android.os.Build;
 import android.support.v7.content.res.AppCompatResources;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -81,7 +88,14 @@ public class OfflineIndicatorController
 
     @Override
     public void onConnectionTypeChanged(int connectionType) {
-        mIsOffline = connectionType == ConnectionType.CONNECTION_NONE;
+        if (connectionType == ConnectionType.CONNECTION_NONE) {
+            mIsOffline = true;
+        } else {
+            if (!performSystemCheckForValidatedNetwork()) {
+                mIsOffline = false;
+            }
+        }
+
         updateOfflineIndicator();
     }
 
@@ -96,6 +110,36 @@ public class OfflineIndicatorController
     @Override
     public void onDismissNoAction(Object actionData) {
         mIsShowingOfflineIndicator = false;
+    }
+
+    /**
+     * Consults with the Android connection manager to find out if there is a validated network.
+     * Returns true if the check is performed. A validated network is one of the following:
+     * 1) a functioning network providing Internet access
+     * 2) a captive portal and the user decided to use it as is
+     */
+    @TargetApi(Build.VERSION_CODES.M)
+    private boolean performSystemCheckForValidatedNetwork() {
+        // NetworkCapabilities.NET_CAPABILITY_VALIDATED is only available on Marshmallow and
+        // later versions.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
+        ConnectivityManager connectivityManager =
+                (ConnectivityManager) ContextUtils.getApplicationContext().getSystemService(
+                        Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return false;
+
+        Network[] networks = connectivityManager.getAllNetworks();
+        for (Network network : networks) {
+            NetworkCapabilities capabilities = connectivityManager.getNetworkCapabilities(network);
+            if (capabilities != null
+                    && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)) {
+                mIsOffline = false;
+                return true;
+            }
+        }
+
+        mIsOffline = true;
+        return true;
     }
 
     private void updateConnectionType() {
