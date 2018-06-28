@@ -331,7 +331,8 @@ class CONTENT_EXPORT StoragePartitionImpl
   // StoragePartition::GetURLLoaderFactoryForBrowserProcess() for
   // more details
   network::mojom::URLLoaderFactoryPtr url_loader_factory_for_browser_process_;
-  ::network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
+  bool is_test_url_loader_factory_for_browser_process_ = false;
+  network::mojom::CookieManagerPtr cookie_manager_for_browser_process_;
 
   // When the network service is disabled, a NetworkContext is created on the IO
   // thread that wraps access to the URLRequestContext.
