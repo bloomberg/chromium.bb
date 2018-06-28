@@ -40,9 +40,7 @@ class TestDialog : public DialogDelegateView {
   }
 
   // WidgetDelegate overrides:
-  bool ShouldShowWindowTitle() const override {
-    return !title_.empty();
-  }
+  bool ShouldShowWindowTitle() const override { return !title_.empty(); }
   bool ShouldShowCloseButton() const override { return show_close_button_; }
 
   // DialogDelegateView overrides:

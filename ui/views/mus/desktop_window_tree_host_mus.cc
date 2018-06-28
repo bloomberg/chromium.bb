@@ -637,8 +637,14 @@ bool DesktopWindowTreeHostMus::IsVisibleOnAllWorkspaces() const {
 }
 
 bool DesktopWindowTreeHostMus::SetWindowTitle(const base::string16& title) {
-  if (window()->GetTitle() == title)
+  WidgetDelegate* widget_delegate =
+      native_widget_delegate_->AsWidget()->widget_delegate();
+  const bool show = widget_delegate && widget_delegate->ShouldShowWindowTitle();
+  if (window()->GetTitle() == title &&
+      window()->GetProperty(aura::client::kTitleShownKey) == show) {
     return false;
+  }
+  window()->SetProperty(aura::client::kTitleShownKey, show);
   window()->SetTitle(title);
   return true;
 }

@@ -268,7 +268,8 @@ void BubbleFrameView::UpdateWindowIcon() {
 void BubbleFrameView::UpdateWindowTitle() {
   if (default_title_) {
     const WidgetDelegate* delegate = GetWidget()->widget_delegate();
-    default_title_->SetVisible(delegate->ShouldShowWindowTitle());
+    default_title_->SetVisible(delegate->ShouldShowWindowTitle() &&
+                               !delegate->GetWindowTitle().empty());
     default_title_->SetText(delegate->GetWindowTitle());
   }  // custom_title_'s updates are handled by its creator.
 }
@@ -408,6 +409,9 @@ void BubbleFrameView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
 
 void BubbleFrameView::ViewHierarchyChanged(
     const ViewHierarchyChangedDetails& details) {
+  if (details.is_add && details.child == this)
+    OnThemeChanged();
+
   if (!details.is_add && details.parent == footnote_container_ &&
       footnote_container_->child_count() == 1 &&
       details.child == footnote_container_->child_at(0)) {

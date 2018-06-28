@@ -13,6 +13,7 @@
 #include "ash/public/interfaces/window_state_type.mojom.h"
 #include "base/unguessable_token.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/geometry/rect.h"
@@ -94,7 +95,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       mojom::kRestoreWindowStateTypeOverride_Property,
       base::BindRepeating(&IsValidWindowStateType));
   property_converter->RegisterPrimitiveProperty(
-      kWindowTitleShownKey,
+      aura::client::kTitleShownKey,
       ui::mojom::WindowManager::kWindowTitleShown_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
 }
@@ -151,6 +152,5 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowPositionManagedTypeKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowStateType,
                              kWindowStateTypeKey,
                              mojom::WindowStateType::DEFAULT);
-DEFINE_UI_CLASS_PROPERTY_KEY(bool, kWindowTitleShownKey, true);
 
 }  // namespace ash

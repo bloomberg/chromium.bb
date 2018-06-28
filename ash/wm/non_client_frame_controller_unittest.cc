@@ -12,6 +12,7 @@
 #include "ash/window_manager.h"
 #include "ash/window_manager_service.h"
 #include "ash/wm/top_level_window_factory.h"
+#include "base/strings/utf_string_conversions.h"
 #include "cc/base/math_util.h"
 #include "cc/trees/layer_tree_settings.h"
 #include "components/viz/common/quads/compositor_frame.h"
@@ -19,6 +20,7 @@
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "services/ui/ws2/test_change_tracker.h"
 #include "services/ui/ws2/test_window_tree_client.h"
+#include "ui/aura/client/aura_constants.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
 #include "ui/compositor/compositor.h"
@@ -204,6 +206,26 @@ TEST_F(NonClientFrameControllerTest, CallsRequestClose) {
   ASSERT_FALSE(changes->empty());
   // The remote client should have a request to close the window.
   EXPECT_EQ("RequestClose", ui::ws2::ChangeToDescription(changes->back()));
+}
+
+TEST_F(NonClientFrameControllerTest, WindowTitle) {
+  std::unique_ptr<aura::Window> window = CreateTestWindow();
+  NonClientFrameController* non_client_frame_controller =
+      NonClientFrameController::Get(window.get());
+  ASSERT_TRUE(non_client_frame_controller);
+  views::WidgetDelegate* widget_delegate =
+      static_cast<views::WidgetDelegate*>(non_client_frame_controller);
+  EXPECT_TRUE(widget_delegate->ShouldShowWindowTitle());
+  EXPECT_TRUE(widget_delegate->GetWindowTitle().empty());
+
+  // Verify GetWindowTitle() mirrors window->SetTitle().
+  const base::string16 title = base::ASCIIToUTF16("X");
+  window->SetTitle(title);
+  EXPECT_EQ(title, widget_delegate->GetWindowTitle());
+
+  // ShouldShowWindowTitle() mirrors |aura::client::kTitleShownKey|.
+  window->SetProperty(aura::client::kTitleShownKey, false);
+  EXPECT_FALSE(widget_delegate->ShouldShowWindowTitle());
 }
 
 }  // namespace ash

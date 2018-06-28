@@ -241,6 +241,18 @@ MusClient::ConfigurePropertiesFromParams(
               init_params.delegate->GetResizeBehavior()));
     }
 
+    if (init_params.delegate->ShouldShowWindowTitle()) {
+      properties[WindowManager::kWindowTitleShown_Property] =
+          mojo::ConvertTo<TransportType>(static_cast<PrimitiveType>(
+              init_params.delegate->ShouldShowWindowTitle()));
+    }
+
+    if (!init_params.delegate->GetWindowTitle().empty()) {
+      properties[WindowManager::kWindowTitle_Property] =
+          mojo::ConvertTo<TransportType>(
+              init_params.delegate->GetWindowTitle());
+    }
+
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
     gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
     SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).sk_bitmap();
@@ -248,6 +260,7 @@ MusClient::ConfigurePropertiesFromParams(
       properties[WindowManager::kAppIcon_Property] =
           mojo::ConvertTo<TransportType>(app_bitmap);
     }
+
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
     gfx::ImageSkia window_icon = init_params.delegate->GetWindowIcon();
     SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).sk_bitmap();

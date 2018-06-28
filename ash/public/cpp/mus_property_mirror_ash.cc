@@ -61,6 +61,9 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     MirrorOwnedProperty(window, root_window, aura::client::kMinimumSize);
   } else if (key == aura::client::kTitleKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kTitleKey);
+  } else if (key == aura::client::kTitleShownKey) {
+    root_window->SetProperty(aura::client::kTitleShownKey,
+                             window->GetProperty(aura::client::kTitleShownKey));
   } else if (key == aura::client::kWindowIconKey) {
     MirrorOwnedProperty(window, root_window, aura::client::kWindowIconKey);
   } else if (key == kFrameBackButtonStateKey) {
@@ -80,9 +83,6 @@ void MusPropertyMirrorAsh::MirrorPropertyFromWidgetWindowToRootWindow(
     MirrorOwnedProperty(window, root_window, kFrameImageOverlayActiveKey);
   } else if (key == kFrameImageOverlayInactiveKey) {
     MirrorOwnedProperty(window, root_window, kFrameImageOverlayInactiveKey);
-  } else if (key == kWindowTitleShownKey) {
-    root_window->SetProperty(kWindowTitleShownKey,
-                             window->GetProperty(kWindowTitleShownKey));
   }
 }
 

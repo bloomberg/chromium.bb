@@ -4,9 +4,7 @@
 
 #include "ui/views/mus/desktop_window_tree_host_mus.h"
 
-#include "base/debug/stack_trace.h"
-#include "base/run_loop.h"
-
+#include "base/strings/utf_string_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/focus_client.h"
@@ -394,6 +392,59 @@ TEST_F(DesktopWindowTreeHostMusTest, GetWindowBoundsInScreen) {
   aura::WindowTreeHostMus::ForWindow(widget2.GetNativeWindow())
       ->set_display_id(kSecondDisplayId);
   EXPECT_EQ(gfx::Rect(800, 0, 100, 100), widget2.GetWindowBoundsInScreen());
+}
+
+// WidgetDelegate implementation that allows setting window-title and whether
+// the title should be shown.
+class WindowTitleWidgetDelegate : public WidgetDelegateView {
+ public:
+  WindowTitleWidgetDelegate() = default;
+  ~WindowTitleWidgetDelegate() override = default;
+
+  void set_window_title(const base::string16& title) { window_title_ = title; }
+  void set_should_show_window_title(bool value) {
+    should_show_window_title_ = value;
+  }
+
+  // WidgetDelegateView:
+  base::string16 GetWindowTitle() const override { return window_title_; }
+  bool ShouldShowWindowTitle() const override {
+    return should_show_window_title_;
+  }
+
+ private:
+  base::string16 window_title_;
+  bool should_show_window_title_ = true;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowTitleWidgetDelegate);
+};
+
+TEST_F(DesktopWindowTreeHostMusTest, WindowTitle) {
+  // Owned by |widget|.
+  WindowTitleWidgetDelegate* delegate = new WindowTitleWidgetDelegate();
+  std::unique_ptr<Widget> widget(CreateWidget(delegate));
+  aura::Window* window = widget->GetNativeWindow()->GetRootWindow();
+
+  // Set the title in the delegate and verify it propagates.
+  const base::string16 title1 = base::ASCIIToUTF16("X");
+  delegate->set_window_title(title1);
+  widget->UpdateWindowTitle();
+  EXPECT_TRUE(window->GetProperty(aura::client::kTitleShownKey));
+  EXPECT_EQ(title1, window->GetTitle());
+
+  // Hiding the title should not change the title.
+  delegate->set_should_show_window_title(false);
+  widget->UpdateWindowTitle();
+  EXPECT_FALSE(window->GetProperty(aura::client::kTitleShownKey));
+  EXPECT_EQ(title1, window->GetTitle());
+
+  // Show the title again with a different value.
+  delegate->set_should_show_window_title(true);
+  const base::string16 title2 = base::ASCIIToUTF16("Z");
+  delegate->set_window_title(title2);
+  widget->UpdateWindowTitle();
+  EXPECT_TRUE(window->GetProperty(aura::client::kTitleShownKey));
+  EXPECT_EQ(title2, window->GetTitle());
 }
 
 }  // namespace views
