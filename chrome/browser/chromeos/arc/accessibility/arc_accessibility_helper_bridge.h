@@ -111,7 +111,7 @@ class ArcAccessibilityHelperBridge
   void OnAccessibilityStatusChanged(
       const chromeos::AccessibilityStatusEventDetails& event_details);
   void UpdateFilterType();
-  void UpdateTouchExplorationPassThrough(aura::Window* window);
+  void UpdateWindowProperties(aura::Window* window);
   void UpdateTreeIdOfNotificationSurface(const std::string& notification_key,
                                          uint32_t tree_id);
 

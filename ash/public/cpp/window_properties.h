@@ -127,6 +127,13 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<gfx::Rect*>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
     mojom::WindowStateType>* const kRestoreWindowStateTypeOverrideKey;
 
+// A property key to store whether search key accelerator is reserved for a
+// window. This is used to pass through search key accelerators to Android
+// window if user is navigating with TalkBack (screen reader on Android).
+// TalkBack uses search key as a modifier key.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kSearchKeyAcceleratorReservedKey;
+
 // A property key to store the id for a window's shelf item.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<std::string*>* const
     kShelfIDKey;

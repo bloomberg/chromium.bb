@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/events/event_rewriter_delegate_impl.h"
 
+#include "ash/public/cpp/window_properties.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host.h"
 #include "chrome/browser/extensions/extension_commands_global_registry.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -12,11 +13,14 @@
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/user_manager/user_manager.h"
+#include "ui/aura/client/aura_constants.h"
 
 namespace chromeos {
 
-EventRewriterDelegateImpl::EventRewriterDelegateImpl()
-    : pref_service_for_testing_(nullptr) {}
+EventRewriterDelegateImpl::EventRewriterDelegateImpl(
+    wm::ActivationClient* activation_client)
+    : pref_service_for_testing_(nullptr),
+      activation_client_(activation_client) {}
 
 EventRewriterDelegateImpl::~EventRewriterDelegateImpl() {}
 
@@ -90,6 +94,16 @@ bool EventRewriterDelegateImpl::IsExtensionCommandRegistered(
   ui::Accelerator accelerator(key_code, flags & kModifierMasks);
   return extensions::ExtensionCommandsGlobalRegistry::Get(profile)
       ->IsRegistered(accelerator);
+}
+
+bool EventRewriterDelegateImpl::IsSearchKeyAcceleratorReserved() const {
+  // |activation_client_| can be null in test.
+  if (!activation_client_)
+    return false;
+
+  aura::Window* active_window = activation_client_->GetActiveWindow();
+  return active_window &&
+         active_window->GetProperty(ash::kSearchKeyAcceleratorReservedKey);
 }
 
 const PrefService* EventRewriterDelegateImpl::GetPrefService() const {

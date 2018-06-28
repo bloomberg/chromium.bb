@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/window_properties.h"
 #include "ash/system/message_center/arc/arc_notification_surface.h"
 #include "base/command_line.h"
 #include "base/memory/singleton.h"
@@ -486,7 +487,7 @@ void ArcAccessibilityHelperBridge::OnAccessibilityStatusChanged(
   }
 
   UpdateFilterType();
-  UpdateTouchExplorationPassThrough(GetActiveWindow());
+  UpdateWindowProperties(GetActiveWindow());
 }
 
 void ArcAccessibilityHelperBridge::UpdateFilterType() {
@@ -515,7 +516,7 @@ void ArcAccessibilityHelperBridge::UpdateFilterType() {
     wm_helper->RemoveActivationObserver(this);
 }
 
-void ArcAccessibilityHelperBridge::UpdateTouchExplorationPassThrough(
+void ArcAccessibilityHelperBridge::UpdateWindowProperties(
     aura::Window* window) {
   if (!window)
     return;
@@ -531,8 +532,11 @@ void ArcAccessibilityHelperBridge::UpdateTouchExplorationPassThrough(
   // app isn't whitelisted Android side or no data has been received for the
   // app.
   auto it = task_id_to_tree_.find(task_id);
+  bool use_talkback = it == task_id_to_tree_.end();
+
   window->SetProperty(aura::client::kAccessibilityTouchExplorationPassThrough,
-                      it == task_id_to_tree_.end());
+                      use_talkback);
+  window->SetProperty(ash::kSearchKeyAcceleratorReservedKey, use_talkback);
 }
 
 aura::Window* ArcAccessibilityHelperBridge::GetActiveWindow() {
@@ -550,7 +554,7 @@ void ArcAccessibilityHelperBridge::OnWindowActivated(
   if (gained_active == lost_active)
     return;
 
-  UpdateTouchExplorationPassThrough(gained_active);
+  UpdateWindowProperties(gained_active);
 }
 
 void ArcAccessibilityHelperBridge::OnTaskDestroyed(int32_t task_id) {
