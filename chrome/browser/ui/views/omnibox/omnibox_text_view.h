@@ -40,6 +40,9 @@ class OmniboxTextView : public views::View {
   // that the non-dimmed text stands out more).
   void Dim();
 
+  // Returns the render text, or an empty string if there is none.
+  const base::string16& text() const;
+
   // Sets the render text with default rendering for the given |text|. The
   // |classifications| are used to style the text. An ImageLine incorporates
   // both the text and the styling.
