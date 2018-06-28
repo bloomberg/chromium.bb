@@ -7,9 +7,14 @@
 
 #include "base/macros.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/mojom/network_service.mojom.h"
+
+namespace net {
+class TestURLRequestContext;
+}
 
 namespace network {
+
+class NetworkContext;
 
 // A helper class to create a full functioning SharedURLLoaderFactory. This is
 // backed by a real URLLoader implementation. Use this in unittests which have a
@@ -38,9 +43,8 @@ class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
   friend class base::RefCounted<TestSharedURLLoaderFactory>;
   ~TestSharedURLLoaderFactory() override;
 
-  std::unique_ptr<network::mojom::NetworkService> network_service_;
-  std::unique_ptr<network::mojom::NetworkServiceClient> network_service_client_;
-  network::mojom::NetworkContextPtr network_context_;
+  std::unique_ptr<net::TestURLRequestContext> url_request_context_;
+  std::unique_ptr<NetworkContext> network_context_;
   mojom::URLLoaderFactoryPtr url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSharedURLLoaderFactory);
