@@ -249,8 +249,7 @@ void PaintController::ProcessNewItem(DisplayItem& display_item) {
 
   if (IsSkippingCache()) {
     DCHECK_EQ(usage_, kMultiplePaints);
-    display_item.Client().SetDisplayItemsUncached(
-        PaintInvalidationReason::kUncacheable);
+    display_item.Client().Invalidate(PaintInvalidationReason::kUncacheable);
   }
 
   if (raster_invalidation_tracking_info_) {
@@ -332,14 +331,14 @@ void PaintController::InvalidateAllInternal() {
   // Can only be called during layout/paintInvalidation, not during painting.
   DCHECK(new_display_item_list_.IsEmpty());
   current_paint_artifact_.Reset();
-  current_cache_generation_.Invalidate();
+  current_cached_subsequences_.clear();
+  cache_is_all_invalid_ = true;
 }
 
 bool PaintController::CacheIsAllInvalid() const {
   DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-  return current_paint_artifact_.IsEmpty() &&
-         current_cache_generation_.GetPaintInvalidationReason() !=
-             PaintInvalidationReason::kNone;
+  DCHECK(!cache_is_all_invalid_ || current_paint_artifact_.IsEmpty());
+  return cache_is_all_invalid_;
 }
 
 bool PaintController::ClientCacheIsValid(
@@ -347,9 +346,9 @@ bool PaintController::ClientCacheIsValid(
 #if DCHECK_IS_ON()
   DCHECK(client.IsAlive());
 #endif
-  if (IsSkippingCache())
+  if (IsSkippingCache() || cache_is_all_invalid_)
     return false;
-  return client.DisplayItemsAreCached(current_cache_generation_);
+  return client.IsValid();
 }
 
 size_t PaintController::FindMatchingItemFromIndex(
@@ -552,8 +551,7 @@ void PaintController::CommitNewDisplayItems() {
   if (!new_display_item_list_.IsEmpty())
     GenerateRasterInvalidations(new_paint_chunks_.LastChunk());
 
-  current_cache_generation_ =
-      DisplayItemClient::CacheGenerationOrInvalidationReason::Next();
+  cache_is_all_invalid_ = false;
 
   new_cached_subsequences_.swap(current_cached_subsequences_);
   new_cached_subsequences_.clear();
@@ -564,26 +562,6 @@ void PaintController::CommitNewDisplayItems() {
 
   current_paint_artifact_ = PaintArtifact(std::move(new_display_item_list_),
                                           new_paint_chunks_.ReleaseData());
-
-  if (usage_ == kMultiplePaints) {
-    // Validate caching of the display item clients.
-    for (auto& item : current_cached_subsequences_) {
-      if (item.key->IsCacheable())
-        item.key->SetDisplayItemsCached(current_cache_generation_);
-    }
-    for (const auto& item : current_paint_artifact_.GetDisplayItemList()) {
-      const auto& client = item.Client();
-      client.ClearPartialInvalidationVisualRect();
-      if (client.IsCacheable() && item.IsCacheable())
-        client.SetDisplayItemsCached(current_cache_generation_);
-      else if (client.IsJustCreated())
-        client.ClearIsJustCreated();
-    }
-    for (const auto& chunk : current_paint_artifact_.PaintChunks()) {
-      if (chunk.id.client.IsJustCreated())
-        chunk.id.client.ClearIsJustCreated();
-    }
-  }
 
   ResetCurrentListIndices();
   out_of_order_item_indices_.clear();
@@ -617,8 +595,28 @@ void PaintController::CommitNewDisplayItems() {
 }
 
 void PaintController::FinishCycle() {
+  if (usage_ == kTransient)
+    return;
+
   DCHECK(new_display_item_list_.IsEmpty());
   DCHECK(new_paint_chunks_.IsInInitialState());
+
+  // Validate display item clients that have validly cached subsequence or
+  // display items in this PaintController.
+  for (auto& item : current_cached_subsequences_) {
+    if (item.key->IsCacheable())
+      item.key->Validate();
+  }
+  for (const auto& item : current_paint_artifact_.GetDisplayItemList()) {
+    const auto& client = item.Client();
+    client.ClearPartialInvalidationVisualRect();
+    if (client.IsCacheable())
+      client.Validate();
+  }
+  for (const auto& chunk : current_paint_artifact_.PaintChunks()) {
+    if (chunk.id.client.IsCacheable())
+      chunk.id.client.Validate();
+  }
 
   current_paint_artifact_.FinishCycle();
 }
@@ -660,9 +658,7 @@ namespace {
 
 class DebugDrawingClient final : public DisplayItemClient {
  public:
-  DebugDrawingClient() {
-    SetDisplayItemsUncached(PaintInvalidationReason::kUncacheable);
-  }
+  DebugDrawingClient() { Invalidate(PaintInvalidationReason::kUncacheable); }
   String DebugName() const final { return "DebugDrawing"; }
   LayoutRect VisualRect() const final {
     return LayoutRect(LayoutRect::InfiniteIntRect());

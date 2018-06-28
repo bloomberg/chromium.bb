@@ -29,14 +29,12 @@ class FakeDisplayItemClient : public DisplayItemClient {
 
   void SetVisualRect(const LayoutRect& r) { visual_rect_ = r; }
   void SetPartialInvalidationVisualRect(const LayoutRect& r) {
-    SetDisplayItemsUncached(PaintInvalidationReason::kRectangle);
+    Invalidate(PaintInvalidationReason::kRectangle);
     partial_invalidation_visual_rect_ = r;
   }
 
   // This simulates a paint without needing a PaintController.
-  void UpdateCacheGeneration() {
-    SetDisplayItemsCached(CacheGenerationOrInvalidationReason::Next());
-  }
+  using DisplayItemClient::Validate;
 
  private:
   String name_;

@@ -2733,10 +2733,14 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
           DocumentAnimations::UpdateAnimations(GetLayoutView()->GetDocument(),
                                                DocumentLifecycle::kPaintClean,
                                                composited_element_ids);
+
+          // Notify the controller that the artifact has been pushed and some
+          // lifecycle state can be freed (such as raster invalidations).
+          paint_controller_->FinishCycle();
+          // PaintController for BlinkGenPropertyTrees is transient.
+          if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
+            paint_controller_ = nullptr;
         }
-        // Notify the controller that the artifact has been pushed and some
-        // lifecycle state can be freed (such as raster invalidations).
-        paint_controller_->FinishCycle();
       }
 
       DCHECK(!frame_->Selection().NeedsLayoutSelectionUpdate());
@@ -2790,9 +2794,6 @@ void LocalFrameView::PerformScrollAnchoringAdjustments() {
 
 void LocalFrameView::PrePaint() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::prePaint");
-
-  if (!paint_controller_)
-    paint_controller_ = PaintController::Create();
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPrePaint);
@@ -2924,6 +2925,9 @@ void LocalFrameView::PaintTree() {
   });
 
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    if (!paint_controller_)
+      paint_controller_ = PaintController::Create();
+
     if (GetLayoutView()->Layer()->NeedsRepaint()) {
       GraphicsContext graphics_context(*paint_controller_);
       if (RuntimeEnabledFeatures::PrintBrowserEnabled())
@@ -2968,6 +2972,12 @@ void LocalFrameView::PaintTree() {
   }
 
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    // BlinkGenPropertyTrees just needs a transient PaintController to
+    // collect the foreign layers which doesn't need caching. It also
+    // shouldn't affect caching status of DisplayItemClients because it's
+    // FinishCycle() is not synchronized with other PaintControllers.
+    paint_controller_ = PaintController::Create(PaintController::kTransient);
+
     GraphicsContext context(*paint_controller_);
     // Note: Some blink unit tests run without turning on compositing which
     // means we don't create viewport layers. OOPIFs also don't have their own

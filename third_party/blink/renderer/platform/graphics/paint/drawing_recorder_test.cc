@@ -22,7 +22,7 @@ TEST_F(DrawingRecorderTest, Nothing) {
   GraphicsContext context(GetPaintController());
   InitRootChunk();
   DrawNothing(context, client, kForegroundType);
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
                       TestDisplayItem(client, kForegroundType));
   EXPECT_FALSE(static_cast<const DrawingDisplayItem&>(
@@ -35,7 +35,7 @@ TEST_F(DrawingRecorderTest, Rect) {
   GraphicsContext context(GetPaintController());
   InitRootChunk();
   DrawRect(context, client, kForegroundType, kBounds);
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
                       TestDisplayItem(client, kForegroundType));
 }
@@ -46,7 +46,7 @@ TEST_F(DrawingRecorderTest, Cached) {
   InitRootChunk();
   DrawNothing(context, client, kBackgroundType);
   DrawRect(context, client, kForegroundType, kBounds);
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(client, kBackgroundType),
@@ -58,27 +58,11 @@ TEST_F(DrawingRecorderTest, Cached) {
 
   EXPECT_EQ(2, NumCachedNewItems());
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(client, kBackgroundType),
                       TestDisplayItem(client, kForegroundType));
-}
-
-template <typename T>
-FloatRect DrawAndGetCullRect(PaintController& controller,
-                             const DisplayItemClient& client,
-                             const T& bounds) {
-  {
-    // Draw some things which will produce a non-null picture.
-    GraphicsContext context(controller);
-    DrawingRecorder recorder(context, client, kBackgroundType, bounds);
-    context.DrawRect(EnclosedIntRect(FloatRect(bounds)));
-  }
-  controller.CommitNewDisplayItems();
-  const auto& drawing = static_cast<const DrawingDisplayItem&>(
-      controller.GetDisplayItemList()[0]);
-  return FloatRect(drawing.VisualRect());
 }
 
 }  // namespace

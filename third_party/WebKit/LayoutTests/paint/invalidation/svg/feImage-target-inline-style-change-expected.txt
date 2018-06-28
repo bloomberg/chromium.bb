@@ -20,7 +20,7 @@
         {
           "object": "LayoutSVGRect rect",
           "rect": [0, 0, 110, 110],
-          "reason": "full"
+          "reason": "style change"
         }
       ]
     }
