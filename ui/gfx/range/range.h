@@ -24,8 +24,7 @@ typedef struct _NSRange NSRange;
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_WIN)
-#include <windows.h>
-#include <richedit.h>
+typedef struct _charrange CHARRANGE;
 #endif
 
 namespace gfx {
@@ -52,7 +51,7 @@ class GFX_RANGE_EXPORT Range {
 #elif defined(OS_WIN)
   // The |total_length| paramater should be used if the CHARRANGE is set to
   // {0,-1} to indicate the whole range.
-  Range(const CHARRANGE& range, LONG total_length = -1);
+  Range(const CHARRANGE& range, long total_length = -1);
 #endif
 
   // Returns a range that is invalid, which is {UINT32_MAX,UINT32_MAX}.

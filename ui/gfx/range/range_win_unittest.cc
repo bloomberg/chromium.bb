@@ -5,6 +5,8 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/range/range.h"
 
+#include <richedit.h>
+
 TEST(RangeTest, FromCHARRANGE) {
   CHARRANGE cr = { 10, 32 };
   gfx::Range r(cr, 50);
