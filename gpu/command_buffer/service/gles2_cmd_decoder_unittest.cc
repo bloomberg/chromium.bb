@@ -257,7 +257,11 @@ TEST_P(GLES2DecoderTest, IsTexture) {
 }
 
 TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
-  EXPECT_CALL(*gl_, GenTextures(1, _)).Times(1).RetiresOnSaturation();
+  const GLuint service_id = 123;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .Times(1)
+      .WillOnce(SetArgPointee<1>(service_id))
+      .RetiresOnSaturation();
   const GLenum target = GL_TEXTURE_EXTERNAL_OES;
   std::unique_ptr<AbstractTexture> abstract_texture =
       GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
@@ -271,7 +275,8 @@ TEST_P(GLES2DecoderTest, TestImageBindingForDecoderManagement) {
       static_cast<ValidatingAbstractTextureImpl*>(abstract_texture.get());
   TextureRef* texture_ref = validating_texture->GetTextureRefForTesting();
   Texture::ImageState state;
-  EXPECT_NE(texture_ref->texture()->GetLevelImage(target, 0, &state), nullptr);
+  EXPECT_EQ(texture_ref->texture()->GetLevelImage(target, 0, &state),
+            image.get());
   EXPECT_EQ(state, GetParam() ? Texture::ImageState::BOUND
                               : Texture::ImageState::UNBOUND);
 
@@ -294,9 +299,10 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
                                           GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_EQ(abstract_texture->GetTextureBase()->target(), target);
   EXPECT_EQ(abstract_texture->service_id(), service_id);
+  Texture* texture = static_cast<Texture*>(abstract_texture->GetTextureBase());
+  EXPECT_EQ(texture->SafeToRenderFrom(), false);
 
   // Set some parameters, and verify that we set them.
-  Texture* texture = static_cast<Texture*>(abstract_texture->GetTextureBase());
   // These three are for ScopedTextureBinder.
   // TODO(liberato): Is there a way to make this less brittle?
   EXPECT_CALL(*gl_, GetIntegerv(_, _)).Times(1).RetiresOnSaturation();
@@ -313,7 +319,13 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   // Attach an image and see if it works.
   scoped_refptr<gl::GLImage> image(new gl::GLImageStub);
   abstract_texture->BindImage(image.get(), true);
+  // Binding an image should make the texture renderable.
+  EXPECT_EQ(texture->SafeToRenderFrom(), true);
   EXPECT_EQ(texture->GetLevelImage(target, 0), image.get());
+
+  // Unbinding should make it not renderable
+  abstract_texture->ReleaseImage();
+  EXPECT_EQ(texture->SafeToRenderFrom(), false);
 
   // Attach a stream image, and verify that the image changes and the service_id
   // matches the one we provide.
@@ -322,6 +334,7 @@ TEST_P(GLES2DecoderTest, CreateAbstractTexture) {
   const GLuint surface_texture_service_id = service_id + 1;
   abstract_texture->BindStreamTextureImage(stream_image.get(),
                                            surface_texture_service_id);
+  EXPECT_EQ(texture->SafeToRenderFrom(), true);
   EXPECT_EQ(texture->GetLevelStreamTextureImage(target, 0), stream_image.get());
   EXPECT_EQ(abstract_texture->service_id(), surface_texture_service_id);
 
@@ -355,7 +368,7 @@ TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWithDecoder) {
 
 TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWhenMadeCurrent) {
   // When an AbstractTexture is destroyed, the ref will be dropped by the next
-  // call to MakeCurrent.
+  // call to MakeCurrent if the context isn't already current.
   const GLuint service_id = 123;
   EXPECT_CALL(*gl_, GenTextures(1, _))
       .Times(1)
@@ -369,7 +382,12 @@ TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWhenMadeCurrent) {
                                           0,                    /* border */
                                           GL_RGBA, GL_UNSIGNED_BYTE);
 
+  // Make the context not current, so that it's not destroyed immediately.
+  context_->ReleaseCurrent(surface_.get());
   abstract_texture.reset();
+  // Make the context current again, |context_| overrides it with a mock.
+  context_->GLContextStub::MakeCurrent(surface_.get());
+
   // Having textures to delete should signal idle work.
   EXPECT_EQ(GetDecoder()->HasMoreIdleWork(), true);
   EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
@@ -377,6 +395,53 @@ TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedWhenMadeCurrent) {
   // Allow the context to be made current.
   EXPECT_CALL(*context_, MakeCurrent(surface_.get())).WillOnce(Return(true));
   GetDecoder()->MakeCurrent();
+}
+
+TEST_P(GLES2DecoderTest, AbstractTextureIsDestroyedIfAlreadyCurrent) {
+  // When an AbstractTexture is destroyed, the ref will be dropped immediately
+  // if the context is current.
+  const GLuint service_id = 123;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .Times(1)
+      .WillOnce(SetArgPointee<1>(service_id))
+      .RetiresOnSaturation();
+  const GLenum target = GL_TEXTURE_EXTERNAL_OES;
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
+                                          256,                  /* height */
+                                          1,                    /* depth */
+                                          0,                    /* border */
+                                          GL_RGBA, GL_UNSIGNED_BYTE);
+
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+  abstract_texture.reset();
+  EXPECT_EQ(GetDecoder()->HasMoreIdleWork(), false);
+}
+
+TEST_P(GLES2DecoderTest, TestAbstractTextureSetClearedWorks) {
+  const GLuint service_id = 123;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .Times(1)
+      .WillOnce(SetArgPointee<1>(service_id))
+      .RetiresOnSaturation();
+  const GLenum target = GL_TEXTURE_2D;
+  std::unique_ptr<AbstractTexture> abstract_texture =
+      GetDecoder()->CreateAbstractTexture(target, GL_RGBA, 256, /* width */
+                                          256,                  /* height */
+                                          1,                    /* depth */
+                                          0,                    /* border */
+                                          GL_RGBA, GL_UNSIGNED_BYTE);
+  Texture* texture = static_cast<Texture*>(abstract_texture->GetTextureBase());
+
+  // Texture should start off unrenderable.
+  EXPECT_EQ(texture->SafeToRenderFrom(), false);
+
+  // Setting it to be cleared should make it renderable.
+  abstract_texture->SetCleared();
+  EXPECT_EQ(texture->SafeToRenderFrom(), true);
+
+  EXPECT_CALL(*gl_, DeleteTextures(1, _)).Times(1).RetiresOnSaturation();
+  abstract_texture.reset();
 }
 
 TEST_P(GLES3DecoderTest, GetInternalformativValidArgsSamples) {

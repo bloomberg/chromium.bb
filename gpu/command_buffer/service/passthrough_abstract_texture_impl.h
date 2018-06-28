@@ -33,6 +33,8 @@ class GPU_GLES2_EXPORT PassthroughAbstractTextureImpl : public AbstractTexture {
   void BindImage(gl::GLImage* image, bool client_managed) override;
   void BindStreamTextureImage(GLStreamTextureImage* image,
                               GLuint service_id) override;
+  void ReleaseImage() override;
+  void SetCleared() override;
 
   // Called when our decoder is going away, so that we can try to clean up.
   scoped_refptr<TexturePassthrough> OnDecoderWillDestroy();

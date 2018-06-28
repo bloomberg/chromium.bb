@@ -47,34 +47,70 @@ void ValidatingAbstractTextureImpl::SetParameteri(GLenum pname, GLint param) {
 
 void ValidatingAbstractTextureImpl::BindImage(gl::GLImage* image,
                                               bool client_managed) {
+  DCHECK(image);
+
   if (!texture_ref_)
     return;
 
   const GLint level = 0;
 
-  Texture::ImageState state = Texture::ImageState::UNBOUND;
-  if (client_managed && image)
-    state = Texture::ImageState::BOUND;
+  Texture::ImageState state = client_managed ? Texture::ImageState::BOUND
+                                             : Texture::ImageState::UNBOUND;
 
   GetTextureManager()->SetLevelImage(texture_ref_.get(),
                                      texture_ref_->texture()->target(), level,
                                      image, state);
-  GetTextureManager()->SetLevelCleared(
-      texture_ref_.get(), texture_ref_->texture()->target(), level, true);
+  SetCleared();
 }
 
 void ValidatingAbstractTextureImpl::BindStreamTextureImage(
     GLStreamTextureImage* image,
     GLuint service_id) {
+  DCHECK(image);
+
   if (!texture_ref_)
     return;
 
   const GLint level = 0;
+  const GLuint target = texture_ref_->texture()->target();
 
   // We set the state to UNBOUND, so that CopyTexImage is called.
   GetTextureManager()->SetLevelStreamTextureImage(
-      texture_ref_.get(), texture_ref_->texture()->target(), level, image,
-      Texture::ImageState::UNBOUND, service_id);
+      texture_ref_.get(), target, level, image, Texture::ImageState::UNBOUND,
+      service_id);
+  SetCleared();
+}
+
+void ValidatingAbstractTextureImpl::ReleaseImage() {
+  if (!texture_ref_)
+    return;
+
+  GLuint target = texture_ref_->texture()->target();
+  Texture::ImageState image_state;
+  gl::GLImage* image =
+      texture_ref_->texture()->GetLevelImage(target, 0, &image_state);
+  if (!image)
+    return;
+
+  // TODO(liberato): Suppress errors here?
+  if (image_state == Texture::BOUND)
+    image->ReleaseTexImage(target);
+
+  GetTextureManager()->SetLevelImage(texture_ref_.get(), target, 0, nullptr,
+                                     Texture::UNBOUND);
+
+  // Mark the texture as uncleared, in case it's only cleared because of the
+  // image binding.
+  const GLint level = 0;
+  GetTextureManager()->SetLevelCleared(texture_ref_.get(), target, level,
+                                       false);
+}
+
+void ValidatingAbstractTextureImpl::SetCleared() {
+  if (!texture_ref_)
+    return;
+
+  const GLint level = 0;
   GetTextureManager()->SetLevelCleared(
       texture_ref_.get(), texture_ref_->texture()->target(), level, true);
 }
