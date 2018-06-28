@@ -9,8 +9,8 @@
 
 #import "base/mac/scoped_nsobject.h"
 #import "content/browser/renderer_host/popup_window_mac.h"
-#import "content/browser/renderer_host/render_widget_host_ns_view_bridge.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
+#include "content/common/render_widget_host_ns_view.mojom.h"
 #include "ui/accelerated_widget_mac/display_ca_layer_tree.h"
 #include "ui/display/display_observer.h"
 
@@ -19,15 +19,21 @@ namespace content {
 // Bridge to a locally-hosted NSView -- this is always instantiated in the same
 // process as the NSView. The caller of this interface may exist in another
 // process.
-class RenderWidgetHostNSViewBridgeLocal : public RenderWidgetHostNSViewBridge,
-                                          public display::DisplayObserver {
+class RenderWidgetHostNSViewBridgeLocal
+    : public mojom::RenderWidgetHostNSViewBridge,
+      public display::DisplayObserver {
  public:
   explicit RenderWidgetHostNSViewBridgeLocal(
       RenderWidgetHostNSViewClient* client);
   ~RenderWidgetHostNSViewBridgeLocal() override;
 
-  // RenderWidgetHostNSViewBridge implementation.
-  RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa() override;
+  // TODO(ccameron): RenderWidgetHostViewMac and other functions currently use
+  // this method to communicate directly with RenderWidgetHostViewCocoa. The
+  // goal of this class is to eliminate this direct communication (so this
+  // method is expected to go away).
+  RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa();
+
+  // mojom::RenderWidgetHostNSViewBridge implementation.
   void InitAsPopup(const gfx::Rect& content_rect,
                    blink::WebPopupType popup_type) override;
   void DisableDisplay() override;
@@ -39,7 +45,7 @@ class RenderWidgetHostNSViewBridgeLocal : public RenderWidgetHostNSViewBridge,
   void SetTooltipText(const base::string16& display_text) override;
   void SetTextInputType(ui::TextInputType text_input_type) override;
   void SetTextSelection(const base::string16& text,
-                        size_t offset,
+                        uint64_t offset,
                         const gfx::Range& range) override;
   void SetCompositionRangeInfo(const gfx::Range& range) override;
   void CancelComposition() override;
@@ -49,8 +55,9 @@ class RenderWidgetHostNSViewBridgeLocal : public RenderWidgetHostNSViewBridge,
   void ShowDictionaryOverlayForSelection() override;
   void ShowDictionaryOverlay(
       const mac::AttributedStringCoder::EncodedString& encoded_string,
-      gfx::Point baseline_point) override;
-  void LockKeyboard(base::Optional<base::flat_set<ui::DomCode>> codes) override;
+      const gfx::Point& baseline_point) override;
+  void LockKeyboard(
+      const base::Optional<std::vector<uint32_t>>& uint_dom_codes) override;
   void UnlockKeyboard() override;
 
  private:

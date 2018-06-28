@@ -574,7 +574,10 @@ mojom("mojo_bindings") {
   }
 
   if (is_mac) {
-    sources += [ "font_loader_mac.mojom" ]
+    sources += [
+      "font_loader_mac.mojom",
+      "render_widget_host_ns_view.mojom",
+    ]
   }
 
   enabled_features = []

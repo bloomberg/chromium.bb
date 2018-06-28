@@ -5,6 +5,7 @@
 mojom = "//content/common/native_types.mojom"
 os_whitelist = [ "mac" ]
 public_headers = [
+  "//content/common/mac/attributed_string_coder.h",
   "//third_party/blink/public/platform/web_scrollbar_buttons_placement.h",
   "//third_party/blink/public/platform/mac/web_scrollbar_theme.h",
 ]
@@ -29,6 +30,7 @@ deps = [
   "//url/ipc:url_ipc",
 ]
 type_mappings = [
+  "content.mojom.EncodedAttributedString=::mac::AttributedStringCoder::EncodedString",
   "content.mojom.ScrollerStyle=::blink::ScrollerStyle",
   "content.mojom.ScrollbarButtonsPlacement=::blink::WebScrollbarButtonsPlacement",
 ]

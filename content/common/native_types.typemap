@@ -12,6 +12,7 @@ public_headers = [
   "//content/common/visual_properties.h",
   "//content/public/common/input_event_ack_source.h",
   "//content/public/common/input_event_ack_state.h",
+  "//content/common/cursors/webcursor.h",
   "//content/common/input/synthetic_pinch_gesture_params.h",
   "//content/common/input/synthetic_pointer_action_list_params.h",
   "//content/common/input/synthetic_smooth_drag_gesture_params.h",
@@ -87,6 +88,7 @@ type_mappings = [
   "content.mojom.TouchAction=cc::TouchAction",
   "content.mojom.TouchActionOptional=cc::TouchAction",
   "content.mojom.TouchState=blink::WebTouchPoint::State",
+  "content.mojom.WebCursor=content::WebCursor",
   "content.mojom.WebPopupType=blink::WebPopupType",
   "content.mojom.WebPreferences=content::WebPreferences",
 ]
