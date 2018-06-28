@@ -30,6 +30,8 @@ KEY_HIT_TEST = Tag(
     'key_hit_test', 'Key hit test stories')
 KEY_SILK = Tag(
     'key_silk', 'Key silk stories')
+KEY_NOOP = Tag(
+    'key_noop', 'Key noop stories')
 MAPS = Tag(
     'maps', 'Maps stories')
 PATHOLOGICAL_MOBILE_SITES = Tag(
