@@ -21,8 +21,8 @@ class CompositorTest : public testing::Test {
   ~CompositorTest() override;
 
  protected:
-  // Mock task runner is initialized here because tests create
-  // WebLayerTreeViewImplForTesting which needs the current task runner handle.
+  // cc::LayerTreeHost requires a task runner, so we use a mock task runner
+  // and bind it as the current ThreadTaskRunnerHandle for this thread.
   scoped_refptr<base::TestMockTimeTaskRunner> runner_;
   base::ThreadTaskRunnerHandle runner_handle_;
 };
