@@ -44,7 +44,7 @@ class COMPONENT_EXPORT(TRACING_CPP) ProducerClient
   ProducerClient();
   ~ProducerClient() override;
 
-  static void DeleteSoon(std::unique_ptr<ProducerClient>);
+  static void DeleteSoonForTesting(std::unique_ptr<ProducerClient>);
 
   // Returns the taskrunner used by Perfetto.
   static base::SequencedTaskRunner* GetTaskRunner();

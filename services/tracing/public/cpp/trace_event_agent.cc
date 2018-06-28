@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
@@ -35,14 +36,23 @@ const char kTraceEventLabel[] = "traceEvents";
 namespace tracing {
 
 #if defined(PERFETTO_AVAILABLE)
+
+namespace {
+
+ProducerClient* GetProducerClient() {
+  static base::NoDestructor<ProducerClient> producer_client;
+  return producer_client.get();
+}
+
+}  // namespace
+
 class PerfettoTraceEventAgent : public TraceEventAgent {
  public:
   explicit PerfettoTraceEventAgent(service_manager::Connector* connector) {
     mojom::PerfettoServicePtr perfetto_service;
     connector->BindInterface(mojom::kServiceName, &perfetto_service);
 
-    producer_client_ = std::make_unique<ProducerClient>();
-    producer_client_->CreateMojoMessagepipes(base::BindOnce(
+    GetProducerClient()->CreateMojoMessagepipes(base::BindOnce(
         [](mojom::PerfettoServicePtr perfetto_service,
            mojom::ProducerClientPtr producer_client_pipe,
            mojom::ProducerHostRequest producer_host_pipe) {
@@ -51,13 +61,6 @@ class PerfettoTraceEventAgent : public TraceEventAgent {
         },
         std::move(perfetto_service)));
   }
-
-  ~PerfettoTraceEventAgent() override {
-    ProducerClient::DeleteSoon(std::move(producer_client_));
-  }
-
- private:
-  std::unique_ptr<ProducerClient> producer_client_;
 };
 #endif
 
