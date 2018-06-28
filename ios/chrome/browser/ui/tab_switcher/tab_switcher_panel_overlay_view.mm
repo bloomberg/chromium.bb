@@ -230,9 +230,7 @@ const CGFloat kSubtitleMinimunLineHeight = 24.0;
 - (void)createSigninPromoViewIfNeeded {
   if (_signinPromoView)
     return;
-  _signinPromoView =
-      [[SigninPromoView alloc] initWithFrame:CGRectZero
-                                       style:SigninPromoViewUILegacy];
+  _signinPromoView = [[SigninPromoView alloc] initWithFrame:CGRectZero];
   _signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
   _signinPromoView.textLabel.text =
       l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_RECENT_TABS);

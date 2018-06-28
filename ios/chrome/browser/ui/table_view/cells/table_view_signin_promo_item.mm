@@ -58,8 +58,7 @@ const CGFloat kMargin = 16;
   self = [super initWithStyle:style reuseIdentifier:reuseIdentifier];
   if (self) {
     SigninPromoView* signinPromoView =
-        [[SigninPromoView alloc] initWithFrame:CGRectZero
-                                         style:SigninPromoViewUIRefresh];
+        [[SigninPromoView alloc] initWithFrame:CGRectZero];
     self.signinPromoView = signinPromoView;
     self.signinPromoView.translatesAutoresizingMaskIntoConstraints = NO;
     [self.contentView addSubview:self.signinPromoView];
