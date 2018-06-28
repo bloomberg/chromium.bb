@@ -351,6 +351,14 @@ blink::WebMediaStreamTrack RTCRtpSender::Track() const {
   return track_ref ? track_ref->web_track() : blink::WebMediaStreamTrack();
 }
 
+blink::WebVector<blink::WebMediaStream> RTCRtpSender::Streams() const {
+  auto stream_refs = this->stream_refs();
+  blink::WebVector<blink::WebMediaStream> web_streams(stream_refs.size());
+  for (size_t i = 0; i < stream_refs.size(); ++i)
+    web_streams[i] = stream_refs[i]->adapter().web_stream();
+  return web_streams;
+}
+
 void RTCRtpSender::ReplaceTrack(blink::WebMediaStreamTrack with_track,
                                 blink::WebRTCVoidRequest request) {
   internal_->ReplaceTrack(

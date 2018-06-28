@@ -16,6 +16,8 @@
 #include "ipc/ipc_platform_file.h"
 #include "third_party/blink/public/platform/web_media_stream.h"
 #include "third_party/blink/public/platform/web_rtc_peer_connection_handler_client.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_receiver.h"
+#include "third_party/blink/public/platform/web_rtc_rtp_sender.h"
 #include "third_party/blink/public/platform/web_rtc_session_description.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 
@@ -58,6 +60,17 @@ class CONTENT_EXPORT PeerConnectionTracker
     ACTION_SET_REMOTE_DESCRIPTION,
     ACTION_CREATE_OFFER,
     ACTION_CREATE_ANSWER
+  };
+
+  // In Plan B: "Transceiver" refers to RTCRtpSender or RTCRtpReceiver.
+  // In Unified Plan: "Transceiver" refers to RTCRtpTransceiver.
+  enum class TransceiverUpdatedReason {
+    kAddTrack,
+    kRemoveTrack,
+    kSetRemoteDescription,
+    // TODO(hbos): When we have RTCRtpTransceiver support, this list should be
+    // expanded to include kAddTransceiver and kSetLocalDescription.
+    // https://crbug.com/777617
   };
 
   // RenderThreadObserver implementation.
@@ -116,15 +129,29 @@ class CONTENT_EXPORT PeerConnectionTracker
       Source source,
       bool succeeded);
 
-  // Sends an update when a media stream is added.
-  virtual void TrackAddStream(
+  // Sends an update when a transceiver is added, modified or removed, which
+  // for example can happen on addTrack() or setRemoteDescription().
+  // In Plan B: "Transceiver" refers to RTCRtpSender or RTCRtpReceiver.
+  // In Unified Plan: "Transceiver" refers to RTCRtpTransceiver.
+  // TODO(hbos): When we support transceivers, take blink::WebRTCRtpTransceiver
+  // as the argument. https://crbug.com/777617
+  virtual void TrackAddTransceiver(
       RTCPeerConnectionHandler* pc_handler,
-      const blink::WebMediaStream& stream, Source source);
-
-  // Sends an update when a media stream is removed.
-  virtual void TrackRemoveStream(
+      TransceiverUpdatedReason reason,
+      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
+  virtual void TrackModifyTransceiver(
       RTCPeerConnectionHandler* pc_handler,
-      const blink::WebMediaStream& stream, Source source);
+      TransceiverUpdatedReason reason,
+      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
+  // TODO(hbos): When Plan B is removed this is no longer applicable.
+  // https://crbug.com/857004
+  virtual void TrackRemoveTransceiver(
+      RTCPeerConnectionHandler* pc_handler,
+      TransceiverUpdatedReason reason,
+      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
 
   // Sends an update when a DataChannel is created.
   virtual void TrackCreateDataChannel(
@@ -180,6 +207,13 @@ class CONTENT_EXPORT PeerConnectionTracker
   // is not registered, the return value will be -1.
   int GetLocalIDForHandler(RTCPeerConnectionHandler* handler) const;
 
+  void TrackTransceiver(
+      const char* callback_type_ending,
+      RTCPeerConnectionHandler* pc_handler,
+      PeerConnectionTracker::TransceiverUpdatedReason reason,
+      const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+      const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver);
+
   // IPC Message handler for getting all stats.
   void OnGetAllStats();
 
@@ -211,7 +245,7 @@ class CONTENT_EXPORT PeerConnectionTracker
   // |value| - A json serialized string containing all the information for the
   //           update event.
   void SendPeerConnectionUpdate(int local_id,
-                                const char* callback_type,
+                                const std::string& callback_type,
                                 const std::string& value);
 
   RenderThread* SendTarget();

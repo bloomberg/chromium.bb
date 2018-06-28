@@ -171,14 +171,21 @@ class MockPeerConnectionTracker : public PeerConnectionTracker {
                     scoped_refptr<blink::WebRTCICECandidate> candidate,
                     Source source,
                     bool succeeded));
-  MOCK_METHOD3(TrackAddStream,
+  MOCK_METHOD4(TrackAddTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const blink::WebMediaStream& stream,
-                    Source source));
-  MOCK_METHOD3(TrackRemoveStream,
+                    PeerConnectionTracker::TransceiverUpdatedReason reason,
+                    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+                    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver));
+  MOCK_METHOD4(TrackModifyTransceiver,
                void(RTCPeerConnectionHandler* pc_handler,
-                    const blink::WebMediaStream& stream,
-                    Source source));
+                    PeerConnectionTracker::TransceiverUpdatedReason reason,
+                    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+                    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver));
+  MOCK_METHOD4(TrackRemoveTransceiver,
+               void(RTCPeerConnectionHandler* pc_handler,
+                    PeerConnectionTracker::TransceiverUpdatedReason reason,
+                    const std::unique_ptr<blink::WebRTCRtpSender>& sender,
+                    const std::unique_ptr<blink::WebRTCRtpReceiver>& receiver));
   MOCK_METHOD1(TrackOnIceComplete,
                void(RTCPeerConnectionHandler* pc_handler));
   MOCK_METHOD3(TrackCreateDataChannel,
@@ -789,12 +796,18 @@ TEST_F(RTCPeerConnectionHandlerTest, addAndRemoveStream) {
   blink::WebMediaStream local_stream(
       CreateLocalMediaStream(stream_label));
 
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackAddStream(pc_handler_.get(), _,
-                             PeerConnectionTracker::SOURCE_LOCAL));
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackRemoveStream(pc_handler_.get(), _,
-                                PeerConnectionTracker::SOURCE_LOCAL));
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackAddTransceiver(
+          pc_handler_.get(),
+          PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack, _, _))
+      .Times(2);
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackRemoveTransceiver(
+          pc_handler_.get(),
+          PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack, _, _))
+      .Times(2);
   EXPECT_TRUE(AddStream(local_stream));
   EXPECT_EQ(stream_label, mock_peer_connection_->stream_label());
   EXPECT_EQ(1u,
@@ -1194,21 +1207,20 @@ TEST_F(RTCPeerConnectionHandlerTest, DISABLED_OnAddAndOnRemoveStream) {
                      std::unique_ptr<blink::WebRTCRtpReceiver>* receiver) {
             receivers_added.push_back(std::move(*receiver));
           }));
-  EXPECT_CALL(*mock_tracker_.get(),
-              TrackAddStream(pc_handler_.get(),
-                             testing::Property(
-                                 &blink::WebMediaStream::Id,
-                                 blink::WebString::FromASCII("remote_stream")),
-                             PeerConnectionTracker::SOURCE_REMOTE));
+  EXPECT_CALL(
+      *mock_tracker_.get(),
+      TrackAddTransceiver(
+          pc_handler_.get(),
+          PeerConnectionTracker::TransceiverUpdatedReason::kAddTrack, _, _))
+      .Times(2);
   // Grab the removed receivers when it's been successfully added to the PC.
   std::vector<std::unique_ptr<blink::WebRTCRtpReceiver>> receivers_removed;
   EXPECT_CALL(
       *mock_tracker_.get(),
-      TrackRemoveStream(
+      TrackRemoveTransceiver(
           pc_handler_.get(),
-          testing::Property(&blink::WebMediaStream::Id,
-                            blink::WebString::FromASCII("remote_stream")),
-          PeerConnectionTracker::SOURCE_REMOTE));
+          PeerConnectionTracker::TransceiverUpdatedReason::kRemoveTrack, _, _))
+      .Times(2);
   EXPECT_CALL(*mock_client_.get(), DidRemoveRemoteTrackForMock(_))
       .WillRepeatedly(
           Invoke([&receivers_removed](
