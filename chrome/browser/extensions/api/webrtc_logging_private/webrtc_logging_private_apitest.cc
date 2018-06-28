@@ -320,9 +320,25 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     params.AppendInteger(maxLogSizeBytes);
 
     if (expect_success) {
-      const bool result_returned =
-          RunFunction<WebrtcLoggingPrivateStartEventLoggingFunction>(params);
-      EXPECT_FALSE(result_returned);  // Should never return a value.
+      scoped_refptr<WebrtcLoggingPrivateStartEventLoggingFunction> function(
+          CreateFunction<WebrtcLoggingPrivateStartEventLoggingFunction>());
+
+      std::unique_ptr<base::Value> result(
+          utils::RunFunctionAndReturnSingleResult(
+              function.get(), ParamsToString(params), GetBrowser()));
+
+      ASSERT_TRUE(result);
+      ASSERT_TRUE(result->is_dict());
+      ASSERT_EQ(result->DictSize(), 1u);
+
+      const base::Value* val =
+          result->FindKeyOfType("logId", base::Value::Type::STRING);
+      ASSERT_TRUE(val);
+
+      const std::string& log_id = val->GetString();
+      EXPECT_EQ(log_id.size(), 32u);
+      EXPECT_EQ(log_id.find_first_not_of("0123456789ABCDEF"),
+                std::string::npos);
     } else {
       RunFunctionAndExpectError<WebrtcLoggingPrivateStartEventLoggingFunction>(
           params, expected_error);

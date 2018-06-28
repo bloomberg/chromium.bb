@@ -44,9 +44,13 @@ extern const size_t kMaxActiveRemoteBoundWebRtcEventLogs;
 // limit is applied per browser context.
 extern const size_t kMaxPendingRemoteBoundWebRtcEventLogs;
 
-// The file extension to be associated with remote-bound logs while they are
-// kept on local disk.
-extern const base::FilePath::CharType kRemoteBoundLogExtension[];
+// Remote-bound log files' names will be of the format [prefix]_[log_id].[ext],
+// where |prefix| is equal to kRemoteBoundWebRtcEventLogFileNamePrefix,
+// |log_id| is composed of 32 random characters from '0'-'9' and 'A'-'F',
+// and |ext| is kRemoteBoundWebRtcEventLogExtension.
+extern const base::FilePath::CharType
+    kRemoteBoundWebRtcEventLogFileNamePrefix[];
+extern const base::FilePath::CharType kRemoteBoundWebRtcEventLogExtension[];
 
 // Remote-bound event logs will not be uploaded if the time since their last
 // modification (meaning the time when they were completed) exceeds this value.
