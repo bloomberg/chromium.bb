@@ -139,7 +139,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   void setDoubleOrStringSequenceMember(const HeapVector<DoubleOrString>&);
 
-  bool hasElementOrNullMember() const { return element_or_null_member_; }
+  bool hasElementOrNullMember() const { return has_element_or_null_member_; }
   Element* elementOrNullMember() const {
     return element_or_null_member_;
   }
@@ -339,7 +339,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   }
   inline void setTestInterfaceMember(TestInterfaceImplementation*);
 
-  bool hasTestInterfaceOrNullMember() const { return test_interface_or_null_member_; }
+  bool hasTestInterfaceOrNullMember() const { return has_test_interface_or_null_member_; }
   TestInterfaceImplementation* testInterfaceOrNullMember() const {
     return test_interface_or_null_member_;
   }
@@ -432,6 +432,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_double_or_null_record_member_ = false;
   bool has_double_or_null_sequence_member_ = false;
   bool has_double_or_string_sequence_member_ = false;
+  bool has_element_or_null_member_ = false;
   bool has_element_or_null_record_member_ = false;
   bool has_element_or_null_sequence_member_ = false;
   bool has_enum_sequence_member_ = false;
@@ -448,6 +449,7 @@ class CORE_EXPORT TestDictionary : public IDLDictionaryBase {
   bool has_string_or_null_record_member_ = false;
   bool has_string_or_null_sequence_member_ = false;
   bool has_string_sequence_member_ = false;
+  bool has_test_interface_or_null_member_ = false;
   bool has_test_interface_sequence_member_ = false;
   bool has_test_object_sequence_member_ = false;
   bool has_treat_null_as_string_sequence_member_ = false;
@@ -543,15 +545,19 @@ void TestDictionary::setDoubleOrNullMember(double value) {
   double_or_null_member_ = value;
   has_double_or_null_member_ = true;
 }
+
 void TestDictionary::setDoubleOrNullMemberToNull() {
   has_double_or_null_member_ = false;
 }
 
 void TestDictionary::setElementOrNullMember(Element* value) {
   element_or_null_member_ = value;
+  has_element_or_null_member_ = true;
 }
+
 void TestDictionary::setElementOrNullMemberToNull() {
   element_or_null_member_ = Member<Element>();
+  has_element_or_null_member_ = false;
 }
 
 void TestDictionary::setEnumMember(const String& value) {
@@ -561,6 +567,7 @@ void TestDictionary::setEnumMember(const String& value) {
 void TestDictionary::setEnumOrNullMember(const String& value) {
   enum_or_null_member_ = value;
 }
+
 void TestDictionary::setEnumOrNullMemberToNull() {
   enum_or_null_member_ = String();
 }
@@ -611,6 +618,7 @@ void TestDictionary::setStringMember(const String& value) {
 void TestDictionary::setStringOrNullMember(const String& value) {
   string_or_null_member_ = value;
 }
+
 void TestDictionary::setStringOrNullMemberToNull() {
   string_or_null_member_ = String();
 }
@@ -621,9 +629,12 @@ void TestDictionary::setTestInterfaceMember(TestInterfaceImplementation* value) 
 
 void TestDictionary::setTestInterfaceOrNullMember(TestInterfaceImplementation* value) {
   test_interface_or_null_member_ = value;
+  has_test_interface_or_null_member_ = true;
 }
+
 void TestDictionary::setTestInterfaceOrNullMemberToNull() {
   test_interface_or_null_member_ = Member<TestInterfaceImplementation>();
+  has_test_interface_or_null_member_ = false;
 }
 
 void TestDictionary::setUint8ArrayMember(NotShared<DOMUint8Array> value) {
@@ -638,6 +649,7 @@ void TestDictionary::setUnrestrictedDoubleMember(double value) {
 void TestDictionary::setUsvStringOrNullMember(const String& value) {
   usv_string_or_null_member_ = value;
 }
+
 void TestDictionary::setUsvStringOrNullMemberToNull() {
   usv_string_or_null_member_ = String();
 }
