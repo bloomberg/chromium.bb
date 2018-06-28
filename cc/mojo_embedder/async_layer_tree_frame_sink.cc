@@ -19,10 +19,18 @@ namespace cc {
 namespace mojo_embedder {
 
 AsyncLayerTreeFrameSink::InitParams::InitParams() = default;
+AsyncLayerTreeFrameSink::InitParams::InitParams(InitParams&& params) = default;
+AsyncLayerTreeFrameSink::InitParams& AsyncLayerTreeFrameSink::InitParams::
+operator=(InitParams&& params) = default;
 AsyncLayerTreeFrameSink::InitParams::~InitParams() = default;
 
 AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes() = default;
 AsyncLayerTreeFrameSink::UnboundMessagePipes::~UnboundMessagePipes() = default;
+AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes(
+    UnboundMessagePipes&& other) = default;
+AsyncLayerTreeFrameSink::UnboundMessagePipes&
+AsyncLayerTreeFrameSink::UnboundMessagePipes::operator=(
+    UnboundMessagePipes&& other) = default;
 
 bool AsyncLayerTreeFrameSink::UnboundMessagePipes::HasUnbound() const {
   return client_request.is_pending() &&
@@ -30,25 +38,19 @@ bool AsyncLayerTreeFrameSink::UnboundMessagePipes::HasUnbound() const {
           compositor_frame_sink_associated_info.is_valid());
 }
 
-AsyncLayerTreeFrameSink::UnboundMessagePipes::UnboundMessagePipes(
-    UnboundMessagePipes&& other) = default;
-
-AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(
-    scoped_refptr<viz::ContextProvider> context_provider,
-    scoped_refptr<viz::RasterContextProvider> worker_context_provider,
-    InitParams* params)
-    : LayerTreeFrameSink(std::move(context_provider),
-                         std::move(worker_context_provider),
-                         std::move(params->compositor_task_runner),
-                         params->gpu_memory_buffer_manager),
-      hit_test_data_provider_(std::move(params->hit_test_data_provider)),
-      local_surface_id_provider_(std::move(params->local_surface_id_provider)),
+AsyncLayerTreeFrameSink::AsyncLayerTreeFrameSink(InitParams params)
+    : LayerTreeFrameSink(std::move(params.context_provider),
+                         std::move(params.worker_context_provider),
+                         std::move(params.compositor_task_runner),
+                         params.gpu_memory_buffer_manager),
+      hit_test_data_provider_(std::move(params.hit_test_data_provider)),
+      local_surface_id_provider_(std::move(params.local_surface_id_provider)),
       synthetic_begin_frame_source_(
-          std::move(params->synthetic_begin_frame_source)),
-      pipes_(std::move(params->pipes)),
+          std::move(params.synthetic_begin_frame_source)),
+      pipes_(std::move(params.pipes)),
       client_binding_(this),
-      enable_surface_synchronization_(params->enable_surface_synchronization),
-      wants_animate_only_begin_frames_(params->wants_animate_only_begin_frames),
+      enable_surface_synchronization_(params.enable_surface_synchronization),
+      wants_animate_only_begin_frames_(params.wants_animate_only_begin_frames),
       weak_factory_(this) {
   DETACH_FROM_THREAD(thread_checker_);
 }
@@ -198,22 +200,54 @@ void AsyncLayerTreeFrameSink::DidPresentCompositorFrame(
 }
 
 void AsyncLayerTreeFrameSink::OnBeginFrame(const viz::BeginFrameArgs& args) {
-  if (!needs_begin_frames_) {
+  // Ignore begin frames received over mojo if we're using a
+  // SyntheticBeginFrameSource instead.
+  if (synthetic_begin_frame_source_)
+    return;
+  // Unlike PostTask from IO thread to compositor thread in Chrome IPC, mojo
+  // polls for messages on the compositor thread which means it can dequeue a
+  // large number of begin frame messages after the compositor thread has been
+  // busy for some time. All but the last begin frame cancels the previous begin
+  // frame, and is essentially a nop, but it still ticks animations. When a page
+  // has a large number of animations each begin frame can take a long time and
+  // push out other tasks such as tile manager callbacks stalling the pipeline.
+  //
+  // Throttling the begin frames in viz doesn't fully solve the problem because
+  // we have to allow at least two begin frames in flight for pipelining, and
+  // so the client can still process two begin frames back to back.
+  //
+  // Post a task to issue the begin frame to the source and its observers. Only
+  // one task is posted at a time only, and it sees the last begin frame args
+  // received so only the last message is propagated to the source.
+  last_begin_frame_args_ = args;
+  if (!is_begin_frame_task_posted_) {
+    is_begin_frame_task_posted_ = true;
+    DCHECK(compositor_task_runner_);
+    compositor_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&AsyncLayerTreeFrameSink::IssueBeginFrame,
+                                  weak_factory_.GetWeakPtr()));
+  }
+}
+
+void AsyncLayerTreeFrameSink::IssueBeginFrame() {
+  DCHECK(begin_frame_source_);
+  is_begin_frame_task_posted_ = false;
+  if (needs_begin_frames_) {
     TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
-                           TRACE_ID_GLOBAL(args.trace_id),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "step", "ReceiveBeginFrameDiscard");
-    // We had a race with SetNeedsBeginFrame(false) and still need to let the
-    // sink know that we didn't use this BeginFrame.
-    DidNotProduceFrame(viz::BeginFrameAck(args, false));
-  } else {
-    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
-                           TRACE_ID_GLOBAL(args.trace_id),
+                           TRACE_ID_GLOBAL(last_begin_frame_args_.trace_id),
                            TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
                            "step", "ReceiveBeginFrame");
+    begin_frame_source_->OnBeginFrame(last_begin_frame_args_);
+  } else {
+    TRACE_EVENT_WITH_FLOW1("viz,benchmark", "Graphics.Pipeline",
+                           TRACE_ID_GLOBAL(last_begin_frame_args_.trace_id),
+                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                           "step", "ReceiveBeginFrameDiscard");
+    // If |needs_begin_frames_| is false, then we had a race with
+    // SetNeedsBeginFrames(false), but we still need to let the sink know that
+    // we didn't use this BeginFrame.
+    DidNotProduceFrame(viz::BeginFrameAck(last_begin_frame_args_, false));
   }
-  if (begin_frame_source_)
-    begin_frame_source_->OnBeginFrame(args);
 }
 
 void AsyncLayerTreeFrameSink::OnBeginFramePausedChanged(bool paused) {

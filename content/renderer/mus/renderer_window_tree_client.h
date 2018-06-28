@@ -75,6 +75,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
       base::Callback<void(std::unique_ptr<cc::LayerTreeFrameSink>)>;
   void RequestLayerTreeFrameSink(
       scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeFrameSinkCallback& callback);
 
@@ -92,6 +93,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
 
   void RequestLayerTreeFrameSinkInternal(
       scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
       const LayerTreeFrameSinkCallback& callback);
 
@@ -215,6 +217,7 @@ class RendererWindowTreeClient : public ui::mojom::WindowTreeClient,
   ui::Id root_window_id_ = 0u;
   bool visible_ = false;
   scoped_refptr<viz::ContextProvider> pending_context_provider_;
+  scoped_refptr<base::SingleThreadTaskRunner> pending_compositor_task_runner_;
   gpu::GpuMemoryBufferManager* pending_gpu_memory_buffer_manager_ = nullptr;
   LayerTreeFrameSinkCallback pending_layer_tree_frame_sink_callback_;
   ui::mojom::WindowTreePtr tree_;

@@ -1961,6 +1961,30 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     return;
   }
 
+#if defined(USE_AURA)
+  if (!features::IsAshInBrowserProcess()) {
+    if (!RendererWindowTreeClient::Get(routing_id)) {
+      callback.Run(nullptr);
+      return;
+    }
+    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
+    // If the channel could not be established correctly, then return null. This
+    // would cause the compositor to wait and try again at a later time.
+    if (!channel) {
+      callback.Run(nullptr);
+      return;
+    }
+    RendererWindowTreeClient::Get(routing_id)
+        ->RequestLayerTreeFrameSink(
+            gpu_->CreateContextProvider(std::move(channel)),
+            compositor_task_runner_, GetGpuMemoryBufferManager(), callback);
+    frame_sink_provider_->RegisterRenderFrameMetadataObserver(
+        routing_id, std::move(render_frame_metadata_observer_client_request),
+        std::move(render_frame_metadata_observer_ptr));
+    return;
+  }
+#endif
+
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
@@ -1986,30 +2010,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
   if (command_line.HasSwitch(switches::kDisableFrameRateLimit))
     params.synthetic_begin_frame_source = CreateSyntheticBeginFrameSource();
 
-#if defined(USE_AURA)
-  if (!features::IsAshInBrowserProcess()) {
-    if (!RendererWindowTreeClient::Get(routing_id)) {
-      callback.Run(nullptr);
-      return;
-    }
-    scoped_refptr<gpu::GpuChannelHost> channel = EstablishGpuChannelSync();
-    // If the channel could not be established correctly, then return null. This
-    // would cause the compositor to wait and try again at a later time.
-    if (!channel) {
-      callback.Run(nullptr);
-      return;
-    }
-    RendererWindowTreeClient::Get(routing_id)
-        ->RequestLayerTreeFrameSink(
-            gpu_->CreateContextProvider(std::move(channel)),
-            GetGpuMemoryBufferManager(), callback);
-    frame_sink_provider_->RegisterRenderFrameMetadataObserver(
-        routing_id, std::move(render_frame_metadata_observer_client_request),
-        std::move(render_frame_metadata_observer_ptr));
-    return;
-  }
-#endif
-
   viz::mojom::CompositorFrameSinkRequest compositor_frame_sink_request =
       mojo::MakeRequest(&params.pipes.compositor_frame_sink_info);
   viz::mojom::CompositorFrameSinkClientPtr compositor_frame_sink_client;
@@ -2025,7 +2025,7 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
         routing_id, std::move(render_frame_metadata_observer_client_request),
         std::move(render_frame_metadata_observer_ptr));
     callback.Run(std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-        nullptr, nullptr, &params));
+        std::move(params)));
     return;
   }
 
@@ -2076,21 +2076,6 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
           automatic_flushes, support_locking, support_grcontext, limits,
           attributes, ui::command_buffer_metrics::RENDER_COMPOSITOR_CONTEXT));
 
-  if (layout_test_deps_) {
-    if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
-      callback.Run(layout_test_deps_->CreateLayerTreeFrameSink(
-          routing_id, std::move(gpu_channel_host), std::move(context_provider),
-          std::move(worker_context_provider), GetGpuMemoryBufferManager(),
-          this));
-      return;
-    } else if (!params.compositor_task_runner) {
-      // The frame sink provider expects a compositor task runner, but we might
-      // not have that if we're running layout tests in single threaded mode.
-      // Set it to be our thread's task runner instead.
-      params.compositor_task_runner = GetCompositorMainThreadTaskRunner();
-    }
-  }
-
 #if defined(OS_ANDROID)
   if (GetContentClient()->UsingSynchronousCompositing()) {
     RenderViewImpl* view = RenderViewImpl::FromRoutingID(routing_id);
@@ -2110,16 +2095,35 @@ void RenderThreadImpl::RequestNewLayerTreeFrameSink(
     }
   }
 #endif
+
+  if (layout_test_deps_) {
+    if (!layout_test_deps_->UseDisplayCompositorPixelDump()) {
+      callback.Run(layout_test_deps_->CreateLayerTreeFrameSink(
+          routing_id, std::move(gpu_channel_host), std::move(context_provider),
+          std::move(worker_context_provider), GetGpuMemoryBufferManager(),
+          this));
+      return;
+    } else if (!params.compositor_task_runner) {
+      // The frame sink provider expects a compositor task runner, but we might
+      // not have that if we're running layout tests in single threaded mode.
+      // Set it to be our thread's task runner instead.
+      params.compositor_task_runner = GetCompositorMainThreadTaskRunner();
+    }
+  }
+
   frame_sink_provider_->CreateForWidget(
       routing_id, std::move(compositor_frame_sink_request),
       std::move(compositor_frame_sink_client));
   frame_sink_provider_->RegisterRenderFrameMetadataObserver(
       routing_id, std::move(render_frame_metadata_observer_client_request),
       std::move(render_frame_metadata_observer_ptr));
+
+  params.context_provider = std::move(context_provider);
+  params.worker_context_provider = std::move(worker_context_provider);
   params.gpu_memory_buffer_manager = GetGpuMemoryBufferManager();
+
   callback.Run(std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-      std::move(context_provider), std::move(worker_context_provider),
-      &params));
+      std::move(params)));
 }
 
 blink::AssociatedInterfaceRegistry*
