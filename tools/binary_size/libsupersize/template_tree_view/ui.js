@@ -6,7 +6,8 @@
 
 /**
  * @fileoverview
- * UI classes and methods for the Binary Size Analysis HTML report.
+ * UI classes and methods for the Tree View in the
+ * Binary Size Analysis HTML report.
  */
 
 {
@@ -57,10 +58,27 @@
 
   /**
    * Replace the contexts of the size element for a tree node.
+   * If in method count mode, size instead represents the amount of methods in
+   * the node. In this case, don't append a unit at the end.
+   * @param {HTMLElement} sizeElement Element that should display the count
+   * @param {number} methodCount Number of methods to use for the count text
+   */
+  function _setMethodCountContents(sizeElement, methodCount) {
+    const methodStr = methodCount.toLocaleString(undefined, {
+      useGrouping: true,
+    });
+
+    const textNode = document.createTextNode(methodStr);
+    dom.replace(sizeElement, textNode);
+    sizeElement.title = `${methodStr} methods`;
+  }
+
+  /**
+   * Replace the contexts of the size element for a tree node.
    * The unit to use is selected from the current state,
    * and the original number of bytes will be displayed as
    * hover text over the element.
-   * @param {HTMLElement} sizeElement Element that shoudl display the byte size
+   * @param {HTMLElement} sizeElement Element that should display the size
    * @param {number} bytes Number of bytes to use for the size text
    */
   function _setSizeContents(sizeElement, bytes) {
@@ -151,7 +169,10 @@
     symbolName.title = data.idPath;
 
     // Set the byte size and hover text
-    _setSizeContents(element.querySelector('.size'), data.size);
+    const _setSize = state.has('method_count')
+      ? _setMethodCountContents
+      : _setSizeContents;
+    _setSize(element.querySelector('.size'), data.size);
 
     if (!isLeaf) {
       link.addEventListener('click', _toggleTreeElement);
@@ -168,12 +189,6 @@
       _setSizeContents(sizeElement, data.size);
     }
   });
-  function _toggleOptions() {
-    document.body.classList.toggle('show-options');
-  }
-  for (const button of document.getElementsByClassName('toggle-options')) {
-    button.addEventListener('click', _toggleOptions);
-  }
 
   self.newTreeElement = newTreeElement;
 }
@@ -189,7 +204,7 @@
 
   /**
    * Displays the given data as a tree view
-   * @param {{data:TreeNode}} param0
+   * @param {{data:{root:TreeNode,meta:object}}} param0
    */
   worker.onmessage = ({data}) => {
     const root = newTreeElement(data);
@@ -201,13 +216,13 @@
 
   /**
    * Loads the tree data given on a worker thread and replaces the tree view in
-   * the UI once complete. Uses query string as state for the filter.
+   * the UI once complete. Uses query string as state for the options.
    * @param {string} treeData JSON string to be parsed on the worker thread.
    */
   function loadTree(treeData) {
     // Post as a JSON string for better performance
     worker.postMessage(
-      `{"tree":${treeData}, "filters":"${location.search.slice(1)}"}`
+      `{"tree":${treeData}, "options":"${location.search.slice(1)}"}`
     );
   }
 
