@@ -237,6 +237,13 @@ _CONFIG = [
         'allowed': ['gin::.+'],
     },
     {
+        'paths': ['third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.cc'],
+        'allowed': [
+            # For memory reduction histogram.
+            'base::ProcessMetrics',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/clipboard'],
         'allowed': ['gfx::PNGCodec'],
     },

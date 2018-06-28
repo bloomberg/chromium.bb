@@ -30,27 +30,31 @@
 
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_for_context_dispose.h"
 
+#include "base/process/process_metrics.h"
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/bindings/v8_per_isolate_data.h"
 #include "third_party/blink/renderer/platform/histogram.h"
 #include "third_party/blink/renderer/platform/memory_coordinator.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread_scheduler.h"
-#include "third_party/blink/renderer/platform/wtf/process_metrics.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
 #include "v8/include/v8.h"
 
-size_t GetMemoryUsage() {
-  size_t usage = WTF::GetMallocUsage() + WTF::Partitions::TotalActiveBytes() +
-                 blink::ProcessHeap::TotalAllocatedObjectSize() +
-                 blink::ProcessHeap::TotalMarkedObjectSize();
+#if defined(OS_ANDROID)
+static size_t GetMemoryUsage() {
+  size_t usage =
+      base::ProcessMetrics::CreateCurrentProcessMetrics()->GetMallocUsage() +
+      WTF::Partitions::TotalActiveBytes() +
+      blink::ProcessHeap::TotalAllocatedObjectSize() +
+      blink::ProcessHeap::TotalMarkedObjectSize();
   v8::HeapStatistics v8_heap_statistics;
   blink::V8PerIsolateData::MainThreadIsolate()->GetHeapStatistics(
       &v8_heap_statistics);
   usage = v8_heap_statistics.total_heap_size();
   return usage;
 }
+#endif  // defined(OS_ANDROID)
 
 namespace blink {
 
