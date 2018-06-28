@@ -406,7 +406,7 @@ void AudioHandler::UnsilenceOutputs() {
 
 void AudioHandler::EnableOutputsIfNecessary() {
   DCHECK(IsMainThread());
-  BaseAudioContext::GraphAutoLocker locker(Context());
+  DCHECK(Context()->IsGraphOwner());
 
   // We're enabling outputs for this handler.  Remove this from the tail
   // processing list (if it's there) so that we don't inadvertently disable the
