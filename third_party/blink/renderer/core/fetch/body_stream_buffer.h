@@ -63,8 +63,8 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   String DebugName() const override { return "BodyStreamBuffer"; }
 
   base::Optional<bool> IsStreamReadable(ExceptionState&);
-  bool IsStreamClosed();
-  bool IsStreamErrored();
+  base::Optional<bool> IsStreamClosed(ExceptionState&);
+  base::Optional<bool> IsStreamErrored(ExceptionState&);
   base::Optional<bool> IsStreamLocked(ExceptionState&);
   bool IsStreamLockedForDCheck();
   base::Optional<bool> IsStreamDisturbed(ExceptionState&);
@@ -93,19 +93,10 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   void EndLoading();
   void StopLoading();
 
-  // Implementation of IsStream*() methods that don't take an ExceptionState&
-  // parameter. Delegates to |predicate|, one of the methods defined in
-  // ReadableStreamOperations. Sets |stream_broken_| if |predicate| returns
-  // empty. Returns |fallback_value| if |stream_broken_| is or becomes true.
-  bool BooleanStreamOperationOrFallback(
-      base::Optional<bool> (*predicate)(ScriptState*, ScriptValue),
-      bool fallback_value);
-
-  // Implementation of IsStream*() methods that take an ExceptionState&
-  // parameter. Delegates to |predicate|, one of the methods defined in
-  // ReadableStreamOperations. Sets |stream_broken_| and throws if |predicate|
-  // throws. Throws an exception if called when |stream_broken_| is already
-  // true.
+  // Implementation of IsStream*() methods. Delegates to |predicate|, one of the
+  // methods defined in ReadableStreamOperations. Sets |stream_broken_| and
+  // throws if |predicate| throws. Throws an exception if called when
+  // |stream_broken_| is already true.
   base::Optional<bool> BooleanStreamOperation(
       base::Optional<bool> (*predicate)(ScriptState*,
                                         ScriptValue,
