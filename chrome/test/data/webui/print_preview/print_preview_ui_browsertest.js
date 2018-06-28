@@ -6,6 +6,9 @@
 
 const ROOT_PATH = '../../../../../';
 
+GEN('#include "chrome/common/chrome_features.h"');
+GEN('#include "ui/base/ui_base_features.h"');
+
 /**
  * @constructor
  * @extends {testing.Test}
@@ -29,6 +32,9 @@ PrintPreviewUIBrowserTest.prototype = {
 
   /** @override */
   isAsync: true,
+
+  /** @override */
+  featureList: ['', 'features::kNewPrintPreview, features::kExperimentalUi'],
 
   /** @override */
   preLoad: function() {
