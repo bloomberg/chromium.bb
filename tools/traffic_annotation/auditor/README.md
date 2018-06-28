@@ -41,3 +41,7 @@ Here are the exception types:
   avoid assigning arbitrary values to mutable annotations. The format of the
   entries should be `full_function_name@file_path`. For example:
   `download::ProtoConversions::EntryFromProto@components/download/internal/background_service/proto_conversions.cc`
+
+## Rolling Binary
+If you update traffic_annotation_auditor, please refer to
+`tools/traffic_annotation/bin/README.md` on how to roll the new binary.
