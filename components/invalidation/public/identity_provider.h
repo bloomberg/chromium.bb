@@ -72,16 +72,15 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   // Starts an access token request for |oauth_consumer_name| and |scopes|. When
   // the request completes, |callback| will be invoked with the access token
   // or error. To cancel the request, destroy the returned TokenFetcher.
-  std::unique_ptr<ActiveAccountAccessTokenFetcher> FetchAccessToken(
+  virtual std::unique_ptr<ActiveAccountAccessTokenFetcher> FetchAccessToken(
       const std::string& oauth_consumer_name,
       const OAuth2TokenService::ScopeSet& scopes,
-
-      ActiveAccountAccessTokenCallback callback);
+      ActiveAccountAccessTokenCallback callback) = 0;
 
   // Marks an OAuth2 |access_token| issued for the active account and |scopes|
   // as invalid.
-  void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
-                             const std::string& access_token);
+  virtual void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
+                                     const std::string& access_token) = 0;
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);

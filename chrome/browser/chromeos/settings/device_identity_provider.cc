@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/settings/device_identity_provider.h"
 
 #include "chrome/browser/chromeos/settings/device_oauth2_token_service.h"
+#include "components/invalidation/public/active_account_access_token_fetcher_impl.h"
 
 namespace chromeos {
 
@@ -24,6 +25,23 @@ bool DeviceIdentityProvider::IsActiveAccountAvailable() {
     return false;
 
   return true;
+}
+
+std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
+DeviceIdentityProvider::FetchAccessToken(
+    const std::string& oauth_consumer_name,
+    const OAuth2TokenService::ScopeSet& scopes,
+    invalidation::ActiveAccountAccessTokenCallback callback) {
+  return std::make_unique<invalidation::ActiveAccountAccessTokenFetcherImpl>(
+      GetActiveAccountId(), oauth_consumer_name, token_service_, scopes,
+      std::move(callback));
+}
+
+void DeviceIdentityProvider::InvalidateAccessToken(
+    const OAuth2TokenService::ScopeSet& scopes,
+    const std::string& access_token) {
+  token_service_->InvalidateAccessToken(GetActiveAccountId(), scopes,
+                                        access_token);
 }
 
 OAuth2TokenService* DeviceIdentityProvider::GetTokenService() {
