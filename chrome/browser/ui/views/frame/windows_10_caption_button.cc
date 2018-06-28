@@ -27,10 +27,9 @@ Windows10CaptionButton::Windows10CaptionButton(
 
 int Windows10CaptionButton::GetBetweenButtonSpacing() const {
   constexpr int kCaptionButtonVisualSpacing = 1;
-  // There's no next button after the minimize button, so we don't need to
-  // reserve any space.
-  return button_type_ == VIEW_ID_MINIMIZE_BUTTON ? 0
-                                                 : kCaptionButtonVisualSpacing;
+  const ViewID leftmost_button =
+      base::i18n::IsRTL() ? VIEW_ID_CLOSE_BUTTON : VIEW_ID_MINIMIZE_BUTTON;
+  return button_type_ == leftmost_button ? 0 : kCaptionButtonVisualSpacing;
 }
 
 gfx::Size Windows10CaptionButton::CalculatePreferredSize() const {
