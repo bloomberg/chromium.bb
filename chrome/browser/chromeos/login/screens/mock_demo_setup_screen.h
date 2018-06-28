@@ -26,6 +26,8 @@ class MockDemoSetupScreenView : public DemoSetupScreenView {
   MOCK_METHOD0(Show, void());
   MOCK_METHOD0(Hide, void());
   MOCK_METHOD1(MockBind, void(DemoSetupScreen* screen));
+  MOCK_METHOD2(OnSetupFinished,
+               void(bool is_success, const std::string& message));
 
   void Bind(DemoSetupScreen* screen) override;
 
