@@ -449,10 +449,25 @@ bool NGInlineLayoutAlgorithm::PlaceOutOfFlowObjects(
 
       // If a block-level box appears in the middle of a line, move the static
       // position to where the next block will be placed.
-      if (static_offset.inline_offset &&
-          !box->StyleRef().IsOriginalDisplayInlineType()) {
-        static_offset.inline_offset = LayoutUnit();
-        if (!line_box_metrics.IsEmpty())
+      if (!box->StyleRef().IsOriginalDisplayInlineType()) {
+        LayoutUnit line_offset;
+        if (!line_info.IsEmptyLine()) {
+          line_offset = line_info.LineBfcOffset().line_offset -
+                        ConstraintSpace().BfcOffset().line_offset;
+        }
+        if (IsRtl(Style().Direction())) {
+          LayoutUnit container_inline_size =
+              ConstraintSpace().AvailableSize().inline_size;
+          LayoutUnit line_end_offset = line_offset + line_info.AvailableWidth();
+          line_offset = container_inline_size - line_end_offset;
+        }
+        line_offset += line_info.TextIndent();
+
+        // We need to subtract the line offset, in order to ignore
+        // floats and text-indent.
+        static_offset.inline_offset = -line_offset;
+
+        if (child.offset.inline_offset && !line_box_metrics.IsEmpty())
           static_offset.block_offset = line_box_metrics.LineHeight();
       }
 
