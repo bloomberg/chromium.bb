@@ -153,8 +153,8 @@ void GetAssertionOperation::PromptTouchIdDone(bool success, NSError* err) {
     return;
   }
 
-  base::Optional<AuthenticatorData> authenticator_data =
-      MakeAuthenticatorData(RpId(), credential_id, public_key);
+  base::Optional<AuthenticatorData> authenticator_data = MakeAuthenticatorData(
+      RpId(), credential_id, SecKeyRefToECPublicKey(public_key));
   if (!authenticator_data) {
     DLOG(ERROR) << "MakeAuthenticatorData failed";
     std::move(callback())
