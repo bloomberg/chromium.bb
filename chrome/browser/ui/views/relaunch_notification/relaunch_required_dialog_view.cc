@@ -31,12 +31,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace {
-
-constexpr int kTitleIconSize = 20;
-
-}  // namespace
-
 // static
 views::Widget* RelaunchRequiredDialogView::Show(
     Browser* browser,
