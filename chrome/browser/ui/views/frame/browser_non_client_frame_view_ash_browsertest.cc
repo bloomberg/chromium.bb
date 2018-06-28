@@ -31,9 +31,11 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
+#include "chrome/browser/profiles/profile_io_data.h"
 #include "chrome/browser/sessions/session_restore_test_helper.h"
 #include "chrome/browser/sessions/session_service_factory.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
+#include "chrome/browser/ssl/cert_verifier_browser_test.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
 #include "chrome/browser/ui/browser.h"
@@ -64,6 +66,8 @@
 #include "components/keep_alive_registry/scoped_keep_alive.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/test/test_navigation_observer.h"
+#include "net/dns/mock_host_resolver.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
@@ -76,10 +80,14 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/vector_icon_types.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/core/window_util.h"
 
 namespace {
+
+const base::FilePath::CharType kDocRoot[] =
+    FILE_PATH_LITERAL("chrome/test/data");
 
 // Toggles fullscreen mode and waits for the notification.
 void ToggleFullscreenModeAndWait(Browser* browser) {
@@ -719,18 +727,30 @@ namespace {
 class HostedAppNonClientFrameViewAshTest
     : public TopChromeMdParamTest<BrowserActionsBarBrowserTest> {
  public:
-  HostedAppNonClientFrameViewAshTest() = default;
+  HostedAppNonClientFrameViewAshTest()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        cert_verifier_(&mock_cert_verifier_) {}
+
   ~HostedAppNonClientFrameViewAshTest() override = default;
 
-  static GURL GetAppURL() { return GURL("http://example.org/"); }
+  GURL GetAppURL() {
+    return https_server_.GetURL("app.com", "/ssl/google.html");
+  }
   static SkColor GetThemeColor() { return SK_ColorBLUE; }
 
   Browser* app_browser_ = nullptr;
+  BrowserView* browser_view_ = nullptr;
   ash::DefaultFrameHeader* frame_header_ = nullptr;
   HostedAppButtonContainer* hosted_app_button_container_ = nullptr;
   const std::vector<ContentSettingImageView*>* content_setting_views_ = nullptr;
   BrowserActionsContainer* browser_actions_container_ = nullptr;
   views::MenuButton* app_menu_button_ = nullptr;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    TopChromeMdParamTest<
+        BrowserActionsBarBrowserTest>::SetUpInProcessBrowserTestFixture();
+    ProfileIOData::SetCertVerifierForTesting(&mock_cert_verifier_);
+  }
 
   void SetUpOnMainThread() override {
     TopChromeMdParamTest<BrowserActionsBarBrowserTest>::SetUpOnMainThread();
@@ -738,18 +758,26 @@ class HostedAppNonClientFrameViewAshTest
     scoped_feature_list_.InitAndEnableFeature(features::kDesktopPWAWindowing);
     HostedAppButtonContainer::DisableAnimationForTesting();
 
+    // Start secure local server.
+    host_resolver()->AddRule("*", "127.0.0.1");
+    cert_verifier_.set_default_result(net::OK);
+    https_server_.AddDefaultHandlers(base::FilePath(kDocRoot));
+    ASSERT_TRUE(https_server_.Start());
+    ASSERT_TRUE(embedded_test_server()->Start());
+
     WebApplicationInfo web_app_info;
     web_app_info.app_url = GetAppURL();
+    web_app_info.scope = GetAppURL().GetWithoutFilename();
     web_app_info.theme_color = GetThemeColor();
 
     const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+    content::TestNavigationObserver navigation_observer(GetAppURL());
+    navigation_observer.StartWatchingNewWebContents();
     app_browser_ = LaunchAppBrowser(app);
-    NavigateParams params(app_browser_, GetAppURL(), ui::PAGE_TRANSITION_LINK);
-    ui_test_utils::NavigateToURL(&params);
+    navigation_observer.WaitForNavigationFinished();
 
-    BrowserView* browser_view =
-        BrowserView::GetBrowserViewForBrowser(app_browser_);
-    BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view);
+    browser_view_ = BrowserView::GetBrowserViewForBrowser(app_browser_);
+    BrowserNonClientFrameViewAsh* frame_view = GetFrameViewAsh(browser_view_);
     frame_header_ =
         static_cast<ash::DefaultFrameHeader*>(frame_view->frame_header_.get());
 
@@ -804,10 +832,23 @@ class HostedAppNonClientFrameViewAshTest
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  // For mocking a secure site.
+  net::EmbeddedTestServer https_server_;
+  net::MockCertVerifier mock_cert_verifier_;
+  CertVerifierBrowserTest::CertVerifier cert_verifier_;
+
   DISALLOW_COPY_AND_ASSIGN(HostedAppNonClientFrameViewAshTest);
 };
 
 }  // namespace
+
+IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, FocusableViews) {
+  EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
+  browser_view_->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(app_menu_button_->HasFocus());
+  browser_view_->GetFocusManager()->AdvanceFocus(false);
+  EXPECT_TRUE(browser_view_->contents_web_view()->HasFocus());
+}
 
 // Tests that a web app's theme color is set.
 IN_PROC_BROWSER_TEST_P(HostedAppNonClientFrameViewAshTest, ThemeColor) {
