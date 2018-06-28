@@ -345,12 +345,10 @@ void TabLayer::SetProperties(int id,
                                          border_padding.y());
   scaled_local_content_area.set_height(scaled_local_content_area.height() -
                                        border_padding.y() * content_scale);
-  shadow_size.set_height(shadow_size.height() -
-                         border_padding.y() * content_scale);
-  border_size.set_height(border_size.height() -
-                         border_padding.y() * content_scale);
+  shadow_size.set_height(shadow_size.height() - border_padding.y());
+  border_size.set_height(border_size.height() - border_padding.y());
   border_inner_shadow_size.set_height(border_inner_shadow_size.height() -
-                                      border_padding.y() * content_scale);
+                                      border_padding.y());
   contour_size.set_height(contour_size.height() - border_padding.y());
   shadow_position.set_y(shadow_position.y() + border_padding.y());
   border_position.set_y(border_position.y() + border_padding.y());
@@ -365,17 +363,13 @@ void TabLayer::SetProperties(int id,
                          border_padding.y() / content_scale);
   content_position.set_y(content_position.y() +
                          border_padding.y() / content_scale);
-
-  const int bottom_border_height =
-      border_resource->size().height() -
-      (border_padding.y() + border_padding.height());
-  border_size.set_height(border_size.height() - bottom_border_height);
-  border_inner_shadow_size.set_height(border_inner_shadow_size.height() -
-                                      bottom_border_height);
-  shadow_size.set_height(shadow_size.height() - bottom_border_height);
+  desired_content_size_pt.set_y(desired_content_size_pt.y() -
+                                border_padding.y() / content_scale);
 
   toolbar_position.set_y(toolbar_position.y() - toolbar_impact_height);
   content_position.set_y(content_position.y() - toolbar_impact_height);
+  desired_content_size_pt.set_y(desired_content_size_pt.y() +
+                                toolbar_impact_height);
 
   // Finally build the sizes that might have calculations that go negative.
   gfx::Size desired_content_size(desired_content_size_pt.x(),
