@@ -34,7 +34,7 @@ namespace blink {
 
 bool SVGPaint::operator==(const SVGPaint& other) const {
   return type == other.type && color == other.color &&
-         resource == other.resource;
+         DataEquivalent(resource, other.resource);
 }
 
 StyleFillData::StyleFillData()
@@ -117,7 +117,7 @@ StyleResourceData::StyleResourceData(const StyleResourceData& other)
     : RefCounted<StyleResourceData>(), masker(other.masker) {}
 
 bool StyleResourceData::operator==(const StyleResourceData& other) const {
-  return masker == other.masker;
+  return DataEquivalent(masker, other.masker);
 }
 
 StyleInheritedResourceData::StyleInheritedResourceData()
@@ -134,8 +134,9 @@ StyleInheritedResourceData::StyleInheritedResourceData(
 
 bool StyleInheritedResourceData::operator==(
     const StyleInheritedResourceData& other) const {
-  return marker_start == other.marker_start && marker_mid == other.marker_mid &&
-         marker_end == other.marker_end;
+  return DataEquivalent(marker_start, other.marker_start) &&
+         DataEquivalent(marker_mid, other.marker_mid) &&
+         DataEquivalent(marker_end, other.marker_end);
 }
 
 StyleGeometryData::StyleGeometryData()
