@@ -13,7 +13,10 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_blacklist.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_service_factory.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/net/spdyproxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_util.h"
@@ -105,18 +108,21 @@ void PageCappingPageLoadMetricsObserver::OnLoadedResource(
 }
 
 void PageCappingPageLoadMetricsObserver::MaybeCreate() {
-  // If the infobar has already been shown for the page, don't show an infobar.
+  // If the InfoBar has already been shown for the page, don't show an InfoBar.
   if (page_capping_state_ != PageCappingState::kInfoBarNotShown)
     return;
 
-  // If the page has not committed, don't show an infobar.
+  // If the page has not committed, don't show an InfoBar.
   if (!web_contents_)
     return;
 
   // If there is no capping threshold, the threshold or the threshold is not
-  // met, do not show an infobar. Use the fuzzing offset to increase the number
+  // met, do not show an InfoBar. Use the fuzzing offset to increase the number
   // of bytes needed.
   if (!page_cap_ || (network_bytes_ - fuzzing_offset_) < page_cap_.value())
+    return;
+
+  if (IsBlacklisted())
     return;
 
   if (PageLoadCappingInfoBarDelegate::Create(
@@ -183,6 +189,7 @@ void PageCappingPageLoadMetricsObserver::OnComplete(
     const page_load_metrics::mojom::PageLoadTiming& timing,
     const page_load_metrics::PageLoadExtraInfo& info) {
   RecordDataSavingsAndUKM(info);
+  ReportOptOut();
   if (page_capping_state_ == PageCappingState::kPagePaused) {
     PAGE_BYTES_HISTOGRAM("HeavyPageCapping.RecordedDataSavings",
                          recorded_savings_);
@@ -267,4 +274,40 @@ int64_t PageCappingPageLoadMetricsObserver::GetFuzzingOffset() const {
 
 bool PageCappingPageLoadMetricsObserver::IsPausedForTesting() const {
   return page_capping_state_ == PageCappingState::kPagePaused;
+}
+
+void PageCappingPageLoadMetricsObserver::ReportOptOut() {
+  if (page_capping_state_ == PageCappingState::kInfoBarNotShown)
+    return;
+  auto* blacklist = GetPageLoadCappingBlacklist();
+  // Opt outs are when the InfoBar is shown and either ignored or clicked
+  // through twice to resume the page. Currently, reloads are not treated as opt
+  // outs.
+  blacklist->AddEntry(
+      url_host_, page_capping_state_ != PageCappingState::kPagePaused,
+      static_cast<int>(PageCappingBlacklistType::kPageCappingOnlyType));
+}
+
+bool PageCappingPageLoadMetricsObserver::IsBlacklisted() {
+  if (blacklisted_)
+    return blacklisted_.value();
+
+  auto* blacklist = GetPageLoadCappingBlacklist();
+  std::vector<blacklist::BlacklistReason> passed_reasons;
+  auto blacklist_reason = blacklist->IsLoadedAndAllowed(
+      url_host_,
+      static_cast<int>(PageCappingBlacklistType::kPageCappingOnlyType), false,
+      &passed_reasons);
+  UMA_HISTOGRAM_ENUMERATION("HeavyPageCapping.BlacklistReason",
+                            blacklist_reason);
+  blacklisted_ = (blacklist_reason != blacklist::BlacklistReason::kAllowed);
+
+  return blacklisted_.value();
+}
+
+PageLoadCappingBlacklist*
+PageCappingPageLoadMetricsObserver::GetPageLoadCappingBlacklist() const {
+  return PageLoadCappingServiceFactory::GetForBrowserContext(
+             web_contents_->GetBrowserContext())
+      ->page_load_capping_blacklist();
 }

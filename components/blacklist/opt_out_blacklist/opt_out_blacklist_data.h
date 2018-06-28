@@ -20,16 +20,19 @@
 namespace blacklist {
 
 // The various reasons the Blacklist may tell that the user is blacklisted.
+// This should remain synchronized with enums.xml
 enum class BlacklistReason {
   // The blacklist may not be loaded very early in the session or when the user
   // has cleared the blacklist history (usually by clearing their browsing
   // history).
-  kBlacklistNotLoaded,
-  kUserOptedOutInSession,
-  kUserOptedOutInGeneral,
-  kUserOptedOutOfHost,
-  kUserOptedOutOfType,
-  kAllowed
+  kBlacklistNotLoaded = 0,
+  kUserOptedOutInSession = 1,
+  kUserOptedOutInGeneral = 2,
+  kUserOptedOutOfHost = 3,
+  kUserOptedOutOfType = 4,
+  kAllowed = 5,
+  kMaxValue = kAllowed,
+
 };
 
 // This class describes all of the data used to determine whether an action is

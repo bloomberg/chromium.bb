@@ -49,7 +49,9 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
       scoped_refptr<base::FieldTrial> trial =
           base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
       std::map<std::string, std::string> feature_parameters = {
-          {"PageCapMiB", "0"}, {"PageFuzzingKiB", "0"}};
+          {"PageCapMiB", "0"},
+          {"PageFuzzingKiB", "0"},
+          {"OptOutStoreDisabled", "true"}};
       base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
           "TrialName1", "GroupName1", feature_parameters);
 
@@ -378,6 +380,35 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
 
   EXPECT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
   EXPECT_EQ(infobar, InfoBarService::FromWebContents(contents)->infobar_at(0));
+
+  https_test_server_.reset();
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
+                       PageLoadCappingInfoBarNotShownAfterBlacklisted) {
+  https_test_server_->RegisterRequestHandler(base::BindRepeating(
+      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
+  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+
+  ASSERT_TRUE(https_test_server_->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  // Load a page and ignore the InfoBar.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+
+  // Load a page and ignore the InfoBar.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+
+  // Load a page and due to session policy blacklisting, the InfoBar should not
+  // show.
+  ui_test_utils::NavigateToURL(
+      browser(), https_test_server_->GetURL("/page_capping.html"));
+  ASSERT_EQ(0u, InfoBarService::FromWebContents(contents)->infobar_count());
 
   https_test_server_.reset();
 }

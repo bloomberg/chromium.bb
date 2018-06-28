@@ -5,27 +5,47 @@
 #include "chrome/browser/page_load_metrics/observers/page_capping_page_load_metrics_observer.h"
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/time/default_clock.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_blacklist.h"
 #include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/page_load_metrics/observers/page_load_metrics_observer_test_harness.h"
 #include "chrome/browser/page_load_metrics/page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/page_load_tracker.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_data.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_blacklist_delegate.h"
+#include "components/blacklist/opt_out_blacklist/opt_out_store.h"
 #include "components/infobars/core/confirm_infobar_delegate.h"
 #include "components/infobars/core/infobar.h"
 #include "content/public/test/web_contents_tester.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "url/gurl.h"
 
 namespace {
+
 const char kTestURL[] = "http://www.test.com";
-}
+
+// Test class that has default blacklisting behavior with no backing store.
+class TestPageLoadCappingBlacklist : public PageLoadCappingBlacklist {
+ public:
+  explicit TestPageLoadCappingBlacklist(
+      blacklist::OptOutBlacklistDelegate* delegate)
+      : PageLoadCappingBlacklist(nullptr,
+                                 base::DefaultClock::GetInstance(),
+                                 delegate) {}
+  ~TestPageLoadCappingBlacklist() override {}
+};
+
+}  // namespace
 
 // Class that overrides WriteToSavings.
 class TestPageCappingPageLoadMetricsObserver
@@ -33,8 +53,11 @@ class TestPageCappingPageLoadMetricsObserver
  public:
   using SizeUpdateCallback = base::RepeatingCallback<void(int64_t)>;
   TestPageCappingPageLoadMetricsObserver(int64_t fuzzing_offset,
+                                         PageLoadCappingBlacklist* blacklist,
                                          const SizeUpdateCallback& callback)
-      : fuzzing_offset_(fuzzing_offset), size_callback_(callback) {}
+      : fuzzing_offset_(fuzzing_offset),
+        blacklist_(blacklist),
+        size_callback_(callback) {}
   ~TestPageCappingPageLoadMetricsObserver() override {}
 
   void WriteToSavings(int64_t bytes_saved) override {
@@ -43,15 +66,21 @@ class TestPageCappingPageLoadMetricsObserver
 
   int64_t GetFuzzingOffset() const override { return fuzzing_offset_; }
 
+  PageLoadCappingBlacklist* GetPageLoadCappingBlacklist() const override {
+    return blacklist_;
+  }
+
  private:
   int64_t fuzzing_offset_;
+  PageLoadCappingBlacklist* blacklist_;
   SizeUpdateCallback size_callback_;
 };
 
 class PageCappingObserverTest
-    : public page_load_metrics::PageLoadMetricsObserverTestHarness {
+    : public page_load_metrics::PageLoadMetricsObserverTestHarness,
+      public blacklist::OptOutBlacklistDelegate {
  public:
-  PageCappingObserverTest() = default;
+  PageCappingObserverTest() : test_blacklist_(this) {}
   ~PageCappingObserverTest() override = default;
 
   void SetUpTest() {
@@ -73,15 +102,23 @@ class PageCappingObserverTest
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
     auto observer = std::make_unique<TestPageCappingPageLoadMetricsObserver>(
-        fuzzing_offset_,
+        fuzzing_offset_, &test_blacklist_,
         base::BindRepeating(&PageCappingObserverTest::UpdateSavings,
                             base::Unretained(this)));
     observer_ = observer.get();
     tracker->AddObserver(std::move(observer));
   }
+
+  // blacklist::OptOutBlacklistDelegate:
+  void OnNewBlacklistedHost(const std::string& host, base::Time time) override {
+  }
+  void OnUserBlacklistedStatusChange(bool blacklisted) override {}
+  void OnBlacklistCleared(base::Time time) override {}
+
   int64_t savings_ = 0;
   int64_t fuzzing_offset_ = 0;
   TestPageCappingPageLoadMetricsObserver* observer_;
+  TestPageLoadCappingBlacklist test_blacklist_;
 };
 
 TEST_F(PageCappingObserverTest, ExperimentDisabled) {
@@ -650,7 +687,6 @@ TEST_F(PageCappingObserverTest, UKMRecordedInfoBarShown) {
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
       feature_parameters);
   SetUpTest();
-  base::HistogramTester histogram_tester;
 
   // A resource of 1 MB.
   page_load_metrics::ExtraRequestCompleteInfo resource = {
@@ -697,7 +733,6 @@ TEST_F(PageCappingObserverTest, UKMRecordedPaused) {
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
       feature_parameters);
   SetUpTest();
-  base::HistogramTester histogram_tester;
 
   // A resource of 1 MB.
   page_load_metrics::ExtraRequestCompleteInfo resource = {
@@ -748,7 +783,6 @@ TEST_F(PageCappingObserverTest, UKMRecordedResumed) {
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
       feature_parameters);
   SetUpTest();
-  base::HistogramTester histogram_tester;
 
   // A resource of 1 MB.
   page_load_metrics::ExtraRequestCompleteInfo resource = {
@@ -804,7 +838,6 @@ TEST_F(PageCappingObserverTest, FuzzingOffset) {
       feature_parameters);
   fuzzing_offset_ = 1;
   SetUpTest();
-  base::HistogramTester histogram_tester;
 
   // A resource of 1 MB.
   page_load_metrics::ExtraRequestCompleteInfo resource = {
@@ -841,4 +874,197 @@ TEST_F(PageCappingObserverTest, FuzzingOffset) {
   SimulateLoadedResource(resource2);
 
   EXPECT_EQ(1u, InfoBarCount());
+}
+
+TEST_F(PageCappingObserverTest, BlacklistOnTwoOptOuts) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+  base::HistogramTester histogram_tester;
+
+  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+
+  // Verify the blacklist is reporting not allowed.
+  std::vector<blacklist::BlacklistReason> passed_reasons;
+  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  SimulateLoadedResource(resource);
+
+  // Because the blacklist is in an opted out state, the InfoBar should not be
+  // shown.
+  EXPECT_EQ(0u, InfoBarCount());
+
+  histogram_tester.ExpectUniqueSample("HeavyPageCapping.BlacklistReason",
+                                      static_cast<int>(blacklist_reason), 1);
+}
+
+TEST_F(PageCappingObserverTest, IgnoringInfoBarTriggersOptOut) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+
+  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+
+  std::vector<blacklist::BlacklistReason> passed_reasons;
+  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  SimulateLoadedResource(resource);
+
+  // Blacklist is in allowed state, so an InfoBar is allowed to be shown.
+  EXPECT_EQ(1u, InfoBarCount());
+
+  // Trigger an opt out reporting event.
+  NavigateToUntrackedUrl();
+
+  // Check that the opt out caused a blacklisted state.
+  blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
+}
+
+TEST_F(PageCappingObserverTest, PausedInfoBarTriggersNonOptOut) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+
+  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+
+  std::vector<blacklist::BlacklistReason> passed_reasons;
+  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  SimulateLoadedResource(resource);
+
+  // Blacklist is in allowed state, so an InfoBar is allowed to be shown.
+  EXPECT_EQ(1u, InfoBarCount());
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+
+  // Trigger a non-opt out reporting event.
+  NavigateToUntrackedUrl();
+
+  // Check that the non-opt out did not cause a blacklisted state.
+  blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
+}
+
+TEST_F(PageCappingObserverTest, ResumedInfoBarTriggersOptOut) {
+  std::map<std::string, std::string> feature_parameters = {
+      {"MediaPageCapMiB", "1"},
+      {"PageCapMiB", "1"},
+      {"PageTypicalLargePageMiB", "2"}};
+  base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_feature_list_.InitAndEnableFeatureWithParameters(
+      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
+      feature_parameters);
+  SetUpTest();
+
+  test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
+
+  std::vector<blacklist::BlacklistReason> passed_reasons;
+  auto blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
+
+  // A resource of 1 MB.
+  page_load_metrics::ExtraRequestCompleteInfo resource = {
+      GURL(kTestURL),
+      net::HostPortPair(),
+      -1 /* frame_tree_node_id */,
+      false /* was_cached */,
+      (1 * 1024 * 1024) /* raw_body_bytes */,
+      0 /* original_network_content_length */,
+      nullptr,
+      content::ResourceType::RESOURCE_TYPE_SCRIPT,
+      0,
+      {} /* load_timing_info */};
+
+  // This should not trigger an InfoBar as the blacklist rules should prevent
+  // it.
+  SimulateLoadedResource(resource);
+
+  // Blacklist is in allowed state, so an InfoBar is allowed to be shown.
+  EXPECT_EQ(1u, InfoBarCount());
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+
+  static_cast<ConfirmInfoBarDelegate*>(
+      infobar_service()->infobar_at(0u)->delegate())
+      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+
+  // Trigger an opt out reporting event.
+  NavigateToUntrackedUrl();
+
+  // Check that the opt out caused a blacklisted state.
+  blacklist_reason = test_blacklist_.IsLoadedAndAllowed(
+      GURL(kTestURL).host(), 0, false, &passed_reasons);
+  EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 }
