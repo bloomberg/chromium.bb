@@ -12,6 +12,7 @@
 #include "base/json/json_reader.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/crx_file/id_util.h"
 #include "crypto/signature_verifier.h"
 #include "extensions/common/extension.h"
@@ -57,6 +58,21 @@ const DictionaryValue* FindDictionaryWithValue(const ListValue* list,
   }
   return NULL;
 }
+
+#if defined(OS_WIN)
+// Returns true if |path| ends with (.| )+.
+// |out_path| will contain "." and/or " " suffix removed from |path|.
+bool TrimDotSpaceSuffix(const base::FilePath::StringType& path,
+                        base::FilePath::StringType* out_path) {
+  base::FilePath::StringType::size_type trim_pos =
+      path.find_last_not_of(FILE_PATH_LITERAL(". "));
+  if (trim_pos == base::FilePath::StringType::npos)
+    return false;
+
+  *out_path = path.substr(0, trim_pos + 1);
+  return true;
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace
 
@@ -156,9 +172,20 @@ bool VerifiedContents::InitFrom(const base::FilePath& path) {
         return false;
       base::FilePath file_path =
           base::FilePath::FromUTF8Unsafe(file_path_string);
-      RootHashes::iterator i = root_hashes_.insert(std::make_pair(
-          base::ToLowerASCII(file_path.value()), std::string()));
+      base::FilePath::StringType lowercase_file_path =
+          base::ToLowerASCII(file_path.value());
+      RootHashes::iterator i = root_hashes_.insert(
+          std::make_pair(lowercase_file_path, std::string()));
       i->second.swap(root_hash);
+
+#if defined(OS_WIN)
+      // Additionally store a canonicalized filename without (.| )+ suffix, so
+      // that any filename with (.| )+ suffix can be matched later, see
+      // HasTreeHashRoot() and TreeHashRootEquals().
+      base::FilePath::StringType trimmed_path;
+      if (TrimDotSpaceSuffix(lowercase_file_path, &trimmed_path))
+        root_hashes_.insert(std::make_pair(trimmed_path, i->second));
+#endif  // defined(OS_WIN)
     }
 
     break;
@@ -170,20 +197,29 @@ bool VerifiedContents::HasTreeHashRoot(
     const base::FilePath& relative_path) const {
   base::FilePath::StringType path = base::ToLowerASCII(
       relative_path.NormalizePathSeparatorsTo('/').value());
-  return root_hashes_.find(path) != root_hashes_.end();
+  if (base::ContainsKey(root_hashes_, path))
+    return true;
+
+#if defined(OS_WIN)
+  base::FilePath::StringType trimmed_path;
+  if (TrimDotSpaceSuffix(path, &trimmed_path))
+    return base::ContainsKey(root_hashes_, trimmed_path);
+#endif  // defined(OS_WIN)
+  return false;
 }
 
 bool VerifiedContents::TreeHashRootEquals(const base::FilePath& relative_path,
                                           const std::string& expected) const {
-  base::FilePath::StringType path = base::ToLowerASCII(
-      relative_path.NormalizePathSeparatorsTo('/').value());
-  std::pair<RootHashes::const_iterator, RootHashes::const_iterator> hashes =
-      root_hashes_.equal_range(path);
-  for (RootHashes::const_iterator iter = hashes.first; iter != hashes.second;
-       ++iter) {
-    if (expected == iter->second)
-      return true;
-  }
+  base::FilePath::StringType normalized_relative_path =
+      base::ToLowerASCII(relative_path.NormalizePathSeparatorsTo('/').value());
+  if (TreeHashRootEqualsImpl(normalized_relative_path, expected))
+    return true;
+
+#if defined(OS_WIN)
+  base::FilePath::StringType trimmed_relative_path;
+  if (TrimDotSpaceSuffix(normalized_relative_path, &trimmed_relative_path))
+    return TreeHashRootEqualsImpl(trimmed_relative_path, expected);
+#endif  // defined(OS_WIN)
   return false;
 }
 
@@ -317,6 +353,19 @@ bool VerifiedContents::VerifySignature(const std::string& protected_value,
     return false;
   }
   return true;
+}
+
+bool VerifiedContents::TreeHashRootEqualsImpl(
+    const base::FilePath::StringType& normalized_relative_path,
+    const std::string& expected) const {
+  std::pair<RootHashes::const_iterator, RootHashes::const_iterator> hashes =
+      root_hashes_.equal_range(normalized_relative_path);
+  for (RootHashes::const_iterator iter = hashes.first; iter != hashes.second;
+       ++iter) {
+    if (expected == iter->second)
+      return true;
+  }
+  return false;
 }
 
 }  // namespace extensions

@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_paths.h"
@@ -23,6 +24,15 @@ namespace {
 
 const char kContentVerifierDirectory[] = "content_verifier/";
 const char kPublicKeyPem[] = "public_key.pem";
+
+// Whether or not dot and space suffixes of filename are ignored in the
+// current OS.
+const bool kDotSpaceSuffixIgnored =
+#if defined(OS_WIN)
+    true;
+#else
+    false;
+#endif  // defined(OS_WIN)
 
 std::string DecodeBase64Url(const std::string& encoded) {
   std::string decoded;
@@ -42,22 +52,41 @@ bool GetPublicKey(const base::FilePath& path, std::string* public_key) {
   return true;
 }
 
-}  // namespace
-
-TEST(VerifiedContents, Simple) {
-  // Figure out our test data directory.
+base::FilePath GetTestDir(const char* sub_dir) {
   base::FilePath path;
   base::PathService::Get(DIR_TEST_DATA, &path);
-  path = path.AppendASCII(kContentVerifierDirectory);
+  return path.AppendASCII(kContentVerifierDirectory).AppendASCII(sub_dir);
+}
+
+// Loads verified_contents file from a sub directory under
+// kContentVerifierDirectory.
+std::unique_ptr<VerifiedContents> CreateTestVerifiedContents(
+    const char* sub_dir,
+    const char* verified_contents_filename) {
+  // Figure out our test data directory.
+  base::FilePath path = GetTestDir(sub_dir);
 
   // Initialize the VerifiedContents object.
   std::string public_key;
-  ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
-  VerifiedContents contents(base::as_bytes(base::make_span(public_key)));
-  base::FilePath verified_contents_path =
-      path.AppendASCII("verified_contents.json");
+  if (!GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key))
+    return nullptr;
 
-  ASSERT_TRUE(contents.InitFrom(verified_contents_path));
+  auto contents = std::make_unique<VerifiedContents>(
+      base::as_bytes(base::make_span(public_key)));
+  base::FilePath verified_contents_path =
+      path.AppendASCII(verified_contents_filename);
+  if (!contents->InitFrom(verified_contents_path))
+    return nullptr;
+  return contents;
+}
+
+}  // namespace
+
+TEST(VerifiedContents, Simple) {
+  std::unique_ptr<VerifiedContents> verified_contents =
+      CreateTestVerifiedContents("simple", "verified_contents.json");
+  ASSERT_TRUE(verified_contents);
+  const VerifiedContents& contents = *verified_contents;
 
   // Make sure we get expected values.
   EXPECT_EQ(contents.block_size(), 4096);
@@ -138,20 +167,161 @@ TEST(VerifiedContents, Simple) {
 TEST(VerifiedContents, FailsOnBase64) {
   // Accepting base64-encoded input where base64url-encoded input is expected
   // will be considered to be invalid data. Verify that it gets rejected.
+  ASSERT_FALSE(
+      CreateTestVerifiedContents("simple", "verified_contents_base64.json"));
+}
 
-  base::FilePath path;
-  base::PathService::Get(DIR_TEST_DATA, &path);
-  path = path.AppendASCII(kContentVerifierDirectory);
+// Tests behavior of verified contents with filenames that have "." and " "
+// suffixes appened to them.
+// Regression test for https://crbug.com/696208.
+TEST(VerifiedContents, DotSpaceSuffixedFiles) {
+  std::unique_ptr<VerifiedContents> contents =
+      CreateTestVerifiedContents("dot_space_suffix", "verified_contents.json");
+  ASSERT_TRUE(contents);
 
-  // Initialize the VerifiedContents object.
-  std::string public_key;
-  ASSERT_TRUE(GetPublicKey(path.AppendASCII(kPublicKeyPem), &public_key));
-  VerifiedContents contents(base::as_bytes(base::make_span(public_key)));
+  // Make sure we get expected values.
+  EXPECT_EQ(contents->block_size(), 4096);
+  EXPECT_EQ(contents->extension_id(), "abcdabcdabcdabcdabcdabcdabcdabcd");
+  EXPECT_EQ("1.2.3.4", contents->version().GetString());
 
-  base::FilePath verified_contents_path =
-      path.AppendASCII("verified_contents_base64.json");
+  auto has_tree_hash_root = [&contents](const std::string& file_path_str) {
+    return contents->HasTreeHashRoot(
+        base::FilePath::FromUTF8Unsafe(file_path_str));
+  };
+  auto tree_hash_root_equals = [&contents](const std::string& file_path_str,
+                                           const char* expected_hash) {
+    return contents->TreeHashRootEquals(
+        base::FilePath::FromUTF8Unsafe(file_path_str),
+        DecodeBase64Url(expected_hash));
+  };
 
-  ASSERT_FALSE(contents.InitFrom(verified_contents_path));
+  // Non-existent files won't be found in tree hash.
+  EXPECT_FALSE(has_tree_hash_root("non-existent.js"));
+  EXPECT_FALSE(has_tree_hash_root(""));
+
+  struct TestFileInfo {
+    const char* filename;
+    const char* root_hashes;
+  };
+  std::vector<TestFileInfo> info_list{
+      {
+          "manifest.json", "ysCDJuQ1s7vWF4yUZTRB2_XDE6vfFyQcIPSmyvNvqEw",
+      },
+      {
+          "background.js", "uYeF7eHzVgKpiBg5fikv2NTctmJnxCfX1UhhlrizvNE",
+      },
+      {
+          "mixedcase.html", "S1lnRa4Yu1CM2dCwJoFYKfAqRkFC7SSI4tzyIOzO7hA",
+      },
+      {
+          "mixedCase.html", "FVncNmt1wBfFn3aZVTnMB9CFRTRIl0Z4YFqm14Wmrhs",
+      },
+      {
+          "doT.html.", "jEsJEk-0azFYx7G91rSUPuzPBXp95863lG4MDwZcSog",
+      },
+  };
+
+  std::vector<std::string> kSuffixes{
+      // Only spaces.
+      " ", "  ", "   ",
+      // Only dots.
+      ".", "..", "...",
+      // Mix of dots and spaces.
+      ". ", ".  ", ".. ", "... ", " .", "  .", "   .", " . ", " ..", " ...",
+      " .. ",
+  };
+
+  for (const TestFileInfo& info : info_list) {
+    // The original filenames' hashes must exist.
+    EXPECT_TRUE(has_tree_hash_root(info.filename));
+    EXPECT_TRUE(tree_hash_root_equals(info.filename, info.root_hashes));
+
+    // Verify that the discovery of tree hashes is also correct when the
+    // filenames are appended with dot and space characters:
+    //   - they should still succeed on windows (kDotSpaceSuffixIgnored = true).
+    //   - they should fail otherwise (kDotSpaceSuffixIgnored = false).
+    for (const std::string& suffix : kSuffixes) {
+      std::string path_with_suffix = std::string(info.filename).append(suffix);
+      EXPECT_EQ(kDotSpaceSuffixIgnored, has_tree_hash_root(path_with_suffix));
+    }
+  }
+
+  // For background.js, additionally verify that reading the file with and
+  // without the suffixes described above matches our expectations, taking
+  // kDotSpaceSuffixIgnored into account.
+  const char* kBackgroundJSFilename = "background.js";
+  const char* kBackgroundJSContents = "console.log('hello');\n";
+  base::FilePath test_dir = GetTestDir("dot_space_suffix");
+  {
+    // Case 1/2: background.js without suffix.
+    base::FilePath background_js_path =
+        test_dir.AppendASCII(kBackgroundJSFilename);
+    EXPECT_TRUE(base::PathExists(background_js_path));
+    std::string background_js_contents;
+    EXPECT_TRUE(
+        base::ReadFileToString(background_js_path, &background_js_contents));
+    EXPECT_EQ(kBackgroundJSContents, background_js_contents);
+  }
+  {
+    // Case 2/2: background.js with dot/space suffixes.
+    for (const std::string& suffix : kSuffixes) {
+      base::FilePath background_js_suffix_path = test_dir.AppendASCII(
+          std::string(kBackgroundJSFilename).append(suffix));
+      EXPECT_EQ(kDotSpaceSuffixIgnored,
+                base::PathExists(background_js_suffix_path));
+      if (kDotSpaceSuffixIgnored) {
+        std::string background_js_suffix_contents;
+        EXPECT_TRUE(base::ReadFileToString(background_js_suffix_path,
+                                           &background_js_suffix_contents));
+        EXPECT_EQ(kBackgroundJSContents, background_js_suffix_contents);
+      }
+    }
+  }
+}
+
+// Tests behavior of verified_contents.json file containing keys already with
+// "." suffix.
+// Regression test for https://crbug.com/696208.
+TEST(VerifiedContents, VerifiedContentsFileContainsDotSuffixedFilename) {
+  std::unique_ptr<VerifiedContents> contents =
+      CreateTestVerifiedContents("dot_space_suffix", "verified_contents.json");
+  ASSERT_TRUE(contents);
+
+  // Make sure we get expected values.
+  EXPECT_EQ(contents->block_size(), 4096);
+  EXPECT_EQ(contents->extension_id(), "abcdabcdabcdabcdabcdabcdabcdabcd");
+  EXPECT_EQ("1.2.3.4", contents->version().GetString());
+
+  auto has_tree_hash_root = [&contents](const std::string& file_path_str) {
+    return contents->HasTreeHashRoot(
+        base::FilePath::FromUTF8Unsafe(file_path_str));
+  };
+  auto tree_hash_root_equals = [&contents](const std::string& file_path_str,
+                                           const char* expected_hash) {
+    return contents->TreeHashRootEquals(
+        base::FilePath::FromUTF8Unsafe(file_path_str),
+        DecodeBase64Url(expected_hash));
+  };
+
+  // The original key "doT.html.", and its case variants should succeed.
+  EXPECT_TRUE(has_tree_hash_root("doT.html."));
+  EXPECT_TRUE(tree_hash_root_equals(
+      "doT.html.", "jEsJEk-0azFYx7G91rSUPuzPBXp95863lG4MDwZcSog"));
+  EXPECT_TRUE(has_tree_hash_root("dot.html."));
+  EXPECT_TRUE(tree_hash_root_equals(
+      "dot.html.", "jEsJEk-0azFYx7G91rSUPuzPBXp95863lG4MDwZcSog"));
+
+  // Keys with dot stripped succeeds if kDotSpaceSuffixIgnored is true.
+  {
+    const char* kKey = "dot.html";
+    EXPECT_EQ(kDotSpaceSuffixIgnored, has_tree_hash_root(kKey));
+    EXPECT_EQ(kDotSpaceSuffixIgnored,
+              tree_hash_root_equals(
+                  kKey, "jEsJEk-0azFYx7G91rSUPuzPBXp95863lG4MDwZcSog"));
+  }
+
+  // Also, adding (.| )+ suffix would succeed if kDotSpaceSuffixIgnored is
+  // true. This is already part of VerifiedContents.DotSpaceSuffixedFiles test.
 }
 
 }  // namespace extensions

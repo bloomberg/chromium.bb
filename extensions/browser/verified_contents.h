@@ -58,6 +58,10 @@ class VerifiedContents {
                        const std::string& payload,
                        const std::string& signature_bytes);
 
+  bool TreeHashRootEqualsImpl(
+      const base::FilePath::StringType& normalized_relative_path,
+      const std::string& expected) const;
+
   // The public key we should use for signature verification.
   base::span<const uint8_t> public_key_;
 
