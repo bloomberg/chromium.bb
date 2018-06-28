@@ -121,7 +121,7 @@ NotificationDatabase::~NotificationDatabase() {
 NotificationDatabase::Status NotificationDatabase::Open(
     bool create_if_missing) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_EQ(STATE_UNINITIALIZED, state_);
+  DCHECK_EQ(State::UNINITIALIZED, state_);
 
   if (!create_if_missing) {
     if (IsInMemoryDatabase() || !base::PathExists(path_) ||
@@ -147,7 +147,7 @@ NotificationDatabase::Status NotificationDatabase::Open(
   if (status != STATUS_OK)
     return status;
 
-  state_ = STATE_INITIALIZED;
+  state_ = State::INITIALIZED;
 
   return ReadNextPersistentNotificationId();
 }
@@ -161,7 +161,7 @@ NotificationDatabase::Status NotificationDatabase::ReadNotificationData(
     const GURL& origin,
     NotificationDatabaseData* notification_database_data) const {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_EQ(STATE_INITIALIZED, state_);
+  DCHECK_EQ(State::INITIALIZED, state_);
   DCHECK(!notification_id.empty());
   DCHECK(origin.is_valid());
   DCHECK(notification_database_data);
@@ -244,7 +244,7 @@ NotificationDatabase::Status NotificationDatabase::WriteNotificationData(
     const GURL& origin,
     const NotificationDatabaseData& notification_data) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_EQ(STATE_INITIALIZED, state_);
+  DCHECK_EQ(State::INITIALIZED, state_);
   DCHECK(origin.is_valid());
 
   const std::string& notification_id = notification_data.notification_id;
@@ -274,7 +274,7 @@ NotificationDatabase::Status NotificationDatabase::DeleteNotificationData(
     const std::string& notification_id,
     const GURL& origin) {
   DCHECK(sequence_checker_.CalledOnValidSequence());
-  DCHECK_EQ(STATE_INITIALIZED, state_);
+  DCHECK_EQ(State::INITIALIZED, state_);
   DCHECK(!notification_id.empty());
   DCHECK(origin.is_valid());
 
@@ -314,7 +314,7 @@ NotificationDatabase::Status NotificationDatabase::Destroy() {
     options.env = env_.get();
   }
 
-  state_ = STATE_DISABLED;
+  state_ = State::DISABLED;
   db_.reset();
 
   return LevelDBStatusToNotificationDatabaseStatus(
