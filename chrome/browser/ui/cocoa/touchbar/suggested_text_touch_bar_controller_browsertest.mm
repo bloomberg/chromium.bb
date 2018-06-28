@@ -52,7 +52,7 @@
 
 @implementation MockSuggestedTextTouchBarController
 
-- (void)requestSuggestionsForText:(NSString*)text inRange:(NSRange)range {
+- (void)requestSuggestionsForText:(NSString*)text {
   [self setSuggestions:@[ text ]];
   [[self controller] invalidateTouchBar];
 }
@@ -148,7 +148,6 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
                        TextSelectionChangedTest) {
   if (@available(macOS 10.12.2, *)) {
     MockSuggestedTextTouchBarController* touch_bar_controller;
-    const NSRange kRange = NSMakeRange(0, [kText length]);
 
     // If not in a textfield,
     //  1. New text selection should not be saved.
@@ -160,7 +159,7 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
         [touch_bar_controller webContents]->IsFocusedElementEditable());
     ASSERT_EQ(kEmptyText, [touch_bar_controller text]);
     ASSERT_EQ(0, [web_textfield_controller() numInvalidations]);
-    [touch_bar_controller webContentsTextSelectionChanged:kText range:kRange];
+    [touch_bar_controller webContentsTextSelectionChanged:kText];
     EXPECT_EQ(kEmptyText, [touch_bar_controller text]);
     EXPECT_EQ(1, [web_textfield_controller() numInvalidations]);
 
@@ -174,7 +173,7 @@ IN_PROC_BROWSER_TEST_F(SuggestedTextTouchBarControllerBrowserTest,
     ASSERT_TRUE([touch_bar_controller webContents]->IsFocusedElementEditable());
     ASSERT_EQ(kEmptyText, [touch_bar_controller text]);
     ASSERT_EQ(0, [web_textfield_controller() numInvalidations]);
-    [touch_bar_controller webContentsTextSelectionChanged:kText range:kRange];
+    [touch_bar_controller webContentsTextSelectionChanged:kText];
     EXPECT_EQ(kText, [touch_bar_controller text]);
     EXPECT_EQ(kText, [touch_bar_controller firstSuggestion]);
     EXPECT_EQ(1, [web_textfield_controller() numInvalidations]);
