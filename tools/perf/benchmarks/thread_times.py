@@ -94,10 +94,6 @@ class ThreadTimesCompositorCases(_ThreadTimes):
   http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
   page_set = page_sets.ToughCompositorCasesPageSet
 
-  def SetExtraBrowserOptions(self, options):
-    super(ThreadTimesCompositorCases, self).SetExtraBrowserOptions(options)
-    silk_flags.CustomizeBrowserOptionsForSoftwareRasterization(options)
-
   @classmethod
   def Name(cls):
     return 'thread_times.tough_compositor_cases'
