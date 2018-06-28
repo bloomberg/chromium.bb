@@ -911,13 +911,15 @@ void GLES2DecoderPassthroughImpl::Destroy(bool have_context) {
     }
   }
 
-  for (PassthroughAbstractTextureImpl* iter : abstract_textures_) {
-    resources_->textures_pending_destruction.insert(
-        iter->OnDecoderWillDestroy());
-  }
-  abstract_textures_.clear();
-  if (have_context) {
-    resources_->DestroyPendingTextures(/*has_context=*/true);
+  if (resources_) {  // Initialize may not have been called yet.
+    for (PassthroughAbstractTextureImpl* iter : abstract_textures_) {
+      resources_->textures_pending_destruction.insert(
+          iter->OnDecoderWillDestroy());
+    }
+    abstract_textures_.clear();
+    if (have_context) {
+      resources_->DestroyPendingTextures(/*has_context=*/true);
+    }
   }
 
   DeleteServiceObjects(&framebuffer_id_map_, have_context,
