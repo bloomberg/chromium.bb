@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "chrome/browser/conflicts/installed_applications_win.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
@@ -44,7 +45,7 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   IncompatibleApplicationsUpdater(
       ModuleDatabaseEventSource* module_database_event_source,
       const CertificateInfo& exe_certificate_info,
-      const ModuleListFilter& module_list_filter,
+      scoped_refptr<ModuleListFilter> module_list_filter,
       const InstalledApplications& installed_applications);
   ~IncompatibleApplicationsUpdater() override;
 
@@ -71,7 +72,7 @@ class IncompatibleApplicationsUpdater : public ModuleDatabaseObserver {
   ModuleDatabaseEventSource* const module_database_event_source_;
 
   const CertificateInfo& exe_certificate_info_;
-  const ModuleListFilter& module_list_filter_;
+  scoped_refptr<ModuleListFilter> module_list_filter_;
   const InstalledApplications& installed_applications_;
 
   // Temporarily holds incompatible applications that were recently found.

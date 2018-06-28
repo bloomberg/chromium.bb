@@ -47,12 +47,13 @@ static constexpr base::TimeDelta kMaxEntryAge = base::TimeDelta::FromDays(180);
 // and return a CacheUpdateResult value.
 ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
     const base::FilePath& module_blacklist_cache_path,
-    const ModuleListFilter& module_list_filter,
+    scoped_refptr<ModuleListFilter> module_list_filter,
     const std::vector<third_party_dlls::PackedListModule>&
         newly_blacklisted_modules,
     const std::vector<third_party_dlls::PackedListModule>& blocked_modules,
     size_t max_module_count,
     uint32_t min_time_date_stamp) {
+  DCHECK(module_list_filter);
   ModuleBlacklistCacheUpdater::CacheUpdateResult result;
 
   // Read the existing cache.
@@ -66,7 +67,7 @@ ModuleBlacklistCacheUpdater::CacheUpdateResult UpdateModuleBlacklistCache(
   // Update the existing data with |newly_blacklisted_modules| and
   // |blocked_modules|.
   UpdateModuleBlacklistCacheData(
-      module_list_filter, newly_blacklisted_modules, blocked_modules,
+      *module_list_filter, newly_blacklisted_modules, blocked_modules,
       max_module_count, min_time_date_stamp, &metadata, &blacklisted_modules);
   // Note: This histogram is tied to the current value of kMaxModuleCount.
   //       Rename the histogram if that value is ever changed.
@@ -91,11 +92,11 @@ constexpr base::TimeDelta ModuleBlacklistCacheUpdater::kUpdateTimerDuration;
 ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
     ModuleDatabaseEventSource* module_database_event_source,
     const CertificateInfo& exe_certificate_info,
-    const ModuleListFilter& module_list_filter,
+    scoped_refptr<ModuleListFilter> module_list_filter,
     OnCacheUpdatedCallback on_cache_updated_callback)
     : module_database_event_source_(module_database_event_source),
       exe_certificate_info_(exe_certificate_info),
-      module_list_filter_(module_list_filter),
+      module_list_filter_(std::move(module_list_filter)),
       on_cache_updated_callback_(std::move(on_cache_updated_callback)),
       background_sequence_(base::CreateSequencedTaskRunnerWithTraits(
           {base::MayBlock(), base::TaskPriority::BACKGROUND,
@@ -111,6 +112,7 @@ ModuleBlacklistCacheUpdater::ModuleBlacklistCacheUpdater(
                         base::Unretained(this)),
              false /* is_repeating */),
       weak_ptr_factory_(this) {
+  DCHECK(module_list_filter_);
   module_database_event_source_->AddObserver(this);
 }
 
@@ -187,12 +189,12 @@ void ModuleBlacklistCacheUpdater::OnNewModuleFound(
 #endif
 
   // Skip modules whitelisted by the Module List component.
-  if (module_list_filter_.IsWhitelisted(module_key, module_data))
+  if (module_list_filter_->IsWhitelisted(module_key, module_data))
     return;
 
   // Some blacklisted modules are allowed to load.
   std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action =
-      module_list_filter_.IsBlacklisted(module_key, module_data);
+      module_list_filter_->IsBlacklisted(module_key, module_data);
   if (blacklist_action && blacklist_action->allow_load())
     return;
 
@@ -253,15 +255,10 @@ void ModuleBlacklistCacheUpdater::StartModuleBlacklistCacheUpdate() {
       CalculateTimeDateStamp(base::Time::Now() - kMaxEntryAge);
 
   // Update the module blacklist cache on a background sequence.
-  //
-  // |module_list_filter_| is safe to pass by const-ref because it is owned by
-  // the ThirdPartyConflictsManager instance, which is never freed, and the only
-  // method called on it is const.
   base::PostTaskAndReplyWithResult(
       background_sequence_.get(), FROM_HERE,
       base::BindOnce(&UpdateModuleBlacklistCache, cache_file_path,
-                     base::ConstRef(module_list_filter_),
-                     std::move(newly_blacklisted_modules_),
+                     module_list_filter_, std::move(newly_blacklisted_modules_),
                      std::move(blocked_modules_), kMaxModuleCount,
                      min_time_date_stamp),
       base::BindOnce(

@@ -33,27 +33,6 @@
 
 namespace {
 
-// Stubs an empty whitelist and blacklist.
-class StubModuleListFilter : public ModuleListFilter {
- public:
-  StubModuleListFilter() = default;
-  ~StubModuleListFilter() override = default;
-
-  bool IsWhitelisted(base::StringPiece basename_hash,
-                     base::StringPiece code_id_hash) const override {
-    return false;
-  }
-
-  std::unique_ptr<chrome::conflicts::BlacklistAction> IsBlacklisted(
-      const ModuleInfoKey& module_key,
-      const ModuleInfoData& module_data) const override {
-    return nullptr;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(StubModuleListFilter);
-};
-
 constexpr base::FilePath::CharType kCertificatePath[] =
     FILE_PATH_LITERAL("CertificatePath");
 constexpr base::FilePath::CharType kCertificateSubject[] =
@@ -109,6 +88,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
         scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME),
         user_data_dir_override_(chrome::DIR_USER_DATA),
+        module_list_filter_(CreateModuleListFilter()),
         module_blacklist_cache_path_(
             ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath()) {
     exe_certificate_info_.type = CertificateType::CERTIFICATE_IN_FILE;
@@ -155,6 +135,33 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
   const base::FilePath dll2_;
 
  private:
+  scoped_refptr<ModuleListFilter> CreateModuleListFilter() {
+    chrome::conflicts::ModuleList module_list;
+    // Include an empty blacklist and whitelist.
+    module_list.mutable_blacklist();
+    module_list.mutable_whitelist();
+
+    // Serialize the module list to the user data directory.
+    base::FilePath module_list_path;
+    if (!base::PathService::Get(chrome::DIR_USER_DATA, &module_list_path))
+      return nullptr;
+    module_list_path =
+        module_list_path.Append(FILE_PATH_LITERAL("ModuleList.bin"));
+
+    std::string contents;
+    if (!module_list.SerializeToString(&contents) ||
+        base::WriteFile(module_list_path, contents.data(),
+                        static_cast<int>(contents.size())) !=
+            static_cast<int>(contents.size())) {
+      return nullptr;
+    }
+
+    auto module_list_filter = base::MakeRefCounted<ModuleListFilter>();
+    if (!module_list_filter->Initialize(module_list_path))
+      return nullptr;
+    return module_list_filter;
+  }
+
   void OnModuleBlacklistCacheUpdated(
       const ModuleBlacklistCacheUpdater::CacheUpdateResult& result) {
     on_cache_updated_callback_invoked_ = true;
@@ -165,7 +172,7 @@ class ModuleBlacklistCacheUpdaterTest : public testing::Test,
   base::ScopedPathOverride user_data_dir_override_;
 
   CertificateInfo exe_certificate_info_;
-  StubModuleListFilter module_list_filter_;
+  scoped_refptr<ModuleListFilter> module_list_filter_;
 
   base::FilePath module_blacklist_cache_path_;
 

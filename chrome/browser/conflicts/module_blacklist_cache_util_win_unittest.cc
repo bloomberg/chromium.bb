@@ -183,7 +183,6 @@ TEST_F(ModuleBlacklistCacheUtilTest, WriteAndRead) {
 class FakeModuleListFilter : public ModuleListFilter {
  public:
   FakeModuleListFilter() = default;
-  ~FakeModuleListFilter() override = default;
 
   void AddWhitelistedModule(const third_party_dlls::PackedListModule& module) {
     whitelisted_modules_.emplace(
@@ -206,6 +205,8 @@ class FakeModuleListFilter : public ModuleListFilter {
   }
 
  private:
+  ~FakeModuleListFilter() override = default;
+
   std::set<std::pair<base::StringPiece, base::StringPiece>>
       whitelisted_modules_;
 
@@ -226,11 +227,11 @@ TEST_F(ModuleBlacklistCacheUtilTest, RemoveWhitelistedEntries) {
                              whitelisted_modules.push_back(element);
                            },
                            &blacklisted_modules);
-  FakeModuleListFilter module_list_filter;
+  auto module_list_filter = base::MakeRefCounted<FakeModuleListFilter>();
   for (const auto& module : whitelisted_modules)
-    module_list_filter.AddWhitelistedModule(module);
+    module_list_filter->AddWhitelistedModule(module);
 
-  internal::RemoveWhitelistedEntries(module_list_filter, &blacklisted_modules);
+  internal::RemoveWhitelistedEntries(*module_list_filter, &blacklisted_modules);
 
   EXPECT_EQ(kTestModuleCount - kWhitelistedModulesCount,
             blacklisted_modules.size());
