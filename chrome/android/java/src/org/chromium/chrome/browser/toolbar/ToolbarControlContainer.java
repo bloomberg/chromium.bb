@@ -36,7 +36,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
 
     private Toolbar mToolbar;
     private ToolbarViewResourceFrameLayout mToolbarContainer;
-    private View mMenuBtn;
 
     private final SwipeRecognizer mSwipeRecognizer;
     private EdgeSwipeHandler mSwipeHandler;
@@ -94,7 +93,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
             mToolbarContainer =
                     (ToolbarViewResourceFrameLayout) findViewById(R.id.toolbar_container);
             mToolbarContainer.setToolbar(mToolbar);
-            mMenuBtn = findViewById(R.id.menu_button);
 
             if (mToolbar instanceof ToolbarTablet) {
                 // On tablet, draw a fake tab strip and toolbar until the compositor is ready to
@@ -107,7 +105,6 @@ public class ToolbarControlContainer extends FrameLayout implements ControlConta
             }
 
             assert mToolbar != null;
-            assert mMenuBtn != null;
         }
     }
 
