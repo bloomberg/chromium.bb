@@ -379,8 +379,8 @@ TEST_F(DeferredImageDecoderTest, data) {
   lazy_decoder_->SetData(original_buffer, false);
   scoped_refptr<SharedBuffer> new_buffer = lazy_decoder_->Data();
   EXPECT_EQ(original_buffer->size(), new_buffer->size());
-  const Vector<char> original_data = original_buffer->Copy();
-  const Vector<char> new_data = new_buffer->Copy();
+  const Vector<char> original_data = original_buffer->CopyAs<Vector<char>>();
+  const Vector<char> new_data = new_buffer->CopyAs<Vector<char>>();
   EXPECT_EQ(0, std::memcmp(original_data.data(), new_data.data(),
                            new_buffer->size()));
 }

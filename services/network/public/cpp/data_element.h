@@ -80,6 +80,14 @@ class COMPONENT_EXPORT(NETWORK_CPP_BASE) DataElement {
     length_ = buf_.size();
   }
 
+  // Sets TYPE_BYTES data. This moves the given data vector into the element.
+  void SetToBytes(std::vector<char> bytes) {
+    type_ = TYPE_BYTES;
+    bytes_ = nullptr;
+    buf_ = std::move(bytes);
+    length_ = buf_.size();
+  }
+
   // Sets TYPE_BYTES data, and clears the internal bytes buffer.
   // For use with AppendBytes.
   void SetToEmptyBytes() {

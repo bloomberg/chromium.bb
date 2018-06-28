@@ -33,6 +33,7 @@
 
 #include "third_party/blink/public/platform/web_common.h"
 #include "third_party/blink/public/platform/web_private_ptr.h"
+#include "third_party/blink/public/platform/web_vector.h"
 
 #if INSIDE_BLINK
 #include "base/memory/scoped_refptr.h"
@@ -75,6 +76,11 @@ class BLINK_PLATFORM_EXPORT WebData {
   // Returns the number of consecutive bytes after "position". "data"
   // points to the first byte. Returns 0 when no more data is left.
   size_t GetSomeData(const char*& data, size_t position) const;
+
+  // Same as SharedBuffer::CopyAs, copies the segmented data into a
+  // contiguous buffer.  Use GetSomeData() or ForEachSegment() whenever
+  // possible, if a copy can be avoided.
+  WebVector<char> Copy() const;
 
   // Helper for applying a lambda to all data segments, sequentially:
   //

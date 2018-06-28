@@ -391,12 +391,7 @@ scoped_refptr<network::ResourceRequestBody> GetRequestBodyForWebHTTPBody(
   while (httpBody.ElementAt(i++, element)) {
     switch (element.type) {
       case WebHTTPBody::Element::kTypeData:
-        element.data.ForEachSegment([&request_body](const char* segment,
-                                                    size_t segment_size,
-                                                    size_t segment_offset) {
-          request_body->AppendBytes(segment, static_cast<int>(segment_size));
-          return true;
-        });
+        request_body->AppendBytes(element.data.Copy().ReleaseVector());
         break;
       case WebHTTPBody::Element::kTypeFile:
         if (element.file_length == -1) {

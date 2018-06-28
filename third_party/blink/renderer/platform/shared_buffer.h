@@ -33,6 +33,8 @@
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
+#include <vector>
+
 class SkData;
 template <typename T>
 class sk_sp;
@@ -73,7 +75,7 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
 
   ~SharedBuffer();
 
-  // DEPRECATED: use a segment iterator, FlatData or Copy() instead.
+  // DEPRECATED: use a segment iterator, FlatData or explicit Copy() instead.
   //
   // Calling this function will force internal segmented buffers to be merged
   // into a flat buffer. Use getSomeData() whenever possible for better
@@ -96,8 +98,10 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   void Clear();
 
   // Copies the segmented data into a contiguous buffer.  Use GetSomeData() or
-  // ForEachSegment() whenever possible, as they are cheaper.
-  Vector<char> Copy() const;
+  // ForEachSegment() if a copy is not required, as they are cheaper.
+  // Supported Ts: WTF::Vector<char>, std::vector<char>.
+  template <typename T>
+  T CopyAs() const;
 
   // Return the number of consecutive bytes after "position". "data"
   // points to the first byte.
@@ -189,6 +193,39 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   mutable Vector<char> buffer_;
   mutable Vector<char*> segments_;
 };
+
+// Current CopyAs specializations.
+template <>
+inline Vector<char> SharedBuffer::CopyAs() const {
+  Vector<char> buffer;
+  buffer.ReserveInitialCapacity(size_);
+
+  ForEachSegment([&buffer](const char* segment, size_t segment_size,
+                           size_t segment_offset) -> bool {
+    DCHECK_EQ(segment_offset, buffer.size());
+    buffer.Append(segment, segment_size);
+    return true;
+  });
+
+  DCHECK_EQ(buffer.size(), size_);
+  return buffer;
+}
+
+template <>
+inline std::vector<char> SharedBuffer::CopyAs() const {
+  std::vector<char> buffer;
+  buffer.reserve(size_);
+
+  ForEachSegment([&buffer](const char* segment, size_t segment_size,
+                           size_t segment_offset) -> bool {
+    DCHECK_EQ(segment_offset, buffer.size());
+    buffer.insert(buffer.end(), segment, segment + segment_size);
+    return true;
+  });
+
+  DCHECK_EQ(buffer.size(), size_);
+  return buffer;
+}
 
 }  // namespace blink
 
