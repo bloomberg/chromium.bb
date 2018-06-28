@@ -45,7 +45,6 @@ class Layer;
 namespace blink {
 
 class CompositorAnimationHost;
-class GraphicsLayer;
 class Page;
 class PagePopupChromeClient;
 class PagePopupClient;
@@ -115,7 +114,7 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
   bool InitializePage();
   void DestroyPage();
   void InitializeLayerTreeView();
-  void SetRootGraphicsLayer(GraphicsLayer*);
+  void SetRootLayer(cc::Layer*);
 
   WebRect WindowRectInScreen() const;
 
@@ -128,7 +127,6 @@ class CORE_EXPORT WebPagePopupImpl final : public WebPagePopup,
 
   WebLayerTreeView* layer_tree_view_ = nullptr;
   scoped_refptr<cc::Layer> root_layer_;
-  GraphicsLayer* root_graphics_layer_ = nullptr;
   std::unique_ptr<CompositorAnimationHost> animation_host_;
   bool is_accelerated_compositing_active_ = false;
 
