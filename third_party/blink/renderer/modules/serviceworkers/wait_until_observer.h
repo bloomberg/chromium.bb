@@ -17,6 +17,7 @@ class ExceptionState;
 class ExecutionContext;
 class ScriptPromise;
 class ScriptState;
+class ScriptValue;
 
 // Created for each ExtendableEvent instance.
 class MODULES_EXPORT WaitUntilObserver final

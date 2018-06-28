@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/modules/serviceworkers/extendable_event.h"
 
 #include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
+#include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_wrappable.h"
 
 namespace blink {
