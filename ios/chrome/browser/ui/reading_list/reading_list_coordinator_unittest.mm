@@ -111,10 +111,10 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   ReadingListModel* model = GetReadingListModel();
   model->AddEntry(url, title, reading_list::ADDED_VIA_CURRENT_APP);
 
-  ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
-           initWithType:0
-                    url:url
-      distillationState:ReadingListUIDistillationStatusSuccess];
+  ReadingListCollectionViewItem* item =
+      [[ReadingListCollectionViewItem alloc] initWithType:0];
+  item.entryURL = url;
+  item.distillationState = ReadingListUIDistillationStatusSuccess;
 
   // Action.
   [GetCoordinator() readingListCollectionViewController:
@@ -140,10 +140,10 @@ TEST_F(ReadingListCoordinatorTest, OpenItemOffline) {
   model->SetEntryDistilledInfo(url, distilled_path, distilled_url, 123,
                                base::Time::FromTimeT(10));
 
-  ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
-           initWithType:0
-                    url:url
-      distillationState:ReadingListUIDistillationStatusSuccess];
+  ReadingListCollectionViewItem* item =
+      [[ReadingListCollectionViewItem alloc] init];
+  item.entryURL = url;
+  item.distillationState = ReadingListUIDistillationStatusSuccess;
   GURL offlineURL =
       reading_list::OfflineURLForPath(distilled_path, url, distilled_url);
   ASSERT_FALSE(model->GetEntryByURL(url)->IsRead());
@@ -167,10 +167,10 @@ TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
   ReadingListModel* model = GetReadingListModel();
   model->AddEntry(url, title, reading_list::ADDED_VIA_CURRENT_APP);
 
-  ReadingListCollectionViewItem* item = [[ReadingListCollectionViewItem alloc]
-           initWithType:0
-                    url:url
-      distillationState:ReadingListUIDistillationStatusSuccess];
+  ReadingListCollectionViewItem* item =
+      [[ReadingListCollectionViewItem alloc] init];
+  item.entryURL = url;
+  item.distillationState = ReadingListUIDistillationStatusSuccess;
 
   // Action.
   [GetCoordinator() readingListCollectionViewController:

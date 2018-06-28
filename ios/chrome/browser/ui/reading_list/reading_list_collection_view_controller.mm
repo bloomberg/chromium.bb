@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 
 #include "base/logging.h"
+#import "base/mac/foundation_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -17,6 +18,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_custom_action_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
@@ -60,6 +62,11 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 
 // Whether the data source modifications should be taken into account.
 @property(nonatomic, assign) BOOL shouldMonitorDataSource;
+
+// The factory that provides custom accessibility actions to the cells, using
+// self as the accessibility delegate.
+@property(nonatomic, strong)
+    ReadingListListViewItemCustomActionFactory* customActionFactory;
 
 // Handles "Done" button touches.
 - (void)donePressed;
@@ -141,6 +148,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 @synthesize dataSource = _dataSource;
 
 @synthesize shouldMonitorDataSource = _shouldMonitorDataSource;
+@synthesize customActionFactory = _customActionFactory;
 
 + (NSString*)accessibilityIdentifier {
   return @"ReadingListCollectionView";
@@ -162,6 +170,10 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 
     _shouldMonitorDataSource = YES;
     _dataSourceHasBeenModified = NO;
+
+    _customActionFactory =
+        [[ReadingListListViewItemCustomActionFactory alloc] init];
+    _customActionFactory.accessibilityDelegate = self;
 
     _dataSource.dataSink = self;
   }
@@ -329,47 +341,61 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 
 #pragma mark - ReadingListListViewItemAccessibilityDelegate
 
-- (BOOL)isEntryRead:(CollectionViewItem*)entry {
-  return [self.dataSource isEntryRead:entry];
+- (BOOL)isEntryRead:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
+  return [self.dataSource isEntryRead:item];
 }
 
-- (void)deleteEntry:(CollectionViewItem*)entry {
-  if ([self.collectionViewModel hasItem:entry]) {
+- (void)deleteEntry:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
+  if ([self.collectionViewModel hasItem:item]) {
     [self deleteItemsAtIndexPaths:@[ [self.collectionViewModel
-                                      indexPathForItem:entry] ]];
+                                      indexPathForItem:item] ]];
   }
 }
 
-- (void)openEntryInNewTab:(CollectionViewItem*)entry {
+- (void)openEntryInNewTab:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
   [self.delegate readingListCollectionViewController:self
-                                    openItemInNewTab:entry
+                                    openItemInNewTab:item
                                            incognito:NO];
 }
 
-- (void)openEntryInNewIncognitoTab:(CollectionViewItem*)entry {
+- (void)openEntryInNewIncognitoTab:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
   [self.delegate readingListCollectionViewController:self
-                                    openItemInNewTab:entry
+                                    openItemInNewTab:item
                                            incognito:YES];
 }
 
-- (void)openEntryOffline:(CollectionViewItem*)entry {
+- (void)openEntryOffline:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
   [self.delegate readingListCollectionViewController:self
-                             openItemOfflineInNewTab:entry];
+                             openItemOfflineInNewTab:item];
 }
 
-- (void)markEntryRead:(CollectionViewItem*)entry {
-  if ([self.collectionViewModel hasItem:entry
+- (void)markEntryRead:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
+  if ([self.collectionViewModel hasItem:item
                 inSectionWithIdentifier:SectionIdentifierUnread]) {
     [self markItemsReadAtIndexPath:@[ [self.collectionViewModel
-                                       indexPathForItem:entry] ]];
+                                       indexPathForItem:item] ]];
   }
 }
 
-- (void)markEntryUnread:(CollectionViewItem*)entry {
-  if ([self.collectionViewModel hasItem:entry
+- (void)markEntryUnread:(ListItem*)entry {
+  CollectionViewItem* item =
+      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
+  if ([self.collectionViewModel hasItem:item
                 inSectionWithIdentifier:SectionIdentifierRead]) {
     [self markItemsUnreadAtIndexPath:@[ [self.collectionViewModel
-                                         indexPathForItem:entry] ]];
+                                         indexPathForItem:item] ]];
   }
 }
 
@@ -431,7 +457,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
   [self.dataSource fillReadItems:readArray
                      unreadItems:unreadArray
-                    withDelegate:self];
+         withCustomActionFactory:self.customActionFactory];
   [self loadItemsFromArray:unreadArray toSection:SectionIdentifierUnread];
   [self loadItemsFromArray:readArray toSection:SectionIdentifierRead];
 

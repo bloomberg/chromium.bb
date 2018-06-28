@@ -172,9 +172,7 @@ TEST_F(ReadingListCollectionViewControllerTest,
           [[reading_list_view_controller_ collectionViewModel]
               itemAtIndexPath:indexPath]);
   EXPECT_EQ(base::SysNSStringToUTF8([readingListItem title]), title);
-  EXPECT_EQ([readingListItem url], url);
-  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem subtitle]),
-            url_formatter::FormatUrl(url));
+  EXPECT_EQ([readingListItem entryURL], url);
   EXPECT_EQ([readingListItem faviconPageURL], url);
   EXPECT_EQ([readingListItem distillationState],
             ReadingListUIDistillationStatusPending);
@@ -205,9 +203,7 @@ TEST_F(ReadingListCollectionViewControllerTest,
           [[reading_list_view_controller_ collectionViewModel]
               itemAtIndexPath:indexPath]);
   EXPECT_EQ(base::SysNSStringToUTF8([readingListItem title]), title);
-  EXPECT_EQ([readingListItem url], url);
-  EXPECT_EQ(base::SysNSStringToUTF16([readingListItem subtitle]),
-            url_formatter::FormatUrl(url));
+  EXPECT_EQ([readingListItem entryURL], url);
   EXPECT_EQ([readingListItem faviconPageURL], distilled_url);
   EXPECT_EQ([readingListItem distillationState],
             ReadingListUIDistillationStatusSuccess);

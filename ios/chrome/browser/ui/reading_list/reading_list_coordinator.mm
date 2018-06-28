@@ -8,6 +8,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#import "base/strings/sys_string_conversions.h"
 #include "components/feature_engagement/public/event_constants.h"
 #include "components/feature_engagement/public/tracker.h"
 #include "components/reading_list/core/reading_list_model.h"
@@ -162,7 +163,7 @@
   ReadingListContextMenuParams* params =
       [[ReadingListContextMenuParams alloc] init];
   params.title = readingListItem.title;
-  params.message = readingListItem.subtitle;
+  params.message = base::SysUTF8ToNSString(readingListItem.entryURL.host());
   params.rect = CGRectMake(menuLocation.x, menuLocation.y, 0, 0);
   params.view = readingListCollectionViewController.collectionView;
   params.entryURL = entryURL;
@@ -211,7 +212,7 @@ readingListCollectionViewController:
   ReadingListCollectionViewItem* readingListItem =
       base::mac::ObjCCastStrict<ReadingListCollectionViewItem>(item);
   [self readingListCollectionViewController:readingListCollectionViewController
-                          openNewTabWithURL:readingListItem.url
+                          openNewTabWithURL:readingListItem.entryURL
                                   incognito:incognito];
 }
 
