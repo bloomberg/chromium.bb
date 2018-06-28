@@ -198,7 +198,7 @@ void* LayoutObject::operator new(size_t sz) {
 
 void LayoutObject::operator delete(void* ptr) {
   DCHECK(IsMainThread());
-  WTF::PartitionFree(ptr);
+  base::PartitionFree(ptr);
 }
 
 LayoutObject* LayoutObject::CreateObject(Element* element,

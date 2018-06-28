@@ -35,6 +35,7 @@
 #include "base/debug/alias.h"
 #include "base/lazy_instance.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partition_allocator.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace WTF {
 
@@ -136,19 +137,19 @@ void Partitions::DumpMemoryStats(
 
 namespace {
 
-class LightPartitionStatsDumperImpl : public WTF::PartitionStatsDumper {
+class LightPartitionStatsDumperImpl : public base::PartitionStatsDumper {
  public:
   LightPartitionStatsDumperImpl() : total_active_bytes_(0) {}
 
   void PartitionDumpTotals(
       const char* partition_name,
-      const WTF::PartitionMemoryStats* memory_stats) override {
+      const base::PartitionMemoryStats* memory_stats) override {
     total_active_bytes_ += memory_stats->total_active_bytes;
   }
 
   void PartitionsDumpBucketStats(
       const char* partition_name,
-      const WTF::PartitionBucketMemoryStats*) override {}
+      const base::PartitionBucketMemoryStats*) override {}
 
   size_t TotalActiveBytes() const { return total_active_bytes_; }
 
@@ -216,12 +217,12 @@ static NOINLINE void PartitionsOutOfMemoryUsingLessThan16M() {
   size_t signature = 16 * 1024 * 1024 - 1;
   base::debug::Alias(&signature);
   DLOG(FATAL) << "ParitionAlloc: out of memory with < 16M usage (error:"
-              << GetAllocPageErrorCode() << ")";
+              << base::GetAllocPageErrorCode() << ")";
 }
 
 void Partitions::HandleOutOfMemory() {
   volatile size_t total_usage = TotalSizeOfCommittedPages();
-  uint32_t alloc_page_error_code = GetAllocPageErrorCode();
+  uint32_t alloc_page_error_code = base::GetAllocPageErrorCode();
   base::debug::Alias(&alloc_page_error_code);
 
   if (total_usage >= 2UL * 1024 * 1024 * 1024)

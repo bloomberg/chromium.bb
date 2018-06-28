@@ -132,6 +132,9 @@ _CONFIG = [
             'base::Feature.*',
             'base::FEATURE_.+',
 
+            # PartitionAlloc
+            'base::PartitionFree',
+
             # cc painting types.
             'cc::PaintCanvas',
             'cc::PaintFlags',

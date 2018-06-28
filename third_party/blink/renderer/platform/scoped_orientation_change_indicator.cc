@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/platform/scoped_orientation_change_indicator.h"
 
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "base/logging.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 namespace blink {
 

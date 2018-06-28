@@ -4,7 +4,8 @@
 
 #include "third_party/blink/renderer/platform/graphics/color_space_profile_data.h"
 
-#include "third_party/blink/renderer/platform/wtf/assertions.h"
+#include "base/logging.h"
+#include "third_party/blink/renderer/platform/wtf/wtf.h"
 
 struct bt709ColorProfile {
   static char* data()  // BT.709 HDTV ITU
