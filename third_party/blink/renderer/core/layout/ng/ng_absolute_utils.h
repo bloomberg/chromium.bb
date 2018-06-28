@@ -22,6 +22,7 @@ struct NGStaticPosition;
 struct CORE_EXPORT NGAbsolutePhysicalPosition {
   NGPhysicalBoxStrut inset;
   NGPhysicalSize size;
+  NGPhysicalBoxStrut margins;
   String ToString() const;
 };
 

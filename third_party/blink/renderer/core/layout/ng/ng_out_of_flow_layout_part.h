@@ -87,7 +87,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
       NGBlockNode node,
       const ContainingBlockInfo&,
       const base::Optional<LayoutUnit>& block_estimate,
-      const NGAbsolutePhysicalPosition node_position);
+      const NGAbsolutePhysicalPosition& node_position);
 
   NGFragmentBuilder* container_builder_;
   bool contains_absolute_;

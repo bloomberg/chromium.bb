@@ -4,6 +4,8 @@
 
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
 
+#include "third_party/blink/renderer/core/layout/layout_block.h"
+#include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_physical_line_box_fragment.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_absolute_utils.h"
@@ -410,7 +412,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
     NGBlockNode descendant,
     const ContainingBlockInfo& container_info,
     const base::Optional<LayoutUnit>& block_estimate,
-    const NGAbsolutePhysicalPosition node_position) {
+    const NGAbsolutePhysicalPosition& node_position) {
   // As the block_estimate is always in the descendant's writing mode, we build
   // the constraint space in the descendant's writing mode.
   WritingMode writing_mode(descendant.Style().GetWritingMode());
@@ -438,7 +440,17 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
   scoped_refptr<NGConstraintSpace> space =
       builder.ToConstraintSpace(writing_mode);
 
-  return descendant.Layout(*space);
+  scoped_refptr<NGLayoutResult> result = descendant.Layout(*space);
+
+  // Legacy Grid and Flexbox seem to handle oof margins correctly
+  // on their own, and break if we set them here.
+  if (!descendant.GetLayoutObject()
+           ->ContainingBlock()
+           ->Style()
+           ->IsDisplayFlexibleOrGridBox())
+    ToLayoutBox(descendant.GetLayoutObject())->SetMargin(node_position.margins);
+
+  return result;
 }
 
 }  // namespace blink

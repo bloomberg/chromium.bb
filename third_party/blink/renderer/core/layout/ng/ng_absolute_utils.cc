@@ -134,18 +134,16 @@ LayoutUnit ComputeAvailableHeight(
 
 LayoutUnit HorizontalBorderPadding(const NGConstraintSpace& space,
                                    const ComputedStyle& style) {
-  NGLogicalSize percentage_logical = space.PercentageResolutionSize();
-  return ValueForLength(style.PaddingLeft(), percentage_logical.inline_size) +
-         ValueForLength(style.PaddingRight(), percentage_logical.inline_size) +
+  return ResolveMarginPaddingLength(space, style.PaddingLeft()) +
+         ResolveMarginPaddingLength(space, style.PaddingRight()) +
          LayoutUnit(style.BorderLeftWidth()) +
          LayoutUnit(style.BorderRightWidth());
 }
 
 LayoutUnit VerticalBorderPadding(const NGConstraintSpace& space,
                                  const ComputedStyle& style) {
-  NGLogicalSize percentage_logical = space.PercentageResolutionSize();
-  return ValueForLength(style.PaddingTop(), percentage_logical.inline_size) +
-         ValueForLength(style.PaddingBottom(), percentage_logical.inline_size) +
+  return ResolveMarginPaddingLength(space, style.PaddingTop()) +
+         ResolveMarginPaddingLength(space, style.PaddingBottom()) +
          LayoutUnit(style.BorderTopWidth()) +
          LayoutUnit(style.BorderBottomWidth());
 }
@@ -160,17 +158,15 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
                                const WritingMode container_writing_mode,
                                const TextDirection container_direction,
                                NGAbsolutePhysicalPosition* position) {
-  NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
-      percentage_logical.ConvertToPhysical(space.GetWritingMode());
+      space.PercentageResolutionSize().ConvertToPhysical(
+          space.GetWritingMode());
   base::Optional<LayoutUnit> margin_left;
   if (!style.MarginLeft().IsAuto())
-    margin_left =
-        ValueForLength(style.MarginLeft(), percentage_logical.inline_size);
+    margin_left = ResolveMarginPaddingLength(space, style.MarginLeft());
   base::Optional<LayoutUnit> margin_right;
   if (!style.MarginRight().IsAuto())
-    margin_right =
-        ValueForLength(style.MarginRight(), percentage_logical.inline_size);
+    margin_right = ResolveMarginPaddingLength(space, style.MarginRight());
   base::Optional<LayoutUnit> left;
   if (!style.Left().IsAuto())
     left = ValueForLength(style.Left(), percentage_physical.width);
@@ -310,6 +306,8 @@ void ComputeAbsoluteHorizontal(const NGConstraintSpace& space,
 
   position->inset.left = *left + *margin_left;
   position->inset.right = *right + *margin_right;
+  position->margins.left = *margin_left;
+  position->margins.right = *margin_right;
   position->size.width = *width;
 }
 
@@ -323,18 +321,16 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
                              const WritingMode container_writing_mode,
                              const TextDirection container_direction,
                              NGAbsolutePhysicalPosition* position) {
-  NGLogicalSize percentage_logical = space.PercentageResolutionSize();
   NGPhysicalSize percentage_physical =
-      percentage_logical.ConvertToPhysical(space.GetWritingMode());
+      space.PercentageResolutionSize().ConvertToPhysical(
+          space.GetWritingMode());
 
   base::Optional<LayoutUnit> margin_top;
   if (!style.MarginTop().IsAuto())
-    margin_top =
-        ValueForLength(style.MarginTop(), percentage_logical.inline_size);
+    margin_top = ResolveMarginPaddingLength(space, style.MarginTop());
   base::Optional<LayoutUnit> margin_bottom;
   if (!style.MarginBottom().IsAuto())
-    margin_bottom =
-        ValueForLength(style.MarginBottom(), percentage_logical.inline_size);
+    margin_bottom = ResolveMarginPaddingLength(space, style.MarginBottom());
   base::Optional<LayoutUnit> top;
   if (!style.Top().IsAuto())
     top = ValueForLength(style.Top(), percentage_physical.height);
@@ -473,6 +469,8 @@ void ComputeAbsoluteVertical(const NGConstraintSpace& space,
 
   position->inset.top = *top + *margin_top;
   position->inset.bottom = *bottom + *margin_bottom;
+  position->margins.top = *margin_top;
+  position->margins.bottom = *margin_bottom;
   position->size.height = *height;
 }
 
