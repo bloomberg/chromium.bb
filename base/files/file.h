@@ -302,19 +302,21 @@ class BASE_EXPORT File {
   bool async() const { return async_; }
 
 #if defined(OS_WIN)
-  // Sets or clears the DeleteFile disposition on the handle. Returns true if
+  // Sets or clears the DeleteFile disposition on the file. Returns true if
   // the disposition was set or cleared, as indicated by |delete_on_close|.
   //
-  // Microsoft Windows deletes a file only when the last handle to the
-  // underlying kernel object is closed when the DeleteFile disposition has been
-  // set by any handle holder. This disposition is be set by:
+  // Microsoft Windows deletes a file only when the DeleteFile disposition is
+  // set on a file when the last handle to the last underlying kernel File
+  // object is closed. This disposition is be set by:
   // - Calling the Win32 DeleteFile function with the path to a file.
-  // - Opening/creating a file with FLAG_DELETE_ON_CLOSE.
+  // - Opening/creating a file with FLAG_DELETE_ON_CLOSE and then closing all
+  //   handles to that File object.
   // - Opening/creating a file with FLAG_CAN_DELETE_ON_CLOSE and subsequently
   //   calling DeleteOnClose(true).
   //
   // In all cases, all pre-existing handles to the file must have been opened
-  // with FLAG_SHARE_DELETE.
+  // with FLAG_SHARE_DELETE. Once the disposition has been set by any of the
+  // above means, no new File objects can be created for the file.
   //
   // So:
   // - Use FLAG_SHARE_DELETE when creating/opening a file to allow another
@@ -323,6 +325,9 @@ class BASE_EXPORT File {
   //   using this permission doesn't provide any protections.)
   // - Use FLAG_DELETE_ON_CLOSE for any file that is to be deleted after use.
   //   The OS will ensure it is deleted even in the face of process termination.
+  //   Note that it's possible for deletion to be cancelled via another File
+  //   object referencing the same file using DeleteOnClose(false) to clear the
+  //   DeleteFile disposition after the original File is closed.
   // - Use FLAG_CAN_DELETE_ON_CLOSE in conjunction with DeleteOnClose() to alter
   //   the DeleteFile disposition on an open handle. This fine-grained control
   //   allows for marking a file for deletion during processing so that it is
