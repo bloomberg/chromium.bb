@@ -1841,7 +1841,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     """Construct a GerritPatch object from Gerrit query results.
 
     Gerrit query JSON fields are documented at:
-    http://gerrit-documentation.googlecode.com/svn/Documentation/2.2.1/json.html
+    https://gerrit-review.googlesource.com/Documentation/json.html
 
     Args:
       patch_dict: A dictionary containing the parsed JSON gerrit query results.
@@ -1892,7 +1892,7 @@ class GerritPatch(GerritFetchOnlyPatch):
     typically before passing it to the GerritPatch constructor.
 
     Old interface:
-      http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/json.html
+      https://gerrit-review.googlesource.com/Documentation/json.html
 
     New interface:
       https://gerrit-review.googlesource.com/Documentation/rest-api-changes.html#json-entities

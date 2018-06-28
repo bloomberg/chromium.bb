@@ -400,7 +400,7 @@ def QueryChanges(host, param_dict, first_param=None, limit=None, o_params=None,
   Args:
     host: The Gerrit server hostname.
     param_dict: A dictionary of search parameters, as documented here:
-        http://gerrit-documentation.googlecode.com/svn/Documentation/2.6/user-search.html
+        https://gerrit-review.googlesource.com/Documentation/user-search.html
     first_param: A change identifier
     limit: Maximum number of results to return.
     o_params: A list of additional output specifiers, as documented here:
