@@ -114,14 +114,14 @@ TEST(OfflinePageFeatureTest, OfflinePagesLimitlessPrefetching) {
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesInDownloadHomeOpenInCct) {
-  // Disabled by default.
-  EXPECT_FALSE(offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
-
-  // Check if helper method works correctly when the features is enabled.
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeature(
-      kOfflinePagesInDownloadHomeOpenInCctFeature);
+  // Enabled by default.
   EXPECT_TRUE(offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
+
+  // Check if helper method works correctly when the features is disabled.
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndDisableFeature(
+      kOfflinePagesInDownloadHomeOpenInCctFeature);
+  EXPECT_FALSE(offline_pages::ShouldOfflinePagesInDownloadHomeOpenInCct());
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesDescriptiveFailStatus) {

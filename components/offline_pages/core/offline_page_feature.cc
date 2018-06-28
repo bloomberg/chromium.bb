@@ -68,7 +68,7 @@ const base::Feature kOfflinePagesDescriptivePendingStatusFeature{
     "OfflinePagesDescriptivePendingStatus", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesInDownloadHomeOpenInCctFeature{
-    "OfflinePagesInDownloadHomeOpenInCct", base::FEATURE_DISABLED_BY_DEFAULT};
+    "OfflinePagesInDownloadHomeOpenInCct", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kOfflinePagesCTSuppressNotificationsFeature{
     "OfflinePagesCTSuppressNotifications", base::FEATURE_DISABLED_BY_DEFAULT};
