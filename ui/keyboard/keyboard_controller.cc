@@ -182,6 +182,7 @@ void KeyboardController::EnableKeyboard(std::unique_ptr<KeyboardUI> ui,
     DisableKeyboard();
 
   ui_ = std::move(ui);
+  DCHECK(ui_);
 
   layout_delegate_ = delegate;
   show_on_content_update_ = false;
