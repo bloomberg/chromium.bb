@@ -77,8 +77,6 @@ static_library("test_support") {
     "fake_host_status_provider.h",
     "fake_host_verifier.cc",
     "fake_host_verifier.h",
-    "fake_multidevice_setup.cc",
-    "fake_multidevice_setup.h",
     "fake_setup_flow_completion_recorder.cc",
     "fake_setup_flow_completion_recorder.h",
   ]
@@ -113,6 +111,7 @@ source_set("unit_tests") {
     "//base",
     "//base/test:test_support",
     "//chromeos/services/device_sync/public/cpp:test_support",
+    "//chromeos/services/multidevice_setup/public/cpp:test_support",
     "//chromeos/services/multidevice_setup/public/mojom",
     "//chromeos/services/secure_channel/public/cpp/client:test_support",
     "//components/cryptauth:test_support",

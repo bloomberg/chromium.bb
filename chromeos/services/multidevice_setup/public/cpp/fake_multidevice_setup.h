@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_FAKE_MULTIDEVICE_SETUP_H_
-#define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_FAKE_MULTIDEVICE_SETUP_H_
+#ifndef CHROMEOS_SERVICES_MULTIDEVICE_SETUP_PUBLIC_CPP_FAKE_MULTIDEVICE_SETUP_H_
+#define CHROMEOS_SERVICES_MULTIDEVICE_SETUP_PUBLIC_CPP_FAKE_MULTIDEVICE_SETUP_H_
 
 #include <utility>
 #include <vector>
 
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace chromeos {
 
@@ -19,6 +20,9 @@ class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
  public:
   FakeMultiDeviceSetup();
   ~FakeMultiDeviceSetup() override;
+
+  void BindRequest(mojom::MultiDeviceSetupRequest request);
+  void BindHandle(mojo::ScopedMessagePipeHandle handle);
 
   mojom::AccountStatusChangeDelegatePtr& delegate() { return delegate_; }
 
@@ -42,6 +46,8 @@ class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
       std::pair<mojom::EventTypeForDebugging, TriggerEventForDebuggingCallback>>
       triggered_debug_events_;
 
+  mojo::BindingSet<mojom::MultiDeviceSetup> bindings_;
+
   DISALLOW_COPY_AND_ASSIGN(FakeMultiDeviceSetup);
 };
 
@@ -49,4 +55,4 @@ class FakeMultiDeviceSetup : public mojom::MultiDeviceSetup {
 
 }  // namespace chromeos
 
-#endif  // CHROMEOS_SERVICES_MULTIDEVICE_SETUP_FAKE_MULTIDEVICE_SETUP_H_
+#endif  // CHROMEOS_SERVICES_MULTIDEVICE_SETUP_PUBLIC_CPP_FAKE_MULTIDEVICE_SETUP_H_
