@@ -41,7 +41,8 @@ using extensions::AutomationEventRouter;
 namespace {
 
 // Returns default browser context for sending events in case it was not
-// provided.
+// provided. This works around a crash in profile creation during OOBE when
+// accessibility is enabled. https://crbug.com/738003
 BrowserContext* GetDefaultEventContext() {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   if (!profile_manager)
