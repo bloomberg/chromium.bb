@@ -270,7 +270,8 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
                                          const AutocompleteMatch& match) {
   is_old_style_answer_ = !!match.answer;
   is_rich_suggestion_ =
-      (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() && !!match.answer) ||
+      (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
+       (!!match.answer || match.type == AutocompleteMatchType::CALCULATOR)) ||
       (OmniboxFieldTrial::IsRichEntitySuggestionsEnabled() &&
        !match.image_url.empty());
   is_search_type_ = AutocompleteMatch::IsSearchType(match.type);
@@ -290,7 +291,14 @@ void OmniboxMatchCellView::OnMatchUpdate(const OmniboxResultView* result_view,
     separator_view_->SetSize(separator_view_->CalculatePreferredSize());
   }
 
-  if (!is_rich_suggestion_) {
+  if (OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
+      match.type == AutocompleteMatchType::CALCULATOR) {
+    image_view_->SetImage(
+        ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(
+            IDR_OMNIBOX_CALCULATOR_ROUND));
+    image_view_->SetImageSize(
+        gfx::Size(kNewAnswerImageSize, kNewAnswerImageSize));
+  } else if (!is_rich_suggestion_) {
     // An entry with |is_old_style_answer_| may use the image_view_. But it's
     // set when the image arrives (later).
     image_view_->SetImage(gfx::ImageSkia());

@@ -40,6 +40,7 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/base/device_form_factor.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(OS_IOS)
@@ -182,8 +183,13 @@ bool IsTrivialAutocompletion(const AutocompleteMatch& match) {
 
 // Whether this autocomplete match type supports custom descriptions.
 bool AutocompleteMatchHasCustomDescription(const AutocompleteMatch& match) {
+  if (ui::GetDeviceFormFactor() == ui::DEVICE_FORM_FACTOR_DESKTOP &&
+      OmniboxFieldTrial::IsNewAnswerLayoutEnabled() &&
+      match.type == AutocompleteMatchType::CALCULATOR) {
+    return true;
+  }
   return match.type == AutocompleteMatchType::SEARCH_SUGGEST_ENTITY ||
-      match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
+         match.type == AutocompleteMatchType::SEARCH_SUGGEST_PROFILE;
 }
 
 }  // namespace
