@@ -14,6 +14,8 @@ cr.define('safe_browsing', function() {
     cr.sendWithPromise('getExperiments', []).then((experiments) =>
         addExperiments(experiments));
     cr.sendWithPromise('getPrefs', []).then((prefs) => addPrefs(prefs));
+    cr.sendWithPromise('getSavedPasswords', []).then((passwords) =>
+        addSavedPasswords(passwords));
     cr.sendWithPromise('getDatabaseManagerInfo', []).then(
       function(databaseState) {
         var fullHashCacheState = databaseState.splice(-1,1);
@@ -58,49 +60,66 @@ cr.define('safe_browsing', function() {
     for (var i = 0; i < resLength; i += 2) {
       experimentsListFormatted += "<div><b>" + result[i + 1] +
           "</b>: " + result[i] + "</div>";
-      }
-      $('experiments-list').innerHTML = experimentsListFormatted;
+    }
+    $('experiments-list').innerHTML = experimentsListFormatted;
   }
 
   function addPrefs(result) {
-      var resLength = result.length;
-      var preferencesListFormatted = "";
+    var resLength = result.length;
+    var preferencesListFormatted = "";
 
-      for (var i = 0; i < resLength; i += 2) {
-        preferencesListFormatted += "<div><b>" + result[i + 1] + "</b>: " +
-            result[i] + "</div>";
+    for (var i = 0; i < resLength; i += 2) {
+      preferencesListFormatted += "<div><b>" + result[i + 1] + "</b>: " +
+          result[i] + "</div>";
+    }
+    $('preferences-list').innerHTML = preferencesListFormatted;
+  }
+
+  function addSavedPasswords(result) {
+    var resLength = result.length;
+    var savedPasswordFormatted = "";
+
+    for (var i = 0; i < resLength; i += 2) {
+      savedPasswordFormatted += "<div>" + result[i];
+      if (result[i+1]) {
+        savedPasswordFormatted += " (GAIA password)";
+      } else {
+        savedPasswordFormatted += " (Enterprise password)";
       }
-      $('preferences-list').innerHTML = preferencesListFormatted;
+      savedPasswordFormatted += "</div>";
+    }
+
+    $('saved-passwords').innerHTML = savedPasswordFormatted;
   }
 
   function addDatabaseManagerInfo(result) {
-      var resLength = result.length;
-      var preferencesListFormatted = "";
+    var resLength = result.length;
+    var preferencesListFormatted = "";
 
-      for (var i = 0; i < resLength; i += 2) {
-        preferencesListFormatted += "<div><b>" + result[i] + "</b>: " +
-            result[i+1] + "</div>";
-      }
-      $('database-info-list').innerHTML = preferencesListFormatted;
+    for (var i = 0; i < resLength; i += 2) {
+      preferencesListFormatted += "<div><b>" + result[i] + "</b>: " +
+          result[i + 1] + "</div>";
+    }
+    $('database-info-list').innerHTML = preferencesListFormatted;
   }
 
   function addFullHashCacheInfo(result) {
-      $('full-hash-cache-info').innerHTML = result;
+    $('full-hash-cache-info').innerHTML = result;
   }
 
   function addSentClientDownloadRequestsInfo(result) {
-      var logDiv = $('sent-client-download-requests-list');
-      appendChildWithInnerText(logDiv, result);
+    var logDiv = $('sent-client-download-requests-list');
+    appendChildWithInnerText(logDiv, result);
   }
 
   function addSentCSBRRsInfo(result) {
-      var logDiv = $('sent-csbrrs-list');
-      appendChildWithInnerText(logDiv, result);
+    var logDiv = $('sent-csbrrs-list');
+    appendChildWithInnerText(logDiv, result);
   }
 
   function addPGEvent(result) {
     var logDiv = $('pg-event-log');
-    var eventFormatted = "[" + (new Date(result['time'])).toLocaleString() +
+    var eventFormatted = "[" + (new Date(result["time"])).toLocaleString() +
         "] " + result['message'];
     appendChildWithInnerText(logDiv, eventFormatted);
   }

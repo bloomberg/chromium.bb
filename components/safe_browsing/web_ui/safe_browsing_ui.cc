@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "components/grit/components_resources.h"
 #include "components/grit/components_scaled_resources.h"
+#include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/features.h"
 #include "components/safe_browsing/web_ui/constants.h"
@@ -518,6 +519,23 @@ void SafeBrowsingUIHandler::GetPrefs(const base::ListValue* args) {
                                 user_prefs::UserPrefs::Get(browser_context_)));
 }
 
+void SafeBrowsingUIHandler::GetSavedPasswords(const base::ListValue* args) {
+  password_manager::HashPasswordManager hash_manager(
+      user_prefs::UserPrefs::Get(browser_context_));
+
+  base::ListValue saved_passwords;
+  for (const password_manager::PasswordHashData& hash_data :
+       hash_manager.RetrieveAllPasswordHashes()) {
+    saved_passwords.AppendString(hash_data.username);
+    saved_passwords.AppendBoolean(hash_data.is_gaia_password);
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), saved_passwords);
+}
+
 void SafeBrowsingUIHandler::GetDatabaseManagerInfo(
     const base::ListValue* args) {
   base::ListValue database_manager_info;
@@ -630,6 +648,10 @@ void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getPrefs", base::BindRepeating(&SafeBrowsingUIHandler::GetPrefs,
                                       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getSavedPasswords",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetSavedPasswords,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getDatabaseManagerInfo",
       base::BindRepeating(&SafeBrowsingUIHandler::GetDatabaseManagerInfo,
