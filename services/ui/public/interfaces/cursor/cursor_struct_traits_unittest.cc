@@ -114,4 +114,16 @@ TEST_F(CursorStructTraitsTest, TestEmptyCursor) {
   EXPECT_TRUE(output.cursor_frames().front().empty());
 }
 
+// For custom cursors, the frame image vector must be non-empty.
+TEST_F(CursorStructTraitsTest, TestMissingFrames) {
+  const base::TimeDelta kFrameDelay = base::TimeDelta::FromMilliseconds(15);
+  const gfx::Point kHotspot = gfx::Point(5, 2);
+  const float kScale = 2.0f;
+
+  ui::CursorData input(kHotspot, {}, kScale, kFrameDelay);
+
+  ui::CursorData output;
+  EXPECT_FALSE(EchoCursorData(input, &output));
+}
+
 }  // namespace ui
