@@ -1418,6 +1418,7 @@ test("content_unittests") {
     "../browser/memory/test_memory_monitor.h",
     "../browser/net/network_quality_observer_impl_unittest.cc",
     "../browser/net/quota_policy_cookie_store_unittest.cc",
+    "../browser/network_service_client_unittest.cc",
     "../browser/notification_service_impl_unittest.cc",
     "../browser/notifications/blink_notification_service_impl_unittest.cc",
     "../browser/notifications/notification_database_data_unittest.cc",

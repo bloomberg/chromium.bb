@@ -125,6 +125,15 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
     DISALLOW_COPY_AND_ASSIGN(UnownedPointer);
   };
 
+  static void OnFilesForUploadOpened(base::WeakPtr<URLLoader> self,
+                                     const ResourceRequest& request,
+                                     int error_code,
+                                     std::vector<base::File> opened_files);
+  void OpenFilesForUpload(const ResourceRequest& request);
+  void SetUpUpload(const ResourceRequest& request,
+                   int error_code,
+                   const std::vector<base::File> opened_files);
+  void ScheduleStart();
   void ReadMore();
   void DidRead(int num_bytes, bool completed_synchronously);
   void NotifyCompleted(int error_code);
@@ -167,8 +176,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   int resource_type_;
   bool is_load_timing_enabled_;
 
-  // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to store
-  // a raw pointer to mojom::URLLoaderFactoryParams.
+  // URLLoaderFactory is guaranteed to outlive URLLoader, so it is safe to
+  // store a raw pointer to mojom::URLLoaderFactoryParams.
   const mojom::URLLoaderFactoryParams* const factory_params_;
 
   uint32_t render_frame_id_;

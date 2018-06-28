@@ -274,6 +274,8 @@ source_set("test_support") {
     "test/test_data_pipe_getter.cc",
     "test/test_data_pipe_getter.h",
     "test/test_network_context.h",
+    "test/test_network_service_client.cc",
+    "test/test_network_service_client.h",
     "test/test_shared_url_loader_factory.cc",
     "test/test_shared_url_loader_factory.h",
     "test/test_url_loader_client.cc",

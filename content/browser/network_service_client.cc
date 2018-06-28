@@ -5,6 +5,7 @@
 #include "content/browser/network_service_client.h"
 
 #include "base/optional.h"
+#include "base/task_scheduler/post_task.h"
 #include "content/browser/devtools/devtools_url_loader_interceptor.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/ssl/ssl_client_auth_handler.h"
@@ -14,12 +15,14 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/child_process_security_policy.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/resource_type.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "net/ssl/client_cert_store.h"
+#include "services/network/public/mojom/network_context.mojom.h"
 
 namespace content {
 namespace {
@@ -269,6 +272,38 @@ class LoginHandlerDelegate {
   scoped_refptr<LoginDelegate> login_delegate_;
 };
 
+void HandleFileUploadRequest(
+    uint32_t process_id,
+    bool async,
+    const std::vector<base::FilePath>& file_paths,
+    NetworkServiceClient::OnFileUploadRequestedCallback callback,
+    scoped_refptr<base::TaskRunner> task_runner) {
+  std::vector<base::File> files;
+  uint32_t file_flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
+                        (async ? base::File::FLAG_ASYNC : 0);
+  ChildProcessSecurityPolicy* cpsp = ChildProcessSecurityPolicy::GetInstance();
+  for (const auto& file_path : file_paths) {
+    if (process_id != network::mojom::kBrowserProcessId &&
+        !cpsp->CanReadFile(process_id, file_path)) {
+      task_runner->PostTask(
+          FROM_HERE, base::BindOnce(std::move(callback), net::ERR_ACCESS_DENIED,
+                                    std::vector<base::File>()));
+      return;
+    }
+    files.emplace_back(file_path, file_flags);
+    if (!files.back().IsValid()) {
+      task_runner->PostTask(
+          FROM_HERE,
+          base::BindOnce(std::move(callback),
+                         net::FileErrorToNetError(files.back().error_details()),
+                         std::vector<base::File>()));
+      return;
+    }
+  }
+  task_runner->PostTask(FROM_HERE, base::BindOnce(std::move(callback), net::OK,
+                                                  std::move(files)));
+}
+
 }  // namespace
 
 NetworkServiceClient::NetworkServiceClient(
@@ -362,7 +397,11 @@ void NetworkServiceClient::OnFileUploadRequested(
     bool async,
     const std::vector<base::FilePath>& file_paths,
     OnFileUploadRequestedCallback callback) {
-  // TODO(crbug.com/845612): implement this
+  base::PostTaskWithTraits(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+      base::BindOnce(&HandleFileUploadRequest, process_id, async, file_paths,
+                     std::move(callback),
+                     base::SequencedTaskRunnerHandle::Get()));
 }
 
 void NetworkServiceClient::OnCookiesRead(int process_id,
