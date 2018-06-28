@@ -117,7 +117,7 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     protected void initializeUiState() {
         mUseGenericSheetUx = mActivity.supportsContextualSuggestionsBottomSheet()
-                && FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(
+                && FeatureUtilities.areContextualSuggestionsEnabled(
                            DeviceFormFactor.isNonMultiDisplayContextOnTablet(mActivity));
     }
 

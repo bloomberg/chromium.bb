@@ -45,6 +45,14 @@
             android:layout_height="match_parent" />
 
         <ViewStub
+            android:id="@+id/experimental_button_stub"
+            android:inflatedId="@+id/experimental_button"
+            android:layout="@layout/experimental_toolbar_button"
+            style="@style/ToolbarButton"
+            android:layout_gravity="top"
+            android:visibility="gone" />
+
+        <ViewStub
             android:id="@+id/incognito_button_stub"
             android:inflatedId="@+id/incognito_button"
             android:layout="@layout/toolbar_phone_incognito_button"

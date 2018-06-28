@@ -190,7 +190,7 @@ public class MainPreferences extends PreferenceFragment
         }
 
         boolean isTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(getActivity());
-        if (FeatureUtilities.isContextualSuggestionsBottomSheetEnabled(isTablet)
+        if (FeatureUtilities.areContextualSuggestionsEnabled(isTablet)
                 && EnabledStateMonitor.shouldShowSettings()) {
             Preference contextualSuggesitons = addPreferenceIfAbsent(PREF_CONTEXTUAL_SUGGESTIONS);
             setOnOffSummary(contextualSuggesitons, EnabledStateMonitor.getEnabledState());

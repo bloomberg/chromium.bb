@@ -467,6 +467,11 @@ class FetchHelper {
 
     @VisibleForTesting
     boolean requireCurrentPageFromSRP() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
+            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, REQUIRE_CURRENT_PAGE_FROM_SRP,
+                    false);
+        }
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
                 REQUIRE_CURRENT_PAGE_FROM_SRP, false);
@@ -474,6 +479,11 @@ class FetchHelper {
 
     @VisibleForTesting
     boolean requireNavChainFromSRP() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
+            return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, REQUIRE_NAV_CHAIN_FROM_SRP,
+                    false);
+        }
         return ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                 ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET, REQUIRE_NAV_CHAIN_FROM_SRP,
                 false);
@@ -542,6 +552,11 @@ class FetchHelper {
 
     @VisibleForTesting
     static long getMinimumFetchDelayMillis() {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
+            return TimeUnit.SECONDS.toMillis(ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
+                    ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, FETCH_TRIGGERING_DELAY_SECONDS,
+                    MINIMUM_FETCH_DELAY_SECONDS));
+        }
         return TimeUnit.SECONDS.toMillis(ChromeFeatureList.getFieldTrialParamByFeatureAsInt(
                 ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET,
                 FETCH_TRIGGERING_DELAY_SECONDS, MINIMUM_FETCH_DELAY_SECONDS));

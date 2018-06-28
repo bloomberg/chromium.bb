@@ -20,6 +20,7 @@ import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.toolbar.ToolbarManager;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.StateChangeReason;
@@ -55,6 +56,7 @@ class ContextualSuggestionsMediator
     private final ContextualSuggestionsModel mModel;
     private final ChromeFullscreenManager mFullscreenManager;
     private final View mIphParentView;
+    private final ToolbarManager mToolbarManager;
     private final EnabledStateMonitor mEnabledStateMonitor;
     private final GestureStateListener mGestureStateListener;
     private final Handler mHandler = new Handler();
@@ -88,16 +90,18 @@ class ContextualSuggestionsMediator
      * @param coordinator The {@link ContextualSuggestionsCoordinator} for the component.
      * @param model The {@link ContextualSuggestionsModel} for the component.
      * @param iphParentView The parent {@link View} used to anchor an in-product help bubble.
+     * @param toolbarManager The {@link ToolbarManager} for the containing activity.
      */
     ContextualSuggestionsMediator(Profile profile, TabModelSelector tabModelSelector,
             ChromeFullscreenManager fullscreenManager, ContextualSuggestionsCoordinator coordinator,
-            ContextualSuggestionsModel model, View iphParentView) {
+            ContextualSuggestionsModel model, View iphParentView, ToolbarManager toolbarManager) {
         mProfile = profile;
         mTabModelSelector = tabModelSelector;
         mCoordinator = coordinator;
         mModel = model;
         mFullscreenManager = fullscreenManager;
         mIphParentView = iphParentView;
+        mToolbarManager = toolbarManager;
 
         if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI)) {
             mModel.setSlimPeekEnabled(true);
@@ -273,6 +277,15 @@ class ContextualSuggestionsMediator
 
             prepareModel(clusters, suggestionsResult.getPeekText());
 
+            if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
+                mToolbarManager.enableExperimentalButton(view -> {
+                    maybeShowContentInSheet();
+                    mCoordinator.expandBottomSheet();
+                }, R.drawable.btn_star_filled, R.string.contextual_suggestions_button_description);
+
+                return;
+            }
+
             // If the controls are already off-screen, show the suggestions immediately so they
             // are available on reverse scroll.
             maybeShowContentInSheet();
@@ -327,6 +340,10 @@ class ContextualSuggestionsMediator
             mSheetObserver = null;
         }
         mCoordinator.removeSuggestions();
+
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)) {
+            mToolbarManager.disableExperimentalButton();
+        }
 
         mDidSuggestionsShowForTab = false;
         mHasRecordedPeekEventForTab = false;
@@ -392,9 +409,12 @@ class ContextualSuggestionsMediator
         // When the controls scroll completely off-screen, the suggestions are "shown" but
         // remain hidden since their offset from the bottom of the screen is determined by
         // the top controls.
-        if (mDidSuggestionsShowForTab || !mModel.hasSuggestions() || mSuggestionsSource == null
-                || !areBrowserControlsHidden() || !mHasReachedTargetScrollPercentage
-                || !mHasPeekDelayPassed || !hasRemainingPeek()) {
+        // TODO(twellington): Break apart this method based on whether the button is enabled.
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
+                && (mDidSuggestionsShowForTab || !mModel.hasSuggestions()
+                           || mSuggestionsSource == null || !areBrowserControlsHidden()
+                           || !mHasReachedTargetScrollPercentage || !mHasPeekDelayPassed
+                           || !hasRemainingPeek())) {
             return;
         }
 

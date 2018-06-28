@@ -40,10 +40,12 @@ using ntp_snippets::RemoteSuggestionsDatabase;
 
 namespace {
 
-bool IsContextualContentSuggestionsEnabled() {
+bool AreContextualContentSuggestionsEnabled() {
 #if defined(OS_ANDROID)
   return base::FeatureList::IsEnabled(
-      contextual_suggestions::kContextualSuggestionsBottomSheet);
+             contextual_suggestions::kContextualSuggestionsBottomSheet) ||
+         base::FeatureList::IsEnabled(
+             contextual_suggestions::kContextualSuggestionsButton);
 #else
   return false;
 #endif  // OS_ANDROID
@@ -87,7 +89,7 @@ ContextualContentSuggestionsServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
   DCHECK(!profile->IsOffTheRecord());
-  if (!IsContextualContentSuggestionsEnabled()) {
+  if (!AreContextualContentSuggestionsEnabled()) {
     return nullptr;
   }
 
