@@ -4,10 +4,12 @@
 
 #import "ios/chrome/browser/ui/location_bar/location_bar_steady_view.h"
 
+#include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/location_bar/extended_touch_target_button.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -53,6 +55,9 @@ const CGFloat kFontSize = 17.0f;
 @property(nonatomic, strong)
     NSArray<NSLayoutConstraint*>* showLocationImageConstraints;
 
+// Elements to surface in accessibility.
+@property(nonatomic, strong) NSMutableArray* accessibleElements;
+
 @end
 
 #pragma mark - LocationBarSteadyViewColorScheme
@@ -89,6 +94,7 @@ const CGFloat kFontSize = 17.0f;
 #pragma mark - LocationBarSteadyView
 
 @implementation LocationBarSteadyView
+@synthesize locationButton = _locationButton;
 @synthesize locationLabel = _locationLabel;
 @synthesize locationIconImageView = _locationIconImageView;
 @synthesize trailingButton = _trailingButton;
@@ -97,6 +103,9 @@ const CGFloat kFontSize = 17.0f;
 @synthesize hideLocationImageConstraints = _hideLocationImageConstraints;
 @synthesize showLocationImageConstraints = _showLocationImageConstraints;
 @synthesize locationContainerView = _locationContainerView;
+@synthesize securityLevelAccessibilityString =
+    _securityLevelAccessibilityString;
+@synthesize accessibleElements = _accessibleElements;
 
 - (instancetype)init {
   self = [super initWithFrame:CGRectZero];
@@ -134,9 +143,6 @@ const CGFloat kFontSize = 17.0f;
     [_locationContainerView addSubview:_locationIconImageView];
     [_locationContainerView addSubview:_locationLabel];
 
-    [self addSubview:_trailingButton];
-    [self addSubview:_locationContainerView];
-
     _showLocationImageConstraints = @[
       [_locationContainerView.leadingAnchor
           constraintEqualToAnchor:_locationIconImageView.leadingAnchor],
@@ -158,11 +164,20 @@ const CGFloat kFontSize = 17.0f;
 
     [NSLayoutConstraint activateConstraints:_showLocationImageConstraints];
 
+    _locationButton = [[UIButton alloc] init];
+    _locationButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [_locationButton addSubview:_trailingButton];
+    [_locationButton addSubview:_locationContainerView];
+
+    [self addSubview:_locationButton];
+
     ApplyVisualConstraints(
         @[ @"V:|[label]|", @"V:|[container]|" ],
         @{@"label" : _locationLabel, @"container" : _locationContainerView});
 
-    // Make the label graviatate towards the center of the view.
+    AddSameConstraints(self, _locationButton);
+
+    // Make the label gravitate towards the center of the view.
     NSLayoutConstraint* centerX = [_locationContainerView.centerXAnchor
         constraintEqualToAnchor:self.centerXAnchor];
     centerX.priority = UILayoutPriorityDefaultHigh;
@@ -190,7 +205,7 @@ const CGFloat kFontSize = 17.0f;
 
     // Setup and activate the show button constraints.
     _showButtonConstraints = @[
-      // TODO(crbug.com/821804) Replace the temorary size when the icon is
+      // TODO(crbug.com/821804) Replace the temporary size when the icon is
       // available.
       [_trailingButton.widthAnchor constraintEqualToConstant:kButtonSize],
       [_trailingButton.heightAnchor constraintEqualToConstant:kButtonSize],
@@ -200,6 +215,27 @@ const CGFloat kFontSize = 17.0f;
     ];
     [NSLayoutConstraint activateConstraints:_showButtonConstraints];
   }
+
+  // Setup accessibility.
+  _trailingButton.isAccessibilityElement = YES;
+  _trailingButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_SHARE);
+  _locationButton.isAccessibilityElement = YES;
+  _locationButton.accessibilityLabel =
+      l10n_util::GetNSString(IDS_ACCNAME_LOCATION);
+
+  _accessibleElements = [[NSMutableArray alloc] init];
+  [_accessibleElements addObject:_locationButton];
+  [_accessibleElements addObject:_trailingButton];
+
+  // These two elements must remain accessible for egtests, but will not be
+  // included in accessibility navigation as they are not added to the
+  // accessibleElements array.
+  _locationIconImageView.isAccessibilityElement = YES;
+  _locationLabel.isAccessibilityElement = YES;
+
+  [self updateAccessibility];
+
   return self;
 }
 
@@ -234,9 +270,50 @@ const CGFloat kFontSize = 17.0f;
   if (hidden) {
     [NSLayoutConstraint deactivateConstraints:self.showButtonConstraints];
     [NSLayoutConstraint activateConstraints:self.hideButtonConstraints];
+    [self.accessibleElements removeObject:self.trailingButton];
   } else {
     [NSLayoutConstraint deactivateConstraints:self.hideButtonConstraints];
     [NSLayoutConstraint activateConstraints:self.showButtonConstraints];
+    [self.accessibleElements addObject:self.trailingButton];
+  }
+}
+
+- (void)setSecurityLevelAccessibilityString:(NSString*)string {
+  if ([_securityLevelAccessibilityString isEqualToString:string]) {
+    return;
+  }
+  _securityLevelAccessibilityString = [string copy];
+  [self updateAccessibility];
+}
+
+#pragma mark - UIAccessibilityContainer]
+
+- (NSArray*)accessibilityElements {
+  return self.accessibleElements;
+}
+
+- (NSInteger)accessibilityElementCount {
+  return self.accessibleElements.count;
+}
+
+- (id)accessibilityElementAtIndex:(NSInteger)index {
+  return self.accessibleElements[index];
+}
+
+- (NSInteger)indexOfAccessibilityElement:(id)element {
+  return [self.accessibleElements indexOfObject:element];
+}
+
+#pragma mark - private
+
+- (void)updateAccessibility {
+  if (self.securityLevelAccessibilityString.length > 0) {
+    self.locationButton.accessibilityValue =
+        [NSString stringWithFormat:@"%@ %@", self.locationLabel.text,
+                                   self.securityLevelAccessibilityString];
+  } else {
+    self.locationButton.accessibilityValue =
+        [NSString stringWithFormat:@"%@", self.locationLabel.text];
   }
 }
 

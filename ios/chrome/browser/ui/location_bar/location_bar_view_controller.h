@@ -52,8 +52,10 @@
 // - non-editing state, with location icon and text.
 - (void)switchToEditing:(BOOL)editing;
 
-// Updates the location icon to become |icon|.
-- (void)updateLocationIcon:(UIImage*)icon;
+// Updates the location icon to become |icon| and use the new |statusText| for
+// a11y labeling.
+- (void)updateLocationIcon:(UIImage*)icon
+        securityStatusText:(NSString*)statusText;
 // Updates the location text in the non-editing mode.
 - (void)updateLocationText:(NSString*)text;
 // Updates the location view to show a fake placeholder in the steady location

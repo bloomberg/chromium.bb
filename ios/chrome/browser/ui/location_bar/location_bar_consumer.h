@@ -10,8 +10,9 @@
 
 // Notifies the consumer to update the location text.
 - (void)updateLocationText:(NSString*)string;
-// Notifies the consumer to update the location icon.
-- (void)updateLocationIcon:(UIImage*)icon;
+// Notifies the consumer to update the location icon and security status text.
+- (void)updateLocationIcon:(UIImage*)icon
+        securityStatusText:(NSString*)statusText;
 
 // Notifies consumer to defocus the omnibox (for example on tab change).
 - (void)defocusOmnibox;
