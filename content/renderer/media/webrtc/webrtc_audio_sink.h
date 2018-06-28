@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
 #include <vector>
 
 #include "base/macros.h"
@@ -166,11 +168,7 @@ class CONTENT_EXPORT WebRtcAudioSink : public MediaStreamAudioSink {
 
   // In debug builds, check that WebRtcAudioSink's public methods are all being
   // called on the main render thread.
-  base::ThreadChecker thread_checker_;
-
-  // Used to DCHECK that OnSetFormat() and OnData() are called on the same
-  // thread.
-  base::ThreadChecker audio_thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(WebRtcAudioSink);
 };

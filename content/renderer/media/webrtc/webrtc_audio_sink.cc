@@ -27,26 +27,26 @@ WebRtcAudioSink::WebRtcAudioSink(
 }
 
 WebRtcAudioSink::~WebRtcAudioSink() {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DVLOG(1) << "WebRtcAudioSink::~WebRtcAudioSink()";
 }
 
 void WebRtcAudioSink::SetAudioProcessor(
     scoped_refptr<MediaStreamAudioProcessor> processor) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(processor.get());
   adapter_->set_processor(std::move(processor));
 }
 
 void WebRtcAudioSink::SetLevel(
     scoped_refptr<MediaStreamAudioLevelCalculator::Level> level) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(level.get());
   adapter_->set_level(std::move(level));
 }
 
 void WebRtcAudioSink::OnEnabledChanged(bool enabled) {
-  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   adapter_->signaling_task_runner()->PostTask(
       FROM_HERE,
       base::BindOnce(base::IgnoreResult(&WebRtcAudioSink::Adapter::set_enabled),
@@ -55,17 +55,14 @@ void WebRtcAudioSink::OnEnabledChanged(bool enabled) {
 
 void WebRtcAudioSink::OnData(const media::AudioBus& audio_bus,
                              base::TimeTicks estimated_capture_time) {
-  DCHECK(audio_thread_checker_.CalledOnValidThread());
+  // No thread check: OnData might be called on different threads (but not
+  // concurrently).
   // The following will result in zero, one, or multiple synchronous calls to
   // DeliverRebufferedAudio().
   fifo_.Push(audio_bus);
 }
 
 void WebRtcAudioSink::OnSetFormat(const media::AudioParameters& params) {
-  // On a format change, the thread delivering audio might have also changed.
-  audio_thread_checker_.DetachFromThread();
-  DCHECK(audio_thread_checker_.CalledOnValidThread());
-
   DCHECK(params.IsValid());
   params_ = params;
   // Make sure that our params always reflect a buffer size of 10ms.
@@ -78,7 +75,6 @@ void WebRtcAudioSink::OnSetFormat(const media::AudioParameters& params) {
 
 void WebRtcAudioSink::DeliverRebufferedAudio(const media::AudioBus& audio_bus,
                                              int frame_delay) {
-  DCHECK(audio_thread_checker_.CalledOnValidThread());
   DCHECK(params_.IsValid());
 
   // TODO(miu): Why doesn't a WebRTC sink care about reference time passed to
