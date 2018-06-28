@@ -420,11 +420,19 @@ void OmniboxMatchCellView::LayoutNewStyleTwoLineSuggestion() {
   }
   image_view->SetBounds(x, y, kRefreshImageBoxSize, child_area.height());
   const int text_width = child_area.width() - kTextIndent;
-  const int text_height = content_view_->GetLineHeight();
-  content_view_->SetBounds(x + kTextIndent, y, text_width, text_height);
-  description_view_->SetBounds(
-      x + kTextIndent, y + text_height, text_width,
-      description_view_->GetHeightForWidth(text_width));
+  if (description_view_->text().empty()) {
+    // This vertically centers content in the rare case that no description is
+    // provided.
+    content_view_->SetBounds(x + kTextIndent, y, text_width,
+                             child_area.height());
+    description_view_->SetSize(gfx::Size());
+  } else {
+    const int text_height = content_view_->GetLineHeight();
+    content_view_->SetBounds(x + kTextIndent, y, text_width, text_height);
+    description_view_->SetBounds(
+        x + kTextIndent, y + text_height, text_width,
+        description_view_->GetHeightForWidth(text_width));
+  }
 }
 
 void OmniboxMatchCellView::LayoutSplit(int icon_view_width, int text_indent) {

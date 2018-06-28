@@ -40,6 +40,8 @@ constexpr int kInherit = INT_MIN;
 static constexpr int kVerticalPadding = 4;
 static constexpr int kRefreshVerticalPadding = 3;
 
+static const base::string16 kEmptyString;
+
 struct TextStyle {
   OmniboxPart part;
 
@@ -182,6 +184,12 @@ void OmniboxTextView::OnPaint(gfx::Canvas* canvas) {
 void OmniboxTextView::Dim() {
   render_text_->SetColor(
       result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED));
+}
+
+const base::string16& OmniboxTextView::text() const {
+  if (!render_text_)
+    return kEmptyString;
+  return render_text_->text();
 }
 
 void OmniboxTextView::SetText(const base::string16& text) {
