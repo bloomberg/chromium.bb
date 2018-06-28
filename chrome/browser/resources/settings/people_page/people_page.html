@@ -19,9 +19,12 @@
 <link rel="import" href="sync_page.html">
 <link rel="import" href="profile_info_browser_proxy.html">
 <link rel="import" href="sync_browser_proxy.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
 <link rel="import" href="../settings_page/settings_subpage.html">
+<link rel="import" href="../passwords_and_forms_page/autofill_section.html">
+<link rel="import" href="../passwords_and_forms_page/passwords_section.html">
 <link rel="import" href="../settings_shared_css.html">
 
 <if expr="chromeos">
@@ -75,6 +78,11 @@
 
       #sync-status:not([actionable]) .subpage-arrow {
         display: none;
+      }
+
+      cr-link-row {
+        --cr-link-row-icon-width: 40px;
+        border-top: var(--settings-separator-line);
       }
 
       .settings-box[actionable].sync-error #syncSecondary {
@@ -268,6 +276,20 @@
           </div>
         </template>
 
+        <template is="dom-if" if="[[autofillHomeEnabled]]">
+          <cr-link-row id="passwordManagerButton" start-icon="settings:vpn-key"
+               label="$i18n{passwords}" icon-class="subpage-arrow"
+               on-click="onPasswordsTap_"></cr-link-row>
+          <cr-link-row id="paymentManagerButton"
+               start-icon="settings:credit-card"
+               label="$i18n{creditCards}" icon-class="subpage-arrow"
+               on-click="onAutofillTap_"></cr-link-row>
+          <cr-link-row id="addressesManagerButton"
+               start-icon="settings:location-on"
+               label="$i18n{addresses}" icon-class="subpage-arrow"
+               on-click="onAutofillTap_"></cr-link-row>
+        </template>
+
 <if expr="not chromeos">
         <template is="dom-if" if="[[diceEnabled_]]">
           <div class="settings-box" id="edit-profile" on-click="onProfileTap_"
@@ -337,6 +359,28 @@
           </settings-sync-page>
         </settings-subpage>
       </template>
+
+      <template is="dom-if" route-path="/passwords">
+        <settings-subpage
+            associated-control="[[$$('#passwordManagerButton')]]"
+            page-title="$i18n{passwords}"
+            learn-more-url="$i18n{passwordManagerLearnMoreURL}"
+            search-label="$i18n{searchPasswords}"
+            search-term="{{passwordFilter_}}">
+          <passwords-section id="passwordSection" filter="[[passwordFilter_]]"
+              prefs="{{prefs}}">
+          </passwords-section>
+        </settings-subpage>
+      </template>
+      <template is="dom-if" route-path="/autofill">
+        <settings-subpage
+            associated-control="[[$$('#addressesManagerButton')]]"
+            page-title="$i18n{autofill}">
+          <settings-autofill-section id="autofillSection" prefs="{{prefs}}">
+          </settings-autofill-section>
+        </settings-subpage>
+      </template>
+
 <if expr="chromeos">
       <template is="dom-if" route-path="/lockScreen">
         <settings-subpage

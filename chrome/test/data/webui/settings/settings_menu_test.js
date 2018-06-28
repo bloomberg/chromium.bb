@@ -126,7 +126,6 @@ cr.define('settings_menu', function() {
       assertFalse(settingsMenu.$$('#onStartup').hidden);
       assertFalse(settingsMenu.$$('#advancedButton').hidden);
       assertFalse(settingsMenu.$$('#advancedSubmenu').hidden);
-      assertFalse(settingsMenu.$$('#passwordsAndForms').hidden);
       assertFalse(settingsMenu.$$('#reset').hidden);
       if (!cr.isChromeOS)
         assertFalse(settingsMenu.$$('#defaultBrowser').hidden);

@@ -140,6 +140,7 @@
           <settings-section page-title="$i18n{peoplePageTitle}"
               section="people">
             <settings-people-page prefs="{{prefs}}"
+                autofill-home-enabled="[[autofillHomeEnabled]]"
                 page-visibility="[[pageVisibility]]">
             </settings-people-page>
           </settings-section>
@@ -257,8 +258,9 @@
                 </settings-privacy-page>
               </settings-section>
             </template>
-            <template is="dom-if"
-                if="[[showPage_(pageVisibility.passwordsAndForms)]]" restamp>
+            <template is="dom-if" if="[[shouldShowPasswordsAndForms_(
+                autofillHomeEnabled, pageVisibility)]]"
+                restamp>
               <settings-section
                   page-title="$i18n{passwordsAndAutofillPageTitle}"
                   section="passwordsAndForms">

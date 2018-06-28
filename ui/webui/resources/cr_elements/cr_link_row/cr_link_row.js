@@ -16,9 +16,17 @@ Polymer({
   behaviors: [Polymer.PaperRippleBehavior],
 
   properties: {
+    startIcon: {
+      type: String,
+      value: '',
+    },
+
     iconClass: String,
 
-    label: String,
+    label: {
+      type: String,
+      value: '',
+    },
 
     subLabel: {
       type: String,

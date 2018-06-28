@@ -210,6 +210,10 @@ cr.define('settings', function() {
     /** @type {!SettingsRoutes} */
     const r = {};
 
+    const autofillHomeEnabled =
+        loadTimeData.valueExists('autofillHomeEnabled') &&
+        loadTimeData.getBoolean('autofillHomeEnabled');
+
     // Root pages.
     r.BASIC = new Route('/');
     r.ABOUT = new Route('/help');
@@ -266,6 +270,10 @@ cr.define('settings', function() {
     if (pageVisibility.people !== false) {
       r.PEOPLE = r.BASIC.createSection('/people', 'people');
       r.SYNC = r.PEOPLE.createChild('/syncSetup');
+      if (autofillHomeEnabled) {
+        r.AUTOFILL = r.PEOPLE.createChild('/autofill');
+        r.MANAGE_PASSWORDS = r.PEOPLE.createChild('/passwords');
+      }
       // <if expr="not chromeos">
       r.MANAGE_PROFILE = r.PEOPLE.createChild('/manageProfile');
       // </if>
@@ -360,7 +368,7 @@ cr.define('settings', function() {
       }
       // </if>
 
-      if (pageVisibility.passwordsAndForms !== false) {
+      if (!autofillHomeEnabled && pageVisibility.passwordsAndForms !== false) {
         r.PASSWORDS =
             r.ADVANCED.createSection('/passwordsAndForms', 'passwordsAndForms');
         r.AUTOFILL = r.PASSWORDS.createChild('/autofill');
