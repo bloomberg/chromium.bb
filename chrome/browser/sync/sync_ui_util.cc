@@ -62,13 +62,17 @@ base::string16 GetSyncedStateStatusLabel(ProfileSyncService* service,
                                          const SigninManagerBase& signin,
                                          StatusLabelStyle style,
                                          bool sync_everything) {
-  if (!service || service->IsManaged()) {
+  if (!service || service->HasDisableReason(
+                      syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)) {
     // User is signed in, but sync is disabled.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_DISABLED);
-  } else if (!service->IsSyncRequested()) {
+  }
+  if (service->HasDisableReason(
+          syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
     // User is signed in, but sync has been stopped.
     return l10n_util::GetStringUTF16(IDS_SIGNED_IN_WITH_SYNC_SUPPRESSED);
-  } else if (!service->IsSyncActive()) {
+  }
+  if (!service->IsSyncActive()) {
     // User is not signed in, or sync is still initializing.
     return base::string16();
   }
@@ -198,8 +202,11 @@ MessageType GetStatusInfo(Profile* profile,
   if (!signin.IsAuthenticated())
     return PRE_SYNCED;
 
-  if (!service || service->IsManaged() || service->IsFirstSetupComplete() ||
-      !service->IsSyncRequested()) {
+  if (!service || service->IsFirstSetupComplete() ||
+      service->HasDisableReason(
+          syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY) ||
+      service->HasDisableReason(
+          syncer::SyncService::DISABLE_REASON_USER_CHOICE)) {
     // The order or priority is going to be: 1. Unrecoverable errors.
     // 2. Auth errors. 3. Protocol errors. 4. Passphrase errors.
 
@@ -263,7 +270,8 @@ MessageType GetStatusInfo(Profile* profile,
 
       // Check to see if sync has been disabled via the dasboard and needs to be
       // set up once again.
-      if (!service->IsSyncRequested() &&
+      if (service->HasDisableReason(
+              syncer::SyncService::DISABLE_REASON_USER_CHOICE) &&
           status.sync_protocol_error.error_type == syncer::NOT_MY_BIRTHDAY) {
         if (status_label) {
           status_label->assign(GetSyncedStateStatusLabel(service, signin, style,
