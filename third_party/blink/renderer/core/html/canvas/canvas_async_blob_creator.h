@@ -59,12 +59,12 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                                         const String& mime_type,
                                         V8BlobCallback*,
                                         ToBlobFunctionType function_type,
-                                        double start_time,
+                                        TimeTicks start_time,
                                         ExecutionContext*);
   static CanvasAsyncBlobCreator* Create(scoped_refptr<StaticBitmapImage>,
                                         const ImageEncodeOptions& options,
                                         ToBlobFunctionType function_type,
-                                        double start_time,
+                                        TimeTicks start_time,
                                         ExecutionContext*,
                                         ScriptPromiseResolver*);
 
@@ -90,7 +90,7 @@ class CORE_EXPORT CanvasAsyncBlobCreator
                          const ImageEncodeOptions&,
                          ToBlobFunctionType,
                          V8BlobCallback*,
-                         double,
+                         TimeTicks start_time,
                          ExecutionContext*,
                          ScriptPromiseResolver*);
   static ImageEncodeOptions GetImageEncodeOptionsForMimeType(
@@ -129,8 +129,8 @@ class CORE_EXPORT CanvasAsyncBlobCreator
   sk_sp<SkData> png_16bit_data_helper_;
 
   // Chrome metrics use
-  double start_time_;
-  double schedule_idle_task_start_time_;
+  TimeTicks start_time_;
+  TimeTicks schedule_idle_task_start_time_;
   bool static_bitmap_image_loaded_;
 
   // Used when CanvasAsyncBlobCreator runs on main thread only
