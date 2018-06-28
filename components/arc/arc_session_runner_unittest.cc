@@ -35,6 +35,12 @@ constexpr int kContainerCrashedEarly =
 constexpr int kContainerCrashed =
     static_cast<int>(ArcContainerLifetimeEvent::CONTAINER_CRASHED);
 
+ArcSession::UpgradeParams DefaultUpgradeParams() {
+  ArcSession::UpgradeParams params;
+  params.locale = "en-US";
+  return params;
+}
+
 class DoNothingObserver : public ArcSessionRunner::Observer {
  public:
   void OnSessionStopped(ArcStopReason reason, bool restarting) override {
@@ -170,9 +176,7 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
 
@@ -188,9 +192,7 @@ TEST_F(ArcSessionRunnerTest, StopMidStartup) {
       base::Bind(&ArcSessionRunnerTest::CreateSuspendedArcSession));
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_FALSE(arc_session()->is_running());
 
@@ -221,9 +223,7 @@ TEST_F(ArcSessionRunnerTest, BootFailure) {
                  ArcStopReason::GENERIC_BOOT_FAILURE));
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   EXPECT_EQ(ArcStopReason::GENERIC_BOOT_FAILURE, stop_reason());
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(restarting());
@@ -243,12 +243,10 @@ TEST_F(ArcSessionRunnerTest, BootFailure_MiniInstance) {
   EXPECT_FALSE(arc_session());
   EXPECT_FALSE(stopped_called());
 
-  // Also make sure that RequestStart() works just fine after the boot
+  // Also make sure that RequestUpgrade() works just fine after the boot
   // failure.
   ResetArcSessionFactory(base::Bind(FakeArcSession::Create));
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
 }
@@ -269,8 +267,7 @@ TEST_F(ArcSessionRunnerTest, Crash_MiniInstance) {
   EXPECT_FALSE(stopped_called());
 }
 
-// Tests that RequestStart(FULL_INSTANCE) works after calling
-// RequestStart(MINI_INSTANCE).
+// Tests that RequestUpgrade works after calling RequestStart.
 TEST_F(ArcSessionRunnerTest, Upgrade) {
   EXPECT_FALSE(arc_session());
 
@@ -278,9 +275,7 @@ TEST_F(ArcSessionRunnerTest, Upgrade) {
   ASSERT_TRUE(arc_session());
   EXPECT_FALSE(arc_session()->is_running());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
 }
@@ -290,9 +285,7 @@ TEST_F(ArcSessionRunnerTest, Restart) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
 
@@ -314,9 +307,7 @@ TEST_F(ArcSessionRunnerTest, GracefulStop) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
 
@@ -332,9 +323,7 @@ TEST_F(ArcSessionRunnerTest, Shutdown) {
   arc_session_runner()->SetRestartDelayForTesting(base::TimeDelta());
   EXPECT_FALSE(arc_session());
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   ASSERT_TRUE(arc_session());
   EXPECT_TRUE(arc_session()->is_running());
 
@@ -372,9 +361,7 @@ TEST_F(ArcSessionRunnerTest, UmaRecording_StartUpgradeShutdown) {
                             1 /* count of the sample */);
 
   // Boot continue should not increase the count.
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
                             1);
 
@@ -388,9 +375,7 @@ TEST_F(ArcSessionRunnerTest, UmaRecording_StartUpgradeShutdown) {
 TEST_F(ArcSessionRunnerTest, UmaRecording_StartShutdown) {
   base::HistogramTester tester;
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
                             1);
   // "0" should be recorded as a restart count on shutdown.
@@ -409,9 +394,7 @@ TEST_F(ArcSessionRunnerTest, UmaRecording_CrashTwice) {
   arc_session_runner()->RequestStartMiniInstance();
   tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
                             1);
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
 
   // Stop the instance with CRASH.
   arc_session()->StopWithReason(ArcStopReason::CRASH);
@@ -472,9 +455,7 @@ TEST_F(ArcSessionRunnerTest, UmaRecording_BootFail) {
 TEST_F(ArcSessionRunnerTest, UmaRecording_LowDisk) {
   base::HistogramTester tester;
 
-  arc_session_runner()->RequestUpgrade(
-      std::string() /* locale */, {} /* preferred_languages */,
-      base::FilePath() /* demo_session_apps_path*/);
+  arc_session_runner()->RequestUpgrade(DefaultUpgradeParams());
   tester.ExpectUniqueSample("Arc.ContainerLifetimeEvent", kContainerStarting,
                             1);
 

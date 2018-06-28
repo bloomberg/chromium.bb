@@ -142,9 +142,7 @@ class ArcSessionImpl : public ArcSession,
 
   // ArcSession overrides:
   void StartMiniInstance() override;
-  void RequestUpgrade(const std::string& locale,
-                      const std::vector<std::string>& preferred_languages,
-                      const base::FilePath& demo_session_apps_path) override;
+  void RequestUpgrade(UpgradeParams params) override;
   void Stop() override;
   bool IsStopRequested() override;
   void OnShutdown() override;
@@ -204,13 +202,8 @@ class ArcSessionImpl : public ArcSession,
   // to notify cancelling of the procedure.
   base::ScopedFD accept_cancel_pipe_;
 
-  // Locale and preferred languages to set in Android container during the boot.
-  std::string locale_;
-  std::vector<std::string> preferred_languages_;
-
-  // Path to squashfs image containing demo apps that should be loaded in the
-  // container.
-  base::FilePath demo_session_apps_path_;
+  // Parameters to upgrade request.
+  UpgradeParams upgrade_params_;
 
   // Mojo endpoint.
   std::unique_ptr<mojom::ArcBridgeHost> arc_bridge_host_;

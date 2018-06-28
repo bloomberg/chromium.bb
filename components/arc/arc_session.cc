@@ -8,6 +8,13 @@
 
 namespace arc {
 
+ArcSession::UpgradeParams::UpgradeParams() = default;
+ArcSession::UpgradeParams::UpgradeParams(ArcSession::UpgradeParams&& other) =
+    default;
+ArcSession::UpgradeParams& ArcSession::UpgradeParams::operator=(
+    ArcSession::UpgradeParams&& other) = default;
+ArcSession::UpgradeParams::~UpgradeParams() = default;
+
 ArcSession::ArcSession() = default;
 ArcSession::~ArcSession() = default;
 

@@ -271,17 +271,12 @@ void ArcSessionImpl::StartMiniInstance() {
                               weak_factory_.GetWeakPtr()));
 }
 
-void ArcSessionImpl::RequestUpgrade(
-    const std::string& locale,
-    const std::vector<std::string>& preferred_languages,
-    const base::FilePath& demo_session_apps_path) {
+void ArcSessionImpl::RequestUpgrade(UpgradeParams params) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(!locale.empty());
+  DCHECK(!params.locale.empty());
 
   upgrade_requested_ = true;
-  locale_ = locale;
-  preferred_languages_ = preferred_languages;
-  demo_session_apps_path_ = demo_session_apps_path;
+  upgrade_params_ = std::move(params);
 
   switch (state_) {
     case State::NOT_STARTED:
@@ -371,12 +366,14 @@ void ArcSessionImpl::DoUpgrade() {
             << packages_cache_mode_string << ".";
   }
 
-  request.set_locale(locale_);
-  for (const std::string& language : preferred_languages_)
+  request.set_is_child(upgrade_params_.is_child);
+  request.set_locale(upgrade_params_.locale);
+  for (const std::string& language : upgrade_params_.preferred_languages)
     request.add_preferred_languages(language);
 
-  if (!demo_session_apps_path_.empty())
-    request.set_demo_session_apps_path(demo_session_apps_path_.value());
+  if (!upgrade_params_.demo_session_apps_path.empty())
+    request.set_demo_session_apps_path(
+        upgrade_params_.demo_session_apps_path.value());
 
   chromeos::SessionManagerClient* client = GetSessionManagerClient();
   client->UpgradeArcContainer(

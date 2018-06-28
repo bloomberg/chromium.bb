@@ -993,12 +993,15 @@ void ArcSessionManager::StartArc() {
     demo_session_apps_path = demo_session->GetDemoAppsPath();
   }
 
+  ArcSession::UpgradeParams params;
+  params.is_child = profile_->IsChild();
+  params.locale = locale;
   // Empty |preferred_lanaguages| is converted to empty array.
-  arc_session_runner_->RequestUpgrade(
-      locale,
-      base::SplitString(preferred_lanaguages, ",", base::TRIM_WHITESPACE,
-                        base::SPLIT_WANT_ALL),
-      demo_session_apps_path);
+  params.preferred_languages = base::SplitString(
+      preferred_lanaguages, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  params.demo_session_apps_path = demo_session_apps_path;
+
+  arc_session_runner_->RequestUpgrade(std::move(params));
 }
 
 void ArcSessionManager::StopArc() {
