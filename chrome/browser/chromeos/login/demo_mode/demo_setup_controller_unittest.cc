@@ -9,7 +9,8 @@
 #include "base/optional.h"
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "chrome/browser/chromeos/login/demo_mode/demo_setup_test_utils.h"
+#include "chrome/browser/chromeos/login/enrollment/enterprise_enrollment_helper_mock.h"
+#include "chrome/browser/chromeos/policy/enrollment_status_chromeos.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #include "chromeos/cryptohome/system_salt_getter.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
@@ -17,9 +18,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using chromeos::test::DemoModeSetupResult;
-using chromeos::test::MockDemoModeOfflineEnrollmentHelperCreator;
-using chromeos::test::MockDemoModeOnlineEnrollmentHelperCreator;
 using testing::_;
 
 namespace chromeos {
@@ -106,6 +104,56 @@ bool SetupDummyOfflineDir(const std::string& account_id,
 
 class DemoSetupControllerTest : public testing::Test {
  protected:
+  enum class SetupResult { SUCCESS, ERROR };
+
+  template <SetupResult result>
+  static EnterpriseEnrollmentHelper* MockOnlineEnrollmentHelperCreator(
+      EnterpriseEnrollmentHelper::EnrollmentStatusConsumer* status_consumer,
+      const policy::EnrollmentConfig& enrollment_config,
+      const std::string& enrolling_user_domain) {
+    EnterpriseEnrollmentHelperMock* mock =
+        new EnterpriseEnrollmentHelperMock(status_consumer);
+
+    EXPECT_EQ(enrollment_config.mode,
+              policy::EnrollmentConfig::MODE_ATTESTATION);
+    EXPECT_CALL(*mock, EnrollUsingAttestation())
+        .WillRepeatedly(testing::Invoke([mock]() {
+          if (result == SetupResult::SUCCESS) {
+            mock->status_consumer()->OnDeviceEnrolled("");
+          } else {
+            // TODO(agawronska): Test different error types.
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForStatus(
+                    policy::EnrollmentStatus::REGISTRATION_FAILED));
+          }
+        }));
+    return mock;
+  }
+
+  template <SetupResult result>
+  static EnterpriseEnrollmentHelper* MockOfflineEnrollmentHelperCreator(
+      EnterpriseEnrollmentHelper::EnrollmentStatusConsumer* status_consumer,
+      const policy::EnrollmentConfig& enrollment_config,
+      const std::string& enrolling_user_domain) {
+    EnterpriseEnrollmentHelperMock* mock =
+        new EnterpriseEnrollmentHelperMock(status_consumer);
+
+    EXPECT_EQ(enrollment_config.mode,
+              policy::EnrollmentConfig::MODE_OFFLINE_DEMO);
+    EXPECT_CALL(*mock, EnrollForOfflineDemo())
+        .WillRepeatedly(testing::Invoke([mock]() {
+          if (result == SetupResult::SUCCESS) {
+            mock->status_consumer()->OnDeviceEnrolled("");
+          } else {
+            // TODO(agawronska): Test different error types.
+            mock->status_consumer()->OnEnrollmentError(
+                policy::EnrollmentStatus::ForStatus(
+                    policy::EnrollmentStatus::Status::LOCK_ERROR));
+          }
+        }));
+    return mock;
+  }
+
   DemoSetupControllerTest() = default;
   ~DemoSetupControllerTest() override = default;
 
@@ -137,8 +185,7 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
   ASSERT_TRUE(SetupDummyOfflineDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+      &MockOfflineEnrollmentHelperCreator<SetupResult::SUCCESS>);
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -151,8 +198,7 @@ TEST_F(DemoSetupControllerTest, OfflineSuccess) {
 
 TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyLoadFailure) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+      &MockOfflineEnrollmentHelperCreator<SetupResult::SUCCESS>);
 
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_)).Times(0);
@@ -169,8 +215,7 @@ TEST_F(DemoSetupControllerTest, OfflineDeviceLocalAccountPolicyStoreFailed) {
   ASSERT_TRUE(SetupDummyOfflineDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+      &MockOfflineEnrollmentHelperCreator<SetupResult::SUCCESS>);
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -187,8 +232,7 @@ TEST_F(DemoSetupControllerTest, OfflineInvalidDeviceLocalAccountPolicyBlob) {
   ASSERT_TRUE(SetupDummyOfflineDir("", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<
-          DemoModeSetupResult::SUCCESS>);
+      &MockOfflineEnrollmentHelperCreator<SetupResult::SUCCESS>);
 
   tested_controller_->EnrollOffline(temp_dir.GetPath());
   EXPECT_TRUE(delegate_->WaitResult(false));
@@ -200,7 +244,7 @@ TEST_F(DemoSetupControllerTest, OfflineError) {
   ASSERT_TRUE(SetupDummyOfflineDir("test", &temp_dir));
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOfflineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockOfflineEnrollmentHelperCreator<SetupResult::ERROR>);
 
   policy::MockCloudPolicyStore mock_store;
   EXPECT_CALL(mock_store, Store(_)).Times(0);
@@ -213,7 +257,7 @@ TEST_F(DemoSetupControllerTest, OfflineError) {
 
 TEST_F(DemoSetupControllerTest, OnlineSuccess) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+      &MockOnlineEnrollmentHelperCreator<SetupResult::SUCCESS>);
 
   tested_controller_->EnrollOnline();
   EXPECT_TRUE(delegate_->WaitResult(true));
@@ -221,7 +265,7 @@ TEST_F(DemoSetupControllerTest, OnlineSuccess) {
 
 TEST_F(DemoSetupControllerTest, OnlineError) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockOnlineEnrollmentHelperCreator<SetupResult::ERROR>);
 
   tested_controller_->EnrollOnline();
   EXPECT_TRUE(delegate_->WaitResult(false));
@@ -230,7 +274,7 @@ TEST_F(DemoSetupControllerTest, OnlineError) {
 
 TEST_F(DemoSetupControllerTest, EnrollTwice) {
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::ERROR>);
+      &MockOnlineEnrollmentHelperCreator<SetupResult::ERROR>);
 
   tested_controller_->EnrollOnline();
   EXPECT_TRUE(delegate_->WaitResult(false));
@@ -239,7 +283,7 @@ TEST_F(DemoSetupControllerTest, EnrollTwice) {
   delegate_->Reset();
 
   EnterpriseEnrollmentHelper::SetupEnrollmentHelperMock(
-      &MockDemoModeOnlineEnrollmentHelperCreator<DemoModeSetupResult::SUCCESS>);
+      &MockOnlineEnrollmentHelperCreator<SetupResult::SUCCESS>);
 
   tested_controller_->EnrollOnline();
   EXPECT_TRUE(delegate_->WaitResult(true));

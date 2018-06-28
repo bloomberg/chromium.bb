@@ -8,7 +8,8 @@
 
 login.createScreen('DemoSetupScreen', 'demo-setup', function() {
   return {
-    EXTERNAL_API: ['onSetupFinished'],
+    UI_STATE: {ERROR: -1, DEFAULT: 0, PROCESSING: 1},
+    EXTERNAL_API: ['setState'],
 
     get defaultControl() {
       return $('demo-setup-content');
@@ -16,17 +17,15 @@ login.createScreen('DemoSetupScreen', 'demo-setup', function() {
 
     /** @override */
     onBeforeShow: function(data) {
-      $('demo-setup-content').reset();
+      this.setState(this.UI_STATE.DEFAULT);
     },
 
     /**
-     * Called when demo mode setup finished.
-     * @param {boolean} isSuccess Whether demo setup finished successfully.
-     * @param {string} message Error message to be displayed to the user,
-     *  populated if setup finished with an error.
+     * Sets state of the UI.
+     * @param {number} state.
      */
-    onSetupFinished: function(isSuccess, message) {
-      $('demo-setup-content').onSetupFinished(isSuccess, message);
+    setState: function(state) {
+      this.state_ = state;
     },
   };
 });

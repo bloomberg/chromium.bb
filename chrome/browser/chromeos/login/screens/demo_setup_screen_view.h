@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEMO_SETUP_SCREEN_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_DEMO_SETUP_SCREEN_VIEW_H_
 
-#include <string>
-
 #include "chrome/browser/chromeos/login/oobe_screen.h"
 
 namespace chromeos {
@@ -28,9 +26,6 @@ class DemoSetupScreenView {
 
   // Sets view and screen.
   virtual void Bind(DemoSetupScreen* screen) = 0;
-
-  // Handles setup result.
-  virtual void OnSetupFinished(bool is_success, const std::string& message) = 0;
 };
 
 }  // namespace chromeos

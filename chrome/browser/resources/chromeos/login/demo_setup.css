@@ -3,5 +3,5 @@
  * found in the LICENSE file. */
 
 [slot='bottom-buttons'] {
-  padding: 0 6px;
+  -webkit-padding-end: 24px;
 }
