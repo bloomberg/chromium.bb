@@ -19072,6 +19072,7 @@ Called by update_net_error_codes.py.-->
   <int value="2490" label="CSSEnvironmentVariable_SafeAreaInsetLeft"/>
   <int value="2491" label="CSSEnvironmentVariable_SafeAreaInsetBottom"/>
   <int value="2492" label="CSSEnvironmentVariable_SafeAreaInsetRight"/>
+  <int value="2493" label="MediaControlsDisplayCutoutGesture"/>
 </enum>
 
 <enum name="FeedbackSource">
