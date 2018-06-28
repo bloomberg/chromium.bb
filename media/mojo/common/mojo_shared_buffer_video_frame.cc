@@ -93,27 +93,37 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
     return nullptr;
   }
 
+  // Compute the number of bytes needed on each row.
+  const size_t y_row_bytes = RowBytes(kYPlane, format, coded_size.width());
+  const size_t u_row_bytes = RowBytes(kUPlane, format, coded_size.width());
+  const size_t v_row_bytes = RowBytes(kVPlane, format, coded_size.width());
+
   // Safe given sizeof(size_t) >= sizeof(int32_t).
   size_t y_stride_size_t = y_stride;
   size_t u_stride_size_t = u_stride;
   size_t v_stride_size_t = v_stride;
-  if (y_stride_size_t < RowBytes(kYPlane, format, coded_size.width()) ||
-      u_stride_size_t < RowBytes(kUPlane, format, coded_size.width()) ||
-      v_stride_size_t < RowBytes(kVPlane, format, coded_size.width())) {
+  if (y_stride_size_t < y_row_bytes || u_stride_size_t < u_row_bytes ||
+      v_stride_size_t < v_row_bytes) {
     DLOG(ERROR) << __func__ << " Invalid stride";
     return nullptr;
   }
 
-  base::CheckedNumeric<size_t> y_rows =
-      Rows(kYPlane, format, coded_size.height());
-  base::CheckedNumeric<size_t> u_rows =
-      Rows(kUPlane, format, coded_size.height());
-  base::CheckedNumeric<size_t> v_rows =
-      Rows(kVPlane, format, coded_size.height());
+  const size_t y_rows = Rows(kYPlane, format, coded_size.height());
+  const size_t u_rows = Rows(kUPlane, format, coded_size.height());
+  const size_t v_rows = Rows(kVPlane, format, coded_size.height());
 
-  base::CheckedNumeric<size_t> y_bound = y_rows * y_stride + y_offset;
-  base::CheckedNumeric<size_t> u_bound = u_rows * u_stride + u_offset;
-  base::CheckedNumeric<size_t> v_bound = v_rows * v_stride + v_offset;
+  // The last row only needs RowBytes() and not a full stride. This is to avoid
+  // problems if the U and V data is interleaved (where |stride| is double the
+  // number of bytes actually needed).
+  base::CheckedNumeric<size_t> y_bound = base::CheckAdd(
+      y_offset, base::CheckMul(base::CheckSub(y_rows, 1), y_stride_size_t),
+      y_row_bytes);
+  base::CheckedNumeric<size_t> u_bound = base::CheckAdd(
+      u_offset, base::CheckMul(base::CheckSub(u_rows, 1), u_stride_size_t),
+      u_row_bytes);
+  base::CheckedNumeric<size_t> v_bound = base::CheckAdd(
+      v_offset, base::CheckMul(base::CheckSub(v_rows, 1), v_stride_size_t),
+      v_row_bytes);
 
   if (!y_bound.IsValid() || !u_bound.IsValid() || !v_bound.IsValid() ||
       y_bound.ValueOrDie() > data_size || u_bound.ValueOrDie() > data_size ||
