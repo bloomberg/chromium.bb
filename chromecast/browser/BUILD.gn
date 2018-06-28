@@ -318,9 +318,9 @@ cast_source_set("browser") {
       "//extensions/common",
       "//extensions/common/api",
       "//google_apis:google_apis",
+      "//ui/events:gesture_detection",
       "//ui/views:views",
       "//ui/wm/public:public",
-      "//ui/events:gesture_detection",
     ]
   }
 
@@ -489,13 +489,11 @@ cast_source_set("unittests") {
   ]
 
   if (enable_chromecast_extensions && use_aura) {
-      sources += [
-          "accessibility/touch_exploration_controller_unittest.cc",
-      ]
-      deps += [
-        "//ui/aura:test_support",
-        "//ui/events:test_support",
-      ]
+    sources += [ "accessibility/touch_exploration_controller_unittest.cc" ]
+    deps += [
+      "//ui/aura:test_support",
+      "//ui/events:test_support",
+    ]
   }
 }
 
