@@ -38,6 +38,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
     private TranslateMenuAdapter mAdapter;
     private View mAnchorView;
     private ListPopupWindow mPopup;
+    private boolean mIsIncognito;
 
     /**
      * Interface for receiving the click event of menu item.
@@ -49,11 +50,12 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
     }
 
     public TranslateMenuHelper(Context context, View anchorView, TranslateOptions options,
-            TranslateMenuListener itemListener) {
+            TranslateMenuListener itemListener, boolean isIncognito) {
         mContextWrapper = new ContextThemeWrapper(context, R.style.OverflowMenuTheme);
         mAnchorView = anchorView;
         mOptions = options;
         mMenuListener = itemListener;
+        mIsIncognito = isIncognito;
     }
 
     /**
@@ -63,7 +65,7 @@ public class TranslateMenuHelper implements AdapterView.OnItemClickListener {
         List<TranslateMenu.MenuItem> menuList = new ArrayList<TranslateMenu.MenuItem>();
         if (menuType == TranslateMenu.MENU_OVERFLOW) {
             // TODO(googleo): Add language short list above static menu after its data is ready.
-            menuList.addAll(TranslateMenu.getOverflowMenu());
+            menuList.addAll(TranslateMenu.getOverflowMenu(mIsIncognito));
         } else {
             for (int i = 0; i < mOptions.allLanguages().size(); ++i) {
                 String code = mOptions.allLanguages().get(i).mLanguageCode;

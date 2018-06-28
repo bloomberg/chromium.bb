@@ -43,6 +43,10 @@ CreateIncognitoPrefServiceSyncable(
   overlay_pref_names.push_back(prefs::kSaveFileDefaultDirectory);
   overlay_pref_names.push_back(
       translate::TranslatePrefs::kPrefTranslateSiteBlacklist);
+  overlay_pref_names.push_back(
+      translate::TranslatePrefs::kPrefTranslateBlockedLanguages);
+  overlay_pref_names.push_back(
+      translate::TranslatePrefs::kPrefTranslateWhitelists);
 #if defined(OS_ANDROID)
   overlay_pref_names.push_back(proxy_config::prefs::kProxy);
 #endif

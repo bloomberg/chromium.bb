@@ -256,18 +256,19 @@ public class TranslateCompactInfoBar extends InfoBar
     }
 
     private void initMenuHelper(int menuType) {
+        boolean isIncognito = nativeIsIncognito(mNativeTranslateInfoBarPtr);
         switch (menuType) {
             case TranslateMenu.MENU_OVERFLOW:
                 if (mOverflowMenuHelper == null) {
-                    mOverflowMenuHelper =
-                            new TranslateMenuHelper(getContext(), mMenuButton, mOptions, this);
+                    mOverflowMenuHelper = new TranslateMenuHelper(
+                            getContext(), mMenuButton, mOptions, this, isIncognito);
                 }
                 return;
             case TranslateMenu.MENU_TARGET_LANGUAGE:
             case TranslateMenu.MENU_SOURCE_LANGUAGE:
                 if (mLanguageMenuHelper == null) {
-                    mLanguageMenuHelper =
-                            new TranslateMenuHelper(getContext(), mMenuButton, mOptions, this);
+                    mLanguageMenuHelper = new TranslateMenuHelper(
+                            getContext(), mMenuButton, mOptions, this, isIncognito);
                 }
                 return;
             default:
@@ -599,4 +600,5 @@ public class TranslateCompactInfoBar extends InfoBar
             long nativeTranslateCompactInfoBar, int option, boolean value);
     private native boolean nativeShouldAutoNeverTranslate(
             long nativeTranslateCompactInfoBar, boolean menuExpanded);
+    private native boolean nativeIsIncognito(long nativeTranslateCompactInfoBar);
 }

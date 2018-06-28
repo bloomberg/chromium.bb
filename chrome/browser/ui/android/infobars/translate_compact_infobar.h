@@ -47,6 +47,10 @@ class TranslateCompactInfoBar
       const base::android::JavaParamRef<jobject>& obj,
       jboolean menu_expanded);
 
+  // Returns true if the current tab is an incognito tab.
+  jboolean IsIncognito(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& obj);
+
   // TranslateInfoBarDelegate::Observer implementation.
   void OnTranslateStepChanged(translate::TranslateStep step,
                     translate::TranslateErrors::Type error_type) override;
