@@ -16,6 +16,9 @@ This document provides a detailed guide to bindings API usage with example code
 snippets. For a detailed API references please consult the headers in
 [//mojo/public/cpp/bindings](https://cs.chromium.org/chromium/src/mojo/public/cpp/bindings/README.md).
 
+For a simplified guide targeted at Chroimum developers, see [this
+link](/docs/mojo_guide.md).
+
 ## Getting Started
 
 When a Mojom IDL file is processed by the bindings generator, C++ code is
