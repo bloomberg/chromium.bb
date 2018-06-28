@@ -21,3 +21,6 @@ via the Common Unix Printing System (CUPS), *not* Cloud Print.
 
 * [Cups Printer Management](cups_printer_management.md) - Overview of how CUPS
   printers are managed in ChromeOS.
+* [Cups Printers Settings Page](cups_printers_settings_page.md) - Contains
+  information about the various dialogs, pages, and various messages/listeners
+  in the UI.
