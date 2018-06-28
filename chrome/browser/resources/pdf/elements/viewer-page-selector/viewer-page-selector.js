@@ -49,7 +49,7 @@ Polymer({
   },
 
   select: function() {
-    this.pageSelector.inputElement.select();
+    this.pageSelector.select();
   },
 
   /**

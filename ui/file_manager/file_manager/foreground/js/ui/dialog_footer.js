@@ -214,13 +214,10 @@ DialogFooter.prototype.onFilenameInputKeyDown_ = function(event) {
 };
 
 DialogFooter.prototype.selectTargetNameInFilenameInput = function() {
-  if (!this.filenameInput.hasAttribute('focused_'))
-    this.filenameInput.focus();
   var selectionEnd = this.filenameInput.value.lastIndexOf('.');
   if (selectionEnd == -1) {
-    this.filenameInput.inputElement.select();
+    this.filenameInput.select();
   } else {
-    this.filenameInput.inputElement.selectionStart = 0;
-    this.filenameInput.inputElement.selectionEnd = selectionEnd;
+    this.filenameInput.select(0, selectionEnd);
   }
 };

@@ -263,4 +263,26 @@ suite('cr-input', function() {
     testAriaLabel(['label', 'placeholder']);
     testAriaLabel(['placeholder']);
   });
+
+  test('select', function() {
+    crInput.value = '0123456789';
+    assertFalse(input.matches(':focus'));
+    crInput.select();
+    assertTrue(input.matches(':focus'));
+    assertEquals('0123456789', window.getSelection().toString());
+
+    regenerateNewInput();
+    crInput.value = '0123456789';
+    assertFalse(input.matches(':focus'));
+    crInput.select(2, 6);
+    assertTrue(input.matches(':focus'));
+    assertEquals('2345', window.getSelection().toString());
+
+    regenerateNewInput();
+    crInput.value = '';
+    assertFalse(input.matches(':focus'));
+    crInput.select();
+    assertTrue(input.matches(':focus'));
+    assertEquals('', window.getSelection().toString());
+  });
 });

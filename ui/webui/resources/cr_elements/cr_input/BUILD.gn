@@ -11,4 +11,7 @@ js_type_check("closure_compile") {
 }
 
 js_library("cr_input") {
+  deps = [
+    "//ui/webui/resources/js:assert",
+  ]
 }

@@ -12,6 +12,6 @@ js_type_check("closure_compile") {
 
 js_library("viewer-password-screen") {
   deps = [
-    "//third_party/polymer/v1_0/components-chromium/paper-input:paper-input-extracted",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
 }

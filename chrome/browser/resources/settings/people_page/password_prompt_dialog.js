@@ -90,6 +90,11 @@ Polymer({
     },
   },
 
+  /** @return {!CrInputElement} */
+  get passwordInput() {
+    return this.$.passwordInput;
+  },
+
   /** @override */
   attached: function() {
     this.writeUma_(LockScreenProgress.START_SCREEN_LOCK);
@@ -97,7 +102,7 @@ Polymer({
     // This needs to occur at the next paint otherwise the password input will
     // not receive focus.
     this.async(() => {
-      this.$.passwordInput.focus();
+      this.passwordInput.focus();
     }, 1);
   },
 
@@ -114,7 +119,7 @@ Polymer({
   submitPassword_: function() {
     clearTimeout(this.clearAccountPasswordTimeout_);
 
-    let password = this.$.passwordInput.value;
+    const password = this.passwordInput.value;
     // The user might have started entering a password and then deleted it all.
     // Do not submit/show an error in this case.
     if (!password) {
@@ -126,10 +131,7 @@ Polymer({
       if (chrome.runtime.lastError) {
         this.passwordInvalid_ = true;
         // Select the whole password if user entered an incorrect password.
-        // Return focus to the password input if it lost focus while being
-        // checked (user pressed confirm button).
-        this.$.passwordInput.focus();
-        this.$.passwordInput.inputElement.select();
+        this.passwordInput.select();
         return;
       }
 
