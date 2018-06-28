@@ -837,6 +837,15 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
 
   StartLoad(request, frame_load_type, policy, nullptr,
             true /* check_with_client */);
+
+  // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
+  // the check that the pages are equal, because consumption should not be
+  // shared across pages.
+  const Document* origin_document = request.OriginDocument();
+  if (frame_->IsMainFrame() && origin_document &&
+      frame_->GetPage() == origin_document->GetPage()) {
+    Frame::ConsumeTransientUserActivation(frame_);
+  }
 }
 
 void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,

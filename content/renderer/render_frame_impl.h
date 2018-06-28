@@ -1236,9 +1236,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   void ShowDeferredContextMenu(const ContextMenuParams& params);
 
-  // Whether or not a navigation in this frame consumes user gestures.
-  bool ConsumeGestureOnNavigation() const;
-
   // Whether the frame is controlled by a service worker.
   blink::mojom::ControllerServiceWorkerMode IsControlledByServiceWorker();
 
