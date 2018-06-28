@@ -4,7 +4,6 @@
 
 from core import perf_benchmark
 
-from benchmarks import silk_flags
 from measurements import thread_times
 import page_sets
 from telemetry import benchmark
@@ -12,11 +11,6 @@ from telemetry import story
 
 
 class _ThreadTimes(perf_benchmark.PerfBenchmark):
-
-  @classmethod
-  def AddBenchmarkCommandLineArgs(cls, parser):
-    parser.add_option('--report-silk-details', action='store_true',
-                      help='Report details relevant to silk.')
 
   @classmethod
   def Name(cls):
@@ -28,11 +22,8 @@ class _ThreadTimes(perf_benchmark.PerfBenchmark):
     # Default to only reporting per-frame metrics.
     return 'per_second' not in name
 
-  def SetExtraBrowserOptions(self, options):
-    silk_flags.CustomizeBrowserOptionsForThreadTimes(options)
-
   def CreatePageTest(self, options):
-    return thread_times.ThreadTimes(options.report_silk_details)
+    return thread_times.ThreadTimes(report_silk_details=True)
 
 
 @benchmark.Owner(emails=['vmiura@chromium.org'])

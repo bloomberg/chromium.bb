@@ -53,6 +53,24 @@ class RenderingSharedState(shared_page_state.SharedPageState):
 
     return 'unknown_gpu'
 
+  def WillRunStory(self, page):
+    super(RenderingSharedState, self).WillRunStory(page)
+    if page.TAGS and story_tags.KEY_IDLE_POWER in page.TAGS:
+      self._EnsureScreenOn()
+
+  def DidRunStory(self, results):
+    if (self.current_page.TAGS and
+        story_tags.KEY_IDLE_POWER in self.current_page.TAGS):
+      try:
+        super(RenderingSharedState, self).DidRunStory(results)
+      finally:
+        self._EnsureScreenOn()
+    else:
+      super(RenderingSharedState, self).DidRunStory(results)
+
+  def _EnsureScreenOn(self):
+    self.platform.android_action_runner.TurnScreenOn()
+
 
 class DesktopRenderingSharedState(RenderingSharedState):
   _device_type = 'desktop'
