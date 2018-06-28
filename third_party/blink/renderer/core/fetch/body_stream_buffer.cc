@@ -177,7 +177,11 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     ExceptionState& exception_state) {
   DCHECK(!IsStreamLockedForDCheck());
   DCHECK(!IsStreamDisturbedForDCheck());
-  if (IsStreamClosed() || IsStreamErrored())
+  const base::Optional<bool> is_closed = IsStreamClosed(exception_state);
+  if (exception_state.HadException() || is_closed.value())
+    return nullptr;
+  const base::Optional<bool> is_errored = IsStreamErrored(exception_state);
+  if (exception_state.HadException() || is_errored.value())
     return nullptr;
 
   if (made_from_readable_stream_)
@@ -198,7 +202,11 @@ scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
     ExceptionState& exception_state) {
   DCHECK(!IsStreamLockedForDCheck());
   DCHECK(!IsStreamDisturbedForDCheck());
-  if (IsStreamClosed() || IsStreamErrored())
+  const base::Optional<bool> is_closed = IsStreamClosed(exception_state);
+  if (exception_state.HadException() || is_closed.value())
+    return nullptr;
+  const base::Optional<bool> is_errored = IsStreamErrored(exception_state);
+  if (exception_state.HadException() || is_errored.value())
     return nullptr;
 
   if (made_from_readable_stream_)
@@ -349,14 +357,16 @@ base::Optional<bool> BodyStreamBuffer::IsStreamReadable(
                                 exception_state);
 }
 
-bool BodyStreamBuffer::IsStreamClosed() {
-  return BooleanStreamOperationOrFallback(ReadableStreamOperations::IsClosed,
-                                          true);
+base::Optional<bool> BodyStreamBuffer::IsStreamClosed(
+    ExceptionState& exception_state) {
+  return BooleanStreamOperation(ReadableStreamOperations::IsClosed,
+                                exception_state);
 }
 
-bool BodyStreamBuffer::IsStreamErrored() {
-  return BooleanStreamOperationOrFallback(ReadableStreamOperations::IsErrored,
-                                          true);
+base::Optional<bool> BodyStreamBuffer::IsStreamErrored(
+    ExceptionState& exception_state) {
+  return BooleanStreamOperation(ReadableStreamOperations::IsErrored,
+                                exception_state);
 }
 
 base::Optional<bool> BodyStreamBuffer::IsStreamLocked(
@@ -490,20 +500,6 @@ void BodyStreamBuffer::StopLoading() {
   loader_ = nullptr;
 }
 
-bool BodyStreamBuffer::BooleanStreamOperationOrFallback(
-    base::Optional<bool> (*predicate)(ScriptState*, ScriptValue),
-    bool fallback_value) {
-  if (stream_broken_)
-    return fallback_value;
-  ScriptState::Scope scope(script_state_.get());
-  const base::Optional<bool> result = predicate(script_state_.get(), Stream());
-  if (!result.has_value()) {
-    stream_broken_ = true;
-    return fallback_value;
-  }
-  return result.value();
-}
-
 base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
     base::Optional<bool> (*predicate)(ScriptState*,
                                       ScriptValue,
@@ -556,21 +552,26 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
     }
     return new ReadableStreamBytesConsumer(script_state_.get(), reader);
   }
-  // We need to call these before calling closeAndLockAndDisturb.
-  const bool is_closed = IsStreamClosed();
-  const bool is_errored = IsStreamErrored();
+  // We need to call these before calling CloseAndLockAndDisturb.
+  const base::Optional<bool> is_closed = IsStreamClosed(exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+  const base::Optional<bool> is_errored = IsStreamErrored(exception_state);
+  if (exception_state.HadException())
+    return nullptr;
+
   BytesConsumer* consumer = consumer_.Release();
 
   CloseAndLockAndDisturb(exception_state);
   if (exception_state.HadException())
     return nullptr;
 
-  if (is_closed) {
+  if (is_closed.value()) {
     // Note that the stream cannot be "draining", because it doesn't have
     // the internal buffer.
     return BytesConsumer::CreateClosed();
   }
-  if (is_errored)
+  if (is_errored.value())
     return BytesConsumer::CreateErrored(BytesConsumer::Error("error"));
 
   DCHECK(consumer);

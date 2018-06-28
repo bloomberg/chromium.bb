@@ -394,14 +394,15 @@ TEST(ReadableStreamOperationsTest, IsClosed) {
   ASSERT_FALSE(closed.IsEmpty());
   ASSERT_FALSE(errored.IsEmpty());
 
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsClosed(scope.GetScriptState(), readable)
-          .value_or(true));
-  EXPECT_TRUE(ReadableStreamOperations::IsClosed(scope.GetScriptState(), closed)
+  EXPECT_FALSE(ReadableStreamOperations::IsClosed(scope.GetScriptState(),
+                                                  readable, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
+  EXPECT_TRUE(ReadableStreamOperations::IsClosed(scope.GetScriptState(), closed,
+                                                 ASSERT_NO_EXCEPTION)
                   .value_or(false));
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsClosed(scope.GetScriptState(), errored)
-          .value_or(true));
+  EXPECT_FALSE(ReadableStreamOperations::IsClosed(scope.GetScriptState(),
+                                                  errored, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
 }
 
 TEST(ReadableStreamOperationsTest, IsErrored) {
@@ -416,15 +417,15 @@ TEST(ReadableStreamOperationsTest, IsErrored) {
   ASSERT_FALSE(closed.IsEmpty());
   ASSERT_FALSE(errored.IsEmpty());
 
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsErrored(scope.GetScriptState(), readable)
-          .value_or(true));
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsErrored(scope.GetScriptState(), closed)
-          .value_or(true));
-  EXPECT_TRUE(
-      ReadableStreamOperations::IsErrored(scope.GetScriptState(), errored)
-          .value_or(false));
+  EXPECT_FALSE(ReadableStreamOperations::IsErrored(
+                   scope.GetScriptState(), readable, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
+  EXPECT_FALSE(ReadableStreamOperations::IsErrored(scope.GetScriptState(),
+                                                   closed, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
+  EXPECT_TRUE(ReadableStreamOperations::IsErrored(scope.GetScriptState(),
+                                                  errored, ASSERT_NO_EXCEPTION)
+                  .value_or(false));
 }
 
 TEST(ReadableStreamOperationsTest, Tee) {

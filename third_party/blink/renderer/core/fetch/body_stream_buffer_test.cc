@@ -443,7 +443,7 @@ TEST_F(BodyStreamBufferTest, LoadClosedHandle) {
   BodyStreamBuffer* buffer = new BodyStreamBuffer(
       scope.GetScriptState(), BytesConsumer::CreateClosed(), nullptr);
 
-  EXPECT_TRUE(buffer->IsStreamClosed());
+  EXPECT_TRUE(buffer->IsStreamClosed(ASSERT_NO_EXCEPTION).value_or(false));
 
   EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
   EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
@@ -473,7 +473,7 @@ TEST_F(BodyStreamBufferTest, LoadErroredHandle) {
       scope.GetScriptState(),
       BytesConsumer::CreateErrored(BytesConsumer::Error()), nullptr);
 
-  EXPECT_TRUE(buffer->IsStreamErrored());
+  EXPECT_TRUE(buffer->IsStreamErrored(ASSERT_NO_EXCEPTION).value_or(false));
 
   EXPECT_FALSE(buffer->IsStreamLocked(ASSERT_NO_EXCEPTION).value_or(true));
   EXPECT_FALSE(buffer->IsStreamDisturbed(ASSERT_NO_EXCEPTION).value_or(true));
