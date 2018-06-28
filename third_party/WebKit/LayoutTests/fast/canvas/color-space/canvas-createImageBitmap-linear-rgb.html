@@ -8,6 +8,8 @@
 // SkColorSpaceXform() may generate slightly different results.
 // Please see: https://fiddle.skia.org/c/94578944d9d52c2b4c2cadda88a4e204
 
+var transparentBlack = [0, 0, 0, 0];
+
 var linearRgbRed =   [1, 0, 0, 1]; // SRGB(255,0,0,255)
 var linearRgbGreen = [0, 1, 0, 1]; // SRGB(0,255,0,255)
 var linearRgbBlue =  [0, 0, 1, 1]; // SRGB(0,0,255,255)
@@ -33,7 +35,7 @@ var linearRgbTransparentBlack = [0.011765, 0.011765, 0.011765, 0.501953];
 
 function testPixels(ctx, tests, sourceType)
 {
-    var actual, expected, tolerance = 0.01;
+    var actual, expected, tolerance = 0.02;
     if (sourceType === 'video')
         tolerance = 0.03;
     for (var i = 0; i < tests.length; i++) {
@@ -60,7 +62,7 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                  [39, 0, linearRgbGreen, "This pixel should be linear RGB green."],
                  [0, 39, linearRgbBlue, "This pixel should be linear RGB blue."],
                  [39, 39, linearRgbBlack, "This pixel should be linear RGB black."],
-                 [41, 41, linearRgbBlack, "This pixel should be linear RGB black."]];
+                 [41, 41, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo == 'opaque')
         tests = [[0, 0, linearRgbOpaqueRed,
                      "This pixel should be linear RGB like red."],
@@ -70,8 +72,7 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be linear RGB like blue."],
                  [39, 39, linearRgbOpaqueBlack,
                      "This pixel should be linear RGB like black."],
-                 [41, 41, linearRgbBlack,
-                     "This pixel should be linear RGB black."]];
+                 [41, 41, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo == 'transparent')
         tests = [[0, 0, linearRgbTransparentRed,
                      "This pixel should be linear RGB transparent red."],
@@ -81,7 +82,8 @@ function checkNoCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be linear RGB transparent blue."],
                  [39, 39, linearRgbTransparentBlack,
                      "This pixel should be linear RGB transparent black."],
-                 [41, 41, linearRgbBlack, "This pixel should be linear RGB black."]];
+                 [41, 41, transparentBlack,
+                     "This pixel should be transparent black."]];
     testPixels(ctx, tests, sourceType);
 }
 
@@ -100,7 +102,7 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                  [19, 0, linearRgbGreen, "This pixel should be linear RGB green."],
                  [0, 19, linearRgbBlue, "This pixel should be linear RGB blue."],
                  [19, 19, linearRgbBlack, "This pixel should be linear RGB black."],
-                 [21, 21, linearRgbBlack, "This pixel should be linear RGB black."]];
+                 [21, 21, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo === 'opaque')
         tests = [[0, 0, linearRgbOpaqueRed,
                      "This pixel should be linear RGB like red."],
@@ -110,7 +112,7 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be linear RGB like blue."],
                  [19, 19, linearRgbOpaqueBlack,
                      "This pixel should be linear RGB like black."],
-                 [21, 21, linearRgbBlack, "This pixel should be linear RGB black."]];
+                 [21, 21, transparentBlack, "This pixel should be transparent black."]];
     else if (colorInfo === 'transparent')
         tests = [[0, 0, linearRgbTransparentRed,
                      "This pixel should be linear RGB transparent red."],
@@ -120,7 +122,8 @@ function checkCrop(imageBitmap, colorInfo, sourceType)
                      "This pixel should be linear RGB transparent blue."],
                  [19, 19, linearRgbTransparentBlack,
                      "This pixel should be linear RGB transparent black."],
-                 [21, 21, linearRgbBlack, "This pixel should be linear RGB black."]];
+                 [21, 21, transparentBlack,
+                     "This pixel should be transparent black."]];
     testPixels(ctx, tests, sourceType);
 }
 
