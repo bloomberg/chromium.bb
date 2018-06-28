@@ -177,11 +177,6 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   // selector interface is unaware of those.  This struct keeps track off all
   // task related state needed to make pairs of TakeTask() / DidRunTask() work.
   struct ExecutingTask {
-    ExecutingTask()
-        : pending_task(TaskQueue::PostedTask(OnceClosure(), Location()),
-                       TimeTicks(),
-                       internal::EnqueueOrder()) {}
-
     ExecutingTask(internal::TaskQueueImpl::Task&& pending_task,
                   internal::TaskQueueImpl* task_queue)
         : pending_task(std::move(pending_task)), task_queue(task_queue) {}
