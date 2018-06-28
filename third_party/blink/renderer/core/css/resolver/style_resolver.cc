@@ -1348,6 +1348,12 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
     case CSSPropertyBackgroundSize:
+    case CSSPropertyBorderBlockEndColor:
+    case CSSPropertyBorderBlockEndStyle:
+    case CSSPropertyBorderBlockEndWidth:
+    case CSSPropertyBorderBlockStartColor:
+    case CSSPropertyBorderBlockStartStyle:
+    case CSSPropertyBorderBlockStartWidth:
     case CSSPropertyBorderBottomColor:
     case CSSPropertyBorderBottomLeftRadius:
     case CSSPropertyBorderBottomRightRadius:
@@ -1358,6 +1364,12 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyBorderImageSlice:
     case CSSPropertyBorderImageSource:
     case CSSPropertyBorderImageWidth:
+    case CSSPropertyBorderInlineEndColor:
+    case CSSPropertyBorderInlineEndStyle:
+    case CSSPropertyBorderInlineEndWidth:
+    case CSSPropertyBorderInlineStartColor:
+    case CSSPropertyBorderInlineStartStyle:
+    case CSSPropertyBorderInlineStartWidth:
     case CSSPropertyBorderLeftColor:
     case CSSPropertyBorderLeftStyle:
     case CSSPropertyBorderLeftWidth:
@@ -1411,23 +1423,11 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextUnderlinePosition:
     case CSSPropertyVerticalAlign:
     case CSSPropertyWebkitBorderAfter:
-    case CSSPropertyWebkitBorderAfterColor:
-    case CSSPropertyWebkitBorderAfterStyle:
-    case CSSPropertyWebkitBorderAfterWidth:
     case CSSPropertyWebkitBorderBefore:
-    case CSSPropertyWebkitBorderBeforeColor:
-    case CSSPropertyWebkitBorderBeforeStyle:
-    case CSSPropertyWebkitBorderBeforeWidth:
     case CSSPropertyWebkitBorderEnd:
-    case CSSPropertyWebkitBorderEndColor:
-    case CSSPropertyWebkitBorderEndStyle:
-    case CSSPropertyWebkitBorderEndWidth:
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderImage:
     case CSSPropertyWebkitBorderStart:
-    case CSSPropertyWebkitBorderStartColor:
-    case CSSPropertyWebkitBorderStartStyle:
-    case CSSPropertyWebkitBorderStartWidth:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitMarginAfterCollapse:

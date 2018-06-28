@@ -4,20 +4,8 @@ All changes to this list should go through Blink's feature review process: http:
 [LONGHANDS]
     -webkit-app-region
     -webkit-appearance
-    -webkit-border-after-color
-    -webkit-border-after-style
-    -webkit-border-after-width
-    -webkit-border-before-color
-    -webkit-border-before-style
-    -webkit-border-before-width
-    -webkit-border-end-color
-    -webkit-border-end-style
-    -webkit-border-end-width
     -webkit-border-horizontal-spacing
     -webkit-border-image
-    -webkit-border-start-color
-    -webkit-border-start-style
-    -webkit-border-start-width
     -webkit-border-vertical-spacing
     -webkit-box-align
     -webkit-box-decoration-break
@@ -108,6 +96,12 @@ All changes to this list should go through Blink's feature review process: http:
     background-size
     baseline-shift
     block-size
+    border-block-end-color
+    border-block-end-style
+    border-block-end-width
+    border-block-start-color
+    border-block-start-style
+    border-block-start-width
     border-bottom-color
     border-bottom-left-radius
     border-bottom-right-radius
@@ -119,6 +113,12 @@ All changes to this list should go through Blink's feature review process: http:
     border-image-slice
     border-image-source
     border-image-width
+    border-inline-end-color
+    border-inline-end-style
+    border-inline-end-width
+    border-inline-start-color
+    border-inline-start-style
+    border-inline-start-width
     border-left-color
     border-left-style
     border-left-width
@@ -371,21 +371,21 @@ All changes to this list should go through Blink's feature review process: http:
 
 [SHORTHANDS]
     -webkit-border-after
-        -webkit-border-after-color
-        -webkit-border-after-style
-        -webkit-border-after-width
+        border-block-end-color
+        border-block-end-style
+        border-block-end-width
     -webkit-border-before
-        -webkit-border-before-color
-        -webkit-border-before-style
-        -webkit-border-before-width
+        border-block-start-color
+        border-block-start-style
+        border-block-start-width
     -webkit-border-end
-        -webkit-border-end-color
-        -webkit-border-end-style
-        -webkit-border-end-width
+        border-inline-end-color
+        border-inline-end-style
+        border-inline-end-width
     -webkit-border-start
-        -webkit-border-start-color
-        -webkit-border-start-style
-        -webkit-border-start-width
+        border-inline-start-color
+        border-inline-start-style
+        border-inline-start-width
     -webkit-column-break-after
         break-after
     -webkit-column-break-before
@@ -705,12 +705,36 @@ All changes to this list should go through Blink's feature review process: http:
         background-origin
     -webkit-background-size
         background-size
+    -webkit-border-after-color
+        border-block-end-color
+    -webkit-border-after-style
+        border-block-end-style
+    -webkit-border-after-width
+        border-block-end-width
+    -webkit-border-before-color
+        border-block-start-color
+    -webkit-border-before-style
+        border-block-start-style
+    -webkit-border-before-width
+        border-block-start-width
     -webkit-border-bottom-left-radius
         border-bottom-left-radius
     -webkit-border-bottom-right-radius
         border-bottom-right-radius
+    -webkit-border-end-color
+        border-inline-end-color
+    -webkit-border-end-style
+        border-inline-end-style
+    -webkit-border-end-width
+        border-inline-end-width
     -webkit-border-radius
         border-radius
+    -webkit-border-start-color
+        border-inline-start-color
+    -webkit-border-start-style
+        border-inline-start-style
+    -webkit-border-start-width
+        border-inline-start-width
     -webkit-border-top-left-radius
         border-top-left-radius
     -webkit-border-top-right-radius

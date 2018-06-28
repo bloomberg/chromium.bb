@@ -32,6 +32,12 @@ backgroundSize
 baselineShift
 blockSize
 border
+borderBlockEndColor
+borderBlockEndStyle
+borderBlockEndWidth
+borderBlockStartColor
+borderBlockStartStyle
+borderBlockStartWidth
 borderBottom
 borderBottomColor
 borderBottomLeftRadius
@@ -46,6 +52,12 @@ borderImageRepeat
 borderImageSlice
 borderImageSource
 borderImageWidth
+borderInlineEndColor
+borderInlineEndStyle
+borderInlineEndWidth
+borderInlineStartColor
+borderInlineStartStyle
+borderInlineStartWidth
 borderLeft
 borderLeftColor
 borderLeftStyle

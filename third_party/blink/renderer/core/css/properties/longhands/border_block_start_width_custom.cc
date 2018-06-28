@@ -1,8 +1,8 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/core/css/properties/longhands/webkit_border_after_width.h"
+#include "third_party/blink/renderer/core/css/properties/longhands/border_block_start_width.h"
 
 #include "third_party/blink/renderer/core/css/parser/css_parser_context.h"
 #include "third_party/blink/renderer/core/css/parser/css_property_parser_helpers.h"
@@ -12,7 +12,7 @@
 namespace blink {
 namespace CSSLonghand {
 
-const CSSValue* WebkitBorderAfterWidth::ParseSingleValue(
+const CSSValue* BorderBlockStartWidth::ParseSingleValue(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
     const CSSParserLocalContext&) const {
