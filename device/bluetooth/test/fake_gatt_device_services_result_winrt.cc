@@ -17,15 +17,18 @@ using ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
 
 }  // namespace
 
-FakeGattDeviceServicesResultWinrt::FakeGattDeviceServicesResultWinrt() =
-    default;
+FakeGattDeviceServicesResultWinrt::FakeGattDeviceServicesResultWinrt(
+    ABI::Windows::Devices::Bluetooth::GenericAttributeProfile::
+        GattCommunicationStatus status)
+    : status_(status) {}
 
 FakeGattDeviceServicesResultWinrt::~FakeGattDeviceServicesResultWinrt() =
     default;
 
 HRESULT FakeGattDeviceServicesResultWinrt::get_Status(
     GattCommunicationStatus* value) {
-  return E_NOTIMPL;
+  *value = status_;
+  return S_OK;
 }
 
 HRESULT FakeGattDeviceServicesResultWinrt::get_ProtocolError(

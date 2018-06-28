@@ -117,8 +117,21 @@ class BluetoothTestWinrt : public BluetoothTestWin,
   BluetoothTestWinrt();
   ~BluetoothTestWinrt() override;
 
+  // BluetoothTestBase:
   bool PlatformSupportsLowEnergy() override;
+  void InitWithDefaultAdapter() override;
+  void InitWithoutDefaultAdapter() override;
+  void InitWithFakeAdapter() override;
   BluetoothDevice* SimulateLowEnergyDevice(int device_ordinal) override;
+  void SimulateGattConnection(BluetoothDevice* device) override;
+  void SimulateGattConnectionError(
+      BluetoothDevice* device,
+      BluetoothDevice::ConnectErrorCode error_code) override;
+  void SimulateGattDisconnection(BluetoothDevice* device) override;
+  void DeleteDevice(BluetoothDevice* device) override;
+
+  void OnFakeBluetoothDeviceConnectGattCalled();
+  void OnFakeBluetoothGattDisconnect();
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
