@@ -88,7 +88,7 @@ cdm::SessionType ToCdmSessionType(CdmSessionType session_type) {
       return cdm::kTemporary;
     case CdmSessionType::kPersistentLicense:
       return cdm::kPersistentLicense;
-    case CdmSessionType::kPersistentReleaseMessage:
+    case CdmSessionType::kPersistentUsageRecord:
       return cdm::kPersistentKeyRelease;
   }
 

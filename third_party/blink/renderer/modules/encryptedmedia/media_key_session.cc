@@ -92,7 +92,7 @@ static bool IsPersistentSessionType(WebEncryptedMediaSessionType session_type) {
       return false;
     case WebEncryptedMediaSessionType::kPersistentLicense:
       return true;
-    case WebEncryptedMediaSessionType::kPersistentReleaseMessage:
+    case WebEncryptedMediaSessionType::kPersistentUsageRecord:
       return true;
     case blink::WebEncryptedMediaSessionType::kUnknown:
       break;

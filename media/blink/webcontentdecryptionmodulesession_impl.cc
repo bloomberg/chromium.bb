@@ -71,8 +71,8 @@ CdmSessionType convertSessionType(
       return CdmSessionType::kTemporary;
     case blink::WebEncryptedMediaSessionType::kPersistentLicense:
       return CdmSessionType::kPersistentLicense;
-    case blink::WebEncryptedMediaSessionType::kPersistentReleaseMessage:
-      return CdmSessionType::kPersistentReleaseMessage;
+    case blink::WebEncryptedMediaSessionType::kPersistentUsageRecord:
+      return CdmSessionType::kPersistentUsageRecord;
     case blink::WebEncryptedMediaSessionType::kUnknown:
       break;
   }

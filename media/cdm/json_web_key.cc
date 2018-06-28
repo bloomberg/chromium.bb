@@ -32,7 +32,7 @@ const char kKeyIdsTag[] = "kids";
 const char kTypeTag[] = "type";
 const char kTemporarySession[] = "temporary";
 const char kPersistentLicenseSession[] = "persistent-license";
-const char kPersistentReleaseMessageSession[] = "persistent-release-message";
+const char kPersistentUsageRecordSession[] = "persistent-usage-record";
 
 static std::string ShortenTo64Characters(const std::string& input) {
   // Convert |input| into a string with escaped characters replacing any
@@ -106,8 +106,8 @@ std::string GenerateJWKSet(const KeyIdAndKeyPairs& keys,
     case CdmSessionType::kPersistentLicense:
       jwk_set.SetString(kTypeTag, kPersistentLicenseSession);
       break;
-    case CdmSessionType::kPersistentReleaseMessage:
-      jwk_set.SetString(kTypeTag, kPersistentReleaseMessageSession);
+    case CdmSessionType::kPersistentUsageRecord:
+      jwk_set.SetString(kTypeTag, kPersistentUsageRecordSession);
       break;
   }
 
@@ -220,8 +220,8 @@ bool ExtractKeysFromJWKSet(const std::string& jwk_set,
     *session_type = CdmSessionType::kTemporary;
   } else if (session_type_id == kPersistentLicenseSession) {
     *session_type = CdmSessionType::kPersistentLicense;
-  } else if (session_type_id == kPersistentReleaseMessageSession) {
-    *session_type = CdmSessionType::kPersistentReleaseMessage;
+  } else if (session_type_id == kPersistentUsageRecordSession) {
+    *session_type = CdmSessionType::kPersistentUsageRecord;
   } else {
     DVLOG(1) << "Invalid '" << kTypeTag << "' value: " << session_type_id;
     return false;
@@ -323,8 +323,8 @@ void CreateLicenseRequest(const KeyIdList& key_ids,
     case CdmSessionType::kPersistentLicense:
       request->SetString(kTypeTag, kPersistentLicenseSession);
       break;
-    case CdmSessionType::kPersistentReleaseMessage:
-      request->SetString(kTypeTag, kPersistentReleaseMessageSession);
+    case CdmSessionType::kPersistentUsageRecord:
+      request->SetString(kTypeTag, kPersistentUsageRecordSession);
       break;
   }
 

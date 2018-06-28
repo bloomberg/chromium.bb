@@ -49,7 +49,7 @@ class TestKeySystemProperties : public media::KeySystemProperties {
     return media::EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
-  media::EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+  media::EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
       const override {
     return media::EmeSessionTypeSupport::NOT_SUPPORTED;
   }

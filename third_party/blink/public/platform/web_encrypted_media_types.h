@@ -21,7 +21,7 @@ enum class WebEncryptedMediaSessionType {
   kUnknown,
   kTemporary,
   kPersistentLicense,
-  kPersistentReleaseMessage,
+  kPersistentUsageRecord,
 };
 
 }  // namespace blink

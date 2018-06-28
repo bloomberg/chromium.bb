@@ -546,7 +546,7 @@ base::Optional<CdmSessionType> ToCdmSessionType(pb::CdmSessionType value) {
   switch (value) {
     CASE_RETURN_OTHER(kTemporary);
     CASE_RETURN_OTHER(kPersistentLicense);
-    CASE_RETURN_OTHER(kPersistentReleaseMessage);
+    CASE_RETURN_OTHER(kPersistentUsageRecord);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }
@@ -557,7 +557,7 @@ base::Optional<pb::CdmSessionType> ToProtoCdmSessionType(CdmSessionType value) {
   switch (value) {
     CASE_RETURN_OTHER(kTemporary);
     CASE_RETURN_OTHER(kPersistentLicense);
-    CASE_RETURN_OTHER(kPersistentReleaseMessage);
+    CASE_RETURN_OTHER(kPersistentUsageRecord);
   }
   return base::nullopt;  // Not a 'default' to ensure compile-time checks.
 }

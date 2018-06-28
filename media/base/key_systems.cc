@@ -133,7 +133,7 @@ class ClearKeyProperties : public KeySystemProperties {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
 
-  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+  EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
       const override {
     return EmeSessionTypeSupport::NOT_SUPPORTED;
   }
@@ -237,7 +237,7 @@ class KeySystemsImpl : public KeySystems {
   EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
       const std::string& key_system) const override;
 
-  EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport(
+  EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport(
       const std::string& key_system) const override;
 
   EmeFeatureSupport GetPersistentStateSupport(
@@ -394,7 +394,7 @@ void KeySystemsImpl::AddSupportedKeySystems(
     DCHECK(!properties->GetKeySystemName().empty());
     DCHECK(properties->GetPersistentLicenseSessionSupport() !=
            EmeSessionTypeSupport::INVALID);
-    DCHECK(properties->GetPersistentReleaseMessageSessionSupport() !=
+    DCHECK(properties->GetPersistentUsageRecordSessionSupport() !=
            EmeSessionTypeSupport::INVALID);
     DCHECK(properties->GetPersistentStateSupport() !=
            EmeFeatureSupport::INVALID);
@@ -414,13 +414,13 @@ void KeySystemsImpl::AddSupportedKeySystems(
         EmeFeatureSupport::NOT_SUPPORTED) {
       DCHECK(properties->GetPersistentLicenseSessionSupport() ==
              EmeSessionTypeSupport::NOT_SUPPORTED);
-      DCHECK(properties->GetPersistentReleaseMessageSessionSupport() ==
+      DCHECK(properties->GetPersistentUsageRecordSessionSupport() ==
              EmeSessionTypeSupport::NOT_SUPPORTED);
     }
 
-    // persistent-release-message sessions are not currently supported.
+    // persistent-usage-record sessions are not currently supported.
     // http://crbug.com/448888
-    DCHECK(properties->GetPersistentReleaseMessageSessionSupport() ==
+    DCHECK(properties->GetPersistentUsageRecordSessionSupport() ==
            EmeSessionTypeSupport::NOT_SUPPORTED);
 
     // If distinctive identifiers are not supported, then no other features can
@@ -429,7 +429,7 @@ void KeySystemsImpl::AddSupportedKeySystems(
         EmeFeatureSupport::NOT_SUPPORTED) {
       DCHECK(properties->GetPersistentLicenseSessionSupport() !=
              EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
-      DCHECK(properties->GetPersistentReleaseMessageSessionSupport() !=
+      DCHECK(properties->GetPersistentUsageRecordSessionSupport() !=
              EmeSessionTypeSupport::SUPPORTED_WITH_IDENTIFIER);
     }
 
@@ -680,7 +680,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentLicenseSessionSupport(
   return key_system_iter->second->GetPersistentLicenseSessionSupport();
 }
 
-EmeSessionTypeSupport KeySystemsImpl::GetPersistentReleaseMessageSessionSupport(
+EmeSessionTypeSupport KeySystemsImpl::GetPersistentUsageRecordSessionSupport(
     const std::string& key_system) const {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -690,7 +690,7 @@ EmeSessionTypeSupport KeySystemsImpl::GetPersistentReleaseMessageSessionSupport(
     NOTREACHED();
     return EmeSessionTypeSupport::INVALID;
   }
-  return key_system_iter->second->GetPersistentReleaseMessageSessionSupport();
+  return key_system_iter->second->GetPersistentUsageRecordSessionSupport();
 }
 
 EmeFeatureSupport KeySystemsImpl::GetPersistentStateSupport(

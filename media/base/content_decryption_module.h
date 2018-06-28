@@ -43,8 +43,8 @@ typedef std::vector<std::unique_ptr<CdmKeyInformation>> CdmKeysInfo;
 enum class CdmSessionType {
   kTemporary,
   kPersistentLicense,
-  kPersistentReleaseMessage,
-  kMaxValue = kPersistentReleaseMessage
+  kPersistentUsageRecord,
+  kMaxValue = kPersistentUsageRecord
 };
 
 // Type of message being sent to the application.

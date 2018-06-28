@@ -30,7 +30,7 @@ class ExternalClearKeyProperties : public media::KeySystemProperties {
       const std::string& requested_robustness) const override;
   media::EmeSessionTypeSupport GetPersistentLicenseSessionSupport()
       const override;
-  media::EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
+  media::EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport()
       const override;
   media::EmeFeatureSupport GetPersistentStateSupport() const override;
   media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override;
