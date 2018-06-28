@@ -36,9 +36,6 @@ const base::Feature kNightLight{"NightLight", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kOverviewSwipeToClose{"OverviewSwipeToClose",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kPersistentWindowBounds{"PersistentWindowBounds",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kSystemTrayUnified{"SystemTrayUnified",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 
@@ -74,10 +71,6 @@ bool IsNewWallpaperPickerEnabled() {
 
 bool IsNightLightEnabled() {
   return base::FeatureList::IsEnabled(kNightLight);
-}
-
-bool IsPersistentWindowBoundsEnabled() {
-  return base::FeatureList::IsEnabled(kPersistentWindowBounds);
 }
 
 bool IsSystemTrayUnifiedEnabled() {

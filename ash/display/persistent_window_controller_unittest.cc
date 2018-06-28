@@ -6,38 +6,19 @@
 
 #include "ash/display/display_move_window_util.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/ash_features.h"
 #include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
 #include "base/test/metrics/histogram_tester.h"
-#include "base/test/scoped_feature_list.h"
 #include "ui/display/test/display_manager_test_api.h"
 
 using session_manager::SessionState;
 
 namespace ash {
 
-class PersistentWindowControllerTest : public AshTestBase {
- protected:
-  PersistentWindowControllerTest() = default;
-  ~PersistentWindowControllerTest() override = default;
-
-  // AshTestBase:
-  void SetUp() override {
-    // Explicitly enable persistent window bounds feature for the tests.
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kPersistentWindowBounds);
-    AshTestBase::SetUp();
-  }
-
- private:
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(PersistentWindowControllerTest);
-};
+using PersistentWindowControllerTest = AshTestBase;
 
 TEST_F(PersistentWindowControllerTest, DisconnectDisplay) {
   UpdateDisplay("0+0-500x500,0+501-500x500");
