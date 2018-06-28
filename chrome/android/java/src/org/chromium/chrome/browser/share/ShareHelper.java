@@ -108,8 +108,7 @@ public class ShareHelper {
 
     private static void fireIntent(Activity activity, Intent intent) {
         if (sFakeIntentReceiverForTesting != null) {
-            Context context = activity.getApplicationContext();
-            sFakeIntentReceiverForTesting.fireIntent(context, intent);
+            sFakeIntentReceiverForTesting.fireIntent(ContextUtils.getApplicationContext(), intent);
         } else {
             activity.startActivity(intent);
         }
@@ -200,7 +199,7 @@ public class ShareHelper {
                     sTargetChosenReceiveAction = activity.getPackageName() + "/"
                             + TargetChosenReceiver.class.getName() + "_ACTION";
                 }
-                Context context = activity.getApplicationContext();
+                Context context = ContextUtils.getApplicationContext();
                 if (sLastRegisteredReceiver != null) {
                     context.unregisterReceiver(sLastRegisteredReceiver);
                     // Must cancel the callback (to satisfy guarantee that exactly one method of
@@ -233,7 +232,7 @@ public class ShareHelper {
         public void onReceive(Context context, Intent intent) {
             synchronized (LOCK) {
                 if (sLastRegisteredReceiver != this) return;
-                context.getApplicationContext().unregisterReceiver(sLastRegisteredReceiver);
+                ContextUtils.getApplicationContext().unregisterReceiver(sLastRegisteredReceiver);
                 sLastRegisteredReceiver = null;
             }
             if (!intent.hasExtra(EXTRA_RECEIVER_TOKEN)
