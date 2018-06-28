@@ -25,7 +25,7 @@ class WebUIInfoSingleton;
 
 class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
  public:
-  SafeBrowsingUIHandler(content::BrowserContext*);
+  SafeBrowsingUIHandler(content::BrowserContext* context);
   ~SafeBrowsingUIHandler() override;
 
   // Get the experiments that are currently enabled per Chrome instance.
@@ -33,6 +33,9 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
 
   // Get the Safe Browsing related preferences for the current user.
   void GetPrefs(const base::ListValue* args);
+
+  // Get the current captured passwords.
+  void GetSavedPasswords(const base::ListValue* args);
 
   // Get the information related to the Safe Browsing database and full hash
   // cache.
@@ -70,6 +73,7 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   void NotifyPGEventJsListener(const sync_pb::UserEventSpecifics& event);
 
   content::BrowserContext* browser_context_;
+
   // List that keeps all the WebUI listener objects.
   static std::vector<SafeBrowsingUIHandler*> webui_list_;
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingUIHandler);
