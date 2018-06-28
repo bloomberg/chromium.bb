@@ -102,11 +102,13 @@ WebInputEventResult MouseWheelEventManager::HandleWheelEvent(
   if (wheel_target_) {
     WheelEvent* dom_event =
         WheelEvent::Create(event, wheel_target_->GetDocument().domWindow());
+    // The event handler might remove |wheel_target_| from DOM so we should get
+    // this value now (see https://crbug.com/857013).
+    bool should_enforce_vertical_scroll =
+        wheel_target_->GetDocument().IsVerticalScrollEnforced();
     DispatchEventResult dom_event_result =
         wheel_target_->DispatchEvent(dom_event);
     if (dom_event_result != DispatchEventResult::kNotCanceled) {
-      bool should_enforce_vertical_scroll =
-          wheel_target_->GetDocument().IsVerticalScrollEnforced();
       // Reset the target if the dom event is cancelled to make sure that new
       // targeting happens for the next wheel event.
       wheel_target_ = nullptr;
