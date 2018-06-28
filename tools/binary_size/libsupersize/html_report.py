@@ -10,6 +10,7 @@ import os
 import shutil
 
 import archive
+import diff
 import path_util
 
 
@@ -218,10 +219,20 @@ class IndexedSet(object):
 
 
 def _MakeTreeViewList(symbols, min_symbol_size):
+  """Builds JSON data of the symbols for the tree view HTML report.
+
+  As the tree is built on the client-side, this function creates a flat list
+  of files, where each file object contains symbols that have the same path.
+
+  Args:
+    symbols: A SymbolGroup containing all symbols.
+    min_symbol_size: The minimum byte size needed for a symbol to be included.
+  """
   file_nodes = {}
   source_paths = IndexedSet()
   components = IndexedSet()
 
+  # Build a container for symbols smaller than min_symbol_size
   small_symbols = {}
   small_file_node = None
   if min_symbol_size > 0:
@@ -233,9 +244,12 @@ def _MakeTreeViewList(symbols, min_symbol_size):
     }
     file_nodes[_NAME_SMALL_SYMBOL_BUCKET] = small_file_node
 
+  # Bundle symbols by the file they belong to,
+  # and add all the file buckets into file_nodes
   for symbol in symbols:
     symbol_type = _GetSymbolType(symbol)
-    if symbol.pss >= min_symbol_size:
+    symbol_size = symbol.pss
+    if abs(symbol_size) >= min_symbol_size:
       path = symbol.source_path or symbol.object_path
       file_node = file_nodes.get(path)
       if file_node is None:
@@ -252,9 +266,9 @@ def _MakeTreeViewList(symbols, min_symbol_size):
       file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
         _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
         _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
-        _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol.pss,
+        _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
       })
-    elif min_symbol_size > 0:
+    else:
       if symbol_type not in _SYMBOL_TYPE_DESCRIPTIONS:
         symbol_type = 'o'
 
@@ -268,7 +282,7 @@ def _MakeTreeViewList(symbols, min_symbol_size):
         small_symbols[symbol_type] = small_type_symbol
         small_file_node[_COMPACT_FILE_SYMBOLS_KEY].append(small_type_symbol)
 
-      small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol.pss
+      small_type_symbol[_COMPACT_SYMBOL_BYTE_SIZE_KEY] += symbol_size
 
   return {
     'file_nodes': list(file_nodes.values()),
@@ -299,10 +313,13 @@ def _CopyTemplateFiles(template_src, dest_dir):
   shutil.copy(os.path.join(template_src, 'D3SymbolTreeMap.js'), dest_dir)
 
 
-def _CopyTreeViewTemplateFiles(template_src, dest_dir):
+def _CopyTreeViewTemplateFiles(template_src, dest_dir, size_header):
   _MakeDirIfDoesNotExist(dest_dir)
-  shutil.copy(os.path.join(template_src, 'index.html'), dest_dir)
   shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
+
+  with open(os.path.join(dest_dir, 'index.html'), 'w') as out_html, \
+        open(os.path.join(template_src, 'index.html'), 'r') as in_html:
+    out_html.write(in_html.read().replace('{{size_header}}', size_header))
 
   with open(os.path.join(dest_dir, 'tree.js'), 'w') as out_js, \
         open(os.path.join(template_src, 'ui.js'), 'r') as ui, \
@@ -326,14 +343,24 @@ def AddArguments(parser):
                       help='Show dex method count rather than size')
   parser.add_argument('--tree-view-ui', action='store_true',
                       help='Use the new tree view UI')
+  parser.add_argument('--diff-with',
+                      help='Diffs the input_file against an older .size file')
 
 
 def Run(args, parser):
   if not args.input_file.endswith('.size'):
     parser.error('Input must end with ".size"')
+  if args.diff_with and not args.diff_with.endswith('.size'):
+    parser.error('Diff input must end with ".size"')
+  elif args.diff_with and not args.tree_view_ui:
+    parser.error('Diffs only supported in --tree-view-ui mode')
 
   logging.info('Reading .size file')
   size_info = archive.LoadAndPostProcessSizeInfo(args.input_file)
+  if args.diff_with:
+    before_size_info = archive.LoadAndPostProcessSizeInfo(args.diff_with)
+    after_size_info = size_info
+    size_info = diff.Diff(before_size_info, after_size_info)
   symbols = size_info.raw_symbols
   if args.method_count:
     symbols = symbols.WhereInSection('m')
@@ -341,8 +368,13 @@ def Run(args, parser):
     symbols = symbols.WhereInSection('b').Inverted()
 
   if args.tree_view_ui:
+    if args.diff_with:
+      size_header = 'Delta size'
+    else:
+      size_header = 'Size'
+
     template_src = os.path.join(os.path.dirname(__file__), 'template_tree_view')
-    _CopyTreeViewTemplateFiles(template_src, args.report_dir)
+    _CopyTreeViewTemplateFiles(template_src, args.report_dir,size_header)
     logging.info('Creating JSON objects')
     tree_root = _MakeTreeViewList(symbols, args.min_symbol_size)
 

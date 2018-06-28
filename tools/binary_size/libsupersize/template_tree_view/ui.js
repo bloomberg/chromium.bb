@@ -86,6 +86,12 @@
     dom.replace(sizeElement, dom.createFragment([textNode, suffixElement]));
     sizeElement.title =
       bytes.toLocaleString(undefined, {useGrouping: true}) + ' bytes';
+
+    if (bytes < 0) {
+      sizeElement.classList.add('negative');
+    } else {
+      sizeElement.classList.remove('negative');
+    }
   }
 
   /**
