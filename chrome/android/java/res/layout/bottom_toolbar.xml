@@ -52,12 +52,13 @@
                 android:layout_height="1dp"
                 android:layout_weight="1" />
 
-            <ImageView
+            <org.chromium.chrome.browser.widget.TintedImageButton
                 android:id="@+id/search_button"
-                style="@style/ToolbarMenuButtonPhone"
-                android:src="@drawable/ic_logo_googleg_24dp"
+                style="@style/ToolbarButton"
+                android:src="@drawable/ic_search"
                 android:layout_gravity="center"
-                android:contentDescription="@string/accessibility_toolbar_btn_menu" />
+                android:contentDescription="@string/accessibility_toolbar_btn_menu"
+                android:tint="@color/dark_mode_tint" />
 
             <Space
                 android:layout_width="0dp"
