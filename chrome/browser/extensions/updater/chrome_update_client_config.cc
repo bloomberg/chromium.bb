@@ -168,12 +168,6 @@ ChromeUpdateClientConfig::RequestContext() const {
       ->GetURLRequestContext();
 }
 
-scoped_refptr<network::SharedURLLoaderFactory>
-ChromeUpdateClientConfig::URLLoaderFactory() const {
-  return content::BrowserContext::GetDefaultStoragePartition(context_)
-      ->GetURLLoaderFactoryForBrowserProcess();
-}
-
 std::unique_ptr<service_manager::Connector>
 ChromeUpdateClientConfig::CreateServiceManagerConnector() const {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);

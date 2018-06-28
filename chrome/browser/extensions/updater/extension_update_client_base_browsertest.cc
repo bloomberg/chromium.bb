@@ -11,7 +11,7 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/chrome_browser_main_extra_parts.h"
 #include "chrome/browser/extensions/browsertest_util.h"
-#include "components/update_client/url_loader_post_interceptor.h"
+#include "components/update_client/url_request_post_interceptor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
 #include "extensions/browser/updater/update_service.h"
@@ -105,18 +105,16 @@ class UpdateClientCompleteEventWaiter
 
 }  // namespace
 
-ExtensionUpdateClientBaseTest::ExtensionUpdateClientBaseTest()
-    : https_server_for_update_(net::EmbeddedTestServer::TYPE_HTTPS),
-      https_server_for_ping_(net::EmbeddedTestServer::TYPE_HTTPS) {}
+ExtensionUpdateClientBaseTest::ExtensionUpdateClientBaseTest() {}
 
 ExtensionUpdateClientBaseTest::~ExtensionUpdateClientBaseTest() {}
 
 std::vector<GURL> ExtensionUpdateClientBaseTest::GetUpdateUrls() const {
-  return {https_server_for_update_.GetURL("/updatehost/service/update")};
+  return {GURL("https://updatehost/service/update")};
 }
 
 std::vector<GURL> ExtensionUpdateClientBaseTest::GetPingUrls() const {
-  return {https_server_for_ping_.GetURL("/pinghost/service/ping")};
+  return {GURL("https://pinghost/service/ping")};
 }
 
 ConfigFactoryCallback
@@ -132,9 +130,6 @@ ExtensionUpdateClientBaseTest::ChromeUpdateClientConfigFactory() const {
 }
 
 void ExtensionUpdateClientBaseTest::SetUp() {
-  ASSERT_TRUE(https_server_for_update_.InitializeAndListen());
-  ASSERT_TRUE(https_server_for_ping_.InitializeAndListen());
-
   scoped_feature_list_.InitAndEnableFeature(
       features::kNewExtensionUpdaterService);
   ChromeUpdateClientConfig::SetChromeUpdateClientConfigFactoryForTesting(
@@ -166,19 +161,20 @@ void ExtensionUpdateClientBaseTest::SetUpNetworkInterceptors() {
   const auto update_urls = GetUpdateUrls();
   ASSERT_TRUE(!update_urls.empty());
   const GURL update_url = update_urls.front();
-
-  update_interceptor_ =
-      std::make_unique<update_client::URLLoaderPostInterceptor>(
-          update_urls, &https_server_for_update_);
-  https_server_for_update_.StartAcceptingConnections();
+  update_interceptor_factory_ =
+      std::make_unique<update_client::URLRequestPostInterceptorFactory>(
+          update_url.scheme(), update_url.host(), io_thread);
+  update_interceptor_ = update_interceptor_factory_->CreateInterceptor(
+      base::FilePath::FromUTF8Unsafe(update_url.path()));
 
   const auto ping_urls = GetPingUrls();
   ASSERT_TRUE(!ping_urls.empty());
   const GURL ping_url = ping_urls.front();
-
-  ping_interceptor_ = std::make_unique<update_client::URLLoaderPostInterceptor>(
-      ping_urls, &https_server_for_ping_);
-  https_server_for_ping_.StartAcceptingConnections();
+  ping_interceptor_factory_ =
+      std::make_unique<update_client::URLRequestPostInterceptorFactory>(
+          ping_url.scheme(), ping_url.host(), io_thread);
+  ping_interceptor_ = ping_interceptor_factory_->CreateInterceptor(
+      base::FilePath::FromUTF8Unsafe(ping_url.path()));
 
   get_interceptor_ = std::make_unique<net::LocalHostTestURLRequestInterceptor>(
       io_thread, base::CreateTaskRunnerWithTraits(
