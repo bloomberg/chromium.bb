@@ -7,27 +7,15 @@
 #include "base/logging.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/network_context.h"
-#include "services/network/network_service.h"
 #include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
-#include "services/network/test/test_network_service_client.h"
 
 namespace network {
 
 TestSharedURLLoaderFactory::TestSharedURLLoaderFactory() {
-  network::mojom::NetworkServicePtr network_service_ptr;
-  network_service_ = network::NetworkService::Create(
-      mojo::MakeRequest(&network_service_ptr), /*netlog=*/nullptr);
-  network::mojom::NetworkContextParamsPtr context_params =
-      network::mojom::NetworkContextParams::New();
-  context_params->enable_data_url_support = true;
-  network_service_ptr->CreateNetworkContext(
-      mojo::MakeRequest(&network_context_), std::move(context_params));
-
-  network::mojom::NetworkServiceClientPtr network_service_client_ptr;
-  network_service_client_ = std::make_unique<TestNetworkServiceClient>(
-      mojo::MakeRequest(&network_service_client_ptr));
-  network_service_ptr->SetClient(std::move(network_service_client_ptr));
-
+  url_request_context_ = std::make_unique<net::TestURLRequestContext>();
+  mojom::NetworkContextPtr network_context;
+  network_context_ = std::make_unique<NetworkContext>(
+      nullptr, mojo::MakeRequest(&network_context), url_request_context_.get());
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;
