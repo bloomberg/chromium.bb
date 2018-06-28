@@ -725,7 +725,7 @@ FileManager.prototype = /** @struct */ {
    */
   FileManager.prototype.getDomInputs_ = function() {
     return this.dialogDom_.querySelectorAll(
-        'input[type=text], input[type=search], textarea');
+        'input[type=text], input[type=search], textarea, cr-input');
   };
 
   /**

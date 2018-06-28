@@ -125,6 +125,7 @@ js_library("dialog_footer") {
     "..:file_list_model",
     "../../../common/js:file_type",
     "../../../common/js:util",
+    "//ui/webui/resources/cr_elements/cr_input:cr_input",
   ]
 }
 

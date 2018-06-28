@@ -65,7 +65,7 @@ test.util.sync.changeValue = function(contentWindow, query, newValue) {
  * @param {string} newName Name to be newly assigned.
  */
 test.util.sync.changeName = function(contentWindow, newName) {
-  var nameBox = contentWindow.document.querySelector('.filename-spacer input');
+  var nameBox = contentWindow.document.querySelector('#rename-input');
   nameBox.focus();
   nameBox.value = newName;
   nameBox.blur();

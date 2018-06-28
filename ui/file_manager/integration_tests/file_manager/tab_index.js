@@ -29,13 +29,14 @@ testcase.tabindexSearchBoxFocus = function() {
     // Check that the search box has the focus.
     function(result) {
       chrome.test.assertTrue(result);
-      remoteCall.waitForElement(appId, ['#search-box input:focus']).
-          then(this.next); },
+      remoteCall.waitForElement(appId, ['#search-box cr-input:focus-within'])
+          .then(this.next);
+    },
     // Press the Esc key.
     function(element) {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', appId,
-          ['#search-box input', 'Escape', 'U+001B', false, false, false],
+          ['#search-box cr-input', 'Escape', 'U+001B', false, false, false],
           this.next);
     },
     // Check that the file list has the focus.
@@ -254,7 +255,7 @@ function tabindexFocus(dialogParams, volumeName, expectedSet, initialize,
     if (dialogParams.type === 'saveFile') {
       promise = promise.then(function() {
         return remoteCall.waitForElement(
-            appId, ['#filename-input-textbox:focus']);
+            appId, ['#filename-input-textbox:focus-within']);
       });
     } else {
       promise = promise.then(function() {

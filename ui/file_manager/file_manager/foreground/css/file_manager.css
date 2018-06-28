@@ -661,31 +661,13 @@ body.check-select #search-box {
   display: none;
 }
 
-#search-box input {
-  display: inline-block;
-  transition: width 200ms ease;
-  width: 0;
-}
-
-#search-box input::-webkit-search-cancel-button {
-  -webkit-appearance: none;
-}
-
-#search-box paper-input-container {
-  margin-top: -4px;
-}
-
-#search-box paper-input-container input::-webkit-input-placeholder {
-  color: rgba(255, 255, 255, 0.5);
-}
-
 #search-box.has-cursor,
 #search-box.has-text {
   -webkit-margin-end: 12px;
 }
 
-#search-box.has-cursor input,
-#search-box.has-text input {
+#search-box.has-cursor cr-input,
+#search-box.has-text cr-input {
   width: 202px;
 }
 
@@ -698,9 +680,8 @@ body.check-select #search-box {
   display: none;
   height: 16px;
   margin: 0;
-  position: relative;
+  position: absolute;
   right: 0;
-  top: 2px;
   visibility: hidden;
   width: 16px;
 }
@@ -828,18 +809,8 @@ html[dir='rtl'] #search-box .clear {
   color: rgb(51, 103, 214);
 }
 
-.dialog-footer input {
-  margin: 3px 0 !important;
-}
-
 .dialog-footer select {
   min-height: 21px;
-}
-
-.dialog-footer paper-input-container {
-  color: rgb(51, 51, 51);
-  padding: 4px 0;
-  width: 100%;
 }
 
 .dialog-footer select {
@@ -2287,7 +2258,7 @@ files-toggle-ripple {
 }
 
 /* Preventing FOUC */
-paper-input-container:unresolved {
+cr-input:unresolved {
   display: none;
 }
 

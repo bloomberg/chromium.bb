@@ -370,18 +370,6 @@ paper-ripple {
   flex: 1 0 auto;
 }
 
-#rename-input {
-  margin: 8px 0;
-  min-width: 160px;
-  padding: 4px 0;
-  width: -webkit-fit-content;
-}
-
-#rename-input > input {
-  color: white;
-  text-overflow: ellipsis;
-}
-
 /* Bubble */
 
 .gallery .toolbar .bubble {
@@ -1054,7 +1042,7 @@ paper-slider {
 
 .edit-modal .input > .unit_label {
   color: rgba(255, 255, 255, 0.54);
-  margin-bottom: 10px;
+  margin-bottom: 2px;
 }
 
 .edit-modal .lockicon {
