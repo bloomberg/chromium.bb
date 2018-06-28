@@ -4,13 +4,15 @@
 
 #include "ui/gfx/range/range.h"
 
+#include <richedit.h>
+
 #include <limits>
 
 #include "base/logging.h"
 
 namespace gfx {
 
-Range::Range(const CHARRANGE& range, LONG total_length) {
+Range::Range(const CHARRANGE& range, long total_length) {
   // Check if this is an invalid range.
   if (range.cpMin == -1 && range.cpMax == -1) {
     *this = InvalidRange();
