@@ -100,4 +100,33 @@ TEST(StorageAreaMapTest, EnforcesQuota) {
   EXPECT_EQ(kValue, map.GetItem(kKey2));
 }
 
+TEST(StorageAreaMapTest, Iteration) {
+  const int kNumTestItems = 100;
+  const size_t kQuota = 102400;  // 100K quota for this test.
+  StorageAreaMap map(kQuota);
+
+  // Fill the map with some data.
+  for (int i = 0; i < kNumTestItems; ++i)
+    EXPECT_TRUE(map.SetItem("key" + String::Number(i), "val", nullptr));
+  EXPECT_EQ(unsigned{kNumTestItems}, map.GetLength());
+
+  Vector<String> keys(kNumTestItems);
+  // Iterate over all keys.
+  for (int i = 0; i < kNumTestItems; ++i)
+    keys[i] = map.GetKey(i);
+
+  // Now iterate over some subsets, and make sure the right keys are returned.
+  for (int i = 5; i < 15; ++i)
+    EXPECT_EQ(keys[i], map.GetKey(i));
+  for (int i = kNumTestItems - 5; i >= kNumTestItems - 15; --i)
+    EXPECT_EQ(keys[i], map.GetKey(i));
+  for (int i = 20; i >= 10; --i)
+    EXPECT_EQ(keys[i], map.GetKey(i));
+  for (int i = 15; i < 20; ++i)
+    EXPECT_EQ(keys[i], map.GetKey(i));
+  for (int i = kNumTestItems - 1; i >= 0; --i)
+    EXPECT_EQ(keys[i], map.GetKey(i));
+  EXPECT_TRUE(map.GetKey(kNumTestItems).IsNull());
+}
+
 }  // namespace blink
