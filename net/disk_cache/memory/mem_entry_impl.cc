@@ -35,16 +35,17 @@ const int kMaxSparseEntryBits = 12;
 const int kMaxSparseEntrySize = 1 << kMaxSparseEntryBits;
 
 // This enum is used for histograms, so only append to the end.
-enum WriteResult {
-  WRITE_RESULT_SUCCESS = 0,
-  WRITE_RESULT_INVALID_ARGUMENT = 1,
-  WRITE_RESULT_OVER_MAX_ENTRY_SIZE = 2,
-  WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE = 3,
-  WRITE_RESULT_MAX = 4,
+enum MemEntryWriteResult {
+  MEM_ENTRY_WRITE_RESULT_SUCCESS = 0,
+  MEM_ENTRY_WRITE_RESULT_INVALID_ARGUMENT = 1,
+  MEM_ENTRY_WRITE_RESULT_OVER_MAX_ENTRY_SIZE = 2,
+  MEM_ENTRY_WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE = 3,
+  MEM_ENTRY_WRITE_RESULT_MAX = 4,
 };
 
-void RecordWriteResult(WriteResult result) {
-  UMA_HISTOGRAM_ENUMERATION("MemCache.WriteResult", result, WRITE_RESULT_MAX);
+void RecordWriteResult(MemEntryWriteResult result) {
+  UMA_HISTOGRAM_ENUMERATION("MemCache.WriteResult", result,
+                            MEM_ENTRY_WRITE_RESULT_MAX);
 }
 
 // Convert global offset to child index.
@@ -367,17 +368,17 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
   if (!backend_) {
     // We have to fail writes after the backend is destroyed since we can't
     // ensure we wouldn't use too much memory if it's gone.
-    RecordWriteResult(WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
+    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
     return net::ERR_INSUFFICIENT_RESOURCES;
   }
 
   if (index < 0 || index >= kNumStreams) {
-    RecordWriteResult(WRITE_RESULT_INVALID_ARGUMENT);
+    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
   }
 
   if (offset < 0 || buf_len < 0) {
-    RecordWriteResult(WRITE_RESULT_INVALID_ARGUMENT);
+    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_INVALID_ARGUMENT);
     return net::ERR_INVALID_ARGUMENT;
   }
 
@@ -386,7 +387,7 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
   // offset of buf_len could be negative numbers.
   if (offset > max_file_size || buf_len > max_file_size ||
       offset + buf_len > max_file_size) {
-    RecordWriteResult(WRITE_RESULT_OVER_MAX_ENTRY_SIZE);
+    RecordWriteResult(MEM_ENTRY_WRITE_RESULT_OVER_MAX_ENTRY_SIZE);
     return net::ERR_FAILED;
   }
 
@@ -396,7 +397,7 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
     backend_->ModifyStorageSize(delta);
     if (backend_->HasExceededStorageSize()) {
       backend_->ModifyStorageSize(-delta);
-      RecordWriteResult(WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
+      RecordWriteResult(MEM_ENTRY_WRITE_RESULT_EXCEEDED_CACHE_STORAGE_SIZE);
       return net::ERR_INSUFFICIENT_RESOURCES;
     }
 
@@ -410,7 +411,7 @@ int MemEntryImpl::InternalWriteData(int index, int offset, IOBuffer* buf,
   }
 
   UpdateStateOnUse(ENTRY_WAS_MODIFIED);
-  RecordWriteResult(WRITE_RESULT_SUCCESS);
+  RecordWriteResult(MEM_ENTRY_WRITE_RESULT_SUCCESS);
 
   if (!buf_len)
     return 0;
