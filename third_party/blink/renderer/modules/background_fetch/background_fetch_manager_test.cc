@@ -6,12 +6,12 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_request.h"
-#include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/modules/v8/request_or_usv_string_or_request_or_usv_string_sequence.h"
 #include "third_party/blink/renderer/core/fetch/request.h"
+#include "third_party/blink/renderer/core/fetch/request_init.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
 #include "third_party/blink/renderer/platform/bindings/script_state.h"
 
@@ -27,20 +27,6 @@ class BackgroundFetchManagerTest : public testing::Test {
       const RequestOrUSVStringOrRequestOrUSVStringSequence& requests) {
     return BackgroundFetchManager::CreateWebRequestVector(
         scope.GetScriptState(), requests, scope.GetExceptionState());
-  }
-
-  // Returns a Dictionary object that represents a JavaScript dictionary with
-  // a single key-value pair, where the key always is "method" with the value
-  // set to |method|.
-  Dictionary GetDictionaryForMethod(V8TestingScope& scope, const char* method) {
-    v8::Isolate* isolate = scope.GetIsolate();
-    v8::Local<v8::Object> data = v8::Object::New(isolate);
-
-    data->Set(isolate->GetCurrentContext(), V8String(isolate, "method"),
-              V8String(isolate, method))
-        .ToChecked();
-
-    return Dictionary(scope.GetIsolate(), data, scope.GetExceptionState());
   }
 };
 
@@ -80,9 +66,11 @@ TEST_F(BackgroundFetchManagerTest, SingleRequest) {
 
   KURL image_url("https://www.example.com/my_image.png");
 
-  Request* request = Request::Create(
-      scope.GetScriptState(), image_url.GetString(),
-      GetDictionaryForMethod(scope, "POST"), scope.GetExceptionState());
+  RequestInit request_init;
+  request_init.setMethod("POST");
+  Request* request =
+      Request::Create(scope.GetScriptState(), image_url.GetString(),
+                      request_init, scope.GetExceptionState());
   ASSERT_FALSE(scope.GetExceptionState().HadException());
   ASSERT_TRUE(request);
 
@@ -112,9 +100,11 @@ TEST_F(BackgroundFetchManagerTest, Sequence) {
   RequestOrUSVString icon_request =
       RequestOrUSVString::FromUSVString(icon_url.GetString());
 
-  Request* request = Request::Create(
-      scope.GetScriptState(), cat_video_url.GetString(),
-      GetDictionaryForMethod(scope, "DELETE"), scope.GetExceptionState());
+  RequestInit request_init;
+  request_init.setMethod("DELETE");
+  Request* request =
+      Request::Create(scope.GetScriptState(), cat_video_url.GetString(),
+                      request_init, scope.GetExceptionState());
   ASSERT_FALSE(scope.GetExceptionState().HadException());
   ASSERT_TRUE(request);
 

@@ -38,8 +38,6 @@ blink_core_sources("fetch") {
     "readable_stream_bytes_consumer.h",
     "request.cc",
     "request.h",
-    "request_init.cc",
-    "request_init.h",
     "response.cc",
     "response.h",
   ]
