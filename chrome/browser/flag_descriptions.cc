@@ -163,6 +163,10 @@ const char kCommittedInterstitialsDescription[] =
     "Use committed error pages instead of transient navigation entries "
     "for interstitial error pages (e.g. certificate errors).";
 
+const char kCanvas2DImageChromiumName[] = "Canvas 2D Image Chromium";
+const char kCanvas2DImageChromiumDescription[] =
+    "Allows for using CHROMIUM_image GLES2 extension for HTML Canvas Contexts";
+
 const char kCastStreamingHwEncodingName[] =
     "Cast Streaming hardware video encoding";
 const char kCastStreamingHwEncodingDescription[] =

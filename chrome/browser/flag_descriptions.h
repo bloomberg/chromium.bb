@@ -125,6 +125,9 @@ extern const char kBypassAppBannerEngagementChecksDescription[];
 extern const char kCommittedInterstitialsName[];
 extern const char kCommittedInterstitialsDescription[];
 
+extern const char kCanvas2DImageChromiumName[];
+extern const char kCanvas2DImageChromiumDescription[];
+
 extern const char kCastStreamingHwEncodingName[];
 extern const char kCastStreamingHwEncodingDescription[];
 
