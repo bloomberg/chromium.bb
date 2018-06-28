@@ -241,13 +241,20 @@ void FetchRespondWithObserver::OnResponseFulfilled(
         ServiceWorkerResponseError::kRedirectedResponseForNotFollowRequest);
     return;
   }
-  if (response->IsBodyLocked()) {
+
+  ExceptionState exception_state(value.GetScriptState()->GetIsolate(),
+                                 context_type, interface_name, property_name);
+  if (response->IsBodyLocked(exception_state) == Body::BodyLocked::kLocked) {
+    DCHECK(!exception_state.HadException());
     OnResponseRejected(ServiceWorkerResponseError::kBodyLocked);
     return;
   }
 
-  ExceptionState exception_state(value.GetScriptState()->GetIsolate(),
-                                 context_type, interface_name, property_name);
+  if (exception_state.HadException()) {
+    OnResponseRejected(ServiceWorkerResponseError::kResponseBodyBroken);
+    return;
+  }
+
   if (response->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
     DCHECK(!exception_state.HadException());
     OnResponseRejected(ServiceWorkerResponseError::kBodyUsed);

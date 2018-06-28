@@ -171,12 +171,13 @@ TEST(ReadableStreamOperationsTest, GetReader) {
   ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
   EXPECT_FALSE(stream.IsEmpty());
 
-  EXPECT_FALSE(
-      ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream)
-          .value_or(true));
+  EXPECT_FALSE(ReadableStreamOperations::IsLocked(scope.GetScriptState(),
+                                                  stream, ASSERT_NO_EXCEPTION)
+                   .value_or(true));
   ScriptValue reader;
   reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
-  EXPECT_TRUE(ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream)
+  EXPECT_TRUE(ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream,
+                                                 ASSERT_NO_EXCEPTION)
                   .value_or(false));
   ASSERT_FALSE(reader.IsEmpty());
 

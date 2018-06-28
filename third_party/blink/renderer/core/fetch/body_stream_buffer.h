@@ -65,7 +65,8 @@ class CORE_EXPORT BodyStreamBuffer final : public UnderlyingSourceBase,
   base::Optional<bool> IsStreamReadable(ExceptionState&);
   bool IsStreamClosed();
   bool IsStreamErrored();
-  bool IsStreamLocked();
+  base::Optional<bool> IsStreamLocked(ExceptionState&);
+  bool IsStreamLockedForDCheck();
   base::Optional<bool> IsStreamDisturbed(ExceptionState&);
   bool IsStreamDisturbedForDCheck();
   void CloseAndLockAndDisturb(ExceptionState&);

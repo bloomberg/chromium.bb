@@ -747,7 +747,8 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
           "Partial response (status code 206) is unsupported");
       return promise;
     }
-    if (responses[i]->IsBodyLocked() ||
+    if (responses[i]->IsBodyLocked(exception_state) ==
+            Body::BodyLocked::kLocked ||
         responses[i]->IsBodyUsed(exception_state) == Body::BodyUsed::kUsed) {
       DCHECK(!exception_state.HadException());
       barrier_callback->OnError("Response body is already used");

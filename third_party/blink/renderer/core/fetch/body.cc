@@ -308,9 +308,14 @@ Body::BodyUsed Body::IsBodyUsed(ExceptionState& exception_state) {
   return stream_disturbed.value() ? BodyUsed::kUsed : BodyUsed::kUnused;
 }
 
-bool Body::IsBodyLocked() {
+Body::BodyLocked Body::IsBodyLocked(ExceptionState& exception_state) {
   auto* body_buffer = BodyBuffer();
-  return body_buffer && body_buffer->IsStreamLocked();
+  if (!body_buffer)
+    return BodyLocked::kUnlocked;
+  base::Optional<bool> is_locked = body_buffer->IsStreamLocked(exception_state);
+  if (exception_state.HadException())
+    return BodyLocked::kBroken;
+  return is_locked.value() ? BodyLocked::kLocked : BodyLocked::kUnlocked;
 }
 
 bool Body::HasPendingActivity() const {
@@ -337,8 +342,12 @@ void Body::RejectInvalidConsumption(ScriptState* script_state,
   }
   DCHECK_NE(used, BodyUsed::kBroken);
 
-  if (IsBodyLocked())
+  if (IsBodyLocked(exception_state) == BodyLocked::kLocked) {
+    DCHECK(!exception_state.HadException());
     exception_state.ThrowTypeError("body stream is locked");
+  }
+  if (exception_state.HadException())
+    return;
 
   if (used == BodyUsed::kUsed)
     exception_state.ThrowTypeError("body stream already read");

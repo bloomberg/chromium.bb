@@ -175,7 +175,7 @@ ScriptValue BodyStreamBuffer::Stream() {
 scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
     BytesConsumer::BlobSizePolicy policy,
     ExceptionState& exception_state) {
-  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamLockedForDCheck());
   DCHECK(!IsStreamDisturbedForDCheck());
   if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
@@ -196,7 +196,7 @@ scoped_refptr<BlobDataHandle> BodyStreamBuffer::DrainAsBlobDataHandle(
 
 scoped_refptr<EncodedFormData> BodyStreamBuffer::DrainAsFormData(
     ExceptionState& exception_state) {
-  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamLockedForDCheck());
   DCHECK(!IsStreamDisturbedForDCheck());
   if (IsStreamClosed() || IsStreamErrored())
     return nullptr;
@@ -239,7 +239,7 @@ void BodyStreamBuffer::StartLoading(FetchDataLoader* loader,
 void BodyStreamBuffer::Tee(BodyStreamBuffer** branch1,
                            BodyStreamBuffer** branch2,
                            ExceptionState& exception_state) {
-  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamLockedForDCheck());
   DCHECK(!IsStreamDisturbedForDCheck());
   *branch1 = nullptr;
   *branch2 = nullptr;
@@ -359,9 +359,15 @@ bool BodyStreamBuffer::IsStreamErrored() {
                                           true);
 }
 
-bool BodyStreamBuffer::IsStreamLocked() {
-  return BooleanStreamOperationOrFallback(ReadableStreamOperations::IsLocked,
-                                          true);
+base::Optional<bool> BodyStreamBuffer::IsStreamLocked(
+    ExceptionState& exception_state) {
+  return BooleanStreamOperation(ReadableStreamOperations::IsLocked,
+                                exception_state);
+}
+
+bool BodyStreamBuffer::IsStreamLockedForDCheck() {
+  return ReadableStreamOperations::IsLockedForDCheck(script_state_.get(),
+                                                     Stream());
 }
 
 base::Optional<bool> BodyStreamBuffer::IsStreamDisturbed(
@@ -521,7 +527,7 @@ base::Optional<bool> BodyStreamBuffer::BooleanStreamOperation(
 
 BytesConsumer* BodyStreamBuffer::ReleaseHandle(
     ExceptionState& exception_state) {
-  DCHECK(!IsStreamLocked());
+  DCHECK(!IsStreamLockedForDCheck());
   DCHECK(!IsStreamDisturbedForDCheck());
 
   if (stream_broken_) {
