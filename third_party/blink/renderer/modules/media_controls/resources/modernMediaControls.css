@@ -36,6 +36,11 @@ video::-webkit-media-controls {
   justify-content: flex-end;
   align-items: center;
   font-size: 14px;
+
+  margin-top: env(safe-area-inset-top);
+  margin-left: env(safe-area-inset-left);
+  margin-right: env(safe-area-inset-right);
+  margin-bottom: env(safe-area-inset-bottom);
 }
 
 audio::-webkit-media-controls-enclosure,
