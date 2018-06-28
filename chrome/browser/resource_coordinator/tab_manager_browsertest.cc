@@ -300,7 +300,13 @@ class TabManagerTestWithTwoTabs : public TabManagerTest {
   DISALLOW_COPY_AND_ASSIGN(TabManagerTestWithTwoTabs);
 };
 
-IN_PROC_BROWSER_TEST_F(TabManagerTest, TabManagerBasics) {
+// Flaky on Mac. http://crbug.com/857418
+#if defined(OS_MACOSX)
+#define MAYBE_TabManagerBasics DISABLED_TabManagerBasics
+#else
+#define MAYBE_TabManagerBasics TabManagerBasics
+#endif
+IN_PROC_BROWSER_TEST_F(TabManagerTest, MAYBE_TabManagerBasics) {
   using content::WindowedNotificationObserver;
 
   // Get three tabs open.
