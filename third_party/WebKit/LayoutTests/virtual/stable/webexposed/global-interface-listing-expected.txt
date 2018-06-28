@@ -1583,6 +1583,7 @@ interface Element : Node
     method setAttributeNode
     method setAttributeNodeNS
     method setPointerCapture
+    method toggleAttribute
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
@@ -4620,11 +4621,8 @@ interface RTCCertificate
 interface RTCDTMFSender : EventTarget
     attribute @@toStringTag
     getter canInsertDTMF
-    getter duration
-    getter interToneGap
     getter ontonechange
     getter toneBuffer
-    getter track
     method constructor
     method insertDTMF
     setter ontonechange
@@ -4841,6 +4839,7 @@ interface ReportingObserver
     method constructor
     method disconnect
     method observe
+    method takeRecords
 interface Request
     attribute @@toStringTag
     getter bodyUsed
