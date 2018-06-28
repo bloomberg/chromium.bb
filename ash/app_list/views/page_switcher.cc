@@ -32,25 +32,26 @@ namespace app_list {
 
 namespace {
 
-constexpr int kNormalButtonRadius = 3;
-constexpr int kSelectedButtonRadius = 4;
-constexpr int kInkDropRadius = 8;
-constexpr int kMaxButtonRadius = 8;
+constexpr int kNormalButtonRadius = 4;
+constexpr int kSelectedButtonRadius = 5;
+constexpr int kInkDropRadius = 16;
+constexpr int kMaxButtonRadius = 16;
 constexpr int kPreferredButtonStripWidth = kMaxButtonRadius * 2;
-constexpr SkScalar kStrokeWidth = SkIntToScalar(1);
+constexpr SkScalar kStrokeWidth = SkIntToScalar(2);
 
 // Constants for the button strip that grows vertically.
 // The padding on top/bottom side of each button.
-constexpr int kVerticalButtonPadding = 12;
+constexpr int kVerticalButtonPadding = 0;
 // The selected button color.
-constexpr SkColor kVerticalSelectedButtonColor = SK_ColorWHITE;
+constexpr SkColor kVerticalSelectedButtonColor =
+    SkColorSetARGB(255, 232, 234, 237);
 // The normal button color (54% white).
-constexpr SkColor kVerticalNormalColor = SkColorSetA(SK_ColorWHITE, 138);
-constexpr SkColor kVerticalInkDropBaseColor = SK_ColorWHITE;
+constexpr SkColor kVerticalNormalColor = SkColorSetARGB(255, 232, 234, 237);
+constexpr SkColor kVerticalInkDropBaseColor = SkColorSetRGB(241, 243, 244);
 constexpr SkColor kVerticalInkDropRippleColor =
-    SkColorSetA(kVerticalInkDropBaseColor, 20);
-constexpr SkColor kVerticalInkDropHighlightColor =
     SkColorSetA(kVerticalInkDropBaseColor, 15);
+constexpr SkColor kVerticalInkDropHighlightColor =
+    SkColorSetA(kVerticalInkDropBaseColor, 20);
 
 // Constants for the button strip that grows horizontally.
 // The padding on left/right side of each button.
@@ -91,7 +92,7 @@ class PageSwitcherButton : public views::Button {
   std::unique_ptr<views::InkDrop> CreateInkDrop() override {
     std::unique_ptr<views::InkDropImpl> ink_drop =
         Button::CreateDefaultInkDropImpl();
-    ink_drop->SetShowHighlightOnHover(false);
+    ink_drop->SetShowHighlightOnHover(true);
     ink_drop->SetAutoHighlightMode(
         views::InkDropImpl::AutoHighlightMode::SHOW_ON_RIPPLE);
     return std::move(ink_drop);
@@ -99,7 +100,7 @@ class PageSwitcherButton : public views::Button {
 
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override {
     return std::make_unique<views::CircleInkDropMask>(
-        size(), GetLocalBounds().CenterPoint(), kMaxButtonRadius);
+        size(), GetLocalBounds().CenterPoint(), kInkDropRadius);
   }
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
@@ -162,6 +163,7 @@ class PageSwitcherButton : public views::Button {
     flags.setAntiAlias(true);
     flags.setStyle(info.style);
     flags.setColor(info.color);
+    flags.setStrokeWidth(info.stroke_width);
     canvas->DrawPath(path, flags);
   }
 
