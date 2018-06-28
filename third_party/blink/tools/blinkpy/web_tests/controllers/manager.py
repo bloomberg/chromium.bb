@@ -137,11 +137,11 @@ class Manager(object):
             msg = 'No tests to run.'
             if self._options.zero_tests_executed_ok:
                 _log.info(msg)
-                code = exit_codes.OK_EXIT_STATUS
+                # Keep executing to produce valid (but empty) results.
             else:
                 _log.critical(msg)
                 code = exit_codes.NO_TESTS_EXIT_STATUS
-            return test_run_results.RunDetails(exit_code=code)
+                return test_run_results.RunDetails(exit_code=code)
 
         exit_code = self._set_up_run(tests_to_run)
         if exit_code:
