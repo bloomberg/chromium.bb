@@ -36,6 +36,12 @@ class ProfileIdentityProvider : public IdentityProvider,
   // IdentityProvider:
   std::string GetActiveAccountId() override;
   bool IsActiveAccountAvailable() override;
+  std::unique_ptr<ActiveAccountAccessTokenFetcher> FetchAccessToken(
+      const std::string& oauth_consumer_name,
+      const OAuth2TokenService::ScopeSet& scopes,
+      ActiveAccountAccessTokenCallback callback) override;
+  void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
+                             const std::string& access_token) override;
   OAuth2TokenService* GetTokenService() override;
 
   // SigninManagerBase::Observer:

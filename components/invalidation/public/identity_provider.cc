@@ -4,30 +4,11 @@
 
 #include "components/invalidation/public/identity_provider.h"
 
-#include "components/invalidation/public/active_account_access_token_fetcher_impl.h"
-
 namespace invalidation {
 
 IdentityProvider::Observer::~Observer() {}
 
 IdentityProvider::~IdentityProvider() {}
-
-std::unique_ptr<ActiveAccountAccessTokenFetcher>
-IdentityProvider::FetchAccessToken(const std::string& oauth_consumer_name,
-                                   const OAuth2TokenService::ScopeSet& scopes,
-
-                                   ActiveAccountAccessTokenCallback callback) {
-  return std::make_unique<ActiveAccountAccessTokenFetcherImpl>(
-      GetActiveAccountId(), oauth_consumer_name, GetTokenService(), scopes,
-      std::move(callback));
-}
-
-void IdentityProvider::InvalidateAccessToken(
-    const OAuth2TokenService::ScopeSet& scopes,
-    const std::string& access_token) {
-  GetTokenService()->InvalidateAccessToken(GetActiveAccountId(), scopes,
-                                           access_token);
-}
 
 void IdentityProvider::AddObserver(Observer* observer) {
   // See the comment on |num_observers_| in the .h file for why this addition

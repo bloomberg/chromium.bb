@@ -4,6 +4,7 @@
 
 #include "components/invalidation/impl/profile_identity_provider.h"
 
+#include "components/invalidation/public/active_account_access_token_fetcher_impl.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 
 namespace invalidation {
@@ -43,6 +44,23 @@ bool ProfileIdentityProvider::IsActiveAccountAvailable() {
     return false;
 
   return true;
+}
+
+std::unique_ptr<ActiveAccountAccessTokenFetcher>
+ProfileIdentityProvider::FetchAccessToken(
+    const std::string& oauth_consumer_name,
+    const OAuth2TokenService::ScopeSet& scopes,
+    ActiveAccountAccessTokenCallback callback) {
+  return std::make_unique<ActiveAccountAccessTokenFetcherImpl>(
+      GetActiveAccountId(), oauth_consumer_name, token_service_, scopes,
+      std::move(callback));
+}
+
+void ProfileIdentityProvider::InvalidateAccessToken(
+    const OAuth2TokenService::ScopeSet& scopes,
+    const std::string& access_token) {
+  token_service_->InvalidateAccessToken(GetActiveAccountId(), scopes,
+                                        access_token);
 }
 
 OAuth2TokenService* ProfileIdentityProvider::GetTokenService() {

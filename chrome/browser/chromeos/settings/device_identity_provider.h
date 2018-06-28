@@ -22,6 +22,13 @@ class DeviceIdentityProvider : public invalidation::IdentityProvider {
   // IdentityProvider:
   std::string GetActiveAccountId() override;
   bool IsActiveAccountAvailable() override;
+  std::unique_ptr<invalidation::ActiveAccountAccessTokenFetcher>
+  FetchAccessToken(
+      const std::string& oauth_consumer_name,
+      const OAuth2TokenService::ScopeSet& scopes,
+      invalidation::ActiveAccountAccessTokenCallback callback) override;
+  void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
+                             const std::string& access_token) override;
   OAuth2TokenService* GetTokenService() override;
 
  private:
