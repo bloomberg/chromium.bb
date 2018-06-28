@@ -16,10 +16,13 @@
 namespace content {
 
 RenderWidgetHostNSViewBridgeLocal::RenderWidgetHostNSViewBridgeLocal(
-    RenderWidgetHostNSViewClient* client) {
+    mojom::RenderWidgetHostNSViewClient* client,
+    RenderWidgetHostNSViewLocalClient* local_client) {
   display::Screen::GetScreen()->AddObserver(this);
 
-  cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc] initWithClient:client]);
+  cocoa_view_.reset([[RenderWidgetHostViewCocoa alloc]
+       initWithClient:client
+      withLocalClient:local_client]);
 
   background_layer_.reset([[CALayer alloc] init]);
   display_ca_layer_tree_ =
