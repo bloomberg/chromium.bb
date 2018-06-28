@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/mac/get_assertion_operation.h"
+#include "device/fido/mac/util.h"
 
 #include <array>
 #include <set>
@@ -41,11 +41,10 @@ std::vector<uint8_t> TouchIdAaguid() {
   return std::vector<uint8_t>(kAaguid.begin(), kAaguid.end());
 }
 
-namespace {
-
-// MakeECPublicKey converts a SecKeyRef for a public key into an equivalent
-// |ECPublicKey| instance. It returns |nullptr| if the key cannot be converted.
-std::unique_ptr<ECPublicKey> MakeECPublicKey(SecKeyRef public_key_ref)
+// SecKeyRefToECPublicKey converts a SecKeyRef for a public key into an
+// equivalent |ECPublicKey| instance. It returns |nullptr| if the key cannot be
+// converted.
+std::unique_ptr<ECPublicKey> SecKeyRefToECPublicKey(SecKeyRef public_key_ref)
     API_AVAILABLE(macosx(10.12.2)) {
   CHECK(public_key_ref);
   ScopedCFTypeRef<CFErrorRef> err;
@@ -67,15 +66,38 @@ std::unique_ptr<ECPublicKey> MakeECPublicKey(SecKeyRef public_key_ref)
   return key;
 }
 
+namespace {
+
+// Returns the current time in seconds since epoch as a privacy-preserving
+// signature counter. Because of the conversion to a 32-bit unsigned integer,
+// the counter will overflow in the year 2108.
+std::array<uint8_t, 4> GetTimestampSignatureCounter() {
+  // TODO(martinkr): The timestamp somewhat defeats the supposed "cloning
+  // detection" properties of a less predictable counter. If we do want real
+  // counters, they should be at least per RP and could probably  be stored in
+  // PrefService.
+  uint32_t sign_counter = static_cast<uint32_t>(base::Time::Now().ToDoubleT());
+  return std::array<uint8_t, 4>{
+      static_cast<uint8_t>((sign_counter >> 24) & 0xff),
+      static_cast<uint8_t>((sign_counter >> 16) & 0xff),
+      static_cast<uint8_t>((sign_counter >> 8) & 0xff),
+      static_cast<uint8_t>(sign_counter & 0xff),
+  };
+}
+
 }  // namespace
 
 base::Optional<AuthenticatorData> MakeAuthenticatorData(
     const std::string& rp_id,
     std::vector<uint8_t> credential_id,
-    SecKeyRef public_key) API_AVAILABLE(macosx(10.12.2)) {
-  if (credential_id.size() > 255) {
-    LOG(ERROR) << "credential id too long: "
+    std::unique_ptr<ECPublicKey> public_key) {
+  if (credential_id.empty() || credential_id.size() > 255) {
+    LOG(ERROR) << "invalid credential id: "
                << base::HexEncode(credential_id.data(), credential_id.size());
+    return base::nullopt;
+  }
+  if (!public_key) {
+    LOG(ERROR) << "public key cannot be null";
     return base::nullopt;
   }
   std::array<uint8_t, 2> encoded_credential_id_length = {
@@ -83,18 +105,11 @@ base::Optional<AuthenticatorData> MakeAuthenticatorData(
   constexpr uint8_t flags =
       static_cast<uint8_t>(AuthenticatorData::Flag::kTestOfUserVerification) |
       static_cast<uint8_t>(AuthenticatorData::Flag::kAttestation);
-  // TODO(martinkr): Implement signature counters.
-  std::array<uint8_t, 4> counter = {0, 0, 0, 1};
-  auto ec_public_key = MakeECPublicKey(public_key);
-  if (!ec_public_key) {
-    LOG(ERROR) << "MakeECPublicKey failed";
-    return base::nullopt;
-  }
   return AuthenticatorData(
-      fido_parsing_utils::CreateSHA256Hash(rp_id), flags, counter,
+      fido_parsing_utils::CreateSHA256Hash(rp_id), flags,
+      GetTimestampSignatureCounter(),
       AttestedCredentialData(kAaguid, encoded_credential_id_length,
-                             std::move(credential_id),
-                             std::move(ec_public_key)));
+                             std::move(credential_id), std::move(public_key)));
 }
 
 base::Optional<std::vector<uint8_t>> GenerateSignature(

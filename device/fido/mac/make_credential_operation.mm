@@ -185,8 +185,8 @@ void MakeCredentialOperation::PromptTouchIdDone(bool success, NSError* err) {
 
   // Create attestation object. There is no separate attestation key pair, so
   // we perform self-attestation.
-  base::Optional<AuthenticatorData> authenticator_data =
-      MakeAuthenticatorData(RpId(), *credential_id, public_key);
+  base::Optional<AuthenticatorData> authenticator_data = MakeAuthenticatorData(
+      RpId(), *credential_id, SecKeyRefToECPublicKey(public_key));
   if (!authenticator_data) {
     DLOG(ERROR) << "MakeAuthenticatorData failed";
     std::move(callback())

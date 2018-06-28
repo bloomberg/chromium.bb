@@ -85,6 +85,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
     return flags_ & base::strict_cast<uint8_t>(Flag::kExtensionDataIncluded);
   }
 
+  base::span<const uint8_t, kSignCounterLength> counter() const {
+    return counter_;
+  }
+
  private:
   // The application parameter: a SHA-256 hash of either the RP ID or the AppID
   // associated with the credential.
