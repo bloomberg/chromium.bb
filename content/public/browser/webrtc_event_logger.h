@@ -45,9 +45,8 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // This function must not be called for an off-the-records BrowserContext.
   // Local-logging is not associated with BrowserContexts, and is allowed even
   // if EnableForBrowserContext is not called. That is, even for incognito mode.
-  virtual void EnableForBrowserContext(
-      const BrowserContext* browser_context,
-      base::OnceClosure reply = base::OnceClosure()) = 0;
+  virtual void EnableForBrowserContext(const BrowserContext* browser_context,
+                                       base::OnceClosure reply) = 0;
 
   // Disables WebRTC event logging for a given BrowserContext. New remote-bound
   // WebRTC event logs will no longer be created for this BrowserContext.
@@ -55,9 +54,8 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // therefore be careful note to call any of BrowserContext's virtual methods.
   // TODO(eladalon): After changing to a Profile-centered interface, change this
   // to not even receive a pointer. https://crbug.com/775415
-  virtual void DisableForBrowserContext(
-      const BrowserContext* browser_context,
-      base::OnceClosure reply = base::OnceClosure()) = 0;
+  virtual void DisableForBrowserContext(const BrowserContext* browser_context,
+                                        base::OnceClosure reply) = 0;
 
   // Call this to let the logger know when a PeerConnection was created.
   // |peer_connection_id| should be a non-empty, relatively short (i.e.
@@ -71,8 +69,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
   virtual void PeerConnectionAdded(int render_process_id,
                                    int lid,
                                    const std::string& peer_connection_id,
-                                   base::OnceCallback<void(bool)> reply =
-                                       base::OnceCallback<void(bool)>()) = 0;
+                                   base::OnceCallback<void(bool)> reply) = 0;
 
   // Call this to let the logger know when a PeerConnection was closed.
   // If a reply callback is given, it will be posted back to BrowserThread::UI,
@@ -81,8 +78,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // or if it has since already been removed).
   virtual void PeerConnectionRemoved(int render_process_id,
                                      int lid,
-                                     base::OnceCallback<void(bool)> reply =
-                                         base::OnceCallback<void(bool)>()) = 0;
+                                     base::OnceCallback<void(bool)> reply) = 0;
 
   // Call this to let the logger know when a PeerConnection was stopped.
   // Closing of a peer connection is an irreversible action. Its distinction
@@ -90,8 +86,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // been garbage collected.
   virtual void PeerConnectionStopped(int render_process_id,
                                      int lid,
-                                     base::OnceCallback<void(bool)> reply =
-                                         base::OnceCallback<void(bool)>()) = 0;
+                                     base::OnceCallback<void(bool)> reply) = 0;
 
   // Enable local logging of WebRTC events.
   // Local logging is distinguished from remote logging, in that local logs are
@@ -109,15 +104,13 @@ class CONTENT_EXPORT WebRtcEventLogger {
   // will get a local log file associated (specifically, we do *not* guarantee
   // it would be either the oldest or the newest).
   virtual void EnableLocalLogging(const base::FilePath& base_path,
-                                  base::OnceCallback<void(bool)> reply =
-                                      base::OnceCallback<void(bool)>()) = 0;
+                                  base::OnceCallback<void(bool)> reply) = 0;
 
   // Disable local logging of WebRTC events.
   // Any active local logs are stopped. Peer connections added after this call
   // will not get a local log associated with them (unless local logging is
   // once again enabled).
-  virtual void DisableLocalLogging(base::OnceCallback<void(bool)> reply =
-                                       base::OnceCallback<void(bool)>()) = 0;
+  virtual void DisableLocalLogging(base::OnceCallback<void(bool)> reply) = 0;
 
   // Called when a new log fragment is sent from the renderer. This will
   // potentially be written to a local WebRTC event log, a remote-bound log
@@ -131,8 +124,7 @@ class CONTENT_EXPORT WebRtcEventLogger {
       int render_process_id,
       int lid,
       const std::string& message,
-      base::OnceCallback<void(std::pair<bool, bool>)> reply =
-          base::OnceCallback<void(std::pair<bool, bool>)>()) = 0;
+      base::OnceCallback<void(std::pair<bool, bool>)> reply) = 0;
 
  protected:
   friend WebRTCInternalsIntegrationBrowserTest;  // (PostNullTaskForTesting)

@@ -133,7 +133,8 @@ WebRTCInternals::WebRTCInternals(int aggregate_updates_ms,
         command_line_derived_logging_path_.Append(kEventLogFilename);
     WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
     if (logger) {
-      logger->EnableLocalLogging(local_logs_path);
+      logger->EnableLocalLogging(local_logs_path,
+                                 base::OnceCallback<void(bool)>());
     }
     // For clarity's sake, though these aren't supposed to be regarded now:
     event_log_recordings_ = true;
@@ -376,7 +377,8 @@ void WebRTCInternals::EnableLocalEventLogRecordings(
 #if defined(OS_ANDROID)
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->EnableLocalLogging(event_log_recordings_file_path_);
+    logger->EnableLocalLogging(event_log_recordings_file_path_,
+                               base::OnceCallback<void(bool)>());
   }
 #else
   DCHECK(web_contents);
@@ -397,7 +399,7 @@ void WebRTCInternals::DisableLocalEventLogRecordings() {
   DCHECK(CanToggleEventLogRecordings());
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->DisableLocalLogging();
+    logger->DisableLocalLogging(base::OnceCallback<void(bool)>());
   }
 }
 
@@ -446,7 +448,7 @@ void WebRTCInternals::FileSelected(const base::FilePath& path,
       event_log_recordings_ = true;
       WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
       if (logger) {
-        logger->EnableLocalLogging(path);
+        logger->EnableLocalLogging(path, base::OnceCallback<void(bool)>());
       }
       break;
     }

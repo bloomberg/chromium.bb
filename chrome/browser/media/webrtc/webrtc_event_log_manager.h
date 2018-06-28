@@ -70,52 +70,43 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   ~WebRtcEventLogManager() override;
 
-  void EnableForBrowserContext(
-      const content::BrowserContext* browser_context,
-      base::OnceClosure reply = base::OnceClosure()) override;
+  void EnableForBrowserContext(const content::BrowserContext* browser_context,
+                               base::OnceClosure reply) override;
 
-  void DisableForBrowserContext(
-      const content::BrowserContext* browser_context,
-      base::OnceClosure reply = base::OnceClosure()) override;
+  void DisableForBrowserContext(const content::BrowserContext* browser_context,
+                                base::OnceClosure reply) override;
 
   void PeerConnectionAdded(int render_process_id,
                            int lid,  // Renderer-local PeerConnection ID.
                            const std::string& peer_connection_id,
-                           base::OnceCallback<void(bool)> reply =
-                               base::OnceCallback<void(bool)>()) override;
+                           base::OnceCallback<void(bool)> reply) override;
 
   void PeerConnectionRemoved(int render_process_id,
                              int lid,  // Renderer-local PeerConnection ID.
-                             base::OnceCallback<void(bool)> reply =
-                                 base::OnceCallback<void(bool)>()) override;
+                             base::OnceCallback<void(bool)> reply) override;
 
   // From the logger's perspective, we treat stopping a peer connection the
   // same as we do its removal. Should a stopped peer connection be later
   // removed, the removal callback will assume the value |false|.
   void PeerConnectionStopped(int render_process_id,
                              int lid,  // Renderer-local PeerConnection ID.
-                             base::OnceCallback<void(bool)> reply =
-                                 base::OnceCallback<void(bool)>()) override;
+                             base::OnceCallback<void(bool)> reply) override;
 
   // The file's actual path is derived from |base_path| by adding a timestamp,
   // the render process ID and the PeerConnection's local ID.
   void EnableLocalLogging(const base::FilePath& base_path,
-                          base::OnceCallback<void(bool)> reply =
-                              base::OnceCallback<void(bool)>()) override;
-  void EnableLocalLogging(
-      const base::FilePath& base_path,
-      size_t max_file_size_bytes = kDefaultMaxLocalLogFileSizeBytes,
-      base::OnceCallback<void(bool)> reply = base::OnceCallback<void(bool)>());
+                          base::OnceCallback<void(bool)> reply) override;
+  void EnableLocalLogging(const base::FilePath& base_path,
+                          size_t max_file_size_bytes,
+                          base::OnceCallback<void(bool)> reply);
 
-  void DisableLocalLogging(base::OnceCallback<void(bool)> reply =
-                               base::OnceCallback<void(bool)>()) override;
+  void DisableLocalLogging(base::OnceCallback<void(bool)> reply) override;
 
   void OnWebRtcEventLogWrite(
       int render_process_id,
       int lid,  // Renderer-local PeerConnection ID.
       const std::string& message,
-      base::OnceCallback<void(std::pair<bool, bool>)> reply =
-          base::OnceCallback<void(std::pair<bool, bool>)>()) override;
+      base::OnceCallback<void(std::pair<bool, bool>)> reply) override;
 
   // Start logging a peer connection's WebRTC events to a file, which will
   // later be uploaded to a remote server. If a reply is provided, it will be
@@ -126,8 +117,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
       int render_process_id,
       const std::string& peer_connection_id,
       size_t max_file_size_bytes,
-      base::OnceCallback<void(bool, const std::string&)> reply =
-          base::OnceCallback<void(bool, const std::string&)>());
+      base::OnceCallback<void(bool, const std::string&)> reply);
 
   // Clear WebRTC event logs associated with a given browser context, in a given
   // time range (|delete_begin| inclusive, |delete_end| exclusive), then
@@ -146,7 +136,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // If a reply callback is given, it will be posted back to BrowserThread::UI
   // after the observer has been set.
   void SetLocalLogsObserver(WebRtcLocalEventLogsObserver* observer,
-                            base::OnceClosure reply = base::OnceClosure());
+                            base::OnceClosure reply);
 
   // Set (or unset) an observer that will be informed whenever a remote log file
   // is started/stopped. Note that this refers to writing these files to disk,
@@ -157,7 +147,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // If a reply callback is given, it will be posted back to BrowserThread::UI
   // after the observer has been set.
   void SetRemoteLogsObserver(WebRtcRemoteEventLogsObserver* observer,
-                             base::OnceClosure reply = base::OnceClosure());
+                             base::OnceClosure reply);
 
  private:
   friend class SigninManagerAndroidTest;       // Calls *ForTesting() methods.
@@ -250,8 +240,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // Injects a fake clock, to be used by tests. For example, this could be
   // used to inject a frozen clock, thereby allowing unit tests to know what a
   // local log's filename would end up being.
-  void SetClockForTesting(base::Clock* clock,
-                          base::OnceClosure reply = base::OnceClosure());
+  void SetClockForTesting(base::Clock* clock, base::OnceClosure reply);
 
   // Injects a PeerConnectionTrackerProxy for testing. The normal tracker proxy
   // is used to communicate back to WebRTC whether event logging is desired for
@@ -259,12 +248,12 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // intercepted by a unit test.
   void SetPeerConnectionTrackerProxyForTesting(
       std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy,
-      base::OnceClosure reply = base::OnceClosure());
+      base::OnceClosure reply);
 
   // Injects a fake uploader, to be used by unit tests.
   void SetWebRtcEventLogUploaderFactoryForTesting(
       std::unique_ptr<WebRtcEventLogUploader::Factory> uploader_factory,
-      base::OnceClosure reply = base::OnceClosure());
+      base::OnceClosure reply);
 
   // This allows unit tests that do not wish to change the task runner to still
   // check when certain operations are finished.

@@ -336,7 +336,8 @@ class WebrtcLoggingPrivateApiTest : public extensions::ExtensionApiTest {
     const int render_process_id = rph->GetID();
     const int lid = 0;
 
-    manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id);
+    manager->PeerConnectionAdded(render_process_id, lid, peer_connection_id,
+                                 base::OnceCallback<void(bool)>());
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;

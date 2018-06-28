@@ -62,16 +62,19 @@ void PeerConnectionTrackerHost::OnChannelClosing() {
 void PeerConnectionTrackerHost::OnAddPeerConnection(
     const PeerConnectionInfo& info) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
   if (webrtc_internals) {
     webrtc_internals->OnAddPeerConnection(
         render_process_id_, peer_pid(), info.lid, info.url,
         info.rtc_configuration, info.constraints);
   }
+
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
     logger->PeerConnectionAdded(render_process_id_, info.lid,
-                                info.peer_connection_id);
+                                info.peer_connection_id,
+                                base::OnceCallback<void(bool)>());
   }
 }
 
@@ -89,7 +92,8 @@ void PeerConnectionTrackerHost::RemovePeerConnection(int lid) {
   }
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->PeerConnectionRemoved(render_process_id_, lid);
+    logger->PeerConnectionRemoved(render_process_id_, lid,
+                                  base::OnceCallback<void(bool)>());
   }
 }
 
@@ -107,7 +111,8 @@ void PeerConnectionTrackerHost::UpdatePeerConnection(int lid,
   if (type == "stop") {
     WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
     if (logger) {
-      logger->PeerConnectionStopped(render_process_id_, lid);
+      logger->PeerConnectionStopped(render_process_id_, lid,
+                                    base::OnceCallback<void(bool)>());
     }
   }
 
@@ -157,7 +162,9 @@ void PeerConnectionTrackerHost::WebRtcEventLogWrite(int lid,
   }
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->OnWebRtcEventLogWrite(render_process_id_, lid, output);
+    logger->OnWebRtcEventLogWrite(
+        render_process_id_, lid, output,
+        base::OnceCallback<void(std::pair<bool, bool>)>());
   }
 }
 
