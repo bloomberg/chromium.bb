@@ -277,6 +277,16 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   }
 
 
+def _MakeDirIfDoesNotExist(rel_path):
+  """Ensures a directory exists."""
+  abs_path = os.path.abspath(rel_path)
+  try:
+    os.makedirs(abs_path)
+  except OSError:
+    if not os.path.isdir(abs_path):
+      raise
+
+
 def _CopyTemplateFiles(template_src, dest_dir):
   d3_out = os.path.join(dest_dir, 'd3')
   if not os.path.exists(d3_out):
@@ -290,6 +300,7 @@ def _CopyTemplateFiles(template_src, dest_dir):
 
 
 def _CopyTreeViewTemplateFiles(template_src, dest_dir):
+  _MakeDirIfDoesNotExist(dest_dir)
   shutil.copy(os.path.join(template_src, 'index.html'), dest_dir)
   shutil.copy(os.path.join(template_src, 'state.js'), dest_dir)
 
