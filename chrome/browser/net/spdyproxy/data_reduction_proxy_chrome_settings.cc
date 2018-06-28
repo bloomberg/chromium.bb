@@ -37,6 +37,7 @@
 #include "net/proxy_resolution/proxy_config.h"
 #include "net/proxy_resolution/proxy_list.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace {
 
@@ -189,6 +190,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
     data_reduction_proxy::DataReductionProxyIOData* io_data,
     PrefService* profile_prefs,
     net::URLRequestContextGetter* request_context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
     std::unique_ptr<data_reduction_proxy::DataStore> store,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_task_runner,
     const scoped_refptr<base::SequencedTaskRunner>& db_task_runner) {
@@ -208,7 +210,7 @@ void DataReductionProxyChromeSettings::InitDataReductionProxySettings(
           this, profile_prefs, request_context_getter, std::move(store),
           std::make_unique<
               data_reduction_proxy::DataReductionProxyPingbackClientImpl>(
-              request_context_getter, ui_task_runner),
+              url_loader_factory, ui_task_runner),
           ui_task_runner, io_data->io_task_runner(), db_task_runner,
           commit_delay);
   data_reduction_proxy::DataReductionProxySettings::
