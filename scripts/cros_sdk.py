@@ -220,7 +220,7 @@ def DeleteChroot(chroot_path):
 
 def CleanupChroot(chroot_path):
   """Unmounts a chroot and cleans up any associated devices."""
-  cros_sdk_lib.CleanupChrootMount(chroot_path, delete_image=False)
+  cros_sdk_lib.CleanupChrootMount(chroot_path, delete=False)
 
 
 def EnterChroot(chroot_path, cache_dir, chrome_root, chrome_root_mount,
@@ -934,8 +934,7 @@ def main(argv):
           osutils.UmountTree(options.chroot)
         else:
           logging.notice('Deleting chroot.')
-          cros_sdk_lib.CleanupChrootMount(options.chroot, delete_image=True)
-          osutils.RmDir(options.chroot, ignore_missing=True)
+          cros_sdk_lib.CleanupChrootMount(options.chroot, delete=True)
           chroot_deleted = True
 
   # If cleanup was requested, we have to do it while we're still in the original

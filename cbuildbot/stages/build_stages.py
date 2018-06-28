@@ -93,8 +93,7 @@ class CleanUpStage(generic_stages.BuilderStage):
       # itself because we haven't sync'd yet, and the version of the chromite
       # in there might be broken. Since we've already unmounted everything in
       # there, we can just remove it using rm -rf.
-      cros_sdk_lib.CleanupChrootMount(chroot, delete_image=True)
-      osutils.RmDir(chroot, ignore_missing=True, sudo=True)
+      cros_sdk_lib.CleanupChrootMount(chroot, delete=True)
 
   def _DeleteArchivedTrybotImages(self):
     """Clear all previous archive images to save space."""

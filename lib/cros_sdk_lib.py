@@ -344,7 +344,7 @@ def FindChrootMountSource(chroot_path, proc_mounts='/proc/mounts'):
 
 # Raise an exception if cleanup takes more than 4 minutes.
 @timeout_util.TimeoutDecorator(240)
-def CleanupChrootMount(chroot=None, buildroot=None, delete_image=False,
+def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
                        proc_mounts='/proc/mounts'):
   """Unmounts a chroot and cleans up attached devices.
 
@@ -358,8 +358,8 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete_image=False,
         to |buildroot|.
     buildroot: Ignored if |chroot| is set.  If |chroot| is None, find the chroot
         relative to |buildroot|.
-    delete_image: Also delete the .img file after cleaning up.  If
-        |delete_image| is False, the chroot contents will still be present and
+    delete: Delete chroot contents and the .img file after cleaning up.  If
+        |delete| is False, the chroot contents will still be present and
         can be immediately re-mounted without recreating a fresh chroot.
     proc_mounts: The path to a list of mounts to read (intended for testing).
   """
@@ -407,8 +407,10 @@ def CleanupChrootMount(chroot=None, buildroot=None, delete_image=False,
   if chroot_dev:
     cmd = ['losetup', '-d', chroot_dev]
     cros_build_lib.SudoRunCommand(cmd, capture_output=True, print_cmd=False)
-  if delete_image:
+  if delete:
     osutils.SafeUnlink(chroot_img)
+    osutils.RmDir(chroot, ignore_missing=True, sudo=True)
+
   if chroot_dev:
     # Force a rescan after everything is gone to make sure lvmetad is updated.
     _RescanDeviceLvmMetadata(chroot_dev)

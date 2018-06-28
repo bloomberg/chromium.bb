@@ -335,7 +335,7 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
         self.root, '.cbuildbot_build_state.json')
     self.buildroot = os.path.join(self.root, 'buildroot')
     self.repo = os.path.join(self.buildroot, '.repo/repo')
-    self.chroot = os.path.join(self.buildroot, 'chroot/chroot')
+    self.chroot = os.path.join(self.buildroot, 'chroot')
     self.general = os.path.join(self.buildroot, 'general/general')
     self.cache = os.path.join(self.buildroot, '.cache')
     self.distfiles = os.path.join(self.cache, 'distfiles')
@@ -450,11 +450,10 @@ class CleanBuildRootTest(cros_test_lib.MockTempDirTestCase):
     self.assertEqual(new_summary, build_state)
 
     self.assertExists(self.repo)
-    self.assertNotExists(self.chroot)
     self.assertExists(self.general)
     self.assertNotExists(self.distfiles)
     self.assertExists(self.previous_build_state)
-    m.assert_called()
+    m.assert_called_with(self.chroot, delete=True)
 
   def testBuildrootBranchMatch(self):
     """Test CleanBuildRoot with no change in branch."""

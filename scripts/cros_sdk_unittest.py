@@ -67,7 +67,7 @@ class CrosSdkSnapshotTest(cros_test_lib.TempDirTestCase):
 
   def tearDown(self):
     with sudo.SudoKeepAlive():
-      cros_sdk_lib.CleanupChrootMount(self.chroot, delete_image=True)
+      cros_sdk_lib.CleanupChrootMount(self.chroot, delete=True)
 
   def _crosSdk(self, args):
     cmd = ['cros_sdk', '--chroot', self.chroot]
