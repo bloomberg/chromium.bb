@@ -36,14 +36,12 @@
 #include "base/containers/span.h"
 #include "base/optional.h"
 #include "third_party/blink/renderer/bindings/core/v8/native_value_traits.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/serialization/transferables.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/partitions.h"
 #include "third_party/blink/renderer/platform/wtf/hash_map.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_view.h"
+#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 #include "third_party/blink/renderer/platform/wtf/thread_safe_ref_counted.h"
 #include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer_contents.h"
 #include "v8/include/v8.h"
@@ -54,6 +52,7 @@ class BlobDataHandle;
 class Transferables;
 class ExceptionState;
 class SharedBuffer;
+class StaticBitmapImage;
 class UnpackedSerializedScriptValue;
 class WebBlobInfo;
 class DOMSharedArrayBuffer;
@@ -240,9 +239,7 @@ class CORE_EXPORT SerializedScriptValue
   ImageBitmapContentsArray& GetImageBitmapContentsArray() {
     return image_bitmap_contents_array_;
   }
-  void SetImageBitmapContentsArray(ImageBitmapContentsArray contents) {
-    image_bitmap_contents_array_ = std::move(contents);
-  }
+  void SetImageBitmapContentsArray(ImageBitmapContentsArray contents);
 
  private:
   friend class ScriptValueSerializer;

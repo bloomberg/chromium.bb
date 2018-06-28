@@ -259,6 +259,11 @@ SerializedScriptValue::SerializedScriptValue(DataBufferPtr data,
       has_registered_external_allocation_(false),
       transferables_need_external_allocation_registration_(false) {}
 
+void SerializedScriptValue::SetImageBitmapContentsArray(
+    ImageBitmapContentsArray contents) {
+  image_bitmap_contents_array_ = std::move(contents);
+}
+
 SerializedScriptValue::DataBufferPtr SerializedScriptValue::AllocateBuffer(
     size_t buffer_size) {
   return DataBufferPtr(static_cast<uint8_t*>(WTF::Partitions::BufferMalloc(
