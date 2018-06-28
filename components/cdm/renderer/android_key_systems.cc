@@ -57,9 +57,11 @@ class AndroidPlatformKeySystemProperties : public KeySystemProperties {
     return false;
   }
 
-  bool IsEncryptionSchemeSupported(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       media::EncryptionMode encryption_scheme) const override {
-    return encryption_scheme == media::EncryptionMode::kCenc;
+    return encryption_scheme == media::EncryptionMode::kCenc
+               ? EmeConfigRule::SUPPORTED
+               : EmeConfigRule::NOT_SUPPORTED;
   }
 
   SupportedCodecs GetSupportedCodecs() const override {
@@ -134,16 +136,17 @@ void AddAndroidWidevine(
 
     // TODO(crbug.com/813845): Determine 'cbcs' support, which may vary by
     // Android version.
-    base::flat_set<media::EncryptionMode> supported_encryption_schemes = {
+    base::flat_set<media::EncryptionMode> encryption_schemes = {
         media::EncryptionMode::kCenc};
 
     concrete_key_systems->emplace_back(new WidevineKeySystemProperties(
-        supported_encryption_schemes,          // Encryption schemes.
-        codecs,                                // Regular codecs.
-        hw_secure_codecs,                      // Hardware-secure codecs.
-        Robustness::HW_SECURE_CRYPTO,          // Max audio robustness.
-        Robustness::HW_SECURE_ALL,             // Max video robustness.
-        persistent_license_support,            // persistent-license.
+        codecs,                        // Regular codecs.
+        encryption_schemes,            // Encryption schemes.
+        hw_secure_codecs,              // Hardware secure codecs.
+        encryption_schemes,            // Hardware secure encryption schemes.
+        Robustness::HW_SECURE_CRYPTO,  // Max audio robustness.
+        Robustness::HW_SECURE_ALL,     // Max video robustness.
+        persistent_license_support,    // persistent-license.
         EmeSessionTypeSupport::NOT_SUPPORTED,  // persistent-release-message.
         EmeFeatureSupport::ALWAYS_ENABLED,     // Persistent state.
         EmeFeatureSupport::ALWAYS_ENABLED));   // Distinctive identifier.

@@ -34,17 +34,17 @@ bool ExternalClearKeyProperties::IsSupportedInitDataType(
   return false;
 }
 
-bool ExternalClearKeyProperties::IsEncryptionSchemeSupported(
+media::EmeConfigRule ExternalClearKeyProperties::GetEncryptionSchemeConfigRule(
     media::EncryptionMode encryption_scheme) const {
   switch (encryption_scheme) {
     case media::EncryptionMode::kCenc:
     case media::EncryptionMode::kCbcs:
-      return true;
+      return media::EmeConfigRule::SUPPORTED;
     case media::EncryptionMode::kUnencrypted:
       break;
   }
   NOTREACHED();
-  return false;
+  return media::EmeConfigRule::NOT_SUPPORTED;
 }
 
 media::SupportedCodecs ExternalClearKeyProperties::GetSupportedCodecs() const {

@@ -26,8 +26,8 @@ class MEDIA_EXPORT KeySystemProperties {
   virtual bool IsSupportedInitDataType(
       EmeInitDataType init_data_type) const = 0;
 
-  // Returns whether |encryption_scheme| is supported by this key system.
-  virtual bool IsEncryptionSchemeSupported(
+  // Returns the configuration rule for supporting |encryption_scheme|.
+  virtual EmeConfigRule GetEncryptionSchemeConfigRule(
       EncryptionMode encryption_scheme) const = 0;
 
   // Returns the codecs supported by this key system.

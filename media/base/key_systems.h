@@ -39,8 +39,8 @@ class MEDIA_EXPORT KeySystems {
       const std::string& key_system,
       EmeInitDataType init_data_type) const = 0;
 
-  // Returns whether |encryption_scheme| is supported by |key_system|.
-  virtual bool IsEncryptionSchemeSupported(
+  // Returns the configuration rule for supporting |encryption_scheme|.
+  virtual EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
       EncryptionMode encryption_scheme) const = 0;
 

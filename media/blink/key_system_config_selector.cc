@@ -362,25 +362,29 @@ bool KeySystemConfigSelector::IsSupportedContentType(
   return true;
 }
 
-bool KeySystemConfigSelector::IsSupportedEncryptionScheme(
+EmeConfigRule KeySystemConfigSelector::GetEncryptionSchemeConfigRule(
     const std::string& key_system,
     const EmeEncryptionScheme encryption_scheme) {
   switch (encryption_scheme) {
+    // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md
+    // "A missing or null value indicates that any encryption scheme is
+    // acceptable."
+    // To fully implement this, we need to get the config rules for both kCenc
+    // and kCbcs, which could be conflicting, and choose a final config rule
+    // somehow. If we end up choosing the rule for kCbcs, we could actually
+    // break legacy players which serves kCenc streams. Therefore, for backward
+    // compatibility and simplicity, we treat kNotSpecified the same as kCenc.
     case EmeEncryptionScheme::kNotSpecified:
-      // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
-      // "A missing or null value indicates that any encryption scheme is
-      //  acceptable."
-      return true;
     case EmeEncryptionScheme::kCenc:
-      return key_systems_->IsEncryptionSchemeSupported(key_system,
-                                                       EncryptionMode::kCenc);
+      return key_systems_->GetEncryptionSchemeConfigRule(key_system,
+                                                         EncryptionMode::kCenc);
     case EmeEncryptionScheme::kCbcs:
-      return key_systems_->IsEncryptionSchemeSupported(key_system,
-                                                       EncryptionMode::kCbcs);
+      return key_systems_->GetEncryptionSchemeConfigRule(key_system,
+                                                         EncryptionMode::kCbcs);
   }
 
   NOTREACHED();
-  return false;
+  return EmeConfigRule::NOT_SUPPORTED;
 }
 
 bool KeySystemConfigSelector::GetSupportedCapabilities(
@@ -449,12 +453,14 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
       DVLOG(3) << "The current robustness rule is not supported.";
       continue;
     }
+    proposed_config_state.AddRule(robustness_rule);
 
     // Check for encryption scheme support.
     // https://github.com/WICG/encrypted-media-encryption-scheme/blob/master/explainer.md.
-    if (!IsSupportedEncryptionScheme(key_system,
-                                     capability.encryption_scheme)) {
-      DVLOG(3) << "Encryption scheme is not supported.";
+    EmeConfigRule encryption_scheme_rule =
+        GetEncryptionSchemeConfigRule(key_system, capability.encryption_scheme);
+    if (!proposed_config_state.IsRuleSupported(encryption_scheme_rule)) {
+      DVLOG(3) << "The current encryption scheme rule is not supported.";
       continue;
     }
 
@@ -463,7 +469,7 @@ bool KeySystemConfigSelector::GetSupportedCapabilities(
 
     // 3.13.2. Add requested media capability to the {audio|video}Capabilities
     // member of local accumulated configuration.
-    proposed_config_state.AddRule(robustness_rule);
+    proposed_config_state.AddRule(encryption_scheme_rule);
 
     // This is used as an intermediate variable so that |proposed_config_state|
     // is updated in the next iteration of the for loop.

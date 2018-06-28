@@ -38,18 +38,20 @@ Robustness ConvertRobustness(const std::string& robustness) {
 }  // namespace
 
 WidevineKeySystemProperties::WidevineKeySystemProperties(
-    base::flat_set<media::EncryptionMode> supported_encryption_schemes,
-    media::SupportedCodecs supported_codecs,
-    media::SupportedCodecs supported_hw_secure_codecs,
+    media::SupportedCodecs codecs,
+    base::flat_set<media::EncryptionMode> encryption_schemes,
+    media::SupportedCodecs hw_secure_codecs,
+    base::flat_set<media::EncryptionMode> hw_secure_encryption_schemes,
     Robustness max_audio_robustness,
     Robustness max_video_robustness,
     media::EmeSessionTypeSupport persistent_license_support,
     media::EmeSessionTypeSupport persistent_release_message_support,
     media::EmeFeatureSupport persistent_state_support,
     media::EmeFeatureSupport distinctive_identifier_support)
-    : supported_encryption_schemes_(std::move(supported_encryption_schemes)),
-      supported_codecs_(supported_codecs),
-      supported_hw_secure_codecs_(supported_hw_secure_codecs),
+    : codecs_(codecs),
+      encryption_schemes_(std::move(encryption_schemes)),
+      hw_secure_codecs_(hw_secure_codecs),
+      hw_secure_encryption_schemes_(std::move(hw_secure_encryption_schemes)),
       max_audio_robustness_(max_audio_robustness),
       max_video_robustness_(max_video_robustness),
       persistent_license_support_(persistent_license_support),
@@ -69,25 +71,36 @@ bool WidevineKeySystemProperties::IsSupportedInitDataType(
   // associated initialization data type. KeySystems handles validating
   // |init_data_type| x |container| pairings.
   if (init_data_type == EmeInitDataType::WEBM)
-    return (supported_codecs_ & media::EME_CODEC_WEBM_ALL) != 0;
+    return (codecs_ & media::EME_CODEC_WEBM_ALL) != 0;
   if (init_data_type == EmeInitDataType::CENC)
-    return (supported_codecs_ & media::EME_CODEC_MP4_ALL) != 0;
+    return (codecs_ & media::EME_CODEC_MP4_ALL) != 0;
 
   return false;
 }
 
-bool WidevineKeySystemProperties::IsEncryptionSchemeSupported(
+EmeConfigRule WidevineKeySystemProperties::GetEncryptionSchemeConfigRule(
     media::EncryptionMode encryption_scheme) const {
-  return supported_encryption_schemes_.count(encryption_scheme) != 0;
+  bool is_supported = encryption_schemes_.count(encryption_scheme);
+  bool is_hw_secure_supported =
+      hw_secure_encryption_schemes_.count(encryption_scheme);
+
+  if (is_supported && is_hw_secure_supported)
+    return EmeConfigRule::SUPPORTED;
+  else if (is_supported && !is_hw_secure_supported)
+    return EmeConfigRule::HW_SECURE_CODECS_NOT_ALLOWED;
+  else if (!is_supported && is_hw_secure_supported)
+    return EmeConfigRule::HW_SECURE_CODECS_REQUIRED;
+  else
+    return EmeConfigRule::NOT_SUPPORTED;
 }
 
 SupportedCodecs WidevineKeySystemProperties::GetSupportedCodecs() const {
-  return supported_codecs_;
+  return codecs_;
 }
 
 SupportedCodecs WidevineKeySystemProperties::GetSupportedHwSecureCodecs()
     const {
-  return supported_hw_secure_codecs_;
+  return hw_secure_codecs_;
 }
 
 EmeConfigRule WidevineKeySystemProperties::GetRobustnessConfigRule(

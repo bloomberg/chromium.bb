@@ -91,7 +91,7 @@ class MEDIA_BLINK_EXPORT KeySystemConfigSelector {
                               const std::string& codecs,
                               ConfigState* config_state);
 
-  bool IsSupportedEncryptionScheme(
+  EmeConfigRule GetEncryptionSchemeConfigRule(
       const std::string& key_system,
       const blink::WebMediaKeySystemMediaCapability::EncryptionScheme
           encryption_scheme);

@@ -244,14 +244,13 @@ static void AddWidevine(
   }
 
   // Codecs and encryption schemes.
-  auto supported_codecs =
+  auto codecs =
       GetSupportedCodecs(capability->video_codecs, /*is_secure=*/false);
-  const auto& supported_encryption_schemes = capability->encryption_schemes;
-  auto supported_hw_secure_codecs = GetSupportedCodecs(
-      capability->hw_secure_video_codecs, /*is_secure=*/true);
-
-  // TODO(crbug.com/853261): Support capability->hw_secure_encryption_schemes
-  // and pass it into WidevineKeySystemProperties.
+  const auto& encryption_schemes = capability->encryption_schemes;
+  auto hw_secure_codecs = GetSupportedCodecs(capability->hw_secure_video_codecs,
+                                             /*is_secure=*/true);
+  const auto& hw_secure_encryption_schemes =
+      capability->hw_secure_encryption_schemes;
 
   // Robustness.
   using Robustness = cdm::WidevineKeySystemProperties::Robustness;
@@ -293,8 +292,8 @@ static void AddWidevine(
 #endif
 
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
-      supported_encryption_schemes, supported_codecs,
-      supported_hw_secure_codecs, max_audio_robustness, max_video_robustness,
+      codecs, encryption_schemes, hw_secure_codecs,
+      hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
       persistent_license_support, persistent_release_message_support,
       persistent_state_support, distinctive_identifier_support));
 }

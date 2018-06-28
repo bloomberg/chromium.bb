@@ -27,30 +27,37 @@ class TestKeySystemProperties : public media::KeySystemProperties {
       media::EmeInitDataType init_data_type) const override {
     return false;
   }
-  bool IsEncryptionSchemeSupported(
+
+  media::EmeConfigRule GetEncryptionSchemeConfigRule(
       media::EncryptionMode encryption_scheme) const override {
-    return false;
+    return media::EmeConfigRule::NOT_SUPPORTED;
   }
+
   media::SupportedCodecs GetSupportedCodecs() const override {
     return media::EME_CODEC_NONE;
   }
+
   media::EmeConfigRule GetRobustnessConfigRule(
       media::EmeMediaType media_type,
       const std::string& requested_robustness) const override {
     return requested_robustness.empty() ? media::EmeConfigRule::SUPPORTED
                                         : media::EmeConfigRule::NOT_SUPPORTED;
   }
+
   media::EmeSessionTypeSupport GetPersistentLicenseSessionSupport()
       const override {
     return media::EmeSessionTypeSupport::NOT_SUPPORTED;
   }
+
   media::EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport()
       const override {
     return media::EmeSessionTypeSupport::NOT_SUPPORTED;
   }
+
   media::EmeFeatureSupport GetPersistentStateSupport() const override {
     return media::EmeFeatureSupport::NOT_SUPPORTED;
   }
+
   media::EmeFeatureSupport GetDistinctiveIdentifierSupport() const override {
     return media::EmeFeatureSupport::NOT_SUPPORTED;
   }
