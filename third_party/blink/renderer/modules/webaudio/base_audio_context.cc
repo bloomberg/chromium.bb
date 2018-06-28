@@ -753,7 +753,7 @@ void BaseAudioContext::PerformCleanupOnMainThread() {
     for (AudioHandler* handler : finished_handlers) {
       for (unsigned i = 0; i < active_source_nodes_.size(); ++i) {
         if (handler == &active_source_nodes_[i]->Handler()) {
-          handler->BreakConnection();
+          handler->BreakConnectionWithLock();
           removables[i] = true;
           remove_count++;
           break;
