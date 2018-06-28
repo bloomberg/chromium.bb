@@ -271,8 +271,6 @@ class KEYBOARD_EXPORT KeyboardController
   // aura::WindowObserver overrides
   void OnWindowHierarchyChanged(const HierarchyChangeParams& params) override;
   void OnWindowAddedToRootWindow(aura::Window* window) override;
-  void OnWindowRemovingFromRootWindow(aura::Window* window,
-                                      aura::Window* new_root) override;
   void OnWindowBoundsChanged(aura::Window* window,
                              const gfx::Rect& old_bounds,
                              const gfx::Rect& new_bounds,
@@ -308,10 +306,6 @@ class KEYBOARD_EXPORT KeyboardController
   void ShowAnimationFinished();
 
   void NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
-
-  // Called when the keyboard mode is set or the keyboard is moved to another
-  // display.
-  void AdjustKeyboardBounds();
 
   // Notifies keyboard config change to the observers.
   // Only called from |UpdateKeyboardConfig| in keyboard_util.
