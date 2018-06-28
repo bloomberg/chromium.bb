@@ -60,7 +60,6 @@ namespace blink {
 HeapAllocHooks::AllocationHook* HeapAllocHooks::allocation_hook_ = nullptr;
 HeapAllocHooks::FreeHook* HeapAllocHooks::free_hook_ = nullptr;
 
-
 ThreadHeap::ThreadHeap(ThreadState* thread_state)
     : thread_state_(thread_state),
       heap_stats_collector_(std::make_unique<ThreadHeapStatsCollector>()),
@@ -214,8 +213,7 @@ void ThreadHeap::RegisterMovingObjectCallback(MovableReference reference,
 }
 
 void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
-  bool complete = AdvanceMarkingStackProcessing(
-      visitor, std::numeric_limits<double>::infinity());
+  bool complete = AdvanceMarkingStackProcessing(visitor, TimeTicks::Max());
   CHECK(complete);
 }
 
@@ -259,7 +257,7 @@ void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
 }
 
 bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
-                                               double deadline_seconds) {
+                                               TimeTicks deadline) {
   const size_t kDeadlineCheckInterval = 2500;
   size_t processed_callback_count = 0;
   // Ephemeron fixed point loop.
@@ -274,7 +272,7 @@ bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
         item.callback(visitor, item.object);
         processed_callback_count++;
         if (processed_callback_count % kDeadlineCheckInterval == 0) {
-          if (deadline_seconds <= CurrentTimeTicksInSeconds()) {
+          if (deadline <= CurrentTimeTicks()) {
             return false;
           }
         }
@@ -579,15 +577,14 @@ void ThreadHeap::TakeSnapshot(SnapshotType type) {
       ->AddOwnershipEdge(classes_dump->guid(), heaps_dump->guid());
 }
 
-bool ThreadHeap::AdvanceLazySweep(double deadline_seconds) {
+bool ThreadHeap::AdvanceLazySweep(TimeTicks deadline) {
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++) {
     // lazySweepWithDeadline() won't check the deadline until it sweeps
     // 10 pages. So we give a small slack for safety.
-    double slack = 0.001;
-    double remaining_budget =
-        deadline_seconds - slack - CurrentTimeTicksInSeconds();
-    if (remaining_budget <= 0 ||
-        !arenas_[i]->LazySweepWithDeadline(deadline_seconds)) {
+    TimeDelta slack = TimeDelta::FromSecondsD(0.001);
+    TimeDelta remaining_budget = deadline - slack - CurrentTimeTicks();
+    if (remaining_budget <= TimeDelta() ||
+        !arenas_[i]->LazySweepWithDeadline(deadline)) {
       return false;
     }
   }

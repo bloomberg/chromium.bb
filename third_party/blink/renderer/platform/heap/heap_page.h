@@ -743,7 +743,7 @@ class PLATFORM_EXPORT BaseArena {
   void SweepUnsweptPage();
   // Returns true if we have swept all pages within the deadline. Returns false
   // otherwise.
-  bool LazySweepWithDeadline(double deadline_seconds);
+  bool LazySweepWithDeadline(TimeTicks deadline);
   void CompleteSweep();
 
   ThreadState* GetThreadState() { return thread_state_; }
