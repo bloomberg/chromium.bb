@@ -1217,14 +1217,15 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             ThreadUtils.postOnUiThreadDelayed(() -> {
                 onDeferredStartup(activityCreationTimeMs, activityName);
             }, RECORD_UMA_PERFORMANCE_METRICS_DELAY_MS - elapsedTime);
+            return;
         }
-        RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime." + activityName,
+        RecordHistogram.recordTimesHistogram("MobileStartup.ToolbarFirstDrawTime2." + activityName,
                 mToolbar.getFirstDrawTime() - activityCreationTimeMs, TimeUnit.MILLISECONDS);
 
         long firstFocusTime = mToolbar.getLocationBar().getFirstUrlBarFocusTime();
         if (firstFocusTime != 0) {
             RecordHistogram.recordCustomTimesHistogram(
-                    "MobileStartup.ToolbarFirstFocusTime." + activityName,
+                    "MobileStartup.ToolbarFirstFocusTime2." + activityName,
                     firstFocusTime - activityCreationTimeMs, MIN_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS,
                     MAX_FOCUS_TIME_FOR_UMA_HISTOGRAM_MS, TimeUnit.MILLISECONDS, 50);
         }
