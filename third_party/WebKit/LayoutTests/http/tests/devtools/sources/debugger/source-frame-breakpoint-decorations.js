@@ -9,7 +9,7 @@
   await TestRunner.addScriptTag('resources/edit-me-breakpoints.js');
 
   function waitAndDumpDecorations(sourceFrame) {
-    return SourcesTestRunner.waitBreakpointSidebarPane(true).then(
+    return SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame).then(
         () => SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame));
   }
 
@@ -42,7 +42,8 @@
         javaScriptSourceFrame = sourceFrame;
         TestRunner.addResult('Setting breakpoint');
         SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, '', true)
-            .then(() => SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, 'true', true))
+            .then(() => SourcesTestRunner.waitBreakpointSidebarPane(true))
+            .then(() => SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, 'true', true))
             .then(() => waitAndDumpDecorations(javaScriptSourceFrame))
             .then(removeBreakpoint);
       }
@@ -68,19 +69,19 @@
       function addConditionalDisabled() {
         TestRunner.addResult('Adding conditional disabled breakpoint');
         waitAndDumpDecorations(javaScriptSourceFrame).then(addRegularEnabled);
-        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, 'true', false);
+        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, 'true', false);
       }
 
       function addRegularEnabled() {
         TestRunner.addResult('Adding regular enabled breakpoint');
         waitAndDumpDecorations(javaScriptSourceFrame).then(addConditionalEnabled);
-        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, '', true);
+        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, '', true);
       }
 
       function addConditionalEnabled() {
         TestRunner.addResult('Adding conditional enabled breakpoint');
         waitAndDumpDecorations(javaScriptSourceFrame).then(disableAll);
-        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 0, 'true', true);
+        SourcesTestRunner.createNewBreakpoint(javaScriptSourceFrame, 2, 'true', true);
       }
 
       function disableAll() {

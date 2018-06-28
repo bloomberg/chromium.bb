@@ -16,7 +16,7 @@
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Remove breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 27, false);
+  SourcesTestRunner.toggleBreakpoint(sourceFrame, 29, false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
@@ -26,7 +26,7 @@
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Remove breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 27, false);
+  SourcesTestRunner.toggleBreakpoint(sourceFrame, 25, false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
@@ -36,7 +36,7 @@
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Remove breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 27, false);
+  SourcesTestRunner.toggleBreakpoint(sourceFrame, 29, false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
@@ -46,7 +46,7 @@
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Remove breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 27, false);
+  SourcesTestRunner.toggleBreakpoint(sourceFrame, 19, false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
@@ -57,12 +57,13 @@
 
   TestRunner.addResult('Set two breakpoints with the same shifted line');
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 19, false);
+  await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.toggleBreakpoint(sourceFrame, 25, false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 
   TestRunner.addResult('Remove breakpoint');
-  SourcesTestRunner.toggleBreakpoint(sourceFrame, 27, false);
+  SourcesTestRunner.toggleBreakpoint(sourceFrame, 29, false);
   await SourcesTestRunner.waitDebuggerPluginBreakpoints(sourceFrame);
   SourcesTestRunner.dumpDebuggerPluginBreakpoints(sourceFrame);
 

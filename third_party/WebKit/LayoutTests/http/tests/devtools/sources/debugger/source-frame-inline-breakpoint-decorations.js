@@ -25,6 +25,8 @@
       function boo() {
         return 42;
       }
+
+      console.log(42);
       //# sourceURL=foo.js
     `);
 
@@ -141,7 +143,7 @@
 
       TestRunner.addResult('Toggle breakpoint');
       let decorationsPromise = waitAndDumpDecorations(javaScriptSourceFrame);
-      SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 25);
+      SourcesTestRunner.toggleBreakpoint(javaScriptSourceFrame, 28);
       await decorationsPromise;
       next();
     }

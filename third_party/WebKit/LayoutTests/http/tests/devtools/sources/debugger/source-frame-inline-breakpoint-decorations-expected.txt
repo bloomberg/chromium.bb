@@ -61,8 +61,8 @@ Click by first inline breakpoints
 
 Running: testAddRemoveBreakpointInLineWithoutBreakableLocations
 Setting breakpoint
-breakpoint at 25
-  inline breakpoint at (25, 8)
-  inline breakpoint at (25, 18) disabled
+breakpoint at 28
+  inline breakpoint at (28, 6)
+  inline breakpoint at (28, 14) disabled
 Toggle breakpoint
 
