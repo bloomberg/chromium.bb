@@ -119,6 +119,12 @@ def GetBoardTypeToBoardsDict(ge_build_config):
       all_boards - chromeos_test.vmtest_boards
   )
 
+  boards_dict['generic_kernel_boards'] = frozenset([
+      'amd64-generic',
+      'arm-generic',
+      'arm64-generic'
+  ])
+
   return boards_dict
 
 
@@ -1166,6 +1172,28 @@ def PreCqBuilders(site_config, boards_dict, ge_build_config):
       boards_dict['all_boards'],
       board_configs,
       site_config.templates.pre_cq,
+  )
+  # Add special pre-cq for generic build tests with non-default kernel version
+  site_config.AddForBoards(
+      'v4_4-pre-cq',
+      boards_dict['generic_kernel_boards'],
+      board_configs,
+      site_config.templates.pre_cq,
+      useflags=config_lib.append_useflags(['-kernel-4_14', 'kernel-4_4']),
+  )
+  site_config.AddForBoards(
+      'v4_14-pre-cq',
+      boards_dict['generic_kernel_boards'],
+      board_configs,
+      site_config.templates.pre_cq,
+      useflags=config_lib.append_useflags(['-kernel-4_4', 'kernel-4_14']),
+  )
+  site_config.AddForBoards(
+      'v4_19-pre-cq',
+      boards_dict['generic_kernel_boards'],
+      board_configs,
+      site_config.templates.pre_cq,
+      useflags=config_lib.append_useflags(['-kernel-4_4', '-kernel-4_14', 'kernel-4_19']),
   )
   site_config.AddForBoards(
       'no-vmtest-pre-cq',

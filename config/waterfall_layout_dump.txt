@@ -630,6 +630,9 @@
   amd64-generic-ubsan-paladin-tryjob
   amd64-generic-ubsan-tryjob
   amd64-generic-unittest-stress
+  amd64-generic-v4_14-pre-cq
+  amd64-generic-v4_19-pre-cq
+  amd64-generic-v4_4-pre-cq
   amd64-llvm-next-toolchain-tryjob
   arkham-compile-only-pre-cq
   arkham-factory-arkham-7077.113.B-factorybranch-tryjob
@@ -656,6 +659,9 @@
   arm-generic-telemetry-tryjob
   arm-generic-tot-chromium-pfq-informational-tryjob
   arm-generic-unittest-stress
+  arm-generic-v4_14-pre-cq
+  arm-generic-v4_19-pre-cq
+  arm-generic-v4_4-pre-cq
   arm-llvm-next-toolchain-tryjob
   arm64-generic-chromium-pfq-tryjob
   arm64-generic-compile-only-pre-cq
@@ -668,6 +674,9 @@
   arm64-generic-pre-cq
   arm64-generic-tot-chromium-pfq-informational-tryjob
   arm64-generic-unittest-stress
+  arm64-generic-v4_14-pre-cq
+  arm64-generic-v4_19-pre-cq
+  arm64-generic-v4_4-pre-cq
   arm64-llvm-next-toolchain-tryjob
   arm64-llvmpipe-chromium-pfq-tryjob
   arm64-llvmpipe-compile-only-pre-cq
