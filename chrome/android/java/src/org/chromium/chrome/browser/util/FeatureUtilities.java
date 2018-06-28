@@ -348,13 +348,15 @@ public class FeatureUtilities {
 
     /**
      * @param isTablet Whether the containing Activity is being displayed on a tablet-sized screen.
-     * @return Whether the contextual suggestions bottom sheet is enabled.
+     * @return Whether contextual suggestions are enabled.
      */
-    public static boolean isContextualSuggestionsBottomSheetEnabled(boolean isTablet) {
+    public static boolean areContextualSuggestionsEnabled(boolean isTablet) {
         return !isTablet && !LocaleManager.getInstance().needToCheckForSearchEnginePromo()
                 && isChromeModernDesignEnabled()
-                && ChromeFeatureList.isEnabled(
-                           ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET);
+                && (ChromeFeatureList.isEnabled(
+                            ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
+                           || ChromeFeatureList.isEnabled(
+                                      ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON));
     }
 
     private static native void nativeSetCustomTabVisible(boolean visible);

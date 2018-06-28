@@ -151,6 +151,9 @@ extern const char kCompositedLayerBordersDescription[];
 extern const char kContextualSuggestionsBottomSheetName[];
 extern const char kContextualSuggestionsBottomSheetDescription[];
 
+extern const char kContextualSuggestionsButtonName[];
+extern const char kContextualSuggestionsButtonDescription[];
+
 extern const char kContextualSuggestionsSlimPeekUIName[];
 extern const char kContextualSuggestionsSlimPeekUIDescription[];
 

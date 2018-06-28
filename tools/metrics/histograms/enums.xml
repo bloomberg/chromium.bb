@@ -27062,6 +27062,7 @@ from previous Chrome versions.
   <int value="-1833149810" label="enable-accessibility-tab-switcher"/>
   <int value="-1832575380" label="show-saved-copy"/>
   <int value="-1832221649" label="disable-out-of-process-pac"/>
+  <int value="-1826649921" label="ContextualSuggestionsButton:disabled"/>
   <int value="-1821058653" label="enable-delay-agnostic-aec"/>
   <int value="-1817209284" label="PayWithGoogleV1:enabled"/>
   <int value="-1816066138" label="CastAllowAllIPs:enabled"/>
@@ -27814,6 +27815,7 @@ from previous Chrome versions.
   <int value="-206393363" label="enable-scroll-prediction"/>
   <int value="-204355195" label="secondary-ui-md"/>
   <int value="-202007318" label="AndroidAIAFetching:enabled"/>
+  <int value="-200805659" label="ContextualSuggestionsButton:enabled"/>
   <int value="-196110497" label="force-text-direction"/>
   <int value="-195029497" label="MediaRemoting:disabled"/>
   <int value="-192919826" label="ViewsSimplifiedFullscreenUI:enabled"/>

@@ -189,6 +189,7 @@ public abstract class ChromeFeatureList {
             "ContextualSearchTapDisableOverride";
     public static final String CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET =
             "ContextualSuggestionsBottomSheet";
+    public static final String CONTEXTUAL_SUGGESTIONS_BUTTON = "ContextualSuggestionsButton";
     public static final String CONTEXTUAL_SUGGESTIONS_SLIM_PEEK_UI =
             "ContextualSuggestionsSlimPeekUI";
     public static final String CUSTOM_CONTEXT_MENU = "CustomContextMenu";

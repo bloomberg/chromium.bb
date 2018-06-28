@@ -2491,6 +2491,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(
          contextual_suggestions::kContextualSuggestionsBottomSheet)},
+    {"contextual-suggestions-button",
+     flag_descriptions::kContextualSuggestionsButtonName,
+     flag_descriptions::kContextualSuggestionsButtonDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsButton)},
     {"contextual-suggestions-slim-peek-ui",
      flag_descriptions::kContextualSuggestionsSlimPeekUIName,
      flag_descriptions::kContextualSuggestionsSlimPeekUIDescription, kOsAndroid,

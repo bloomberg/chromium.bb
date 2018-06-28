@@ -13,7 +13,9 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.SystemClock;
+import android.support.annotation.DrawableRes;
 import android.support.annotation.Nullable;
+import android.support.annotation.StringRes;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.text.TextUtils;
@@ -21,6 +23,7 @@ import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -864,6 +867,20 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
         mMenuBadgeAnimatorSet.start();
     }
+
+    /**
+     * Enable the experimental toolbar button.
+     * @param onClickListener The {@link OnClickListener} to be called when the button is clicked.
+     * @param drawableResId The resource id of the drawable to display for the button.
+     * @param contentDescriptionResId The resource id of the content description for the button.
+     */
+    public void enableExperimentalButton(OnClickListener onClickListener,
+            @DrawableRes int drawableResId, @StringRes int contentDescriptionResId) {}
+
+    /**
+     * Disable the experimental toolbar button.
+     */
+    public void disableExperimentalButton() {}
 
     /**
      * Sets the update badge visibility to VISIBLE and sets the menu button image to the badged

@@ -146,6 +146,7 @@ public class ToolbarPhone extends ToolbarLayout
     private TextView mUrlBar;
     protected View mUrlActionContainer;
     protected ImageView mToolbarShadow;
+    private @Nullable TintedImageButton mExperimentalButton;
 
     private final int mProgressBackBackgroundColorWhite;
 
@@ -1374,9 +1375,18 @@ public class ToolbarPhone extends ToolbarLayout
         }
         mLocationBar.setAlpha(previousAlpha);
 
-        // Draw the tab stack button and associated text.
+        // Translate to draw end toolbar buttons.
         translateCanvasToView(this, mToolbarButtonsContainer, canvas);
 
+        // Draw the experimental button if necessary.
+        if (mExperimentalButton != null && mExperimentalButton.getVisibility() != View.GONE) {
+            previousAlpha = mExperimentalButton.getAlpha();
+            mExperimentalButton.setAlpha(previousAlpha * floatAlpha);
+            drawChild(canvas, mExperimentalButton, SystemClock.uptimeMillis());
+            mExperimentalButton.setAlpha(previousAlpha);
+        }
+
+        // Draw the tab stack button and associated text.
         if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null
                 && mUrlExpansionPercent != 1f) {
             // Draw the tab stack button image.
@@ -2663,6 +2673,9 @@ public class ToolbarPhone extends ToolbarLayout
         if (mLocationBar.useModernDesign()) {
             updateModernLocationBarColor(getLocationBarColorForToolbarColor(currentPrimaryColor));
         }
+        if (mExperimentalButton != null) {
+            mExperimentalButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+        }
 
         setMenuButtonHighlightDrawable(mHighlightingMenu);
         if (mShowMenuBadge && inOrEnteringStaticTab) {
@@ -2768,6 +2781,36 @@ public class ToolbarPhone extends ToolbarLayout
             mTabSwitcherAnimationMenuBadgeDarkDrawable = null;
             mTabSwitcherAnimationMenuBadgeLightDrawable = null;
         }
+    }
+
+    @Override
+    public void enableExperimentalButton(
+            OnClickListener onClickListener, int drawableResId, int contentDescriptionResId) {
+        if (mExperimentalButton == null) {
+            ViewStub viewStub = findViewById(R.id.experimental_button_stub);
+            mExperimentalButton = (TintedImageButton) viewStub.inflate();
+            mBrowsingModeViews.add(mExperimentalButton);
+        } else {
+            assert mExperimentalButton.getVisibility()
+                    == View.GONE : "#disableExperimentalButton() should be called first.";
+        }
+
+        mExperimentalButton.setOnClickListener(onClickListener);
+        mExperimentalButton.setImageResource(drawableResId);
+        mExperimentalButton.setContentDescription(
+                getContext().getResources().getString(contentDescriptionResId));
+        mExperimentalButton.setTint(mUseLightToolbarDrawables ? mLightModeTint : mDarkModeTint);
+        mExperimentalButton.setVisibility(View.VISIBLE);
+
+        if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
+    }
+
+    @Override
+    public void disableExperimentalButton() {
+        if (mExperimentalButton == null) return;
+
+        mExperimentalButton.setVisibility(View.GONE);
+        if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
     }
 
     private void setTabSwitcherAnimationMenuDrawable() {

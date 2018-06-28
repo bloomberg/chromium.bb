@@ -127,6 +127,8 @@ public final class FetchHelperTest {
         // Ensure Chrome feature list does not switch to native.
         Map<String, Boolean> testFeatures = new HashMap<>();
         testFeatures.put(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET, true);
+        // TODO(twellington): write some tests for the button variant.
+        testFeatures.put(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON, false);
         ChromeFeatureList.setTestFeatures(testFeatures);
     }
 

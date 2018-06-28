@@ -202,6 +202,10 @@ const char kContextualSuggestionsBottomSheetName[] =
 const char kContextualSuggestionsBottomSheetDescription[] =
     "If enabled, shows contextual suggestions in the bottom sheet.";
 
+const char kContextualSuggestionsButtonName[] = "Contextual Suggestions Button";
+const char kContextualSuggestionsButtonDescription[] =
+    "If enabled, shows a button to trigger contextual suggestions.";
+
 const char kContextualSuggestionsSlimPeekUIName[] =
     "Contextual Suggestions Slim Peek UI";
 const char kContextualSuggestionsSlimPeekUIDescription[] =
