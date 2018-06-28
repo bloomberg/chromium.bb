@@ -39,6 +39,46 @@ int* const CountCopy::kDeletedValue =
 
 namespace {
 
+TEST(HashSetTest, IteratorComparison) {
+  HashSet<int> set;
+  set.insert(1);
+  EXPECT_TRUE(set.begin() != set.end());
+  EXPECT_FALSE(set.begin() == set.end());
+
+  HashSet<int>::const_iterator begin = set.begin();
+  EXPECT_TRUE(begin == set.begin());
+  EXPECT_TRUE(set.begin() == begin);
+  EXPECT_TRUE(begin != set.end());
+  EXPECT_TRUE(set.end() != begin);
+  EXPECT_FALSE(begin != set.begin());
+  EXPECT_FALSE(set.begin() != begin);
+  EXPECT_FALSE(begin == set.end());
+  EXPECT_FALSE(set.end() == begin);
+}
+
+TEST(HashSetTest, Iteration) {
+  HashSet<int> set;
+  for (int i = 0; i < 10; ++i)
+    set.insert(1 << i);
+
+  int encountered_keys = 0, count = 0;
+  for (auto it = set.begin(); it != set.end(); ++it) {
+    encountered_keys |= *it;
+    count++;
+  }
+  EXPECT_EQ(10, count);
+  EXPECT_EQ((1 << 10) - 1, encountered_keys);
+
+  encountered_keys = count = 0;
+  for (auto it = set.end(); it != set.begin();) {
+    --it;
+    encountered_keys |= *it;
+    count++;
+  }
+  EXPECT_EQ(10, count);
+  EXPECT_EQ((1 << 10) - 1, encountered_keys);
+}
+
 template <unsigned size>
 void TestReserveCapacity();
 template <>
