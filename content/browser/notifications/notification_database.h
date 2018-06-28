@@ -157,12 +157,10 @@ class CONTENT_EXPORT NotificationDatabase {
  private:
   friend class NotificationDatabaseTest;
 
-  // TODO(peter): Convert to an enum class when DCHECK_EQ supports this.
-  // See https://crbug.com/463869.
-  enum State {
-    STATE_UNINITIALIZED,
-    STATE_INITIALIZED,
-    STATE_DISABLED,
+  enum class State {
+    UNINITIALIZED,
+    INITIALIZED,
+    DISABLED,
   };
 
   // Reads the next available persistent notification id from the database and
@@ -213,7 +211,7 @@ class CONTENT_EXPORT NotificationDatabase {
   std::unique_ptr<leveldb::Env> env_;
   std::unique_ptr<leveldb::DB> db_;
 
-  State state_ = STATE_UNINITIALIZED;
+  State state_ = State::UNINITIALIZED;
 
   base::SequenceChecker sequence_checker_;
 
