@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "base/callback_helpers.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "components/favicon/core/favicon_server_fetcher_params.h"
@@ -21,7 +20,6 @@
 #include "components/ntp_tiles/constants.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "ui/base/resource/resource_bundle.h"
-#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image.h"
 #include "url/gurl.h"
@@ -59,12 +57,6 @@ bool HasResultDefaultBackgroundColor(
   return result.fallback_icon_style->is_default_background_color;
 }
 
-int GetMinimumFetchingSizeForDesktopFaviconsFromServer() {
-  std::vector<float> favicon_scales = favicon_base::GetFaviconScales();
-  DCHECK(!favicon_scales.empty());
-  return std::ceil(gfx::kFaviconSize * favicon_scales.back());
-}
-
 int GetMinimumFetchingSizeForChromeSuggestionsFaviconsFromServer() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kNtpMostLikelyFaviconsFromServerFeature, kTileIconMinSizePxFieldParam,
@@ -75,17 +67,6 @@ int GetDesiredFetchingSizeForChromeSuggestionsFaviconsFromServer() {
   return base::GetFieldTrialParamByFeatureAsInt(
       kNtpMostLikelyFaviconsFromServerFeature, kTileIconDesiredSizePxFieldParam,
       kDefaultTileIconDesiredSizePx);
-}
-
-void OnGetFallbackStyleFinished(
-    IconCacher::FallbackStyleCallback fallback_style_callback,
-    const favicon_base::LargeIconResult& result) {
-  if (!result.fallback_icon_style) {
-    std::move(fallback_style_callback).Run(base::nullopt);
-    return;
-  }
-  std::move(fallback_style_callback)
-      .Run(std::move(*result.fallback_icon_style));
 }
 
 }  // namespace
@@ -302,20 +283,6 @@ void IconCacherImpl::OnMostLikelyFaviconDownloaded(
   FinishRequestAndNotifyIconAvailable(
       request_url,
       status == favicon_base::GoogleFaviconServerRequestStatus::SUCCESS);
-}
-
-void IconCacherImpl::GetFallbackStyleForURL(
-    const GURL& page_url,
-    IconCacher::FallbackStyleCallback fallback_style_callback) {
-  // Desired size 0 means that we do not want the service to resize the image
-  // (as we will not use it anyway).
-  large_icon_service_->GetLargeIconOrFallbackStyle(
-      page_url, GetMinimumFetchingSizeForDesktopFaviconsFromServer(),
-      /*desired_size_in_pixel=*/0,
-      base::BindRepeating(
-          &OnGetFallbackStyleFinished,
-          base::AdaptCallbackForRepeating(std::move(fallback_style_callback))),
-      &tracker_);
 }
 
 bool IconCacherImpl::StartRequest(const GURL& request_url,

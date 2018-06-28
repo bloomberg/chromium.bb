@@ -8,14 +8,12 @@
 #include <iterator>
 #include <utility>
 
-#include "base/barrier_closure.h"
 #include "base/bind.h"
 #include "base/callback.h"
 #include "base/feature_list.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "components/favicon_base/fallback_icon_style.h"
 #include "components/history/core/browser/top_sites.h"
 #include "components/ntp_tiles/constants.h"
 #include "components/ntp_tiles/icon_cacher.h"
@@ -23,7 +21,6 @@
 #include "components/ntp_tiles/switches.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/skia/include/core/SkColor.h"
 
 using history::TopSites;
 using suggestions::ChromeSuggestion;
@@ -80,109 +77,6 @@ bool ShouldShowPopularSites() {
 }
 
 }  // namespace
-
-// Helper class for returning fallback styles with NTPTiles. New tiles will live
-// here while waiting for all fallback style callbacks to finish. After
-// callbacks finish, the tiles are given back to MostVisitedSites to be saved
-// and notify the observer as necessary.
-class MostVisitedSites::FallbackIconHelper {
- public:
-  using TilesWithFallbackStylesCallback =
-      base::OnceCallback<void(NTPTilesVector,
-                              std::map<SectionType, NTPTilesVector>)>;
-  using FallbackStyleCallback =
-      base::OnceCallback<void(base::Optional<favicon_base::FallbackIconStyle>)>;
-  using GetFallbackStyleForURL =
-      base::RepeatingCallback<void(const GURL&, FallbackStyleCallback)>;
-
-  FallbackIconHelper(NTPTilesVector tiles,
-                     std::map<SectionType, NTPTilesVector> sections,
-                     GetFallbackStyleForURL get_fallback_style_callback,
-                     TilesWithFallbackStylesCallback callback);
-
-  ~FallbackIconHelper();
-
-  void StartGetFallbackStyles();
-
- private:
-  // Generates a callback for |tile| that will be given to
-  // |IconCacher::GetFallbackStyleForURL|. |tile| should exist inside |tiles_|.
-  FallbackStyleCallback GetFallbackStyleCallback(NTPTile* tile);
-
-  void OnFallbackStyleReturned(
-      NTPTile* tile,
-      base::Optional<favicon_base::FallbackIconStyle> fallback_icon_style);
-
-  void OnAllFallbackStylesReturned();
-
-  NTPTilesVector tiles_;
-  std::map<SectionType, NTPTilesVector> sections_;
-  GetFallbackStyleForURL get_fallback_style_callback_;
-  TilesWithFallbackStylesCallback callback_;
-  base::RepeatingClosure barrier_closure_;
-
-  base::WeakPtrFactory<FallbackIconHelper> weak_ptr_factory_;
-
-  DISALLOW_COPY_AND_ASSIGN(FallbackIconHelper);
-};
-
-MostVisitedSites::FallbackIconHelper::FallbackIconHelper(
-    NTPTilesVector tiles,
-    std::map<SectionType, NTPTilesVector> sections,
-    GetFallbackStyleForURL get_fallback_style_callback,
-    TilesWithFallbackStylesCallback callback)
-    : tiles_(std::move(tiles)),
-      sections_(std::move(sections)),
-      get_fallback_style_callback_(std::move(get_fallback_style_callback)),
-      callback_(std::move(callback)),
-      weak_ptr_factory_(this) {
-  barrier_closure_ = base::BarrierClosure(
-      tiles_.size(),
-      base::BindOnce(&FallbackIconHelper::OnAllFallbackStylesReturned,
-                     weak_ptr_factory_.GetWeakPtr()));
-}
-
-MostVisitedSites::FallbackIconHelper::~FallbackIconHelper() {}
-
-void MostVisitedSites::FallbackIconHelper::StartGetFallbackStyles() {
-  for (auto& tile : tiles_) {
-    // Only check for fallback colors if no favicon url is specified or the url
-    // is invalid.
-    // TODO(kristipark): Determine if the linked favicon requires a fallback.
-    // It's possible that the favicon may be too small.
-    if (!tile.favicon_url.is_valid()) {
-      get_fallback_style_callback_.Run(tile.url,
-                                       GetFallbackStyleCallback(&tile));
-    } else {
-      barrier_closure_.Run();
-    }
-  }
-}
-
-MostVisitedSites::FallbackIconHelper::FallbackStyleCallback
-MostVisitedSites::FallbackIconHelper::GetFallbackStyleCallback(NTPTile* tile) {
-  return base::BindOnce(&FallbackIconHelper::OnFallbackStyleReturned,
-                        weak_ptr_factory_.GetWeakPtr(), tile);
-}
-
-void MostVisitedSites::FallbackIconHelper::OnFallbackStyleReturned(
-    NTPTile* tile,
-    base::Optional<favicon_base::FallbackIconStyle> fallback_icon_style) {
-  if (fallback_icon_style.has_value()) {
-    tile->has_fallback_style = true;
-    tile->fallback_background_color = fallback_icon_style->background_color;
-    tile->fallback_text_color = fallback_icon_style->text_color;
-  } else {
-    tile->has_fallback_style = false;
-    tile->fallback_background_color = SK_ColorBLACK;
-    tile->fallback_text_color = SK_ColorBLACK;
-  }
-  barrier_closure_.Run();
-}
-
-void MostVisitedSites::FallbackIconHelper::OnAllFallbackStylesReturned() {
-  std::move(callback_).Run(std::move(tiles_), std::move(sections_));
-}
 
 MostVisitedSites::MostVisitedSites(
     PrefService* prefs,
@@ -388,7 +282,7 @@ void MostVisitedSites::OnMostVisitedURLsAvailable(
   }
 
   mv_source_ = TileSource::TOP_SITES;
-  MergeTilesAndGetFallbackStyles(std::move(tiles));
+  SaveTilesAndNotify(std::move(tiles));
 }
 
 void MostVisitedSites::OnSuggestionsProfileChanged(
@@ -450,7 +344,7 @@ void MostVisitedSites::BuildCurrentTilesGivenSuggestionsProfile(
   }
 
   mv_source_ = TileSource::SUGGESTIONS_SERVICE;
-  MergeTilesAndGetFallbackStyles(std::move(tiles));
+  SaveTilesAndNotify(std::move(tiles));
 }
 
 NTPTilesVector MostVisitedSites::CreateWhitelistEntryPointTiles(
@@ -561,8 +455,7 @@ NTPTilesVector MostVisitedSites::CreatePopularSitesTiles(
   return popular_sites_tiles;
 }
 
-void MostVisitedSites::MergeTilesAndGetFallbackStyles(
-    NTPTilesVector personal_tiles) {
+void MostVisitedSites::SaveTilesAndNotify(NTPTilesVector personal_tiles) {
   std::set<std::string> used_hosts;
   size_t num_actual_tiles = 0u;
   AddToHostsAndTotalCount(personal_tiles, &used_hosts, &num_actual_tiles);
@@ -579,30 +472,12 @@ void MostVisitedSites::MergeTilesAndGetFallbackStyles(
   NTPTilesVector new_tiles =
       MergeTiles(std::move(personal_tiles), std::move(whitelist_tiles),
                  std::move(sections[SectionType::PERSONALIZED]));
-  DCHECK_EQ(num_actual_tiles, new_tiles.size());
-
-  if (IsMDIconsEnabled()) {
-    fallback_icon_helper_ = std::make_unique<FallbackIconHelper>(
-        std::move(new_tiles), std::move(sections),
-        base::BindRepeating(&IconCacher::GetFallbackStyleForURL,
-                            base::Unretained(icon_cacher_.get())),
-        base::BindOnce(&MostVisitedSites::SaveTilesAndNotify,
-                       base::Unretained(this)));
-    fallback_icon_helper_->StartGetFallbackStyles();
-  } else {
-    SaveTilesAndNotify(std::move(new_tiles), std::move(sections));
-  }
-}
-
-void MostVisitedSites::SaveTilesAndNotify(
-    NTPTilesVector new_tiles,
-    std::map<SectionType, NTPTilesVector> sections) {
-  fallback_icon_helper_.reset();
   if (current_tiles_.has_value() && (*current_tiles_ == new_tiles)) {
     return;
   }
 
   current_tiles_.emplace(std::move(new_tiles));
+  DCHECK_EQ(num_actual_tiles, current_tiles_->size());
 
   int num_personal_tiles = 0;
   for (const auto& tile : *current_tiles_) {

@@ -75,7 +75,6 @@ using testing::ReturnRef;
 using testing::SaveArg;
 using testing::SizeIs;
 using testing::StrictMock;
-using testing::WithArg;
 using testing::_;
 
 std::string PrintTile(const std::string& title,
@@ -89,20 +88,6 @@ std::string PrintTile(const std::string& title,
 MATCHER_P3(MatchesTile, title, url, source, PrintTile(title, url, source)) {
   return arg.title == base::ASCIIToUTF16(title) && arg.url == GURL(url) &&
          arg.source == source;
-}
-
-MATCHER_P6(MatchesTileWithFallback,
-           title,
-           url,
-           source,
-           has_fallback_style,
-           fallback_background_color,
-           fallback_text_color,
-           PrintTile(title, url, source)) {
-  return arg.title == base::ASCIIToUTF16(title) && arg.url == GURL(url) &&
-         arg.source == source && arg.has_fallback_style == has_fallback_style &&
-         arg.fallback_background_color == fallback_background_color &&
-         arg.fallback_text_color == fallback_text_color;
 }
 
 MATCHER_P3(FirstPersonalizedTileIs,
@@ -243,14 +228,6 @@ class MockIconCacher : public IconCacher {
                     const base::Closure& preliminary_icon_available));
   MOCK_METHOD2(StartFetchMostLikely,
                void(const GURL& page_url, const base::Closure& icon_available));
-  // Used to get around Gmock's lack of support for move-only types.
-  void GetFallbackStyleForURL(const GURL& page_url,
-                              FallbackStyleCallback fallback_style_callback) {
-    DoGetFallbackStyleForURL(page_url, fallback_style_callback);
-  }
-  MOCK_METHOD2(DoGetFallbackStyleForURL,
-               void(const GURL& page_url,
-                    FallbackStyleCallback& fallback_style_callback));
 };
 
 class PopularSitesFactoryForTest {
@@ -444,11 +421,6 @@ class MostVisitedSitesTest : public ::testing::TestWithParam<bool> {
 
     EXPECT_CALL(*icon_cacher, StartFetchMostLikely(_, _)).Times(AtLeast(0));
 
-    if (IsMDIconsEnabled()) {
-      EXPECT_CALL(*icon_cacher, DoGetFallbackStyleForURL(_, _))
-          .Times(AtLeast(0));
-    }
-
     most_visited_sites_ = std::make_unique<MostVisitedSites>(
         &pref_service_, mock_top_sites_, &mock_suggestions_service_,
         popular_sites_factory_.New(), std::move(icon_cacher),
@@ -554,77 +526,6 @@ TEST_P(MostVisitedSitesTest, ShouldContainSiteExplorationsWhenFeatureEnabled) {
             Contains(Pair(SectionType::NEWS, SizeIs(2ul))),
             Contains(Pair(SectionType::SOCIAL, SizeIs(1ul))),
             Contains(Pair(_, IsEmpty()))));
-}
-
-TEST_P(MostVisitedSitesTest, ShouldContainFallbackStylesWhenFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kNtpIcons);
-  const SkColor kTestColorBackground = SK_ColorRED;
-  const SkColor kTestColorText = SK_ColorBLUE;
-
-  favicon_base::FallbackIconStyle fallback;
-  fallback.background_color = kTestColorBackground;
-  fallback.text_color = kTestColorText;
-  std::map<SectionType, NTPTilesVector> sections;
-  RecreateMostVisitedSites();
-  DisableRemoteSuggestions();
-
-  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
-      .WillRepeatedly(InvokeCallbackArgument<0>(
-          MostVisitedURLList{MakeMostVisitedURL("Site 1", "http://site1/")}));
-  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*icon_cacher_, DoGetFallbackStyleForURL(_, _))
-      .WillOnce(WithArg<1>(Invoke(
-          [&](IconCacher::FallbackStyleCallback& fallback_style_callback) {
-            std::move(fallback_style_callback).Run(fallback);
-          })));
-  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
-      .WillOnce(SaveArg<0>(&sections));
-
-  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
-                                                  /*num_sites=*/1);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(
-      sections,
-      Contains(Pair(SectionType::PERSONALIZED,
-                    ElementsAre(MatchesTileWithFallback(
-                        "Site 1", "http://site1/", TileSource::TOP_SITES, true,
-                        kTestColorBackground, kTestColorText)))));
-}
-
-TEST_P(MostVisitedSitesTest,
-       ShouldContainEmptyFallbackStylesWhenFeatureEnabled) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(kNtpIcons);
-  const SkColor kTestColor = SK_ColorBLACK;
-
-  std::map<SectionType, NTPTilesVector> sections;
-  RecreateMostVisitedSites();
-  DisableRemoteSuggestions();
-
-  EXPECT_CALL(*mock_top_sites_, GetMostVisitedURLs(_, false))
-      .WillRepeatedly(InvokeCallbackArgument<0>(
-          MostVisitedURLList{MakeMostVisitedURL("Site 1", "http://site1/")}));
-  EXPECT_CALL(*mock_top_sites_, SyncWithHistory());
-  EXPECT_CALL(*icon_cacher_, DoGetFallbackStyleForURL(_, _))
-      .WillOnce(WithArg<1>(Invoke(
-          [&](IconCacher::FallbackStyleCallback& fallback_style_callback) {
-            std::move(fallback_style_callback).Run(base::nullopt);
-          })));
-  EXPECT_CALL(mock_observer_, OnURLsAvailable(_))
-      .WillOnce(SaveArg<0>(&sections));
-
-  most_visited_sites_->SetMostVisitedURLsObserver(&mock_observer_,
-                                                  /*num_sites=*/1);
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_THAT(
-      sections,
-      Contains(Pair(SectionType::PERSONALIZED,
-                    ElementsAre(MatchesTileWithFallback(
-                        "Site 1", "http://site1/", TileSource::TOP_SITES, false,
-                        kTestColor, kTestColor)))));
 }
 
 TEST_P(MostVisitedSitesTest,

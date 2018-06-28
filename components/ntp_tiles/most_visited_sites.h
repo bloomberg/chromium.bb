@@ -141,8 +141,8 @@ class MostVisitedSites : public history::TopSitesObserver,
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 
-  // Workhorse for |MergeTilesAndGetFallbackStyles|. Implemented as a separate
-  // static and public method for ease of testing.
+  // Workhorse for SaveNewTilesAndNotify. Implemented as a separate static and
+  // public method for ease of testing.
   static NTPTilesVector MergeTiles(NTPTilesVector personal_tiles,
                                    NTPTilesVector whitelist_tiles,
                                    NTPTilesVector popular_tiles);
@@ -154,8 +154,6 @@ class MostVisitedSites : public history::TopSitesObserver,
                            ShouldDeduplicateDomainByRemovingMobilePrefixes);
   FRIEND_TEST_ALL_PREFIXES(MostVisitedSitesTest,
                            ShouldDeduplicateDomainByReplacingMobilePrefixes);
-
-  class FallbackIconHelper;
 
   // This function tries to match the given |host| to a close fit in
   // |hosts_to_skip| by removing a prefix that is commonly used to redirect from
@@ -207,15 +205,10 @@ class MostVisitedSites : public history::TopSitesObserver,
       const std::set<std::string>& hosts_to_skip,
       size_t num_max_tiles);
 
-  // Takes the personal tiles, creates and merges in whitelist and popular
-  // tiles, and gets fallback icon colors as appropriate. Calls
-  // |SaveTilesAndNotify| in the end.
-  void MergeTilesAndGetFallbackStyles(NTPTilesVector personal_tiles);
-
-  // Saves the new tiles and notifies the observer if the tiles were actually
-  // changed.
-  void SaveTilesAndNotify(NTPTilesVector new_tiles,
-                          std::map<SectionType, NTPTilesVector> sections);
+  // Takes the personal tiles, creates and merges in whitelist and popular tiles
+  // if appropriate, and saves the new tiles. Notifies the observer if the tiles
+  // were actually changed.
+  void SaveTilesAndNotify(NTPTilesVector personal_tiles);
 
   void OnPopularSitesDownloaded(bool success);
 
@@ -258,10 +251,6 @@ class MostVisitedSites : public history::TopSitesObserver,
   // whenever it changes, including possibily an initial change from
   // !current_tiles_.has_value() to current_tiles_->empty().
   base::Optional<NTPTilesVector> current_tiles_;
-
-  // Helper to fetch fallback styles for missing/too small favicons. Non-null
-  // while such a fetch is ongoing.
-  std::unique_ptr<FallbackIconHelper> fallback_icon_helper_;
 
   // For callbacks may be run after destruction, used exclusively for TopSites
   // (since it's used to detect whether there's a query in flight).

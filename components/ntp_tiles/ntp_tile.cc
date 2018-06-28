@@ -7,11 +7,7 @@
 namespace ntp_tiles {
 
 NTPTile::NTPTile()
-    : title_source(TileTitleSource::UNKNOWN),
-      source(TileSource::TOP_SITES),
-      has_fallback_style(false),
-      fallback_background_color(SK_ColorBLACK),
-      fallback_text_color(SK_ColorBLACK) {}
+    : title_source(TileTitleSource::UNKNOWN), source(TileSource::TOP_SITES) {}
 
 NTPTile::NTPTile(const NTPTile&) = default;
 
@@ -22,10 +18,7 @@ bool operator==(const NTPTile& a, const NTPTile& b) {
          (a.title_source == b.title_source) &&
          (a.whitelist_icon_path == b.whitelist_icon_path) &&
          (a.thumbnail_url == b.thumbnail_url) &&
-         (a.favicon_url == b.favicon_url) &&
-         (a.has_fallback_style == b.has_fallback_style) &&
-         (a.fallback_background_color == b.fallback_background_color) &&
-         (a.fallback_text_color == b.fallback_text_color);
+         (a.favicon_url == b.favicon_url);
 }
 
 bool operator!=(const NTPTile& a, const NTPTile& b) {
