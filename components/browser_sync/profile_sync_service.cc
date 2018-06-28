@@ -776,6 +776,78 @@ int ProfileSyncService::GetDisableReasons() const {
   return result;
 }
 
+syncer::SyncService::State ProfileSyncService::GetState() const {
+  if (GetDisableReasons() != DISABLE_REASON_NONE) {
+    // We shouldn't have an engine while in a disabled state, with one
+    // exception: When encountering an unrecoverable error, we post a task to
+    // shut down instead of doing it immediately, so there's a brief timeframe
+    // where we have an unrecoverable error but the engine still exists.
+    // TODO(crbug.com/839834): See if we can change this by either shutting down
+    // immediately (not posting a task), or setting the unrecoverable error as
+    // part of the posted task.
+    DCHECK((GetDisableReasons() & DISABLE_REASON_UNRECOVERABLE_ERROR) ||
+           !engine_);
+    return State::DISABLED;
+  }
+
+  // From this point on, Sync can start in principle.
+  DCHECK(CanSyncStart());
+
+  // Typically, Sync won't start until the initial setup is at least in
+  // progress. StartupController::TryStartImmediately bypasses the first setup
+  // check though, so we first have to check whether the engine is initialized.
+  if (!IsEngineInitialized()) {
+    DCHECK_EQ(GetAuthError().state(), GoogleServiceAuthError::NONE);
+    switch (startup_controller_->GetState()) {
+      case syncer::StartupController::State::NOT_STARTED:
+        DCHECK(!engine_);
+        return State::WAITING_FOR_START_REQUEST;
+      case syncer::StartupController::State::STARTING_DEFERRED:
+        DCHECK(!engine_);
+        return State::START_DEFERRED;
+      case syncer::StartupController::State::STARTED:
+        DCHECK(engine_);
+        return State::INITIALIZING;
+    }
+    NOTREACHED();
+  }
+  DCHECK(engine_);
+  // The DataTypeManager gets created once the engine is initialized.
+  DCHECK(data_type_manager_);
+
+  if (GetAuthError().state() != GoogleServiceAuthError::NONE) {
+    return State::AUTH_ERROR;
+  }
+
+  if (!IsFirstSetupComplete()) {
+    DCHECK(!ConfigurationDone());
+    return State::WAITING_FOR_CONSENT;
+  }
+
+#if DCHECK_IS_ON()
+  // At this point we should generally be able to configure our data types,
+  // except if a setup is currently in progress (i.e. the Sync settings UI is
+  // being shown). Note that if a setup is started after the data types have
+  // been configured, then they'll stay configured even though
+  // CanConfigureDataTypes will be false.
+  if (!IsSetupInProgress()) {
+    DCHECK(CanConfigureDataTypes());
+    // After data types *can* be configured, they must actually get configured,
+    // so the DataTypeManager should have gotten out of the initial STOPPED
+    // state. It can only go back to STOPPED in case of unrecoverable errors,
+    // for which we already checked above.
+    DCHECK_NE(data_type_manager_->state(), DataTypeManager::STOPPED);
+    DCHECK(IsSyncActive());
+  }
+#endif  // DCHECK_IS_ON()
+
+  if (!ConfigurationDone()) {
+    return State::CONFIGURING;
+  }
+
+  return State::ACTIVE;
+}
+
 bool ProfileSyncService::IsFirstSetupComplete() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return sync_prefs_.IsFirstSetupComplete();
@@ -1310,8 +1382,6 @@ bool ProfileSyncService::IsSyncAllowed() const {
 
 bool ProfileSyncService::IsSyncActive() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // TODO(treib): Should this check that the state is CONFIGURED? Seems wrong to
-  // say IsSyncActive() == true while it's CONFIGURING or RETRYING.
   return engine_initialized_ && data_type_manager_ &&
          data_type_manager_->state() != DataTypeManager::STOPPED;
 }

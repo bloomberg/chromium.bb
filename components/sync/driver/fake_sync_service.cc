@@ -10,6 +10,7 @@
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/user_share.h"
+#include "google_apis/gaia/google_service_auth_error.h"
 
 namespace syncer {
 
@@ -31,6 +32,34 @@ FakeSyncService::~FakeSyncService() {}
 
 int FakeSyncService::GetDisableReasons() const {
   return DISABLE_REASON_NONE;
+}
+
+syncer::SyncService::State FakeSyncService::GetState() const {
+  // This is a temporary partial copy of the real implementation in
+  // ProfileSyncService, containing only the things that exist in the
+  // FakeSyncService. If subclasses override some of the individual getters,
+  // this should still return a reasonable result.
+  if (GetDisableReasons() != DISABLE_REASON_NONE) {
+    return State::DISABLED;
+  }
+  // From this point on, Sync can start in principle.
+  DCHECK(CanSyncStart());
+  // Note: We don't distinguish here if the engine doesn't exist at all, or
+  // exists but hasn't finished initializing.
+  if (!IsEngineInitialized()) {
+    return State::INITIALIZING;
+  }
+  if (GetAuthError() != GoogleServiceAuthError::AuthErrorNone()) {
+    return State::AUTH_ERROR;
+  }
+  if (!IsFirstSetupComplete()) {
+    return State::WAITING_FOR_CONSENT;
+  }
+  DCHECK(IsSyncActive());
+  if (!ConfigurationDone()) {
+    return State::CONFIGURING;
+  }
+  return State::ACTIVE;
 }
 
 bool FakeSyncService::IsFirstSetupComplete() const {

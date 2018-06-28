@@ -101,6 +101,44 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     DISABLE_REASON_UNRECOVERABLE_ERROR = 1 << 4
   };
 
+  // The overall state of the SyncService, in ascending order of "activeness".
+  enum class State {
+    // Sync is disabled, e.g. due to enterprise policy, or because the user has
+    // disabled it, or simply because there is no authenticated user. Call
+    // GetDisableReasons to figure out which of these it is.
+    DISABLED,
+    // Sync can start in principle, but nothing has prodded it to actually do it
+    // yet. Note that during subsequent browser startups, Sync starts
+    // automatically, i.e. no prod is necessary, but during the first start Sync
+    // does need a kick. This usually happens via starting (not finishing!) the
+    // initial setup, or via an explicit call to RequestStart.
+    // TODO(crbug.com/839834): Check whether this state is necessary, or if Sync
+    // can just always start up if all conditions are fulfilled (that's what
+    // happens in practice anyway).
+    WAITING_FOR_START_REQUEST,
+    // Sync's startup was deferred, so that it doesn't slow down browser
+    // startup. Once the deferral time (usually 10s) expires, or something
+    // requests immediate startup, Sync will actually start.
+    START_DEFERRED,
+    // The Sync engine is in the process of initializing.
+    INITIALIZING,
+    // The Sync engine is initialized and the data types may or may not be
+    // configured (i.e. any of the states below), but Sync has encountered an
+    // auth error. Call GetAuthError for more details.
+    AUTH_ERROR,
+    // The Sync engine is initialized, but the user hasn't completed the initial
+    // Sync setup yet, so we won't actually configure the data types.
+    WAITING_FOR_CONSENT,
+    // The Sync engine itself is up and running, but the individual data types
+    // are being (re)configured. GetActiveDataTypes() will still be empty.
+    CONFIGURING,
+    // The Sync service is up and running. Note that this *still* doesn't
+    // necessarily mean any particular data is being uploaded, e.g. individual
+    // data types might be disabled or might have failed to start (check
+    // GetActiveDataTypes()).
+    ACTIVE
+  };
+
   // Used to specify the kind of passphrase with which sync data is encrypted.
   enum PassphraseType {
     IMPLICIT,  // The user did not provide a custom passphrase for encryption.
@@ -128,10 +166,17 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     return GetDisableReasons() & reason;
   }
 
-  // Whether sync is enabled by user or not. This does not necessarily mean
+  // Returns the overall state of the SyncService. See the enum definition for
+  // what the individual states mean.
+  // Note: If your question is "Are we actually sending this data to Google?" or
+  // "Am I allowed to send this type of data to Google?", you probably want
+  // syncer::GetUploadToGoogleState instead of this.
+  virtual State GetState() const = 0;
+
+  // Whether the user has completed the initial Sync setup. This does not mean
   // that sync is currently running (due to delayed startup, unrecoverable
-  // errors, or shutdown). See IsSyncActive below for checking whether sync
-  // is actually running.
+  // errors, or shutdown). If you want to know whether Sync is actually running,
+  // use GetState instead.
   virtual bool IsFirstSetupComplete() const = 0;
 
   // Whether sync is allowed to start. Command line flags, platform-level
@@ -144,6 +189,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // an initial configuration has successfully completed, although there may
   // be datatype specific, auth, or other transient errors. To see which
   // datatypes are actually syncing, see GetActiveDataTypes() below.
+  // DEPRECATED! Use GetState instead.
   virtual bool IsSyncActive() const = 0;
 
   // Returns true if the local sync backend server has been enabled through a
@@ -188,6 +234,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // (being logged in does not mean that tokens are available - tokens may
   // be missing because they have not loaded yet, or because they were deleted
   // due to http://crbug.com/121755).
+  // DEPRECATED! Use GetState instead.
   virtual bool CanSyncStart() const = 0;
 
   // Stops sync at the user's request. |data_fate| controls whether the sync
@@ -239,6 +286,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // Whether the data types active for the current mode have finished
   // configuration.
+  // DEPRECATED! Use GetState instead.
   virtual bool ConfigurationDone() const = 0;
 
   virtual const GoogleServiceAuthError& GetAuthError() const = 0;
@@ -247,6 +295,7 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   virtual bool HasUnrecoverableError() const = 0;
 
   // Returns true if the SyncEngine has told us it's ready to accept changes.
+  // DEPRECATED! Use GetState instead.
   virtual bool IsEngineInitialized() const = 0;
 
   // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
