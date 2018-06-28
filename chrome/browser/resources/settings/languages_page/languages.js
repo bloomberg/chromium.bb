@@ -283,6 +283,9 @@ Polymer({
    * @private
    */
   preferredLanguagesPrefChanged_: function() {
+    if (this.prefs == undefined || this.languages == undefined)
+      return;
+
     const enabledLanguageStates = this.getEnabledLanguageStates_(
         this.languages.translateTarget, this.languages.prospectiveUILanguage);
 
@@ -306,6 +309,9 @@ Polymer({
    * @private
    */
   spellCheckDictionariesPrefChanged_: function() {
+    if (this.prefs == undefined || this.languages == undefined)
+      return;
+
     const spellCheckSet = this.makeSetFromArray_(/** @type {!Array<string>} */ (
         this.getPref('spellcheck.dictionaries').value));
     const spellCheckForcedSet =
@@ -356,6 +362,9 @@ Polymer({
 
   /** @private */
   translateLanguagesPrefChanged_: function() {
+    if (this.prefs == undefined || this.languages == undefined)
+      return;
+
     const translateBlockedPref = this.getPref('translate_blocked_languages');
     const translateBlockedSet = this.makeSetFromArray_(
         /** @type {!Array<string>} */ (translateBlockedPref.value));
@@ -595,7 +604,9 @@ Polymer({
    * @private
    */
   updateRemovableLanguages_: function() {
-    assert(this.languages);
+    if (this.prefs == undefined || this.languages == undefined)
+      return;
+
     // TODO(michaelpg): Enabled input methods can affect which languages are
     // removable, so run updateEnabledInputMethods_ first (if it has been
     // scheduled).

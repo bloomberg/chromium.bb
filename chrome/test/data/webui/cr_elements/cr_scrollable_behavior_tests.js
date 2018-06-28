@@ -9,7 +9,7 @@ suite('cr-scrollable-behavior', function() {
 
   suiteSetup(function() {
     document.body.innerHTML = `
-      <dom-module is="test-element">
+      <dom-module id="test-element">
         <template>
           <style>
             #container {

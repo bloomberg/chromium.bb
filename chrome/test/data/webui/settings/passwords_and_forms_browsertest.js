@@ -60,8 +60,11 @@ TEST_F('PasswordsAndFormsBrowserTest', 'uiTests', function() {
     const element = document.createElement('settings-passwords-and-forms-page');
     element.prefs = prefsElement.prefs;
     document.body.appendChild(element);
-    element.$$('template[route-path="/passwords"]').if = true;
-    element.$$('template[route-path="/autofill"]').if = true;
+
+    // TODO(dpapad): Update this once migration to Polymer 2 is done.
+    const domIfTag = Polymer.DomIf ? 'dom-if' : 'template';
+    element.$$(`${domIfTag}[route-path="/passwords"]`).if = true;
+    element.$$(`${domIfTag}[route-path="/autofill"]`).if = true;
     Polymer.dom.flush();
     return element;
   }

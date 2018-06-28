@@ -24,7 +24,8 @@ var CrPolicyPrefBehavior = {
    * @return {boolean} True if |this.pref| is controlled by an enforced policy.
    */
   isPrefEnforced: function() {
-    return this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
+    return !!this.pref &&
+        this.pref.enforcement == chrome.settingsPrivate.Enforcement.ENFORCED;
   },
 
   /**

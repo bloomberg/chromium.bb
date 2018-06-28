@@ -31,7 +31,9 @@ suite('controlled radio button', function() {
     Polymer.dom.flush();
     assertTrue(!!radioButton.$$('cr-policy-pref-indicator'));
 
-    radioButton.set('pref.enforcement', undefined);
+    // See https://github.com/Polymer/polymer/issues/4652#issuecomment-305471987
+    // on why |null| must be used here instead of |undefined|.
+    radioButton.set('pref.enforcement', null);
     Polymer.dom.flush();
     assertFalse(radioButton.disabled);
     assertEquals(

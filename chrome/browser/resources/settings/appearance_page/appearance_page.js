@@ -274,6 +274,9 @@ Polymer({
    * @private
    */
   themeChanged_: function(themeId, useSystemTheme) {
+    if (this.prefs == undefined || useSystemTheme == undefined)
+      return;
+
     if (themeId.length > 0) {
       assert(!useSystemTheme);
 

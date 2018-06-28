@@ -79,6 +79,9 @@ cr.define('extensions', function() {
 
     /** @private */
     shouldShowEmptyItemsMessage_: function() {
+      if (!this.apps || !this.extensions)
+        return;
+
       return this.apps.length === 0 && this.extensions.length === 0;
     },
 
