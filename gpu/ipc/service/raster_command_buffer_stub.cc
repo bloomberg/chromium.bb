@@ -84,24 +84,23 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   DCHECK(manager);
 
   if (share_command_buffer_stub) {
-    context_group_ = share_command_buffer_stub->context_group();
-    DCHECK(context_group_->bind_generates_resource() ==
-           init_params.attribs.bind_generates_resource);
-  } else {
-    scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
-        manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
-    gpu::GpuMemoryBufferFactory* gmb_factory =
-        manager->gpu_memory_buffer_factory();
-    context_group_ = new gles2::ContextGroup(
-        manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
-        manager->mailbox_manager(), CreateMemoryTracker(init_params),
-        manager->shader_translator_cache(),
-        manager->framebuffer_completeness_cache(), feature_info,
-        init_params.attribs.bind_generates_resource, channel_->image_manager(),
-        gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
-        manager->watchdog() /* progress_reporter */,
-        manager->gpu_feature_info(), manager->discardable_manager());
+    LOG(ERROR) << "Using a share group is not supported with RasterDecoder";
+    return ContextResult::kFatalFailure;
   }
+
+  scoped_refptr<gles2::FeatureInfo> feature_info = new gles2::FeatureInfo(
+      manager->gpu_driver_bug_workarounds(), manager->gpu_feature_info());
+  gpu::GpuMemoryBufferFactory* gmb_factory =
+      manager->gpu_memory_buffer_factory();
+  context_group_ = new gles2::ContextGroup(
+      manager->gpu_preferences(), gles2::PassthroughCommandDecoderSupported(),
+      manager->mailbox_manager(), CreateMemoryTracker(init_params),
+      manager->shader_translator_cache(),
+      manager->framebuffer_completeness_cache(), feature_info,
+      init_params.attribs.bind_generates_resource, channel_->image_manager(),
+      gmb_factory ? gmb_factory->AsImageFactory() : nullptr,
+      manager->watchdog() /* progress_reporter */, manager->gpu_feature_info(),
+      manager->discardable_manager());
 
 #if defined(OS_MACOSX)
   // Virtualize PreferIntegratedGpu contexts by default on OS X to prevent
@@ -143,11 +142,7 @@ gpu::ContextResult RasterCommandBufferStub::Initialize(
   if (context_group_->use_passthrough_cmd_decoder()) {
     // When using the passthrough command decoder, only share with other
     // contexts in the explicitly requested share group
-    if (share_command_buffer_stub) {
-      share_group_ = share_command_buffer_stub->share_group();
-    } else {
       share_group_ = new gl::GLShareGroup();
-    }
   } else {
     // When using the validating command decoder, always use the global share
     // group
