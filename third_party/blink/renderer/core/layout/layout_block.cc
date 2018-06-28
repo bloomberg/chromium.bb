@@ -1441,17 +1441,17 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
       child->SetPreferredLogicalWidthsDirty();
     }
 
-    const ComputedStyle& child_style = child->StyleRef();
+    scoped_refptr<const ComputedStyle> child_style = child->Style();
     if (child->IsFloating() ||
         (child->IsBox() && ToLayoutBox(child)->AvoidsFloats())) {
       LayoutUnit float_total_width = float_left_width + float_right_width;
-      if (child_style.Clear() == EClear::kBoth ||
-          child_style.Clear() == EClear::kLeft) {
+      if (child_style->Clear() == EClear::kBoth ||
+          child_style->Clear() == EClear::kLeft) {
         max_logical_width = std::max(float_total_width, max_logical_width);
         float_left_width = LayoutUnit();
       }
-      if (child_style.Clear() == EClear::kBoth ||
-          child_style.Clear() == EClear::kRight) {
+      if (child_style->Clear() == EClear::kBoth ||
+          child_style->Clear() == EClear::kRight) {
         max_logical_width = std::max(float_total_width, max_logical_width);
         float_right_width = LayoutUnit();
       }
@@ -1461,8 +1461,8 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     // (variable).
     // Auto and percentage margins simply become 0 when computing min/max width.
     // Fixed margins can be added in as is.
-    Length start_margin_length = child_style.MarginStartUsing(style_to_use);
-    Length end_margin_length = child_style.MarginEndUsing(style_to_use);
+    Length start_margin_length = child_style->MarginStartUsing(style_to_use);
+    Length end_margin_length = child_style->MarginEndUsing(style_to_use);
     LayoutUnit margin;
     LayoutUnit margin_start;
     LayoutUnit margin_end;
@@ -1516,7 +1516,7 @@ void LayoutBlock::ComputeBlockPreferredLogicalWidths(
     }
 
     if (child->IsFloating()) {
-      if (child_style.Floating() == EFloat::kLeft)
+      if (child_style->Floating() == EFloat::kLeft)
         float_left_width += w;
       else
         float_right_width += w;
