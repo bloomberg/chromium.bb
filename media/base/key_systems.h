@@ -62,9 +62,9 @@ class MEDIA_EXPORT KeySystems {
   virtual EmeSessionTypeSupport GetPersistentLicenseSessionSupport(
       const std::string& key_system) const = 0;
 
-  // Returns the support |key_system| provides for persistent-release-message
+  // Returns the support |key_system| provides for persistent-usage-record
   // sessions.
-  virtual EmeSessionTypeSupport GetPersistentReleaseMessageSessionSupport(
+  virtual EmeSessionTypeSupport GetPersistentUsageRecordSessionSupport(
       const std::string& key_system) const = 0;
 
   // Returns the support |key_system| provides for persistent state.

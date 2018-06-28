@@ -138,7 +138,7 @@ bool IsPersistentSessionType(blink::WebEncryptedMediaSessionType sessionType) {
       return false;
     case blink::WebEncryptedMediaSessionType::kPersistentLicense:
       return true;
-    case blink::WebEncryptedMediaSessionType::kPersistentReleaseMessage:
+    case blink::WebEncryptedMediaSessionType::kPersistentUsageRecord:
       return true;
     case blink::WebEncryptedMediaSessionType::kUnknown:
       break;
@@ -671,10 +671,9 @@ KeySystemConfigSelector::GetSupportedConfiguration(
         session_type_rule = GetSessionTypeConfigRule(
             key_systems_->GetPersistentLicenseSessionSupport(key_system));
         break;
-      case blink::WebEncryptedMediaSessionType::kPersistentReleaseMessage:
+      case blink::WebEncryptedMediaSessionType::kPersistentUsageRecord:
         session_type_rule = GetSessionTypeConfigRule(
-            key_systems_->GetPersistentReleaseMessageSessionSupport(
-                key_system));
+            key_systems_->GetPersistentUsageRecordSessionSupport(key_system));
         break;
     }
 

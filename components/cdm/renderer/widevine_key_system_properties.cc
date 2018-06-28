@@ -168,7 +168,7 @@ WidevineKeySystemProperties::GetPersistentLicenseSessionSupport() const {
 }
 
 EmeSessionTypeSupport
-WidevineKeySystemProperties::GetPersistentReleaseMessageSessionSupport() const {
+WidevineKeySystemProperties::GetPersistentUsageRecordSessionSupport() const {
   return persistent_release_message_support_;
 }
 

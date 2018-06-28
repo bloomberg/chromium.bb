@@ -281,8 +281,7 @@ static void AddWidevine(
       capability->session_types, media::CdmSessionType::kPersistentLicense);
   auto persistent_license_support =
       GetPersistentLicenseSupport(cdm_supports_persistent_license);
-  auto persistent_release_message_support =
-      EmeSessionTypeSupport::NOT_SUPPORTED;
+  auto persistent_usage_record_support = EmeSessionTypeSupport::NOT_SUPPORTED;
 
   // Others.
   auto persistent_state_support = EmeFeatureSupport::REQUESTABLE;
@@ -294,7 +293,7 @@ static void AddWidevine(
   concrete_key_systems->emplace_back(new cdm::WidevineKeySystemProperties(
       codecs, encryption_schemes, hw_secure_codecs,
       hw_secure_encryption_schemes, max_audio_robustness, max_video_robustness,
-      persistent_license_support, persistent_release_message_support,
+      persistent_license_support, persistent_usage_record_support,
       persistent_state_support, distinctive_identifier_support));
 }
 #endif  // defined(WIDEVINE_CDM_AVAILABLE)

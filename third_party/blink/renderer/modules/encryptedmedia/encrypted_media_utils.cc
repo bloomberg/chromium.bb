@@ -67,8 +67,8 @@ String EncryptedMediaUtils::ConvertFromSessionType(
       return kTemporary;
     case WebEncryptedMediaSessionType::kPersistentLicense:
       return kPersistentLicense;
-    // FIXME: Remove once removed from Chromium (crbug.com/448888).
-    case WebEncryptedMediaSessionType::kPersistentReleaseMessage:
+    // TODO(crbug.com/856925): Add support for kPersistentUsageRecord.
+    case WebEncryptedMediaSessionType::kPersistentUsageRecord:
     case WebEncryptedMediaSessionType::kUnknown:
       // Chromium should not use Unknown.
       NOTREACHED();

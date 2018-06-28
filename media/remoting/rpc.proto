@@ -322,7 +322,7 @@ enum CdmMessageType {
 enum CdmSessionType {
   kTemporary = 0;
   kPersistentLicense = 1;
-  kPersistentReleaseMessage = 2;
+  kPersistentUsageRecord = 2;
 };
 
 message RendererInitialize {

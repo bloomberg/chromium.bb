@@ -155,7 +155,7 @@ static media::CdmSessionType ConvertSessionType(cdm::SessionType session_type) {
     case cdm::kPersistentLicense:
       return media::CdmSessionType::kPersistentLicense;
     case cdm::kPersistentKeyRelease:
-      return media::CdmSessionType::kPersistentReleaseMessage;
+      return media::CdmSessionType::kPersistentUsageRecord;
   }
   NOTREACHED();
   return media::CdmSessionType::kTemporary;
