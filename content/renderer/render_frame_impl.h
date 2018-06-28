@@ -152,7 +152,6 @@ namespace content {
 class AssociatedInterfaceProviderImpl;
 class BlinkInterfaceRegistryImpl;
 class CompositorDependencies;
-class DocumentState;
 class ExternalPopupMenu;
 class HistoryEntry;
 class ManifestManager;
@@ -1185,19 +1184,9 @@ class CONTENT_EXPORT RenderFrameImpl
   // Returns the URL being loaded by the |frame_|'s request.
   GURL GetLoadingUrl() const;
 
-  // If we initiated a navigation, this function will populate |document_state|
-  // with the navigation information saved in OnNavigate().
-  void PopulateDocumentStateFromPending(DocumentState* document_state);
-
   // Returns a new NavigationState populated with the navigation information
   // saved in OnNavigate().
   NavigationState* CreateNavigationStateFromPending();
-
-  // Sets the NavigationState on the DocumentState based on
-  // the value of |pending_navigation_params_|.
-  void UpdateNavigationState(DocumentState* document_state,
-                             bool was_within_same_document,
-                             bool content_initiated);
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   void HandlePepperImeCommit(const base::string16& text);
