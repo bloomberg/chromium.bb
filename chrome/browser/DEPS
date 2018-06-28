@@ -26,6 +26,7 @@ include_rules = [
   "+device/bluetooth",
   "+device/fido",
   "+device/geolocation/public/cpp",
+  "+device/gamepad/public/cpp",
   "+device/usb",
   "+device/vr/buildflags/buildflags.h",
   "+extensions/browser",

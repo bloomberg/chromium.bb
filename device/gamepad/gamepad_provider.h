@@ -15,6 +15,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/synchronization/lock.h"
 #include "base/system_monitor/system_monitor.h"
+#include "base/time/time.h"
 #include "device/gamepad/gamepad_export.h"
 #include "device/gamepad/gamepad_pad_state_provider.h"
 #include "device/gamepad/gamepad_shared_buffer.h"
@@ -114,7 +115,8 @@ class DEVICE_GAMEPAD_EXPORT GamepadProvider
   // true if any user gesture observers were notified.
   bool CheckForUserGesture();
 
-  enum { kDesiredSamplingIntervalMs = 16 };
+  // The duration of the delay between iterations of DoPoll.
+  base::TimeDelta sampling_interval_delta_;
 
   // Keeps track of when the background thread is paused. Access to is_paused_
   // must be guarded by is_paused_lock_.

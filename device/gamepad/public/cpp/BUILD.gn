@@ -41,3 +41,10 @@ component("shared_typemap_traits") {
     "//device/gamepad/public/mojom:mojom_shared",
   ]
 }
+
+static_library("switches") {
+  sources = [
+    "gamepad_switches.cc",
+    "gamepad_switches.h",
+  ]
+}
