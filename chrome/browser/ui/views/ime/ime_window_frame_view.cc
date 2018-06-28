@@ -20,22 +20,6 @@
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
 
-namespace {
-
-// The distance values for layout in DIPs.
-const int kButtonSize = 24;
-const int kImeBorderThickness = 1;
-const int kTitleIconSize = 16;
-const int kTitlebarHeight = 32;
-const int kTitlebarLeftPadding = 8;
-const int kTitlebarRightPadding = 6;
-
-// Colors used to draw border, titlebar background and title text.
-const SkColor kImeBackgroundColor = SkColorSetRGB(0xec, 0xef, 0xf1);
-const SkColor kBorderColor = SkColorSetRGB(0xda, 0xdf, 0xe1);
-
-}  // namespace
-
 namespace ui {
 
 ImeWindowFrameView::ImeWindowFrameView(ImeWindowView* ime_window_view,

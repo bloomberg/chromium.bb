@@ -44,8 +44,6 @@
 
 namespace {
 
-constexpr int kTitleIconSize = 20;
-
 // Returns the anchor for |browser|'s app menu, accounting for macOS running
 // with views or Cocoa.
 std::pair<views::Button*, gfx::Point> GetAnchor(Browser* browser) {

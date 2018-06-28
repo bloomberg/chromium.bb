@@ -56,6 +56,8 @@ class RelaunchRecommendedBubbleView : public LocationBarBubbleDelegateView {
                                 base::TimeTicks detection_time,
                                 base::RepeatingClosure on_accept);
 
+  static constexpr int kTitleIconSize = 20;
+
   // Schedules a timer to fire the next time the title text must be updated; for
   // example, from "...is available" to "...has been available for 1 day".
   void ScheduleNextTitleRefresh();

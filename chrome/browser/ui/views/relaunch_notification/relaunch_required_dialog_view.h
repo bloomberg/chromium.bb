@@ -68,6 +68,8 @@ class RelaunchRequiredDialogView : views::DialogDelegateView {
   RelaunchRequiredDialogView(base::TimeTicks deadline,
                              base::RepeatingClosure on_accept);
 
+  static constexpr int kTitleIconSize = 20;
+
   // Schedules a timer to fire the next time the title must be updated.
   void ScheduleNextTitleRefresh();
 

@@ -34,6 +34,18 @@ class ImeWindowFrameView : public views::NonClientFrameView,
   void UpdateIcon();
 
  private:
+  static constexpr int kButtonSize = 24;
+  static constexpr int kImeBorderThickness = 1;
+  static constexpr int kTitleIconSize = 16;
+  static constexpr int kTitlebarHeight = 32;
+  static constexpr int kTitlebarLeftPadding = 8;
+  static constexpr int kTitlebarRightPadding = 6;
+
+  // Colors used to draw border, titlebar background and title text.
+  static constexpr SkColor kImeBackgroundColor =
+      SkColorSetRGB(0xec, 0xef, 0xf1);
+  static constexpr SkColor kBorderColor = SkColorSetRGB(0xda, 0xdf, 0xe1);
+
   // views::NonClientFrameView:
   gfx::Rect GetBoundsForClientView() const override;
   gfx::Rect GetWindowBoundsForClientBounds(
