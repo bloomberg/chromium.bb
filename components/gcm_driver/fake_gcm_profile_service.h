@@ -7,13 +7,17 @@
 
 #include <list>
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/macros.h"
 #include "components/gcm_driver/common/gcm_messages.h"
 #include "components/gcm_driver/gcm_client.h"
 #include "components/gcm_driver/gcm_profile_service.h"
-#include "content/public/browser/browser_context.h"
+
+namespace content {
+class BrowserContext;
+}  // namespace content
 
 namespace gcm {
 
