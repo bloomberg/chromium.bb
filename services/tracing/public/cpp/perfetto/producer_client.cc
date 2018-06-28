@@ -42,7 +42,7 @@ ProducerClient::~ProducerClient() {
 }
 
 // static
-void ProducerClient::DeleteSoon(
+void ProducerClient::DeleteSoonForTesting(
     std::unique_ptr<ProducerClient> producer_client) {
   GetTaskRunner()->DeleteSoon(FROM_HERE, std::move(producer_client));
 }
