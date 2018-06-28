@@ -447,6 +447,10 @@ bool KeyboardShortcutView::CanResize() const {
   return false;
 }
 
+bool KeyboardShortcutView::ShouldShowWindowTitle() const {
+  return false;
+}
+
 views::ClientView* KeyboardShortcutView::CreateClientView(
     views::Widget* widget) {
   return new views::ClientView(widget, this);

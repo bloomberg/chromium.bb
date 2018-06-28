@@ -172,11 +172,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<
     mojom::WindowStateType>* const kWindowStateTypeKey;
 
-// Determines whether the window title should be drawn. For example, app and
-// non-tabbed, trusted source windows (such as Settings) will not show a title.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kWindowTitleShownKey;
-
 // Alphabetical sort.
 
 }  // namespace ash

@@ -400,10 +400,10 @@ NonClientFrameController::~NonClientFrameController() {
 }
 
 base::string16 NonClientFrameController::GetWindowTitle() const {
-  if (!window_ || !window_->GetProperty(aura::client::kTitleKey))
+  if (!window_)
     return base::string16();
 
-  base::string16 title = *window_->GetProperty(aura::client::kTitleKey);
+  base::string16 title = window_->GetTitle();
 
   if (window_->GetProperty(kWindowIsJanky))
     title += base::ASCIIToUTF16(" !! Not responding !!");
@@ -433,7 +433,7 @@ bool NonClientFrameController::CanActivate() const {
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {
-  return window_ && window_->GetProperty(kWindowTitleShownKey);
+  return window_ && window_->GetProperty(aura::client::kTitleShownKey);
 }
 
 views::ClientView* NonClientFrameController::CreateClientView(
@@ -450,13 +450,12 @@ void NonClientFrameController::OnWindowPropertyChanged(aura::Window* window,
   if (!did_init_native_widget_)
     return;
 
-  if (key == kWindowIsJanky) {
+  if (key == kWindowIsJanky || key == aura::client::kTitleKey ||
+      key == aura::client::kTitleShownKey) {
     widget_->UpdateWindowTitle();
     widget_->non_client_view()->frame_view()->SchedulePaint();
   } else if (key == aura::client::kResizeBehaviorKey) {
     widget_->OnSizeConstraintsChanged();
-  } else if (key == aura::client::kTitleKey) {
-    widget_->UpdateWindowTitle();
   }
 }
 

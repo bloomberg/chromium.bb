@@ -65,9 +65,6 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   properties[ui::mojom::WindowManager::kShelfItemType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(ash::TYPE_BROWSER_SHORTCUT));
-  properties[ui::mojom::WindowManager::kWindowTitleShown_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(
-          static_cast<int64_t>(browser_view_->ShouldShowWindowTitle()));
 
   // TODO(estade): to match classic Ash, this property should be toggled to true
   // for non-popups after the window is initially shown.
