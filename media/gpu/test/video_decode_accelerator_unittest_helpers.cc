@@ -14,6 +14,7 @@
 #include "media/video/h264_parser.h"
 
 #if defined(OS_CHROMEOS)
+#include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/ozone/public/ozone_gpu_test_helper.h"
 #include "ui/ozone/public/ozone_platform.h"
@@ -117,14 +118,22 @@ gfx::GpuMemoryBufferHandle TextureRef::ExportGpuMemoryBufferHandle() const {
 #if defined(OS_CHROMEOS)
   CHECK(pixmap_);
   handle.type = gfx::NATIVE_PIXMAP;
-  for (size_t i = 0; i < pixmap_->GetDmaBufFdCount(); i++) {
+
+  size_t num_planes =
+      gfx::NumberOfPlanesForBufferFormat(pixmap_->GetBufferFormat());
+  for (size_t i = 0; i < num_planes; ++i) {
+    handle.native_pixmap_handle.planes.emplace_back(
+        pixmap_->GetDmaBufPitch(i), pixmap_->GetDmaBufOffset(i), i,
+        pixmap_->GetDmaBufModifier(i));
+  }
+
+  size_t num_fds = pixmap_->GetDmaBufFdCount();
+  LOG_ASSERT(num_fds == num_planes || num_fds == 1);
+  for (size_t i = 0; i < num_fds; ++i) {
     int duped_fd = HANDLE_EINTR(dup(pixmap_->GetDmaBufFd(i)));
     LOG_ASSERT(duped_fd != -1) << "Failed duplicating dmabuf fd";
     handle.native_pixmap_handle.fds.emplace_back(
         base::FileDescriptor(duped_fd, true));
-    handle.native_pixmap_handle.planes.emplace_back(
-        pixmap_->GetDmaBufPitch(i), pixmap_->GetDmaBufOffset(i), i,
-        pixmap_->GetDmaBufModifier(i));
   }
 #endif
   return handle;
