@@ -36,6 +36,8 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
   static auto* kContextualSearchFeatureWhitelist =
       new base::flat_set<std::string>({"DidOptIn",
                                        "DurationAfterScrollMs",
+                                       "EntityImpressionsCount",
+                                       "EntityOpensCount",
                                        "FontSize",
                                        "IsEntity",
                                        "IsEntityEligible",
@@ -45,6 +47,7 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
                                        "IsSecondTapOverride",
                                        "IsShortWord",
                                        "IsWordEdge",
+                                       "OpenCount",
                                        "OutcomeRankerDidPredict",
                                        "OutcomeRankerPrediction",
                                        "OutcomeWasCardsDataShown",
@@ -56,7 +59,12 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
                                        "Previous28DayImpressionsCount",
                                        "PreviousWeekCtrPercent",
                                        "PreviousWeekImpressionsCount",
+                                       "QuickActionImpressionsCount",
+                                       "QuickActionsIgnored",
+                                       "QuickActionsTaken",
+                                       "QuickAnswerCount",
                                        "ScreenTopDps",
+                                       "TapCount",
                                        "TapDurationMs",
                                        "WasScreenBottom"});
   return kContextualSearchFeatureWhitelist;

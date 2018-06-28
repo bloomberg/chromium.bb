@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.contextualsearch;
 
+import android.support.annotation.Nullable;
+
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.content_public.browser.WebContents;
@@ -11,8 +13,6 @@ import org.chromium.content_public.browser.WebContents;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
-
-import javax.annotation.Nullable;
 
 /**
  * Implements the UMA logging for Ranker that's used for Contextual Search Tap Suppression.
@@ -59,6 +59,15 @@ public class ContextualSearchRankerLoggerImpl implements ContextualSearchRankerL
         features.put(Feature.IS_ENTITY_ELIGIBLE, "IsEntityEligible");
         features.put(Feature.IS_LANGUAGE_MISMATCH, "IsLanguageMismatch");
         features.put(Feature.PORTION_OF_ELEMENT, "PortionOfElement");
+        // UKM CS v4 features.
+        features.put(Feature.TAP_COUNT, "TapCount");
+        features.put(Feature.OPEN_COUNT, "OpenCount");
+        features.put(Feature.QUICK_ANSWER_COUNT, "QuickAnswerCount");
+        features.put(Feature.ENTITY_IMPRESSIONS_COUNT, "EntityImpressionsCount");
+        features.put(Feature.ENTITY_OPENS_COUNT, "EntityOpensCount");
+        features.put(Feature.QUICK_ACTION_IMPRESSIONS_COUNT, "QuickActionImpressionsCount");
+        features.put(Feature.QUICK_ACTIONS_TAKEN_COUNT, "QuickActionsTaken");
+        features.put(Feature.QUICK_ACTIONS_IGNORED_COUNT, "QuickActionsIgnored");
         FEATURES = Collections.unmodifiableMap(features);
 
         Map<Feature, String> allNames = new HashMap<Feature, String>();

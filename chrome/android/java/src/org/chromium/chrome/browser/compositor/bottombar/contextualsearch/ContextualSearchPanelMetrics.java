@@ -10,6 +10,7 @@ import org.chromium.chrome.browser.contextualsearch.ContextualSearchHeuristics;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchIPH;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchRankerLogger;
 import org.chromium.chrome.browser.contextualsearch.ContextualSearchUma;
+import org.chromium.chrome.browser.contextualsearch.EngagementSuppression;
 import org.chromium.chrome.browser.contextualsearch.QuickActionCategory;
 import org.chromium.chrome.browser.profiles.Profile;
 
@@ -121,12 +122,15 @@ public class ContextualSearchPanelMetrics {
 
             if (mWasContextualCardsDataShown) {
                 ContextualSearchUma.logContextualCardsResultsSeen(mWasSearchContentViewSeen);
+                EngagementSuppression.registerContextualCardsImpression(mWasSearchContentViewSeen);
             }
             if (mWasQuickActionShown) {
                 ContextualSearchUma.logQuickActionResultsSeen(mWasSearchContentViewSeen,
                         mQuickActionCategory);
                 ContextualSearchUma.logQuickActionClicked(mWasQuickActionClicked,
                         mQuickActionCategory);
+                EngagementSuppression.registerQuickActionImpression(
+                        mWasSearchContentViewSeen, mWasQuickActionClicked);
             }
 
             if (mResultsSeenExperiments != null) {

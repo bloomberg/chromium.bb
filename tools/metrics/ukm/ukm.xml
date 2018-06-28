@@ -584,6 +584,20 @@ be describing additional metrics about the same event.
       not recorded if there was no subsequent scroll.
     </summary>
   </metric>
+  <metric name="EntityImpressionsCount">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the number of
+      impressions of an Entity that were shown in the Bar, aggregated in Android
+      device storage for this user, starting in M-69.
+    </summary>
+  </metric>
+  <metric name="EntityOpensCount">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the number of times
+      an Entity was shown in the Bar and the panel was opened, aggregated in
+      Android device storage for this user, starting in M-69.
+    </summary>
+  </metric>
   <metric name="FontSize">
     <summary>
       Emits a value from 0-10 representing the effective font size on the
@@ -642,6 +656,13 @@ be describing additional metrics about the same event.
       word, rather than in the middle 50% of the word.
     </summary>
   </metric>
+  <metric name="OpenCount">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the total number of
+      times the user opened the panel, aggregated in Android device storage for
+      this user since M-69.
+    </summary>
+  </metric>
   <metric name="OutcomeRankerDidPredict">
     <summary>
       Emits a 1 or 0 to indicate whether Ranker was able to make a prediction.
@@ -687,32 +708,74 @@ be describing additional metrics about the same event.
   </metric>
   <metric name="Previous28DayCtrPercent">
     <summary>
-      The CTR of the overlay panel for this user, aggregated over a previous 28
-      day period, expressed as an integer between 0-99.
+      The CTR of the overlay panel for this user, aggregated in Android device
+      storage over a previous 28 day period, expressed as an integer between
+      0-99, since M-60.
     </summary>
   </metric>
   <metric name="Previous28DayImpressionsCount">
     <summary>
-      The count of views of the overlay panel for this user, aggregated over a
-      previous 28 day period.
+      The count of views of the overlay panel for this user, aggregated in
+      Android device storage over a previous 28 day period, since M-60.
     </summary>
   </metric>
   <metric name="PreviousWeekCtrPercent">
     <summary>
-      The CTR of the overlay panel for this user, aggregated over the previous
-      week, expressed as an integer between 0-99.
+      The CTR of the overlay panel for this user, aggregated in Android device
+      storage over the previous week, expressed as an integer between 0-99,
+      since M-60.
     </summary>
   </metric>
   <metric name="PreviousWeekImpressionsCount">
     <summary>
-      The count of views of the overlay panel for this user, aggregated over the
-      previous week.
+      The count of views of the overlay panel for this user, aggregated in
+      Android device storage over the previous week, since M-60.
+    </summary>
+  </metric>
+  <metric name="QuickActionImpressionsCount">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the total number of
+      times the user saw a quick action in the caption of the Bar, e.g. a phone
+      number to dial. Aggregated in Android device storage since M-69 for this
+      user.
+    </summary>
+  </metric>
+  <metric name="QuickActionsIgnored">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the total number of
+      times the user ignored a quick action but opened the Bar instead, e.g. a
+      phone number was available but not dialed. Aggregated in Android device
+      storage starting at M-69.
+    </summary>
+  </metric>
+  <metric name="QuickActionsTaken">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the total number of
+      times the user activated a quick action by tapping on a quick action shown
+      in the Bar, e.g. dialed a phone number. Aggregated in Android device
+      storage since M-69 for this user.
+    </summary>
+  </metric>
+  <metric name="QuickAnswerCount">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the total number of
+      times the user saw a quick answer in the caption of the Bar. Typically
+      these quick answers represent an automatic translation of the selection.
+      Aggregated in Android device storage for all time for this user, since
+      M-57.
     </summary>
   </metric>
   <metric name="ScreenTopDps">
     <summary>
       The location of the tap relative to the top of the screen, expressed in
       DPs.
+    </summary>
+  </metric>
+  <metric name="TapCount">
+    <summary>
+      Emits an integer in the range of 0 - N that represents the total number of
+      taps that triggered the Bar, aggregated in Android device storage for this
+      user, since M-43.
     </summary>
   </metric>
   <metric name="TapDurationMs">

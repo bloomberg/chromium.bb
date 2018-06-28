@@ -45,7 +45,16 @@ public interface ContextualSearchRankerLogger {
         IS_HTTP,
         IS_ENTITY_ELIGIBLE,
         IS_LANGUAGE_MISMATCH,
-        PORTION_OF_ELEMENT
+        PORTION_OF_ELEMENT,
+        // UKM CS v4 features (see go/ukm-cs-4).
+        TAP_COUNT,
+        OPEN_COUNT,
+        QUICK_ANSWER_COUNT,
+        ENTITY_IMPRESSIONS_COUNT,
+        ENTITY_OPENS_COUNT,
+        QUICK_ACTION_IMPRESSIONS_COUNT,
+        QUICK_ACTIONS_TAKEN_COUNT,
+        QUICK_ACTIONS_IGNORED_COUNT,
     }
 
     /**
