@@ -4,7 +4,6 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "cc/base/lap_timer.h"
-#include "chrome/browser/vr/cpu_surface_provider.h"
 #include "chrome/browser/vr/elements/text.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/test/constants.h"

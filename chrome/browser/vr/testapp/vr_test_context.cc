@@ -450,10 +450,10 @@ void VrTestContext::OnGlInitialized() {
   unsigned int content_texture_id = CreateTexture(0xFF000080);
   unsigned int ui_texture_id = CreateTexture(0xFF008000);
 
-  ui_->OnGlInitialized(
-      content_texture_id, UiElementRenderer::kTextureLocationLocal,
-      content_texture_id, UiElementRenderer::kTextureLocationLocal,
-      ui_texture_id, false);
+  ui_->OnGlInitialized(content_texture_id,
+                       UiElementRenderer::kTextureLocationLocal,
+                       content_texture_id,
+                       UiElementRenderer::kTextureLocationLocal, ui_texture_id);
 
   keyboard_delegate_->Initialize(ui_->scene()->SurfaceProviderForTesting(),
                                  ui_->ui_element_renderer());
