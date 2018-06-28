@@ -105,6 +105,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/feature_h264_with_openh264_ffmpeg.h"
 #include "device/base/features.h"
+#include "device/gamepad/public/cpp/gamepad_switches.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/buildflags/buildflags.h"
 #include "google_apis/drive/drive_switches.h"
@@ -1154,6 +1155,14 @@ const FeatureEntry::FeatureVariation kProactiveTabFreezeAndDiscardVariations[] =
      {"Freeze and discard", kProactiveTabFreezeAndDiscard_FreezeAndDiscard,
       base::size(kProactiveTabFreezeAndDiscard_FreezeAndDiscard), nullptr}};
 #endif
+
+const FeatureEntry::Choice kGamepadPollingRateChoices[] = {
+    {"60 Hz (Default)", "", ""},  // 16 ms, technically 62.5 Hz
+    {"100 Hz", switches::kGamepadPollingInterval, "10"},
+    {"125 Hz", switches::kGamepadPollingInterval, "8"},
+    {"200 Hz", switches::kGamepadPollingInterval, "5"},
+    {"250 Hz", switches::kGamepadPollingInterval, "4"},
+};
 
 // RECORDING USER METRICS FOR FLAGS:
 // -----------------------------------------------------------------------------
@@ -3995,6 +4004,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kArcCupsApiDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(features::kArcCupsApi)},
 #endif  // OS_CHROMEOS
+
+    {"gamepad-polling-rate", flag_descriptions::kGamepadPollingRateName,
+     flag_descriptions::kGamepadPollingRateDescription, kOsDesktop,
+     MULTI_VALUE_TYPE(kGamepadPollingRateChoices)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

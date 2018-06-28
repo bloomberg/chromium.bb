@@ -11,10 +11,12 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_restrictions.h"
@@ -23,9 +25,17 @@
 #include "device/gamepad/gamepad_data_fetcher.h"
 #include "device/gamepad/gamepad_data_fetcher_manager.h"
 #include "device/gamepad/gamepad_user_gesture.h"
+#include "device/gamepad/public/cpp/gamepad_switches.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace device {
+
+namespace {
+
+const size_t kPollingIntervalMillisecondsMin = 4;   // ~250 Hz
+const size_t kPollingIntervalMillisecondsMax = 16;  // ~62.5 Hz
+
+}  // namespace
 
 GamepadProvider::ClosureAndThread::ClosureAndThread(
     const base::Closure& c,
@@ -185,6 +195,22 @@ void GamepadProvider::OnDevicesChanged(base::SystemMonitor::DeviceType type) {
 }
 
 void GamepadProvider::Initialize(std::unique_ptr<GamepadDataFetcher> fetcher) {
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  size_t interval_millis = kPollingIntervalMillisecondsMax;
+  if (command_line &&
+      command_line->HasSwitch(switches::kGamepadPollingInterval)) {
+    std::string string_value =
+        command_line->GetSwitchValueASCII(switches::kGamepadPollingInterval);
+    size_t int_value;
+    if (base::StringToSizeT(string_value, &int_value)) {
+      // Clamp interval duration to valid range.
+      int_value = std::max(int_value, kPollingIntervalMillisecondsMin);
+      int_value = std::min(int_value, kPollingIntervalMillisecondsMax);
+      interval_millis = int_value;
+    }
+  }
+  sampling_interval_delta_ = base::TimeDelta::FromMilliseconds(interval_millis);
+
   base::SystemMonitor* monitor = base::SystemMonitor::Get();
   if (monitor)
     monitor->AddDevicesChangedObserver(this);
@@ -372,7 +398,7 @@ void GamepadProvider::ScheduleDoPoll() {
 
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE, base::BindOnce(&GamepadProvider::DoPoll, Unretained(this)),
-      base::TimeDelta::FromMilliseconds(kDesiredSamplingIntervalMs));
+      sampling_interval_delta_);
   have_scheduled_do_poll_ = true;
 }
 

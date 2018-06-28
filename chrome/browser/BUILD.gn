@@ -1819,6 +1819,7 @@ jumbo_split_static_library("browser") {
     "//crypto:platform",
     "//device/base",
     "//device/fido",
+    "//device/gamepad/public/cpp:switches",
     "//device/usb/mojo",
     "//device/usb/public/mojom",
     "//device/vr/buildflags",
