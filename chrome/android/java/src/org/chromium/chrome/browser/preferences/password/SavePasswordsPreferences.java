@@ -509,7 +509,7 @@ public class SavePasswordsPreferences
             return;
         }
         ForegroundColorSpan colorSpan = new ForegroundColorSpan(
-                ApiCompatibilityUtils.getColor(getResources(), R.color.google_blue_700));
+                ApiCompatibilityUtils.getColor(getResources(), R.color.default_text_color_link));
         SpannableString title = SpanApplier.applySpans(getString(R.string.manage_passwords_text),
                 new SpanApplier.SpanInfo("<link>", "</link>", colorSpan));
         mLinkPref = new ChromeBasePreference(getActivity());

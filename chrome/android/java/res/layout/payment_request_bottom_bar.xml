@@ -36,22 +36,16 @@
 
     <Button
         android:id="@+id/button_secondary"
-        style="@style/ButtonCompatBorderless"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
-        android:text="@string/payments_edit_button"
-        android:textAllCaps="true"
-        android:textColor="@color/light_active_color"
-        android:textSize="14sp" />
+        android:text="@string/payments_edit_button" />
 
     <org.chromium.ui.widget.ButtonCompat
         android:id="@+id/button_primary"
         android:layout_width="wrap_content"
         android:layout_height="36dp"
         android:text="@string/payments_pay_button"
-        android:textAllCaps="true"
-        android:textColor="@android:color/white"
-        android:textSize="14sp"
+        android:textAppearance="@style/WhiteButtonText"
         app:buttonColor="@color/light_active_color"
         app:buttonRaised="false" />
 </org.chromium.chrome.browser.payments.ui.PaymentRequestBottomBar>

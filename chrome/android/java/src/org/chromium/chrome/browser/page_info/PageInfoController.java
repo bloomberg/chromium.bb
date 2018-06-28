@@ -545,7 +545,7 @@ public class PageInfoController implements ModalDialogView.Controller {
                     new SpannableString(mContext.getString(R.string.details_link));
             final ForegroundColorSpan blueSpan =
                     new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                            mContext.getResources(), R.color.google_blue_700));
+                            mContext.getResources(), R.color.default_text_color_link));
             detailsText.setSpan(
                     blueSpan, 0, detailsText.length(), Spannable.SPAN_INCLUSIVE_EXCLUSIVE);
             messageBuilder.append(detailsText);

@@ -28,8 +28,7 @@
         android:layout_marginBottom="16dp"
         android:layout_marginStart="8dp"
         android:text="@string/learn_more"
-        android:textColor="@color/light_active_color"
-        android:textSize="16sp" />
+        android:textAppearance="@style/BlueLink1" />
 
     <CheckBox
         android:id="@+id/data_use_checkbox"

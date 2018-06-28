@@ -544,8 +544,8 @@ public class SearchEngineAdapter extends BaseAdapter
         int message = getPermissionsLinkMessage(getSearchEngineUrl(templateUrl));
         if (message == 0) return;
 
-        ForegroundColorSpan linkSpan = new ForegroundColorSpan(
-                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.google_blue_700));
+        ForegroundColorSpan linkSpan = new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.default_text_color_link));
         link.setVisibility(View.VISIBLE);
         link.setOnClickListener(this);
 

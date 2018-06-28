@@ -343,20 +343,17 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
         // The title is always displayed for the row at the top of the main section.
         mTitleView = new TextView(getContext());
         mTitleView.setText(sectionName);
-        ApiCompatibilityUtils.setTextAppearance(
-                mTitleView, R.style.PaymentsUiSectionHeader);
+        ApiCompatibilityUtils.setTextAppearance(mTitleView, R.style.BlueLink2);
         mainSectionLayout.addView(
                 mTitleView, new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.WRAP_CONTENT));
 
         // Create the two TextViews for showing the summary text.
         mSummaryLeftTextView = new TextView(getContext());
         mSummaryLeftTextView.setId(R.id.payments_left_summary_label);
-        ApiCompatibilityUtils.setTextAppearance(
-                mSummaryLeftTextView, R.style.PaymentsUiSectionDefaultText);
+        ApiCompatibilityUtils.setTextAppearance(mSummaryLeftTextView, R.style.BlackTitle1);
 
         mSummaryRightTextView = new TextView(getContext());
-        ApiCompatibilityUtils.setTextAppearance(
-                mSummaryRightTextView, R.style.PaymentsUiSectionDefaultText);
+        ApiCompatibilityUtils.setTextAppearance(mSummaryRightTextView, R.style.BlackTitle1);
         ApiCompatibilityUtils.setTextAlignment(mSummaryRightTextView, TEXT_ALIGNMENT_TEXT_END);
 
         // The main TextView sucks up all the available space.
@@ -579,8 +576,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
 
             // Create the view and set the text appearance and layout parameters.
             mUpdatedView = new TextView(context);
-            ApiCompatibilityUtils.setTextAppearance(
-                    mUpdatedView, R.style.PaymentsUiSectionDefaultText);
+            ApiCompatibilityUtils.setTextAppearance(mUpdatedView, R.style.BlackTitle1);
             LinearLayout.LayoutParams updatedLayoutParams = new LinearLayout.LayoutParams(
                     LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
             ApiCompatibilityUtils.setTextAlignment(mUpdatedView, TEXT_ALIGNMENT_TEXT_END);
@@ -934,9 +930,9 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 TextView labelView = new TextView(context);
                 if (mRowType == OPTION_ROW_TYPE_OPTION) {
                     // Show the string representing the EditableOption.
-                    ApiCompatibilityUtils.setTextAppearance(labelView, isEnabled
-                            ? R.style.PaymentsUiSectionDefaultText
-                            : R.style.PaymentsUiSectionDisabledText);
+                    ApiCompatibilityUtils.setTextAppearance(labelView,
+                            isEnabled ? R.style.BlackTitle1
+                                      : R.style.PaymentsUiSectionDisabledText);
                     labelView.setText(convertOptionToString(mOption, false, /* excludeMainLabel */
                             mDelegate.isBoldLabelNeeded(OptionSection.this),
                             false /* singleLine */));
@@ -1303,11 +1299,10 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                         getContext(), mSectionInformation, getSummaryLeftTextView());
             } else {
                 setLogoDrawable(selectedItem.getDrawableIcon());
-                // Selected item summary should be displayed as
-                // R.style.PaymentsUiSectionDefaultText.
+                // Selected item summary should be displayed as R.style.BlackTitle1.
                 if (mSummaryInDescriptiveText) {
                     ApiCompatibilityUtils.setTextAppearance(
-                            getSummaryLeftTextView(), R.style.PaymentsUiSectionDefaultText);
+                            getSummaryLeftTextView(), R.style.BlackTitle1);
                     mSummaryInDescriptiveText = false;
                 }
                 // Split summary in DISPLAY_MODE_NORMAL if caller specified. The first part is
@@ -1412,7 +1407,7 @@ public abstract class PaymentRequestSection extends LinearLayout implements View
                 String editMessage = item.getEditMessage();
                 builder.append(editMessage);
                 Object foregroundSpanner = new ForegroundColorSpan(ApiCompatibilityUtils.getColor(
-                        getContext().getResources(), R.color.google_blue_700));
+                        getContext().getResources(), R.color.default_text_color_link));
                 Object sizeSpanner = new AbsoluteSizeSpan(14, true);
                 int startIndex = builder.length() - editMessage.length();
                 builder.setSpan(foregroundSpanner, startIndex, builder.length(), 0);

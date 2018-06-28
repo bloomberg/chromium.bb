@@ -7,6 +7,7 @@
     <!-- Common colors -->
     <color name="default_text_color">@color/black_alpha_87</color>
     <color name="default_primary_color">#F2F2F2</color>
+    <color name="default_text_color_link">@color/modern_blue_600</color>
     <!-- Deprecated. Use dark_mode_tint or default_icon_color for icons instead. -->
     <color name="light_normal_color">#5A5A5A</color>
     <color name="light_active_color">@color/google_blue_500</color>
@@ -20,6 +21,8 @@
     <color name="error_text_color">@color/google_red_700</color>
     <color name="google_blue_grey_500">#607D8B</color>
     <color name="google_blue_50">#E3F2FD</color>
+    <color name="google_blue_500">#4285F4</color>
+    <color name="google_blue_700">#3367D6</color>
     <color name="google_red_700">#C53929</color>
     <color name="google_green_700">#0B8043</color>
     <color name="google_grey_50">#FAFAFA</color>
@@ -48,7 +51,7 @@
     <color name="black_alpha_40">#66000000</color>
 
     <!-- Infobar colors -->
-    <color name="infobar_accent_blue">@color/google_blue_500</color>
+    <color name="infobar_accent_blue">@color/modern_blue_600</color>
     <color name="infobar_descriptive_text_color">@color/black_alpha_54</color>
 
     <!-- Snackbar colors -->
@@ -78,7 +81,7 @@
     <color name="url_emphasis_light_default_text">@android:color/white</color>
 
     <!-- Omnibox Suggestion colors -->
-    <color name="suggestion_url_dark_modern">@color/google_blue_500</color>
+    <color name="suggestion_url_dark_modern">@color/default_text_color_link</color>
     <color name="suggestion_url_light_modern">@color/modern_blue_300</color>
     <color name="suggestion_url_light">#5595FE</color>
     <color name="answers_description_text_negative">@color/google_red_700</color>

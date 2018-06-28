@@ -18,6 +18,9 @@
     <style name="ButtonCompatBorderlessOverlay">
         <item name="android:buttonStyle">@style/ButtonCompatBorderless</item>
     </style>
+    <!-- TODO(https://crbug.com/856244): Remove textAllCaps and textSize from button style and move
+         it to button textAppearance styles, and figure out why the feed library styles overrides
+         styles here. -->
     <style name="ButtonCompatBase">
         <item name="android:minWidth">88dp</item>
         <item name="android:minHeight">36dp</item>
@@ -31,6 +34,8 @@
         <item name="android:clickable">true</item>
         <item name="android:gravity">center_vertical|center_horizontal</item>
     </style>
+    <!-- TODO(https://crbug.com/856244): Remove textStyle from button style and move it to button
+         textAppearance styles. -->
     <style name="ButtonCompat" parent="ButtonCompatBase">
         <item name="android:background">@drawable/button_compat_shape</item>
         <item name="android:textStyle">bold</item>
@@ -138,6 +143,9 @@
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
+    <style name="WhiteButtonText" parent="WhiteTitle2" tools:ignore="UnusedResources">
+        <item name="android:textAllCaps">true</item>
+    </style>
     <style name="WhiteLink" tools:ignore="UnusedResources">
         <item name="android:textColor">@android:color/white</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
@@ -150,19 +158,19 @@
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
     <style name="BlueButtonText2" parent="RobotoMediumStyle" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/google_blue_500</item>
+        <item name="android:textColor">@color/modern_blue_600</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
     <style name="BlueLink1" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/google_blue_700</item>
+        <item name="android:textColor">@color/modern_blue_600</item>
         <item name="android:textSize">@dimen/text_size_large</item>
     </style>
     <style name="BlueLink2" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/google_blue_700</item>
+        <item name="android:textColor">@color/modern_blue_600</item>
         <item name="android:textSize">@dimen/text_size_medium</item>
     </style>
     <style name="BlueLink3" tools:ignore="UnusedResources">
-        <item name="android:textColor">@color/google_blue_700</item>
+        <item name="android:textColor">@color/modern_blue_600</item>
         <item name="android:textSize">@dimen/text_size_small</item>
     </style>
 </resources>

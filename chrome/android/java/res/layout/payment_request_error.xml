@@ -41,7 +41,6 @@
         android:layout_height="wrap_content"
         android:layout_gravity="end"
         android:layout_marginEnd="@dimen/editor_dialog_section_small_spacing"
-        android:layout_marginBottom="@dimen/editor_dialog_section_small_spacing"
-        android:textColor="@color/light_active_color" />
+        android:layout_marginBottom="@dimen/editor_dialog_section_small_spacing" />
 
 </org.chromium.chrome.browser.payments.ui.PaymentRequestUiErrorView>

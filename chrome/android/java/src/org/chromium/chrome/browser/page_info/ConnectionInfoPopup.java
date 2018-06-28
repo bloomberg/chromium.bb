@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.graphics.Color;
 import android.provider.Browser;
 import android.text.TextUtils;
+import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -38,12 +39,13 @@ public class ConnectionInfoPopup implements OnClickListener {
 
     private static final String HELP_URL =
             "https://support.google.com/chrome/answer/95617";
-    private static final int DESCRIPTION_TEXT_SIZE_SP = 12;
+
     private final Context mContext;
     private final Dialog mDialog;
     private final LinearLayout mContainer;
     private final WebContents mWebContents;
     private final int mPaddingWide, mPaddingThin;
+    private final float mDescriptionTextSizePx;
     private final long mNativeConnectionInfoPopup;
     private final CertificateViewer mCertificateViewer;
     private TextView mCertificateViewerTextView, mMoreInfoLink;
@@ -64,6 +66,7 @@ public class ConnectionInfoPopup implements OnClickListener {
                 R.dimen.connection_info_padding_wide);
         mPaddingThin = (int) context.getResources().getDimension(
                 R.dimen.connection_info_padding_thin);
+        mDescriptionTextSizePx = context.getResources().getDimension(R.dimen.text_size_small);
         mContainer.setPadding(mPaddingWide, mPaddingWide, mPaddingWide,
                 mPaddingWide - mPaddingThin);
 
@@ -136,7 +139,7 @@ public class ConnectionInfoPopup implements OnClickListener {
 
         TextView d = (TextView) section.findViewById(R.id.connection_info_description);
         d.setText(description);
-        d.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
+        d.setTextSize(TypedValue.COMPLEX_UNIT_PX, mDescriptionTextSizePx);
         if (TextUtils.isEmpty(description)) d.setVisibility(View.GONE);
 
         mContainer.addView(section);
@@ -147,9 +150,7 @@ public class ConnectionInfoPopup implements OnClickListener {
         assert mCertificateViewerTextView == null;
         mCertificateViewerTextView = new TextView(mContext);
         mCertificateViewerTextView.setText(label);
-        mCertificateViewerTextView.setTextColor(
-                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.google_blue_700));
-        mCertificateViewerTextView.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
+        ApiCompatibilityUtils.setTextAppearance(mCertificateViewerTextView, R.style.BlueLink3);
         mCertificateViewerTextView.setOnClickListener(this);
         mCertificateViewerTextView.setPadding(0, mPaddingThin, 0, 0);
         mCertificateLayout.addView(mCertificateViewerTextView);
@@ -166,7 +167,7 @@ public class ConnectionInfoPopup implements OnClickListener {
         mResetCertDecisionsButton.setTextColor(ApiCompatibilityUtils.getColor(
                 mContext.getResources(),
                 R.color.connection_info_popup_reset_cert_decisions_button));
-        mResetCertDecisionsButton.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
+        mResetCertDecisionsButton.setTextSize(TypedValue.COMPLEX_UNIT_PX, mDescriptionTextSizePx);
         mResetCertDecisionsButton.setOnClickListener(this);
 
         LinearLayout container = new LinearLayout(mContext);
@@ -181,9 +182,7 @@ public class ConnectionInfoPopup implements OnClickListener {
         mMoreInfoLink = new TextView(mContext);
         mLinkUrl = HELP_URL;
         mMoreInfoLink.setText(linkText);
-        mMoreInfoLink.setTextColor(
-                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.google_blue_700));
-        mMoreInfoLink.setTextSize(DESCRIPTION_TEXT_SIZE_SP);
+        ApiCompatibilityUtils.setTextAppearance(mMoreInfoLink, R.style.BlueLink3);
         mMoreInfoLink.setPadding(0, mPaddingThin, 0, 0);
         mMoreInfoLink.setOnClickListener(this);
         mDescriptionLayout.addView(mMoreInfoLink);

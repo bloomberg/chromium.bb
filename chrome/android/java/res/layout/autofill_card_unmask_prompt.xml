@@ -115,7 +115,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:singleLine="true"
-                android:textColor="@color/light_active_color"
+                android:textColor="@color/default_text_color_link"
                 android:text="@string/autofill_card_unmask_new_card_link"
                 android:visibility="gone" />
         </LinearLayout>
@@ -199,7 +199,7 @@
             android:id="@+id/verification_message"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textColor="@color/light_active_color"
+            android:textColor="@color/default_text_color_link"
             android:textSize="20sp" />
     </LinearLayout>
 </RelativeLayout>
