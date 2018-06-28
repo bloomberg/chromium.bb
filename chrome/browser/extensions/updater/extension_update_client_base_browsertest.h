@@ -25,8 +25,7 @@ class TestURLRequestInterceptor;
 }  // namespace net
 
 namespace update_client {
-class URLRequestPostInterceptor;
-class URLRequestPostInterceptorFactory;
+class URLLoaderPostInterceptor;
 }  // namespace update_client
 
 namespace extensions {
@@ -69,12 +68,12 @@ class ExtensionUpdateClientBaseTest : public ExtensionBrowserTest {
  protected:
   extensions::UpdateService* update_service_ = nullptr;
   std::unique_ptr<net::TestURLRequestInterceptor> get_interceptor_;
-  std::unique_ptr<update_client::URLRequestPostInterceptorFactory>
-      update_interceptor_factory_;
-  std::unique_ptr<update_client::URLRequestPostInterceptorFactory>
-      ping_interceptor_factory_;
-  scoped_refptr<update_client::URLRequestPostInterceptor> update_interceptor_;
-  scoped_refptr<update_client::URLRequestPostInterceptor> ping_interceptor_;
+
+  std::unique_ptr<update_client::URLLoaderPostInterceptor> update_interceptor_;
+  std::unique_ptr<update_client::URLLoaderPostInterceptor> ping_interceptor_;
+
+  net::EmbeddedTestServer https_server_for_update_;
+  net::EmbeddedTestServer https_server_for_ping_;
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;

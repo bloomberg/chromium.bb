@@ -17,7 +17,9 @@
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/task_scheduler/post_task.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/version.h"
@@ -28,8 +30,9 @@
 #include "components/update_client/persisted_data.h"
 #include "components/update_client/test_configurator.h"
 #include "components/update_client/update_engine.h"
-#include "components/update_client/url_request_post_interceptor.h"
+#include "components/update_client/url_loader_post_interceptor.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/resource_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -135,8 +138,7 @@ class UpdateCheckerTest : public testing::Test,
 
   std::unique_ptr<UpdateChecker> update_checker_;
 
-  std::unique_ptr<InterceptorFactory> interceptor_factory_;
-  scoped_refptr<URLRequestPostInterceptor> post_interceptor_;
+  std::unique_ptr<URLLoaderPostInterceptor> post_interceptor_;
 
   base::Optional<ProtocolParser::Results> results_;
   ErrorCategory error_category_ = ErrorCategory::kNone;
@@ -170,9 +172,9 @@ void UpdateCheckerTest::SetUp() {
   PersistedData::RegisterPrefs(pref_->registry());
   metadata_ = std::make_unique<PersistedData>(pref_.get(),
                                               activity_data_service_.get());
-  interceptor_factory_ =
-      std::make_unique<InterceptorFactory>(base::ThreadTaskRunnerHandle::Get());
-  post_interceptor_ = interceptor_factory_->CreateInterceptor();
+
+  post_interceptor_ = std::make_unique<URLLoaderPostInterceptor>(
+      config_->test_url_loader_factory());
   EXPECT_TRUE(post_interceptor_);
 
   update_checker_ = nullptr;
@@ -185,8 +187,7 @@ void UpdateCheckerTest::SetUp() {
 void UpdateCheckerTest::TearDown() {
   update_checker_ = nullptr;
 
-  post_interceptor_ = nullptr;
-  interceptor_factory_ = nullptr;
+  post_interceptor_.reset();
 
   config_ = nullptr;
 
@@ -319,7 +320,8 @@ TEST_P(UpdateCheckerTest, UpdateCheckSuccess) {
 #endif  // OS_WINDOWS
 
   // Check the DDOS protection header values.
-  const auto extra_request_headers = post_interceptor_->GetRequests()[0].second;
+  const auto extra_request_headers =
+      std::get<1>(post_interceptor_->GetRequests()[0]);
   EXPECT_TRUE(extra_request_headers.HasHeader("X-Goog-Update-Interactivity"));
   std::string header;
   extra_request_headers.GetHeader("X-Goog-Update-Interactivity", &header);
@@ -394,7 +396,7 @@ TEST_F(UpdateCheckerTest, UpdateCheckSuccessNoBrand) {
 // Simulates a 403 server response error.
 TEST_F(UpdateCheckerTest, UpdateCheckError) {
   EXPECT_TRUE(post_interceptor_->ExpectRequest(
-      std::make_unique<PartialMatch>("updatecheck"), 403));
+      std::make_unique<PartialMatch>("updatecheck"), net::HTTP_FORBIDDEN));
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());
 
@@ -910,10 +912,10 @@ TEST_F(UpdateCheckerTest, UpdatePauseResume) {
       std::make_unique<PartialMatch>("updatecheck"),
       test_file("updatecheck_reply_1.xml")));
   post_interceptor_->url_job_request_ready_callback(base::BindOnce(
-      [](scoped_refptr<URLRequestPostInterceptor> post_interceptor) {
+      [](URLLoaderPostInterceptor* post_interceptor) {
         post_interceptor->Resume();
       },
-      post_interceptor_));
+      post_interceptor_.get()));
   post_interceptor_->Pause();
 
   update_checker_ = UpdateChecker::Create(config_, metadata_.get());

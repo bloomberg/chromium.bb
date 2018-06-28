@@ -44,6 +44,8 @@ class IOSConfigurator : public update_client::Configurator {
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
+  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
+      const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -133,6 +135,11 @@ std::string IOSConfigurator::GetDownloadPreference() const {
 scoped_refptr<net::URLRequestContextGetter> IOSConfigurator::RequestContext()
     const {
   return GetApplicationContext()->GetSystemURLRequestContext();
+}
+
+scoped_refptr<network::SharedURLLoaderFactory>
+IOSConfigurator::URLLoaderFactory() const {
+  return GetApplicationContext()->GetSharedURLLoaderFactory();
 }
 
 std::unique_ptr<service_manager::Connector>

@@ -18,8 +18,7 @@
 #include "components/update_client/update_client_errors.h"
 #include "components/update_client/utils.h"
 #include "net/http/http_response_headers.h"
-#include "net/url_request/url_fetcher.h"
-#include "net/url_request/url_request_status.h"
+#include "services/network/public/cpp/simple_url_loader.h"
 
 namespace update_client {
 
@@ -105,9 +104,13 @@ void RequestSender::SendInternal() {
     url = BuildUpdateUrl(url, request_query_string);
   }
 
-  url_fetcher_ = SendProtocolRequest(url, request_extra_headers_, request_body_,
-                                     this, config_->RequestContext());
-  if (!url_fetcher_)
+  update_client::LoadCompleteCallback callback = base::BindOnce(
+      &RequestSender::OnSimpleURLLoaderComplete, base::Unretained(this), url);
+
+  url_loader_ =
+      SendProtocolRequest(url, request_extra_headers_, request_body_,
+                          std::move(callback), config_->URLLoaderFactory());
+  if (!url_loader_)
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(&RequestSender::SendInternalComplete,
@@ -154,30 +157,40 @@ void RequestSender::SendInternalComplete(int error,
   HandleSendError(error, retry_after_sec);
 }
 
-void RequestSender::OnURLFetchComplete(const net::URLFetcher* source) {
+void RequestSender::OnSimpleURLLoaderComplete(
+    const GURL& original_url,
+    std::unique_ptr<std::string> response_body) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(source);
 
-  const GURL original_url(source->GetOriginalURL());
   VLOG(1) << "request completed from url: " << original_url.spec();
 
-  const int fetch_error(GetFetchError(*source));
-  std::string response_body;
-  CHECK(source->GetResponseAsString(&response_body));
+  int response_code = -1;
+  if (url_loader_->ResponseInfo() && url_loader_->ResponseInfo()->headers) {
+    response_code = url_loader_->ResponseInfo()->headers->response_code();
+  }
+
+  int fetch_error = -1;
+  if (response_body && response_code == 200) {
+    fetch_error = 0;
+  } else if (response_code != -1) {
+    fetch_error = response_code;
+  } else {
+    fetch_error = url_loader_->NetError();
+  }
 
   int64_t retry_after_sec(-1);
-  const auto status(source->GetStatus().status());
-  if (original_url.SchemeIsCryptographic() &&
-      status == net::URLRequestStatus::SUCCESS) {
-    retry_after_sec = GetInt64HeaderValue(source, kHeaderXRetryAfter);
+  if (original_url.SchemeIsCryptographic() && fetch_error > 0) {
+    retry_after_sec =
+        GetInt64HeaderValue(url_loader_.get(), kHeaderXRetryAfter);
     retry_after_sec = std::min(retry_after_sec, kMaxRetryAfterSec);
   }
 
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(&RequestSender::SendInternalComplete,
-                     base::Unretained(this), fetch_error, response_body,
-                     GetStringHeaderValue(source, kHeaderEtag),
+                     base::Unretained(this), fetch_error,
+                     response_body ? *response_body : std::string(),
+                     GetStringHeaderValue(url_loader_.get(), kHeaderEtag),
                      static_cast<int>(retry_after_sec)));
 }
 
@@ -206,23 +219,30 @@ GURL RequestSender::BuildUpdateUrl(const GURL& url,
   return url.ReplaceComponents(replacements);
 }
 
-std::string RequestSender::GetStringHeaderValue(const net::URLFetcher* source,
-                                                const char* header_name) {
-  auto* response_headers(source->GetResponseHeaders());
-  if (!response_headers)
-    return std::string();
+std::string RequestSender::GetStringHeaderValue(
+    const network::SimpleURLLoader* url_loader,
+    const char* header_name) {
+  DCHECK(url_loader);
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {
+    std::string etag;
+    return url_loader->ResponseInfo()->headers->EnumerateHeader(
+               nullptr, header_name, &etag)
+               ? etag
+               : std::string();
+  }
 
-  std::string etag;
-  return response_headers->EnumerateHeader(nullptr, header_name, &etag)
-             ? etag
-             : std::string();
+  return std::string();
 }
 
-int64_t RequestSender::GetInt64HeaderValue(const net::URLFetcher* source,
-                                           const char* header_name) {
-  auto* response_headers(source->GetResponseHeaders());
-  return response_headers ? response_headers->GetInt64HeaderValue(header_name)
-                          : -1;
+int64_t RequestSender::GetInt64HeaderValue(
+    const network::SimpleURLLoader* url_loader,
+    const char* header_name) {
+  DCHECK(url_loader);
+  if (url_loader->ResponseInfo() && url_loader->ResponseInfo()->headers) {
+    return url_loader->ResponseInfo()->headers->GetInt64HeaderValue(
+        header_name);
+  }
+  return -1;
 }
 
 }  // namespace update_client

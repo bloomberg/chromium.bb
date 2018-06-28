@@ -16,15 +16,14 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/threading/thread_checker.h"
-#include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
 namespace client_update_protocol {
 class Ecdsa;
 }
 
-namespace net {
-class URLFetcher;
+namespace network {
+class SimpleURLLoader;
 }
 
 namespace update_client {
@@ -35,7 +34,7 @@ class Configurator;
 // of responsibility design pattern, where the urls are tried in the order they
 // are specified, until the request to one of them succeeds or all have failed.
 // CUP signing is optional.
-class RequestSender : public net::URLFetcherDelegate {
+class RequestSender {
  public:
   // If |error| is 0, then the response is provided in the |response| parameter.
   // |retry_after_sec| contains the value of the X-Retry-After response header,
@@ -47,7 +46,7 @@ class RequestSender : public net::URLFetcherDelegate {
       void(int error, const std::string& response, int retry_after_sec)>;
 
   explicit RequestSender(scoped_refptr<Configurator> config);
-  ~RequestSender() override;
+  ~RequestSender();
 
   // |use_signing| enables CUP signing of protocol messages exchanged using
   // this class. |is_foreground| controls the presence and the value for the
@@ -70,16 +69,17 @@ class RequestSender : public net::URLFetcherDelegate {
 
   // Returns the string value of a header of the server response or an empty
   // string if the header is not available.
-  static std::string GetStringHeaderValue(const net::URLFetcher* source,
-                                          const char* header_name);
+  static std::string GetStringHeaderValue(
+      const network::SimpleURLLoader* url_loader,
+      const char* header_name);
 
   // Returns the integral value of a header of the server response or -1 if
   // if the header is not available or a conversion error has occured.
-  static int64_t GetInt64HeaderValue(const net::URLFetcher* source,
+  static int64_t GetInt64HeaderValue(const network::SimpleURLLoader* loader,
                                      const char* header_name);
 
-  // Overrides for URLFetcherDelegate.
-  void OnURLFetchComplete(const net::URLFetcher* source) override;
+  void OnSimpleURLLoaderComplete(const GURL& original_url,
+                                 std::unique_ptr<std::string> response_body);
 
   // Implements the error handling and url fallback mechanism.
   void SendInternal();
@@ -106,7 +106,7 @@ class RequestSender : public net::URLFetcherDelegate {
 
   std::string public_key_;
   std::vector<GURL>::const_iterator cur_url_;
-  std::unique_ptr<net::URLFetcher> url_fetcher_;
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   std::unique_ptr<client_update_protocol::Ecdsa> signer_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestSender);

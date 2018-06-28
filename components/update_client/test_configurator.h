@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "components/update_client/configurator.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -23,6 +24,10 @@ namespace net {
 class TestURLRequestContextGetter;
 class URLRequestContextGetter;
 }  // namespace net
+
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
 
 namespace service_manager {
 class Connector;
@@ -87,6 +92,8 @@ class TestConfigurator : public Configurator {
   std::string ExtraRequestParams() const override;
   std::string GetDownloadPreference() const override;
   scoped_refptr<net::URLRequestContextGetter> RequestContext() const override;
+  scoped_refptr<network::SharedURLLoaderFactory> URLLoaderFactory()
+      const override;
   std::unique_ptr<service_manager::Connector> CreateServiceManagerConnector()
       const override;
   bool EnabledDeltas() const override;
@@ -108,6 +115,9 @@ class TestConfigurator : public Configurator {
   void SetUpdateCheckUrl(const GURL& url);
   void SetPingUrl(const GURL& url);
   void SetAppGuid(const std::string& app_guid);
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<TestConfigurator>;
@@ -128,6 +138,9 @@ class TestConfigurator : public Configurator {
   std::unique_ptr<service_manager::TestConnectorFactory> connector_factory_;
   std::unique_ptr<service_manager::Connector> connector_;
   scoped_refptr<net::TestURLRequestContextGetter> context_;
+
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TestConfigurator);
 };
