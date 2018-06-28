@@ -51,7 +51,6 @@ import org.chromium.chrome.browser.preferences.website.WebsitePreferenceBridge;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.vr_shell.UiUnsupportedMode;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -555,13 +554,9 @@ public class PageInfoController implements ModalDialogView.Controller {
         if (isConnectionDetailsLinkVisible()) {
             connectionInfoParams.clickCallback = () -> {
                 runAfterDismiss(() -> {
-                    // TODO(crbug.com/819883): Port the connection info popup to VR.
-                    if (VrShellDelegate.isInVr()) {
-                        VrShellDelegate.requestToExitVrAndRunOnSuccess(
-                                PageInfoController.this ::showConnectionInfoPopup,
-                                UiUnsupportedMode.UNHANDLED_CONNECTION_INFO);
-                    } else {
-                        showConnectionInfoPopup();
+                    if (!mTab.getWebContents().isDestroyed()) {
+                        recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
+                        ConnectionInfoPopup.show(mContext, mTab);
                     }
                 });
             };
@@ -611,13 +606,6 @@ public class PageInfoController implements ModalDialogView.Controller {
     private boolean isSheet() {
         return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
                 && !VrShellDelegate.isInVr();
-    }
-
-    private void showConnectionInfoPopup() {
-        if (!mTab.getWebContents().isDestroyed()) {
-            recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-            ConnectionInfoPopup.show(mContext, mTab.getWebContents());
-        }
     }
 
     @VisibleForTesting

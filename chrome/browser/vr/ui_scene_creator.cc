@@ -797,6 +797,9 @@ std::unique_ptr<UiElement> CreateHostedUi(
   hosted_ui->AddBinding(VR_BIND_FUNC(
       unsigned int, Model, model, model->hosted_platform_ui.texture_id,
       PlatformUiElement, hosted_ui.get(), SetTextureId));
+  hosted_ui->AddBinding(VR_BIND_FUNC(
+      UiElementRenderer::TextureLocation, Model, model, model->content_location,
+      PlatformUiElement, hosted_ui.get(), SetTextureLocation));
   hosted_ui->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA(
           [](Model* m) { return m->hosted_platform_ui.hosted_ui_enabled; },
@@ -889,9 +892,11 @@ std::unique_ptr<UiElement> CreateHostedUi(
       base::Unretained(model), base::Unretained(browser));
   backplane->set_event_handlers(event_handlers);
   backplane->AddChild(std::move(shadow));
-  backplane->AddBinding(VR_BIND_FUNC(
-      bool, Model, model, model->hosted_platform_ui.hosted_ui_enabled,
-      InvisibleHitTarget, backplane.get(), SetVisible));
+  backplane->AddBinding(
+      VR_BIND_FUNC(bool, Model, model,
+                   model->hosted_platform_ui.hosted_ui_enabled &&
+                       model->active_modal_prompt_type == kModalPromptTypeNone,
+                   InvisibleHitTarget, backplane.get(), SetVisible));
 
   return backplane;
 }
@@ -2874,7 +2879,8 @@ void UiSceneCreator::CreatePrompts() {
                     IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON;
                 secondary_button_text_id = IDS_VR_BUTTON_BACK;
                 break;
-              case kModalPromptTypeExitVRForConnectionInfo:
+              case kModalPromptTypeExitVRForCertificateInfo:
+              case kModalPromptTypeExitVRForConnectionSecurityInfo:
               case kModalPromptTypeGenericUnsupportedFeature:
                 message_id = IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION;
                 icon = &vector_icons::kInfoOutlineIcon;

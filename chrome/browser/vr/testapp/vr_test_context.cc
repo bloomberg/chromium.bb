@@ -273,6 +273,14 @@ void VrTestContext::HandleInput(ui::Event* event) {
       case ui::DomCode::US_L:
         model_->standalone_vr_device = !model_->standalone_vr_device;
         break;
+      case ui::DomCode::US_N:
+        if (hosted_ui_enabled_) {
+          CloseHostedDialog();
+        } else {
+          ui_->SetAlertDialogEnabled(true, nullptr, 100, 50);
+          hosted_ui_enabled_ = true;
+        }
+        break;
       default:
         break;
     }
@@ -439,20 +447,22 @@ ControllerModel VrTestContext::UpdateController(const RenderInfo& render_info,
 }
 
 void VrTestContext::OnGlInitialized() {
-  unsigned int content_texture_id = CreateFakeContentTexture();
+  unsigned int content_texture_id = CreateTexture(0xFF000080);
+  unsigned int ui_texture_id = CreateTexture(0xFF008000);
 
   ui_->OnGlInitialized(
       content_texture_id, UiElementRenderer::kTextureLocationLocal,
-      content_texture_id, UiElementRenderer::kTextureLocationLocal, 0, false);
+      content_texture_id, UiElementRenderer::kTextureLocationLocal,
+      ui_texture_id, false);
 
   keyboard_delegate_->Initialize(ui_->scene()->SurfaceProviderForTesting(),
                                  ui_->ui_element_renderer());
 }
 
-unsigned int VrTestContext::CreateFakeContentTexture() {
+unsigned int VrTestContext::CreateTexture(SkColor color) {
   sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(1, 1);
   SkCanvas* canvas = surface->getCanvas();
-  canvas->clear(0xFF000080);
+  canvas->clear(color);
 
   SkPixmap pixmap;
   CHECK(surface->peekPixels(&pixmap));
@@ -621,7 +631,10 @@ void VrTestContext::OnUnsupportedMode(vr::UiUnsupportedMode mode) {
   }
 }
 
-void VrTestContext::CloseHostedDialog() {}
+void VrTestContext::CloseHostedDialog() {
+  ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
+  hosted_ui_enabled_ = false;
+}
 
 void VrTestContext::OnExitVrPromptResult(vr::ExitVrPromptChoice choice,
                                          vr::UiUnsupportedMode reason) {

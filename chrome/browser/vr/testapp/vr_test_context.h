@@ -15,6 +15,7 @@
 #include "chrome/browser/vr/model/controller_model.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
 #include "chrome/browser/vr/ui_renderer.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/gfx/transform.h"
 
 namespace ui {
@@ -74,7 +75,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   void set_window_size(const gfx::Size& size) { window_size_ = size; }
 
  private:
-  unsigned int CreateFakeContentTexture();
+  unsigned int CreateTexture(SkColor color);
   void CreateFakeVoiceSearchResult();
   void CycleWebVrModes();
   void ToggleSplashScreen();
@@ -115,6 +116,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   bool recentered_ = false;
   base::TimeTicks page_load_start_;
   int tab_id_ = 0;
+  bool hosted_ui_enabled_ = false;
 
   std::unique_ptr<TextInputDelegate> text_input_delegate_;
   std::unique_ptr<TestKeyboardDelegate> keyboard_delegate_;

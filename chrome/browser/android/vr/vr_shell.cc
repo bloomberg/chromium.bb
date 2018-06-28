@@ -884,6 +884,8 @@ content::WebContents* VrShell::GetNonNativePageWebContents() const {
 void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
   switch (mode) {
     case UiUnsupportedMode::kUnhandledCodePoint:  // Fall through.
+    case UiUnsupportedMode::kUnhandledCertificateInfo:
+    case UiUnsupportedMode::kUnhandledConnectionSecurityInfo:
     case UiUnsupportedMode::kGenericUnsupportedFeature:
       ExitVrDueToUnsupportedMode(mode);
       return;
@@ -903,8 +905,6 @@ void VrShell::OnUnsupportedMode(UiUnsupportedMode mode) {
     // kSearchEnginePromo should directly DOFF without showing a promo. So it
     // should never be used from VR ui thread.
     case UiUnsupportedMode::kSearchEnginePromo:
-    // Not sent by the UI but from page info popup.
-    case UiUnsupportedMode::kUnhandledConnectionInfo:
     // Should never be used as a mode.
     case UiUnsupportedMode::kCount:
       NOTREACHED();

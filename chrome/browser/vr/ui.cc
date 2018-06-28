@@ -164,9 +164,13 @@ void Ui::ShowExitVrPrompt(UiUnsupportedMode reason) {
     case UiUnsupportedMode::kNeedsKeyboardUpdate:
       model_->active_modal_prompt_type = kModalPromptTypeUpdateKeyboard;
       break;
-    case UiUnsupportedMode::kUnhandledConnectionInfo:
+    case UiUnsupportedMode::kUnhandledCertificateInfo:
       model_->active_modal_prompt_type =
-          kModalPromptTypeExitVRForConnectionInfo;
+          kModalPromptTypeExitVRForCertificateInfo;
+      break;
+    case UiUnsupportedMode::kUnhandledConnectionSecurityInfo:
+      model_->active_modal_prompt_type =
+          kModalPromptTypeExitVRForConnectionSecurityInfo;
       break;
     // kSearchEnginePromo should DOFF directly. It should never try to change
     // the state of UI.
