@@ -823,6 +823,8 @@ public class CustomTabActivity extends ChromeActivity {
     protected void onDestroyInternal() {
         super.onDestroyInternal();
         if (mActivityDelegate != null) mActivityDelegate.onDestroy(isChangingConfigurations());
+        mConnection.maybeUnloadModule(mIntentDataProvider.getModulePackageName(),
+                mIntentDataProvider.getModuleClassName());
     }
 
     @Override
