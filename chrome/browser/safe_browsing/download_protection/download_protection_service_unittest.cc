@@ -69,7 +69,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/zlib/google/zip.h"
@@ -207,6 +206,17 @@ class MockBinaryFeatureExtractor : public BinaryFeatureExtractor {
 };
 
 using NiceMockDownloadItem = NiceMock<download::MockDownloadItem>;
+
+std::string GetBodyFromRequest(const network::ResourceRequest& request) {
+  auto body = request.request_body;
+  if (!body)
+    return std::string();
+
+  CHECK_EQ(1u, body->elements()->size());
+  auto& element = body->elements()->at(0);
+  CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+  return std::string(element.bytes(), element.length());
+}
 
 }  // namespace
 
@@ -1865,7 +1875,7 @@ TEST_F(DownloadProtectionServiceTest,
     sb_service_->test_url_loader_factory()->SetInterceptor(
         base::BindLambdaForTesting(
             [&](const network::ResourceRequest& request) {
-              upload_data = network::GetUploadData(request);
+              upload_data = GetBodyFromRequest(request);
               if (!upload_data.empty())
                 interceptor_run_loop.Quit();
             }));
@@ -1923,7 +1933,7 @@ TEST_F(DownloadProtectionServiceTest,
     sb_service_->test_url_loader_factory()->SetInterceptor(
         base::BindLambdaForTesting(
             [&](const network::ResourceRequest& request) {
-              upload_data = network::GetUploadData(request);
+              upload_data = GetBodyFromRequest(request);
               if (!upload_data.empty())
                 interceptor_run_loop.Quit();
             }));
@@ -2478,7 +2488,7 @@ TEST_F(DownloadProtectionServiceTest, PPAPIDownloadRequest_Payload) {
   std::string upload_data;
   sb_service_->test_url_loader_factory()->SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
-        upload_data = network::GetUploadData(request);
+        upload_data = GetBodyFromRequest(request);
       }));
 
   base::FilePath default_file_path(FILE_PATH_LITERAL("/foo/bar/test.crx"));

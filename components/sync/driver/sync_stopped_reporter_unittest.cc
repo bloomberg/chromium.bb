@@ -15,7 +15,6 @@
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
-#include "services/network/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
@@ -63,6 +62,17 @@ class SyncStoppedReporterTest : public testing::Test {
 
   const SyncStoppedReporter::Result& request_result() const {
     return request_result_;
+  }
+
+  std::string GetBodyFromRequest(const network::ResourceRequest& request) {
+    auto body = request.request_body;
+    if (!body)
+      return std::string();
+
+    CHECK_EQ(1u, body->elements()->size());
+    auto& element = body->elements()->at(0);
+    CHECK_EQ(network::DataElement::TYPE_BYTES, element.type());
+    return std::string(element.bytes(), element.length());
   }
 
   network::TestURLLoaderFactory* url_loader_factory() {
@@ -122,7 +132,7 @@ TEST_F(SyncStoppedReporterTest, FetcherConfiguration) {
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         intercepted_url = request.url;
         intercepted_headers = request.headers;
-        intercepted_body = network::GetUploadData(request);
+        intercepted_body = GetBodyFromRequest(request);
       }));
   SyncStoppedReporter ssr(test_url(), user_agent(), shared_url_loader_factory(),
                           callback());
