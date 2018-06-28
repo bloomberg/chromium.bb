@@ -39,17 +39,15 @@ void AppCacheDispatcherHost::Create(ChromeAppCacheService* appcache_service,
 
 void AppCacheDispatcherHost::RegisterHost(int32_t host_id) {
   if (appcache_service_) {
-    // PlzNavigate
     // The AppCacheHost could have been precreated in which case we want to
     // register it with the backend here.
-    if (IsBrowserSideNavigationEnabled()) {
-      std::unique_ptr<content::AppCacheHost> host =
-          AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
-      if (host.get()) {
-        backend_impl_.RegisterPrecreatedHost(std::move(host));
-        return;
-      }
+    std::unique_ptr<content::AppCacheHost> host =
+        AppCacheNavigationHandleCore::GetPrecreatedHost(host_id);
+    if (host.get()) {
+      backend_impl_.RegisterPrecreatedHost(std::move(host));
+      return;
     }
+
     if (!backend_impl_.RegisterHost(host_id)) {
       mojo::ReportBadMessage("ACDH_REGISTER");
     }

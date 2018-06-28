@@ -191,10 +191,6 @@ class CONTENT_EXPORT AppCacheHost
 
   const GURL& first_party_url() const { return first_party_url_; }
 
-  // Methods to support cross site navigations.
-  void PrepareForTransfer();
-  void CompleteTransfer(int host_id, AppCacheFrontend* frontend);
-
   // Returns a weak pointer reference to the host.
   base::WeakPtr<AppCacheHost> GetWeakPtr();
 

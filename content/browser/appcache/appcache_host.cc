@@ -509,20 +509,6 @@ void AppCacheHost::NotifyMainResourceBlocked(const GURL& manifest_url) {
   blocked_manifest_url_ = manifest_url;
 }
 
-void AppCacheHost::PrepareForTransfer() {
-  // This can only happen prior to the document having been loaded.
-  DCHECK(!associated_cache());
-  DCHECK(!is_selection_pending());
-  DCHECK(!group_being_updated_.get());
-  host_id_ = kAppCacheNoHostId;
-  frontend_ = nullptr;
-}
-
-void AppCacheHost::CompleteTransfer(int host_id, AppCacheFrontend* frontend) {
-  host_id_ = host_id;
-  frontend_ = frontend;
-}
-
 base::WeakPtr<AppCacheHost> AppCacheHost::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
