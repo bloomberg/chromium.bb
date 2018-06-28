@@ -32,7 +32,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/lock.h"
-#include "base/sys_info.h"
 #include "base/values.h"
 #include "build/build_config.h"
 
@@ -568,36 +567,6 @@ void Histogram::ValidateHistogramContents() const {
   CHECK(unlogged_samples_->bucket_ranges());
   CHECK(logged_samples_);
   CHECK(logged_samples_->bucket_ranges());
-#if !defined(OS_NACL)
-  if (0U == logged_samples_->id() && (flags() & kIsPersistent)) {
-    // ID should never be zero. If it is, then it's probably because the
-    // entire memory page was cleared. Check that this is true.
-    // TODO(bcwhite): Remove this.
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=836875
-    size_t page_size = SysInfo::VMAllocationGranularity();
-    if (page_size == 0)
-      page_size = 1024;
-    const int* address = reinterpret_cast<const int*>(
-        reinterpret_cast<uintptr_t>(logged_samples_->meta()) &
-        ~(page_size - 1));
-    // Check a couple places so there is evidence in a crash report as to
-    // where it was non-zero.
-    CHECK_EQ(0, address[0]);
-    CHECK_EQ(0, address[1]);
-    CHECK_EQ(0, address[2]);
-    CHECK_EQ(0, address[4]);
-    CHECK_EQ(0, address[8]);
-    CHECK_EQ(0, address[16]);
-    CHECK_EQ(0, address[32]);
-    CHECK_EQ(0, address[64]);
-    CHECK_EQ(0, address[128]);
-    CHECK_EQ(0, address[256]);
-    CHECK_EQ(0, address[512]);
-    // Now check every address.
-    for (size_t i = 0; i < page_size / sizeof(int); ++i)
-      CHECK_EQ(0, address[i]);
-  }
-#endif
   CHECK_NE(0U, logged_samples_->id());
 }
 
