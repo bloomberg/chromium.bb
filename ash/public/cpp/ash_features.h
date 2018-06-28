@@ -52,11 +52,6 @@ ASH_PUBLIC_EXPORT extern const base::Feature kNightLight;
 // https://crbug.com/828646.
 ASH_PUBLIC_EXPORT extern const base::Feature kOverviewSwipeToClose;
 
-// Enables persistent window bounds in multi-displays scenario.
-// TODO(warx): Remove this after the feature is fully launched.
-// https://crbug.com/805046.
-ASH_PUBLIC_EXPORT extern const base::Feature kPersistentWindowBounds;
-
 // Enables new system menu.
 ASH_PUBLIC_EXPORT extern const base::Feature kSystemTrayUnified;
 
@@ -80,8 +75,6 @@ ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
 ASH_PUBLIC_EXPORT bool IsNewWallpaperPickerEnabled();
 
 ASH_PUBLIC_EXPORT bool IsNightLightEnabled();
-
-ASH_PUBLIC_EXPORT bool IsPersistentWindowBoundsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
 
