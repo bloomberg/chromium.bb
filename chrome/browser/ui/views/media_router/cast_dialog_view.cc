@@ -34,6 +34,19 @@ namespace {
 // This value is negative so that it doesn't overlap with a sink index.
 constexpr int kAlternativeSourceButtonId = -1;
 
+// In the sources menu, we have a single item for "tab", which includes both
+// presenting and mirroring a tab.
+constexpr int kTabSource = PRESENTATION | TAB_MIRROR;
+
+bool SupportsTabSource(const UIMediaSink& sink) {
+  return base::ContainsKey(sink.cast_modes, PRESENTATION) ||
+         base::ContainsKey(sink.cast_modes, TAB_MIRROR);
+}
+
+bool SupportsDesktopSource(const UIMediaSink& sink) {
+  return base::ContainsKey(sink.cast_modes, DESKTOP_MIRROR);
+}
+
 }  // namespace
 
 // static
@@ -85,8 +98,7 @@ base::string16 CastDialogView::GetDialogButtonLabel(
 
 bool CastDialogView::IsDialogButtonEnabled(ui::DialogButton button) const {
   return !sink_buttons_.empty() &&
-         sink_buttons_.at(selected_sink_index_)->sink().state !=
-             UIMediaSinkState::CONNECTING;
+         GetSelectedSink().state != UIMediaSinkState::CONNECTING;
 }
 
 int CastDialogView::GetDialogButtons() const {
@@ -94,23 +106,29 @@ int CastDialogView::GetDialogButtons() const {
 }
 
 views::View* CastDialogView::CreateExtraView() {
-  alternative_sources_button_ = views::MdTextButton::CreateSecondaryUiButton(
+  sources_button_ = views::MdTextButton::CreateSecondaryUiButton(
       this,
       l10n_util::GetStringUTF16(IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON));
-  alternative_sources_button_->set_id(kAlternativeSourceButtonId);
-  alternative_sources_button_->SetEnabled(false);
-  return alternative_sources_button_;
+  sources_button_->set_id(kAlternativeSourceButtonId);
+  sources_button_->SetEnabled(false);
+  return sources_button_;
 }
 
 bool CastDialogView::Accept() {
   scroll_position_ = scroll_view_->GetVisibleRect().y();
-  const UIMediaSink& sink = sink_buttons_.at(selected_sink_index_)->sink();
+  const UIMediaSink& sink = GetSelectedSink();
   if (!sink.route_id.empty()) {
     controller_->StopCasting(sink.route_id);
-  } else if (base::ContainsKey(sink.cast_modes, PRESENTATION)) {
-    controller_->StartCasting(sink.id, PRESENTATION);
-  } else if (base::ContainsKey(sink.cast_modes, TAB_MIRROR)) {
-    controller_->StartCasting(sink.id, TAB_MIRROR);
+  } else {
+    // Go through cast modes in the order of preference to find one that is
+    // supported and selected.
+    for (MediaCastMode cast_mode : {PRESENTATION, TAB_MIRROR, DESKTOP_MIRROR}) {
+      if ((cast_mode & selected_source_) &&
+          base::ContainsKey(sink.cast_modes, cast_mode)) {
+        controller_->StartCasting(sink.id, cast_mode);
+        break;
+      }
+    }
   }
   return false;
 }
@@ -145,6 +163,7 @@ CastDialogView::CastDialogView(views::View* anchor_view,
                                CastDialogController* controller,
                                Browser* browser)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
+      selected_source_(kTabSource),
       controller_(controller),
       browser_(browser) {
   ShowNoSinksView();
@@ -158,13 +177,13 @@ CastDialogView::~CastDialogView() {
 void CastDialogView::ButtonPressed(views::Button* sender,
                                    const ui::Event& event) {
   if (sender->tag() == kAlternativeSourceButtonId)
-    ShowAlternativeSources();
+    ShowSourcesMenu();
   else
     SelectSinkAtIndex(sender->tag());
 }
 
 bool CastDialogView::IsCommandIdChecked(int command_id) const {
-  return false;
+  return command_id == selected_source_;
 }
 
 bool CastDialogView::IsCommandIdEnabled(int command_id) const {
@@ -172,8 +191,7 @@ bool CastDialogView::IsCommandIdEnabled(int command_id) const {
 }
 
 void CastDialogView::ExecuteCommand(int command_id, int event_flags) {
-  const UIMediaSink& sink = sink_buttons_.at(selected_sink_index_)->sink();
-  controller_->StartCasting(sink.id, static_cast<MediaCastMode>(command_id));
+  selected_source_ = command_id;
 }
 
 gfx::Size CastDialogView::CalculatePreferredSize() const {
@@ -261,27 +279,35 @@ void CastDialogView::PopulateScrollView(const std::vector<UIMediaSink>& sinks) {
   Layout();
 }
 
-void CastDialogView::ShowAlternativeSources() {
-  alternative_sources_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
-  const CastModeSet& cast_modes =
-      sink_buttons_.at(selected_sink_index_)->sink().cast_modes;
+void CastDialogView::ShowSourcesMenu() {
+  sources_menu_model_ = std::make_unique<ui::SimpleMenuModel>(this);
+  const UIMediaSink& sink = GetSelectedSink();
 
-  if (base::ContainsKey(cast_modes, DESKTOP_MIRROR)) {
-    alternative_sources_menu_model_->AddItemWithStringId(
+  if (SupportsTabSource(sink)) {
+    sources_menu_model_->AddCheckItemWithStringId(
+        kTabSource, IDS_MEDIA_ROUTER_TAB_MIRROR_CAST_MODE);
+  }
+  if (SupportsDesktopSource(sink)) {
+    sources_menu_model_->AddCheckItemWithStringId(
         DESKTOP_MIRROR, IDS_MEDIA_ROUTER_DESKTOP_MIRROR_CAST_MODE);
   }
-  if (base::ContainsKey(cast_modes, LOCAL_FILE)) {
-    alternative_sources_menu_model_->AddItemWithStringId(
-        LOCAL_FILE, IDS_MEDIA_ROUTER_LOCAL_FILE_CAST_MODE);
-  }
 
-  alternative_sources_menu_runner_ = std::make_unique<views::MenuRunner>(
-      alternative_sources_menu_model_.get(), views::MenuRunner::COMBOBOX);
-  const gfx::Rect& screen_bounds =
-      alternative_sources_button_->GetBoundsInScreen();
-  alternative_sources_menu_runner_->RunMenuAt(
-      alternative_sources_button_->GetWidget(), nullptr, screen_bounds,
-      views::MENU_ANCHOR_TOPLEFT, ui::MENU_SOURCE_MOUSE);
+  sources_menu_runner_ = std::make_unique<views::MenuRunner>(
+      sources_menu_model_.get(), views::MenuRunner::COMBOBOX);
+  const gfx::Rect& screen_bounds = sources_button_->GetBoundsInScreen();
+  sources_menu_runner_->RunMenuAt(sources_button_->GetWidget(), nullptr,
+                                  screen_bounds, views::MENU_ANCHOR_TOPLEFT,
+                                  ui::MENU_SOURCE_MOUSE);
+}
+
+void CastDialogView::UpdateSourcesMenu(const UIMediaSink& sink) {
+  bool supports_desktop_source = SupportsDesktopSource(sink);
+  // If desktop mirroring is supported, show the sources menu button so that
+  // the user can switch sources.
+  if (sources_button_)
+    sources_button_->SetEnabled(supports_desktop_source);
+  if (!supports_desktop_source && selected_source_ == DESKTOP_MIRROR)
+    selected_source_ = kTabSource;
 }
 
 void CastDialogView::SelectSinkAtIndex(size_t index) {
@@ -293,15 +319,14 @@ void CastDialogView::SelectSinkAtIndex(size_t index) {
   selected_button->SetSelected(true);
   selected_sink_index_ = index;
 
-  if (alternative_sources_button_) {
-    const CastModeSet& cast_modes = selected_button->sink().cast_modes;
-    alternative_sources_button_->SetEnabled(
-        base::ContainsKey(cast_modes, DESKTOP_MIRROR) ||
-        base::ContainsKey(cast_modes, LOCAL_FILE));
-  }
-
+  UpdateSourcesMenu(selected_button->sink());
   // Update the text on the main action button.
   DialogModelChanged();
+}
+
+const UIMediaSink& CastDialogView::GetSelectedSink() const {
+  DCHECK_GT(sink_buttons_.size(), selected_sink_index_);
+  return sink_buttons_.at(selected_sink_index_)->sink();
 }
 
 void CastDialogView::MaybeSizeToContents() {

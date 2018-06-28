@@ -59,8 +59,8 @@
   <message name="IDS_MEDIA_ROUTER_CAST_LOCAL_MEDIA_TITLE" desc="Title of the local file cast mode after a local file is selected for casting.">
     Cast <ph name="FILE_NAME">$1<ex>my_media.mp3</ex></ph>
   </message>
-  <message name="IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON" desc="Label for the button which, on click, shows non-default Cast sources (desktop, local media file).">
-    Other sources
+  <message name="IDS_MEDIA_ROUTER_ALTERNATIVE_SOURCES_BUTTON" desc="Label for the button which, on click, shows a list of Cast sources (tab, desktop, local media file).">
+    Sources
   </message>
 
   <!-- Contextual Menu -->
