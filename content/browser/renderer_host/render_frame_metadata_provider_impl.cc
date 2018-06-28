@@ -78,6 +78,9 @@ void RenderFrameMetadataProviderImpl::OnRenderFrameMetadataChanged(
       observer.OnLocalSurfaceIdChanged(metadata);
   }
 
+  if (!frame_token)
+    return;
+
   // Both RenderFrameMetadataProviderImpl and FrameTokenMessageQueue are owned
   // by the same RenderWidgetHostImpl. During shutdown the queue is cleared
   // without running the callbacks.

@@ -39,6 +39,7 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
   // frequency of change. However if there are changes in high frequency
   // fields these can be reported while testing is enabled.
   bool send_metadata = false;
+  bool needs_activation_notification = true;
   if (render_frame_metadata_observer_client_) {
     if (report_all_frame_submissions_for_testing_enabled_) {
       last_frame_token_ = compositor_frame_metadata->frame_token;
@@ -50,7 +51,8 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     } else {
       send_metadata = !last_render_frame_metadata_ ||
                       ShouldSendRenderFrameMetadata(
-                          *last_render_frame_metadata_, render_frame_metadata);
+                          *last_render_frame_metadata_, render_frame_metadata,
+                          &needs_activation_notification);
     }
   }
 
@@ -73,16 +75,18 @@ void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
 #endif
 
     last_frame_token_ = compositor_frame_metadata->frame_token;
-    compositor_frame_metadata->send_frame_token_to_embedder = true;
+    compositor_frame_metadata->send_frame_token_to_embedder =
+        needs_activation_notification;
     render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
-        last_frame_token_, metadata_copy);
+        needs_activation_notification ? last_frame_token_ : 0u, metadata_copy);
   }
 
   // Always cache the initial frame token, so that if a test connects later on
   // it can be notified of the initial state.
   if (!last_frame_token_) {
     last_frame_token_ = compositor_frame_metadata->frame_token;
-    compositor_frame_metadata->send_frame_token_to_embedder = true;
+    compositor_frame_metadata->send_frame_token_to_embedder =
+        needs_activation_notification;
   }
 }
 
@@ -103,7 +107,8 @@ void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(
 // static
 bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
     const cc::RenderFrameMetadata& rfm1,
-    const cc::RenderFrameMetadata& rfm2) {
+    const cc::RenderFrameMetadata& rfm2,
+    bool* needs_activation_notification) {
   if (rfm1.root_background_color != rfm2.root_background_color ||
       rfm1.is_scroll_offset_at_top != rfm2.is_scroll_offset_at_top ||
       rfm1.selection != rfm2.selection ||
@@ -112,6 +117,7 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.device_scale_factor != rfm2.device_scale_factor ||
       rfm1.viewport_size_in_pixels != rfm2.viewport_size_in_pixels ||
       rfm1.local_surface_id != rfm2.local_surface_id) {
+    *needs_activation_notification = true;
     return true;
   }
 
@@ -126,6 +132,7 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
       rfm1.scrollable_viewport_size != rfm2.scrollable_viewport_size ||
       rfm1.root_layer_size != rfm2.root_layer_size ||
       rfm1.has_transparent_background != rfm2.has_transparent_background) {
+    *needs_activation_notification = true;
     return true;
   }
 
@@ -156,10 +163,12 @@ bool RenderFrameMetadataObserverImpl::ShouldSendRenderFrameMetadata(
 
   if (old_viewport_rect != new_viewport_rect &&
       (at_left_or_right_edge || at_top_or_bottom_edge)) {
+    *needs_activation_notification = false;
     return true;
   }
 #endif
 
+  *needs_activation_notification = false;
   return false;
 }
 
