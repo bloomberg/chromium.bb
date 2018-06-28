@@ -696,7 +696,7 @@ class DeleteSocketCallback : public TestCompletionCallbackBase {
 class FailingChannelIDStore : public ChannelIDStore {
   int GetChannelID(const std::string& server_identifier,
                    std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                   const GetChannelIDCallback& callback) override {
+                   GetChannelIDCallback callback) override {
     return ERR_UNEXPECTED;
   }
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
@@ -708,7 +708,7 @@ class FailingChannelIDStore : public ChannelIDStore {
       base::Time delete_end,
       base::OnceClosure completion_callback) override {}
   void DeleteAll(base::OnceClosure completion_callback) override {}
-  void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
+  void GetAllChannelIDs(GetChannelIDListCallback callback) override {}
   int GetChannelIDCount() override { return 0; }
   void SetForceKeepSessionState() override {}
   void Flush() override {}
@@ -720,10 +720,10 @@ class FailingChannelIDStore : public ChannelIDStore {
 class AsyncFailingChannelIDStore : public ChannelIDStore {
   int GetChannelID(const std::string& server_identifier,
                    std::unique_ptr<crypto::ECPrivateKey>* key_result,
-                   const GetChannelIDCallback& callback) override {
+                   GetChannelIDCallback callback) override {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE,
-        base::Bind(callback, ERR_UNEXPECTED, server_identifier, nullptr));
+        FROM_HERE, base::BindOnce(std::move(callback), ERR_UNEXPECTED,
+                                  server_identifier, nullptr));
     return ERR_IO_PENDING;
   }
   void SetChannelID(std::unique_ptr<ChannelID> channel_id) override {}
@@ -735,7 +735,7 @@ class AsyncFailingChannelIDStore : public ChannelIDStore {
       base::Time delete_end,
       base::OnceClosure completion_callback) override {}
   void DeleteAll(base::OnceClosure completion_callback) override {}
-  void GetAllChannelIDs(const GetChannelIDListCallback& callback) override {}
+  void GetAllChannelIDs(GetChannelIDListCallback callback) override {}
   int GetChannelIDCount() override { return 0; }
   void SetForceKeepSessionState() override {}
   void Flush() override {}
