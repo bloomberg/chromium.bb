@@ -10,14 +10,14 @@ from telemetry import story
 
 class KeyIdlePowerPage(page_module.Page):
 
-  def __init__(self, url, page_set, turn_screen_off, duration_seconds=20,
+  def __init__(self, url, name, page_set, turn_screen_off, duration_seconds=20,
                shared_page_state_class=shared_page_state.SharedMobilePageState):
     super(KeyIdlePowerPage, self).__init__(
         url=url,
         page_set=page_set,
         shared_page_state_class=(android_screen_restoration_shared_state
             .AndroidScreenRestorationSharedState),
-        name=url.split('/')[-1])
+        name=name)
     self._turn_screen_off = turn_screen_off
     self._duration_seconds = duration_seconds
 
@@ -39,18 +39,18 @@ class KeyIdlePowerPage(page_module.Page):
 
 class KeyLongIdlePowerPage(KeyIdlePowerPage):
 
-  def __init__(self, url, page_set, turn_screen_off,
+  def __init__(self, url, name, page_set, turn_screen_off,
                shared_page_state_class=shared_page_state.SharedMobilePageState):
     # 90 seconds ensures the capture of activity after the 60-second
     # PowerMonitor suspend signal.
     super(KeyLongIdlePowerPage, self).__init__(
         url=url,
+        name=name,
         page_set=page_set,
         turn_screen_off=turn_screen_off,
         duration_seconds=90,
         shared_page_state_class=(android_screen_restoration_shared_state
             .AndroidScreenRestorationSharedState))
-    self._name = self.name + " (Long Idle)"
 
 
 class KeyIdlePowerCasesPageSet(story.StorySet):
@@ -62,26 +62,34 @@ class KeyIdlePowerCasesPageSet(story.StorySet):
 
     foreground_urls_list = [
       # Why: Ensure minimal activity for static, empty pages in the foreground.
-      'file://key_idle_power_cases/blank.html',
+      ('idle_power_blank', 'file://key_idle_power_cases/blank.html'),
     ]
 
-    for url in foreground_urls_list:
-      self.AddStory(KeyIdlePowerPage(url, self, False))
+    for name,url in foreground_urls_list:
+      self.AddStory(KeyIdlePowerPage(
+          name=name, url=url, page_set=self, turn_screen_off=False))
 
     background_urls_list = [
       # Why: Ensure animated GIFs aren't processed when Chrome is backgrounded.
-      'file://key_idle_power_cases/animated-gif.html',
+      ('idle_power_animated_gif',
+       'file://key_idle_power_cases/animated-gif.html'),
       # Why: Ensure CSS animations aren't processed when Chrome is backgrounded.
-      'file://key_idle_power_cases/css-animation.html',
+      ('idle_power_css_animation',
+       'file://key_idle_power_cases/css-animation.html'),
       # Why: Ensure rAF is suppressed when Chrome is backgrounded.
-      'file://key_idle_power_cases/request-animation-frame.html',
+      ('idle_power_request_animation_frame',
+       'file://key_idle_power_cases/request-animation-frame.html'),
       # Why: Ensure setTimeout is throttled when Chrome is backgrounded.
-      'file://key_idle_power_cases/set-timeout.html',
+      ('idle_power_set_timetout',
+       'file://key_idle_power_cases/set-timeout.html'),
     ]
 
-    for url in background_urls_list:
-      self.AddStory(KeyIdlePowerPage(url, self, True))
+    for name,url in background_urls_list:
+      self.AddStory(KeyIdlePowerPage(
+          name=name, url=url, page_set=self, turn_screen_off=True))
 
     # Why: Ensure that activity strictly diminishes the longer the idle time.
     self.AddStory(KeyLongIdlePowerPage(
-        'file://key_idle_power_cases/set-timeout.html', self, True))
+        name='idle_power_set_timeout_long',
+        url='file://key_idle_power_cases/set-timeout.html',
+        page_set=self, turn_screen_off=True))
