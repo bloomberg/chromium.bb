@@ -730,6 +730,7 @@ deps = {
 
     self._commit_git('repo_14', {
       'DEPS': textwrap.dedent("""\
+        vars = {}
         deps = {
           'src/cipd_dep': {
             'packages': [
@@ -749,6 +750,15 @@ deps = {
               {
                 'package': 'package2',
                 'version': '1.13',
+              },
+            ],
+            'dep_type': 'cipd',
+          },
+          'src/cipd_dep_with_cipd_variable': {
+            'packages': [
+              {
+                'package': 'package3/${{platform}}',
+                'version': '1.2',
               },
             ],
             'dep_type': 'cipd',
