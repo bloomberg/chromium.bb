@@ -13,6 +13,7 @@
 namespace base {
 namespace sequence_manager {
 
+// TODO(kraynov): Move to platform/scheduler/common.
 class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
   explicit VirtualTimeDomain(TimeTicks initial_time_ticks);
@@ -22,7 +23,6 @@ class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
   LazyNow CreateLazyNow() const override;
   TimeTicks Now() const override;
   Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
-  const char* GetName() const override;
 
   // Advances this time domain to |now|. NOTE |now| is supposed to be
   // monotonically increasing.  NOTE it's the responsibility of the caller to
@@ -30,19 +30,14 @@ class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
   void AdvanceNowTo(TimeTicks now);
 
  protected:
-  void OnRegisterWithTaskQueueManager(
-      TaskQueueManagerImpl* task_queue_manager) override;
+  const char* GetName() const override;
   void RequestWakeUpAt(TimeTicks now, TimeTicks run_time) override;
   void CancelWakeUpAt(TimeTicks run_time) override;
-  void AsValueIntoInternal(trace_event::TracedValue* state) const override;
-
-  void RequestDoWork();
 
  private:
   mutable Lock lock_;  // Protects |now_ticks_|
   TimeTicks now_ticks_;
 
-  TaskQueueManagerImpl* task_queue_manager_;  // NOT OWNED
   Closure do_work_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(VirtualTimeDomain);

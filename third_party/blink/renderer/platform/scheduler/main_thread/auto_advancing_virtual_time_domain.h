@@ -38,9 +38,6 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   // TimeDomain implementation:
   base::Optional<base::TimeDelta> DelayTillNextTask(
       base::sequence_manager::LazyNow* lazy_now) override;
-  void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
-  void CancelWakeUpAt(base::TimeTicks run_time) override;
-  const char* GetName() const override;
 
   class PLATFORM_EXPORT Observer {
    public:
@@ -77,6 +74,11 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   void DidProcessTask(const base::PendingTask& pending_task) override;
 
   int task_starvation_count() const { return task_starvation_count_; }
+
+ protected:
+  const char* GetName() const override;
+  void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
+  void CancelWakeUpAt(base::TimeTicks run_time) override;
 
  private:
   // Can be called on any thread.

@@ -23,18 +23,11 @@ class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
   LazyNow CreateLazyNow() const override;
   TimeTicks Now() const override;
   Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override;
-  const char* GetName() const override;
 
  protected:
-  void OnRegisterWithTaskQueueManager(
-      TaskQueueManagerImpl* task_queue_manager) override;
-  void RequestWakeUpAt(TimeTicks now, TimeTicks run_time) override;
-  void CancelWakeUpAt(TimeTicks run_time) override;
-  void AsValueIntoInternal(trace_event::TracedValue* state) const override;
+  const char* GetName() const override;
 
  private:
-  TaskQueueManagerImpl* task_queue_manager_;  // NOT OWNED
-
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };
 

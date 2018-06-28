@@ -7,31 +7,50 @@
 #include <set>
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
+#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {
 namespace sequence_manager {
 
-TimeDomain::TimeDomain() = default;
+TimeDomain::TimeDomain() : sequence_manager_(nullptr) {}
 
 TimeDomain::~TimeDomain() {
   DCHECK(main_thread_checker_.CalledOnValidThread());
 }
 
-void TimeDomain::RegisterQueue(internal::TaskQueueImpl* queue) {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  DCHECK_EQ(queue->GetTimeDomain(), this);
+void TimeDomain::OnRegisterWithSequenceManager(
+    TaskQueueManagerImpl* sequence_manager) {
+  DCHECK(sequence_manager);
+  DCHECK(!sequence_manager_);
+  sequence_manager_ = sequence_manager;
+}
+
+SequenceManager* TimeDomain::sequence_manager() const {
+  DCHECK(sequence_manager_);
+  return sequence_manager_;
+}
+
+void TimeDomain::RequestWakeUpAt(TimeTicks now, TimeTicks run_time) {
+  sequence_manager_->MaybeScheduleDelayedWork(FROM_HERE, this, now, run_time);
+}
+
+void TimeDomain::CancelWakeUpAt(TimeTicks run_time) {
+  sequence_manager_->CancelDelayedWork(this, run_time);
+}
+
+void TimeDomain::RequestDoWork() {
+  sequence_manager_->MaybeScheduleImmediateWork(FROM_HERE);
 }
 
 void TimeDomain::UnregisterQueue(internal::TaskQueueImpl* queue) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   DCHECK_EQ(queue->GetTimeDomain(), this);
-
-  LazyNow lazy_now = CreateLazyNow();
-  ScheduleWakeUpForQueue(queue, nullopt, &lazy_now);
+  LazyNow lazy_now(CreateLazyNow());
+  SetNextWakeUpForQueue(queue, nullopt, &lazy_now);
 }
 
-void TimeDomain::ScheduleWakeUpForQueue(
+void TimeDomain::SetNextWakeUpForQueue(
     internal::TaskQueueImpl* queue,
     Optional<internal::TaskQueueImpl::DelayedWakeUp> wake_up,
     LazyNow* lazy_now) {
@@ -68,6 +87,10 @@ void TimeDomain::ScheduleWakeUpForQueue(
 
   if (previous_wake_up)
     CancelWakeUpAt(previous_wake_up.value());
+
+  // TODO(kraynov): https://crbug.com/857101 Review the relationship with
+  // SequenceManager's time. Right now it's not an issue since
+  // VirtualTimeDomain doesn't invoke SequenceManager itself.
   if (new_wake_up)
     RequestWakeUpAt(lazy_now->Now(), new_wake_up.value());
 }
@@ -84,23 +107,11 @@ void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
   }
 }
 
-bool TimeDomain::NextScheduledRunTime(TimeTicks* out_time) const {
+Optional<TimeTicks> TimeDomain::NextScheduledRunTime() const {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   if (delayed_wake_up_queue_.empty())
-    return false;
-
-  *out_time = delayed_wake_up_queue_.Min().wake_up.time;
-  return true;
-}
-
-bool TimeDomain::NextScheduledTaskQueue(
-    internal::TaskQueueImpl** out_task_queue) const {
-  DCHECK(main_thread_checker_.CalledOnValidThread());
-  if (delayed_wake_up_queue_.empty())
-    return false;
-
-  *out_task_queue = delayed_wake_up_queue_.Min().queue;
-  return true;
+    return nullopt;
+  return delayed_wake_up_queue_.Min().wake_up.time;
 }
 
 void TimeDomain::AsValueInto(trace_event::TracedValue* state) const {
@@ -113,6 +124,10 @@ void TimeDomain::AsValueInto(trace_event::TracedValue* state) const {
   }
   AsValueIntoInternal(state);
   state->EndDictionary();
+}
+
+void TimeDomain::AsValueIntoInternal(trace_event::TracedValue* state) const {
+  // Can be overriden to trace some additional state.
 }
 
 }  // namespace sequence_manager

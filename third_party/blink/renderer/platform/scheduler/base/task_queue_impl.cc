@@ -50,7 +50,6 @@ TaskQueueImpl::TaskQueueImpl(TaskQueueManagerImpl* task_queue_manager,
       should_monitor_quiescence_(spec.should_monitor_quiescence),
       should_notify_observers_(spec.should_notify_observers) {
   DCHECK(time_domain);
-  time_domain->RegisterQueue(this);
 }
 
 TaskQueueImpl::~TaskQueueImpl() {
@@ -601,7 +600,6 @@ void TaskQueueImpl::SetTimeDomain(TimeDomain* time_domain) {
 
   main_thread_only().time_domain->UnregisterQueue(this);
   main_thread_only().time_domain = time_domain;
-  time_domain->RegisterQueue(this);
 
   LazyNow lazy_now = time_domain->CreateLazyNow();
   // Clear scheduled wake up to ensure that new notifications are issued
@@ -939,8 +937,8 @@ void TaskQueueImpl::UpdateDelayedWakeUpImpl(
     main_thread_only().on_next_wake_up_changed_callback.Run(wake_up->time);
   }
 
-  main_thread_only().time_domain->ScheduleWakeUpForQueue(this, wake_up,
-                                                         lazy_now);
+  main_thread_only().time_domain->SetNextWakeUpForQueue(this, wake_up,
+                                                        lazy_now);
 }
 
 void TaskQueueImpl::SetDelayedWakeUpForTesting(
