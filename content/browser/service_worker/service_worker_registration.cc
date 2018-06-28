@@ -64,7 +64,7 @@ ServiceWorkerRegistration::~ServiceWorkerRegistration() {
   if (context_)
     context_->RemoveLiveRegistration(registration_id_);
   if (active_version())
-    active_version()->RemoveListener(this);
+    active_version()->RemoveObserver(this);
 }
 
 ServiceWorkerVersion* ServiceWorkerRegistration::GetNewestVersion() const {
@@ -126,10 +126,10 @@ void ServiceWorkerRegistration::SetActiveVersion(
   if (version)
     UnsetVersionInternal(version.get(), &mask);
   if (active_version_)
-    active_version_->RemoveListener(this);
+    active_version_->RemoveObserver(this);
   active_version_ = version;
   if (active_version_) {
-    active_version_->AddListener(this);
+    active_version_->AddObserver(this);
     active_version_->SetNavigationPreloadState(navigation_preload_state_);
   }
   mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
@@ -188,7 +188,7 @@ void ServiceWorkerRegistration::UnsetVersionInternal(
     should_activate_when_ready_ = false;
     mask->add(ChangedVersionAttributesMask::WAITING_VERSION);
   } else if (active_version_.get() == version) {
-    active_version_->RemoveListener(this);
+    active_version_->RemoveObserver(this);
     active_version_ = nullptr;
     mask->add(ChangedVersionAttributesMask::ACTIVE_VERSION);
   }
@@ -571,7 +571,7 @@ void ServiceWorkerRegistration::Clear() {
   }
   if (active_version_.get()) {
     versions_to_doom.push_back(active_version_);
-    active_version_->RemoveListener(this);
+    active_version_->RemoveObserver(this);
     active_version_ = nullptr;
     mask.add(ChangedVersionAttributesMask::ACTIVE_VERSION);
   }

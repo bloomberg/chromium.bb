@@ -174,7 +174,7 @@ ServiceWorkerObjectHost::ServiceWorkerObjectHost(
       weak_ptr_factory_(this) {
   DCHECK(context_ && provider_host_ && version_);
   DCHECK(context_->GetLiveRegistration(version_->registration_id()));
-  version_->AddListener(this);
+  version_->AddObserver(this);
   bindings_.set_connection_error_handler(base::BindRepeating(
       &ServiceWorkerObjectHost::OnConnectionError, base::Unretained(this)));
 }
@@ -186,7 +186,7 @@ ServiceWorkerObjectHost::~ServiceWorkerObjectHost() {
   CHECK(!in_dtor_);
   in_dtor_ = true;
 
-  version_->RemoveListener(this);
+  version_->RemoveObserver(this);
 }
 
 void ServiceWorkerObjectHost::OnVersionStateChanged(

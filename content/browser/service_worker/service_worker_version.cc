@@ -427,7 +427,7 @@ void ServiceWorkerVersion::SetStatus(Status status) {
   // property.
   // TODO(shimazu): Clarify the dependency of OnVersionStateChanged and
   // |status_change_callbacks_|
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnVersionStateChanged(this);
 
   std::vector<base::OnceClosure> callbacks;
@@ -739,7 +739,7 @@ void ServiceWorkerVersion::AddControllee(
   // Keep the worker alive a bit longer right after a new controllee is added.
   RestartTick(&idle_time_);
   ClearTick(&no_controllees_time_);
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnControlleeAdded(this, provider_host);
 }
 
@@ -748,11 +748,11 @@ void ServiceWorkerVersion::RemoveControllee(
   const std::string& uuid = provider_host->client_uuid();
   DCHECK(base::ContainsKey(controllee_map_, uuid));
   controllee_map_.erase(uuid);
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnControlleeRemoved(this, provider_host);
   if (!HasControllee()) {
     RestartTick(&no_controllees_time_);
-    for (auto& observer : listeners_)
+    for (auto& observer : observers_)
       observer.OnNoControllees(this);
   }
 }
@@ -769,12 +769,12 @@ void ServiceWorkerVersion::OnStreamResponseFinished() {
     OnNoWorkInBrowser();
 }
 
-void ServiceWorkerVersion::AddListener(Listener* listener) {
-  listeners_.AddObserver(listener);
+void ServiceWorkerVersion::AddObserver(Observer* observer) {
+  observers_.AddObserver(observer);
 }
 
-void ServiceWorkerVersion::RemoveListener(Listener* listener) {
-  listeners_.RemoveObserver(listener);
+void ServiceWorkerVersion::RemoveObserver(Observer* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void ServiceWorkerVersion::ReportError(blink::ServiceWorkerStatusCode status,
@@ -882,7 +882,7 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
         url::Origin::Create(scope()), http_info.headers.get(), clock_->Now());
   }
 
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnMainScriptHttpResponseInfoSet(this);
 }
 
@@ -943,7 +943,7 @@ void ServiceWorkerVersion::OnThreadStarted() {
 }
 
 void ServiceWorkerVersion::OnStarting() {
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
 }
 
@@ -954,7 +954,7 @@ void ServiceWorkerVersion::OnStarted() {
   // Fire all start callbacks.
   scoped_refptr<ServiceWorkerVersion> protect(this);
   FinishStartWorker(blink::SERVICE_WORKER_OK);
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
 
   if (!pending_external_requests_.empty()) {
@@ -977,7 +977,7 @@ void ServiceWorkerVersion::OnStopping() {
   // worker stops, the timer is disabled. The interval will be reset to normal
   // when the worker starts up again.
   SetTimeoutTimerInterval(kStopWorkerTimeout);
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
 }
 
@@ -1001,7 +1001,7 @@ void ServiceWorkerVersion::OnDetached(EmbeddedWorkerStatus old_status) {
 }
 
 void ServiceWorkerVersion::OnRegisteredToDevToolsManager() {
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnDevToolsRoutingIdChanged(this);
 }
 
@@ -1010,7 +1010,7 @@ void ServiceWorkerVersion::OnReportException(
     int line_number,
     int column_number,
     const GURL& source_url) {
-  for (auto& observer : listeners_) {
+  for (auto& observer : observers_) {
     observer.OnErrorReported(this, error_message, line_number, column_number,
                              source_url);
   }
@@ -1021,7 +1021,7 @@ void ServiceWorkerVersion::OnReportConsoleMessage(int source_identifier,
                                                   const base::string16& message,
                                                   int line_number,
                                                   const GURL& source_url) {
-  for (auto& observer : listeners_) {
+  for (auto& observer : observers_) {
     observer.OnReportConsoleMessage(this, source_identifier, message_level,
                                     message, line_number, source_url);
   }
@@ -1305,8 +1305,8 @@ void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::SetCachedMetadata", callback_id,
                          "result", result);
-  for (auto& listener : listeners_)
-    listener.OnCachedMetadataUpdated(this, size);
+  for (auto& observer : observers_)
+    observer.OnCachedMetadataUpdated(this, size);
 }
 
 void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
@@ -1314,8 +1314,8 @@ void ServiceWorkerVersion::OnClearCachedMetadataFinished(int64_t callback_id,
   TRACE_EVENT_ASYNC_END1("ServiceWorker",
                          "ServiceWorkerVersion::ClearCachedMetadata",
                          callback_id, "result", result);
-  for (auto& listener : listeners_)
-    listener.OnCachedMetadataUpdated(this, 0);
+  for (auto& observer : observers_)
+    observer.OnCachedMetadataUpdated(this, 0);
 }
 
 void ServiceWorkerVersion::OpenWindow(
@@ -1970,7 +1970,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   binding_.Close();
   pending_external_requests_.clear();
 
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnRunningStateChanged(this);
   if (should_restart) {
     StartWorkerInternal();
@@ -1996,7 +1996,7 @@ void ServiceWorkerVersion::CleanUpExternalRequest(
 void ServiceWorkerVersion::OnNoWorkInBrowser() {
   DCHECK(!HasWorkInBrowser());
   if (!ServiceWorkerUtils::IsServicificationEnabled()) {
-    for (auto& observer : listeners_)
+    for (auto& observer : observers_)
       observer.OnNoWork(this);
     return;
   }
@@ -2007,7 +2007,7 @@ void ServiceWorkerVersion::OnNoWorkInBrowser() {
     return;
   }
 
-  for (auto& observer : listeners_)
+  for (auto& observer : observers_)
     observer.OnNoWork(this);
   idle_timer_fired_in_renderer_ = false;
 }

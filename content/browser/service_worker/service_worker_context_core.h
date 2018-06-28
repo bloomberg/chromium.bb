@@ -55,7 +55,7 @@ class URLLoaderFactoryGetter;
 // is the root of the containment hierarchy for service worker data
 // associated with a particular partition.
 class CONTENT_EXPORT ServiceWorkerContextCore
-    : public ServiceWorkerVersion::Listener {
+    : public ServiceWorkerVersion::Observer {
  public:
   using BoolCallback = base::OnceCallback<void(bool)>;
   using StatusCallback =
@@ -128,7 +128,7 @@ class CONTENT_EXPORT ServiceWorkerContextCore
 
   void OnStorageWiped();
 
-  // ServiceWorkerVersion::Listener overrides.
+  // ServiceWorkerVersion::Observer overrides.
   void OnRunningStateChanged(ServiceWorkerVersion* version) override;
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
   void OnDevToolsRoutingIdChanged(ServiceWorkerVersion* version) override;

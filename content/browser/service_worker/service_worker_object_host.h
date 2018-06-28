@@ -39,14 +39,14 @@ class ServiceWorkerObjectHostTest;
 // that the version is alive while this handle is around.
 class CONTENT_EXPORT ServiceWorkerObjectHost
     : public blink::mojom::ServiceWorkerObjectHost,
-      public ServiceWorkerVersion::Listener {
+      public ServiceWorkerVersion::Observer {
  public:
   ServiceWorkerObjectHost(base::WeakPtr<ServiceWorkerContextCore> context,
                           ServiceWorkerProviderHost* provider_host,
                           scoped_refptr<ServiceWorkerVersion> version);
   ~ServiceWorkerObjectHost() override;
 
-  // ServiceWorkerVersion::Listener overrides.
+  // ServiceWorkerVersion::Observer overrides.
   void OnVersionStateChanged(ServiceWorkerVersion* version) override;
 
   // Returns an info for the ServiceWorker object. The info contains a Mojo
