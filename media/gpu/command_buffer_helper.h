@@ -63,9 +63,6 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
   // edge. If |target| is GL_TEXTURE_2D, storage will be allocated but not
   // initialized.
   //
-  // It is up to the caller to initialize the texture before providing it to the
-  // renderer, else the results are undefined.
-  //
   // The context must be current.
   //
   // TODO(sandersd): Is really necessary to allocate storage? GpuVideoDecoder
@@ -87,12 +84,15 @@ class MEDIA_GPU_EXPORT CommandBufferHelper
 
   // Binds level 0 of the texture to an image.
   //
-  // If the sampler binding already exists, set |client_managed| to true.
+  // If the sampler binding already exists, set |can_bind_to_sampler| to true.
   // Otherwise set it to false, and BindTexImage()/CopyTexImage() will be called
   // when the texture is used.
+  //
+  // TODO(sandersd): Should we expose ImageState directly, rather than
+  // |can_bind_to_sampler|?
   virtual bool BindImage(GLuint service_id,
                          gl::GLImage* image,
-                         bool client_managed) = 0;
+                         bool can_bind_to_sampler) = 0;
 
   // Creates a mailbox for a texture.
   //

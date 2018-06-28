@@ -12,36 +12,27 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "gpu/command_buffer/common/command_buffer_id.h"
 #include "gpu/command_buffer/common/constants.h"
-#include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/sequence_id.h"
 #include "gpu/ipc/common/gpu_messages.h"
+#include "media/gpu/android/texture_wrapper.h"
 #include "media/gpu/fake_command_buffer_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace media {
 
-using gpu::gles2::AbstractTexture;
 using testing::_;
 using testing::NiceMock;
 using testing::Return;
 
 // SupportsWeakPtr so it's easy to tell when it has been destroyed.
-class MockAbstractTexture : public NiceMock<AbstractTexture>,
-                            public base::SupportsWeakPtr<MockAbstractTexture> {
+class MockTextureWrapper : public NiceMock<TextureWrapper>,
+                           public base::SupportsWeakPtr<MockTextureWrapper> {
  public:
-  MockAbstractTexture() {}
-  ~MockAbstractTexture() override {}
+  MockTextureWrapper() {}
+  ~MockTextureWrapper() override {}
 
   MOCK_METHOD0(ForceContextLost, void());
-  MOCK_CONST_METHOD0(GetTextureBase, gpu::TextureBase*());
-  MOCK_METHOD2(SetParameteri, void(GLenum pname, GLint param));
-  MOCK_METHOD2(BindStreamTextureImage,
-               void(gpu::gles2::GLStreamTextureImage* image,
-                    GLuint service_id));
-  MOCK_METHOD2(BindImage, void(gl::GLImage* image, bool client_managed));
-  MOCK_METHOD0(ReleaseImage, void());
-  MOCK_METHOD0(SetCleared, void());
 };
 
 class TexturePoolTest : public testing::Test {
@@ -61,11 +52,11 @@ class TexturePoolTest : public testing::Test {
     base::RunLoop().RunUntilIdle();
   }
 
-  using WeakTexture = base::WeakPtr<MockAbstractTexture>;
+  using WeakTexture = base::WeakPtr<MockTextureWrapper>;
 
   WeakTexture CreateAndAddTexture() {
-    std::unique_ptr<MockAbstractTexture> texture =
-        std::make_unique<MockAbstractTexture>();
+    std::unique_ptr<MockTextureWrapper> texture =
+        std::make_unique<MockTextureWrapper>();
     WeakTexture texture_weak = texture->AsWeakPtr();
 
     texture_pool_->AddTexture(std::move(texture));
@@ -86,6 +77,8 @@ class TexturePoolTest : public testing::Test {
 TEST_F(TexturePoolTest, AddAndReleaseTexturesWithContext) {
   // Test that adding then deleting a texture destroys it.
   WeakTexture texture = CreateAndAddTexture();
+  // The texture should not be notified that the context was lost.
+  EXPECT_CALL(*texture.get(), ForceContextLost()).Times(0);
   texture_pool_->ReleaseTexture(texture.get(), sync_token_);
 
   // The texture should still exist until the sync token is cleared.
@@ -99,16 +92,64 @@ TEST_F(TexturePoolTest, AddAndReleaseTexturesWithContext) {
 }
 
 TEST_F(TexturePoolTest, AddAndReleaseTexturesWithoutContext) {
-  // Test that adding then deleting a texture destroys it, even if the context
-  // was lost.
+  // Test that adding then deleting a texture destroys it, and marks that the
+  // context is lost, if the context can't be made current.
   WeakTexture texture = CreateAndAddTexture();
   helper_->ContextLost();
+  EXPECT_CALL(*texture, ForceContextLost()).Times(1);
   texture_pool_->ReleaseTexture(texture.get(), sync_token_);
   ASSERT_TRUE(texture);
 
   helper_->ReleaseSyncToken(sync_token_);
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(texture);
+}
+
+TEST_F(TexturePoolTest, TexturesAreReleasedOnStubDestructionWithContext) {
+  // Add multiple textures, and test that they're all destroyed when the stub
+  // says that it's destroyed.
+  std::vector<TextureWrapper*> raw_textures;
+  std::vector<WeakTexture> textures;
+
+  for (int i = 0; i < 3; i++) {
+    textures.push_back(CreateAndAddTexture());
+    raw_textures.push_back(textures.back().get());
+    // The context should not be lost.
+    EXPECT_CALL(*textures.back(), ForceContextLost()).Times(0);
+  }
+
+  helper_->StubLost();
+
+  // TextureWrappers should be destroyed.
+  for (auto& texture : textures)
+    ASSERT_FALSE(texture);
+
+  // It should be okay to release the textures after they're destroyed, and
+  // nothing should crash.
+  for (auto* raw_texture : raw_textures)
+    texture_pool_->ReleaseTexture(raw_texture, sync_token_);
+}
+
+TEST_F(TexturePoolTest, TexturesAreReleasedOnStubDestructionWithoutContext) {
+  std::vector<TextureWrapper*> raw_textures;
+  std::vector<WeakTexture> textures;
+
+  for (int i = 0; i < 3; i++) {
+    textures.push_back(CreateAndAddTexture());
+    raw_textures.push_back(textures.back().get());
+    EXPECT_CALL(*textures.back(), ForceContextLost()).Times(1);
+  }
+
+  helper_->ContextLost();
+  helper_->StubLost();
+
+  for (auto& texture : textures)
+    ASSERT_FALSE(texture);
+
+  // It should be okay to release the textures after they're destroyed, and
+  // nothing should crash.
+  for (auto* raw_texture : raw_textures)
+    texture_pool_->ReleaseTexture(raw_texture, sync_token_);
 }
 
 TEST_F(TexturePoolTest, NonEmptyPoolAfterStubDestructionDoesntCrash) {

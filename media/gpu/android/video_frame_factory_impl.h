@@ -7,7 +7,6 @@
 
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
-#include "gpu/command_buffer/service/abstract_texture.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "gpu/ipc/service/command_buffer_stub.h"
@@ -89,7 +88,7 @@ class GpuVideoFrameFactory
   void SetImageGroup(scoped_refptr<CodecImageGroup> image_group);
 
  private:
-  // Creates an AbstractTexture and VideoFrame.
+  // Creates a TextureRef and VideoFrame.
   void CreateVideoFrameInternal(
       std::unique_ptr<CodecOutputBuffer> output_buffer,
       scoped_refptr<TextureOwner> texture_owner,
@@ -97,7 +96,7 @@ class GpuVideoFrameFactory
       gfx::Size natural_size,
       PromotionHintAggregator::NotifyPromotionHintCB promotion_hint_cb,
       scoped_refptr<VideoFrame>* video_frame_out,
-      std::unique_ptr<gpu::gles2::AbstractTexture>* texture_out);
+      scoped_refptr<gpu::gles2::TextureRef>* texture_ref_out);
 
   void OnWillDestroyStub(bool have_context) override;
 
