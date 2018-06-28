@@ -311,7 +311,7 @@ TEST_F(ShellSurfaceTest, SetStartupId) {
   EXPECT_EQ(nullptr, ShellSurface::GetStartupId(window));
 }
 
-TEST_F(ShellSurfaceTest, Move) {
+TEST_F(ShellSurfaceTest, StartMove) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -319,13 +319,13 @@ TEST_F(ShellSurfaceTest, Move) {
   surface->Commit();
 
   // The interactive move should end when surface is destroyed.
-  shell_surface->Move();
+  shell_surface->StartMove();
 
   // Test that destroying the shell surface before move ends is OK.
   shell_surface.reset();
 }
 
-TEST_F(ShellSurfaceTest, Resize) {
+TEST_F(ShellSurfaceTest, StartResize) {
   std::unique_ptr<Surface> surface(new Surface);
   std::unique_ptr<ShellSurface> shell_surface(new ShellSurface(surface.get()));
 
@@ -333,7 +333,7 @@ TEST_F(ShellSurfaceTest, Resize) {
   surface->Commit();
 
   // The interactive resize should end when surface is destroyed.
-  shell_surface->Resize(HTBOTTOMRIGHT);
+  shell_surface->StartResize(HTBOTTOMRIGHT);
 
   // Test that destroying the surface before resize ends is OK.
   surface.reset();
@@ -506,7 +506,7 @@ TEST_F(ShellSurfaceTest, ConfigureCallback) {
   EXPECT_FALSE(is_active);
 
   EXPECT_FALSE(is_resizing);
-  shell_surface->Resize(HTBOTTOMRIGHT);
+  shell_surface->StartResize(HTBOTTOMRIGHT);
   shell_surface->AcknowledgeConfigure(0);
   EXPECT_TRUE(is_resizing);
 }

@@ -1085,7 +1085,7 @@ void shell_surface_move(wl_client* client,
                         wl_resource* resource,
                         wl_resource* seat_resource,
                         uint32_t serial) {
-  GetUserDataAs<ShellSurface>(resource)->Move();
+  GetUserDataAs<ShellSurface>(resource)->StartMove();
 }
 
 void shell_surface_resize(wl_client* client,
@@ -1677,7 +1677,7 @@ class WaylandToplevel : public aura::WindowObserver {
 
   void Move() {
     if (shell_surface_)
-      shell_surface_->Move();
+      shell_surface_->StartMove();
   }
 
   void Resize(int component) {
@@ -1685,7 +1685,7 @@ class WaylandToplevel : public aura::WindowObserver {
       return;
 
     if (component != HTNOWHERE)
-      shell_surface_->Resize(component);
+      shell_surface_->StartResize(component);
   }
 
   void SetMaximumSize(const gfx::Size& size) {
@@ -2269,7 +2269,7 @@ void remote_surface_ack_configure(wl_client* client,
 }
 
 void remote_surface_move(wl_client* client, wl_resource* resource) {
-  GetUserDataAs<ClientControlledShellSurface>(resource)->Move();
+  // DEPRECATED
 }
 
 void remote_surface_set_window_type(wl_client* client,

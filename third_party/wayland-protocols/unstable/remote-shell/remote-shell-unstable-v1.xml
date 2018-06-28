@@ -550,7 +550,7 @@
 
     <request name="move" since="5">
       <description summary="start an interactive move">
-	Start an interactive, user-driven move of the surface.
+	[Deprecated] Start an interactive, user-driven move of the surface.
 
 	The compositor responds to this request with a configure event that
 	transitions to the "moving" state. The client must only initiate motion

@@ -29,7 +29,6 @@
 #include "ui/wm/public/activation_change_observer.h"
 
 namespace ash {
-class WindowResizer;
 namespace wm {
 class WindowState;
 }
@@ -110,10 +109,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Sets the system modality.
   void SetSystemModal(bool system_modal);
-
-  // Start an interactive move of surface.
-  // TODO(oshima): Move this to ShellSurface.
-  void Move();
 
   // Sets the application ID for the window. The application ID identifies the
   // general class of applications to which the window belongs.
@@ -226,11 +221,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
                          aura::Window* gained_active,
                          aura::Window* lost_active) override;
 
-  // Overridden from ui::EventHandler:
-  void OnKeyEvent(ui::KeyEvent* event) override;
-  void OnMouseEvent(ui::MouseEvent* event) override;
-  void OnGestureEvent(ui::GestureEvent* event) override;
-
   // Overridden from ui::AcceleratorTarget:
   bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
 
@@ -296,11 +286,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   // In the local coordinate system of the window.
   virtual gfx::Rect GetShadowBounds() const;
 
-  // Attempt to start a drag operation. The type of drag operation to start is
-  // determined by |component|.
-  // TODO(oshima): Move this to ShellSurface.
-  void AttemptToStartDrag(int component);
-
   // Set the parent window of this surface.
   void SetParentWindow(aura::Window* parent);
 
@@ -326,7 +311,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
   gfx::Rect pending_geometry_;
   base::Optional<gfx::Rect> shadow_bounds_;
   bool shadow_bounds_changed_ = false;
-  std::unique_ptr<ash::WindowResizer> resizer_;
   base::string16 title_;
   std::unique_ptr<ui::CompositorLock> configure_compositor_lock_;
   ConfigureCallback configure_callback_;
@@ -351,20 +335,6 @@ class ShellSurfaceBase : public SurfaceTreeHost,
 
   // Returns the scale of the surface tree relative to the shell surface.
   virtual float GetScale() const;
-
-  // Returns the window that has capture during dragging.
-  virtual aura::Window* GetDragWindow();
-
-  // Creates the resizer for a dragging/resizing operation.
-  virtual std::unique_ptr<ash::WindowResizer> CreateWindowResizer(
-      aura::Window* window,
-      int component);
-
-  // Overridden from ui::EventHandler:
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
-
-  // End current drag operation.
-  void EndDrag(bool revert);
 
   // Return the bounds of the widget/origin of surface taking visible
   // bounds and current resize direction into account.

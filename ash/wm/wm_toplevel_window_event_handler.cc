@@ -231,7 +231,7 @@ void WmToplevelWindowEventHandler::OnGestureEvent(ui::GestureEvent* event,
   if (event->type() == ui::ET_GESTURE_END)
     UpdateGestureTarget(nullptr);
   else if (event->type() == ui::ET_GESTURE_BEGIN)
-    UpdateGestureTarget(target);
+    UpdateGestureTarget(target, event->location());
 
   if (event->handled())
     return;
@@ -612,7 +612,10 @@ void WmToplevelWindowEventHandler::OnWindowDestroying(aura::Window* window) {
     UpdateGestureTarget(nullptr);
 }
 
-void WmToplevelWindowEventHandler::UpdateGestureTarget(aura::Window* target) {
+void WmToplevelWindowEventHandler::UpdateGestureTarget(
+    aura::Window* target,
+    const gfx::Point& location) {
+  event_location_in_gesture_target_ = location;
   if (gesture_target_ == target)
     return;
 

@@ -237,11 +237,6 @@ class ClientControlledShellSurface
   gfx::Rect GetShadowBounds() const override;
   void InitializeWindowState(ash::wm::WindowState* window_state) override;
   float GetScale() const override;
-  aura::Window* GetDragWindow() override;
-  std::unique_ptr<ash::WindowResizer> CreateWindowResizer(
-      aura::Window* window,
-      int component) override;
-  bool OnMouseDragged(const ui::MouseEvent& event) override;
   gfx::Rect GetWidgetBounds() const override;
   gfx::Point GetSurfaceOrigin() const override;
 
