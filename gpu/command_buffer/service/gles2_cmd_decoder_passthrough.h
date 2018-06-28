@@ -474,7 +474,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
       BindOnePendingImage(texture->target(), texture.get());
   }
 
-  DecoderClient* client_;
+  DecoderClient* client_ = nullptr;
 
   // A set of raw pointers to currently living PassthroughAbstractTextures
   // which allow us to properly signal to them when we are destroyed.
@@ -507,7 +507,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   static const CommandInfo command_info[kNumCommands - kFirstGLES2Command];
 
   // The GLApi to make the gl calls on.
-  gl::GLApi* api_;
+  gl::GLApi* api_ = nullptr;
 
   // The GL context this decoder renders to on behalf of the client.
   scoped_refptr<gl::GLSurface> surface_;
@@ -528,7 +528,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   bool bind_generates_resource_;
 
   // Mappings from client side IDs to service side IDs for shared objects
-  PassthroughResources* resources_;
+  PassthroughResources* resources_ = nullptr;
 
   // Mappings from client side IDs to service side IDs for per-context objects
   ClientServiceMap<GLuint, GLuint> framebuffer_id_map_;
@@ -537,7 +537,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
   ClientServiceMap<GLuint, GLuint> vertex_array_id_map_;
 
   // Mailboxes
-  MailboxManager* mailbox_manager_;
+  MailboxManager* mailbox_manager_ = nullptr;
 
   std::unique_ptr<GpuFenceManager> gpu_fence_manager_;
 
@@ -776,7 +776,7 @@ class GPU_GLES2_EXPORT GLES2DecoderPassthroughImpl : public GLES2Decoder {
 
   // Tracing
   std::unique_ptr<GPUTracer> gpu_tracer_;
-  const unsigned char* gpu_decoder_category_;
+  const unsigned char* gpu_decoder_category_ = nullptr;
   int gpu_trace_level_;
   bool gpu_trace_commands_;
   bool gpu_debug_commands_;
