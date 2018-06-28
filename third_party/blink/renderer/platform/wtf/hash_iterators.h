@@ -68,6 +68,12 @@ struct HashTableConstIteratorAdapter<HashTableType,
   }
   // postfix ++ intentionally omitted
 
+  HashTableConstIteratorAdapter& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
+
   KeysIterator Keys() { return KeysIterator(*this); }
   ValuesIterator Values() { return ValuesIterator(*this); }
 
@@ -102,6 +108,12 @@ struct HashTableIteratorAdapter<HashTableType,
   }
   // postfix ++ intentionally omitted
 
+  HashTableIteratorAdapter& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
+
   operator HashTableConstIteratorAdapter<HashTableType, ValueType>() {
     typename HashTableType::const_iterator i = impl_;
     return i;
@@ -135,6 +147,12 @@ struct HashTableConstKeysIterator {
   }
   // postfix ++ intentionally omitted
 
+  HashTableConstKeysIterator& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
+
   ConstIterator impl_;
 };
 
@@ -159,6 +177,12 @@ struct HashTableConstValuesIterator {
     return *this;
   }
   // postfix ++ intentionally omitted
+
+  HashTableConstValuesIterator& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
 
   ConstIterator impl_;
 };
@@ -187,6 +211,12 @@ struct HashTableKeysIterator {
     return *this;
   }
   // postfix ++ intentionally omitted
+
+  HashTableKeysIterator& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
 
   operator HashTableConstKeysIterator<HashTableType, KeyType, MappedType>() {
     ConstIterator i = impl_;
@@ -220,6 +250,12 @@ struct HashTableValuesIterator {
     return *this;
   }
   // postfix ++ intentionally omitted
+
+  HashTableValuesIterator& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
 
   operator HashTableConstValuesIterator<HashTableType, KeyType, MappedType>() {
     ConstIterator i = impl_;

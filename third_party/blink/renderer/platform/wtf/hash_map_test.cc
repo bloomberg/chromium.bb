@@ -59,6 +59,29 @@ TEST(HashMapTest, IteratorComparison) {
   EXPECT_FALSE(map.end() == begin);
 }
 
+TEST(HashMapTest, Iteration) {
+  IntHashMap map;
+  for (int i = 0; i < 10; ++i)
+    map.insert(1 << i, i);
+
+  int encountered_keys = 0, count = 0;
+  for (auto it = map.begin(); it != map.end(); ++it) {
+    encountered_keys |= it->key;
+    count++;
+  }
+  EXPECT_EQ(10, count);
+  EXPECT_EQ((1 << 10) - 1, encountered_keys);
+
+  encountered_keys = count = 0;
+  for (auto it = map.end(); it != map.begin();) {
+    --it;
+    encountered_keys |= it->key;
+    count++;
+  }
+  EXPECT_EQ(10, count);
+  EXPECT_EQ((1 << 10) - 1, encountered_keys);
+}
+
 struct TestDoubleHashTraits : HashTraits<double> {
   static const unsigned kMinimumTableSize = 8;
 };

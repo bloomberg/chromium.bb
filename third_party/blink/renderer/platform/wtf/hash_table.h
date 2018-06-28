@@ -295,13 +295,26 @@ class HashTableConstIterator final {
       ++position_;
   }
 
+  void ReverseSkipEmptyBuckets() {
+    // Don't need to check for out-of-bounds positions, as begin position is
+    // always going to be a non-empty bucket.
+    while (HashTableType::IsEmptyOrDeletedBucket(*position_)) {
+#if DCHECK_IS_ON()
+      DCHECK_NE(position_, begin_position_);
+#endif
+      --position_;
+    }
+  }
+
   HashTableConstIterator(PointerType position,
+                         PointerType begin_position,
                          PointerType end_position,
                          const HashTableType* container)
       : position_(position),
         end_position_(end_position)
 #if DCHECK_IS_ON()
         ,
+        begin_position_(begin_position),
         container_(container),
         container_modifications_(container->Modifications())
 #endif
@@ -310,6 +323,7 @@ class HashTableConstIterator final {
   }
 
   HashTableConstIterator(PointerType position,
+                         PointerType begin_position,
                          PointerType end_position,
                          const HashTableType* container,
                          HashItemKnownGoodTag)
@@ -317,6 +331,7 @@ class HashTableConstIterator final {
         end_position_(end_position)
 #if DCHECK_IS_ON()
         ,
+        begin_position_(begin_position),
         container_(container),
         container_modifications_(container->Modifications())
 #endif
@@ -359,6 +374,18 @@ class HashTableConstIterator final {
 
   // postfix ++ intentionally omitted
 
+  const_iterator& operator--() {
+#if DCHECK_IS_ON()
+    DCHECK_NE(position_, begin_position_);
+#endif
+    CheckModifications();
+    --position_;
+    ReverseSkipEmptyBuckets();
+    return *this;
+  }
+
+  // postfix -- intentionally omitted
+
   // Comparison.
   bool operator==(const const_iterator& other) const {
     return position_ == other.position_;
@@ -385,6 +412,7 @@ class HashTableConstIterator final {
   PointerType position_;
   PointerType end_position_;
 #if DCHECK_IS_ON()
+  PointerType begin_position_;
   const HashTableType* container_;
   int64_t container_modifications_;
 #endif
@@ -456,14 +484,16 @@ class HashTableIterator final {
                          Allocator>;
 
   HashTableIterator(PointerType pos,
+                    PointerType begin,
                     PointerType end,
                     const HashTableType* container)
-      : iterator_(pos, end, container) {}
+      : iterator_(pos, begin, end, container) {}
   HashTableIterator(PointerType pos,
+                    PointerType begin,
                     PointerType end,
                     const HashTableType* container,
                     HashItemKnownGoodTag tag)
-      : iterator_(pos, end, container, tag) {}
+      : iterator_(pos, begin, end, container, tag) {}
 
  public:
   HashTableIterator() = default;
@@ -482,6 +512,13 @@ class HashTableIterator final {
   }
 
   // postfix ++ intentionally omitted
+
+  iterator& operator--() {
+    --iterator_;
+    return *this;
+  }
+
+  // postfix -- intentionally omitted
 
   // Comparison.
   bool operator==(const iterator& other) const {
@@ -875,16 +912,18 @@ class HashTable final
   }
 
   iterator MakeIterator(ValueType* pos) {
-    return iterator(pos, table_ + table_size_, this);
+    return iterator(pos, table_, table_ + table_size_, this);
   }
   const_iterator MakeConstIterator(const ValueType* pos) const {
-    return const_iterator(pos, table_ + table_size_, this);
+    return const_iterator(pos, table_, table_ + table_size_, this);
   }
   iterator MakeKnownGoodIterator(ValueType* pos) {
-    return iterator(pos, table_ + table_size_, this, kHashItemKnownGood);
+    return iterator(pos, table_, table_ + table_size_, this,
+                    kHashItemKnownGood);
   }
   const_iterator MakeKnownGoodConstIterator(const ValueType* pos) const {
-    return const_iterator(pos, table_ + table_size_, this, kHashItemKnownGood);
+    return const_iterator(pos, table_, table_ + table_size_, this,
+                          kHashItemKnownGood);
   }
 
   static const unsigned kMaxLoad = 2;
@@ -2151,7 +2190,11 @@ struct HashTableConstIteratorAdapter {
     return *this;
   }
   // postfix ++ intentionally omitted
-
+  HashTableConstIteratorAdapter& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
   typename HashTableType::const_iterator impl_;
 };
 
@@ -2185,6 +2228,12 @@ struct HashTableIteratorAdapter {
     return *this;
   }
   // postfix ++ intentionally omitted
+
+  HashTableIteratorAdapter& operator--() {
+    --impl_;
+    return *this;
+  }
+  // postfix -- intentionally omitted
 
   operator HashTableConstIteratorAdapter<HashTableType, Traits>() {
     typename HashTableType::const_iterator i = impl_;
