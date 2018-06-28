@@ -14,6 +14,9 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "components/signin/core/browser/gaia_cookie_manager_service.h"
+#include "ui/events/event.h"
+
+class Browser;
 
 class AvatarToolbarButton : public ToolbarButton,
                             public AvatarButtonErrorControllerDelegate,
@@ -21,7 +24,7 @@ class AvatarToolbarButton : public ToolbarButton,
                             public GaiaCookieManagerService::Observer,
                             public AccountTrackerService::Observer {
  public:
-  AvatarToolbarButton(Profile* profile, views::ButtonListener* listener);
+  explicit AvatarToolbarButton(Browser* browser);
   ~AvatarToolbarButton() override;
 
   void UpdateIcon();
@@ -29,6 +32,9 @@ class AvatarToolbarButton : public ToolbarButton,
 
  private:
   enum class SyncState { kNormal, kPaused, kError };
+
+  // ToolbarButton:
+  void NotifyClick(const ui::Event& event) override;
 
   // AvatarButtonErrorControllerDelegate:
   void OnAvatarErrorChanged() override;
@@ -62,6 +68,7 @@ class AvatarToolbarButton : public ToolbarButton,
   gfx::Image GetIconImageFromProfile() const;
   SyncState GetSyncState();
 
+  Browser* const browser_;
   Profile* const profile_;
 
 #if !defined(OS_CHROMEOS)
