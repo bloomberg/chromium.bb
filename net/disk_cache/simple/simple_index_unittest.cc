@@ -24,7 +24,6 @@
 #include "base/time/time.h"
 #include "net/base/cache_type.h"
 #include "net/disk_cache/backend_cleanup_tracker.h"
-#include "net/disk_cache/simple/simple_experiment.h"
 #include "net/disk_cache/simple/simple_index_delegate.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "net/disk_cache/simple/simple_test_util.h"
