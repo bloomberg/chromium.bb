@@ -146,7 +146,7 @@ TEST(GIFImageDecoderTest, parseByteByByte) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   const Vector<char> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif")->Copy();
+      ReadFile(kLayoutTestResourcesDir, "animated.gif")->CopyAs<Vector<char>>();
 
   size_t frame_count = 0;
 
@@ -195,7 +195,7 @@ TEST(GIFImageDecoderTest, allDataReceivedTruncation) {
   std::unique_ptr<ImageDecoder> decoder = CreateDecoder();
 
   const Vector<char> data =
-      ReadFile(kLayoutTestResourcesDir, "animated.gif")->Copy();
+      ReadFile(kLayoutTestResourcesDir, "animated.gif")->CopyAs<Vector<char>>();
 
   ASSERT_GE(data.size(), 10u);
   scoped_refptr<SharedBuffer> temp_data =
@@ -232,7 +232,7 @@ TEST(GIFImageDecoderTest, frameIsCompleteLoading) {
   scoped_refptr<SharedBuffer> data_buffer =
       ReadFile(kLayoutTestResourcesDir, "animated.gif");
   ASSERT_TRUE(data_buffer.get());
-  const Vector<char> data = data_buffer->Copy();
+  const Vector<char> data = data_buffer->CopyAs<Vector<char>>();
 
   ASSERT_GE(data.size(), 10u);
   scoped_refptr<SharedBuffer> temp_data =
@@ -356,7 +356,7 @@ TEST(GIFImageDecoderTest, firstFrameHasGreaterSizeThanScreenSize) {
   const Vector<char> full_data =
       ReadFile(kDecodersTestingDir,
                "first-frame-has-greater-size-than-screen-size.gif")
-          ->Copy();
+          ->CopyAs<Vector<char>>();
 
   std::unique_ptr<ImageDecoder> decoder;
   IntSize frame_size;
@@ -388,7 +388,7 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
   scoped_refptr<SharedBuffer> full_data_buffer =
       ReadFile(kDecodersTestingDir, "radient.gif");
   ASSERT_TRUE(full_data_buffer.get());
-  const Vector<char> full_data = full_data_buffer->Copy();
+  const Vector<char> full_data = full_data_buffer->CopyAs<Vector<char>>();
 
   // Empirically chosen truncation size:
   //   a) large enough to produce a partial frame &&

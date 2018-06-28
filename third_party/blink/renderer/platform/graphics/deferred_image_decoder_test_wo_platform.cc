@@ -43,7 +43,7 @@ sk_sp<SkImage> CreateFrameAtIndex(DeferredImageDecoder* decoder, size_t index) {
 static void MixImages(const char* file_name,
                       size_t bytes_for_first_frame,
                       size_t later_frame) {
-  const Vector<char> file = ReadFile(file_name)->Copy();
+  const Vector<char> file = ReadFile(file_name)->CopyAs<Vector<char>>();
 
   scoped_refptr<SharedBuffer> partial_file =
       SharedBuffer::Create(file.data(), bytes_for_first_frame);

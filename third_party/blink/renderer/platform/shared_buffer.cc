@@ -140,20 +140,6 @@ void SharedBuffer::Clear() {
   buffer_.clear();
 }
 
-Vector<char> SharedBuffer::Copy() const {
-  Vector<char> buffer;
-  buffer.ReserveInitialCapacity(size_);
-
-  ForEachSegment([&buffer](const char* segment, size_t segment_size,
-                           size_t segment_offset) -> bool {
-    buffer.Append(segment, segment_size);
-    return true;
-  });
-
-  DCHECK_EQ(buffer.size(), size_);
-  return buffer;
-}
-
 void SharedBuffer::MergeSegmentsIntoBuffer() const {
   size_t buffer_size = buffer_.size();
   if (size_ > buffer_size) {

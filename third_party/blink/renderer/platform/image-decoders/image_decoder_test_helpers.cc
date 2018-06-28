@@ -64,7 +64,7 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
                           SharedBuffer* shared_data,
                           size_t expected_frame_count,
                           int expected_repetition_count) {
-  const Vector<char> data = shared_data->Copy();
+  const Vector<char> data = shared_data->CopyAs<Vector<char>>();
 
   Vector<unsigned> baseline_hashes;
   CreateDecodingBaseline(create_decoder, shared_data, &baseline_hashes);
@@ -124,7 +124,7 @@ void TestByteByByteDecode(DecoderCreator create_decoder,
 static void TestMergeBuffer(DecoderCreator create_decoder,
                             SharedBuffer* shared_data) {
   const unsigned hash = CreateDecodingBaseline(create_decoder, shared_data);
-  const Vector<char> data = shared_data->Copy();
+  const Vector<char> data = shared_data->CopyAs<Vector<char>>();
 
   // In order to do any verification, this test needs to move the data owned
   // by the SharedBuffer. A way to guarantee that is to create a new one, and
@@ -210,7 +210,7 @@ static void TestDecodeAfterReallocatingData(DecoderCreator create_decoder,
   size_t frame_count = decoder->FrameCount();
 
   // ... and then decode frames from 'reallocated_data'.
-  Vector<char> copy = data->Copy();
+  Vector<char> copy = data->CopyAs<Vector<char>>();
   scoped_refptr<SharedBuffer> reallocated_data =
       SharedBuffer::AdoptVector(copy);
   ASSERT_TRUE(reallocated_data.get());
@@ -235,7 +235,7 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
   // the data to check that IsSizeAvailable() changes state only when that
   // offset is reached. Also check other decoder state.
   scoped_refptr<SharedBuffer> temp_data = SharedBuffer::Create();
-  const Vector<char> source_buffer = data->Copy();
+  const Vector<char> source_buffer = data->CopyAs<Vector<char>>();
   const char* source = source_buffer.data();
   for (size_t length = 1; length <= frame_offset; ++length) {
     temp_data->Append(source++, 1u);
@@ -263,7 +263,7 @@ static void TestByteByByteSizeAvailable(DecoderCreator create_decoder,
 static void TestProgressiveDecoding(DecoderCreator create_decoder,
                                     SharedBuffer* full_buffer,
                                     size_t increment) {
-  const Vector<char> full_data = full_buffer->Copy();
+  const Vector<char> full_data = full_buffer->CopyAs<Vector<char>>();
   const size_t full_length = full_data.size();
 
   std::unique_ptr<ImageDecoder> decoder;
@@ -308,7 +308,7 @@ static void TestProgressiveDecoding(DecoderCreator create_decoder,
 void TestUpdateRequiredPreviousFrameAfterFirstDecode(
     DecoderCreator create_decoder,
     SharedBuffer* full_buffer) {
-  const Vector<char> full_data = full_buffer->Copy();
+  const Vector<char> full_data = full_buffer->CopyAs<Vector<char>>();
   std::unique_ptr<ImageDecoder> decoder = create_decoder();
 
   // Give it data that is enough to parse but not decode in order to check the
@@ -342,7 +342,7 @@ void TestUpdateRequiredPreviousFrameAfterFirstDecode(
 void TestResumePartialDecodeAfterClearFrameBufferCache(
     DecoderCreator create_decoder,
     SharedBuffer* full_buffer) {
-  const Vector<char> full_data = full_buffer->Copy();
+  const Vector<char> full_data = full_buffer->CopyAs<Vector<char>>();
   Vector<unsigned> baseline_hashes;
   CreateDecodingBaseline(create_decoder, full_buffer, &baseline_hashes);
   size_t frame_count = baseline_hashes.size();

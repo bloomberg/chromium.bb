@@ -132,9 +132,9 @@ TEST(SharedBufferTest, copy) {
   // copy().
   ASSERT_EQ(length * 4, shared_buffer->size());
 
-  Vector<char> clone = shared_buffer->Copy();
+  Vector<char> clone = shared_buffer->CopyAs<Vector<char>>();
   ASSERT_EQ(length * 4, clone.size());
-  const Vector<char> contiguous = shared_buffer->Copy();
+  const Vector<char> contiguous = shared_buffer->CopyAs<Vector<char>>();
   ASSERT_EQ(contiguous.size(), shared_buffer->size());
   ASSERT_EQ(0, memcmp(clone.data(), contiguous.data(), clone.size()));
 

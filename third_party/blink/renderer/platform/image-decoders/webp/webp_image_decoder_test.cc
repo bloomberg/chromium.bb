@@ -279,7 +279,8 @@ TEST(AnimatedWebPTests, truncatedInBetweenFrame) {
   std::unique_ptr<ImageDecoder> decoder = CreateWEBPDecoder();
 
   const Vector<char> full_data =
-      ReadFile("/images/resources/invalid-animated-webp4.webp")->Copy();
+      ReadFile("/images/resources/invalid-animated-webp4.webp")
+          ->CopyAs<Vector<char>>();
   scoped_refptr<SharedBuffer> data =
       SharedBuffer::Create(full_data.data(), full_data.size() - 1);
   decoder->SetData(data.get(), false);
@@ -301,7 +302,7 @@ TEST(AnimatedWebPTests, reproCrash) {
   scoped_refptr<SharedBuffer> full_data_buffer =
       ReadFile("/images/resources/invalid_vp8_vp8x.webp");
   ASSERT_TRUE(full_data_buffer.get());
-  const Vector<char> full_data = full_data_buffer->Copy();
+  const Vector<char> full_data = full_data_buffer->CopyAs<Vector<char>>();
 
   // Parse partial data up to which error in bitstream is not detected.
   const size_t kPartialSize = 32768;
@@ -336,7 +337,7 @@ TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
   scoped_refptr<SharedBuffer> data_buffer =
       ReadFile("/images/resources/webp-animated.webp");
   ASSERT_TRUE(data_buffer.get());
-  const Vector<char> data = data_buffer->Copy();
+  const Vector<char> data = data_buffer->CopyAs<Vector<char>>();
 
   ASSERT_GE(data.size(), 10u);
   scoped_refptr<SharedBuffer> temp_data =
