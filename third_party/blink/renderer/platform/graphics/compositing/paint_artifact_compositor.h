@@ -67,11 +67,6 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // The root layer of the tree managed by this object.
   cc::Layer* RootLayer() const { return root_layer_.get(); }
 
-  // Wraps RootLayer(), so that it can be attached as a child of another
-  // cc::Layer.
-  // TODO(danakj): Remove this, use RootLayer() directly.
-  cc::Layer* GetCcLayer() const { return root_layer_.get(); }
-
   // Returns extra information recorded during unit tests.
   // While not part of the normal output of this class, this provides a simple
   // way of locating the layers of interest, since there are still a slew of

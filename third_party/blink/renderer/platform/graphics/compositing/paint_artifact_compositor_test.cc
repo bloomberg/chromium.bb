@@ -98,8 +98,7 @@ class PaintArtifactCompositorTest : public testing::Test,
     settings.use_layer_lists = true;
     web_layer_tree_view_ =
         std::make_unique<WebLayerTreeViewWithLayerTreeFrameSink>(settings);
-    web_layer_tree_view_->SetRootLayer(
-        paint_artifact_compositor_->GetCcLayer());
+    web_layer_tree_view_->SetRootLayer(paint_artifact_compositor_->RootLayer());
   }
 
   void TearDown() override {
