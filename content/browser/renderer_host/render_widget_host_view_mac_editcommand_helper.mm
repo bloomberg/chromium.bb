@@ -138,10 +138,10 @@ void EditCommandImp(id self, SEL _cmd, id sender) {
   std::string command([command_name_ns UTF8String]);
 
   // Forward the edit command string down the pipeline.
-  RenderWidgetHostNSViewClient* client = [(
+  mojom::RenderWidgetHostNSViewClient* client = [(
       id<RenderWidgetHostNSViewClientOwner>)self renderWidgetHostNSViewClient];
   DCHECK(client);
-  client->OnNSViewExecuteEditCommand(command);
+  client->ExecuteEditCommand(command);
 }
 
 }  // namespace

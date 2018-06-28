@@ -147,7 +147,7 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
       weak_factory_(this) {
   // The NSView is on the other side of |ns_view_bridge_|.
   ns_view_bridge_local_ =
-      std::make_unique<RenderWidgetHostNSViewBridgeLocal>(this);
+      std::make_unique<RenderWidgetHostNSViewBridgeLocal>(this, this);
   ns_view_bridge_ = ns_view_bridge_local_.get();
 
   // Guess that the initial screen we will be on is the screen of the current
@@ -1325,19 +1325,27 @@ MouseWheelPhaseHandler* RenderWidgetHostViewMac::GetMouseWheelPhaseHandler() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetHostNSViewClient implementation:
+// RenderWidgetHostNSViewLocalClient and mojom::RenderWidgetHostNSViewClient
+// implementation:
 
 BrowserAccessibilityManager*
 RenderWidgetHostViewMac::GetRootBrowserAccessibilityManager() {
   return host()->GetRootBrowserAccessibilityManager();
 }
 
-void RenderWidgetHostViewMac::OnNSViewSyncIsRenderViewHost(
-    bool* is_render_view) {
+bool RenderWidgetHostViewMac::SyncIsRenderViewHost(bool* is_render_view) {
   *is_render_view = RenderViewHost::From(host()) != nullptr;
+  return true;
 }
 
-void RenderWidgetHostViewMac::OnNSViewRequestShutdown() {
+void RenderWidgetHostViewMac::SyncIsRenderViewHost(
+    SyncIsRenderViewHostCallback callback) {
+  bool is_render_view;
+  SyncIsRenderViewHost(&is_render_view);
+  std::move(callback).Run(is_render_view);
+}
+
+void RenderWidgetHostViewMac::RequestShutdown() {
   if (!weak_factory_.HasWeakPtrs()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(&RenderWidgetHostViewMac::ShutdownHost,
@@ -1345,8 +1353,7 @@ void RenderWidgetHostViewMac::OnNSViewRequestShutdown() {
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewIsFirstResponderChanged(
-    bool is_first_responder) {
+void RenderWidgetHostViewMac::OnFirstResponderChanged(bool is_first_responder) {
   if (is_first_responder_ == is_first_responder)
     return;
   is_first_responder_ = is_first_responder;
@@ -1359,11 +1366,11 @@ void RenderWidgetHostViewMac::OnNSViewIsFirstResponderChanged(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewWindowIsKeyChanged(bool is_key) {
+void RenderWidgetHostViewMac::OnWindowIsKeyChanged(bool is_key) {
   SetActive(is_key);
 }
 
-void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
+void RenderWidgetHostViewMac::OnBoundsInWindowChanged(
     const gfx::Rect& view_bounds_in_window_dip,
     bool attached_to_window) {
   bool view_size_changed =
@@ -1384,7 +1391,7 @@ void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
     UpdateNSViewAndDisplayProperties();
 }
 
-void RenderWidgetHostViewMac::OnNSViewWindowFrameInScreenChanged(
+void RenderWidgetHostViewMac::OnWindowFrameInScreenChanged(
     const gfx::Rect& window_frame_in_screen_dip) {
   if (window_frame_in_screen_dip_ == window_frame_in_screen_dip)
     return;
@@ -1396,13 +1403,13 @@ void RenderWidgetHostViewMac::OnNSViewWindowFrameInScreenChanged(
     host()->SendScreenRects();
 }
 
-void RenderWidgetHostViewMac::OnNSViewDisplayChanged(
+void RenderWidgetHostViewMac::OnDisplayChanged(
     const display::Display& display) {
   display_ = display;
   UpdateNSViewAndDisplayProperties();
 }
 
-void RenderWidgetHostViewMac::OnNSViewBeginKeyboardEvent() {
+void RenderWidgetHostViewMac::BeginKeyboardEvent() {
   DCHECK(!in_keyboard_event_);
   in_keyboard_event_ = true;
   RenderWidgetHostImpl* widget_host = host();
@@ -1416,13 +1423,13 @@ void RenderWidgetHostViewMac::OnNSViewBeginKeyboardEvent() {
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewEndKeyboardEvent() {
+void RenderWidgetHostViewMac::EndKeyboardEvent() {
   in_keyboard_event_ = false;
   keyboard_event_widget_process_id_ = 0;
   keyboard_event_widget_routing_id_ = 0;
 }
 
-void RenderWidgetHostViewMac::OnNSViewForwardKeyboardEvent(
+void RenderWidgetHostViewMac::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency_info) {
   if (auto* widget_host = GetWidgetForKeyboardEvent()) {
@@ -1430,7 +1437,7 @@ void RenderWidgetHostViewMac::OnNSViewForwardKeyboardEvent(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewForwardKeyboardEventWithCommands(
+void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
     const NativeWebKeyboardEvent& key_event,
     const ui::LatencyInfo& latency_info,
     const std::vector<EditCommand>& commands) {
@@ -1440,7 +1447,7 @@ void RenderWidgetHostViewMac::OnNSViewForwardKeyboardEventWithCommands(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewRouteOrProcessMouseEvent(
+void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
     const blink::WebMouseEvent& const_web_event) {
   blink::WebMouseEvent web_event = const_web_event;
   ui::LatencyInfo latency_info(ui::SourceEventType::OTHER);
@@ -1453,7 +1460,7 @@ void RenderWidgetHostViewMac::OnNSViewRouteOrProcessMouseEvent(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewRouteOrProcessWheelEvent(
+void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
     const blink::WebMouseWheelEvent& const_web_event) {
   blink::WebMouseWheelEvent web_event = const_web_event;
   ui::LatencyInfo latency_info(ui::SourceEventType::WHEEL);
@@ -1476,7 +1483,7 @@ void RenderWidgetHostViewMac::OnNSViewRouteOrProcessWheelEvent(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewForwardMouseEvent(
+void RenderWidgetHostViewMac::ForwardMouseEvent(
     const blink::WebMouseEvent& web_event) {
   if (host())
     host()->ForwardMouseEvent(web_event);
@@ -1485,7 +1492,7 @@ void RenderWidgetHostViewMac::OnNSViewForwardMouseEvent(
     ns_view_bridge_->SetTooltipText(base::string16());
 }
 
-void RenderWidgetHostViewMac::OnNSViewForwardWheelEvent(
+void RenderWidgetHostViewMac::ForwardWheelEvent(
     const blink::WebMouseWheelEvent& const_web_event) {
   blink::WebMouseWheelEvent web_event = const_web_event;
   if (wheel_scroll_latching_enabled()) {
@@ -1498,9 +1505,8 @@ void RenderWidgetHostViewMac::OnNSViewForwardWheelEvent(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewGestureBegin(
-    blink::WebGestureEvent begin_event,
-    bool is_synthetically_injected) {
+void RenderWidgetHostViewMac::GestureBegin(blink::WebGestureEvent begin_event,
+                                           bool is_synthetically_injected) {
   gesture_begin_event_ = std::make_unique<WebGestureEvent>(begin_event);
 
   // If the page is at the minimum zoom level, require a threshold be reached
@@ -1512,7 +1518,7 @@ void RenderWidgetHostViewMac::OnNSViewGestureBegin(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewGestureUpdate(
+void RenderWidgetHostViewMac::GestureUpdate(
     blink::WebGestureEvent update_event) {
   // If, due to nesting of multiple gestures (e.g, from multiple touch
   // devices), the beginning of the gesture has been lost, skip the remainder
@@ -1548,8 +1554,7 @@ void RenderWidgetHostViewMac::OnNSViewGestureUpdate(
   SendGesturePinchEvent(&update_event);
 }
 
-void RenderWidgetHostViewMac::OnNSViewGestureEnd(
-    blink::WebGestureEvent end_event) {
+void RenderWidgetHostViewMac::GestureEnd(blink::WebGestureEvent end_event) {
   gesture_begin_event_.reset();
   if (gesture_begin_pinch_sent_) {
     SendGesturePinchEvent(&end_event);
@@ -1557,12 +1562,12 @@ void RenderWidgetHostViewMac::OnNSViewGestureEnd(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewSmartMagnify(
+void RenderWidgetHostViewMac::SmartMagnify(
     const blink::WebGestureEvent& smart_magnify_event) {
   host()->ForwardGestureEvent(smart_magnify_event);
 }
 
-void RenderWidgetHostViewMac::OnNSViewImeSetComposition(
+void RenderWidgetHostViewMac::ImeSetComposition(
     const base::string16& text,
     const std::vector<ui::ImeTextSpan>& ime_text_spans,
     const gfx::Range& replacement_range,
@@ -1574,7 +1579,7 @@ void RenderWidgetHostViewMac::OnNSViewImeSetComposition(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewImeCommitText(
+void RenderWidgetHostViewMac::ImeCommitText(
     const base::string16& text,
     const gfx::Range& replacement_range) {
   if (auto* widget_host = GetWidgetForIme()) {
@@ -1583,19 +1588,19 @@ void RenderWidgetHostViewMac::OnNSViewImeCommitText(
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewImeFinishComposingText() {
+void RenderWidgetHostViewMac::ImeFinishComposingText() {
   if (auto* widget_host = GetWidgetForIme()) {
     widget_host->ImeFinishComposingText(false);
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewImeCancelComposition() {
+void RenderWidgetHostViewMac::ImeCancelCompositionFromCocoa() {
   if (auto* widget_host = GetWidgetForIme()) {
     widget_host->ImeCancelComposition();
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayFromRange(
+void RenderWidgetHostViewMac::LookUpDictionaryOverlayFromRange(
     const gfx::Range& range) {
   content::RenderWidgetHostViewBase* focused_view =
       GetFocusedViewForTextSelection();
@@ -1616,7 +1621,7 @@ void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayFromRange(
                      target_widget_routing_id));
 }
 
-void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayAtPoint(
+void RenderWidgetHostViewMac::LookUpDictionaryOverlayAtPoint(
     const gfx::PointF& root_point) {
   if (!host() || !host()->delegate() ||
       !host()->delegate()->GetInputEventRouter())
@@ -1638,34 +1643,47 @@ void RenderWidgetHostViewMac::OnNSViewLookUpDictionaryOverlayAtPoint(
                      target_widget_routing_id));
 }
 
-void RenderWidgetHostViewMac::OnNSViewSyncGetCharacterIndexAtPoint(
+bool RenderWidgetHostViewMac::SyncGetCharacterIndexAtPoint(
     const gfx::PointF& root_point,
     uint32_t* index) {
   *index = UINT32_MAX;
 
   if (!host() || !host()->delegate() ||
       !host()->delegate()->GetInputEventRouter())
-    return;
+    return true;
 
   gfx::PointF transformed_point;
   RenderWidgetHostImpl* widget_host =
       host()->delegate()->GetInputEventRouter()->GetRenderWidgetHostAtPoint(
           this, root_point, &transformed_point);
   if (!widget_host)
-    return;
+    return true;
 
   *index = TextInputClientMac::GetInstance()->GetCharacterIndexAtPoint(
       widget_host, gfx::ToFlooredPoint(transformed_point));
+  return true;
 }
 
-void RenderWidgetHostViewMac::OnNSViewSyncGetFirstRectForRange(
+void RenderWidgetHostViewMac::SyncGetCharacterIndexAtPoint(
+    const gfx::PointF& root_point,
+    SyncGetCharacterIndexAtPointCallback callback) {
+  uint32_t index;
+  SyncGetCharacterIndexAtPoint(root_point, &index);
+  std::move(callback).Run(index);
+}
+
+bool RenderWidgetHostViewMac::SyncGetFirstRectForRange(
     const gfx::Range& requested_range,
+    const gfx::Rect& in_rect,
+    const gfx::Range& in_actual_range,
     gfx::Rect* rect,
     gfx::Range* actual_range,
     bool* success) {
+  *rect = in_rect;
+  *actual_range = in_actual_range;
   if (!GetFocusedWidget()) {
     *success = false;
-    return;
+    return true;
   }
   *success = true;
   if (!GetCachedFirstRectForCharacterRange(requested_range, rect,
@@ -1675,68 +1693,88 @@ void RenderWidgetHostViewMac::OnNSViewSyncGetFirstRectForRange(
     // TODO(thakis): Pipe |actualRange| through TextInputClientMac machinery.
     *actual_range = requested_range;
   }
+  return true;
 }
 
-void RenderWidgetHostViewMac::OnNSViewExecuteEditCommand(
-    const std::string& command) {
+void RenderWidgetHostViewMac::SyncGetFirstRectForRange(
+    const gfx::Range& requested_range,
+    const gfx::Rect& rect,
+    const gfx::Range& actual_range,
+    SyncGetFirstRectForRangeCallback callback) {
+  gfx::Rect out_rect;
+  gfx::Range out_actual_range;
+  bool success;
+  SyncGetFirstRectForRange(requested_range, rect, actual_range, &out_rect,
+                           &out_actual_range, &success);
+  std::move(callback).Run(out_rect, out_actual_range, success);
+}
+
+void RenderWidgetHostViewMac::ExecuteEditCommand(const std::string& command) {
   if (host()->delegate()) {
     host()->delegate()->ExecuteEditCommand(command, base::nullopt);
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewUndo() {
+void RenderWidgetHostViewMac::Undo() {
   WebContents* web_contents = GetWebContents();
   if (web_contents)
     web_contents->Undo();
 }
 
-void RenderWidgetHostViewMac::OnNSViewRedo() {
+void RenderWidgetHostViewMac::Redo() {
   WebContents* web_contents = GetWebContents();
   if (web_contents)
     web_contents->Redo();
 }
 
-void RenderWidgetHostViewMac::OnNSViewCut() {
+void RenderWidgetHostViewMac::Cut() {
   if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
     delegate->Cut();
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewCopy() {
+void RenderWidgetHostViewMac::Copy() {
   if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
     delegate->Copy();
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewCopyToFindPboard() {
+void RenderWidgetHostViewMac::CopyToFindPboard() {
   WebContents* web_contents = GetWebContents();
   if (web_contents)
     web_contents->CopyToFindPboard();
 }
 
-void RenderWidgetHostViewMac::OnNSViewPaste() {
+void RenderWidgetHostViewMac::Paste() {
   if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
     delegate->Paste();
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewPasteAndMatchStyle() {
+void RenderWidgetHostViewMac::PasteAndMatchStyle() {
   WebContents* web_contents = GetWebContents();
   if (web_contents)
     web_contents->PasteAndMatchStyle();
 }
 
-void RenderWidgetHostViewMac::OnNSViewSelectAll() {
+void RenderWidgetHostViewMac::SelectAll() {
   if (auto* delegate = GetFocusedRenderWidgetHostDelegate()) {
     delegate->SelectAll();
   }
 }
 
-void RenderWidgetHostViewMac::OnNSViewSyncIsSpeaking(bool* is_speaking) {
+bool RenderWidgetHostViewMac::SyncIsSpeaking(bool* is_speaking) {
   *is_speaking = ui::TextServicesContextMenu::IsSpeaking();
+  return true;
 }
 
-void RenderWidgetHostViewMac::OnNSViewSpeakSelection() {
+void RenderWidgetHostViewMac::SyncIsSpeaking(SyncIsSpeakingCallback callback) {
+  bool is_speaking;
+  SyncIsSpeaking(&is_speaking);
+  std::move(callback).Run(is_speaking);
+}
+
+void RenderWidgetHostViewMac::StartSpeaking() {
   RenderWidgetHostView* target = this;
   WebContents* web_contents = GetWebContents();
   if (web_contents) {
@@ -1753,8 +1791,150 @@ void RenderWidgetHostViewMac::OnNSViewSpeakSelection() {
   target->SpeakSelection();
 }
 
-void RenderWidgetHostViewMac::OnNSViewStopSpeaking() {
+void RenderWidgetHostViewMac::StopSpeaking() {
   ui::TextServicesContextMenu::StopSpeaking();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// mojom::RenderWidgetHostNSViewClient functions that translate events and
+// forward them to the RenderWidgetHostNSViewLocalClient implementation:
+
+void RenderWidgetHostViewMac::ForwardKeyboardEvent(
+    std::unique_ptr<InputEvent> input_event,
+    bool skip_in_browser) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsKeyboardEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-KeyboardEventType event.";
+    return;
+  }
+  const blink::WebKeyboardEvent& keyboard_event =
+      static_cast<const blink::WebKeyboardEvent&>(*input_event->web_event);
+  NativeWebKeyboardEvent native_event(keyboard_event, nil);
+  native_event.skip_in_browser = skip_in_browser;
+  ForwardKeyboardEvent(native_event, input_event->latency_info);
+}
+
+void RenderWidgetHostViewMac::ForwardKeyboardEventWithCommands(
+    std::unique_ptr<InputEvent> input_event,
+    bool skip_in_browser,
+    const std::vector<EditCommand>& commands) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsKeyboardEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-KeyboardEventType event.";
+    return;
+  }
+  const blink::WebKeyboardEvent& keyboard_event =
+      static_cast<const blink::WebKeyboardEvent&>(*input_event->web_event);
+  NativeWebKeyboardEvent native_event(keyboard_event, nil);
+  native_event.skip_in_browser = skip_in_browser;
+  ForwardKeyboardEventWithCommands(native_event, input_event->latency_info,
+                                   commands);
+}
+void RenderWidgetHostViewMac::RouteOrProcessMouseEvent(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsMouseEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-MouseEventType event.";
+    return;
+  }
+  const blink::WebMouseEvent& mouse_event =
+      static_cast<const blink::WebMouseEvent&>(*input_event->web_event);
+  RouteOrProcessMouseEvent(mouse_event);
+}
+
+void RenderWidgetHostViewMac::RouteOrProcessWheelEvent(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      input_event->web_event->GetType() != blink::WebInputEvent::kMouseWheel) {
+    DLOG(ERROR) << "Absent or non-MouseWheel event.";
+    return;
+  }
+  const blink::WebMouseWheelEvent& wheel_event =
+      static_cast<const blink::WebMouseWheelEvent&>(*input_event->web_event);
+  RouteOrProcessWheelEvent(wheel_event);
+}
+
+void RenderWidgetHostViewMac::ForwardMouseEvent(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsMouseEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-MouseEventType event.";
+    return;
+  }
+  const blink::WebMouseEvent& mouse_event =
+      static_cast<const blink::WebMouseEvent&>(*input_event->web_event);
+  ForwardMouseEvent(mouse_event);
+}
+
+void RenderWidgetHostViewMac::ForwardWheelEvent(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      input_event->web_event->GetType() != blink::WebInputEvent::kMouseWheel) {
+    DLOG(ERROR) << "Absent or non-MouseWheel event.";
+    return;
+  }
+  const blink::WebMouseWheelEvent& wheel_event =
+      static_cast<const blink::WebMouseWheelEvent&>(*input_event->web_event);
+  ForwardWheelEvent(wheel_event);
+}
+
+void RenderWidgetHostViewMac::GestureBegin(
+    std::unique_ptr<InputEvent> input_event,
+    bool is_synthetically_injected) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsGestureEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-GestureEventType event.";
+    return;
+  }
+  blink::WebGestureEvent gesture_event =
+      *static_cast<const blink::WebGestureEvent*>(input_event->web_event.get());
+  // Strip the gesture type, because it is not known.
+  gesture_event.SetType(blink::WebInputEvent::kUndefined);
+  GestureBegin(gesture_event, is_synthetically_injected);
+}
+
+void RenderWidgetHostViewMac::GestureUpdate(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsGestureEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-GestureEventType event.";
+    return;
+  }
+  const blink::WebGestureEvent& gesture_event =
+      static_cast<const blink::WebGestureEvent&>(*input_event->web_event);
+  GestureUpdate(gesture_event);
+}
+
+void RenderWidgetHostViewMac::GestureEnd(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsGestureEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-GestureEventType event.";
+    return;
+  }
+  blink::WebGestureEvent gesture_event =
+      *static_cast<const blink::WebGestureEvent*>(input_event->web_event.get());
+  GestureEnd(gesture_event);
+}
+
+void RenderWidgetHostViewMac::SmartMagnify(
+    std::unique_ptr<InputEvent> input_event) {
+  if (!input_event || !input_event->web_event ||
+      !blink::WebInputEvent::IsGestureEventType(
+          input_event->web_event->GetType())) {
+    DLOG(ERROR) << "Absent or non-GestureEventType event.";
+    return;
+  }
+  const blink::WebGestureEvent& gesture_event =
+      static_cast<const blink::WebGestureEvent&>(*input_event->web_event);
+  SmartMagnify(gesture_event);
 }
 
 void RenderWidgetHostViewMac::OnGotStringForDictionaryOverlay(

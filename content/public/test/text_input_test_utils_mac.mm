@@ -76,7 +76,7 @@ void AskForLookUpDictionaryForRange(RenderWidgetHostView* tab_view,
                                     const gfx::Range& range) {
   RenderWidgetHostViewMac* tab_view_mac =
       static_cast<RenderWidgetHostViewMac*>(tab_view);
-  tab_view_mac->OnNSViewLookUpDictionaryOverlayFromRange(range);
+  tab_view_mac->LookUpDictionaryOverlayFromRange(range);
 }
 
 size_t GetOpenNSWindowsCount() {

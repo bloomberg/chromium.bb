@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "content/browser/renderer_host/input/mouse_wheel_rails_filter_mac.h"
 #include "content/common/edit_command.h"
+#include "content/common/render_widget_host_ns_view.mojom.h"
 #import "ui/base/cocoa/command_dispatcher.h"
 #import "ui/base/cocoa/tool_tip_base_view.h"
 #include "ui/base/ime/ime_text_span.h"
@@ -26,7 +27,11 @@ class WebGestureEvent;
 }
 
 namespace content {
+namespace mojom {
 class RenderWidgetHostNSViewClient;
+}
+
+class RenderWidgetHostNSViewLocalClient;
 class RenderWidgetHostViewMac;
 class RenderWidgetHostViewMacEditCommandHelper;
 }
@@ -39,7 +44,7 @@ struct DidOverscrollParams;
 @protocol RenderWidgetHostViewMacDelegate;
 
 @protocol RenderWidgetHostNSViewClientOwner
-- (content::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient;
+- (content::mojom::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient;
 @end
 
 // This is the view that lives in the Cocoa view hierarchy. In Windows-land,
@@ -54,12 +59,24 @@ struct DidOverscrollParams;
  @private
   // The communications channel to the RenderWidgetHostViewMac. This pointer is
   // always valid. When the original client disconnects, |client_| is changed to
-  // point to |noopClient_|, to avoid having to preface every dereference with
+  // point to |dummyClient_|, to avoid having to preface every dereference with
   // a nullptr check.
-  content::RenderWidgetHostNSViewClient* client_;
+  content::mojom::RenderWidgetHostNSViewClient* client_;
 
-  // Dummy client that is always valid (see above).
-  std::unique_ptr<content::RenderWidgetHostNSViewClient> noopClient_;
+  // A separate client interface for the parts of the interface to
+  // RenderWidgetHostViewMac that cannot or should not be forwarded over mojo.
+  // This includes events (where the extra translation is unnecessary or loses
+  // information) and access to accessibility structures (only present in the
+  // browser process).
+  content::RenderWidgetHostNSViewLocalClient* localClient_;
+
+  // An implementation of the in-process interface that will translate and
+  // forward messages through |client_|.
+  std::unique_ptr<content::RenderWidgetHostNSViewLocalClient>
+      forwardingLocalClient_;
+
+  // Dummy client that is always valid (see above comments about client_).
+  content::mojom::RenderWidgetHostNSViewClientPtr dummyClient_;
 
   // This ivar is the cocoa delegate of the NSResponder.
   base::scoped_nsobject<NSObject<RenderWidgetHostViewMacDelegate>>
@@ -227,7 +244,8 @@ struct DidOverscrollParams;
 - (void)unlockKeyboard;
 
 // Methods previously marked as private.
-- (id)initWithClient:(content::RenderWidgetHostNSViewClient*)client;
+- (id)initWithClient:(content::mojom::RenderWidgetHostNSViewClient*)client
+     withLocalClient:(content::RenderWidgetHostNSViewLocalClient*)localClient;
 - (void)setResponderDelegate:
     (NSObject<RenderWidgetHostViewMacDelegate>*)delegate;
 - (void)processedGestureScrollEvent:(const blink::WebGestureEvent&)event

@@ -53,7 +53,7 @@ using content::RenderWidgetHostViewMac;
   return self;
 }
 
-- (content::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient {
+- (content::mojom::RenderWidgetHostNSViewClient*)renderWidgetHostNSViewClient {
   return rwhvm_;
 }
 
