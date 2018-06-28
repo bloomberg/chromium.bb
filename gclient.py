@@ -1853,6 +1853,9 @@ class CipdDependency(Dependency):
         self.url, self.root.root_dir, self.name, self.outbuf, out_cb,
         root=self._cipd_root, package=self._cipd_package)
 
+  def hierarchy(self, include_url=False):
+    return self.parent.hierarchy(include_url) + ' -> ' + self._cipd_subdir
+
   def ToLines(self):
     """Return a list of lines representing this in a DEPS file."""
     s = []
