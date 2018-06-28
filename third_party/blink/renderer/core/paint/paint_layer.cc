@@ -1432,14 +1432,9 @@ PaintLayer* PaintLayer::RemoveChild(PaintLayer* old_child) {
       if (!old_child_style.IsStacked())
         Compositor()->SetNeedsCompositingUpdate(kCompositingUpdateRebuildTree);
     }
-    if (old_child_style.IsStacked() || old_child->FirstChild()) {
-      // Dirty the z-order list in which we are contained.  When called via the
-      // reattachment process in removeOnlyThisLayer, the layer may already be
-      // disconnected from the main layer tree, so we need to null-check the
-      // |stackingContext| value.
-      PaintLayerStackingNode::DirtyStackingContextZOrderLists(old_child);
-      MarkAncestorChainForDescendantDependentFlagsUpdate();
-    }
+    // Dirty the z-order list in which we are contained.
+    PaintLayerStackingNode::DirtyStackingContextZOrderLists(old_child);
+    MarkAncestorChainForDescendantDependentFlagsUpdate();
   }
 
   if (GetLayoutObject().Style()->Visibility() != EVisibility::kVisible)
