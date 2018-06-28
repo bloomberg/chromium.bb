@@ -74,6 +74,7 @@
 /gles2_conform
 /glslang/src
 /glslang-angle/src
+/gn/
 /gnu_binutils/
 /google_appengine_cloudstorage
 /google_toolbox_for_mac/src
