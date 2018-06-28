@@ -5,6 +5,7 @@
 #include <stdint.h>
 
 #include "base/command_line.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -15,7 +16,9 @@
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/download_manager_delegate.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
@@ -29,6 +32,7 @@
 #include "content/public/test/navigation_handle_observer.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/shell/browser/shell.h"
+#include "content/shell/browser/shell_download_manager_delegate.h"
 #include "content/shell/browser/shell_network_delegate.h"
 #include "content/test/content_browser_test_utils_internal.h"
 #include "ipc/ipc_security_test_util.h"
@@ -855,6 +859,72 @@ IN_PROC_BROWSER_TEST_F(BrowserSideNavigationBaseBrowserTest,
         "window.domAutomationController.send(iframe_count);",
         &iframe_count));
   }
+}
+
+class NavigationDownloadBrowserTest
+    : public BrowserSideNavigationBaseBrowserTest {
+ protected:
+  void SetUpOnMainThread() override {
+    BrowserSideNavigationBaseBrowserTest::SetUpOnMainThread();
+
+    // Set up a test download directory, in order to prevent prompting for
+    // handling downloads.
+    ASSERT_TRUE(downloads_directory_.CreateUniqueTempDir());
+    ShellDownloadManagerDelegate* delegate =
+        static_cast<ShellDownloadManagerDelegate*>(
+            shell()
+                ->web_contents()
+                ->GetBrowserContext()
+                ->GetDownloadManagerDelegate());
+    delegate->SetDownloadBehaviorForTesting(downloads_directory_.GetPath());
+  }
+
+ private:
+  base::ScopedTempDir downloads_directory_;
+};
+
+// Regression test for https://crbug.com/855033
+// 1) A page contains many scripts and DOM elements. It forces the parser to
+//    yield CPU to other tasks. That way the response body's data are not fully
+//    read when URLLoaderClient::OnComplete(..) is received.
+// 2) A script makes the document navigates elsewhere while it is still loading.
+//    It cancels the parser of the current document. Due to a bug, the document
+//    loader was not marked to be 'loaded' at this step.
+// 3) The request for the new navigation starts and it turns out it is a
+//    download. The navigation is dropped.
+// 4) There are no more possibilities for DidStopLoading() to be sent.
+IN_PROC_BROWSER_TEST_F(NavigationDownloadBrowserTest,
+                       StopLoadingAfterDroppedNavigation) {
+  net::test_server::ControllableHttpResponse main_response(
+      embedded_test_server(), "/main");
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL main_url(embedded_test_server()->GetURL("/main"));
+  GURL download_url(embedded_test_server()->GetURL("/download-test1.lib"));
+
+  shell()->LoadURL(main_url);
+  main_response.WaitForRequest();
+  std::string headers =
+      "HTTP/1.1 200 OK\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n";
+
+  // Craft special HTML to make the blink::DocumentParser yield CPU to other
+  // tasks. The goal is to ensure the response body datapipe is not fully read
+  // when URLLoaderClient::OnComplete() is called.
+  // This relies on the  HTMLParserScheduler::ShouldYield() heuristics.
+  std::string mix_of_script_and_div = "<script></script><div></div>";
+  for (size_t i = 0; i < 10; ++i) {
+    mix_of_script_and_div += mix_of_script_and_div;  // Exponential growth.
+  }
+
+  std::string navigate_to_download =
+      "<script>location.href='" + download_url.spec() + "'</script>";
+
+  main_response.Send(headers + navigate_to_download + mix_of_script_and_div);
+  main_response.Done();
+
+  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
 }
 
 }  // namespace content
