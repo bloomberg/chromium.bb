@@ -166,7 +166,7 @@
 <translation id="397105322502079400">جارٍ الحساب...</translation>
 <translation id="3995138139523574647">‏جهاز USB-C (المنفذ الخلفي الأيمن)</translation>
 <translation id="4017989525502048489">مؤشر الليزر</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{موقوف لتطبيق واحد}zero{موقوف لـ # تطبيق}two{موقوف لتطبيقين (#)}few{موقوف لـ # تطبيقات}many{موقوف لـ # تطبيقًا}other{موقوف لـ # تطبيق}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{الإشعارات متوقفة لتطبيق واحد}zero{الإشعارات متوقفة لـ # تطبيق}two{الإشعارات متوقفة لتطبيقَين (#)}few{الإشعارات متوقفة لـ # تطبيقات}many{الإشعارات متوقفة لـ # تطبيقًا}other{الإشعارات متوقفة لـ # تطبيق}}</translation>
 <translation id="4072264167173457037">إشارة متوسطة</translation>
 <translation id="4200057768455216496">لقد ضغطت على اختصار المُكبِّر الذي تم إرساؤه. هل ترغب في تفعيله؟</translation>
 <translation id="4217571870635786043">إملاء</translation>
@@ -354,7 +354,7 @@
 <translation id="8054466585765276473">يجري حساب وقت البطارية.</translation>
 <translation id="8061464966246066292">تباين عالٍ</translation>
 <translation id="8098591350844501178">إيقاف إرسال الشاشة إلى <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">مُفعَّل، جميع التطبيقات</translation>
+<translation id="8113423164597455979">الإشعارات مُفعَّلة، جميع التطبيقات</translation>
 <translation id="8132793192354020517">تم الاتصال بالموقع <ph name="NAME" /></translation>
 <translation id="813913629614996137">جارٍ التهيئة...</translation>
 <translation id="8142699993796781067">الشبكة الخاصة</translation>
@@ -375,7 +375,7 @@
 <translation id="847056008324733326">عرض إعدادات المقياس</translation>
 <translation id="8477270416194247200">‏اضغط على Alt+مفتاح البحث، أو اضغط على المفتاح Shift للإلغاء.</translation>
 <translation id="8484916590211895857"><ph name="NAME" /> : جارٍ إعادة الاتصال ...</translation>
-<translation id="8513108775083588393">التدوير التلقائي</translation>
+<translation id="8513108775083588393">التدوير تلقائي</translation>
 <translation id="8517041960877371778">قد يتعذر شحن <ph name="DEVICE_TYPE" /> أثناء التشغيل.</translation>
 <translation id="8639760480004882931">يتبقى <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">سماع الاختيار</translation>

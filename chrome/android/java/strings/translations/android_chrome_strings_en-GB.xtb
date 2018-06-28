@@ -19,6 +19,7 @@
 <translation id="1145536944570833626">Delete existing data.</translation>
 <translation id="1146678959555564648">Enter VR</translation>
 <translation id="114721135501989771">Get Google smarts in Chrome</translation>
+<translation id="1157102636231978136">Your browsing data and activity, synced to your Google account</translation>
 <translation id="116280672541001035">Used</translation>
 <translation id="1172593791219290334">Startup Page</translation>
 <translation id="1178581264944972037">Pause</translation>
@@ -33,6 +34,7 @@
 <translation id="124116460088058876">More languages</translation>
 <translation id="124678866338384709">Close current tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="127138278192656016">Use sync and all services</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">Tap to expand</translation>
 <translation id="1285320974508926690">Never translate this site</translation>
@@ -48,6 +50,7 @@
 <translation id="1383876407941801731">Search</translation>
 <translation id="1384959399684842514">Download paused</translation>
 <translation id="1389974829397082527">No bookmarks here</translation>
+<translation id="1395084944394113895">View offline content</translation>
 <translation id="1397811292916898096">Search with <ph name="PRODUCT_NAME" /></translation>
 <translation id="1397854323885047133">Sync and personalisation</translation>
 <translation id="1404122904123200417">Embedded in <ph name="WEBSITE_URL" /></translation>
@@ -178,6 +181,7 @@
 <translation id="2426805022920575512">Choose another account</translation>
 <translation id="2433507940547922241">Appearance</translation>
 <translation id="2434158240863470628">Download complete <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2436117022029368436">Communicates with Google to improve browsing and Chrome</translation>
 <translation id="2440823041667407902">Location access</translation>
 <translation id="2450083983707403292">Do you want to start downloading <ph name="FILE_NAME" /> again?</translation>
 <translation id="2476578072172137802">Site Settings</translation>
@@ -401,6 +405,7 @@ Your Google Account may have other forms of browsing history such as searches an
 <translation id="4532845899244822526">Choose folder</translation>
 <translation id="4550003330909367850">To view or copy your password here, set screen lock on this device.</translation>
 <translation id="4558311620361989323">Web page shortcuts</translation>
+<translation id="4561979708150884304">No connection</translation>
 <translation id="4565377596337484307">Hide password</translation>
 <translation id="4570913071927164677">Details</translation>
 <translation id="4572422548854449519">Sign in to managed account</translation>
@@ -792,6 +797,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="7698359219371678927">Create email in <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">Always translate pages in <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="773905249182896430">Protects you and your device from dangerous sites</translation>
 <translation id="7762668264895820836">SD Card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Add address</translation>
 <translation id="7765158879357617694">Move</translation>
@@ -863,6 +869,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8374821112118309944">You need to update TalkBack to a newer version.</translation>
 <translation id="8393700583063109961">Send message</translation>
 <translation id="8413126021676339697">Show full history</translation>
+<translation id="8420510748452002155">Non-personalised services</translation>
 <translation id="8428213095426709021">Settings</translation>
 <translation id="8441146129660941386">Seek backward</translation>
 <translation id="8445448999790540984">Can’t export passwords</translation>
@@ -906,6 +913,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="8812260976093120287">On some websites, you can pay with above supported payment apps on your device.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> will open in Chrome. By continuing, you agree to Chrome's <ph name="BEGIN_LINK1" />Terms of Service<ph name="END_LINK1" /> and <ph name="BEGIN_LINK2" />Privacy Notice<ph name="END_LINK2" />, and the <ph name="BEGIN_LINK3" />Privacy Notice for Google Accounts Managed with Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Bookmarks</translation>
+<translation id="8823704566850948458">Suggest password...</translation>
 <translation id="8830904257167680355"><ph name="DESCRIPTION" /> – <ph name="FILE_SIZE" /></translation>
 <translation id="883806473910249246">An error occurred while downloading the content.</translation>
 <translation id="8840953339110955557">This page may differ from the online version.</translation>
@@ -949,6 +957,7 @@ For example, some websites may respond to this request by showing you ads that a
 <translation id="9188680907066685419">Sign out of managed account</translation>
 <translation id="9204836675896933765">1 file left</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9218033835049520260">Suggest strong password...</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932599481871055447">Save data and browse faster</translation>

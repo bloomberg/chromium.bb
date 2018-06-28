@@ -765,7 +765,6 @@
 <translation id="2173801458090845390">Добавяне на идентификационен номер на заявка към това устройство</translation>
 <translation id="2175042898143291048">Превеждане винаги</translation>
 <translation id="2175607476662778685">Лента за бързо стартиране</translation>
-<translation id="2176087259161165020">Други източници</translation>
 <translation id="2177950615300672361">Раздел в режим „инкогнито“: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_NAME" /> от <ph name="PEPPER_PLUGIN_DOMAIN" /> иска да осъществи достъп до компютъра ви</translation>
 <translation id="2178614541317717477">Компрометиране на сертифициращия орган</translation>
@@ -805,7 +804,6 @@
 <translation id="2230062665678605299">Не можем да създадем папката „<ph name="FOLDER_NAME" />“. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Кликнете, за да видите днешната драскулка</translation>
 <translation id="2231238007119540260">Ако изтриете сертификат на сървър, възстановявате обичайните проверки за сигурността за този сървър и изисквате да използва валиден сертификат.</translation>
-<translation id="2232379019872353004">Изпраща до Google системна информация и част от съдържанието на страниците</translation>
 <translation id="2232876851878324699">Файлът съдържаше един сертификат, който не бе импортиран:</translation>
 <translation id="2233502537820838181">&amp;Още информация</translation>
 <translation id="2238379619048995541">Данни за състоянието на активност</translation>
@@ -2018,7 +2016,6 @@
 <translation id="4147897805161313378">Google Снимки</translation>
 <translation id="4150201353443180367">Екран</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 раздел}other{# раздела}}</translation>
-<translation id="4153038609398984088">Ами сега! Конфигурацията за присъединяване към домейна не може да бъде анализирана синтактично. Моля, свържете се с администратора.</translation>
 <translation id="4154664944169082762">Пръстови отпечатъци</translation>
 <translation id="4157869833395312646">„Преминаваща през сървъра шифрована информация“ от Microsoft</translation>
 <translation id="4158739975813877944">Отваряне на плейлиста</translation>
@@ -5060,7 +5057,6 @@
 <translation id="8978154919215542464">Включено (всичко се синхронизира)</translation>
 <translation id="897939795688207351">В/ъв <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> – възникна срив</translation>
-<translation id="8983677657449185470">Помощ за подобряването на Безопасно сърфиране</translation>
 <translation id="8984654317541110628">URL адрес за споделяне на файлове</translation>
 <translation id="8986362086234534611">Забравяне</translation>
 <translation id="8986494364107987395">Автоматично изпращане до Google на статистически данни за използването на Chrome и сигнали за сривове</translation>

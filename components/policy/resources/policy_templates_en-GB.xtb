@@ -42,6 +42,9 @@
       See https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for a list of variables that can be used.
 
       If this policy is left not set the default cache directory will be used and the user will be able to override it with the '--disk-cache-dir' command line flag.</translation>
+<translation id="1135264353752122851">Configures which keyboard layouts are allowed for <ph name="PRODUCT_OS_NAME" /> user sessions.
+
+      If this policy is set, the user can only select one of the input methods specified by this policy. If this policy is not set or set to an empty list, the user can select all supported input methods. If the current input method is not allowed by this policy, the input method will be switched to the hardware keyboard layout (if allowed) or the first valid entry in this list. All invalid or unsupported input methods in this list will be ignored.</translation>
 <translation id="1138294736309071213">This policy is active in retail mode only.
 
       Determines the duration before the screen saver is shown on the sign-in screen for devices in retail mode.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Load specified URLs on demo login</translation>
 <translation id="1223789468190631420">Safe Browsing enable state for trusted sources</translation>
 <translation id="123081309365616809">Enable casting content to the device</translation>
+<translation id="1243570869342663665">Control SafeSites adult content filtering.</translation>
 <translation id="1257550411839719984">Set default download directory</translation>
 <translation id="1265053460044691532">Limit the time for which a user authenticated via SAML can log in offline</translation>
 <translation id="1291880496936992484">Warning: RC4 will be completely removed from <ph name="PRODUCT_NAME" /> after version 52 (around September 2016) and this policy will stop working then.
@@ -265,6 +269,7 @@
       The format of the value follows the names of timezones in the "IANA Time Zone Database" (see "https://en.wikipedia.org/wiki/Tz_database"). In particular, most timezones can be referred to by "continent/large_city" or "ocean/large_city".
 
       Setting this policy completely disables automatic timezone resolve by device location. It also overrides SystemTimezoneAutomaticDetection policy.</translation>
+<translation id="1885782360784839335">Enable showing full-tab promotional content</translation>
 <translation id="1888871729456797026">The enrolment token of cloud policy on desktop</translation>
 <translation id="1897365952389968758">Allow all sites to run JavaScript (recommended)</translation>
 <translation id="1906888171268104594">Controls whether usage metrics and diagnostic data, including crash reports, are reported back to Google.
@@ -377,6 +382,7 @@
       free to change it. In this case, the default value is not reapplied at
       restart.</translation>
 <translation id="2156132677421487971">Configure policies for <ph name="PRODUCT_NAME" />, a feature that allows users to send the contents of tabs, sites or the desktop from the browser to remote displays and sound systems.</translation>
+<translation id="2166472654199325139">Do not filter sites for adult content</translation>
 <translation id="2168397434410358693">Idle delay when running on AC power</translation>
 <translation id="2170233653554726857">Enable WPAD optimisation</translation>
 <translation id="2176565653304920879">When this policy is set, automatic time zone detection flow will be in one of the following ways depending on the value of the setting:
@@ -531,6 +537,12 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="2466131534462628618">Captive portal authentication ignores proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="2483146640187052324">Predict network actions on any network connection</translation>
+<translation id="2484208301968418871">This policy controls the application of the SafeSites URL filter.
+      This filter uses the Google Safe Search API to classify URLs as pornographic or not.
+
+      When this policy is not configured or set to 'Do not filter sites for adult content', sites will not be filtered.
+
+      When this policy is set to 'Filter top-level sites for adult content', sites classified as pornographic will be filtered.</translation>
 <translation id="2485721741875148980">If this policy is set to true, user has to sign in to <ph name="PRODUCT_NAME" /> with their profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. Note that existing unsigned profiles will be locked and inaccessible after enabling this policy. For more information, see Help Centre article.
 
       If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME" />.</translation>
@@ -1371,6 +1383,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 
       If this policy is left not set or blank, then any user can sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Allow fullscreen mode</translation>
+<translation id="4861767323695239729">Configure the allowed input methods in a user session</translation>
 <translation id="4869787217450099946">Specifies whether screen wake locks are allowed. Screen wake locks can be requested by extensions via the power management extension API.
 
           If this policy is set to true or left not set, screen wake locks will be honoured for power management.
@@ -1958,6 +1971,7 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       If this policy is disabled or left not set, only the regular local profiles will be used.
 
       The <ph name="SYNC_DISABLED_POLICY_NAME" /> policy disables all data synchronisation, overriding RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filter top-level sites (but not embedded iframes) for adult content</translation>
 <translation id="6735701345096330595">Force enable spellcheck languages</translation>
 <translation id="673699536430961464">This setting allows users to switch between Google Accounts within the content area of their browser window after they sign in to their <ph name="PRODUCT_OS_NAME" /> device.
 
@@ -1980,6 +1994,13 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6757438632136860443">Allows you to set a list of URL patterns that specify sites which are allowed to run the <ph name="FLASH_PLUGIN_NAME" /> plug-in.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultPluginsSetting' policy if it is set, or the user's personal configuration otherwise.</translation>
+<translation id="6762235610019366960">Allows you to control the presentation of full-tab promotional and/or educational content in <ph name="PRODUCT_NAME" />.
+
+      If not configured or enabled (set to true), <ph name="PRODUCT_NAME" /> may show full-tab content to users to provide product information.
+
+      If disabled (set to false), <ph name="PRODUCT_NAME" /> will not show full-tab content to users to provide product information.
+
+      This setting controls the presentation of the welcome pages that help users sign in to <ph name="PRODUCT_NAME" />, choose it as their default browser or otherwise inform them of product features.</translation>
 <translation id="6766216162565713893">Allow sites to ask the user to grant access to a nearby Bluetooth device</translation>
 <translation id="6770454900105963262">Report information about active kiosk sessions</translation>
 <translation id="6786747875388722282">Extensions</translation>

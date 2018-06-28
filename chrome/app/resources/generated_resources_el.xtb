@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">Προσθήκη αναγνωριστικού επίταξης σε αυτήν τη συσκευή</translation>
 <translation id="2175042898143291048">Να γίνεται πάντα</translation>
 <translation id="2175607476662778685">Γραμμή γρήγορης εκκίνησης</translation>
-<translation id="2176087259161165020">Άλλες πηγές</translation>
 <translation id="2177950615300672361">Καρτέλα ανώνυμης περιήγησης: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">Η προσθήκη <ph name="PEPPER_PLUGIN_NAME" /> στον τομέα <ph name="PEPPER_PLUGIN_DOMAIN" /> επιθυμεί να αποκτήσει πρόσβαση στον υπολογιστή σας</translation>
 <translation id="2178614541317717477">Παραβίαση αρχής έκδοσης πιστοποιητικών</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">Δεν είναι δυνατή η δημιουργία του φακέλου "<ph name="FOLDER_NAME" />". <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">Κάντε κλικ για να δείτε το σημερινό doodle</translation>
 <translation id="2231238007119540260">Εάν διαγράψετε ένα πιστοποιητικό διακομιστή, θα επαναφέρετε τους συνήθεις ελέγχους ασφαλείας για αυτό το διακομιστή και θα απαιτείται η χρήση ενός έγκυρου πιστοποιητικού.</translation>
-<translation id="2232379019872353004">Αποστέλλει ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google</translation>
 <translation id="2232876851878324699">Το αρχείο περιείχε ένα πιστοποιητικό, το οποίο δεν εισάχθηκε: </translation>
 <translation id="2233502537820838181">&amp;Περισσότερες πληροφορίες</translation>
 <translation id="2238379619048995541">Δεδομένα κατάστασης συχνότητας</translation>
@@ -2020,7 +2018,6 @@
 <translation id="4147897805161313378">Φωτογραφίες Google</translation>
 <translation id="4150201353443180367">Οθόνη</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 καρτέλα}other{# καρτέλες}}</translation>
-<translation id="4153038609398984088">Ωχ!  Δεν είναι δυνατή η ανάλυση της διαμόρφωσης συμμετοχής σε τομέα. Επικοινωνήστε με τον διαχειριστή σας.</translation>
 <translation id="4154664944169082762">Αποτυπώματα</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">Άνοιγμα playlist</translation>
@@ -5060,7 +5057,6 @@
 <translation id="8978154919215542464">Ενεργό - συγχρονισμός όλων</translation>
 <translation id="897939795688207351">Ενεργό <ph name="ORIGIN" /></translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - Παρουσίασε σφάλμα</translation>
-<translation id="8983677657449185470">Συμβάλλετε στη βελτίωση της Ασφαλούς περιήγησης</translation>
 <translation id="8984654317541110628">URL κοινής χρήσης αρχείου</translation>
 <translation id="8986362086234534611">Διαγραφή από τη μνήμη</translation>
 <translation id="8986494364107987395">Αυτόματη αποστολή στατιστικών στοιχείων χρήσης και αναφορών σφαλμάτων στην Google</translation>

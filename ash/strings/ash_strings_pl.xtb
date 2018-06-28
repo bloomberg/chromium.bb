@@ -166,7 +166,7 @@
 <translation id="397105322502079400">Obliczanie...</translation>
 <translation id="3995138139523574647">Urządzenie USB-C (tylny port na prawym boku)</translation>
 <translation id="4017989525502048489">Wskaźnik laserowy</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączone w przypadku jednej aplikacji}few{Wyłączone w przypadku # aplikacji}many{Wyłączone w przypadku # aplikacji}other{Wyłączone w przypadku # aplikacji}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Wyłączono w przypadku jednej aplikacji}few{Wyłączono w przypadku # aplikacji}many{Wyłączono w przypadku # aplikacji}other{Wyłączono w przypadku # aplikacji}}</translation>
 <translation id="4072264167173457037">średni sygnał</translation>
 <translation id="4200057768455216496">Naciśnięto skrót lupy zadokowanej. Czy chcesz ją włączyć?</translation>
 <translation id="4217571870635786043">Dyktowanie</translation>
@@ -354,7 +354,7 @@
 <translation id="8054466585765276473">Obliczanie czasu pracy na baterii.</translation>
 <translation id="8061464966246066292">Wysoki kontrast</translation>
 <translation id="8098591350844501178">Zakończ przesyłanie ekranu do: <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">Włączone w przypadku wszystkich aplikacji</translation>
+<translation id="8113423164597455979">Włączono w przypadku wszystkich aplikacji</translation>
 <translation id="8132793192354020517">Połączono z <ph name="NAME" /></translation>
 <translation id="813913629614996137">Inicjuję…</translation>
 <translation id="8142699993796781067">Sieć prywatna</translation>

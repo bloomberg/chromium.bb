@@ -765,7 +765,6 @@
 <translation id="2173801458090845390">ഈ ഉപകരണത്തിൽ അഭ്യർത്ഥന ഐഡി ചേർക്കുക</translation>
 <translation id="2175042898143291048">എല്ലായ്‌പ്പോഴും ഇങ്ങനെ ചെയ്യുക</translation>
 <translation id="2175607476662778685">ക്വിക്ക് ലോഞ്ച് ബാര്‍</translation>
-<translation id="2176087259161165020">മറ്റ് ഉറവിടങ്ങൾ</translation>
 <translation id="2177950615300672361">ആൾമാറാട്ട ടാബ്: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724">നിങ്ങളുടെ കമ്പ്യൂട്ടർ ആക്‌സസ് ചെയ്യാൻ <ph name="PEPPER_PLUGIN_DOMAIN" /> എന്നതിലെ <ph name="PEPPER_PLUGIN_NAME" /> ആഗ്രഹിക്കുന്നു</translation>
 <translation id="2178614541317717477">CA കോംപ്രമൈസ്</translation>
@@ -805,7 +804,6 @@
 <translation id="2230062665678605299">"<ph name="FOLDER_NAME" />" ഫോൾഡർ സൃഷ്‌ടിക്കാനാവില്ല. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">ഇന്നത്തെ ഡൂഡിൽ കാണാൻ ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2231238007119540260">നിങ്ങള്‍ ഒ‍രു സെര്‍വര്‍ സാക്‌ഷ്യപത്രം ഇല്ലാതാക്കുന്നതിലൂടെ, നിങ്ങള്‍ ആ സെര്‍വറിനായുള്ള സാധാരണ സുരക്ഷ പുനഃസ്ഥാപിക്കുകയാണ്‌, ഒപ്പം അതൊരു സാധുവായ സാക്‍ഷ്യപത്രം ഉപയോഗിക്കേണ്ടതുമുണ്ട്.</translation>
-<translation id="2232379019872353004">ചില സിസ്‌റ്റം വിവരങ്ങളും പേജ് ഉള്ളടക്കവും Google-ന് അയയ്‌ക്കുന്നു</translation>
 <translation id="2232876851878324699">ഫയലില്‍ ഒരു സാക്‌ഷ്യപത്രം ഉണ്ടായിരുന്നു, അത് ഇറക്കുമതി ചെയ്തിട്ടില്ല:</translation>
 <translation id="2233502537820838181">&amp;കൂടുതൽ വിവരങ്ങൾ</translation>
 <translation id="2238379619048995541">ആവൃത്തി നില ഡാറ്റ</translation>
@@ -2016,7 +2014,6 @@
 <translation id="4147897805161313378">Google ഫോട്ടോസ്</translation>
 <translation id="4150201353443180367">ഡിസ്‌പ്ലേ</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{ഒരു ടാബ്}other{# ടാബുകൾ}}</translation>
-<translation id="4153038609398984088">ക്ഷമിക്കണം! ഡൊമെയ്‌ൻ ചേർക്കൽ കോൺഫിഗറേഷൻ വിശകലനം ചെയ്യാനാവില്ല. അഡ്‌മിനിസ്ട്രേറ്ററെ ബന്ധപ്പെടുക.</translation>
 <translation id="4154664944169082762">ഫിംഗര്‍‌പ്രിന്‍റുകള്‍‌</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">പ്ലേ ലിസ്‌റ്റ് തുറക്കുക</translation>
@@ -5058,7 +5055,6 @@ Google Chrome മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.
 <translation id="8978154919215542464">ഓണാണ് - എല്ലാം സമന്വയിപ്പിക്കുക</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" />-ൽ</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - ക്രാഷായി</translation>
-<translation id="8983677657449185470">സുരക്ഷിത ബ്രൗസിംഗ് മെച്ചപ്പെടുത്താൻ സഹായിക്കുക</translation>
 <translation id="8984654317541110628">ഫയൽ പങ്കിടൽ URL</translation>
 <translation id="8986362086234534611">മറന്നു</translation>
 <translation id="8986494364107987395">Google ലേക്ക് സ്വപ്രേരിതമായി ഉപയോഗ സ്ഥിതിവിവരക്കണക്കുകളും ക്രാഷ് റിപ്പോര്‍ട്ടുകളും അയയ്ക്കുക</translation>

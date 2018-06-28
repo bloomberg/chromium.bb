@@ -1332,7 +1332,7 @@
           Jei nenustatysite šios politikos, „<ph name="PRODUCT_NAME" />“ neperduos naudotojo prisijungimo duomenų, net jei aptinkama, kad serveris yra intranete.</translation>
 <translation id="4752880493649142945">Kliento sertifikatas, skirtas prisijungti prie „RemoteAccessHostTokenValidationUrl“</translation>
 <translation id="4757671984625088193">Jei šis nustatymas nustatytas kaip „true“ arba nenustatytas, „<ph name="PRODUCT_NAME" />“ siūlys puslapius, susijusius su dabartiniu.
-      Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serveriu.
+      Šie siūlymai gaunami nuotoliniu būdu iš „Google“ serverių.
 
       Jei šis nustatymas nustatytas kaip „false“, siūlymai nebus gaunami ar pateikiami.</translation>
 <translation id="4791031774429044540">Įgalinti didelio žymeklio pasiekiamumo funkciją.

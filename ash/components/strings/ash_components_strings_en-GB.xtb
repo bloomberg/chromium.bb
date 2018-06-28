@@ -49,6 +49,7 @@
 <translation id="2789868185375229787">Zoom out on the page</translation>
 <translation id="2804480015716812239">Press <ph name="ALT" /> and click a link</translation>
 <translation id="2830827904629746450">Dock a window on the right</translation>
+<translation id="2840766858109427815">Go forward to next page</translation>
 <translation id="2872353916818027657">Swap primary monitor</translation>
 <translation id="2914313326123580426">Show or hide the Developer Tools panel</translation>
 <translation id="292495055542441795">Toggle full screen</translation>
@@ -87,6 +88,7 @@
 <translation id="4141203561740478845">Highlight the row with the address bar</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> or <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overview mode</translation>
+<translation id="4382340674111381977">Go back to previous page</translation>
 <translation id="4472417192667361414">System &amp; Display Settings</translation>
 <translation id="4556221320735744018">See Keyboard Shortcut Helper</translation>
 <translation id="4628718545549558538">Open the status area (where your account picture appears)</translation>

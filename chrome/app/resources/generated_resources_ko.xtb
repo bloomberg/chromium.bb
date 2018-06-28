@@ -768,7 +768,6 @@
 <translation id="2173801458090845390">이 기기에 요청 ID 추가</translation>
 <translation id="2175042898143291048">항상 번역</translation>
 <translation id="2175607476662778685">빠른 실행 표시줄</translation>
-<translation id="2176087259161165020">기타 소스</translation>
 <translation id="2177950615300672361">시크릿 탭: <ph name="TAB_NAME" /></translation>
 <translation id="2178098616815594724"><ph name="PEPPER_PLUGIN_DOMAIN" />의 <ph name="PEPPER_PLUGIN_NAME" />에서 내 컴퓨터에 액세스하려고 합니다</translation>
 <translation id="2178614541317717477">CA 손상</translation>
@@ -808,7 +807,6 @@
 <translation id="2230062665678605299">'<ph name="FOLDER_NAME" />' 폴더를 생성할 수 없습니다. <ph name="ERROR_MESSAGE" /></translation>
 <translation id="223106756035922488">클릭하여 오늘의 기념일 로고 보기</translation>
 <translation id="2231238007119540260">서버 인증서를 삭제하려면 해당 서버에 대해 일반적인 보안 확인을 복원하고 유효한 인증서를 사용해야 합니다.</translation>
-<translation id="2232379019872353004">일부 시스템 정보와 페이지 콘텐츠를 Google로 전송</translation>
 <translation id="2232876851878324699">파일에 하나의 인증서가 있지만 이 인증서를 가져올 수 없습니다.</translation>
 <translation id="2233502537820838181">추가 정보</translation>
 <translation id="2238379619048995541">주파수 상태 데이터</translation>
@@ -2018,7 +2016,6 @@
 <translation id="4147897805161313378">Google 포토</translation>
 <translation id="4150201353443180367">디스플레이</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{탭 1개}other{탭 #개}}</translation>
-<translation id="4153038609398984088">죄송합니다. 도메인 가입 설정을 파싱할 수 없습니다. 관리자에게 문의하세요.</translation>
 <translation id="4154664944169082762">지문</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
 <translation id="4158739975813877944">재생목록 열기</translation>
@@ -5059,7 +5056,6 @@
 <translation id="8978154919215542464">사용 - 모든 항목 동기화</translation>
 <translation id="897939795688207351"><ph name="ORIGIN" />에서</translation>
 <translation id="8980951173413349704"><ph name="WINDOW_TITLE" /> - 비정상 종료됨</translation>
-<translation id="8983677657449185470">세이프 브라우징 개선에 참여</translation>
 <translation id="8984654317541110628">파일 공유 URL</translation>
 <translation id="8986362086234534611">저장 안함</translation>
 <translation id="8986494364107987395">사용 통계 및 비정상 종료 보고서를 Google에 자동으로 보내기</translation>
