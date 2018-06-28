@@ -28,6 +28,14 @@ p, h2, h3, h4 {
   font-size: smaller;
 }
 
+.good {
+  background-color: rgba(0, 255, 0, 0.1);
+}
+
+.bad {
+  background-color: rgba(255, 0, 0, 0.1);
+}
+
 #help {
   font-family: sans-serif;
   box-sizing: border-box;
@@ -196,6 +204,8 @@ p, h2, h3, h4 {
   <li><b>Enter</b> to see test details. This will automatically close other details.
   <li><b>ctrl A</b> to select text of all tests for easy copying.
   <li><b>f</b> to flag/unflag a test.
+  <li><b>?</b> to blink error region of a failed image test.
+  <li><b>p</b> prints full record of currently selected test to console.
   </ul>
   <p>Modifiers:</p>
   <ul>
@@ -302,6 +312,10 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
     <button onclick="javascript:Query.query('Flaky', Filters.flaky, true)">
       Flaky
       <span id="count_flaky"></span>
+    </button>
+    <button onclick="javascript:Query.query('Unexpected Flaky', Filters.unexpectedFlaky, true)">
+      Unexpected flaky
+      <span id="count_unexpected_flaky"></span>
     </button>
     <button onclick="javascript:Query.query('Flagged', Filters.flagged, true)">
       Flagged
@@ -997,6 +1011,7 @@ const Filters = {
   wontfix: test => test.expected == "WONTFIX",
   all: _ => true,
   flaky: test => test.actualMap.size > 1,
+  unexpectedFlaky: test => test.actualMap.size > 1 && test.expectedMap.size <= 1,
   flagged: test => test.flagged,
   flagFailure: test => { // Tests that are failing, but expected to pass in base.
     if (Filters.containsPass(test.actualMap))
@@ -1268,6 +1283,17 @@ const GUI = {
                 GUI.toggleFlag(expectation.querySelector(".flag"), ev);
             }
             break;
+          case "?":
+          case "/": // Blinks currect image error rect
+            if (document.querySelector(".image-viewer"))
+              document.querySelector(".image-viewer").controller.blinkDiffRect();
+            break;
+          case "p": {
+            let expectation = GUI.getExpectation(ev.target);
+            if (expectation)
+              console.log(Report.getTestById(expectation.getAttribute("data-id")));
+            break;
+          }
         }
       }
     });
@@ -1364,6 +1390,7 @@ const GUI = {
       "count_regressions": 0,
       "count_testexpectations": 0,
       "count_flaky": 0,
+      "count_unexpected_flaky": 0,
       "count_all": 0,
       "count_flagfailure": 0,
       "count_flagpass" : 0
@@ -1379,6 +1406,8 @@ const GUI = {
         counts.count_testexpectations++;
       if (Filters.flaky(test))
         counts.count_flaky++;
+      if (Filters.unexpectedFlaky(test))
+        counts.count_unexpected_flaky++;
       if (Filters.flagFailure(test))
         counts.count_flagfailure++;
       if (Filters.flagPass(test))
@@ -1390,6 +1419,12 @@ const GUI = {
         " filtered:" + counts.count_regressions);
     for (let p in counts)
       document.querySelector("#" + p).innerText = counts[p];
+    if (counts.count_regressions > 0)
+      document.querySelector("#count_regressions").parentElement.classList.add("bad");
+    if (counts.count_unexpected_flaky > 0)
+      document.querySelector("#count_unexpected_flaky").parentElement.classList.add("bad");
+    if (counts.count_unexpected_pass > 0)
+      document.querySelector("#count_unexpected_pass").parentElement.classList.add("good");
 
     document.querySelector("#summary_total").innerText = counts.count_all;
     if (!GUI.hasBaseExpectations)
@@ -1766,6 +1801,7 @@ class ImageResultsViewer {
       overflow: auto;
       max-height: calc(100vh - 80px);
       margin-right: 8px;
+      min-height: 605px;
     }
     .image-viewer-highlight {
       position: absolute;
@@ -1818,7 +1854,7 @@ class ImageResultsViewer {
     // Viewer DOM API
     this.viewer.showImages = this.showImages.bind(this);
     this.viewer.owner = owner;
-
+    this.viewer.controller = this;
     this.viewer.classList.add("image-viewer");
     this.viewer.addEventListener("click", (ev) => {
       this.toggleZoom({x: ev.offsetX, y: ev.offsetY}, ev.target);
@@ -1832,14 +1868,18 @@ class ImageResultsViewer {
       imgTile.addEventListener("wheel", this.boundWheelHandler);
       this.viewer.appendChild(imgTile);
       if (info.title == "Difference") {
-        let diffImage = new Image();
-        diffImage.addEventListener("load", function(ev) {
+        this.diffImage = new Image();
+        this.diffImage.addEventListener("load", function(ev) {
           this.computeDiffRect(ev.target);
         }.bind(this), false);
-        diffImage.src = info.src;
+        this.diffImage.src = info.src;
       }
     }
     return this.viewer;
+  }
+
+  blinkDiffRect() {
+    this.computeDiffRect(this.diffImage);
   }
 
   // public API
