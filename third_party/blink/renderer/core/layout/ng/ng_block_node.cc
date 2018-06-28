@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_flow_thread.h"
 #include "third_party/blink/renderer/core/layout/layout_multi_column_set.h"
@@ -251,8 +252,14 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
     WritingMode container_writing_mode,
     const MinMaxSizeInput& input,
     const NGConstraintSpace* constraint_space) {
+  bool is_orthogonal_flow_root =
+      !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
+
   MinMaxSize sizes;
-  if (!CanUseNewLayout()) {
+  // If we're orthogonal, we have to run layout to compute the sizes. However,
+  // if we're outside of layout, we can't do that. This can happen on Mac.
+  if (!CanUseNewLayout() ||
+      (is_orthogonal_flow_root && !box_->GetFrameView()->IsInPerformLayout())) {
     // TODO(layout-ng): This could be somewhat optimized by directly calling
     // computeIntrinsicLogicalWidths, but that function is currently private.
     // Consider doing that if this becomes a performance issue.
@@ -268,9 +275,6 @@ MinMaxSize NGBlockNode::ComputeMinMaxSize(
   scoped_refptr<NGConstraintSpace> zero_constraint_space =
       CreateConstraintSpaceBuilderForMinMax(*this).ToConstraintSpace(
           Style().GetWritingMode());
-
-  bool is_orthogonal_flow_root =
-      !IsParallelWritingMode(container_writing_mode, Style().GetWritingMode());
 
   if (!constraint_space) {
     // Using the zero-sized constraint space when measuring for an orthogonal

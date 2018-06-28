@@ -23,6 +23,12 @@ MinMaxSize& MinMaxSize::operator+=(const LayoutUnit length) {
   return *this;
 }
 
+MinMaxSize& MinMaxSize::operator-=(const LayoutUnit length) {
+  min_size -= length;
+  max_size -= length;
+  return *this;
+}
+
 std::ostream& operator<<(std::ostream& stream, const MinMaxSize& value) {
   return stream << "(" << value.min_size << ", " << value.max_size << ")";
 }

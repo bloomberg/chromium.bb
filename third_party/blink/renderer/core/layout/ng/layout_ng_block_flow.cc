@@ -5,9 +5,11 @@
 #include "third_party/blink/renderer/core/layout/ng/layout_ng_block_flow.h"
 
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
+#include "third_party/blink/renderer/core/layout/min_max_size.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "third_party/blink/renderer/core/layout/ng/inline/ng_inline_node_data.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_constraint_space.h"
+#include "third_party/blink/renderer/core/layout/ng/ng_constraint_space_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_fragment_builder.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_length_utils.h"
 #include "third_party/blink/renderer/core/layout/ng/ng_out_of_flow_layout_part.h"
@@ -24,6 +26,32 @@ LayoutNGBlockFlow::~LayoutNGBlockFlow() = default;
 bool LayoutNGBlockFlow::IsOfType(LayoutObjectType type) const {
   return type == kLayoutObjectNGBlockFlow ||
          LayoutNGMixin<LayoutBlockFlow>::IsOfType(type);
+}
+
+void LayoutNGBlockFlow::ComputeIntrinsicLogicalWidths(
+    LayoutUnit& min_logical_width,
+    LayoutUnit& max_logical_width) const {
+  NGBlockNode node(const_cast<LayoutNGBlockFlow*>(this));
+  if (!node.CanUseNewLayout()) {
+    LayoutBlockFlow::ComputeIntrinsicLogicalWidths(min_logical_width,
+                                                   max_logical_width);
+    return;
+  }
+  MinMaxSize sizes =
+      node.ComputeMinMaxSize(StyleRef().GetWritingMode(), MinMaxSizeInput());
+  // ComputeMinMaxSize returns a border-box size. This function needs to return
+  // content-box plus scrollbar.
+  // We can't just call BorderAndPaddingLogicalWidth() here because that
+  // handles percentages differently from NG intrinsic sizing.
+  scoped_refptr<NGConstraintSpace> space =
+      NGConstraintSpaceBuilder(node.Style().GetWritingMode(),
+                               node.InitialContainingBlockSize())
+          .ToConstraintSpace(node.Style().GetWritingMode());
+  sizes -=
+      (ComputeBorders(*space, StyleRef()) + ComputePadding(*space, StyleRef()))
+          .InlineSum();
+  min_logical_width = sizes.min_size;
+  max_logical_width = sizes.max_size;
 }
 
 void LayoutNGBlockFlow::UpdateBlockLayout(bool relayout_children) {
