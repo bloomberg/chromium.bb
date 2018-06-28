@@ -82,6 +82,15 @@ const base::Feature kLowPriorityForHiddenFrame{
     "BlinkSchedulerLowPriorityForHiddenFrame",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables setting the priority of an ad frame to low priority.
+const base::Feature kLowPriorityForAdFrame{
+    "BlinkSchedulerLowPriorityForAdFrame", base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enables setting the priority of an ad frame to best effort priority.
+const base::Feature kBestEffortPriorityForAdFrame{
+    "BlinkSchedulerBestEffortPriorityForAdFrame",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables a chosen experiments only during the load use case.
 const base::Feature kExperimentOnlyWhenLoading{
     "BlinkSchedulerExperimentOnlyWhenLoading",

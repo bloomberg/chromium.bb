@@ -651,6 +651,10 @@ MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
   low_priority_subframe_throttleable =
       base::FeatureList::IsEnabled(kLowPriorityForSubFrameThrottleableTask);
 
+  low_priority_ad_frame = base::FeatureList::IsEnabled(kLowPriorityForAdFrame);
+  best_effort_ad_frame =
+      base::FeatureList::IsEnabled(kBestEffortPriorityForAdFrame);
+
   experiment_only_when_loading =
       base::FeatureList::IsEnabled(kExperimentOnlyWhenLoading);
 }

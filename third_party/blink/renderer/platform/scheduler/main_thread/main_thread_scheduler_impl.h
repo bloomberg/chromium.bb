@@ -90,15 +90,19 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // High priority input experiment.
     bool high_priority_input;
 
-    // Background page priority experiment.
+    // Background page priority experiment (crbug.com/848835).
     bool low_priority_background_page;
     bool best_effort_background_page;
 
-    // Task and subframe priority experiment.
+    // Task and subframe priority experiment (crbug.com/852380)
     bool low_priority_subframe;
     bool low_priority_throttleable;
     bool low_priority_subframe_throttleable;
     bool low_priority_hidden_frame;
+
+    // Ads priority experiment (crbug.com/856150)
+    bool low_priority_ad_frame;
+    bool best_effort_ad_frame;
 
     // Turn on relevant experiments during the loading phase.
     bool experiment_only_when_loading;
