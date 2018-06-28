@@ -26,8 +26,10 @@ class ExtensionZoomRequestClient : public zoom::ZoomRequestClient {
   bool ShouldSuppressBubble() const override;
   const Extension* extension() const { return extension_.get(); }
 
- private:
+ protected:
   ~ExtensionZoomRequestClient() override;
+
+ private:
   scoped_refptr<const Extension> extension_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionZoomRequestClient);

@@ -325,9 +325,14 @@ void LocationBarView::ZoomChangedForActiveTab(bool can_show_bubble) {
   }
 
   WebContents* web_contents = GetWebContents();
-  if (can_show_bubble && web_contents) {
+  if (!web_contents)
+    return;
+
+  if (can_show_bubble) {
     ZoomBubbleView::ShowBubble(web_contents, gfx::Point(),
                                ZoomBubbleView::AUTOMATIC);
+  } else {
+    ZoomBubbleView::RefreshBubbleIfShowing(web_contents);
   }
 }
 
