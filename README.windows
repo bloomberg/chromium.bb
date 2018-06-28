@@ -12,19 +12,19 @@ tools. You will also have to set environment variables correctly. You
 can download the Community version of Microsoft Visual Studio, including 
 Visual C++, and the Microsoft Windows SDK for free. It has a batch file 
 that sets environment variables and then displays a command prompt.
-For example, you should add the Visual Studio path 
+
+You might have to add the Visual Studio path 
 (C:\Program Files (x86)\Microsoft Visual Studio\2017\Community) to the 
 "Path" of the environment variables manually.
 
 Next, go to the subdirectory windows. Edit the file configure.mk. If you 
 want 32-bit Unicode change the 2 in the line UCS=2 to a 4.
 
-For example, you should open the "VS 2017 Developer Command Prompt" from 
-the Start menu and use the "cd" command goto the "\liblouis-x.x.x\windows" 
-folder, then type:
+Open the "VS 2017 Developer Command Prompt" from the Start menu and use the 
+"cd" command goto the "\liblouis-x.x.x\windows" folder, then type:
+
 nmake /f Makefile.nmake
 
 The directory will contain liblouis.dll and liblouis.lib, along with 
-object files. 
-Note: those liblouis.dll and liblouis.lib only support for the Windows 
+object files. Note that those liblouis.dll and liblouis.lib only are for  
 32-bit usage.
