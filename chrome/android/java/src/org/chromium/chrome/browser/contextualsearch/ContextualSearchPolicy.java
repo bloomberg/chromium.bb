@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextualsearch;
 
 import android.content.Context;
 import android.net.Uri;
+import android.support.annotation.Nullable;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 
@@ -23,8 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 
 /**
@@ -185,23 +184,26 @@ class ContextualSearchPolicy {
                 promoTapCounter.increment();
             }
         }
-        int tapsSinceOpen = mPreferenceManager.getContextualSearchTapCount();
-        mPreferenceManager.setContextualSearchTapCount(++tapsSinceOpen);
+        int tapsSinceOpen = mPreferenceManager.incrementInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
         if (isUserUndecided()) {
             ContextualSearchUma.logTapsSinceOpenForUndecided(tapsSinceOpen);
         } else {
             ContextualSearchUma.logTapsSinceOpenForDecided(tapsSinceOpen);
         }
+        mPreferenceManager.incrementInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT);
     }
 
     /**
      * Updates all the counters to account for an open-action on the panel.
      */
     void updateCountersForOpen() {
-        // Always completely reset the tap counter, since it just counts taps
-        // since the last open.
-        mPreferenceManager.setContextualSearchTapCount(0);
-        mPreferenceManager.setContextualSearchTapQuickAnswerCount(0);
+        // Always completely reset the tap counters that accumulate only since the last open.
+        mPreferenceManager.writeInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT, 0);
+        mPreferenceManager.writeInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT, 0);
 
         // Disable the "promo tap" counter, but only if we're using the Opt-out onboarding.
         // For Opt-in, we never disable the promo tap counter.
@@ -209,10 +211,12 @@ class ContextualSearchPolicy {
             getPromoTapCounter().disable();
 
             // Bump the total-promo-opens counter.
-            int count = mPreferenceManager.getContextualSearchPromoOpenCount();
-            mPreferenceManager.setContextualSearchPromoOpenCount(++count);
+            int count = mPreferenceManager.incrementInt(
+                    ChromePreferenceManager.CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT);
             ContextualSearchUma.logPromoOpenCount(count);
         }
+        mPreferenceManager.incrementInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT);
     }
 
     /**
@@ -223,9 +227,10 @@ class ContextualSearchPolicy {
      */
     void updateCountersForQuickAnswer(boolean wasActivatedByTap, boolean doesAnswer) {
         if (wasActivatedByTap && doesAnswer) {
-            int tapsWithAnswerSinceOpen =
-                    mPreferenceManager.getContextualSearchTapQuickAnswerCount();
-            mPreferenceManager.setContextualSearchTapQuickAnswerCount(++tapsWithAnswerSinceOpen);
+            mPreferenceManager.incrementInt(
+                    ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT);
+            mPreferenceManager.incrementInt(
+                    ChromePreferenceManager.CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT);
         }
     }
 
@@ -364,7 +369,8 @@ class ContextualSearchPolicy {
      */
     @VisibleForTesting
     int getPromoOpenCount() {
-        return mPreferenceManager.getContextualSearchPromoOpenCount();
+        return mPreferenceManager.readInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT);
     }
 
     /**
@@ -372,7 +378,8 @@ class ContextualSearchPolicy {
      */
     @VisibleForTesting
     int getTapCount() {
-        return mPreferenceManager.getContextualSearchTapCount();
+        return mPreferenceManager.readInt(
+                ChromePreferenceManager.CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT);
     }
 
     // --------------------------------------------------------------------------------------------

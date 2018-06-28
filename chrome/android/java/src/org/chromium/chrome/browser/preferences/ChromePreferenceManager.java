@@ -20,7 +20,68 @@ import java.util.Set;
  * ChromePreferenceManager stores and retrieves various values in Android shared preferences.
  */
 public class ChromePreferenceManager {
-    private static final String TAG = "preferences";
+    // For new int values with a default of 0, just document the key and its usage, and call
+    // #readInt and #writeInt directly.
+
+    /** An all-time counter of taps that triggered the Contextual Search peeking panel. */
+    public static final String CONTEXTUAL_SEARCH_ALL_TIME_TAP_COUNT =
+            "contextual_search_all_time_tap_count";
+    /** An all-time counter of Contextual Search panel opens triggered by any gesture.*/
+    public static final String CONTEXTUAL_SEARCH_ALL_TIME_OPEN_COUNT =
+            "contextual_search_all_time_open_count";
+    /**
+     * The number of times a tap gesture caused a Contextual Search Quick Answer to be shown.
+     * Cumulative, starting at M-69.
+     */
+    public static final String CONTEXTUAL_SEARCH_ALL_TIME_TAP_QUICK_ANSWER_COUNT =
+            "contextual_search_all_time_tap_quick_answer_count";
+    /**
+     * The number of times that a tap triggered the Contextual Search panel to peek since the last
+     * time the panel was opened.  Note legacy string value without "open".
+     */
+    public static final String CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_COUNT =
+            "contextual_search_tap_count";
+    /**
+     * The number of times a tap gesture caused a Contextual Search Quick Answer to be shown since
+     * the last time the panel was opened.  Note legacy string value without "open".
+     */
+    public static final String CONTEXTUAL_SEARCH_TAP_SINCE_OPEN_QUICK_ANSWER_COUNT =
+            "contextual_search_tap_quick_answer_count";
+    /**
+     * The number of times the Contextual Search panel was opened with the opt-in promo visible.
+     */
+    public static final String CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT =
+            "contextual_search_promo_open_count";
+    /**
+     * The entity-data impressions count for Contextual Search, i.e. thumbnails shown in the Bar.
+     * Cumulative, starting at M-69.
+     */
+    public static final String CONTEXTUAL_SEARCH_ENTITY_IMPRESSIONS_COUNT =
+            "contextual_search_entity_impressions_count";
+    /**
+     * The entity-data opens count for Contextual Search, e.g. Panel opens following thumbnails
+     * shown in the Bar. Cumulative, starting at M-69.
+     */
+    public static final String CONTEXTUAL_SEARCH_ENTITY_OPENS_COUNT =
+            "contextual_search_entity_opens_count";
+    /**
+     * The Quick Action impressions count for Contextual Search, i.e. actions presented in the Bar.
+     * Cumulative, starting at M-69.
+     */
+    public static final String CONTEXTUAL_SEARCH_QUICK_ACTION_IMPRESSIONS_COUNT =
+            "contextual_search_quick_action_impressions_count";
+    /**
+     * The Quick Actions taken count for Contextual Search, i.e. phone numbers dialed and similar
+     * actions. Cumulative, starting at M-69.
+     */
+    public static final String CONTEXTUAL_SEARCH_QUICK_ACTIONS_TAKEN_COUNT =
+            "contextual_search_quick_actions_taken_count";
+    /**
+     * The Quick Actions ignored count, i.e. phone numbers available but not dialed.
+     * Cumulative, starting at M-69.
+     */
+    public static final String CONTEXTUAL_SEARCH_QUICK_ACTIONS_IGNORED_COUNT =
+            "contextual_search_quick_actions_ignored_count";
 
     private static final String PROMOS_SKIPPED_ON_FIRST_START = "promos_skipped_on_first_start";
     private static final String SIGNIN_PROMO_LAST_SHOWN_MAJOR_VERSION =
@@ -29,15 +90,10 @@ public class ChromePreferenceManager {
             "signin_promo_last_shown_account_names";
     private static final String ALLOW_LOW_END_DEVICE_UI = "allow_low_end_device_ui";
     private static final String PREF_WEBSITE_SETTINGS_FILTER = "website_settings_filter";
-    private static final String CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT =
-            "contextual_search_promo_open_count";
     private static final String CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT =
             "contextual_search_tap_triggered_promo_count";
-    private static final String CONTEXTUAL_SEARCH_TAP_COUNT = "contextual_search_tap_count";
     private static final String CONTEXTUAL_SEARCH_LAST_ANIMATION_TIME =
             "contextual_search_last_animation_time";
-    private static final String CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT =
-            "contextual_search_tap_quick_answer_count";
     private static final String CONTEXTUAL_SEARCH_CURRENT_WEEK_NUMBER =
             "contextual_search_current_week_number";
     private static final String CHROME_HOME_ENABLED_KEY = "chrome_home_enabled";
@@ -227,21 +283,6 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * @return Number of times the panel was opened with the promo visible.
-     */
-    public int getContextualSearchPromoOpenCount() {
-        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT, 0);
-    }
-
-    /**
-     * Sets the number of times the panel was opened with the promo visible.
-     * @param count Number of times the panel was opened with a promo visible.
-     */
-    public void setContextualSearchPromoOpenCount(int count) {
-        writeInt(CONTEXTUAL_SEARCH_PROMO_OPEN_COUNT, count);
-    }
-
-    /**
      * @return The last time the search provider icon was animated on tap.
      */
     public long getContextualSearchLastAnimationTime() {
@@ -274,41 +315,6 @@ public class ChromePreferenceManager {
      */
     public void setContextualSearchTapTriggeredPromoCount(int count) {
         writeInt(CONTEXTUAL_SEARCH_TAP_TRIGGERED_PROMO_COUNT, count);
-    }
-
-    /**
-     * @return Number of tap gestures that have been received since the last time the panel was
-     *         opened.
-     */
-    public int getContextualSearchTapCount() {
-        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_TAP_COUNT, 0);
-    }
-
-    /**
-     * Sets the number of tap gestures that have been received since the last time the panel was
-     * opened.
-     * @param count Number of taps that have been received since the last time the panel was opened.
-     */
-    public void setContextualSearchTapCount(int count) {
-        writeInt(CONTEXTUAL_SEARCH_TAP_COUNT, count);
-    }
-
-    /**
-     * @return Number of Tap triggered Quick Answers (that "do answer") that have been shown since
-     *         the last time the panel was opened.
-     */
-    public int getContextualSearchTapQuickAnswerCount() {
-        return mSharedPreferences.getInt(CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT, 0);
-    }
-
-    /**
-     * Sets the number of tap triggered Quick Answers (that "do answer") that have been shown since
-     * the last time the panel was opened.
-     * @param count Number of Tap triggered Quick Answers (that "do answer") that have been shown
-     *              since the last time the panel was opened.
-     */
-    public void setContextualSearchTapQuickAnswerCount(int count) {
-        writeInt(CONTEXTUAL_SEARCH_TAP_QUICK_ANSWER_COUNT, count);
     }
 
     /**
@@ -481,7 +487,7 @@ public class ChromePreferenceManager {
         writeBoolean(COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, isEnabled);
     }
 
-    /** Retunr whether command line on non-rooted devices is enabled. */
+    /** Returns whether command line on non-rooted devices is enabled. */
     public boolean getCommandLineOnNonRootedEnabled() {
         return mSharedPreferences.getBoolean(COMMAND_LINE_ON_NON_ROOTED_ENABLED_KEY, false);
     }
@@ -575,12 +581,24 @@ public class ChromePreferenceManager {
     }
 
     /**
-     * Reads the given int value from the named shared preference.
+     * Reads the given int value from the named shared preference, defaulting to 0 if not found.
      * @param key The name of the preference to return.
      * @return The value of the preference.
      */
     public int readInt(String key) {
         return mSharedPreferences.getInt(key, 0);
+    }
+
+    /**
+     * Increments the integer value specified by the given key.  If no initial value is present then
+     * an initial value of 0 is assumed and incremented, so a new value of 1 is set.
+     * @param key The key specifying which integer value to increment.
+     * @return The newly incremented value.
+     */
+    public int incrementInt(String key) {
+        int value = mSharedPreferences.getInt(key, 0);
+        writeInt(key, ++value);
+        return value;
     }
 
     /**
@@ -604,18 +622,6 @@ public class ChromePreferenceManager {
      */
     private long readLong(String key, long defaultValue) {
         return mSharedPreferences.getLong(key, defaultValue);
-    }
-
-    /**
-     * Writes the given String to the named shared preference.
-     *
-     * @param key The name of the preference to modify.
-     * @param value The new value for the preference.
-     */
-    private void writeString(String key, String value) {
-        SharedPreferences.Editor ed = mSharedPreferences.edit();
-        ed.putString(key, value);
-        ed.apply();
     }
 
     /**
