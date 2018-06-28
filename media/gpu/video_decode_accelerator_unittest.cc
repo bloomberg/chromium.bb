@@ -561,11 +561,10 @@ void GLRenderingVDAClient::DismissPictureBuffer(int32_t picture_buffer_id) {
 }
 
 void GLRenderingVDAClient::PictureReady(const Picture& picture) {
-  // We shouldn't be getting pictures delivered after Reset has completed.
-  LOG_ASSERT(state_ < CS_RESET);
-
   if (decoder_deleted())
     return;
+  // We shouldn't be getting pictures delivered after Reset has completed.
+  LOG_ASSERT(state_ < CS_RESET);
 
   gfx::Rect visible_rect = picture.visible_rect();
   if (!visible_rect.IsEmpty())
