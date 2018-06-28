@@ -69,7 +69,7 @@ AccessibilityTest.define('SettingsA11yManagePasswords', {
         // Passwords section should be loaded before setup is complete.
         this.passwordsSection = settingsUi.$$('settings-main')
                                     .$$('settings-basic-page')
-                                    .$$('settings-passwords-and-forms-page')
+                                    .$$('settings-people-page')
                                     .$$('passwords-section');
         assertTrue(!!this.passwordsSection);
 

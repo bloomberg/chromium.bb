@@ -327,6 +327,12 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("unifiedConsentEnabled",
                           IsUnifiedConsentEnabled(profile));
 
+  // TODO(jdoerrie): https://crbug.com/854562.
+  // Remove once Autofill Home is launched.
+  html_source->AddBoolean(
+      "autofillHomeEnabled",
+      base::FeatureList::IsEnabled(password_manager::features::kAutofillHome));
+
   html_source->AddBoolean("showImportPasswords",
                           base::FeatureList::IsEnabled(
                               password_manager::features::kPasswordImport));

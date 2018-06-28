@@ -163,11 +163,13 @@
             <iron-icon icon="cr:security"></iron-icon>
             $i18n{privacyPageTitle}
           </a>
-          <a id= "passwordsAndForms" href="/passwordsAndForms"
-              hidden="[[!pageVisibility.passwordsAndForms]]">
-            <iron-icon icon="settings:assignment"></iron-icon>
-            $i18n{passwordsAndAutofillPageTitle}
-          </a>
+          <template is="dom-if" if="[[!autofillHomeEnabled]]">
+            <a id="passwordsAndForms" href="/passwordsAndForms"
+                hidden="[[!pageVisibility.passwordsAndForms]]">
+              <iron-icon icon="settings:assignment"></iron-icon>
+              $i18n{passwordsAndAutofillPageTitle}
+            </a>
+          </template>
           <a href="/languages">
             <iron-icon icon="settings:language"></iron-icon>
             $i18n{languagesPageTitle}

@@ -3,6 +3,7 @@
 <link rel="import" href="chrome://resources/cr_elements/cr_icons_css.html">
 <link rel="import" href="chrome://resources/cr_elements/hidden_style_css.html">
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-ripple-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/default-theme.html">
 
@@ -42,6 +43,13 @@
         pointer-events: none;
       }
 
+      #startIcon {
+        -webkit-padding-end: var(--cr-icon-button-margin-start);
+        display: flex;
+        flex-shrink: 0;
+        width: var(--cr-link-row-icon-width, var(--cr-icon-size));
+      }
+
       #icon {
         /* The |_rippleContainer| must be position relative. */
         position: relative;
@@ -79,6 +87,9 @@
     </style>
     <button disabled="[[disabled]]">
       <div id="outer" noSubLabel$="[[!subLabel]]">
+        <iron-icon id="startIcon" icon="[[startIcon]]" hidden="[[!startIcon]]"
+            aria-hidden="true">
+        </iron-icon>
         <div id="labelWrapper" hidden="[[!label]]">
           <div id="label" class="label">[[label]]</div>
           <div id="subLabel" class="secondary label">[[subLabel]]</div>
