@@ -329,6 +329,18 @@ public class NewTabPageView extends FrameLayout {
         mNewTabPageLayout.getSearchBoxBounds(bounds, translation, this);
     }
 
+    @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+
+        // Trigger a scroll update when reattaching the window to signal the toolbar that
+        // it needs to reset the NTP state. Note that this is handled here rather than
+        // NewTabPageLayout#onAttachedToWindow() because NewTabPageLayout may not be
+        // immediately attached to the window if the RecyclerView is scrolled when the NTP
+        // is refocused.
+        if (mManager.isLocationBarShownInNTP()) mNewTabPageLayout.updateSearchBoxOnScroll();
+    }
+
     /**
      * @see InvalidationAwareThumbnailProvider#shouldCaptureThumbnail()
      */

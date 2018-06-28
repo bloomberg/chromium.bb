@@ -719,10 +719,6 @@ public class NewTabPageLayout
             onInitializationProgressChanged();
             NewTabPageUma.recordSearchAvailableLoadTime(mTab.getActivity());
             TraceEvent.instant("NewTabPageSearchAvailable)");
-        } else {
-            // Trigger a scroll update when reattaching the window to signal the toolbar that
-            // it needs to reset the NTP state.
-            if (mManager.isLocationBarShownInNTP()) updateSearchBoxOnScroll();
         }
     }
 
