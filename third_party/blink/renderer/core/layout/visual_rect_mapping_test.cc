@@ -67,8 +67,7 @@ class VisualRectMappingTest : public PaintTestConfigurations,
     // The following condition can be false if paintInvalidationContainer is
     // a LayoutView and compositing is not enabled.
     if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled() &&
-        (flags && AdjustForBacking) &&
-        ancestor.IsPaintInvalidationContainer()) {
+        (flags & AdjustForBacking) && ancestor.IsPaintInvalidationContainer()) {
       PaintLayer::MapRectInPaintInvalidationContainerToBacking(ancestor,
                                                                slow_map_rect);
       LayoutRect temp(geometry_mapper_rect.Rect());
