@@ -26,28 +26,29 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
   // vkGetInstanceProcAddr must be handled specially since it gets its function
   // pointer through base::GetFunctionPOinterFromNativeLibrary(). Other Vulkan
   // functions don't do this.
-  vkGetInstanceProcAddr = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
+  vkGetInstanceProcAddrFn = reinterpret_cast<PFN_vkGetInstanceProcAddr>(
       base::GetFunctionPointerFromNativeLibrary(vulkan_loader_library_,
                                                 "vkGetInstanceProcAddr"));
-  if (!vkGetInstanceProcAddr)
+  if (!vkGetInstanceProcAddrFn)
     return false;
 
-  vkCreateInstance = reinterpret_cast<PFN_vkCreateInstance>(
-      vkGetInstanceProcAddr(nullptr, "vkCreateInstance"));
-  if (!vkCreateInstance)
+  vkCreateInstanceFn = reinterpret_cast<PFN_vkCreateInstance>(
+      vkGetInstanceProcAddrFn(nullptr, "vkCreateInstance"));
+  if (!vkCreateInstanceFn)
     return false;
 
-  vkEnumerateInstanceExtensionProperties =
+  vkEnumerateInstanceExtensionPropertiesFn =
       reinterpret_cast<PFN_vkEnumerateInstanceExtensionProperties>(
-          vkGetInstanceProcAddr(nullptr,
-                                "vkEnumerateInstanceExtensionProperties"));
-  if (!vkEnumerateInstanceExtensionProperties)
+          vkGetInstanceProcAddrFn(nullptr,
+                                  "vkEnumerateInstanceExtensionProperties"));
+  if (!vkEnumerateInstanceExtensionPropertiesFn)
     return false;
 
-  vkEnumerateInstanceLayerProperties =
+  vkEnumerateInstanceLayerPropertiesFn =
       reinterpret_cast<PFN_vkEnumerateInstanceLayerProperties>(
-          vkGetInstanceProcAddr(nullptr, "vkEnumerateInstanceLayerProperties"));
-  if (!vkEnumerateInstanceLayerProperties)
+          vkGetInstanceProcAddrFn(nullptr,
+                                  "vkEnumerateInstanceLayerProperties"));
+  if (!vkEnumerateInstanceLayerPropertiesFn)
     return false;
 
   return true;
@@ -55,19 +56,20 @@ bool VulkanFunctionPointers::BindUnassociatedFunctionPointers() {
 
 bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     VkInstance vk_instance) {
-  vkDestroyInstance = reinterpret_cast<PFN_vkDestroyInstance>(
-      vkGetInstanceProcAddr(vk_instance, "vkDestroyInstance"));
-  if (!vkDestroyInstance)
+  vkDestroyInstanceFn = reinterpret_cast<PFN_vkDestroyInstance>(
+      vkGetInstanceProcAddrFn(vk_instance, "vkDestroyInstance"));
+  if (!vkDestroyInstanceFn)
     return false;
 
-  vkEnumeratePhysicalDevices = reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
-      vkGetInstanceProcAddr(vk_instance, "vkEnumeratePhysicalDevices"));
-  if (!vkEnumeratePhysicalDevices)
+  vkEnumeratePhysicalDevicesFn =
+      reinterpret_cast<PFN_vkEnumeratePhysicalDevices>(
+          vkGetInstanceProcAddrFn(vk_instance, "vkEnumeratePhysicalDevices"));
+  if (!vkEnumeratePhysicalDevicesFn)
     return false;
 
-  vkGetDeviceProcAddr = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
-      vkGetInstanceProcAddr(vk_instance, "vkGetDeviceProcAddr"));
-  if (!vkGetDeviceProcAddr)
+  vkGetDeviceProcAddrFn = reinterpret_cast<PFN_vkGetDeviceProcAddr>(
+      vkGetInstanceProcAddrFn(vk_instance, "vkGetDeviceProcAddr"));
+  if (!vkGetDeviceProcAddrFn)
     return false;
 
   return true;
@@ -75,23 +77,23 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
 
 bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
     VkInstance vk_instance) {
-  vkCreateDevice = reinterpret_cast<PFN_vkCreateDevice>(
-      vkGetInstanceProcAddr(vk_instance, "vkCreateDevice"));
-  if (!vkCreateDevice)
+  vkCreateDeviceFn = reinterpret_cast<PFN_vkCreateDevice>(
+      vkGetInstanceProcAddrFn(vk_instance, "vkCreateDevice"));
+  if (!vkCreateDeviceFn)
     return false;
 
-  vkEnumerateDeviceLayerProperties =
+  vkEnumerateDeviceLayerPropertiesFn =
       reinterpret_cast<PFN_vkEnumerateDeviceLayerProperties>(
-          vkGetInstanceProcAddr(vk_instance,
-                                "vkEnumerateDeviceLayerProperties"));
-  if (!vkEnumerateDeviceLayerProperties)
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkEnumerateDeviceLayerProperties"));
+  if (!vkEnumerateDeviceLayerPropertiesFn)
     return false;
 
-  vkGetPhysicalDeviceQueueFamilyProperties =
+  vkGetPhysicalDeviceQueueFamilyPropertiesFn =
       reinterpret_cast<PFN_vkGetPhysicalDeviceQueueFamilyProperties>(
-          vkGetInstanceProcAddr(vk_instance,
-                                "vkGetPhysicalDeviceQueueFamilyProperties"));
-  if (!vkGetPhysicalDeviceQueueFamilyProperties)
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkGetPhysicalDeviceQueueFamilyProperties"));
+  if (!vkGetPhysicalDeviceQueueFamilyPropertiesFn)
     return false;
 
   return true;
@@ -99,247 +101,247 @@ bool VulkanFunctionPointers::BindPhysicalDeviceFunctionPointers(
 
 bool VulkanFunctionPointers::BindDeviceFunctionPointers(VkDevice vk_device) {
   // Device functions
-  vkAllocateCommandBuffers = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
-      vkGetDeviceProcAddr(vk_device, "vkAllocateCommandBuffers"));
-  if (!vkAllocateCommandBuffers)
+  vkAllocateCommandBuffersFn = reinterpret_cast<PFN_vkAllocateCommandBuffers>(
+      vkGetDeviceProcAddrFn(vk_device, "vkAllocateCommandBuffers"));
+  if (!vkAllocateCommandBuffersFn)
     return false;
 
-  vkAllocateDescriptorSets = reinterpret_cast<PFN_vkAllocateDescriptorSets>(
-      vkGetDeviceProcAddr(vk_device, "vkAllocateDescriptorSets"));
-  if (!vkAllocateDescriptorSets)
+  vkAllocateDescriptorSetsFn = reinterpret_cast<PFN_vkAllocateDescriptorSets>(
+      vkGetDeviceProcAddrFn(vk_device, "vkAllocateDescriptorSets"));
+  if (!vkAllocateDescriptorSetsFn)
     return false;
 
-  vkCreateCommandPool = reinterpret_cast<PFN_vkCreateCommandPool>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateCommandPool"));
-  if (!vkCreateCommandPool)
+  vkCreateCommandPoolFn = reinterpret_cast<PFN_vkCreateCommandPool>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateCommandPool"));
+  if (!vkCreateCommandPoolFn)
     return false;
 
-  vkCreateDescriptorPool = reinterpret_cast<PFN_vkCreateDescriptorPool>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateDescriptorPool"));
-  if (!vkCreateDescriptorPool)
+  vkCreateDescriptorPoolFn = reinterpret_cast<PFN_vkCreateDescriptorPool>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateDescriptorPool"));
+  if (!vkCreateDescriptorPoolFn)
     return false;
 
-  vkCreateDescriptorSetLayout =
+  vkCreateDescriptorSetLayoutFn =
       reinterpret_cast<PFN_vkCreateDescriptorSetLayout>(
-          vkGetDeviceProcAddr(vk_device, "vkCreateDescriptorSetLayout"));
-  if (!vkCreateDescriptorSetLayout)
+          vkGetDeviceProcAddrFn(vk_device, "vkCreateDescriptorSetLayout"));
+  if (!vkCreateDescriptorSetLayoutFn)
     return false;
 
-  vkCreateFence = reinterpret_cast<PFN_vkCreateFence>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateFence"));
-  if (!vkCreateFence)
+  vkCreateFenceFn = reinterpret_cast<PFN_vkCreateFence>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateFence"));
+  if (!vkCreateFenceFn)
     return false;
 
-  vkCreateFramebuffer = reinterpret_cast<PFN_vkCreateFramebuffer>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateFramebuffer"));
-  if (!vkCreateFramebuffer)
+  vkCreateFramebufferFn = reinterpret_cast<PFN_vkCreateFramebuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateFramebuffer"));
+  if (!vkCreateFramebufferFn)
     return false;
 
-  vkCreateImageView = reinterpret_cast<PFN_vkCreateImageView>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateImageView"));
-  if (!vkCreateImageView)
+  vkCreateImageViewFn = reinterpret_cast<PFN_vkCreateImageView>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateImageView"));
+  if (!vkCreateImageViewFn)
     return false;
 
-  vkCreateRenderPass = reinterpret_cast<PFN_vkCreateRenderPass>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateRenderPass"));
-  if (!vkCreateRenderPass)
+  vkCreateRenderPassFn = reinterpret_cast<PFN_vkCreateRenderPass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateRenderPass"));
+  if (!vkCreateRenderPassFn)
     return false;
 
-  vkCreateSampler = reinterpret_cast<PFN_vkCreateSampler>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateSampler"));
-  if (!vkCreateSampler)
+  vkCreateSamplerFn = reinterpret_cast<PFN_vkCreateSampler>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateSampler"));
+  if (!vkCreateSamplerFn)
     return false;
 
-  vkCreateSemaphore = reinterpret_cast<PFN_vkCreateSemaphore>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateSemaphore"));
-  if (!vkCreateSemaphore)
+  vkCreateSemaphoreFn = reinterpret_cast<PFN_vkCreateSemaphore>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateSemaphore"));
+  if (!vkCreateSemaphoreFn)
     return false;
 
-  vkCreateShaderModule = reinterpret_cast<PFN_vkCreateShaderModule>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateShaderModule"));
-  if (!vkCreateShaderModule)
+  vkCreateShaderModuleFn = reinterpret_cast<PFN_vkCreateShaderModule>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateShaderModule"));
+  if (!vkCreateShaderModuleFn)
     return false;
 
-  vkDestroyCommandPool = reinterpret_cast<PFN_vkDestroyCommandPool>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyCommandPool"));
-  if (!vkDestroyCommandPool)
+  vkDestroyCommandPoolFn = reinterpret_cast<PFN_vkDestroyCommandPool>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyCommandPool"));
+  if (!vkDestroyCommandPoolFn)
     return false;
 
-  vkDestroyDescriptorPool = reinterpret_cast<PFN_vkDestroyDescriptorPool>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyDescriptorPool"));
-  if (!vkDestroyDescriptorPool)
+  vkDestroyDescriptorPoolFn = reinterpret_cast<PFN_vkDestroyDescriptorPool>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyDescriptorPool"));
+  if (!vkDestroyDescriptorPoolFn)
     return false;
 
-  vkDestroyDescriptorSetLayout =
+  vkDestroyDescriptorSetLayoutFn =
       reinterpret_cast<PFN_vkDestroyDescriptorSetLayout>(
-          vkGetDeviceProcAddr(vk_device, "vkDestroyDescriptorSetLayout"));
-  if (!vkDestroyDescriptorSetLayout)
+          vkGetDeviceProcAddrFn(vk_device, "vkDestroyDescriptorSetLayout"));
+  if (!vkDestroyDescriptorSetLayoutFn)
     return false;
 
-  vkDestroyDevice = reinterpret_cast<PFN_vkDestroyDevice>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyDevice"));
-  if (!vkDestroyDevice)
+  vkDestroyDeviceFn = reinterpret_cast<PFN_vkDestroyDevice>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyDevice"));
+  if (!vkDestroyDeviceFn)
     return false;
 
-  vkDestroyFramebuffer = reinterpret_cast<PFN_vkDestroyFramebuffer>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyFramebuffer"));
-  if (!vkDestroyFramebuffer)
+  vkDestroyFramebufferFn = reinterpret_cast<PFN_vkDestroyFramebuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyFramebuffer"));
+  if (!vkDestroyFramebufferFn)
     return false;
 
-  vkDestroyFence = reinterpret_cast<PFN_vkDestroyFence>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyFence"));
-  if (!vkDestroyFence)
+  vkDestroyFenceFn = reinterpret_cast<PFN_vkDestroyFence>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyFence"));
+  if (!vkDestroyFenceFn)
     return false;
 
-  vkDestroyImage = reinterpret_cast<PFN_vkDestroyImage>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyImage"));
-  if (!vkDestroyImage)
+  vkDestroyImageFn = reinterpret_cast<PFN_vkDestroyImage>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyImage"));
+  if (!vkDestroyImageFn)
     return false;
 
-  vkDestroyImageView = reinterpret_cast<PFN_vkDestroyImageView>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyImageView"));
-  if (!vkDestroyImageView)
+  vkDestroyImageViewFn = reinterpret_cast<PFN_vkDestroyImageView>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyImageView"));
+  if (!vkDestroyImageViewFn)
     return false;
 
-  vkDestroyRenderPass = reinterpret_cast<PFN_vkDestroyRenderPass>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyRenderPass"));
-  if (!vkDestroyRenderPass)
+  vkDestroyRenderPassFn = reinterpret_cast<PFN_vkDestroyRenderPass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyRenderPass"));
+  if (!vkDestroyRenderPassFn)
     return false;
 
-  vkDestroySampler = reinterpret_cast<PFN_vkDestroySampler>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroySampler"));
-  if (!vkDestroySampler)
+  vkDestroySamplerFn = reinterpret_cast<PFN_vkDestroySampler>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroySampler"));
+  if (!vkDestroySamplerFn)
     return false;
 
-  vkDestroySemaphore = reinterpret_cast<PFN_vkDestroySemaphore>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroySemaphore"));
-  if (!vkDestroySemaphore)
+  vkDestroySemaphoreFn = reinterpret_cast<PFN_vkDestroySemaphore>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroySemaphore"));
+  if (!vkDestroySemaphoreFn)
     return false;
 
-  vkDestroyShaderModule = reinterpret_cast<PFN_vkDestroyShaderModule>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroyShaderModule"));
-  if (!vkDestroyShaderModule)
+  vkDestroyShaderModuleFn = reinterpret_cast<PFN_vkDestroyShaderModule>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroyShaderModule"));
+  if (!vkDestroyShaderModuleFn)
     return false;
 
-  vkFreeCommandBuffers = reinterpret_cast<PFN_vkFreeCommandBuffers>(
-      vkGetDeviceProcAddr(vk_device, "vkFreeCommandBuffers"));
-  if (!vkFreeCommandBuffers)
+  vkFreeCommandBuffersFn = reinterpret_cast<PFN_vkFreeCommandBuffers>(
+      vkGetDeviceProcAddrFn(vk_device, "vkFreeCommandBuffers"));
+  if (!vkFreeCommandBuffersFn)
     return false;
 
-  vkFreeDescriptorSets = reinterpret_cast<PFN_vkFreeDescriptorSets>(
-      vkGetDeviceProcAddr(vk_device, "vkFreeDescriptorSets"));
-  if (!vkFreeDescriptorSets)
+  vkFreeDescriptorSetsFn = reinterpret_cast<PFN_vkFreeDescriptorSets>(
+      vkGetDeviceProcAddrFn(vk_device, "vkFreeDescriptorSets"));
+  if (!vkFreeDescriptorSetsFn)
     return false;
 
-  vkFreeMemory = reinterpret_cast<PFN_vkFreeMemory>(
-      vkGetDeviceProcAddr(vk_device, "vkFreeMemory"));
-  if (!vkFreeMemory)
+  vkFreeMemoryFn = reinterpret_cast<PFN_vkFreeMemory>(
+      vkGetDeviceProcAddrFn(vk_device, "vkFreeMemory"));
+  if (!vkFreeMemoryFn)
     return false;
 
-  vkGetDeviceQueue = reinterpret_cast<PFN_vkGetDeviceQueue>(
-      vkGetDeviceProcAddr(vk_device, "vkGetDeviceQueue"));
-  if (!vkGetDeviceQueue)
+  vkGetDeviceQueueFn = reinterpret_cast<PFN_vkGetDeviceQueue>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetDeviceQueue"));
+  if (!vkGetDeviceQueueFn)
     return false;
 
-  vkGetFenceStatus = reinterpret_cast<PFN_vkGetFenceStatus>(
-      vkGetDeviceProcAddr(vk_device, "vkGetFenceStatus"));
-  if (!vkGetFenceStatus)
+  vkGetFenceStatusFn = reinterpret_cast<PFN_vkGetFenceStatus>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetFenceStatus"));
+  if (!vkGetFenceStatusFn)
     return false;
 
-  vkResetFences = reinterpret_cast<PFN_vkResetFences>(
-      vkGetDeviceProcAddr(vk_device, "vkResetFences"));
-  if (!vkResetFences)
+  vkResetFencesFn = reinterpret_cast<PFN_vkResetFences>(
+      vkGetDeviceProcAddrFn(vk_device, "vkResetFences"));
+  if (!vkResetFencesFn)
     return false;
 
-  vkUpdateDescriptorSets = reinterpret_cast<PFN_vkUpdateDescriptorSets>(
-      vkGetDeviceProcAddr(vk_device, "vkUpdateDescriptorSets"));
-  if (!vkUpdateDescriptorSets)
+  vkUpdateDescriptorSetsFn = reinterpret_cast<PFN_vkUpdateDescriptorSets>(
+      vkGetDeviceProcAddrFn(vk_device, "vkUpdateDescriptorSets"));
+  if (!vkUpdateDescriptorSetsFn)
     return false;
 
-  vkWaitForFences = reinterpret_cast<PFN_vkWaitForFences>(
-      vkGetDeviceProcAddr(vk_device, "vkWaitForFences"));
-  if (!vkWaitForFences)
+  vkWaitForFencesFn = reinterpret_cast<PFN_vkWaitForFences>(
+      vkGetDeviceProcAddrFn(vk_device, "vkWaitForFences"));
+  if (!vkWaitForFencesFn)
     return false;
 
   // Queue functions
-  vkQueueSubmit = reinterpret_cast<PFN_vkQueueSubmit>(
-      vkGetDeviceProcAddr(vk_device, "vkQueueSubmit"));
-  if (!vkQueueSubmit)
+  vkQueueSubmitFn = reinterpret_cast<PFN_vkQueueSubmit>(
+      vkGetDeviceProcAddrFn(vk_device, "vkQueueSubmit"));
+  if (!vkQueueSubmitFn)
     return false;
 
-  vkQueueWaitIdle = reinterpret_cast<PFN_vkQueueWaitIdle>(
-      vkGetDeviceProcAddr(vk_device, "vkQueueWaitIdle"));
-  if (!vkQueueWaitIdle)
+  vkQueueWaitIdleFn = reinterpret_cast<PFN_vkQueueWaitIdle>(
+      vkGetDeviceProcAddrFn(vk_device, "vkQueueWaitIdle"));
+  if (!vkQueueWaitIdleFn)
     return false;
 
   // Command Buffer functions
-  vkBeginCommandBuffer = reinterpret_cast<PFN_vkBeginCommandBuffer>(
-      vkGetDeviceProcAddr(vk_device, "vkBeginCommandBuffer"));
-  if (!vkBeginCommandBuffer)
+  vkBeginCommandBufferFn = reinterpret_cast<PFN_vkBeginCommandBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkBeginCommandBuffer"));
+  if (!vkBeginCommandBufferFn)
     return false;
 
-  vkCmdBeginRenderPass = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
-      vkGetDeviceProcAddr(vk_device, "vkCmdBeginRenderPass"));
-  if (!vkCmdBeginRenderPass)
+  vkCmdBeginRenderPassFn = reinterpret_cast<PFN_vkCmdBeginRenderPass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdBeginRenderPass"));
+  if (!vkCmdBeginRenderPassFn)
     return false;
 
-  vkCmdEndRenderPass = reinterpret_cast<PFN_vkCmdEndRenderPass>(
-      vkGetDeviceProcAddr(vk_device, "vkCmdEndRenderPass"));
-  if (!vkCmdEndRenderPass)
+  vkCmdEndRenderPassFn = reinterpret_cast<PFN_vkCmdEndRenderPass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdEndRenderPass"));
+  if (!vkCmdEndRenderPassFn)
     return false;
 
-  vkCmdExecuteCommands = reinterpret_cast<PFN_vkCmdExecuteCommands>(
-      vkGetDeviceProcAddr(vk_device, "vkCmdExecuteCommands"));
-  if (!vkCmdExecuteCommands)
+  vkCmdExecuteCommandsFn = reinterpret_cast<PFN_vkCmdExecuteCommands>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdExecuteCommands"));
+  if (!vkCmdExecuteCommandsFn)
     return false;
 
-  vkCmdNextSubpass = reinterpret_cast<PFN_vkCmdNextSubpass>(
-      vkGetDeviceProcAddr(vk_device, "vkCmdNextSubpass"));
-  if (!vkCmdNextSubpass)
+  vkCmdNextSubpassFn = reinterpret_cast<PFN_vkCmdNextSubpass>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdNextSubpass"));
+  if (!vkCmdNextSubpassFn)
     return false;
 
-  vkCmdPipelineBarrier = reinterpret_cast<PFN_vkCmdPipelineBarrier>(
-      vkGetDeviceProcAddr(vk_device, "vkCmdPipelineBarrier"));
-  if (!vkCmdPipelineBarrier)
+  vkCmdPipelineBarrierFn = reinterpret_cast<PFN_vkCmdPipelineBarrier>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCmdPipelineBarrier"));
+  if (!vkCmdPipelineBarrierFn)
     return false;
 
-  vkEndCommandBuffer = reinterpret_cast<PFN_vkEndCommandBuffer>(
-      vkGetDeviceProcAddr(vk_device, "vkEndCommandBuffer"));
-  if (!vkEndCommandBuffer)
+  vkEndCommandBufferFn = reinterpret_cast<PFN_vkEndCommandBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkEndCommandBuffer"));
+  if (!vkEndCommandBufferFn)
     return false;
 
-  vkResetCommandBuffer = reinterpret_cast<PFN_vkResetCommandBuffer>(
-      vkGetDeviceProcAddr(vk_device, "vkResetCommandBuffer"));
-  if (!vkResetCommandBuffer)
+  vkResetCommandBufferFn = reinterpret_cast<PFN_vkResetCommandBuffer>(
+      vkGetDeviceProcAddrFn(vk_device, "vkResetCommandBuffer"));
+  if (!vkResetCommandBufferFn)
     return false;
 
   return true;
 }
 
 bool VulkanFunctionPointers::BindSwapchainFunctionPointers(VkDevice vk_device) {
-  vkAcquireNextImageKHR = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkAcquireNextImageKHR"));
-  if (!vkAcquireNextImageKHR)
+  vkAcquireNextImageKHRFn = reinterpret_cast<PFN_vkAcquireNextImageKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkAcquireNextImageKHR"));
+  if (!vkAcquireNextImageKHRFn)
     return false;
 
-  vkCreateSwapchainKHR = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkCreateSwapchainKHR"));
-  if (!vkCreateSwapchainKHR)
+  vkCreateSwapchainKHRFn = reinterpret_cast<PFN_vkCreateSwapchainKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkCreateSwapchainKHR"));
+  if (!vkCreateSwapchainKHRFn)
     return false;
 
-  vkDestroySwapchainKHR = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkDestroySwapchainKHR"));
-  if (!vkDestroySwapchainKHR)
+  vkDestroySwapchainKHRFn = reinterpret_cast<PFN_vkDestroySwapchainKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkDestroySwapchainKHR"));
+  if (!vkDestroySwapchainKHRFn)
     return false;
 
-  vkGetSwapchainImagesKHR = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkGetSwapchainImagesKHR"));
-  if (!vkGetSwapchainImagesKHR)
+  vkGetSwapchainImagesKHRFn = reinterpret_cast<PFN_vkGetSwapchainImagesKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkGetSwapchainImagesKHR"));
+  if (!vkGetSwapchainImagesKHRFn)
     return false;
 
-  vkQueuePresentKHR = reinterpret_cast<PFN_vkQueuePresentKHR>(
-      vkGetDeviceProcAddr(vk_device, "vkQueuePresentKHR"));
-  if (!vkQueuePresentKHR)
+  vkQueuePresentKHRFn = reinterpret_cast<PFN_vkQueuePresentKHR>(
+      vkGetDeviceProcAddrFn(vk_device, "vkQueuePresentKHR"));
+  if (!vkQueuePresentKHRFn)
     return false;
 
   return true;
