@@ -4,6 +4,12 @@
 
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
+enum CookieSameSite {
+  "strict",
+  "lax",
+  "unrestricted"
+};
+
 dictionary CookieStoreSetOptions {
   USVString name;
   USVString value;
@@ -12,4 +18,5 @@ dictionary CookieStoreSetOptions {
   USVString path = "/";
   boolean secure = true;
   boolean httpOnly = false;
+  CookieSameSite sameSite = "strict";
 };

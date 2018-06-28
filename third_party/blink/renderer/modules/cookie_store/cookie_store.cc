@@ -177,10 +177,19 @@ base::Optional<WebCanonicalCookie> ToWebCanonicalCookie(
         "__Secure- and __Host- cookies must be secure");
   }
 
+  network::mojom::CookieSameSite same_site;
+  if (options.sameSite() == "strict") {
+    same_site = network::mojom::CookieSameSite::STRICT_MODE;
+  } else if (options.sameSite() == "lax") {
+    same_site = network::mojom::CookieSameSite::LAX_MODE;
+  } else {
+    DCHECK_EQ(options.sameSite(), "unrestricted");
+    same_site = network::mojom::CookieSameSite::NO_RESTRICTION;
+  }
+
   return WebCanonicalCookie::Create(
       name, value, domain, path, WTF::Time() /*creation*/, expiry,
-      WTF::Time() /*last_access*/, secure, options.httpOnly(),
-      WebCanonicalCookie::kDefaultSameSiteMode,
+      WTF::Time() /*last_access*/, secure, options.httpOnly(), same_site,
       WebCanonicalCookie::kDefaultPriority);
 }
 

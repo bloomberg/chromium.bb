@@ -200,14 +200,10 @@ void RestrictedCookieManager::SetCanonicalCookie(
   // TODO(pwnall): Call NetworkDelegate::CanSetCookie() on a NetworkDelegate
   //               associated with the NetworkContext.
   base::Time now = base::Time::NowFromSystemTime();
-  // TODO(pwnall): Reason about whether it makes sense to allow a renderer to
-  //               set these fields.
-  net::CookieSameSite cookie_same_site_mode = net::CookieSameSite::STRICT_MODE;
-  net::CookiePriority cookie_priority = net::COOKIE_PRIORITY_DEFAULT;
   auto sanitized_cookie = std::make_unique<net::CanonicalCookie>(
       cookie.Name(), cookie.Value(), cookie.Domain(), cookie.Path(), now,
       cookie.ExpiryDate(), now, cookie.IsSecure(), cookie.IsHttpOnly(),
-      cookie_same_site_mode, cookie_priority);
+      cookie.SameSite(), cookie.Priority());
 
   // TODO(pwnall): secure_source should depend on url, and might depend on the
   //               renderer.
