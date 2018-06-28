@@ -43,9 +43,9 @@ PowerTracingAgent::PowerTracingAgent(service_manager::Connector* connector)
   // Register this agent.
   tracing::mojom::AgentPtr agent;
   binding_.Bind(mojo::MakeRequest(&agent));
-  agent_registry->RegisterAgent(std::move(agent), kPowerTraceLabel,
-                                tracing::mojom::TraceDataType::STRING,
-                                true /* supports_explicit_clock_sync */);
+  agent_registry->RegisterAgent(
+      std::move(agent), kPowerTraceLabel, tracing::mojom::TraceDataType::STRING,
+      true /* supports_explicit_clock_sync */, base::kNullProcessId);
 }
 
 PowerTracingAgent::PowerTracingAgent() : binding_(this) {}

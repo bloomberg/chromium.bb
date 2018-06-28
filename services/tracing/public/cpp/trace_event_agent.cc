@@ -92,10 +92,11 @@ TraceEventAgentImpl::TraceEventAgentImpl(
                 kTraceEventLabel,
                 mojom::TraceDataType::ARRAY,
 #if defined(OS_ANDROID)
-                request_clock_sync_marker_on_android),
+                request_clock_sync_marker_on_android,
 #else
-                false),
+                false,
 #endif
+                base::trace_event::TraceLog::GetInstance()->process_id()),
       enabled_tracing_modes_(0) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }

@@ -559,6 +559,8 @@ void TraceLog::GetKnownCategoryGroups(
 
 void TraceLog::SetEnabled(const TraceConfig& trace_config,
                           uint8_t modes_to_enable) {
+  DCHECK(trace_config.process_filter_config().IsEnabled(process_id_));
+
   std::vector<EnabledStateObserver*> observer_list;
   std::map<AsyncEnabledStateObserver*, RegisteredAsyncObserver> observer_map;
   {

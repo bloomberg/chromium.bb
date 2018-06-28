@@ -26,7 +26,8 @@ CrOSTracingAgent::CrOSTracingAgent(service_manager::Connector* connector)
     : BaseAgent(connector,
                 kCrOSTraceLabel,
                 tracing::mojom::TraceDataType::STRING,
-                false /* supports_explicit_clock_sync */) {}
+                false /* supports_explicit_clock_sync */,
+                base::kNullProcessId) {}
 
 CrOSTracingAgent::~CrOSTracingAgent() = default;
 

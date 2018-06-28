@@ -323,8 +323,23 @@ bool TracingControllerImpl::StartTracing(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   // TODO(chiniforooshan): The actual value should be received by callback and
   // this function should return void.
-  if (IsTracing())
-    return false;
+  if (IsTracing()) {
+    // Do not allow updating trace config when process filter is not used.
+    if (trace_config.process_filter_config().empty() ||
+        trace_config_->process_filter_config().empty()) {
+      return false;
+    }
+    // Make sure other parts of trace_config (besides process filter)
+    // did not change.
+    base::trace_event::TraceConfig old_config_copy(*trace_config_);
+    base::trace_event::TraceConfig new_config_copy(trace_config);
+    old_config_copy.SetProcessFilterConfig(
+        base::trace_event::TraceConfig::ProcessFilterConfig());
+    new_config_copy.SetProcessFilterConfig(
+        base::trace_event::TraceConfig::ProcessFilterConfig());
+    if (old_config_copy.ToString() != new_config_copy.ToString())
+      return false;
+  }
   trace_config_ =
       std::make_unique<base::trace_event::TraceConfig>(trace_config);
   coordinator_->StartTracing(

@@ -46,7 +46,8 @@ EtwTracingAgent::EtwTracingAgent(service_manager::Connector* connector)
     : BaseAgent(connector,
                 kETWTraceLabel,
                 tracing::mojom::TraceDataType::OBJECT,
-                false /* supports_explicit_clock_sync */),
+                false /* supports_explicit_clock_sync */,
+                base::kNullProcessId),
       thread_("EtwConsumerThread"),
       is_tracing_(false) {
   DCHECK(!g_etw_tracing_agent);
