@@ -385,27 +385,27 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 181;
     case CSSPropertyWebkitBorderAfter:
       return 182;
-    case CSSPropertyWebkitBorderAfterColor:
+    case CSSPropertyAliasWebkitBorderAfterColor:
       return 183;
-    case CSSPropertyWebkitBorderAfterStyle:
+    case CSSPropertyAliasWebkitBorderAfterStyle:
       return 184;
-    case CSSPropertyWebkitBorderAfterWidth:
+    case CSSPropertyAliasWebkitBorderAfterWidth:
       return 185;
     case CSSPropertyWebkitBorderBefore:
       return 186;
-    case CSSPropertyWebkitBorderBeforeColor:
+    case CSSPropertyAliasWebkitBorderBeforeColor:
       return 187;
-    case CSSPropertyWebkitBorderBeforeStyle:
+    case CSSPropertyAliasWebkitBorderBeforeStyle:
       return 188;
-    case CSSPropertyWebkitBorderBeforeWidth:
+    case CSSPropertyAliasWebkitBorderBeforeWidth:
       return 189;
     case CSSPropertyWebkitBorderEnd:
       return 190;
-    case CSSPropertyWebkitBorderEndColor:
+    case CSSPropertyAliasWebkitBorderEndColor:
       return 191;
-    case CSSPropertyWebkitBorderEndStyle:
+    case CSSPropertyAliasWebkitBorderEndStyle:
       return 192;
-    case CSSPropertyWebkitBorderEndWidth:
+    case CSSPropertyAliasWebkitBorderEndWidth:
       return 193;
     // CSSPropertyWebkitBorderFit was 194
     case CSSPropertyWebkitBorderHorizontalSpacing:
@@ -416,11 +416,11 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 197;
     case CSSPropertyWebkitBorderStart:
       return 198;
-    case CSSPropertyWebkitBorderStartColor:
+    case CSSPropertyAliasWebkitBorderStartColor:
       return 199;
-    case CSSPropertyWebkitBorderStartStyle:
+    case CSSPropertyAliasWebkitBorderStartStyle:
       return 200;
-    case CSSPropertyWebkitBorderStartWidth:
+    case CSSPropertyAliasWebkitBorderStartWidth:
       return 201;
     case CSSPropertyWebkitBorderVerticalSpacing:
       return 202;
@@ -1154,6 +1154,30 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 600;
     case CSSPropertyPaddingInlineEnd:
       return 601;
+    case CSSPropertyBorderBlockEndColor:
+      return 602;
+    case CSSPropertyBorderBlockEndStyle:
+      return 603;
+    case CSSPropertyBorderBlockEndWidth:
+      return 604;
+    case CSSPropertyBorderBlockStartColor:
+      return 605;
+    case CSSPropertyBorderBlockStartStyle:
+      return 606;
+    case CSSPropertyBorderBlockStartWidth:
+      return 607;
+    case CSSPropertyBorderInlineEndColor:
+      return 608;
+    case CSSPropertyBorderInlineEndStyle:
+      return 609;
+    case CSSPropertyBorderInlineEndWidth:
+      return 610;
+    case CSSPropertyBorderInlineStartColor:
+      return 611;
+    case CSSPropertyBorderInlineStartStyle:
+      return 612;
+    case CSSPropertyBorderInlineStartWidth:
+      return 613;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in
