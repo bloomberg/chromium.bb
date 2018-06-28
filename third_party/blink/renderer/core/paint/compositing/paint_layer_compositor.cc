@@ -730,6 +730,9 @@ GraphicsLayer* PaintLayerCompositor::RootGraphicsLayer() const {
 
 GraphicsLayer* PaintLayerCompositor::PaintRootGraphicsLayer() const {
   if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled()) {
+    if (layout_view_.GetDocument().GetPage()->GetChromeClient().IsPopup())
+      return RootGraphicsLayer();
+
     // Start painting at the inner viewport container layer which is an ancestor
     // of both the main contents layers and the scrollbar layers.
     if (IsMainFrame() && GetVisualViewport().ContainerLayer())

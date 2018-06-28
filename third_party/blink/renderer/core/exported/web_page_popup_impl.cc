@@ -222,7 +222,12 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 
   void AttachRootGraphicsLayer(GraphicsLayer* graphics_layer,
                                LocalFrame* local_root) override {
-    popup_->SetRootGraphicsLayer(graphics_layer);
+    popup_->SetRootLayer(graphics_layer ? graphics_layer->CcLayer() : nullptr);
+  }
+
+  void AttachRootLayer(scoped_refptr<cc::Layer> layer,
+                       LocalFrame* local_root) override {
+    popup_->SetRootLayer(layer.get());
   }
 
   void SetToolTip(LocalFrame&,
@@ -359,9 +364,8 @@ void WebPagePopupImpl::SetWindowRect(const IntRect& rect_in_screen) {
   WidgetClient()->SetWindowRect(rect_in_screen);
 }
 
-void WebPagePopupImpl::SetRootGraphicsLayer(GraphicsLayer* layer) {
-  root_graphics_layer_ = layer;
-  root_layer_ = layer ? layer->CcLayer() : nullptr;
+void WebPagePopupImpl::SetRootLayer(cc::Layer* layer) {
+  root_layer_ = layer;
 
   is_accelerated_compositing_active_ = !!layer;
   if (layer_tree_view_) {

@@ -787,6 +787,21 @@ bool LayerTreeHost::DoUpdateLayers(Layer* root_layer) {
                            property_trees->AsTracedValue());
     }
 
+#if DCHECK_IS_ON()
+    // Ensure property tree nodes were created for all layers. When using layer
+    // lists, this can fail if blink doesn't setup layers or nodes correctly in
+    // |PaintArtifactCompositor|. When not using layer lists, this can fail if
+    // |PropertyTreeBuilder::BuildPropertyTrees| fails to create property tree
+    // nodes.
+    for (auto* layer : *this) {
+      DCHECK(property_trees_.effect_tree.Node(layer->effect_tree_index()));
+      DCHECK(
+          property_trees_.transform_tree.Node(layer->transform_tree_index()));
+      DCHECK(property_trees_.clip_tree.Node(layer->clip_tree_index()));
+      DCHECK(property_trees_.scroll_tree.Node(layer->scroll_tree_index()));
+    }
+#endif
+
     draw_property_utils::UpdatePropertyTrees(this, property_trees);
     draw_property_utils::FindLayersThatNeedUpdates(this, property_trees,
                                                    &update_layer_list);
