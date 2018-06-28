@@ -29,6 +29,7 @@
 #include "components/exo/surface.h"
 #include "components/exo/wm_helper.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/window.h"
@@ -62,6 +63,8 @@ DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kApplicationIdKey, nullptr);
 
 // Application Id set by the client.
 DEFINE_OWNED_UI_CLASS_PROPERTY_KEY(std::string, kStartupIdKey, nullptr);
+
+const int32_t kInvalidChildAxTreeId = -1;
 
 // The accelerator keys used to close ShellSurfaces.
 const struct {
@@ -570,6 +573,16 @@ void ShellSurfaceBase::SetStartupId(const char* startup_id) {
     SetStartupId(widget_->GetNativeWindow(), startup_id_);
 }
 
+void ShellSurfaceBase::SetChildAxTreeId(int32_t child_ax_tree_id) {
+  // We don't expect that child ax tree id is changed once it's set.
+  DCHECK_EQ(child_ax_tree_id_, kInvalidChildAxTreeId);
+  DCHECK_NE(child_ax_tree_id, kInvalidChildAxTreeId);
+
+  child_ax_tree_id_ = child_ax_tree_id;
+
+  this->NotifyAccessibilityEvent(ax::mojom::Event::kChildrenChanged, false);
+}
+
 void ShellSurfaceBase::Close() {
   if (!close_callback_.is_null())
     close_callback_.Run();
@@ -1044,6 +1057,16 @@ gfx::Size ShellSurfaceBase::GetMaximumSize() const {
   return maximum_size_;
 }
 
+void ShellSurfaceBase::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kClient;
+
+  if (child_ax_tree_id_ == kInvalidChildAxTreeId)
+    return;
+
+  node_data->AddIntAttribute(ax::mojom::IntAttribute::kChildTreeId,
+                             child_ax_tree_id_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver overrides:
 
@@ -1152,8 +1175,10 @@ void ShellSurfaceBase::CreateShellSurfaceWidget(
 
   aura::Window* window = widget_->GetNativeWindow();
   window->SetName("ExoShellSurface");
+  // TODO(yawano): This needs to be set to false if TalkBack is handling this
+  //               window.
   window->SetProperty(aura::client::kAccessibilityFocusFallsbackToWidgetKey,
-                      false);
+                      true);
   window->AddChild(host_window());
   // Use DESCENDANTS_ONLY event targeting policy for mus/mash.
   // TODO(https://crbug.com/839521): Revisit after event dispatching code is
