@@ -204,7 +204,8 @@ def forward_signals(procs):
   assert all(isinstance(p, subprocess.Popen) for p in procs)
   def _sig_handler(sig, _):
     for p in procs:
-      if sig == signal.SIGBREAK:
+      # SIGBREAK is defined only for win32.
+      if sys.platform == 'win32' and sig == signal.SIGBREAK:
         p.send_signal(signal.CTRL_BREAK_EVENT)
       else:
         p.send_signal(sig)
