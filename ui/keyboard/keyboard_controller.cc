@@ -515,15 +515,8 @@ void KeyboardController::OnWindowHierarchyChanged(
 }
 
 void KeyboardController::OnWindowAddedToRootWindow(aura::Window* window) {
-  if (!window->GetRootWindow()->HasObserver(this))
-    window->GetRootWindow()->AddObserver(this);
-  AdjustKeyboardBounds();
-}
-
-void KeyboardController::OnWindowRemovingFromRootWindow(aura::Window* window,
-    aura::Window* new_root) {
-  if (window->GetRootWindow()->HasObserver(this))
-    window->GetRootWindow()->RemoveObserver(this);
+  container_behavior_->SetCanonicalBounds(GetContentsWindow(),
+                                          GetRootWindow()->bounds());
 }
 
 void KeyboardController::OnWindowBoundsChanged(
@@ -721,11 +714,6 @@ void KeyboardController::
 void KeyboardController::NotifyKeyboardConfigChanged() {
   for (KeyboardControllerObserver& observer : observer_list_)
     observer.OnKeyboardConfigChanged();
-}
-
-void KeyboardController::AdjustKeyboardBounds() {
-  container_behavior_->SetCanonicalBounds(GetContentsWindow(),
-                                          GetRootWindow()->bounds());
 }
 
 void KeyboardController::CheckStateTransition(KeyboardControllerState prev,
