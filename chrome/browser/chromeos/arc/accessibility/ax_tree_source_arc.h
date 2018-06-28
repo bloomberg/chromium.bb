@@ -120,7 +120,6 @@ class AXTreeSourceArc
   // A delegate that handles accessibility actions on behalf of this tree. The
   // delegate is valid during the lifetime of this tree.
   const Delegate* const delegate_;
-  std::unique_ptr<FocusStealer> focus_stealer_;
   std::string package_name_;
   std::map<mojom::AccessibilityNodeInfoData*, gfx::Rect>
       cached_computed_bounds_;

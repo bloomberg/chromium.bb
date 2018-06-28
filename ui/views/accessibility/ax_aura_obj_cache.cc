@@ -16,6 +16,7 @@
 #include "ui/views/accessibility/ax_window_obj_wrapper.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace views {
 
@@ -168,7 +169,15 @@ View* AXAuraObjCache::GetFocusedView() {
 
   if (focused_window->GetProperty(
           aura::client::kAccessibilityFocusFallsbackToWidgetKey)) {
-    // If no view is focused, falls back to root view.
+    // If focused widget has non client view, falls back to first child view of
+    // its client view. We don't expect that non client view gets keyboard
+    // focus.
+    if (focused_widget->non_client_view() &&
+        focused_widget->non_client_view()->client_view() &&
+        focused_widget->non_client_view()->client_view()->has_children()) {
+      return focused_widget->non_client_view()->client_view()->child_at(0);
+    }
+
     return focused_widget->GetRootView();
   }
 
