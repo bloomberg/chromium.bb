@@ -281,19 +281,19 @@ camera.util.orientPhoto = function(blob, onSuccess, onFailure) {
 };
 
 /**
- * Checks the board name if the user is using a chromebook.
- * @param {string} name Board name.
+ * Checks if the current device is in the given device list.
+ * @param {Array.<string>} ids Device ids.
  * @return {!Promise<boolean>} Promise for the result.
  */
-camera.util.isBoard = function(name, callback) {
-  if (!chrome.chromeosInfoPrivate) {
-    return Promise.resolve(false);
-  }
-
-  return new Promise(function(onFulfill, onReject) {
-    chrome.chromeosInfoPrivate.get(['board'], function(values) {
-      var board = values['board'];
-      onFulfill(board && board.indexOf(name) == 0);
+camera.util.isChromeOSDevice = function(ids) {
+  return new Promise(resolve => {
+    if (!chrome.chromeosInfoPrivate) {
+      resolve(false);
+      return;
+    }
+    chrome.chromeosInfoPrivate.get(['customizationId'], values => {
+      var device = values['customizationId'];
+      resolve(device && ids.indexOf(device) >= 0);
     });
   });
 };

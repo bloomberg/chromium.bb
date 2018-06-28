@@ -183,13 +183,6 @@ camera.views.Camera = function(context, router) {
   this.videoDeviceIds_ = null;
 
   /**
-   * Legacy mirroring set per all devices.
-   * @type {boolean}
-   * @private
-   */
-  this.legacyMirroringToggle_ = true;
-
-  /**
    * Mirroring set per device.
    * @type {!Object}
    * @private
@@ -243,18 +236,22 @@ camera.views.Camera.prototype = {
  * @param {function()} callback Completion callback.
  */
 camera.views.Camera.prototype.initialize = function(callback) {
+  // Show the mirror toggle on flipping-camera chromebooks (crbug.com/847737).
+  camera.util.isChromeOSDevice(
+      ['LENOVO-REKS1', 'LENOVO-REKS3', 'LENOVO-REKS4']).then(result => {
+    document.querySelector('#toggle-mirror').hidden = !result;
+  });
+
   // Select the default state of the toggle buttons.
   chrome.storage.local.get({
     toggleTimer: false,
-    toggleMirror: true,  // Deprecated.
-    mirroringToggles: {},  // Per device.
+    mirroringToggles: {},  // Manually mirroring states per video device.
   }, values => {
     document.querySelector('#toggle-timer').checked = values.toggleTimer;
-    this.legacyMirroringToggle_ = values.toggleMirror;
     this.mirroringToggles_ = values.mirroringToggles;
   });
   // Remove the deprecated values.
-  chrome.storage.local.remove(['effectIndex', 'toggleMulti']);
+  chrome.storage.local.remove(['effectIndex', 'toggleMulti', 'toggleMirror']);
 
   // TODO: Replace with "devicechanged" event once it's implemented in Chrome.
   this.maybeRefreshVideoDeviceIds_();
@@ -419,36 +416,33 @@ camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
   var enabled = document.querySelector('#toggle-mirror').checked;
   this.mirroringToggles_[this.videoDeviceId_] = enabled;
   chrome.storage.local.set({mirroringToggles: this.mirroringToggles_});
-  this.updateMirroring_();
+  document.body.classList.toggle('mirror', enabled);
 };
 
 /**
- * Updates the UI to reflect the mirroring either set automatically or by user.
+ * Updates mirroring when a new stream is available.
  * @private
  */
 camera.views.Camera.prototype.updateMirroring_ = function() {
-  var toggleMirror = document.querySelector('#toggle-mirror')
-  var enabled;
-
+  // Update mirroring by detected facing-mode. Enable mirroring by default if
+  // facing-mode isn't available.
   var track = this.stream_ && this.stream_.getVideoTracks()[0];
   var trackSettings = track.getSettings && track.getSettings();
   var facingMode = trackSettings && trackSettings.facingMode;
+  var enabled = facingMode ? facingMode == 'user' : true;
 
-  toggleMirror.hidden = !!facingMode;
-
-  if (facingMode) {
-    // Automatic mirroring detection.
-    enabled = facingMode == 'user';
+  var toggleMirror = document.querySelector('#toggle-mirror');
+  if (toggleMirror.hidden) {
+    document.body.classList.toggle('mirror', enabled);
   } else {
-    // Manual mirroring.
-    if (this.videoDeviceId_ in this.mirroringToggles_)
+    // Override mirroring if it was set manually by the mirror toggle.
+    if (this.videoDeviceId_ in this.mirroringToggles_) {
       enabled = this.mirroringToggles_[this.videoDeviceId_];
-    else
-      enabled = this.legacyMirroringToggle_;
+    }
+    if (toggleMirror.checked != enabled) {
+      toggleMirror.click();
+    }
   }
-
-  toggleMirror.checked = enabled;
-  document.body.classList.toggle('mirror', enabled);
 };
 
 /**
