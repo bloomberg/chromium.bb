@@ -4671,6 +4671,13 @@ crbug.com/850202 [ Linux ] http/tests/devtools/network/network-filters.js [ Pass
 crbug.com/851746 [ Linux ] fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]
 crbug.com/851746 [ Linux ] virtual/gpu/fast/canvas/color-space/canvas-colorManaged-convertToBlob-roundtrip.html [ Pass Timeout ]
 
+crbug.com/857576 fast/canvas/color-space/canvas-createImageBitmap-linear-rgb.html [ Failure ]
+crbug.com/857576 fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Failure ]
+crbug.com/857576 fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Failure ]
+crbug.com/857576 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-linear-rgb.html [ Failure ]
+crbug.com/857576 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-p3.html [ Failure ]
+crbug.com/857576 virtual/gpu/fast/canvas/color-space/canvas-createImageBitmap-rec2020.html [ Failure ]
+
 crbug.com/853360 [ Mac ] fast/css/input-search-padding.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-ar.html [ Failure ]
 crbug.com/853360 [ Mac ] fast/forms/calendar-picker/calendar-picker-appearance-minimum-date.html [ Failure ]

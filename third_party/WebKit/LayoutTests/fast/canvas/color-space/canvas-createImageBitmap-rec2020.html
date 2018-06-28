@@ -40,8 +40,8 @@ function testPixels(ctx, tests, sourceType)
         actual = ctx.getImageData(tests[i][0], tests[i][1], 1, 1).dataUnion;
         expected = tests[i][2];
         assert_true(actual.length === expected.length);
-       for (var i = 0; i < actual.length; i++)
-           assert_approx_equals(actual[i], expected[i], tolerance, tests[i][3]);
+       for (var j = 0; j < actual.length; j++)
+           assert_approx_equals(actual[j], expected[j], tolerance, tests[i][3]);
     }
 }
 
