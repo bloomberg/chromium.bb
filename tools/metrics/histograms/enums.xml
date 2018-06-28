@@ -48088,6 +48088,8 @@ Full version information for the fingerprint enum values:
   <int value="6" label="The keyboard version is out-of-date"/>
   <int value="7" label="The default search engine wasn't selected"/>
   <int value="8" label="Unhandled ConnectionInfo"/>
+  <int value="9" label="Unhandled certificate info"/>
+  <int value="10" label="Unhandled connection security info"/>
 </enum>
 
 <enum name="VRViewerType">

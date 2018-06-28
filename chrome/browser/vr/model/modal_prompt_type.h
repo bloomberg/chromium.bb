@@ -12,7 +12,8 @@ namespace vr {
 enum ModalPromptType {
   kModalPromptTypeNone,
   kModalPromptTypeExitVRForSiteInfo,
-  kModalPromptTypeExitVRForConnectionInfo,
+  kModalPromptTypeExitVRForCertificateInfo,
+  kModalPromptTypeExitVRForConnectionSecurityInfo,
   kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
   kModalPromptTypeGenericUnsupportedFeature,
   kModalPromptTypeUpdateKeyboard,
