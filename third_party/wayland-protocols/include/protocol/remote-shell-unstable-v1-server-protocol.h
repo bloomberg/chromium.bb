@@ -36,6 +36,7 @@ struct wl_resource;
  * - @subpage page_iface_zcr_remote_shell_v1 - remote_shell
  * - @subpage page_iface_zcr_remote_surface_v1 - A desktop window
  * - @subpage page_iface_zcr_notification_surface_v1 - A notification window
+ * - @subpage page_iface_zcr_input_method_surface_v1 - An input method window
  * @section page_copyright_remote_shell_unstable_v1 Copyright
  * <pre>
  *
@@ -62,6 +63,7 @@ struct wl_resource;
  * </pre>
  */
 struct wl_surface;
+struct zcr_input_method_surface_v1;
 struct zcr_notification_surface_v1;
 struct zcr_remote_shell_v1;
 struct zcr_remote_surface_v1;
@@ -136,6 +138,20 @@ extern const struct wl_interface zcr_remote_surface_v1_interface;
  * notification contents.
  */
 extern const struct wl_interface zcr_notification_surface_v1_interface;
+/**
+ * @page page_iface_zcr_input_method_surface_v1 zcr_input_method_surface_v1
+ * @section page_iface_zcr_input_method_surface_v1_desc Description
+ *
+ * An interface that may be implemented by a wl_surface to host IME contents.
+ * @section page_iface_zcr_input_method_surface_v1_api API
+ * See @ref iface_zcr_input_method_surface_v1.
+ */
+/**
+ * @defgroup iface_zcr_input_method_surface_v1 The zcr_input_method_surface_v1 interface
+ *
+ * An interface that may be implemented by a wl_surface to host IME contents.
+ */
+extern const struct wl_interface zcr_input_method_surface_v1_interface;
 
 #ifndef ZCR_REMOTE_SHELL_V1_CONTAINER_ENUM
 #define ZCR_REMOTE_SHELL_V1_CONTAINER_ENUM
@@ -293,6 +309,17 @@ struct zcr_remote_shell_v1_interface {
 					 uint32_t id,
 					 struct wl_resource *surface,
 					 const char *notification_key);
+	/**
+	 * Create a input method surface from a surface
+	 *
+	 * Creates an input_method_surface for the given surface, gives
+	 * it the input_method_surface role.
+	 * @since 17
+	 */
+	void (*get_input_method_surface)(struct wl_client *client,
+					 struct wl_resource *resource,
+					 uint32_t id,
+					 struct wl_resource *surface);
 };
 
 #define ZCR_REMOTE_SHELL_V1_ACTIVATED 0
@@ -334,6 +361,10 @@ struct zcr_remote_shell_v1_interface {
  * @ingroup iface_zcr_remote_shell_v1
  */
 #define ZCR_REMOTE_SHELL_V1_GET_NOTIFICATION_SURFACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_GET_INPUT_METHOD_SURFACE_SINCE_VERSION 17
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -1514,6 +1545,26 @@ struct zcr_notification_surface_v1_interface {
  * @ingroup iface_zcr_notification_surface_v1
  */
 #define ZCR_NOTIFICATION_SURFACE_V1_SET_APP_ID_SINCE_VERSION 16
+
+/**
+ * @ingroup iface_zcr_input_method_surface_v1
+ * @struct zcr_input_method_surface_v1_interface
+ */
+struct zcr_input_method_surface_v1_interface {
+	/**
+	 * Destroy the ime_surface
+	 *
+	 * Unmap and destroy the input mtehod surface.
+	 */
+	void (*destroy)(struct wl_client *client,
+			struct wl_resource *resource);
+};
+
+
+/**
+ * @ingroup iface_zcr_input_method_surface_v1
+ */
+#define ZCR_INPUT_METHOD_SURFACE_V1_DESTROY_SINCE_VERSION 1
 
 #ifdef  __cplusplus
 }

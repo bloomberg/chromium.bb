@@ -33,6 +33,7 @@ extern "C" {
  * - @subpage page_iface_zcr_remote_shell_v1 - remote_shell
  * - @subpage page_iface_zcr_remote_surface_v1 - A desktop window
  * - @subpage page_iface_zcr_notification_surface_v1 - A notification window
+ * - @subpage page_iface_zcr_input_method_surface_v1 - An input method window
  * @section page_copyright_remote_shell_unstable_v1 Copyright
  * <pre>
  *
@@ -59,6 +60,7 @@ extern "C" {
  * </pre>
  */
 struct wl_surface;
+struct zcr_input_method_surface_v1;
 struct zcr_notification_surface_v1;
 struct zcr_remote_shell_v1;
 struct zcr_remote_surface_v1;
@@ -133,6 +135,20 @@ extern const struct wl_interface zcr_remote_surface_v1_interface;
  * notification contents.
  */
 extern const struct wl_interface zcr_notification_surface_v1_interface;
+/**
+ * @page page_iface_zcr_input_method_surface_v1 zcr_input_method_surface_v1
+ * @section page_iface_zcr_input_method_surface_v1_desc Description
+ *
+ * An interface that may be implemented by a wl_surface to host IME contents.
+ * @section page_iface_zcr_input_method_surface_v1_api API
+ * See @ref iface_zcr_input_method_surface_v1.
+ */
+/**
+ * @defgroup iface_zcr_input_method_surface_v1 The zcr_input_method_surface_v1 interface
+ *
+ * An interface that may be implemented by a wl_surface to host IME contents.
+ */
+extern const struct wl_interface zcr_input_method_surface_v1_interface;
 
 #ifndef ZCR_REMOTE_SHELL_V1_CONTAINER_ENUM
 #define ZCR_REMOTE_SHELL_V1_CONTAINER_ENUM
@@ -335,6 +351,7 @@ zcr_remote_shell_v1_add_listener(struct zcr_remote_shell_v1 *zcr_remote_shell_v1
 #define ZCR_REMOTE_SHELL_V1_DESTROY 0
 #define ZCR_REMOTE_SHELL_V1_GET_REMOTE_SURFACE 1
 #define ZCR_REMOTE_SHELL_V1_GET_NOTIFICATION_SURFACE 2
+#define ZCR_REMOTE_SHELL_V1_GET_INPUT_METHOD_SURFACE 3
 
 /**
  * @ingroup iface_zcr_remote_shell_v1
@@ -369,6 +386,10 @@ zcr_remote_shell_v1_add_listener(struct zcr_remote_shell_v1 *zcr_remote_shell_v1
  * @ingroup iface_zcr_remote_shell_v1
  */
 #define ZCR_REMOTE_SHELL_V1_GET_NOTIFICATION_SURFACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ */
+#define ZCR_REMOTE_SHELL_V1_GET_INPUT_METHOD_SURFACE_SINCE_VERSION 17
 
 /** @ingroup iface_zcr_remote_shell_v1 */
 static inline void
@@ -446,6 +467,23 @@ zcr_remote_shell_v1_get_notification_surface(struct zcr_remote_shell_v1 *zcr_rem
 			 ZCR_REMOTE_SHELL_V1_GET_NOTIFICATION_SURFACE, &zcr_notification_surface_v1_interface, NULL, surface, notification_key);
 
 	return (struct zcr_notification_surface_v1 *) id;
+}
+
+/**
+ * @ingroup iface_zcr_remote_shell_v1
+ *
+ * Creates an input_method_surface for the given surface, gives it
+ * the input_method_surface role.
+ */
+static inline struct zcr_input_method_surface_v1 *
+zcr_remote_shell_v1_get_input_method_surface(struct zcr_remote_shell_v1 *zcr_remote_shell_v1, struct wl_surface *surface)
+{
+	struct wl_proxy *id;
+
+	id = wl_proxy_marshal_constructor((struct wl_proxy *) zcr_remote_shell_v1,
+			 ZCR_REMOTE_SHELL_V1_GET_INPUT_METHOD_SURFACE, &zcr_input_method_surface_v1_interface, NULL, surface);
+
+	return (struct zcr_input_method_surface_v1 *) id;
 }
 
 #ifndef ZCR_REMOTE_SURFACE_V1_SYSTEMUI_VISIBILITY_STATE_ENUM
@@ -1834,6 +1872,48 @@ zcr_notification_surface_v1_set_app_id(struct zcr_notification_surface_v1 *zcr_n
 {
 	wl_proxy_marshal((struct wl_proxy *) zcr_notification_surface_v1,
 			 ZCR_NOTIFICATION_SURFACE_V1_SET_APP_ID, app_id);
+}
+
+#define ZCR_INPUT_METHOD_SURFACE_V1_DESTROY 0
+
+
+/**
+ * @ingroup iface_zcr_input_method_surface_v1
+ */
+#define ZCR_INPUT_METHOD_SURFACE_V1_DESTROY_SINCE_VERSION 1
+
+/** @ingroup iface_zcr_input_method_surface_v1 */
+static inline void
+zcr_input_method_surface_v1_set_user_data(struct zcr_input_method_surface_v1 *zcr_input_method_surface_v1, void *user_data)
+{
+	wl_proxy_set_user_data((struct wl_proxy *) zcr_input_method_surface_v1, user_data);
+}
+
+/** @ingroup iface_zcr_input_method_surface_v1 */
+static inline void *
+zcr_input_method_surface_v1_get_user_data(struct zcr_input_method_surface_v1 *zcr_input_method_surface_v1)
+{
+	return wl_proxy_get_user_data((struct wl_proxy *) zcr_input_method_surface_v1);
+}
+
+static inline uint32_t
+zcr_input_method_surface_v1_get_version(struct zcr_input_method_surface_v1 *zcr_input_method_surface_v1)
+{
+	return wl_proxy_get_version((struct wl_proxy *) zcr_input_method_surface_v1);
+}
+
+/**
+ * @ingroup iface_zcr_input_method_surface_v1
+ *
+ * Unmap and destroy the input mtehod surface.
+ */
+static inline void
+zcr_input_method_surface_v1_destroy(struct zcr_input_method_surface_v1 *zcr_input_method_surface_v1)
+{
+	wl_proxy_marshal((struct wl_proxy *) zcr_input_method_surface_v1,
+			 ZCR_INPUT_METHOD_SURFACE_V1_DESTROY);
+
+	wl_proxy_destroy((struct wl_proxy *) zcr_input_method_surface_v1);
 }
 
 #ifdef  __cplusplus
