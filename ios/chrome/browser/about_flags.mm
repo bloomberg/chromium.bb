@@ -54,7 +54,6 @@
 #include "ios/chrome/browser/ui/main/main_feature_flags.h"
 #import "ios/chrome/browser/ui/toolbar/public/features.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/user_feedback_features.h"
 #include "ios/chrome/browser/web/features.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -286,13 +285,6 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kMailtoHandlingWithGoogleUIName,
      flag_descriptions::kMailtoHandlingWithGoogleUIDescription,
      flags_ui::kOsIos, FEATURE_VALUE_TYPE(kMailtoHandledWithGoogleUI)},
-    {"feedback-kit-v2", flag_descriptions::kFeedbackKitV2Name,
-     flag_descriptions::kFeedbackKitV2Description, flags_ui::kOsIos,
-     FEATURE_VALUE_TYPE(kFeedbackKitV2)},
-    {"feedback-kit-v2-sso-service",
-     flag_descriptions::kFeedbackKitV2WithSSOServiceName,
-     flag_descriptions::kFeedbackKitV2WithSSOServiceDescription,
-     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kFeedbackKitV2WithSSOService)},
     {"new-clear-browsing-data-ui",
      flag_descriptions::kNewClearBrowsingDataUIName,
      flag_descriptions::kNewClearBrowsingDataUIDescription, flags_ui::kOsIos,

@@ -167,9 +167,6 @@ newUserFeedbackController:(ios::ChromeBrowserState*)browserState
       initWithRootViewController:controller
                     browserState:browserState
                         delegate:delegate];
-  if (!experimental_flags::IsNewFeedbackKitEnabled()) {
-    [controller navigationItem].rightBarButtonItem = [nc cancelButton];
-  }
   return nc;
 }
 
