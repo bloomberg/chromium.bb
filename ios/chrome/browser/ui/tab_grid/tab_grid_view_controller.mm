@@ -158,22 +158,22 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   }
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
-  UIEdgeInsets contentInset = UIEdgeInsetsZero;
+  CGFloat bottomInset = self.configuration == TabGridConfigurationBottomToolbar
+                            ? self.bottomToolbar.intrinsicContentSize.height
+                            : 0;
+  UIEdgeInsets contentInset = UIEdgeInsetsMake(
+      self.topToolbar.intrinsicContentSize.height, 0, bottomInset, 0);
   if (@available(iOS 11, *)) {
-    // Beginning with iPhoneX, there could be unsafe areas on the side margins
-    // and bottom.
-    contentInset = self.view.safeAreaInsets;
+    self.incognitoTabsViewController.additionalSafeAreaInsets = contentInset;
+    self.regularTabsViewController.additionalSafeAreaInsets = contentInset;
+    self.remoteTabsViewController.additionalSafeAreaInsets = contentInset;
   } else {
-    // Previously only the top had unsafe areas.
-    contentInset.top = self.topLayoutGuide.length;
+    // Must manually account for status bar in pre-iOS 11.
+    contentInset.top += self.topLayoutGuide.length;
+    self.incognitoTabsViewController.gridView.contentInset = contentInset;
+    self.regularTabsViewController.gridView.contentInset = contentInset;
+    self.remoteTabsViewController.tableView.contentInset = contentInset;
   }
-  contentInset.top += self.topToolbar.intrinsicContentSize.height;
-  if (self.view.frame.size.width < self.view.frame.size.height) {
-    contentInset.bottom += self.bottomToolbar.intrinsicContentSize.height;
-  }
-  self.incognitoTabsViewController.gridView.contentInset = contentInset;
-  self.regularTabsViewController.gridView.contentInset = contentInset;
-  self.remoteTabsViewController.tableView.contentInset = contentInset;
 }
 
 - (void)viewWillTransitionToSize:(CGSize)size
@@ -413,12 +413,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       kTabGridIncognitoTabsEmptyStateIdentifier;
   viewController.theme = GridThemeDark;
   viewController.delegate = self;
-  if (@available(iOS 11, *)) {
-    // Adjustments are made in |-viewWillLayoutSubviews|. Automatic adjustments
-    // do not work well with the scrollview.
-    viewController.gridView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
   NSArray* constraints = @[
     [viewController.view.topAnchor
         constraintEqualToAnchor:contentView.topAnchor],
@@ -447,12 +441,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       kTabGridRegularTabsEmptyStateIdentifier;
   viewController.theme = GridThemeLight;
   viewController.delegate = self;
-  if (@available(iOS 11, *)) {
-    // Adjustments are made in |-viewWillLayoutSubviews|. Automatic adjustments
-    // do not work well with the scrollview.
-    viewController.gridView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
   NSArray* constraints = @[
     [viewController.view.topAnchor
         constraintEqualToAnchor:contentView.topAnchor],
@@ -473,6 +461,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // TODO(crbug.com/804589) : Dark style on remote tabs.
   // The styler must be set before the view controller is loaded.
   ChromeTableViewStyler* styler = [[ChromeTableViewStyler alloc] init];
+  styler.tableViewSectionHeaderBlurEffect = nil;
   styler.tableViewBackgroundColor = UIColorFromRGB(kGridBackgroundColor);
   styler.cellTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
   styler.headerFooterTitleColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
@@ -484,12 +473,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   [self addChildViewController:viewController];
   [contentView addSubview:viewController.view];
   [viewController didMoveToParentViewController:self];
-  if (@available(iOS 11, *)) {
-    // Adjustments are made in |-viewWillLayoutSubviews|. Automatic adjustments
-    // do not work well with the scrollview.
-    viewController.tableView.contentInsetAdjustmentBehavior =
-        UIScrollViewContentInsetAdjustmentNever;
-  }
   NSArray* constraints = @[
     [viewController.view.topAnchor
         constraintEqualToAnchor:contentView.topAnchor],
