@@ -663,8 +663,7 @@ void OobeUI::ShowSigninScreen(const LoginScreenContext& context,
   signin_screen_handler_->SetNativeWindowDelegate(native_window_delegate);
 
   LoginScreenContext actual_context(context);
-  actual_context.set_oobe_ui(core_handler_->show_oobe_ui());
-  signin_screen_handler_->Show(actual_context);
+  signin_screen_handler_->Show(actual_context, core_handler_->show_oobe_ui());
 }
 
 void OobeUI::ForwardAccelerator(std::string accelerator_name) {

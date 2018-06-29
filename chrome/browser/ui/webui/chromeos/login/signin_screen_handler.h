@@ -81,19 +81,13 @@ class UserContext;
 class LoginScreenContext {
  public:
   LoginScreenContext();
-  explicit LoginScreenContext(const base::ListValue* args);
 
   void set_email(const std::string& email) { email_ = email; }
   const std::string& email() const { return email_; }
 
-  void set_oobe_ui(bool oobe_ui) { oobe_ui_ = oobe_ui; }
-  bool oobe_ui() const { return oobe_ui_; }
-
  private:
-  void Init();
-
+  // Optional email to prefill in gaia signin.
   std::string email_;
-  bool oobe_ui_;
 };
 
 // An interface for WebUILoginDisplay to call SigninScreenHandler.
@@ -232,7 +226,7 @@ class SigninScreenHandler
       input_method::InputMethodManager::State* ime_state);
 
   // Shows the sign in screen.
-  void Show(const LoginScreenContext& context);
+  void Show(const LoginScreenContext& context, bool oobe_ui);
 
   // Sets delegate to be used by the handler. It is guaranteed that valid
   // delegate is set before Show() method will be called.

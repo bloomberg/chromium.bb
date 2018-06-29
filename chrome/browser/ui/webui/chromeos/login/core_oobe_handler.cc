@@ -379,7 +379,15 @@ void CoreOobeHandler::HandleScreenAssetsLoaded(
 }
 
 void CoreOobeHandler::HandleSkipToLoginForTesting(const base::ListValue* args) {
-  LoginScreenContext context(args);
+  LoginScreenContext context;
+
+  // Parse |args|.
+  if (args->GetSize() > 0) {
+    std::string email;
+    if (args->GetString(0, &email))
+      context.set_email(email);
+  }
+
   if (WizardController::default_controller())
     WizardController::default_controller()->SkipToLoginForTesting(context);
 }
