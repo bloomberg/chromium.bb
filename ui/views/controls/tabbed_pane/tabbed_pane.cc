@@ -389,7 +389,7 @@ void MdTab::OnFocus() {
 
 void MdTab::OnBlur() {
   // Do not draw focus ring in kHighlight mode.
-  if (tabbed_pane()->GetStyle() == TabbedPane::TabStripStyle::kHighlight)
+  if (tabbed_pane()->GetStyle() != TabbedPane::TabStripStyle::kHighlight)
     SetBorder(CreateEmptyBorder(GetInsets()));
   SchedulePaint();
 }
