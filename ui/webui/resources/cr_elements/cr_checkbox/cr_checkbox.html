@@ -9,6 +9,7 @@ List of customizable styles:
 
   --cr-checkbox-border-size
   --cr-checkbox-checked-box-color
+  --cr-checkbox-label-color
   --cr-checkbox-label-container (CSS mixin)
   --cr-checkbox-mark-color
   --cr-checkbox-ripple-checked-color
@@ -111,6 +112,7 @@ List of customizable styles:
 
       #label-container {
         -webkit-padding-start: 20px;
+        color: var(--cr-checkbox-label-color, var(--google-grey-900));
         white-space: normal;
 
         @apply --cr-checkbox-label-container;
