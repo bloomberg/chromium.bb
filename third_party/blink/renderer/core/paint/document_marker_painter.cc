@@ -22,13 +22,8 @@ namespace {
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 2;
 
-sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
-  SkColor color =
-      (marker_type == DocumentMarker::kGrammar)
-          ? LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor().Rgb()
-          : LayoutTheme::GetTheme()
-                .PlatformSpellingMarkerUnderlineColor()
-                .Rgb();
+sk_sp<PaintRecord> RecordMarker(Color blink_color) {
+  const SkColor color = blink_color.Rgb();
 
   // Record the path equivalent to this legacy pattern:
   //   X o   o X o   o X
@@ -66,13 +61,8 @@ sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
 static const float kMarkerWidth = 4;
 static const float kMarkerHeight = 3;
 
-sk_sp<PaintRecord> RecordMarker(DocumentMarker::MarkerType marker_type) {
-  SkColor color =
-      (marker_type == DocumentMarker::kGrammar)
-          ? LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor().Rgb()
-          : LayoutTheme::GetTheme()
-                .PlatformSpellingMarkerUnderlineColor()
-                .Rgb();
+sk_sp<PaintRecord> RecordMarker(Color blink_color) {
+  const SkColor color = blink_color.Rgb();
 
   // Match the artwork used by the Mac.
   static const float kR = 1.5f;
@@ -106,10 +96,16 @@ void DrawDocumentMarker(GraphicsContext& context,
   DCHECK(marker_type == DocumentMarker::kSpelling ||
          marker_type == DocumentMarker::kGrammar);
 
-  DEFINE_STATIC_LOCAL(PaintRecord*, spelling_marker,
-                      (RecordMarker(DocumentMarker::kSpelling).release()));
-  DEFINE_STATIC_LOCAL(PaintRecord*, grammar_marker,
-                      (RecordMarker(DocumentMarker::kGrammar).release()));
+  DEFINE_STATIC_LOCAL(
+      PaintRecord*, spelling_marker,
+      (RecordMarker(
+           LayoutTheme::GetTheme().PlatformSpellingMarkerUnderlineColor())
+           .release()));
+  DEFINE_STATIC_LOCAL(
+      PaintRecord*, grammar_marker,
+      (RecordMarker(
+           LayoutTheme::GetTheme().PlatformGrammarMarkerUnderlineColor())
+           .release()));
   auto* const marker = marker_type == DocumentMarker::kSpelling
                            ? spelling_marker
                            : grammar_marker;
