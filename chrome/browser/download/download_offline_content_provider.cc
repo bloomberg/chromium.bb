@@ -48,9 +48,11 @@ DownloadOfflineContentProvider::~DownloadOfflineContentProvider() {
       manager_->GetBrowserContext()->IsOffTheRecord()));
 }
 
+// TODO(shaktisahu) : Pass DownloadOpenSource.
 void DownloadOfflineContentProvider::OpenItem(const ContentId& id) {
-  // TODO(crbug.com/855727): Provide implementation.
-  NOTIMPLEMENTED();
+  download::DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  if (item)
+    item->OpenDownload();
 }
 
 void DownloadOfflineContentProvider::RemoveItem(const ContentId& id) {

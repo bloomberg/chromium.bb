@@ -57,6 +57,9 @@ class DownloadManagerService
   // Called to Initialize this object.
   void Init(JNIEnv* env, jobject obj);
 
+  // Called to open a given download item.
+  void OpenDownload(download::DownloadItem* download, int source);
+
   // Called to open a download item whose GUID is equal to |jdownload_guid|.
   void OpenDownload(JNIEnv* env,
                     jobject obj,

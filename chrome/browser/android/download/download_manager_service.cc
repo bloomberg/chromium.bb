@@ -204,6 +204,15 @@ void DownloadManagerService::Observe(
   }
 }
 
+void DownloadManagerService::OpenDownload(download::DownloadItem* download,
+                                          int source) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> j_item =
+      JNI_DownloadManagerService_CreateJavaDownloadItem(env, download);
+
+  Java_DownloadManagerService_openDownloadItem(env, java_ref_, j_item, source);
+}
+
 void DownloadManagerService::OpenDownload(
     JNIEnv* env,
     jobject obj,
@@ -222,10 +231,7 @@ void DownloadManagerService::OpenDownload(
   if (!item)
     return;
 
-  ScopedJavaLocalRef<jobject> j_item =
-      JNI_DownloadManagerService_CreateJavaDownloadItem(env, item);
-
-  Java_DownloadManagerService_openDownloadItem(env, java_ref_, j_item, source);
+  OpenDownload(item, source);
 }
 
 void DownloadManagerService::ResumeDownload(
