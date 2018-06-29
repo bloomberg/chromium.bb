@@ -5,15 +5,7 @@
 #include "ui/base/cursor/cursor_data.h"
 
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "ui/base/cursor/cursor_type.h"
-
-#if defined(USE_AURA)
 #include "ui/base/cursor/cursor.h"
-#endif
-
-#if defined(USE_OZONE)
-#include "ui/ozone/public/cursor_factory_ozone.h"
-#endif
 
 namespace ui {
 
@@ -55,35 +47,5 @@ bool CursorData::IsSameAs(const CursorData& rhs) const {
          hotspot_ == rhs.hotspot_ && scale_factor_ == rhs.scale_factor_ &&
          generator_ids_ == rhs.generator_ids_;
 }
-
-#if defined(USE_AURA)
-gfx::NativeCursor CursorData::ToNativeCursor() const {
-  Cursor cursor(cursor_type_);
-
-#if defined(USE_OZONE)
-  PlatformCursor platform;
-  auto* factory = CursorFactoryOzone::GetInstance();
-  if (cursor_type_ != CursorType::kCustom) {
-    platform = factory->GetDefaultCursor(cursor_type_);
-  } else if (cursor_frames_.size() > 1U) {
-    platform = factory->CreateAnimatedCursor(
-        cursor_frames_, hotspot_, frame_delay_.InMilliseconds(), scale_factor_);
-  } else {
-    DCHECK_EQ(1U, cursor_frames_.size());
-    platform =
-        factory->CreateImageCursor(cursor_frames_[0], hotspot_, scale_factor_);
-  }
-  cursor.SetPlatformCursor(platform);
-#else
-  NOTIMPLEMENTED();
-#endif
-
-  if (!cursor_frames_.empty()) {
-    cursor.set_custom_bitmap(cursor_frames_[0]);
-    cursor.set_custom_hotspot(hotspot_);
-  }
-  return cursor;
-}
-#endif
 
 }  // namespace ui
