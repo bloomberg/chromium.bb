@@ -17,8 +17,7 @@
 
 namespace content {
 
-void SetContentCommandLineFlags(bool single_process,
-                                const std::string& plugin_descriptor) {
+void SetContentCommandLineFlags(bool single_process) {
   // May be called multiple times, to cover all possible program entry points.
   static bool already_initialized = false;
   if (already_initialized)
@@ -59,11 +58,6 @@ void SetContentCommandLineFlags(bool single_process,
   // Disable anti-aliasing.
   parsed_command_line->AppendSwitch(
       cc::switches::kDisableCompositedAntialiasing);
-
-  if (!plugin_descriptor.empty()) {
-    parsed_command_line->AppendSwitchNative(
-      switches::kRegisterPepperPlugins, plugin_descriptor);
-  }
 }
 
 }  // namespace content

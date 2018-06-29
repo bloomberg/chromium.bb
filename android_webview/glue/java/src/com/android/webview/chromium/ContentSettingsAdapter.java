@@ -19,6 +19,7 @@ import org.chromium.android_webview.AwSettings;
 @SuppressWarnings({"deprecation", "NoSynchronizedMethodCheck"})
 public class ContentSettingsAdapter extends android.webkit.WebSettings {
     private AwSettings mAwSettings;
+    private PluginState mPluginState = PluginState.OFF;
 
     public ContentSettingsAdapter(AwSettings awSettings) {
         mAwSettings = awSettings;
@@ -415,24 +416,12 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized void setPluginsEnabled(boolean flag) {
-        mAwSettings.setPluginsEnabled(flag);
+        mPluginState = flag ? PluginState.ON : PluginState.OFF;
     }
 
     @Override
     public synchronized void setPluginState(PluginState state) {
-        switch (state) {
-            case OFF:
-                mAwSettings.setPluginState(AwSettings.PLUGIN_STATE_OFF);
-                return;
-            case ON:
-                mAwSettings.setPluginState(AwSettings.PLUGIN_STATE_ON);
-                return;
-            case ON_DEMAND:
-                mAwSettings.setPluginState(AwSettings.PLUGIN_STATE_ON_DEMAND);
-                return;
-            default:
-                throw new IllegalArgumentException("Unsupported value: " + state);
-        }
+        mPluginState = state;
     }
 
     @Override
@@ -508,22 +497,12 @@ public class ContentSettingsAdapter extends android.webkit.WebSettings {
 
     @Override
     public synchronized boolean getPluginsEnabled() {
-        return mAwSettings.getPluginsEnabled();
+        return mPluginState == PluginState.ON;
     }
 
     @Override
     public synchronized PluginState getPluginState() {
-        int value = mAwSettings.getPluginState();
-        switch (value) {
-            case AwSettings.PLUGIN_STATE_OFF:
-                return PluginState.OFF;
-            case AwSettings.PLUGIN_STATE_ON:
-                return PluginState.ON;
-            case AwSettings.PLUGIN_STATE_ON_DEMAND:
-                return PluginState.ON_DEMAND;
-            default:
-                throw new IllegalArgumentException("Unsupported value: " + value);
-        }
+        return mPluginState;
     }
 
     @Override
