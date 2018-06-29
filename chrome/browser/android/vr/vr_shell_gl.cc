@@ -413,7 +413,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
   content_overlay_surface_texture_ =
       gl::SurfaceTexture::Create(content_overlay_texture_id_);
   ui_surface_texture_ = gl::SurfaceTexture::Create(ui_texture_id);
-  webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
 
   content_surface_ =
       std::make_unique<gl::ScopedJavaSurface>(content_surface_texture_.get());
@@ -437,8 +436,6 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
                           weak_ptr_factory_.GetWeakPtr()));
   ui_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
       &VrShellGl::OnUiFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
-  webvr_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
-      &VrShellGl::OnWebVRFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
 
   content_surface_texture_->SetDefaultBufferSize(
       content_tex_buffer_size_.width(), content_tex_buffer_size_.height());
@@ -516,9 +513,25 @@ void VrShellGl::OnGpuProcessConnectionReady() {
   WebVrTryStartAnimatingFrame(false);
 }
 
+void VrShellGl::CreateSurfaceBridge(gl::SurfaceTexture* surface_texture) {
+  DCHECK(!mailbox_bridge_);
+  mailbox_bridge_ready_ = false;
+  mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>();
+  if (surface_texture) {
+    mailbox_bridge_->CreateSurface(surface_texture);
+  }
+  mailbox_bridge_->CreateAndBindContextProvider(base::BindOnce(
+      &VrShellGl::OnGpuProcessConnectionReady, weak_ptr_factory_.GetWeakPtr()));
+}
+
 void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   DVLOG(2) << __FUNCTION__ << ": size=" << size.width() << "x" << size.height();
   if (!webvr_surface_texture_) {
+    if (webxr_use_shared_buffer_draw_) {
+      // We don't have a surface in SharedBuffer mode, just update the size.
+      webvr_surface_size_ = size;
+      return;
+    }
     DLOG(ERROR) << "No WebVR surface texture available";
     return;
   }
@@ -542,12 +555,7 @@ void VrShellGl::CreateOrResizeWebVRSurface(const gfx::Size& size) {
   if (mailbox_bridge_) {
     mailbox_bridge_->ResizeSurface(size.width(), size.height());
   } else {
-    mailbox_bridge_ready_ = false;
-    mailbox_bridge_ = std::make_unique<MailboxToSurfaceBridge>();
-    mailbox_bridge_->CreateSurface(webvr_surface_texture_.get());
-    mailbox_bridge_->CreateAndBindContextProvider(
-        base::BindOnce(&VrShellGl::OnGpuProcessConnectionReady,
-                       weak_ptr_factory_.GetWeakPtr()));
+    CreateSurfaceBridge(webvr_surface_texture_.get());
   }
 }
 
@@ -845,12 +853,27 @@ void VrShellGl::ConnectPresentingService(
   DVLOG(1) << __FUNCTION__ << ": resize initial to " << webvr_size.width()
            << "x" << webvr_size.height();
 
-  CreateOrResizeWebVRSurface(webvr_size);
+  // Decide which transport mechanism we want to use. This sets
+  // the webxr_use_* options as a side effect.
+  device::mojom::VRDisplayFrameTransportOptionsPtr transport_options =
+      GetWebVrFrameTransportOptions(options);
+
+  if (webxr_use_shared_buffer_draw_) {
+    CreateSurfaceBridge(nullptr);
+  } else {
+    if (!webvr_surface_texture_) {
+      webvr_surface_texture_ = gl::SurfaceTexture::Create(webvr_texture_id_);
+      webvr_surface_texture_->SetFrameAvailableCallback(base::BindRepeating(
+          &VrShellGl::OnWebVRFrameAvailable, weak_ptr_factory_.GetWeakPtr()));
+    }
+    CreateOrResizeWebVRSurface(webvr_size);
+  }
+
   ScheduleOrCancelWebVrFrameTimeout();
 
   browser_->SendRequestPresentReply(true, mojo::MakeRequest(&submit_client_),
                                     std::move(provider),
-                                    GetWebVrFrameTransportOptions(options));
+                                    std::move(transport_options));
 }
 
 void VrShellGl::OnSwapContents(int new_content_id) {
