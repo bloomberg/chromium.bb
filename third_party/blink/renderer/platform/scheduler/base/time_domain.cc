@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain_forward.h"
 
 #include <set>
 
@@ -30,6 +30,11 @@ SequenceManager* TimeDomain::sequence_manager() const {
   DCHECK(sequence_manager_);
   return sequence_manager_;
 }
+
+// TODO(kraynov): https://crbug.com/857101 Consider making an interface
+// for TaskQueueManagerImpl which will expose MaybeScheduleDelayedWork,
+// CancelDelayedWork and MaybeScheduleImmediateWork methods in order
+// to make the functions below pure-virtual.
 
 void TimeDomain::RequestWakeUpAt(TimeTicks now, TimeTicks run_time) {
   sequence_manager_->MaybeScheduleDelayedWork(FROM_HERE, this, now, run_time);

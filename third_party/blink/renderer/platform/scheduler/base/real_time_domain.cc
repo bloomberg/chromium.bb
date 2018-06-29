@@ -10,6 +10,7 @@
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 
 RealTimeDomain::RealTimeDomain() {}
 
@@ -44,5 +45,6 @@ const char* RealTimeDomain::GetName() const {
   return "RealTimeDomain";
 }
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

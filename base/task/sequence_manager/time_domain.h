@@ -1,9 +1,9 @@
-// Copyright 2015 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TIME_DOMAIN_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TIME_DOMAIN_H_
+#ifndef BASE_TASK_SEQUENCE_MANAGER_TIME_DOMAIN_H_
+#define BASE_TASK_SEQUENCE_MANAGER_TIME_DOMAIN_H_
 
 #include <map>
 
@@ -12,8 +12,8 @@
 #include "base/macros.h"
 #include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/lazy_now.h"
+#include "base/task/sequence_manager/task_queue_impl.h"
 #include "base/time/time.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 
 namespace base {
 namespace sequence_manager {
@@ -23,7 +23,7 @@ class TaskQueueManagerImpl;
 
 namespace internal {
 class TaskQueueImpl;
-}  // internal
+}  // namespace internal
 
 // TimeDomain wakes up TaskQueues when their delayed tasks are due to run.
 // This class allows overrides to enable clock overriding on some TaskQueues
@@ -31,7 +31,7 @@ class TaskQueueImpl;
 //
 // TaskQueue maintains its own next wake-up time and communicates it
 // to the TimeDomain, which aggregates wake-ups across registered TaskQueues
-// into a global wake-up, which ultimately gets passed to the ThreadCOntroller.
+// into a global wake-up, which ultimately gets passed to the ThreadController.
 class PLATFORM_EXPORT TimeDomain {
  public:
   virtual ~TimeDomain();
@@ -133,4 +133,4 @@ class PLATFORM_EXPORT TimeDomain {
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TIME_DOMAIN_H_
+#endif  // BASE_TASK_SEQUENCE_MANAGER_TIME_DOMAIN_H_

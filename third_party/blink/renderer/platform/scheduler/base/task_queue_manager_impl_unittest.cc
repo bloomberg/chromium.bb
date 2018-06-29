@@ -1724,8 +1724,10 @@ TEST_F(TaskQueueManagerTest,
 
   std::vector<EnqueueOrder> run_order;
 
-  std::unique_ptr<RealTimeDomain> domain_a(new RealTimeDomain());
-  std::unique_ptr<RealTimeDomain> domain_b(new RealTimeDomain());
+  std::unique_ptr<internal::RealTimeDomain> domain_a =
+      std::make_unique<internal::RealTimeDomain>();
+  std::unique_ptr<internal::RealTimeDomain> domain_b =
+      std::make_unique<internal::RealTimeDomain>();
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
 
@@ -1912,7 +1914,7 @@ TEST_F(TaskQueueManagerTest, TaskQueueObserver_DelayedWorkWhichCanRunNow) {
   Mock::VerifyAndClearExpectations(&observer);
 
   std::unique_ptr<TimeDomain> mock_time_domain =
-      std::make_unique<RealTimeDomain>();
+      std::make_unique<internal::RealTimeDomain>();
   manager_->RegisterTimeDomain(mock_time_domain.get());
 
   test_task_runner_->AdvanceMockTickClock(delay10s);

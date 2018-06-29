@@ -109,7 +109,7 @@ TaskQueueManagerImpl::AnyThread::~AnyThread() = default;
 TaskQueueManagerImpl::MainThreadOnly::MainThreadOnly()
     : random_generator(RandUint64()),
       uniform_distribution(0.0, 1.0),
-      real_time_domain(new RealTimeDomain()) {}
+      real_time_domain(new internal::RealTimeDomain()) {}
 
 TaskQueueManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 

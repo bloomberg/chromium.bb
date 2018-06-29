@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "base/trace_event/blame_context.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {

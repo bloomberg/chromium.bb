@@ -18,7 +18,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
 
