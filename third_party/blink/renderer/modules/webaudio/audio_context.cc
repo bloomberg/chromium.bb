@@ -141,7 +141,10 @@ AudioContext::AudioContext(Document& document,
 
 void AudioContext::Uninitialize() {
   DCHECK(IsMainThread());
+  DCHECK_NE(g_hardware_context_count, 0u);
+  --g_hardware_context_count;
 
+  DidClose();
   RecordAutoplayMetrics();
   BaseAudioContext::Uninitialize();
 }
@@ -266,18 +269,14 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
                              "has already been closed."));
   }
 
-  // Save the current sample rate for any subsequent decodeAudioData calls.
-  SetClosedContextSampleRate(sampleRate());
-
   close_resolver_ = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = close_resolver_->Promise();
 
-  // Stop the audio context. This will stop the destination node from pulling
-  // audio anymore. And since we have disconnected the destination from the
-  // audio graph, and thus has no references, the destination node can GCed if
-  // JS has no references. uninitialize() will also resolve the Promise created
-  // here.
-  Uninitialize();
+  // Stops the rendering, but it doesn't release the resources here.
+  StopRendering();
+
+  // The promise from closing context resolves immediately after this function.
+  DidClose();
 
   probe::didCloseAudioContext(GetDocument());
 
@@ -285,12 +284,7 @@ ScriptPromise AudioContext::closeContext(ScriptState* script_state) {
 }
 
 void AudioContext::DidClose() {
-  // This is specific to AudioContexts. OfflineAudioContexts
-  // are closed in their completion event.
   SetContextState(kClosed);
-
-  DCHECK(g_hardware_context_count);
-  --g_hardware_context_count;
 
   if (close_resolver_)
     close_resolver_->Resolve();
@@ -462,6 +456,10 @@ void AudioContext::RecordAutoplayMetrics() {
 
     autoplay_unlock_type_.reset();
   }
+}
+
+void AudioContext::ContextDestroyed(ExecutionContext*) {
+  Uninitialize();
 }
 
 }  // namespace blink
