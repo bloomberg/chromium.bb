@@ -159,6 +159,8 @@ std::unique_ptr<base::DictionaryValue> GetTranslatedStrings(bool is_google) {
               IDS_NTP_CUSTOM_BG_DAILY_REFRESH);
     AddString(translated_strings.get(), "selectionDone",
               IDS_NTP_CUSTOM_LINKS_DONE);
+    AddString(translated_strings.get(), "selectionCancel",
+              IDS_NTP_CUSTOM_BG_CANCEL);
 
     // Voice Search
     AddString(translated_strings.get(), "audioError",
