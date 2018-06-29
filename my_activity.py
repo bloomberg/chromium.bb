@@ -269,7 +269,7 @@ class MyActivity(object):
 
     return issues
 
-  def extract_bug_number_from_description(self, issue):
+  def extract_bug_numbers_from_description(self, issue):
     description = None
 
     if 'description' in issue:
@@ -293,7 +293,7 @@ class MyActivity(object):
         # Add default chromium: prefix if none specified.
         bugs = [bug if ':' in bug else 'chromium:%s' % bug for bug in bugs]
 
-    return bugs
+    return sorted(set(bugs))
 
   def process_rietveld_issue(self, remote, instance, issue):
     ret = {}
@@ -336,7 +336,7 @@ class MyActivity(object):
     ret['created'] = datetime_from_rietveld(issue['created'])
     ret['replies'] = self.process_rietveld_replies(issue['messages'])
 
-    ret['bugs'] = self.extract_bug_number_from_description(issue)
+    ret['bugs'] = self.extract_bug_numbers_from_description(issue)
     ret['landed_days_ago'] = issue['landed_days_ago']
 
     return ret
@@ -410,7 +410,7 @@ class MyActivity(object):
       ret['replies'] = []
     ret['reviewers'] = set(r['author'] for r in ret['replies'])
     ret['reviewers'].discard(ret['author'])
-    ret['bugs'] = self.extract_bug_number_from_description(issue)
+    ret['bugs'] = self.extract_bug_numbers_from_description(issue)
     return ret
 
   @staticmethod
@@ -749,7 +749,7 @@ class MyActivity(object):
     changes_without_issue = []
     for change in self.changes:
       added = False
-      for issue_uid in change['bugs']:
+      for issue_uid in set(change['bugs']):
         if issue_uid in issues:
           changes_by_issue_uid[issue_uid].append(change)
           added = True
