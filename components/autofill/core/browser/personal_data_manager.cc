@@ -1259,6 +1259,25 @@ bool PersonalDataManager::IsAutofillWalletImportEnabled() const {
   return pref_service_->GetBoolean(prefs::kAutofillWalletImportEnabled);
 }
 
+bool PersonalDataManager::ShouldSuggestServerCards() const {
+  if (!IsAutofillWalletImportEnabled())
+    return false;
+
+  if (is_syncing_for_test_)
+    return true;
+
+  // Check if the feature to offer server cards on auth error is enabled.
+  if (base::FeatureList::IsEnabled(
+          features::kAutofillEnablePaymentsInteractionsOnAuthError)) {
+    return true;
+  }
+
+  // Server cards should be suggested if the sync service active.
+  return syncer::GetUploadToGoogleState(
+             sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
+         syncer::UploadState::ACTIVE;
+}
+
 std::string PersonalDataManager::CountryCodeForCurrentTimezone() const {
   return base::CountryCodeForCurrentTimezone();
 }
@@ -2281,25 +2300,6 @@ bool PersonalDataManager::DeleteDisusedAddresses() {
   AutofillMetrics::LogNumberOfAddressesDeletedForDisuse(num_deleted_addresses);
 
   return true;
-}
-
-bool PersonalDataManager::ShouldSuggestServerCards() const {
-  if (!IsAutofillWalletImportEnabled())
-    return false;
-
-  if (is_syncing_for_test_)
-    return true;
-
-  // Check if the feature to offer server cards on auth error is enabled.
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillEnablePaymentsInteractionsOnAuthError)) {
-    return true;
-  }
-
-  // Server cards should be suggested if the sync service active.
-  return syncer::GetUploadToGoogleState(
-             sync_service_, syncer::ModelType::AUTOFILL_WALLET_DATA) ==
-         syncer::UploadState::ACTIVE;
 }
 
 void PersonalDataManager::ApplyAddressFixesAndCleanups() {

@@ -451,6 +451,9 @@ class PersonalDataManager : public KeyedService,
   // Returns the value of the AutofillWalletImportEnabled pref.
   virtual bool IsAutofillWalletImportEnabled() const;
 
+  // Whether the server cards are enabled and should be suggested to the user.
+  virtual bool ShouldSuggestServerCards() const;
+
   // Overrideable for testing.
   virtual std::string CountryCodeForCurrentTimezone() const;
 
@@ -607,9 +610,6 @@ class PersonalDataManager : public KeyedService,
   // autofill credit card data that would otherwise be difficult to create
   // manually using the UI.
   void MaybeCreateTestCreditCards();
-
-  // Whether the server cards are enabled and should be suggested to the user.
-  bool ShouldSuggestServerCards() const;
 
   // Applies various fixes and cleanups on autofill addresses.
   void ApplyAddressFixesAndCleanups();

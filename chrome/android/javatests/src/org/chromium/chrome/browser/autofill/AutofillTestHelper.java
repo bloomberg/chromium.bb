@@ -83,7 +83,9 @@ public class AutofillTestHelper {
 
     List<CreditCard> getCreditCardsToSuggest() throws ExecutionException {
         return ThreadUtils.runOnUiThreadBlocking(
-                () -> PersonalDataManager.getInstance().getCreditCardsToSuggest());
+                ()
+                        -> PersonalDataManager.getInstance().getCreditCardsToSuggest(
+                                /*includeServerCards=*/true));
     }
 
     List<CreditCard> getCreditCardsForSettings() throws ExecutionException {

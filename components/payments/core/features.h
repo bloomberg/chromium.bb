@@ -11,6 +11,9 @@
 namespace payments {
 namespace features {
 
+// Used to control whether Google Pay cards are returned for basic-card.
+extern const base::Feature kReturnGooglePayInBasicCard;
+
 #if defined(OS_IOS)
 // Used to control the state of the Payment Request API feature.
 extern const base::Feature kWebPayments;

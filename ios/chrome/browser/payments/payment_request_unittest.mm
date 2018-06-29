@@ -319,6 +319,64 @@ TEST_F(PaymentRequestTest, SupportedMethods_BasicCard_WithSupportedNetworks) {
   EXPECT_EQ("unionpay", payment_request.supported_card_networks()[1]);
 }
 
+TEST_F(PaymentRequestTest, GooglePayCardsInBasicCard_Allowed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kReturnGooglePayInBasicCard);
+
+  WebPaymentRequest web_payment_request;
+  PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("mastercard");
+  web_payment_request.method_data.push_back(method_datum);
+
+  // Add a mastercard with billing address.
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  test_personal_data_manager_.AddProfile(address);
+  autofill::CreditCard credit_card = autofill::test::GetMaskedServerCard();
+  credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
+  credit_card.set_billing_address_id(address.guid());
+  test_personal_data_manager_.AddServerCreditCard(credit_card);
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &test_personal_data_manager_);
+
+  // The card is available in the payment request, and added to the
+  // PersonalDataManager.
+  EXPECT_EQ(1U, payment_request.payment_methods().size());
+  // The card is expected to have been added to the PersonalDataManager.
+  EXPECT_EQ(1U, test_personal_data_manager_.GetCreditCards().size());
+}
+
+TEST_F(PaymentRequestTest, GooglePayCardsInBasicCard_NotAllowed) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kReturnGooglePayInBasicCard);
+
+  WebPaymentRequest web_payment_request;
+  PaymentMethodData method_datum;
+  method_datum.supported_methods.push_back("basic-card");
+  method_datum.supported_networks.push_back("mastercard");
+  web_payment_request.method_data.push_back(method_datum);
+
+  // Add a mastercard with billing address.
+  autofill::AutofillProfile address = autofill::test::GetFullProfile();
+  test_personal_data_manager_.AddProfile(address);
+  autofill::CreditCard credit_card = autofill::test::GetMaskedServerCard();
+  credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
+  credit_card.set_billing_address_id(address.guid());
+  test_personal_data_manager_.AddServerCreditCard(credit_card);
+
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &test_personal_data_manager_);
+
+  // The card is not available in the payment request, but added to the
+  // PersonalDataManager.
+  EXPECT_TRUE(payment_request.payment_methods().empty());
+  // The card is expected to have been added to the PersonalDataManager.
+  EXPECT_EQ(1U, test_personal_data_manager_.GetCreditCards().size());
+}
+
 // Tests that an autofill payment instrumnt e.g., credit cards can be added
 // to the list of available payment methods.
 TEST_F(PaymentRequestTest, CreateAndAddAutofillPaymentInstrument) {
@@ -1150,7 +1208,7 @@ TEST_F(PaymentRequestTest,
   autofill::CreditCard credit_card = autofill::test::GetMaskedServerCardAmex();
   credit_card.set_card_type(autofill::CreditCard::CardType::CARD_TYPE_CREDIT);
   credit_card.set_billing_address_id(address.guid());
-  test_personal_data_manager_.AddCreditCard(credit_card);
+  test_personal_data_manager_.AddServerCreditCard(credit_card);
 
   WebPaymentRequest web_payment_request =
       payment_request_test_util::CreateTestWebPaymentRequest();
