@@ -997,7 +997,8 @@
                  type="chrome_html" />
       <structure name="IDR_SETTINGS_SITE_SETTINGS_BEHAVIOR_JS"
                  file="site_settings/site_settings_behavior.js"
-                 type="chrome_html" />
+                 type="chrome_html"
+                 preprocess="true" />
       <structure name="IDR_SETTINGS_CONSTANTS_JS"
                  file="site_settings/constants.js"
                  type="chrome_html" />
