@@ -34,6 +34,7 @@ from py_utils import discover
 
 _UNSCHEDULED_TELEMETRY_BENCHMARKS = set([
   'experimental.startup.android.coldish',
+  'experimental.startup.mobile',
   ])
 
 
