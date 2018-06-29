@@ -603,9 +603,6 @@
       status: "experimental",
     },
     {
-      name: "IntersectionObserverGeometryMapper",
-    },
-    {
       name: "IntersectionObserverV2",
       settable_from_internals: true,
     },
