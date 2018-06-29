@@ -2024,6 +2024,7 @@ source_set("unit_tests") {
     "login/auth/cryptohome_authenticator_unittest.cc",
     "login/demo_mode/demo_session_unittest.cc",
     "login/demo_mode/demo_setup_controller_unittest.cc",
+    "login/demo_mode/demo_setup_test_utils.h",
     "login/easy_unlock/easy_unlock_challenge_wrapper_unittest.cc",
     "login/easy_unlock/easy_unlock_tpm_key_manager_unittest.cc",
     "login/enrollment/enrollment_screen_unittest.cc",

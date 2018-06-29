@@ -64,6 +64,7 @@ void DemoSetupScreen::OnUserAction(const std::string& action_id) {
 
 void DemoSetupScreen::OnSetupError(bool fatal) {
   // TODO(mukai): propagate |fatal| information and change the error message.
+  view_->OnSetupFinished(false, std::string());
 }
 
 void DemoSetupScreen::OnSetupSuccess() {
