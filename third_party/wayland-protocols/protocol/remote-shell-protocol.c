@@ -28,6 +28,7 @@
 #include "wayland-util.h"
 
 extern const struct wl_interface wl_surface_interface;
+extern const struct wl_interface zcr_input_method_surface_v1_interface;
 extern const struct wl_interface zcr_notification_surface_v1_interface;
 extern const struct wl_interface zcr_remote_surface_v1_interface;
 
@@ -51,6 +52,8 @@ static const struct wl_interface *types[] = {
 	&zcr_notification_surface_v1_interface,
 	&wl_surface_interface,
 	NULL,
+	&zcr_input_method_surface_v1_interface,
+	&wl_surface_interface,
 	&wl_surface_interface,
 	&wl_surface_interface,
 };
@@ -59,10 +62,11 @@ static const struct wl_message zcr_remote_shell_v1_requests[] = {
 	{ "destroy", "", types + 0 },
 	{ "get_remote_surface", "nou", types + 13 },
 	{ "get_notification_surface", "nos", types + 16 },
+	{ "get_input_method_surface", "17no", types + 19 },
 };
 
 static const struct wl_message zcr_remote_shell_v1_events[] = {
-	{ "activated", "?o?o", types + 19 },
+	{ "activated", "?o?o", types + 21 },
 	{ "configuration_changed", "iiifiiiiu", types + 0 },
 	{ "workspace", "5uuiiiiiiiiifu", types + 0 },
 	{ "configure", "5u", types + 0 },
@@ -70,8 +74,8 @@ static const struct wl_message zcr_remote_shell_v1_events[] = {
 };
 
 WL_EXPORT const struct wl_interface zcr_remote_shell_v1_interface = {
-	"zcr_remote_shell_v1", 16,
-	3, zcr_remote_shell_v1_requests,
+	"zcr_remote_shell_v1", 17,
+	4, zcr_remote_shell_v1_requests,
 	5, zcr_remote_shell_v1_events,
 };
 
@@ -143,6 +147,16 @@ static const struct wl_message zcr_notification_surface_v1_requests[] = {
 WL_EXPORT const struct wl_interface zcr_notification_surface_v1_interface = {
 	"zcr_notification_surface_v1", 16,
 	2, zcr_notification_surface_v1_requests,
+	0, NULL,
+};
+
+static const struct wl_message zcr_input_method_surface_v1_requests[] = {
+	{ "destroy", "", types + 0 },
+};
+
+WL_EXPORT const struct wl_interface zcr_input_method_surface_v1_interface = {
+	"zcr_input_method_surface_v1", 17,
+	1, zcr_input_method_surface_v1_requests,
 	0, NULL,
 };
 

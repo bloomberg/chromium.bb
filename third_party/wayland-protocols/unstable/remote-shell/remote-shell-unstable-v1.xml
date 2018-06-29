@@ -38,7 +38,7 @@
     reset.
   </description>
 
-  <interface name="zcr_remote_shell_v1" version="16">
+  <interface name="zcr_remote_shell_v1" version="17">
     <description summary="remote_shell">
       The global interface that allows clients to turn a wl_surface into a
       "real window" which is remotely managed but can be stacked, activated
@@ -182,6 +182,17 @@
       </description>
       <arg name="scale" type="int" summary="DP to pixels ratio, in 8.24 fixed point format"/>
     </event>
+
+    <!-- Version 17 additions -->
+
+    <request name="get_input_method_surface" since="17">
+      <description summary="Create a input method surface from a surface">
+	Creates an input_method_surface for the given surface, gives it
+	the input_method_surface role.
+      </description>
+      <arg name="id" type="new_id" interface="zcr_input_method_surface_v1"/>
+      <arg name="surface" type="object" interface="wl_surface"/>
+    </request>
   </interface>
 
   <interface name="zcr_remote_surface_v1" version="15">
@@ -913,6 +924,18 @@
 	Set an application identifier for the notification surface.
       </description>
       <arg name="app_id" type="string"/>
+    </request>
+  </interface>
+
+  <interface name="zcr_input_method_surface_v1" version="17">
+    <description summary="An input method window">
+      An interface that may be implemented by a wl_surface to host IME contents.
+    </description>
+
+    <request name="destroy" type="destructor">
+      <description summary="Destroy the ime_surface">
+	Unmap and destroy the input mtehod surface.
+      </description>
     </request>
   </interface>
 
