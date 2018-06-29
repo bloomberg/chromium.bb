@@ -329,7 +329,6 @@ source_set("blink_headers") {
     "platform/web_prerendering_support.h",
     "platform/web_prescient_networking.h",
     "platform/web_private_ptr.h",
-    "platform/web_public_suffix_list.h",
     "platform/web_rect.h",
     "platform/web_referrer_policy.h",
     "platform/web_resource_timing_info.h",

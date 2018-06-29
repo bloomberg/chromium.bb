@@ -626,8 +626,6 @@ target(link_target_type, "renderer") {
     "web_ui_extension_data.h",
     "webgraphicscontext3d_provider_impl.cc",
     "webgraphicscontext3d_provider_impl.h",
-    "webpublicsuffixlist_impl.cc",
-    "webpublicsuffixlist_impl.h",
     "worker_thread_registry.cc",
     "worker_thread_registry.h",
   ]
