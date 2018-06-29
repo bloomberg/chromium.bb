@@ -4728,6 +4728,12 @@ static void dump_filtered_recon_frames(AV1_COMP *cpi) {
 }
 #endif  // DUMP_RECON_FRAMES
 
+static INLINE int is_frame_droppable(AV1_COMP *cpi) {
+  return !(cpi->refresh_alt_ref_frame || cpi->refresh_alt2_ref_frame ||
+           cpi->refresh_bwd_ref_frame || cpi->refresh_golden_frame ||
+           cpi->refresh_last_frame);
+}
+
 static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
                                      int skip_adapt,
                                      unsigned int *frame_flags) {
@@ -5097,6 +5103,19 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->seg.update_data = 0;
   cm->lf.mode_ref_delta_update = 0;
 
+  // A droppable frame might not be shown but it always
+  // takes a space in the gf group. Therefore, even when
+  // it is not shown, we still need update the count down.
+
+  // TODO(weitinglin): This is a work-around to handle the condition
+  // when a frame is drop. We should fix the cm->show_frame flag
+  // instead of checking the other condition to update the counter properly.
+  if (cm->show_frame || is_frame_droppable(cpi)) {
+    // Decrement count down till next gf
+    if (cpi->rc.frames_till_gf_update_due > 0)
+      cpi->rc.frames_till_gf_update_due--;
+  }
+
   if (cm->show_frame) {
     // TODO(zoeliu): We may only swamp mi and prev_mi for those frames that
     // are
@@ -5104,10 +5123,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     swap_mi_and_prev_mi(cm);
     // Don't increment frame counters if this was an altref buffer
     // update not a real frame
-
-    // Decrement count down till next gf
-    if (cpi->rc.frames_till_gf_update_due > 0)
-      cpi->rc.frames_till_gf_update_due--;
 
     ++cm->current_video_frame;
   }
