@@ -469,6 +469,9 @@ class LocationBarView : public LocationBar,
   // Animation to control showing / hiding the location bar.
   gfx::SlideAnimation size_animation_{this};
 
+  // Animation to indent the text when opening the suggestions dropdown.
+  gfx::SlideAnimation text_indent_animation_{this};
+
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
   const bool is_popup_mode_;

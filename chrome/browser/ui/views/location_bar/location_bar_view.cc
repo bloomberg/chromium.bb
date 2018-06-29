@@ -156,6 +156,10 @@ LocationBarView::LocationBarView(Browser* browser,
 
   zoom::ZoomEventManager::GetForBrowserContext(profile)
       ->AddZoomEventManagerObserver(this);
+
+  // TODO(tommycli): This is a placeholder duration. Replace this with the real
+  // value once UX decides.
+  text_indent_animation_.SetSlideDuration(200);
 }
 
 LocationBarView::~LocationBarView() {
@@ -481,8 +485,18 @@ void LocationBarView::Layout() {
   keyword_hint_view_->SetVisible(false);
 
   const int item_padding = GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
-  LocationBarLayout leading_decorations(LocationBarLayout::LEFT_EDGE,
-                                        item_padding, item_padding);
+
+  constexpr int kTextIndentDp = 12;
+  int leading_edit_item_padding =
+      ui::MaterialDesignController::IsRefreshUi()
+          ? text_indent_animation_.CurrentValueBetween(0, kTextIndentDp)
+          : item_padding;
+  // We always subtract the left padding of the OmniboxView itself to allow for
+  // an extended I-beam click target without affecting actual layout.
+  leading_edit_item_padding -= omnibox_view_->GetInsets().left();
+
+  LocationBarLayout leading_decorations(
+      LocationBarLayout::LEFT_EDGE, item_padding, leading_edit_item_padding);
   LocationBarLayout trailing_decorations(LocationBarLayout::RIGHT_EDGE,
                                          item_padding, item_padding);
 
@@ -1217,13 +1231,22 @@ bool LocationBarView::CanStartDragForView(View* sender,
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private gfx::AnimationDelegate implementation:
 void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
-  GetWidget()->non_client_view()->Layout();
+  if (animation == &size_animation_) {
+    GetWidget()->non_client_view()->Layout();
+  } else if (animation == &text_indent_animation_) {
+    Layout();
+    SchedulePaint();
+  } else {
+    NOTREACHED();
+  }
 }
 
 void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
-  AnimationProgressed(animation);
-  if (animation->GetCurrentValue() == 0)
-    SetVisible(false);
+  if (animation == &size_animation_) {
+    AnimationProgressed(animation);
+    if (animation->GetCurrentValue() == 0)
+      SetVisible(false);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1246,8 +1269,12 @@ void LocationBarView::OnPopupVisibilityChanged() {
   if (focus_ring_)
     focus_ring_->SchedulePaint();
 
-  if (ui::MaterialDesignController::IsRefreshUi())
-    omnibox_view_->UpdateTextIndent();
+  if (ui::MaterialDesignController::IsRefreshUi()) {
+    if (GetOmniboxPopupView()->IsOpen())
+      text_indent_animation_.Show();
+    else
+      text_indent_animation_.Hide();
+  }
 }
 
 const ToolbarModel* LocationBarView::GetToolbarModel() const {

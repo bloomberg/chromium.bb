@@ -55,6 +55,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/selection_model.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -174,8 +175,8 @@ void OmniboxViewViews::Init() {
 
   // Override the default FocusableBorder from Textfield, since the
   // LocationBarView will indicate the focus state.
-  SetBorder(views::CreateEmptyBorder(
-      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX)));
+  constexpr gfx::Insets kTextfieldInsets(3);
+  SetBorder(views::CreateEmptyBorder(kTextfieldInsets));
 
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->
@@ -237,20 +238,6 @@ void OmniboxViewViews::InstallPlaceholderText() {
   } else {
     set_placeholder_text(base::string16());
   }
-}
-
-void OmniboxViewViews::UpdateTextIndent() {
-  DCHECK(ui::MaterialDesignController::IsRefreshUi());
-
-  gfx::Insets insets =
-      ChromeLayoutProvider::Get()->GetInsetsMetric(INSETS_OMNIBOX);
-  if (model()->popup_model()->IsOpen())
-    insets += gfx::Insets(0, 8 /* left */, 0, 0);
-
-  SetBorder(views::CreateEmptyBorder(insets));
-
-  // This is necessary to reposition the internal RenderText.
-  OnBoundsChanged(gfx::Rect());
 }
 
 bool OmniboxViewViews::IsHovered() const {

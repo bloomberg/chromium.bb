@@ -14,10 +14,8 @@
 #include "ui/views/layout/layout_provider.h"
 
 enum ChromeInsetsMetric {
-  // Padding applied around the text in the omnibox's editable area.
-  INSETS_OMNIBOX = views::VIEWS_INSETS_END,
   // Padding around buttons on the bookmarks bar.
-  INSETS_BOOKMARKS_BAR_BUTTON,
+  INSETS_BOOKMARKS_BAR_BUTTON = views::VIEWS_INSETS_END,
   // Margins used by toasts.
   INSETS_TOAST,
 };
