@@ -40,13 +40,14 @@ void CreateSubresourceLoaderFactoryForWorker(
     mojom::ServiceWorkerContainerHostPtrInfo container_host_info,
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory,
-    network::mojom::URLLoaderFactoryRequest request) {
+    network::mojom::URLLoaderFactoryRequest request,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   ServiceWorkerSubresourceLoaderFactory::Create(
       base::MakeRefCounted<ControllerServiceWorkerConnector>(
           std::move(container_host_info), nullptr /* controller_ptr */,
           client_id),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory)),
-      std::move(request));
+      std::move(request), std::move(task_runner));
 }
 
 }  // namespace
@@ -395,10 +396,10 @@ void WorkerFetchContextImpl::ResetServiceWorkerURLLoaderFactory() {
       {base::MayBlock(), base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN});
   task_runner->PostTask(
       FROM_HERE,
-      base::BindOnce(&CreateSubresourceLoaderFactoryForWorker,
-                     std::move(host_ptr_info), client_id_,
-                     fallback_factory_->Clone(),
-                     mojo::MakeRequest(&service_worker_url_loader_factory)));
+      base::BindOnce(
+          &CreateSubresourceLoaderFactoryForWorker, std::move(host_ptr_info),
+          client_id_, fallback_factory_->Clone(),
+          mojo::MakeRequest(&service_worker_url_loader_factory), task_runner));
   web_loader_factory_->SetServiceWorkerURLLoaderFactory(
       std::move(service_worker_url_loader_factory));
 }

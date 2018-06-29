@@ -150,7 +150,8 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
     network::mojom::URLLoaderClientPtr client,
     const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-    scoped_refptr<network::SharedURLLoaderFactory> fallback_factory)
+    scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : redirect_limit_(net::URLRequest::kMaxRedirects),
       url_loader_client_(std::move(client)),
       url_loader_binding_(this, std::move(request)),
@@ -164,6 +165,7 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       traffic_annotation_(traffic_annotation),
       resource_request_(resource_request),
       fallback_factory_(std::move(fallback_factory)),
+      task_runner_(std::move(task_runner)),
       weak_factory_(this) {
   DCHECK(controller_connector_);
   response_head_.request_start = base::TimeTicks::Now();
@@ -308,7 +310,7 @@ void ServiceWorkerSubresourceLoader::OnConnectionClosed() {
     return;
   }
   fetch_request_restarted_ = true;
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
+  task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&ServiceWorkerSubresourceLoader::DispatchFetchEvent,
                      weak_factory_.GetWeakPtr()));
@@ -587,18 +589,21 @@ void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
 void ServiceWorkerSubresourceLoaderFactory::Create(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
-    network::mojom::URLLoaderFactoryRequest request) {
-  new ServiceWorkerSubresourceLoaderFactory(std::move(controller_connector),
-                                            std::move(fallback_factory),
-                                            std::move(request));
+    network::mojom::URLLoaderFactoryRequest request,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  new ServiceWorkerSubresourceLoaderFactory(
+      std::move(controller_connector), std::move(fallback_factory),
+      std::move(request), std::move(task_runner));
 }
 
 ServiceWorkerSubresourceLoaderFactory::ServiceWorkerSubresourceLoaderFactory(
     scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
     scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
-    network::mojom::URLLoaderFactoryRequest request)
+    network::mojom::URLLoaderFactoryRequest request,
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
     : controller_connector_(std::move(controller_connector)),
-      fallback_factory_(std::move(fallback_factory)) {
+      fallback_factory_(std::move(fallback_factory)),
+      task_runner_(std::move(task_runner)) {
   DCHECK(fallback_factory_);
   bindings_.AddBinding(this, std::move(request));
   bindings_.set_connection_error_handler(base::BindRepeating(
@@ -621,10 +626,10 @@ void ServiceWorkerSubresourceLoaderFactory::CreateLoaderAndStart(
   // network loader when fallback happens. When that happens the loader unbinds
   // the request, passes the request to the fallback factory, and
   // destructs itself (while the loader client continues to work).
-  new ServiceWorkerSubresourceLoader(std::move(request), routing_id, request_id,
-                                     options, resource_request,
-                                     std::move(client), traffic_annotation,
-                                     controller_connector_, fallback_factory_);
+  new ServiceWorkerSubresourceLoader(
+      std::move(request), routing_id, request_id, options, resource_request,
+      std::move(client), traffic_annotation, controller_connector_,
+      fallback_factory_, task_runner_);
 }
 
 void ServiceWorkerSubresourceLoaderFactory::Clone(
