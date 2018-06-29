@@ -9,6 +9,7 @@
 #include "base/feature_list.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/optional.h"
+#include "base/trace_event/trace_event.h"
 #include "content/common/service_worker/service_worker_loader_helpers.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "content/common/service_worker/service_worker_utils.h"
@@ -19,6 +20,7 @@
 #include "content/renderer/service_worker/controller_service_worker_connector.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/redirect_util.h"
 #include "net/url_request/url_request.h"
 #include "services/network/public/cpp/features.h"
@@ -182,6 +184,9 @@ void ServiceWorkerSubresourceLoader::OnConnectionError() {
 
 void ServiceWorkerSubresourceLoader::StartRequest(
     const network::ResourceRequest& resource_request) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::StartRequest", this,
+      TRACE_EVENT_FLAG_FLOW_OUT, "url", resource_request.url.spec());
   DCHECK_EQ(Status::kNotStarted, status_);
   status_ = Status::kStarted;
 
@@ -207,6 +212,9 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   mojom::ControllerServiceWorker* controller =
       controller_connector_->GetControllerServiceWorker(
           mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
+  TRACE_EVENT1("ServiceWorker",
+               "ServiceWorkerSubresourceLoader::DispatchFetchEvent",
+               "controller", (controller ? "exists" : "does not exist"));
   if (!controller) {
     auto controller_state = controller_connector_->state();
     if (controller_state ==
@@ -256,6 +264,11 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
     blink::mojom::ServiceWorkerEventStatus status,
     base::Time dispatch_event_time) {
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                         "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
+                         this, TRACE_EVENT_FLAG_FLOW_IN, "status",
+                         ServiceWorkerUtils::MojoEnumToString(status));
+
   // Stop restarting logic here since OnFetchEventFinished() indicates that the
   // fetch event dispatch reached the renderer.
   SettleFetchEventDispatch(
@@ -319,6 +332,9 @@ void ServiceWorkerSubresourceLoader::SettleFetchEventDispatch(
 void ServiceWorkerSubresourceLoader::OnResponse(
     const ServiceWorkerResponse& response,
     base::Time dispatch_event_time) {
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerSubresourceLoader::OnResponse", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   StartResponse(response, nullptr /* body_as_blob */,
                 nullptr /* body_as_stream */);
@@ -328,6 +344,9 @@ void ServiceWorkerSubresourceLoader::OnResponseBlob(
     const ServiceWorkerResponse& response,
     blink::mojom::BlobPtr body_as_blob,
     base::Time dispatch_event_time) {
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerSubresourceLoader::OnResponseBlob", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   StartResponse(response, std::move(body_as_blob),
                 nullptr /* body_as_stream */);
@@ -337,6 +356,9 @@ void ServiceWorkerSubresourceLoader::OnResponseStream(
     const ServiceWorkerResponse& response,
     blink::mojom::ServiceWorkerStreamHandlePtr body_as_stream,
     base::Time dispatch_event_time) {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnResponseStream", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   SettleFetchEventDispatch(blink::SERVICE_WORKER_OK);
   StartResponse(response, nullptr /* body_as_blob */,
                 std::move(body_as_stream));
@@ -357,12 +379,18 @@ void ServiceWorkerSubresourceLoader::OnFallback(
       (!resource_request_.request_initiator.has_value() ||
        !resource_request_.request_initiator->IsSameOriginWith(
            url::Origin::Create(resource_request_.url)))) {
+    TRACE_EVENT_WITH_FLOW0(
+        "ServiceWorker", "ServiceWorkerSubresourceLoader::OnFallback", this,
+        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
     response_head_.was_fetched_via_service_worker = true;
     response_head_.was_fallback_required_by_service_worker = true;
     CommitResponseHeaders();
     CommitCompleted(net::OK);
     return;
   }
+  TRACE_EVENT_WITH_FLOW0("ServiceWorker",
+                         "ServiceWorkerSubresourceLoader::OnFallback", this,
+                         TRACE_EVENT_FLAG_FLOW_IN);
 
   // Hand over to the network loader.
   network::mojom::URLLoaderClientPtr client;
@@ -458,6 +486,10 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
 }
 
 void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::CommitCompleted", this,
+      TRACE_EVENT_FLAG_FLOW_IN, "error_code", net::ErrorToString(error_code));
+
   DCHECK_LT(status_, Status::kCompleted);
   DCHECK(url_loader_client_.is_bound());
   stream_waiter_.reset();
@@ -474,6 +506,10 @@ void ServiceWorkerSubresourceLoader::FollowRedirect(
     const base::Optional<std::vector<std::string>>&
         to_be_removed_request_headers,
     const base::Optional<net::HttpRequestHeaders>& modified_request_headers) {
+  TRACE_EVENT_WITH_FLOW1("ServiceWorker",
+                         "ServiceWorkerSubresourceLoader::FollowRedirect", this,
+                         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
+                         "new_url", redirect_info_->new_url.spec());
   DCHECK(!modified_request_headers.has_value()) << "Redirect with modified "
                                                    "headers was not supported "
                                                    "yet. crbug.com/845683";
@@ -515,6 +551,11 @@ void ServiceWorkerSubresourceLoader::ResumeReadingBodyFromNet() {}
 
 void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
     const base::Optional<std::vector<uint8_t>>& metadata) {
+  TRACE_EVENT_WITH_FLOW1(
+      "ServiceWorker",
+      "ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete", this,
+      TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "metadata size",
+      (metadata ? metadata->size() : 0));
   DCHECK(url_loader_client_);
   if (metadata.has_value())
     url_loader_client_->OnReceiveCachedMetadata(metadata.value());
@@ -533,6 +574,9 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
 }
 
 void ServiceWorkerSubresourceLoader::OnBlobReadingComplete(int net_error) {
+  TRACE_EVENT_WITH_FLOW0(
+      "ServiceWorker", "ServiceWorkerSubresourceLoader::OnBlobReadingComplete",
+      this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
   CommitCompleted(net_error);
   body_as_blob_.reset();
 }
