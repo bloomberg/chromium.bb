@@ -65,6 +65,8 @@ static_library("impl") {
 
   if (!is_android) {
     sources += [
+      "fcm_sync_invalidation_listener.cc",
+      "fcm_sync_invalidation_listener.h",
       "gcm_invalidation_bridge.cc",
       "gcm_invalidation_bridge.h",
       "gcm_network_channel.cc",
@@ -147,6 +149,7 @@ source_set("unit_tests") {
     # Non-Android tests.
     sources += [
       "fake_invalidator_unittest.cc",
+      "fcm_sync_invalidation_listener_unittest.cc",
       "gcm_invalidation_bridge_unittest.cc",
       "gcm_network_channel_unittest.cc",
       "invalidation_notifier_unittest.cc",

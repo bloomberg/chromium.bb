@@ -287,9 +287,10 @@ SyncSystemResources::SyncSystemResources(
       logger_(new SyncLogger()),
       internal_scheduler_(new SyncInvalidationScheduler()),
       listener_scheduler_(new SyncInvalidationScheduler()),
-      storage_(new SyncStorage(state_writer, internal_scheduler_.get())),
-      sync_network_channel_(sync_network_channel) {
-}
+      storage_(state_writer
+                   ? new SyncStorage(state_writer, internal_scheduler_.get())
+                   : nullptr),
+      sync_network_channel_(sync_network_channel) {}
 
 SyncSystemResources::~SyncSystemResources() {
   Stop();
@@ -323,7 +324,7 @@ SyncLogger* SyncSystemResources::logger() {
 }
 
 SyncStorage* SyncSystemResources::storage() {
-  return storage_.get();
+  return storage_ ? storage_.get() : nullptr;
 }
 
 SyncNetworkChannel* SyncSystemResources::network() {
