@@ -166,9 +166,12 @@ public class VideoCaptureCamera2 extends VideoCapture {
     // Inner class to extend a Photo Session state change listener.
     // Error paths must signal notifyTakePhotoError().
     private class CrPhotoSessionListener extends CameraCaptureSession.StateCallback {
+        private final ImageReader mImageReader;
         private final CaptureRequest mPhotoRequest;
         private final long mCallbackId;
-        CrPhotoSessionListener(CaptureRequest photoRequest, long callbackId) {
+        CrPhotoSessionListener(
+                ImageReader imageReader, CaptureRequest photoRequest, long callbackId) {
+            mImageReader = imageReader;
             mPhotoRequest = photoRequest;
             mCallbackId = callbackId;
         }
@@ -197,6 +200,11 @@ public class VideoCaptureCamera2 extends VideoCapture {
             Log.e(TAG, "failed configuring capture session");
             notifyTakePhotoError(mCallbackId);
             return;
+        }
+
+        @Override
+        public void onClosed(CameraCaptureSession session) {
+            mImageReader.close();
         }
     };
 
@@ -1145,7 +1153,7 @@ public class VideoCaptureCamera2 extends VideoCapture {
 
         final CaptureRequest photoRequest = photoRequestBuilder.build();
         final CrPhotoSessionListener sessionListener =
-                new CrPhotoSessionListener(photoRequest, callbackId);
+                new CrPhotoSessionListener(imageReader, photoRequest, callbackId);
         try {
             mCameraDevice.createCaptureSession(surfaceList, sessionListener, backgroundHandler);
         } catch (CameraAccessException | IllegalArgumentException | SecurityException ex) {
