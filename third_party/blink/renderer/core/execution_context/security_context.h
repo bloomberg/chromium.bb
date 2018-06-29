@@ -29,23 +29,27 @@
 
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
-#include "third_party/blink/public/common/feature_policy/feature_policy.h"
-#include "third_party/blink/public/mojom/net/ip_address_space.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/frame/sandbox_flags.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
-#include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
-#include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
 
 #include <memory>
 
 namespace blink {
 
-class SecurityOrigin;
 class ContentSecurityPolicy;
+class FeaturePolicy;
+class SecurityOrigin;
+struct ParsedFeaturePolicyDeclaration;
+
+using ParsedFeaturePolicy = std::vector<ParsedFeaturePolicyDeclaration>;
+
+namespace mojom {
+enum class IPAddressSpace : int32_t;
+}
 
 // Defines the security properties (such as the security origin, content
 // security policy, and other restrictions) of an environment in which
