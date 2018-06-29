@@ -41,10 +41,9 @@ NGLineBreaker::LineData::LineData(NGInlineNode node,
   is_first_formatted_line = (!break_token || (!break_token->ItemIndex() &&
                                               !break_token->TextOffset())) &&
                             node.CanContainFirstFormattedLine();
-  use_first_line_style = is_first_formatted_line && node.GetLayoutObject()
-                                                        ->GetDocument()
-                                                        .GetStyleEngine()
-                                                        .UsesFirstLineRules();
+  use_first_line_style =
+      is_first_formatted_line &&
+      node.GetLayoutBox()->GetDocument().GetStyleEngine().UsesFirstLineRules();
 }
 
 NGLineBreaker::NGLineBreaker(

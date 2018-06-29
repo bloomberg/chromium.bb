@@ -373,7 +373,7 @@ bool NGBlockNode::CanUseNewLayout() const {
 
 String NGBlockNode::ToString() const {
   return String::Format("NGBlockNode: '%s'",
-                        GetLayoutObject()->DebugName().Ascii().data());
+                        GetLayoutBox()->DebugName().Ascii().data());
 }
 
 void NGBlockNode::CopyFragmentDataToLayoutBox(
@@ -573,14 +573,13 @@ void NGBlockNode::CopyChildFragmentPosition(
 }
 
 bool NGBlockNode::IsInlineLevel() const {
-  return GetLayoutObject()->IsInline();
+  return GetLayoutBox()->IsInline();
 }
 
 bool NGBlockNode::IsAtomicInlineLevel() const {
   // LayoutObject::IsAtomicInlineLevel() returns true for e.g., <img
   // style="display: block">. Check IsInline() as well.
-  return GetLayoutObject()->IsAtomicInlineLevel() &&
-         GetLayoutObject()->IsInline();
+  return GetLayoutBox()->IsAtomicInlineLevel() && GetLayoutBox()->IsInline();
 }
 
 scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
@@ -592,7 +591,7 @@ scoped_refptr<NGLayoutResult> NGBlockNode::LayoutAtomicInline(
 
   // Request to compute baseline during the layout, except when we know the box
   // would synthesize box-baseline.
-  if (NGBaseline::ShouldPropagateBaselines(ToLayoutBox(GetLayoutObject()))) {
+  if (NGBaseline::ShouldPropagateBaselines(GetLayoutBox())) {
     space_builder.AddBaselineRequest(
         {NGBaselineAlgorithmType::kAtomicInline, baseline_type});
   }

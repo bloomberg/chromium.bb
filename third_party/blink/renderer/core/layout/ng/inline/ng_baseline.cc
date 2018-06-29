@@ -23,7 +23,7 @@ bool NGBaseline::ShouldPropagateBaselines(const NGLayoutInputNode node) {
   if (node.IsInline())
     return true;
 
-  return ShouldPropagateBaselines(ToLayoutBox(node.GetLayoutObject()));
+  return ShouldPropagateBaselines(node.GetLayoutBox());
 }
 
 bool NGBaseline::ShouldPropagateBaselines(LayoutBox* layout_box) {

@@ -18,7 +18,7 @@ NGUnpositionedListMarker::NGUnpositionedListMarker(LayoutNGListMarker* marker)
     : marker_layout_object_(marker) {}
 
 NGUnpositionedListMarker::NGUnpositionedListMarker(const NGBlockNode& node)
-    : NGUnpositionedListMarker(ToLayoutNGListMarker(node.GetLayoutObject())) {}
+    : NGUnpositionedListMarker(ToLayoutNGListMarker(node.GetLayoutBox())) {}
 
 // Returns true if this is an image marker.
 bool NGUnpositionedListMarker::IsImage() const {

@@ -1012,7 +1012,7 @@ bool NGBlockLayoutAlgorithm::HandleInflow(
   // We update marker text in WillCollectInlines(). If ListItem isn't
   // ChildrenInline(), we should WillCollectInlines() manually.
   if (Node().IsListItem() && !child.IsInline()) {
-    LayoutBlockFlow* block = ToLayoutBlockFlow(Node().GetLayoutObject());
+    LayoutBlockFlow* block = ToLayoutBlockFlow(Node().GetLayoutBox());
     block->WillCollectInlines();
   }
 

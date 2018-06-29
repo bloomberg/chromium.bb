@@ -341,10 +341,8 @@ MinMaxSize ComputeMinAndMaxContentContribution(
   // sized different. So we just always let the table code handle this.
   // Replaced elements may size themselves using aspect ratios and block sizes,
   // so we pass that on as well.
-  LayoutObject* layout_object = node.GetLayoutObject();
-  if (layout_object->IsTable() || layout_object->IsTablePart() ||
-      layout_object->IsLayoutReplaced()) {
-    LayoutBox* box = ToLayoutBox(layout_object);
+  LayoutBox* box = node.GetLayoutBox();
+  if (box->IsTable() || box->IsTablePart() || box->IsLayoutReplaced()) {
     return {box->MinPreferredLogicalWidth(), box->MaxPreferredLogicalWidth()};
   }
   base::Optional<MinMaxSize> minmax;
@@ -780,9 +778,9 @@ NGBoxStrut CalculateBorderScrollbarPadding(
   if (constraint_space.IsAnonymous())
     return NGBoxStrut();
   NGBoxStrut border_intrinsic_padding;
-  if (node.GetLayoutObject()->IsTableCell()) {
+  if (node.GetLayoutBox()->IsTableCell()) {
     // Use values calculated by the table layout code
-    const LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutObject());
+    const LayoutTableCell* cell = ToLayoutTableCell(node.GetLayoutBox());
     // TODO(karlo): intrinsic padding can sometimes be negative; that
     // seems insane, but works in the old code; in NG it trips
     // DCHECKs.

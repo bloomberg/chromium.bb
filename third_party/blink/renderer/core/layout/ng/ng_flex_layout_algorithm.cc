@@ -92,8 +92,7 @@ scoped_refptr<NGLayoutResult> NGFlexLayoutAlgorithm::Layout() {
     // https://www.w3.org/TR/css-flexbox-1/#min-size-auto
     MinMaxSize min_max_sizes_in_main_axis_direction{LayoutUnit(),
                                                     LayoutUnit::Max()};
-    flex_items.emplace_back(ToLayoutBox(Node().GetLayoutObject()),
-                            flex_base_content_size,
+    flex_items.emplace_back(Node().GetLayoutBox(), flex_base_content_size,
                             min_max_sizes_in_main_axis_direction,
                             main_axis_border_and_padding, main_axis_margin);
     flex_items.back().ng_input_node = child;
