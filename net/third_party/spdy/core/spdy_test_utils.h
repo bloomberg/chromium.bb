@@ -51,6 +51,8 @@ void SetFrameLength(SpdySerializedFrame* frame, size_t length);
 class TestHeadersHandler : public SpdyHeadersHandlerInterface {
  public:
   TestHeadersHandler() {}
+  TestHeadersHandler(const TestHeadersHandler&) = delete;
+  TestHeadersHandler& operator=(const TestHeadersHandler&) = delete;
 
   void OnHeaderBlockStart() override;
 
@@ -69,8 +71,6 @@ class TestHeadersHandler : public SpdyHeadersHandlerInterface {
   SpdyHeaderBlock block_;
   size_t header_bytes_parsed_ = 0;
   size_t compressed_header_bytes_parsed_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(TestHeadersHandler);
 };
 
 }  // namespace test

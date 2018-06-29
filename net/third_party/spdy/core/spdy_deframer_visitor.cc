@@ -132,6 +132,8 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
       : listener_(std::move(listener)) {
     CHECK(listener_);
   }
+  SpdyTestDeframerImpl(const SpdyTestDeframerImpl&) = delete;
+  SpdyTestDeframerImpl& operator=(const SpdyTestDeframerImpl&) = delete;
   ~SpdyTestDeframerImpl() override = default;
 
   bool AtFrameEnd() override;
@@ -236,8 +238,6 @@ class SpdyTestDeframerImpl : public SpdyTestDeframer,
 
  private:
   std::unique_ptr<SpdyDeframerVisitorInterface> listener_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyTestDeframerImpl);
 };
 
 // static

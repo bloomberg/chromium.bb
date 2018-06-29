@@ -55,6 +55,8 @@ SpdyStringPiece SeparatorForKey(SpdyStringPiece key) {
 class SpdyHeaderBlock::Storage {
  public:
   Storage() : arena_(kDefaultStorageBlockSize) {}
+  Storage(const Storage&) = delete;
+  Storage& operator=(const Storage&) = delete;
   ~Storage() { Clear(); }
 
   SpdyStringPiece Write(const SpdyStringPiece s) {
@@ -96,8 +98,6 @@ class SpdyHeaderBlock::Storage {
 
  private:
   net::UnsafeArena arena_;
-
-  DISALLOW_COPY_AND_ASSIGN(Storage);
 };
 
 SpdyHeaderBlock::HeaderValue::HeaderValue(Storage* storage,
