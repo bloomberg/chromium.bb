@@ -121,8 +121,10 @@ class FileElementReader : public net::UploadFileElementReader {
  public:
   FileElementReader(ResourceRequestBody* resource_request_body,
                     base::TaskRunner* task_runner,
-                    const DataElement& element)
+                    const DataElement& element,
+                    base::File&& file)
       : net::UploadFileElementReader(task_runner,
+                                     std::move(file),
                                      element.path(),
                                      element.offset(),
                                      element.length(),
@@ -167,6 +169,7 @@ class RawFileElementReader : public net::UploadFileElementReader {
 // TODO: copied from content/browser/loader/upload_data_stream_builder.cc.
 std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
     ResourceRequestBody* body,
+    std::vector<base::File>& opened_files,
     base::SequencedTaskRunner* file_task_runner) {
   // In the case of a chunked upload, there will just be one element.
   if (body->elements()->size() == 1 &&
@@ -177,6 +180,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
                   .ReleaseChunkedDataPipeGetter());
   }
 
+  auto opened_file = opened_files.begin();
   std::vector<std::unique_ptr<net::UploadElementReader>> element_readers;
   for (const auto& element : *body->elements()) {
     switch (element.type()) {
@@ -185,8 +189,9 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
             std::make_unique<BytesElementReader>(body, element));
         break;
       case DataElement::TYPE_FILE:
+        DCHECK(opened_file != opened_files.end());
         element_readers.push_back(std::make_unique<FileElementReader>(
-            body, file_task_runner, element));
+            body, file_task_runner, element, std::move(*opened_file++)));
         break;
       case DataElement::TYPE_RAW_FILE:
         element_readers.push_back(std::make_unique<RawFileElementReader>(
@@ -212,6 +217,7 @@ std::unique_ptr<net::UploadDataStream> CreateUploadDataStream(
         break;
     }
   }
+  DCHECK(opened_file == opened_files.end());
 
   return std::make_unique<net::ElementsUploadDataStream>(
       std::move(element_readers), body->identifier());
@@ -349,23 +355,6 @@ URLLoader::URLLoader(
   throttling_token_ = network::ScopedThrottlingToken::MaybeCreate(
       url_request_->net_log().source().id, request.throttling_profile_id);
 
-  // Resolve elements from request_body and prepare upload data.
-  if (request.request_body.get()) {
-    scoped_refptr<base::SequencedTaskRunner> task_runner =
-        base::CreateSequencedTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-    url_request_->set_upload(
-        CreateUploadDataStream(request.request_body.get(), task_runner.get()));
-
-    if (request.enable_upload_progress) {
-      upload_progress_tracker_ = std::make_unique<UploadProgressTracker>(
-          FROM_HERE,
-          base::BindRepeating(&URLLoader::SendUploadProgress,
-                              base::Unretained(this)),
-          url_request_.get());
-    }
-  }
-
   url_request_->set_initiator(request.request_initiator);
 
   if (request.update_first_party_url_on_redirect) {
@@ -385,6 +374,83 @@ URLLoader::URLLoader(
   if (keepalive_ && keepalive_statistics_recorder_)
     keepalive_statistics_recorder_->OnLoadStarted(factory_params_->process_id);
 
+  // Resolve elements from request_body and prepare upload data.
+  if (request.request_body.get()) {
+    OpenFilesForUpload(request);
+    return;
+  }
+  ScheduleStart();
+}
+
+void URLLoader::OpenFilesForUpload(const ResourceRequest& request) {
+  std::vector<base::FilePath> paths;
+  for (const auto& element : *request.request_body.get()->elements()) {
+    if (element.type() == DataElement::TYPE_FILE)
+      paths.push_back(element.path());
+  }
+  if (paths.empty()) {
+    SetUpUpload(request, net::OK, std::vector<base::File>());
+    return;
+  }
+  if (!network_service_client_) {
+    // Defer calling NotifyCompleted to make sure the URLLoader finishes
+    // initializing before getting deleted.
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&URLLoader::NotifyCompleted, base::Unretained(this),
+                       net::ERR_ACCESS_DENIED));
+    return;
+  }
+  url_request_->LogBlockedBy("Opening Files");
+  network_service_client_->OnFileUploadRequested(
+      factory_params_->process_id, true /* async */, paths,
+      base::BindOnce(&OnFilesForUploadOpened, weak_ptr_factory_.GetWeakPtr(),
+                     request));
+}
+
+// static
+void URLLoader::OnFilesForUploadOpened(base::WeakPtr<URLLoader> self,
+                                       const ResourceRequest& request,
+                                       int error_code,
+                                       std::vector<base::File> opened_files) {
+  // If the URLLoader was already deleted, move the opened_files vector onto a
+  // sequence that can block so it gets destroyed there.
+  if (self) {
+    self->url_request_->LogUnblocked();
+    self->SetUpUpload(request, error_code, std::move(opened_files));
+  } else {
+    base::PostTaskWithTraits(
+        FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_BLOCKING},
+        base::BindOnce(base::DoNothing::Once<std::vector<base::File>>(),
+                       std::move(opened_files)));
+  }
+}
+
+void URLLoader::SetUpUpload(const ResourceRequest& request,
+                            int error_code,
+                            std::vector<base::File> opened_files) {
+  if (error_code != net::OK) {
+    DCHECK(opened_files.empty());
+    NotifyCompleted(error_code);
+    return;
+  }
+  scoped_refptr<base::SequencedTaskRunner> task_runner =
+      base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  url_request_->set_upload(CreateUploadDataStream(
+      request.request_body.get(), opened_files, task_runner.get()));
+
+  if (request.enable_upload_progress) {
+    upload_progress_tracker_ = std::make_unique<UploadProgressTracker>(
+        FROM_HERE,
+        base::BindRepeating(&URLLoader::SendUploadProgress,
+                            base::Unretained(this)),
+        url_request_.get());
+  }
+  ScheduleStart();
+}
+
+void URLLoader::ScheduleStart() {
   bool defer = false;
   if (resource_scheduler_client_) {
     resource_scheduler_request_handle_ =

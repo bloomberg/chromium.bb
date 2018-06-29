@@ -11,6 +11,7 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/guid.h"
 #include "base/location.h"
+#include "base/path_service.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -27,6 +28,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_content_client.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -1108,6 +1110,36 @@ IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, CookieSettings) {
   EXPECT_FALSE(
       content::GetCookies(GetProfile(), embedded_test_server()->base_url())
           .empty());
+}
+
+// Make sure file uploads work.
+IN_PROC_BROWSER_TEST_P(NetworkContextConfigurationBrowserTest, UploadFile) {
+  std::unique_ptr<network::ResourceRequest> request =
+      std::make_unique<network::ResourceRequest>();
+  request->method = "POST";
+  request->url = embedded_test_server()->GetURL("/echo");
+  content::SimpleURLLoaderTestHelper simple_loader_helper;
+  std::unique_ptr<network::SimpleURLLoader> simple_loader =
+      network::SimpleURLLoader::Create(std::move(request),
+                                       TRAFFIC_ANNOTATION_FOR_TESTS);
+  base::FilePath dir_test_data;
+  base::PathService::Get(chrome::DIR_TEST_DATA, &dir_test_data);
+  base::FilePath path =
+      dir_test_data.Append(base::FilePath(FILE_PATH_LITERAL("simple.html")));
+  simple_loader->AttachFileForUpload(path, "text/html");
+
+  simple_loader->DownloadToStringOfUnboundedSizeUntilCrashAndDie(
+      loader_factory(), simple_loader_helper.GetCallback());
+  simple_loader_helper.WaitForCallback();
+
+  ASSERT_TRUE(simple_loader->ResponseInfo());
+  ASSERT_TRUE(simple_loader->ResponseInfo()->headers);
+  EXPECT_EQ(200, simple_loader->ResponseInfo()->headers->response_code());
+  ASSERT_TRUE(simple_loader_helper.response_body());
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  std::string expected_response;
+  base::ReadFileToString(path, &expected_response);
+  EXPECT_EQ(expected_response.c_str(), *simple_loader_helper.response_body());
 }
 
 class NetworkContextConfigurationFixedPortBrowserTest

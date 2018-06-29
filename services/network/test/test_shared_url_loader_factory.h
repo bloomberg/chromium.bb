@@ -15,6 +15,7 @@ class TestURLRequestContext;
 namespace network {
 
 class NetworkContext;
+class NetworkService;
 
 // A helper class to create a full functioning SharedURLLoaderFactory. This is
 // backed by a real URLLoader implementation. Use this in unittests which have a
@@ -23,7 +24,8 @@ class NetworkContext;
 // across threads.
 class TestSharedURLLoaderFactory : public SharedURLLoaderFactory {
  public:
-  TestSharedURLLoaderFactory();
+  explicit TestSharedURLLoaderFactory(
+      NetworkService* network_service = nullptr);
 
   // URLLoaderFactory implementation:
   void CreateLoaderAndStart(mojom::URLLoaderRequest loader,
