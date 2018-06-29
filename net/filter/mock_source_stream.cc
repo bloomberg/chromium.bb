@@ -4,6 +4,8 @@
 
 #include "net/filter/mock_source_stream.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "net/base/io_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -25,7 +27,7 @@ MockSourceStream::~MockSourceStream() {
 
 int MockSourceStream::Read(IOBuffer* dest_buffer,
                            int buffer_size,
-                           const CompletionCallback& callback) {
+                           CompletionOnceCallback callback) {
   DCHECK(!awaiting_completion_);
   DCHECK(!results_.empty());
 
@@ -38,7 +40,7 @@ int MockSourceStream::Read(IOBuffer* dest_buffer,
     awaiting_completion_ = true;
     dest_buffer_ = dest_buffer;
     dest_buffer_size_ = buffer_size;
-    callback_ = callback;
+    callback_ = std::move(callback);
     return ERR_IO_PENDING;
   }
 
@@ -93,7 +95,7 @@ void MockSourceStream::CompleteNextRead() {
   DCHECK_GE(dest_buffer_size_, r.len);
   memcpy(dest_buffer_->data(), r.data, r.len);
   dest_buffer_ = nullptr;
-  callback_.Run(r.error == OK ? r.len : r.error);
+  std::move(callback_).Run(r.error == OK ? r.len : r.error);
 }
 
 }  // namespace net

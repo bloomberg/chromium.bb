@@ -5,6 +5,7 @@
 #include "net/filter/fuzzed_source_stream.h"
 
 #include <algorithm>
+#include <utility>
 
 #include "base/test/fuzzed_data_provider.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -32,7 +33,7 @@ FuzzedSourceStream::~FuzzedSourceStream() {
 
 int FuzzedSourceStream::Read(IOBuffer* buf,
                              int buf_len,
-                             const CompletionCallback& callback) {
+                             CompletionOnceCallback callback) {
   DCHECK(!read_pending_);
   DCHECK(!end_returned_);
   DCHECK_LE(0, buf_len);
@@ -59,9 +60,9 @@ int FuzzedSourceStream::Read(IOBuffer* buf,
   read_pending_ = true;
   // |this| is owned by the caller so use base::Unretained is safe.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FuzzedSourceStream::OnReadComplete, base::Unretained(this),
-                 callback, data, pending_read_buf, result));
+      FROM_HERE, base::BindOnce(&FuzzedSourceStream::OnReadComplete,
+                                base::Unretained(this), std::move(callback),
+                                data, pending_read_buf, result));
   return ERR_IO_PENDING;
 }
 
@@ -69,7 +70,7 @@ std::string FuzzedSourceStream::Description() const {
   return "";
 }
 
-void FuzzedSourceStream::OnReadComplete(const CompletionCallback& callback,
+void FuzzedSourceStream::OnReadComplete(CompletionOnceCallback callback,
                                         const std::string& fuzzed_data,
                                         scoped_refptr<IOBuffer> read_buf,
                                         int result) {
@@ -82,7 +83,7 @@ void FuzzedSourceStream::OnReadComplete(const CompletionCallback& callback,
     end_returned_ = true;
   }
   read_pending_ = false;
-  callback.Run(result);
+  std::move(callback).Run(result);
 }
 
 }  // namespace net

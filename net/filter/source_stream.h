@@ -10,7 +10,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_export.h"
 
@@ -48,7 +48,7 @@ class NET_EXPORT_PRIVATE SourceStream {
   // asynchronously to ensure it does not get freed mid-read.
   virtual int Read(IOBuffer* dest_buffer,
                    int buffer_size,
-                   const CompletionCallback& callback) = 0;
+                   CompletionOnceCallback callback) = 0;
 
   // Returns a string that represents stream. This is for UMA and NetLog
   // logging.

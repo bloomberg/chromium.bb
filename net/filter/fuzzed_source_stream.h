@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "net/base/completion_callback.h"
+#include "net/base/completion_once_callback.h"
 #include "net/filter/source_stream.h"
 
 namespace base {
@@ -32,11 +32,11 @@ class FuzzedSourceStream : public SourceStream {
   // SourceStream implementation
   int Read(IOBuffer* dest_buffer,
            int buffer_size,
-           const CompletionCallback& callback) override;
+           CompletionOnceCallback callback) override;
   std::string Description() const override;
 
  private:
-  void OnReadComplete(const CompletionCallback& callback,
+  void OnReadComplete(CompletionOnceCallback callback,
                       const std::string& fuzzed_data,
                       scoped_refptr<IOBuffer> read_buf,
                       int result);

@@ -4,6 +4,8 @@
 
 #include "content/browser/loader/data_pipe_to_source_stream.h"
 
+#include <utility>
+
 #include "base/auto_reset.h"
 #include "net/base/io_buffer.h"
 
@@ -30,7 +32,7 @@ std::string DataPipeToSourceStream::Description() const {
 
 int DataPipeToSourceStream::Read(net::IOBuffer* buf,
                                  int buf_size,
-                                 const net::CompletionCallback& callback) {
+                                 net::CompletionOnceCallback callback) {
   base::AutoReset<bool>(&inside_read_, true);
 
   if (!body_.get()) {
@@ -56,7 +58,7 @@ int DataPipeToSourceStream::Read(net::IOBuffer* buf,
       return 0;
     case MOJO_RESULT_SHOULD_WAIT:
       // Data is not available yet.
-      pending_callback_ = callback;
+      pending_callback_ = std::move(callback);
       output_buf_ = buf;
       output_buf_size_ = buf_size;
       handle_watcher_.ArmOrNotify();

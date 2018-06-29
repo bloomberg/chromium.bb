@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/power_monitor/power_observer.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/load_states.h"
 #include "net/base/net_error_details.h"
@@ -359,7 +360,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
   // synchronously.
   int ReadRawDataHelper(IOBuffer* buf,
                         int buf_size,
-                        const CompletionCallback& callback);
+                        CompletionOnceCallback callback);
 
   // Returns OK if |new_url| is a valid redirect target and an error code
   // otherwise.
@@ -455,7 +456,7 @@ class NET_EXPORT URLRequestJob : public base::PowerObserver {
 
   // Non-null if ReadRawData() returned ERR_IO_PENDING, and the read has not
   // completed.
-  CompletionCallback read_raw_callback_;
+  CompletionOnceCallback read_raw_callback_;
 
   base::WeakPtrFactory<URLRequestJob> weak_factory_;
 
