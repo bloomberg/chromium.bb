@@ -944,6 +944,8 @@ component("ash") {
     "system/unified/feature_pod_controller_base.h",
     "system/unified/feature_pods_container_view.cc",
     "system/unified/feature_pods_container_view.h",
+    "system/unified/ime_mode_view.cc",
+    "system/unified/ime_mode_view.h",
     "system/unified/notification_counter_view.cc",
     "system/unified/notification_counter_view.h",
     "system/unified/quiet_mode_feature_pod_controller.cc",
