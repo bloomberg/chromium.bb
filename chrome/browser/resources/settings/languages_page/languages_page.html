@@ -9,7 +9,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-collapse/iron-collapse.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/iron-icons/iron-icons.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_action_menu/cr_action_menu.html">
@@ -21,6 +20,7 @@
 <link rel="import" href="add_languages_dialog.html">
 <link rel="import" href="languages.html">
 <link rel="import" href="../controls/settings_toggle_button.html">
+<link rel="import" href="../icons.html">
 <link rel="import" href="../lifetime_browser_proxy.html">
 <link rel="import" href="../route.html">
 <link rel="import" href="../settings_page/settings_animated_pages.html">
@@ -99,7 +99,7 @@
         margin-top: 8px;
       }
 
-      .error-icon {
+      iron-icon[icon='settings:error'] {
         @apply --cr-icon-height-width;
         --iron-icon-fill-color: var(--google-red-700);
         -webkit-margin-end: 8px;
@@ -275,8 +275,7 @@
                   [[item.language.displayName]]
                   <div hidden="[[!errorsGreaterThan_(
                       item.downloadDictionaryFailureCount, 0)]]">
-                    <iron-icon class="error-icon" icon="error">
-                    </iron-icon>
+                    <iron-icon icon="settings:error"></iron-icon>
                     $i18n{languagesDictionaryDownloadError}
                   </div>
                   <div hidden="[[!errorsGreaterThan_(
