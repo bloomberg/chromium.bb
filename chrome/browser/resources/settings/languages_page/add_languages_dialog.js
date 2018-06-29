@@ -83,6 +83,9 @@ Polymer({
       if (!isAvailableLanguage)
         return false;
 
+      if (this.languageHelper.isLanguageCodeForArcIme(language.code))
+        return false;  // internal use only
+
       if (filterValue === null)
         return true;
 

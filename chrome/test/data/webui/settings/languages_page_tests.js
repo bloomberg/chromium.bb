@@ -212,6 +212,11 @@ cr.define('languages_page_tests', function() {
         searchInput.setValue('egaugnal');
         Polymer.dom.flush();
         assertEquals(0, getItems().length);
+
+        // Issue query that should never match any language.
+        searchInput.setValue('_arc_ime_language_');
+        Polymer.dom.flush();
+        assertEquals(0, getItems().length);
       });
 
       test('Escape key behavior', function() {

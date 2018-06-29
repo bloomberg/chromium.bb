@@ -97,6 +97,17 @@ class LanguageHelper {
   // </if>
 
   /**
+   * @return {string} The language code for ARC IMEs.
+   */
+  getArcImeLanguageCode() {}
+
+  /**
+   * @param {string} languageCode
+   * @return {boolean}
+   */
+  isLanguageCodeForArcIme(languageCode) {}
+
+  /**
    * @param {string} languageCode
    * @return {boolean}
    */
