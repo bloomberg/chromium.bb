@@ -1,0 +1,65 @@
+# Converted from squash_space.c
+# Note: Long strings consisting of spaces cannot be folded in yaml.
+table: [tests/tables/squash_space_with_repeated.utb]
+tests:
+  - # one space
+    - " "
+    - " "
+  - # the usual case
+    - "                                                                                "
+    - " "
+  - # a very long string
+    - "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+    - " "
+  - # an even longer string
+    - "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+    - " "
+  # strings containing tabs
+  - - "    \t"
+    - " \t"
+  - - "    \t    "
+    - " \t "
+  - - "\t    "
+    - "\t "
+  # Strings containing newlines
+  - - "    \n"
+    - " \n"
+  - - "    \n    "
+    - " \n "
+  - - "\n    "
+    - "\n "
+
+table: [tests/tables/squash_space_with_context_2.utb]
+tests:
+# A number of strings that we want to squash, i.e. they should all
+# result in an output of one space */
+  - # a simple space
+    - " "
+    - " "
+  - # a long string
+    - "                                                                                "
+    - " "
+  - # a very long string
+    - "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+    - " "
+  - # an even longer string
+    - "                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                "
+    - " "
+  # a couple of strings containing tabs
+  - - "    \t"
+    - " "
+    - xfail: true
+  - - "    \t    "
+    - " "
+  - - "\t    "
+    - " "
+  # Strings containing newlines
+  - - "    \n"
+    - " "
+  - - "    \n    "
+    - " "
+  - - "\n    "
+    - " "
+  # All mixed
+  - - "    \n    \t    \n    \t\t    \n\n\n\t\t    "
+    - " "

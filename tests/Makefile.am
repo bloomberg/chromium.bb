@@ -28,7 +28,6 @@ logging_SOURCES = logging.c
 pass0_typebuf_SOURCES = pass0_typebuf.c
 present_progressive_SOURCES = default_table.h present_progressive.c
 resolve_table_SOURCES = resolve_table.c
-squash_space_SOURCES = squash_space.c
 typeform_SOURCES = typeform.c
 typeform_for_emphclass_SOURCES = typeform_for_emphclass.c
 check_metadata_SOURCES = check_metadata.c
@@ -51,7 +50,6 @@ program_TESTS =					\
 	pass0_typebuf				\
 	present_progressive			\
 	resolve_table				\
-	squash_space				\
 	typeform				\
 	typeform_for_emphclass			\
 	suggestChunks
@@ -75,8 +73,7 @@ endif
 XFAIL_TESTS =					\
 	present_progressive			\
 	lastworditalafter			\
-	en_gb_g1_italics			\
-	squash_space
+	en_gb_g1_italics
 
 dist_braille_specs_TESTS =				  \
 	braille-specs/ar-ar-g1_harness.yaml		  \
@@ -211,6 +208,7 @@ dist_yaml_TESTS =			  \
 	yaml/multipass-negation.yaml	  \
 	yaml/new_emph.yaml		  \
 	yaml/noletsignafter.yaml	  \
+	yaml/squash_space.yaml		\
 	yaml/syllable.yaml
 
 YAML_LOG_COMPILER_SCRIPT = yaml-log-compiler.sh
