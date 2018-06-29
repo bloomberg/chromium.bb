@@ -33,9 +33,6 @@ class CORE_EXPORT NGPhysicalBoxFragment final
   // True if this is an anonymous inline box for ::first-line.
   bool IsFirstLineAnonymousInlineBox() const;
 
-  // Return the style to use for background painting.
-  const ComputedStyle& StyleForBackground() const;
-
   const NGBaseline* Baseline(const NGBaselineRequest&) const;
 
   const NGPixelSnappedPhysicalBoxStrut& Padding() const { return padding_; }
