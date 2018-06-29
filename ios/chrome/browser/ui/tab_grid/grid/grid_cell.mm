@@ -21,7 +21,10 @@
 @property(nonatomic, weak) UIImageView* iconView;
 @property(nonatomic, weak) TopAlignedImageView* snapshotView;
 @property(nonatomic, weak) UILabel* titleLabel;
-@property(nonatomic, weak) UIButton* closeButton;
+@property(nonatomic, weak) UIImageView* closeIconView;
+// Since the close icon dimensions are smaller than the recommended tap target
+// size, use an overlaid tap target button.
+@property(nonatomic, weak) UIButton* closeTapTargetButton;
 @property(nonatomic, weak) UIView* border;
 @end
 
@@ -38,7 +41,8 @@
 @synthesize iconView = _iconView;
 @synthesize snapshotView = _snapshotView;
 @synthesize titleLabel = _titleLabel;
-@synthesize closeButton = _closeButton;
+@synthesize closeIconView = _closeIconView;
+@synthesize closeTapTargetButton = _closeTapTargetButton;
 @synthesize border = _border;
 
 // |-dequeueReusableCellWithReuseIdentifier:forIndexPath:| calls this method to
@@ -53,10 +57,23 @@
     UIView* topBar = [self setupTopBar];
     TopAlignedImageView* snapshotView = [[TopAlignedImageView alloc] init];
     snapshotView.translatesAutoresizingMaskIntoConstraints = NO;
+
+    UIButton* closeTapTargetButton =
+        [UIButton buttonWithType:UIButtonTypeCustom];
+    closeTapTargetButton.translatesAutoresizingMaskIntoConstraints = NO;
+    [closeTapTargetButton addTarget:self
+                             action:@selector(closeButtonTapped:)
+                   forControlEvents:UIControlEventTouchUpInside];
+    closeTapTargetButton.accessibilityIdentifier =
+        kGridCellCloseButtonIdentifier;
+
     [contentView addSubview:topBar];
     [contentView addSubview:snapshotView];
+    [contentView addSubview:closeTapTargetButton];
     _topBar = topBar;
     _snapshotView = snapshotView;
+    _closeTapTargetButton = closeTapTargetButton;
+
     NSArray* constraints = @[
       [topBar.topAnchor constraintEqualToAnchor:contentView.topAnchor],
       [topBar.leadingAnchor constraintEqualToAnchor:contentView.leadingAnchor],
@@ -70,6 +87,14 @@
           constraintEqualToAnchor:contentView.trailingAnchor],
       [snapshotView.bottomAnchor
           constraintEqualToAnchor:contentView.bottomAnchor],
+      [closeTapTargetButton.topAnchor
+          constraintEqualToAnchor:contentView.topAnchor],
+      [closeTapTargetButton.trailingAnchor
+          constraintEqualToAnchor:contentView.trailingAnchor],
+      [closeTapTargetButton.widthAnchor
+          constraintEqualToConstant:kGridCellCloseTapTargetWidthHeight],
+      [closeTapTargetButton.heightAnchor
+          constraintEqualToConstant:kGridCellCloseTapTargetWidthHeight],
     ];
     [NSLayoutConstraint activateConstraints:constraints];
   }
@@ -123,7 +148,7 @@
       self.topBar.backgroundColor =
           UIColorFromRGB(kGridLightThemeCellHeaderColor);
       self.titleLabel.textColor = UIColorFromRGB(kGridLightThemeCellTitleColor);
-      self.closeButton.tintColor =
+      self.closeIconView.tintColor =
           UIColorFromRGB(kGridLightThemeCellCloseButtonTintColor);
       self.border.layer.borderColor =
           UIColorFromRGB(kGridLightThemeCellSelectionColor).CGColor;
@@ -132,7 +157,7 @@
       self.topBar.backgroundColor =
           UIColorFromRGB(kGridDarkThemeCellHeaderColor);
       self.titleLabel.textColor = UIColorFromRGB(kGridDarkThemeCellTitleColor);
-      self.closeButton.tintColor =
+      self.closeIconView.tintColor =
           UIColorFromRGB(kGridDarkThemeCellCloseButtonTintColor);
       self.border.layer.borderColor =
           UIColorFromRGB(kGridDarkThemeCellSelectionColor).CGColor;
@@ -185,24 +210,18 @@
   titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
   titleLabel.adjustsFontForContentSizeCategory = YES;
 
-  UIButton* closeButton = [UIButton buttonWithType:UIButtonTypeCustom];
-  closeButton.translatesAutoresizingMaskIntoConstraints = NO;
-  UIImage* closeImage = [[UIImage imageNamed:@"grid_cell_close_button"]
+  UIImageView* closeIconView = [[UIImageView alloc] init];
+  closeIconView.translatesAutoresizingMaskIntoConstraints = NO;
+  closeIconView.contentMode = UIViewContentModeCenter;
+  closeIconView.image = [[UIImage imageNamed:@"grid_cell_close_button"]
       imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  [closeButton setImage:closeImage forState:UIControlStateNormal];
-  closeButton.contentEdgeInsets = UIEdgeInsetsMake(
-      0, kGridCellCloseButtonContentInset, 0, kGridCellCloseButtonContentInset);
-  [closeButton addTarget:self
-                  action:@selector(closeButtonTapped:)
-        forControlEvents:UIControlEventTouchUpInside];
-  closeButton.accessibilityIdentifier = kGridCellCloseButtonIdentifier;
 
   [topBar addSubview:iconView];
   [topBar addSubview:titleLabel];
-  [topBar addSubview:closeButton];
+  [topBar addSubview:closeIconView];
   _iconView = iconView;
   _titleLabel = titleLabel;
-  _closeButton = closeButton;
+  _closeIconView = closeIconView;
 
   NSArray* constraints = @[
     [iconView.leadingAnchor
@@ -216,21 +235,23 @@
                        constant:kGridCellHeaderLeadingInset],
     [titleLabel.centerYAnchor constraintEqualToAnchor:topBar.centerYAnchor],
     [titleLabel.trailingAnchor
-        constraintLessThanOrEqualToAnchor:closeButton.leadingAnchor
+        constraintLessThanOrEqualToAnchor:closeIconView.leadingAnchor
                                  constant:kGridCellCloseButtonContentInset],
-    [closeButton.topAnchor constraintEqualToAnchor:topBar.topAnchor],
-    [closeButton.bottomAnchor constraintEqualToAnchor:topBar.bottomAnchor],
-    [closeButton.trailingAnchor constraintEqualToAnchor:topBar.trailingAnchor],
+    [closeIconView.topAnchor constraintEqualToAnchor:topBar.topAnchor],
+    [closeIconView.bottomAnchor constraintEqualToAnchor:topBar.bottomAnchor],
+    [closeIconView.trailingAnchor
+        constraintEqualToAnchor:topBar.trailingAnchor
+                       constant:-kGridCellCloseButtonContentInset],
   ];
   [NSLayoutConstraint activateConstraints:constraints];
   [titleLabel
       setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                       forAxis:UILayoutConstraintAxisHorizontal];
-  [closeButton
+  [closeIconView
       setContentCompressionResistancePriority:UILayoutPriorityRequired
                                       forAxis:UILayoutConstraintAxisHorizontal];
-  [closeButton setContentHuggingPriority:UILayoutPriorityRequired
-                                 forAxis:UILayoutConstraintAxisHorizontal];
+  [closeIconView setContentHuggingPriority:UILayoutPriorityRequired
+                                   forAxis:UILayoutConstraintAxisHorizontal];
   return topBar;
 }
 
