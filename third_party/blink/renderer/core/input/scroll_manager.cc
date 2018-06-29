@@ -275,12 +275,11 @@ bool ScrollManager::BubblingScroll(ScrollDirection direction,
     return true;
 
   Frame* parent_frame = frame_->Tree().Parent();
-  if (!parent_frame || !parent_frame->IsLocalFrame())
+  if (!parent_frame)
     return false;
-  // FIXME: Broken for OOPI.
-  return ToLocalFrame(parent_frame)
-      ->GetEventHandler()
-      .BubblingScroll(direction, granularity, frame_->DeprecatedLocalOwner());
+
+  return parent_frame->BubbleLogicalScrollFromChildFrame(direction, granularity,
+                                                         frame_);
 }
 
 void ScrollManager::CustomizedScroll(ScrollState& scroll_state) {

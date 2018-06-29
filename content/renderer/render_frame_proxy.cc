@@ -443,6 +443,7 @@ bool RenderFrameProxy::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(FrameMsg_UpdateUserActivationState,
                         OnUpdateUserActivationState)
     IPC_MESSAGE_HANDLER(FrameMsg_ScrollRectToVisible, OnScrollRectToVisible)
+    IPC_MESSAGE_HANDLER(FrameMsg_BubbleLogicalScroll, OnBubbleLogicalScroll)
     IPC_MESSAGE_HANDLER(FrameMsg_SetHasReceivedUserGestureBeforeNavigation,
                         OnSetHasReceivedUserGestureBeforeNavigation)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -581,6 +582,12 @@ void RenderFrameProxy::OnScrollRectToVisible(
     const gfx::Rect& rect_to_scroll,
     const blink::WebScrollIntoViewParams& params) {
   web_frame_->ScrollRectToVisible(rect_to_scroll, params);
+}
+
+void RenderFrameProxy::OnBubbleLogicalScroll(
+    blink::WebScrollDirection direction,
+    blink::WebScrollGranularity granularity) {
+  web_frame_->BubbleLogicalScroll(direction, granularity);
 }
 
 void RenderFrameProxy::OnDidUpdateVisualProperties(

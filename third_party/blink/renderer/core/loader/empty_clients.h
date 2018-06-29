@@ -364,6 +364,10 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
     return Platform::Current()->CreateDefaultURLLoaderFactory();
   }
 
+  void BubbleLogicalScrollInParentFrame(
+      ScrollDirection direction,
+      ScrollGranularity granularity) override {}
+
   void AnnotatedRegionsChanged() override {}
   base::UnguessableToken GetDevToolsFrameToken() const override {
     return base::UnguessableToken::Create();

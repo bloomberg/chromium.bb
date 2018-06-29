@@ -51,6 +51,7 @@
 #include "third_party/blink/public/platform/web_file_system_type.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
+#include "third_party/blink/public/platform/web_scroll_types.h"
 #include "third_party/blink/public/platform/web_set_sink_id_callbacks.h"
 #include "third_party/blink/public/platform/web_source_location.h"
 #include "third_party/blink/public/platform/web_sudden_termination_disabler_type.h"
@@ -689,6 +690,12 @@ class BLINK_EXPORT WebLocalFrameClient {
   virtual void ScrollRectToVisibleInParentFrame(
       const WebRect&,
       const WebScrollIntoViewParams&) {}
+
+  // When the bubbling of a logical scroll reaches a local root, bubbling
+  // will be continued in the parent process.
+  virtual void BubbleLogicalScrollInParentFrame(
+      WebScrollDirection direction,
+      WebScrollGranularity granularity) {}
 
   // Find-in-page notifications ------------------------------------------
 

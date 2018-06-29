@@ -591,6 +591,19 @@ void LocalFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
   }
 }
 
+bool LocalFrame::BubbleLogicalScrollFromChildFrame(
+    ScrollDirection direction,
+    ScrollGranularity granularity,
+    Frame* child) {
+  FrameOwner* owner = child->Owner();
+  DCHECK(owner);
+  DCHECK(owner->IsLocal());
+  HTMLFrameOwnerElement* owner_element = ToHTMLFrameOwnerElement(owner);
+
+  return GetEventHandler().BubblingScroll(direction, granularity,
+                                          owner_element);
+}
+
 LocalFrame& LocalFrame::LocalFrameRoot() const {
   const LocalFrame* cur_frame = this;
   while (cur_frame && cur_frame->Tree().Parent() &&

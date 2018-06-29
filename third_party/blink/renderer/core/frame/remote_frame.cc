@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/window_proxy_manager.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
+#include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_dom_window.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_client.h"
 #include "third_party/blink/renderer/core/frame/remote_frame_view.h"
@@ -153,6 +154,17 @@ void RemoteFrame::SetInheritedEffectiveTouchAction(TouchAction touch_action) {
   if (inherited_effective_touch_action_ != touch_action)
     Client()->SetInheritedEffectiveTouchAction(touch_action);
   inherited_effective_touch_action_ = touch_action;
+}
+
+bool RemoteFrame::BubbleLogicalScrollFromChildFrame(
+    ScrollDirection direction,
+    ScrollGranularity granularity,
+    Frame* child) {
+  DCHECK(child->IsLocalFrame());
+  DCHECK(child->Client());
+  ToLocalFrame(child)->Client()->BubbleLogicalScrollInParentFrame(direction,
+                                                                  granularity);
+  return false;
 }
 
 void RemoteFrame::SetView(RemoteFrameView* view) {

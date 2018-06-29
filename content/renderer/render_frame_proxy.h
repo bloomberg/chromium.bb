@@ -257,6 +257,8 @@ class CONTENT_EXPORT RenderFrameProxy : public IPC::Listener,
   void OnUpdateUserActivationState(blink::UserActivationUpdateType update_type);
   void OnScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                              const blink::WebScrollIntoViewParams& params);
+  void OnBubbleLogicalScroll(blink::WebScrollDirection direction,
+                             blink::WebScrollGranularity granularity);
   void OnDidUpdateVisualProperties(const cc::RenderFrameMetadata& metadata);
   void OnEnableAutoResize(const gfx::Size& min_size, const gfx::Size& max_size);
   void OnDisableAutoResize();
