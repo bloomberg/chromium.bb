@@ -23048,6 +23048,8 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="PasswordManager.Android.PasswordCredentialEntry.Username"/>
   <int value="1753226325"
       label="DataUse.MessageSize.AllServices.Downstream.Foreground.Cellular"/>
+  <int value="1857977303"
+      label="TaskQueueSelector.TaskServicedPerSelectorLogic"/>
   <int value="1864392953" label="AsyncDNS.HostsNotifyInterval"/>
   <int value="1977321258"
       label="DataUse.MessageSize.AllServices.Downstream.Background.Cellular"/>
