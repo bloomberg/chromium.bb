@@ -6,6 +6,8 @@
 #define COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TEST_TEST_DOWNLOAD_SERVICE_H_
 
 #include <list>
+#include <memory>
+#include <string>
 
 #include "base/optional.h"
 #include "components/download/public/background_service/client.h"
@@ -21,13 +23,13 @@ namespace test {
 // Implementation of DownloadService used for testing.
 class TestDownloadService : public DownloadService {
  public:
-  explicit TestDownloadService();
+  TestDownloadService();
   ~TestDownloadService() override;
 
   // DownloadService implementation.
   const ServiceConfig& GetConfig() override;
   void OnStartScheduledTask(DownloadTaskType task_type,
-                            const TaskFinishedCallback& callback) override;
+                            TaskFinishedCallback callback) override;
   bool OnStopScheduledTask(DownloadTaskType task_type) override;
   DownloadService::ServiceStatus GetStatus() override;
   void StartDownload(const DownloadParams& download_params) override;

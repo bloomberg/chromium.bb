@@ -4,8 +4,6 @@
 
 #include "components/download/public/background_service/test/test_download_service.h"
 
-#include <memory>
-
 #include "base/bind.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/download/public/background_service/client.h"
@@ -55,9 +53,8 @@ const ServiceConfig& TestDownloadService::GetConfig() {
   return *service_config_;
 }
 
-void TestDownloadService::OnStartScheduledTask(
-    DownloadTaskType task_type,
-    const TaskFinishedCallback& callback) {}
+void TestDownloadService::OnStartScheduledTask(DownloadTaskType task_type,
+                                               TaskFinishedCallback callback) {}
 
 bool TestDownloadService::OnStopScheduledTask(DownloadTaskType task_type) {
   return true;

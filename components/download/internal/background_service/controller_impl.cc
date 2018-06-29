@@ -5,9 +5,8 @@
 #include "components/download/internal/background_service/controller_impl.h"
 
 #include <inttypes.h>
-
-#include <string>
-#include <vector>
+#include <algorithm>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -304,10 +303,9 @@ DownloadClient ControllerImpl::GetOwnerOfDownload(const std::string& guid) {
   return entry ? entry->client : DownloadClient::INVALID;
 }
 
-void ControllerImpl::OnStartScheduledTask(
-    DownloadTaskType task_type,
-    const TaskFinishedCallback& callback) {
-  task_finished_callbacks_[task_type] = callback;
+void ControllerImpl::OnStartScheduledTask(DownloadTaskType task_type,
+                                          TaskFinishedCallback callback) {
+  task_finished_callbacks_[task_type] = std::move(callback);
 
   switch (controller_state_) {
     case State::READY:

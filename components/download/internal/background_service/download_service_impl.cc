@@ -4,6 +4,8 @@
 
 #include "components/download/internal/background_service/download_service_impl.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/strings/string_util.h"
 #include "components/download/internal/background_service/controller.h"
@@ -31,17 +33,16 @@ const ServiceConfig& DownloadServiceImpl::GetConfig() {
   return service_config_;
 }
 
-void DownloadServiceImpl::OnStartScheduledTask(
-    DownloadTaskType task_type,
-    const TaskFinishedCallback& callback) {
+void DownloadServiceImpl::OnStartScheduledTask(DownloadTaskType task_type,
+                                               TaskFinishedCallback callback) {
   if (startup_completed_) {
-    controller_->OnStartScheduledTask(task_type, callback);
+    controller_->OnStartScheduledTask(task_type, std::move(callback));
     return;
   }
 
-  pending_tasks_[task_type] =
-      base::Bind(&Controller::OnStartScheduledTask,
-                 base::Unretained(controller_.get()), task_type, callback);
+  pending_tasks_[task_type] = base::BindOnce(
+      &Controller::OnStartScheduledTask, base::Unretained(controller_.get()),
+      task_type, base::Passed(&callback));
 }
 
 bool DownloadServiceImpl::OnStopScheduledTask(DownloadTaskType task_type) {
@@ -53,7 +54,7 @@ bool DownloadServiceImpl::OnStopScheduledTask(DownloadTaskType task_type) {
   if (iter != pending_tasks_.end()) {
     // We still need to run the callback in order to properly cleanup and notify
     // the system by running the respective task finished callbacks.
-    iter->second.Run();
+    std::move(iter->second).Run();
     pending_tasks_.erase(iter);
   }
 
@@ -81,9 +82,9 @@ void DownloadServiceImpl::StartDownload(const DownloadParams& download_params) {
   if (startup_completed_) {
     controller_->StartDownload(download_params);
   } else {
-    pending_actions_.push_back(base::Bind(&Controller::StartDownload,
-                                          base::Unretained(controller_.get()),
-                                          download_params));
+    pending_actions_.push_back(
+        base::BindOnce(&Controller::StartDownload,
+                       base::Unretained(controller_.get()), download_params));
   }
 }
 
@@ -93,7 +94,7 @@ void DownloadServiceImpl::PauseDownload(const std::string& guid) {
   if (startup_completed_) {
     controller_->PauseDownload(guid);
   } else {
-    pending_actions_.push_back(base::Bind(
+    pending_actions_.push_back(base::BindOnce(
         &Controller::PauseDownload, base::Unretained(controller_.get()), guid));
   }
 }
@@ -104,9 +105,9 @@ void DownloadServiceImpl::ResumeDownload(const std::string& guid) {
   if (startup_completed_) {
     controller_->ResumeDownload(guid);
   } else {
-    pending_actions_.push_back(base::Bind(&Controller::ResumeDownload,
-                                          base::Unretained(controller_.get()),
-                                          guid));
+    pending_actions_.push_back(
+        base::BindOnce(&Controller::ResumeDownload,
+                       base::Unretained(controller_.get()), guid));
   }
 }
 
@@ -116,9 +117,9 @@ void DownloadServiceImpl::CancelDownload(const std::string& guid) {
   if (startup_completed_) {
     controller_->CancelDownload(guid);
   } else {
-    pending_actions_.push_back(base::Bind(&Controller::CancelDownload,
-                                          base::Unretained(controller_.get()),
-                                          guid));
+    pending_actions_.push_back(
+        base::BindOnce(&Controller::CancelDownload,
+                       base::Unretained(controller_.get()), guid));
   }
 }
 
@@ -130,9 +131,9 @@ void DownloadServiceImpl::ChangeDownloadCriteria(
   if (startup_completed_) {
     controller_->ChangeDownloadCriteria(guid, params);
   } else {
-    pending_actions_.push_back(base::Bind(&Controller::ChangeDownloadCriteria,
-                                          base::Unretained(controller_.get()),
-                                          guid, params));
+    pending_actions_.push_back(
+        base::BindOnce(&Controller::ChangeDownloadCriteria,
+                       base::Unretained(controller_.get()), guid, params));
   }
 }
 
@@ -142,14 +143,14 @@ Logger* DownloadServiceImpl::GetLogger() {
 
 void DownloadServiceImpl::OnControllerInitialized() {
   while (!pending_actions_.empty()) {
-    auto callback = pending_actions_.front();
-    callback.Run();
+    auto callback = std::move(pending_actions_.front());
     pending_actions_.pop_front();
+    std::move(callback).Run();
   }
 
   while (!pending_tasks_.empty()) {
     auto iter = pending_tasks_.begin();
-    iter->second.Run();
+    std::move(iter->second).Run();
     pending_tasks_.erase(iter);
   }
 

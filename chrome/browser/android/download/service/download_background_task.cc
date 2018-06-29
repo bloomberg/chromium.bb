@@ -32,13 +32,13 @@ void JNI_DownloadBackgroundTask_StartBackgroundTask(
   DCHECK(profile);
 
   TaskFinishedCallback finish_callback =
-      base::Bind(&CallTaskFinishedCallback,
-                 base::android::ScopedJavaGlobalRef<jobject>(jcallback));
+      base::BindOnce(&CallTaskFinishedCallback,
+                     base::android::ScopedJavaGlobalRef<jobject>(jcallback));
 
   DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(profile);
   download_service->OnStartScheduledTask(
-      static_cast<DownloadTaskType>(task_type), finish_callback);
+      static_cast<DownloadTaskType>(task_type), std::move(finish_callback));
 }
 
 // static

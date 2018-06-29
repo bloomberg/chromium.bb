@@ -6,6 +6,7 @@
 #define COMPONENTS_OFFLINE_PAGES_CORE_PREFETCH_TEST_DOWNLOAD_SERVICE_H_
 
 #include <list>
+#include <string>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/optional.h"
@@ -19,14 +20,13 @@ namespace offline_pages {
 // Implementation of DownloadService used for testing.
 class TestDownloadService : public download::DownloadService {
  public:
-  explicit TestDownloadService();
+  TestDownloadService();
   ~TestDownloadService() override;
 
   // DownloadService implementation.
   const download::ServiceConfig& GetConfig() override;
-  void OnStartScheduledTask(
-      download::DownloadTaskType task_type,
-      const download::TaskFinishedCallback& callback) override;
+  void OnStartScheduledTask(download::DownloadTaskType task_type,
+                            download::TaskFinishedCallback callback) override;
   bool OnStopScheduledTask(download::DownloadTaskType task_type) override;
   DownloadService::ServiceStatus GetStatus() override;
   void StartDownload(const download::DownloadParams& download_params) override;

@@ -4,8 +4,10 @@
 
 #include "components/download/internal/background_service/controller_impl.h"
 
+#include <stdint.h>
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/guid.h"
@@ -104,7 +106,7 @@ class MockTaskScheduler : public TaskScheduler {
 
   // TaskScheduler implementation.
   MOCK_METHOD6(ScheduleTask,
-               void(DownloadTaskType, bool, bool, int, long, long));
+               void(DownloadTaskType, bool, bool, int, int64_t, int64_t));
   MOCK_METHOD1(CancelTask, void(DownloadTaskType));
 };
 
@@ -496,7 +498,7 @@ TEST_F(DownloadServiceControllerImplTest,
   store_->TriggerInit(true, std::make_unique<std::vector<Entry>>(entries));
   file_monitor_->TriggerInit(true);
   controller_->OnStartScheduledTask(DownloadTaskType::CLEANUP_TASK,
-                                    base::Bind(&NotifyTaskFinished));
+                                    base::BindOnce(&NotifyTaskFinished));
 
   task_runner_->RunUntilIdle();
   controller_->OnStopScheduledTask(DownloadTaskType::CLEANUP_TASK);
@@ -1025,7 +1027,7 @@ TEST_F(DownloadServiceControllerImplTest, OnDownloadSucceeded) {
   base::Time now = base::Time::Now();
   done_dentry.completion_time = now;
 
-  long start_time = 0;
+  int64_t start_time = 0;
   EXPECT_CALL(*task_scheduler_,
               ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
       .WillOnce(SaveArg<4>(&start_time));
@@ -1889,7 +1891,7 @@ TEST_F(DownloadServiceControllerImplTest, DownloadTaskQueuesAfterFinish) {
   // Simulate a task start, which should limit our calls to Reschedule() because
   // we are in a task.
   controller_->OnStartScheduledTask(DownloadTaskType::DOWNLOAD_TASK,
-                                    base::Bind(&NotifyTaskFinished));
+                                    base::BindOnce(&NotifyTaskFinished));
 
   // Set up new expectations to start a new download.
   ON_CALL(*scheduler_, Next(_, _))
@@ -1954,7 +1956,7 @@ TEST_F(DownloadServiceControllerImplTest, CleanupTaskQueuesAfterFinish) {
               ScheduleTask(DownloadTaskType::CLEANUP_TASK, _, _, _, _, _))
       .Times(0);
   controller_->OnStartScheduledTask(DownloadTaskType::CLEANUP_TASK,
-                                    base::Bind(&NotifyTaskFinished));
+                                    base::BindOnce(&NotifyTaskFinished));
 
   // Trigger download succeed events, which should not schedule a cleanup until
   // the existing cleanup has finished.

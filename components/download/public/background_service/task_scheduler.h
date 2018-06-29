@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_SCHEDULER_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TASK_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include "components/download/public/background_service/download_task_types.h"
 
 namespace download {
@@ -23,8 +25,8 @@ class TaskScheduler {
                             bool require_unmetered_network,
                             bool require_charging,
                             int optimal_battery_percentage,
-                            long window_start_time_seconds,
-                            long window_end_time_seconds) = 0;
+                            int64_t window_start_time_seconds,
+                            int64_t window_end_time_seconds) = 0;
 
   // Cancels a pre-scheduled task of type |task_type|.
   virtual void CancelTask(DownloadTaskType task_type) = 0;

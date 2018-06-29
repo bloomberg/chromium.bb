@@ -18,8 +18,8 @@ void DownloadTaskScheduler::ScheduleTask(DownloadTaskType task_type,
                                          bool require_unmetered_network,
                                          bool require_charging,
                                          int optimal_battery_percentage,
-                                         long window_start_time_seconds,
-                                         long window_end_time_seconds) {
+                                         int64_t window_start_time_seconds,
+                                         int64_t window_end_time_seconds) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadTaskScheduler_scheduleTask(
       env, static_cast<jint>(task_type), require_unmetered_network,

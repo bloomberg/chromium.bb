@@ -78,7 +78,7 @@ void TestDownloadService::SetTestFileData(const std::string& data) {
 
 void TestDownloadService::OnStartScheduledTask(
     download::DownloadTaskType task_type,
-    const download::TaskFinishedCallback& callback) {
+    download::TaskFinishedCallback callback) {
   NOTIMPLEMENTED();
 }
 bool TestDownloadService::OnStopScheduledTask(

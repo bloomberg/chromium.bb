@@ -34,7 +34,7 @@ class DownloadServiceImpl : public DownloadService {
   // DownloadService implementation.
   const ServiceConfig& GetConfig() override;
   void OnStartScheduledTask(DownloadTaskType task_type,
-                            const TaskFinishedCallback& callback) override;
+                            TaskFinishedCallback callback) override;
   bool OnStopScheduledTask(DownloadTaskType task_type) override;
   ServiceStatus GetStatus() override;
   void StartDownload(const DownloadParams& download_params) override;
@@ -56,8 +56,8 @@ class DownloadServiceImpl : public DownloadService {
   std::unique_ptr<Controller> controller_;
   ServiceConfigImpl service_config_;
 
-  base::circular_deque<base::Closure> pending_actions_;
-  std::map<DownloadTaskType, base::Closure> pending_tasks_;
+  base::circular_deque<base::OnceClosure> pending_actions_;
+  std::map<DownloadTaskType, base::OnceClosure> pending_tasks_;
   bool startup_completed_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadServiceImpl);

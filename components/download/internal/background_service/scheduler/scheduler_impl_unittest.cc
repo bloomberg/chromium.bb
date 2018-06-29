@@ -4,6 +4,7 @@
 
 #include "components/download/internal/background_service/scheduler/scheduler_impl.h"
 
+#include <stdint.h>
 #include <memory>
 
 #include "base/strings/string_number_conversions.h"
@@ -26,7 +27,7 @@ class MockTaskScheduler : public TaskScheduler {
   ~MockTaskScheduler() override = default;
 
   MOCK_METHOD6(ScheduleTask,
-               void(DownloadTaskType, bool, bool, int, long, long));
+               void(DownloadTaskType, bool, bool, int, int64_t, int64_t));
   MOCK_METHOD1(CancelTask, void(DownloadTaskType));
 };
 
