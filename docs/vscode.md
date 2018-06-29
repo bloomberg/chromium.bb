@@ -237,7 +237,7 @@ You might have to adjust the commands to your situation and needs.
 ```
 {
   "version": "0.1.0",
-  "_runner": "terminal",
+  "runner": "terminal",
   "showOutput": "always",
   "echoCommand": true,
   "tasks": [
