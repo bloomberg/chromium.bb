@@ -3513,35 +3513,6 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 #endif
 }
 
-namespace {
-
-class TestPageScaleObserver : public WebContentsObserver {
- public:
-  explicit TestPageScaleObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-
-  void OnPageScaleFactorChanged(float page_scale_factor) override {
-    seen_page_scale_change_ = true;
-    if (done_callback_)
-      std::move(done_callback_).Run();
-  }
-
-  void WaitForPageScaleUpdate() {
-    if (!seen_page_scale_change_) {
-      base::RunLoop run_loop;
-      done_callback_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-    seen_page_scale_change_ = false;
-  }
-
- private:
-  base::OnceClosure done_callback_;
-  bool seen_page_scale_change_ = false;
-};
-
-}  // namespace
-
 // Test that performing a touchpad pinch over an OOPIF offers the synthetic
 // wheel events to the child and causes the page scale factor to change for
 // the main frame (given that the child did not consume the wheel).
@@ -3580,7 +3551,7 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   const gfx::Point point_in_child(gfx::ToCeiledInt(100 * scale_factor),
                                   gfx::ToCeiledInt(100 * scale_factor));
 
-  TestPageScaleObserver scale_observer(shell()->web_contents());
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
   SendTouchpadPinchSequenceWithExpectedTarget(
       rwhv_parent, point_in_child, router->touchpad_gesture_target_.target,
       rwhv_child);

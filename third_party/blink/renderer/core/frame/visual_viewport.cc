@@ -325,8 +325,13 @@ double VisualViewport::ScaleForVisualViewport() const {
 
 void VisualViewport::SetScaleAndLocation(float scale,
                                          const FloatPoint& location) {
-  if (DidSetScaleOrLocation(scale, location))
+  if (DidSetScaleOrLocation(scale, location)) {
     NotifyRootFrameViewport();
+    Document* document = MainFrame()->GetDocument();
+    if (AXObjectCache* cache = document->ExistingAXObjectCache()) {
+      cache->HandleScaleAndLocationChanged(document);
+    }
+  }
 }
 
 double VisualViewport::VisibleWidthCSSPx() const {

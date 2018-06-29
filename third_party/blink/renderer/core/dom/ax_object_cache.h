@@ -91,6 +91,7 @@ class CORE_EXPORT AXObjectCache
                                              Node* new_focused_node) = 0;
   virtual void HandleInitialFocus() = 0;
   virtual void HandleEditableTextContentChanged(Node*) = 0;
+  virtual void HandleScaleAndLocationChanged(Document*) = 0;
   virtual void HandleTextMarkerDataAdded(Node* start, Node* end) = 0;
   virtual void HandleTextFormControlChanged(Node*) = 0;
   virtual void HandleValueChanged(Node*) = 0;

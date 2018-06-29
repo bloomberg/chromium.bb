@@ -39,6 +39,7 @@
 #include "third_party/blink/public/web/web_view.h"
 #include "ui/accessibility/ax_enum_util.h"
 #include "ui/accessibility/ax_role_properties.h"
+#include "ui/gfx/geometry/vector2d_f.h"
 
 using base::ASCIIToUTF16;
 using base::UTF16ToUTF8;
@@ -469,8 +470,24 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
   src.GetRelativeBounds(offset_container, bounds_in_container,
                         container_transform, &clips_children);
   dst->location = bounds_in_container;
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+  if (src.Equals(root())) {
+    WebView* web_view = render_frame_->GetRenderView()->GetWebView();
+    std::unique_ptr<gfx::Transform> container_transform_gfx =
+        std::make_unique<gfx::Transform>(container_transform);
+    container_transform_gfx->Scale(web_view->PageScaleFactor(),
+                                   web_view->PageScaleFactor());
+    container_transform_gfx->Translate(
+        gfx::Vector2dF(-web_view->VisualViewportOffset().x,
+                       -web_view->VisualViewportOffset().y));
+    if (!container_transform_gfx->IsIdentity())
+      dst->transform = std::move(container_transform_gfx);
+  } else if (!container_transform.isIdentity())
+    dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
+#else
   if (!container_transform.isIdentity())
     dst->transform = base::WrapUnique(new gfx::Transform(container_transform));
+#endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
   if (!offset_container.IsDetached())
     dst->offset_container_id = offset_container.AxID();
   if (clips_children)

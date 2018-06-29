@@ -141,6 +141,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleInitialFocus() override;
   void HandleTextFormControlChanged(Node*) override;
   void HandleEditableTextContentChanged(Node*) override;
+  void HandleScaleAndLocationChanged(Document*) override;
   void HandleTextMarkerDataAdded(Node* start, Node* end) override;
   void HandleValueChanged(Node*) override;
   void HandleUpdateActiveMenuOption(LayoutMenuList*, int option_index) override;
