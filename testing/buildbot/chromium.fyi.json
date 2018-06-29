@@ -335,6 +335,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "angle_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_shell_unittests"
       },
       {
@@ -407,7 +413,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_app_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chromedriver_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
       },
       {
         "swarming": {
@@ -478,7 +496,19 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "device_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "display_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -503,6 +533,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gn_unittests"
       },
       {
         "swarming": {
@@ -552,6 +588,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mac_installer_unittests"
       },
       {
         "swarming": {
@@ -647,6 +689,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "services_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "shell_dialogs_unittests"
       },
       {
@@ -654,6 +702,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "swarming": {
@@ -4574,6 +4628,15 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "angle_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "app_shell_unittests"
       },
       {
@@ -4682,7 +4745,25 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "chrome_app_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "chromedriver_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "components_browsertests"
       },
       {
         "args": [
@@ -4777,7 +4858,25 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "device_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "display_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "extensions_browsertests"
       },
       {
         "args": [
@@ -4814,6 +4913,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gin_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "gn_unittests"
       },
       {
         "args": [
@@ -4887,6 +4995,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "libjingle_xmpp_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "mac_installer_unittests"
       },
       {
         "args": [
@@ -5030,6 +5147,15 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "services_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "shell_dialogs_unittests"
       },
       {
@@ -5040,6 +5166,15 @@
           "can_use_on_swarming_builders": true
         },
         "test": "skia_unittests"
+      },
+      {
+        "args": [
+          "--enable-features=ViewsBrowserWindows"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "snapshot_unittests"
       },
       {
         "args": [
