@@ -8,13 +8,14 @@
 #include <numeric>
 
 #include "base/logging.h"
+#include "base/numerics/checked_math.h"
 
 namespace media {
 
 constexpr size_t VideoBitrateAllocation::kMaxSpatialLayers;
 constexpr size_t VideoBitrateAllocation::kMaxTemporalLayers;
 
-VideoBitrateAllocation::VideoBitrateAllocation() : bitrates_{} {}
+VideoBitrateAllocation::VideoBitrateAllocation() : sum_(0), bitrates_{} {}
 
 bool VideoBitrateAllocation::SetBitrate(size_t spatial_index,
                                         size_t temporal_index,
@@ -23,11 +24,14 @@ bool VideoBitrateAllocation::SetBitrate(size_t spatial_index,
   CHECK_LT(temporal_index, kMaxTemporalLayers);
   CHECK_GE(bitrate_bps, 0);
 
-  if (GetSumBps() - bitrates_[spatial_index][temporal_index] >
-      std::numeric_limits<int>::max() - bitrate_bps) {
+  base::CheckedNumeric<int> checked_sum = sum_;
+  checked_sum -= bitrates_[spatial_index][temporal_index];
+  checked_sum += bitrate_bps;
+  if (!checked_sum.IsValid()) {
     return false;  // Would cause overflow of the sum.
   }
 
+  sum_ = checked_sum.ValueOrDie();
   bitrates_[spatial_index][temporal_index] = bitrate_bps;
   return true;
 }
@@ -40,19 +44,14 @@ int VideoBitrateAllocation::GetBitrateBps(size_t spatial_index,
 }
 
 int VideoBitrateAllocation::GetSumBps() const {
-  int sum = 0;
-  for (size_t spatial_index = 0; spatial_index < kMaxSpatialLayers;
-       ++spatial_index) {
-    for (size_t temporal_index = 0; temporal_index < kMaxTemporalLayers;
-         ++temporal_index) {
-      sum += bitrates_[spatial_index][temporal_index];
-    }
-  }
-  return sum;
+  return sum_;
 }
 
 bool VideoBitrateAllocation::operator==(
     const VideoBitrateAllocation& other) const {
+  if (sum_ != other.sum_) {
+    return false;
+  }
   return memcmp(bitrates_, other.bitrates_, sizeof(bitrates_)) == 0;
 }
 

@@ -195,6 +195,19 @@ void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
   DVLOG(2) << __func__;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(vea_.is_bound());
+
+  media::VideoBitrateAllocation bitrate_allocation;
+  bitrate_allocation.SetBitrate(0, 0, bitrate);
+  vea_->RequestEncodingParametersChange(bitrate_allocation, framerate);
+}
+
+void MojoVideoEncodeAccelerator::RequestEncodingParametersChange(
+    const VideoBitrateAllocation& bitrate,
+    uint32_t framerate) {
+  DVLOG(2) << __func__;
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(vea_.is_bound());
+
   vea_->RequestEncodingParametersChange(bitrate, framerate);
 }
 

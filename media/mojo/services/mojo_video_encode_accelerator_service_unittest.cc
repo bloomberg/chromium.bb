@@ -173,12 +173,48 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, EncodingParametersChange) {
 
   const uint32_t kNewBitrate = 123123u;
   const uint32_t kNewFramerate = 321321u;
-  mojo_vea_service()->RequestEncodingParametersChange(kNewBitrate,
+  VideoBitrateAllocation bitrate_allocation;
+  bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
+  mojo_vea_service()->RequestEncodingParametersChange(bitrate_allocation,
                                                       kNewFramerate);
   base::RunLoop().RunUntilIdle();
 
   ASSERT_TRUE(fake_vea());
-  EXPECT_EQ(kNewBitrate, fake_vea()->stored_bitrates().front());
+  VideoBitrateAllocation expected_allocation;
+  expected_allocation.SetBitrate(0, 0, kNewBitrate);
+  EXPECT_EQ(expected_allocation,
+            fake_vea()->stored_bitrate_allocations().back());
+}
+
+// Tests that a RequestEncodingParametersChange() ripples through correctly.
+TEST_F(MojoVideoEncodeAcceleratorServiceTest,
+       EncodingParametersWithBitrateAllocation) {
+  CreateMojoVideoEncodeAccelerator();
+  BindAndInitialize();
+
+  const uint32_t kNewFramerate = 321321u;
+  const size_t kMaxNumBitrates = VideoBitrateAllocation::kMaxSpatialLayers *
+                                 VideoBitrateAllocation::kMaxTemporalLayers;
+
+  // Verify translation of VideoBitrateAllocation into vector of bitrates for
+  // everything from empty array up to max number of layers.
+  VideoBitrateAllocation bitrate_allocation;
+  for (size_t i = 0; i <= kMaxNumBitrates; ++i) {
+    if (i > 0) {
+      int layer_bitrate = i * 1000;
+      const size_t si = (i - 1) / VideoBitrateAllocation::kMaxTemporalLayers;
+      const size_t ti = (i - 1) % VideoBitrateAllocation::kMaxTemporalLayers;
+      bitrate_allocation.SetBitrate(si, ti, layer_bitrate);
+    }
+
+    mojo_vea_service()->RequestEncodingParametersChange(bitrate_allocation,
+                                                        kNewFramerate);
+    base::RunLoop().RunUntilIdle();
+
+    ASSERT_TRUE(fake_vea());
+    EXPECT_EQ(bitrate_allocation,
+              fake_vea()->stored_bitrate_allocations().back());
+  }
 }
 
 // This test verifies that MojoVEA::Initialize() fails with an invalid |client|.
@@ -278,7 +314,9 @@ TEST_F(MojoVideoEncodeAcceleratorServiceTest, CallsBeforeInitializeAreIgnored) {
   {
     const uint32_t kNewBitrate = 123123u;
     const uint32_t kNewFramerate = 321321u;
-    mojo_vea_service()->RequestEncodingParametersChange(kNewBitrate,
+    media::VideoBitrateAllocation bitrate_allocation;
+    bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
+    mojo_vea_service()->RequestEncodingParametersChange(bitrate_allocation,
                                                         kNewFramerate);
     base::RunLoop().RunUntilIdle();
   }

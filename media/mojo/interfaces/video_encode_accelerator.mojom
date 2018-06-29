@@ -36,6 +36,12 @@ interface VideoEncodeAcceleratorProvider {
   CreateVideoEncodeAccelerator(VideoEncodeAccelerator& request);
 };
 
+// Class that describes how video bitrate, in bps, is allocated across temporal
+// and spatial layers. See media::VideoBitrateAllocation for more details.
+struct VideoBitrateAllocation {
+  array<int32> bitrates;
+};
+
 interface VideoEncodeAccelerator {
   // See media::VideoEncodeAccelerator::Error
   enum Error {
@@ -60,7 +66,9 @@ interface VideoEncodeAccelerator {
   UseOutputBitstreamBuffer(int32 bitstream_buffer_id,
                            handle<shared_buffer> buffer);
 
-  RequestEncodingParametersChange(uint32 bitrate, uint32 framerate);
+  RequestEncodingParametersChange(
+    VideoBitrateAllocation bitrate_allocation,
+    uint32 framerate);
 };
 
 interface VideoEncodeAcceleratorClient {

@@ -20,6 +20,17 @@ struct EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
                         media::VideoEncodeAccelerator::Error* out);
 };
 
+template <>
+class StructTraits<media::mojom::VideoBitrateAllocationDataView,
+                   media::VideoBitrateAllocation> {
+ public:
+  static std::vector<int32_t> bitrates(
+      const media::VideoBitrateAllocation& bitrate_allocation);
+
+  static bool Read(media::mojom::VideoBitrateAllocationDataView data,
+                   media::VideoBitrateAllocation* out_bitrate_allocation);
+};
+
 }  // namespace mojo
 
 #endif  // MEDIA_MOJO_INTERFACES_VIDEO_ENCODE_ACCELERATOR_TYPEMAP_TRAITS_H_

@@ -11,10 +11,15 @@ traits_headers =
 
 sources = [
   "//media/mojo/interfaces/video_encode_accelerator_typemap_traits.cc",
+  "//media/mojo/interfaces/video_encode_accelerator_typemap_traits.h",
 ]
 
 deps = [
   "//base",
+  "//media",
 ]
 
-type_mappings = [ "media.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error" ]
+type_mappings = [
+  "media.mojom.VideoEncodeAccelerator.Error=media::VideoEncodeAccelerator::Error",
+  "media.mojom.VideoBitrateAllocation=media::VideoBitrateAllocation",
+]

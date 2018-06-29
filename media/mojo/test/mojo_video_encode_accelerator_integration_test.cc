@@ -297,7 +297,39 @@ TEST_F(MojoVideoEncodeAcceleratorIntegrationTest, EncodingParametersChange) {
 
   mojo_vea()->RequestEncodingParametersChange(kNewBitrate, kNewFramerate);
   base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(kNewBitrate, fake_vea()->stored_bitrates().front());
+  VideoBitrateAllocation expected_bitrate_allocation;
+  expected_bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
+  EXPECT_EQ(expected_bitrate_allocation,
+            fake_vea()->stored_bitrate_allocations().back());
+}
+
+// Tests that a RequestEncodingParametersChange() ripples through correctly.
+TEST_F(MojoVideoEncodeAcceleratorIntegrationTest,
+       EncodingParametersWithBitrateAllocation) {
+  auto mock_vea_client = std::make_unique<MockVideoEncodeAcceleratorClient>();
+  Initialize(mock_vea_client.get());
+
+  const uint32_t kNewFramerate = 321321u;
+  const size_t kMaxNumBitrates = VideoBitrateAllocation::kMaxSpatialLayers *
+                                 VideoBitrateAllocation::kMaxTemporalLayers;
+
+  // Verify translation of VideoBitrateAllocation into vector of bitrates for
+  // everything from empty array up to max number of layers.
+  VideoBitrateAllocation bitrate_allocation;
+  for (size_t i = 0; i <= kMaxNumBitrates; ++i) {
+    if (i > 0) {
+      int layer_bitrate = i * 1000;
+      const size_t si = (i - 1) / VideoBitrateAllocation::kMaxTemporalLayers;
+      const size_t ti = (i - 1) % VideoBitrateAllocation::kMaxTemporalLayers;
+      bitrate_allocation.SetBitrate(si, ti, layer_bitrate);
+    }
+
+    mojo_vea()->RequestEncodingParametersChange(bitrate_allocation,
+                                                kNewFramerate);
+    base::RunLoop().RunUntilIdle();
+    EXPECT_EQ(bitrate_allocation,
+              fake_vea()->stored_bitrate_allocations().back());
+  }
 }
 
 // Tests that calls are sent nowhere when the connection has been Close()d --

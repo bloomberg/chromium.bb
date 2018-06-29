@@ -44,10 +44,16 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   void UseOutputBitstreamBuffer(const BitstreamBuffer& buffer) override;
   void RequestEncodingParametersChange(uint32_t bitrate,
                                        uint32_t framerate) override;
+  void RequestEncodingParametersChange(const VideoBitrateAllocation& bitrate,
+                                       uint32_t framerate) override;
   void Destroy() override;
 
   const std::vector<uint32_t>& stored_bitrates() const {
     return stored_bitrates_;
+  }
+  const std::vector<VideoBitrateAllocation>& stored_bitrate_allocations()
+      const {
+    return stored_bitrate_allocations_;
   }
   void SendDummyFrameForTesting(bool key_frame);
   void SetWillInitializationSucceed(bool will_initialization_succeed);
@@ -66,6 +72,7 @@ class FakeVideoEncodeAccelerator : public VideoEncodeAccelerator {
   // Our original (constructor) calling message loop used for all tasks.
   const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   std::vector<uint32_t> stored_bitrates_;
+  std::vector<VideoBitrateAllocation> stored_bitrate_allocations_;
   bool will_initialization_succeed_;
 
   VideoEncodeAccelerator::Client* client_;
