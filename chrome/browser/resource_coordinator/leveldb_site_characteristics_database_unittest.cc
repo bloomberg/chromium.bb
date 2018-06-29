@@ -10,6 +10,8 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_task_environment.h"
+#include "base/test/test_file_util.h"
+#include "build/build_config.h"
 #include "chrome/browser/resource_coordinator/site_characteristics.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -18,6 +20,35 @@
 namespace resource_coordinator {
 
 namespace {
+
+class ScopedReadOnlyDirectory {
+ public:
+  explicit ScopedReadOnlyDirectory(const base::FilePath& root_dir);
+  ~ScopedReadOnlyDirectory() {
+    permission_restorer_.reset();
+    EXPECT_TRUE(base::DeleteFile(read_only_path_, true));
+  }
+
+  const base::FilePath& GetReadOnlyPath() { return read_only_path_; }
+
+ private:
+  base::FilePath read_only_path_;
+  std::unique_ptr<base::FilePermissionRestorer> permission_restorer_;
+};
+
+ScopedReadOnlyDirectory::ScopedReadOnlyDirectory(
+    const base::FilePath& root_dir) {
+  EXPECT_TRUE(base::CreateTemporaryDirInDir(
+      root_dir, FILE_PATH_LITERAL("read_only_path"), &read_only_path_));
+  permission_restorer_ =
+      std::make_unique<base::FilePermissionRestorer>(read_only_path_);
+#if defined(OS_WIN)
+  base::DenyFilePermission(read_only_path_, GENERIC_WRITE);
+#else  // defined(OS_WIN)
+  EXPECT_TRUE(base::MakeFileUnwritable(read_only_path_));
+#endif
+  EXPECT_FALSE(base::PathIsWritable(read_only_path_));
+}
 
 // Initialize a SiteCharacteristicsProto object with a test value (the same
 // value is used to initialize all fields).
@@ -52,12 +83,15 @@ class LevelDBSiteCharacteristicsDatabaseTest : public ::testing::Test {
     EXPECT_TRUE(temp_dir_.Delete());
   }
 
-  void OpenDB() {
-    db_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(
-        temp_dir_.GetPath());
+  void OpenDB() { OpenDB(temp_dir_.GetPath()); }
+
+  void OpenDB(base::FilePath path) {
+    db_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(path);
     WaitForAsyncOperationsToComplete();
     EXPECT_TRUE(db_);
   }
+
+  const base::FilePath& GetTempPath() { return temp_dir_.GetPath(); }
 
  protected:
   // Try to read an entry from the database, returns true if the entry is
@@ -176,6 +210,28 @@ TEST_F(LevelDBSiteCharacteristicsDatabaseTest, DatabaseRecoveryTest) {
 
   // TODO(sebmarchand): try to induce an I/O error by deleting one of the
   // manifest files.
+}
+
+// Ensure that there's no fatal failures if we try using the database after
+// failing to open it (all the events will be ignored).
+TEST_F(LevelDBSiteCharacteristicsDatabaseTest, DatabaseOpeningFailure) {
+  db_.reset();
+  ScopedReadOnlyDirectory read_only_dir(GetTempPath());
+
+  OpenDB(read_only_dir.GetReadOnlyPath());
+  EXPECT_FALSE(db_->DatabaseIsInitializedForTesting());
+
+  SiteCharacteristicsProto proto_temp;
+  EXPECT_FALSE(
+      ReadFromDB(url::Origin::Create(GURL("https://foo.com")), &proto_temp));
+  WaitForAsyncOperationsToComplete();
+  db_->WriteSiteCharacteristicsIntoDB(
+      url::Origin::Create(GURL("https://foo.com")), proto_temp);
+  WaitForAsyncOperationsToComplete();
+  db_->RemoveSiteCharacteristicsFromDB({});
+  WaitForAsyncOperationsToComplete();
+  db_->ClearDatabase();
+  WaitForAsyncOperationsToComplete();
 }
 
 }  // namespace resource_coordinator
