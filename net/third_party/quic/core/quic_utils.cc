@@ -321,4 +321,5 @@ bool QuicUtils::IsIetfPacketHeader(uint8_t first_byte) {
          !(first_byte & FLAGS_DEMULTIPLEXING_BIT);
 }
 
+#undef RETURN_STRING_LITERAL  // undef for jumbo builds
 }  // namespace quic

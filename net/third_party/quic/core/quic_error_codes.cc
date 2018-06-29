@@ -162,4 +162,5 @@ void RecordInternalErrorLocation(QuicInternalErrorLocation location) {
                             INTERNAL_ERROR_LOCATION_MAX);
 }
 
+#undef RETURN_STRING_LITERAL  // undef for jumbo builds
 }  // namespace quic
