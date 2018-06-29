@@ -57,9 +57,10 @@
 -ExtensionManagementTest.ExternalUrlUpdate
 -ExtensionManagementTest.PolicyOverridesUserInstall
 
-# These try to resolver host names using ResourceContext, using the old
+# These try to resolve host names using ResourceContext, using the old
 # in-process HostResolver API. Neither works when the network service is
-# enabled, so they'll need to be moved over to a new API.
+# enabled, so they'll need to be moved over to a new API. See
+# pepper_host_resolver_message_filter.cc.
 # https://crubug.com/821021
 -OutOfProcessPPAPITest.TCPServerSocketPrivate
 -OutOfProcessPPAPITest.TCPSocket
@@ -71,12 +72,6 @@
 -PPAPINaClPNaClNonSfiTest.TCPServerSocketPrivate
 -PPAPINaClPNaClNonSfiTest.TCPSocket
 -PPAPINaClPNaClNonSfiTest.TCPSocketPrivate
-# This test fails flakily. Only enable it once
-# SocketExtensionWithDnsLookupFunction::StartDnsLookup uses the Mojo
-# HostResolver API.
--SocketApiTest.SocketUDPExtension
-
-# Uncategorized PPAPI timeouts or test failures.
 -OutOfProcessPPAPITest.HostResolver
 -OutOfProcessPPAPITest.HostResolverPrivate_Resolve
 -OutOfProcessPPAPITest.HostResolverPrivate_ResolveIPv4
@@ -119,6 +114,10 @@
 -PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption_1_0
 -PPAPINaClPNaClNonSfiTest.UDPSocket_SetOption_1_1
 -PPAPINaClPNaClNonSfiTest.UDPSocketPrivate_Connect
+# This test fails flakily. Only enable it once
+# SocketExtensionWithDnsLookupFunction::StartDnsLookup uses the Mojo
+# HostResolver API.
+-SocketApiTest.SocketUDPExtension
 
 # These tests use URLFetchers directly.
 # https://crbug.com/853798
@@ -266,9 +265,13 @@
 -ExtensionWebRequestApiTest.WebRequestTestOSDD
 # Note WebRequestUnloadImmediately is disabled on Linux
 -ExtensionWebRequestApiTest.WebRequestUnloadImmediately
-# http://crbug.com/841827
+
+# WebRequest implementation needs to handle extension
+# installation/uninstallation events.
+# http://crbug.com/857577
 -BackgroundXhrTest.HttpAuth
 -BackgroundXhrTest.TlsClientAuth
+
 # http://crbug.com/853733
 -DeclarativeNetRequestBrowserTest.PageAllowingAPI_BrowserRequests/0
 
