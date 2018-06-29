@@ -211,6 +211,7 @@ class CORE_EXPORT NGPhysicalFragment
     DumpTextOffsets = 0x40,
     DumpSelfPainting = 0x80,
     DumpOverflow = 0x100,
+    DumpNodeName = 0x200,
     DumpAll = -1
   };
   typedef int DumpFlags;

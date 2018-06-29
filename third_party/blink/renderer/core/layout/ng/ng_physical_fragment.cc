@@ -132,6 +132,12 @@ void AppendFragmentToString(const NGPhysicalFragment* fragment,
     has_content =
         AppendFragmentOffsetAndSize(fragment, builder, flags, has_content);
 
+    if (flags & NGPhysicalFragment::DumpNodeName &&
+        fragment->GetLayoutObject()) {
+      if (has_content)
+        builder->Append(" ");
+      builder->Append(fragment->GetLayoutObject()->DebugName());
+    }
     builder->Append("\n");
 
     if (flags & NGPhysicalFragment::DumpSubtree) {
