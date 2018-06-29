@@ -80,7 +80,6 @@ static const MimeInfo kPrimaryMappings[] = {
     // Must precede audio/webm .
     {"video/webm", "webm"},
 
-    {"application/javascript", "js"},
     {"application/wasm", "wasm"},
     {"application/x-chrome-extension", "crx"},
     {"application/xhtml+xml", "xhtml,xht,xhtm"},
@@ -98,6 +97,7 @@ static const MimeInfo kPrimaryMappings[] = {
     {"multipart/related", "mht,mhtml"},
     {"text/css", "css"},
     {"text/html", "html,htm,shtml,shtm"},
+    {"text/javascript", "js"},
     {"text/xml", "xml"},
     {"video/mp4", "mp4,m4v"},
     {"video/ogg", "ogv,ogm"},
@@ -110,6 +110,7 @@ static const MimeInfo kSecondaryMappings[] = {
     {"application/epub+zip", "epub"},
     {"application/font-woff", "woff"},
     {"application/gzip", "gz,tgz"},
+    {"application/javascript", "js"},
     {"application/json", "json"},  // Per http://www.ietf.org/rfc/rfc4627.txt.
     {"application/octet-stream", "bin,exe,com"},
     {"application/pdf", "pdf"},
