@@ -110,6 +110,11 @@ import subprocess2
 import setup_color
 
 
+# Singleton object to represent an unset cache_dir (as opposed to a disabled
+# one, e.g. if a spec explicitly says `cache_dir = None`.)
+UNSET_CACHE_DIR = object()
+
+
 class GNException(Exception):
   pass
 
@@ -1252,8 +1257,12 @@ solutions = [
     "custom_vars": %(custom_vars)r,
   },
 ]
+""")
+
+  DEFAULT_CLIENT_CACHE_DIR_TEXT = ("""\
 cache_dir = %(cache_dir)r
 """)
+
 
   DEFAULT_SNAPSHOT_FILE_TEXT = ("""\
 # Snapshot generated with gclient revinfo --snapshot
@@ -1349,13 +1358,13 @@ it or fix the checkout.
     else:
       self._enforced_cpu = tuple(set(self._enforced_cpu).union(target_cpu))
 
-    cache_dir = config_dict.get('cache_dir', self._options.cache_dir)
-    if cache_dir:
-      cache_dir = os.path.join(self.root_dir, cache_dir)
-      cache_dir = os.path.abspath(cache_dir)
+    cache_dir = config_dict.get('cache_dir', UNSET_CACHE_DIR)
+    if cache_dir is not UNSET_CACHE_DIR:
+      if cache_dir:
+        cache_dir = os.path.join(self.root_dir, cache_dir)
+        cache_dir = os.path.abspath(cache_dir)
 
-    gclient_scm.GitWrapper.cache_dir = cache_dir
-    git_cache.Mirror.SetCachePath(cache_dir)
+      git_cache.Mirror.SetCachePath(cache_dir)
 
     if not target_os and config_dict.get('target_os_only', False):
       raise gclient_utils.Error('Can\'t use target_os_only if target_os is '
@@ -1427,15 +1436,22 @@ it or fix the checkout.
     return client
 
   def SetDefaultConfig(self, solution_name, deps_file, solution_url,
-                       managed=True, cache_dir=None, custom_vars=None):
-    self.SetConfig(self.DEFAULT_CLIENT_FILE_TEXT % {
+                       managed=True, cache_dir=UNSET_CACHE_DIR,
+                       custom_vars=None):
+    text = self.DEFAULT_CLIENT_FILE_TEXT
+    format_dict = {
       'solution_name': solution_name,
       'solution_url': solution_url,
       'deps_file': deps_file,
       'managed': managed,
-      'cache_dir': cache_dir,
       'custom_vars': custom_vars or {},
-    })
+    }
+
+    if cache_dir is not UNSET_CACHE_DIR:
+      text += self.DEFAULT_CLIENT_CACHE_DIR_TEXT
+      format_dict['cache_dir'] = cache_dir
+
+    self.SetConfig(text % format_dict)
 
   def _SaveEntries(self):
     """Creates a .gclient_entries file to record the list of unique checkouts.
@@ -2337,6 +2353,11 @@ def CMDconfig(parser, args):
                          'to have the main solution untouched by gclient '
                          '(gclient will check out unmanaged dependencies but '
                          'will never sync them)')
+  parser.add_option('--cache-dir', default=UNSET_CACHE_DIR,
+                    help='Cache all git repos into this dir and do shared '
+                         'clones from the cache, instead of cloning directly '
+                         'from the remote. Pass "None" to disable cache, even '
+                         'if globally enabled due to $GIT_CACHE_PATH.')
   parser.add_option('--custom-var', action='append', dest='custom_vars',
                     default=[],
                     help='overrides variables; key=value syntax')
@@ -2347,6 +2368,10 @@ def CMDconfig(parser, args):
   if ((options.spec and args) or len(args) > 2 or
       (not options.spec and not args)):
     parser.error('Inconsistent arguments. Use either --spec or one or 2 args')
+
+  if (options.cache_dir is not UNSET_CACHE_DIR
+      and options.cache_dir.lower() == 'none'):
+    options.cache_dir = None
 
   custom_vars = {}
   for arg in options.custom_vars:
@@ -2845,12 +2870,6 @@ class OptionParser(optparse.OptionParser):
         '--spec',
         help='create a gclient file containing the provided string. Due to '
             'Cygwin/Python brokenness, it can\'t contain any newlines.')
-    self.add_option(
-        '--cache-dir',
-        help='(git only) Cache all git repos into this dir and do '
-             'shared clones from the cache, instead of cloning '
-             'directly from the remote. (experimental)',
-        default=os.environ.get('GCLIENT_CACHE_DIR'))
     self.add_option(
         '--no-nag-max', default=False, action='store_true',
         help='Ignored for backwards compatibility.')

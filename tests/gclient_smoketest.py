@@ -189,10 +189,10 @@ class GClientSmoke(GClientSmokeBase):
           '    },\n'
           '    "custom_vars": {},\n'
           '  },\n'
-          ']\n'
-          'cache_dir = None\n') % self.git_base)
+          ']\n' % self.git_base))
 
-    test(['config', self.git_base + 'repo_1', '--name', 'src'],
+    test(['config', self.git_base + 'repo_1', '--name', 'src',
+          '--cache-dir', 'none'],
          ('solutions = [\n'
           '  { "name"        : "src",\n'
           '    "url"         : "%srepo_1",\n'
@@ -205,7 +205,8 @@ class GClientSmoke(GClientSmokeBase):
           ']\n'
           'cache_dir = None\n') % self.git_base)
 
-    test(['config', 'https://example.com/foo', 'faa'],
+    test(['config', 'https://example.com/foo', 'faa',
+          '--cache-dir', 'something'],
          'solutions = [\n'
          '  { "name"        : "foo",\n'
          '    "url"         : "https://example.com/foo",\n'
@@ -216,7 +217,7 @@ class GClientSmoke(GClientSmokeBase):
          '    "custom_vars": {},\n'
          '  },\n'
          ']\n'
-         'cache_dir = None\n')
+         'cache_dir = \'something\'\n')
 
     test(['config', 'https://example.com/foo', '--deps', 'blah'],
          'solutions = [\n'
@@ -228,8 +229,7 @@ class GClientSmoke(GClientSmokeBase):
          '    },\n'
          '    "custom_vars": {},\n'
          '  },\n'
-         ']\n'
-         'cache_dir = None\n')
+         ']\n')
 
     test(['config', self.git_base + 'src/',
           '--custom-var', 'bool_var=True',
@@ -243,8 +243,7 @@ class GClientSmoke(GClientSmokeBase):
           '    },\n'
           '    "custom_vars": {\'bool_var\': True, \'str_var\': \'abc\'},\n'
           '  },\n'
-          ']\n'
-          'cache_dir = None\n') % self.git_base)
+          ']\n') % self.git_base)
 
     test(['config', '--spec', '["blah blah"]'], '["blah blah"]')
 

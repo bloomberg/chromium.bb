@@ -138,7 +138,7 @@ class SCMWrapper(object):
     return log.splitlines()[0].split(' ', 1)[1]
 
   def GetCacheMirror(self):
-    if (getattr(self, 'cache_dir', None)):
+    if getattr(self, 'cache_dir', None):
       url, _ = gclient_utils.SplitUrlRevision(self.url)
       return git_cache.Mirror(url)
     return None
@@ -210,7 +210,12 @@ class GitWrapper(SCMWrapper):
   name = 'git'
   remote = 'origin'
 
-  cache_dir = None
+  @property
+  def cache_dir(self):
+    try:
+      return git_cache.Mirror.GetCachePath()
+    except RuntimeError:
+      return None
 
   def __init__(self, url=None, *args, **kwargs):
     """Removes 'git+' fake prefix from git URL."""
@@ -832,7 +837,7 @@ class GitWrapper(SCMWrapper):
 
   def _GetMirror(self, url, options):
     """Get a git_cache.Mirror object for the argument url."""
-    if not git_cache.Mirror.GetCachePath():
+    if not self.cache_dir:
       return None
     mirror_kwargs = {
         'print_func': self.filter,

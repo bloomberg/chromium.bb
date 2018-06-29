@@ -195,6 +195,11 @@ class Mirror(object):
     os.path.dirname(os.path.abspath(__file__)), 'gsutil.py')
   cachepath_lock = threading.Lock()
 
+  UNSET_CACHEPATH = object()
+
+  # Used for tests
+  _GIT_CONFIG_LOCATION = []
+
   @staticmethod
   def parse_fetch_spec(spec):
     """Parses and canonicalizes a fetch spec.
@@ -272,14 +277,18 @@ class Mirror(object):
       if not hasattr(cls, 'cachepath'):
         try:
           cachepath = subprocess.check_output(
-              [cls.git_exe, 'config', '--global', 'cache.cachepath']).strip()
+              [cls.git_exe, 'config'] +
+              cls._GIT_CONFIG_LOCATION +
+              ['cache.cachepath']).strip()
         except subprocess.CalledProcessError:
-          cachepath = None
-        if not cachepath:
-          raise RuntimeError(
-              'No global cache.cachepath git configuration found.')
+          cachepath = os.environ.get('GIT_CACHE_PATH', cls.UNSET_CACHEPATH)
         setattr(cls, 'cachepath', cachepath)
-      return getattr(cls, 'cachepath')
+
+      ret = getattr(cls, 'cachepath')
+      if ret is cls.UNSET_CACHEPATH:
+        raise RuntimeError('No cache.cachepath git configuration or '
+                           '$GIT_CACHE_PATH is set.')
+      return ret
 
   def Rename(self, src, dst):
     # This is somehow racy on Windows.
@@ -795,7 +804,10 @@ class OptionParser(optparse.OptionParser):
   def __init__(self, *args, **kwargs):
     optparse.OptionParser.__init__(self, *args, prog='git cache', **kwargs)
     self.add_option('-c', '--cache-dir',
-                    help='Path to the directory containing the cache')
+                    help=(
+                      'Path to the directory containing the caches. Normally '
+                      'deduced from git config cache.cachepath or '
+                      '$GIT_CACHE_PATH.'))
     self.add_option('-v', '--verbose', action='count', default=1,
                     help='Increase verbosity (can be passed multiple times)')
     self.add_option('-q', '--quiet', action='store_true',
