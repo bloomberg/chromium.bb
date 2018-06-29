@@ -78,7 +78,8 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   // pending_requests(). Prefer using AddResponse.
   static void SimulateResponse(PendingRequest request,
                                std::string content,
-                               int net_error = net::OK);
+                               int net_error = net::OK,
+                               net::HttpStatusCode status = net::HTTP_OK);
 
   static ResourceResponseHead CreateResourceResponseHead(
       net::HttpStatusCode http_status);
