@@ -48,8 +48,8 @@ GestureCommandData.GESTURE_COMMAND_MAP = {
     command: 'nextWord',
     keyOverride: {keyCode: 40 /* right */, modifiers: {ctrl: true}}
   },
-  'swipeUp3': {command: 'scrollBackward'},
-  'swipeDown3': {command: 'scrollForward'},
+  'swipeUp3': {command: 'scrollForward'},
+  'swipeDown3': {command: 'scrollBackward'},
   'tap2': {command: 'stopSpeech'},
   'tap4': {command: 'showPanelMenuMostRecent'},
 };
