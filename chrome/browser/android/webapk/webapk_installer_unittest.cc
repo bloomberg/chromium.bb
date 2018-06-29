@@ -4,9 +4,7 @@
 
 #include "chrome/browser/android/webapk/webapk_installer.h"
 
-#include <jni.h>
-#include <memory>
-#include <string>
+#include <utility>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
@@ -116,8 +114,8 @@ class WebApkInstallerRunner {
     info.best_badge_icon_url = best_badge_icon_url_;
     WebApkInstaller::InstallAsyncForTesting(
         CreateWebApkInstaller(), info, SkBitmap(), SkBitmap(),
-        base::Bind(&WebApkInstallerRunner::OnCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&WebApkInstallerRunner::OnCompleted,
+                       base::Unretained(this)));
 
     run_loop.Run();
   }
@@ -128,8 +126,8 @@ class WebApkInstallerRunner {
 
     WebApkInstaller::UpdateAsyncForTesting(
         CreateWebApkInstaller(), update_request_path,
-        base::Bind(&WebApkInstallerRunner::OnCompleted,
-                   base::Unretained(this)));
+        base::BindOnce(&WebApkInstallerRunner::OnCompleted,
+                       base::Unretained(this)));
 
     run_loop.Run();
   }
@@ -183,7 +181,8 @@ class UpdateRequestStorer {
         update_request_path, ShortcutInfo((GURL())), SkBitmap(), SkBitmap(), "",
         "", std::map<std::string, std::string>(), false,
         WebApkUpdateReason::PRIMARY_ICON_HASH_DIFFERS,
-        base::Bind(&UpdateRequestStorer::OnComplete, base::Unretained(this)));
+        base::BindOnce(&UpdateRequestStorer::OnComplete,
+                       base::Unretained(this)));
     run_loop.Run();
   }
 
@@ -233,8 +232,8 @@ class BuildProtoRunner {
     WebApkInstaller::BuildProto(
         info, primary_icon, badge_icon, "" /* package_name */, "" /* version */,
         icon_url_to_murmur2_hash, is_manifest_stale,
-        base::Bind(&BuildProtoRunner::OnBuiltWebApkProto,
-                   base::Unretained(this)));
+        base::BindOnce(&BuildProtoRunner::OnBuiltWebApkProto,
+                       base::Unretained(this)));
 
     base::RunLoop run_loop;
     on_completed_callback_ = run_loop.QuitClosure();
@@ -289,7 +288,7 @@ class WebApkInstallerTest : public ::testing::Test {
 
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kTestDataDir));
-    test_server_.RegisterRequestHandler(base::Bind(
+    test_server_.RegisterRequestHandler(base::BindRepeating(
         &WebApkInstallerTest::HandleWebApkRequest, base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
 
@@ -439,7 +438,7 @@ BuildUnparsableWebApkResponse() {
 // Test that an HTTP response which cannot be parsed as a webapk::WebApkResponse
 // is handled properly.
 TEST_F(WebApkInstallerTest, UnparsableCreateWebApkResponse) {
-  SetWebApkResponseBuilder(base::Bind(&BuildUnparsableWebApkResponse));
+  SetWebApkResponseBuilder(base::BindRepeating(&BuildUnparsableWebApkResponse));
 
   std::unique_ptr<WebApkInstallerRunner> runner = CreateWebApkInstallerRunner();
   runner->RunInstallWebApk();
@@ -466,7 +465,7 @@ TEST_F(WebApkInstallerTest, UpdateSuccess) {
 // - The most up to date version of the WebAPK on the server is identical to the
 //   one installed on the client.
 TEST_F(WebApkInstallerTest, UpdateSuccessWithEmptyTokenInResponse) {
-  SetWebApkResponseBuilder(base::Bind(&BuildValidWebApkResponse, ""));
+  SetWebApkResponseBuilder(base::BindRepeating(&BuildValidWebApkResponse, ""));
 
   ScopedTempFile scoped_file;
   base::FilePath update_request_path = scoped_file.GetFilePath();

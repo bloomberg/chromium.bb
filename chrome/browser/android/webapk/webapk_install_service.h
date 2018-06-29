@@ -54,7 +54,7 @@ class WebApkInstallService : public KeyedService {
   //   from the WebAPK server.
   // - the package name of the WebAPK.
   using FinishCallback =
-      base::Callback<void(WebApkInstallResult, bool, const std::string&)>;
+      base::OnceCallback<void(WebApkInstallResult, bool, const std::string&)>;
 
   static WebApkInstallService* Get(content::BrowserContext* browser_context);
 
@@ -78,7 +78,7 @@ class WebApkInstallService : public KeyedService {
   // |update_request_path| is the path of the file with the update request.
   // Calls |finish_callback| once the update completed or failed.
   void UpdateAsync(const base::FilePath& update_request_path,
-                   const FinishCallback& finish_callback);
+                   FinishCallback finish_callback);
 
  private:
   // Observes the lifetime of a WebContents.
