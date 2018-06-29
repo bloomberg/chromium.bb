@@ -1204,4 +1204,5 @@ bool QuicSession::session_decides_what_to_write() const {
   return connection_->session_decides_what_to_write();
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

@@ -287,4 +287,5 @@ QuicString QuicDataReader::VerboseDebugString() const {
                     QuicTextUtils::HexDump(QuicStringPiece(data_, len_)), " }");
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic
