@@ -4108,6 +4108,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   GURL error_url(embedded_test_server()->GetURL("/empty.html"));
   std::unique_ptr<URLLoaderInterceptor> url_interceptor =
       SetupRequestFailForURL(error_url);
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Start with a successful navigation to a document.
   EXPECT_TRUE(NavigateToURL(shell(), url));
@@ -4132,7 +4133,6 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
 
     // Verify that the error page process is locked to origin
-    auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
     EXPECT_EQ(
         GURL(kUnreachableWebDataURL),
         policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
@@ -4143,6 +4143,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
   EXPECT_TRUE(NavigateToURL(shell(), url));
   success_site_instance =
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
+  EXPECT_NE(
+      GURL(kUnreachableWebDataURL),
+      policy->GetOriginLock(
+          shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 
   {
     NavigationHandleObserver observer(shell()->web_contents(), error_url);
@@ -4161,6 +4165,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
     EXPECT_NE(success_site_instance->GetProcess()->GetID(),
               error_site_instance->GetProcess()->GetID());
     EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+
+    // Verify that the error page process is locked to origin
+    EXPECT_EQ(
+        GURL(kUnreachableWebDataURL),
+        policy->GetOriginLock(error_site_instance->GetProcess()->GetID()));
   }
 }
 
@@ -4233,6 +4242,11 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       new_shell->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_NE(main_site_instance, error_site_instance);
   EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+
+  // Verify that the error page process is locked to origin
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                error_site_instance->GetProcess()->GetID()));
 }
 
 // Test to verify that windows that are not part of the same
@@ -4280,6 +4294,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
           new_shell->web_contents()->GetSiteInstance()));
   EXPECT_EQ(shell()->web_contents()->GetSiteInstance()->GetProcess(),
             new_shell->web_contents()->GetSiteInstance()->GetProcess());
+
+  // Verify that the process is locked to origin
+  EXPECT_EQ(
+      GURL(kUnreachableWebDataURL),
+      ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+          shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 }
 
 // Test to verify that reloading an error page once the error condition has
@@ -4298,6 +4318,7 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   NavigationControllerImpl& nav_controller =
       static_cast<NavigationControllerImpl&>(
           shell()->web_contents()->GetController());
+  auto* policy = ChildProcessSecurityPolicyImpl::GetInstance();
 
   // Start with a successful navigation to a document and verify there is
   // only one entry in session history.
@@ -4313,6 +4334,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   EXPECT_EQ(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_EQ(
+      GURL(kUnreachableWebDataURL),
+      policy->GetOriginLock(
+          shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 
   // Reload the error page after clearing the error condition, such that the
   // navigation is successful and verify that no new entry was added to
@@ -4328,6 +4353,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_NE(
+      GURL(kUnreachableWebDataURL),
+      policy->GetOriginLock(
+          shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 
   // Test the same scenario as above, but this time initiated by the
   // renderer process.
@@ -4337,6 +4366,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   EXPECT_EQ(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_EQ(
+      GURL(kUnreachableWebDataURL),
+      policy->GetOriginLock(
+          shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 
   url_interceptor.reset();
   {
@@ -4349,6 +4382,10 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest, ErrorPageNavigationReload) {
   EXPECT_NE(
       GURL(kUnreachableWebDataURL),
       shell()->web_contents()->GetMainFrame()->GetSiteInstance()->GetSiteURL());
+  EXPECT_NE(
+      GURL(kUnreachableWebDataURL),
+      policy->GetOriginLock(
+          shell()->web_contents()->GetSiteInstance()->GetProcess()->GetID()));
 }
 
 // A NavigationThrottle implementation that blocks all outgoing navigation
@@ -4406,6 +4443,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
       shell()->web_contents()->GetMainFrame()->GetSiteInstance();
   EXPECT_TRUE(observer.is_error());
   EXPECT_EQ(GURL(kUnreachableWebDataURL), error_site_instance->GetSiteURL());
+  EXPECT_EQ(GURL(kUnreachableWebDataURL),
+            ChildProcessSecurityPolicyImpl::GetInstance()->GetOriginLock(
+                error_site_instance->GetProcess()->GetID()));
   EXPECT_FALSE(ChildProcessSecurityPolicy::GetInstance()->HasWebUIBindings(
       error_site_instance->GetProcess()->GetID()));
 }
