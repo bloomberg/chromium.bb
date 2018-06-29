@@ -357,6 +357,8 @@
     'jingle_unittests': {},
     'latency_unittests': {},
     'midi_unittests': {},
+    'mojo_unittests': {},
+    'ozone_unittests': {},
     'pdf_unittests': {},
     'printing_unittests': {},
     'sql_unittests': {},
