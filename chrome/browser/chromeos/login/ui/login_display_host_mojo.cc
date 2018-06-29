@@ -32,6 +32,12 @@ constexpr char kAccelSendFeedback[] = "send_feedback";
 
 }  // namespace
 
+LoginDisplayHostMojo::AuthState::AuthState(AccountId account_id,
+                                           AuthenticateUserCallback callback)
+    : account_id(account_id), callback(std::move(callback)) {}
+
+LoginDisplayHostMojo::AuthState::~AuthState() = default;
+
 LoginDisplayHostMojo::LoginDisplayHostMojo()
     : login_display_(std::make_unique<LoginDisplayMojo>(this)),
       user_board_view_mojo_(std::make_unique<UserBoardViewMojo>()),
@@ -290,16 +296,18 @@ void LoginDisplayHostMojo::HandleAuthenticateUser(
     const std::string& password,
     bool authenticated_by_pin,
     AuthenticateUserCallback callback) {
-  DCHECK(!authenticated_by_pin);
   DCHECK_EQ(account_id.GetUserEmail(),
             gaia::SanitizeEmail(account_id.GetUserEmail()));
 
-  on_authenticated_ = std::move(callback);
+  CHECK(!pending_auth_state_);
+  pending_auth_state_ =
+      std::make_unique<AuthState>(account_id, std::move(callback));
 
   const user_manager::User* const user =
       user_manager::UserManager::Get()->FindUser(account_id);
   DCHECK(user);
   UserContext user_context(*user);
+  user_context.SetIsUsingPin(authenticated_by_pin);
   user_context.SetKey(
       Key(chromeos::Key::KEY_TYPE_PASSWORD_PLAIN, "" /*salt*/, password));
   if (account_id.GetAccountType() == AccountType::ACTIVE_DIRECTORY &&
@@ -360,13 +368,21 @@ void LoginDisplayHostMojo::HandleLaunchPublicSession(
 }
 
 void LoginDisplayHostMojo::OnAuthFailure(const AuthFailure& error) {
-  if (on_authenticated_)
-    std::move(on_authenticated_).Run(false);
+  // OnAuthFailure and OnAuthSuccess can be called if an authentication attempt
+  // is not initiated from mojo, ie, if LoginDisplay::Delegate::Login() is
+  // called directly.
+  if (pending_auth_state_) {
+    login_display_->UpdatePinKeyboardState(pending_auth_state_->account_id);
+    std::move(pending_auth_state_->callback).Run(false);
+    pending_auth_state_.reset();
+  }
 }
 
 void LoginDisplayHostMojo::OnAuthSuccess(const UserContext& user_context) {
-  if (on_authenticated_)
-    std::move(on_authenticated_).Run(true);
+  if (pending_auth_state_) {
+    std::move(pending_auth_state_->callback).Run(true);
+    pending_auth_state_.reset();
+  }
 }
 
 void LoginDisplayHostMojo::InitWidgetAndView() {

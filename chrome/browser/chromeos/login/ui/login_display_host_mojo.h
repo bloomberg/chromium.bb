@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "chrome/browser/chromeos/login/ui/kiosk_app_menu_updater.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_common.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -118,8 +119,17 @@ class LoginDisplayHostMojo : public LoginDisplayHostCommon,
   // Initialize the dialog widget for webui (for gaia and post login screens).
   void InitWidgetAndView();
 
-  // Callback that should be executed the authentication result is available.
-  AuthenticateUserCallback on_authenticated_;
+  // State associated with a pending authentication attempt.
+  struct AuthState {
+    AuthState(AccountId account_id, AuthenticateUserCallback callback);
+    ~AuthState();
+
+    // Account that is being authenticated.
+    AccountId account_id;
+    // Callback that should be executed the authentication result is available.
+    AuthenticateUserCallback callback;
+  };
+  std::unique_ptr<AuthState> pending_auth_state_;
 
   std::unique_ptr<LoginDisplayMojo> login_display_;
 
