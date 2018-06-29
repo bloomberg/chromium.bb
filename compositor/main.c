@@ -513,7 +513,7 @@ usage(int error_code)
 #if defined(BUILD_DRM_COMPOSITOR)
 	fprintf(out,
 		"Options for drm-backend.so:\n\n"
-		"  --seat=SEAT\t\tThe seat that weston should run on\n"
+		"  --seat=SEAT\t\tThe seat that weston should run on, instead of the seat defined in XDG_SEAT\n"
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --drm-device=CARD\tThe DRM device to use, e.g. \"card0\".\n"
 		"  --use-pixman\t\tUse the pixman (CPU) renderer\n"

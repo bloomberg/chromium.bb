@@ -106,7 +106,8 @@ struct weston_drm_backend_config {
 
 	/** The seat to be used for input and output.
 	 *
-	 * If NULL the default "seat0" will be used.  The backend will
+	 * If seat_id is NULL, the seat is taken from XDG_SEAT environment
+	 * variable. If neither is set, "seat0" is used. The backend will
 	 * take ownership of the seat_id pointer and will free it on
 	 * backend destruction.
 	 */

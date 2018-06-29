@@ -6029,7 +6029,15 @@ drm_backend_create(struct weston_compositor *compositor,
 	struct udev_device *drm_device;
 	struct wl_event_loop *loop;
 	const char *seat_id = default_seat;
+	const char *session_seat;
 	int ret;
+
+	session_seat = getenv("XDG_SEAT");
+	if (session_seat)
+		seat_id = session_seat;
+
+	if (config->seat_id)
+		seat_id = config->seat_id;
 
 	weston_log("initializing drm backend\n");
 
@@ -6061,9 +6069,6 @@ drm_backend_create(struct weston_compositor *compositor,
 
 	if (parse_gbm_format(config->gbm_format, GBM_FORMAT_XRGB8888, &b->gbm_format) < 0)
 		goto err_compositor;
-
-	if (config->seat_id)
-		seat_id = config->seat_id;
 
 	/* Check if we run drm-backend using weston-launch */
 	compositor->launcher = weston_launcher_connect(compositor, config->tty,
