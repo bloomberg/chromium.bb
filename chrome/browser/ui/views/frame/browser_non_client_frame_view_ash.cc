@@ -192,6 +192,13 @@ void BrowserNonClientFrameViewAsh::Init() {
       static_cast<int>(browser->is_app() ? ash::AppType::CHROME_APP
                                          : ash::AppType::BROWSER));
 
+  // To preserve privacy, tag incognito windows so that they won't be included
+  // in screenshot sent to assistant server.
+  if (browser->profile()->IsOffTheRecord()) {
+    frame()->GetNativeWindow()->SetProperty(
+        ash::kBlockedForAssistantSnapshotKey, true);
+  }
+
   // TODO(estade): how much of the rest of this needs porting to Mash?
   if (IsMash()) {
     OnThemeChanged();
