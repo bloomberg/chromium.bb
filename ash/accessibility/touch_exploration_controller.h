@@ -337,6 +337,9 @@ class ASH_EXPORT TouchExplorationController
   // fingers in place is a bit harder.
   float GetSplitTapTouchSlop();
 
+  // Convert a gfx::PointF from DIP back to raw screen coordinates.
+  gfx::PointF ConvertDIPToScreenInPixels(const gfx::PointF& location);
+
   enum State {
     // No fingers are down and no events are pending.
     NO_FINGERS_DOWN,
