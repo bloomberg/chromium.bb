@@ -106,7 +106,8 @@ void AssistantContainerView::Init() {
   assistant_mini_view_->set_owned_by_client();
 
   // Web view.
-  assistant_web_view_ = std::make_unique<AssistantWebView>();
+  assistant_web_view_ =
+      std::make_unique<AssistantWebView>(assistant_controller_);
   assistant_web_view_->set_owned_by_client();
 
   // Update the view state based on the current UI mode.

@@ -4,6 +4,7 @@
 
 #include "ash/assistant/assistant_controller.h"
 
+#include "ash/assistant/assistant_controller_observer.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
@@ -43,6 +44,15 @@ AssistantController::~AssistantController() {
 void AssistantController::BindRequest(
     mojom::AssistantControllerRequest request) {
   assistant_controller_bindings_.AddBinding(this, std::move(request));
+}
+
+void AssistantController::AddObserver(AssistantControllerObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AssistantController::RemoveObserver(
+    AssistantControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void AssistantController::SetAssistant(
@@ -158,14 +168,15 @@ void AssistantController::OnOpenUrlFromTab(const GURL& url) {
 
 void AssistantController::OpenUrl(const GURL& url) {
   if (assistant::util::IsDeepLinkUrl(url)) {
-    // TODO(dmblack): Handle deep links.
-    NOTIMPLEMENTED();
+    for (AssistantControllerObserver& observer : observers_)
+      observer.OnDeepLinkReceived(url);
     return;
   }
 
-  // We dismiss Assistant UI when opening a new browser tab.
   Shell::Get()->new_window_controller()->NewTabWithUrl(url);
-  assistant_ui_controller_->HideUi(AssistantSource::kUnspecified);
+
+  for (AssistantControllerObserver& observer : observers_)
+    observer.OnUrlOpened(url);
 }
 
 }  // namespace ash

@@ -5,25 +5,53 @@
 #ifndef ASH_ASSISTANT_UI_ASSISTANT_WEB_VIEW_H_
 #define ASH_ASSISTANT_UI_ASSISTANT_WEB_VIEW_H_
 
+#include <memory>
+
+#include "ash/assistant/assistant_controller_observer.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/views/view.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace ash {
+
+class AssistantController;
 
 // AssistantWebView is a child of AssistantBubbleView which allows Assistant UI
 // to render remotely hosted content within its bubble. It provides a CaptionBar
 // for window level controls and a WebView/RemoteViewHost for embedding web
 // contents.
-class AssistantWebView : public views::View {
+class AssistantWebView : public views::View,
+                         public AssistantControllerObserver {
  public:
-  AssistantWebView();
+  explicit AssistantWebView(AssistantController* assistant_controller);
   ~AssistantWebView() override;
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;
+  void ChildPreferredSizeChanged(views::View* child) override;
+
+  // AssistantControllerObserver:
+  void OnDeepLinkReceived(const GURL& deep_link) override;
 
  private:
+  void InitLayout();
+  void OnWebContentsReady(
+      const base::Optional<base::UnguessableToken>& embed_token);
+  void ReleaseWebContents();
+
+  AssistantController* const assistant_controller_;  // Owned by Shell.
+
+  // Uniquely identifies web contents owned by WebContentsManager.
+  base::Optional<base::UnguessableToken> web_contents_id_token_;
+
+  // Weak pointer factory used for web contents rendering requests.
+  base::WeakPtrFactory<AssistantWebView> web_contents_request_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(AssistantWebView);
 };
 
