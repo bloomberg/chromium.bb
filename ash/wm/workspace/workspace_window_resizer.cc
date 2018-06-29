@@ -17,8 +17,8 @@
 #include "ash/shell_port.h"
 #include "ash/wm/default_window_resizer.h"
 #include "ash/wm/panels/panel_window_resizer.h"
+#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
 #include "ash/wm/window_positioning_utils.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_util.h"
@@ -73,7 +73,8 @@ std::unique_ptr<WindowResizer> CreateWindowResizer(
       return nullptr;
 
     window_state->CreateDragDetails(point_in_parent, window_component, source);
-    window_resizer = std::make_unique<TabletModeWindowResizer>(window_state);
+    window_resizer =
+        std::make_unique<TabletModeBrowserWindowDragController>(window_state);
     window_resizer = ShellPort::Get()->CreateDragWindowResizer(
         std::move(window_resizer), window_state);
     return window_resizer;

@@ -1827,6 +1827,9 @@ extern const char kEnableChromevoxArcSupportDescription[];
 extern const char kEnableDisplayZoomSettingName[];
 extern const char kEnableDisplayZoomSettingDescription[];
 
+extern const char kEnableDragAppsInTabletModeName[];
+extern const char kEnableDragAppsInTabletModeDescription[];
+
 extern const char kEnableDragTabsInTabletModeName[];
 extern const char kEnableDragTabsInTabletModeDescription[];
 

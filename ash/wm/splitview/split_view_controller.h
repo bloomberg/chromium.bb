@@ -336,6 +336,19 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // snapped windows.
   void FinishWindowResizing(aura::Window* window);
 
+  // Called by OnWindowDragEnded to do the actual work of finishing the window
+  // dragging.
+  void EndWindowDragImpl(aura::Window* window,
+                         SnapPosition desired_snap_position,
+                         const gfx::Point& last_location_in_screen);
+
+  // Gets the snap position of |window| according to last mouse/gesture event
+  // location on |window|. Used when |desired_snap_position_| was NONE but
+  // SplitViewController needs to snap the |window| after dragging.
+  SplitViewController::SnapPosition GetSnapPosition(
+      aura::Window* window,
+      const gfx::Point& last_location_in_screen);
+
   // Bindings for the SplitViewController interface.
   mojo::BindingSet<mojom::SplitViewController> bindings_;
 
