@@ -50,6 +50,8 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   void HandlePowerAction();
   // Show date and time settings. Called from the view.
   void HandleOpenDateTimeSettingsAction();
+  // Show enterprise managed device info. Called from the view.
+  void HandleEnterpriseInfoAction();
   // Toggle expanded state of UnifiedSystemTrayView. Called from the view.
   void ToggleExpanded();
   // Clear all notifications. It triggers animation, and does not remove

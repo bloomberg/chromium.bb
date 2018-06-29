@@ -26,6 +26,9 @@
 #include "base/time/time.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/views/animation/ink_drop_highlight.h"
+#include "ui/views/animation/ink_drop_impl.h"
+#include "ui/views/animation/ink_drop_ripple.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -59,6 +62,12 @@ class DateView : public views::Button,
 
  private:
   void Update();
+
+  // views::Button:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
@@ -103,6 +112,22 @@ void DateView::Update() {
       IDS_ASH_STATUS_TRAY_DATE, FormatDayOfWeek(now), FormatDate(now)));
   SetAccessibleName(TimeFormatFriendlyDateAndTime(now));
   NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+}
+
+std::unique_ptr<views::InkDrop> DateView::CreateInkDrop() {
+  return TrayPopupUtils::CreateInkDrop(this);
+}
+
+std::unique_ptr<views::InkDropRipple> DateView::CreateInkDropRipple() const {
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      GetInkDropCenterBasedOnLastEvent());
+}
+
+std::unique_ptr<views::InkDropHighlight> DateView::CreateInkDropHighlight()
+    const {
+  return TrayPopupUtils::CreateInkDropHighlight(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this);
 }
 
 void DateView::OnDateFormatChanged() {}
@@ -206,6 +231,12 @@ class ManagedStateView : public views::Button {
  public:
   ~ManagedStateView() override = default;
 
+  // views::Button:
+  std::unique_ptr<views::InkDrop> CreateInkDrop() override;
+  std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override;
+  std::unique_ptr<views::InkDropHighlight> CreateInkDropHighlight()
+      const override;
+
  protected:
   ManagedStateView(views::ButtonListener* listener,
                    int label_id,
@@ -238,13 +269,30 @@ ManagedStateView::ManagedStateView(views::ButtonListener* listener,
   TrayPopupUtils::ConfigureTrayPopupButton(this);
 }
 
+std::unique_ptr<views::InkDrop> ManagedStateView::CreateInkDrop() {
+  return TrayPopupUtils::CreateInkDrop(this);
+}
+
+std::unique_ptr<views::InkDropRipple> ManagedStateView::CreateInkDropRipple()
+    const {
+  return TrayPopupUtils::CreateInkDropRipple(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this,
+      GetInkDropCenterBasedOnLastEvent());
+}
+
+std::unique_ptr<views::InkDropHighlight>
+ManagedStateView::CreateInkDropHighlight() const {
+  return TrayPopupUtils::CreateInkDropHighlight(
+      TrayPopupInkDropStyle::FILL_BOUNDS, this);
+}
+
 // A view that shows whether the device is enterprise managed or not. It updates
 // by observing EnterpriseDomainModel.
 class EnterpriseManagedView : public ManagedStateView,
                               public views::ButtonListener,
                               public EnterpriseDomainObserver {
  public:
-  EnterpriseManagedView();
+  explicit EnterpriseManagedView(UnifiedSystemTrayController* controller);
   ~EnterpriseManagedView() override;
 
   // views::ButtonListener:
@@ -256,13 +304,17 @@ class EnterpriseManagedView : public ManagedStateView,
  private:
   void Update();
 
+  UnifiedSystemTrayController* const controller_;
+
   DISALLOW_COPY_AND_ASSIGN(EnterpriseManagedView);
 };
 
-EnterpriseManagedView::EnterpriseManagedView()
+EnterpriseManagedView::EnterpriseManagedView(
+    UnifiedSystemTrayController* controller)
     : ManagedStateView(this,
                        IDS_ASH_ENTERPRISE_DEVICE_MANAGED_SHORT,
-                       kSystemMenuBusinessIcon) {
+                       kSystemMenuBusinessIcon),
+      controller_(controller) {
   DCHECK(Shell::Get());
   set_id(VIEW_ID_TRAY_ENTERPRISE);
   Shell::Get()->system_tray_model()->enterprise_domain()->AddObserver(this);
@@ -275,7 +327,7 @@ EnterpriseManagedView::~EnterpriseManagedView() {
 
 void EnterpriseManagedView::ButtonPressed(views::Button* sender,
                                           const ui::Event& event) {
-  Shell::Get()->system_tray_controller()->ShowEnterpriseInfo();
+  controller_->HandleEnterpriseInfoAction();
 }
 
 void EnterpriseManagedView::OnEnterpriseDomainChanged() {
@@ -321,7 +373,7 @@ SupervisedUserView::SupervisedUserView()
 
 UnifiedSystemInfoView::UnifiedSystemInfoView(
     UnifiedSystemTrayController* controller)
-    : enterprise_managed_(new EnterpriseManagedView()),
+    : enterprise_managed_(new EnterpriseManagedView(controller)),
       supervised_(new SupervisedUserView()) {
   auto* layout = SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, kUnifiedMenuItemPadding,
