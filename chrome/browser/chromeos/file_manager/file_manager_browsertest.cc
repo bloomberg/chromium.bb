@@ -154,8 +154,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     ::testing::Values(TestCase("audioOpenCloseDownloads"),
                       TestCase("audioOpenCloseDownloads").InGuestMode(),
                       TestCase("audioOpenCloseDrive"),
+// Flaky on Linux ChromiumOS MSan. http://crbug.com/859008.
+#if !(defined(OS_CHROMEOS) && defined(MEMORY_SANITIZER))
                       TestCase("audioOpenDownloads").InGuestMode(),
                       TestCase("audioOpenDownloads"),
+#endif
                       TestCase("audioOpenDrive"),
                       TestCase("audioAutoAdvanceDrive"),
                       TestCase("audioRepeatAllModeSingleFileDrive"),
