@@ -980,7 +980,7 @@ void LocalFrameView::UpdateLayout() {
 
         if (first_layout_) {
           first_layout_ = false;
-          last_viewport_size_ = GetLayoutSize(kIncludeScrollbars);
+          last_viewport_size_ = GetLayoutSize();
           last_zoom_factor_ = GetLayoutView()->Style()->Zoom();
 
           ScrollbarMode h_mode;
@@ -1143,7 +1143,7 @@ FloatSize LocalFrameView::ViewportSizeForViewportUnits() const {
 }
 
 FloatSize LocalFrameView::ViewportSizeForMediaQueries() const {
-  FloatSize viewport_size(GetLayoutSize(kIncludeScrollbars));
+  FloatSize viewport_size(GetLayoutSize());
   if (!frame_->GetDocument() || !frame_->GetDocument()->Printing())
     viewport_size.Scale(1 / GetFrame().PageZoomFactor());
   return viewport_size;
@@ -1683,13 +1683,6 @@ void LocalFrameView::ClearFragmentAnchor() {
   fragment_anchor_ = nullptr;
 }
 
-IntSize LocalFrameView::GetLayoutSize(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  return scrollbar_inclusion == kExcludeScrollbars
-             ? ExcludeScrollbars(layout_size_)
-             : layout_size_;
-}
-
 void LocalFrameView::SetLayoutSize(const IntSize& size) {
   DCHECK(!LayoutSizeFixedToFrameSize());
   if (frame_->GetDocument() &&
@@ -2208,7 +2201,7 @@ bool LocalFrameView::WasViewportResized() {
   auto* layout_view = GetLayoutView();
   if (!layout_view)
     return false;
-  return (GetLayoutSize(kIncludeScrollbars) != last_viewport_size_ ||
+  return (GetLayoutSize() != last_viewport_size_ ||
           layout_view->StyleRef().Zoom() != last_zoom_factor_);
 }
 
@@ -2222,7 +2215,7 @@ void LocalFrameView::SendResizeEventIfNeeded() {
   if (!WasViewportResized())
     return;
 
-  last_viewport_size_ = GetLayoutSize(kIncludeScrollbars);
+  last_viewport_size_ = GetLayoutSize();
   last_zoom_factor_ = layout_view->StyleRef().Zoom();
 
   if (RuntimeEnabledFeatures::VisualViewportAPIEnabled())
@@ -4176,7 +4169,7 @@ void LocalFrameView::Hide() {
 }
 
 int LocalFrameView::ViewportWidth() const {
-  int viewport_width = GetLayoutSize(kIncludeScrollbars).Width();
+  int viewport_width = GetLayoutSize().Width();
   return AdjustForAbsoluteZoom::AdjustInt(viewport_width, GetLayoutView());
 }
 
