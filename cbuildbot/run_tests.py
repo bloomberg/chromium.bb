@@ -88,7 +88,7 @@ SPECIAL_TESTS = {
     'scripts/cros_mark_as_stable_unittest': INSIDE,
     'scripts/cros_mark_chrome_as_stable_unittest': INSIDE,
     'scripts/sync_package_status_unittest': INSIDE,
-    'scripts/cros_portage_upgrade_unittest': INSIDE,
+    'scripts/cros_portage_upgrade_unittest': SKIP,
     'scripts/dep_tracker_unittest': INSIDE,
     'scripts/test_image_unittest': INSIDE,
     'scripts/upload_package_status_unittest': INSIDE,
