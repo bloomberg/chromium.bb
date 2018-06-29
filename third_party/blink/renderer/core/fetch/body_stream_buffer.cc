@@ -404,10 +404,15 @@ void BodyStreamBuffer::CloseAndLockAndDisturb(ExceptionState& exception_state) {
   DCHECK(!stream_broken_);
 
   ScriptState::Scope scope(script_state_.get());
-  ScriptValue reader =
-      ReadableStreamOperations::GetReader(script_state_.get(), Stream());
-  if (reader.IsEmpty())
+  const base::Optional<bool> is_locked = IsStreamLocked(exception_state);
+  if (exception_state.HadException() || is_locked.value())
     return;
+  ScriptValue reader = ReadableStreamOperations::GetReader(
+      script_state_.get(), Stream(), exception_state);
+  if (exception_state.HadException()) {
+    stream_broken_ = true;
+    return;
+  }
   ReadableStreamOperations::DefaultReaderRead(script_state_.get(), reader);
 }
 
@@ -535,20 +540,18 @@ BytesConsumer* BodyStreamBuffer::ReleaseHandle(
 
   if (made_from_readable_stream_) {
     ScriptState::Scope scope(script_state_.get());
-    // We need to have |reader| alive by some means (as written in
-    // ReadableStreamDataConsumerHandle). Based on the following facts
-    //  - This function is used only from tee and startLoading.
-    //  - This branch cannot be taken when called from tee.
-    //  - startLoading makes hasPendingActivity return true while loading.
-    // , we don't need to keep the reader explicitly.
-    ScriptValue reader =
-        ReadableStreamOperations::GetReader(script_state_.get(), Stream());
-    // TODO(ricea): Make GetReader take an ExceptionState& and raise the
-    // exception.
-    if (reader.IsEmpty()) {
+    // We need to have |reader| alive by some means (as noted in
+    // ReadableStreamDataConsumerHandle). Based on the following facts:
+    //  - This function is used only from Tee and StartLoading.
+    //  - This branch cannot be taken when called from Tee.
+    //  - StartLoading makes HasPendingActivity return true while loading.
+    //  - ReadableStream holds a reference to |reader| inside JS.
+    // we don't need to keep the reader explicitly.
+    ScriptValue reader = ReadableStreamOperations::GetReader(
+        script_state_.get(), Stream(), exception_state);
+    if (exception_state.HadException()) {
       stream_broken_ = true;
-      return BytesConsumer::CreateErrored(
-          BytesConsumer::Error("Failed to GetReader in ReleaseHandle"));
+      return nullptr;
     }
     return new ReadableStreamBytesConsumer(script_state_.get(), reader);
   }

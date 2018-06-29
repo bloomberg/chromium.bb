@@ -181,7 +181,8 @@ TEST(ReadableStreamOperationsTest, GetReader) {
                                                   stream, ASSERT_NO_EXCEPTION)
                    .value_or(true));
   ScriptValue reader;
-  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
+  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream,
+                                               ASSERT_NO_EXCEPTION);
   EXPECT_TRUE(ReadableStreamOperations::IsLocked(scope.GetScriptState(), stream,
                                                  ASSERT_NO_EXCEPTION)
                   .value_or(false));
@@ -195,7 +196,10 @@ TEST(ReadableStreamOperationsTest, GetReader) {
                   .value_or(false));
 
   // Already locked!
-  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
+  DummyExceptionStateForTesting exception_state;
+  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream,
+                                               exception_state);
+  EXPECT_TRUE(exception_state.HadException());
   EXPECT_TRUE(reader.IsEmpty());
 }
 
@@ -288,7 +292,8 @@ TEST(ReadableStreamOperationsTest,
   EXPECT_EQ(8, underlying_source->DesiredSize());
 
   ScriptValue reader;
-  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream);
+  reader = ReadableStreamOperations::GetReader(scope.GetScriptState(), stream,
+                                               ASSERT_NO_EXCEPTION);
   ASSERT_FALSE(reader.IsEmpty());
 
   Iteration* it1 = new Iteration();
@@ -450,10 +455,10 @@ TEST(ReadableStreamOperationsTest, Tee) {
   ASSERT_FALSE(new1.IsEmpty());
   ASSERT_FALSE(new2.IsEmpty());
 
-  ScriptValue reader1 =
-      ReadableStreamOperations::GetReader(scope.GetScriptState(), new1);
-  ScriptValue reader2 =
-      ReadableStreamOperations::GetReader(scope.GetScriptState(), new2);
+  ScriptValue reader1 = ReadableStreamOperations::GetReader(
+      scope.GetScriptState(), new1, exception_state);
+  ScriptValue reader2 = ReadableStreamOperations::GetReader(
+      scope.GetScriptState(), new2, exception_state);
 
   ASSERT_FALSE(reader1.IsEmpty());
   ASSERT_FALSE(reader2.IsEmpty());
