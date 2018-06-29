@@ -12,7 +12,7 @@
   color: rgba(255, 255, 255, 0.87);
   font-size: 12px;
   margin: 2px;
-  max-width: 250px;
+  max-width: 240px;
   padding: 8px;
   position: absolute;
   transition: opacity 200ms ease-in-out;
@@ -20,7 +20,7 @@
 
 body.chromeos .bubble {
   margin: unset;
-  padding: 16px;
+  padding: 14px;
 }
 
 /* --- oldstyle begin --- */
@@ -138,9 +138,9 @@ body.chromeos .error-message-bubble::before {
   content: '';
   display: block;
   height: 20px;
-  left: 16px;
+  left: 14px;
   position: absolute;
-  top: 8px;
+  top: 10px;
   width: 20px;
 }
 
@@ -151,7 +151,7 @@ body:not(.chromeos) .error-message-bubble {
 }
 
 body.chromeos .error-message-bubble {
-  -webkit-padding-start: 20px;
+  padding-top: 19px;
 }
 
 .bubble[match-width] .error-message-bubble {
