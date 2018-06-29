@@ -34,16 +34,17 @@ class MachPortRelay : public base::PortProvider::Observer {
   };
 
   // Used by a child process to receive Mach ports from a sender (privileged)
-  // process. The Mach port in |*handle| is interpreted as an intermediate Mach
+  // process. The Mach port in |port| is interpreted as an intermediate Mach
   // port. It replaces each Mach port with the final Mach port received from the
   // intermediate port. This method takes ownership of the intermediate Mach
   // port and gives ownership of the final Mach port to the caller.
   //
-  // On failure, the Mach port is replaced with MACH_PORT_NULL.
+  // On failure, returns a null send right.
   //
   // See SendPortsToProcess() for the definition of intermediate and final Mach
   // ports.
-  static void ReceiveSendRight(InternalPlatformHandle* handle);
+  static base::mac::ScopedMachSendRight ReceiveSendRight(
+      base::mac::ScopedMachReceiveRight port);
 
   explicit MachPortRelay(base::PortProvider* port_provider);
   ~MachPortRelay() override;
@@ -54,16 +55,17 @@ class MachPortRelay : public base::PortProvider::Observer {
   // this intermediate port and the message is modified to refer to the name of
   // the intermediate port. The Mach port received over the intermediate port in
   // the child is referred to as the final Mach port.
-  // Ports that cannot be brokered are replaced with MACH_PORT_NULL.
+  //
+  // All ports in |message|'s set of handles are reset by this call, and all
+  // port names in the message's header are replaced with the new receive right
+  // ports.
   void SendPortsToProcess(Channel::Message* message,
                           base::ProcessHandle process);
 
-  // Given a InternalPlatformHandle of Type::MACH_NAME, extracts the Mach port,
-  // and updates the contents of the InternalPlatformHandle to have Type::MACH
-  // and have the actual Mach port. On failure, replaces the contents with
-  // Type::MACH and MACH_PORT_NULL.
-  void ExtractPort(ScopedInternalPlatformHandle* handle,
-                   base::ProcessHandle process);
+  // Given the name of a Mach send right within |process|, extracts an owned
+  // send right ref and returns it. May return a null port on failure.
+  base::mac::ScopedMachSendRight ExtractPort(mach_port_t port_name,
+                                             base::ProcessHandle process);
 
   // Observer interface.
   void AddObserver(Observer* observer);

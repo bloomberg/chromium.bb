@@ -163,10 +163,9 @@ class NodeChannel : public base::RefCountedThreadSafe<NodeChannel>,
   ~NodeChannel() override;
 
   // Channel::Delegate:
-  void OnChannelMessage(
-      const void* payload,
-      size_t payload_size,
-      std::vector<ScopedInternalPlatformHandle> handles) override;
+  void OnChannelMessage(const void* payload,
+                        size_t payload_size,
+                        std::vector<PlatformHandle> handles) override;
   void OnChannelError(Channel::Error error) override;
 
   void WriteChannelMessage(Channel::MessagePtr message);

@@ -88,6 +88,11 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
 
   void reset();
 
+  // Relinquishes ownership of the underlying handle, regardless of type, and
+  // discards its value. To release and obtain the underlying handle value, use
+  // one of the specific |Release*()| methods below.
+  void release();
+
   // Duplicates the underlying platform handle, returning a new PlatformHandle
   // which owns it.
   PlatformHandle Clone() const;
@@ -97,15 +102,31 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   bool is_valid_handle() const { return handle_.IsValid(); }
   bool is_handle() const { return type_ == Type::kHandle; }
   const base::win::ScopedHandle& GetHandle() const { return handle_; }
-  base::win::ScopedHandle TakeHandle() { return std::move(handle_); }
-  HANDLE ReleaseHandle() WARN_UNUSED_RESULT { return handle_.Take(); }
+  base::win::ScopedHandle TakeHandle() {
+    DCHECK_EQ(type_, Type::kHandle);
+    type_ = Type::kNone;
+    return std::move(handle_);
+  }
+  HANDLE ReleaseHandle() WARN_UNUSED_RESULT {
+    DCHECK_EQ(type_, Type::kHandle);
+    type_ = Type::kNone;
+    return handle_.Take();
+  }
 #elif defined(OS_FUCHSIA)
   bool is_valid() const { return is_valid_fd() || is_valid_handle(); }
   bool is_valid_handle() const { return handle_.is_valid(); }
   bool is_handle() const { return type_ == Type::kHandle; }
   const base::ScopedZxHandle& GetHandle() const { return handle_; }
-  base::ScopedZxHandle TakeHandle() { return std::move(handle_); }
-  zx_handle_t ReleaseHandle() WARN_UNUSED_RESULT { return handle_.release(); }
+  base::ScopedZxHandle TakeHandle() {
+    if (type_ == Type::kHandle)
+      type_ = Type::kNone;
+    return std::move(handle_);
+  }
+  zx_handle_t ReleaseHandle() WARN_UNUSED_RESULT {
+    if (type_ == Type::kHandle)
+      type_ = Type::kNone;
+    return handle_.release();
+  }
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
   bool is_valid() const { return is_valid_fd() || is_valid_mach_port(); }
   bool is_valid_mach_port() const { return mach_port_.is_valid(); }
@@ -114,9 +135,13 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
     return mach_port_;
   }
   base::mac::ScopedMachSendRight TakeMachPort() {
+    if (type_ == Type::kMachPort)
+      type_ = Type::kNone;
     return std::move(mach_port_);
   }
   mach_port_t ReleaseMachPort() WARN_UNUSED_RESULT {
+    if (type_ == Type::kMachPort)
+      type_ = Type::kNone;
     return mach_port_.release();
   }
 #elif defined(OS_POSIX)
@@ -129,8 +154,16 @@ class COMPONENT_EXPORT(MOJO_CPP_PLATFORM) PlatformHandle {
   bool is_valid_fd() const { return fd_.is_valid(); }
   bool is_fd() const { return type_ == Type::kFd; }
   const base::ScopedFD& GetFD() const { return fd_; }
-  base::ScopedFD TakeFD() { return std::move(fd_); }
-  int ReleaseFD() WARN_UNUSED_RESULT { return fd_.release(); }
+  base::ScopedFD TakeFD() {
+    if (type_ == Type::kFd)
+      type_ = Type::kNone;
+    return std::move(fd_);
+  }
+  int ReleaseFD() WARN_UNUSED_RESULT {
+    if (type_ == Type::kFd)
+      type_ = Type::kNone;
+    return fd_.release();
+  }
 #endif
 
  private:

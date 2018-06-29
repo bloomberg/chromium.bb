@@ -113,6 +113,8 @@ template("core_impl_source_set") {
       "system/node_controller.cc",
       "system/platform_handle.cc",
       "system/platform_handle_dispatcher.cc",
+      "system/platform_handle_in_transit.cc",
+      "system/platform_handle_in_transit.h",
       "system/platform_handle_utils.cc",
       "system/platform_shared_memory_mapping.cc",
       "system/request_context.cc",

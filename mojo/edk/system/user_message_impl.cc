@@ -20,6 +20,7 @@
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_channel.h"
 #include "mojo/edk/system/node_controller.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/message_filter.h"
 #include "mojo/edk/system/ports/node.h"
@@ -176,7 +177,7 @@ MojoResult CreateOrExtendSerializedEventMessage(
     memcpy(dispatcher_data, original_dispatcher_data,
            original_dispatcher_data_size);
     new_dispatcher_data = dispatcher_data + original_dispatcher_data_size;
-    handles = original_message->TakeHandles();
+    auto handles = original_message->TakeInternalHandles();
     if (!handles.empty())
       handles.resize(num_handles);
     memcpy(reinterpret_cast<char*>(header) + header_size,
@@ -583,7 +584,7 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
   size_t port_index = 0;
   size_t platform_handle_index = 0;
   std::vector<ScopedInternalPlatformHandle> msg_handles =
-      channel_message_->TakeHandles();
+      channel_message_->TakeInternalHandles();
   for (size_t i = 0; i < header->num_dispatchers; ++i) {
     const DispatcherHeader& dh = dispatcher_headers[i];
     auto type = static_cast<Dispatcher::Type>(dh.type);

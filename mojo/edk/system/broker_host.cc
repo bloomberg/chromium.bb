@@ -49,21 +49,12 @@ BrokerHost::~BrokerHost() {
 }
 
 bool BrokerHost::PrepareHandlesForClient(
-    std::vector<ScopedInternalPlatformHandle>* handles) {
+    std::vector<PlatformHandleInTransit>* handles) {
 #if defined(OS_WIN)
   bool handles_ok = true;
   for (auto& handle : *handles) {
-    HANDLE value = handle.release().handle;
-    BOOL result = ::DuplicateHandle(
-        base::GetCurrentProcessHandle(), value, client_process_.get(), &value,
-        0, FALSE, DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    if (result) {
-      handle.reset(InternalPlatformHandle(value));
-      handle.get().owning_process = client_process_.Clone().release();
-    } else {
+    if (!handle.TransferToProcess(client_process_.Clone()))
       handles_ok = false;
-      DPLOG(ERROR) << "DuplicateHandle failed";
-    }
   }
   return handles_ok;
 #else
@@ -84,8 +75,9 @@ bool BrokerHost::SendChannel(ScopedInternalPlatformHandle handle) {
   Channel::MessagePtr message =
       CreateBrokerMessage(BrokerMessageType::INIT, 1, nullptr);
 #endif
-  std::vector<ScopedInternalPlatformHandle> handles(1);
-  handles[0] = std::move(handle);
+  std::vector<PlatformHandleInTransit> handles(1);
+  handles[0] = PlatformHandleInTransit(
+      ScopedInternalPlatformHandleToPlatformHandle(std::move(handle)));
 
   // This may legitimately fail on Windows if the client process is in another
   // session, e.g., is an elevated process.
@@ -116,21 +108,21 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   base::subtle::PlatformSharedMemoryRegion region =
       base::subtle::PlatformSharedMemoryRegion::CreateWritable(num_bytes);
 
-  std::vector<ScopedInternalPlatformHandle> handles(2);
+  std::vector<PlatformHandleInTransit> handles(2);
   if (region.IsValid()) {
     PlatformHandle h[2];
     ExtractPlatformHandlesFromSharedMemoryRegionHandle(
         region.PassPlatformHandle(), &h[0], &h[1]);
-    handles[0] = PlatformHandleToScopedInternalPlatformHandle(std::move(h[0]));
-    handles[1] = PlatformHandleToScopedInternalPlatformHandle(std::move(h[1]));
+    handles[0] = PlatformHandleInTransit(std::move(h[0]));
+    handles[1] = PlatformHandleInTransit(std::move(h[1]));
 #if !defined(OS_POSIX) || defined(OS_ANDROID) || defined(OS_FUCHSIA) || \
     (defined(OS_MACOSX) && !defined(OS_IOS))
     // Non-POSIX systems, as well as Android, Fuchsia, and non-iOS Mac, only use
     // a single handle to represent a writable region.
-    DCHECK(!handles[1].is_valid());
+    DCHECK(!handles[1].handle().is_valid());
     handles.resize(1);
 #else
-    DCHECK(handles[1].is_valid());
+    DCHECK(handles[1].handle().is_valid());
 #endif
   }
 
@@ -148,10 +140,9 @@ void BrokerHost::OnBufferRequest(uint32_t num_bytes) {
   channel_->Write(std::move(message));
 }
 
-void BrokerHost::OnChannelMessage(
-    const void* payload,
-    size_t payload_size,
-    std::vector<ScopedInternalPlatformHandle> handles) {
+void BrokerHost::OnChannelMessage(const void* payload,
+                                  size_t payload_size,
+                                  std::vector<PlatformHandle> handles) {
   if (payload_size < sizeof(BrokerMessageHeader))
     return;
 

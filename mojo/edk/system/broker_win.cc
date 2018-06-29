@@ -35,7 +35,8 @@ bool TakeHandlesFromBrokerMessage(Channel::Message* message,
     return false;
   }
 
-  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles =
+      message->TakeInternalHandles();
   DCHECK_EQ(handles.size(), num_handles);
   DCHECK(out_handles);
 

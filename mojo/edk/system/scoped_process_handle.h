@@ -23,6 +23,10 @@ namespace edk {
 // This essentially exists to support passing around process handles internally
 // in a generic way while also supporting Windows process handle ownership
 // semantics.
+//
+// A ScopedProcessHandle will never refer to the current process, and
+// constructing a ScopedProcessHandle over the current process's handle is
+// considered an error.
 class ScopedProcessHandle {
  public:
   ScopedProcessHandle();
@@ -39,29 +43,9 @@ class ScopedProcessHandle {
 
   ScopedProcessHandle& operator=(ScopedProcessHandle&&);
 
-  bool is_valid() const {
-#if defined(OS_WIN)
-    return handle_.IsValid();
-#else
-    return handle_ != base::kNullProcessHandle;
-#endif
-  }
-
-  base::ProcessHandle get() const {
-#if defined(OS_WIN)
-    return handle_.Get();
-#else
-    return handle_;
-#endif
-  }
-
-  base::ProcessHandle release() {
-#if defined(OS_WIN)
-    return handle_.Take();
-#else
-    return handle_;
-#endif
-  }
+  bool is_valid() const;
+  base::ProcessHandle get() const;
+  base::ProcessHandle release();
 
   ScopedProcessHandle Clone() const;
 

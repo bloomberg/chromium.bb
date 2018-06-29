@@ -75,19 +75,19 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  std::vector<ScopedInternalPlatformHandle> TakeHandles() {
+  std::vector<PlatformHandleInTransit> TakeHandles() {
     return std::move(handles_);
   }
   Channel::MessagePtr TakeMessage() { return std::move(message_); }
 
-  void SetHandles(std::vector<ScopedInternalPlatformHandle> handles) {
+  void SetHandles(std::vector<PlatformHandleInTransit> handles) {
     handles_ = std::move(handles);
   }
 
  private:
   Channel::MessagePtr message_;
   size_t offset_;
-  std::vector<ScopedInternalPlatformHandle> handles_;
+  std::vector<PlatformHandleInTransit> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -174,14 +174,13 @@ class ChannelPosix : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadInternalPlatformHandles(
-      const void* payload,
-      size_t payload_size,
-      size_t num_handles,
-      const void* extra_header,
-      size_t extra_header_size,
-      std::vector<ScopedInternalPlatformHandle>* handles,
-      bool* deferred) override {
+  bool GetReadPlatformHandles(const void* payload,
+                              size_t payload_size,
+                              size_t num_handles,
+                              const void* extra_header,
+                              size_t extra_header_size,
+                              std::vector<PlatformHandle>* handles,
+                              bool* deferred) override {
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
 #if defined(OS_MACOSX) && !defined(OS_IOS)
@@ -198,68 +197,75 @@ class ChannelPosix : public Channel,
     size_t num_mach_ports = mach_ports_header->num_ports;
     if (num_mach_ports > num_handles)
       return false;
-    if (incoming_platform_handles_.size() + num_mach_ports < num_handles)
+    if (incoming_fds_.size() + num_mach_ports < num_handles)
       return true;
 
-    handles->resize(num_handles);
+    std::vector<PlatformHandleInTransit> handles_in_transit(num_handles);
     const MachPortsEntry* mach_ports = mach_ports_header->entries;
+
+    // If we know the remote process handle, we assume all incoming Mach ports
+    // are send right references owned by the remote process. Otherwise they're
+    // receive ports we can use to read a send right.
+    const bool extract_send_rights = remote_process().is_valid();
     for (size_t i = 0, mach_port_index = 0; i < num_handles; ++i) {
       if (mach_port_index < num_mach_ports &&
           mach_ports[mach_port_index].index == i) {
-        handles->at(i).reset(InternalPlatformHandle(
-            static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port)));
-        DCHECK_EQ(handles->at(i).get().type,
-                  InternalPlatformHandle::Type::MACH);
-        // These are actually just Mach port names until they're resolved from
-        // the remote process.
-        handles->at(i).get().type = InternalPlatformHandle::Type::MACH_NAME;
+        mach_port_t port_name =
+            static_cast<mach_port_t>(mach_ports[mach_port_index].mach_port);
+        if (extract_send_rights) {
+          handles_in_transit[i] =
+              PlatformHandleInTransit::CreateForMachPortName(port_name);
+        } else {
+          handles_in_transit[i] = PlatformHandleInTransit(
+              PlatformHandle(MachPortRelay::ReceiveSendRight(
+                  base::mac::ScopedMachReceiveRight(port_name))));
+        }
         mach_port_index++;
       } else {
-        if (incoming_platform_handles_.empty())
+        if (incoming_fds_.empty())
           return false;
-        handles->at(i) = std::move(incoming_platform_handles_.front());
-        incoming_platform_handles_.pop_front();
+        handles_in_transit[i] = PlatformHandleInTransit(
+            PlatformHandle(std::move(incoming_fds_.front())));
+        incoming_fds_.pop_front();
       }
     }
-    if (num_mach_ports) {
+    if (extract_send_rights && num_mach_ports) {
       MachPortRelay* relay = Core::Get()->GetMachPortRelay();
-      if (!relay) {
-        // With no relay, we know these are each receive rights from which we
-        // can read a send right. Do that now and the message will be ready for
-        // dispatch immediately.
-        for (auto& handle : *handles) {
-          if (handle.get().type == InternalPlatformHandle::Type::MACH_NAME)
-            MachPortRelay::ReceiveSendRight(&handle.get());
-        }
-      } else if (remote_process().is_valid()) {
-        // We have a relay, so we know these are send rights we can extract.
-        // That requires a task port for the remote process.
-        if (relay->port_provider()->TaskForPid(remote_process().get()) !=
-            MACH_PORT_NULL) {
-          // We have a task port, so we can extract the send rights immediately.
-          for (auto& handle : *handles) {
-            if (handle.get().type == InternalPlatformHandle::Type::MACH_NAME)
-              relay->ExtractPort(&handle, remote_process().get());
+      DCHECK(relay);
+      // Extracting send rights requires that we have a task port for the
+      // remote process, which we may not yet have.
+      if (relay->port_provider()->TaskForPid(remote_process().get()) !=
+          MACH_PORT_NULL) {
+        // We do have a task port, so extract the send rights immediately.
+        for (auto& handle : handles_in_transit) {
+          if (handle.is_mach_port_name()) {
+            handle = PlatformHandleInTransit(PlatformHandle(relay->ExtractPort(
+                handle.mach_port_name(), remote_process().get())));
           }
-        } else {
-          // No task port, we have to defer this message.
-          *deferred = true;
-          base::AutoLock lock(task_port_wait_lock_);
-          std::vector<uint8_t> data(payload_size);
-          memcpy(data.data(), payload, payload_size);
-          pending_incoming_with_mach_ports_.emplace_back(std::move(data),
-                                                         std::move(*handles));
         }
+      } else {
+        // No task port, we have to defer this message.
+        *deferred = true;
+        base::AutoLock lock(task_port_wait_lock_);
+        std::vector<uint8_t> data(payload_size);
+        memcpy(data.data(), payload, payload_size);
+        pending_incoming_with_mach_ports_.emplace_back(
+            std::move(data), std::move(handles_in_transit));
+        return true;
       }
     }
+
+    handles->resize(handles_in_transit.size());
+    for (size_t i = 0; i < handles->size(); ++i)
+      handles->at(i) = handles_in_transit[i].TakeHandle();
 #else
-    if (incoming_platform_handles_.size() < num_handles)
+    if (incoming_fds_.size() < num_handles)
       return true;
 
     handles->resize(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
-      handles->at(i) = std::move(incoming_platform_handles_.front());
-      incoming_platform_handles_.pop_front();
+      handles->at(i) = PlatformHandle(std::move(incoming_fds_.front()));
+      incoming_fds_.pop_front();
     }
 #endif
 
@@ -366,18 +372,22 @@ class ChannelPosix : public Channel,
     base::ProcessHandle process = remote_process().get();
     MachPortRelay* relay = Core::Get()->GetMachPortRelay();
     DCHECK(relay);
-
     for (auto& message : incoming) {
       Channel::Delegate* d = delegate();
       if (!d)
         break;
-
-      for (auto& handle : message.second) {
-        if (handle.get().type == InternalPlatformHandle::Type::MACH_NAME)
-          relay->ExtractPort(&handle, process);
+      std::vector<PlatformHandle> handles(message.handles.size());
+      for (size_t i = 0; i < message.handles.size(); ++i) {
+        if (message.handles[i].is_mach_port_name()) {
+          handles[i] = PlatformHandle(
+              relay->ExtractPort(message.handles[i].mach_port_name(), process));
+        } else {
+          DCHECK(!message.handles[i].owning_process().is_valid());
+          handles[i] = message.handles[i].TakeHandle();
+        }
       }
-      d->OnChannelMessage(message.first.data(), message.first.size(),
-                          std::move(message.second));
+      d->OnChannelMessage(message.data.data(), message.data.size(),
+                          std::move(handles));
     }
 
     for (auto& message : outgoing) {
@@ -431,10 +441,8 @@ class ChannelPosix : public Channel,
       std::vector<base::ScopedFD> incoming_fds;
       ssize_t read_result = SocketRecvmsg(handle_.get().handle, buffer,
                                           buffer_capacity, &incoming_fds);
-      for (auto& fd : incoming_fds) {
-        incoming_platform_handles_.emplace_back(
-            InternalPlatformHandle(fd.release()));
-      }
+      for (auto& fd : incoming_fds)
+        incoming_fds_.emplace_back(std::move(fd));
 
       if (read_result > 0) {
         bytes_read = static_cast<size_t>(read_result);
@@ -486,14 +494,13 @@ class ChannelPosix : public Channel,
       message_view.advance_data_offset(bytes_written);
 
       ssize_t result;
-      std::vector<ScopedInternalPlatformHandle> handles =
-          message_view.TakeHandles();
+      std::vector<PlatformHandleInTransit> handles = message_view.TakeHandles();
       if (!handles.empty()) {
         iovec iov = {const_cast<void*>(message_view.data()),
                      message_view.data_num_bytes()};
         std::vector<base::ScopedFD> fds(handles.size());
         for (size_t i = 0; i < handles.size(); ++i)
-          fds[i] = base::ScopedFD(handles[i].release().handle);
+          fds[i] = handles[i].TakeHandle().TakeFD();
         // TODO: Handle lots of handles.
         result = SendmsgWithHandles(handle_.get().handle, &iov, 1, fds);
         if (result >= 0) {
@@ -521,8 +528,10 @@ class ChannelPosix : public Channel,
         } else {
           // Message transmission failed, so pull the FDs back into |handles|
           // so they can be held by the Message again.
-          for (size_t i = 0; i < fds.size(); ++i)
-            handles[i].reset(InternalPlatformHandle(fds[i].release()));
+          for (size_t i = 0; i < fds.size(); ++i) {
+            handles[i] =
+                PlatformHandleInTransit(PlatformHandle(std::move(fds[i])));
+          }
         }
       } else {
         result = SocketWrite(handle_.get().handle, message_view.data(),
@@ -591,11 +600,10 @@ class ChannelPosix : public Channel,
   }
 
 #if defined(OS_MACOSX)
-  bool OnControlMessage(
-      Message::MessageType message_type,
-      const void* payload,
-      size_t payload_size,
-      std::vector<ScopedInternalPlatformHandle> handles) override {
+  bool OnControlMessage(Message::MessageType message_type,
+                        const void* payload,
+                        size_t payload_size,
+                        std::vector<PlatformHandle> handles) override {
     switch (message_type) {
       case Message::MessageType::HANDLES_SENT: {
         if (payload_size == 0)
@@ -686,7 +694,7 @@ class ChannelPosix : public Channel,
   std::unique_ptr<base::MessagePumpForIO::FdWatchController> read_watcher_;
   std::unique_ptr<base::MessagePumpForIO::FdWatchController> write_watcher_;
 
-  base::circular_deque<ScopedInternalPlatformHandle> incoming_platform_handles_;
+  base::circular_deque<base::ScopedFD> incoming_fds_;
 
   // Protects |pending_write_| and |outgoing_messages_|.
   base::Lock write_lock_;
@@ -703,9 +711,17 @@ class ChannelPosix : public Channel,
   // Guards access to the send/receive queues below. These are messages that
   // can't be fully accepted from or dispatched to the Channel user yet because
   // we're still waiting on a task port for the remote process.
-  using RawIncomingMessage =
-      std::pair<std::vector<uint8_t>,
-                std::vector<ScopedInternalPlatformHandle>>;
+  struct RawIncomingMessage {
+    RawIncomingMessage(std::vector<uint8_t> data,
+                       std::vector<PlatformHandleInTransit> handles)
+        : data(std::move(data)), handles(std::move(handles)) {}
+    RawIncomingMessage(RawIncomingMessage&&) = default;
+    ~RawIncomingMessage() = default;
+
+    std::vector<uint8_t> data;
+    std::vector<PlatformHandleInTransit> handles;
+  };
+
   base::Lock task_port_wait_lock_;
   bool reject_incoming_messages_with_mach_ports_ = false;
   std::vector<MessagePtr> pending_outgoing_with_mach_ports_;
