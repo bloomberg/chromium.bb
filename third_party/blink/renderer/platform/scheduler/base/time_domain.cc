@@ -32,16 +32,11 @@ SequenceManager* TimeDomain::sequence_manager() const {
 }
 
 // TODO(kraynov): https://crbug.com/857101 Consider making an interface
-// for TaskQueueManagerImpl which will expose MaybeScheduleDelayedWork,
-// CancelDelayedWork and MaybeScheduleImmediateWork methods in order
-// to make the functions below pure-virtual.
+// for TaskQueueManagerImpl which will expose SetNextDelayedDoWork and
+// MaybeScheduleImmediateWork methods to make the functions below pure-virtual.
 
-void TimeDomain::RequestWakeUpAt(TimeTicks now, TimeTicks run_time) {
-  sequence_manager_->MaybeScheduleDelayedWork(FROM_HERE, this, now, run_time);
-}
-
-void TimeDomain::CancelWakeUpAt(TimeTicks run_time) {
-  sequence_manager_->CancelDelayedWork(this, run_time);
+void TimeDomain::SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) {
+  sequence_manager_->SetNextDelayedDoWork(lazy_now, run_time);
 }
 
 void TimeDomain::RequestDoWork() {
@@ -87,17 +82,21 @@ void TimeDomain::SetNextWakeUpForQueue(
   if (!delayed_wake_up_queue_.empty())
     new_wake_up = delayed_wake_up_queue_.Min().wake_up.time;
 
-  if (previous_wake_up == new_wake_up)
-    return;
-
-  if (previous_wake_up)
-    CancelWakeUpAt(previous_wake_up.value());
-
   // TODO(kraynov): https://crbug.com/857101 Review the relationship with
   // SequenceManager's time. Right now it's not an issue since
   // VirtualTimeDomain doesn't invoke SequenceManager itself.
-  if (new_wake_up)
-    RequestWakeUpAt(lazy_now->Now(), new_wake_up.value());
+
+  if (new_wake_up) {
+    if (new_wake_up != previous_wake_up) {
+      // Update the wake-up.
+      SetNextDelayedDoWork(lazy_now, new_wake_up.value());
+    }
+  } else {
+    if (previous_wake_up) {
+      // No new wake-up to be set, cancel the previous one.
+      SetNextDelayedDoWork(lazy_now, TimeTicks::Max());
+    }
+  }
 }
 
 void TimeDomain::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {

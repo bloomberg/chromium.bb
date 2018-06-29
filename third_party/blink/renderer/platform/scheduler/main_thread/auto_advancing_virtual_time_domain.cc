@@ -83,16 +83,17 @@ AutoAdvancingVirtualTimeDomain::DelayTillNextTask(
   return base::nullopt;
 }
 
-void AutoAdvancingVirtualTimeDomain::RequestWakeUpAt(base::TimeTicks now,
-                                                     base::TimeTicks run_time) {
-  // Avoid posting pointless DoWorks.  I.e. if the time domain has more then one
+void AutoAdvancingVirtualTimeDomain::SetNextDelayedDoWork(
+    base::sequence_manager::LazyNow* lazy_now,
+    base::TimeTicks run_time) {
+  // Ignore cancelation since no delayed work is actually being posted.
+  if (run_time == base::TimeTicks::Max())
+    return;
+
+  // Avoid posting pointless DoWorks, i.e. if the time domain has more then one
   // scheduled wake up then we don't need to do anything.
   if (can_advance_virtual_time_ && NumberOfScheduledWakeUps() == 1u)
     RequestDoWork();
-}
-
-void AutoAdvancingVirtualTimeDomain::CancelWakeUpAt(base::TimeTicks run_time) {
-  // We ignore this because RequestWakeUpAt doesn't post a delayed task.
 }
 
 void AutoAdvancingVirtualTimeDomain::SetObserver(Observer* observer) {

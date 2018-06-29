@@ -118,15 +118,11 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   // Requests that a delayed task to process work is posted on the main task
   // runner. These delayed tasks are de-duplicated. Must be called on the thread
   // this class was created on.
-  void MaybeScheduleDelayedWork(const Location& from_here,
-                                TimeDomain* requesting_time_domain,
-                                TimeTicks now,
-                                TimeTicks run_time);
 
-  // Cancels a delayed task to process work at |run_time|, previously requested
-  // with MaybeScheduleDelayedWork.
-  void CancelDelayedWork(TimeDomain* requesting_time_domain,
-                         TimeTicks run_time);
+  // Schedules next wake-up at the given time, cancels any previous requests.
+  // Use TimeTicks::Max() to cancel a wake-up.
+  // Must be called from a TimeDomain only.
+  void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time);
 
   // Returns the currently executing TaskQueue if any. Must be called on the
   // thread this class was created on.

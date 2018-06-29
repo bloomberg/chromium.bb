@@ -69,11 +69,13 @@ class PLATFORM_EXPORT TimeDomain {
     return delayed_wake_up_queue_.size();
   }
 
-  // Tell SequenceManager to (un)schedule delayed or immediate work.
-  // Time is provided in SequenceManager's time.
+  // Tells SequenceManager to schedule delayed work, use TimeTicks::Max()
+  // to unschedule. Also cancels any previous requests.
   // May be overriden to control wake ups manually.
-  virtual void RequestWakeUpAt(TimeTicks now, TimeTicks run_time);
-  virtual void CancelWakeUpAt(TimeTicks run_time);
+  virtual void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time);
+
+  // Tells SequenceManager to schedule immediate work.
+  // May be overriden to control wake ups manually.
   virtual void RequestDoWork();
 
   // For implementation-specific tracing.

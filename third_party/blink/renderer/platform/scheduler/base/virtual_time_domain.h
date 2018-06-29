@@ -31,8 +31,7 @@ class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
 
  protected:
   const char* GetName() const override;
-  void RequestWakeUpAt(TimeTicks now, TimeTicks run_time) override;
-  void CancelWakeUpAt(TimeTicks run_time) override;
+  void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override;
 
  private:
   mutable Lock lock_;  // Protects |now_ticks_|

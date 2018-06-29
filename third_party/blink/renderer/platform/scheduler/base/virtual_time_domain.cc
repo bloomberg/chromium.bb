@@ -26,13 +26,10 @@ TimeTicks VirtualTimeDomain::Now() const {
   return now_ticks_;
 }
 
-void VirtualTimeDomain::RequestWakeUpAt(TimeTicks now, TimeTicks run_time) {
+void VirtualTimeDomain::SetNextDelayedDoWork(LazyNow* lazy_now,
+                                             TimeTicks run_time) {
   // Caller of AdvanceTo is responsible for telling SequenceManager to schedule
   // immediate work if needed.
-}
-
-void VirtualTimeDomain::CancelWakeUpAt(TimeTicks run_time) {
-  // We ignore this because RequestWakeUpAt is a NOP.
 }
 
 Optional<TimeDelta> VirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
