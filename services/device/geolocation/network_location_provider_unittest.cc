@@ -229,13 +229,13 @@ class GeolocationNetworkProviderTest : public testing::Test {
     const base::Value* expected_value;
     const base::Value* actual_value;
     if (!expected.Get(field, &expected_value))
-      return testing::AssertionFailure() << "Expected dictionary "
-                                         << PrettyJson(expected)
-                                         << " is missing field " << field;
+      return testing::AssertionFailure()
+             << "Expected dictionary " << PrettyJson(expected)
+             << " is missing field " << field;
     if (!expected.Get(field, &actual_value))
-      return testing::AssertionFailure() << "Actual dictionary "
-                                         << PrettyJson(actual)
-                                         << " is missing field " << field;
+      return testing::AssertionFailure()
+             << "Actual dictionary " << PrettyJson(actual)
+             << " is missing field " << field;
     if (!expected_value->Equals(actual_value))
       return testing::AssertionFailure()
              << "Field " << field

@@ -96,6 +96,8 @@ class GeolocationServiceUnitTest : public DeviceServiceTestBase {
     // make sure the base::CallbackList<> member in GeolocationProviderImpl is
     // empty.
     geolocation_.reset();
+    GeolocationProviderImpl::GetInstance()
+        ->clear_user_did_opt_into_location_services_for_testing();
     base::RunLoop().RunUntilIdle();
   }
 

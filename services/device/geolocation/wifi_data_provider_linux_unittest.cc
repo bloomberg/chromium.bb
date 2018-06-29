@@ -41,8 +41,7 @@ class GeolocationWifiDataProviderLinuxTest : public testing::Test {
     // Set an expectation so mock_network_manager_proxy_'s
     // CallMethodAndBlock() will use CreateNetworkManagerProxyResponse()
     // to return responses.
-    EXPECT_CALL(*mock_network_manager_proxy_.get(),
-                CallMethodAndBlock(_, _))
+    EXPECT_CALL(*mock_network_manager_proxy_.get(), CallMethodAndBlock(_, _))
         .WillRepeatedly(Invoke(this, &GeolocationWifiDataProviderLinuxTest::
                                          CreateNetworkManagerProxyResponse));
 
