@@ -29,9 +29,11 @@ class NGBlockFlowPainter {
       : block_(layout_block_flow) {}
   void Paint(const PaintInfo&, const LayoutPoint&);
 
+  // Hit tests this block flow
+  // @param physical_offset Physical offset of this block flow in paint layer.
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const LayoutPoint& physical_offset,
                    HitTestAction);
 
  private:

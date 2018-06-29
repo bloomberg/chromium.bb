@@ -36,13 +36,12 @@ class NGBoxFragmentPainter : public BoxPainterBase {
   void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
   void PaintInlineBox(const PaintInfo&, const LayoutPoint& paint_offset);
 
-  // |accumulated_offset| is the offset of the current fragment itself in the
-  // paint layer. Note that this is different from legacy, where it stands for
-  // the offset of the parent context instead.
+  // Hit tests this box fragment.
+  // @param physical_offset Physical offset of this box fragment in paint layer.
   // TODO(eae): Change to take a HitTestResult pointer instead as it mutates.
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation& location_in_container,
-                   const LayoutPoint& accumulated_offset,
+                   const LayoutPoint& physical_offset,
                    HitTestAction);
 
  protected:
@@ -117,22 +116,38 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   bool IsInSelfHitTestingPhase(HitTestAction) const;
   bool VisibleToHitTestRequest(const HitTestRequest&) const;
+
+  // Hit tests the children of a container fragment, which is either
+  // |box_fragment_|, or one of its child line box fragments.
+  // @param physical_offset Physical offset of the container fragment in paint
+  // layer.
   bool HitTestChildren(HitTestResult&,
                        const Vector<std::unique_ptr<NGPaintFragment>>&,
                        const HitTestLocation& location_in_container,
-                       const LayoutPoint& accumulated_offset,
+                       const LayoutPoint& physical_offset,
                        HitTestAction);
+
+  // Hit tests the given text fragment.
+  // @param physical_offset Physical offset of the text fragment in paint layer.
   bool HitTestTextFragment(HitTestResult&,
                            const NGPaintFragment&,
                            const HitTestLocation& location_in_container,
-                           const LayoutPoint& accumulated_offset);
+                           const LayoutPoint& physical_offset);
+
+  // Hit tests the given line box fragment.
+  // @param physical_offset Physical offset of the line box fragment in paint
+  // layer.
   bool HitTestLineBoxFragment(HitTestResult&,
                               const NGPaintFragment&,
                               const HitTestLocation& location_in_container,
-                              const LayoutPoint& accumulated_offset,
+                              const LayoutPoint& physical_offset,
                               HitTestAction);
+
+  // Returns whether the hit test location is completely outside the border box,
+  // which possibly has rounded corners.
   bool HitTestClippedOutByBorder(const HitTestLocation&,
                                  const LayoutPoint& border_box_location) const;
+
   LayoutPoint FlipForWritingModeForChild(
       const NGPhysicalFragment& child_fragment,
       const LayoutPoint& offset);
