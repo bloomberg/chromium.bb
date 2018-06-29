@@ -54,17 +54,6 @@ class LockScreenAppFocuser {
   DISALLOW_COPY_AND_ASSIGN(LockScreenAppFocuser);
 };
 
-// Returns true if |view| or any child of it has focus.
-bool HasFocusInAnyChildView(views::View* view) {
-  if (view->HasFocus())
-    return true;
-  for (int i = 0; i < view->child_count(); ++i) {
-    if (HasFocusInAnyChildView(view->child_at(i)))
-      return true;
-  }
-  return false;
-}
-
 // Keeps tabbing through |view| until the view loses focus.
 // The number of generated tab events will be limited - if the focus is still
 // within the view by the time the limit is hit, this will return false.

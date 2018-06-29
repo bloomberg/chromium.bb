@@ -1042,6 +1042,8 @@ void LockContentsView::OnBigUserChanged() {
   const AccountId new_big_user =
       CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id;
 
+  CurrentBigUserView()->RequestFocus();
+
   Shell::Get()->login_screen_controller()->OnFocusPod(new_big_user);
   UpdateEasyUnlockIconForUser(new_big_user);
 

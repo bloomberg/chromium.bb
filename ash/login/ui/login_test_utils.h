@@ -29,6 +29,9 @@ mojom::LoginUserInfoPtr CreateUser(const std::string& email);
 // public account user.
 mojom::LoginUserInfoPtr CreatePublicAccountUser(const std::string& email);
 
+// Returns true if |view| or any child of it has focus.
+bool HasFocusInAnyChildView(views::View* view);
+
 }  // namespace ash
 
 #endif  // ASH_LOGIN_UI_LOGIN_TEST_UTILS_H_

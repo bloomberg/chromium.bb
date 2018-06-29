@@ -22,6 +22,7 @@
 #include "ash/login/ui/login_pin_view.h"
 #include "ash/login/ui/login_public_account_user_view.h"
 #include "ash/login/ui/login_test_base.h"
+#include "ash/login/ui/login_test_utils.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/scrollable_users_list_view.h"
 #include "ash/public/interfaces/tray_action.mojom.h"
@@ -1155,10 +1156,11 @@ TEST_F(LockContentsViewUnitTest, SwapAuthAndPublicAccountUserInTwoUserLayout) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       data_dispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
-  LockContentsView::TestApi test_api(contents);
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   AddPublicAccountUsers(1);
   AddUsers(1);
+
+  LockContentsView::TestApi test_api(contents);
 
   // Capture user info to validate it did not change during the swap.
   AccountId primary_user = test_api.primary_big_view()
@@ -1215,22 +1217,23 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
       mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
       data_dispatcher(),
       std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
-  LockContentsView::TestApi lock_contents(contents);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   AddPublicAccountUsers(2);
   AddUsers(2);
-  ScrollableUsersListView::TestApi users_list(lock_contents.users_list());
-  EXPECT_EQ(users().size() - 1, users_list.user_views().size());
-  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
 
-  LoginBigUserView* primary_big_view = lock_contents.primary_big_view();
+  LockContentsView::TestApi contents_test_api(contents);
+  ScrollableUsersListView::TestApi users_list(contents_test_api.users_list());
+  EXPECT_EQ(users().size() - 1, users_list.user_views().size());
+
+  LoginBigUserView* primary_big_view = contents_test_api.primary_big_view();
 
   // Verify that primary_big_view is public account user.
   ASSERT_TRUE(primary_big_view->public_account());
   ASSERT_FALSE(primary_big_view->auth_user());
 
-  const LoginUserView* user_view0 = users_list.user_views().at(0);
-  const LoginUserView* user_view1 = users_list.user_views().at(1);
-  const LoginUserView* user_view2 = users_list.user_views().at(2);
+  const LoginUserView* user_view0 = users_list.user_views()[0];
+  const LoginUserView* user_view1 = users_list.user_views()[1];
+  const LoginUserView* user_view2 = users_list.user_views()[2];
 
   // Clicks on |view| to make it swap with the primary big user.
   auto click_view = [&](const LoginUserView* view) {
@@ -1332,6 +1335,61 @@ TEST_F(LockContentsViewUnitTest, SwapUserListToPrimaryBigUser) {
   ASSERT_FALSE(primary_big_view->auth_user());
   // user_view0 becomes auth user.
   EXPECT_FALSE(is_public_account(user_view0));
+}
+
+// Validates that swapping between two auth users also changes password focus.
+TEST_F(LockContentsViewUnitTest, AuthUserSwapFocusesPassword) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  AddUsers(2);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  LoginAuthUserView::TestApi primary_test_api =
+      MakeLoginAuthTestApi(contents, AuthTarget::kPrimary);
+  LoginAuthUserView::TestApi secondary_test_api =
+      MakeLoginAuthTestApi(contents, AuthTarget::kSecondary);
+
+  // Focus second user view, verify password does not have focus, activate it,
+  // verify password does have focus.
+  LoginPasswordView* secondary_password = secondary_test_api.password_view();
+  secondary_test_api.user_view()->RequestFocus();
+  EXPECT_FALSE(HasFocusInAnyChildView(secondary_password));
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  EXPECT_TRUE(HasFocusInAnyChildView(secondary_password));
+
+  // Focus primary user view, verify password does not have focus, activate it,
+  // verify password does have focus.
+  LoginPasswordView* primary_password = primary_test_api.password_view();
+  primary_test_api.user_view()->RequestFocus();
+  EXPECT_FALSE(HasFocusInAnyChildView(primary_password));
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  EXPECT_TRUE(HasFocusInAnyChildView(primary_password));
+}
+
+// Validates that swapping between users in user lists maintains password focus.
+TEST_F(LockContentsViewUnitTest, UserListUserSwapFocusesPassword) {
+  auto* contents = new LockContentsView(
+      mojom::TrayActionState::kNotAvailable, LockScreen::ScreenType::kLock,
+      data_dispatcher(),
+      std::make_unique<FakeLoginDetachableBaseModel>(data_dispatcher()));
+  LockContentsView::TestApi contents_test_api(contents);
+  AddUsers(3);
+  std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
+
+  LoginPasswordView* password_view =
+      LoginAuthUserView::TestApi(
+          contents_test_api.primary_big_view()->auth_user())
+          .password_view();
+  LoginUserView* user_view = contents_test_api.users_list()->user_view_at(0);
+
+  // Focus the user view, verify the password does not have focus, activate the
+  // user view, verify the password now has focus.
+  user_view->RequestFocus();
+  EXPECT_FALSE(HasFocusInAnyChildView(password_view));
+  GetEventGenerator().PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+  EXPECT_TRUE(HasFocusInAnyChildView(password_view));
 }
 
 TEST_F(LockContentsViewUnitTest, ExpandedPublicSessionView) {
