@@ -249,6 +249,15 @@ BrowserNonClientFrameViewAsh::CreateInterfacePtrForTesting() {
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserNonClientFrameView:
 
+void BrowserNonClientFrameViewAsh::OnSingleTabModeChanged() {
+  if (!IsMash()) {
+    BrowserNonClientFrameView::OnSingleTabModeChanged();
+    return;
+  }
+
+  UpdateFrameColors();
+}
+
 gfx::Rect BrowserNonClientFrameViewAsh::GetBoundsForTabStrip(
     views::View* tabstrip) const {
   if (!tabstrip)
@@ -659,27 +668,7 @@ void BrowserNonClientFrameViewAsh::OnThemeChanged() {
   inactive_frame_overlay_image_registration_ = update_window_image(
       ash::kFrameImageOverlayInactiveKey, GetFrameOverlayImage(false));
 
-  base::Optional<SkColor> active_color, inactive_color;
-  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
-    active_color = GetFrameColor(true);
-    inactive_color = GetFrameColor(false);
-  } else if (extensions::HostedAppBrowserController::
-                 IsForExperimentalHostedAppBrowser(browser_view()->browser())) {
-    base::Optional<SkColor> theme_color =
-        browser_view()->browser()->hosted_app_controller()->GetThemeColor();
-    window->SetProperty(ash::kFrameIsThemedByHostedAppKey, !!theme_color);
-
-    if (theme_color)
-      active_color = SkColorSetA(*theme_color, SK_AlphaOPAQUE);
-  } else {
-    active_color = BrowserFrameAsh::kMdWebUiFrameColor;
-  }
-
-  if (active_color) {
-    window->SetProperty(ash::kFrameActiveColorKey, *active_color);
-    window->SetProperty(ash::kFrameInactiveColorKey,
-                        inactive_color.value_or(*active_color));
-  }
+  UpdateFrameColors();
 
   BrowserNonClientFrameView::OnThemeChanged();
 }
@@ -1071,4 +1060,34 @@ void BrowserNonClientFrameViewAsh::StartHostedAppAnimation() {
   frame_header_origin_text_->StartSlideAnimation();
   hosted_app_button_container_->StartTitlebarAnimation(
       frame_header_origin_text_->AnimationDuration());
+}
+
+void BrowserNonClientFrameViewAsh::UpdateFrameColors() {
+  DCHECK(IsMash());
+
+  aura::Window* window = frame()->GetNativeWindow();
+  base::Optional<SkColor> active_color, inactive_color;
+  if (!UsePackagedAppHeaderStyle(browser_view()->browser())) {
+    active_color = GetFrameColor(true);
+    inactive_color = GetFrameColor(false);
+  } else if (extensions::HostedAppBrowserController::
+                 IsForExperimentalHostedAppBrowser(browser_view()->browser())) {
+    base::Optional<SkColor> theme_color =
+        browser_view()->browser()->hosted_app_controller()->GetThemeColor();
+    window->SetProperty(ash::kFrameIsThemedByHostedAppKey, !!theme_color);
+
+    if (theme_color)
+      active_color = SkColorSetA(*theme_color, SK_AlphaOPAQUE);
+  } else {
+    active_color = BrowserFrameAsh::kMdWebUiFrameColor;
+  }
+
+  if (active_color) {
+    window->SetProperty(ash::kFrameActiveColorKey, *active_color);
+    window->SetProperty(ash::kFrameInactiveColorKey,
+                        inactive_color.value_or(*active_color));
+  } else {
+    window->ClearProperty(ash::kFrameActiveColorKey);
+    window->ClearProperty(ash::kFrameInactiveColorKey);
+  }
 }
