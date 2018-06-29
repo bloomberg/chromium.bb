@@ -172,6 +172,9 @@ LevelDBSiteCharacteristicsDatabase::AsyncHelper::ReadSiteCharacteristicsFromDB(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
 
+  if (!db_)
+    return base::nullopt;
+
   std::string protobuf_value;
   leveldb::Status s = db_->Get(
       read_options_, SerializeOriginIntoDatabaseKey(origin), &protobuf_value);
@@ -193,6 +196,10 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
         const SiteCharacteristicsProto& site_characteristic_proto) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
+
+  if (!db_)
+    return;
+
   leveldb::Status s =
       db_->Put(write_options_, SerializeOriginIntoDatabaseKey(origin),
                site_characteristic_proto.SerializeAsString());
@@ -207,6 +214,10 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
         const std::vector<url::Origin>& site_origins) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
+
+  if (!db_)
+    return;
+
   leveldb::WriteBatch batch;
   for (const auto& iter : site_origins)
     batch.Delete(SerializeOriginIntoDatabaseKey(iter));
@@ -220,6 +231,9 @@ void LevelDBSiteCharacteristicsDatabase::AsyncHelper::
 void LevelDBSiteCharacteristicsDatabase::AsyncHelper::ClearDatabase() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::AssertBlockingAllowed();
+  if (!db_)
+    return;
+
   leveldb_env::Options options;
   db_.reset();
   leveldb::Status status = leveldb::DestroyDB(db_path_.AsUTF8Unsafe(), options);
