@@ -11,11 +11,13 @@
 
 namespace network {
 
-TestSharedURLLoaderFactory::TestSharedURLLoaderFactory() {
+TestSharedURLLoaderFactory::TestSharedURLLoaderFactory(
+    NetworkService* network_service) {
   url_request_context_ = std::make_unique<net::TestURLRequestContext>();
   mojom::NetworkContextPtr network_context;
   network_context_ = std::make_unique<NetworkContext>(
-      nullptr, mojo::MakeRequest(&network_context), url_request_context_.get());
+      network_service, mojo::MakeRequest(&network_context),
+      url_request_context_.get());
   mojom::URLLoaderFactoryParamsPtr params =
       mojom::URLLoaderFactoryParams::New();
   params->process_id = mojom::kBrowserProcessId;

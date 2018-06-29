@@ -6,13 +6,15 @@
 #define CONTENT_BROWSER_NETWORK_SERVICE_IMPL_H_
 
 #include "base/macros.h"
+#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
-class NetworkServiceClient : public network::mojom::NetworkServiceClient {
+class CONTENT_EXPORT NetworkServiceClient
+    : public network::mojom::NetworkServiceClient {
  public:
   explicit NetworkServiceClient(network::mojom::NetworkServiceClientRequest
                                     network_service_client_request);
