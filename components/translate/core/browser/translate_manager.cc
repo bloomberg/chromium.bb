@@ -265,29 +265,42 @@ void TranslateManager::InitiateTranslation(const std::string& page_lang) {
     return;
   }
 
-  if (!should_offer_translation) {
+  // Show the omnibar icon if we've gotten this far.
+  language_state_.SetTranslateEnabled(true);
+  TranslateBrowserMetrics::ReportInitiationStatus(
+      TranslateBrowserMetrics::INITIATION_STATUS_SHOW_ICON);
+
+  // Will be true if we've decided to show the infobar/bubble UI to the user.
+  bool did_show_ui = false;
+
+  if (should_offer_translation) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
+
+    // If the source language matches the UI language, it means the translation
+    // prompt is being forced by an experiment. Report this so the count of how
+    // often it happens can be tracked to suppress the experiment as necessary.
+    if (language_code ==
+        TranslateDownloadManager::GetLanguageCode(
+            TranslateDownloadManager::GetInstance()->application_locale())) {
+      translate_prefs->ReportForceTriggerOnEnglishPages();
+    }
+
+    // Prompts the user if they want the page translated.
+    did_show_ui = translate_client_->ShowTranslateUI(
+        translate::TRANSLATE_STEP_BEFORE_TRANSLATE, language_code, target_lang,
+        TranslateErrors::NONE, false);
+
+  } else {
     TranslateBrowserMetrics::ReportInitiationStatus(
         TranslateBrowserMetrics::INITIATION_STATUS_ABORTED_BY_RANKER);
     RecordTranslateEvent(metrics::TranslateEventProto::DISABLED_BY_RANKER);
-    return;
   }
 
-  TranslateBrowserMetrics::ReportInitiationStatus(
-      TranslateBrowserMetrics::INITIATION_STATUS_SHOW_INFOBAR);
-
-  // If the source language matches the UI language, it means the translation
-  // prompt is being forced by an experiment. Report this so the count of how
-  // often it happens can be tracked to suppress the experiment as necessary.
-  if (language_code ==
-      TranslateDownloadManager::GetLanguageCode(
-          TranslateDownloadManager::GetInstance()->application_locale())) {
-    translate_prefs->ReportForceTriggerOnEnglishPages();
+  if (!did_show_ui) {
+    TranslateBrowserMetrics::ReportInitiationStatus(
+        TranslateBrowserMetrics::INITIATION_STATUS_SUPPRESS_INFOBAR);
   }
-
-  // Prompts the user if they want the page translated.
-  translate_client_->ShowTranslateUI(translate::TRANSLATE_STEP_BEFORE_TRANSLATE,
-                                     language_code, target_lang,
-                                     TranslateErrors::NONE, false);
 }
 
 void TranslateManager::TranslatePage(const std::string& original_source_lang,
@@ -581,7 +594,6 @@ bool TranslateManager::ShouldSuppressBubbleUI(
   // the same language as the previous page. In the new UI,
   // continue offering translation after the user navigates
   // to another page.
-  language_state_.SetTranslateEnabled(true);
   if (!language_state_.HasLanguageChanged() &&
       !ShouldOverrideDecision(
           metrics::TranslateEventProto::MATCHES_PREVIOUS_LANGUAGE)) {

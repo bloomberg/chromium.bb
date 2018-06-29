@@ -102,7 +102,7 @@ class ChromeTranslateClient
 
   void RecordLanguageDetectionEvent(
       const translate::LanguageDetectionDetails& details) const override;
-  void ShowTranslateUI(translate::TranslateStep step,
+  bool ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
                        const std::string& target_language,
                        translate::TranslateErrors::Type error_type,

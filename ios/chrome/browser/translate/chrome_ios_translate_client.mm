@@ -161,7 +161,7 @@ void ChromeIOSTranslateClient::RecordTranslateEvent(
   }
 }
 
-void ChromeIOSTranslateClient::ShowTranslateUI(
+bool ChromeIOSTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
@@ -178,6 +178,8 @@ void ChromeIOSTranslateClient::ShowTranslateUI(
       InfoBarManagerImpl::FromWebState(web_state_),
       web_state_->GetBrowserState()->IsOffTheRecord(), step, source_language,
       target_language, error_type, triggered_from_menu);
+
+  return true;
 }
 
 translate::IOSTranslateDriver* ChromeIOSTranslateClient::GetTranslateDriver() {

@@ -53,7 +53,7 @@ class MockTranslateClient : public TranslateClient {
                      void(const LanguageDetectionDetails&));
 
   MOCK_METHOD5(ShowTranslateUI,
-               void(translate::TranslateStep,
+               bool(translate::TranslateStep,
                     const std::string&,
                     const std::string&,
                     TranslateErrors::Type,
