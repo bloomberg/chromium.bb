@@ -383,6 +383,22 @@ TEST_F(LayoutTableSectionTest, OverflowingCells) {
   EXPECT_EQ(big_section->FullTableEffectiveColumnSpan(), columns);
 }
 
+TEST_F(LayoutTableSectionTest, RowCollapseNegativeHeightCrash) {
+  // Table % height triggers the heuristic check for relayout of cells at
+  // https://cs.chromium.org/chromium/src/third_party/blink/renderer/core/layout/layout_table_section.cc?rcl=5ea6fa63d8809f990d662182d971facbf557f812&l=1899
+  // Cell child needs a % height to set cell_children_flex at line 1907, which
+  // caused a negative override height to get set at 1929, which DCHECKed.
+  SetBodyInnerHTML(R"HTML(
+    <table style="height:50%">
+      <tr style="visibility:collapse">
+        <td>
+          <div style="height:50%"></div>
+        </td>
+      </tr>
+    </table>
+  )HTML");
+}
+
 }  // anonymous namespace
 
 }  // namespace blink

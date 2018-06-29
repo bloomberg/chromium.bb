@@ -92,6 +92,8 @@ void LayoutTable::StyleDidChange(StyleDifference diff,
   // In the collapsed border model, there is no cell spacing.
   h_spacing_ = ShouldCollapseBorders() ? 0 : Style()->HorizontalBorderSpacing();
   v_spacing_ = ShouldCollapseBorders() ? 0 : Style()->VerticalBorderSpacing();
+  DCHECK_GE(h_spacing_, 0);
+  DCHECK_GE(v_spacing_, 0);
 
   if (!table_layout_ ||
       Style()->IsFixedTableLayout() != old_fixed_table_layout) {

@@ -958,6 +958,7 @@ int LayoutTableSection::CalcRowLogicalHeight() {
       total_collapsed_height += row_collapsed_height_[r];
       // Adjust row position according to the height collapsed so far.
       row_pos_[r + 1] -= total_collapsed_height;
+      DCHECK_GE(row_pos_[r + 1], row_pos_[r]);
     }
   }
 
@@ -1186,13 +1187,21 @@ void LayoutTableSection::LayoutRows() {
     if (LayoutTableRow* row = grid_[r].row) {
       row->SetLogicalLocation(LayoutPoint(0, row_pos_[r]));
       row->SetLogicalWidth(LogicalWidth());
-      LayoutUnit row_logical_height(row_pos_[r + 1] - row_pos_[r] - vspacing);
+      LayoutUnit row_logical_height;
+      // If the row is collapsed then it has 0 height. vspacing was implicitly
+      // removed earlier, when row_pos_[r+1] was set to row_pos[r].
+      if (!RowHasVisibilityCollapse(r)) {
+        row_logical_height =
+            LayoutUnit(row_pos_[r + 1] - row_pos_[r] - vspacing);
+      }
+      DCHECK_GE(row_logical_height, 0);
       if (state.IsPaginated() && r + 1 < total_rows) {
         // If the next row has a pagination strut, we need to subtract it. It
         // should not be included in this row's height.
         if (LayoutTableRow* next_row_object = grid_[r + 1].row)
           row_logical_height -= next_row_object->PaginationStrut();
       }
+      DCHECK_GE(row_logical_height, 0);
       row->SetLogicalHeight(row_logical_height);
       row->UpdateAfterLayout();
     }
