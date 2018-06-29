@@ -115,10 +115,11 @@
         <item name="colorPrimary">@color/light_active_color</item>
     </style>
 
+    <!-- The dim amount should match the alpha of modal_dialog_scrim_color. -->
     <style name="ModalDialogTheme" parent="AlertDialogTheme">
         <item name="android:windowFrame">@null</item>
-        <item name="android:backgroundDimEnabled">false</item>
         <item name="android:windowBackground">@android:color/transparent</item>
+        <item name="android:backgroundDimAmount">0.5</item>
         <item name="android:windowMinWidthMajor">100%</item>
         <item name="android:windowMinWidthMinor">100%</item>
         <item name="buttonBarStyle">@style/ModalDialogButtonBarStyle</item>
