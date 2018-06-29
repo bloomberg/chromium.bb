@@ -32,6 +32,12 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
   // it will not be extended by user activity.
   /** @const */ var VIDEO_LOGIN_TIMEOUT = 90 * 1000;
 
+  // Horizontal padding for the error bubble.
+  /** @const */ var BUBBLE_HORIZONTAL_PADDING = 65;
+
+  // Vertical padding for the error bubble.
+  /** @const */ var BUBBLE_VERTICAL_PADDING = -213;
+
   /**
    * The modes this screen can be in.
    * @enum {integer}
@@ -1188,8 +1194,8 @@ login.createScreen('GaiaSigninScreen', 'gaia-signin', function() {
       } else if (!this.loading) {
         // TODO(dzhioev): investigate if this branch ever get hit.
         $('bubble').showContentForElement(
-            $('gaia-signin-form-container'), cr.ui.Bubble.Attachment.LEFT,
-            error);
+            $('gaia-signin-form-container'), cr.ui.Bubble.Attachment.BOTTOM,
+            error, BUBBLE_HORIZONTAL_PADDING, BUBBLE_VERTICAL_PADDING);
       } else {
         // Defer the bubble until the frame has been loaded.
         this.errorBubble_ = [loginAttempts, error];
