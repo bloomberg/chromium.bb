@@ -8,6 +8,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 
 namespace {
@@ -79,44 +80,12 @@ class TouchpadPinchBrowserTest : public ContentBrowserTest {
   }
 };
 
-namespace {
-
-class TestPageScaleObserver : public WebContentsObserver {
- public:
-  explicit TestPageScaleObserver(WebContents* web_contents)
-      : WebContentsObserver(web_contents) {}
-
-  void OnPageScaleFactorChanged(float page_scale_factor) override {
-    last_scale_ = page_scale_factor;
-    seen_page_scale_change_ = true;
-    if (done_callback_)
-      std::move(done_callback_).Run();
-  }
-
-  float WaitForPageScaleUpdate() {
-    if (!seen_page_scale_change_) {
-      base::RunLoop run_loop;
-      done_callback_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
-    seen_page_scale_change_ = false;
-    return last_scale_;
-  }
-
- private:
-  base::OnceClosure done_callback_;
-  bool seen_page_scale_change_ = false;
-  float last_scale_ = 0.f;
-};
-
-}  // namespace
-
 // Performing a touchpad pinch gesture should change the page scale.
 IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest,
                        TouchpadPinchChangesPageScale) {
   LoadURL();
 
-  TestPageScaleObserver scale_observer(shell()->web_contents());
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
 
   const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
   const gfx::Point pinch_position(contents_rect.width() / 2,
@@ -135,7 +104,7 @@ IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest, WheelListenerAllowingPinch) {
       content::ExecuteScript(shell()->web_contents(), "setListener(false);"));
   SynchronizeThreads();
 
-  TestPageScaleObserver scale_observer(shell()->web_contents());
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
 
   const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
   const gfx::Point pinch_position(contents_rect.width() / 2,
@@ -165,7 +134,8 @@ IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest, WheelListenerPreventingPinch) {
 
   // Perform an initial pinch so we can figure out the page scale we're
   // starting with for the test proper.
-  TestPageScaleObserver starting_scale_observer(shell()->web_contents());
+  content::TestPageScaleObserver starting_scale_observer(
+      shell()->web_contents());
   const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
   const gfx::Point pinch_position(contents_rect.width() / 2,
                                   contents_rect.height() / 2);
@@ -199,7 +169,7 @@ IN_PROC_BROWSER_TEST_F(TouchpadPinchBrowserTest, WheelListenerPreventingPinch) {
                                      "setListener(false);"));
   SynchronizeThreads();
 
-  TestPageScaleObserver scale_observer(shell()->web_contents());
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
   SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 2.0,
                                blink::kWebGestureDeviceTouchpad);
   ASSERT_TRUE(content::ExecuteScriptAndExtractBool(

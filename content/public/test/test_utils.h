@@ -332,6 +332,23 @@ class WebContentsDestroyedWatcher : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(WebContentsDestroyedWatcher);
 };
 
+// Watches a web contents for page scales.
+class TestPageScaleObserver : public WebContentsObserver {
+ public:
+  explicit TestPageScaleObserver(WebContents* web_contents);
+  ~TestPageScaleObserver() override;
+  float WaitForPageScaleUpdate();
+
+ private:
+  void OnPageScaleFactorChanged(float page_scale_factor) override;
+
+  base::OnceClosure done_callback_;
+  bool seen_page_scale_change_ = false;
+  float last_scale_ = 0.f;
+
+  DISALLOW_COPY_AND_ASSIGN(TestPageScaleObserver);
+};
+
 // A custom ContentBrowserClient that simulates GetEffectiveURL() translation
 // for a single URL.
 class EffectiveURLContentBrowserClient : public ContentBrowserClient {

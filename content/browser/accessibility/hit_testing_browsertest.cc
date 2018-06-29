@@ -3,9 +3,11 @@
 // found in the LICENSE file.
 
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "content/browser/accessibility/browser_accessibility.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -59,6 +61,28 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     return HitTestAndWaitForResultWithEvent(point, ax::mojom::Event::kHover);
   }
 
+  BrowserAccessibility* TapAndWaitForResult(const gfx::Point& point) {
+    WebContentsImpl* web_contents =
+        static_cast<WebContentsImpl*>(shell()->web_contents());
+    FrameTree* frame_tree = web_contents->GetFrameTree();
+
+    AccessibilityNotificationWaiter event_waiter(shell()->web_contents(),
+                                                 ui::kAXModeComplete,
+                                                 ax::mojom::Event::kClicked);
+    for (FrameTreeNode* node : frame_tree->Nodes())
+      event_waiter.ListenToAdditionalFrame(node->current_frame_host());
+
+    SimulateTapAt(shell()->web_contents(), point);
+    event_waiter.WaitForNotification();
+
+    RenderFrameHostImpl* target_frame = event_waiter.event_render_frame_host();
+    BrowserAccessibilityManager* target_manager =
+        target_frame->browser_accessibility_manager();
+    int event_target_id = event_waiter.event_target_id();
+    BrowserAccessibility* hit_node = target_manager->GetFromID(event_target_id);
+    return hit_node;
+  }
+
   BrowserAccessibility* CallCachingAsyncHitTest(const gfx::Point& point) {
     WebContentsImpl* web_contents =
         static_cast<WebContentsImpl*>(shell()->web_contents());
@@ -77,6 +101,18 @@ class AccessibilityHitTestingBrowserTest : public ContentBrowserTest {
     BrowserAccessibility* result = manager->CachingAsyncHitTest(screen_point);
     hover_waiter.WaitForNotification();
     return result;
+  }
+
+  RenderWidgetHostImpl* GetRenderWidgetHost() {
+    return RenderWidgetHostImpl::From(shell()
+                                          ->web_contents()
+                                          ->GetRenderWidgetHostView()
+                                          ->GetRenderWidgetHost());
+  }
+
+  void SynchronizeThreads() {
+    MainThreadFrameObserver observer(GetRenderWidgetHost());
+    observer.Wait();
   }
 };
 
@@ -129,8 +165,15 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   // wait for the hover event in response, verifying we hit the
   // correct object.
 
-  // (50, 50) -> "Button"
+  // (26, 26) -> "Button"
   BrowserAccessibility* hit_node;
+  hit_node = HitTestAndWaitForResult(gfx::Point(26, 26));
+  ASSERT_TRUE(hit_node != nullptr);
+  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  ASSERT_EQ("Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (50, 50) -> "Button"
   hit_node = HitTestAndWaitForResult(gfx::Point(50, 50));
   ASSERT_TRUE(hit_node != nullptr);
   ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
@@ -199,42 +242,197 @@ IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
   BrowserAccessibility* hit_node;
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 50));
-  ASSERT_EQ("Button",
+  EXPECT_EQ("Button",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 305) -> div in first iframe
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+  EXPECT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 305));
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 
   // (50, 350) -> "Ordinary Button"
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 350));
-  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  ASSERT_EQ("Ordinary Button",
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Ordinary Button",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 455) -> "Scrolled Button"
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 455));
-  ASSERT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
-  ASSERT_EQ("Scrolled Button",
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Scrolled Button",
             hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
 
   // (50, 505) -> div in second iframe
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
   ASSERT_TRUE(hit_node != nullptr);
-  ASSERT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+  EXPECT_NE(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
   hit_node = CallCachingAsyncHitTest(gfx::Point(50, 505));
-  ASSERT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
+  EXPECT_EQ(ax::mojom::Role::kGenericContainer, hit_node->GetRole());
 }
+
+#if !defined(OS_ANDROID) && !defined(OS_MACOSX)
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+                       HitTestingWithPinchZoom) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+
+  const char url_str[] =
+      "data:text/html,"
+      "<!doctype html>"
+      "<html>"
+      "<head><title>Accessibility Test</title>"
+      "<style>body {margin: 0px;}"
+      "button {display: block; height: 50px; width: 50px}</style>"
+      "</head>"
+      "<body>"
+      "<button>Button 1</button>"
+      "<button>Button 2</button>"
+      "</body></html>";
+
+  GURL url(url_str);
+  NavigateToURL(shell(), url);
+  SynchronizeThreads();
+  waiter.WaitForNotification();
+
+  BrowserAccessibility* hit_node;
+
+  // Use a tap event instead of a hittest to make sure that we are using
+  // px as input, rather than dips.
+
+  // (10, 10) -> "Button 1"
+  hit_node = TapAndWaitForResult(gfx::Point(10, 10));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 1",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (60, 60) -> No button there
+  hit_node = TapAndWaitForResult(gfx::Point(60, 60));
+  EXPECT_TRUE(hit_node == nullptr);
+
+  // (10, 60) -> "Button 2"
+  hit_node = TapAndWaitForResult(gfx::Point(10, 60));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 2",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
+  const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
+  const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
+  SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 2.0f,
+                               blink::kWebGestureDeviceTouchscreen);
+  scale_observer.WaitForPageScaleUpdate();
+
+  // (10, 10) -> "Button 1"
+  hit_node = TapAndWaitForResult(gfx::Point(10, 10));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 1",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (60, 60) -> "Button 1"
+  hit_node = TapAndWaitForResult(gfx::Point(60, 60));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 1",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (10, 60) -> "Button 1"
+  hit_node = TapAndWaitForResult(gfx::Point(10, 60));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 1",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (10, 110) -> "Button 2"
+  hit_node = TapAndWaitForResult(gfx::Point(10, 110));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 2",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (190, 190) -> "Button 2"
+  hit_node = TapAndWaitForResult(gfx::Point(90, 190));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button 2",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+}
+
+IN_PROC_BROWSER_TEST_F(AccessibilityHitTestingBrowserTest,
+                       HitTestingWithPinchZoomAndIframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+
+  AccessibilityNotificationWaiter waiter(shell()->web_contents(),
+                                         ui::kAXModeComplete,
+                                         ax::mojom::Event::kLoadComplete);
+
+  GURL url(embedded_test_server()->GetURL(
+      "/accessibility/html/iframe-coordinates.html"));
+  NavigateToURL(shell(), url);
+  SynchronizeThreads();
+  waiter.WaitForNotification();
+
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Ordinary Button");
+  WaitForAccessibilityTreeToContainNodeWithName(shell()->web_contents(),
+                                                "Scrolled Button");
+
+  content::TestPageScaleObserver scale_observer(shell()->web_contents());
+  const gfx::Rect contents_rect = shell()->web_contents()->GetContainerBounds();
+  const gfx::Point pinch_position(contents_rect.x(), contents_rect.y());
+
+  SimulateGesturePinchSequence(shell()->web_contents(), pinch_position, 1.25f,
+                               blink::kWebGestureDeviceTouchscreen);
+  scale_observer.WaitForPageScaleUpdate();
+
+  BrowserAccessibility* hit_node;
+
+  // (26, 26) -> No button because of pinch.
+  hit_node = TapAndWaitForResult(gfx::Point(26, 26));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_NE(ax::mojom::Role::kButton, hit_node->GetRole());
+
+  // (63, 63) -> "Button"
+  hit_node = TapAndWaitForResult(gfx::Point(63, 63));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (63, 438) -> "Ordinary Button"
+  hit_node = TapAndWaitForResult(gfx::Point(63, 438));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Ordinary Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+
+  // (63, 569) -> "Scrolled Button"
+  hit_node = TapAndWaitForResult(gfx::Point(63, 569));
+  ASSERT_TRUE(hit_node != nullptr);
+  EXPECT_EQ(ax::mojom::Role::kButton, hit_node->GetRole());
+  EXPECT_EQ("Scrolled Button",
+            hit_node->GetStringAttribute(ax::mojom::StringAttribute::kName));
+}
+
+#endif  // !defined(OS_ANDROID) && !defined(OS_MACOSX)
 
 }  // namespace content

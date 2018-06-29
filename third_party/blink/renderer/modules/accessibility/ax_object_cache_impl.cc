@@ -1147,6 +1147,12 @@ void AXObjectCacheImpl::HandleEditableTextContentChanged(Node* node) {
   PostNotification(obj, kAXValueChanged);
 }
 
+void AXObjectCacheImpl::HandleScaleAndLocationChanged(Document* document) {
+  if (!document)
+    return;
+  PostNotification(document, kAXLocationChanged);
+}
+
 void AXObjectCacheImpl::HandleTextFormControlChanged(Node* node) {
   HandleEditableTextContentChanged(node);
 }

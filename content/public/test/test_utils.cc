@@ -460,6 +460,28 @@ void WebContentsDestroyedWatcher::WebContentsDestroyed() {
   run_loop_.Quit();
 }
 
+TestPageScaleObserver::TestPageScaleObserver(WebContents* web_contents)
+    : WebContentsObserver(web_contents) {}
+
+TestPageScaleObserver::~TestPageScaleObserver() {}
+
+void TestPageScaleObserver::OnPageScaleFactorChanged(float page_scale_factor) {
+  last_scale_ = page_scale_factor;
+  seen_page_scale_change_ = true;
+  if (done_callback_)
+    std::move(done_callback_).Run();
+}
+
+float TestPageScaleObserver::WaitForPageScaleUpdate() {
+  if (!seen_page_scale_change_) {
+    base::RunLoop run_loop;
+    done_callback_ = run_loop.QuitClosure();
+    run_loop.Run();
+  }
+  seen_page_scale_change_ = false;
+  return last_scale_;
+}
+
 GURL EffectiveURLContentBrowserClient::GetEffectiveURL(
     BrowserContext* browser_context,
     const GURL& url) {
