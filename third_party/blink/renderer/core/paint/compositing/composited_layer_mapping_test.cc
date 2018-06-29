@@ -189,7 +189,7 @@ TEST_F(CompositedLayerMappingTest, TallNonCompositedScrolledLayerInterestRect) {
                                                           kProgrammaticScroll);
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  PaintLayer* paint_layer = GetDocument().View()->Layer();
+  PaintLayer* paint_layer = GetDocument().GetLayoutView()->Layer();
   ASSERT_TRUE(paint_layer->GraphicsLayerBacking());
   EXPECT_EQ(IntRect(0, 4000, 800, 7016),
             RecomputeInterestRect(paint_layer->GraphicsLayerBacking()));

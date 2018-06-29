@@ -276,7 +276,8 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -100));
     EXPECT_FLOAT_EQ(100, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
+    EXPECT_FLOAT_EQ(
+        0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
   }
 
   {
@@ -288,7 +289,8 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     GetWebView()->HandleInputEvent(GenerateTouchGestureEvent(
         WebInputEvent::kGestureScrollUpdate, 0, -500));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
+    EXPECT_FLOAT_EQ(
+        0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
     Mock::VerifyAndClearExpectations(&client);
   }
 
@@ -300,7 +302,8 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -20));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
+    EXPECT_FLOAT_EQ(
+        0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
     Mock::VerifyAndClearExpectations(&client);
   }
 
@@ -319,7 +322,8 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     GetWebView()->HandleInputEvent(
         GenerateTouchGestureEvent(WebInputEvent::kGestureScrollUpdate, 0, -30));
     EXPECT_FLOAT_EQ(maximum_scroll, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, MainFrameView()->GetScrollOffset().Height());
+    EXPECT_FLOAT_EQ(
+        0, MainFrameView()->LayoutViewport()->GetScrollOffset().Height());
     Mock::VerifyAndClearExpectations(&client);
 
     GetWebView()->HandleInputEvent(

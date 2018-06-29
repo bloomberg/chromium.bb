@@ -43,6 +43,7 @@
 #include "third_party/blink/renderer/core/frame/visual_viewport.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
+#include "third_party/blink/renderer/core/layout/layout_view.h"
 #include "third_party/blink/renderer/core/page/page.h"
 #include "third_party/blink/renderer/core/paint/compositing/composited_layer_mapping.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
@@ -729,8 +730,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectLayoutHeight)) {
 
   // The layout size on the LocalFrameView should not include the browser
   // controls.
-  EXPECT_EQ(300,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
 
   // Hide the browser controls.
   VerticalScroll(-100.f);
@@ -746,8 +746,7 @@ TEST_F(BrowserControlsTest, MAYBE(DontAffectLayoutHeight)) {
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
 
   // The layout size should not change as a result of browser controls hiding.
-  EXPECT_EQ(300,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
 }
 
 // Ensure that browser controls do not affect the layout by showing and hiding
@@ -770,8 +769,7 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   VerticalScroll(-100.f);
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
   web_view->UpdateAllLifecyclePhases();
-  ASSERT_EQ(300,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  ASSERT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
 
   // Now lock the controls in a hidden state. The layout and elements should
   // resize without a WebView::resize.
@@ -781,8 +779,7 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   EXPECT_FLOAT_EQ(200.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
 
-  EXPECT_EQ(400,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(400, GetFrame()->View()->GetLayoutSize().Height());
 
   // Unlock the controls, the sizes should change even though the controls are
   // still hidden.
@@ -792,8 +789,7 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   EXPECT_FLOAT_EQ(150.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
 
-  EXPECT_EQ(300,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
 
   // Now lock the controls in a shown state.
   web_view->UpdateBrowserControlsState(kWebBrowserControlsShown,
@@ -803,8 +799,7 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   EXPECT_FLOAT_EQ(150.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(150.f, fixed_pos->getBoundingClientRect()->height());
 
-  EXPECT_EQ(300,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
 
   // Shown -> Hidden
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
@@ -814,16 +809,14 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   EXPECT_FLOAT_EQ(200.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
 
-  EXPECT_EQ(400,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(400, GetFrame()->View()->GetLayoutSize().Height());
 
   // Go from Unlocked and showing, to locked and hidden but issue the resize
   // before the constraint update to check for race issues.
   web_view->UpdateBrowserControlsState(kWebBrowserControlsBoth,
                                        kWebBrowserControlsShown, false);
   web_view->ResizeWithBrowserControls(WebSize(400, 300), 100.f, 0, true);
-  ASSERT_EQ(300,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  ASSERT_EQ(300, GetFrame()->View()->GetLayoutSize().Height());
   web_view->UpdateAllLifecyclePhases();
 
   web_view->ResizeWithBrowserControls(WebSize(400, 400), 100.f, 0, false);
@@ -833,8 +826,7 @@ TEST_F(BrowserControlsTest, MAYBE(AffectLayoutHeightWhenConstrained)) {
   EXPECT_FLOAT_EQ(200.f, abs_pos->getBoundingClientRect()->height());
   EXPECT_FLOAT_EQ(200.f, fixed_pos->getBoundingClientRect()->height());
 
-  EXPECT_EQ(400,
-            GetFrame()->View()->GetLayoutSize(kIncludeScrollbars).Height());
+  EXPECT_EQ(400, GetFrame()->View()->GetLayoutSize().Height());
 }
 
 // Ensure that browser controls do not affect vh units.
@@ -1032,7 +1024,8 @@ TEST_F(BrowserControlsTest,
         GenerateEvent(WebInputEvent::kGestureScrollUpdate, 0, 80));
 
     GetVisualViewport().ClampToBoundaries();
-    view->SetScrollOffset(view->GetScrollOffset(), kProgrammaticScroll);
+    view->LayoutViewport()->SetScrollOffset(
+        view->LayoutViewport()->GetScrollOffset(), kProgrammaticScroll);
 
     ASSERT_EQ(80.f, web_view->GetBrowserControls().ContentOffset());
     EXPECT_EQ(expected_root_offset, root_viewport->GetScrollOffset().Height());
@@ -1174,7 +1167,7 @@ TEST_F(BrowserControlsTest,
 
   // Ensure there is a raster invalidation of the bottom of the layer.
   const auto& raster_invalidations = GetFrame()
-                                         ->View()
+                                         ->ContentLayoutObject()
                                          ->Layer()
                                          ->GetCompositedLayerMapping()
                                          ->ScrollingContentsLayer()
