@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/feature_list.h"
+#include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/metrics/histogram_macros.h"
@@ -131,14 +132,24 @@ bool ModuleBlacklistCacheUpdater::IsThirdPartyModuleBlockingEnabled() {
 
 // static
 base::FilePath ModuleBlacklistCacheUpdater::GetModuleBlacklistCachePath() {
+  // Subdir relative to UserDataDirectory.
+  constexpr base::FilePath::CharType kFileSubdir[] =
+      FILE_PATH_LITERAL("ThirdPartyModuleList")
+#if defined(_WIN64)
+          FILE_PATH_LITERAL("64");
+#else
+          FILE_PATH_LITERAL("32");
+#endif
+
+  // Packed module data cache file.
+  constexpr base::FilePath::CharType kBlFileName[] =
+      FILE_PATH_LITERAL("bldata");
+
   base::FilePath user_data_dir;
   if (!base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir))
     return base::FilePath();
 
-  // Using FilePath::StringType + operator because the constants contains the
-  // path separator.
-  return base::FilePath(user_data_dir.value() + third_party_dlls::kFileSubdir +
-                        third_party_dlls::kBlFileName);
+  return user_data_dir.Append(kFileSubdir).Append(kBlFileName);
 }
 
 // static

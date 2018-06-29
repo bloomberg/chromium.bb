@@ -178,14 +178,11 @@ void LogLoadAttempt(LogType log_type,
   ::memcpy(&entry.basename_hash[0], basename_hash.data(),
            elf_sha1::kSHA1Length);
   ::memcpy(&entry.code_id_hash[0], code_id_hash.data(), elf_sha1::kSHA1Length);
+  entry.full_path = full_image_path;
 
-  // Only store full path if the module was allowed to load.
-  if (log_type == LogType::kAllowed) {
-    entry.full_path = full_image_path;
-    // Edge condition.  Ensure the path length is <= max(uint32_t) - 1.
-    if (entry.full_path.size() > std::numeric_limits<uint32_t>::max() - 1)
-      entry.full_path.resize(std::numeric_limits<uint32_t>::max() - 1);
-  }
+  // Edge condition.  Ensure the path length is <= max(uint32_t) - 1.
+  if (entry.full_path.size() > std::numeric_limits<uint32_t>::max() - 1)
+    entry.full_path.resize(std::numeric_limits<uint32_t>::max() - 1);
 
   // Add the new entry.
   Log& log =

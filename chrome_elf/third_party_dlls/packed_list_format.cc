@@ -8,17 +8,11 @@
 
 namespace third_party_dlls {
 
-// Subdir relative to install_static::GetUserDataDirectory().
-const wchar_t kFileSubdir[] =
-    L"\\ThirdPartyModuleList"
-#if defined(_WIN64)
-    L"64";
-#else
-    L"32";
-#endif
+// Subkey relative to install_static::GetRegistryPath().
+const wchar_t kThirdPartyRegKeyName[] = L"\\ThirdParty";
 
-// Packed module data cache file.
-const wchar_t kBlFileName[] = L"\\bldata";
+// Subkey value of type REG_SZ to hold a full path to a packed-list file.
+const wchar_t kBlFilePathRegValue[] = L"BlFilePath";
 
 std::string GetFingerprintString(uint32_t image_size,
                                  uint32_t time_data_stamp) {
