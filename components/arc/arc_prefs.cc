@@ -70,6 +70,9 @@ const char kArcSetNotificationsEnabledDeferred[] =
     "arc.set_notifications_enabled_deferred";
 // A preference that indicates status of Android sign-in.
 const char kArcSignedIn[] = "arc.signedin";
+// A preference that indicates that ARC skipped the setup UI flows that
+// contain a notice related to reporting of diagnostic information.
+const char kArcSkippedReportingNotice[] = "arc.skipped.reporting.notice";
 // A preference that indicates an ARC comaptible filesystem was chosen for
 // the user directory (i.e., the user finished required migration.)
 const char kArcCompatibleFilesystemChosen[] =
@@ -125,6 +128,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterListPref(kArcFastAppReinstallPackages);
   registry->RegisterBooleanPref(kArcPolicyComplianceReported, false);
   registry->RegisterBooleanPref(kArcSignedIn, false);
+  registry->RegisterBooleanPref(kArcSkippedReportingNotice, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
   registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
   registry->RegisterBooleanPref(kArcVoiceInteractionValuePropAccepted, false);
