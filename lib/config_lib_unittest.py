@@ -396,7 +396,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
     site_config.Add(
         'tast_vm_tests',
         tast_vm_tests=[config_lib.TastVMTestConfig('tast_vm_suite',
-                                                   ['(bvt)'])])
+                                                   ['(!disabled)'])])
 
     site_config.AddGroup(
         'parent',
@@ -479,7 +479,7 @@ class SiteConfigTest(cros_test_lib.TestCase):
             '_template': None,
             'name': 'tast_vm_tests',
             'tast_vm_tests': [
-                config_lib.TastVMTestConfig('tast_vm_suite', ['(bvt)'])],
+                config_lib.TastVMTestConfig('tast_vm_suite', ['(!disabled)'])],
         },
         'parent': {
             '_template': None,
