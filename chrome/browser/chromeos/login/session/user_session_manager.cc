@@ -1508,8 +1508,8 @@ bool UserSessionManager::InitializeUserSession(Profile* profile) {
   ChildAccountService* child_service =
       ChildAccountServiceFactory::GetForProfile(profile);
   child_service->AddChildStatusReceivedCallback(
-      base::Bind(&UserSessionManager::ChildAccountStatusReceivedCallback,
-                 weak_factory_.GetWeakPtr(), profile));
+      base::BindOnce(&UserSessionManager::ChildAccountStatusReceivedCallback,
+                     weak_factory_.GetWeakPtr(), profile));
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&UserSessionManager::StopChildStatusObserving,

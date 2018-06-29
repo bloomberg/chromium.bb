@@ -4,6 +4,8 @@
 
 #include "chrome/browser/supervised_user/child_accounts/child_account_service_android.h"
 
+#include <memory>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -31,10 +33,8 @@ void JNI_ChildAccountService_ListenForChildStatusReceived(
       profile_manager->GetLastUsedProfile());
   // Needed to disambiguate RunCallbackAndroid
   void (*runCallback)(const JavaRef<jobject>&, bool) = &RunCallbackAndroid;
-  // TODO(https://crbug.com/692591) Should use base::BindOnce, but
-  // AddChildStatusReceivedCallback won't yet accept a BindOnce.
-  service->AddChildStatusReceivedCallback(
-      base::Bind(runCallback, ScopedJavaGlobalRef<jobject>(callback), true));
+  service->AddChildStatusReceivedCallback(base::BindOnce(
+      runCallback, ScopedJavaGlobalRef<jobject>(callback), true));
 }
 
 void ReauthenticateChildAccount(content::WebContents* web_contents,
