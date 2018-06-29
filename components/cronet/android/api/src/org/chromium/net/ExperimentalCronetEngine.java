@@ -127,18 +127,6 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
         }
 
         /**
-         * Initializes CachingCertVerifier's cache with certVerifierData which has
-         * the results of certificate verification.
-         * @param certVerifierData a serialized representation of certificate
-         *        verification results.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder setCertVerifierData(String certVerifierData) {
-            mBuilderDelegate.setCertVerifierData(certVerifierData);
-            return this;
-        }
-
-        /**
          * Sets experimental options to be used in Cronet.
          *
          * @param options JSON formatted experimental options.
@@ -384,21 +372,6 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
      * @param listener the listener to remove.
      */
     public void removeRequestFinishedListener(RequestFinishedInfo.Listener listener) {}
-
-    /**
-     * Returns serialized representation of certificate verifier's cache
-     * which contains the list of hosts/certificates and the certificate
-     * verification results. May block until data is received from the network
-     * thread (will timeout after the specified timeout). In case of timeout, it
-     * returns the previous saved value.
-     *
-     * @param timeout in milliseconds. If timeout is 0, it will use default value.
-     * @return serialized representation of certificate verification results
-     *         data.
-     */
-    public String getCertVerifierData(long timeout) {
-        return "";
-    }
 
     /**
      * Returns the HTTP RTT estimate (in milliseconds) computed by the network

@@ -115,11 +115,6 @@ public final class JavaCronetEngine extends CronetEngineBase {
     public void stopNetLog() {}
 
     @Override
-    public String getCertVerifierData(long timeout) {
-        return "";
-    }
-
-    @Override
     public byte[] getGlobalMetricsDeltas() {
         return new byte[0];
     }

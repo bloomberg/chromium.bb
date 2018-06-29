@@ -382,12 +382,6 @@ void CronetURLRequestContext::NetworkTasks::Initialize(
     }
   }
 
-  // If there is a cert_verifier, then populate its cache with
-  // |cert_verifier_data|.
-  if (!config->cert_verifier_data.empty() && context_->cert_verifier())
-    callback_->OnInitCertVerifierData(context_->cert_verifier(),
-                                      config->cert_verifier_data);
-
   // Iterate through PKP configuration for every host.
   for (const auto& pkp : config->pkp_list) {
     // Add the host pinning.
@@ -500,20 +494,6 @@ void CronetURLRequestContext::StopNetLog() {
       FROM_HERE,
       base::BindOnce(&CronetURLRequestContext::NetworkTasks::StopNetLog,
                      base::Unretained(network_tasks_)));
-}
-
-void CronetURLRequestContext::GetCertVerifierData() {
-  PostTaskToNetworkThread(
-      FROM_HERE,
-      base::BindOnce(
-          &CronetURLRequestContext::NetworkTasks::GetCertVerifierData,
-          base::Unretained(network_tasks_)));
-}
-
-void CronetURLRequestContext::NetworkTasks::GetCertVerifierData() {
-  DCHECK_CALLED_ON_VALID_THREAD(network_thread_checker_);
-  callback_->OnSaveCertVerifierData(
-      is_context_initialized_ ? context_->cert_verifier() : nullptr);
 }
 
 int CronetURLRequestContext::default_load_flags() const {

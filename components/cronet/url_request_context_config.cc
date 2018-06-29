@@ -165,8 +165,7 @@ URLRequestContextConfig::URLRequestContextConfig(
     const std::string& experimental_options,
     std::unique_ptr<net::CertVerifier> mock_cert_verifier,
     bool enable_network_quality_estimator,
-    bool bypass_public_key_pinning_for_local_trust_anchors,
-    const std::string& cert_verifier_data)
+    bool bypass_public_key_pinning_for_local_trust_anchors)
     : enable_quic(enable_quic),
       quic_user_agent_id(quic_user_agent_id),
       enable_spdy(enable_spdy),
@@ -181,7 +180,6 @@ URLRequestContextConfig::URLRequestContextConfig(
       enable_network_quality_estimator(enable_network_quality_estimator),
       bypass_public_key_pinning_for_local_trust_anchors(
           bypass_public_key_pinning_for_local_trust_anchors),
-      cert_verifier_data(cert_verifier_data),
       experimental_options(experimental_options) {}
 
 URLRequestContextConfig::~URLRequestContextConfig() {}
@@ -603,7 +601,7 @@ URLRequestContextConfigBuilder::Build() {
       http_cache_max_size, load_disable_cache, storage_path, accept_language,
       user_agent, experimental_options, std::move(mock_cert_verifier),
       enable_network_quality_estimator,
-      bypass_public_key_pinning_for_local_trust_anchors, cert_verifier_data);
+      bypass_public_key_pinning_for_local_trust_anchors);
 }
 
 }  // namespace cronet

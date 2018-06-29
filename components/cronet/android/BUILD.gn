@@ -146,23 +146,8 @@ zip("cronet_impl_version_srcjar") {
 
 _cronet_version_header_include_dir = "$target_gen_dir/cronet_version_header"
 
-proto_library("cronet_android_cert_proto") {
-  visibility = [ "//components/cronet/android/*" ]
-
-  sources = [
-    "//components/cronet/android/cert/proto/cert_verification.proto",
-  ]
-
-  deps = [
-    "//third_party/protobuf:protobuf_lite",
-  ]
-
-  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
 source_set("cronet_static") {
   deps = [
-    ":cronet_android_cert_proto",
     ":cronet_jni_headers",
     ":cronet_jni_registration",
     "//base",
@@ -178,8 +163,6 @@ source_set("cronet_static") {
     "//url:url_features",
   ]
   sources = [
-    "//components/cronet/android/cert/cert_verifier_cache_serializer.cc",
-    "//components/cronet/android/cert/cert_verifier_cache_serializer.h",
     "//components/cronet/android/cronet_bidirectional_stream_adapter.cc",
     "//components/cronet/android/cronet_bidirectional_stream_adapter.h",
     "//components/cronet/android/cronet_library_loader.cc",
@@ -879,12 +862,7 @@ android_apk("cronet_perf_test_apk") {
 }
 
 test("cronet_unittests_android") {
-  sources = [
-    "//components/cronet/android/cert/cert_verifier_cache_serializer_unittest.cc",
-  ]
-
   deps = [
-    ":cronet_android_cert_proto",
     ":cronet_impl_native_base_java",
     ":cronet_static",
     "//base",

@@ -177,23 +177,6 @@ void CachingCertVerifier::AddResultToCache(
                           start_time + base::TimeDelta::FromSeconds(kTTLSecs)));
 }
 
-void CachingCertVerifier::VisitEntries(CacheVisitor* visitor) const {
-  DCHECK(visitor);
-
-  CacheValidityPeriod now(base::Time::Now());
-  CacheExpirationFunctor expiration_cmp;
-
-  for (CertVerificationCache::Iterator it(cache_); it.HasNext(); it.Advance()) {
-    if (!expiration_cmp(now, it.expiration()))
-      continue;
-    if (!visitor->VisitEntry(it.key(), it.value().error, it.value().result,
-                             it.expiration().verification_time,
-                             it.expiration().expiration_time)) {
-      break;
-    }
-  }
-}
-
 void CachingCertVerifier::OnCertDBChanged() {
   ClearCache();
 }

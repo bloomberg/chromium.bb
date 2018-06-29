@@ -30,23 +30,6 @@ using testing::ReturnRef;
 
 namespace net {
 
-namespace {
-
-class MockCacheVisitor : public CachingCertVerifier::CacheVisitor {
- public:
-  MockCacheVisitor() = default;
-  ~MockCacheVisitor() override = default;
-
-  MOCK_METHOD5(VisitEntry,
-               bool(const CachingCertVerifier::RequestParams& params,
-                    int error,
-                    const CertVerifyResult& result,
-                    base::Time verification_time,
-                    base::Time expiration_time));
-};
-
-}  // namespace
-
 class CachingCertVerifierTest : public ::testing::Test {
  public:
   CachingCertVerifierTest() : verifier_(std::make_unique<MockCertVerifier>()) {}
@@ -89,72 +72,6 @@ TEST_F(CachingCertVerifierTest, CacheHit) {
   ASSERT_EQ(2u, verifier_.requests());
   ASSERT_EQ(1u, verifier_.cache_hits());
   ASSERT_EQ(1u, verifier_.GetCacheSize());
-}
-
-TEST_F(CachingCertVerifierTest, Visitor) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_TRUE(test_cert.get());
-
-  TestCompletionCallback callback;
-  std::unique_ptr<CertVerifier::Request> request;
-
-  // Add some entries to the cache
-  CertVerifier::RequestParams params1(test_cert, "www.example.com", 0,
-                                      std::string(), CertificateList());
-  CertVerifyResult result1;
-  int error1 = callback.GetResult(
-      verifier_.Verify(params1, nullptr, &result1, callback.callback(),
-                       &request, NetLogWithSource()));
-  ASSERT_TRUE(IsCertificateError(error1));
-  ASSERT_EQ(1u, verifier_.requests());
-  ASSERT_EQ(0u, verifier_.cache_hits());
-  ASSERT_EQ(1u, verifier_.GetCacheSize());
-
-  CertVerifier::RequestParams params2(test_cert, "www.example.net", 0,
-                                      std::string(), CertificateList());
-  CertVerifyResult result2;
-  int error2 = callback.GetResult(
-      verifier_.Verify(params2, nullptr, &result2, callback.callback(),
-                       &request, NetLogWithSource()));
-  ASSERT_TRUE(IsCertificateError(error2));
-  ASSERT_EQ(2u, verifier_.requests());
-  ASSERT_EQ(0u, verifier_.cache_hits());
-  ASSERT_EQ(2u, verifier_.GetCacheSize());
-
-  CertVerifier::RequestParams params3(test_cert, "www.example.org", 0,
-                                      std::string(), CertificateList());
-  CertVerifyResult result3;
-  int error3 = callback.GetResult(
-      verifier_.Verify(params3, nullptr, &result3, callback.callback(),
-                       &request, NetLogWithSource()));
-  ASSERT_TRUE(IsCertificateError(error3));
-  ASSERT_EQ(3u, verifier_.requests());
-  ASSERT_EQ(0u, verifier_.cache_hits());
-  ASSERT_EQ(3u, verifier_.GetCacheSize());
-
-  // Iterate through all entries.
-  {
-    MockCacheVisitor mock_visitor;
-    EXPECT_CALL(mock_visitor, VisitEntry(params1, error1, _, _, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(mock_visitor, VisitEntry(params2, error2, _, _, _))
-        .WillOnce(Return(true));
-    EXPECT_CALL(mock_visitor, VisitEntry(params3, error3, _, _, _))
-        .WillOnce(Return(true));
-    verifier_.VisitEntries(&mock_visitor);
-  }
-
-  // Now perform partial iteration
-  {
-    MockCacheVisitor mock_visitor;
-    ::testing::InSequence sequence;
-    EXPECT_CALL(mock_visitor, VisitEntry(_, _, _, _, _)).WillOnce(Return(true));
-    EXPECT_CALL(mock_visitor, VisitEntry(_, _, _, _, _))
-        .WillOnce(Return(false));
-    verifier_.VisitEntries(&mock_visitor);
-  }
 }
 
 TEST_F(CachingCertVerifierTest, AddsEntries) {

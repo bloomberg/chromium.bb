@@ -85,11 +85,6 @@ class CronetURLRequestContextAdapter
   void StopNetLog(JNIEnv* env,
                   const base::android::JavaParamRef<jobject>& jcaller);
 
-  // Posts a task to Network thread to get serialized results of certificate
-  // verifications of |context_|'s |cert_verifier|.
-  void GetCertVerifierData(JNIEnv* env,
-                           const base::android::JavaParamRef<jobject>& jcaller);
-
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const;
 
@@ -126,9 +121,6 @@ class CronetURLRequestContextAdapter
   // CronetURLRequestContext::Callback
   void OnInitNetworkThread() override;
   void OnDestroyNetworkThread() override;
-  void OnInitCertVerifierData(net::CertVerifier* cert_verifier,
-                              const std::string& cert_verifier_data) override;
-  void OnSaveCertVerifierData(net::CertVerifier* cert_verifier) override;
   void OnEffectiveConnectionTypeChanged(
       net::EffectiveConnectionType effective_connection_type) override;
   void OnRTTOrThroughputEstimatesComputed(

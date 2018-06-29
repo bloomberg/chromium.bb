@@ -1127,32 +1127,6 @@ public class CronetUrlRequestContextTest {
     @Test
     @SmallTest
     @Feature({"Cronet"})
-    public void testEmptyGetCertVerifierData() {
-        // Immediately make a request after initializing the engine.
-        ExperimentalCronetEngine cronetEngine =
-                new ExperimentalCronetEngine.Builder(getContext()).build();
-        TestUrlRequestCallback callback = new TestUrlRequestCallback();
-        UrlRequest.Builder urlRequestBuilder =
-                cronetEngine.newUrlRequestBuilder(mUrl, callback, callback.getExecutor());
-        urlRequestBuilder.build().start();
-        callback.blockForDone();
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-
-        try {
-            cronetEngine.getCertVerifierData(-1);
-            fail("Should throw an exception");
-        } catch (Exception e) {
-            assertEquals("timeout must be a positive value", e.getMessage());
-        }
-        // Because mUrl is http, getCertVerifierData() will return empty data.
-        String data = cronetEngine.getCertVerifierData(100);
-        assertTrue(data.isEmpty());
-        cronetEngine.shutdown();
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Cronet"})
     public void testInitEngineStartTwoRequests() throws Exception {
         // Make two requests after initializing the context.
         CronetEngine cronetEngine = new CronetEngine.Builder(getContext()).build();
@@ -1262,7 +1236,6 @@ public class CronetUrlRequestContextTest {
         builder.enableHttp2(false);
         builder.enableQuic(true);
         builder.addQuicHint("example.com", 12, 34);
-        builder.setCertVerifierData("test_cert_verifier_data");
         builder.enableHttpCache(HTTP_CACHE_IN_MEMORY, 54321);
         builder.setUserAgent("efgh");
         builder.setExperimentalOptions("ijkl");
