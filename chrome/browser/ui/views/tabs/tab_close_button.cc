@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
+#include "chrome/common/chrome_features.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/material_design/material_design_controller.h"
@@ -170,7 +171,8 @@ bool TabCloseButton::GetHitTestMask(gfx::Path* mask) const {
 
 SkAlpha TabCloseButton::GetOpacity() {
   Tab* tab = static_cast<Tab*>(parent());
-  if (!MD::IsRefreshUi() || IsMouseHovered() || tab->IsActive())
+  if (base::FeatureList::IsEnabled(features::kCloseButtonsInactiveTabs) ||
+      IsMouseHovered() || tab->IsActive())
     return SK_AlphaOPAQUE;
   const double animation_value = tab->hover_controller()->GetAnimationValue();
   return gfx::Tween::IntValueBetween(animation_value, SK_AlphaTRANSPARENT,
