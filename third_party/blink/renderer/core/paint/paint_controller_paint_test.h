@@ -74,16 +74,17 @@ class PaintControllerPaintTestBase : public RenderingTest {
     return GetLayoutView();
   }
 
-  void Commit() {
+  void CommitAndFinishCycle() {
     // Only root graphics layer is supported.
     RootPaintController().CommitNewDisplayItems();
+    RootPaintController().FinishCycle();
     GetDocument().View()->Lifecycle().AdvanceTo(DocumentLifecycle::kPaintClean);
   }
 
   void Paint(const IntRect* interest_rect = nullptr) {
     // Only root graphics layer is supported.
     if (PaintWithoutCommit(interest_rect))
-      Commit();
+      CommitAndFinishCycle();
   }
 
   bool DisplayItemListContains(const DisplayItemList& display_item_list,

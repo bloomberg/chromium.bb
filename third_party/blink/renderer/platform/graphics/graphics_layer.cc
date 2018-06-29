@@ -287,8 +287,13 @@ void GraphicsLayer::PaintRecursively() {
 
   // Notify the controllers that the artifact has been pushed and some
   // lifecycle state can be freed (such as raster invalidations).
-  for (auto* layer : repainted_layers)
+  for (auto* layer : repainted_layers) {
+#if DCHECK_IS_ON()
+    if (VLOG_IS_ON(2))
+      LOG(ERROR) << "FinishCycle for GraphicsLayer: " << layer->DebugName();
+#endif
     layer->GetPaintController().FinishCycle();
+  }
 
 #if DCHECK_IS_ON()
   if (VLOG_IS_ON(2)) {
@@ -345,9 +350,9 @@ bool GraphicsLayer::Paint(const IntRect* interest_rect,
   DCHECK(layer_state_) << "No layer state for GraphicsLayer: " << DebugName();
   // Generate raster invalidations for SPv1.
   IntRect layer_bounds(layer_state_->offset, Size());
-  EnsureRasterInvalidator().Generate(GetPaintController().GetPaintArtifact(),
-                                     layer_bounds, layer_state_->state,
-                                     VisualRectSubpixelOffset(), this);
+  EnsureRasterInvalidator().Generate(
+      GetPaintController().GetPaintArtifactShared(), layer_bounds,
+      layer_state_->state, VisualRectSubpixelOffset(), this);
 
   if (RuntimeEnabledFeatures::PaintUnderInvalidationCheckingEnabled() &&
       DrawsContent()) {
@@ -590,9 +595,6 @@ void GraphicsLayer::UpdateTrackingRasterInvalidations() {
     EnsureRasterInvalidator().SetTracksRasterInvalidations(true);
   else if (raster_invalidator_)
     raster_invalidator_->SetTracksRasterInvalidations(false);
-
-  if (paint_controller_)
-    paint_controller_->SetTracksRasterInvalidations(should_track);
 }
 
 void GraphicsLayer::ResetTrackedRasterInvalidations() {
@@ -1147,8 +1149,6 @@ void GraphicsLayer::SetNeedsDisplay() {
   if (!DrawsContent())
     return;
 
-  // TODO(chrishtr): Stop invalidating the rects once
-  // FrameView::paintRecursively() does so.
   layer_->SetNeedsDisplay();
   for (size_t i = 0; i < link_highlights_.size(); ++i)
     link_highlights_[i]->Invalidate();
@@ -1316,11 +1316,8 @@ void GraphicsLayer::DidChangeScrollbarsHiddenIfOverlay(bool hidden) {
 
 PaintController& GraphicsLayer::GetPaintController() const {
   CHECK(DrawsContent());
-  if (!paint_controller_) {
+  if (!paint_controller_)
     paint_controller_ = PaintController::Create();
-    paint_controller_->SetTracksRasterInvalidations(
-        client_.IsTrackingRasterInvalidations());
-  }
   return *paint_controller_;
 }
 

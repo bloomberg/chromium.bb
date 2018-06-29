@@ -50,8 +50,8 @@ TEST_F(PaintChunkerTest, Empty) {
   PaintChunker chunker;
   EXPECT_TRUE(chunker.PaintChunks().IsEmpty());
 
-  auto chunks_data = chunker.ReleaseData();
-  EXPECT_TRUE(chunks_data.chunks.IsEmpty());
+  auto chunks = chunker.ReleasePaintChunks();
+  EXPECT_TRUE(chunks.IsEmpty());
 }
 
 TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
@@ -65,11 +65,10 @@ TEST_F(PaintChunkerTest, SingleNonEmptyRange) {
   EXPECT_EQ(chunks.size(), 1u);
   EXPECT_EQ(chunks[0], PaintChunk(0, 2, id, DefaultPaintChunkProperties()));
 
-  auto chunks_data = chunker.ReleaseData();
+  auto chunks1 = chunker.ReleasePaintChunks();
   EXPECT_TRUE(chunker.PaintChunks().IsEmpty());
-  EXPECT_EQ(chunks_data.chunks.size(), 1u);
-  EXPECT_EQ(chunks_data.chunks[0],
-            PaintChunk(0, 2, id, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks1.size(), 1u);
+  EXPECT_EQ(chunks1[0], PaintChunk(0, 2, id, DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
@@ -85,11 +84,10 @@ TEST_F(PaintChunkerTest, SamePropertiesTwiceCombineIntoOneChunk) {
   EXPECT_EQ(chunks.size(), 1u);
   EXPECT_EQ(chunks[0], PaintChunk(0, 3, id, DefaultPaintChunkProperties()));
 
-  auto chunks_data = chunker.ReleaseData();
+  auto chunks1 = chunker.ReleasePaintChunks();
   EXPECT_TRUE(chunker.PaintChunks().IsEmpty());
-  EXPECT_EQ(chunks_data.chunks.size(), 1u);
-  EXPECT_EQ(chunks_data.chunks[0],
-            PaintChunk(0, 3, id, DefaultPaintChunkProperties()));
+  EXPECT_EQ(chunks1.size(), 1u);
+  EXPECT_EQ(chunks1[0], PaintChunk(0, 3, id, DefaultPaintChunkProperties()));
 }
 
 TEST_F(PaintChunkerTest, BuildMultipleChunksWithSinglePropertyChanging) {

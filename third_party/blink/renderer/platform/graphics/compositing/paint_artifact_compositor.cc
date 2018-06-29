@@ -67,7 +67,7 @@ void PaintArtifactCompositor::EnableExtraDataForTesting() {
 
 void PaintArtifactCompositor::SetTracksRasterInvalidations(bool should_track) {
   for (auto& client : content_layer_clients_)
-    client->SetTracksRasterInvalidations(should_track);
+    client->GetRasterInvalidator().SetTracksRasterInvalidations(should_track);
 }
 
 void PaintArtifactCompositor::WillBeRemovedFromFrame() {
@@ -220,26 +220,27 @@ PaintArtifactCompositor::ClientForPaintChunk(const PaintChunk& paint_chunk) {
   }
 
   auto client = std::make_unique<ContentLayerClientImpl>();
-  client->SetTracksRasterInvalidations(tracks_raster_invalidations_);
+  client->GetRasterInvalidator().SetTracksRasterInvalidations(
+      tracks_raster_invalidations_);
   return client;
 }
 
 scoped_refptr<cc::Layer>
 PaintArtifactCompositor::CompositedLayerForPendingLayer(
-    const PaintArtifact& paint_artifact,
+    scoped_refptr<const PaintArtifact> paint_artifact,
     const PendingLayer& pending_layer,
     gfx::Vector2dF& layer_offset,
     Vector<std::unique_ptr<ContentLayerClientImpl>>& new_content_layer_clients,
     Vector<scoped_refptr<cc::Layer>>& new_scroll_hit_test_layers) {
   auto paint_chunks =
-      paint_artifact.GetPaintChunkSubset(pending_layer.paint_chunk_indices);
+      paint_artifact->GetPaintChunkSubset(pending_layer.paint_chunk_indices);
   DCHECK(paint_chunks.size());
   const PaintChunk& first_paint_chunk = paint_chunks[0];
   DCHECK(first_paint_chunk.size());
 
   // If the paint chunk is a foreign layer, just return that layer.
   if (scoped_refptr<cc::Layer> foreign_layer = ForeignLayerForPaintChunk(
-          paint_artifact, first_paint_chunk, layer_offset)) {
+          *paint_artifact, first_paint_chunk, layer_offset)) {
     DCHECK_EQ(paint_chunks.size(), 1u);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->content_layers.push_back(foreign_layer);
@@ -248,7 +249,7 @@ PaintArtifactCompositor::CompositedLayerForPendingLayer(
 
   // If the paint chunk is a scroll hit test layer, lookup/create the layer.
   if (scoped_refptr<cc::Layer> scroll_layer = ScrollHitTestLayerForPendingLayer(
-          paint_artifact, pending_layer, layer_offset)) {
+          *paint_artifact, pending_layer, layer_offset)) {
     new_scroll_hit_test_layers.push_back(scroll_layer);
     if (extra_data_for_testing_enabled_)
       extra_data_for_testing_->scroll_hit_test_layers.push_back(scroll_layer);
@@ -692,7 +693,7 @@ cc::Layer* PaintArtifactCompositor::CreateOrReuseSynthesizedClipLayer(
 }
 
 void PaintArtifactCompositor::Update(
-    const PaintArtifact& paint_artifact,
+    scoped_refptr<const PaintArtifact> paint_artifact,
     CompositorElementIdSet& composited_element_ids,
     TransformPaintPropertyNode* viewport_scale_node) {
   DCHECK(root_layer_);
@@ -720,7 +721,7 @@ void PaintArtifactCompositor::Update(
                                             root_layer_.get(),
                                             g_s_property_tree_sequence_number);
   Vector<PendingLayer, 0> pending_layers;
-  CollectPendingLayers(paint_artifact, pending_layers);
+  CollectPendingLayers(*paint_artifact, pending_layers);
 
   // The page scale layer would create this below but we need to use the
   // special EnsureCompositorPageScaleTransformNode method since the transform
@@ -765,7 +766,7 @@ void PaintArtifactCompositor::Update(
     // The compositor scroll node is not directly stored in the property tree
     // state but can be created via the scroll offset translation node.
     const auto& scroll_translation =
-        ScrollTranslationForPendingLayer(paint_artifact, pending_layer);
+        ScrollTranslationForPendingLayer(*paint_artifact, pending_layer);
     int scroll_id =
         property_tree_manager.EnsureCompositorScrollNode(&scroll_translation);
 

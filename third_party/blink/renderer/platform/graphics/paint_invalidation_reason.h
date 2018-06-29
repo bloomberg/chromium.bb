@@ -41,6 +41,7 @@ enum class PaintInvalidationReason : uint8_t {
   kUncacheable,
   // The initial PaintInvalidationReason of a DisplayItemClient.
   kJustCreated,
+  kReordered,
   kChunkAppeared,
   kChunkDisappeared,
   kChunkUncacheable,

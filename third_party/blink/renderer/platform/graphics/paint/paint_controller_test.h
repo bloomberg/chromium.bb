@@ -86,11 +86,6 @@ class PaintControllerTestBase : public testing::Test {
     return ClientCacheIsValid(*paint_controller_, client);
   }
 
-  const ChunkRasterInvalidationRects* GetRasterInvalidationRects(size_t i) {
-    return GetPaintController().GetPaintArtifact().GetRasterInvalidationRects(
-        i);
-  }
-
  private:
   FakeDisplayItemClient root_paint_property_client_;
   PaintChunk::Id root_paint_chunk_id_;

@@ -154,9 +154,9 @@ void PaintController::ShowDebugDataInternal(
     DisplayItemList::JsonFlags flags) const {
   LOG(ERROR) << "current display item list: "
              << DisplayItemListAsJSON(
-                    current_paint_artifact_.GetDisplayItemList(),
+                    current_paint_artifact_->GetDisplayItemList(),
                     current_cached_subsequences_,
-                    current_paint_artifact_.PaintChunks(), flags)
+                    current_paint_artifact_->PaintChunks(), flags)
                     .ToString()
                     .Utf8()
                     .data();

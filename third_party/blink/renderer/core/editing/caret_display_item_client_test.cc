@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/editing/caret_display_item_client.h"
 
+#include "testing/gmock/include/gmock/gmock.h"
 #include "third_party/blink/renderer/core/editing/frame_selection.h"
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
@@ -14,6 +15,8 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 
 namespace blink {
+
+using ::testing::UnorderedElementsAre;
 
 class CaretDisplayItemClientTest : public PaintAndRasterInvalidationTest {
  protected:
@@ -86,14 +89,11 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(1, caret_visual_rect.Width());
   EXPECT_EQ(block->Location(), caret_visual_rect.Location());
 
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
-            (*raster_invalidations)[0].rect);
-  EXPECT_EQ(&GetCaretDisplayItemClient(), (*raster_invalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kAppeared,
-            (*raster_invalidations)[0].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                         EnclosingIntRect(caret_visual_rect),
+                                         PaintInvalidationReason::kAppeared}));
 
   std::unique_ptr<JSONArray> object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -116,18 +116,15 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
   EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
-    raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
-    ASSERT_EQ(2u, raster_invalidations->size());
-    EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
-              (*raster_invalidations)[0].rect);
-    EXPECT_EQ(&GetCaretDisplayItemClient(), (*raster_invalidations)[0].client);
-    EXPECT_EQ(PaintInvalidationReason::kCaret,
-              (*raster_invalidations)[0].reason);
-    EXPECT_EQ(EnclosingIntRect(new_caret_visual_rect),
-              (*raster_invalidations)[1].rect);
-    EXPECT_EQ(&GetCaretDisplayItemClient(), (*raster_invalidations)[1].client);
-    EXPECT_EQ(PaintInvalidationReason::kCaret,
-              (*raster_invalidations)[1].reason);
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(
+          RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                 EnclosingIntRect(caret_visual_rect),
+                                 PaintInvalidationReason::kCaret},
+          RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                 EnclosingIntRect(new_caret_visual_rect),
+                                 PaintInvalidationReason::kCaret}));
 
   object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -144,18 +141,18 @@ TEST_P(CaretDisplayItemClientTest, CaretPaintInvalidation) {
   EXPECT_FALSE(block->ShouldPaintCursorCaret());
   EXPECT_EQ(LayoutRect(), GetCaretDisplayItemClient().VisualRect());
 
-    raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
-    ASSERT_EQ(1u, raster_invalidations->size());
-    EXPECT_EQ(EnclosingIntRect(old_caret_visual_rect),
-              (*raster_invalidations)[0].rect);
-    EXPECT_EQ(&GetCaretDisplayItemClient(), (*raster_invalidations)[0].client);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  &GetCaretDisplayItemClient(), "Caret",
+                  EnclosingIntRect(old_caret_visual_rect),
+                  PaintInvalidationReason::kDisappeared}));
 
-    object_invalidations =
-        GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
-    ASSERT_EQ(1u, object_invalidations->size());
-    JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
-    EXPECT_EQ("Caret", s);
-    GetDocument().View()->SetTracksPaintInvalidations(false);
+  object_invalidations =
+      GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
+  ASSERT_EQ(1u, object_invalidations->size());
+  JSONObject::Cast(object_invalidations->at(0))->Get("object")->AsString(&s);
+  EXPECT_EQ("Caret", s);
+  GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
@@ -165,8 +162,8 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   auto* block_element1 = AppendBlock("Block1");
   auto* block_element2 = AppendBlock("Block2");
   UpdateAllLifecyclePhases();
-  auto* block1 = ToLayoutBlock(block_element1->GetLayoutObject());
-  auto* block2 = ToLayoutBlock(block_element2->GetLayoutObject());
+  auto* block1 = ToLayoutBlockFlow(block_element1->GetLayoutObject());
+  auto* block2 = ToLayoutBlockFlow(block_element2->GetLayoutObject());
 
   // Focus the body.
   GetDocument().body()->focus();
@@ -193,17 +190,14 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_FALSE(block1->ShouldPaintCursorCaret());
   EXPECT_TRUE(block2->ShouldPaintCursorCaret());
 
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations->size());
-  EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
-            (*raster_invalidations)[0].rect);
-  EXPECT_EQ(&GetCaretDisplayItemClient(), (*raster_invalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[0].reason);
-  EXPECT_EQ(EnclosingIntRect(caret_visual_rect2),
-            (*raster_invalidations)[1].rect);
-  EXPECT_EQ(&GetCaretDisplayItemClient(), (*raster_invalidations)[1].client);
-  EXPECT_EQ(PaintInvalidationReason::kCaret, (*raster_invalidations)[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                         EnclosingIntRect(caret_visual_rect1),
+                                         PaintInvalidationReason::kCaret},
+                  RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                         EnclosingIntRect(caret_visual_rect2),
+                                         PaintInvalidationReason::kCaret}));
 
   std::unique_ptr<JSONArray> object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -222,20 +216,14 @@ TEST_P(CaretDisplayItemClientTest, CaretMovesBetweenBlocks) {
   EXPECT_TRUE(block1->ShouldPaintCursorCaret());
   EXPECT_FALSE(block2->ShouldPaintCursorCaret());
 
-    raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
-    ASSERT_EQ(2u, raster_invalidations->size());
-      EXPECT_EQ(EnclosingIntRect(caret_visual_rect2),
-                (*raster_invalidations)[0].rect);
-      EXPECT_EQ(&GetCaretDisplayItemClient(),
-                (*raster_invalidations)[0].client);
-      EXPECT_EQ(PaintInvalidationReason::kCaret,
-                (*raster_invalidations)[0].reason);
-      EXPECT_EQ(EnclosingIntRect(caret_visual_rect1),
-                (*raster_invalidations)[1].rect);
-      EXPECT_EQ(&GetCaretDisplayItemClient(),
-                (*raster_invalidations)[1].client);
-      EXPECT_EQ(PaintInvalidationReason::kCaret,
-                (*raster_invalidations)[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                         EnclosingIntRect(caret_visual_rect1),
+                                         PaintInvalidationReason::kCaret},
+                  RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                         EnclosingIntRect(caret_visual_rect2),
+                                         PaintInvalidationReason::kCaret}));
 
   object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();
@@ -334,17 +322,15 @@ TEST_P(CaretDisplayItemClientTest, CaretHideMoveAndShow) {
   EXPECT_EQ(caret_visual_rect.Y(), new_caret_visual_rect.Y());
   EXPECT_LT(caret_visual_rect.X(), new_caret_visual_rect.X());
 
-    const auto& raster_invalidations =
-        GetRasterInvalidationTracking()->Invalidations();
-    ASSERT_EQ(2u, raster_invalidations.size());
-    EXPECT_EQ(EnclosingIntRect(caret_visual_rect),
-              raster_invalidations[0].rect);
-      EXPECT_EQ(&GetCaretDisplayItemClient(), raster_invalidations[0].client);
-    EXPECT_EQ(PaintInvalidationReason::kCaret, raster_invalidations[0].reason);
-    EXPECT_EQ(EnclosingIntRect(new_caret_visual_rect),
-              raster_invalidations[1].rect);
-      EXPECT_EQ(&GetCaretDisplayItemClient(), raster_invalidations[1].client);
-    EXPECT_EQ(PaintInvalidationReason::kCaret, raster_invalidations[1].reason);
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(
+          RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                 EnclosingIntRect(caret_visual_rect),
+                                 PaintInvalidationReason::kCaret},
+          RasterInvalidationInfo{&GetCaretDisplayItemClient(), "Caret",
+                                 EnclosingIntRect(new_caret_visual_rect),
+                                 PaintInvalidationReason::kCaret}));
 
   auto object_invalidations =
       GetDocument().View()->TrackedObjectPaintInvalidationsAsJSON();

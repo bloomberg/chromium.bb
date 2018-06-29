@@ -60,7 +60,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   //
   // Populates |composited_element_ids| with the CompositorElementId of all
   // animations for which we saw a paint chunk and created a layer.
-  void Update(const PaintArtifact&,
+  void Update(scoped_refptr<const PaintArtifact>,
               CompositorElementIdSet& composited_element_ids,
               TransformPaintPropertyNode* viewport_scale_node);
 
@@ -164,7 +164,7 @@ class PLATFORM_EXPORT PaintArtifactCompositor final
   // paint chunk to align the bounding box to (0, 0) and return the actual
   // origin of the paint chunk in the |layerOffset| outparam.
   scoped_refptr<cc::Layer> CompositedLayerForPendingLayer(
-      const PaintArtifact&,
+      scoped_refptr<const PaintArtifact>,
       const PendingLayer&,
       gfx::Vector2dF& layer_offset,
       Vector<std::unique_ptr<ContentLayerClientImpl>>&

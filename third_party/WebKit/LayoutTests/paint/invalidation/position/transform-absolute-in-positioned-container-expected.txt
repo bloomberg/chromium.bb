@@ -23,7 +23,7 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
           "rect": [118, 232, 202, 202],
           "reason": "paint property change"
         }
