@@ -91,11 +91,18 @@ void BaseRenderingContext2D::restore() {
   DCHECK_GE(state_stack_.size(), 1u);
   if (state_stack_.size() <= 1)
     return;
-  path_.Transform(GetState().Transform());
+  // Verify that the current state's transform is invertible.
+  if (GetState().IsTransformInvertible())
+    path_.Transform(GetState().Transform());
+
   state_stack_.pop_back();
   state_stack_.back()->ClearResolvedFilter();
-  path_.Transform(GetState().Transform().Inverse());
+
+  if (GetState().IsTransformInvertible())
+    path_.Transform(GetState().Transform().Inverse());
+
   cc::PaintCanvas* c = DrawingCanvas();
+
   if (c)
     c->restore();
 

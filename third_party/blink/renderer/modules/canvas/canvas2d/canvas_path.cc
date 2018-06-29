@@ -54,18 +54,22 @@ void CanvasPath::closePath() {
 void CanvasPath::moveTo(float x, float y) {
   if (!std::isfinite(x) || !std::isfinite(y))
     return;
-  if (!IsTransformInvertible())
+  if (!IsTransformInvertible()) {
+    path_.MoveTo(Transform().MapPoint(FloatPoint(x, y)));
     return;
+  }
   path_.MoveTo(FloatPoint(x, y));
 }
 
 void CanvasPath::lineTo(float x, float y) {
   if (!std::isfinite(x) || !std::isfinite(y))
     return;
-  if (!IsTransformInvertible())
-    return;
-
   FloatPoint p1 = FloatPoint(x, y);
+
+  if (!IsTransformInvertible()) {
+    p1 = Transform().MapPoint(p1);
+  }
+
   if (!path_.HasCurrentPoint())
     path_.MoveTo(p1);
 
@@ -76,13 +80,16 @@ void CanvasPath::quadraticCurveTo(float cpx, float cpy, float x, float y) {
   if (!std::isfinite(cpx) || !std::isfinite(cpy) || !std::isfinite(x) ||
       !std::isfinite(y))
     return;
-  if (!IsTransformInvertible())
-    return;
-  if (!path_.HasCurrentPoint())
-    path_.MoveTo(FloatPoint(cpx, cpy));
-
   FloatPoint p1 = FloatPoint(x, y);
   FloatPoint cp = FloatPoint(cpx, cpy);
+
+  if (!IsTransformInvertible()) {
+    p1 = Transform().MapPoint(p1);
+    cp = Transform().MapPoint(cp);
+  }
+
+  if (!path_.HasCurrentPoint())
+    path_.MoveTo(FloatPoint(cpx, cpy));
 
   path_.AddQuadCurveTo(cp, p1);
 }
@@ -96,14 +103,18 @@ void CanvasPath::bezierCurveTo(float cp1x,
   if (!std::isfinite(cp1x) || !std::isfinite(cp1y) || !std::isfinite(cp2x) ||
       !std::isfinite(cp2y) || !std::isfinite(x) || !std::isfinite(y))
     return;
-  if (!IsTransformInvertible())
-    return;
-  if (!path_.HasCurrentPoint())
-    path_.MoveTo(FloatPoint(cp1x, cp1y));
 
   FloatPoint p1 = FloatPoint(x, y);
   FloatPoint cp1 = FloatPoint(cp1x, cp1y);
   FloatPoint cp2 = FloatPoint(cp2x, cp2y);
+
+  if (!IsTransformInvertible()) {
+    p1 = Transform().MapPoint(p1);
+    cp1 = Transform().MapPoint(cp1);
+    cp2 = Transform().MapPoint(cp2);
+  }
+  if (!path_.HasCurrentPoint())
+    path_.MoveTo(FloatPoint(cp1x, cp1y));
 
   path_.AddBezierCurveTo(cp1, cp2, p1);
 }
@@ -125,11 +136,13 @@ void CanvasPath::arcTo(float x1,
     return;
   }
 
-  if (!IsTransformInvertible())
-    return;
-
   FloatPoint p1 = FloatPoint(x1, y1);
   FloatPoint p2 = FloatPoint(x2, y2);
+
+  if (!IsTransformInvertible()) {
+    p1 = Transform().MapPoint(p1);
+    p2 = Transform().MapPoint(p2);
+  }
 
   if (!path_.HasCurrentPoint())
     path_.MoveTo(p1);
