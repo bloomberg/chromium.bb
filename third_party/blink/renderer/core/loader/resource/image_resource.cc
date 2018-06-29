@@ -24,7 +24,6 @@
 #include "third_party/blink/renderer/core/loader/resource/image_resource.h"
 
 #include <stdint.h>
-#include <v8.h>
 #include <memory>
 
 #include "third_party/blink/public/platform/platform.h"

@@ -30,8 +30,6 @@
 
 #include "third_party/blink/renderer/platform/heap/thread_state.h"
 
-#include <v8.h>
-
 #include <algorithm>
 #include <iomanip>
 #include <limits>
@@ -63,6 +61,7 @@
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/threading_primitives.h"
 #include "third_party/blink/renderer/platform/wtf/time.h"
+#include "v8/include/v8.h"
 
 #if defined(OS_WIN)
 #include <stddef.h>

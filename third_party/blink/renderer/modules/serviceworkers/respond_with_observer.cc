@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/modules/serviceworkers/respond_with_observer.h"
 
-#include <v8.h>
-
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -13,6 +11,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
+#include "v8/include/v8.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 
