@@ -230,9 +230,7 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   if (!unpositioned_float->node.GetLayoutBox()
            ->GetFrameView()
            ->IsInPerformLayout()) {
-    LayoutObject* layout_object = unpositioned_float->node.GetLayoutBox();
-    SECURITY_DCHECK(layout_object->IsBox());
-    LayoutBox* box = ToLayoutBox(layout_object);
+    LayoutBox* box = unpositioned_float->node.GetLayoutBox();
     LayoutBox::LogicalExtentComputedValues values;
     box->ComputeLogicalWidth(values);
     return values.extent_;
