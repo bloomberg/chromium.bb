@@ -199,6 +199,10 @@ void CastRemotingConnector::ConnectToService(
       &CastRemotingConnector::OnMirrorServiceStopped, base::Unretained(this)));
 }
 
+void CastRemotingConnector::ResetRemotingPermission() {
+  remoting_allowed_.reset();
+}
+
 void CastRemotingConnector::OnMirrorServiceStopped() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   VLOG(2) << __func__;
@@ -226,7 +230,7 @@ void CastRemotingConnector::RegisterBridge(RemotingBridge* bridge) {
   DCHECK(bridges_.find(bridge) == bridges_.end());
 
   bridges_.insert(bridge);
-  if (remoter_ && !active_bridge_)
+  if (remoter_ && !active_bridge_ && remoting_allowed_.value_or(true))
     bridge->OnSinkAvailable(sink_metadata_);
 }
 
@@ -269,11 +273,44 @@ void CastRemotingConnector::StartRemoting(RemotingBridge* bridge) {
   }
 
   active_bridge_ = bridge;
-  remoter_->Start();
 
-  // Assume the remoting session is always started successfully. If any failure
-  // occurs, OnError() will be called.
-  bridge->OnStarted();
+  if (remoting_allowed_.has_value()) {
+    StartRemotingIfPermitted();
+  } else {
+    base::OnceCallback<void(bool)> dialog_result_callback(base::BindOnce(
+        [](base::WeakPtr<CastRemotingConnector> connector, bool is_allowed) {
+          DCHECK_CURRENTLY_ON(BrowserThread::UI);
+          if (!connector)
+            return;
+          connector->remoting_allowed_ = is_allowed;
+          connector->StartRemotingIfPermitted();
+        },
+        weak_factory_.GetWeakPtr()));
+
+    // TODO(http://crbug.com/849020): Show the remoting dialog to get user's
+    // permission.
+    std::move(dialog_result_callback).Run(true);
+  }
+}
+
+void CastRemotingConnector::StartRemotingIfPermitted() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+  if (!active_bridge_)
+    return;
+
+  if (remoting_allowed_.value()) {
+    remoter_->Start();
+
+    // Assume the remoting session is always started successfully. If any
+    // failure occurs, OnError() will be called.
+    active_bridge_->OnStarted();
+  } else {
+    // TODO(xjz): Add an extra reason for this failure.
+    active_bridge_->OnStartFailed(RemotingStartFailReason::ROUTE_TERMINATED);
+    active_bridge_->OnSinkGone();
+    active_bridge_ = nullptr;
+  }
 }
 
 void CastRemotingConnector::StartRemotingDataStreams(
@@ -432,8 +469,10 @@ void CastRemotingConnector::OnSinkAvailable(
       media::mojom::RemotingSinkFeature::RENDERING);
 #endif
 
-  for (RemotingBridge* notifyee : bridges_)
-    notifyee->OnSinkAvailable(sink_metadata_);
+  if (remoting_allowed_.value_or(true)) {
+    for (RemotingBridge* notifyee : bridges_)
+      notifyee->OnSinkAvailable(sink_metadata_);
+  }
 }
 
 void CastRemotingConnector::OnError() {

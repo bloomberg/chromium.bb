@@ -8,6 +8,7 @@
 #include <set>
 
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "base/supports_user_data.h"
 #include "components/sessions/core/session_id.h"
 #include "media/mojo/interfaces/mirror_service_remoting.mojom.h"
@@ -93,6 +94,9 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
       media::mojom::MirrorServiceRemotingSourceRequest source_request,
       media::mojom::MirrorServiceRemoterPtr remoter);
 
+  // Called at the start of mirroring to reset the permission.
+  void ResetRemotingPermission();
+
  private:
   // Allow unit tests access to the private constructor and CreateBridge()
   // method, since unit tests don't have a complete browser (i.e., with a
@@ -146,6 +150,10 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
   void EstimateTransmissionCapacity(
       media::mojom::Remoter::EstimateTransmissionCapacityCallback callback);
 
+  // Called after permission check. Either call |remoter_| to start remoting or
+  // notify the source that start fails due to no permission.
+  void StartRemotingIfPermitted();
+
   // Called when RTP streams are started.
   void OnDataStreamsStarted(
       mojo::ScopedDataPipeConsumerHandle audio_pipe,
@@ -182,6 +190,10 @@ class CastRemotingConnector : public base::SupportsUserData::Data,
 
   mojo::Binding<media::mojom::MirrorServiceRemotingSource> binding_;
   media::mojom::MirrorServiceRemoterPtr remoter_;
+
+  // Permission is checked the first time remoting requested to start for each
+  // casting session.
+  base::Optional<bool> remoting_allowed_;
 
   // Produces weak pointers that are only valid for the current remoting
   // session. This is used to cancel any outstanding callbacks when a remoting
