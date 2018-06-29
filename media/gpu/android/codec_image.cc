@@ -61,10 +61,7 @@ unsigned CodecImage::GetInternalFormat() {
 }
 
 bool CodecImage::BindTexImage(unsigned target) {
-  // If we're using an overlay, then pretend it's bound.  That way, we'll get
-  // calls to ScheduleOverlayPlane.  Otherwise, fail so that we will be asked
-  // to CopyTexImage.  Note that we could just CopyTexImage here.
-  return !texture_owner_;
+  return false;
 }
 
 void CodecImage::ReleaseTexImage(unsigned target) {}
