@@ -1857,6 +1857,7 @@ chrome_test_java_sources = [
   "javatests/src/org/chromium/chrome/browser/partnercustomizations/PartnerDisableIncognitoModeUnitTest.java",
   "javatests/src/org/chromium/chrome/browser/partnercustomizations/PartnerHomepageIntegrationTest.java",
   "javatests/src/org/chromium/chrome/browser/partnercustomizations/PartnerHomepageUnitTest.java",
+  "javatests/src/org/chromium/chrome/browser/password_manager/PasswordGenerationDialogTest.java",
   "javatests/src/org/chromium/chrome/browser/photo_picker/PhotoPickerDialogTest.java",
   "javatests/src/org/chromium/chrome/browser/policy/CombinedPolicyProviderTest.java",
   "javatests/src/org/chromium/chrome/browser/payments/AndroidPaymentAppFinderTest.java",

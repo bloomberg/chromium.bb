@@ -49,6 +49,8 @@ public class PasswordGenerationDialogViewBinder {
                 model.getValue(PasswordGenerationDialogModel.PASSWORD_ACTION_CALLBACK)));
         viewHolder.setGeneratedPassword(
                 model.getValue(PasswordGenerationDialogModel.GENERATED_PASSWORD));
+        viewHolder.setSaveExplanationText(
+                model.getValue(PasswordGenerationDialogModel.SAVE_EXPLANATION_TEXT));
         viewHolder.initializeView();
     }
 }

@@ -6,9 +6,14 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
+#include "chrome/grit/chromium_strings.h"
+#include "chrome/grit/generated_resources.h"
+#include "components/strings/grit/components_strings.h"
 #include "jni/PasswordGenerationDialogBridge_jni.h"
 #include "ui/android/window_android.h"
+#include "ui/base/l10n/l10n_util.h"
 
 PasswordGenerationDialogViewAndroid::PasswordGenerationDialogViewAndroid(
     PasswordAccessoryController* controller)
@@ -29,9 +34,17 @@ PasswordGenerationDialogViewAndroid::~PasswordGenerationDialogViewAndroid() {
 
 void PasswordGenerationDialogViewAndroid::Show(base::string16& password) {
   JNIEnv* env = base::android::AttachCurrentThread();
+
+  base::string16 link =
+      l10n_util::GetStringUTF16(IDS_PASSWORD_MANAGER_SMART_LOCK);
+  size_t offset = 0;
+  base::string16 explanation_text =
+      l10n_util::GetStringFUTF16(IDS_PASSWORD_GENERATION_PROMPT, link, &offset);
+
   Java_PasswordGenerationDialogBridge_showDialog(
-      env, java_object_,
-      base::android::ConvertUTF16ToJavaString(env, password));
+      env, java_object_, base::android::ConvertUTF16ToJavaString(env, password),
+      base::android::ConvertUTF16ToJavaString(env, explanation_text), offset,
+      offset + link.length());
 }
 
 void PasswordGenerationDialogViewAndroid::PasswordAccepted(
@@ -47,6 +60,12 @@ void PasswordGenerationDialogViewAndroid::PasswordRejected(
     const base::android::JavaParamRef<jobject>& obj) {
   // TODO(ioanap): Send message to controller. This will probably be used
   // mainly for metrics.
+}
+
+void PasswordGenerationDialogViewAndroid::OnSavedPasswordsLinkClicked(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj) {
+  controller_->OnSavedPasswordsLinkClicked();
 }
 
 // static

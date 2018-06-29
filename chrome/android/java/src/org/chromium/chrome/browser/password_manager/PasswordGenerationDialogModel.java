@@ -15,12 +15,16 @@ class PasswordGenerationDialogModel extends PropertyModel {
     /** The generated password to be displayed in the dialog. */
     public static final ObjectPropertyKey<String> GENERATED_PASSWORD = new ObjectPropertyKey<>();
 
+    /** Explanation text for how the generated password is saved. */
+    public static final ObjectPropertyKey<PasswordGenerationDialogCoordinator.SaveExplanationText>
+            SAVE_EXPLANATION_TEXT = new ObjectPropertyKey<>();
+
     /** Callback invoked when the password is accepted or rejected by the user. */
     public static final ObjectPropertyKey<Callback<Boolean>> PASSWORD_ACTION_CALLBACK =
             new ObjectPropertyKey<>();
 
     /** Default constructor */
     public PasswordGenerationDialogModel() {
-        super(GENERATED_PASSWORD, PASSWORD_ACTION_CALLBACK);
+        super(GENERATED_PASSWORD, SAVE_EXPLANATION_TEXT, PASSWORD_ACTION_CALLBACK);
     }
 }
