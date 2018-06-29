@@ -204,6 +204,9 @@ class PasswordProtectionRequest
   // Whether there is a modal warning triggered by this request.
   bool is_modal_warning_showing_;
 
+  // If a request is sent, this is the token returned by the WebUI.
+  int web_ui_token_;
+
   base::WeakPtrFactory<PasswordProtectionRequest> weakptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(PasswordProtectionRequest);
 };

@@ -24,3 +24,12 @@ h1, h2, h3, p {
   font-weight: normal;
   line-height: 1.5;
 }
+table.request-response {
+  table-layout:fixed;
+  width: 100%;
+  word-break:break-all;
+  white-space:pre-wrap;
+}
+table.request-response td {
+  width: 50%;
+}

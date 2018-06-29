@@ -103,6 +103,36 @@ void WebUIInfoSingleton::ClearPGEvents() {
   std::vector<sync_pb::UserEventSpecifics>().swap(pg_event_log_);
 }
 
+int WebUIInfoSingleton::AddToPGPings(
+    const LoginReputationClientRequest& request) {
+  if (webui_instances_.empty())
+    return -1;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyPGPingJsListener(pg_pings_.size(), request);
+
+  pg_pings_.push_back(request);
+
+  return pg_pings_.size() - 1;
+}
+
+void WebUIInfoSingleton::AddToPGResponses(
+    int token,
+    const LoginReputationClientResponse& response) {
+  if (webui_instances_.empty())
+    return;
+
+  for (auto* webui_listener : webui_instances_)
+    webui_listener->NotifyPGResponseJsListener(token, response);
+
+  pg_responses_[token] = response;
+}
+
+void WebUIInfoSingleton::ClearPGPings() {
+  std::vector<LoginReputationClientRequest>().swap(pg_pings_);
+  std::map<int, LoginReputationClientResponse>().swap(pg_responses_);
+}
+
 void WebUIInfoSingleton::RegisterWebUIInstance(SafeBrowsingUIHandler* webui) {
   webui_instances_.push_back(webui);
 }
@@ -466,6 +496,290 @@ base::DictionaryValue SerializePGEvent(
   return result;
 }
 
+base::Value SerializeReferrer(const ReferrerChainEntry& referrer) {
+  base::DictionaryValue referrer_dict;
+  referrer_dict.SetPath({"url"}, base::Value(referrer.url()));
+  referrer_dict.SetPath({"main_frame_url"},
+                        base::Value(referrer.main_frame_url()));
+
+  std::string url_type;
+  switch (referrer.type()) {
+    case ReferrerChainEntry::EVENT_URL:
+      url_type = "EVENT_URL";
+      break;
+    case ReferrerChainEntry::LANDING_PAGE:
+      url_type = "LANDING_PAGE";
+      break;
+    case ReferrerChainEntry::LANDING_REFERRER:
+      url_type = "LANDING_REFERRER";
+      break;
+    case ReferrerChainEntry::CLIENT_REDIRECT:
+      url_type = "CLIENT_REDIRECT";
+      break;
+    case ReferrerChainEntry::DEPRECATED_SERVER_REDIRECT:
+      url_type = "DEPRECATED_SERVER_REDIRECT";
+      break;
+    case ReferrerChainEntry::RECENT_NAVIGATION:
+      url_type = "RECENT_NAVIGATION";
+      break;
+  }
+  referrer_dict.SetPath({"type"}, base::Value(url_type));
+
+  base::ListValue ip_addresses;
+  for (const std::string& ip_address : referrer.ip_addresses()) {
+    ip_addresses.GetList().push_back(base::Value(ip_address));
+  }
+  referrer_dict.SetPath({"ip_addresses"}, std::move(ip_addresses));
+
+  referrer_dict.SetPath({"referrer_url"}, base::Value(referrer.referrer_url()));
+
+  referrer_dict.SetPath({"referrer_main_frame_url"},
+                        base::Value(referrer.referrer_main_frame_url()));
+
+  referrer_dict.SetPath({"is_retargeting"},
+                        base::Value(referrer.is_retargeting()));
+
+  referrer_dict.SetPath({"navigation_time_msec"},
+                        base::Value(referrer.navigation_time_msec()));
+
+  base::ListValue server_redirects;
+  for (const ReferrerChainEntry::ServerRedirect& server_redirect :
+       referrer.server_redirect_chain()) {
+    server_redirects.GetList().push_back(base::Value(server_redirect.url()));
+  }
+  referrer_dict.SetPath({"server_redirect_chain"}, std::move(server_redirects));
+
+  std::string navigation_initiation;
+  switch (referrer.navigation_initiation()) {
+    case ReferrerChainEntry::UNDEFINED:
+      navigation_initiation = "UNDEFINED";
+      break;
+    case ReferrerChainEntry::BROWSER_INITIATED:
+      navigation_initiation = "BROWSER_INITIATED";
+      break;
+    case ReferrerChainEntry::RENDERER_INITIATED_WITHOUT_USER_GESTURE:
+      navigation_initiation = "RENDERER_INITIATED_WITHOUT_USER_GESTURE";
+      break;
+    case ReferrerChainEntry::RENDERER_INITIATED_WITH_USER_GESTURE:
+      navigation_initiation = "RENDERER_INITIATED_WITH_USER_GESTURE";
+      break;
+  }
+  referrer_dict.SetPath({"navigation_initiation"},
+                        base::Value(navigation_initiation));
+
+  return std::move(referrer_dict);
+}
+
+base::Value SerializeFrame(const LoginReputationClientRequest::Frame& frame) {
+  base::DictionaryValue frame_dict;
+  frame_dict.SetPath({"frame_index"}, base::Value(frame.frame_index()));
+  frame_dict.SetPath({"parent_frame_index"},
+                     base::Value(frame.parent_frame_index()));
+  frame_dict.SetPath({"url"}, base::Value(frame.url()));
+  frame_dict.SetPath({"has_password_field"},
+                     base::Value(frame.has_password_field()));
+
+  base::ListValue referrer_list;
+  for (const ReferrerChainEntry& referrer : frame.referrer_chain()) {
+    referrer_list.GetList().push_back(SerializeReferrer(referrer));
+  }
+  frame_dict.SetPath({"referrer_chain"}, std::move(referrer_list));
+
+  frame_dict.SetPath(
+      {"referrer_chain_options", "recent_navigations_to_collect"},
+      base::Value(
+          frame.referrer_chain_options().recent_navigations_to_collect()));
+
+  base::ListValue form_list;
+  for (const LoginReputationClientRequest::Frame::Form& form : frame.forms()) {
+    base::DictionaryValue form_dict;
+    form_dict.SetPath({"action_url"}, base::Value(form.action_url()));
+    form_dict.SetPath({"has_password_field"},
+                      base::Value(form.has_password_field()));
+    form_list.GetList().push_back(std::move(form_dict));
+  }
+  frame_dict.SetPath({"forms"}, std::move(form_list));
+
+  return std::move(frame_dict);
+}
+
+base::Value SerializePasswordReuseEvent(
+    const LoginReputationClientRequest::PasswordReuseEvent& event) {
+  base::DictionaryValue event_dict;
+
+  base::ListValue domains_list;
+  for (const std::string& domain : event.domains_matching_password()) {
+    domains_list.GetList().push_back(base::Value(domain));
+  }
+  event_dict.SetPath({"domains_matching_password"}, std::move(domains_list));
+
+  event_dict.SetPath({"frame_id"}, base::Value(event.frame_id()));
+  event_dict.SetPath({"is_chrome_signin_password"},
+                     base::Value(event.is_chrome_signin_password()));
+
+  std::string sync_account_type;
+  switch (event.sync_account_type()) {
+    case LoginReputationClientRequest::PasswordReuseEvent::NOT_SIGNED_IN:
+      sync_account_type = "NOT_SIGNED_IN";
+      break;
+    case LoginReputationClientRequest::PasswordReuseEvent::GMAIL:
+      sync_account_type = "GMAIL";
+      break;
+    case LoginReputationClientRequest::PasswordReuseEvent::GSUITE:
+      sync_account_type = "GSUITE";
+      break;
+  }
+  event_dict.SetPath({"sync_account_type"}, base::Value(sync_account_type));
+
+  std::string reused_password_type;
+  switch (event.reused_password_type()) {
+    case LoginReputationClientRequest::PasswordReuseEvent::
+        REUSED_PASSWORD_TYPE_UNKNOWN:
+      reused_password_type = "REUSED_PASSWORD_TYPE_UNKNOWN";
+      break;
+    case LoginReputationClientRequest::PasswordReuseEvent::SAVED_PASSWORD:
+      reused_password_type = "SAVED_PASSWORD";
+      break;
+    case LoginReputationClientRequest::PasswordReuseEvent::SIGN_IN_PASSWORD:
+      reused_password_type = "SIGN_IN_PASSWORD";
+      break;
+    case LoginReputationClientRequest::PasswordReuseEvent::OTHER_GAIA_PASSWORD:
+      reused_password_type = "OTHER_GAIA_PASSWORD";
+      break;
+    case LoginReputationClientRequest::PasswordReuseEvent::ENTERPRISE_PASSWORD:
+      reused_password_type = "ENTERPRISE_PASSWORD";
+      break;
+  }
+  event_dict.SetPath({"reused_password_type"},
+                     base::Value(reused_password_type));
+
+  return std::move(event_dict);
+}
+
+base::Value SerializeChromeUserPopulation(
+    const ChromeUserPopulation& population) {
+  base::DictionaryValue population_dict;
+
+  std::string user_population;
+  switch (population.user_population()) {
+    case ChromeUserPopulation::UNKNOWN_USER_POPULATION:
+      user_population = "REUSED_PASSWORD_TYPE_UNKNOWN";
+      break;
+    case ChromeUserPopulation::SAFE_BROWSING:
+      user_population = "SAFE_BROWSING";
+      break;
+    case ChromeUserPopulation::EXTENDED_REPORTING:
+      user_population = "EXTENDED_REPORTING";
+      break;
+  }
+  population_dict.SetPath({"user_population"}, base::Value(user_population));
+
+  population_dict.SetPath({"is_history_sync_enabled"},
+                          base::Value(population.is_history_sync_enabled()));
+
+  base::ListValue finch_list;
+  for (const std::string& finch_group : population.finch_active_groups()) {
+    finch_list.GetList().push_back(base::Value(finch_group));
+  }
+  population_dict.SetPath({"finch_active_groups"}, std::move(finch_list));
+
+  std::string management_status;
+  switch (population.profile_management_status()) {
+    case ChromeUserPopulation::UNKNOWN:
+      management_status = "UNKNOWN";
+      break;
+    case ChromeUserPopulation::UNAVAILABLE:
+      management_status = "UNAVAILABLE";
+      break;
+    case ChromeUserPopulation::NOT_MANAGED:
+      management_status = "NOT_MANAGED";
+      break;
+    case ChromeUserPopulation::ENTERPRISE_MANAGED:
+      management_status = "ENTERPRISE_MANAGED";
+      break;
+  }
+  population_dict.SetPath({"profile_management_status"},
+                          base::Value(management_status));
+
+  return std::move(population_dict);
+}
+
+std::string SerializePGPing(const LoginReputationClientRequest& request) {
+  base::DictionaryValue request_dict;
+
+  request_dict.SetPath({"page_url"}, base::Value(request.page_url()));
+
+  std::string trigger_type;
+  switch (request.trigger_type()) {
+    case LoginReputationClientRequest::TRIGGER_TYPE_UNSPECIFIED:
+      trigger_type = "TRIGGER_TYPE_UNSPECIFIED";
+      break;
+    case LoginReputationClientRequest::UNFAMILIAR_LOGIN_PAGE:
+      trigger_type = "UNFAMILIAR_LOGIN_PAGE";
+      break;
+    case LoginReputationClientRequest::PASSWORD_REUSE_EVENT:
+      trigger_type = "PASSWORD_REUSE_EVENT";
+      break;
+  }
+  request_dict.SetPath({"trigger_type"}, base::Value(trigger_type));
+
+  base::ListValue frames_list;
+  for (const LoginReputationClientRequest::Frame& frame : request.frames()) {
+    frames_list.GetList().push_back(SerializeFrame(frame));
+  }
+  request_dict.SetPath({"frames"}, std::move(frames_list));
+
+  request_dict.SetPath(
+      {"password_reuse_event"},
+      SerializePasswordReuseEvent(request.password_reuse_event()));
+  request_dict.SetPath({"stored_verdict_cnt"},
+                       base::Value(request.stored_verdict_cnt()));
+  request_dict.SetPath({"population"},
+                       SerializeChromeUserPopulation(request.population()));
+  request_dict.SetPath({"clicked_through_interstitial"},
+                       base::Value(request.clicked_through_interstitial()));
+  request_dict.SetPath({"content_type"}, base::Value(request.content_type()));
+
+  std::string request_serialized;
+  JSONStringValueSerializer serializer(&request_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(request_dict);
+  return request_serialized;
+}
+
+std::string SerializePGResponse(const LoginReputationClientResponse& response) {
+  base::DictionaryValue response_dict;
+
+  std::string verdict;
+  switch (response.verdict_type()) {
+    case LoginReputationClientResponse::VERDICT_TYPE_UNSPECIFIED:
+      verdict = "VERDICT_TYPE_UNSPECIFIED";
+      break;
+    case LoginReputationClientResponse::SAFE:
+      verdict = "SAFE";
+      break;
+    case LoginReputationClientResponse::LOW_REPUTATION:
+      verdict = "LOW_REPUTATION";
+      break;
+    case LoginReputationClientResponse::PHISHING:
+      verdict = "PHISHING";
+      break;
+  }
+  response_dict.SetPath({"verdict_type"}, base::Value(verdict));
+  response_dict.SetPath({"cache_duration_sec"},
+                        base::Value(int(response.cache_duration_sec())));
+  response_dict.SetPath({"cache_expression"},
+                        base::Value(response.cache_expression()));
+  response_dict.SetPath({"verdict_token"},
+                        base::Value(response.verdict_token()));
+
+  std::string response_serialized;
+  JSONStringValueSerializer serializer(&response_serialized);
+  serializer.set_pretty_print(true);
+  serializer.Serialize(response_dict);
+  return response_serialized;
+}
+
 }  // namespace
 
 SafeBrowsingUI::SafeBrowsingUI(content::WebUI* web_ui)
@@ -620,6 +934,45 @@ void SafeBrowsingUIHandler::GetPGEvents(const base::ListValue* args) {
   ResolveJavascriptCallback(base::Value(callback_id), events_sent);
 }
 
+void SafeBrowsingUIHandler::GetPGPings(const base::ListValue* args) {
+  const std::vector<LoginReputationClientRequest> requests =
+      WebUIInfoSingleton::GetInstance()->pg_pings();
+
+  base::ListValue pings_sent;
+  for (size_t request_index = 0; request_index < requests.size();
+       request_index++) {
+    base::ListValue ping_entry;
+    ping_entry.GetList().push_back(base::Value(int(request_index)));
+    ping_entry.GetList().push_back(
+        base::Value(SerializePGPing(requests[request_index])));
+    pings_sent.GetList().push_back(std::move(ping_entry));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), pings_sent);
+}
+
+void SafeBrowsingUIHandler::GetPGResponses(const base::ListValue* args) {
+  const std::map<int, LoginReputationClientResponse> responses =
+      WebUIInfoSingleton::GetInstance()->pg_responses();
+
+  base::ListValue responses_sent;
+  for (const auto& token_and_response : responses) {
+    base::ListValue response_entry;
+    response_entry.GetList().push_back(base::Value(token_and_response.first));
+    response_entry.GetList().push_back(
+        base::Value(SerializePGResponse(token_and_response.second)));
+    responses_sent.GetList().push_back(std::move(response_entry));
+  }
+
+  AllowJavascript();
+  std::string callback_id;
+  args->GetString(0, &callback_id);
+  ResolveJavascriptCallback(base::Value(callback_id), responses_sent);
+}
+
 void SafeBrowsingUIHandler::NotifyClientDownloadRequestJsListener(
     ClientDownloadRequest* client_download_request) {
   AllowJavascript();
@@ -638,6 +991,28 @@ void SafeBrowsingUIHandler::NotifyPGEventJsListener(
     const sync_pb::UserEventSpecifics& event) {
   AllowJavascript();
   FireWebUIListener("sent-pg-event", SerializePGEvent(event));
+}
+
+void SafeBrowsingUIHandler::NotifyPGPingJsListener(
+    int token,
+    const LoginReputationClientRequest& request) {
+  base::ListValue request_list;
+  request_list.GetList().push_back(base::Value(token));
+  request_list.GetList().push_back(base::Value(SerializePGPing(request)));
+
+  AllowJavascript();
+  FireWebUIListener("pg-pings-update", request_list);
+}
+
+void SafeBrowsingUIHandler::NotifyPGResponseJsListener(
+    int token,
+    const LoginReputationClientResponse& response) {
+  base::ListValue response_list;
+  response_list.GetList().push_back(base::Value(token));
+  response_list.GetList().push_back(base::Value(SerializePGResponse(response)));
+
+  AllowJavascript();
+  FireWebUIListener("pg-responses-update", response_list);
 }
 
 void SafeBrowsingUIHandler::RegisterMessages() {
