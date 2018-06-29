@@ -9,7 +9,10 @@ import android.support.annotation.Nullable;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.autofill.keyboard_accessory.KeyboardAccessoryData.Provider;
+import org.chromium.chrome.browser.compositor.layouts.Layout;
+import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
 import org.chromium.chrome.browser.fullscreen.FullscreenOptions;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
@@ -87,23 +90,38 @@ class ManualFillingMediator
     private TabModelSelectorTabModelObserver mTabModelObserver;
     private Tab mActiveBrowserTab;
 
+    private final SceneChangeObserver mTabSwitcherObserver = new SceneChangeObserver() {
+        @Override
+        public void onTabSelectionHinted(int tabId) {}
+
+        @Override
+        public void onSceneChange(Layout layout) {
+            // Includes events like side-swiping between tabs and triggering contextual search.
+            mAccessorySheet.hide();
+        }
+    };
+
     private final TabObserver mTabObserver = new EmptyTabObserver() {
         @Override
         public void onHidden(Tab tab) {
             // TODO(fhorschig): Test that the accessory is reset and close if a tab changes.
             // TODO(fhorschig): Test that this hides everything.
-            resetAccessory(tab);
+            mAccessorySheet.hide();
+            resetAccessory();
         }
 
         @Override
         public void onDestroyed(Tab tab) {
             // TODO(fhorschig): Test that this hides everything.
-            // TODO(fhorschig): Clear caches and remove tab. What to select next?
+            mAccessorySheet.hide();
+            resetAccessory();
+            mModel.remove(tab); // Clears tab if still present.
         }
 
         @Override
         public void onEnterFullscreenMode(Tab tab, FullscreenOptions options) {
             // TODO(fhorschig): Test that this hides everything.
+            mAccessorySheet.hide();
         }
     };
 
@@ -112,6 +130,13 @@ class ManualFillingMediator
         mKeyboardAccessory = keyboardAccessory;
         mAccessorySheet = accessorySheet;
         mActivity = activity;
+        if (activity instanceof ChromeTabbedActivity) {
+            // This object typically lives as long as the layout manager, so there is no need to
+            // unsubscribe which would occasionally use an invalidated object.
+            ((ChromeTabbedActivity) activity)
+                    .getLayoutManager()
+                    .addSceneChangeObserver(mTabSwitcherObserver);
+        }
         mTabModelObserver = new TabModelSelectorTabModelObserver(mActivity.getTabModelSelector()) {
             @Override
             public void didSelectTab(Tab tab, @TabModel.TabSelectionType int type, int lastId) {
@@ -121,6 +146,8 @@ class ManualFillingMediator
 
             @Override
             public void willCloseTab(Tab tab, boolean animate) {
+                mAccessorySheet.hide();
+                resetAccessory();
                 mModel.remove(tab);
             }
         };
@@ -187,17 +214,15 @@ class ManualFillingMediator
 
     private void restoreCachedState(Tab browserTab) {
         AccessoryState state = getOrCreateAccessoryState(browserTab);
+        resetAccessory();
         if (state.mPasswordAccessorySheet != null) {
             addTab(state.mPasswordAccessorySheet.getTab());
         }
         if (state.mActionsProvider != null) state.mActionsProvider.notifyAboutCachedItems();
     }
 
-    private void resetAccessory(Tab browserTab) {
-        AccessoryState state = getOrCreateAccessoryState(browserTab);
-        if (state.mPasswordAccessorySheet != null) {
-            setTabs(new KeyboardAccessoryData.Tab[0]);
-        }
+    private void resetAccessory() {
+        setTabs(new KeyboardAccessoryData.Tab[0]);
     }
 
     private void setTabs(KeyboardAccessoryData.Tab[] tabs) {
@@ -207,6 +232,8 @@ class ManualFillingMediator
 
     @VisibleForTesting
     void addTab(KeyboardAccessoryData.Tab tab) {
+        // TODO(fhorschig): This should add the tab only to the state. Sheet and accessory should be
+        // using a |set| method or even observe the state.
         mKeyboardAccessory.addTab(tab);
         mAccessorySheet.addTab(tab);
     }

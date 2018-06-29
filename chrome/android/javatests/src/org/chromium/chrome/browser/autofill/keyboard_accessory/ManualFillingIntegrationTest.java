@@ -20,12 +20,12 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 
 import java.util.concurrent.TimeoutException;
 /**
@@ -37,8 +37,8 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class ManualFillingIntegrationTest {
     @Rule
-    public final ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
-            new ChromeActivityTestRule<>(ChromeActivity.class);
+    public final ChromeTabbedActivityTestRule mActivityTestRule =
+            new ChromeTabbedActivityTestRule();
 
     private final ManualFillingTestHelper mHelper = new ManualFillingTestHelper(mActivityTestRule);
 
@@ -135,6 +135,30 @@ public class ManualFillingIntegrationTest {
         onView(withId(R.id.tabs)).perform(selectTabAtPosition(0));
         mHelper.waitForKeyboard();
         onView(withId(R.id.keyboard_accessory)).check(matches(isDisplayed()));
+        mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
+    }
+
+    @Test
+    @SmallTest
+    public void testInvokingTabSwitcherHidesAccessory()
+            throws InterruptedException, TimeoutException {
+        mHelper.loadTestPage(false);
+        mHelper.createTestTab();
+
+        // Focus the field to bring up the accessory.
+        mHelper.clickPasswordField();
+        mHelper.waitForKeyboard();
+
+        // Click the tab to show the sheet and hide the keyboard.
+        whenDisplayed(withId(R.id.tabs)).perform(selectTabAtPosition(0));
+        mHelper.waitForKeyboardToDisappear();
+        whenDisplayed(withId(R.id.keyboard_accessory_sheet));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mActivityTestRule.getActivity().getLayoutManager().showOverview(false);
+            mActivityTestRule.getActivity().getLayoutManager().hideOverview(false);
+        });
+
         mHelper.waitToBeHidden(withId(R.id.keyboard_accessory_sheet));
     }
 
