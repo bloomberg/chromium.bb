@@ -66,19 +66,6 @@ bool NGPhysicalBoxFragment::IsFirstLineAnonymousInlineBox() const {
          ToLayoutInline(layout_object_)->IsFirstLineAnonymous();
 }
 
-const ComputedStyle& NGPhysicalBoxFragment::StyleForBackground() const {
-  if (!IsFirstLineAnonymousInlineBox())
-    return Style();
-
-  // TODO(kojii): Ideally, the first-line anonymous can return a synthesized
-  // style that has background inherited from the ::first-line style. Doing so
-  // is a bit complicated, and fortunately paint code can handle background
-  // properties and geometry from different style objects.
-  LayoutObject* container = GetLayoutObject()->Parent();
-  DCHECK(container && container->IsLayoutBlockFlow());
-  return container->FirstLineStyleRef();
-}
-
 const NGBaseline* NGPhysicalBoxFragment::Baseline(
     const NGBaselineRequest& request) const {
   for (const auto& baseline : baselines_) {

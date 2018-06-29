@@ -19,7 +19,7 @@ BoxDecorationData::BoxDecorationData(const LayoutBox& layout_box)
 }
 
 BoxDecorationData::BoxDecorationData(const NGPhysicalBoxFragment& fragment)
-    : BoxDecorationData(fragment.StyleForBackground()) {
+    : BoxDecorationData(fragment.Style()) {
   bleed_avoidance = ComputeBleedAvoidance(fragment.GetLayoutObject());
 }
 
