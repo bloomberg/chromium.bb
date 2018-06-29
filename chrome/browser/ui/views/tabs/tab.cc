@@ -1104,7 +1104,7 @@ int Tab::GetMinimumActiveWidth() {
 
 // static
 int Tab::GetStandardWidth() {
-  constexpr int kLayoutWidth[] = {193, 193, 245, 268, 268};
+  constexpr int kLayoutWidth[] = {193, 193, 245, 240, 240};
   return GetOverlap() + kLayoutWidth[MD::GetMode()];
 }
 
