@@ -1,0 +1,5 @@
+CONSOLE ERROR: line 13: Uncaught Error: Reloading with appropriate origin for desired context...
+This is a testharness.js-based test.
+FAIL Client IDs match between Locks API and Service Workers assert_true: clientIds should match, but are different expected true got false
+Harness: the test ran to completion.
+
