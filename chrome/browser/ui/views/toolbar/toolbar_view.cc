@@ -769,10 +769,8 @@ void ToolbarView::LoadImages() {
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
 
-#if !defined(OS_CHROMEOS)
   if (avatar_)
     avatar_->UpdateIcon();
-#endif  // !defined(OS_CHROMEOS)
 
   app_menu_button_->UpdateIcon(false);
 
