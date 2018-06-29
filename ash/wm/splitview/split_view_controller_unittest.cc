@@ -6,6 +6,7 @@
 
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
+#include "ash/public/cpp/app_types.h"
 #include "ash/public/cpp/config.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/screen_util.h"
@@ -24,8 +25,10 @@
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
+#include "ash/wm/tablet_mode/tablet_mode_app_window_drag_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_browser_window_drag_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
-#include "ash/wm/tablet_mode/tablet_mode_window_resizer.h"
+#include "ash/wm/tablet_mode/tablet_mode_window_drag_delegate.h"
 #include "ash/wm/window_resizer.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
@@ -1554,7 +1557,11 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
       real_window_resizer = static_cast<DragWindowResizerMash*>(resizer)
                                 ->next_window_resizer_for_testing();
     }
-    return static_cast<TabletModeWindowResizer*>(real_window_resizer)
+    TabletModeBrowserWindowDragController* browser_controller =
+        static_cast<TabletModeBrowserWindowDragController*>(
+            real_window_resizer);
+
+    return browser_controller->drag_delegate_for_testing()
         ->split_view_drag_indicators_for_testing()
         ->current_indicator_state();
   }
@@ -2134,6 +2141,107 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   EXPECT_TRUE(window_selector->IsWindowInOverview(window3.get()));
   // Test that the new window item widget has been destroyed.
   EXPECT_FALSE(current_grid->new_selector_item_widget_for_testing());
+}
+
+class SplitViewAppDraggingTest : public SplitViewControllerTest {
+ public:
+  SplitViewAppDraggingTest() = default;
+  ~SplitViewAppDraggingTest() override = default;
+
+  // SplitViewControllerTest:
+  void SetUp() override {
+    SplitViewControllerTest::SetUp();
+    controller_ = std::make_unique<TabletModeAppWindowDragController>();
+  }
+
+  // SplitViewControllerTest:
+  void TearDown() override {
+    controller_.reset();
+    SplitViewControllerTest::TearDown();
+  }
+
+ protected:
+  aura::Window* CreateAppWindow(const gfx::Rect& bounds) {
+    aura::Window* window = CreateWindow(bounds);
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(ash::AppType::CHROME_APP));
+    return window;
+  }
+
+  // Sends a gesture scroll sequence to TabletModeAppWindowDragController.
+  void SendGestureEvents(const gfx::Point& start,
+                         float scroll_delta,
+                         aura::Window* window) {
+    base::TimeTicks timestamp = base::TimeTicks::Now();
+    SendGestureEventToController(
+        start.x(), start.y(), timestamp,
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN, 0, 0), window);
+
+    timestamp += base::TimeDelta::FromMilliseconds(100);
+    SendGestureEventToController(
+        start.x(), start.y() + scroll_delta, timestamp,
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, 0, scroll_delta),
+        window);
+
+    timestamp += base::TimeDelta::FromMilliseconds(100);
+    SendGestureEventToController(
+        start.x(), start.y() + scroll_delta, timestamp,
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END), window);
+  }
+
+ private:
+  void SendGestureEventToController(int x,
+                                    int y,
+                                    base::TimeTicks& timestamp,
+                                    const ui::GestureEventDetails& details,
+                                    aura::Window* window) {
+    ui::GestureEvent event =
+        ui::GestureEvent(x, y, ui::EF_NONE, timestamp, details);
+    ui::Event::DispatcherApi(&event).set_target(window);
+    controller_->DragWindowFromTop(&event);
+  }
+
+  std::unique_ptr<TabletModeAppWindowDragController> controller_;
+
+  DISALLOW_COPY_AND_ASSIGN(SplitViewAppDraggingTest);
+};
+
+// Tests the functionalities that are related to dragging a maximized window
+// into splitscreen.
+TEST_F(SplitViewAppDraggingTest, DragMaximizedWindow) {
+  UpdateDisplay("800x600");
+  std::unique_ptr<aura::Window> window(
+      CreateAppWindow(gfx::Rect(0, 0, 500, 500)));
+  wm::GetWindowState(window.get())->Maximize();
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+  gfx::Rect display_bounds =
+      split_view_controller()->GetDisplayWorkAreaBoundsInScreen(window.get());
+
+  // Move the window by a small amount of distance will maximize the window
+  // again.
+  SendGestureEvents(gfx::Point(0, 0), 10, window.get());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
+
+  // Drag the window long enough (pass one fourth of the screen vertical
+  // height) to snap the window to splitscreen.
+  SendGestureEvents(gfx::Point(0, 0), display_bounds.height() / 4 + 5,
+                    window.get());
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(split_view_controller()->left_window(), window.get());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsSnapped());
+
+  // Drag the window that cannot be snapped long enough, the window will be
+  // restored back to maximized.
+  aura::test::TestWindowDelegate* delegate =
+      static_cast<aura::test::TestWindowDelegate*>(window->delegate());
+  delegate->set_minimum_size(
+      gfx::Size(display_bounds.width() * 0.67f, display_bounds.height()));
+  SendGestureEvents(gfx::Point(0, 0), display_bounds.height() / 4 + 5,
+                    window.get());
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(wm::GetWindowState(window.get())->IsMaximized());
 }
 
 }  // namespace ash

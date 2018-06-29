@@ -16,6 +16,11 @@ namespace features {
 // https://crbug.com/709824.
 ASH_PUBLIC_EXPORT extern const base::Feature kDockedMagnifier;
 
+// Enables dragging an app window when it is in tablet mode.
+// TODO(minch): Remove this after the feature is launched.
+// https://crbug.com/847587.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragAppsInTabletMode;
+
 // Enables dragging one or more tabs out of a browser window in tablet mode.
 // TODO(xdai): Remove this after the feature is launched.
 // https://crbug.com/823769.

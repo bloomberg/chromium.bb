@@ -178,103 +178,12 @@ class SplitViewController::TabDraggedWindowObserver
       // dragging.
       dragged_window_->RemoveObserver(this);
       dragged_window_ = nullptr;
-
-      // If the newly created window has been added to overview window, do
-      // nothing.
-      WindowSelectorController* window_selector_controller =
-          Shell::Get()->window_selector_controller();
-      if (window_selector_controller->IsSelecting() &&
-          window_selector_controller->window_selector()->IsWindowInOverview(
-              window)) {
-        return;
-      }
-
-      const bool was_splitview_active =
-          split_view_controller_->IsSplitViewModeActive();
-      if (desired_snap_position_ != SplitViewController::NONE) {
-        aura::Window* previous_snapped_window =
-            split_view_controller_->GetSnappedWindowAt(desired_snap_position_);
-        split_view_controller_->SnapWindow(window, desired_snap_position_);
-        if (!was_splitview_active) {
-          // If splitview mode was not active before snapping the dragged
-          // window, snap the initiator window to the other side of the screen
-          // if it's not the same window as the dragged window.
-          aura::Window* initiator_window =
-              window->GetProperty(ash::kTabDraggingSourceWindowKey);
-          if (initiator_window && initiator_window != window) {
-            split_view_controller_->SnapWindow(
-                initiator_window,
-                (desired_snap_position_ == SplitViewController::LEFT)
-                    ? SplitViewController::RIGHT
-                    : SplitViewController::LEFT);
-          } else {
-            split_view_controller_->StartOverview();
-          }
-        } else {
-          // If splitview mode was active before snapping the dragged window,
-          // but the dragged window was then snapped to the same side (i.e.,
-          // overview mode is still active), put the previous snapped window to
-          // overview window grid.
-          if (split_view_controller_->state() !=
-              SplitViewController::BOTH_SNAPPED) {
-            DCHECK(window_selector_controller->IsSelecting());
-            split_view_controller_->InsertWindowToOverview(
-                previous_snapped_window);
-          }
-        }
-      } else {  // desired_snap_positon_ == SplitViewController::NONE
-        if (was_splitview_active) {
-          // Even though |snap_position| equals |NONE|, the dragged window still
-          // needs to be snapped if splitview mode is active at the momemnt.
-          // Calculate the expected snap position based on the last event
-          // location.
-          SplitViewController::SnapPosition snap_position = GetSnapPosition();
-          aura::Window* previous_snapped_window =
-              split_view_controller_->GetSnappedWindowAt(snap_position);
-          split_view_controller_->SnapWindow(window, snap_position);
-          if (split_view_controller_->state() !=
-              SplitViewController::BOTH_SNAPPED) {
-            DCHECK(window_selector_controller->IsSelecting());
-            split_view_controller_->InsertWindowToOverview(
-                previous_snapped_window);
-          }
-        } else {
-          // Maximize the window if we are not supposed to snap the window. End
-          // the overview mode first if it's active at the moment.
-          split_view_controller_->EndOverview();
-          wm::WMEvent maximize_event(wm::WM_EVENT_MAXIMIZE);
-          wm::GetWindowState(window)->OnWMEvent(&maximize_event);
-        }
-      }
+      split_view_controller_->EndWindowDragImpl(window, desired_snap_position_,
+                                                last_location_in_screen_);
     }
   }
 
  private:
-  // It's used when the |snap_position_| equals NONE, but SplitViewController
-  // needs to snap the dragged window after dragging. Use the last mouse/gesture
-  // event location on the dragged window to determine where we should snap the
-  // window.
-  SplitViewController::SnapPosition GetSnapPosition() {
-    const int divider_position =
-        split_view_controller_->IsSplitViewModeActive()
-            ? split_view_controller_->divider_position()
-            : split_view_controller_->GetDefaultDividerPosition(
-                  dragged_window_);
-    const int position =
-        split_view_controller_->IsCurrentScreenOrientationLandscape()
-            ? last_location_in_screen_.x()
-            : last_location_in_screen_.y();
-    if (position <= divider_position) {
-      return split_view_controller_->IsCurrentScreenOrientationPrimary()
-                 ? SplitViewController::LEFT
-                 : SplitViewController::RIGHT;
-    } else {
-      return split_view_controller_->IsCurrentScreenOrientationPrimary()
-                 ? SplitViewController::RIGHT
-                 : SplitViewController::LEFT;
-    }
-  }
-
   SplitViewController* split_view_controller_;
   aura::Window* dragged_window_;
   SplitViewController::SnapPosition desired_snap_position_;
@@ -686,6 +595,9 @@ void SplitViewController::OnWindowDragEnded(
   if (wm::IsDraggingTabs(dragged_window)) {
     dragged_window_observer_.reset(new TabDraggedWindowObserver(
         this, dragged_window, desired_snap_position, last_location_in_screen));
+  } else {
+    EndWindowDragImpl(dragged_window, desired_snap_position,
+                      last_location_in_screen);
   }
 }
 
@@ -1520,6 +1432,89 @@ void SplitViewController::FinishWindowResizing(aura::Window* window) {
         GetEndDragLocationInScreen(window, previous_event_location_));
     window_state->DeleteDragDetails();
   }
+}
+
+void SplitViewController::EndWindowDragImpl(
+    aura::Window* window,
+    SnapPosition desired_snap_position,
+    const gfx::Point& last_location_in_screen) {
+  // If the newly created window has been added to overview window, do
+  // nothing.
+  WindowSelectorController* window_selector_controller =
+      Shell::Get()->window_selector_controller();
+  if (window_selector_controller->IsSelecting() &&
+      window_selector_controller->window_selector()->IsWindowInOverview(
+          window)) {
+    return;
+  }
+
+  const bool was_splitview_active = IsSplitViewModeActive();
+  if (desired_snap_position == SplitViewController::NONE) {
+    if (was_splitview_active) {
+      // Even though |snap_position| equals |NONE|, the dragged window still
+      // needs to be snapped if splitview mode is active at the momemnt.
+      // Calculate the expected snap position based on the last event
+      // location.
+      SplitViewController::SnapPosition snap_position =
+          GetSnapPosition(window, last_location_in_screen);
+      aura::Window* previous_snapped_window = GetSnappedWindowAt(snap_position);
+      SnapWindow(window, snap_position);
+      if (state() != SplitViewController::BOTH_SNAPPED) {
+        DCHECK(window_selector_controller->IsSelecting());
+        InsertWindowToOverview(previous_snapped_window);
+      }
+    } else {
+      // Maximize the window if we are not supposed to snap the window. End
+      // the overview mode first if it's active at the moment.
+      EndOverview();
+      // TODO(minch): Remove the logic that maximize the window explicitly,
+      // since window will be maximized in tablet mode if it is not snapped.
+      wm::WMEvent maximize_event(wm::WM_EVENT_MAXIMIZE);
+      wm::GetWindowState(window)->OnWMEvent(&maximize_event);
+    }
+  } else {
+    aura::Window* previous_snapped_window =
+        GetSnappedWindowAt(desired_snap_position);
+    SnapWindow(window, desired_snap_position);
+    if (!was_splitview_active) {
+      // If splitview mode was not active before snapping the dragged
+      // window, snap the initiator window to the other side of the screen
+      // if it's not the same window as the dragged window.
+      aura::Window* initiator_window =
+          window->GetProperty(ash::kTabDraggingSourceWindowKey);
+      if (initiator_window && initiator_window != window) {
+        SnapWindow(initiator_window,
+                   (desired_snap_position == SplitViewController::LEFT)
+                       ? SplitViewController::RIGHT
+                       : SplitViewController::LEFT);
+      } else {
+        StartOverview();
+      }
+    } else {
+      // If splitview mode was active before snapping the dragged window,
+      // but the dragged window was then snapped to the same side (i.e.,
+      // overview mode is still active), put the previous snapped window to
+      // overview window grid.
+      if (state() != SplitViewController::BOTH_SNAPPED) {
+        DCHECK(window_selector_controller->IsSelecting());
+        InsertWindowToOverview(previous_snapped_window);
+      }
+    }
+  }
+}
+
+SplitViewController::SnapPosition SplitViewController::GetSnapPosition(
+    aura::Window* window,
+    const gfx::Point& last_location_in_screen) {
+  const int divider_position = IsSplitViewModeActive()
+                                   ? this->divider_position()
+                                   : GetDefaultDividerPosition(window);
+  const int position = IsCurrentScreenOrientationLandscape()
+                           ? last_location_in_screen.x()
+                           : last_location_in_screen.y();
+  return (position <= divider_position) == IsCurrentScreenOrientationPrimary()
+             ? SplitViewController::LEFT
+             : SplitViewController::RIGHT;
 }
 
 }  // namespace ash

@@ -4,6 +4,7 @@
 
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_delegate.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -11,7 +12,9 @@
 #include "ash/shelf/shelf.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
+#include "base/test/scoped_feature_list.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/env.h"
@@ -147,9 +150,7 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     widget_->Init(params);
     widget_->Show();
 
-    window()->SetProperty(aura::client::kShowStateKey,
-                          ui::SHOW_STATE_FULLSCREEN);
-
+    SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
     gfx::Size window_size = widget_->GetWindowBoundsInScreen().size();
     content_view_ = new views::NativeViewHost();
     content_view_->SetBounds(0, 0, window_size.width(), window_size.height());
@@ -165,6 +166,9 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     controller_.reset(new ImmersiveFullscreenController);
     controller_->Init(delegate_.get(), widget_, top_container_);
     ImmersiveFullscreenControllerTestApi(controller_.get()).SetupForTest();
+
+    // Explicitly enable the app window dragging feature for the tests.
+    scoped_feature_list_.InitAndEnableFeature(features::kDragAppsInTabletMode);
 
     // The mouse is moved so that it is not over |top_container_| by
     // AshTestBase.
@@ -213,6 +217,16 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
     }
   }
 
+  void SetWindowShowState(ui::WindowShowState show_state) {
+    window()->SetProperty(aura::client::kShowStateKey, show_state);
+  }
+
+  // Enable or disable tablet mode based on |enable|.
+  void EnableTabletMode(bool enable) {
+    Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(
+        enable);
+  }
+
  private:
   // Attempt to change the revealed state to |revealed| via |modality|.
   void AttemptRevealStateChange(bool revealed, Modality modality) {
@@ -251,6 +265,8 @@ class ImmersiveFullscreenControllerTest : public AshTestBase {
   views::Widget* widget_;                // Owned by the native widget.
   views::View* top_container_;           // Owned by |widget_|'s root-view.
   views::NativeViewHost* content_view_;  // Owned by |widget_|'s root-view.
+
+  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ImmersiveFullscreenControllerTest);
 };
@@ -656,6 +672,34 @@ TEST_F(ImmersiveFullscreenControllerTest, DifferentModalityEnterExit) {
   EXPECT_FALSE(controller()->IsRevealed());
 }
 
+// Tests the top-of-window views for maximized window in tablet mode.
+TEST_F(ImmersiveFullscreenControllerTest, MaximizedWindowInTabletMode) {
+  SetWindowShowState(ui::SHOW_STATE_MAXIMIZED);
+  EnableTabletMode(true);
+  SetEnabled(true);
+  EXPECT_TRUE(controller()->IsEnabled());
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Top-of-window views will not be revealed through gesture scroll for
+  // maximized window in tablet mode.
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Top-of-window views will be revealed for maximized window not in tablet
+  // mode.
+  EnableTabletMode(false);
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
+  EXPECT_TRUE(controller()->IsRevealed());
+  AttemptUnreveal(MODALITY_GESTURE_SCROLL);
+  EXPECT_FALSE(controller()->IsRevealed());
+
+  // Top-of-window views will be revealed for fullscreen window in tablet mode.
+  EnableTabletMode(true);
+  SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
+  AttemptReveal(MODALITY_GESTURE_SCROLL);
+  EXPECT_TRUE(controller()->IsRevealed());
+}
+
 // Test when the SWIPE_CLOSE edge gesture closes the top-of-window views.
 TEST_F(ImmersiveFullscreenControllerTest, EndRevealViaGesture) {
   SetEnabled(true);
@@ -1008,18 +1052,18 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
   Shelf* shelf = GetPrimaryShelf();
 
   // Shelf is visible by default.
-  window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  SetWindowShowState(ui::SHOW_STATE_NORMAL);
   ASSERT_FALSE(controller()->IsEnabled());
   ASSERT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
   // Entering immersive fullscreen sets the shelf to auto hide.
-  window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
   SetEnabled(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Disabling immersive fullscreen puts it back.
   SetEnabled(false);
-  window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  SetWindowShowState(ui::SHOW_STATE_NORMAL);
   ASSERT_FALSE(controller()->IsEnabled());
   EXPECT_EQ(SHELF_VISIBLE, shelf->GetVisibilityState());
 
@@ -1028,13 +1072,13 @@ TEST_F(ImmersiveFullscreenControllerTest, Shelf) {
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Entering immersive fullscreen keeps auto-hide.
-  window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_FULLSCREEN);
+  SetWindowShowState(ui::SHOW_STATE_FULLSCREEN);
   SetEnabled(true);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 
   // Disabling immersive fullscreen maintains the user's auto-hide selection.
   SetEnabled(false);
-  window()->SetProperty(aura::client::kShowStateKey, ui::SHOW_STATE_NORMAL);
+  SetWindowShowState(ui::SHOW_STATE_NORMAL);
   EXPECT_EQ(SHELF_AUTO_HIDE, shelf->GetVisibilityState());
 }
 

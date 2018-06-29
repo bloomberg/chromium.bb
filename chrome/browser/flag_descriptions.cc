@@ -2977,6 +2977,12 @@ const char kEnableDisplayZoomSettingDescription[] =
     "Allows the user to modify the display size or zoom via the chrome display "
     "settings page.";
 
+const char kEnableDragAppsInTabletModeName[] =
+    "Enable dragging apps in tablet mode";
+const char kEnableDragAppsInTabletModeDescription[] =
+    "If enabled, swiping down from the top of the screen when an app is opened "
+    "in tablet mode can drag the app.";
+
 const char kEnableDragTabsInTabletModeName[] =
     "Enable dragging tabs in tablet mode";
 const char kEnableDragTabsInTabletModeDescription[] =
