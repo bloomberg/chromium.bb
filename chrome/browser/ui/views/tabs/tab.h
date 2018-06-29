@@ -90,10 +90,9 @@ class Tab : public gfx::AnimationDelegate,
                             gfx::Point* origin) const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   gfx::Size CalculatePreferredSize() const override;
-  void ViewHierarchyChanged(
-      const ViewHierarchyChangedDetails& details) override;
   void PaintChildren(const views::PaintInfo& info) override;
   void OnPaint(gfx::Canvas* canvas) override;
+  void AddedToWidget() override;
   void OnThemeChanged() override;
 
   TabController* controller() const { return controller_; }

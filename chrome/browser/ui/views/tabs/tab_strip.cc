@@ -2411,7 +2411,7 @@ void TabStrip::SingleTabModeChanged() {
   const int active_tab_index = controller_->GetActiveIndex();
   if (IsValidModelIndex(active_tab_index))
     tab_at(active_tab_index)->Layout();
-  new_tab_button_->FrameColorsChanged();
+  FrameColorsChanged();
   for (TabStripObserver& observer : observers_)
     observer.OnSingleTabModeChanged();
 }
