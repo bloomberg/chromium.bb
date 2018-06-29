@@ -7,6 +7,7 @@
 
 #include "base/callback_forward.h"
 #include "base/memory/scoped_refptr.h"
+#include "services/data_decoder/public/cpp/decode_image.h"
 
 namespace gfx {
 class ImageSkia;
@@ -20,6 +21,7 @@ using OnWallpaperDecoded =
 // Do an async wallpaper decode; |on_decoded| is run on the calling thread when
 // the decode has finished.
 void DecodeWallpaper(const std::string& image_data,
+                     const data_decoder::mojom::ImageCodec& image_codec,
                      OnWallpaperDecoded callback);
 
 }  // namespace ash

@@ -42,6 +42,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "services/data_decoder/public/cpp/decode_image.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"
@@ -161,14 +162,13 @@ std::string GetCustomWallpaperSubdirForCurrentResolution() {
 }
 
 // Resizes |image| to a resolution which is nearest to |preferred_width| and
-// |preferred_height| while respecting the |layout| choice. |output_skia| is
-// optional (may be null). Returns true on success.
-bool ResizeImage(const gfx::ImageSkia& image,
-                 WallpaperLayout layout,
-                 int preferred_width,
-                 int preferred_height,
-                 scoped_refptr<base::RefCountedBytes>* output,
-                 gfx::ImageSkia* output_skia) {
+// |preferred_height| while respecting the |layout| choice. Encodes the image to
+// JPEG and saves to |output|. Returns true on success.
+bool ResizeAndEncodeImage(const gfx::ImageSkia& image,
+                          WallpaperLayout layout,
+                          int preferred_width,
+                          int preferred_height,
+                          scoped_refptr<base::RefCountedBytes>* output) {
   int width = image.width();
   int height = image.height();
   int resized_width;
@@ -205,33 +205,25 @@ bool ResizeImage(const gfx::ImageSkia& image,
 
   SkBitmap bitmap = *(resized_image.bitmap());
   gfx::JPEGCodec::Encode(bitmap, kDefaultEncodingQuality, &(*output)->data());
-
-  if (output_skia) {
-    resized_image.MakeThreadSafe();
-    *output_skia = resized_image;
-  }
-
   return true;
 }
 
 // Resizes |image| to a resolution which is nearest to |preferred_width| and
 // |preferred_height| while respecting the |layout| choice and saves the
-// resized wallpaper to |path|. |output_skia| is optional (may be
-// null). Returns true on success.
+// resized wallpaper to |path|. Returns true on success.
 bool ResizeAndSaveWallpaper(const gfx::ImageSkia& image,
                             const base::FilePath& path,
                             WallpaperLayout layout,
                             int preferred_width,
-                            int preferred_height,
-                            gfx::ImageSkia* output_skia) {
+                            int preferred_height) {
   if (layout == WALLPAPER_LAYOUT_CENTER) {
     if (base::PathExists(path))
       base::DeleteFile(path, false);
     return false;
   }
   scoped_refptr<base::RefCountedBytes> data;
-  if (!ResizeImage(image, layout, preferred_width, preferred_height, &data,
-                   output_skia)) {
+  if (!ResizeAndEncodeImage(image, layout, preferred_width, preferred_height,
+                            &data)) {
     return false;
   }
 
@@ -312,9 +304,11 @@ void OnWallpaperDataRead(LoadedCallback callback,
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), base::Passed(gfx::ImageSkia())));
-  } else {
-    DecodeWallpaper(*data, std::move(callback));
+    return;
   }
+  // This image was once encoded to JPEG by |ResizeAndEncodeImage|.
+  DecodeWallpaper(*data, data_decoder::mojom::ImageCodec::ROBUST_JPEG,
+                  std::move(callback));
 }
 
 // Deletes a list of wallpaper files in |file_list|.
@@ -381,13 +375,11 @@ void SaveCustomWallpaper(const std::string& wallpaper_files_id,
   // resized wallpaper is not generated (i.e. chrome shutdown before resized
   // wallpaper is saved).
   ResizeAndSaveWallpaper(*image, original_path, WALLPAPER_LAYOUT_STRETCH,
-                         image->width(), image->height(), nullptr);
+                         image->width(), image->height());
   ResizeAndSaveWallpaper(*image, small_wallpaper_path, layout,
-                         kSmallWallpaperMaxWidth, kSmallWallpaperMaxHeight,
-                         nullptr);
+                         kSmallWallpaperMaxWidth, kSmallWallpaperMaxHeight);
   ResizeAndSaveWallpaper(*image, large_wallpaper_path, layout,
-                         kLargeWallpaperMaxWidth, kLargeWallpaperMaxHeight,
-                         nullptr);
+                         kLargeWallpaperMaxWidth, kLargeWallpaperMaxHeight);
 }
 
 // Checks if kiosk app is running. Note: it returns false either when there's
@@ -442,13 +434,13 @@ void SaveOnlineWallpaper(const std::string& url,
       *image,
       GetOnlineWallpaperPath(url,
                              WallpaperController::WALLPAPER_RESOLUTION_LARGE),
-      layout, image->width(), image->height(), nullptr);
+      layout, image->width(), image->height());
   ResizeAndSaveWallpaper(
       *image,
       GetOnlineWallpaperPath(url,
                              WallpaperController::WALLPAPER_RESOLUTION_SMALL),
       WALLPAPER_LAYOUT_CENTER_CROPPED, kSmallWallpaperMaxWidth,
-      kSmallWallpaperMaxHeight, nullptr);
+      kSmallWallpaperMaxHeight);
 }
 
 // Implementation of |WallpaperController::GetOfflineWallpaper|.
@@ -961,10 +953,16 @@ void WallpaperController::SetOnlineWallpaperFromData(
       base::BindOnce(&WallpaperController::OnOnlineWallpaperDecoded,
                      weak_factory_.GetWeakPtr(), params, /*save_file=*/true,
                      std::move(callback));
-  if (bypass_decode_for_testing_)
+  if (bypass_decode_for_testing_) {
     std::move(decoded_callback).Run(CreateSolidColorWallpaper());
-  else
-    DecodeWallpaper(image_data, std::move(decoded_callback));
+    return;
+  }
+  // Use default codec because 1) online wallpapers may have various formats,
+  // 2) the image data comes from the Chrome OS wallpaper picker and is
+  // trusted (third-party wallpaper apps use |SetThirdPartyWallpaper|), 3) the
+  // code path is never used on login screen (enforced by the check above).
+  DecodeWallpaper(image_data, data_decoder::mojom::ImageCodec::DEFAULT,
+                  std::move(decoded_callback));
 }
 
 void WallpaperController::SetDefaultWallpaper(
@@ -1020,10 +1018,14 @@ void WallpaperController::SetPolicyWallpaper(
       base::Passed(&user_info), wallpaper_files_id, kPolicyWallpaperFile,
       POLICY, WALLPAPER_LAYOUT_CENTER_CROPPED, show_wallpaper);
 
-  if (bypass_decode_for_testing_)
+  if (bypass_decode_for_testing_) {
     std::move(callback).Run(CreateSolidColorWallpaper());
-  else
-    DecodeWallpaper(data, std::move(callback));
+    return;
+  }
+  // The default codec cannot be used here because the image data is provided by
+  // user and thus not trusted. In addition, only JPEG |data| is accepted.
+  DecodeWallpaper(data, data_decoder::mojom::ImageCodec::ROBUST_JPEG,
+                  std::move(callback));
 }
 
 void WallpaperController::SetDeviceWallpaperPolicyEnforced(bool enforced) {
