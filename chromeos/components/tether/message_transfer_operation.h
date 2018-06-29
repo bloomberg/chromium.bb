@@ -101,11 +101,11 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   // Returns the type of message that this operation intends to send.
   virtual MessageType GetMessageTypeForConnection() = 0;
 
-  // The number of seconds that this operation should wait before unregistering
-  // a device after it has been authenticated if it has not been explicitly
-  // unregistered. If ShouldOperationUseTimeout() returns false, this method is
-  // never used.
-  virtual uint32_t GetTimeoutSeconds();
+  // The number of seconds that this operation should wait to let messages be
+  // sent and received before unregistering a device after it has been
+  // authenticated if it has not been explicitly unregistered. If
+  // ShouldOperationUseTimeout() returns false, this method is never used.
+  virtual uint32_t GetMessageTimeoutSeconds();
 
   cryptauth::RemoteDeviceRefList& remote_devices() { return remote_devices_; }
 
@@ -156,11 +156,16 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
     std::unique_ptr<secure_channel::ClientChannel> client_channel_;
   };
 
-  // The default number of seconds an operation should wait before a timeout
-  // occurs. Once this amount of time passes, the connection will be closed.
-  // Classes deriving from MessageTransferOperation should override
-  // GetTimeoutSeconds() if they desire a different duration.
-  static constexpr const uint32_t kDefaultTimeoutSeconds = 10;
+  // The maximum expected time to connect to a remote device, if it can be
+  // connected to. This number has been determined by examining metrics.
+  static constexpr const uint32_t kConnectionTimeoutSeconds = 15;
+
+  // The default number of seconds an operation should wait to send and receive
+  // messages before a timeout occurs. Once this amount of time passes, the
+  // connection will be closed. Classes deriving from MessageTransferOperation
+  // should override GetMessageTimeoutSeconds() if they desire a different
+  // duration.
+  static constexpr const uint32_t kDefaultMessageTimeoutSeconds = 10;
 
   struct ConnectAttemptCounts {
     uint32_t empty_scan_attempts = 0;
@@ -179,7 +184,17 @@ class MessageTransferOperation : public BleConnectionManager::Observer {
   void HandleDeviceDisconnection(
       cryptauth::RemoteDeviceRef remote_device,
       BleConnectionManager::StateChangeDetail status_change_detail);
-  void StartTimerForDevice(cryptauth::RemoteDeviceRef remote_device);
+
+  // Start the timer while waiting for a connection to |remote_device|. See
+  // |kConnectionTimeoutSeconds|.
+  void StartConnectionTimerForDevice(cryptauth::RemoteDeviceRef remote_device);
+
+  // Start the timer while waiting for messages to be sent to and received by
+  // |remote_device|. See |kDefaultMessageTimeoutSeconds|.
+  void StartMessageTimerForDevice(cryptauth::RemoteDeviceRef remote_device);
+
+  void StartTimerForDevice(cryptauth::RemoteDeviceRef remote_device,
+                           uint32_t timeout_seconds);
   void StopTimerForDeviceIfRunning(cryptauth::RemoteDeviceRef remote_device);
   void OnTimeout(cryptauth::RemoteDeviceRef remote_device);
   base::Optional<cryptauth::RemoteDeviceRef> GetRemoteDevice(

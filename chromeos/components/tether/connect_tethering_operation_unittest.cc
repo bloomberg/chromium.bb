@@ -213,7 +213,7 @@ class ConnectTetheringOperationTest : public testing::Test {
                   kSetupNotRequiredResponseTimeoutSeconds;
 
     EXPECT_EQ(expected_response_timeout_seconds,
-              operation_->GetTimeoutSeconds());
+              operation_->GetMessageTimeoutSeconds());
   }
 
   const std::string connect_tethering_request_string_;

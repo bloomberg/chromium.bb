@@ -109,7 +109,7 @@ class ConnectTetheringOperation : public MessageTransferOperation {
   void OnOperationFinished() override;
   MessageType GetMessageTypeForConnection() override;
   void OnMessageSent(int sequence_number) override;
-  uint32_t GetTimeoutSeconds() override;
+  uint32_t GetMessageTimeoutSeconds() override;
 
   void NotifyConnectTetheringRequestSent();
   void NotifyObserversOfSuccessfulResponse(const std::string& ssid,

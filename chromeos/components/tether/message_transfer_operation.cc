@@ -145,6 +145,7 @@ void MessageTransferOperation::Initialize() {
 
   for (const auto& remote_device : remote_devices_) {
     if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      StartConnectionTimerForDevice(remote_device);
       remote_device_to_connection_attempt_delegate_map_[remote_device] =
           std::make_unique<ConnectionAttemptDelegate>(
               this, remote_device,
@@ -159,7 +160,7 @@ void MessageTransferOperation::Initialize() {
       if (connection_manager_->GetStatusForDevice(remote_device.GetDeviceId(),
                                                   &status) &&
           status == cryptauth::SecureChannel::Status::AUTHENTICATED) {
-        StartTimerForDevice(remote_device);
+        StartMessageTimerForDevice(remote_device);
         OnDeviceAuthenticated(remote_device);
       }
     }
@@ -184,7 +185,7 @@ void MessageTransferOperation::OnSecureChannelStatusChanged(
 
   switch (new_status) {
     case cryptauth::SecureChannel::Status::AUTHENTICATED:
-      StartTimerForDevice(*remote_device);
+      StartMessageTimerForDevice(*remote_device);
       OnDeviceAuthenticated(*remote_device);
       break;
     case cryptauth::SecureChannel::Status::DISCONNECTED:
@@ -273,8 +274,8 @@ int MessageTransferOperation::SendMessageToDevice(
   }
 }
 
-uint32_t MessageTransferOperation::GetTimeoutSeconds() {
-  return MessageTransferOperation::kDefaultTimeoutSeconds;
+uint32_t MessageTransferOperation::GetMessageTimeoutSeconds() {
+  return MessageTransferOperation::kDefaultMessageTimeoutSeconds;
 }
 
 void MessageTransferOperation::OnConnectionAttemptFailure(
@@ -294,7 +295,14 @@ void MessageTransferOperation::OnConnection(
   remote_device_to_client_channel_observer_map_[remote_device] =
       std::make_unique<ClientChannelObserver>(this, remote_device,
                                               std::move(channel));
-  StartTimerForDevice(remote_device);
+
+  // Stop the timer which was started from StartConnectionTimerForDevice() since
+  // the connection has now been established. Start another timer now via
+  // StartMessageTimerForDevice() while waiting for messages to be sent to and
+  // received by |remote_device|.
+  StopTimerForDeviceIfRunning(remote_device);
+  StartMessageTimerForDevice(remote_device);
+
   OnDeviceAuthenticated(remote_device);
 }
 
@@ -376,8 +384,19 @@ void MessageTransferOperation::HandleDeviceDisconnection(
   }
 }
 
-void MessageTransferOperation::StartTimerForDevice(
+void MessageTransferOperation::StartConnectionTimerForDevice(
     cryptauth::RemoteDeviceRef remote_device) {
+  StartTimerForDevice(remote_device, kConnectionTimeoutSeconds);
+}
+
+void MessageTransferOperation::StartMessageTimerForDevice(
+    cryptauth::RemoteDeviceRef remote_device) {
+  StartTimerForDevice(remote_device, GetMessageTimeoutSeconds());
+}
+
+void MessageTransferOperation::StartTimerForDevice(
+    cryptauth::RemoteDeviceRef remote_device,
+    uint32_t timeout_seconds) {
   PA_LOG(INFO) << "Starting timer for operation with message type "
                << message_type_for_connection_ << " from device with ID "
                << remote_device.GetTruncatedDeviceIdForLogs() << ".";
@@ -385,7 +404,7 @@ void MessageTransferOperation::StartTimerForDevice(
   remote_device_to_timer_map_.emplace(remote_device,
                                       timer_factory_->CreateOneShotTimer());
   remote_device_to_timer_map_[remote_device]->Start(
-      FROM_HERE, base::TimeDelta::FromSeconds(GetTimeoutSeconds()),
+      FROM_HERE, base::TimeDelta::FromSeconds(timeout_seconds),
       base::Bind(&MessageTransferOperation::OnTimeout,
                  weak_ptr_factory_.GetWeakPtr(), remote_device));
 }
