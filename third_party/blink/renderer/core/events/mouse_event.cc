@@ -226,9 +226,7 @@ void MouseEvent::SetCoordinatesFromWebPointerProperties(
     FloatPoint page_point = frame->View()->ConvertFromRootFrame(
         web_pointer_properties.PositionInWidget());
     scale_factor = 1.0f / frame->PageZoomFactor();
-    FloatPoint scroll_position(frame->View()->GetScrollOffset());
     client_point = page_point.ScaledBy(scale_factor);
-    client_point.MoveBy(scroll_position.ScaledBy(-scale_factor));
   }
 
   initializer.setScreenX(web_pointer_properties.PositionInScreen().x);

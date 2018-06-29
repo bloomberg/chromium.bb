@@ -609,10 +609,7 @@ bool ScrollingCoordinator::ScrollableAreaScrollLayerDidChange(
   // LocalFrameView::CompositorAnimationTimeline() can indirectly return
   // m_programmaticScrollAnimatorTimeline if it does not have its own
   // timeline.
-  if (scrollable_area->IsLocalFrameView()) {
-    timeline =
-        ToLocalFrameView(scrollable_area)->GetCompositorAnimationTimeline();
-  } else if (scrollable_area->IsPaintLayerScrollableArea()) {
+  if (scrollable_area->IsPaintLayerScrollableArea()) {
     timeline = ToPaintLayerScrollableArea(scrollable_area)
                    ->GetCompositorAnimationTimeline();
   } else {
@@ -1080,10 +1077,6 @@ Region ScrollingCoordinator::ComputeShouldHandleScrollGestureOnMainThreadRegion(
   if (const LocalFrameView::ScrollableAreaSet* scrollable_areas =
           frame_view->ScrollableAreas()) {
     for (const ScrollableArea* scrollable_area : *scrollable_areas) {
-      if (scrollable_area->IsLocalFrameView() &&
-          ToLocalFrameView(scrollable_area)->ShouldThrottleRendering()) {
-        continue;
-      }
       // Composited scrollable areas can be scrolled off the main thread.
       if (scrollable_area->UsesCompositedScrolling())
         continue;

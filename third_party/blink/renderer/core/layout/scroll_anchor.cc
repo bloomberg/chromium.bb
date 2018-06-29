@@ -578,10 +578,7 @@ void ScrollAnchor::ClearSelf() {
 
 void ScrollAnchor::Dispose() {
   if (scroller_) {
-    LocalFrameView* frame_view =
-        scroller_->IsLocalFrameView()
-            ? static_cast<LocalFrameView*>(scroller_.Get())
-            : ScrollerLayoutBox(scroller_)->GetFrameView();
+    LocalFrameView* frame_view = ScrollerLayoutBox(scroller_)->GetFrameView();
     ScrollableArea* owning_scroller =
         scroller_->IsRootFrameViewport()
             ? &ToRootFrameViewport(scroller_)->LayoutViewport()
@@ -609,12 +606,6 @@ void ScrollAnchor::Clear() {
       anchor->ClearSelf();
     }
     layer = layer->Parent();
-  }
-
-  if (LocalFrameView* view = layout_object->GetFrameView()) {
-    ScrollAnchor* anchor = view->GetScrollAnchor();
-    DCHECK(anchor);
-    anchor->ClearSelf();
   }
 }
 

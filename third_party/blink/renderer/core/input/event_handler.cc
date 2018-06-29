@@ -805,9 +805,6 @@ WebInputEventResult EventHandler::HandleMouseMoveEvent(
       layer_scrollable_area->MouseMovedInContentArea();
   }
 
-  if (LocalFrameView* frame_view = frame_->View())
-    frame_view->MouseMovedInContentArea();
-
   hovered_node.SetToShadowHostIfInRestrictedShadowRoot();
   page->GetChromeClient().MouseDidMoveOverElement(*frame_, hovered_node);
 

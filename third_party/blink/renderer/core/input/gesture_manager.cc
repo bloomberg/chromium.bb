@@ -431,8 +431,6 @@ WebInputEventResult GestureManager::HandleGestureShowPress() {
   LocalFrameView* view = frame_->View();
   if (!view)
     return WebInputEventResult::kNotHandled;
-  if (ScrollAnimatorBase* scroll_animator = view->ExistingScrollAnimator())
-    scroll_animator->CancelAnimation();
   const LocalFrameView::ScrollableAreaSet* areas = view->ScrollableAreas();
   if (!areas)
     return WebInputEventResult::kNotHandled;

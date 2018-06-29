@@ -2041,8 +2041,6 @@ void Document::PropagateStyleToViewport() {
     GetLayoutView()->SetStyle(new_style);
     SetupFontBuilder(*new_style);
 
-    View()->RecalculateScrollbarOverlayColorTheme(
-        View()->DocumentBackgroundColor());
     if (PaintLayerScrollableArea* scrollable_area =
             GetLayoutView()->GetScrollableArea()) {
       if (scrollable_area->HorizontalScrollbar() &&

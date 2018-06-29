@@ -1296,7 +1296,7 @@ IntRect Element::VisibleBoundsInVisualViewport() const {
   LayoutRect rect(
       RoundedIntRect(GetLayoutObject()->AbsoluteBoundingBoxFloatRect()));
   LayoutRect frame_clip_rect =
-      GetDocument().View()->GetLayoutBox()->ClippingRect(LayoutPoint());
+      GetDocument().View()->GetLayoutView()->ClippingRect(LayoutPoint());
   rect.Intersect(frame_clip_rect);
 
   // MapToVisualRectInAncestorSpace, called with a null ancestor argument,

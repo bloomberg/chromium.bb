@@ -719,7 +719,7 @@ bool PaintLayerScrollableArea::ShouldSuspendScrollAnimations() const {
   LayoutView* view = GetLayoutBox()->View();
   if (!view)
     return true;
-  return view->GetFrameView()->ShouldSuspendScrollAnimations();
+  return !GetLayoutBox()->GetDocument().LoadEventFinished();
 }
 
 void PaintLayerScrollableArea::ScrollbarVisibilityChanged() {
@@ -746,7 +746,14 @@ bool PaintLayerScrollableArea::ScrollbarsCanBeActive() const {
   LayoutView* view = GetLayoutBox()->View();
   if (!view)
     return false;
-  return view->GetFrameView()->ScrollbarsCanBeActive();
+
+  // TODO(szager): This conditional is weird and likely obsolete. Originally
+  // added in commit eb0d49caaee2b275ff524d3945a74e8d9180eb7d.
+  LocalFrameView* frame_view = view->GetFrameView();
+  if (frame_view != frame_view->GetFrame().View())
+    return false;
+
+  return !!frame_view->GetFrame().GetDocument();
 }
 
 IntRect PaintLayerScrollableArea::ScrollableAreaBoundingBox() const {

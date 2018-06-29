@@ -402,20 +402,9 @@ void LocalFrameView::SetupRenderThrottling() {
 void LocalFrameView::Dispose() {
   CHECK(!IsInPerformLayout());
 
-  if (ScrollAnimatorBase* scroll_animator = ExistingScrollAnimator())
-    scroll_animator->CancelAnimation();
-  CancelProgrammaticScrollAnimation();
-
-  if (ScrollingCoordinator* scrolling_coordinator =
-          this->GetScrollingCoordinator())
-    scrolling_coordinator->WillDestroyScrollableArea(this);
-
-  Page* page = frame_->GetPage();
   // TODO(dcheng): It's wrong that the frame can be detached before the
   // LocalFrameView. Figure out what's going on and fix LocalFrameView to be
   // disposed with the correct timing.
-  if (page)
-    page->GlobalRootScrollerController().DidDisposeScrollableArea(*this);
 
   // We need to clear the RootFrameViewport's animator since it gets called
   // from non-GC'd objects and RootFrameViewport will still have a pointer to
@@ -647,12 +636,10 @@ void LocalFrameView::SetLayoutOverflowSize(const IntSize& size) {
     return;
 
   layout_overflow_size_ = size;
-  ScrollableArea::ContentsResized();
 
   Page* page = GetFrame().GetPage();
   if (!page)
     return;
-
   page->GetChromeClient().ContentsSizeChanged(frame_.Get(), size);
 }
 
@@ -750,9 +737,6 @@ void LocalFrameView::PerformPreLayoutTasks() {
 
   if (was_resized)
     document->ClearResizedForViewportUnits();
-
-  if (ShouldPerformScrollAnchoring())
-    scroll_anchor_.NotifyBeforeLayout();
 }
 
 void LocalFrameView::LayoutFromRootObject(LayoutObject& root) {
@@ -1356,8 +1340,6 @@ void LocalFrameView::ViewportSizeChanged(bool width_changed,
 
   if (GetFrame().GetDocument())
     GetFrame().GetDocument()->GetRootScrollerController().DidResizeFrameView();
-
-  ShowOverlayScrollbars();
 
   if (GetLayoutView() && frame_->IsMainFrame() &&
       frame_->GetPage()->GetBrowserControls().TotalHeight()) {
@@ -2007,7 +1989,6 @@ void LocalFrameView::SetBaseBackgroundColor(const Color& background_color) {
         composited_layer_mapping->ScrollingContentsLayer()->SetNeedsDisplay();
     }
   }
-  RecalculateScrollbarOverlayColorTheme(DocumentBackgroundColor());
 
   if (!ShouldThrottleRendering())
     GetPage()->Animator().ScheduleVisualUpdate(frame_.Get());
@@ -3252,7 +3233,6 @@ IntRect LocalFrameView::ConvertFromLayoutObject(
   LayoutRect rect = EnclosingLayoutRect(
       layout_object.LocalToAbsoluteQuad(FloatRect(layout_object_rect))
           .BoundingBox());
-  rect.Move(LayoutSize(-GetScrollOffset()));
   return PixelSnappedIntRect(rect);
 }
 
@@ -3280,12 +3260,8 @@ IntPoint LocalFrameView::ConvertToLayoutObject(
 LayoutPoint LocalFrameView::ConvertFromLayoutObject(
     const LayoutObject& layout_object,
     const LayoutPoint& layout_object_point) const {
-  LayoutPoint point(layout_object.LocalToAbsolute(
+  return LayoutPoint(layout_object.LocalToAbsolute(
       FloatPoint(layout_object_point), kUseTransforms));
-
-  // Convert from page ("absolute") to LocalFrameView coordinates.
-  point.Move(-LayoutSize(GetScrollOffset()));
-  return point;
 }
 
 LayoutPoint LocalFrameView::ConvertToLayoutObject(
@@ -3298,12 +3274,7 @@ LayoutPoint LocalFrameView::ConvertToLayoutObject(
 FloatPoint LocalFrameView::ConvertToLayoutObject(
     const LayoutObject& layout_object,
     const FloatPoint& frame_point) const {
-  FloatPoint point = frame_point;
-
-  // Convert from LocalFrameView coords into page ("absolute") coordinates.
-  point += FloatSize(ScrollX(), ScrollY());
-
-  return layout_object.AbsoluteToLocal(point, kUseTransforms);
+  return layout_object.AbsoluteToLocal(frame_point, kUseTransforms);
 }
 
 IntPoint LocalFrameView::ConvertSelfToChild(const EmbeddedContentView& child,
@@ -4633,40 +4604,13 @@ String LocalFrameView::MainThreadScrollingReasonsAsText() {
   return String(MainThreadScrollingReason::AsText(reasons).c_str());
 }
 
-IntRect LocalFrameView::RemoteViewportIntersection() {
-  IntRect intersection(GetFrame().RemoteViewportIntersection());
-  intersection.Move(ScrollOffsetInt());
-  return intersection;
-}
-
-void LocalFrameView::MapQuadToAncestorFrameIncludingScrollOffset(
-    LayoutRect& rect,
-    const LayoutObject* descendant,
-    const LayoutView* ancestor,
-    MapCoordinatesFlags mode) {
-  FloatQuad mapped_quad = descendant->LocalToAncestorQuad(
-      FloatQuad(FloatRect(rect)), ancestor, mode);
-  rect = LayoutRect(mapped_quad.BoundingBox());
-
-  // localToAncestorQuad accounts for scroll offset if it encounters a remote
-  // frame in the ancestor chain, otherwise it needs to be added explicitly.
-  if (GetFrame().LocalFrameRoot() == GetFrame().Tree().Top() ||
-      (ancestor &&
-       ancestor->GetFrame()->LocalFrameRoot() == GetFrame().LocalFrameRoot())) {
-    LocalFrameView* ancestor_view =
-        (ancestor ? ancestor->GetFrameView()
-                  : ToLocalFrame(GetFrame().Tree().Top()).View());
-    LayoutSize scroll_position = LayoutSize(ancestor_view->GetScrollOffset());
-    rect.Move(-scroll_position);
-  }
-}
-
 bool LocalFrameView::MapToVisualRectInTopFrameSpace(LayoutRect& rect) {
   // This is the top-level frame, so no mapping necessary.
   if (frame_->IsMainFrame())
     return true;
 
-  LayoutRect viewport_intersection_rect(RemoteViewportIntersection());
+  LayoutRect viewport_intersection_rect(
+      GetFrame().RemoteViewportIntersection());
   rect.Intersect(viewport_intersection_rect);
   if (rect.IsEmpty())
     return false;
@@ -4679,7 +4623,8 @@ void LocalFrameView::ApplyTransformForTopFrameSpace(
   if (frame_->IsMainFrame())
     return;
 
-  LayoutRect viewport_intersection_rect(RemoteViewportIntersection());
+  LayoutRect viewport_intersection_rect(
+      GetFrame().RemoteViewportIntersection());
   transform_state.Move(LayoutSize(-viewport_intersection_rect.X(),
                                   -viewport_intersection_rect.Y()));
 }

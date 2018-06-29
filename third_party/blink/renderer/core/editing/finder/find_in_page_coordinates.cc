@@ -92,15 +92,6 @@ static FloatRect ToNormalizedRect(const FloatRect& absolute_rect,
   FloatRect normalized_rect = absolute_rect;
   normalized_rect.MoveBy(-container_rect.Location());
 
-  // Fixed positions do not make sense in this coordinate system, but need to
-  // leave consistent tickmarks.  So, use their position when the view is not
-  // scrolled, like an absolute position.
-  if (layout_object->Style()->GetPosition() == EPosition::kFixed &&
-      container->IsLayoutView()) {
-    normalized_rect.Move(
-        -ToLayoutView(container)->GetFrameView()->GetScrollOffset());
-  }
-
   normalized_rect.Scale(1 / container_rect.Width(),
                         1 / container_rect.Height());
   return normalized_rect;

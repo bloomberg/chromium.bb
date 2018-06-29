@@ -3121,15 +3121,6 @@ static bool FindReferencingScrollAnchors(
     }
     layer = layer->Parent();
   }
-  if (LocalFrameView* view = layout_object->GetFrameView()) {
-    ScrollAnchor* anchor = view->GetScrollAnchor();
-    DCHECK(anchor);
-    if (anchor->RefersTo(layout_object)) {
-      found = true;
-      if (behavior == kClear)
-        anchor->NotifyRemoved(layout_object);
-    }
-  }
   return found;
 }
 
