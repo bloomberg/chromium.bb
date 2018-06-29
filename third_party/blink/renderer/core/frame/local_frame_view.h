@@ -184,9 +184,7 @@ class CORE_EXPORT LocalFrameView final
 
   // Methods for getting/setting the size Blink should use to layout the
   // contents.
-  // NOTE: Scrollbar exclusion is based on the LocalFrameView's scrollbars. To
-  // exclude scrollbars on the root PaintLayer, use LayoutView::layoutSize.
-  IntSize GetLayoutSize(IncludeScrollbarsInRect = kExcludeScrollbars) const;
+  IntSize GetLayoutSize() const { return layout_size_; }
   void SetLayoutSize(const IntSize&);
 
   // If this is set to false, the layout size will need to be explicitly set by
