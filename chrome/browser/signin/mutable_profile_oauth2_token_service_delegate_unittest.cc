@@ -385,9 +385,9 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   // LoadCredentials() guarantees that the account given to it as argument
   // is in the refresh_token map.
   EXPECT_EQ(1U, oauth2_service_delegate_->refresh_tokens_.size());
-  EXPECT_TRUE(oauth2_service_delegate_->refresh_tokens_["account_id"]
-                  ->refresh_token()
-                  .empty());
+  EXPECT_EQ(
+      MutableProfileOAuth2TokenServiceDelegate::kInvalidRefreshToken,
+      oauth2_service_delegate_->refresh_tokens_["account_id"]->refresh_token());
   // Setup a DB with tokens that don't require upgrade and clear memory.
   oauth2_service_delegate_->UpdateCredentials("account_id", "refresh_token");
   oauth2_service_delegate_->UpdateCredentials("account_id2", "refresh_token2");
@@ -671,8 +671,12 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(1, start_batch_changes_);
   EXPECT_EQ(1, end_batch_changes_);
   EXPECT_EQ(1, auth_error_changed_count_);
-  EXPECT_FALSE(oauth2_service_delegate_->RefreshTokenIsAvailable(
+  EXPECT_TRUE(oauth2_service_delegate_->RefreshTokenIsAvailable(
       primary_account.account_id));
+  EXPECT_EQ(
+      GoogleServiceAuthError::InvalidGaiaCredentialsReason::CREDENTIALS_MISSING,
+      oauth2_service_delegate_->GetAuthError(primary_account.account_id)
+          .GetInvalidGaiaCredentialsReason());
   EXPECT_EQ(OAuth2TokenServiceDelegate::
                 LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
             oauth2_service_delegate_->GetLoadCredentialsState());

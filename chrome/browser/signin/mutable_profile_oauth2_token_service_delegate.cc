@@ -303,6 +303,7 @@ MutableProfileOAuth2TokenServiceDelegate::AccountStatus::AccountStatus(
       last_auth_error_(GoogleServiceAuthError::NONE) {
   DCHECK(signin_error_controller_);
   DCHECK(!account_id_.empty());
+  DCHECK(!refresh_token.empty());
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::AccountStatus::Initialize() {
@@ -446,8 +447,11 @@ bool MutableProfileOAuth2TokenServiceDelegate::RefreshTokenIsAvailable(
 std::string MutableProfileOAuth2TokenServiceDelegate::GetRefreshToken(
     const std::string& account_id) const {
   AccountStatusMap::const_iterator iter = refresh_tokens_.find(account_id);
-  if (iter != refresh_tokens_.end())
-    return iter->second->refresh_token();
+  if (iter != refresh_tokens_.end()) {
+    const std::string refresh_token = iter->second->refresh_token();
+    DCHECK(!refresh_token.empty());
+    return refresh_token;
+  }
   return std::string();
 }
 
@@ -562,22 +566,18 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
       load_credentials_state_ =
           LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT;
     }
-    AddAccountStatus(loading_primary_account_id_, std::string(),
+    AddAccountStatus(loading_primary_account_id_, kInvalidRefreshToken,
                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
                              CREDENTIALS_MISSING));
   }
 
-  // If we don't have a refresh token for a known account, signal an error.
+#ifndef NDEBUG
   for (auto& token : refresh_tokens_) {
-    if (!RefreshTokenIsAvailable(token.first)) {
-      UpdateAuthError(token.first,
-                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
-                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
-                              CREDENTIALS_MISSING));
-      break;
-    }
+    DCHECK(RefreshTokenIsAvailable(token.first))
+        << "Missing token for " << token.first;
   }
+#endif
 
   loading_primary_account_id_.clear();
   FireRefreshTokensLoaded();
@@ -784,6 +784,8 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
 void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(
     const std::string& account_id,
     const std::string& refresh_token) {
+  DCHECK(!account_id.empty());
+  DCHECK(!refresh_token.empty());
   scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
   if (token_web_data.get()) {
     VLOG(1) << "MutablePO2TS::PersistCredentials for account_id=" << account_id;
@@ -836,6 +838,7 @@ void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentials(
 
 void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
     const std::string& account_id) {
+  DCHECK(!account_id.empty());
   scoped_refptr<TokenWebData> token_web_data = client_->GetDatabase();
   if (token_web_data.get()) {
     VLOG(1) << "MutablePO2TS::ClearPersistedCredentials for account_id="
@@ -846,6 +849,8 @@ void MutableProfileOAuth2TokenServiceDelegate::ClearPersistedCredentials(
 
 void MutableProfileOAuth2TokenServiceDelegate::RevokeCredentialsOnServer(
     const std::string& refresh_token) {
+  DCHECK(!refresh_token.empty());
+
   if (refresh_token == kInvalidRefreshToken)
     return;
 
