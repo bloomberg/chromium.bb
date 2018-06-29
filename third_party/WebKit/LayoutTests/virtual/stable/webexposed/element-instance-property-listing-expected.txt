@@ -413,6 +413,7 @@ html element canvas
     property height
     property toBlob
     property toDataURL
+    property transferControlToOffscreen
     property width
 html element caption
     property align

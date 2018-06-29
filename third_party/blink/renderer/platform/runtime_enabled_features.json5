@@ -847,11 +847,11 @@
     },
     {
       name: "OffscreenCanvas",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "OffscreenCanvasText",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "OnDeviceChange",
