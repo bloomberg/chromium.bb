@@ -24,7 +24,7 @@ layer at (90,90) size 90x90
   LayoutNGBlockFlow (positioned) {DIV} at (90,90) size 90x90 [bgcolor=#008000]
 layer at (9,198) size 34x18
   LayoutNGBlockFlow (positioned) {DIV} at (9,198) size 34x18
-    LayoutInline {SPAN} at (0,0) size 34x17 [color=#008000]
+    LayoutInline {SPAN} at (0,0) size 34x16 [color=#008000]
       LayoutInline {B} at (0,0) size 34x17
         LayoutText {#text} at (0,0) size 34x17
           text run at (0,0) width 34: "PASS"
@@ -34,7 +34,7 @@ layer at (270,90) size 90x90
   LayoutNGBlockFlow (positioned) {DIV} at (270,90) size 90x90 [bgcolor=#008000]
 layer at (198,198) size 34x18
   LayoutNGBlockFlow (positioned) {DIV} at (198,198) size 34x18
-    LayoutInline {SPAN} at (0,0) size 34x17 [color=#008000]
+    LayoutInline {SPAN} at (0,0) size 34x16 [color=#008000]
       LayoutInline {B} at (0,0) size 34x17
         LayoutText {#text} at (0,0) size 34x17
           text run at (0,0) width 34: "PASS"

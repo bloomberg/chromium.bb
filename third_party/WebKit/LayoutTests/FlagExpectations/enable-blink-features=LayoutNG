@@ -33,6 +33,9 @@ crbug.com/636993 external/wpt/css/css-text/word-break/word-break-break-all-005.h
 crbug.com/636993 external/wpt/css/css-text/word-break/word-break-normal-hi-000.html [ Failure ]
 crbug.com/636993 transforms/2d/hindi-rotated.html [ Failure ]
 
+# Superscript text off by 1px
+crbug.com/636993 external/wpt/css/css-text-decor/text-decoration-color.html [ Failure ]
+
 # New passes
 crbug.com/774229 editing/pasteboard/copy-paste-white-space.html [ Pass ]
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Pass ]
@@ -300,7 +303,6 @@ crbug.com/591099 external/wpt/css/css-writing-modes/text-orientation-script-001a
 crbug.com/591099 external/wpt/css/css-writing-modes/text-orientation-script-001c.html [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-003.xht [ Pass ]
 crbug.com/591099 external/wpt/css/css-writing-modes/vertical-alignment-009.xht [ Pass ]
-crbug.com/851075 external/wpt/css/cssom-view/elementFromPoint-mixed-font-sizes.html [ Failure ]
 crbug.com/591099 external/wpt/css/cssom-view/scrollintoview.html [ Failure Pass ]
 crbug.com/591099 external/wpt/css/geometry/interfaces.worker.html [ Pass ]
 crbug.com/591099 external/wpt/css/mediaqueries/viewport-script-dynamic.html [ Pass ]

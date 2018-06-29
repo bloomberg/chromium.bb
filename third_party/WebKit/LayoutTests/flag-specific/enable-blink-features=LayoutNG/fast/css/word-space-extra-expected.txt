@@ -87,7 +87,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (572,68) size 692x16
             text run at (572,68) width 692: "too. (with comment (no trailing space) between elements and too)"
             text run at (1264,68) width 0: " "
-          LayoutInline {SPAN} at (0,0) size 376x17
+          LayoutInline {SPAN} at (0,0) size 376x16
             LayoutText {#text} at (0,85) size 260x16
               text run at (0,85) width 260: "Word   spacing test "
             LayoutInline {EM} at (0,0) size 24x17
@@ -107,7 +107,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (452,85) width 644: " elements too. (with monospace font from Word to elements)"
             text run at (1096,85) width 0: " "
             text run at (0,102) width 260: "Word   spacing test "
-          LayoutInline {SPAN} at (0,0) size 192x17
+          LayoutInline {SPAN} at (0,0) size 192x16
             LayoutInline {EM} at (0,0) size 24x17
               LayoutText {#text} at (260,101) size 24x17
                 text run at (260,101) width 24: "for"
@@ -227,7 +227,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (572,68) size 692x16
             text run at (572,68) width 692: "too. (with comment (no trailing space) between elements and too)"
             text run at (1264,68) width 0: " "
-          LayoutInline {SPAN} at (0,0) size 376x17
+          LayoutInline {SPAN} at (0,0) size 376x16
             LayoutText {#text} at (0,85) size 260x16
               text run at (0,85) width 260: "Word   spacing test "
             LayoutInline {EM} at (0,0) size 24x17
@@ -247,7 +247,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (452,85) width 644: " elements too. (with monospace font from Word to elements)"
             text run at (1096,85) width 0: " "
             text run at (0,102) width 260: "Word   spacing test "
-          LayoutInline {SPAN} at (0,0) size 192x17
+          LayoutInline {SPAN} at (0,0) size 192x16
             LayoutInline {EM} at (0,0) size 24x17
               LayoutText {#text} at (260,101) size 24x17
                 text run at (260,101) width 24: "for"
@@ -374,7 +374,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (451,100) width 276: "too. (with comment (no trailing"
             text run at (0,120) width 292: "space) between elements and too)"
           LayoutBR {BR} at (292,120) size 0x0
-          LayoutInline {SPAN} at (0,0) size 320x17
+          LayoutInline {SPAN} at (0,0) size 320x16
             LayoutText {#text} at (0,143) size 204x16
               text run at (0,143) width 204: "Word spacing test "
             LayoutInline {EM} at (0,0) size 24x17
@@ -396,7 +396,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutBR {BR} at (155,160) size 0x0
           LayoutText {#text} at (0,180) size 176x19
             text run at (0,180) width 176: "Word spacing test "
-          LayoutInline {SPAN} at (0,0) size 192x17
+          LayoutInline {SPAN} at (0,0) size 192x16
             LayoutInline {EM} at (0,0) size 24x17
               LayoutText {#text} at (176,182) size 24x17
                 text run at (176,182) width 24: "for"
@@ -523,7 +523,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (663,68) size 832x16
             text run at (663,68) width 832: "too. (with comment (no trailing space) between elements and too)"
             text run at (1495,68) width 0: " "
-          LayoutInline {SPAN} at (0,0) size 442x17
+          LayoutInline {SPAN} at (0,0) size 442x16
             LayoutText {#text} at (0,85) size 286x16
               text run at (0,85) width 286: "Letter   spacing test "
             LayoutInline {EM} at (0,0) size 39x17
@@ -543,7 +543,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (533,85) width 780: " elements too. (with monospace font from Letter to elements)"
             text run at (1313,85) width 0: " "
             text run at (0,102) width 286: "Letter   spacing test "
-          LayoutInline {SPAN} at (0,0) size 247x17
+          LayoutInline {SPAN} at (0,0) size 247x16
             LayoutInline {EM} at (0,0) size 39x17
               LayoutText {#text} at (286,101) size 39x17
                 text run at (286,101) width 39: "for"
@@ -663,7 +663,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (663,68) size 832x16
             text run at (663,68) width 832: "too. (with comment (no trailing space) between elements and too)"
             text run at (1495,68) width 0: " "
-          LayoutInline {SPAN} at (0,0) size 442x17
+          LayoutInline {SPAN} at (0,0) size 442x16
             LayoutText {#text} at (0,85) size 286x16
               text run at (0,85) width 286: "Letter   spacing test "
             LayoutInline {EM} at (0,0) size 39x17
@@ -683,7 +683,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (533,85) width 780: " elements too. (with monospace font from Letter to elements)"
             text run at (1313,85) width 0: " "
             text run at (0,102) width 286: "Letter   spacing test "
-          LayoutInline {SPAN} at (0,0) size 247x17
+          LayoutInline {SPAN} at (0,0) size 247x16
             LayoutInline {EM} at (0,0) size 39x17
               LayoutText {#text} at (286,101) size 39x17
                 text run at (286,101) width 39: "for"
@@ -811,7 +811,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (558,100) width 213: "too. (with comment"
             text run at (0,120) width 510: "(no trailing space) between elements and too)"
           LayoutBR {BR} at (510,120) size 0x0
-          LayoutInline {SPAN} at (0,0) size 416x17
+          LayoutInline {SPAN} at (0,0) size 416x16
             LayoutText {#text} at (0,143) size 260x16
               text run at (0,143) width 260: "Letter spacing test "
             LayoutInline {EM} at (0,0) size 39x17
@@ -833,7 +833,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutBR {BR} at (450,160) size 0x0
           LayoutText {#text} at (0,180) size 218x19
             text run at (0,180) width 218: "Letter spacing test "
-          LayoutInline {SPAN} at (0,0) size 247x17
+          LayoutInline {SPAN} at (0,0) size 247x16
             LayoutInline {EM} at (0,0) size 39x17
               LayoutText {#text} at (218,182) size 39x17
                 text run at (218,182) width 39: "for"
@@ -960,7 +960,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (1000,68) size 1012x16
             text run at (1000,68) width 1012: "too. (with comment (no trailing space) between elements and too)"
             text run at (2012,68) width 0: " "
-          LayoutInline {SPAN} at (0,0) size 719x17
+          LayoutInline {SPAN} at (0,0) size 719x16
             LayoutText {#text} at (0,85) size 543x16
               text run at (0,85) width 543: "Word and letter   spacing test "
             LayoutInline {EM} at (0,0) size 39x17
@@ -980,7 +980,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (830,85) width 934: " elements too. (with monospace font from Word to elements)"
             text run at (1764,85) width 0: " "
             text run at (0,102) width 543: "Word and letter   spacing test "
-          LayoutInline {SPAN} at (0,0) size 287x17
+          LayoutInline {SPAN} at (0,0) size 287x16
             LayoutInline {EM} at (0,0) size 39x17
               LayoutText {#text} at (543,101) size 39x17
                 text run at (543,101) width 39: "for"
@@ -1100,7 +1100,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutText {#text} at (1000,68) size 1012x16
             text run at (1000,68) width 1012: "too. (with comment (no trailing space) between elements and too)"
             text run at (2012,68) width 0: " "
-          LayoutInline {SPAN} at (0,0) size 719x17
+          LayoutInline {SPAN} at (0,0) size 719x16
             LayoutText {#text} at (0,85) size 543x16
               text run at (0,85) width 543: "Word and letter   spacing test "
             LayoutInline {EM} at (0,0) size 39x17
@@ -1120,7 +1120,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (830,85) width 934: " elements too. (with monospace font from Word to elements)"
             text run at (1764,85) width 0: " "
             text run at (0,102) width 543: "Word and letter   spacing test "
-          LayoutInline {SPAN} at (0,0) size 287x17
+          LayoutInline {SPAN} at (0,0) size 287x16
             LayoutInline {EM} at (0,0) size 39x17
               LayoutText {#text} at (543,101) size 39x17
                 text run at (543,101) width 39: "for"
@@ -1247,7 +1247,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
             text run at (124,160) width 647: "too. (with comment (no trailing space) between"
             text run at (0,180) width 236: "elements and too)"
           LayoutBR {BR} at (236,180) size 0x0
-          LayoutInline {SPAN} at (0,0) size 653x17
+          LayoutInline {SPAN} at (0,0) size 653x16
             LayoutText {#text} at (0,203) size 477x16
               text run at (0,203) width 477: "Word and letter spacing test "
             LayoutInline {EM} at (0,0) size 39x17
@@ -1269,7 +1269,7 @@ layer at (0,0) size 800x2576 backgroundClip at (0,0) size 800x600 clip at (0,0) 
           LayoutBR {BR} at (105,240) size 0x0
           LayoutText {#text} at (0,260) size 423x19
             text run at (0,260) width 423: "Word and letter spacing test "
-          LayoutInline {SPAN} at (0,0) size 287x17
+          LayoutInline {SPAN} at (0,0) size 287x16
             LayoutInline {EM} at (0,0) size 39x17
               LayoutText {#text} at (423,262) size 39x17
                 text run at (423,262) width 39: "for"

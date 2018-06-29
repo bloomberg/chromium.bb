@@ -211,17 +211,21 @@ void NGInlineLayoutStateStack::EndBoxState(
   PositionPending position_pending =
       ApplyBaselineShift(box, line_box, baseline_type);
 
+  // We are done here if there is no parent box.
+  if (box == stack_.begin())
+    return;
+  NGInlineBoxState& parent_box = *std::prev(box);
+
+  // Propagate necessary data back to the parent box.
+
   // Unite the metrics to the parent box.
-  if (position_pending == kPositionNotPending && box != stack_.begin()) {
-    box[-1].metrics.Unite(box->metrics);
-  }
+  if (position_pending == kPositionNotPending)
+    parent_box.metrics.Unite(box->metrics);
 
   // Create box fragments for parent if the current box has properties (e.g.,
   // margin) that make it tricky to compute the parent's rects.
-  if (box != stack_.begin() && box[-1].item) {
-    if (box->ParentNeedsBoxFragment())
-      box[-1].SetNeedsBoxFragment();
-  }
+  if (box->ParentNeedsBoxFragment(parent_box))
+    parent_box.SetNeedsBoxFragment();
 }
 
 void NGInlineBoxState::SetNeedsBoxFragment() {
@@ -244,7 +248,10 @@ void NGInlineBoxState::SetLineRightForBoxFragment(
   }
 }
 
-bool NGInlineBoxState::ParentNeedsBoxFragment() const {
+bool NGInlineBoxState::ParentNeedsBoxFragment(
+    const NGInlineBoxState& parent) const {
+  if (!parent.item)
+    return false;
   // Below are the known cases where parent rect may not equal the union of
   // its child rects.
   if (margin_inline_start || margin_inline_end)
@@ -253,9 +260,9 @@ bool NGInlineBoxState::ParentNeedsBoxFragment() const {
   // from the height of its child atomic inline.
   if (item && item->Type() == NGInlineItem::kAtomicInline)
     return true;
-  // TODO(xiaochengh): We may need to create box fragment when this box and
-  // parent have differnt 'font-size' values. Not capured by layout test yet.
-  return false;
+  // Returns true when parent and child boxes have different font metrics, since
+  // they may have different heights and/or locations in block direction.
+  return text_metrics != parent.text_metrics;
 }
 
 // Crete a placeholder for a box fragment.

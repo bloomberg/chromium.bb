@@ -45,7 +45,7 @@ layer at (0,0) size 800x323
         LayoutImage {IMG} at (113.50,87.50) size 50x50
         LayoutText {#text} at (163,106) size 16x16
           text run at (163,106) width 16: " "
-        LayoutInline {SPAN} at (0,0) size 353x57 [color=#C0C0C0]
+        LayoutInline {SPAN} at (0,0) size 353x24 [color=#C0C0C0]
           LayoutText {#text} at (178,100) size 93x24
             text run at (178,100) width 93: "xxx "
           LayoutInline {SPAN} at (0,0) size 169x57

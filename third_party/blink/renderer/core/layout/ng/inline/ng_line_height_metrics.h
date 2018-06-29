@@ -33,6 +33,13 @@ struct NGLineHeightMetrics {
 
   bool IsEmpty() const { return ascent == LayoutUnit::Min(); }
 
+  bool operator==(const NGLineHeightMetrics& other) const {
+    return ascent == other.ascent && descent == other.descent;
+  }
+  bool operator!=(const NGLineHeightMetrics& other) const {
+    return !operator==(other);
+  }
+
   // Add the leading. Half the leading is added to ascent and descent each.
   // https://drafts.csswg.org/css2/visudet.html#leading
   void AddLeading(LayoutUnit line_height);
