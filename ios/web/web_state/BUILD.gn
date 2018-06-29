@@ -162,3 +162,18 @@ source_set("context_menu") {
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }
+
+source_set("web_frame") {
+  deps = [
+    "//base",
+    "//ios/web/public",
+    "//url",
+  ]
+
+  sources = [
+    "web_frame_impl.h",
+    "web_frame_impl.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
