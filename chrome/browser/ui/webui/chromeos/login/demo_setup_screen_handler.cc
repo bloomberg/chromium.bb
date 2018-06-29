@@ -37,6 +37,11 @@ void DemoSetupScreenHandler::Bind(DemoSetupScreen* screen) {
   BaseScreenHandler::SetBaseScreen(screen);
 }
 
+void DemoSetupScreenHandler::OnSetupFinished(bool is_success,
+                                             const std::string& message) {
+  CallJS("onSetupFinished", is_success, message);
+}
+
 void DemoSetupScreenHandler::Initialize() {}
 
 void DemoSetupScreenHandler::DeclareLocalizedValues(
