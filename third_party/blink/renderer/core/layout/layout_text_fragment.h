@@ -117,8 +117,8 @@ class CORE_EXPORT LayoutTextFragment final : public LayoutText {
 DEFINE_TYPE_CASTS(LayoutTextFragment,
                   LayoutObject,
                   object,
-                  ToLayoutText(object)->IsTextFragment(),
-                  ToLayoutText(object).IsTextFragment());
+                  (object->IsText() && ToLayoutText(object)->IsTextFragment()),
+                  (object.IsText() && ToLayoutText(object).IsTextFragment()));
 
 }  // namespace blink
 
