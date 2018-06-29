@@ -3702,7 +3702,11 @@ ChromeContentBrowserClient::GetExtraServiceManifests() {
 
 std::vector<service_manager::Identity>
 ChromeContentBrowserClient::GetStartupServices() {
+#if defined(OS_ANDROID)
   return {service_manager::Identity("download_manager")};
+#else
+  return {};
+#endif
 }
 
 void ChromeContentBrowserClient::OpenURL(
