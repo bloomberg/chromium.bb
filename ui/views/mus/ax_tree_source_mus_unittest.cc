@@ -35,12 +35,9 @@ class AXTreeSourceMusTest : public ViewsTestBase {
     params.context = GetContext();
     widget_->Init(params);
     widget_->SetContentsView(new View());
-    label1_ = new Label(base::ASCIIToUTF16("Label 1"));
-    label1_->SetBounds(1, 1, 111, 111);
-    widget_->GetContentsView()->AddChildView(label1_);
-    label2_ = new Label(base::ASCIIToUTF16("Label 2"));
-    label2_->SetBounds(2, 2, 222, 222);
-    widget_->GetContentsView()->AddChildView(label2_);
+    label_ = new Label(base::ASCIIToUTF16("Label"));
+    label_->SetBounds(1, 1, 111, 111);
+    widget_->GetContentsView()->AddChildView(label_);
   }
 
   void TearDown() override {
@@ -49,62 +46,11 @@ class AXTreeSourceMusTest : public ViewsTestBase {
   }
 
   std::unique_ptr<Widget> widget_;
-  Label* label1_ = nullptr;  // Owned by views hierarchy.
-  Label* label2_ = nullptr;  // Owned by views hierarchy.
+  Label* label_ = nullptr;  // Owned by views hierarchy.
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AXTreeSourceMusTest);
 };
-
-TEST_F(AXTreeSourceMusTest, Basics) {
-  AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
-
-  // Start the tree at the Widget's contents view.
-  AXAuraObjWrapper* root = cache->GetOrCreate(widget_->GetContentsView());
-  AXTreeSourceMus tree(root);
-  EXPECT_EQ(root, tree.GetRoot());
-
-  // The root has no parent.
-  EXPECT_FALSE(tree.GetParent(root));
-
-  // The root has the right children.
-  std::vector<AXAuraObjWrapper*> children;
-  tree.GetChildren(root, &children);
-  ASSERT_EQ(2u, children.size());
-
-  // The labels are the children.
-  AXAuraObjWrapper* label1 = children[0];
-  AXAuraObjWrapper* label2 = children[1];
-  EXPECT_EQ(label1, cache->GetOrCreate(label1_));
-  EXPECT_EQ(label2, cache->GetOrCreate(label2_));
-
-  // The parents is correct.
-  EXPECT_EQ(root, tree.GetParent(label1));
-  EXPECT_EQ(root, tree.GetParent(label2));
-
-  // IDs match the ones in the cache.
-  EXPECT_EQ(root->GetUniqueId().Get(), tree.GetId(root));
-  EXPECT_EQ(label1->GetUniqueId().Get(), tree.GetId(label1));
-  EXPECT_EQ(label2->GetUniqueId().Get(), tree.GetId(label2));
-
-  // Reverse ID lookups work.
-  EXPECT_EQ(root, tree.GetFromId(root->GetUniqueId().Get()));
-  EXPECT_EQ(label1, tree.GetFromId(label1->GetUniqueId().Get()));
-  EXPECT_EQ(label2, tree.GetFromId(label2->GetUniqueId().Get()));
-
-  // Validity.
-  EXPECT_TRUE(tree.IsValid(root));
-  EXPECT_FALSE(tree.IsValid(nullptr));
-
-  // Comparisons.
-  EXPECT_TRUE(tree.IsEqual(label1, label1));
-  EXPECT_FALSE(tree.IsEqual(label1, label2));
-  EXPECT_FALSE(tree.IsEqual(label1, nullptr));
-  EXPECT_FALSE(tree.IsEqual(nullptr, label1));
-
-  // Null pointers is the null value.
-  EXPECT_EQ(nullptr, tree.GetNull());
-}
 
 TEST_F(AXTreeSourceMusTest, Serialize) {
   AXAuraObjCache* cache = AXAuraObjCache::GetInstance();
@@ -122,7 +68,7 @@ TEST_F(AXTreeSourceMusTest, Serialize) {
   EXPECT_EQ(-1, node_data.offset_container_id);
 
   // Serialize a child.
-  tree.SerializeNode(cache->GetOrCreate(label1_), &node_data);
+  tree.SerializeNode(cache->GetOrCreate(label_), &node_data);
 
   // Child has relative position with the root as the container.
   EXPECT_EQ(gfx::RectF(1, 1, 111, 111), node_data.location);
