@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/views/tabs/tab_strip_layout.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "third_party/skia/include/core/SkColorFilter.h"
@@ -836,9 +837,14 @@ NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
 }
 
 bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
-  if (tab->IsActive())
-    return SingleTabMode();
-  return touch_layout_ != nullptr || MD::IsRefreshUi();
+  if (tab->IsActive()) {
+    // For single-tab mode, the close button looks like it's floating oddly in
+    // space for LEADING/TRAILING NTBs, so hide in that case.
+    return SingleTabMode() &&
+           controller_->GetNewTabButtonPosition() != AFTER_TABS;
+  }
+  return touch_layout_ ||
+         !base::FeatureList::IsEnabled(features::kCloseButtonsInactiveTabs);
 }
 
 bool TabStrip::ShouldShowCloseButtonOnHover() {

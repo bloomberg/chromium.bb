@@ -137,6 +137,9 @@ extern const char kClickToOpenPDFDescription[];
 extern const char kClipboardContentSettingName[];
 extern const char kClipboardContentSettingDescription[];
 
+extern const char kCloseButtonsInactiveTabs[];
+extern const char kCloseButtonsInactiveTabsDescription[];
+
 extern const char kCloudImportName[];
 extern const char kCloudImportDescription[];
 

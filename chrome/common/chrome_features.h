@@ -86,6 +86,8 @@ extern const base::Feature kClickToOpenPDFPlaceholder;
 
 extern const base::Feature kClipboardContentSetting;
 
+extern const base::Feature kCloseButtonsInactiveTabs;
+
 #if defined(OS_MACOSX)
 extern const base::Feature kContentFullscreen;
 #endif
