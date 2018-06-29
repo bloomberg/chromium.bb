@@ -50,9 +50,10 @@ bool IsChild(Profile* profile) {
 }
 
 bool IsOwnerProfile(Profile* profile) {
-  return chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
+  return profile &&
+         chromeos::OwnerSettingsServiceChromeOSFactory::GetForBrowserContext(
              profile)
-      ->IsOwner();
+             ->IsOwner();
 }
 
 bool CanModifyWhitelistedUsers(Profile* profile) {
@@ -66,8 +67,8 @@ api::users_private::User CreateApiUser(const std::string& email,
   api_user.email = email;
   api_user.display_email = user.GetDisplayEmail();
   api_user.name = base::UTF16ToUTF8(user.GetDisplayName());
-  api_user.is_owner =
-      IsOwnerProfile(chromeos::ProfileHelper::Get()->GetProfileByUser(&user));
+  api_user.is_owner = user.GetAccountId() ==
+                      user_manager::UserManager::Get()->GetOwnerAccountId();
   api_user.is_supervised = user.IsSupervised();
   api_user.is_child = user.IsChild();
   return api_user;

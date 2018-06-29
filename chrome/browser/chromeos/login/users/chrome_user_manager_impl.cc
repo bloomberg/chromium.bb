@@ -334,6 +334,24 @@ void ChromeUserManagerImpl::Shutdown() {
   registrar_.RemoveAll();
 }
 
+void ChromeUserManagerImpl::UserLoggedIn(const AccountId& account_id,
+                                         const std::string& username_hash,
+                                         bool browser_restart,
+                                         bool is_child) {
+  if (FakeOwnership()) {
+    std::string owner_email;
+    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
+                                             &owner_email);
+    if (owner_email.empty()) {
+      owner_email = account_id.GetUserEmail();
+      VLOG(1) << "Set device owner to: " << owner_email;
+      CrosSettings::Get()->SetString(kDeviceOwner, owner_email);
+    }
+  }
+  ChromeUserManager::UserLoggedIn(account_id, username_hash, browser_restart,
+                                  is_child);
+}
+
 MultiProfileUserController*
 ChromeUserManagerImpl::GetMultiProfileUserController() {
   return multi_profile_user_controller_.get();
@@ -810,17 +828,19 @@ void ChromeUserManagerImpl::GuestUserLoggedIn() {
 void ChromeUserManagerImpl::RegularUserLoggedIn(
     const AccountId& account_id,
     const user_manager::UserType user_type) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
   ChromeUserManager::RegularUserLoggedIn(account_id, user_type);
 
   if (FakeOwnership()) {
-    const AccountId owner_account_id = GetActiveUser()->GetAccountId();
-    VLOG(1) << "Set device owner to: " << owner_account_id.GetUserEmail();
-    CrosSettings::Get()->SetString(kDeviceOwner,
-                                   owner_account_id.GetUserEmail());
-    SetOwnerId(owner_account_id);
+    std::string owner_email;
+    chromeos::CrosSettings::Get()->GetString(chromeos::kDeviceOwner,
+                                             &owner_email);
+    if (owner_email == account_id.GetUserEmail())
+      SetOwnerId(account_id);
   }
-  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
   GetUserImageManager(account_id)->UserLoggedIn(IsCurrentUserNew(), false);
+  WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
+
   // Make sure that new data is persisted to Local State.
   GetLocalState()->CommitPendingWrite();
 }
