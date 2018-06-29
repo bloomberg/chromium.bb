@@ -980,8 +980,19 @@ void PrintLayoutObjectForSelection(std::ostream& ostream,
     ostream << "<null>";
     return;
   }
-  ostream << (void*)layout_object << ' ' << layout_object->GetNode()
-          << ", state:" << layout_object->GetSelectionState()
+  ostream << (void*)layout_object << ' ';
+  if (const LayoutTextFragment* fragment =
+          ToLayoutTextFragmentOrNull(*layout_object)) {
+    // TODO(yoichio): Treat LayoutQuote which may generate LayoutTextFragment
+    // that's neither first-letter nor remaining text.
+    if (fragment->IsRemainingTextLayoutObject())
+      ostream << "remaining part of " << fragment->AssociatedTextNode();
+    else
+      ostream << "first-letter of " << fragment->AssociatedTextNode();
+  } else {
+    ostream << layout_object->GetNode();
+  }
+  ostream << ", state:" << layout_object->GetSelectionState()
           << (layout_object->ShouldInvalidateSelection() ? ", ShouldInvalidate"
                                                          : ", NotInvalidate");
 }
