@@ -694,8 +694,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, IncognitoSplitModeReload) {
   EXPECT_TRUE(listener_incognito2.WaitUntilSatisfied());
 }
 
-// This test is flaky. See http://crbug.com/859063.
-IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, DISABLED_ExtensionRequests) {
+IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest, ExtensionRequests) {
   ASSERT_TRUE(StartEmbeddedTestServer());
   ExtensionTestMessageListener listener_main1("web_request_status1", true);
   ExtensionTestMessageListener listener_main2("web_request_status2", true);
