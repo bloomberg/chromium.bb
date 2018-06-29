@@ -161,6 +161,18 @@ WebRemoteFrameImpl* CreateRemoteChild(WebRemoteFrame& parent,
                                       scoped_refptr<SecurityOrigin> = nullptr,
                                       TestWebRemoteFrameClient* = nullptr);
 
+// A class that constructs and owns a content::RenderWidgetCompositor for blink
+// unit tests.
+class RenderWidgetCompositorFactory {
+ public:
+  content::RenderWidgetCompositor* Initialize();
+
+ private:
+  content::StubRenderWidgetCompositorDelegate delegate_;
+  content::FakeCompositorDependencies compositor_deps_;
+  std::unique_ptr<content::RenderWidgetCompositor> compositor_;
+};
+
 class TestWebWidgetClient : public WebWidgetClient {
  public:
   ~TestWebWidgetClient() override = default;
@@ -169,16 +181,14 @@ class TestWebWidgetClient : public WebWidgetClient {
   WebLayerTreeView* InitializeLayerTreeView() override;
 
  private:
-  content::StubRenderWidgetCompositorDelegate delegate_;
-  content::FakeCompositorDependencies compositor_deps_;
-  std::unique_ptr<content::RenderWidgetCompositor> compositor_;
+  RenderWidgetCompositorFactory compositor_factory_;
 };
 
 class TestWebViewClient : public WebViewClient {
  public:
   ~TestWebViewClient() override = default;
 
-  void SetViewportSize(const WebSize& size);
+  content::RenderWidgetCompositor* compositor() { return compositor_; }
 
   // WebViewClient:
   WebLayerTreeView* InitializeLayerTreeView() override;
@@ -189,9 +199,8 @@ class TestWebViewClient : public WebViewClient {
   bool CanUpdateLayout() override { return true; }
 
  private:
-  content::StubRenderWidgetCompositorDelegate delegate_;
-  content::FakeCompositorDependencies compositor_deps_;
-  std::unique_ptr<content::RenderWidgetCompositor> compositor_;
+  content::RenderWidgetCompositor* compositor_ = nullptr;
+  RenderWidgetCompositorFactory compositor_factory_;
   bool animation_scheduled_ = false;
 };
 
@@ -253,9 +262,7 @@ class WebViewHelper {
   WebLocalFrameImpl* LocalMainFrame() const;
   WebRemoteFrameImpl* RemoteMainFrame() const;
 
-  void SetViewportSize(const WebSize& size) {
-    test_web_view_client_->SetViewportSize(size);
-  }
+  void SetViewportSize(const WebSize& size);
 
  private:
   void InitializeWebView(TestWebViewClient*, class WebView* opener);

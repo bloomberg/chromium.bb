@@ -365,6 +365,14 @@ void WebViewHelper::Resize(WebSize size) {
   test_web_view_client_->ClearAnimationScheduled();
 }
 
+void WebViewHelper::SetViewportSize(const WebSize& size) {
+  content::RenderWidgetCompositor* compositor =
+      test_web_view_client_->compositor();
+  compositor->SetViewportSizeAndScale(
+      static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
+      compositor->layer_tree_host()->local_surface_id_from_parent());
+}
+
 void WebViewHelper::InitializeWebView(TestWebViewClient* web_view_client,
                                       class WebView* opener) {
   owned_test_web_view_client_ = CreateDefaultClientIfNeeded(web_view_client);
@@ -461,14 +469,7 @@ void TestWebRemoteFrameClient::FrameDetached(DetachType type) {
   self_owned_.reset();
 }
 
-void TestWebViewClient::SetViewportSize(const WebSize& size) {
-  // TODO(ccameron): This likely causes surface invariant violations.
-  compositor_->SetViewportSizeAndScale(
-      static_cast<gfx::Size>(size), /*device_scale_factor=*/1.f,
-      compositor_->layer_tree_host()->local_surface_id_from_parent());
-}
-
-WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
+content::RenderWidgetCompositor* RenderWidgetCompositorFactory::Initialize() {
   cc::LayerTreeSettings settings;
   // Use synchronous compositing so that the MessageLoop becomes idle and the
   // test makes progress.
@@ -489,23 +490,12 @@ WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
 }
 
 WebLayerTreeView* TestWebWidgetClient::InitializeLayerTreeView() {
-  cc::LayerTreeSettings settings;
-  // Use synchronous compositing so that the MessageLoop becomes idle and the
-  // test makes progress.
-  settings.single_thread_proxy_scheduler = false;
-  // For web contents, layer transforms should scale up the contents of layers
-  // to keep content always crisp when possible.
-  settings.layer_transforms_should_scale_layer_contents = true;
-  // BlinkGenPropertyTrees should imply layer lists in the compositor. Some
-  // code across the boundaries makes assumptions based on this so ensure tests
-  // run using this configuration as well.
-  if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
-    settings.use_layer_lists = true;
+  return compositor_factory_.Initialize();
+}
 
-  compositor_ = std::make_unique<content::RenderWidgetCompositor>(
-      &delegate_, &compositor_deps_);
-  compositor_->Initialize(settings);
-  return compositor_.get();
+WebLayerTreeView* TestWebViewClient::InitializeLayerTreeView() {
+  compositor_ = compositor_factory_.Initialize();
+  return compositor_;
 }
 
 }  // namespace FrameTestHelpers
