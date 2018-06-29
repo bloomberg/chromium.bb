@@ -13,7 +13,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/chrome_content_browser_client.h"
-#include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/external_protocol/external_protocol_handler.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
@@ -30,9 +29,6 @@
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/navigation_handle.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_widget_host_view.h"
@@ -43,6 +39,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
+#include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "net/dns/mock_host_resolver.h"
@@ -301,16 +298,14 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PopupWindowFocus) {
   // Open a popup for a cross-site page.
   GURL popup_url =
       embedded_test_server()->GetURL("foo.com", "/page_with_focus_events.html");
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(ExecuteScript(web_contents,
                             "openPopup('" + popup_url.spec() + "','popup')"));
   popup_observer.Wait();
   ASSERT_EQ(2, browser()->tab_strip_model()->count());
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
 
@@ -563,9 +558,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // and (2) open a popup.  Note that ExecuteScript will run this with a user
   // gesture, so both steps should succeed.
   frame_url = embedded_test_server()->GetURL("c.com", "/title1.html");
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   bool popup_handle_is_valid = false;
   EXPECT_TRUE(ExecuteScriptAndExtractBool(
       active_web_contents,
@@ -633,9 +627,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Navigate to a URL that redirects to another process and approve the
   // beforeunload dialog that pops up.
-  content::WindowedNotificationObserver nav_observer(
-      content::NOTIFICATION_NAV_ENTRY_COMMITTED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver nav_observer(contents);
   GURL dest_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   GURL redirect_url(embedded_test_server()->GetURL(
       "c.com", "/server-redirect?" + dest_url.spec()));
@@ -645,7 +637,7 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   JavaScriptAppModalDialog* alert = ui_test_utils::WaitForAppModalDialog();
   EXPECT_TRUE(alert->is_before_unload_dialog());
   alert->native_dialog()->AcceptAppModalDialog();
-  nav_observer.Wait();
+  nav_observer.WaitForNavigationFinished();
 }
 
 IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest, PrintIgnoredInUnloadHandler) {
@@ -702,9 +694,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
       browser()->tab_strip_model()->GetActiveWebContents();
 
   GURL popup_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(ExecuteScript(opener_contents,
                             "window.open('" + popup_url.spec() + "');"));
   popup_observer.Wait();
@@ -712,7 +703,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   content::WebContents* popup_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_NE(opener_contents, popup_contents);
-  EXPECT_TRUE(content::WaitForLoadStop(popup_contents));
 
   // This test technically performs a tab-under navigation. This will be blocked
   // if the tab-under blocking feature is enabled. Simulate clicking the opener
@@ -1117,9 +1107,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   // default ExecuteScript runs with a user gesture, which should be
   // transferred to the parent via postMessage. The parent should open the
   // popup in its message handler, and the popup shouldn't be blocked.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(ExecuteScript(ChildFrameAt(web_contents->GetMainFrame(), 0),
                             "parent.postMessage('foo', '*')"));
   popup_observer.Wait();
@@ -1127,7 +1116,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
 
@@ -1168,9 +1156,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Send two postMessages from child frame to parent frame as part of the same
   // user gesture.  Ensure that only one popup can be opened.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(ExecuteScript(child,
                             "parent.postMessage('title1.html', '*');\n"
                             "parent.postMessage('title2.html', '*');"));
@@ -1179,7 +1166,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title1.html"),
             popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
@@ -1221,9 +1207,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(ExecuteScriptWithoutUserGesture(frame_b, script));
 
   // Add a popup observer.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
 
   // Send two postMessages from the "leaf" frame to both its ancestors as part
   // of the same user gesture.
@@ -1239,7 +1224,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title1.html"),
             popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
@@ -1303,15 +1287,13 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Send a postMessage from bottom frame to middle frame as part of the same
   // user gesture.  Ensure that only one popup can be opened.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(ExecuteScript(grandchild, "parent.postMessage('foo', '*');"));
   popup_observer.Wait();
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(popup1_url, popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
 
@@ -1361,9 +1343,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   // Send a postMessage from child frame to parent frame and then immediately
   // consume the user gesture with window.open().
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
   EXPECT_TRUE(ExecuteScript(
       child, base::StringPrintf(
                  "parent.postMessage('foo', '*');\n"
@@ -1373,7 +1354,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(popup_url, popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
 
@@ -1416,9 +1396,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(ExecuteScript(frame_b, no_op_script));
 
   // Add a popup observer.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
 
   // Try opening popups from frame_c and root frame.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
@@ -1437,7 +1416,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title2.html"),
             popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
@@ -1481,9 +1459,8 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
   EXPECT_TRUE(ExecuteScript(frame_c, no_op_script));
 
   // Add a popup observer.
-  content::WindowedNotificationObserver popup_observer(
-      chrome::NOTIFICATION_TAB_ADDED,
-      content::NotificationService::AllSources());
+  content::TestNavigationObserver popup_observer(nullptr);
+  popup_observer.StartWatchingNewWebContents();
 
   // Try opening popups from all three frames.
   GURL popup_url(embedded_test_server()->GetURL("popup.com", "/"));
@@ -1506,7 +1483,6 @@ IN_PROC_BROWSER_TEST_F(ChromeSitePerProcessTest,
 
   content::WebContents* popup =
       browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(WaitForLoadStop(popup));
   EXPECT_EQ(embedded_test_server()->GetURL("popup.com", "/title1.html"),
             popup->GetLastCommittedURL());
   EXPECT_NE(popup, web_contents);
