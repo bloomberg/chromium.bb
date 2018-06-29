@@ -121,10 +121,10 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
                            double framebuffer_scale)
     : XRLayer(session, kXRWebGLLayerType),
       webgl_context_(webgl_context),
-      drawing_buffer_(drawing_buffer),
+      drawing_buffer_(std::move(drawing_buffer)),
       framebuffer_(framebuffer),
       framebuffer_scale_(framebuffer_scale) {
-  DCHECK(drawing_buffer);
+  DCHECK(drawing_buffer_);
   // If the contents need mirroring, indicate that to the drawing buffer.
   if (session->exclusive() && session->outputContext() &&
       session->device()->external()) {
@@ -137,6 +137,7 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
 XRWebGLLayer::~XRWebGLLayer() {
   if (mirroring_)
     drawing_buffer_->SetMirrorClient(nullptr);
+  drawing_buffer_->BeginDestruction();
 }
 
 void XRWebGLLayer::getXRWebGLRenderingContext(

@@ -63,13 +63,18 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   void UseSharedBuffer(const gpu::MailboxHolder&);
   void DoneWithSharedBuffer();
 
+  // Prepare for destruction by breaking reference loops. This must be called to
+  // avoid memory leaks, drawing buffer and color buffers are refcounted and
+  // store references to each other.
+  void BeginDestruction();
+
  private:
   struct ColorBuffer : public RefCounted<ColorBuffer> {
     ColorBuffer(XRWebGLDrawingBuffer*, const IntSize&, GLuint texture_id);
     ~ColorBuffer();
 
     // The owning XRWebGLDrawingBuffer. Note that DrawingBuffer is explicitly
-    // destroyed by the beginDestruction method, which will eventually drain all
+    // destroyed by the BeginDestruction method, which will eventually drain all
     // of its ColorBuffers.
     scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer;
     const IntSize size;

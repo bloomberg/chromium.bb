@@ -114,6 +114,12 @@ XRWebGLDrawingBuffer::XRWebGLDrawingBuffer(DrawingBuffer* drawing_buffer,
       alpha_(want_alpha_channel),
       multiview_(false) {}
 
+void XRWebGLDrawingBuffer::BeginDestruction() {
+  back_color_buffer_ = nullptr;
+  front_color_buffer_ = nullptr;
+  recycled_color_buffer_queue_.clear();
+}
+
 // TODO(bajones): The GL resources allocated in this function are leaking. Add
 // a way to clean up the buffers when the layer is GCed or the session ends.
 bool XRWebGLDrawingBuffer::Initialize(const IntSize& size,
