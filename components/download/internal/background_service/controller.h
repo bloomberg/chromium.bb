@@ -102,7 +102,7 @@ class Controller {
 
   // See DownloadService::OnStartScheduledTask.
   virtual void OnStartScheduledTask(DownloadTaskType task_type,
-                                    const TaskFinishedCallback& callback) = 0;
+                                    TaskFinishedCallback callback) = 0;
 
   // See DownloadService::OnStopScheduledTask.
   virtual bool OnStopScheduledTask(DownloadTaskType task_type) = 0;

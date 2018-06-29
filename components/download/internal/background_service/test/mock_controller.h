@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_TEST_MOCK_CONTROLLER_H_
 #define COMPONENTS_DOWNLOAD_INTERNAL_BACKGROUND_SERVICE_TEST_MOCK_CONTROLLER_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/download/internal/background_service/controller.h"
 #include "components/download/internal/background_service/startup_status.h"
@@ -30,7 +32,7 @@ class MockController : public Controller {
                void(const std::string&, const SchedulingParams&));
   MOCK_METHOD1(GetOwnerOfDownload, DownloadClient(const std::string&));
   MOCK_METHOD2(OnStartScheduledTask,
-               void(DownloadTaskType, const TaskFinishedCallback&));
+               void(DownloadTaskType, TaskFinishedCallback));
   MOCK_METHOD1(OnStopScheduledTask, bool(DownloadTaskType task_type));
 
   void TriggerInitCompleted();

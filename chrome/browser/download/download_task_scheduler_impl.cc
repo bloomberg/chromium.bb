@@ -26,8 +26,8 @@ void DownloadTaskSchedulerImpl::ScheduleTask(
     bool require_unmetered_network,
     bool require_charging,
     int optimal_battery_percentage,
-    long window_start_time_seconds,
-    long window_end_time_seconds) {
+    int64_t window_start_time_seconds,
+    int64_t window_end_time_seconds) {
   // We only rely on this for cleanup tasks. Since this doesn't restart Chrome,
   // for download tasks it doesn't do much and we handle them outside of task
   // scheduler.
@@ -52,8 +52,8 @@ void DownloadTaskSchedulerImpl::RunScheduledTask(
   download::DownloadService* download_service =
       DownloadServiceFactory::GetForBrowserContext(context_);
   download_service->OnStartScheduledTask(
-      task_type, base::Bind(&DownloadTaskSchedulerImpl::OnTaskFinished,
-                            weak_factory_.GetWeakPtr()));
+      task_type, base::BindOnce(&DownloadTaskSchedulerImpl::OnTaskFinished,
+                                weak_factory_.GetWeakPtr()));
 }
 
 void DownloadTaskSchedulerImpl::OnTaskFinished(bool reschedule) {

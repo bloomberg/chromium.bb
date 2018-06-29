@@ -25,7 +25,7 @@ class ServiceConfig;
 struct DownloadParams;
 struct SchedulingParams;
 
-using TaskFinishedCallback = base::Callback<void(bool)>;
+using TaskFinishedCallback = base::OnceCallback<void(bool)>;
 
 // A service responsible for helping facilitate the scheduling and downloading
 // of file content from the web.  See |DownloadParams| for more details on the
@@ -62,7 +62,7 @@ class DownloadService : public KeyedService {
   // or OnStopScheduledTask is invoked by the system. Do not call this method
   // directly.
   virtual void OnStartScheduledTask(DownloadTaskType task_type,
-                                    const TaskFinishedCallback& callback) = 0;
+                                    TaskFinishedCallback callback) = 0;
 
   // Callback method to run by the service if the system decides to stop the
   // task. Returns true if the task needs to be rescheduled. Any pending

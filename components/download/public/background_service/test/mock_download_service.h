@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TEST_MOCK_DOWNLOAD_SERVICE_H_
 #define COMPONENTS_DOWNLOAD_PUBLIC_BACKGROUND_SERVICE_TEST_MOCK_DOWNLOAD_SERVICE_H_
 
+#include <string>
+
 #include "base/macros.h"
 #include "components/download/public/background_service/download_params.h"
 #include "components/download/public/background_service/download_service.h"
@@ -22,8 +24,7 @@ class MockDownloadService : public DownloadService {
   // DownloadService implementation.
   MOCK_METHOD0(GetConfig, const ServiceConfig&());
   MOCK_METHOD2(OnStartScheduledTask,
-               void(DownloadTaskType task_type,
-                    const TaskFinishedCallback& callback));
+               void(DownloadTaskType task_type, TaskFinishedCallback callback));
   MOCK_METHOD1(OnStopScheduledTask, bool(DownloadTaskType task_type));
   MOCK_METHOD0(GetStatus, ServiceStatus());
   MOCK_METHOD1(StartDownload, void(const DownloadParams& download_params));

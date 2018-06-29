@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TASK_SCHEDULER_IMPL_H_
 #define CHROME_BROWSER_DOWNLOAD_DOWNLOAD_TASK_SCHEDULER_IMPL_H_
 
+#include <stdint.h>
 #include <map>
 
 #include "base/cancelable_callback.h"
@@ -29,8 +30,8 @@ class DownloadTaskSchedulerImpl : public download::TaskScheduler {
                     bool require_unmetered_network,
                     bool require_charging,
                     int optimal_battery_percentage,
-                    long window_start_time_seconds,
-                    long window_end_time_seconds) override;
+                    int64_t window_start_time_seconds,
+                    int64_t window_end_time_seconds) override;
   void CancelTask(download::DownloadTaskType task_type) override;
 
  private:

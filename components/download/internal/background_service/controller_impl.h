@@ -8,6 +8,8 @@
 #include <map>
 #include <memory>
 #include <set>
+#include <string>
+#include <vector>
 
 #include "base/cancelable_callback.h"
 #include "base/macros.h"
@@ -78,7 +80,7 @@ class ControllerImpl : public Controller,
                               const SchedulingParams& params) override;
   DownloadClient GetOwnerOfDownload(const std::string& guid) override;
   void OnStartScheduledTask(DownloadTaskType task_type,
-                            const TaskFinishedCallback& callback) override;
+                            TaskFinishedCallback callback) override;
   bool OnStopScheduledTask(DownloadTaskType task_type) override;
 
  private:
