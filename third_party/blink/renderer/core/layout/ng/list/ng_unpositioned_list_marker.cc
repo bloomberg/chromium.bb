@@ -55,7 +55,8 @@ bool NGUnpositionedListMarker::AddToBox(
     FontBaseline baseline_type,
     const NGPhysicalFragment& content,
     NGLogicalOffset* content_offset,
-    NGFragmentBuilder* container_builder) const {
+    NGFragmentBuilder* container_builder,
+    const NGBoxStrut& border_scrollbar_padding) const {
   // Baselines from two different writing-mode cannot be aligned.
   if (UNLIKELY(space.GetWritingMode() != content.Style().GetWritingMode()))
     return false;
@@ -102,6 +103,9 @@ bool NGUnpositionedListMarker::AddToBox(
     // push the content down.
     content_offset->block_offset -= baseline_adjust;
   }
+  marker_offset.inline_offset += ComputeIntrudedFloatOffset(
+      space, container_builder, border_scrollbar_padding,
+      marker_offset.block_offset);
 
   DCHECK(container_builder);
   container_builder->AddChild(std::move(marker_layout_result), marker_offset);
@@ -130,6 +134,42 @@ LayoutUnit NGUnpositionedListMarker::AddToBoxWithoutLineBoxes(
   container_builder->AddChild(std::move(marker_layout_result), offset);
 
   return marker_size.block_size;
+}
+
+// Find the opportunity for marker, and compare it to ListItem, then compute the
+// diff as intruded offset.
+LayoutUnit NGUnpositionedListMarker::ComputeIntrudedFloatOffset(
+    const NGConstraintSpace& space,
+    const NGFragmentBuilder* container_builder,
+    const NGBoxStrut& border_scrollbar_padding,
+    LayoutUnit marker_block_offset) const {
+  DCHECK(container_builder);
+  // Because opportunity.rect is in the content area of LI, so origin_offset
+  // should plus border_scrollbar_padding.inline_start, and available_size
+  // should minus border_scrollbar_padding.
+  NGBfcOffset bfc_offset = container_builder->BfcOffset().value();
+  NGBfcOffset origin_offset = {
+      bfc_offset.line_offset + border_scrollbar_padding.inline_start,
+      bfc_offset.block_offset + marker_block_offset};
+  LayoutUnit available_size = container_builder->InlineSize() -
+                              border_scrollbar_padding.inline_start -
+                              border_scrollbar_padding.inline_end;
+  NGLayoutOpportunity opportunity =
+      space.ExclusionSpace().FindLayoutOpportunity(
+          origin_offset, available_size, NGLogicalSize());
+  DCHECK(marker_layout_object_);
+  const TextDirection direction = marker_layout_object_->StyleRef().Direction();
+  if (direction == TextDirection::kLtr) {
+    // If Ltr, compare the left side.
+    if (opportunity.rect.LineStartOffset() > origin_offset.line_offset)
+      return opportunity.rect.LineStartOffset() - origin_offset.line_offset;
+  } else if (opportunity.rect.LineEndOffset() <
+             origin_offset.line_offset + available_size) {
+    // If Rtl, Compare the right side.
+    return origin_offset.line_offset + available_size -
+           opportunity.rect.LineEndOffset();
+  }
+  return LayoutUnit(0);
 }
 
 }  // namespace blink

@@ -2118,7 +2118,7 @@ void NGBlockLayoutAlgorithm::PositionOrPropagateListMarker(
   }
   if (list_marker.AddToBox(constraint_space_, Style().GetFontBaseline(),
                            *layout_result.PhysicalFragment(), content_offset,
-                           &container_builder_))
+                           &container_builder_, border_scrollbar_padding_))
     return;
 
   // If the list marker could not be positioned against this child because it
