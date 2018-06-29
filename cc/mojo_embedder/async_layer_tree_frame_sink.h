@@ -41,9 +41,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
     UnboundMessagePipes();
     ~UnboundMessagePipes();
     UnboundMessagePipes(UnboundMessagePipes&& other);
-    UnboundMessagePipes& operator=(UnboundMessagePipes&& other);
-    UnboundMessagePipes(const UnboundMessagePipes& other) = delete;
-    UnboundMessagePipes& operator=(const UnboundMessagePipes& other) = delete;
 
     bool HasUnbound() const;
 
@@ -58,36 +55,11 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   struct CC_MOJO_EMBEDDER_EXPORT InitParams {
     InitParams();
     ~InitParams();
-    InitParams(InitParams&& params);
-    InitParams& operator=(InitParams&& params);
-    InitParams(const InitParams& params) = delete;
-    InitParams& operator=(const InitParams& params) = delete;
 
-    // Optional compositor context provider which will be bound to the
-    // compositor thread in BindToClient(). Not used for software compositing.
-    scoped_refptr<viz::ContextProvider> context_provider;
-
-    // Optional worker context provider which is already bound to another thread
-    // e.g. main thread. Context loss notifications will be forwarded to
-    // compositor task runner by LayerTreeFrameSink.
-    scoped_refptr<viz::RasterContextProvider> worker_context_provider;
-
-    // Task runner used to receive mojo messages, begin frames, post worker
-    // context lost callback etc. Must belong to the same thread where all
-    // calls to or from the client are made. Must be provided by the client.
     scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner;
-
-    // Optional for when GpuMemoryBuffers are used. Used with GL compositing,
-    // and must outlive the frame sink.
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager = nullptr;
-
-    // Optional begin frame source used instead of the frame sink driving begin
-    // frames e.g. BackToBackBeginFrameSource when frame throttling is disabled.
-    // If this is provided, mojo begin frame messages do not drive the
-    // compositor.
     std::unique_ptr<viz::SyntheticBeginFrameSource>
         synthetic_begin_frame_source;
-
     std::unique_ptr<viz::HitTestDataProvider> hit_test_data_provider;
     std::unique_ptr<viz::LocalSurfaceIdProvider> local_surface_id_provider;
     UnboundMessagePipes pipes;
@@ -95,7 +67,11 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
     bool wants_animate_only_begin_frames = false;
   };
 
-  explicit AsyncLayerTreeFrameSink(InitParams params);
+  AsyncLayerTreeFrameSink(
+      scoped_refptr<viz::ContextProvider> context_provider,
+      scoped_refptr<viz::RasterContextProvider> worker_context_provider,
+      InitParams* params);
+
   ~AsyncLayerTreeFrameSink() override;
 
   const viz::HitTestDataProvider* hit_test_data_provider() const {
@@ -134,10 +110,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   void OnMojoConnectionError(uint32_t custom_reason,
                              const std::string& description);
 
-  // OnBeginFrame() posts a task to IssueBeginFrame() to coalesce multiple begin
-  // frames to mitigate against receiving a flood of begin frame messages.
-  void IssueBeginFrame();
-
   bool begin_frames_paused_ = false;
   bool needs_begin_frames_ = false;
   viz::LocalSurfaceId local_surface_id_;
@@ -165,9 +137,6 @@ class CC_MOJO_EMBEDDER_EXPORT AsyncLayerTreeFrameSink
   viz::LocalSurfaceId last_submitted_local_surface_id_;
   float last_submitted_device_scale_factor_ = 1.f;
   gfx::Size last_submitted_size_in_pixels_;
-
-  viz::BeginFrameArgs last_begin_frame_args_;
-  bool is_begin_frame_task_posted_ = false;
 
   base::WeakPtrFactory<AsyncLayerTreeFrameSink> weak_factory_;
 
