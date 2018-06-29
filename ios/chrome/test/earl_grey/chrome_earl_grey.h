@@ -7,6 +7,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 
+#include "ios/web/public/test/element_selector.h"
 #include "url/gurl.h"
 
 namespace chrome_test_util {
@@ -81,9 +82,10 @@ id ExecuteJavaScript(NSString* javascript, NSError* __autoreleasing* out_error);
 // within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewContainingText:(std::string)text;
 
-// Waits for the current web view to contain a css selector matching |selector|.
+// Waits for the current web view to contain an element matching |selector|.
 // If the condition is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingCSSSelector:(std::string)selector;
++ (void)waitForWebViewContainingElement:
+    (const web::test::ElementSelector)selector;
 
 // Waits for there to be no web view containing |text|. If the condition is not
 // met within a timeout, a GREYAssert is induced.

@@ -22,6 +22,7 @@
 #import "ios/chrome/test/earl_grey/chrome_earl_grey.h"
 #import "ios/testing/wait_util.h"
 #import "ios/web/public/test/earl_grey/js_test_util.h"
+#include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/web_view_content_test_util.h"
 #import "ios/web/public/test/web_view_interaction_test_util.h"
 #import "ios/web/public/web_state/js/crw_js_injection_receiver.h"
@@ -185,16 +186,17 @@ id ExecuteJavaScript(NSString* javascript,
              @"Failed waiting for web view containing %s", text.c_str());
 }
 
-+ (void)waitForWebViewContainingCSSSelector:(std::string)selector {
++ (void)waitForWebViewContainingElement:
+    (const web::test::ElementSelector)selector {
   GREYCondition* condition = [GREYCondition
-      conditionWithName:@"Wait for web view containing CSS selector"
+      conditionWithName:@"Wait for web view containing Element"
                   block:^BOOL {
-                    return web::test::IsWebViewContainingCssSelector(
+                    return web::test::IsWebViewContainingElement(
                         chrome_test_util::GetCurrentWebState(), selector);
                   }];
   GREYAssert([condition waitWithTimeout:testing::kWaitForUIElementTimeout],
-             @"Failed waiting for web view containing css selector: %s",
-             selector.c_str());
+             @"Failed waiting for web view containing element %s",
+             selector.GetSelectorDescription().c_str());
 }
 
 + (void)waitForWebViewNotContainingText:(std::string)text {

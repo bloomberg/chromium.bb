@@ -7,6 +7,7 @@
 
 #import <Foundation/Foundation.h>
 
+#include "ios/web/public/test/element_selector.h"
 #include "url/gurl.h"
 
 // Test methods that perform actions on Web Shell. These methods may read or
@@ -23,14 +24,16 @@
 // within a timeout, a GREYAssert is induced.
 + (void)waitForWebViewContainingText:(const std::string)text;
 
-// Waits for the current web view to contain a css selector matching |selector|.
+// Waits for the current web view to contain an element matching |selector|.
 // If the condition is not met within a timeout, a GREYAssert is induced.
-+ (void)waitForWebViewContainingCSSSelector:(std::string)selector;
++ (void)waitForWebViewContainingElement:
+    (const web::test::ElementSelector)selector;
 
-// Waits for the current web view to not contain a css selector matching
+// Waits for the current web view to not contain an element matching
 // |selector|. If the condition is not met within a timeout, a GREYAssert is
 // induced.
-+ (void)waitForWebViewNotContainingCSSSelector:(std::string)selector;
++ (void)waitForWebViewNotContainingElement:
+    (const web::test::ElementSelector)selector;
 
 @end
 

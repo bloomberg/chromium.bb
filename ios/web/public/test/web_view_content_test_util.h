@@ -5,6 +5,7 @@
 #ifndef IOS_WEB_PUBLIC_TEST_WEB_VIEW_CONTENT_TEST_UTIL_H_
 #define IOS_WEB_PUBLIC_TEST_WEB_VIEW_CONTENT_TEST_UTIL_H_
 
+#include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/web_state/web_state.h"
 
 namespace web {
@@ -33,10 +34,10 @@ bool WaitForWebViewContainingImage(std::string image_id,
                                    web::WebState* web_state,
                                    ImageStateElement image_state);
 
-// Returns true if there is a web view for |web_state| that contains the CSS
-// selector |css_selector|.
-bool IsWebViewContainingCssSelector(web::WebState* web_state,
-                                    const std::string& css_selector);
+// Returns true if there is a web view for |web_state| that contains an
+// element for the |selector|.
+bool IsWebViewContainingElement(web::WebState* web_state,
+                                const web::test::ElementSelector& selector);
 
 }  // namespace test
 }  // namespace web
