@@ -84,9 +84,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // or one of its descendents is determined to be damaged at aggregation time.
   void SetAggregatedDamageCallbackForTesting(AggregatedDamageCallback callback);
 
-  // Sets callback called on destruction.
-  void SetDestructionCallback(base::OnceClosure callback);
-
   // This allows the FrameSinkManagerImpl to pass a BeginFrameSource to use.
   void SetBeginFrameSource(BeginFrameSource* begin_frame_source);
 
@@ -245,9 +242,6 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
   // contained within submitted CompositorFrames. Otherwise, unprivileged
   // clients would be able to capture content for which they are not authorized.
   bool allow_copy_output_requests_;
-
-  // A callback that will be run at the start of the destructor if set.
-  base::OnceClosure destruction_callback_;
 
   // TODO(crbug.com/754872): Remove once tab capture has moved into VIZ.
   AggregatedDamageCallback aggregated_damage_callback_;

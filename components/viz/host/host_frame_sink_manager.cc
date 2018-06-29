@@ -67,7 +67,7 @@ void HostFrameSinkManager::RegisterFrameSinkId(const FrameSinkId& frame_sink_id,
 
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(!data.IsFrameSinkRegistered());
-  DCHECK(!data.HasCompositorFrameSinkData());
+  DCHECK(!data.has_created_compositor_frame_sink);
   data.client = client;
   frame_sink_manager_->RegisterFrameSinkId(frame_sink_id);
 }
@@ -131,7 +131,6 @@ void HostFrameSinkManager::CreateRootCompositorFrameSink(
   FrameSinkId frame_sink_id = params->frame_sink_id;
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
-  DCHECK(!data.support);
 
   // If GL context is lost a new CompositorFrameSink will be created. Destroy
   // the old CompositorFrameSink first.
@@ -154,7 +153,6 @@ void HostFrameSinkManager::CreateCompositorFrameSink(
     mojom::CompositorFrameSinkClientPtr client) {
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
-  DCHECK(!data.support);
 
   // If GL context is lost a new CompositorFrameSink will be created. Destroy
   // the old CompositorFrameSink first.
@@ -299,32 +297,18 @@ HostFrameSinkManager::CreateCompositorFrameSinkSupport(
 
   FrameSinkData& data = frame_sink_data_map_[frame_sink_id];
   DCHECK(data.IsFrameSinkRegistered());
-  DCHECK(!data.HasCompositorFrameSinkData());
+  DCHECK(!data.has_created_compositor_frame_sink);
 
   auto support = std::make_unique<CompositorFrameSinkSupport>(
       client, frame_sink_manager_impl_, frame_sink_id, is_root,
       needs_sync_points);
-  support->SetDestructionCallback(
-      base::BindOnce(&HostFrameSinkManager::CompositorFrameSinkSupportDestroyed,
-                     weak_ptr_factory_.GetWeakPtr(), frame_sink_id));
 
-  data.support = support.get();
   data.is_root = is_root;
 
   if (is_root)
     display_hit_test_query_[frame_sink_id] = std::make_unique<HitTestQuery>();
 
   return support;
-}
-
-void HostFrameSinkManager::CompositorFrameSinkSupportDestroyed(
-    const FrameSinkId& frame_sink_id) {
-  auto iter = frame_sink_data_map_.find(frame_sink_id);
-  DCHECK(iter != frame_sink_data_map_.end());
-
-  iter->second.support = nullptr;
-  if (iter->second.IsEmpty())
-    frame_sink_data_map_.erase(iter);
 }
 
 void HostFrameSinkManager::PerformAssignTemporaryReference(
