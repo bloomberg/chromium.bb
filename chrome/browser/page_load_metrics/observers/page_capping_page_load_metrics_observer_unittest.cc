@@ -83,7 +83,18 @@ class PageCappingObserverTest
   PageCappingObserverTest() : test_blacklist_(this) {}
   ~PageCappingObserverTest() override = default;
 
-  void SetUpTest() {
+  void SetUpTest(bool enabled, std::map<std::string, std::string> params) {
+    if (enabled) {
+      scoped_feature_list_.InitAndEnableFeatureWithParameters(
+          data_use_measurement::page_load_capping::features::
+              kDetectingHeavyPages,
+          params);
+    } else {
+      scoped_feature_list_.InitAndDisableFeature(
+          data_use_measurement::page_load_capping::features::
+              kDetectingHeavyPages);
+    }
+
     MockInfoBarService::CreateForWebContents(web_contents());
     NavigateAndCommit(GURL(kTestURL));
   }
@@ -98,6 +109,17 @@ class PageCappingObserverTest
 
   // Called from the observer when |WriteToSavings| is called.
   void UpdateSavings(int64_t savings) { savings_ += savings; }
+
+  // Load a resource of size |bytes|.
+  void SimulateBytes(int bytes) {
+    page_load_metrics::ExtraRequestCompleteInfo resource(
+        GURL(kTestURL), net::HostPortPair(), -1 /* frame_tree_node_id */,
+        false /* was_cached */, bytes /* raw_body_bytes */,
+        0 /* original_network_content_length */, nullptr,
+        content::ResourceType::RESOURCE_TYPE_SCRIPT, 0,
+        {} /* load_timing_info */);
+    SimulateLoadedResource(resource);
+  }
 
  protected:
   void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override {
@@ -115,6 +137,7 @@ class PageCappingObserverTest
   void OnUserBlacklistedStatusChange(bool blacklisted) override {}
   void OnBlacklistCleared(base::Time time) override {}
 
+  base::test::ScopedFeatureList scoped_feature_list_;
   int64_t savings_ = 0;
   int64_t fuzzing_offset_ = 0;
   TestPageCappingPageLoadMetricsObserver* observer_;
@@ -125,290 +148,126 @@ TEST_F(PageCappingObserverTest, ExperimentDisabled) {
   base::test::ScopedFeatureList scoped_feature_list_;
   scoped_feature_list_.InitAndDisableFeature(
       data_use_measurement::page_load_capping::features::kDetectingHeavyPages);
-  SetUpTest();
+  SetUpTest(false, {});
 
-  // A resource slightly over 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) + 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // The infobar should not show even though the cap would be met because the
+  // Load a resource slightly over 1 MB.
+  // The InfoBar should not show even though the cap would be met because the
   // feature is disabled.
-  SimulateLoadedResource(resource);
+  SimulateBytes(1 * 1024 * 1024 + 10);
 
   EXPECT_EQ(0u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, DefaultThresholdNotMetNonMedia) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      {});
-  SetUpTest();
+  SetUpTest(true, {});
 
-  // A resource slightly under 5 MB, the default page capping threshold.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (5 * 1024 * 1024) - 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // The cap is not met, so the infobar should not show.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly under 5 MB, the default page capping threshold.
+  // The cap is not met, so the InfoBar should not show.
+  SimulateBytes(5 * 1024 * 1024 - 10);
 
   EXPECT_EQ(0u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, DefaultThresholdMetNonMedia) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      {});
-  SetUpTest();
+  SetUpTest(true, {});
 
-  // A resource slightly over 5 MB, the default page capping threshold.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (5 * 1024 * 1024) + 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // The cap is not met, so the infobar should not show.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly over 5 MB, the default page capping threshold.
+  // The cap is not met, so the InfoBar should not show.
+  SimulateBytes(5 * 1024 * 1024 + 10);
 
   EXPECT_EQ(1u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, DefaultThresholdNotMetMedia) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      {});
-  SetUpTest();
+  SetUpTest(true, {});
 
   SimulateMediaPlayed();
 
-  // A resource slightly under 15 MB, the default media page capping threshold.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (15 * 1024 * 1024) - 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // The cap is not met, so the infobar should not show.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly under 15 MB, the default media page capping
+  // threshold. The cap is not met, so the InfoBar should not show.
+  SimulateBytes(15 * 1024 * 1024 - 10);
 
   EXPECT_EQ(0u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, DefaultThresholdMetMedia) {
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      {});
-  SetUpTest();
+  SetUpTest(true, {});
 
   SimulateMediaPlayed();
 
-  // A resource slightly over 15 MB, the default media page capping threshold.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (15 * 1024 * 1024) + 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // The cap is not met, so the infobar should not show.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly over 15 MB, the default media page capping
+  // threshold. The cap is not met, so the InfoBar should not show.
+  SimulateBytes(15 * 1024 * 1024 + 10);
 
   EXPECT_EQ(1u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, NotEnoughForThreshold) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}});
 
-  // A resource slightly under 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) - 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // The cap is not met, so the infobar should not show.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly under 1 MB.
+  // The cap is not met, so the InfoBar should not show.
+  SimulateBytes(1 * 1024 * 1024 - 10);
 
   EXPECT_EQ(0u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, InfobarOnlyShownOnce) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}});
 
-  // A resource slightly over 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) + 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger the infobar.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly over 1 MB.
+  // This should trigger the InfoBar.
+  SimulateBytes(1 * 1024 * 1024 + 10);
   EXPECT_EQ(1u, InfoBarCount());
-  // The infobar is already being shown, so this should not trigger and infobar.
-  SimulateLoadedResource(resource);
+  // The InfoBar is already being shown, so this should not trigger an InfoBar.
+  SimulateBytes(10);
   EXPECT_EQ(1u, InfoBarCount());
 
-  // Clear all infobars.
+  // Clear all InfoBars.
   RemoveAllInfoBars();
-  // Verify the infobars are clear.
+  // Verify the InfoBars are clear.
   EXPECT_EQ(0u, InfoBarCount());
-  // This would trigger and infobar if one was not already shown from this
+  // This would trigger an InfoBar if one was not already shown from this
   // observer.
-  SimulateLoadedResource(resource);
+  SimulateBytes(10);
   EXPECT_EQ(0u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, MediaCap) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "10"}, {"PageCapMiB", "1"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "10"}, {"PageCapMiB", "1"}});
 
   // Show that media has played.
   SimulateMediaPlayed();
 
-  // A resource slightly under 10 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (10 * 1024 * 1024) - 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should not trigger an infobar as the media cap is not met.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly under 10 MB.
+  // This should not trigger an InfoBar as the media cap is not met.
+  SimulateBytes(10 * 1024 * 1024 - 10);
   EXPECT_EQ(0u, InfoBarCount());
-  // Adding more data should now trigger the infobar.
-  SimulateLoadedResource(resource);
+
+  // Adding more data should now trigger the InfoBar.
+  SimulateBytes(10);
   EXPECT_EQ(1u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, PageCap) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "10"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"}, {"PageCapMiB", "10"}});
 
-  // A resource slightly under 10 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (10 * 1024 * 1024) - 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should not trigger an infobar as the non-media cap is not met.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly under 10 MB.
+  // This should not trigger an InfoBar as the non-media cap is not met.
+  SimulateBytes(10 * 1024 * 1024 - 10);
   EXPECT_EQ(0u, InfoBarCount());
-  // Adding more data should now trigger the infobar.
-  SimulateLoadedResource(resource);
+
+  // Adding more data should now trigger the InfoBar.
+  SimulateBytes(10);
   EXPECT_EQ(1u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, PageCappingTriggered) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}});
 
-  // A resource slightly over 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) + 10 /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  SimulateLoadedResource(resource);
+  // Load a resource slightly over 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1 * 1024 * 1024 + 10);
   EXPECT_EQ(1u, InfoBarCount());
 
   // Verify the callback is called twice with appropriate bool values.
@@ -438,30 +297,11 @@ TEST_F(PageCappingObserverTest, PageCappingTriggered) {
 // Check that data savings works without a specific param. The estimated page
 // size should be 1.5 the threshold.
 TEST_F(PageCappingObserverTest, DataSavingsDefault) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"}, {"PageCapMiB", "1"}});
 
-  // A resource of 1/4 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 256) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  for (size_t i = 0; i < 4; i++)
-    SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
   EXPECT_EQ(1u, InfoBarCount());
 
   // Verify the callback is called twice with appropriate bool values.
@@ -479,7 +319,8 @@ TEST_F(PageCappingObserverTest, DataSavingsDefault) {
   SimulateAppEnterBackground();
   EXPECT_EQ(1024 * 1024 / 2, savings_);
 
-  SimulateLoadedResource(resource);
+  // Load a resource of size 1/4 MB.
+  SimulateBytes(1024 * 1024 / 4);
 
   // Adding another resource and forcing savings to be written should reduce
   // total savings.
@@ -506,32 +347,13 @@ TEST_F(PageCappingObserverTest, DataSavingsDefault) {
 // Check that data savings works with a specific param. The estimated page size
 // should be |PageTypicalLargePageMB|.
 TEST_F(PageCappingObserverTest, DataSavingsParam) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
-  // A resource of 1/4 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 256) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  for (size_t i = 0; i < 4; i++)
-    SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
   EXPECT_EQ(1u, InfoBarCount());
 
   // Verify the callback is called twice with appropriate bool values.
@@ -549,7 +371,8 @@ TEST_F(PageCappingObserverTest, DataSavingsParam) {
   SimulateAppEnterBackground();
   EXPECT_EQ(1024 * 1024, savings_);
 
-  SimulateLoadedResource(resource);
+  // Load a resource of size 1/4 MB.
+  SimulateBytes(1024 * 1024 / 4);
 
   // Adding another resource and forcing savings to be written should reduce
   // total savings.
@@ -578,32 +401,14 @@ TEST_F(PageCappingObserverTest, DataSavingsParam) {
 }
 
 TEST_F(PageCappingObserverTest, DataSavingsHistogram) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
   base::HistogramTester histogram_tester;
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
@@ -619,32 +424,14 @@ TEST_F(PageCappingObserverTest, DataSavingsHistogram) {
 }
 
 TEST_F(PageCappingObserverTest, DataSavingsHistogramWhenResumed) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
   base::HistogramTester histogram_tester;
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   static_cast<ConfirmInfoBarDelegate*>(
       infobar_service()->infobar_at(0u)->delegate())
@@ -659,15 +446,9 @@ TEST_F(PageCappingObserverTest, DataSavingsHistogramWhenResumed) {
 }
 
 TEST_F(PageCappingObserverTest, UKMNotRecordedWhenNotTriggered) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
   base::HistogramTester histogram_tester;
   NavigateToUntrackedUrl();
 
@@ -678,31 +459,13 @@ TEST_F(PageCappingObserverTest, UKMNotRecordedWhenNotTriggered) {
 }
 
 TEST_F(PageCappingObserverTest, UKMRecordedInfoBarShown) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   NavigateToUntrackedUrl();
 
@@ -724,31 +487,13 @@ TEST_F(PageCappingObserverTest, UKMRecordedInfoBarShown) {
 }
 
 TEST_F(PageCappingObserverTest, UKMRecordedPaused) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   // Pause the page.
   static_cast<ConfirmInfoBarDelegate*>(
@@ -774,31 +519,13 @@ TEST_F(PageCappingObserverTest, UKMRecordedPaused) {
 }
 
 TEST_F(PageCappingObserverTest, UKMRecordedResumed) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should trigger an infobar as the non-media cap is met.
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   // Pause then resume.
   static_cast<ConfirmInfoBarDelegate*>(
@@ -828,64 +555,28 @@ TEST_F(PageCappingObserverTest, UKMRecordedResumed) {
 }
 
 TEST_F(PageCappingObserverTest, FuzzingOffset) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
   fuzzing_offset_ = 1;
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  // This should not trigger an infobar as the non-media cap is not met.
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should not trigger an InfoBar as the non-media cap is not met.
+  SimulateBytes(1024 * 1024);
 
   EXPECT_EQ(0u, InfoBarCount());
 
-  // A resource of 1 KB.
-  page_load_metrics::ExtraRequestCompleteInfo resource2 = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
+  // Load a resource of 1 byte.
   // This should trigger an InfoBar as the non-media cap is met.
-  SimulateLoadedResource(resource2);
+  SimulateBytes(1);
 
   EXPECT_EQ(1u, InfoBarCount());
 }
 
 TEST_F(PageCappingObserverTest, BlacklistOnTwoOptOuts) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
   base::HistogramTester histogram_tester;
 
   test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
@@ -897,20 +588,9 @@ TEST_F(PageCappingObserverTest, BlacklistOnTwoOptOuts) {
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_NE(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   // Because the blacklist is in an opted out state, the InfoBar should not be
   // shown.
@@ -921,15 +601,9 @@ TEST_F(PageCappingObserverTest, BlacklistOnTwoOptOuts) {
 }
 
 TEST_F(PageCappingObserverTest, IgnoringInfoBarTriggersOptOut) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
   test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
 
@@ -938,20 +612,9 @@ TEST_F(PageCappingObserverTest, IgnoringInfoBarTriggersOptOut) {
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   // Blacklist is in allowed state, so an InfoBar is allowed to be shown.
   EXPECT_EQ(1u, InfoBarCount());
@@ -966,15 +629,9 @@ TEST_F(PageCappingObserverTest, IgnoringInfoBarTriggersOptOut) {
 }
 
 TEST_F(PageCappingObserverTest, PausedInfoBarTriggersNonOptOut) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
   test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
 
@@ -983,20 +640,9 @@ TEST_F(PageCappingObserverTest, PausedInfoBarTriggersNonOptOut) {
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
-  SimulateLoadedResource(resource);
+  // Load a resource of 1 MB.
+  // This should trigger an InfoBar as the non-media cap is met.
+  SimulateBytes(1024 * 1024);
 
   // Blacklist is in allowed state, so an InfoBar is allowed to be shown.
   EXPECT_EQ(1u, InfoBarCount());
@@ -1015,15 +661,9 @@ TEST_F(PageCappingObserverTest, PausedInfoBarTriggersNonOptOut) {
 }
 
 TEST_F(PageCappingObserverTest, ResumedInfoBarTriggersOptOut) {
-  std::map<std::string, std::string> feature_parameters = {
-      {"MediaPageCapMiB", "1"},
-      {"PageCapMiB", "1"},
-      {"PageTypicalLargePageMiB", "2"}};
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeatureWithParameters(
-      data_use_measurement::page_load_capping::features::kDetectingHeavyPages,
-      feature_parameters);
-  SetUpTest();
+  SetUpTest(true, {{"MediaPageCapMiB", "1"},
+                   {"PageCapMiB", "1"},
+                   {"PageTypicalLargePageMiB", "2"}});
 
   test_blacklist_.AddEntry(GURL(kTestURL).host(), true, 0);
 
@@ -1032,22 +672,10 @@ TEST_F(PageCappingObserverTest, ResumedInfoBarTriggersOptOut) {
       GURL(kTestURL).host(), 0, false, &passed_reasons);
   EXPECT_EQ(blacklist::BlacklistReason::kAllowed, blacklist_reason);
 
-  // A resource of 1 MB.
-  page_load_metrics::ExtraRequestCompleteInfo resource = {
-      GURL(kTestURL),
-      net::HostPortPair(),
-      -1 /* frame_tree_node_id */,
-      false /* was_cached */,
-      (1 * 1024 * 1024) /* raw_body_bytes */,
-      0 /* original_network_content_length */,
-      nullptr,
-      content::ResourceType::RESOURCE_TYPE_SCRIPT,
-      0,
-      {} /* load_timing_info */};
-
+  // Load a resource of 1 MB.
   // This should not trigger an InfoBar as the blacklist rules should prevent
   // it.
-  SimulateLoadedResource(resource);
+  SimulateBytes(1024 * 1024);
 
   // Blacklist is in allowed state, so an InfoBar is allowed to be shown.
   EXPECT_EQ(1u, InfoBarCount());
