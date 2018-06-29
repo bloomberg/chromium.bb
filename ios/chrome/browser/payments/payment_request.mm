@@ -522,7 +522,8 @@ void PaymentRequest::PopulatePaymentMethodCache(
     std::vector<std::unique_ptr<IOSPaymentInstrument>> native_app_instruments) {
   const std::vector<autofill::CreditCard*>& credit_cards_to_suggest =
       personal_data_manager_->GetCreditCardsToSuggest(
-          /*include_server_cards=*/true);
+          /*include_server_cards=*/base::FeatureList::IsEnabled(
+              payments::features::kReturnGooglePayInBasicCard));
 
   // Return early if the user has no stored credit cards or installed payment
   // apps.

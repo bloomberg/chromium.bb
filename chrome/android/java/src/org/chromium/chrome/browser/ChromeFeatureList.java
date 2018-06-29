@@ -269,6 +269,8 @@ public abstract class ChromeFeatureList {
     public static final String WEB_PAYMENTS_METHOD_SECTION_ORDER_V2 =
             "WebPaymentsMethodSectionOrderV2";
     public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
+    public static final String WEB_PAYMENTS_RETURN_GOOGLE_PAY_IN_BASIC_CARD =
+            "ReturnGooglePayInBasicCard";
     public static final String WEB_PAYMENTS_SINGLE_APP_UI_SKIP = "WebPaymentsSingleAppUiSkip";
     public static final String WEBVR_AUTOPRESENT_FROM_INTENT = "WebVrAutopresentFromIntent";
     public static final String WEBVR_CARDBOARD_SUPPORT = "WebVrCardboardSupport";

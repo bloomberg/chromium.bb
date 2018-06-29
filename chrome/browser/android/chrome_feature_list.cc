@@ -131,6 +131,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kVrBrowsingFeedback,
     &kVrBrowsingInCustomTab,
     &kVrBrowsingNativeAndroidUi,
+    &payments::features::kReturnGooglePayInBasicCard,
     &payments::features::kWebPaymentsMethodSectionOrderV2,
     &payments::features::kWebPaymentsModifiers,
     &payments::features::kWebPaymentsSingleAppUiSkip,

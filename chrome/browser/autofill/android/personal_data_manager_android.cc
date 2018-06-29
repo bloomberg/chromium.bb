@@ -475,10 +475,11 @@ PersonalDataManagerAndroid::GetCreditCardGUIDsForSettings(
 base::android::ScopedJavaLocalRef<jobjectArray>
 PersonalDataManagerAndroid::GetCreditCardGUIDsToSuggest(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& unused_obj) {
-  return GetCreditCardGUIDs(env,
-                            personal_data_manager_->GetCreditCardsToSuggest(
-                                /*include_server_cards=*/true));
+    const base::android::JavaParamRef<jobject>& unused_obj,
+    bool include_server_cards) {
+  return GetCreditCardGUIDs(
+      env,
+      personal_data_manager_->GetCreditCardsToSuggest(include_server_cards));
 }
 
 ScopedJavaLocalRef<jobject> PersonalDataManagerAndroid::GetCreditCardByGUID(

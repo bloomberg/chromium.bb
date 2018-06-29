@@ -7,6 +7,9 @@
 namespace payments {
 namespace features {
 
+const base::Feature kReturnGooglePayInBasicCard{
+    "ReturnGooglePayInBasicCard", base::FEATURE_ENABLED_BY_DEFAULT};
+
 #if defined(OS_IOS)
 const base::Feature kWebPayments{"WebPayments",
                                  base::FEATURE_ENABLED_BY_DEFAULT};

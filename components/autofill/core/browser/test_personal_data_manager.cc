@@ -191,6 +191,10 @@ bool TestPersonalDataManager::IsAutofillWalletImportEnabled() const {
   return PersonalDataManager::IsAutofillWalletImportEnabled();
 }
 
+bool TestPersonalDataManager::ShouldSuggestServerCards() const {
+  return IsAutofillCreditCardEnabled() && IsAutofillWalletImportEnabled();
+}
+
 std::string TestPersonalDataManager::CountryCodeForCurrentTimezone()
     const {
   return timezone_country_code_;
