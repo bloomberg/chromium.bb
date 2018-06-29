@@ -1147,10 +1147,14 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
   const int bh = block_size_high[bsize];
   unsigned int esq[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 
-  const int f_index = bsize - BLOCK_16X16;
-  if (f_index < 0) {
-    const int w_shift = bw == 8 ? 1 : 2;
-    const int h_shift = bh == 8 ? 1 : 2;
+  if (bsize < BLOCK_16X16 || (bsize >= BLOCK_4X16 && bsize <= BLOCK_32X8)) {
+    // Special cases: calculate 'esq' values manually, as we don't have 'vf'
+    // functions for the 16 (very small) sub-blocks of this block.
+    const int w_shift = (bw == 4) ? 0 : (bw == 8) ? 1 : (bw == 16) ? 2 : 3;
+    const int h_shift = (bh == 4) ? 0 : (bh == 8) ? 1 : (bh == 16) ? 2 : 3;
+    assert(bw <= 32);
+    assert(bh <= 32);
+    assert(((bw - 1) >> w_shift) + (((bh - 1) >> h_shift) << 2) == 15);
     if (cpi->common.use_highbitdepth) {
       const uint16_t *src16 = CONVERT_TO_SHORTPTR(src);
       const uint16_t *dst16 = CONVERT_TO_SHORTPTR(dst);
@@ -1169,43 +1173,49 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
                         (src[j + i * src_stride] - dst[j + i * dst_stride]);
         }
     }
-  } else {
-    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[0]);
-    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+  } else {  // Calculate 'esq' values using 'vf' functions on the 16 sub-blocks.
+    const int f_index =
+        (bsize < BLOCK_SIZES) ? bsize - BLOCK_16X16 : bsize - BLOCK_8X16;
+    assert(f_index >= 0 && f_index < BLOCK_SIZES_ALL);
+    const BLOCK_SIZE subsize = (BLOCK_SIZE)f_index;
+    assert(block_size_wide[bsize] == 4 * block_size_wide[subsize]);
+    assert(block_size_high[bsize] == 4 * block_size_high[subsize]);
+    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[0]);
+    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
                             &esq[1]);
-    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
                             &esq[2]);
-    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
                             dst_stride, &esq[3]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[4]);
-    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[4]);
+    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
                             &esq[5]);
-    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
                             &esq[6]);
-    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
                             dst_stride, &esq[7]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[8]);
-    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[8]);
+    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
                             &esq[9]);
-    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
                             &esq[10]);
-    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
                             dst_stride, &esq[11]);
     src += bh / 4 * src_stride;
     dst += bh / 4 * dst_stride;
 
-    cpi->fn_ptr[f_index].vf(src, src_stride, dst, dst_stride, &esq[12]);
-    cpi->fn_ptr[f_index].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
+    cpi->fn_ptr[subsize].vf(src, src_stride, dst, dst_stride, &esq[12]);
+    cpi->fn_ptr[subsize].vf(src + bw / 4, src_stride, dst + bw / 4, dst_stride,
                             &esq[13]);
-    cpi->fn_ptr[f_index].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
+    cpi->fn_ptr[subsize].vf(src + bw / 2, src_stride, dst + bw / 2, dst_stride,
                             &esq[14]);
-    cpi->fn_ptr[f_index].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
+    cpi->fn_ptr[subsize].vf(src + 3 * bw / 4, src_stride, dst + 3 * bw / 4,
                             dst_stride, &esq[15]);
   }
 
