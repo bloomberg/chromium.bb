@@ -73,4 +73,5 @@ and land the resulting CL.
 The following two lines will be updated by the above script, and the modified
 README should be committed along with the updated .sha1 checksums.
 
-LASTCHANGE=fb40db1204f14ad0e420652787c4a70ce374c4a4-refs/heads/master@{#571041}
+CLANG_REVISION = '335608'
+LASTCHANGE=fed0e8ec393c317037a824b63b3e9690b8b0a4fc-refs/heads/master@{#571031}
