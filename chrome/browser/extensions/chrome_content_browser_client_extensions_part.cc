@@ -438,10 +438,23 @@ bool ChromeContentBrowserClientExtensionsPart::CanCommitURL(
   if (!extension)
     return true;
 
-  // If the process is the dedicated process for this extension, then it's safe
-  // to commit.
-  if (ProcessMap::Get(process_host->GetBrowserContext())
-          ->Contains(extension->id(), process_host->GetID())) {
+  // If the process is a dedicated process for this extension, then it's safe to
+  // commit. This accounts for cases where an extension might have multiple
+  // processes, such as incognito split mode.
+  ProcessMap* process_map = ProcessMap::Get(process_host->GetBrowserContext());
+  if (process_map->Contains(extension->id(), process_host->GetID())) {
+    return true;
+  }
+
+  // TODO(creis): We're seeing cases where an extension URL commits in an
+  // extension process but not one registered for it in ProcessMap. This is
+  // surprising and we do not yet have repro steps for it. We should fix this,
+  // but we're primarily concerned with preventing web processes from committing
+  // an extension URL, which is more severe. (Extensions currently share
+  // processes with each other anyway.) Allow it for now, as long as this is an
+  // extension and not a hosted app.
+  if (GetProcessPrivilege(process_host, process_map, registry) ==
+      PRIV_EXTENSION) {
     return true;
   }
 
