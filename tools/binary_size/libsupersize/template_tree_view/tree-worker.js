@@ -26,7 +26,7 @@
 /**
  * @typedef {object} FileEntry JSON object representing a single file and its
  * symbols.
- * @prop {number} p - source_path_index
+ * @prop {number} p - source_path
  * @prop {number} c - component_index
  * @prop {Array<{n:string,b:number,t:string}>} s - Symbols belonging to this
  * node. Array of objects.
@@ -51,7 +51,7 @@
  * @enum {string}
  */
 const _KEYS = {
-  SOURCE_PATH_INDEX: 'p',
+  SOURCE_PATH: 'p',
   COMPONENT_INDEX: 'c',
   FILE_SYMBOLS: 's',
   SYMBOL_NAME: 'n',
@@ -99,7 +99,7 @@ function combineSingleChildNodes(node, sep) {
     // If there is only 1 child and its the same type, merge it in.
     if (node.children.length === 1 && node.type === child.type) {
       // size & type should be the same, so don't bother copying them.
-      node.shortName += sep + child.shortName;
+      node.shortName += sep + '\u200b' + child.shortName;
       node.idPath = child.idPath;
       node.children = child.children;
       // Search children of this node.
@@ -292,7 +292,7 @@ self.onmessage = event => {
     symbols: tree.file_nodes,
     sep,
     methodCountMode,
-    getPath: s => tree.source_paths[s[_KEYS.SOURCE_PATH_INDEX]],
+    getPath: s => s[_KEYS.SOURCE_PATH],
     filterTest: s => typeFilter.has(s.type),
   });
 
