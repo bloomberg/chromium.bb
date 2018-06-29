@@ -28,11 +28,11 @@ void NGBlockFlowPainter::PaintBoxFragment(const NGPaintFragment& fragment,
 bool NGBlockFlowPainter::NodeAtPoint(
     HitTestResult& result,
     const HitTestLocation& location_in_container,
-    const LayoutPoint& accumulated_offset,
+    const LayoutPoint& physical_offset,
     HitTestAction action) {
   if (const NGPaintFragment* paint_fragment = block_.PaintFragment()) {
     return NGBoxFragmentPainter(*paint_fragment)
-        .NodeAtPoint(result, location_in_container, accumulated_offset, action);
+        .NodeAtPoint(result, location_in_container, physical_offset, action);
   }
   return false;
 }
