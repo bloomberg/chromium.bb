@@ -78,28 +78,40 @@ InterceptNavigationThrottle::WillFinish() {
 
 content::NavigationThrottle::ThrottleCheckResult
 InterceptNavigationThrottle::CheckIfShouldIgnoreNavigation(bool is_redirect) {
-  pending_checks_++;
   if (ShouldCheckAsynchronously()) {
+    pending_checks_++;
     ui_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&InterceptNavigationThrottle::RunCheck,
+        FROM_HERE, base::BindOnce(&InterceptNavigationThrottle::RunCheckAsync,
                                   weak_factory_.GetWeakPtr(),
                                   GetNavigationParams(is_redirect)));
     return content::NavigationThrottle::PROCEED;
   }
-  RunCheck(GetNavigationParams(is_redirect));
-  return should_ignore_ ? content::NavigationThrottle::CANCEL_AND_IGNORE
-                        : content::NavigationThrottle::PROCEED;
+  // No need to set |should_ignore_| since if it is true, we'll cancel the
+  // navigation immediately.
+  return should_ignore_callback_.Run(navigation_handle()->GetWebContents(),
+                                     GetNavigationParams(is_redirect))
+             ? content::NavigationThrottle::CANCEL_AND_IGNORE
+             : content::NavigationThrottle::PROCEED;
+  // Careful, |this| can be deleted at this point.
 }
 
-void InterceptNavigationThrottle::RunCheck(const NavigationParams& params) {
-  should_ignore_ |= should_ignore_callback_.Run(
-      navigation_handle()->GetWebContents(), params);
+void InterceptNavigationThrottle::RunCheckAsync(
+    const NavigationParams& params) {
+  DCHECK(base::FeatureList::IsEnabled(kAsyncCheck));
   DCHECK_GT(pending_checks_, 0);
   pending_checks_--;
-  if (!deferring_ || pending_checks_ > 0)
+  bool final_deferred_check = deferring_ && pending_checks_ == 0;
+  auto weak_this = weak_factory_.GetWeakPtr();
+  bool should_ignore = should_ignore_callback_.Run(
+      navigation_handle()->GetWebContents(), params);
+  if (!weak_this)
     return;
 
-  if (should_ignore_) {
+  should_ignore_ |= should_ignore;
+  if (!final_deferred_check)
+    return;
+
+  if (should_ignore) {
     CancelDeferredNavigation(content::NavigationThrottle::CANCEL_AND_IGNORE);
   } else {
     Resume();

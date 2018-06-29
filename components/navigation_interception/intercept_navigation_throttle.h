@@ -50,7 +50,7 @@ class InterceptNavigationThrottle : public content::NavigationThrottle {
   ThrottleCheckResult WillFinish();
 
   ThrottleCheckResult CheckIfShouldIgnoreNavigation(bool is_redirect);
-  void RunCheck(const NavigationParams& params);
+  void RunCheckAsync(const NavigationParams& params);
 
   bool ShouldCheckAsynchronously() const;
 
@@ -59,11 +59,14 @@ class InterceptNavigationThrottle : public content::NavigationThrottle {
 
   // This callback should be called at the start of navigation and every
   // redirect, until |should_ignore_| is true.
+  // Note: the callback can delete |this|.
   CheckCallback should_ignore_callback_;
 
   // Note that the CheckCallback currently has thread affinity on the Java side.
   scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner_;
 
+  // The remaining members are only set for asynchronous checking.
+  //
   // How many outbound pending checks are running. Normally this will be either
   // 0 or 1, but making this a bool makes too many assumptions about the nature
   // of Chrome's task queues (e.g. we could be scheduled after the task which

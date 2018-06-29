@@ -896,8 +896,9 @@ bool NavigationSimulator::SimulateBrowserInitiatedStart() {
               web_contents_->GetMainFrame()->GetRoutingID()));
       state_ = FAILED;
       return false;
-    } else if (web_contents_->GetMainFrame()->GetNavigationHandle() ==
-               handle_) {
+    } else if (handle_ &&
+               web_contents_->GetMainFrame()->GetNavigationHandle() ==
+                   handle_) {
       DCHECK(!IsURLHandledByNetworkStack(handle_->GetURL()));
       return true;
     } else if (web_contents_->GetMainFrame()
