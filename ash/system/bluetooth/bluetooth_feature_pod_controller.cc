@@ -36,8 +36,12 @@ FeaturePodButton* BluetoothFeaturePodController::CreateButton() {
 }
 
 void BluetoothFeaturePodController::OnIconPressed() {
-  Shell::Get()->tray_bluetooth_helper()->SetBluetoothEnabled(
-      !button_->IsToggled());
+  bool was_enabled = button_->IsToggled();
+  Shell::Get()->tray_bluetooth_helper()->SetBluetoothEnabled(!was_enabled);
+
+  // If Bluetooth was disabled, show device list as well as enabling Bluetooth.
+  if (!was_enabled)
+    tray_controller_->ShowBluetoothDetailedView();
 }
 
 void BluetoothFeaturePodController::OnLabelPressed() {
