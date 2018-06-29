@@ -468,7 +468,13 @@ base::CommandLine CloudPrintProxyPolicyStartupTest::MakeCmdLine(
   return cl;
 }
 
-TEST_F(CloudPrintProxyPolicyStartupTest, StartAndShutdown) {
+// This test is flaky on Mac. See http://crbug.com/859151.
+#if defined(OS_MACOSX)
+#define MAYBE_StartAndShutdown DISABLED_StartAndShutdown
+#else
+#define MAYBE_StartAndShutdown StartAndShutdown
+#endif
+TEST_F(CloudPrintProxyPolicyStartupTest, MAYBE_StartAndShutdown) {
   mojo::edk::Init();
   mojo::edk::ScopedIPCSupport ipc_support(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO),
