@@ -7,7 +7,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/date/clock_observer.h"
-#include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 
 namespace ash {
@@ -44,11 +44,11 @@ bool ClockModel::IsLoggedIn() {
 }
 
 void ClockModel::ShowDateSettings() {
-  Shell::Get()->system_tray_controller()->ShowDateSettings();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowDateSettings();
 }
 
 void ClockModel::ShowSetTimeDialog() {
-  Shell::Get()->system_tray_controller()->ShowSetTimeDialog();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowSetTimeDialog();
 }
 
 void ClockModel::NotifyRefreshClock() {

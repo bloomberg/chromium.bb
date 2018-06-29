@@ -9,6 +9,7 @@
 
 #include "ash/public/interfaces/system_tray.mojom.h"
 #include "base/macros.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 
 namespace ash {
 
@@ -19,12 +20,13 @@ class TracingModel;
 class UpdateModel;
 
 // Top level model of SystemTray.
-// TODO(tetsui): Eventually migrate all of the mojom::SystemTray implementation
-// from SystemTrayController, and bind SystemTrayRequest directly.
 class SystemTrayModel : public mojom::SystemTray {
  public:
   SystemTrayModel();
   ~SystemTrayModel() override;
+
+  // Binds the mojom::SystemTray interface to this object.
+  void BindRequest(mojom::SystemTrayRequest request);
 
   // mojom::SystemTray:
   void SetClient(mojom::SystemTrayClientPtr client) override;
@@ -50,6 +52,8 @@ class SystemTrayModel : public mojom::SystemTray {
   TracingModel* tracing() { return tracing_.get(); }
   UpdateModel* update_model() { return update_model_.get(); }
 
+  const mojom::SystemTrayClientPtr& client_ptr() { return client_ptr_; }
+
  private:
   std::unique_ptr<ClockModel> clock_;
   std::unique_ptr<EnterpriseDomainModel> enterprise_domain_;
@@ -59,6 +63,12 @@ class SystemTrayModel : public mojom::SystemTray {
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel
+
+  // Bindings for users of the mojo interface.
+  mojo::BindingSet<mojom::SystemTray> bindings_;
+
+  // Client interface in chrome browser. May be null in tests.
+  mojom::SystemTrayClientPtr client_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayModel);
 };

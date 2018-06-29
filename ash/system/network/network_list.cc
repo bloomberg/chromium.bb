@@ -16,6 +16,7 @@
 #include "ash/shell_delegate.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/network_icon.h"
 #include "ash/system/network/network_icon_animation.h"
 #include "ash/system/network/network_info.h"
@@ -25,7 +26,6 @@
 #include "ash/system/power/power_status.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_menu_button.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -91,7 +91,7 @@ void ShowCellularSettings() {
   const chromeos::NetworkState* cellular_network =
       NetworkHandler::Get()->network_state_handler()->FirstNetworkByType(
           NetworkTypePattern::Cellular());
-  Shell::Get()->system_tray_controller()->ShowNetworkSettings(
+  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
       cellular_network ? cellular_network->guid() : std::string());
 }
 
@@ -458,7 +458,7 @@ class WifiHeaderRowView : public NetworkListView::SectionHeaderRowView {
     if (sender == join_button_) {
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_NETWORK_JOIN_OTHER_CLICKED);
-      Shell::Get()->system_tray_controller()->ShowNetworkCreate(
+      Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkCreate(
           ::onc::network_type::kWiFi);
       return;
     }

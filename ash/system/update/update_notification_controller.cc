@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -105,7 +104,7 @@ void UpdateNotificationController::HandleNotificationClick(
 
   if (!button_index) {
     // Notification message body clicked, which says "learn more".
-    Shell::Get()->system_tray_controller()->ShowAboutChromeOS();
+    Shell::Get()->system_tray_model()->client_ptr()->ShowAboutChromeOS();
     return;
   }
 
@@ -115,13 +114,13 @@ void UpdateNotificationController::HandleNotificationClick(
                                                            false /* by_user */);
 
   if (model_->update_required()) {
-    Shell::Get()->system_tray_controller()->RequestRestartForUpdate();
+    Shell::Get()->system_tray_model()->client_ptr()->RequestRestartForUpdate();
     Shell::Get()->metrics()->RecordUserMetricsAction(
         UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED);
   } else {
     // Shows the about chrome OS page and checks for update after the page is
     // loaded.
-    Shell::Get()->system_tray_controller()->ShowAboutChromeOS();
+    Shell::Get()->system_tray_model()->client_ptr()->ShowAboutChromeOS();
   }
 }
 

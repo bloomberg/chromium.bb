@@ -16,9 +16,9 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/tray_detailed_view.h"
 #include "ash/system/tray/tray_item_more.h"
@@ -434,14 +434,17 @@ void AccessibilityDetailedView::CreateExtraTitleRowButtons() {
 
 void AccessibilityDetailedView::ShowSettings() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
-    Shell::Get()->system_tray_controller()->ShowAccessibilitySettings();
+    Shell::Get()
+        ->system_tray_model()
+        ->client_ptr()
+        ->ShowAccessibilitySettings();
     CloseBubble();
   }
 }
 
 void AccessibilityDetailedView::ShowHelp() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
-    Shell::Get()->system_tray_controller()->ShowAccessibilityHelp();
+    Shell::Get()->system_tray_model()->client_ptr()->ShowAccessibilityHelp();
     CloseBubble();
   }
 }

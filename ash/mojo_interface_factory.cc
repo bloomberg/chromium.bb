@@ -35,9 +35,9 @@
 #include "ash/shell_state.h"
 #include "ash/shutdown_controller.h"
 #include "ash/system/locale/locale_notification_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/vpn_list.h"
 #include "ash/system/night_light/night_light_controller.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/tray_action/tray_action.h"
 #include "ash/voice_interaction/voice_interaction_controller.h"
 #include "ash/wallpaper/wallpaper_controller.h"
@@ -183,7 +183,7 @@ void BindShutdownControllerRequestOnMainThread(
 }
 
 void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
-  Shell::Get()->system_tray_controller()->BindRequest(std::move(request));
+  Shell::Get()->system_tray_model()->BindRequest(std::move(request));
 }
 
 void BindTabletModeRequestOnMainThread(

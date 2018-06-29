@@ -118,6 +118,10 @@ class ASH_EXPORT SystemTray : public TrayBackgroundView,
   // Returns true if system bubble is visible.
   bool IsSystemBubbleVisible() const;
 
+  // Enable / disable SystemTray button in status area. If the bubble is open
+  // when disabling, also close it.
+  void SetTrayEnabled(bool enabled);
+
   // Returns view for help button if default view is shown. Returns NULL
   // otherwise.
   views::View* GetHelpButtonView() const;

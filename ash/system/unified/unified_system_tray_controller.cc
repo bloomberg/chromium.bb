@@ -26,7 +26,6 @@
 #include "ash/system/network/vpn_feature_pod_controller.h"
 #include "ash/system/night_light/night_light_feature_pod_controller.h"
 #include "ash/system/rotation/rotation_lock_feature_pod_controller.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_item_uma_type.h"
 #include "ash/system/unified/accessibility_feature_pod_controller.h"
 #include "ash/system/unified/detailed_view_controller.h"
@@ -121,7 +120,7 @@ void UnifiedSystemTrayController::HandleLockAction() {
 
 void UnifiedSystemTrayController::HandleSettingsAction() {
   Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
-  Shell::Get()->system_tray_controller()->ShowSettings();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowSettings();
   CloseBubble();
 }
 
@@ -143,7 +142,7 @@ void UnifiedSystemTrayController::HandleOpenDateTimeSettingsAction() {
 }
 
 void UnifiedSystemTrayController::HandleEnterpriseInfoAction() {
-  Shell::Get()->system_tray_controller()->ShowEnterpriseInfo();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowEnterpriseInfo();
   CloseBubble();
 }
 

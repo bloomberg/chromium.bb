@@ -7,8 +7,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/hover_highlight_view.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_info_label.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -366,7 +366,7 @@ void BluetoothDetailedView::CreateExtraTitleRowButtons() {
 
 void BluetoothDetailedView::ShowSettings() {
   if (TrayPopupUtils::CanOpenWebUISettings()) {
-    Shell::Get()->system_tray_controller()->ShowBluetoothSettings();
+    Shell::Get()->system_tray_model()->client_ptr()->ShowBluetoothSettings();
     CloseBubble();
   }
 }

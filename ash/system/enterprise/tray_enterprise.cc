@@ -12,7 +12,6 @@
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/label_tray_view.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/logging.h"
 #include "base/strings/string16.h"
@@ -76,7 +75,7 @@ void TrayEnterprise::OnEnterpriseDomainChanged() {
 }
 
 void TrayEnterprise::OnViewClicked(views::View* sender) {
-  Shell::Get()->system_tray_controller()->ShowEnterpriseInfo();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowEnterpriseInfo();
 }
 
 }  // namespace ash
