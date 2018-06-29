@@ -9,7 +9,6 @@
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/public/cpp/notification.h"
@@ -26,7 +25,7 @@ const char kNotifierId[] = "ash.tracing";
 void HandleNotificationClick() {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_TRACING_DEFAULT_SELECTED);
-  Shell::Get()->system_tray_controller()->ShowChromeSlow();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowChromeSlow();
 }
 
 }  // namespace

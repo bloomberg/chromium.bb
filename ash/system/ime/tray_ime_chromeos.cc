@@ -12,8 +12,8 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_item_detailed_view_delegate.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_constants.h"
@@ -120,7 +120,7 @@ void IMEDetailedView::CreateExtraTitleRowButtons() {
 
 void IMEDetailedView::ShowSettings() {
   base::RecordAction(base::UserMetricsAction("StatusArea_IME_Detailed"));
-  Shell::Get()->system_tray_controller()->ShowIMESettings();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowIMESettings();
   CloseBubble();
 }
 

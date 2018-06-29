@@ -184,7 +184,6 @@ class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
 class SystemNotificationController;
 class SystemTray;
-class SystemTrayController;
 class SystemTrayModel;
 class SystemTrayNotifier;
 class TimeToFirstPresentRecorder;
@@ -527,9 +526,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   SystemNotificationController* system_notification_controller() {
     return system_notification_controller_.get();
   }
-  SystemTrayController* system_tray_controller() {
-    return system_tray_controller_.get();
-  }
   SystemTrayModel* system_tray_model() { return system_tray_model_.get(); }
   SystemTrayNotifier* system_tray_notifier() {
     return system_tray_notifier_.get();
@@ -786,7 +782,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<ShellState> shell_state_;
   std::unique_ptr<ShutdownController> shutdown_controller_;
   std::unique_ptr<SystemNotificationController> system_notification_controller_;
-  std::unique_ptr<SystemTrayController> system_tray_controller_;
   std::unique_ptr<SystemTrayModel> system_tray_model_;
   std::unique_ptr<SystemTrayNotifier> system_tray_notifier_;
   std::unique_ptr<ToastManager> toast_manager_;

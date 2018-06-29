@@ -15,11 +15,11 @@
 #include "ash/shutdown_controller.h"
 #include "ash/shutdown_reason.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/night_light/night_light_controller.h"
 #include "ash/system/night_light/night_light_toggle_button.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_item.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -119,10 +119,10 @@ void TilesDefaultView::ButtonPressed(views::Button* sender,
   DCHECK(sender);
   if (sender == settings_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_SETTINGS);
-    Shell::Get()->system_tray_controller()->ShowSettings();
+    Shell::Get()->system_tray_model()->client_ptr()->ShowSettings();
   } else if (sender == help_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_HELP);
-    Shell::Get()->system_tray_controller()->ShowHelp();
+    Shell::Get()->system_tray_model()->client_ptr()->ShowHelp();
   } else if (features::IsNightLightEnabled() && sender == night_light_button_) {
     Shell::Get()->metrics()->RecordUserMetricsAction(UMA_TRAY_NIGHT_LIGHT);
     night_light_button_->Toggle();

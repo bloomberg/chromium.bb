@@ -6,7 +6,7 @@
 
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -84,7 +84,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterUpdate) {
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update.
-  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
       mojom::UpdateSeverity::LOW, false, mojom::UpdateType::SYSTEM);
 
   // The notification is now visible.
@@ -102,7 +102,7 @@ TEST_F(UpdateNotificationControllerTest, VisibilityAfterFlashUpdate) {
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update.
-  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
       mojom::UpdateSeverity::LOW, false, mojom::UpdateType::FLASH);
 
   // The notification is now visible.
@@ -123,9 +123,8 @@ TEST_F(UpdateNotificationControllerTest,
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update available for downloading over cellular connection.
-  Shell::Get()
-      ->system_tray_controller()
-      ->SetUpdateOverCellularAvailableIconVisible(true);
+  Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
+      true);
 
   // The notification is now visible.
   ASSERT_TRUE(HasNotification());
@@ -136,9 +135,8 @@ TEST_F(UpdateNotificationControllerTest,
 
   // Simulate the user's one time permission on downloading the update is
   // granted.
-  Shell::Get()
-      ->system_tray_controller()
-      ->SetUpdateOverCellularAvailableIconVisible(false);
+  Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
+      false);
 
   // The notification disappears.
   EXPECT_FALSE(HasNotification());
@@ -151,7 +149,7 @@ TEST_F(UpdateNotificationControllerTest,
   EXPECT_FALSE(HasNotification());
 
   // Simulate an update that requires factory reset.
-  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
       mojom::UpdateSeverity::LOW, true, mojom::UpdateType::SYSTEM);
 
   // The notification is now visible.

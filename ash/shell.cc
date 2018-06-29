@@ -120,7 +120,6 @@
 #include "ash/system/status_area_widget.h"
 #include "ash/system/system_notification_controller.h"
 #include "ash/system/toast/toast_manager.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/touch/ash_touch_transform_controller.h"
 #include "ash/touch/touch_devices_controller.h"
@@ -702,7 +701,6 @@ Shell::Shell(std::unique_ptr<ShellDelegate> shell_delegate,
       shell_delegate_(std::move(shell_delegate)),
       shell_state_(std::make_unique<ShellState>()),
       shutdown_controller_(std::make_unique<ShutdownController>()),
-      system_tray_controller_(std::make_unique<SystemTrayController>()),
       system_tray_notifier_(std::make_unique<SystemTrayNotifier>()),
       vpn_list_(std::make_unique<VpnList>()),
       window_cycle_controller_(std::make_unique<WindowCycleController>()),

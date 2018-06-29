@@ -7,8 +7,8 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/interfaces/update.mojom.h"
 #include "ash/shell.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/test/ash_test_base.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/events/event.h"
@@ -33,7 +33,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdate) {
   EXPECT_FALSE(tray_update->tray_view()->visible());
 
   // Simulate an update.
-  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
       mojom::UpdateSeverity::LOW, false, mojom::UpdateType::SYSTEM);
 
   // Tray item is now visible.
@@ -57,7 +57,7 @@ TEST_F(TrayUpdateTest, VisibilityAfterFlashUpdate) {
   EXPECT_FALSE(tray_update->tray_view()->visible());
 
   // Simulate an update.
-  Shell::Get()->system_tray_controller()->ShowUpdateIcon(
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
       mojom::UpdateSeverity::LOW, false, mojom::UpdateType::FLASH);
 
   // Tray item is now visible.
@@ -83,9 +83,8 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdateOverCellularAvailable) {
   EXPECT_FALSE(tray_update->tray_view()->visible());
 
   // Simulate an update available for downloading over cellular connection.
-  Shell::Get()
-      ->system_tray_controller()
-      ->SetUpdateOverCellularAvailableIconVisible(true);
+  Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
+      true);
 
   // Tray item is now visible.
   EXPECT_TRUE(tray_update->tray_view()->visible());
@@ -96,9 +95,8 @@ TEST_F(TrayUpdateTest, VisibilityAfterUpdateOverCellularAvailable) {
 
   // Simulate the user's one time permission on downloading the update is
   // granted.
-  Shell::Get()
-      ->system_tray_controller()
-      ->SetUpdateOverCellularAvailableIconVisible(false);
+  Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
+      false);
 
   // Tray item disappears.
   EXPECT_FALSE(tray_update->tray_view()->visible());

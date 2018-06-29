@@ -213,6 +213,15 @@ void UnifiedSystemTray::UpdateAfterLoginStatusChange() {
   PreferredSizeChanged();
 }
 
+void UnifiedSystemTray::SetTrayEnabled(bool enabled) {
+  // We should close bubble at this point. If it remains opened and interactive,
+  // it can be dangerous (http://crbug.com/497080).
+  if (!enabled && bubble_)
+    CloseBubble();
+
+  SetEnabled(enabled);
+}
+
 bool UnifiedSystemTray::PerformAction(const ui::Event& event) {
   if (bubble_)
     CloseBubble();

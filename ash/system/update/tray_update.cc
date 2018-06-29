@@ -13,7 +13,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -115,13 +114,16 @@ class TrayUpdate::UpdateView : public ActionableView {
     DCHECK(model_->update_required() ||
            model_->update_over_cellular_available());
     if (model_->update_required()) {
-      Shell::Get()->system_tray_controller()->RequestRestartForUpdate();
+      Shell::Get()
+          ->system_tray_model()
+          ->client_ptr()
+          ->RequestRestartForUpdate();
       Shell::Get()->metrics()->RecordUserMetricsAction(
           UMA_STATUS_AREA_OS_UPDATE_DEFAULT_SELECTED);
     } else {
       // Shows the about chrome OS page and checks for update after the page is
       // loaded.
-      Shell::Get()->system_tray_controller()->ShowAboutChromeOS();
+      Shell::Get()->system_tray_model()->client_ptr()->ShowAboutChromeOS();
     }
     CloseSystemBubble();
     return true;

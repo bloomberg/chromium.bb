@@ -66,6 +66,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView {
   // Updates when the login status of the system changes.
   void UpdateAfterLoginStatusChange();
 
+  // Enable / disable UnifiedSystemTray button in status area. If the bubble is
+  // open when disabling, also close it.
+  void SetTrayEnabled(bool enabled);
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;

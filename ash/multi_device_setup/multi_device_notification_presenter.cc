@@ -12,7 +12,7 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
-#include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -58,7 +58,7 @@ MultiDeviceNotificationPresenter::OpenUiDelegate::~OpenUiDelegate() = default;
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::
     OpenMultiDeviceSetupUi() {
-  Shell::Get()->system_tray_controller()->ShowMultiDeviceSetup();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowMultiDeviceSetup();
 }
 
 void MultiDeviceNotificationPresenter::OpenUiDelegate::

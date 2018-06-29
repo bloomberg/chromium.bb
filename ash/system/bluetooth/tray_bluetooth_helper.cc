@@ -6,7 +6,7 @@
 
 #include "ash/shell.h"
 #include "ash/system/bluetooth/bluetooth_power_controller.h"
-#include "ash/system/tray/system_tray_controller.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/bind.h"
 #include "base/bind_helpers.h"
@@ -127,7 +127,7 @@ void TrayBluetoothHelper::ConnectToBluetoothDevice(const std::string& address) {
     return;
   }
   // Show pairing dialog for the unpaired device.
-  Shell::Get()->system_tray_controller()->ShowBluetoothPairingDialog(
+  Shell::Get()->system_tray_model()->client_ptr()->ShowBluetoothPairingDialog(
       device->GetAddress(), device->GetNameForDisplay(), device->IsPaired(),
       device->IsConnected());
 }

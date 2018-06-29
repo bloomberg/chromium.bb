@@ -10,9 +10,9 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_menu_button.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tri_view.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -257,7 +257,7 @@ void NetworkStateListDetailedView::HandleViewClicked(views::View* view) {
       list_type_ == LIST_TYPE_VPN
           ? UMA_STATUS_AREA_SHOW_VPN_CONNECTION_DETAILS
           : UMA_STATUS_AREA_SHOW_NETWORK_CONNECTION_DETAILS);
-  Shell::Get()->system_tray_controller()->ShowNetworkSettings(
+  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
       network ? network->guid() : std::string());
 }
 
@@ -280,7 +280,8 @@ void NetworkStateListDetailedView::ShowSettings() {
   Shell::Get()->metrics()->RecordUserMetricsAction(
       list_type_ == LIST_TYPE_VPN ? UMA_STATUS_AREA_VPN_SETTINGS_OPENED
                                   : UMA_STATUS_AREA_NETWORK_SETTINGS_OPENED);
-  Shell::Get()->system_tray_controller()->ShowNetworkSettings(std::string());
+  Shell::Get()->system_tray_model()->client_ptr()->ShowNetworkSettings(
+      std::string());
 }
 
 void NetworkStateListDetailedView::UpdateHeaderButtons() {

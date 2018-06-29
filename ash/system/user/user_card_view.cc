@@ -16,7 +16,6 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
-#include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
 #include "ash/system/user/rounded_image_view.h"
@@ -230,7 +229,7 @@ void PublicAccountUserDetails::GetAccessibleNodeData(
 void PublicAccountUserDetails::LinkClicked(views::Link* source,
                                            int event_flags) {
   DCHECK_EQ(source, learn_more_);
-  Shell::Get()->system_tray_controller()->ShowPublicAccountInfo();
+  Shell::Get()->system_tray_model()->client_ptr()->ShowPublicAccountInfo();
 }
 
 void PublicAccountUserDetails::DeterminePreferredSize() {

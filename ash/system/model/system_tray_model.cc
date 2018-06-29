@@ -4,11 +4,18 @@
 
 #include "ash/system/model/system_tray_model.h"
 
+#include "ash/public/cpp/ash_features.h"
+#include "ash/root_window_controller.h"
+#include "ash/shell.h"
+#include "ash/system/audio/tray_audio.h"
 #include "ash/system/model/clock_model.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/session_length_limit_model.h"
 #include "ash/system/model/tracing_model.h"
 #include "ash/system/model/update_model.h"
+#include "ash/system/status_area_widget.h"
+#include "ash/system/tray/system_tray.h"
+#include "ash/system/unified/unified_system_tray.h"
 #include "base/logging.h"
 
 namespace ash {
@@ -22,16 +29,36 @@ SystemTrayModel::SystemTrayModel()
 
 SystemTrayModel::~SystemTrayModel() = default;
 
-void SystemTrayModel::SetClient(mojom::SystemTrayClientPtr client) {
-  NOTIMPLEMENTED();
+void SystemTrayModel::BindRequest(mojom::SystemTrayRequest request) {
+  bindings_.AddBinding(this, std::move(request));
+}
+
+void SystemTrayModel::SetClient(mojom::SystemTrayClientPtr client_ptr) {
+  client_ptr_ = std::move(client_ptr);
 }
 
 void SystemTrayModel::SetPrimaryTrayEnabled(bool enabled) {
-  NOTIMPLEMENTED();
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    UnifiedSystemTray* tray = Shell::GetPrimaryRootWindowController()
+                                  ->GetStatusAreaWidget()
+                                  ->unified_system_tray();
+    if (!tray)
+      return;
+    tray->SetTrayEnabled(enabled);
+  } else {
+    ash::SystemTray* tray =
+        Shell::GetPrimaryRootWindowController()->GetSystemTray();
+    if (!tray)
+      return;
+    tray->SetTrayEnabled(enabled);
+  }
 }
 
 void SystemTrayModel::SetPrimaryTrayVisible(bool visible) {
-  NOTIMPLEMENTED();
+  auto* status_area =
+      Shell::GetPrimaryRootWindowController()->GetStatusAreaWidget();
+  if (status_area)
+    status_area->SetSystemTrayVisibility(visible);
 }
 
 void SystemTrayModel::SetUse24HourClock(bool use_24_hour) {
@@ -61,7 +88,23 @@ void SystemTrayModel::SetUpdateOverCellularAvailableIconVisible(bool visible) {
 }
 
 void SystemTrayModel::ShowVolumeSliderBubble() {
-  NOTIMPLEMENTED();
+  // Show the bubble on all monitors with a system tray.
+  if (features::IsSystemTrayUnifiedEnabled()) {
+    for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+      UnifiedSystemTray* system_tray =
+          root->GetStatusAreaWidget()->unified_system_tray();
+      if (!system_tray)
+        continue;
+      system_tray->ShowVolumeSliderBubble();
+    }
+  } else {
+    for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
+      ash::SystemTray* system_tray = root->GetSystemTray();
+      if (!system_tray)
+        continue;
+      system_tray->GetTrayAudio()->ShowPopUpVolumeView();
+    }
+  }
 }
 
 }  // namespace ash
