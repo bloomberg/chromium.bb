@@ -150,9 +150,10 @@ class BoxPainterBase {
                                  const IntRect& mask_rect,
                                  const LayoutPoint& paint_offset,
                                  bool object_has_multiple_boxes) = 0;
-  virtual LayoutRect AdjustForScrolledContent(const PaintInfo&,
-                                              const FillLayerInfo&,
-                                              const LayoutRect&) = 0;
+
+  virtual LayoutRect AdjustRectForScrolledContent(const PaintInfo&,
+                                                  const FillLayerInfo&,
+                                                  const LayoutRect&) = 0;
   virtual FillLayerInfo GetFillLayerInfo(const Color&,
                                          const FillLayer&,
                                          BackgroundBleedAvoidance) const = 0;

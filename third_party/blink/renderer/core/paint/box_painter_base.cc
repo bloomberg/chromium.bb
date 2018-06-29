@@ -339,27 +339,54 @@ inline bool PaintFastBottomLayer(Node* node,
   if (!info.should_paint_color && !info.should_paint_image)
     return true;
 
+  // Compute the destination rect for painting the color here because we may
+  // need it for computing the image painting rect for optimization.
+  GraphicsContext& context = paint_info.context;
+  FloatRoundedRect color_border =
+      info.is_rounded_fill ? border_rect
+                           : FloatRoundedRect(PixelSnappedIntRect(rect));
+
   // When the layer has an image, figure out whether it is covered by a single
-  // tile.
+  // tile. The border for painting images may not be the same as the color due
+  // to optimizations for the image painting destination that avoid painting
+  // under the border.
   FloatRect image_tile;
+  FloatRoundedRect image_border;
   if (info.should_paint_image) {
     // Avoid image shaders when printing (poorly supported in PDF).
     if (info.is_rounded_fill && paint_info.IsPrinting())
       return false;
 
-    if (!geometry.DestRect().IsEmpty()) {
-      // The tile is too small.
-      if (geometry.TileSize().Width() < rect.Width() ||
-          geometry.TileSize().Height() < rect.Height())
+    // Compute the dest rect we will be using for images.
+    image_border =
+        info.is_rounded_fill
+            ? color_border
+            : FloatRoundedRect(FloatRect(geometry.SnappedDestRect()));
+
+    if (!image_border.Rect().IsEmpty()) {
+      // We cannot optimize if the tile is too small.
+      if (geometry.TileSize().Width() < image_border.Rect().Width() ||
+          geometry.TileSize().Height() < image_border.Rect().Height())
         return false;
 
-      image_tile = Image::ComputeTileContaining(
-          FloatPoint(geometry.DestRect().Location()),
-          FloatSize(geometry.TileSize()), FloatPoint(geometry.Phase()),
+      // Phase calculation uses the actual painted location, given by the
+      // border-snapped destination rect.
+      image_tile = Image::ComputePhaseForBackground(
+          FloatPoint(geometry.SnappedDestRect().Location()),
+          FloatSize(geometry.TileSize()), geometry.Phase(),
           FloatSize(geometry.SpaceSize()));
 
-      // The tile is misaligned.
-      if (!image_tile.Contains(FloatRect(rect)))
+      // Force the image tile to LayoutUnit precision, which is the precision
+      // it was calcuated in. This avoids bleeding due to values very close to
+      // integers.
+      // The test images/sprite-no-bleed.html fails on two of the sub-cases
+      // due to this rounding still not being enough to make the Contains check
+      // pass. The best way to fix this would be to remove the paint rect offset
+      // from the tile computation, because we effectively add it in
+      // ComputePhaseForBackground then remove it in ComputeSubsetForBackground.
+      image_tile = FloatRect(LayoutRect(image_tile));
+      // We cannot optimize if the tile is misaligned.
+      if (!image_tile.Contains(image_border.Rect()))
         return false;
     }
   }
@@ -367,46 +394,54 @@ inline bool PaintFastBottomLayer(Node* node,
   // At this point we're committed to the fast path: the destination (r)rect
   // fits within a single tile, and we can paint it using direct draw(R)Rect()
   // calls.
-  GraphicsContext& context = paint_info.context;
-  FloatRoundedRect border = info.is_rounded_fill
-                                ? border_rect
-                                : FloatRoundedRect(PixelSnappedIntRect(rect));
   base::Optional<RoundedInnerRectClipper> clipper;
-  if (info.is_rounded_fill && !border.IsRenderable()) {
+  if (info.is_rounded_fill && !color_border.IsRenderable()) {
     // When the rrect is not renderable, we resort to clipping.
     // RoundedInnerRectClipper handles this case via discrete, corner-wise
     // clipping.
-    clipper.emplace(context, rect, border);
-    border.SetRadii(FloatRoundedRect::Radii());
+    clipper.emplace(context, rect, color_border);
+    color_border.SetRadii(FloatRoundedRect::Radii());
   }
 
   // Paint the color if needed.
   if (info.should_paint_color)
-    context.FillRoundedRect(border, info.color);
+    context.FillRoundedRect(color_border, info.color);
 
   // Paint the image if needed.
-  if (!info.should_paint_image || image_tile.IsEmpty())
+  if (!info.should_paint_image || !image || image_tile.IsEmpty())
     return true;
 
-  if (!image)
-    return true;
-
+  // Generated images will be created at the desired tile size, so assume their
+  // intrinsic size is the requested tile size.
   const FloatSize intrinsic_tile_size =
       image->HasRelativeSize() ? image_tile.Size() : FloatSize(image->Size());
-  const FloatRect src_rect = Image::ComputeSubsetForTile(
-      image_tile, border.Rect(), intrinsic_tile_size);
+  // Subset computation needs the same location as was used with
+  // ComputePhaseForBackground above, but needs the unsnapped destination
+  // size to correctly calculate sprite subsets in the presence of zoom.
+  FloatRect dest_rect_for_subset(
+      FloatPoint(geometry.SnappedDestRect().Location()),
+      FloatSize(geometry.UnsnappedDestRect().Size()));
+  // Content providers almost always choose source pixels at integer locations,
+  // so snap to integers. This is particuarly important for sprite maps.
+  // Calculation up to this point, in LayoutUnits, can lead to small variations
+  // from integer size, so it is safe to round without introducing major issues.
+  const FloatRect src_rect =
+      FloatRect(RoundedIntRect(Image::ComputeSubsetForBackground(
+          image_tile, dest_rect_for_subset, intrinsic_tile_size)));
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",
                InspectorPaintImageEvent::Data(node, *info.image, image->Rect(),
-                                              FloatRect(rect)));
+                                              image_border.Rect()));
+
   // Since there is no way for the developer to specify decode behavior, use
   // kSync by default.
-  context.DrawImageRRect(image, Image::kSyncDecode, border, src_rect,
+  context.DrawImageRRect(image, Image::kSyncDecode, image_border, src_rect,
                          composite_op);
 
   return true;
 }
+
 // Inset the background rect by a "safe" amount: 1/2 border-width for opaque
 // border styles, 1/6 border-width for double borders.
 FloatRoundedRect BackgroundRoundedRectAdjustedForBleedAvoidance(
@@ -508,15 +543,17 @@ void PaintFillLayerBackground(GraphicsContext& context,
   // No progressive loading of the background image.
   // NOTE: This method can be called with no image in situations when a bad
   // resource locator is given such as "//:0", so still check for image.
-  if (info.should_paint_image && !geometry.DestRect().IsEmpty() && image) {
+  if (info.should_paint_image && !geometry.SnappedDestRect().IsEmpty() &&
+      image) {
     TRACE_EVENT1(
         TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage", "data",
         InspectorPaintImageEvent::Data(node, *info.image, image->Rect(),
                                        FloatRect(scrolled_paint_rect)));
-    context.DrawTiledImage(image, FloatRect(geometry.DestRect()),
-                           FloatPoint(geometry.Phase()),
-                           FloatSize(geometry.TileSize()), composite_op,
-                           FloatSize(geometry.SpaceSize()));
+    context.DrawTiledImage(image,
+                           FloatSize(geometry.UnsnappedDestRect().Size()),
+                           FloatRect(geometry.SnappedDestRect()),
+                           geometry.Phase(), FloatSize(geometry.TileSize()),
+                           composite_op, FloatSize(geometry.SpaceSize()));
   }
 }
 
@@ -558,8 +595,9 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
 
   GraphicsContextStateSaver clip_with_scrolling_state_saver(
       context, info.is_clipped_with_local_scrolling);
-  LayoutRect scrolled_paint_rect =
-      AdjustForScrolledContent(paint_info, info, rect);
+  auto scrolled_paint_rect =
+      AdjustRectForScrolledContent(paint_info, info, rect);
+  const auto did_adjust_paint_rect = scrolled_paint_rect != rect;
 
   scoped_refptr<Image> image;
   SkBlendMode composite_op = op;
@@ -588,8 +626,13 @@ void BoxPainterBase::PaintFillLayer(const PaintInfo& paint_info,
       style_, info, bg_layer, rect, object_has_multiple_boxes, flow_box_size,
       bleed_avoidance, border_padding_insets);
 
-  // Fast path for drawing simple color backgrounds.
-  if (PaintFastBottomLayer(node_, paint_info, info, rect, border_rect, geometry,
+  // Fast path for drawing simple color backgrounds. Do not use the fast
+  // path if the dest rect has been adjusted for scrolling backgrounds
+  // because correcting the dest rect for this case reduces the accuracy of the
+  // destinations rects.
+  // TODO(schenney): Still use the fast path if not painting any images.
+  if (!did_adjust_paint_rect &&
+      PaintFastBottomLayer(node_, paint_info, info, rect, border_rect, geometry,
                            image.get(), composite_op)) {
     return;
   }

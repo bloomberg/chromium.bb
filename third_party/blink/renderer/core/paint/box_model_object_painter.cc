@@ -93,7 +93,7 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
   }
 }
 
-LayoutRect BoxModelObjectPainter::AdjustForScrolledContent(
+LayoutRect BoxModelObjectPainter::AdjustRectForScrolledContent(
     const PaintInfo& paint_info,
     const BoxPainterBase::FillLayerInfo& info,
     const LayoutRect& rect) {
