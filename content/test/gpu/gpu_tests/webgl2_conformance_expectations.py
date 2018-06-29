@@ -829,6 +829,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'nvidia'], bug=618447)
+    self.Flaky('deqp/functional/gles3/texturespecification/' +
+        'random_teximage2d_cube.html',
+        ['linux', 'nvidia'], bug=618447)
     self.Fail('conformance/glsl/bugs/unary-minus-operator-float-bug.html',
         ['linux', 'nvidia'], bug=672380)
     self.Fail('conformance2/glsl3/vector-dynamic-indexing-swizzled-lvalue.html',
