@@ -115,6 +115,9 @@ class CONTENT_EXPORT EmbeddedWorkerInstance
                                         const base::string16& message,
                                         int line_number,
                                         const GURL& source_url) {}
+    // The instance is being deleted, so it's not safe to call any methods that
+    // may result in a virtual method call.
+    virtual void OnDestroyed() {}
   };
 
   ~EmbeddedWorkerInstance() override;

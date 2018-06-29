@@ -4714,9 +4714,7 @@ crbug.com/855222 [ Mac ] external/wpt/magnetometer/Magnetometer-iframe-access.ht
 crbug.com/855055 [ Mac ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Pass Timeout ]
 
 # Sheriff 2018-06-25
-crbug.com/855860 [ Linux ] virtual/outofblink-cors/http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Timeout ]
 crbug.com/855816 [ Win7 ] virtual/stable/http/tests/navigation/rename-subframe-goback.html [ Pass Timeout ]
-crbug.com/856330 external/wpt/service-workers/service-worker/about-blank-replacement.https.html [ Pass Timeout ]
 
 # Sheriff 2018-06-26
 crbug.com/856601 [ Linux ] external/wpt/FileAPI/idlharness.html [ Pass Timeout ]
@@ -4730,11 +4728,7 @@ crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/media
 
 # Sheriff 2018-06-27
 crbug.com/856955 [ Win10 Linux ] inspector-protocol/animation/animation-multiple-frames.js [ Failure Pass ]
-crbug.com/856969 [ Win Linux Mac ] external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Pass Timeout ]
-crbug.com/856969 [ Win Linux Mac ] virtual/outofblink-cors/external/wpt/fetch/api/abort/serviceworker-intercepted.https.html [ Pass Timeout ]
 
 # Sheriff 2018-06-28
-crbug.com/857410 [ Linux ] virtual/outofblink-cors/external/wpt/service-workers/service-worker/about-blank-replacement.https.html [ Pass Timeout ]
 crbug.com/857414 [ Win Mac10.10 Mac10.11 ] http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-webaudio.js [ Pass Timeout ]
 crbug.com/857520 [ Mac Win7 ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
-crbug.com/856330 [ Linux Debug ] virtual/service-worker-servicification/external/wpt/service-workers/service-worker/about-blank-replacement.https.html [ Pass Timeout ]

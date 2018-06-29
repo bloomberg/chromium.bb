@@ -627,8 +627,8 @@ void ServiceWorkerRegisterJob::OnScriptLoaded() {
   new_version()->embedded_worker()->ResumeAfterDownload();
 }
 
-void ServiceWorkerRegisterJob::OnDetached(EmbeddedWorkerStatus old_status) {
-  // The version's EmbeddedWorkerInstance may be getting destructed soon, so
+void ServiceWorkerRegisterJob::OnDestroyed() {
+  // The version's EmbeddedWorkerInstance is getting destructed, so
   // remove the observer to avoid a use-after-free. We expect to continue when
   // the StartWorker() callback is called with failure.
   // TODO(crbug.com/855852): Remove the EmbeddedWorkerInstance::Listener
