@@ -89,6 +89,7 @@ const char kWebMVp8VideoOnly[] = "video/webm; codecs=\"vp8\"";
 #endif
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kMp4Avc1VideoOnly[] = "video/mp4; codecs=\"avc1.64001E\"";
+const char kMp4AacAudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"";
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 // Sessions to load.
@@ -114,6 +115,7 @@ const char kEmeSessionClosedAndError[] = "EME_SESSION_CLOSED_AND_ERROR";
 #endif
 
 const char kDefaultEmePlayer[] = "eme_player.html";
+const char kDefaultMseOnlyEmePlayer[] = "mse_different_containers.html";
 
 // The type of video src used to load media.
 enum class SrcType { SRC, MSE };
@@ -128,14 +130,6 @@ enum class ConfigChangeType {
 
 // Whether the video should be played once or twice.
 enum class PlayCount { ONCE, TWICE };
-
-// Format of a container when testing different streams.
-enum class EncryptedContainer {
-  CLEAR_WEBM,
-  CLEAR_MP4,
-  ENCRYPTED_WEBM,
-  ENCRYPTED_MP4
-};
 
 // Base class for encrypted media tests.
 class EncryptedMediaTestBase : public MediaBrowserTest {
@@ -215,6 +209,35 @@ class EncryptedMediaTestBase : public MediaBrowserTest {
         "document.querySelector('video').receivedKeyMessage);",
         &receivedKeyMessage));
     EXPECT_TRUE(receivedKeyMessage);
+  }
+
+  void RunEncryptedMediaMultipleFileTest(const std::string& key_system,
+                                         const std::string& video_media_file,
+                                         const std::string& video_media_type,
+                                         const std::string& audio_media_file,
+                                         const std::string& audio_media_type,
+                                         const std::string& expected_title) {
+    if (!IsPlayBackPossible(key_system)) {
+      DVLOG(0) << "Skipping test - Test requires video playback.";
+      return;
+    }
+
+    base::StringPairs query_params;
+    query_params.emplace_back("keySystem", key_system);
+    query_params.emplace_back("runEncrypted", "1");
+    if (!video_media_file.empty()) {
+      DCHECK(!video_media_type.empty());
+      query_params.emplace_back("videoFile", video_media_file);
+      query_params.emplace_back("videoFormat", video_media_type);
+    }
+    if (!audio_media_file.empty()) {
+      DCHECK(!audio_media_type.empty());
+      query_params.emplace_back("audioFile", audio_media_file);
+      query_params.emplace_back("audioFormat", audio_media_type);
+    }
+
+    RunEncryptedMediaTestPage(kDefaultMseOnlyEmePlayer, key_system,
+                              query_params, expected_title);
   }
 
   // Starts a license server if available for the |key_system| and adds a
@@ -346,18 +369,6 @@ class ECKEncryptedMediaTest : public EncryptedMediaTestBase,
                           expected_title);
   }
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS)
-  void TestMp4EncryptionPlayback(const std::string& key_system,
-                                 const std::string& media_file,
-                                 const std::string& media_type,
-                                 const std::string& expected_title) {
-    // MP4 playback is only supported with MSE.
-    RunEncryptedMediaTest(kDefaultEmePlayer, media_file, media_type, key_system,
-                          SrcType::MSE, kNoSessionToLoad, false,
-                          PlayCount::ONCE, expected_title);
-  }
-#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
-
  protected:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     EncryptedMediaTestBase::SetUpCommandLine(command_line);
@@ -462,45 +473,19 @@ class EncryptedMediaTest
                               query_params, kUnitTestSuccess);
   }
 
-  std::string ConvertContainerFormat(EncryptedContainer format) {
-    switch (format) {
-      case EncryptedContainer::CLEAR_MP4:
-        return "CLEAR_MP4";
-      case EncryptedContainer::CLEAR_WEBM:
-        return "CLEAR_WEBM";
-      case EncryptedContainer::ENCRYPTED_MP4:
-        return "ENCRYPTED_MP4";
-      case EncryptedContainer::ENCRYPTED_WEBM:
-        return "ENCRYPTED_WEBM";
-    }
-    NOTREACHED();
-    return "UNKNOWN";
-  }
-
-  void TestDifferentContainers(EncryptedContainer video_format,
-                               EncryptedContainer audio_format) {
+  void TestDifferentContainers(const std::string& video_media_file,
+                               const std::string& video_media_type,
+                               const std::string& audio_media_file,
+                               const std::string& audio_media_type) {
     // MP4 without MSE is not support yet, http://crbug.com/170793.
-    if ((video_format == EncryptedContainer::ENCRYPTED_MP4 ||
-         audio_format == EncryptedContainer::ENCRYPTED_MP4) &&
-        CurrentSourceType() != SrcType::MSE) {
+    if (CurrentSourceType() != SrcType::MSE) {
       DVLOG(0) << "Skipping test; Can only play MP4 encrypted streams by MSE.";
       return;
     }
 
-    if (!IsPlayBackPossible(CurrentKeySystem())) {
-      DVLOG(0) << "Skipping test - Test requires video playback.";
-      return;
-    }
-
-    base::StringPairs query_params;
-    query_params.emplace_back("keySystem", CurrentKeySystem());
-    query_params.emplace_back("runEncrypted", "1");
-    query_params.push_back(
-        std::make_pair("videoFormat", ConvertContainerFormat(video_format)));
-    query_params.push_back(
-        std::make_pair("audioFormat", ConvertContainerFormat(audio_format)));
-    RunEncryptedMediaTestPage("mse_different_containers.html",
-                              CurrentKeySystem(), query_params, media::kEnded);
+    RunEncryptedMediaMultipleFileTest(CurrentKeySystem(), video_media_file,
+                                      video_media_type, audio_media_file,
+                                      audio_media_type, media::kEnded);
   }
 
   void DisableEncryptedMedia() {
@@ -705,26 +690,38 @@ IN_PROC_BROWSER_TEST_P(EncryptedMediaTest, Playback_Encryption_CBCS) {
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_EncryptedVideo_MP4_ClearAudio_WEBM) {
-  TestDifferentContainers(EncryptedContainer::ENCRYPTED_MP4,
-                          EncryptedContainer::CLEAR_WEBM);
+  TestDifferentContainers("bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly,
+                          "bear-320x240-audio-only.webm", kWebMVorbisAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_ClearVideo_WEBM_EncryptedAudio_MP4) {
-  TestDifferentContainers(EncryptedContainer::CLEAR_WEBM,
-                          EncryptedContainer::ENCRYPTED_MP4);
+  TestDifferentContainers("bear-320x240-video-only.webm", kWebMVp8VideoOnly,
+                          "bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly);
 }
 
 IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
                        Playback_EncryptedVideo_WEBM_EncryptedAudio_MP4) {
-  TestDifferentContainers(EncryptedContainer::ENCRYPTED_WEBM,
-                          EncryptedContainer::ENCRYPTED_MP4);
+  TestDifferentContainers("bear-320x240-v_enc-v.webm", kWebMVp8VideoOnly,
+                          "bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_EncryptedVideo_CBCS_EncryptedAudio_CENC) {
+  TestDifferentContainers("bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly,
+                          "bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly);
+}
+
+IN_PROC_BROWSER_TEST_P(EncryptedMediaTest,
+                       Playback_EncryptedVideo_CENC_EncryptedAudio_CBCS) {
+  TestDifferentContainers("bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly,
+                          "bear-640x360-a_frag-cbcs.mp4", kMp4AacAudioOnly);
 }
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
-// Test both CDM_9 and CDM_10.
+// Test CDM_9 through CDM_11.
 static_assert(media::CheckSupportedCdmInterfaceVersions(9, 11),
               "Mismatch between implementation and test coverage");
 INSTANTIATE_TEST_CASE_P(CDM_9, ECKEncryptedMediaTest, Values(9));
@@ -803,24 +800,38 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DecryptOnly_VideoOnly_MP4_VP9) {
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
 
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DecryptOnly_VideoOnly_MP4_CBCS) {
+  // 'cbcs' decryption is only supported on CDM 10 or later as long as
+  // the appropriate buildflag is enabled.
+  std::string expected_result =
+      GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+          ? media::kEnded
+          : media::kError;
+  RunEncryptedMediaTest(
+      kDefaultEmePlayer, "bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly,
+      kExternalClearKeyDecryptOnlyKeySystem, SrcType::MSE, kNoSessionToLoad,
+      false, PlayCount::ONCE, expected_result);
+}
+
 // Encryption Scheme tests. ClearKey key system is covered in
 // content/browser/media/encrypted_media_browsertest.cc.
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CENC) {
-  TestMp4EncryptionPlayback(kExternalClearKeyKeySystem,
-                            "bear-640x360-v_frag-cenc.mp4", kMp4Avc1VideoOnly,
-                            media::kEnded);
+  RunEncryptedMediaMultipleFileTest(
+      kExternalClearKeyKeySystem, "bear-640x360-v_frag-cenc.mp4",
+      kMp4Avc1VideoOnly, "bear-640x360-a_frag-cenc.mp4", kMp4AacAudioOnly,
+      media::kEnded);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CBC1) {
-  TestMp4EncryptionPlayback(kExternalClearKeyKeySystem,
-                            "bear-640x360-v_frag-cbc1.mp4", kMp4Avc1VideoOnly,
-                            media::kError);
+  RunEncryptedMediaMultipleFileTest(
+      kExternalClearKeyKeySystem, "bear-640x360-v_frag-cbc1.mp4",
+      kMp4Avc1VideoOnly, std::string(), std::string(), media::kError);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CENS) {
-  TestMp4EncryptionPlayback(kExternalClearKeyKeySystem,
-                            "bear-640x360-v_frag-cens.mp4", kMp4Avc1VideoOnly,
-                            media::kError);
+  RunEncryptedMediaMultipleFileTest(
+      kExternalClearKeyKeySystem, "bear-640x360-v_frag-cens.mp4",
+      kMp4Avc1VideoOnly, std::string(), std::string(), media::kError);
 }
 
 IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CBCS) {
@@ -830,9 +841,10 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, Playback_Encryption_CBCS) {
       GetCdmInterfaceVersion() >= 10 && BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
           ? media::kEnded
           : media::kError;
-  TestMp4EncryptionPlayback(kExternalClearKeyKeySystem,
-                            "bear-640x360-v_frag-cbcs.mp4", kMp4Avc1VideoOnly,
-                            expected_result);
+  RunEncryptedMediaMultipleFileTest(
+      kExternalClearKeyKeySystem, "bear-640x360-v_frag-cbcs.mp4",
+      kMp4Avc1VideoOnly, "bear-640x360-a_frag-cbcs.mp4", kMp4AacAudioOnly,
+      expected_result);
 }
 
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)

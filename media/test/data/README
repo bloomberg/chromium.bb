@@ -138,6 +138,10 @@ bear-640x360-v_frag-cens.mp4
       shaka/packager/tools/pssh/pssh-box.py --widevine-system-id --key-id 30313233343536373839303132333435 --hex
       shaka/packager/tools/pssh/pssh-box.py --common-system-id --key-id 30313233343536373839303132333435 --hex
 
+bear-640x360-a_frag-cbcs.mp4
+- Same as previous instructions, except source is bear-640x360-a_frag.mp4
+  and no clear lead (i.e. --clear_lead 0).
+
 bear-flac-cenc.mp4
 - Encrypted version of bear-flac.mp4, encrypted by Shaka Packager
   using key ID [1] and key [2]. Sample encryption information stored in

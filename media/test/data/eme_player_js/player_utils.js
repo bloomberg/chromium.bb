@@ -234,23 +234,11 @@ PlayerUtils.registerEMEEventListeners = function(player) {
   } else {
     // Some tests (e.g. mse_different_containers.html) specify audio and
     // video codecs seperately.
-    if (player.testConfig.videoFormat == 'ENCRYPTED_MP4' ||
-        player.testConfig.videoFormat == 'CLEAR_MP4') {
-      config.videoCapabilities =
-          [{contentType: 'video/mp4; codecs="avc1.4D000C"'}];
-    } else if (
-        player.testConfig.videoFormat == 'ENCRYPTED_WEBM' ||
-        player.testConfig.videoFormat == 'CLEAR_WEBM') {
-      config.videoCapabilities = [{contentType: 'video/webm; codecs="vp8"'}];
+    if (player.testConfig.videoFormat) {
+      config.videoCapabilities = [{contentType: player.testConfig.videoFormat}];
     }
-    if (player.testConfig.audioFormat == 'ENCRYPTED_MP4' ||
-        player.testConfig.audioFormat == 'CLEAR_MP4') {
-      config.audioCapabilities =
-          [{contentType: 'audio/mp4; codecs="mp4a.40.2"'}];
-    } else if (
-        player.testConfig.audioFormat == 'ENCRYPTED_WEBM' ||
-        player.testConfig.audioFormat == 'CLEAR_WEBM') {
-      config.audioCapabilities = [{contentType: 'audio/webm; codecs="vorbis"'}];
+    if (player.testConfig.audioFormat) {
+      config.audioCapabilities = [{contentType: player.testConfig.audioFormat}];
     }
   }
 
