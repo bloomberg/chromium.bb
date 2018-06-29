@@ -51,7 +51,7 @@ class FakeCommandBufferHelper : public CommandBufferHelper {
   void SetCleared(GLuint service_id) override;
   bool BindImage(GLuint service_id,
                  gl::GLImage* image,
-                 bool can_bind_to_sampler) override;
+                 bool client_managed) override;
   gpu::Mailbox CreateMailbox(GLuint service_id) override;
   void WaitForSyncToken(gpu::SyncToken sync_token,
                         base::OnceClosure done_cb) override;

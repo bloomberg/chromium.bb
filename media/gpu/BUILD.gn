@@ -197,8 +197,6 @@ component("gpu") {
       "android/texture_owner.h",
       "android/texture_pool.cc",
       "android/texture_pool.h",
-      "android/texture_wrapper.cc",
-      "android/texture_wrapper.h",
       "android/video_frame_factory.h",
       "android/video_frame_factory_impl.cc",
       "android/video_frame_factory_impl.h",
