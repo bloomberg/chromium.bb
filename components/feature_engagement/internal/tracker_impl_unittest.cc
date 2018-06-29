@@ -4,6 +4,7 @@
 
 #include "components/feature_engagement/internal/tracker_impl.h"
 
+#include <map>
 #include <memory>
 #include <utility>
 
@@ -458,7 +459,7 @@ TEST_F(TrackerImplTest, TestInitialization) {
   EXPECT_FALSE(tracker_->IsInitialized());
 
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   EXPECT_FALSE(callback.invoked());
 
@@ -477,11 +478,11 @@ TEST_F(TrackerImplTest, TestInitializationMultipleCallbacks) {
   StoringInitializedCallback callback2;
 
   tracker_->AddOnInitializedCallback(
-      base::Bind(&StoringInitializedCallback::OnInitialized,
-                 base::Unretained(&callback1)));
+      base::BindOnce(&StoringInitializedCallback::OnInitialized,
+                     base::Unretained(&callback1)));
   tracker_->AddOnInitializedCallback(
-      base::Bind(&StoringInitializedCallback::OnInitialized,
-                 base::Unretained(&callback2)));
+      base::BindOnce(&StoringInitializedCallback::OnInitialized,
+                     base::Unretained(&callback2)));
   EXPECT_FALSE(callback1.invoked());
   EXPECT_FALSE(callback2.invoked());
 
@@ -504,7 +505,7 @@ TEST_F(TrackerImplTest, TestAddingCallbackAfterInitFinished) {
   EXPECT_TRUE(tracker_->IsInitialized());
 
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   EXPECT_FALSE(callback.invoked());
 
@@ -523,8 +524,8 @@ TEST_F(TrackerImplTest, TestAddingCallbackBeforeAndAfterInitFinished) {
 
   StoringInitializedCallback callback_before;
   tracker_->AddOnInitializedCallback(
-      base::Bind(&StoringInitializedCallback::OnInitialized,
-                 base::Unretained(&callback_before)));
+      base::BindOnce(&StoringInitializedCallback::OnInitialized,
+                     base::Unretained(&callback_before)));
   EXPECT_FALSE(callback_before.invoked());
 
   base::RunLoop().RunUntilIdle();
@@ -533,8 +534,8 @@ TEST_F(TrackerImplTest, TestAddingCallbackBeforeAndAfterInitFinished) {
 
   StoringInitializedCallback callback_after;
   tracker_->AddOnInitializedCallback(
-      base::Bind(&StoringInitializedCallback::OnInitialized,
-                 base::Unretained(&callback_after)));
+      base::BindOnce(&StoringInitializedCallback::OnInitialized,
+                     base::Unretained(&callback_after)));
   EXPECT_FALSE(callback_after.invoked());
 
   base::RunLoop().RunUntilIdle();
@@ -546,7 +547,7 @@ TEST_F(FailingStoreInitTrackerImplTest, TestFailingInitialization) {
   EXPECT_FALSE(tracker_->IsInitialized());
 
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   EXPECT_FALSE(callback.invoked());
 
@@ -565,11 +566,11 @@ TEST_F(FailingStoreInitTrackerImplTest,
   StoringInitializedCallback callback1;
   StoringInitializedCallback callback2;
   tracker_->AddOnInitializedCallback(
-      base::Bind(&StoringInitializedCallback::OnInitialized,
-                 base::Unretained(&callback1)));
+      base::BindOnce(&StoringInitializedCallback::OnInitialized,
+                     base::Unretained(&callback1)));
   tracker_->AddOnInitializedCallback(
-      base::Bind(&StoringInitializedCallback::OnInitialized,
-                 base::Unretained(&callback2)));
+      base::BindOnce(&StoringInitializedCallback::OnInitialized,
+                     base::Unretained(&callback2)));
   EXPECT_FALSE(callback1.invoked());
   EXPECT_FALSE(callback2.invoked());
 
@@ -587,7 +588,7 @@ TEST_F(FailingAvailabilityModelInitTrackerImplTest, AvailabilityModelNotReady) {
   EXPECT_FALSE(tracker_->IsInitialized());
 
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   EXPECT_FALSE(callback.invoked());
 
@@ -602,7 +603,7 @@ TEST_F(FailingAvailabilityModelInitTrackerImplTest, AvailabilityModelNotReady) {
 TEST_F(TrackerImplTest, TestTriggering) {
   // Ensure all initialization is finished.
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   base::UserActionTester user_action_tester;
@@ -671,7 +672,7 @@ TEST_F(TrackerImplTest, TestTriggering) {
 TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {
   // Ensure all initialization is finished.
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   base::UserActionTester user_action_tester;
@@ -720,7 +721,7 @@ TEST_F(TrackerImplTest, TestTrackingOnlyTriggering) {
 TEST_F(TrackerImplTest, TestWouldTriggerInspection) {
   // Ensure all initialization is finished.
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   base::UserActionTester user_action_tester;
@@ -782,7 +783,7 @@ TEST_F(TrackerImplTest, TestTriggerStateInspection) {
 
   // Ensure all initialization is finished.
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   base::UserActionTester user_action_tester;
@@ -823,7 +824,7 @@ TEST_F(TrackerImplTest, TestTriggerStateInspection) {
 
 TEST_F(TrackerImplTest, TestNotifyEvent) {
   StoringInitializedCallback callback;
-  tracker_->AddOnInitializedCallback(base::Bind(
+  tracker_->AddOnInitializedCallback(base::BindOnce(
       &StoringInitializedCallback::OnInitialized, base::Unretained(&callback)));
   base::RunLoop().RunUntilIdle();
   base::UserActionTester user_action_tester;

@@ -162,9 +162,9 @@ void TrackerImplAndroid::AddOnInitializedCallback(
   // Disambiguate RunCallbackAndroid to get the reference to the bool version.
   void (*runBoolCallback)(const base::android::JavaRef<jobject>&, bool) =
       &base::android::RunCallbackAndroid;
-  tracker_impl_->AddOnInitializedCallback(
-      base::Bind(runBoolCallback,
-                 base::android::ScopedJavaGlobalRef<jobject>(j_callback_obj)));
+  tracker_impl_->AddOnInitializedCallback(base::BindOnce(
+      runBoolCallback,
+      base::android::ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 
 DisplayLockHandleAndroid::DisplayLockHandleAndroid(
