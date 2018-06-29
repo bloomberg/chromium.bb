@@ -776,6 +776,13 @@ fbdev_backend_create(struct weston_compositor *compositor,
 {
 	struct fbdev_backend *backend;
 	const char *seat_id = default_seat;
+	const char *session_seat;
+
+	session_seat = getenv("XDG_SEAT");
+	if (session_seat)
+		seat_id = session_seat;
+	if (param->seat_id)
+		seat_id = param->seat_id;
 
 	weston_log("initializing fbdev backend\n");
 
@@ -800,7 +807,7 @@ fbdev_backend_create(struct weston_compositor *compositor,
 	wl_signal_add(&compositor->session_signal,
 		      &backend->session_listener);
 	compositor->launcher =
-		weston_launcher_connect(compositor, param->tty, "seat0", false);
+		weston_launcher_connect(compositor, param->tty, seat_id, false);
 	if (!compositor->launcher) {
 		weston_log("fatal: fbdev backend should be run using "
 			   "weston-launch binary, or your system should "
@@ -846,6 +853,7 @@ config_init_to_defaults(struct weston_fbdev_backend_config *config)
 	 * udev, rather than passing a device node in as a parameter. */
 	config->tty = 0; /* default to current tty */
 	config->device = "/dev/fb0"; /* default frame buffer */
+	config->seat_id = NULL;
 }
 
 WL_EXPORT int

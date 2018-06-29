@@ -525,6 +525,7 @@ usage(int error_code)
 		"Options for fbdev-backend.so:\n\n"
 		"  --tty=TTY\t\tThe tty to use\n"
 		"  --device=DEVICE\tThe framebuffer device to use\n"
+		"  --seat=SEAT\t\tThe seat that weston should run on, instead of the seat defined in XDG_SEAT\n"
 		"\n");
 #endif
 
@@ -2059,6 +2060,7 @@ load_fbdev_backend(struct weston_compositor *c,
 	const struct weston_option fbdev_options[] = {
 		{ WESTON_OPTION_INTEGER, "tty", 0, &config.tty },
 		{ WESTON_OPTION_STRING, "device", 0, &config.device },
+		{ WESTON_OPTION_STRING, "seat", 0, &config.seat_id },
 	};
 
 	parse_options(fbdev_options, ARRAY_LENGTH(fbdev_options), argc, argv);

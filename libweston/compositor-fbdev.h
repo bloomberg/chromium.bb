@@ -52,6 +52,15 @@ struct weston_fbdev_backend_config {
 	 */
 	void (*configure_device)(struct weston_compositor *compositor,
 				 struct libinput_device *device);
+
+	/** The seat to be used for input and output.
+	 *
+	 * If seat_id is NULL, the seat is taken from XDG_SEAT environment
+	 * variable. If neither is set, "seat0" is used. The backend will
+	 * take ownership of the seat_id pointer and will free it on
+	 * backend destruction.
+	 */
+	char *seat_id;
 };
 
 #ifdef  __cplusplus
