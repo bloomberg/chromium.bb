@@ -54,7 +54,7 @@ class ChildAccountService : public KeyedService,
   // KeyedService:
   void Shutdown() override;
 
-  void AddChildStatusReceivedCallback(const base::Closure& callback);
+  void AddChildStatusReceivedCallback(base::OnceClosure callback);
 
   // Returns whether or not the user is authenticated on Google web properties
   // based on the state of the cookie jar. Returns AuthState::PENDING if
@@ -121,7 +121,7 @@ class ChildAccountService : public KeyedService,
   base::CallbackList<void()> google_auth_state_observers_;
 
   // Callbacks to run when the user status becomes known.
-  std::vector<base::Closure> status_received_callback_list_;
+  std::vector<base::OnceClosure> status_received_callback_list_;
 
   base::WeakPtrFactory<ChildAccountService> weak_ptr_factory_;
 
