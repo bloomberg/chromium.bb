@@ -831,7 +831,7 @@ void NGBoxFragmentPainter::PaintTextClipMask(GraphicsContext& context,
   }
 }
 
-LayoutRect NGBoxFragmentPainter::AdjustForScrolledContent(
+LayoutRect NGBoxFragmentPainter::AdjustRectForScrolledContent(
     const PaintInfo& paint_info,
     const BoxPainterBase::FillLayerInfo& info,
     const LayoutRect& rect) {

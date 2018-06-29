@@ -41,9 +41,9 @@ class BoxModelObjectPainter : public BoxPainterBase {
                          const IntRect& mask_rect,
                          const LayoutPoint& paint_offset,
                          bool object_has_multiple_boxes) override;
-  LayoutRect AdjustForScrolledContent(const PaintInfo&,
-                                      const BoxPainterBase::FillLayerInfo&,
-                                      const LayoutRect&) override;
+  LayoutRect AdjustRectForScrolledContent(const PaintInfo&,
+                                          const BoxPainterBase::FillLayerInfo&,
+                                          const LayoutRect&) override;
 
  private:
   const LayoutBoxModelObject& box_model_;

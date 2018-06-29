@@ -219,12 +219,15 @@ class PLATFORM_EXPORT GraphicsContext {
       const FloatRect& src_rect,
       SkBlendMode = SkBlendMode::kSrcOver,
       RespectImageOrientationEnum = kDoNotRespectImageOrientation);
+  // Used for background image
   void DrawTiledImage(Image*,
-                      const FloatRect& dest_rect,
-                      const FloatPoint& src_point,
+                      const FloatSize& unsnapped_subset_size,
+                      const FloatRect& snapped_paint_rect,
+                      const FloatPoint& unsnapped_phase,
                       const FloatSize& tile_size,
                       SkBlendMode = SkBlendMode::kSrcOver,
                       const FloatSize& repeat_spacing = FloatSize());
+  // Used for border image
   void DrawTiledImage(Image*,
                       const FloatRect& dest_rect,
                       const FloatRect& src_rect,

@@ -1650,15 +1650,15 @@ bool LayoutBox::GetBackgroundPaintedExtent(LayoutRect& painted_extent) const {
   }
 
   BackgroundImageGeometry geometry(*this);
-  // TODO(jchaffraix): This function should be rethought as it's called during
+  // TODO(schenney): This function should be rethought as it's called during
   // and outside of the paint phase. Potentially returning different results at
-  // different phases.
+  // different phases. crbug.com/732934
   geometry.Calculate(nullptr, PaintPhase::kBlockBackground,
                      kGlobalPaintNormalPhase, Style()->BackgroundLayers(),
                      background_rect);
   if (geometry.HasNonLocalGeometry())
     return false;
-  painted_extent = LayoutRect(geometry.DestRect());
+  painted_extent = LayoutRect(geometry.SnappedDestRect());
   return true;
 }
 
