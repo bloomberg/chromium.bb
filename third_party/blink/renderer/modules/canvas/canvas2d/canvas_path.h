@@ -32,6 +32,7 @@
 
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/platform/graphics/path.h"
+#include "third_party/blink/renderer/platform/transforms/affine_transform.h"
 
 namespace blink {
 
@@ -76,6 +77,9 @@ class MODULES_EXPORT CanvasPath {
   void rect(float x, float y, float width, float height);
 
   virtual bool IsTransformInvertible() const { return true; }
+  virtual AffineTransform Transform() const {
+    return AffineTransform(1, 0, 0, 1, 0, 0);
+  }
 
  protected:
   CanvasPath() { path_.SetIsVolatile(true); }
