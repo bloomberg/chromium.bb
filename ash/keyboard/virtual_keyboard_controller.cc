@@ -94,9 +94,13 @@ VirtualKeyboardController::VirtualKeyboardController()
       &VirtualKeyboardController::ForceShowKeyboardWithKeyset,
       base::Unretained(this),
       chromeos::input_method::mojom::ImeKeyset::kEmoji));
+
+  keyboard::KeyboardController::Get()->AddObserver(this);
 }
 
 VirtualKeyboardController::~VirtualKeyboardController() {
+  keyboard::KeyboardController::Get()->RemoveObserver(this);
+
   if (Shell::Get()->tablet_mode_controller())
     Shell::Get()->tablet_mode_controller()->RemoveObserver(this);
   if (Shell::Get()->session_controller())
@@ -257,9 +261,6 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   // If the virtual keyboard is enabled, show the keyboard directly.
   auto* keyboard_controller = keyboard::KeyboardController::Get();
   if (keyboard_controller->enabled()) {
-    // Observe the keyboard closing in order to reset any keysets.
-    if (!keyboard_controller->HasObserver(this))
-      keyboard_controller->AddObserver(this);
     keyboard_controller->ShowKeyboard(false /* locked */);
     return;
   }
@@ -285,9 +286,6 @@ void VirtualKeyboardController::ForceShowKeyboard() {
   keyboard_controller = keyboard::KeyboardController::Get();
   DCHECK(keyboard_controller->enabled());
 
-  // Observe the keyboard closing in order to disable the accessibility
-  // keyboard again and reset any keysets.
-  keyboard_controller->AddObserver(this);
   keyboard_controller->ShowKeyboard(false);
 }
 
@@ -299,10 +297,6 @@ void VirtualKeyboardController::OnKeyboardDisabled() {
 void VirtualKeyboardController::OnKeyboardHidden() {
   Shell::Get()->ime_controller()->OverrideKeyboardKeyset(
       chromeos::input_method::mojom::ImeKeyset::kNone);
-
-  auto* keyboard_controller = keyboard::KeyboardController::Get();
-  if (keyboard_controller->enabled())
-    keyboard_controller->RemoveObserver(this);
 
   if (keyboard_enabled_using_accessibility_prefs_) {
     keyboard_enabled_using_accessibility_prefs_ = false;
