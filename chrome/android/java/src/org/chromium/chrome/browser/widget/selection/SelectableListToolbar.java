@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.graphics.drawable.Drawable;
+import android.os.Build;
 import android.support.annotation.CallSuper;
 import android.support.annotation.StringRes;
 import android.support.v4.view.GravityCompat;
@@ -26,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.Window;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -99,7 +101,8 @@ public class SelectableListToolbar<E>
     private TintedImageButton mClearTextButton;
     private SearchDelegate mSearchDelegate;
     private boolean mSelectableListHasItems;
-    private boolean mIsVrEnabled = false;
+    private boolean mIsVrEnabled;
+    private boolean mUpdateStatusBarColor;
 
     protected NumberRollView mNumberRollView;
     private DrawerLayout mDrawerLayout;
@@ -168,14 +171,20 @@ public class SelectableListToolbar<E>
      * @param normalBackgroundColorResId The resource id of the color to use as the background color
      *                                   when selection is not enabled. If null the default appbar
      *                                   background color will be used.
+     * @param updateStatusBarColor Whether the status bar color should be updated to match the
+     *                             toolbar color. If true, the status bar will only be updated if
+     *                             the current device fully supports theming and is on Android M+.
      */
     public void initialize(SelectionDelegate<E> delegate, int titleResId,
             @Nullable DrawerLayout drawerLayout, int normalGroupResId, int selectedGroupResId,
-            @Nullable Integer normalBackgroundColorResId) {
+            @Nullable Integer normalBackgroundColorResId, boolean updateStatusBarColor) {
         mTitleResId = titleResId;
         mDrawerLayout = drawerLayout;
         mNormalGroupResId = normalGroupResId;
         mSelectedGroupResId = selectedGroupResId;
+        mUpdateStatusBarColor = updateStatusBarColor
+                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
+                && !UiUtils.isSystemUiThemingDisabled();
 
         mSelectionDelegate = delegate;
         mSelectionDelegate.addObserver(this);
@@ -624,6 +633,7 @@ public class SelectableListToolbar<E>
         setNavigationButton(NAVIGATION_BUTTON_BACK);
         if (FeatureUtilities.isChromeModernDesignEnabled()) {
             setBackgroundResource(R.drawable.search_toolbar_modern_bg);
+            updateStatusBarColor(mSearchBackgroundColor);
         } else {
             setBackgroundColor(mSearchBackgroundColor);
         }
@@ -735,6 +745,25 @@ public class SelectableListToolbar<E>
         // The super class adds an AppCompatTextView for the title which not focusable by default.
         // Set TextView children to focusable so the title can gain focus in accessibility mode.
         makeTextViewChildrenAccessible();
+    }
+
+    @Override
+    public void setBackgroundColor(int color) {
+        super.setBackgroundColor(color);
+
+        updateStatusBarColor(color);
+    }
+
+    private void updateStatusBarColor(int color) {
+        if (!mUpdateStatusBarColor) return;
+
+        Context context = getContext();
+        if (!(context instanceof Activity)) return;
+
+        Window window = ((Activity) context).getWindow();
+        ApiCompatibilityUtils.setStatusBarColor(window, color);
+        ApiCompatibilityUtils.setStatusBarIconColor(window.getDecorView().getRootView(),
+                !ColorUtils.shouldUseLightForegroundOnBackground(color));
     }
 
     @VisibleForTesting
