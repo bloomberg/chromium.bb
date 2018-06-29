@@ -219,3 +219,90 @@ TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {
   EXPECT_EQ(0, contents_max_width);
   EXPECT_EQ(0, description_max_width);
 }
+
+// Makes sure focus remains on the tab switch button when nothing changes,
+// and leaves when it does. Exercises the ratcheting logic in
+// OmniboxPopupModel::OnResultChanged().
+TEST_F(OmniboxPopupModelTest, TestFocusFixing) {
+  ACMatches matches;
+  AutocompleteMatch match(nullptr, 1000, false,
+                          AutocompleteMatchType::URL_WHAT_YOU_TYPED);
+  match.contents = base::ASCIIToUTF16("match1.com");
+  match.destination_url = GURL("http://match1.com");
+  match.allowed_to_be_default_match = true;
+  match.has_tab_match = true;
+  matches.push_back(match);
+
+  auto* result = &model()->autocomplete_controller()->result_;
+  AutocompleteInput input(base::UTF8ToUTF16("match"),
+                          metrics::OmniboxEventProto::NTP,
+                          TestSchemeClassifier());
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  popup_model()->SetSelectedLine(0, true, false);
+  // The default state should be unfocused.
+  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
+
+  // Focus the selection.
+  popup_model()->SetSelectedLine(0, false, false);
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  EXPECT_EQ(OmniboxPopupModel::TAB_SWITCH,
+            popup_model()->selected_line_state());
+
+  // Adding a match at end won't change that we selected first suggestion, so
+  // shouldn't change focused state.
+  matches[0].relevance = 999;
+  // Give it a different name so not deduped.
+  matches[0].contents = base::ASCIIToUTF16("match2.com");
+  matches[0].destination_url = GURL("http://match2.com");
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(OmniboxPopupModel::TAB_SWITCH,
+            popup_model()->selected_line_state());
+
+  // Changing selection should change focused state.
+  popup_model()->SetSelectedLine(1, false, false);
+  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
+
+  // Changing selection to same selection might change state.
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  // Letting routine filter selecting same line should not change it.
+  popup_model()->SetSelectedLine(1, false, false);
+  EXPECT_EQ(OmniboxPopupModel::TAB_SWITCH,
+            popup_model()->selected_line_state());
+  // Forcing routine to handle selecting same line should change it.
+  popup_model()->SetSelectedLine(1, false, true);
+  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
+
+  // Adding a match at end will reset selection to first, so should change
+  // selected line, and thus focus.
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  matches[0].relevance = 999;
+  matches[0].contents = base::ASCIIToUTF16("match3.com");
+  matches[0].destination_url = GURL("http://match3.com");
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(0U, popup_model()->selected_line());
+  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
+
+  // Prepending a match won't change selection, but since URL is different,
+  // should clear the focus state.
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  matches[0].relevance = 1100;
+  matches[0].contents = base::ASCIIToUTF16("match4.com");
+  matches[0].destination_url = GURL("http://match4.com");
+  result->AppendMatches(input, matches);
+  result->SortAndCull(input, nullptr);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(0U, popup_model()->selected_line());
+  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
+
+  // Selecting |kNoMatch| should clear focus.
+  popup_model()->SetSelectedLineState(OmniboxPopupModel::TAB_SWITCH);
+  popup_model()->SetSelectedLine(OmniboxPopupModel::kNoMatch, false, false);
+  popup_model()->OnResultChanged();
+  EXPECT_EQ(OmniboxPopupModel::NORMAL, popup_model()->selected_line_state());
+}

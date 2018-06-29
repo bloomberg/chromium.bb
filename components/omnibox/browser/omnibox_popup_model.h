@@ -169,6 +169,11 @@ class OmniboxPopupModel {
   // (if TAB_SWITCH) is selected.
   LineState selected_line_state_;
 
+  // When a result changes, this informs of the URL in the previously selected
+  // suggestion whose tab switch button was focused, so that we may compare
+  // if equal.
+  GURL old_focused_url_;
+
   // The user has manually selected a match.
   bool has_selected_match_;
 
