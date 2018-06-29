@@ -383,7 +383,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 180;
     case CSSPropertyAliasWebkitBackgroundSize:
       return 181;
-    case CSSPropertyWebkitBorderAfter:
+    case CSSPropertyAliasWebkitBorderAfter:
       return 182;
     case CSSPropertyAliasWebkitBorderAfterColor:
       return 183;
@@ -391,7 +391,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 184;
     case CSSPropertyAliasWebkitBorderAfterWidth:
       return 185;
-    case CSSPropertyWebkitBorderBefore:
+    case CSSPropertyAliasWebkitBorderBefore:
       return 186;
     case CSSPropertyAliasWebkitBorderBeforeColor:
       return 187;
@@ -399,7 +399,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 188;
     case CSSPropertyAliasWebkitBorderBeforeWidth:
       return 189;
-    case CSSPropertyWebkitBorderEnd:
+    case CSSPropertyAliasWebkitBorderEnd:
       return 190;
     case CSSPropertyAliasWebkitBorderEndColor:
       return 191;
@@ -414,7 +414,7 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 196;
     case CSSPropertyAliasWebkitBorderRadius:
       return 197;
-    case CSSPropertyWebkitBorderStart:
+    case CSSPropertyAliasWebkitBorderStart:
       return 198;
     case CSSPropertyAliasWebkitBorderStartColor:
       return 199;
@@ -1178,6 +1178,14 @@ int UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(
       return 612;
     case CSSPropertyBorderInlineStartWidth:
       return 613;
+    case CSSPropertyBorderBlockStart:
+      return 614;
+    case CSSPropertyBorderBlockEnd:
+      return 615;
+    case CSSPropertyBorderInlineStart:
+      return 616;
+    case CSSPropertyBorderInlineEnd:
+      return 617;
     // 1. Add new features above this line (don't change the assigned numbers of
     // the existing items).
     // 2. Update kMaximumCSSSampleId (defined in

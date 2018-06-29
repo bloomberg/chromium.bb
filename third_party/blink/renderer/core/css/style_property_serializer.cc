@@ -433,6 +433,14 @@ String StylePropertySerializer::SerializeShorthand(
       return GetShorthandValue(borderBottomShorthand());
     case CSSPropertyBorderLeft:
       return GetShorthandValue(borderLeftShorthand());
+    case CSSPropertyBorderBlockStart:
+      return GetShorthandValue(borderBlockStartShorthand());
+    case CSSPropertyBorderBlockEnd:
+      return GetShorthandValue(borderBlockEndShorthand());
+    case CSSPropertyBorderInlineStart:
+      return GetShorthandValue(borderInlineStartShorthand());
+    case CSSPropertyBorderInlineEnd:
+      return GetShorthandValue(borderInlineEndShorthand());
     case CSSPropertyOutline:
       return GetShorthandValue(outlineShorthand());
     case CSSPropertyBorderColor:

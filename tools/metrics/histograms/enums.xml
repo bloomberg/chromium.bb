@@ -29448,15 +29448,15 @@ Called by update_use_counter_css.py.-->
   <int value="179" label="webkit-background-composite"/>
   <int value="180" label="alias-webkit-background-origin"/>
   <int value="181" label="alias-webkit-background-size"/>
-  <int value="182" label="webkit-border-after"/>
+  <int value="182" label="alias-webkit-border-after"/>
   <int value="183" label="alias-webkit-border-after-color"/>
   <int value="184" label="alias-webkit-border-after-style"/>
   <int value="185" label="alias-webkit-border-after-width"/>
-  <int value="186" label="webkit-border-before"/>
+  <int value="186" label="alias-webkit-border-before"/>
   <int value="187" label="alias-webkit-border-before-color"/>
   <int value="188" label="alias-webkit-border-before-style"/>
   <int value="189" label="alias-webkit-border-before-width"/>
-  <int value="190" label="webkit-border-end"/>
+  <int value="190" label="alias-webkit-border-end"/>
   <int value="191" label="alias-webkit-border-end-color"/>
   <int value="192" label="alias-webkit-border-end-style"/>
   <int value="193" label="alias-webkit-border-end-width"/>
@@ -29464,7 +29464,7 @@ Called by update_use_counter_css.py.-->
   <int value="195" label="webkit-border-horizontal-spacing"/>
   <int value="196" label="webkit-border-image"/>
   <int value="197" label="alias-webkit-border-radius"/>
-  <int value="198" label="webkit-border-start"/>
+  <int value="198" label="alias-webkit-border-start"/>
   <int value="199" label="alias-webkit-border-start-color"/>
   <int value="200" label="alias-webkit-border-start-style"/>
   <int value="201" label="alias-webkit-border-start-width"/>
@@ -29880,6 +29880,10 @@ Called by update_use_counter_css.py.-->
   <int value="611" label="border-inline-start-color"/>
   <int value="612" label="border-inline-start-style"/>
   <int value="613" label="border-inline-start-width"/>
+  <int value="614" label="border-block-start"/>
+  <int value="615" label="border-block-end"/>
+  <int value="616" label="border-inline-start"/>
+  <int value="617" label="border-inline-end"/>
 </enum>
 
 <enum name="MappedEditingCommands">

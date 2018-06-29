@@ -4520,6 +4520,30 @@
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
     },
     {
+      name: "border-block-end",
+      longhands: [
+        "border-block-end-width", "border-block-end-style",
+        "border-block-end-color"
+      ],
+      property_methods: ["ParseShorthand"],
+      direction_aware_options: {
+        logical_side: "after",
+        shorthand_for_physical_side: "BorderDirections",
+      },
+    },
+    {
+      name: "border-block-start",
+      longhands: [
+        "border-block-start-width", "border-block-start-style",
+        "border-block-start-color"
+      ],
+      property_methods: ["ParseShorthand"],
+      direction_aware_options: {
+        logical_side: "before",
+        shorthand_for_physical_side: "BorderDirections",
+      },
+    },
+    {
       name: "border-bottom",
       longhands: [
         "border-bottom-width", "border-bottom-style", "border-bottom-color"
@@ -4541,6 +4565,30 @@
         "border-image-outset", "border-image-repeat"
       ],
       property_methods: ["ParseShorthand", "CSSValueFromComputedStyleInternal"],
+    },
+    {
+      name: "border-inline-end",
+      longhands: [
+        "border-inline-end-width", "border-inline-end-style",
+        "border-inline-end-color"
+      ],
+      property_methods: ["ParseShorthand"],
+      direction_aware_options: {
+        logical_side: "end",
+        shorthand_for_physical_side: "BorderDirections",
+      },
+    },
+    {
+      name: "border-inline-start",
+      longhands: [
+        "border-inline-start-width", "border-inline-start-style",
+        "border-inline-start-color"
+      ],
+      property_methods: ["ParseShorthand"],
+      direction_aware_options: {
+        logical_side: "start",
+        shorthand_for_physical_side: "BorderDirections",
+      },
     },
     {
       name: "border-left",
@@ -4808,51 +4856,19 @@
     },
     {
       name: "-webkit-border-after",
-      longhands: [
-        "border-block-end-width", "border-block-end-style",
-        "border-block-end-color"
-      ],
-      property_methods: ["ParseShorthand"],
-      direction_aware_options: {
-        logical_side: "after",
-        shorthand_for_physical_side: "BorderDirections",
-      },
+      alias_for: "border-block-end",
     },
     {
       name: "-webkit-border-before",
-      longhands: [
-        "border-block-start-width", "border-block-start-style",
-        "border-block-start-color"
-      ],
-      property_methods: ["ParseShorthand"],
-      direction_aware_options: {
-        logical_side: "before",
-        shorthand_for_physical_side: "BorderDirections",
-      },
+      alias_for: "border-block-start",
     },
     {
       name: "-webkit-border-end",
-      longhands: [
-        "border-inline-end-width", "border-inline-end-style",
-        "border-inline-end-color"
-      ],
-      property_methods: ["ParseShorthand"],
-      direction_aware_options: {
-        logical_side: "end",
-        shorthand_for_physical_side: "BorderDirections",
-      },
+      alias_for: "border-inline-end",
     },
     {
       name: "-webkit-border-start",
-      longhands: [
-        "border-inline-start-width", "border-inline-start-style",
-        "border-inline-start-color"
-      ],
-      property_methods: ["ParseShorthand"],
-      direction_aware_options: {
-        logical_side: "start",
-        shorthand_for_physical_side: "BorderDirections",
-      },
+      alias_for: "border-inline-start",
     },
     {
       name: "-webkit-column-break-after",

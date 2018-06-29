@@ -1352,9 +1352,11 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyBackgroundRepeatX:
     case CSSPropertyBackgroundRepeatY:
     case CSSPropertyBackgroundSize:
+    case CSSPropertyBorderBlockEnd:
     case CSSPropertyBorderBlockEndColor:
     case CSSPropertyBorderBlockEndStyle:
     case CSSPropertyBorderBlockEndWidth:
+    case CSSPropertyBorderBlockStart:
     case CSSPropertyBorderBlockStartColor:
     case CSSPropertyBorderBlockStartStyle:
     case CSSPropertyBorderBlockStartWidth:
@@ -1368,9 +1370,11 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyBorderImageSlice:
     case CSSPropertyBorderImageSource:
     case CSSPropertyBorderImageWidth:
+    case CSSPropertyBorderInlineEnd:
     case CSSPropertyBorderInlineEndColor:
     case CSSPropertyBorderInlineEndStyle:
     case CSSPropertyBorderInlineEndWidth:
+    case CSSPropertyBorderInlineStart:
     case CSSPropertyBorderInlineStartColor:
     case CSSPropertyBorderInlineStartStyle:
     case CSSPropertyBorderInlineStartWidth:
@@ -1426,12 +1430,8 @@ static inline bool IsValidFirstLetterStyleProperty(CSSPropertyID id) {
     case CSSPropertyTextTransform:
     case CSSPropertyTextUnderlinePosition:
     case CSSPropertyVerticalAlign:
-    case CSSPropertyWebkitBorderAfter:
-    case CSSPropertyWebkitBorderBefore:
-    case CSSPropertyWebkitBorderEnd:
     case CSSPropertyWebkitBorderHorizontalSpacing:
     case CSSPropertyWebkitBorderImage:
-    case CSSPropertyWebkitBorderStart:
     case CSSPropertyWebkitBorderVerticalSpacing:
     case CSSPropertyWebkitFontSmoothing:
     case CSSPropertyWebkitMarginAfterCollapse:

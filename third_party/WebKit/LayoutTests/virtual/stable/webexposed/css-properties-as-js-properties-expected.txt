@@ -32,9 +32,11 @@ backgroundSize
 baselineShift
 blockSize
 border
+borderBlockEnd
 borderBlockEndColor
 borderBlockEndStyle
 borderBlockEndWidth
+borderBlockStart
 borderBlockStartColor
 borderBlockStartStyle
 borderBlockStartWidth
@@ -52,9 +54,11 @@ borderImageRepeat
 borderImageSlice
 borderImageSource
 borderImageWidth
+borderInlineEnd
 borderInlineEndColor
 borderInlineEndStyle
 borderInlineEndWidth
+borderInlineStart
 borderInlineStartColor
 borderInlineStartStyle
 borderInlineStartWidth
