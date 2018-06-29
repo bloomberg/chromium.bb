@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "base/memory/ptr_util.h"
 #include "base/values.h"
-#include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
+#include "build/build_config.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/policy_constants.h"
@@ -12,10 +13,11 @@
 namespace policy {
 
 void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
+#if defined(OS_ANDROID)
   policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
                   POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
                   base::WrapUnique(new base::Value(false)), nullptr);
-#if defined(OS_CHROMEOS)
+#elif defined(OS_CHROMEOS)
   SetEnterpriseUsersDefaults(policy_map);
 #endif
 }
