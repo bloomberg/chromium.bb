@@ -17,6 +17,7 @@ namespace invalidation {
 // An identity provider implementation that's backed by
 // ProfileOAuth2TokenService and SigninManager.
 class ProfileIdentityProvider : public IdentityProvider,
+                                public OAuth2TokenService::Observer,
                                 public SigninManagerBase::Observer {
  public:
   ProfileIdentityProvider(SigninManagerBase* signin_manager,
@@ -42,13 +43,16 @@ class ProfileIdentityProvider : public IdentityProvider,
       ActiveAccountAccessTokenCallback callback) override;
   void InvalidateAccessToken(const OAuth2TokenService::ScopeSet& scopes,
                              const std::string& access_token) override;
-  OAuth2TokenService* GetTokenService() override;
 
   // SigninManagerBase::Observer:
   void GoogleSigninSucceeded(const std::string& account_id,
                              const std::string& username) override;
   void GoogleSignedOut(const std::string& account_id,
                        const std::string& username) override;
+
+  // OAuth2TokenService::Observer:
+  void OnRefreshTokenAvailable(const std::string& account_id) override;
+  void OnRefreshTokenRevoked(const std::string& account_id) override;
 
  private:
   SigninManagerBase* const signin_manager_;
