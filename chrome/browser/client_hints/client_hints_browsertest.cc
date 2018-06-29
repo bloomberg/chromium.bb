@@ -132,6 +132,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
   ClientHintsBrowserTest()
       : http_server_(net::EmbeddedTestServer::TYPE_HTTP),
         https_server_(net::EmbeddedTestServer::TYPE_HTTPS),
+        https_cross_origin_server_(net::EmbeddedTestServer::TYPE_HTTPS),
         expect_client_hints_on_main_frame_(false),
         expect_client_hints_on_subresources_(false),
         count_client_hints_headers_seen_(0),
@@ -139,16 +140,27 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
     http_server_.ServeFilesFromSourceDirectory("chrome/test/data/client_hints");
     https_server_.ServeFilesFromSourceDirectory(
         "chrome/test/data/client_hints");
+    https_cross_origin_server_.ServeFilesFromSourceDirectory(
+        "chrome/test/data/client_hints");
 
     http_server_.RegisterRequestMonitor(
-        base::Bind(&ClientHintsBrowserTest::MonitorResourceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
+                            base::Unretained(this)));
     https_server_.RegisterRequestMonitor(
-        base::Bind(&ClientHintsBrowserTest::MonitorResourceRequest,
-                   base::Unretained(this)));
+        base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
+                            base::Unretained(this)));
+    https_cross_origin_server_.RegisterRequestMonitor(
+        base::BindRepeating(&ClientHintsBrowserTest::MonitorResourceRequest,
+                            base::Unretained(this)));
+    https_server_.RegisterRequestHandler(base::BindRepeating(
+        &ClientHintsBrowserTest::RequestHandlerToFetchCrossOriginIframe,
+        base::Unretained(this)));
 
     EXPECT_TRUE(http_server_.Start());
     EXPECT_TRUE(https_server_.Start());
+    EXPECT_TRUE(https_cross_origin_server_.Start());
+
+    EXPECT_NE(https_server_.base_url(), https_cross_origin_server_.base_url());
 
     accept_ch_with_lifetime_http_local_url_ =
         http_server_.GetURL("/accept_ch_with_lifetime.html");
@@ -314,7 +326,46 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
+  std::string intercept_iframe_resource_;
+
  private:
+  // Intercepts only the main frame requests that contain
+  // |intercept_iframe_resource_| in the resource path. The intercepted requests
+  // are served an HTML file that fetches an iframe from a cross-origin HTTPS
+  // server.
+  std::unique_ptr<net::test_server::HttpResponse>
+  RequestHandlerToFetchCrossOriginIframe(
+      const net::test_server::HttpRequest& request) {
+    if (intercept_iframe_resource_.empty())
+      return nullptr;
+
+    // Check if it's a main frame request.
+    if (request.relative_url.find(".html") == std::string::npos)
+      return nullptr;
+
+    if (request.relative_url.find(intercept_iframe_resource_) ==
+        std::string::npos) {
+      return nullptr;
+    }
+
+    const std::string iframe_url =
+        https_cross_origin_server_.GetURL("/accept_ch_with_lifetime.html")
+            .spec();
+
+    std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
+        new net::test_server::BasicHttpResponse());
+    http_response->set_code(net::HTTP_OK);
+    http_response->set_content_type("text/html");
+    http_response->set_content(
+        "<html>"
+        "<link rel='icon' href='data:;base64,='><head></head>"
+        "Empty file which uses link-rel to disable favicon fetches. "
+        "<iframe src='" +
+        iframe_url + "'></iframe></html>");
+
+    return std::move(http_response);
+  }
+
   // Called by |https_server_|.
   void MonitorResourceRequest(const net::test_server::HttpRequest& request) {
     bool is_main_frame_navigation =
@@ -461,6 +512,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 
   net::EmbeddedTestServer http_server_;
   net::EmbeddedTestServer https_server_;
+  net::EmbeddedTestServer https_cross_origin_server_;
   GURL accept_ch_with_lifetime_http_local_url_;
   GURL accept_ch_with_lifetime_url_;
   GURL accept_ch_without_lifetime_url_;
@@ -653,11 +705,44 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
 }
 
 // Loads a HTTPS webpage that does not request persisting of client hints.
-// An iframe loaded by the webpage requests persistence of client hints.
-// Verify that the request from the iframe is not honored, and client hints
-// preference is not persisted.
+// A same-origin iframe loaded by the webpage requests persistence of client
+// hints. Verify that the request from the iframe is honored, and client hints
+// preference is persisted.
 IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
-                       DisregardPersistenceRequestIframe) {
+                       PersistenceRequestIframe_SameOrigin) {
+  base::HistogramTester histogram_tester;
+  ContentSettingsForOneType host_settings;
+
+  HostContentSettingsMapFactory::GetForProfile(browser()->profile())
+      ->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_CLIENT_HINTS, std::string(),
+                              &host_settings);
+  EXPECT_EQ(0u, host_settings.size());
+
+  ui_test_utils::NavigateToURL(browser(),
+                               accept_ch_without_lifetime_with_iframe_url());
+
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateEventCount", 1);
+
+  content::FetchHistogramsFromChildProcesses();
+  SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
+
+  // accept_ch_without_lifetime_with_iframe_url() loads
+  // accept_ch_with_lifetime() in an iframe. The request to persist client
+  // hints from accept_ch_with_lifetime() should be persisted.
+  histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 1);
+  histogram_tester.ExpectUniqueSample("ClientHints.PersistDuration",
+                                      3600 * 1000, 1);
+}
+
+// Loads a HTTPS webpage that does not request persisting of client hints.
+// An iframe loaded by the webpage from an cross origin server requests
+// persistence of client hints.
+// Verify that the request from the cross origin iframe is not honored, and
+// client hints preference is not persisted.
+IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
+                       DisregardPersistenceRequestIframe_CrossOrigin) {
+  intercept_iframe_resource_ =
+      accept_ch_without_lifetime_with_iframe_url().path();
   base::HistogramTester histogram_tester;
   ContentSettingsForOneType host_settings;
 
@@ -675,8 +760,8 @@ IN_PROC_BROWSER_TEST_F(ClientHintsBrowserTest,
   SubprocessMetricsProvider::MergeHistogramDeltasForTesting();
 
   // accept_ch_without_lifetime_with_iframe_url() loads
-  // accept_ch_with_lifetime() in an iframe. The request to persist client
-  // hints from accept_ch_with_lifetime() should be disregarded.
+  // accept_ch_with_lifetime() in a cross origin iframe. The request to persist
+  // client hints from accept_ch_with_lifetime() should be disregarded.
   histogram_tester.ExpectTotalCount("ClientHints.UpdateSize", 0);
   histogram_tester.ExpectTotalCount("ClientHints.PersistDuration", 0);
 }

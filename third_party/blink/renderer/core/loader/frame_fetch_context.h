@@ -261,6 +261,10 @@ class CORE_EXPORT FrameFetchContext final : public BaseFetchContext {
   // JavaScript was blocked from being executed.
   bool AllowScriptFromSourceWithoutNotifying(const KURL&) const;
 
+  // Returns true if the origin of |url| is same as the origin of the top level
+  // frame's main resource.
+  bool IsFirstPartyOrigin(const KURL& url) const;
+
   Member<DocumentLoader> document_loader_;
   Member<Document> document_;
 
