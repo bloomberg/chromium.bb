@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_request_respond_with_observer.h"
 
-#include <v8.h>
 #include "third_party/blink/public/platform/modules/payments/web_payment_handler_response.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -16,6 +15,7 @@
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "v8/include/v8.h"
 
 namespace blink {
 

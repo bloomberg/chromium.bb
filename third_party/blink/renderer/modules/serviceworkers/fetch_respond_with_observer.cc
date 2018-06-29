@@ -7,7 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include <v8.h>
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "services/network/public/mojom/request_context_frame_type.mojom-blink.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_response.h"
@@ -23,6 +22,7 @@
 #include "third_party/blink/renderer/modules/serviceworkers/service_worker_global_scope_client.h"
 #include "third_party/blink/renderer/modules/serviceworkers/wait_until_observer.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "v8/include/v8.h"
 
 using blink::mojom::ServiceWorkerResponseError;
 
