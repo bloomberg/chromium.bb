@@ -99,8 +99,8 @@ class PInfo(object):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
-  # Use main repo until https://crbug.com/858925 is fixed.
-  PORTAGE_GIT_URL = 'git://anongit.gentoo.org/repo/gentoo.git'
+  PORTAGE_GIT_URL = '%s/external/github.com/gentoo/gentoo.git' % (
+      site_config.params.EXTERNAL_GOB_URL)
   GIT_REMOTE = 'origin'
   GIT_BRANCH = 'master'
   GIT_REMOTE_BRANCH = '%s/%s' % (GIT_REMOTE, GIT_BRANCH)
@@ -1912,8 +1912,6 @@ def _CreateParser():
 
 def main(argv):
   """Main function."""
-  cros_build_lib.Die('Please wait until crbug.com/858925 has been resolved')
-
   parser = _CreateParser()
   options = parser.parse_args(argv)
   # TODO: Can't freeze until options.host modification below is sorted.
