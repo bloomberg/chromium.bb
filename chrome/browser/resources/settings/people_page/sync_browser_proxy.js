@@ -225,7 +225,7 @@ cr.define('settings', function() {
 
     /** @override */
     signOut(deleteProfile) {
-      chrome.send('SyncSetupStopSyncing', [deleteProfile]);
+      chrome.send('SyncSetupSignout', [deleteProfile]);
     }
 
     /** @override */
