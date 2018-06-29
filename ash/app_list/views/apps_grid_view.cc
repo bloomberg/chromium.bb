@@ -463,8 +463,6 @@ void AppsGridView::ClearAnySelectedView() {
     selected_view_->SchedulePaint();
     selected_view_ = nullptr;
   }
-  if (suggestions_container_)
-    suggestions_container_->ClearSelectedIndex();
 }
 
 bool AppsGridView::IsSelectedView(const AppListItemView* view) const {
@@ -476,8 +474,6 @@ views::View* AppsGridView::GetSelectedView() const {
     return selected_view_;
   if (expand_arrow_view_ && expand_arrow_view_->HasFocus())
     return expand_arrow_view_;
-  if (suggestions_container_)
-    return suggestions_container_->GetSelectedView();
   return nullptr;
 }
 

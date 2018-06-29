@@ -30,8 +30,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
                        AppListViewDelegate* view_delegate);
   ~SearchResultListView() override;
 
-  bool IsResultViewSelected(const SearchResultView* result_view) const;
-
   // Helper function to get SearchResultView at given |index|.
   SearchResultView* GetResultViewAt(size_t index);
 
@@ -51,11 +49,8 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   void ListItemsRemoved(size_t start, size_t count) override;
 
   // Overridden from SearchResultContainerView:
-  void OnContainerSelected(bool from_bottom,
-                           bool directional_movement) override;
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
-  views::View* GetSelectedView() override;
   SearchResultBaseView* GetFirstResultView() override;
 
  private:
@@ -63,7 +58,6 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;
-  void UpdateSelectedIndex(int old_selected, int new_selected) override;
 
   // Overridden from views::View:
   void Layout() override;

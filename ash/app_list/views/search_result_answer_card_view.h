@@ -22,14 +22,10 @@ class APP_LIST_EXPORT SearchResultAnswerCardView
   const char* GetClassName() const override;
 
   // Overridden from SearchResultContainerView:
-  void OnContainerSelected(bool from_bottom,
-                           bool directional_movement) override;
   void NotifyFirstResultYIndex(int y_index) override {}
   int GetYSize() override;
   int DoUpdate() override;
-  void UpdateSelectedIndex(int old_selected, int new_selected) override;
   bool OnKeyPressed(const ui::KeyEvent& event) override;
-  views::View* GetSelectedView() override;
   SearchResultBaseView* GetFirstResultView() override;
 
   views::View* GetSearchAnswerContainerViewForTest() const;

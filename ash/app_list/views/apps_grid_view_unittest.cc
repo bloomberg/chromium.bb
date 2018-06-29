@@ -406,63 +406,6 @@ TEST_F(AppsGridViewTest, RemoveSelectedLastApp) {
   EXPECT_TRUE(apps_grid_view_->IsSelectedView(view));
 }
 
-// TODO(crbug.com/766807): Remove the test once the new focus model is stable.
-TEST_P(AppsGridViewTest, DISABLED_MoveSelectedOnAllAppsTiles) {
-  const int kItemsOnSecondPage = 3;
-  const int kAllAppsItems = GetTilesPerPage(0) + kItemsOnSecondPage;
-  const int kLastIndexOfFirstPage = GetTilesPerPage(0) - 1;
-  const int kFirstIndexOfLastRowFirstPage =
-      GetTilesPerPage(0) - apps_grid_view_->cols();
-  model_->PopulateApps(kAllAppsItems);
-
-  // Tests moving left from the first tile on the first page.
-  apps_grid_view_->SetSelectedView(GetItemViewAt(0));
-  SimulateKeyPress(is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT);
-  EXPECT_FALSE(apps_grid_view_->has_selected_view());
-  EXPECT_EQ(suggestions_container_->num_results() - 1,
-            suggestions_container_->selected_index());
-  suggestions_container_->ClearSelectedIndex();
-
-  // Tests moving left from the first tile on the second page.
-  apps_grid_view_->SetSelectedView(GetItemViewAt(GetTilesPerPage(0)));
-  SimulateKeyPress(is_rtl_ ? ui::VKEY_RIGHT : ui::VKEY_LEFT);
-  EXPECT_TRUE(
-      apps_grid_view_->IsSelectedView(GetItemViewAt(kLastIndexOfFirstPage)));
-
-  // Tests moving right from the last slot on the first page.
-  apps_grid_view_->SetSelectedView(GetItemViewAt(kLastIndexOfFirstPage));
-  SimulateKeyPress(is_rtl_ ? ui::VKEY_LEFT : ui::VKEY_RIGHT);
-  EXPECT_TRUE(
-      apps_grid_view_->IsSelectedView(GetItemViewAt(GetTilesPerPage(0))));
-
-  // Tests moving up from the first row on the first page.
-  apps_grid_view_->SetSelectedView(GetItemViewAt(1));
-  SimulateKeyPress(ui::VKEY_UP);
-  EXPECT_FALSE(apps_grid_view_->has_selected_view());
-  EXPECT_EQ(1, suggestions_container_->selected_index());
-  suggestions_container_->ClearSelectedIndex();
-
-  // Tests moving up from the first row on the second page.
-  apps_grid_view_->SetSelectedView(GetItemViewAt(kAllAppsItems - 1));
-  SimulateKeyPress(ui::VKEY_UP);
-  int expected_index =
-      GetTilesPerPage(0) - 1 - (apps_grid_view_->cols() - kItemsOnSecondPage);
-  EXPECT_TRUE(apps_grid_view_->IsSelectedView(GetItemViewAt(expected_index)));
-
-  // Tests moving down from the last row on the first page.
-  apps_grid_view_->SetSelectedView(
-      GetItemViewAt(kFirstIndexOfLastRowFirstPage));
-  SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_TRUE(
-      apps_grid_view_->IsSelectedView(GetItemViewAt(GetTilesPerPage(0))));
-
-  // Tests moving down if no direct tile exists, clamp to the last item.
-  apps_grid_view_->SetSelectedView(GetItemViewAt(kLastIndexOfFirstPage));
-  SimulateKeyPress(ui::VKEY_DOWN);
-  EXPECT_TRUE(
-      apps_grid_view_->IsSelectedView(GetItemViewAt(kAllAppsItems - 1)));
-}
-
 // Tests that UMA is properly collected when either a suggested or normal app is
 // launched.
 TEST_F(AppsGridViewTest, UMATestForLaunchingApps) {

@@ -76,19 +76,6 @@ SearchResultTileItemListView::SearchResultTileItemListView(
 
 SearchResultTileItemListView::~SearchResultTileItemListView() = default;
 
-void SearchResultTileItemListView::OnContainerSelected(
-    bool from_bottom,
-    bool directional_movement) {
-  if (num_results() == 0)
-    return;
-
-  // If the user came from below using linear controls (eg, Tab, as opposed to
-  // directional controls such as Up), select the right-most result. Otherwise,
-  // select the left-most result even if coming from below.
-  bool select_last = from_bottom && !directional_movement;
-  SetSelectedIndex(select_last ? num_results() - 1 : 0);
-}
-
 void SearchResultTileItemListView::NotifyFirstResultYIndex(int y_index) {
   for (size_t i = 0; i < static_cast<size_t>(num_results()); ++i)
     tile_views_[i]->result()->set_distance_from_origin(i + y_index);
@@ -96,11 +83,6 @@ void SearchResultTileItemListView::NotifyFirstResultYIndex(int y_index) {
 
 int SearchResultTileItemListView::GetYSize() {
   return num_results() ? 1 : 0;
-}
-
-views::View* SearchResultTileItemListView::GetSelectedView() {
-  return IsValidSelectionIndex(selected_index()) ? tile_views_[selected_index()]
-                                                 : nullptr;
 }
 
 SearchResultBaseView* SearchResultTileItemListView::GetFirstResultView() {
@@ -148,11 +130,6 @@ int SearchResultTileItemListView::DoUpdate() {
 
   return display_results.size();
 }
-
-// TODO(warx): This implementation is deprecated and should be removed as part
-// of removing "pseudo-focus" logic work (https://crbug.com/766807).
-void SearchResultTileItemListView::UpdateSelectedIndex(int old_selected,
-                                                       int new_selected) {}
 
 bool SearchResultTileItemListView::OnKeyPressed(const ui::KeyEvent& event) {
   // Let the FocusManager handle Left/Right keys.

@@ -45,16 +45,7 @@ SearchResultListView::SearchResultListView(AppListMainView* main_view,
   AddChildView(results_container_);
 }
 
-SearchResultListView::~SearchResultListView() {}
-
-bool SearchResultListView::IsResultViewSelected(
-    const SearchResultView* result_view) const {
-  if (selected_index() < 0)
-    return false;
-
-  return static_cast<const SearchResultView*>(
-             results_container_->child_at(selected_index())) == result_view;
-}
+SearchResultListView::~SearchResultListView() = default;
 
 SearchResultView* SearchResultListView::GetResultViewAt(size_t index) {
   DCHECK(index >= 0 && index < search_result_views_.size());
@@ -69,14 +60,6 @@ void SearchResultListView::ListItemsRemoved(size_t start, size_t count) {
   SearchResultContainerView::ListItemsRemoved(start, count);
 }
 
-void SearchResultListView::OnContainerSelected(bool from_bottom,
-                                               bool /*directional_movement*/) {
-  if (num_results() == 0)
-    return;
-
-  SetSelectedIndex(from_bottom ? num_results() - 1 : 0);
-}
-
 void SearchResultListView::NotifyFirstResultYIndex(int y_index) {
   for (size_t i = 0; i < static_cast<size_t>(num_results()); ++i)
     GetResultViewAt(i)->result()->set_distance_from_origin(i + y_index);
@@ -84,12 +67,6 @@ void SearchResultListView::NotifyFirstResultYIndex(int y_index) {
 
 int SearchResultListView::GetYSize() {
   return num_results();
-}
-
-views::View* SearchResultListView::GetSelectedView() {
-  return IsValidSelectionIndex(selected_index())
-             ? GetResultViewAt(selected_index())
-             : nullptr;
 }
 
 SearchResultBaseView* SearchResultListView::GetFirstResultView() {
@@ -120,23 +97,6 @@ int SearchResultListView::DoUpdate() {
       display_results.empty() ? 0 : display_results.front()->display_score());
 
   return display_results.size();
-}
-
-void SearchResultListView::UpdateSelectedIndex(int old_selected,
-                                               int new_selected) {
-  if (old_selected >= 0) {
-    SearchResultView* selected_view = GetResultViewAt(old_selected);
-    selected_view->ClearSelectedAction();
-    selected_view->SchedulePaint();
-  }
-
-  if (new_selected >= 0) {
-    SearchResultView* selected_view = GetResultViewAt(new_selected);
-    ScrollRectToVisible(selected_view->bounds());
-    selected_view->ClearSelectedAction();
-    selected_view->SchedulePaint();
-    selected_view->NotifyAccessibilityEvent(ax::mojom::Event::kSelection, true);
-  }
 }
 
 void SearchResultListView::Layout() {

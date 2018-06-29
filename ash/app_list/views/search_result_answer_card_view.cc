@@ -186,15 +186,6 @@ const char* SearchResultAnswerCardView::GetClassName() const {
   return "SearchResultAnswerCardView";
 }
 
-void SearchResultAnswerCardView::OnContainerSelected(
-    bool from_bottom,
-    bool directional_movement) {
-  if (num_results() == 0)
-    return;
-
-  SetSelectedIndex(0);
-}
-
 int SearchResultAnswerCardView::GetYSize() {
   return num_results();
 }
@@ -219,25 +210,11 @@ int SearchResultAnswerCardView::DoUpdate() {
   return have_result ? 1 : 0;
 }
 
-void SearchResultAnswerCardView::UpdateSelectedIndex(int old_selected,
-                                                     int new_selected) {
-  // TODO(weidongg): This implementation is deprecated and should be removed as
-  // part of removing "pseudo-focus" logic work (https://crbug.com/766807).
-}
-
 bool SearchResultAnswerCardView::OnKeyPressed(const ui::KeyEvent& event) {
-  if (selected_index() == 0 &&
-      search_answer_container_view_->OnKeyPressed(event)) {
+  if (search_answer_container_view_->OnKeyPressed(event))
     return true;
-  }
 
   return SearchResultContainerView::OnKeyPressed(event);
-}
-
-views::View* SearchResultAnswerCardView::GetSelectedView() {
-  // TODO(weidongg): This implementation is deprecated and should be removed as
-  // part of removing "pseudo-focus" logic work (https://crbug.com/766807).
-  return nullptr;
 }
 
 SearchResultBaseView* SearchResultAnswerCardView::GetFirstResultView() {

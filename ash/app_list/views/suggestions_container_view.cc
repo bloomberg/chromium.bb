@@ -74,10 +74,17 @@ int SuggestionsContainerView::DoUpdate() {
   return display_results.size();
 }
 
-views::View* SuggestionsContainerView::GetSelectedView() {
-  return IsValidSelectionIndex(selected_index())
-             ? search_result_tile_views_[selected_index()]
-             : nullptr;
+void SuggestionsContainerView::NotifyFirstResultYIndex(int /*y_index*/) {
+  NOTREACHED();
+}
+
+int SuggestionsContainerView::GetYSize() {
+  NOTREACHED();
+  return 0;
+}
+
+SearchResultBaseView* SuggestionsContainerView::GetFirstResultView() {
+  return nullptr;
 }
 
 const char* SuggestionsContainerView::GetClassName() const {

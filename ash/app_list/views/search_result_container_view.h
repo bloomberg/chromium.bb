@@ -39,18 +39,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   void SetResults(SearchModel::SearchResults* results);
   SearchModel::SearchResults* results() { return results_; }
 
-  // Sets the index of the selected search result within this container. This
-  // must be a valid index.
-  void SetSelectedIndex(int selected_index);
-
-  void ClearSelectedIndex();
-
-  // The currently selected index. Returns -1 on no selection.
-  int selected_index() const { return selected_index_; }
-
-  // Returns whether |index| is a valid index for selection.
-  bool IsValidSelectionIndex(int index) const;
-
   int num_results() const { return num_results_; }
 
   void set_container_score(double score) { container_score_ = score; }
@@ -80,16 +68,6 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   void ListItemMoved(size_t index, size_t target_index) override;
   void ListItemsChanged(size_t start, size_t count) override;
 
-  // Updates the container for being selected. |from_bottom| is true if the view
-  // was entered into from a selected view below it; false if entered into from
-  // above. |directional_movement| is true if the navigation was caused by
-  // directional controls (eg, arrow keys), as opposed to linear controls (eg,
-  // Tab).
-  virtual void OnContainerSelected(bool from_bottom, bool directional_movement);
-
-  // Returns selected view in this container view.
-  virtual views::View* GetSelectedView();
-
   // Returns the first result in the container view. Returns NULL if it does not
   // exist.
   virtual SearchResultBaseView* GetFirstResultView();
@@ -102,20 +80,16 @@ class APP_LIST_EXPORT SearchResultContainerView : public views::View,
   // Updates UI with model. Returns the number of visible results.
   virtual int DoUpdate() = 0;
 
-  // Updates UI for a change in the selected index.
-  virtual void UpdateSelectedIndex(int old_selected, int new_selected);
+  Delegate* delegate_ = nullptr;
 
-  Delegate* delegate_;
-
-  int selected_index_;
-  int num_results_;
+  int num_results_ = 0;
 
   double container_score_;
 
-  SearchModel::SearchResults* results_;  // Owned by SearchModel.
+  SearchModel::SearchResults* results_ = nullptr;  // Owned by SearchModel.
 
   // The factory that consolidates multiple Update calls into one.
-  base::WeakPtrFactory<SearchResultContainerView> update_factory_;
+  base::WeakPtrFactory<SearchResultContainerView> update_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultContainerView);
 };
