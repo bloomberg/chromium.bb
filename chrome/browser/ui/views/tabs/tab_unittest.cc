@@ -39,6 +39,9 @@ class FakeTabController : public TabController {
     return selection_model_;
   }
   bool SupportsMultipleSelection() override { return false; }
+  NewTabButtonPosition GetNewTabButtonPosition() const override {
+    return LEADING;
+  }
   bool ShouldHideCloseButtonForTab(Tab* tab) const override { return false; }
   bool ShouldShowCloseButtonOnHover() override { return false; }
   bool MaySetClip() override { return false; }
@@ -54,6 +57,8 @@ class FakeTabController : public TabController {
   bool IsActiveTab(const Tab* tab) const override { return active_tab_; }
   bool IsTabSelected(const Tab* tab) const override { return false; }
   bool IsTabPinned(const Tab* tab) const override { return false; }
+  bool IsFirstVisibleTab(const Tab* tab) const override { return false; }
+  bool IsLastVisibleTab(const Tab* tab) const override { return false; }
   bool IsIncognito() const override { return false; }
   void MaybeStartDrag(
       Tab* tab,
@@ -65,9 +70,7 @@ class FakeTabController : public TabController {
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override {
     return nullptr;
   }
-  Tab* GetAdjacentTab(Tab* tab, TabController::Direction direction) override {
-    return nullptr;
-  }
+  Tab* GetSubsequentTab(Tab* tab) override { return nullptr; }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
   bool ShouldPaintTab(
@@ -91,6 +94,9 @@ class FakeTabController : public TabController {
   int GetBackgroundResourceId(bool* custom_image) const override {
     *custom_image = false;
     return IDR_THEME_TAB_BACKGROUND;
+  }
+  gfx::Rect GetTabAnimationTargetBounds(Tab* tab) override {
+    return tab->bounds();
   }
   base::string16 GetAccessibleTabName(const Tab* tab) const override {
     return base::string16();
