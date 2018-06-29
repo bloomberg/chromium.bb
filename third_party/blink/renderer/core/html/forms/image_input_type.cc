@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/core/layout/adjust_for_absolute_zoom.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/layout_image.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -106,7 +107,7 @@ void ImageInputType::HandleDOMActivateEvent(Event* event) {
 LayoutObject* ImageInputType::CreateLayoutObject(
     const ComputedStyle& style) const {
   if (use_fallback_content_)
-    return new LayoutBlockFlow(&GetElement());
+    return LayoutObjectFactory::CreateBlockFlow(GetElement(), style);
   LayoutImage* image = new LayoutImage(&GetElement());
   image->SetImageResource(LayoutImageResource::Create());
   return image;
