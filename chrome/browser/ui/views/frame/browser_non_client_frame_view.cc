@@ -70,7 +70,6 @@ int BrowserNonClientFrameView::GetAvatarIconPadding() {
 
 void BrowserNonClientFrameView::OnBrowserViewInitViewsComplete() {
   MaybeObserveTabstrip();
-  OnSingleTabModeChanged();
   UpdateMinimumSize();
 }
 
