@@ -31,6 +31,15 @@ imageset("distillation_fail") {
   ]
 }
 
+imageset("distillation_fail_new") {
+  sources = [
+    "distillation_fail_new.imageset/Contents.json",
+    "distillation_fail_new.imageset/distillation_fail_new.png",
+    "distillation_fail_new.imageset/distillation_fail_new@2x.png",
+    "distillation_fail_new.imageset/distillation_fail_new@3x.png",
+  ]
+}
+
 imageset("reading_list_side_swipe") {
   sources = [
     "reading_list_side_swipe.imageset/Contents.json",

@@ -31,6 +31,13 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
 #error "This file requires ARC support."
 #endif
 
+@interface ReadingListTableViewItem ()
+
+// The image to supply as to the TableViewURLCell's |faviconBadgeView|.
+@property(nonatomic, strong) UIImage* distillationBadgeImage;
+
+@end
+
 @implementation ReadingListTableViewItem
 @synthesize title = _title;
 @synthesize entryURL = _entryURL;
@@ -40,12 +47,35 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
 @synthesize distillationDateText = _distillationDateText;
 @synthesize customActionFactory = _customActionFactory;
 @synthesize attributes = _attributes;
+@synthesize distillationBadgeImage = _distillationBadgeImage;
 
 - (instancetype)initWithType:(NSInteger)type {
   if (self = [super initWithType:type]) {
     self.cellClass = [TableViewURLCell class];
   }
   return self;
+}
+
+#pragma mark - Accessors
+
+- (void)setDistillationState:
+    (ReadingListUIDistillationStatus)distillationState {
+  if (_distillationState == distillationState)
+    return;
+  _distillationState = distillationState;
+  switch (_distillationState) {
+    case ReadingListUIDistillationStatusFailure:
+      self.distillationBadgeImage =
+          [UIImage imageNamed:@"distillation_fail_new"];
+      break;
+    case ReadingListUIDistillationStatusSuccess:
+      self.distillationBadgeImage =
+          [UIImage imageNamed:@"table_view_cell_check_mark"];
+      break;
+    case ReadingListUIDistillationStatusPending:
+      self.distillationBadgeImage = nil;
+      break;
+  }
 }
 
 #pragma mark - ListItem
@@ -72,6 +102,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
   if (styler.cellTitleColor)
     URLCell.titleLabel.textColor = styler.cellTitleColor;
   [URLCell.faviconView configureWithAttributes:self.attributes];
+  URLCell.faviconBadgeView.image = self.distillationBadgeImage;
   cell.isAccessibilityElement = YES;
   cell.accessibilityLabel = GetReadingListCellAccessibilityLabel(
       self.title, base::SysUTF8ToNSString(self.entryURL.host()),
