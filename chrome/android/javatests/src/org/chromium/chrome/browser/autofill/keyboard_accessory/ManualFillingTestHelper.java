@@ -23,6 +23,7 @@ import android.support.test.espresso.PerformException;
 import android.support.test.espresso.UiController;
 import android.support.test.espresso.ViewAction;
 import android.support.test.espresso.ViewInteraction;
+import android.support.v7.content.res.AppCompatResources;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -31,8 +32,7 @@ import org.hamcrest.Matcher;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.test.ChromeActivityTestRule;
+import org.chromium.chrome.test.ChromeTabbedActivityTestRule;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.WebContents;
@@ -45,10 +45,10 @@ import java.util.concurrent.atomic.AtomicReference;
  * Helpers in this class simplify interactions with the Keyboard Accessory and the sheet below it.
  */
 public class ManualFillingTestHelper {
-    private final ChromeActivityTestRule<ChromeActivity> mActivityTestRule;
+    private final ChromeTabbedActivityTestRule mActivityTestRule;
     private final AtomicReference<WebContents> mWebContentsRef = new AtomicReference<>();
 
-    ManualFillingTestHelper(ChromeActivityTestRule<ChromeActivity> activityTestRule) {
+    ManualFillingTestHelper(ChromeTabbedActivityTestRule activityTestRule) {
         mActivityTestRule = activityTestRule;
     }
 
@@ -102,7 +102,7 @@ public class ManualFillingTestHelper {
     public void createTestTab() {
         mActivityTestRule.getActivity().getManualFillingController().getMediatorForTesting().addTab(
                 new KeyboardAccessoryData.Tab(
-                        InstrumentationRegistry.getContext().getResources().getDrawable(
+                        AppCompatResources.getDrawable(InstrumentationRegistry.getContext(),
                                 android.R.drawable.ic_lock_lock),
                         "TestTabDescription", R.layout.empty_accessory_sheet, null));
     }

@@ -69,7 +69,7 @@ class KeyboardAccessoryView extends LinearLayout {
 
         mSuggestionsView = findViewById(R.id.suggestions_view);
 
-        // Apply RTL layout changes to the views childen:
+        // Apply RTL layout changes to the views children:
         ApiCompatibilityUtils.setLayoutDirection(mSuggestionsView,
                 isLayoutRtl() ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
     }
@@ -99,25 +99,26 @@ class KeyboardAccessoryView extends LinearLayout {
      * @param contentDescription The contentDescription to be used for the tab icon.
      */
     void addTabAt(int position, Drawable icon, CharSequence contentDescription) {
-        this.post(() -> { // Using |post| ensures this is cannot happen before inflation finishes.
-            TabLayout.Tab tab = mTabLayout.newTab();
-            tab.setIcon(icon.mutate()); // mutate() needed to change the active tint.
-            tab.setContentDescription(contentDescription);
-            mTabLayout.addTab(tab, position, false);
-        });
+        if (mTabLayout == null) return; // Inflation not done yet. Will be invoked again afterwards.
+        TabLayout.Tab tab = mTabLayout.newTab();
+        tab.setIcon(icon.mutate()); // mutate() needed to change the active tint.
+        tab.setContentDescription(contentDescription);
+        mTabLayout.addTab(tab, position, false);
     }
 
     void removeTabAt(int position) {
-        this.post(() -> mTabLayout.removeTabAt(position));
+        if (mTabLayout == null) return; // Inflation not done yet. Will be invoked again afterwards.
+        TabLayout.Tab tab = mTabLayout.getTabAt(position);
+        if (tab == null) return; // The tab was already removed.
+        mTabLayout.removeTab(tab);
     }
 
     /**
      * Removes all tabs.
      */
     void clearTabs() {
-        this.post(() -> {
-            if (mTabLayout != null) mTabLayout.removeAllTabs();
-        });
+        if (mTabLayout == null) return; // Inflation not done yet. Will be invoked again afterwards.
+        mTabLayout.removeAllTabs();
     }
 
     ViewPager.OnPageChangeListener getPageChangeListener() {
