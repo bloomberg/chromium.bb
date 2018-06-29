@@ -490,10 +490,11 @@ bool Canvas2DLayerBridge::WritePixels(const SkImageInfo& orig_info,
     SkipQueuedDrawCommands();
   } else {
     FlushRecording();
+    if (!GetOrCreateResourceProvider())
+      return false;
   }
 
-  GetOrCreateResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x,
-                                             y);
+  ResourceProvider()->WritePixels(orig_info, pixels, row_bytes, x, y);
   DidDraw(FloatRect(x, y, orig_info.width(), orig_info.height()));
 
   return true;
@@ -517,7 +518,7 @@ void Canvas2DLayerBridge::FlushRecording() {
   if (have_recorded_draw_commands_ && GetOrCreateResourceProvider()) {
     TRACE_EVENT0("cc", "Canvas2DLayerBridge::flushRecording");
 
-    cc::PaintCanvas* canvas = GetOrCreateResourceProvider()->Canvas();
+    cc::PaintCanvas* canvas = ResourceProvider()->Canvas();
     {
       sk_sp<PaintRecord> recording = recorder_->finishRecordingAsPicture();
       canvas->drawPicture(recording);
@@ -528,7 +529,7 @@ void Canvas2DLayerBridge::FlushRecording() {
     // A new null check on the resource provider is necessary just in case
     // the playback crashed the context.
     if (GetOrCreateResourceProvider())
-      GetOrCreateResourceProvider()->ReleaseLockedImages();
+      ResourceProvider()->ReleaseLockedImages();
 
     if (is_deferral_enabled_)
       StartRecording();
@@ -626,13 +627,14 @@ bool Canvas2DLayerBridge::PrepareTransferableResource(
   if (!IsValid())
     return false;
 
+  FlushRecording();
+
   // If the context is lost, we don't know if we should be producing GPU or
   // software frames, until we get a new context, since the compositor will
   // be trying to get a new context and may change modes.
   if (!GetOrCreateResourceProvider())
     return false;
 
-  FlushRecording();
   scoped_refptr<CanvasResource> frame = ResourceProvider()->ProduceFrame();
   if (frame && frame->IsValid()) {
     // Note frame is kept alive via a reference kept in out_release_callback.
@@ -686,7 +688,7 @@ void Canvas2DLayerBridge::FinalizeFrame() {
   ++frames_since_last_commit_;
 
   if (frames_since_last_commit_ >= 2) {
-    GetOrCreateResourceProvider()->FlushSkia();
+    ResourceProvider()->FlushSkia();
     if (IsAccelerated()) {
       if (!rate_limiter_) {
         rate_limiter_ =
@@ -713,10 +715,15 @@ scoped_refptr<StaticBitmapImage> Canvas2DLayerBridge::NewImageSnapshot(
     return StaticBitmapImage::Create(hibernation_image_);
   if (!IsValid())
     return nullptr;
+  // GetOrCreateResourceProvider needs to be called before FlushRecording, to
+  // make sure "hint" is properly taken into account, as well as after
+  // FlushRecording, in case the playback crashed the GPU context.
   if (!GetOrCreateResourceProvider(hint))
     return nullptr;
   FlushRecording();
-  return GetOrCreateResourceProvider()->Snapshot();
+  if (!GetOrCreateResourceProvider(hint))
+    return nullptr;
+  return ResourceProvider()->Snapshot();
 }
 
 void Canvas2DLayerBridge::WillOverwriteCanvas() {
