@@ -8,6 +8,7 @@
 #error "This file requires ARC support."
 #endif
 
+GuideName* const kContentAreaGuide = @"ContentAreaGuide";
 GuideName* const kSecondaryToolbar = @"kSecondaryToolbar";
 GuideName* const kSecondaryToolbarNoFullscreen =
     @"kSecondaryToolbarNoFullscreen";

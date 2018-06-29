@@ -1609,7 +1609,6 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 #pragma mark - UIViewController
 
-// Perform additional set up after loading the view, typically from a nib.
 - (void)viewDidLoad {
   CGRect initialViewsRect = self.view.bounds;
   if (!self.usesFullscreenContainer) {
@@ -2403,6 +2402,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
            aboveSubview:self.primaryToolbarCoordinator.viewController.view];
     }
     NSArray<GuideName*>* guideNames = @[
+      kContentAreaGuide,
       kOmniboxGuide,
       kBackButtonGuide,
       kForwardButtonGuide,
@@ -2413,6 +2413,33 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       kVoiceSearchButtonGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
+
+    // Configure the content area guide.
+    NamedGuide* contentAreaGuide =
+        [NamedGuide guideWithName:kContentAreaGuide view:self.view];
+
+    // Constrain top to bottom of top toolbar.
+    UIView* primaryToolbarView =
+        self.primaryToolbarCoordinator.viewController.view;
+    [contentAreaGuide.topAnchor
+        constraintEqualToAnchor:primaryToolbarView.bottomAnchor]
+        .active = YES;
+
+    LayoutSides contentSides = LayoutSides::kLeading | LayoutSides::kTrailing;
+    if (self.secondaryToolbarCoordinator) {
+      // If there's a bottom toolbar, the content area guide is constrained to
+      // its top.
+      UIView* secondaryToolbarView =
+          self.secondaryToolbarCoordinator.viewController.view;
+      [contentAreaGuide.bottomAnchor
+          constraintEqualToAnchor:secondaryToolbarView.topAnchor]
+          .active = YES;
+    } else {
+      // Otherwise, the content area guide is constrained to self.view's bootom
+      // along with its sides;
+      contentSides = contentSides | LayoutSides::kBottom;
+    }
+    AddSameConstraintsToSides(self.view, contentAreaGuide, contentSides);
   }
   if (initialLayout) {
     [self.primaryToolbarCoordinator.viewController
