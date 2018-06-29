@@ -31,6 +31,7 @@ ARC_EXPORT extern const char kArcPushInstallAppsRequested[];
 ARC_EXPORT extern const char kArcPushInstallAppsPending[];
 ARC_EXPORT extern const char kArcSetNotificationsEnabledDeferred[];
 ARC_EXPORT extern const char kArcSignedIn[];
+ARC_EXPORT extern const char kArcSkippedReportingNotice[];
 ARC_EXPORT extern const char kArcSupervisionTransition[];
 ARC_EXPORT extern const char kArcCompatibleFilesystemChosen[];
 ARC_EXPORT extern const char kArcVoiceInteractionValuePropAccepted[];

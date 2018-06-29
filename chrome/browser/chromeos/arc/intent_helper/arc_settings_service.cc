@@ -526,6 +526,15 @@ void ArcSettingsServiceImpl::SyncReportingConsent(bool initial_sync) const {
     // reporting notice during ARC setup.
     return;
   }
+  if (consent && initial_sync &&
+      profile_->GetPrefs()->GetBoolean(prefs::kArcSkippedReportingNotice)) {
+    // Explicitly leave reporting off for users who did not get a reporting
+    // notice during setup, but otherwise would have reporting on due to the
+    // result of |IsArcStatsReportingEnabled()| during setup. Typically this is
+    // due to the fact that ArcSessionManager was able to skip the setup UI for
+    // managed users.
+    consent = false;
+  }
   base::DictionaryValue extras;
   extras.SetBoolean("reportingConsent", consent);
   SendSettingsBroadcast("org.chromium.arc.intent_helper.SET_REPORTING_CONSENT",
