@@ -80,25 +80,21 @@ const CGFloat kAppendButtonSize = 48.0;
     // The current implementation is from before using a UITableViewCell.
     [self.contentView addSubview:_appendButton];
 
-    // Leading icon is only displayed on iPad.
-    if (IsIPadIdiom()) {
-      _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
-      _imageView.userInteractionEnabled = NO;
-      _imageView.contentMode = UIViewContentModeCenter;
+    // Before UI Refresh, the leading icon is only displayed on iPad. In UI
+    // Refresh, it's only in Regular x Regular size class.
+    // TODO(justincohen): Consider using the UITableViewCell's image view.
+    // The current implementation is from before using a UITableViewCell.
+    _imageView = [[UIImageView alloc] initWithFrame:CGRectZero];
+    _imageView.userInteractionEnabled = NO;
+    _imageView.contentMode = UIViewContentModeCenter;
 
-      if (IsUIRefreshPhase1Enabled()) {
-        _imageView.layer.cornerRadius = kImageViewCornerRadiusUIRefresh;
-        _imageView.backgroundColor =
-            incognito ? [UIColor colorWithWhite:1 alpha:0.05]
-                      : [UIColor colorWithWhite:0 alpha:0.03];
-        _imageView.tintColor = incognito
-                                   ? [UIColor colorWithWhite:1 alpha:0.4]
-                                   : [UIColor colorWithWhite:0 alpha:0.33];
-      }
-
-      // TODO(justincohen): Consider using the UITableViewCell's image view.
-      // The current implementation is from before using a UITableViewCell.
-      [self.contentView addSubview:_imageView];
+    if (IsUIRefreshPhase1Enabled()) {
+      _imageView.layer.cornerRadius = kImageViewCornerRadiusUIRefresh;
+      _imageView.backgroundColor = incognito
+                                       ? [UIColor colorWithWhite:1 alpha:0.05]
+                                       : [UIColor colorWithWhite:0 alpha:0.03];
+      _imageView.tintColor = incognito ? [UIColor colorWithWhite:1 alpha:0.4]
+                                       : [UIColor colorWithWhite:0 alpha:0.33];
     }
 
     _answerImageView = [[UIImageView alloc] initWithFrame:CGRectZero];
@@ -112,6 +108,11 @@ const CGFloat kAppendButtonSize = 48.0;
 - (void)layoutSubviews {
   [super layoutSubviews];
   [self layoutAccessoryViews];
+  if ([self showsLeadingIcons]) {
+    [self.contentView addSubview:_imageView];
+  } else {
+    [_imageView removeFromSuperview];
+  }
 }
 
 - (void)layoutAccessoryViews {
@@ -124,7 +125,9 @@ const CGFloat kAppendButtonSize = 48.0;
   CGFloat imageViewSize = IsUIRefreshPhase1Enabled() ? kImageViewSizeUIRefresh
                                                      : kImageDimensionLength;
   LayoutRect imageViewLayout = LayoutRectMake(
-      IsCompactTablet() ? kLeadingPaddingIpadCompact : kLeadingPaddingIpad,
+      ([self showsLeadingIcons] && IsCompactTablet())
+          ? kLeadingPaddingIpadCompact
+          : kLeadingPaddingIpad,
       CGRectGetWidth(self.contentView.bounds),
       floor((_rowHeight - imageViewSize) / 2), imageViewSize, imageViewSize);
   _imageView.frame = LayoutRectGetRect(imageViewLayout);
@@ -201,6 +204,14 @@ const CGFloat kAppendButtonSize = 48.0;
   return _detailTruncatingLabel.hidden
              ? _detailAnswerLabel.attributedText.string
              : _detailTruncatingLabel.attributedText.string;
+}
+
+- (BOOL)showsLeadingIcons {
+  if (IsUIRefreshPhase1Enabled()) {
+    return IsRegularXRegularSizeClass();
+  } else {
+    return IsIPadIdiom();
+  }
 }
 
 @end

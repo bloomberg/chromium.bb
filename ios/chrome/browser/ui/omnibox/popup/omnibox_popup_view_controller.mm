@@ -230,10 +230,10 @@ UIColor* BackgroundColorIncognito() {
 - (void)updateRow:(OmniboxPopupRow*)row
         withMatch:(id<AutocompleteSuggestion>)match {
   CGFloat kTextCellLeadingPadding =
-      IsIPadIdiom() ? (!IsCompactTablet() ? 192 : 100) : 16;
+      [self showsLeadingIcons] ? ([self useRegularWidthOffset] ? 192 : 100)
+                               : 16;
   if (IsUIRefreshPhase1Enabled()) {
-    kTextCellLeadingPadding =
-        IsIPadIdiom() ? (!IsCompactTablet() ? 221 : 100) : 24;
+    kTextCellLeadingPadding = [self showsLeadingIcons] ? 221 : 24;
   }
 
   const CGFloat kTextCellTopPadding = 6;
@@ -341,7 +341,7 @@ UIColor* BackgroundColorIncognito() {
 
   // The leading image (e.g. magnifying glass, star, clock) is only shown on
   // iPad.
-  if (IsIPadIdiom()) {
+  if ([self showsLeadingIcons]) {
     UIImage* image = nil;
     if (IsUIRefreshPhase1Enabled()) {
       image = match.suggestionTypeIcon;
@@ -377,7 +377,8 @@ UIColor* BackgroundColorIncognito() {
   if (LTRTextInRTLLayout) {
     // This is really a left padding, not a leading padding.
     const CGFloat kLTRTextInRTLLayoutLeftPadding =
-        IsIPadIdiom() ? (!IsCompactTablet() ? 176 : 94) : 94;
+        [self showsLeadingIcons] ? ([self useRegularWidthOffset] ? 176 : 94)
+                                 : 94;
     CGRect frame = textLabel.frame;
     frame.size.width -= kLTRTextInRTLLayoutLeftPadding - frame.origin.x;
     frame.origin.x = kLTRTextInRTLLayoutLeftPadding;
@@ -645,6 +646,20 @@ UIColor* BackgroundColorIncognito() {
     [self.delegate autocompleteResultConsumer:self
                       didSelectRowForDeletion:indexPath.row];
   }
+}
+
+#pragma mark - private
+
+- (BOOL)showsLeadingIcons {
+  if (IsUIRefreshPhase1Enabled()) {
+    return IsRegularXRegularSizeClass();
+  } else {
+    return IsIPadIdiom();
+  }
+}
+
+- (BOOL)useRegularWidthOffset {
+  return [self showsLeadingIcons] && !IsCompactWidth();
 }
 
 @end
