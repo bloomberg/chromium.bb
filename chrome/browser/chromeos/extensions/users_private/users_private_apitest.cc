@@ -133,6 +133,9 @@ class UsersPrivateApiTest : public ExtensionApiTest {
     ExtensionApiTest::SetUpCommandLine(command_line);
 #if defined(OS_CHROMEOS)
     command_line->AppendSwitch(chromeos::switches::kStubCrosSettings);
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginUser,
+                                    "testuser@gmail.com");
+    command_line->AppendSwitchASCII(chromeos::switches::kLoginProfile, "user");
 #endif
   }
 
