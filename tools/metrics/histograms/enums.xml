@@ -46307,6 +46307,8 @@ Full version information for the fingerprint enum values:
   <int value="14" label="Aborted by too often denied rule"/>
   <int value="15" label="Aborted by matches previous language"/>
   <int value="16" label="Decision made to create infobar on Android"/>
+  <int value="17" label="Show omnibar icon to the user"/>
+  <int value="18" label="Suppress infobar but show omnibar icon"/>
 </enum>
 
 <enum name="TranslateLanguage">

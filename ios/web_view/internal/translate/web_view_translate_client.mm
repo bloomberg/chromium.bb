@@ -76,7 +76,7 @@ std::unique_ptr<infobars::InfoBar> WebViewTranslateClient::CreateInfoBar(
   return nullptr;
 }
 
-void WebViewTranslateClient::ShowTranslateUI(
+bool WebViewTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
@@ -87,6 +87,7 @@ void WebViewTranslateClient::ShowTranslateUI(
                                 targetLanguage:target_language
                                      errorType:error_type
                              triggeredFromMenu:triggered_from_menu];
+  return true;
 }
 
 translate::IOSTranslateDriver* WebViewTranslateClient::GetTranslateDriver() {

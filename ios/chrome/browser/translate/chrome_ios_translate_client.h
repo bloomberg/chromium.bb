@@ -71,7 +71,7 @@ class ChromeIOSTranslateClient
   std::unique_ptr<infobars::InfoBar> CreateInfoBar(
       std::unique_ptr<translate::TranslateInfoBarDelegate> delegate)
       const override;
-  void ShowTranslateUI(translate::TranslateStep step,
+  bool ShowTranslateUI(translate::TranslateStep step,
                        const std::string& source_language,
                        const std::string& target_language,
                        translate::TranslateErrors::Type error_type,

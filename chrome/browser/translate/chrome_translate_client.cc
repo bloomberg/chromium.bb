@@ -220,7 +220,7 @@ translate::TranslateManager* ChromeTranslateClient::GetTranslateManager() {
   return translate_manager_.get();
 }
 
-void ChromeTranslateClient::ShowTranslateUI(
+bool ChromeTranslateClient::ShowTranslateUI(
     translate::TranslateStep step,
     const std::string& source_language,
     const std::string& target_language,
@@ -241,7 +241,7 @@ void ChromeTranslateClient::ShowTranslateUI(
         InfoBarService::FromWebContents(web_contents()),
         web_contents()->GetBrowserContext()->IsOffTheRecord(), step,
         source_language, target_language, error_type, triggered_from_menu);
-    return;
+    return true;
   }
 #endif
 
@@ -249,7 +249,7 @@ void ChromeTranslateClient::ShowTranslateUI(
   if (step == translate::TRANSLATE_STEP_BEFORE_TRANSLATE &&
       translate_manager_->ShouldSuppressBubbleUI(triggered_from_menu,
                                                  source_language)) {
-    return;
+    return false;
   }
 
   ShowTranslateBubbleResult result = ShowBubble(step, error_type);
@@ -258,6 +258,8 @@ void ChromeTranslateClient::ShowTranslateUI(
     translate_manager_->RecordTranslateEvent(
         BubbleResultToTranslateEvent(result));
   }
+
+  return true;
 }
 
 translate::TranslateDriver* ChromeTranslateClient::GetTranslateDriver() {
