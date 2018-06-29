@@ -179,7 +179,7 @@ class FetchHelper {
 
         mTabObserver = new EmptyTabObserver() {
             @Override
-            public void onUpdateUrl(Tab tab, String url) {
+            public void onPageLoadStarted(Tab tab, String url) {
                 assert !tab.isIncognito();
                 if (tab == mCurrentTab) {
                     clearState();

@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import android.view.View;
 
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 
@@ -55,7 +56,12 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
 
     @Override
     public boolean swipeToDismissEnabled() {
-        return false;
+        return ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON);
+    }
+
+    @Override
+    public boolean isPeekStateEnabled() {
+        return !ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON);
     }
 
     @Override

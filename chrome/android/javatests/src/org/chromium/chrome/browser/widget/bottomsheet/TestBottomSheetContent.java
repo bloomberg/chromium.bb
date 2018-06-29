@@ -77,6 +77,11 @@ class TestBottomSheetContent implements BottomSheetContent {
     }
 
     @Override
+    public boolean isPeekStateEnabled() {
+        return true;
+    }
+
+    @Override
     public boolean useSlimPeek() {
         return false;
     }
