@@ -449,7 +449,7 @@ int Main(const MainParams& params) {
     case ProcessType::kEmbedder:
       if (delegate->IsEmbedderSubprocess())
         CommonSubprocessInit();
-      else {
+      if (command_line.GetSwitchValueASCII(switches::kProcessType).empty()) {
         // TODO(https://crbug.com/729596): Use this task runner to start
         // ServiceManager.
         scoped_refptr<base::SingleThreadTaskRunner> task_runner =
