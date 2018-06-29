@@ -123,6 +123,9 @@ void FakeConciergeClient::InitializeProtoResponses() {
       vm_tools::concierge::CONTAINER_STATUS_RUNNING);
 
   container_ssh_keys_response_.Clear();
+  container_ssh_keys_response_.set_container_public_key("pubkey");
+  container_ssh_keys_response_.set_host_private_key("privkey");
+  container_ssh_keys_response_.set_hostname("hostname");
 }
 
 }  // namespace chromeos

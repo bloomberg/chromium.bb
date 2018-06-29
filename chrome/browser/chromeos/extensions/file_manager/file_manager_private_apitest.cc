@@ -514,17 +514,18 @@ IN_PROC_BROWSER_TEST_F(FileManagerPrivateApiTest, Crostini) {
       ->SetAuthenticatedAccountInfo("12345", "testuser@gmail.com");
 
   // DiskMountManager mock.
-  // TODO(joelhockey): Update with privkey, pubkey, hostname from
-  // FakeConciergeClient once it is updated with non-empty values.
   std::string known_hosts;
-  base::Base64Encode("[]:2222 ", &known_hosts);
+  base::Base64Encode("[hostname]:2222 pubkey", &known_hosts);
+  std::string identity;
+  base::Base64Encode("privkey", &identity);
   std::vector<std::string> mount_options = {
-      "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=", "Port=2222"};
-  EXPECT_CALL(
-      *disk_mount_manager_mock_,
-      MountPath("sshfs://testuser@:", "", "crostini_user_termina_penguin",
-                mount_options, chromeos::MOUNT_TYPE_NETWORK_STORAGE,
-                chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
+      "UserKnownHostsBase64=" + known_hosts, "IdentityBase64=" + identity,
+      "Port=2222"};
+  EXPECT_CALL(*disk_mount_manager_mock_,
+              MountPath("sshfs://testuser@hostname:", "",
+                        "crostini_user_termina_penguin", mount_options,
+                        chromeos::MOUNT_TYPE_NETWORK_STORAGE,
+                        chromeos::MOUNT_ACCESS_MODE_READ_WRITE))
       .WillOnce(
           Invoke(this, &FileManagerPrivateApiTest_Crostini_Test::SshfsMount));
 
