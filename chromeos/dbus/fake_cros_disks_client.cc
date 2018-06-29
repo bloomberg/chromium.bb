@@ -103,9 +103,12 @@ void FakeCrosDisksClient::Mount(const std::string& source_path,
           base::FilePath::FromUTF8Unsafe(mount_label));
       break;
     case MOUNT_TYPE_NETWORK_STORAGE:
-      if (custom_mount_point_callback_) {
-        mounted_path =
-            custom_mount_point_callback_.Run(source_path, mount_options);
+      // Call all registered callbacks until mounted_path is non-empty.
+      for (auto const& callback : custom_mount_point_callbacks_) {
+        mounted_path = callback.Run(source_path, mount_options);
+        if (!mounted_path.empty()) {
+          break;
+        }
       }
       break;
     case MOUNT_TYPE_INVALID:
@@ -233,9 +236,9 @@ void FakeCrosDisksClient::NotifyRenameCompleted(
     observer.OnRenameCompleted(error_code, device_path);
 }
 
-void FakeCrosDisksClient::SetCustomMountPointCallback(
+void FakeCrosDisksClient::AddCustomMountPointCallback(
     FakeCrosDisksClient::CustomMountPointCallback custom_mount_point_callback) {
-  custom_mount_point_callback_ = std::move(custom_mount_point_callback);
+  custom_mount_point_callbacks_.emplace_back(custom_mount_point_callback);
 }
 
 }  // namespace chromeos

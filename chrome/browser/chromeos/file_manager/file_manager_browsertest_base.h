@@ -24,6 +24,7 @@ enum GuestMode { NOT_IN_GUEST_MODE, IN_GUEST_MODE, IN_INCOGNITO };
 class DriveTestVolume;
 class FakeTestVolume;
 class LocalTestVolume;
+class CrostiniTestVolume;
 
 class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
  protected:
@@ -79,9 +80,16 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
                  const base::DictionaryValue& value,
                  std::string* output);
 
+  // Called during tests to mount a crostini volume if needed. Returns the mount
+  // path of the volume.
+  base::FilePath MaybeMountCrostini(
+      const std::string& source_path,
+      const std::vector<std::string>& mount_options);
+
   base::test::ScopedFeatureList feature_list_;
 
   std::unique_ptr<LocalTestVolume> local_volume_;
+  std::unique_ptr<CrostiniTestVolume> crostini_volume_;
   std::map<Profile*, std::unique_ptr<DriveTestVolume>> drive_volumes_;
   DriveTestVolume* drive_volume_ = nullptr;
   std::unique_ptr<FakeTestVolume> usb_volume_;

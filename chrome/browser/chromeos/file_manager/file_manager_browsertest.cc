@@ -433,6 +433,11 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("showPasteIntoCurrentFolder"),
                       TestCase("showSelectAllInCurrentFolder")));
 
+WRAPPED_INSTANTIATE_TEST_CASE_P(
+    Crostini, /* crostini.js */
+    FilesAppBrowserTest,
+    ::testing::Values(TestCase("mountCrostiniContainer")));
+
 // Structure to describe an account info.
 struct TestAccountInfo {
   const char* const gaia_id;
