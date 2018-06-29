@@ -2491,35 +2491,6 @@
           'isolated_scripts': 'mojo_network_isolated_scripts',
         },
       },
-      'Out of Process Profiling Android': {
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_type': 'coho',
-              'os': 'Android',
-            },
-          ],
-        },
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-        },
-      },
-      'Out of Process Profiling Linux': {
-        'test_suites': {
-          'gtest_tests': 'chromium_linux_gtests',
-        },
-      },
-      'Out of Process Profiling Mac': {
-        'test_suites': {
-          'gtest_tests': 'chromium_mac_gtests',
-          'isolated_scripts': 'chromium_rel_isolated_scripts',
-        },
-      },
-      'Out of Process Profiling Windows': {
-        'test_suites': {
-          'gtest_tests': 'chromium_win_gtests',
-        },
-      },
       'Site Isolation Android': {
         'swarming': {
           'dimension_sets': [

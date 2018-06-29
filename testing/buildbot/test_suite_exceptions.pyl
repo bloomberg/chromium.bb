@@ -24,8 +24,6 @@
       'KitKat Tablet Tester',
       # chromium.android.fyi
       'x64 Device Tester',
-      # chromium.fyi
-      'Out of Process Profiling Android',
     ],
     'modifications': {
       'Lollipop Tablet Tester': {
@@ -77,14 +75,12 @@
   'app_shell_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
   },
   'aura_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
   },
@@ -113,12 +109,6 @@
       },
       # chromium.clang
       'ToTMac': {
-        'swarming': {
-          'shards': 5,
-        },
-      },
-      # chromium.fyi
-      'Out of Process Profiling Mac': {
         'swarming': {
           'shards': 5,
         },
@@ -193,7 +183,6 @@
       'ToTMacASan', # https://crbug.com/828031
       # chromium.fyi
       'Chromium Mac 10.13', # https://crbug.com/828031
-      'Out of Process Profiling Mac', # https://crbug.com/828031
       'mac-views-rel', # https://crbug.com/828031
       # chromium.mac
       'Mac10.10 Tests', # https://crbug.com/828031
@@ -219,12 +208,6 @@
       'ToTWin64(dbg)': {
         'swarming': {
           'shards': 20,
-        },
-      },
-      # chromium.fyi
-      'Out of Process Profiling Linux': {
-        'swarming': {
-          'shards': 5,
         },
       },
       # chromium.mac
@@ -408,13 +391,11 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
     ],
   },
   'chrome_elf_import_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
   },
@@ -506,13 +487,6 @@
       },
       # chromium.clang
       'ToTAndroid x64': {
-        'swarming': {
-          'shards': 1,
-          'hard_timeout': 0,
-        },
-      },
-      # chromium.fyi
-      'Out of Process Profiling Android': {
         'swarming': {
           'shards': 1,
           'hard_timeout': 0,
@@ -631,12 +605,6 @@
           'hard_timeout': 0,
         },
       },
-      # chromium.fyi
-      'Out of Process Profiling Android': {
-        'swarming': {
-          'hard_timeout': 0,
-        },
-      },
       # chromium.memory
       'Android CFI': {
         'swarming': {
@@ -670,8 +638,6 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Linux',
-      'Out of Process Profiling Mac',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -773,7 +739,6 @@
   'compositor_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
   },
@@ -936,7 +901,6 @@
     'remove_from': [
       # chromium.fyi
       'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
       # On chromium.linux, unclear why these only run on "Linux Tests".
       'Linux Tests (dbg)(1)',
       'Linux Tests (dbg)(1)(32)',
@@ -1029,13 +993,6 @@
         },
       },
       'ToTAndroidCFI': {
-        'swarming': {
-          'hard_timeout': 0,
-          'shards': 1,
-        },
-      },
-      # chromium.fyi
-      'Out of Process Profiling Android': {
         'swarming': {
           'hard_timeout': 0,
           'shards': 1,
@@ -1149,7 +1106,6 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1213,8 +1169,6 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Linux',
-      'Out of Process Profiling Mac',
       # On chromium.mac, unclear why these aren't run.
       'Mac10.10 Tests',
       'Mac10.11 Tests',
@@ -1431,8 +1385,6 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Linux',
-      'Out of Process Profiling Mac',
     ],
   },
   'headless_browsertests': {
@@ -1483,7 +1435,6 @@
   'install_static_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
   },
@@ -1587,7 +1538,6 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
     ],
   },
   'media_blink_unittests': {
@@ -1616,7 +1566,6 @@
     'remove_from': [
       # chromium.fyi
       'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
     ],
   },
   'mojo_test_apk': {
@@ -1790,8 +1739,6 @@
       'ToTWinCFI64',
       'ToTWinLibcxx64',
       'ToTWinThinLTO64',
-      # chromium.fyi; all these bots run Windows 7.
-      'Out of Process Profiling Windows',
     ],
   },
   'printing_unittests': {
@@ -2027,7 +1974,6 @@
       # chromium.fyi
       'mac-views-rel',
       'Chromium Mac 10.13',
-      'Out of Process Profiling Mac',
     ],
   },
   'sql_unittests': {
@@ -2054,10 +2000,6 @@
     },
   },
   'storage_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Out of Process Profiling Mac',
-    ],
     'modifications': {
       # chromium.android
       'android-kitkat-arm-rel': {
@@ -2134,7 +2076,6 @@
     'remove_from': [
       # chromium.fyi
       'Chromium Mac 10.13', # https://crbug.com/828031
-      'Out of Process Profiling Mac', # https://crbug.com/828031
       'mac-views-rel', # https://crbug.com/828031
     ],
   },
@@ -2260,13 +2201,6 @@
     ],
   },
   'telemetry_unittests': {
-    'modifications': {
-      'Out of Process Profiling Mac': {
-        'swarming': {
-          'shards': 2,
-        },
-      },
-    },
     'remove_from': [
       # chromium.win
       'Win10 Tests x64 (dbg)',
@@ -2477,7 +2411,6 @@
       'ToTMacASan', # https://crbug.com/828031
       # chromium.fyi
       'Chromium Mac 10.13', # https://crbug.com/828031
-      'Out of Process Profiling Mac', # https://crbug.com/828031
       'mac-views-rel', # https://crbug.com/828031
       # chromium.mac
       'Mac10.10 Tests', # https://crbug.com/828031
@@ -2531,9 +2464,6 @@
   },
   'viz_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'Out of Process Profiling Android',
-      'Out of Process Profiling Linux',
       # chromium.win
       'Win10 Tests x64',
     ],
@@ -2562,7 +2492,6 @@
   },
   'vr_common_unittests': {
     'remove_from': [
-      'Out of Process Profiling Android',
       # chromium.win
       'Win 7 Tests x64 (1)',
       'Win10 Tests x64',
@@ -2605,7 +2534,6 @@
   'vr_pixeltests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Android',
       'VR Linux',
       # chromium.win
       'Win 7 Tests x64 (1)',
@@ -2669,8 +2597,6 @@
   },
   'webkit_layout_tests': {
     'remove_from': [
-      # chromium.fyi
-      'Out of Process Profiling Mac',
       # chromium.linux
       'Linux Tests (dbg)(1)(32)', # 32-bit linux is unsupported
       # chromium.win
@@ -3001,8 +2927,6 @@
       # On chromium.swarm, this should possibly be being run (or removed
       # from Android N5X Swarm).
       'Android N5 Swarm',
-      # chromium.fyi
-      'Out of Process Profiling Android',
     ],
     'key_removals': {
       # chromium.android.fyi
@@ -3061,7 +2985,6 @@
   'wm_unittests': {
     'remove_from': [
       # chromium.fyi
-      'Out of Process Profiling Windows',
       'Win 10 Fast Ring',
     ],
   },
