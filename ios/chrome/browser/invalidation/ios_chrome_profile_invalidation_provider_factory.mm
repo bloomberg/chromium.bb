@@ -25,6 +25,7 @@
 #include "ios/chrome/browser/signin/signin_manager_factory.h"
 #include "ios/web/public/web_client.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,7 +77,8 @@ IOSChromeProfileInvalidationProviderFactory::BuildServiceInstanceFor(
           browser_state->GetPrefs()),
       IOSChromeGCMProfileServiceFactory::GetForBrowserState(browser_state)
           ->driver(),
-      browser_state->GetRequestContext()));
+      browser_state->GetRequestContext(),
+      browser_state->GetSharedURLLoaderFactory()));
   service->Init(
       std::make_unique<InvalidatorStorage>(browser_state->GetPrefs()));
 

@@ -26,6 +26,7 @@
 #include "google/cacheinvalidation/deps/callback.h"
 #include "google/cacheinvalidation/include/types.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
 
@@ -179,10 +180,14 @@ std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreatePushClientChannel(
 }
 
 std::unique_ptr<SyncNetworkChannel> SyncNetworkChannel::CreateGCMNetworkChannel(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
     std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
-  return std::make_unique<GCMNetworkChannel>(request_context_getter,
-                                             std::move(delegate));
+  DCHECK(url_loader_factory_info);
+  return std::make_unique<GCMNetworkChannel>(
+      network::SharedURLLoaderFactory::Create(
+          std::move(url_loader_factory_info)),
+      std::move(delegate));
 }
 
 void SyncNetworkChannel::NotifyNetworkStatusChange(bool online) {

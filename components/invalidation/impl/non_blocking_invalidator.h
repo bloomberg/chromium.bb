@@ -28,6 +28,10 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
+
 namespace syncer {
 class SyncNetworkChannel;
 class GCMNetworkChannelDelegate;
@@ -72,7 +76,8 @@ class INVALIDATION_EXPORT NonBlockingInvalidator
   static NetworkChannelCreator MakePushClientChannelCreator(
       const notifier::NotifierOptions& notifier_options);
   static NetworkChannelCreator MakeGCMNetworkChannelCreator(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   // These methods are forwarded to the invalidation_state_tracker_.

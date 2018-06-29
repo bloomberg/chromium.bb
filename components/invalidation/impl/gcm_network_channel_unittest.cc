@@ -11,15 +11,21 @@
 #include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "google_apis/gaia/google_service_auth_error.h"
-#include "net/url_request/test_url_fetcher_factory.h"
-#include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
+#include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace syncer {
+
+namespace {
+const char kURL[] = "http://test.url.com/";
+}
 
 class TestGCMNetworkChannelDelegate : public GCMNetworkChannelDelegate {
  public:
@@ -86,9 +92,9 @@ const net::BackoffEntry::Policy kTestBackoffPolicy = {
 class TestGCMNetworkChannel : public GCMNetworkChannel {
  public:
   TestGCMNetworkChannel(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate)
-      : GCMNetworkChannel(request_context_getter, std::move(delegate)) {
+      : GCMNetworkChannel(std::move(url_loader_factory), std::move(delegate)) {
     ResetRegisterBackoffEntryForTest(&kTestBackoffPolicy);
   }
 
@@ -96,34 +102,11 @@ class TestGCMNetworkChannel : public GCMNetworkChannel {
   // On Android GCMNetworkChannel::BuildUrl hits NOTREACHED(). I still want
   // tests to run.
   GURL BuildUrl(const std::string& registration_id) override {
-    return GURL("http://test.url.com");
+    return GURL(kURL);
   }
 };
 
 class GCMNetworkChannelTest;
-
-// Test needs to capture setting echo-token header on http request.
-// This class is going to do that.
-class TestNetworkChannelURLFetcher : public net::FakeURLFetcher {
- public:
-  TestNetworkChannelURLFetcher(GCMNetworkChannelTest* test,
-                               const GURL& url,
-                               net::URLFetcherDelegate* delegate,
-                               const std::string& response_data,
-                               net::HttpStatusCode response_code,
-                               net::URLRequestStatus::Status status)
-      : net::FakeURLFetcher(url,
-                            delegate,
-                            response_data,
-                            response_code,
-                            status),
-        test_(test) {}
-
-  void AddExtraRequestHeader(const std::string& header_line) override;
-
- private:
-  GCMNetworkChannelTest* test_;
-};
 
 class GCMNetworkChannelTest
     : public ::testing::Test,
@@ -131,27 +114,31 @@ class GCMNetworkChannelTest
  public:
   GCMNetworkChannelTest()
       : delegate_(nullptr),
-        url_fetchers_created_count_(0),
-        last_invalidator_state_(TRANSIENT_INVALIDATION_ERROR) {}
+        last_invalidator_state_(TRANSIENT_INVALIDATION_ERROR),
+        test_shared_loader_factory_(
+            base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+                &test_url_loader_factory_)) {}
 
   ~GCMNetworkChannelTest() override {}
 
   void SetUp() override {
-    request_context_getter_ = new net::TestURLRequestContextGetter(
-        base::ThreadTaskRunnerHandle::Get());
+    network_request_count_ = 0;
+    test_url_loader_factory()->SetInterceptor(base::BindLambdaForTesting(
+        [&](const network::ResourceRequest& request) {
+          EXPECT_EQ(kURL, request.url);
+          ++network_request_count_;
+          request.headers.GetHeader("echo-token", &last_echo_token_);
+        }));
     // Ownership of delegate goes to GCNMentworkChannel but test needs pointer
     // to it.
     delegate_ = new TestGCMNetworkChannelDelegate();
     std::unique_ptr<GCMNetworkChannelDelegate> delegate(delegate_);
     gcm_network_channel_.reset(new TestGCMNetworkChannel(
-        request_context_getter_, std::move(delegate)));
+        test_shared_loader_factory_, std::move(delegate)));
     gcm_network_channel_->AddObserver(this);
     gcm_network_channel_->SetMessageReceiver(
         invalidation::NewPermanentCallback(
             this, &GCMNetworkChannelTest::OnIncomingMessage));
-    url_fetcher_factory_.reset(new net::FakeURLFetcherFactory(
-        nullptr, base::Bind(&GCMNetworkChannelTest::CreateURLFetcher,
-                            base::Unretained(this))));
   }
 
   void TearDown() override { gcm_network_channel_->RemoveObserver(this); }
@@ -176,36 +163,18 @@ class GCMNetworkChannelTest
     return delegate_;
   }
 
-  int url_fetchers_created_count() {
-    return url_fetchers_created_count_;
-  }
-
-  net::FakeURLFetcherFactory* url_fetcher_factory() {
-    return url_fetcher_factory_.get();
-  }
-
-  std::unique_ptr<net::FakeURLFetcher> CreateURLFetcher(
-      const GURL& url,
-      net::URLFetcherDelegate* delegate,
-      const std::string& response_data,
-      net::HttpStatusCode response_code,
-      net::URLRequestStatus::Status status) {
-    ++url_fetchers_created_count_;
-    return std::unique_ptr<net::FakeURLFetcher>(
-        new TestNetworkChannelURLFetcher(this, url, delegate, response_data,
-                                         response_code, status));
-  }
-
-  void set_last_echo_token(const std::string& echo_token) {
-    last_echo_token_ = echo_token;
-  }
-
   const std::string& get_last_echo_token() {
     return last_echo_token_;
   }
 
+  int get_network_request_count() { return network_request_count_; }
+
   InvalidatorState get_last_invalidator_state() {
     return last_invalidator_state_;
+  }
+
+  network::TestURLLoaderFactory* test_url_loader_factory() {
+    return &test_url_loader_factory_;
   }
 
   void RunLoopUntilIdle() {
@@ -217,34 +186,17 @@ class GCMNetworkChannelTest
   base::test::ScopedTaskEnvironment scoped_task_environment_;
   TestGCMNetworkChannelDelegate* delegate_;
   std::unique_ptr<GCMNetworkChannel> gcm_network_channel_;
-  scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
-  std::unique_ptr<net::FakeURLFetcherFactory> url_fetcher_factory_;
-  int url_fetchers_created_count_;
+  int network_request_count_;
   std::string last_echo_token_;
   InvalidatorState last_invalidator_state_;
+  network::TestURLLoaderFactory test_url_loader_factory_;
+  scoped_refptr<network::SharedURLLoaderFactory> test_shared_loader_factory_;
 };
-
-void TestNetworkChannelURLFetcher::AddExtraRequestHeader(
-    const std::string& header_line) {
-  net::FakeURLFetcher::AddExtraRequestHeader(header_line);
-  std::string header_name("echo-token: ");
-  std::string echo_token;
-  if (base::StartsWith(header_line, header_name,
-                       base::CompareCase::INSENSITIVE_ASCII)) {
-    echo_token = header_line;
-    base::ReplaceFirstSubstringAfterOffset(
-        &echo_token, 0, header_name, std::string());
-    test_->set_last_echo_token(echo_token);
-  }
-}
 
 TEST_F(GCMNetworkChannelTest, HappyCase) {
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
   EXPECT_FALSE(delegate()->message_callback.is_null());
-  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
-                                         std::string(),
-                                         net::HTTP_NO_CONTENT,
-                                         net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_NO_CONTENT);
 
   // Emulate gcm connection state to be online.
   delegate()->connection_state_callback.Run(true);
@@ -257,23 +209,26 @@ TEST_F(GCMNetworkChannelTest, HappyCase) {
   // SendMessage should have triggered RequestToken. No HTTP request should be
   // started yet.
   EXPECT_FALSE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(get_network_request_count(), 0);
   // Return valid access token. This should trigger HTTP request.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(get_network_request_count(), 1);
+  EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 
   // Return another access token. Message should be cleared by now and shouldn't
   // be sent.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token2");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(get_network_request_count(), 1);
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
 }
 
 TEST_F(GCMNetworkChannelTest, FailedRegister) {
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_NO_CONTENT);
+
   // After construction GCMNetworkChannel should have called Register.
   EXPECT_FALSE(delegate()->register_callback.is_null());
   EXPECT_EQ(1, delegate()->register_call_count_);
@@ -291,14 +246,11 @@ TEST_F(GCMNetworkChannelTest, FailedRegister) {
   network_channel()->SendMessage("abra.cadabra");
   // SendMessage shouldn't trigger RequestToken.
   EXPECT_TRUE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(0, url_fetchers_created_count());
+  EXPECT_EQ(get_network_request_count(), 0);
 }
 
 TEST_F(GCMNetworkChannelTest, RegisterFinishesAfterSendMessage) {
-  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
-                                         "",
-                                         net::HTTP_NO_CONTENT,
-                                         net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_NO_CONTENT);
 
   // After construction GCMNetworkChannel should have called Register.
   EXPECT_FALSE(delegate()->register_callback.is_null());
@@ -306,21 +258,24 @@ TEST_F(GCMNetworkChannelTest, RegisterFinishesAfterSendMessage) {
   network_channel()->SendMessage("abra.cadabra");
   // SendMessage shouldn't trigger RequestToken.
   EXPECT_TRUE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(get_network_request_count(), 0);
 
   // Return valid registration id.
   delegate()->register_callback.Run("registration.id", gcm::GCMClient::SUCCESS);
 
   EXPECT_FALSE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(get_network_request_count(), 0);
+
   // Return valid access token. This should trigger HTTP request.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(get_network_request_count(), 1);
 }
 
 TEST_F(GCMNetworkChannelTest, RequestTokenFailure) {
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_NO_CONTENT);
+
   // After construction GCMNetworkChannel should have called Register.
   EXPECT_FALSE(delegate()->register_callback.is_null());
   // Return valid registration id.
@@ -330,21 +285,18 @@ TEST_F(GCMNetworkChannelTest, RequestTokenFailure) {
   // SendMessage should have triggered RequestToken. No HTTP request should be
   // started yet.
   EXPECT_FALSE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(get_network_request_count(), 0);
   // RequestToken returns failure.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::FromConnectionError(1), "");
 
   // Should be no HTTP requests.
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(get_network_request_count(), 0);
 }
 
 TEST_F(GCMNetworkChannelTest, AuthErrorFromServer) {
   // Setup fake response to return AUTH_ERROR.
-  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
-                                         "",
-                                         net::HTTP_UNAUTHORIZED,
-                                         net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_UNAUTHORIZED);
 
   // After construction GCMNetworkChannel should have called Register.
   EXPECT_FALSE(delegate()->register_callback.is_null());
@@ -355,12 +307,12 @@ TEST_F(GCMNetworkChannelTest, AuthErrorFromServer) {
   // SendMessage should have triggered RequestToken. No HTTP request should be
   // started yet.
   EXPECT_FALSE(delegate()->request_token_callback.is_null());
-  EXPECT_EQ(url_fetchers_created_count(), 0);
+  EXPECT_EQ(get_network_request_count(), 0);
   // Return valid access token. This should trigger HTTP request.
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(get_network_request_count(), 1);
   EXPECT_EQ(delegate()->invalidated_token, "access.token");
 }
 
@@ -384,10 +336,8 @@ TEST_F(GCMNetworkChannelTest, RequestTokenNeverCompletes) {
 TEST_F(GCMNetworkChannelTest, ChannelState) {
   EXPECT_FALSE(delegate()->message_callback.is_null());
   // POST will fail.
-  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
-                                         std::string(),
-                                         net::HTTP_SERVICE_UNAVAILABLE,
-                                         net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURL, "",
+                                         net::HTTP_SERVICE_UNAVAILABLE);
 
   delegate()->connection_state_callback.Run(true);
   delegate()->register_callback.Run("registration.id", gcm::GCMClient::SUCCESS);
@@ -397,21 +347,18 @@ TEST_F(GCMNetworkChannelTest, ChannelState) {
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(get_network_request_count(), 1);
   // Failing HTTP POST should cause TRANSIENT_INVALIDATION_ERROR.
   EXPECT_EQ(TRANSIENT_INVALIDATION_ERROR, get_last_invalidator_state());
 
   // Setup POST to succeed.
-  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
-                                         "",
-                                         net::HTTP_NO_CONTENT,
-                                         net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_NO_CONTENT);
   network_channel()->SendMessage("abra.cadabra");
   EXPECT_FALSE(delegate()->request_token_callback.is_null());
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 2);
+  EXPECT_EQ(get_network_request_count(), 2);
   // Successful post should set invalidator state to enabled.
   EXPECT_EQ(INVALIDATIONS_ENABLED, get_last_invalidator_state());
   // Network changed event shouldn't affect invalidator state.
@@ -441,10 +388,7 @@ TEST_F(GCMNetworkChannelTest, BuildUrl) {
 }
 
 TEST_F(GCMNetworkChannelTest, EchoToken) {
-  url_fetcher_factory()->SetFakeResponse(GURL("http://test.url.com"),
-                                         std::string(),
-                                         net::HTTP_OK,
-                                         net::URLRequestStatus::SUCCESS);
+  test_url_loader_factory()->AddResponse(kURL, "", net::HTTP_OK);
   // After construction GCMNetworkChannel should have called Register.
   // Return valid registration id.
   delegate()->register_callback.Run("registration.id", gcm::GCMClient::SUCCESS);
@@ -454,7 +398,7 @@ TEST_F(GCMNetworkChannelTest, EchoToken) {
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 1);
+  EXPECT_EQ(get_network_request_count(), 1);
   EXPECT_TRUE(get_last_echo_token().empty());
 
   // Trigger response.
@@ -465,7 +409,7 @@ TEST_F(GCMNetworkChannelTest, EchoToken) {
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 2);
+  EXPECT_EQ(get_network_request_count(), 2);
   EXPECT_EQ("echo.token", get_last_echo_token());
 
   // Trigger response with empty echo token.
@@ -476,7 +420,7 @@ TEST_F(GCMNetworkChannelTest, EchoToken) {
   delegate()->request_token_callback.Run(
       GoogleServiceAuthError::AuthErrorNone(), "access.token");
   RunLoopUntilIdle();
-  EXPECT_EQ(url_fetchers_created_count(), 3);
+  EXPECT_EQ(get_network_request_count(), 3);
   // Echo_token should be from second message.
   EXPECT_EQ("echo.token", get_last_echo_token());
 }

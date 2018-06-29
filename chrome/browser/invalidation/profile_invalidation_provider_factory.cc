@@ -29,7 +29,9 @@
 #include "components/prefs/pref_registry.h"
 #include "components/signin/core/browser/profile_oauth2_token_service.h"
 #include "components/signin/core/browser/signin_manager.h"
+#include "content/public/browser/storage_partition.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 #if defined(OS_ANDROID)
 #include "components/invalidation/impl/invalidation_service_android.h"
@@ -127,7 +129,9 @@ KeyedService* ProfileInvalidationProviderFactory::BuildServiceInstanceFor(
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(profile->GetPrefs())),
       gcm::GCMProfileServiceFactory::GetForProfile(profile)->driver(),
-      profile->GetRequestContext()));
+      profile->GetRequestContext(),
+      content::BrowserContext::GetDefaultStoragePartition(profile)
+          ->GetURLLoaderFactoryForBrowserProcess()));
   service->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new InvalidatorStorage(profile->GetPrefs())));
 

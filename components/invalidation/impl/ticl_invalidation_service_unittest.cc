@@ -22,6 +22,7 @@
 #include "components/invalidation/impl/profile_identity_provider.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -70,7 +71,7 @@ class TiclInvalidationServiceTestDelegate {
         "TestUserAgent",
         std::make_unique<ProfileIdentityProvider>(&token_service_),
         std::unique_ptr<TiclSettingsProvider>(new FakeTiclSettingsProvider),
-        gcm_driver_.get(), nullptr));
+        gcm_driver_.get(), nullptr, nullptr));
   }
 
   void InitializeInvalidationService() {
