@@ -5661,7 +5661,7 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cpi->refresh_alt_ref_frame = 0;
 
   // Initialize fields related to forward keyframes
-  cpi->invisible_kf = 0;
+  cpi->no_show_kf = 0;
   cm->reset_decoder_state = 0;
 
   // Don't allow a show_existing_frame to coincide with an error resilient or
@@ -5751,12 +5751,13 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if ((source = av1_lookahead_peek(cpi->lookahead, arf_src_index)) != NULL) {
       cm->showable_frame = 1;
       cpi->alt_ref_source = source;
+      // When arf_src_index == rc->frames_to_key, it indicates a fwd_kf
       if (arf_src_index == rc->frames_to_key) {
         // Skip temporal filtering and mark as intra_only if we have a fwd_kf
         const GF_GROUP *const gf_group = &cpi->twopass.gf_group;
         int which_arf = gf_group->arf_update_idx[gf_group->index];
         cpi->is_arf_filter_off[which_arf] = 1;
-        cpi->invisible_kf = 1;
+        cpi->no_show_kf = 1;
       } else {
         if (oxcf->arnr_max_frames > 0) {
           // Produce the filtered ARF frame.

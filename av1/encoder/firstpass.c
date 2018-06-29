@@ -3455,7 +3455,7 @@ void av1_rc_get_second_pass_params(AV1_COMP *cpi) {
     target_rate = av1_rc_clamp_pframe_target_size(cpi, target_rate);
     rc->base_frame_target = target_rate;
 
-    if (cpi->invisible_kf) {
+    if (cpi->no_show_kf) {
       assert(gf_group->update_type[gf_group->index] == ARF_UPDATE);
       cm->frame_type = KEY_FRAME;
     } else {
