@@ -466,11 +466,13 @@ void VideoCaptureDeviceAndroid::DoTakePhoto(TakePhotoCallback callback) {
   std::unique_ptr<TakePhotoCallback> heap_callback(
       new TakePhotoCallback(std::move(callback)));
   const intptr_t callback_id = reinterpret_cast<intptr_t>(heap_callback.get());
-  if (!Java_VideoCapture_takePhoto(env, j_capture_, callback_id))
-    return;
 
-  {
-    base::AutoLock lock(photo_callbacks_lock_);
+  // We need lock here because asynchronous response to
+  // Java_VideoCapture_takePhoto(), i.e. a call to OnPhotoTaken, arrives from a
+  // separate thread, and it can arrive before |photo_callbacks_.push_back()|
+  // has executed.
+  base::AutoLock lock(photo_callbacks_lock_);
+  if (Java_VideoCapture_takePhoto(env, j_capture_, callback_id)) {
     photo_callbacks_.push_back(std::move(heap_callback));
   }
 }
