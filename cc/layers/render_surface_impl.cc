@@ -616,7 +616,10 @@ void RenderSurfaceImpl::TileMaskLayer(
       case viz::DrawQuad::SOLID_COLOR: {
         SkColor temp_color =
             viz::SolidColorDrawQuad::MaterialCast(temp_quad)->color;
-        if (!temp_color)
+        // Check the alpha channel of the color. We apply the mask by
+        // multiplying with the alpha channel, so if the alpha channel is
+        // transparent, we skip this quad.
+        if (SkColorGetA(temp_color) == SK_AlphaTRANSPARENT)
           continue;
         SkAlpha solid = SK_AlphaOPAQUE;
         DCHECK_EQ(SkColorGetA(temp_color), solid);
