@@ -63,6 +63,11 @@ ASH_PUBLIC_EXPORT void RegisterWindowProperties(
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<BackdropWindowMode>* const
     kBackdropWindowMode;
 
+// If set to true, the window will be replaced by a black rectangle when taking
+// screenshot for assistant. Used to preserve privacy for incognito windows.
+ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
+    kBlockedForAssistantSnapshotKey;
+
 // If true, will send system keys to the window for dispatch.
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
     kCanConsumeSystemKeysKey;

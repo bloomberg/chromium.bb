@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "ash/ash_export.h"
 #include "ash/highlighter/highlighter_controller.h"
 #include "ash/public/interfaces/assistant_controller.mojom.h"
 #include "ash/public/interfaces/assistant_image_downloader.mojom.h"
@@ -24,15 +25,20 @@ namespace base {
 class UnguessableToken;
 }  // namespace base
 
+namespace ui {
+class LayerTreeOwner;
+}  // namespace ui
+
 namespace ash {
 
 class AssistantControllerObserver;
 class AssistantInteractionController;
 class AssistantUiController;
 
-class AssistantController : public mojom::AssistantController,
-                            public HighlighterController::Observer,
-                            public mojom::ManagedWebContentsOpenUrlDelegate {
+class ASH_EXPORT AssistantController
+    : public mojom::AssistantController,
+      public HighlighterController::Observer,
+      public mojom::ManagedWebContentsOpenUrlDelegate {
  public:
   AssistantController();
   ~AssistantController() override;
@@ -98,6 +104,8 @@ class AssistantController : public mojom::AssistantController,
     DCHECK(assistant_ui_controller_);
     return assistant_ui_controller_.get();
   }
+
+  std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
   // The observer list should be initialized early so that sub-controllers may
