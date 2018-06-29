@@ -18,6 +18,7 @@ extern "C" {
 
 struct AV1Decoder;
 struct aom_read_bit_buffer;
+struct ThreadData;
 
 // Reads the middle part of the sequence header OBU (from
 // frame_width_bits_minus_1 to enable_restoration) into cm->seq_params (a
@@ -69,7 +70,7 @@ struct aom_read_bit_buffer *av1_init_read_bit_buffer(
     struct AV1Decoder *pbi, struct aom_read_bit_buffer *rb, const uint8_t *data,
     const uint8_t *data_end);
 
-void av1_free_mc_tmp_buf(void *td, int use_highbd);
+void av1_free_mc_tmp_buf(struct ThreadData *thread_data, int use_highbd);
 
 void av1_set_single_tile_decoding_mode(AV1_COMMON *const cm);
 

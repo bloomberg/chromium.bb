@@ -2854,8 +2854,7 @@ static void alloc_dec_jobs(AV1DecTileMT *tile_mt_info, AV1_COMMON *cm,
                   aom_malloc(sizeof(*tile_mt_info->job_queue) * num_tiles));
 }
 
-void av1_free_mc_tmp_buf(void *td, int use_highbd) {
-  ThreadData *thread_data = (ThreadData *)td;
+void av1_free_mc_tmp_buf(ThreadData *thread_data, int use_highbd) {
   int ref;
   for (ref = 0; ref < 2; ref++) {
     if (use_highbd)
@@ -2867,10 +2866,8 @@ void av1_free_mc_tmp_buf(void *td, int use_highbd) {
   thread_data->mc_buf_size = 0;
 }
 
-static void allocate_mc_tmp_buf(AV1_COMMON *const cm, void *td, int buf_size,
-                                int use_highbd) {
-  ThreadData *thread_data = (ThreadData *)td;
-
+static void allocate_mc_tmp_buf(AV1_COMMON *const cm, ThreadData *thread_data,
+                                int buf_size, int use_highbd) {
   for (int ref = 0; ref < 2; ref++) {
     if (use_highbd) {
       uint16_t *hbd_mc_buf;
