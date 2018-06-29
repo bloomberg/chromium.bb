@@ -2847,10 +2847,9 @@ bool PaintLayer::SupportsSubsequenceCaching() const {
   if (EnclosingPaginationLayer())
     return false;
 
-  // SVG paints atomically. Even though LayoutSVGRoot is not itself a stacking
-  // context, the only way to specify any z-index changes to paint ordering
-  // is underneath <foreignObject>, which is itself a stacking context.
-  if (GetLayoutObject().IsSVGRoot())
+  // SVG documents paint atomically.
+  if (GetLayoutObject().IsSVGRoot() &&
+      GetLayoutObject().GetDocument().IsSVGDocument())
     return true;
 
   // Create subsequence for only stacking contexts whose painting are atomic.

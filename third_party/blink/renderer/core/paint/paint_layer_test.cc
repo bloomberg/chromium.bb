@@ -454,7 +454,7 @@ TEST_P(PaintLayerTest, SubsequenceCachingSVGRoot) {
   )HTML");
 
   PaintLayer* svgroot = GetPaintLayerByElementId("svgroot");
-  EXPECT_TRUE(svgroot->SupportsSubsequenceCaching());
+  EXPECT_FALSE(svgroot->SupportsSubsequenceCaching());
 }
 
 TEST_P(PaintLayerTest, SubsequenceCachingMuticol) {
