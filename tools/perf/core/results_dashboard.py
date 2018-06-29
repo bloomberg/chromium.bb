@@ -19,7 +19,6 @@ import sys
 import traceback
 import urllib
 import urllib2
-import uuid
 import zlib
 
 from core import path_util
@@ -88,10 +87,9 @@ def SendResults(data, url, tmp_dir,
 
 def _GetCacheFileName(tmp_dir):
   """Gets the cache filename, creating the file if it does not exist."""
-  cache_dir = os.path.join(os.path.abspath(tmp_dir), CACHE_DIR, str(uuid.uuid4()))
+  cache_dir = os.path.join(os.path.abspath(tmp_dir), CACHE_DIR)
   if not os.path.exists(cache_dir):
     os.makedirs(cache_dir)
-  # Since this is multi-processed, add a unique identifier to the cache dir
   cache_filename = os.path.join(cache_dir, CACHE_FILENAME)
   if not os.path.exists(cache_filename):
     # Create the file.

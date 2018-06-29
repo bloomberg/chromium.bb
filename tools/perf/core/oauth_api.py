@@ -13,13 +13,13 @@ import tempfile
 
 
 @contextlib.contextmanager
-def with_access_token(service_account_json, append):
+def with_access_token(service_account_json):
   """Yields an access token for the service account.
 
   Args:
     service_account_json: The path to the service account JSON file.
   """
-  fd, path = tempfile.mkstemp(suffix='.json', prefix=append)
+  fd, path = tempfile.mkstemp(suffix='.json', prefix='tok')
   try:
     args = ['luci-auth', 'token']
     if service_account_json:
