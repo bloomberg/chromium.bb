@@ -101,7 +101,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_experiments.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "components/sessions/core/session_id_generator.h"
@@ -1299,7 +1299,7 @@ void BrowserProcessImpl::CreateOptimizationGuideService() {
   DCHECK(!optimization_guide_service_);
   created_optimization_guide_service_ = true;
 
-  if (!base::FeatureList::IsEnabled(previews::features::kOptimizationHints))
+  if (!previews::params::IsOptimizationHintsEnabled())
     return;
 
   optimization_guide_service_ =

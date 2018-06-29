@@ -17,7 +17,7 @@
 #include "components/optimization_guide/optimization_guide_constants.h"
 #include "components/optimization_guide/optimization_guide_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/previews/core/previews_features.h"
+#include "components/previews/core/previews_experiments.h"
 
 using component_updater::ComponentUpdateService;
 
@@ -133,7 +133,7 @@ OptimizationHintsComponentInstallerPolicy::GetMimeTypes() const {
 
 void RegisterOptimizationHintsComponent(ComponentUpdateService* cus,
                                         PrefService* profile_prefs) {
-  if (!base::FeatureList::IsEnabled(previews::features::kOptimizationHints)) {
+  if (!previews::params::IsOptimizationHintsEnabled()) {
     return;
   }
   if (!profile_prefs || !profile_prefs->GetBoolean(prefs::kDataSaverEnabled)) {
