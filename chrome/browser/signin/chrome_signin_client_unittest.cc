@@ -21,6 +21,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "content/public/browser/network_connection_tracker.h"
+#include "content/public/test/mock_network_connection_tracker.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -30,61 +31,12 @@
 
 namespace {
 
-class MockNetworkConnectionTrackerNeverOffline
-    : public content::NetworkConnectionTracker {
- public:
-  MockNetworkConnectionTrackerNeverOffline()
-      : content::NetworkConnectionTracker() {}
-  ~MockNetworkConnectionTrackerNeverOffline() override {}
-
-  bool GetConnectionType(network::mojom::ConnectionType* type,
-                         ConnectionTypeCallback callback) override {
-    *type = network::mojom::ConnectionType::CONNECTION_3G;
-    return true;
-  }
-};
-
-class MockNetworkConnectionTrackerGetConnectionTypeAsync
-    : public content::NetworkConnectionTracker {
- public:
-  MockNetworkConnectionTrackerGetConnectionTypeAsync()
-      : content::NetworkConnectionTracker() {}
-  ~MockNetworkConnectionTrackerGetConnectionTypeAsync() override {}
-
-  void CompleteCallback() {
-    OnInitialConnectionType(network::mojom::ConnectionType::CONNECTION_3G);
-  }
-};
-
-class MockNetworkConnectionTrackerOfflineUntilChange
-    : public content::NetworkConnectionTracker {
- public:
-  MockNetworkConnectionTrackerOfflineUntilChange()
-      : content::NetworkConnectionTracker(), online_(false) {}
-  ~MockNetworkConnectionTrackerOfflineUntilChange() override {}
-
-  bool GetConnectionType(network::mojom::ConnectionType* type,
-                         ConnectionTypeCallback callback) override {
-    if (online_) {
-      *type = network::mojom::ConnectionType::CONNECTION_3G;
-    } else {
-      *type = network::mojom::ConnectionType::CONNECTION_NONE;
-    }
-    return true;
-  }
-  void GoOnline() {
-    online_ = true;
-    OnNetworkChanged(network::mojom::ConnectionType::CONNECTION_3G);
-  }
- private:
-  bool online_;
-};
-
 class CallbackTester {
  public:
   CallbackTester() : called_(0) {}
 
   void Increment();
+  void IncrementAndUnblock(base::RunLoop* run_loop);
   bool WasCalledExactlyOnce();
 
  private:
@@ -93,6 +45,11 @@ class CallbackTester {
 
 void CallbackTester::Increment() {
   called_++;
+}
+
+void CallbackTester::IncrementAndUnblock(base::RunLoop* run_loop) {
+  Increment();
+  run_loop->QuitWhenIdle();
 }
 
 bool CallbackTester::WasCalledExactlyOnce() {
@@ -125,7 +82,8 @@ class ChromeSigninClientTest : public testing::Test {
 };
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
-  Initialize(std::make_unique<MockNetworkConnectionTrackerNeverOffline>());
+  Initialize(std::make_unique<content::MockNetworkConnectionTracker>(
+      true, network::mojom::ConnectionType::CONNECTION_3G));
   CallbackTester tester;
   signin_client()->DelayNetworkCall(
       base::Bind(&CallbackTester::Increment, base::Unretained(&tester)));
@@ -133,32 +91,35 @@ TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsImmediatelyWithNetwork) {
 }
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterGetConnectionType) {
-  auto tracker =
-      std::make_unique<MockNetworkConnectionTrackerGetConnectionTypeAsync>();
-  MockNetworkConnectionTrackerGetConnectionTypeAsync* mock = tracker.get();
+  auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+      false, network::mojom::ConnectionType::CONNECTION_3G);
   Initialize(std::move(tracker));
 
+  base::RunLoop run_loop;
   CallbackTester tester;
-  signin_client()->DelayNetworkCall(base::Bind(&CallbackTester::Increment,
-                                               base::Unretained(&tester)));
+  signin_client()->DelayNetworkCall(
+      base::Bind(&CallbackTester::IncrementAndUnblock,
+                 base::Unretained(&tester), &run_loop));
   ASSERT_FALSE(tester.WasCalledExactlyOnce());
-  mock->CompleteCallback();
-  base::RunLoop().RunUntilIdle();
+  run_loop.Run();  // Wait for IncrementAndUnblock().
   ASSERT_TRUE(tester.WasCalledExactlyOnce());
 }
 
 TEST_F(ChromeSigninClientTest, DelayNetworkCallRunsAfterNetworkChange) {
-  auto tracker =
-      std::make_unique<MockNetworkConnectionTrackerOfflineUntilChange>();
-  MockNetworkConnectionTrackerOfflineUntilChange* mock = tracker.get();
+  auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+      true, network::mojom::ConnectionType::CONNECTION_NONE);
+  content::MockNetworkConnectionTracker* mock = tracker.get();
   Initialize(std::move(tracker));
 
+  base::RunLoop run_loop;
   CallbackTester tester;
-  signin_client()->DelayNetworkCall(base::Bind(&CallbackTester::Increment,
-                                               base::Unretained(&tester)));
+  signin_client()->DelayNetworkCall(
+      base::Bind(&CallbackTester::IncrementAndUnblock,
+                 base::Unretained(&tester), &run_loop));
+
   ASSERT_FALSE(tester.WasCalledExactlyOnce());
-  mock->GoOnline();
-  base::RunLoop().RunUntilIdle();
+  mock->SetConnectionType(network::mojom::ConnectionType::CONNECTION_3G);
+  run_loop.Run();  // Wait for IncrementAndUnblock().
   ASSERT_TRUE(tester.WasCalledExactlyOnce());
 }
 
