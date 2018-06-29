@@ -1,5 +1,8 @@
 This is a testharness.js-based test.
 PASS Payment handler interfaces.
+FAIL Partial interface ServiceWorkerRegistration: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface ServiceWorkerGlobalScope: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface ServiceWorkerGlobalScope[2]: original interface defined assert_true: Original interface should be defined expected true got false
 FAIL PaymentManager interface: existence and properties of interface object assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 FAIL PaymentManager interface object length assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 FAIL PaymentManager interface object name assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
@@ -9,6 +12,8 @@ FAIL PaymentManager interface: existence and properties of interface prototype o
 FAIL PaymentManager interface: attribute instruments assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
 PASS Unscopable handled correctly for instruments property on PaymentManager
 FAIL PaymentManager interface: member requestPermission Cannot use 'in' operator to search for 'requestPermission' in undefined
+FAIL PaymentManager interface: attribute userHint assert_own_property: self does not have own property "PaymentManager" expected property "PaymentManager" missing
+PASS Unscopable handled correctly for userHint property on PaymentManager
 PASS PaymentInstruments interface: existence and properties of interface object
 PASS PaymentInstruments interface object length
 PASS PaymentInstruments interface object name
