@@ -121,6 +121,10 @@ bool ExtensionTestNotificationObserver::WaitForExtensionCrash(
       NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources())
       .Wait();
+  // GetNonTerminatedExtensions consults ExtensionRegistry which gets updated
+  // asynchronously in a task posted when
+  // NOTIFICATION_EXTENSION_PROCESS_TERMINATED is handled, so let this task run.
+  base::RunLoop().RunUntilIdle();
   return (GetNonTerminatedExtensions(extension_id, context_) == NULL);
 }
 
@@ -194,16 +198,15 @@ void ExtensionTestNotificationObserver::WaitForCondition(
     return;
   condition_ = condition;
 
-  scoped_refptr<content::MessageLoopRunner> runner(
-      new content::MessageLoopRunner);
-  quit_closure_ = runner->QuitClosure();
+  base::RunLoop run_loop;
+  quit_closure_ = run_loop.QuitClosure();
 
   std::unique_ptr<base::CallbackList<void()>::Subscription> subscription;
   if (notification_set) {
     subscription = notification_set->callback_list().Add(base::Bind(
         &ExtensionTestNotificationObserver::MaybeQuit, base::Unretained(this)));
   }
-  runner->Run();
+  run_loop.Run();
 
   condition_.Reset();
   quit_closure_.Reset();
