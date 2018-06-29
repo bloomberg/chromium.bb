@@ -12092,20 +12092,23 @@
             }
           },
           'overrides': {
-            'type': 'object',
-            'properties': {
-              'action': {
-                'type': 'string',
-                'enum': [
-                  'LOCK',
-                  'UNLOCK'
-                ]
-              },
-              'created_at_millis': { 'type': 'string' },
-              'action_specific_data': {
-                'type': 'object',
-                'properties': {
-                  'duration_mins': { 'type': 'integer' }
+            'type': 'array',
+            'items': {
+              'type': 'object',
+              'properties': {
+                'action': {
+                  'type': 'string',
+                  'enum': [
+                    'LOCK',
+                    'UNLOCK'
+                  ]
+                },
+                'created_at_millis': { 'type': 'string' },
+                'action_specific_data': {
+                  'type': 'object',
+                  'properties': {
+                    'duration_mins': { 'type': 'integer' }
+                  }
                 }
               }
             }
@@ -12142,10 +12145,10 @@
             'minute': 0
           }
         },
-        'overrides': {
+        'overrides': [{
           'action': 'LOCK',
           'created_at_millis': '1250000'
-        }
+        }]
       }],
       'id': 448,
       'caption': '''Time Limit''',
@@ -12160,7 +12163,9 @@
           * If neither time_window_limit nor time_usage_limit is active |LOCK| can be used to lock the device.
           * |LOCK| temporarily locks a user session until the next time_window_limit or time_usage_limit starts.
           * |UNLOCK| unlocks a user's session locked by time_window_limit or time_usage_limit.
-          |created_time_millis| is the UTC timestamp for the override creation, it is sent as a String because the timestamp wouldn't fit in an integer It is used to determine whether this override should still be applied. If the current active time limit feature (time usage limit or time window limit) started after the override was created, it should not take action. Also if the override was created before the last change of the active time_window_limit or time_usage_window it should not be applied.'''
+          |created_time_millis| is the UTC timestamp for the override creation, it is sent as a String because the timestamp wouldn't fit in an integer It is used to determine whether this override should still be applied. If the current active time limit feature (time usage limit or time window limit) started after the override was created, it should not take action. Also if the override was created before the last change of the active time_window_limit or time_usage_window it should not be applied.
+
+          Multiple overrides may be sent, the newest valid entry is the one that is going to be applied.'''
     },
     {
       'name': 'ArcBackupRestoreServiceEnabled',
