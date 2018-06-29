@@ -642,7 +642,7 @@ bool ThemePainterMac::PaintCheckbox(const Node* node,
 
   LocalCurrentGraphicsContext local_context(
       paint_info.context, ThemeMac::InflateRectForFocusRing(inflated_rect));
-  NSView* view = ThemeMac::EnsuredView(document.View());
+  NSView* view = ThemeMac::EnsuredView(document.View()->Size());
   [checkbox_cell drawWithFrame:NSRect(inflated_rect) inView:view];
   if (states & kFocusControlState)
     [checkbox_cell cr_drawFocusRingWithFrame:NSRect(inflated_rect) inView:view];
@@ -684,7 +684,7 @@ bool ThemePainterMac::PaintRadio(const Node* node,
   LocalCurrentGraphicsContext local_context(
       paint_info.context, ThemeMac::InflateRectForFocusRing(inflated_rect));
   BEGIN_BLOCK_OBJC_EXCEPTIONS
-  NSView* view = ThemeMac::EnsuredView(document.View());
+  NSView* view = ThemeMac::EnsuredView(document.View()->Size());
   [radio_cell drawWithFrame:NSRect(inflated_rect) inView:view];
   if (states & kFocusControlState)
     [radio_cell cr_drawFocusRingWithFrame:NSRect(inflated_rect) inView:view];
@@ -741,7 +741,7 @@ bool ThemePainterMac::PaintButton(const Node* node,
 
   LocalCurrentGraphicsContext local_context(
       paint_info.context, ThemeMac::InflateRectForFocusRing(inflated_rect));
-  NSView* view = ThemeMac::EnsuredView(document.View());
+  NSView* view = ThemeMac::EnsuredView(document.View()->Size());
 
   [button_cell drawWithFrame:NSRect(inflated_rect) inView:view];
   if (states & kFocusControlState)

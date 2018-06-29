@@ -96,7 +96,7 @@ class ThemeMac : public Theme {
                                                 float zoom_factor);
   static PLATFORM_EXPORT const IntSize* CheckboxSizes();
   static PLATFORM_EXPORT const int* CheckboxMargins(NSControlSize);
-  static PLATFORM_EXPORT NSView* EnsuredView(ScrollableArea*);
+  static PLATFORM_EXPORT NSView* EnsuredView(const IntSize&);
 
   static PLATFORM_EXPORT const IntSize* RadioSizes();
   static PLATFORM_EXPORT const int* RadioMargins(NSControlSize);

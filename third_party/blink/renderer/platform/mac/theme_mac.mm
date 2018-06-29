@@ -154,11 +154,10 @@ static void UpdateStates(NSCell* cell, ControlStates states) {
 }
 
 // Return a fake NSView whose sole purpose is to tell AppKit that it's flipped.
-NSView* ThemeMac::EnsuredView(ScrollableArea* scrollable_area) {
+NSView* ThemeMac::EnsuredView(const IntSize& size) {
   // Use a fake flipped view.
   static NSView* flipped_view = [[BlinkFlippedControl alloc] init];
-  [flipped_view
-      setFrameSize:NSSizeFromCGSize(CGSize(scrollable_area->ContentsSize()))];
+  [flipped_view setFrameSize:NSSizeFromCGSize(CGSize(size))];
 
   return flipped_view;
 }
