@@ -646,6 +646,13 @@
         }
       },
       {
+        "isolate_name": "content_shell_crash_test",
+        "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -1909,6 +1916,13 @@
     ],
     "isolated_scripts": [
       {
+        "isolate_name": "content_shell_crash_test",
+        "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
         "swarming": {
@@ -2596,6 +2610,13 @@
       {
         "isolate_name": "components_perftests",
         "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "content_shell_crash_test",
+        "name": "content_shell_crash_test",
         "swarming": {
           "can_use_on_swarming_builders": true
         }
@@ -3307,6 +3328,13 @@
       }
     ],
     "isolated_scripts": [
+      {
+        "isolate_name": "content_shell_crash_test",
+        "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
       {
         "isolate_name": "metrics_python_tests",
         "name": "metrics_python_tests",
