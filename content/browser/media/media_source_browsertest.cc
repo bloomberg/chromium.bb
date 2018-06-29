@@ -26,10 +26,17 @@ const char kWebMVideoOnly[] = "video/webm; codecs=\"vp8\"";
 const char kWebMAudioVideo[] = "video/webm; codecs=\"vorbis, vp8\"";
 const char kMp4FlacAudioOnly[] = "audio/mp4; codecs=\"flac\"";
 
-#if BUILDFLAG(USE_PROPRIETARY_CODECS) && \
-    BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
+const char kMp4AudioOnly[] = "audio/mp4; codecs=\"mp4a.40.2\"'";
+
+#if !defined(OS_ANDROID)
+const char kMp4VideoOnly[] = "video/mp4; codecs=\"avc1.4D4041\"'";
+#endif  // !defined(OS_ANDROID)
+
+#if BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
 const char kMp2tAudioVideo[] = "video/mp2t; codecs=\"mp4a.40.2, avc1.42E01E\"";
-#endif
+#endif  // BUILDFLAG(ENABLE_MSE_MPEG2TS_STREAM_PARSER)
+#endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
 namespace content {
 
@@ -103,8 +110,12 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, ConfigChangeVideo) {
 #if !defined(OS_ANDROID)
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
   base::StringPairs query_params;
-  query_params.push_back(std::make_pair("videoFormat", "CLEAR_MP4"));
-  query_params.push_back(std::make_pair("audioFormat", "CLEAR_WEBM"));
+  query_params.push_back(
+      std::make_pair("videoFile", "bear-640x360-v_frag.mp4"));
+  query_params.push_back(std::make_pair("videoFormat", kMp4VideoOnly));
+  query_params.push_back(
+      std::make_pair("audioFile", "bear-320x240-audio-only.webm"));
+  query_params.push_back(std::make_pair("audioFormat", kWebMAudioOnly));
   RunMediaTestPage("mse_different_containers.html", query_params, media::kEnded,
                    true);
 }
@@ -112,8 +123,12 @@ IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_MP4_Audio_WEBM) {
 
 IN_PROC_BROWSER_TEST_F(MediaSourceTest, Playback_Video_WEBM_Audio_MP4) {
   base::StringPairs query_params;
-  query_params.push_back(std::make_pair("videoFormat", "CLEAR_WEBM"));
-  query_params.push_back(std::make_pair("audioFormat", "CLEAR_MP4"));
+  query_params.push_back(
+      std::make_pair("videoFile", "bear-320x240-video-only.webm"));
+  query_params.push_back(std::make_pair("videoFormat", kWebMVideoOnly));
+  query_params.push_back(
+      std::make_pair("audioFile", "bear-640x360-a_frag.mp4"));
+  query_params.push_back(std::make_pair("audioFormat", kMp4AudioOnly));
   RunMediaTestPage("mse_different_containers.html", query_params, media::kEnded,
                    true);
 }
