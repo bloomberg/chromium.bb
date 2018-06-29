@@ -21,6 +21,8 @@ using OfflineContentProvider = offline_items_collection::OfflineContentProvider;
 using OfflineContentAggregator =
     offline_items_collection::OfflineContentAggregator;
 
+class SkBitmap;
+
 // This class handles the task of observing a single DownloadManager and
 // notifies UI about updates about various downloads.
 class DownloadOfflineContentProvider
@@ -51,6 +53,10 @@ class DownloadOfflineContentProvider
   // AllDownloadItemNotifier::Observer methods.
   void OnDownloadUpdated(DownloadManager* manager, DownloadItem* item) override;
   void OnDownloadRemoved(DownloadManager* manager, DownloadItem* item) override;
+
+  void OnThumbnailRetrieved(const ContentId& id,
+                            const VisualsCallback& callback,
+                            const SkBitmap& bitmap);
 
   DownloadManager* manager_;
   download::AllDownloadItemNotifier download_notifier_;

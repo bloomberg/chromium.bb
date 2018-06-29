@@ -8,6 +8,7 @@
 
 #include "base/callback.h"
 #include "base/time/time.h"
+#include "chrome/browser/download/image_thumbnail_request.h"
 #include "chrome/browser/download/offline_item_utils.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,13 +16,20 @@
 #include "components/offline_items_collection/core/offline_content_aggregator.h"
 #include "components/offline_items_collection/core/offline_item.h"
 #include "content/public/browser/browser_context.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 
 using OfflineItemFilter = offline_items_collection::OfflineItemFilter;
 using OfflineItemState = offline_items_collection::OfflineItemState;
 using OfflineItemProgressUnit =
     offline_items_collection::OfflineItemProgressUnit;
+using OfflineItemVisuals = offline_items_collection::OfflineItemVisuals;
 
 namespace {
+
+// Thumbnail size used for generating thumbnails for image files.
+const int kThumbnailSizeInDP = 64;
 
 bool ShouldShowDownloadItem(const download::DownloadItem* item) {
   return !item->IsTemporary() && !item->IsTransient() && !item->IsDangerous();
@@ -114,8 +122,32 @@ void DownloadOfflineContentProvider::GetVisualsForItem(
     const ContentId& id,
     const VisualsCallback& callback) {
   // TODO(crbug.com/855330) Supply thumbnail if item is visible.
+  DownloadItem* item = manager_->GetDownloadByGuid(id.id);
+  if (!item)
+    return;
+
+  display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
+  int icon_size = kThumbnailSizeInDP * display.device_scale_factor();
+
+  auto request = std::make_unique<ImageThumbnailRequest>(
+      icon_size,
+      base::BindOnce(&DownloadOfflineContentProvider::OnThumbnailRetrieved,
+                     weak_ptr_factory_.GetWeakPtr(), id, callback));
+  request->Start(item->GetTargetFilePath());
+
+  // Dropping ownership of |request| here because it will clean itself up once
+  // the started request finishes.
+  request.release();
+}
+
+void DownloadOfflineContentProvider::OnThumbnailRetrieved(
+    const ContentId& id,
+    const VisualsCallback& callback,
+    const SkBitmap& bitmap) {
+  auto visuals = std::make_unique<OfflineItemVisuals>();
+  visuals->icon = gfx::Image::CreateFrom1xBitmap(bitmap);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, id, nullptr));
+      FROM_HERE, base::BindOnce(std::move(callback), id, std::move(visuals)));
 }
 
 void DownloadOfflineContentProvider::AddObserver(
