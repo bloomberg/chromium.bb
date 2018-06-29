@@ -327,7 +327,7 @@ NGLineBreaker::LineBreakState NGLineBreaker::HandleText(
 
   line_.should_create_line_box = true;
   NGInlineItemResult* item_result = AddItem(item, item_results);
-  LayoutUnit available_width = line_.AvailableWidth();
+  LayoutUnit available_width = line_.AvailableWidthToFit();
 
   if (auto_wrap_) {
     // Try to break inside of this text item.
@@ -963,7 +963,7 @@ void NGLineBreaker::HandleCloseTag(const NGInlineItem& item,
 // are no break opportunities in item_results.back().
 NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(
     NGLineInfo* line_info) {
-  return HandleOverflow(line_info, line_.AvailableWidth());
+  return HandleOverflow(line_info, line_.AvailableWidthToFit());
 }
 
 NGLineBreaker::LineBreakState NGLineBreaker::HandleOverflow(

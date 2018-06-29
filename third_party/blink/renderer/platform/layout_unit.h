@@ -192,6 +192,13 @@ class LayoutUnit {
 
   static float Epsilon() { return 1.0f / kFixedPointDenominator; }
 
+  LayoutUnit AddEpsilon() const {
+    LayoutUnit return_value;
+    return_value.SetRawValue(
+        value_ < std::numeric_limits<int>::max() ? value_ + 1 : value_);
+    return return_value;
+  }
+
   static const LayoutUnit Max() {
     LayoutUnit m;
     m.value_ = std::numeric_limits<int>::max();

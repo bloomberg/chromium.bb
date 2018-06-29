@@ -97,12 +97,16 @@ class CORE_EXPORT NGLineBreaker {
     LayoutUnit AvailableWidth() const {
       return line_opportunity.AvailableInlineSize();
     }
-    bool CanFit() const { return position <= AvailableWidth(); }
+    LayoutUnit AvailableWidthToFit() const {
+      return AvailableWidth().AddEpsilon();
+    }
+    bool CanFit() const { return position <= AvailableWidthToFit(); }
     bool CanFit(LayoutUnit extra) const {
-      return position + extra <= AvailableWidth();
+      return position + extra <= AvailableWidthToFit();
     }
     bool CanFloatFit(LayoutUnit extra) const {
-      return position + extra <= line_opportunity.AvailableFloatInlineSize();
+      return position + extra <=
+             line_opportunity.AvailableFloatInlineSize().AddEpsilon();
     }
   };
 
