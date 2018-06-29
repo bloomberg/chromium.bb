@@ -153,6 +153,17 @@ Polymer({
         usedLanguages.add(languageFamilyCodes[k]);
     }
 
+    // Add ARC IMEs to the bottom if any.
+    const arcInputMethods = this.getInputMethodsForLanguages(
+        [this.languageHelper.getArcImeLanguageCode()]);
+    if (arcInputMethods.length) {
+      languageList.push({
+        language: this.languageHelper.getLanguage(
+            this.languageHelper.getArcImeLanguageCode()),
+        inputMethods: arcInputMethods,
+      });
+    }
+
     this.languageList_ = languageList;
     this.notifyInputMethodsChanged_();
   },

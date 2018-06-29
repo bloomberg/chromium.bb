@@ -43,6 +43,7 @@
 #include "ui/base/l10n/l10n_util_collator.h"
 
 #if defined(OS_CHROMEOS)
+#include "chrome/grit/generated_resources.h"
 #include "ui/base/ime/chromeos/component_extension_ime_manager.h"
 #include "ui/base/ime/chromeos/extension_ime_util.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -144,6 +145,10 @@ std::vector<std::string> GetSortedExtensionIMEs(
       base::SplitString(preferred_languages, ",", base::TRIM_WHITESPACE,
                         base::SPLIT_WANT_NONEMPTY);
 
+  // Add the fake language for ARC IMEs at the very last of the list. Unlike
+  // Chrome OS IMEs, these ARC ones are not associated with any (real) language.
+  enabled_languages.push_back(chromeos::extension_ime_util::kArcImeLanguage);
+
   InputMethodDescriptors descriptors;
   ime_state->GetInputMethodExtensions(&descriptors);
 
@@ -243,6 +248,20 @@ LanguageSettingsPrivateGetLanguageListFunction::Run() {
 
     language_list->Append(language.ToValue());
   }
+
+#if defined(OS_CHROMEOS)
+  // Send the display name of the fake language for ARC IMEs to the JS side.
+  // |native_display_name| does't have to be set because the language selection
+  // drop-down menu doesn't list the fake language.
+  {
+    language_settings_private::Language language;
+    language.code = chromeos::extension_ime_util::kArcImeLanguage;
+    language.display_name =
+        l10n_util::GetStringUTF8(IDS_SETTINGS_LANGUAGES_KEYBOARD_APPS);
+    language_list->Append(language.ToValue());
+  }
+#endif  // defined(OS_CHROMEOS)
+
   return RespondNow(OneArgument(std::move(language_list)));
 }
 
