@@ -47,6 +47,10 @@ class CredentialMetadataTest : public ::testing::Test {
     return *CredentialMetadata::EncodeRpId(key_, rp_id_);
   }
 
+  std::string DecodeRpId(const std::string& ct) {
+    return *CredentialMetadata::DecodeRpId(key_, ct);
+  }
+
   std::vector<uint8_t> default_id_ = {0, 1, 2, 3};
   std::string rp_id_ = "acme.com";
   std::string key_ = "supersecretsupersecretsupersecre";
@@ -64,7 +68,7 @@ TEST_F(CredentialMetadataTest, CredentialId_IsRandom) {
   EXPECT_NE(SealCredentialId(DefaultUser()), SealCredentialId(DefaultUser()));
 }
 
-TEST_F(CredentialMetadataTest, CredentialId_FailDecrypt) {
+TEST_F(CredentialMetadataTest, CredentialId_FailDecode) {
   const auto id = SealCredentialId(DefaultUser());
   // Flipping a bit in version, nonce, or ciphertext will fail credential
   // decryption.
@@ -97,11 +101,19 @@ TEST_F(CredentialMetadataTest, EncodeRpIdAndUserId) {
 }
 
 TEST_F(CredentialMetadataTest, EncodeRpId) {
-  EXPECT_EQ(64u, EncodeRpId().size());
+  EXPECT_EQ(48u, EncodeRpId().size());
 
   EXPECT_EQ(EncodeRpId(), EncodeRpId());
   EXPECT_NE(EncodeRpId(), *CredentialMetadata::EncodeRpId(key_, "notacme.com"));
   EXPECT_NE(EncodeRpId(), *CredentialMetadata::EncodeRpId(wrong_key_, rp_id_));
+}
+
+TEST_F(CredentialMetadataTest, DecodeRpId) {
+  EXPECT_EQ(rp_id_, DecodeRpId(EncodeRpId()));
+  EXPECT_NE(rp_id_,
+            *CredentialMetadata::DecodeRpId(
+                key_, *CredentialMetadata::EncodeRpId(key_, "notacme.com")));
+  EXPECT_FALSE(CredentialMetadata::DecodeRpId(wrong_key_, EncodeRpId()));
 }
 
 TEST(CredentialMetadata, GenerateRandomSecret) {

@@ -97,20 +97,40 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CredentialMetadata {
   static base::Optional<std::string> EncodeRpId(const std::string& secret,
                                                 const std::string& rp_id);
 
+  // DecodeRpId attempts to decode a given RP ID from the keychain. This can be
+  // used to test whether a set of credential metadata was created under the
+  // given secret without knowing the RP ID (which would be required to unseal
+  // a credential ID).
+  static base::Optional<std::string> DecodeRpId(const std::string& secret,
+                                                const std::string& ciphertext);
+
  private:
+  enum Algorithm : uint8_t {
+    kAes256Gcm = 0,
+    kHmacSha256 = 1,
+    kAes256GcmSiv = 2,
+  };
   static constexpr uint8_t kVersion = 0x00;
 
   // MakeAad returns the concatenation of |kVersion| and |rp_id|,
   // which is used as the additional authenticated data (AAD) input to the AEAD.
   static std::string MakeAad(const std::string& rp_id);
 
+  // Derives keys from the caller-provided secret to avoid using the same key
+  // for different algorithms.
+  static std::string DeriveKey(base::StringPiece secret, Algorithm alg);
+  static base::Optional<crypto::Aead::AeadAlgorithm> ToAeadAlgorithm(
+      Algorithm alg);
+
   CredentialMetadata(const std::string& secret);
   ~CredentialMetadata();
 
-  base::Optional<std::string> Seal(base::span<const uint8_t> nonce,
+  base::Optional<std::string> Seal(Algorithm alg,
+                                   base::span<const uint8_t> nonce,
                                    base::span<const uint8_t> plaintext,
                                    base::StringPiece authenticated_data) const;
   base::Optional<std::string> Unseal(
+      Algorithm alg,
       base::span<const uint8_t> nonce,
       base::span<const uint8_t> ciphertext,
       base::StringPiece authenticated_data) const;

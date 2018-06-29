@@ -23,29 +23,6 @@ using cbor::CBORWriter;
 using cbor::CBORReader;
 using cbor::CBORValue;
 
-namespace {
-
-enum Algorithm : uint8_t {
-  kAes256Gcm = 0,
-  kHmacSha256 = 1,
-};
-
-// Derive keys from the caller-provided key to avoid using the same key for
-// both algorithms.
-std::string DeriveKey(base::StringPiece in, Algorithm alg) {
-  static constexpr size_t kKeyLength = 32u;
-  std::string key;
-  const uint8_t info = static_cast<uint8_t>(alg);
-  const bool hkdf_init = ::HKDF(
-      reinterpret_cast<uint8_t*>(base::WriteInto(&key, kKeyLength + 1)),
-      kKeyLength, EVP_sha256(), reinterpret_cast<const uint8_t*>(in.data()),
-      in.size(), nullptr /* salt */, 0, &info, 1);
-  DCHECK(hkdf_init);
-  return key;
-}
-
-}  // namespace
-
 // static
 std::string CredentialMetadata::GenerateRandomSecret() {
   static constexpr size_t kSecretSize = 32u;
@@ -126,8 +103,8 @@ base::Optional<std::vector<uint8_t>> CredentialMetadata::SealCredentialId(
   if (!pt) {
     return base::nullopt;
   }
-  base::Optional<std::string> ciphertext =
-      cryptor.Seal(nonce, *pt, MakeAad(rp_id));
+  base::Optional<std::string> ciphertext = cryptor.Seal(
+      CredentialMetadata::Algorithm::kAes256Gcm, nonce, *pt, MakeAad(rp_id));
   if (!ciphertext) {
     return base::nullopt;
   }
@@ -153,7 +130,8 @@ CredentialMetadata::UnsealCredentialId(
   }
 
   base::Optional<std::string> plaintext =
-      cryptor.Unseal(credential_id.subspan(1, kNonceLength),
+      cryptor.Unseal(CredentialMetadata::Algorithm::kAes256Gcm,
+                     credential_id.subspan(1, kNonceLength),
                      credential_id.subspan(1 + kNonceLength), MakeAad(rp_id));
   if (!plaintext) {
     return base::nullopt;
@@ -191,7 +169,38 @@ base::Optional<std::string> CredentialMetadata::EncodeRpIdAndUserId(
 base::Optional<std::string> CredentialMetadata::EncodeRpId(
     const std::string& secret,
     const std::string& rp_id) {
-  return CredentialMetadata(secret).HmacForStorage(rp_id);
+  // Encrypt with a fixed nonce to make the result deterministic while still
+  // allowing the RP ID to be recovered from the ciphertext later.
+  static constexpr std::array<uint8_t, kNonceLength> fixed_zero_nonce = {};
+  base::span<const uint8_t> pt(reinterpret_cast<const uint8_t*>(rp_id.data()),
+                               rp_id.size());
+  std::string empty_ad;
+  // Using AES-GCM with a fixed nonce would break confidentiality, so this uses
+  // AES-GCM-SIV instead.
+  base::Optional<std::string> ct = CredentialMetadata(secret).Seal(
+      CredentialMetadata::Algorithm::kAes256GcmSiv, fixed_zero_nonce, pt,
+      empty_ad);
+  if (!ct) {
+    return base::nullopt;
+  }
+  // The keychain field that stores the encrypted RP ID only accepts NSString
+  // (not NSData), so we HexEncode to ensure the result is UTF-8-decodable.
+  return base::HexEncode(ct->data(), ct->size());
+}
+
+// static
+base::Optional<std::string> CredentialMetadata::DecodeRpId(
+    const std::string& secret,
+    const std::string& ciphertext) {
+  std::vector<uint8_t> ct;
+  if (!base::HexStringToBytes(ciphertext, &ct)) {
+    return base::nullopt;
+  }
+  static constexpr std::array<uint8_t, kNonceLength> fixed_zero_nonce = {};
+  std::string empty_ad;
+  return CredentialMetadata(secret).Unseal(
+      CredentialMetadata::Algorithm::kAes256GcmSiv, fixed_zero_nonce, ct,
+      empty_ad);
 }
 
 // static
@@ -199,12 +208,45 @@ std::string CredentialMetadata::MakeAad(const std::string& rp_id) {
   return std::string(1, kVersion) + rp_id;
 }
 
+// static
+std::string CredentialMetadata::DeriveKey(base::StringPiece secret,
+                                          Algorithm alg) {
+  static constexpr size_t kKeyLength = 32u;
+  std::string key;
+  const uint8_t info = static_cast<uint8_t>(alg);
+  const bool hkdf_init = ::HKDF(
+      reinterpret_cast<uint8_t*>(base::WriteInto(&key, kKeyLength + 1)),
+      kKeyLength, EVP_sha256(), reinterpret_cast<const uint8_t*>(secret.data()),
+      secret.size(), nullptr /* salt */, 0, &info, 1);
+  DCHECK(hkdf_init);
+  return key;
+}
+
+// static
+base::Optional<crypto::Aead::AeadAlgorithm> CredentialMetadata::ToAeadAlgorithm(
+    Algorithm alg) {
+  switch (alg) {
+    case CredentialMetadata::Algorithm::kAes256Gcm:
+      return crypto::Aead::AES_256_GCM;
+    case CredentialMetadata::Algorithm::kAes256GcmSiv:
+      return crypto::Aead::AES_256_GCM_SIV;
+    case CredentialMetadata::Algorithm::kHmacSha256:
+      NOTREACHED() << "invalid AEAD";
+      return base::nullopt;
+  }
+}
+
 base::Optional<std::string> CredentialMetadata::Seal(
+    CredentialMetadata::Algorithm algorithm,
     base::span<const uint8_t> nonce,
     base::span<const uint8_t> plaintext,
     base::StringPiece authenticated_data) const {
-  const std::string key = DeriveKey(secret_, Algorithm::kAes256Gcm);
-  crypto::Aead aead(crypto::Aead::AES_256_GCM);
+  auto opt_aead_algorithm = ToAeadAlgorithm(algorithm);
+  if (!opt_aead_algorithm)
+    return base::nullopt;
+
+  const std::string key = DeriveKey(secret_, algorithm);
+  crypto::Aead aead(*opt_aead_algorithm);
   aead.Init(&key);
   std::string ciphertext;
   if (!aead.Seal(
@@ -219,11 +261,16 @@ base::Optional<std::string> CredentialMetadata::Seal(
 }
 
 base::Optional<std::string> CredentialMetadata::Unseal(
+    CredentialMetadata::Algorithm algorithm,
     base::span<const uint8_t> nonce,
     base::span<const uint8_t> ciphertext,
     base::StringPiece authenticated_data) const {
-  const std::string key = DeriveKey(secret_, Algorithm::kAes256Gcm);
-  crypto::Aead aead(crypto::Aead::AES_256_GCM);
+  auto opt_aead_algorithm = ToAeadAlgorithm(algorithm);
+  if (!opt_aead_algorithm)
+    return base::nullopt;
+
+  const std::string key = DeriveKey(secret_, algorithm);
+  crypto::Aead aead(*opt_aead_algorithm);
   aead.Init(&key);
   std::string plaintext;
   if (!aead.Open(

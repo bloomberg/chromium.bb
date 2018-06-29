@@ -19,7 +19,7 @@ namespace crypto {
 // This class exposes the AES-128-CTR-HMAC-SHA256 and AES_256_GCM AEAD.
 class CRYPTO_EXPORT Aead {
  public:
-  enum AeadAlgorithm { AES_128_CTR_HMAC_SHA256, AES_256_GCM };
+  enum AeadAlgorithm { AES_128_CTR_HMAC_SHA256, AES_256_GCM, AES_256_GCM_SIV };
 
   explicit Aead(AeadAlgorithm algorithm);
 
