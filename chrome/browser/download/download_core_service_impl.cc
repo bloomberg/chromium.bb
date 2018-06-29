@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_history.h"
+#include "chrome/browser/download/download_offline_content_provider.h"
 #include "chrome/browser/download/download_status_updater.h"
 #include "chrome/browser/download/download_ui_controller.h"
 #include "chrome/browser/history/history_service_factory.h"
@@ -64,6 +65,8 @@ DownloadCoreServiceImpl::GetDownloadManagerDelegate() {
   // default delegate does all the notifications we need.
   download_ui_.reset(new DownloadUIController(
       manager, std::unique_ptr<DownloadUIController::Delegate>()));
+
+  download_provider_.reset(new DownloadOfflineContentProvider(manager));
 
   // Include this download manager in the set monitored by the
   // global status updater.
