@@ -7,6 +7,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/layout/ng/geometry/ng_box_strut.h"
 #include "third_party/blink/renderer/platform/fonts/font_baseline.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 
@@ -49,7 +50,8 @@ class CORE_EXPORT NGUnpositionedListMarker final {
                 FontBaseline,
                 const NGPhysicalFragment& content,
                 NGLogicalOffset* content_offset,
-                NGFragmentBuilder*) const;
+                NGFragmentBuilder*,
+                const NGBoxStrut&) const;
 
   // Add a fragment for an outside list marker when the list item has no line
   // boxes.
@@ -64,6 +66,10 @@ class CORE_EXPORT NGUnpositionedListMarker final {
 
   scoped_refptr<NGLayoutResult> Layout(const NGConstraintSpace&,
                                        FontBaseline) const;
+  LayoutUnit ComputeIntrudedFloatOffset(const NGConstraintSpace&,
+                                        const NGFragmentBuilder*,
+                                        const NGBoxStrut&,
+                                        LayoutUnit) const;
 
   LayoutNGListMarker* marker_layout_object_;
 };
