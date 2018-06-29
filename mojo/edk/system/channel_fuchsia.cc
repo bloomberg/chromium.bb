@@ -23,6 +23,7 @@
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "mojo/edk/system/platform_handle_in_transit.h"
 
 namespace mojo {
 namespace edk {
@@ -32,12 +33,12 @@ namespace {
 const size_t kMaxBatchReadCapacity = 256 * 1024;
 
 bool UnwrapInternalPlatformHandle(
-    ScopedInternalPlatformHandle handle,
+    PlatformHandleInTransit handle,
     Channel::Message::HandleInfoEntry* info_out,
-    std::vector<ScopedInternalPlatformHandle>* handles_out) {
-  DCHECK(handle.get().is_valid());
+    std::vector<PlatformHandleInTransit>* handles_out) {
+  DCHECK(handle.handle().is_valid());
 
-  if (!handle.get().is_valid_fd()) {
+  if (!handle.handle().is_valid_fd()) {
     *info_out = {0u, 0u};
     handles_out->emplace_back(std::move(handle));
     return true;
@@ -51,19 +52,20 @@ bool UnwrapInternalPlatformHandle(
   // already been dup()d into another FD) we may need to clone.
   zx_handle_t handles[FDIO_MAX_HANDLES] = {};
   uint32_t info[FDIO_MAX_HANDLES] = {};
-  zx_status_t result = fdio_transfer_fd(handle.get().as_fd(), 0, handles, info);
+  zx_status_t result =
+      fdio_transfer_fd(handle.handle().GetFD().get(), 0, handles, info);
   if (result > 0) {
     // On success, the fd in |handle| has been transferred and is no longer
-    // valid. Release from the ScopedInternalPlatformHandle to avoid close()ing
+    // valid. Release from the PlatformHandle to avoid close()ing an invalid
     // an invalid handle.
-    ignore_result(handle.release());
+    handle.CompleteTransit();
   } else if (result == ZX_ERR_UNAVAILABLE) {
     // No luck, try cloning instead.
-    result = fdio_clone_fd(handle.get().as_fd(), 0, handles, info);
+    result = fdio_clone_fd(handle.handle().GetFD().get(), 0, handles, info);
   }
 
   if (result <= 0) {
-    DLOG(ERROR) << "fdio_transfer_fd(" << handle.get().as_fd()
+    DLOG(ERROR) << "fdio_transfer_fd(" << handle.handle().GetFD().get()
                 << "): " << zx_status_get_string(result);
     return false;
   }
@@ -75,23 +77,23 @@ bool UnwrapInternalPlatformHandle(
   for (int i = 0; i < result; ++i) {
     DCHECK_EQ(PA_HND_TYPE(info[0]), PA_HND_TYPE(info[i]));
     DCHECK_EQ(0u, PA_HND_SUBTYPE(info[i]));
-    handles_out->emplace_back(InternalPlatformHandle::ForHandle(handles[i]));
+    handles_out->emplace_back(PlatformHandleInTransit(
+        PlatformHandle(base::ScopedZxHandle(handles[i]))));
   }
 
   return true;
 }
 
-ScopedInternalPlatformHandle WrapInternalPlatformHandles(
+PlatformHandle WrapInternalPlatformHandles(
     Channel::Message::HandleInfoEntry info,
     base::circular_deque<base::ScopedZxHandle>* handles) {
-  ScopedInternalPlatformHandle out_handle;
+  PlatformHandle out_handle;
   if (!info.type) {
-    out_handle.reset(
-        InternalPlatformHandle::ForHandle(handles->front().release()));
+    out_handle = PlatformHandle(std::move(handles->front()));
     handles->pop_front();
   } else {
     if (info.count > FDIO_MAX_HANDLES)
-      return ScopedInternalPlatformHandle();
+      return PlatformHandle();
 
     // Fetch the required number of handles from |handles| and set up type info.
     zx_handle_t fd_handles[FDIO_MAX_HANDLES] = {};
@@ -107,7 +109,7 @@ ScopedInternalPlatformHandle WrapInternalPlatformHandles(
         fdio_create_fd(fd_handles, fd_infos, info.count, out_fd.receive());
     if (result != ZX_OK) {
       DLOG(ERROR) << "fdio_create_fd: " << zx_status_get_string(result);
-      return ScopedInternalPlatformHandle();
+      return PlatformHandle();
     }
 
     // The handles are owned by FDIO now, so |release()| them before removing
@@ -117,7 +119,7 @@ ScopedInternalPlatformHandle WrapInternalPlatformHandles(
       handles->pop_front();
     }
 
-    out_handle.reset(InternalPlatformHandle::ForFd(out_fd.release()));
+    out_handle = PlatformHandle(std::move(out_fd));
   }
   return out_handle;
 }
@@ -157,9 +159,9 @@ class MessageView {
     offset_ += num_bytes;
   }
 
-  std::vector<ScopedInternalPlatformHandle> TakeHandles() {
+  std::vector<PlatformHandleInTransit> TakeHandles() {
     if (handles_.empty())
-      return std::vector<ScopedInternalPlatformHandle>();
+      return std::vector<PlatformHandleInTransit>();
 
     // We can only pass Fuchsia handles via IPC, so unwrap any FDIO file-
     // descriptors in |handles_| into the underlying handles, and serialize the
@@ -168,12 +170,12 @@ class MessageView {
         message_->mutable_extra_header());
     memset(handles_info, 0, message_->extra_header_size());
 
-    std::vector<ScopedInternalPlatformHandle> in_handles = std::move(handles_);
+    std::vector<PlatformHandleInTransit> in_handles = std::move(handles_);
     handles_.reserve(in_handles.size());
     for (size_t i = 0; i < in_handles.size(); i++) {
       if (!UnwrapInternalPlatformHandle(std::move(in_handles[i]),
                                         &handles_info[i], &handles_))
-        return std::vector<ScopedInternalPlatformHandle>();
+        return std::vector<PlatformHandleInTransit>();
     }
     return std::move(handles_);
   }
@@ -181,7 +183,7 @@ class MessageView {
  private:
   Channel::MessagePtr message_;
   size_t offset_;
-  std::vector<ScopedInternalPlatformHandle> handles_;
+  std::vector<PlatformHandleInTransit> handles_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageView);
 };
@@ -238,14 +240,13 @@ class ChannelFuchsia : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadInternalPlatformHandles(
-      const void* payload,
-      size_t payload_size,
-      size_t num_handles,
-      const void* extra_header,
-      size_t extra_header_size,
-      std::vector<ScopedInternalPlatformHandle>* handles,
-      bool* deferred) override {
+  bool GetReadPlatformHandles(const void* payload,
+                              size_t payload_size,
+                              size_t num_handles,
+                              const void* extra_header,
+                              size_t extra_header_size,
+                              std::vector<PlatformHandle>* handles,
+                              bool* deferred) override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
@@ -276,8 +277,7 @@ class ChannelFuchsia : public Channel,
     handles->reserve(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
       handles->emplace_back(
-          WrapInternalPlatformHandles(handles_info[i], &incoming_handles_)
-              .release());
+          WrapInternalPlatformHandles(handles_info[i], &incoming_handles_));
     }
     return true;
   }
@@ -384,15 +384,15 @@ class ChannelFuchsia : public Channel,
     do {
       message_view.advance_data_offset(write_bytes);
 
-      std::vector<ScopedInternalPlatformHandle> outgoing_handles =
+      std::vector<PlatformHandleInTransit> outgoing_handles =
           message_view.TakeHandles();
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
       size_t handles_count = outgoing_handles.size();
 
       DCHECK_LE(handles_count, arraysize(handles));
       for (size_t i = 0; i < handles_count; ++i) {
-        DCHECK(outgoing_handles[i].is_valid());
-        handles[i] = outgoing_handles[i].get().as_handle();
+        DCHECK(outgoing_handles[i].handle().is_valid());
+        handles[i] = outgoing_handles[i].handle().GetHandle().get();
       }
 
       write_bytes = std::min(message_view.data_num_bytes(),
@@ -403,7 +403,7 @@ class ChannelFuchsia : public Channel,
       // zx_channel_write() consumes |handles| whether or not it succeeds, so
       // release() our copies now, to avoid them being double-closed.
       for (auto& outgoing_handle : outgoing_handles)
-        ignore_result(outgoing_handle.release());
+        outgoing_handle.CompleteTransit();
 
       if (result != ZX_OK) {
         // TODO(fuchsia): Handle ZX_ERR_SHOULD_WAIT flow-control errors, once

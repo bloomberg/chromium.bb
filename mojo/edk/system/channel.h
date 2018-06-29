@@ -13,8 +13,10 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/edk/system/connection_params.h"
+#include "mojo/edk/system/platform_handle_in_transit.h"
 #include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -142,8 +144,12 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
             MessageType message_type);
     ~Message();
 
-    // Constructs a Message from serialized message data.
-    static MessagePtr Deserialize(const void* data, size_t data_num_bytes);
+    // Constructs a Message from serialized message data, optionally coming from
+    // a known remote process.
+    static MessagePtr Deserialize(
+        const void* data,
+        size_t data_num_bytes,
+        base::ProcessHandle from_process = base::kNullProcessHandle);
 
     const void* data() const { return data_; }
     size_t data_num_bytes() const { return size_; }
@@ -181,12 +187,15 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // Note: SetHandles() and TakeHandles() invalidate any previous value of
     // handles().
     void SetHandles(std::vector<ScopedInternalPlatformHandle> new_handles);
-    std::vector<ScopedInternalPlatformHandle> TakeHandles();
+    void SetHandles(std::vector<PlatformHandle> new_handles);
+    void SetHandles(std::vector<PlatformHandleInTransit> new_handles);
+    std::vector<PlatformHandleInTransit> TakeHandles();
+    std::vector<ScopedInternalPlatformHandle> TakeInternalHandles();
     // Version of TakeHandles that returns a vector of platform handles suitable
     // for transfer over an underlying OS mechanism. i.e. file descriptors over
     // a unix domain socket. Any handle that cannot be transferred this way,
     // such as Mach ports, will be removed.
-    std::vector<ScopedInternalPlatformHandle> TakeHandlesForTransport();
+    std::vector<PlatformHandleInTransit> TakeHandlesForTransport();
 
     void SetVersionForTest(uint16_t version_number);
 
@@ -205,7 +214,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // Maximum number of handles which may be attached to this message.
     size_t max_handles_ = 0;
 
-    std::vector<ScopedInternalPlatformHandle> handle_vector_;
+    std::vector<PlatformHandleInTransit> handle_vector_;
 
 #if defined(OS_WIN)
     // On Windows, handles are serialised into the extra header section.
@@ -242,10 +251,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
     // Notify of a received message. |payload| is not owned and must not be
     // retained; it will be null if |payload_size| is 0. |handles| are
     // transferred to the callee.
-    virtual void OnChannelMessage(
-        const void* payload,
-        size_t payload_size,
-        std::vector<ScopedInternalPlatformHandle> handles) = 0;
+    virtual void OnChannelMessage(const void* payload,
+                                  size_t payload_size,
+                                  std::vector<PlatformHandle> handles) = 0;
 
     // Notify that an error has occured and the Channel will cease operation.
     virtual void OnChannelError(Error error) = 0;
@@ -329,24 +337,22 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
   // |true| but |*handles| will also be reset to null.
   //
   // If the implementation sets |*deferred| to |true|, it assumes responsibility
-  // for dispatching the message eventually. It must copy |payload| and take
-  // ownership of |*handles|.
-  virtual bool GetReadInternalPlatformHandles(
-      const void* payload,
-      size_t payload_size,
-      size_t num_handles,
-      const void* extra_header,
-      size_t extra_header_size,
-      std::vector<ScopedInternalPlatformHandle>* handles,
-      bool* deferred) = 0;
+  // for dispatching the message eventually. It must copy |payload| to retain
+  // it for later transmission.
+  virtual bool GetReadPlatformHandles(const void* payload,
+                                      size_t payload_size,
+                                      size_t num_handles,
+                                      const void* extra_header,
+                                      size_t extra_header_size,
+                                      std::vector<PlatformHandle>* handles,
+                                      bool* deferred) = 0;
 
   // Handles a received control message. Returns |true| if the message is
   // accepted, or |false| otherwise.
-  virtual bool OnControlMessage(
-      Message::MessageType message_type,
-      const void* payload,
-      size_t payload_size,
-      std::vector<ScopedInternalPlatformHandle> handles);
+  virtual bool OnControlMessage(Message::MessageType message_type,
+                                const void* payload,
+                                size_t payload_size,
+                                std::vector<PlatformHandle> handles);
 
  private:
   friend class base::RefCountedThreadSafe<Channel>;

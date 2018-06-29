@@ -14,6 +14,7 @@
 #include "base/strings/string_piece.h"
 #include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/platform_handle_in_transit.h"
 #include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
 
@@ -40,14 +41,12 @@ class BrokerHost : public Channel::Delegate,
  private:
   ~BrokerHost() override;
 
-  bool PrepareHandlesForClient(
-      std::vector<ScopedInternalPlatformHandle>* handles);
+  bool PrepareHandlesForClient(std::vector<PlatformHandleInTransit>* handles);
 
   // Channel::Delegate:
-  void OnChannelMessage(
-      const void* payload,
-      size_t payload_size,
-      std::vector<ScopedInternalPlatformHandle> handles) override;
+  void OnChannelMessage(const void* payload,
+                        size_t payload_size,
+                        std::vector<PlatformHandle> handles) override;
   void OnChannelError(Channel::Error error) override;
 
   // base::MessageLoopCurrent::DestructionObserver:

@@ -27,20 +27,13 @@ namespace edk {
 #if defined(OS_WIN)
 struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
   InternalPlatformHandle() : InternalPlatformHandle(INVALID_HANDLE_VALUE) {}
-  explicit InternalPlatformHandle(HANDLE handle)
-      : handle(handle), owning_process(base::GetCurrentProcessHandle()) {}
+  explicit InternalPlatformHandle(HANDLE handle) : handle(handle) {}
 
   void CloseIfNecessary();
 
   bool is_valid() const { return handle != INVALID_HANDLE_VALUE; }
 
   HANDLE handle;
-
-  // A Windows HANDLE may be duplicated to another process but not yet sent to
-  // that process. This tracks the handle's owning process and this process
-  // handle (if not null, i.e., the current process) is *owned* by this
-  // InternalPlatformHandle.
-  base::ProcessHandle owning_process;
 
   // A Windows HANDLE may be an unconnected named pipe. In this case, we need to
   // wait for a connection before communicating on the pipe.
@@ -88,7 +81,7 @@ struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
 
   bool is_valid() const {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
-    if (type == Type::MACH || type == Type::MACH_NAME)
+    if (type == Type::MACH)
       return port != MACH_PORT_NULL;
 #endif
     return handle != -1;
@@ -98,11 +91,6 @@ struct MOJO_SYSTEM_IMPL_EXPORT InternalPlatformHandle {
     POSIX,
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     MACH,
-    // MACH_NAME isn't a real Mach port. But rather the "name" of one that can
-    // be resolved to a real port later. This distinction is needed so that the
-    // "port" doesn't try to be closed if CloseIfNecessary() is called. Having
-    // this also allows us to do checks in other places.
-    MACH_NAME,
 #endif
   };
   Type type = Type::POSIX;

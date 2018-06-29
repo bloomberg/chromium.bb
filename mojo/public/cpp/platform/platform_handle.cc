@@ -84,7 +84,9 @@ base::ScopedFD CloneFD(const base::ScopedFD& fd) {
 
 PlatformHandle::PlatformHandle() = default;
 
-PlatformHandle::PlatformHandle(PlatformHandle&& other) = default;
+PlatformHandle::PlatformHandle(PlatformHandle&& other) {
+  *this = std::move(other);
+}
 
 #if defined(OS_WIN)
 PlatformHandle::PlatformHandle(base::win::ScopedHandle handle)
@@ -108,7 +110,24 @@ PlatformHandle::PlatformHandle(base::ScopedFD fd)
 
 PlatformHandle::~PlatformHandle() = default;
 
-PlatformHandle& PlatformHandle::operator=(PlatformHandle&& other) = default;
+PlatformHandle& PlatformHandle::operator=(PlatformHandle&& other) {
+  type_ = other.type_;
+  other.type_ = Type::kNone;
+
+#if defined(OS_WIN)
+  handle_ = std::move(other.handle_);
+#elif defined(OS_FUCHSIA)
+  handle_ = std::move(other.handle_);
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  mach_port_ = std::move(other.mach_port_);
+#endif
+
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  fd_ = std::move(other.fd_);
+#endif
+
+  return *this;
+}
 
 // static
 void PlatformHandle::ToMojoPlatformHandle(PlatformHandle handle,
@@ -196,6 +215,22 @@ void PlatformHandle::reset() {
 
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   fd_.reset();
+#endif
+}
+
+void PlatformHandle::release() {
+  type_ = Type::kNone;
+
+#if defined(OS_WIN)
+  ignore_result(handle_.Take());
+#elif defined(OS_FUCHSIA)
+  ignore_result(handle_.release());
+#elif defined(OS_MACOSX) && !defined(OS_IOS)
+  ignore_result(mach_port_.release());
+#endif
+
+#if defined(OS_POSIX) || defined(OS_FUCHSIA)
+  ignore_result(fd_.release());
 #endif
 }
 

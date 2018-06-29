@@ -58,20 +58,9 @@ class ChannelWin : public Channel,
     if (remote_process().is_valid()) {
       // If we know the remote process handle, we transfer all outgoing handles
       // to the process now rewriting them in the message.
-      std::vector<ScopedInternalPlatformHandle> handles =
-          message->TakeHandles();
-      for (auto& handle : handles) {
-        BOOL result = ::DuplicateHandle(
-            base::GetCurrentProcessHandle(), handle.get().handle,
-            remote_process().get(), &handle.get().handle, 0, FALSE,
-            DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-        if (result) {
-          handle.get().owning_process = remote_process().Clone().release();
-        } else {
-          handle.get().handle = INVALID_HANDLE_VALUE;
-          DPLOG(ERROR) << "DuplicateHandle failed";
-        }
-      }
+      std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
+      for (auto& handle : handles)
+        handle.TransferToProcess(remote_process().Clone());
       message->SetHandles(std::move(handles));
     }
 
@@ -100,14 +89,13 @@ class ChannelWin : public Channel,
     leak_handle_ = true;
   }
 
-  bool GetReadInternalPlatformHandles(
-      const void* payload,
-      size_t payload_size,
-      size_t num_handles,
-      const void* extra_header,
-      size_t extra_header_size,
-      std::vector<ScopedInternalPlatformHandle>* handles,
-      bool* deferred) override {
+  bool GetReadPlatformHandles(const void* payload,
+                              size_t payload_size,
+                              size_t num_handles,
+                              const void* extra_header,
+                              size_t extra_header_size,
+                              std::vector<PlatformHandle>* handles,
+                              bool* deferred) override {
     DCHECK(extra_header);
     if (num_handles > std::numeric_limits<uint16_t>::max())
       return false;
@@ -119,22 +107,17 @@ class ChannelWin : public Channel,
     const HandleEntry* extra_header_handles =
         reinterpret_cast<const HandleEntry*>(extra_header);
     for (size_t i = 0; i < num_handles; i++) {
-      ScopedInternalPlatformHandle handle(InternalPlatformHandle(
-          base::win::Uint32ToHandle(extra_header_handles[i].handle)));
+      HANDLE handle_value =
+          base::win::Uint32ToHandle(extra_header_handles[i].handle);
       if (remote_process().is_valid()) {
         // If we know the remote process's handle, we assume it doesn't know
         // ours; that means any handle values still belong to that process, and
         // we need to transfer them to this process.
-        BOOL result = ::DuplicateHandle(
-            remote_process().get(), handle.get().handle,
-            base::GetCurrentProcessHandle(), &handle.get().handle, 0, FALSE,
-            DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-        if (!result) {
-          handle.get().handle = INVALID_HANDLE_VALUE;
-          DPLOG(ERROR) << "DuplicateHandle failed";
-        }
+        handle_value = PlatformHandleInTransit::TakeIncomingRemoteHandle(
+                           handle_value, remote_process().get())
+                           .ReleaseHandle();
       }
-      handles->emplace_back(std::move(handle));
+      handles->emplace_back(base::win::ScopedHandle(std::move(handle_value)));
     }
     return true;
   }
@@ -274,13 +257,9 @@ class ChannelWin : public Channel,
       outgoing_messages_.pop_front();
 
       // Invalidate all the scoped handles so we don't attempt to close them.
-      // Note that we don't simply release these objects because they also own
-      // an internal process handle (in |owning_process|) which *does* need to
-      // be closed.
-      std::vector<ScopedInternalPlatformHandle> handles =
-          message->TakeHandles();
+      std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
       for (auto& handle : handles)
-        handle.get().handle = INVALID_HANDLE_VALUE;
+        handle.CompleteTransit();
 
       // Overlapped WriteFile() to a pipe should always fully complete.
       if (message->data_num_bytes() != bytes_written)

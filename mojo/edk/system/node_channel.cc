@@ -15,6 +15,7 @@
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
+#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/request_context.h"
 
 namespace mojo {
@@ -399,7 +400,8 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // above stated assumption. We should not leak handles in cases where we
   // outlive the broker, as we may continue existing and eventually accept a new
   // broker invitation.
-  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles =
+      message->TakeInternalHandles();
   for (auto& handle : handles)
     ignore_result(handle.release());
 
@@ -411,7 +413,8 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // moves them back to the relayed message. This is necessary because the
   // message may contain fds which need to be attached to the outer message so
   // that they can be transferred to the broker.
-  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
+  std::vector<ScopedInternalPlatformHandle> handles =
+      message->TakeInternalHandles();
   size_t num_bytes = sizeof(RelayEventMessageData) + message->data_num_bytes();
   RelayEventMessageData* data;
   Channel::MessagePtr relay_message = CreateMessage(
@@ -462,10 +465,17 @@ NodeChannel::~NodeChannel() {
 void NodeChannel::OnChannelMessage(
     const void* payload,
     size_t payload_size,
-    std::vector<ScopedInternalPlatformHandle> handles) {
+    std::vector<PlatformHandle> platform_handles) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
+
+  std::vector<ScopedInternalPlatformHandle> handles;
+  handles.reserve(platform_handles.size());
+  for (auto& h : platform_handles) {
+    handles.emplace_back(
+        PlatformHandleToScopedInternalPlatformHandle(std::move(h)));
+  }
 
   // Ensure this NodeChannel stays alive through the extent of this method. The
   // delegate may have the only other reference to this object and it may choose
@@ -623,7 +633,8 @@ void NodeChannel::OnChannelMessage(
 
         const void* message_start = data + 1;
         Channel::MessagePtr message = Channel::Message::Deserialize(
-            message_start, payload_size - sizeof(Header) - sizeof(*data));
+            message_start, payload_size - sizeof(Header) - sizeof(*data),
+            from_process);
         if (!message) {
           DLOG(ERROR) << "Dropping invalid relay message.";
           break;

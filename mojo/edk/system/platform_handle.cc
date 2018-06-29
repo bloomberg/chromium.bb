@@ -27,51 +27,10 @@ namespace mojo {
 namespace edk {
 
 void InternalPlatformHandle::CloseIfNecessary() {
-#if defined(OS_WIN)
-  // Take local ownership of the process handle in |owning_process| if it's
-  // a handle to a remote process. We do this before the generic handle validity
-  // test below because even if the platform handle has been taken by someone
-  // else, we may still own a remote process handle and it needs to be closed
-  // before we return.
-  base::Optional<ScopedProcessHandle> remote_process_handle;
-  if (owning_process != base::GetCurrentProcessHandle()) {
-    remote_process_handle.emplace(owning_process);
-    owning_process = base::GetCurrentProcessHandle();
-  }
-#endif
-
   if (!is_valid())
     return;
 
 #if defined(OS_WIN)
-  if (remote_process_handle) {
-    // This handle may have been duplicated to a new target process but not yet
-    // sent there. In this case CloseHandle should NOT be called. From MSDN
-    // documentation for DuplicateHandle[1]:
-    //
-    //    Normally the target process closes a duplicated handle when that
-    //    process is finished using the handle. To close a duplicated handle
-    //    from the source process, call DuplicateHandle with the following
-    //    parameters:
-    //
-    //    * Set hSourceProcessHandle to the target process from the
-    //      call that created the handle.
-    //    * Set hSourceHandle to the duplicated handle to close.
-    //    * Set lpTargetHandle [sic] to NULL. (N.B.: This appears to be a
-    //      documentation bug; what matters is that hTargetProcessHandle is
-    //      NULL.)
-    //    * Set dwOptions to DUPLICATE_CLOSE_SOURCE.
-    //
-    // [1] https://msdn.microsoft.com/en-us/library/windows/desktop/ms724251
-    //
-    // NOTE: It's possible for this operation to fail if the owning process
-    // was terminated or is in the process of being terminated. Either way,
-    // there is nothing we can reasonably do about failure, so we ignore it.
-    ::DuplicateHandle(remote_process_handle->get(), handle, NULL, &handle, 0,
-                      FALSE, DUPLICATE_CLOSE_SOURCE);
-    return;
-  }
-
   bool success = !!CloseHandle(handle);
   DPCHECK(success);
   handle = INVALID_HANDLE_VALUE;

@@ -13,10 +13,26 @@
 namespace mojo {
 namespace edk {
 
+namespace {
+
+base::ProcessHandle GetCurrentProcessHandle() {
+#if defined(OS_NACL_NONSFI)
+  // Doesn't really matter, it's not going to be used for anything interesting
+  // under NaCl.
+  return 1;
+#else
+  return base::GetCurrentProcessHandle();
+#endif
+}
+
+}  // namespace
+
 ScopedProcessHandle::ScopedProcessHandle() = default;
 
 ScopedProcessHandle::ScopedProcessHandle(base::ProcessHandle handle)
-    : handle_(handle) {}
+    : handle_(handle) {
+  DCHECK_NE(handle, GetCurrentProcessHandle());
+}
 
 ScopedProcessHandle::ScopedProcessHandle(ScopedProcessHandle&&) = default;
 
@@ -24,10 +40,14 @@ ScopedProcessHandle::~ScopedProcessHandle() = default;
 
 // static
 ScopedProcessHandle ScopedProcessHandle::CloneFrom(base::ProcessHandle handle) {
+  DCHECK_NE(handle, GetCurrentProcessHandle());
+  if (handle == base::kNullProcessHandle)
+    return ScopedProcessHandle();
+
 #if defined(OS_WIN)
-  BOOL ok = ::DuplicateHandle(base::GetCurrentProcessHandle(), handle,
-                              base::GetCurrentProcessHandle(), &handle, 0,
-                              FALSE, DUPLICATE_SAME_ACCESS);
+  BOOL ok = ::DuplicateHandle(GetCurrentProcessHandle(), handle,
+                              GetCurrentProcessHandle(), &handle, 0, FALSE,
+                              DUPLICATE_SAME_ACCESS);
   DCHECK(ok);
 #endif
   return ScopedProcessHandle(handle);
@@ -36,9 +56,34 @@ ScopedProcessHandle ScopedProcessHandle::CloneFrom(base::ProcessHandle handle) {
 ScopedProcessHandle& ScopedProcessHandle::operator=(ScopedProcessHandle&&) =
     default;
 
+bool ScopedProcessHandle::is_valid() const {
+#if defined(OS_WIN)
+  return handle_.IsValid();
+#else
+  return handle_ != base::kNullProcessHandle;
+#endif
+}
+
+base::ProcessHandle ScopedProcessHandle::get() const {
+#if defined(OS_WIN)
+  return handle_.Get();
+#else
+  return handle_;
+#endif
+}
+
+base::ProcessHandle ScopedProcessHandle::release() {
+#if defined(OS_WIN)
+  return handle_.Take();
+#else
+  return handle_;
+#endif
+}
+
 ScopedProcessHandle ScopedProcessHandle::Clone() const {
-  DCHECK(is_valid());
-  return CloneFrom(get());
+  if (is_valid())
+    return CloneFrom(get());
+  return ScopedProcessHandle();
 }
 
 }  // namespace edk

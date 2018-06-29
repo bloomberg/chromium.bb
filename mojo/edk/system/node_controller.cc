@@ -1107,6 +1107,8 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
                                          base::ProcessHandle from_process,
                                          const ports::NodeName& destination,
                                          Channel::MessagePtr message) {
+  // The broker should always know which process this came from.
+  DCHECK(from_process != base::kNullProcessHandle);
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (GetBrokerChannel()) {
@@ -1115,28 +1117,6 @@ void NodeController::OnRelayEventMessage(const ports::NodeName& from_node,
     DropPeer(from_node, nullptr);
     return;
   }
-
-  // The broker should always know which process this came from.
-  DCHECK(from_process != base::kNullProcessHandle);
-
-#if defined(OS_WIN)
-  // The deserialized message to be relayed may have handles encoded within it.
-  // These handles still belong to the source process, because the Channel
-  // has no idea they're encoded there and couldn't have rewritten them yet.
-  std::vector<ScopedInternalPlatformHandle> handles = message->TakeHandles();
-  for (auto& handle : handles) {
-    BOOL result = ::DuplicateHandle(
-        from_process, handle.get().handle, base::GetCurrentProcessHandle(),
-        &handle.get().handle, 0, FALSE,
-        DUPLICATE_SAME_ACCESS | DUPLICATE_CLOSE_SOURCE);
-    handle.get().owning_process = base::GetCurrentProcessHandle();
-    if (!result) {
-      handle.get().handle = INVALID_HANDLE_VALUE;
-      DPLOG(ERROR) << "DuplicateHandle failed";
-    }
-  }
-  message->SetHandles(std::move(handles));
-#endif  // defined(OS_WIN)
 
   if (destination == name_) {
     // Great, we can deliver this message locally.
