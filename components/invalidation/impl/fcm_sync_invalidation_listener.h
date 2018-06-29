@@ -1,0 +1,158 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// A simple wrapper around invalidation::InvalidationClient that
+// handles all the startup/shutdown details and hookups.
+
+#ifndef COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
+#define COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
+
+#include <memory>
+
+#include "base/callback_forward.h"
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "components/invalidation/impl/per_user_topic_registration_manager.h"
+#include "components/invalidation/impl/sync_system_resources.h"
+#include "components/invalidation/impl/unacked_invalidation_set.h"
+#include "components/invalidation/public/ack_handler.h"
+#include "components/invalidation/public/invalidation_object_id.h"
+#include "components/invalidation/public/invalidation_util.h"
+#include "components/invalidation/public/invalidator_state.h"
+#include "google/cacheinvalidation/include/invalidation-listener.h"
+#include "services/network/public/mojom/url_loader_factory.mojom.h"
+
+namespace syncer {
+
+class ObjectIdInvalidationMap;
+
+class INVALIDATION_EXPORT FCMSyncInvalidationListener
+    : public invalidation::InvalidationListener,
+      public SyncNetworkChannel::Observer,
+      public AckHandler {
+ public:
+  typedef base::OnceCallback<std::unique_ptr<invalidation::InvalidationClient>(
+      invalidation::SystemResources*,
+      invalidation::InvalidationListener*)>
+      CreateInvalidationClientCallback;
+
+  class INVALIDATION_EXPORT Delegate {
+   public:
+    virtual ~Delegate();
+
+    virtual void OnInvalidate(const ObjectIdInvalidationMap& invalidations) = 0;
+
+    virtual void OnInvalidatorStateChange(InvalidatorState state) = 0;
+  };
+
+  explicit FCMSyncInvalidationListener(
+      std::unique_ptr<SyncNetworkChannel> network_channel);
+
+  ~FCMSyncInvalidationListener() override;
+
+  void Start(
+      CreateInvalidationClientCallback create_invalidation_client_callback,
+      Delegate* delegate,
+      std::unique_ptr<PerUserTopicRegistrationManager>
+          per_user_topic_registration_manager);
+
+  // Update the set of object IDs that we're interested in getting
+  // notifications for. May be called at any time.
+  void UpdateRegisteredIds(const ObjectIdSet& ids);
+
+  // invalidation::InvalidationListener implementation.
+  void Ready(invalidation::InvalidationClient* client) override;
+  void Invalidate(invalidation::InvalidationClient* client,
+                  const invalidation::Invalidation& invalidation,
+                  const invalidation::AckHandle& ack_handle) override;
+  void InvalidateUnknownVersion(
+      invalidation::InvalidationClient* client,
+      const invalidation::ObjectId& object_id,
+      const invalidation::AckHandle& ack_handle) override;
+  void InvalidateAll(invalidation::InvalidationClient* client,
+                     const invalidation::AckHandle& ack_handle) override;
+  void InformRegistrationStatus(
+      invalidation::InvalidationClient* client,
+      const invalidation::ObjectId& object_id,
+      invalidation::InvalidationListener::RegistrationState reg_state) override;
+  void InformRegistrationFailure(invalidation::InvalidationClient* client,
+                                 const invalidation::ObjectId& object_id,
+                                 bool is_transient,
+                                 const std::string& error_message) override;
+  void ReissueRegistrations(invalidation::InvalidationClient* client,
+                            const std::string& prefix,
+                            int prefix_length) override;
+  void InformError(invalidation::InvalidationClient* client,
+                   const invalidation::ErrorInfo& error_info) override;
+
+  // AckHandler implementation.
+  void Acknowledge(const invalidation::ObjectId& id,
+                   const syncer::AckHandle& handle) override;
+  void Drop(const invalidation::ObjectId& id,
+            const syncer::AckHandle& handle) override;
+
+  // SyncNetworkChannel::Observer implementation.
+  void OnNetworkChannelStateChanged(
+      InvalidatorState invalidator_state) override;
+
+  void DoRegistrationUpdate();
+
+  void StopForTest();
+
+  ObjectIdSet GetRegisteredIdsForTest() const;
+
+  base::WeakPtr<FCMSyncInvalidationListener> AsWeakPtr();
+
+ private:
+  void Stop();
+
+  InvalidatorState GetState() const;
+
+  void EmitStateChange();
+
+  // Sends invalidations to their appropriate destination.
+  //
+  // If there are no observers registered for them, they will be saved for
+  // later.
+  //
+  // If there are observers registered, they will be saved (to make sure we
+  // don't drop them until they've been acted on) and emitted to the observers.
+  void DispatchInvalidations(const ObjectIdInvalidationMap& invalidations);
+
+  // Saves invalidations.
+  //
+  // This call isn't synchronous so we can't guarantee these invalidations will
+  // be safely on disk by the end of the call, but it should ensure that the
+  // data makes it to disk eventually.
+  void SaveInvalidations(const ObjectIdInvalidationMap& to_save);
+  // Emits previously saved invalidations to their registered observers.
+  void EmitSavedInvalidations(const ObjectIdInvalidationMap& to_emit);
+
+  // Generate a Dictionary with all the debugging information.
+  std::unique_ptr<base::DictionaryValue> CollectDebugData() const;
+
+  std::unique_ptr<SyncNetworkChannel> sync_network_channel_;
+  SyncSystemResources sync_system_resources_;
+  UnackedInvalidationsMap unacked_invalidations_map_;
+  Delegate* delegate_;
+  std::unique_ptr<invalidation::InvalidationClient> invalidation_client_;
+
+  // Stored to pass to |per_user_topic_registration_manager_| on start.
+  InvalidationObjectIdSet registered_ids_;
+
+  // The states of the ticl and FCN channel.
+  InvalidatorState ticl_state_;
+  InvalidatorState fcm_network_state_;
+
+  std::unique_ptr<PerUserTopicRegistrationManager>
+      per_user_topic_registration_manager_;
+
+  base::WeakPtrFactory<FCMSyncInvalidationListener> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(FCMSyncInvalidationListener);
+};
+
+}  // namespace syncer
+
+#endif  // COMPONENTS_INVALIDATION_IMPL_FCM_SYNC_INVALIDATION_LISTENER_H_
