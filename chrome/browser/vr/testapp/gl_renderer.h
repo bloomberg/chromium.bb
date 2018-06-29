@@ -11,7 +11,6 @@
 #include "ui/gfx/swap_result.h"
 
 namespace gl {
-class GLContext;
 class GLSurface;
 }  // namespace gl
 
@@ -34,7 +33,6 @@ class GlRenderer {
  private:
   scoped_refptr<gl::GLSurface> surface_;
   vr::VrTestContext* vr_;
-  scoped_refptr<gl::GLContext> context_;
 
   base::WeakPtrFactory<GlRenderer> weak_ptr_factory_;
 

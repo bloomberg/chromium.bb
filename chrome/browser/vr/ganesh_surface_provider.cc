@@ -27,11 +27,7 @@ GaneshSurfaceProvider::GaneshSurfaceProvider() {
   sk_sp<const GrGLInterface> gr_interface =
       gl::init::CreateGrGLInterface(gl_version_info);
   DCHECK(gr_interface.get());
-  // TODO(https://crbug.com/856404): Remove these options whenever CCPR plays
-  // nice with the VR UI.
-  GrContextOptions options;
-  options.fDisableCoverageCountingPaths = true;
-  gr_context_ = GrContext::MakeGL(std::move(gr_interface), options);
+  gr_context_ = GrContext::MakeGL(std::move(gr_interface));
   DCHECK(gr_context_.get());
   glGetIntegerv(GL_FRAMEBUFFER_BINDING, &main_fbo_);
 }

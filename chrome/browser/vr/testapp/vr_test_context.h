@@ -24,6 +24,7 @@ class Event;
 
 namespace vr {
 
+class GraphicsDelegate;
 class TextInputDelegate;
 class TestKeyboardDelegate;
 class Ui;
@@ -36,7 +37,7 @@ class VrTestContext : public vr::UiBrowserInterface {
   VrTestContext();
   ~VrTestContext() override;
 
-  void OnGlInitialized();
+  void OnGlInitialized(std::unique_ptr<GraphicsDelegate> graphics_delegate);
   // TODO(vollick): we should refactor VrShellGl's rendering logic and use it
   // directly. crbug.com/767282
   void DrawFrame();
@@ -120,6 +121,7 @@ class VrTestContext : public vr::UiBrowserInterface {
 
   std::unique_ptr<TextInputDelegate> text_input_delegate_;
   std::unique_ptr<TestKeyboardDelegate> keyboard_delegate_;
+  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
 
   PlatformController::Handedness handedness_ = PlatformController::kRightHanded;
 

@@ -5,12 +5,16 @@
 #ifndef CHROME_BROWSER_VR_TEST_GL_TEST_ENVIRONMENT_H_
 #define CHROME_BROWSER_VR_TEST_GL_TEST_ENVIRONMENT_H_
 
+#include <memory>
+
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface.h"
 
 namespace vr {
+
+class GraphicsDelegate;
 
 class GlTestEnvironment {
  public:
@@ -21,7 +25,7 @@ class GlTestEnvironment {
 
  private:
   scoped_refptr<gl::GLSurface> surface_;
-  scoped_refptr<gl::GLContext> context_;
+  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
   GLuint vao_ = 0;
   GLuint frame_buffer_ = 0;
 };

@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/vr/test/gl_test_environment.h"
+
+#include "chrome/browser/vr/graphics_delegate.h"
 #include "ui/gl/gl_version_info.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/gl/test/gl_image_test_support.h"
@@ -14,9 +16,9 @@ GlTestEnvironment::GlTestEnvironment(const gfx::Size frame_buffer_size) {
   // Setup offscreen GL context.
   gl::GLImageTestSupport::InitializeGL(base::nullopt);
   surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
-  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                       gl::GLContextAttribs());
-  context_->MakeCurrent(surface_.get());
+  graphics_delegate_ = std::make_unique<GraphicsDelegate>(surface_);
+  if (!graphics_delegate_->Initialize())
+    return;
 
   if (gl::GLContext::GetCurrent()->GetVersionInfo()->IsAtLeastGL(3, 3)) {
     // To avoid glGetVertexAttribiv(0, ...) failing.
@@ -34,8 +36,7 @@ GlTestEnvironment::~GlTestEnvironment() {
   if (vao_) {
     glDeleteVertexArraysOES(1, &vao_);
   }
-  context_->ReleaseCurrent(surface_.get());
-  context_ = nullptr;
+  graphics_delegate_.reset();
   surface_ = nullptr;
   gl::GLImageTestSupport::CleanupGL();
 }
