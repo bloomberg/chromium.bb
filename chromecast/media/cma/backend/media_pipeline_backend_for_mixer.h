@@ -53,6 +53,10 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   // Gets current time on the same clock as the rendering delay timestamp.
   virtual int64_t MonotonicClockNow() const;
 
+  int64_t GetPlaybackStartTimeForTesting() const {
+    return start_playback_timestamp_us_;
+  }
+
  protected:
   std::unique_ptr<VideoDecoderForMixer> video_decoder_;
   std::unique_ptr<AudioDecoderForMixer> audio_decoder_;
@@ -72,6 +76,7 @@ class MediaPipelineBackendForMixer : public MediaPipelineBackend {
   const MediaPipelineDeviceParams params_;
 
   std::unique_ptr<AvSync> av_sync_;
+  int64_t start_playback_timestamp_us_ = INT64_MIN;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPipelineBackendForMixer);
 };

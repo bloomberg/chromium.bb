@@ -41,7 +41,7 @@ constexpr base::TimeDelta kAvSyncUpkeepInterval =
 #if DCHECK_IS_ON()
 // Time interval between checking playbacks statistics.
 constexpr base::TimeDelta kPlaybackStatisticsCheckInterval =
-    base::TimeDelta::FromSeconds(1);
+    base::TimeDelta::FromSeconds(5);
 #endif
 
 // The amount of time we wait after a correction before we start upkeeping the
@@ -69,7 +69,8 @@ AvSyncVideo::AvSyncVideo(
 }
 
 void AvSyncVideo::UpkeepAvSync() {
-  if (backend_->MonotonicClockNow() < av_sync_start_timestamp_) {
+  if (backend_->MonotonicClockNow() <
+      (playback_start_timestamp_us_ + kAvSyncUpkeepInterval.InMicroseconds())) {
     return;
   }
 
@@ -91,8 +92,9 @@ void AvSyncVideo::UpkeepAvSync() {
   double error = 0.0;
 
   int64_t new_current_vpts = 0;
-  int64_t timestamp = 0;
-  if (!backend_->video_decoder()->GetCurrentPts(&timestamp, &new_current_vpts)) {
+  int64_t new_vpts_timestamp = 0;
+  if (!backend_->video_decoder()->GetCurrentPts(&new_vpts_timestamp,
+                                                &new_current_vpts)) {
     LOG(ERROR) << "Failed to get VPTS.";
     return;
   }
@@ -100,6 +102,13 @@ void AvSyncVideo::UpkeepAvSync() {
   if (new_current_vpts != last_vpts_value_recorded_) {
     video_pts_->AddSample(now, new_current_vpts, 1.0);
     last_vpts_value_recorded_ = new_current_vpts;
+  }
+
+  if (!first_video_pts_received_) {
+    LOG(INFO) << "Video starting at difference="
+              << (new_vpts_timestamp - new_current_vpts) -
+                     playback_start_timestamp_us_;
+    first_video_pts_received_ = true;
   }
 
   // TODO(almasrymina): using GetCurrentPts is vulnerable to pairing it with an
@@ -121,6 +130,14 @@ void AvSyncVideo::UpkeepAvSync() {
                  << " new_current_vpts=" << new_current_vpts;
   } else {
     audio_pts_->AddSample(now, backend_->audio_decoder()->GetCurrentPts(), 1.0);
+
+    if (!first_audio_pts_received_) {
+      LOG(INFO) << "Audio starting at difference="
+                << (backend_->MonotonicClockNow() -
+                    backend_->audio_decoder()->GetCurrentPts()) -
+                       playback_start_timestamp_us_;
+      first_audio_pts_received_ = true;
+    }
   }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
@@ -152,11 +169,15 @@ void AvSyncVideo::UpkeepAvSync() {
 
   VLOG(3) << "Pts_monitor."
           << " difference=" << difference / 1000 << " apts_slope=" << apts_slope
-          << " apts_slope=" << apts_slope
+          << " vpts_slope=" << vpts_slope
           << " current_audio_playback_rate_=" << current_audio_playback_rate_
           << " current_vpts=" << new_current_vpts
           << " current_apts=" << backend_->audio_decoder()->GetCurrentPts()
-          << " current_time=" << backend_->MonotonicClockNow();
+          << " current_time=" << backend_->MonotonicClockNow()
+          << " video_start_error="
+          << (new_vpts_timestamp - new_current_vpts -
+              playback_start_timestamp_us_) /
+                 1000;
 
   av_sync_difference_sum_ += difference;
   ++av_sync_difference_count_;
@@ -183,7 +204,7 @@ void AvSyncVideo::SoftCorrection(int64_t now) {
   error_->EstimateY(now, &difference, &error);
 
   if (audio_pts_->num_samples() < 50) {
-    VLOG(4) << "Not enough apts samples=" << video_pts_->num_samples();
+    VLOG(4) << "Not enough apts samples=" << audio_pts_->num_samples();
     return;
   }
 
@@ -314,6 +335,11 @@ void AvSyncVideo::GatherPlaybackStatistics() {
   av_sync_difference_sum_ = 0;
   av_sync_difference_count_ = 0;
 
+  int64_t accurate_vpts = 0;
+  int64_t accurate_vpts_timestamp = 0;
+  backend_->video_decoder()->GetCurrentPts(&accurate_vpts_timestamp,
+                                           &accurate_vpts);
+
   LOG(INFO) << "Playback diagnostics:"
             << " CurrentContentRefreshRate="
             << backend_->video_decoder()->GetCurrentContentRefreshRate()
@@ -322,7 +348,13 @@ void AvSyncVideo::GatherPlaybackStatistics() {
             << " unexpected_dropped_frames=" << unexpected_dropped_frames
             << " unexpected_repeated_frames=" << unexpected_repeated_frames
             << " average_av_sync_difference="
-            << average_av_sync_difference / 1000;
+            << average_av_sync_difference / 1000 << " video_start_error="
+            << accurate_vpts_timestamp - accurate_vpts -
+                   playback_start_timestamp_us_
+            << " audio_start_error_estimate="
+            << backend_->MonotonicClockNow() -
+                   backend_->audio_decoder()->GetCurrentPts() -
+                   playback_start_timestamp_us_;
 
   int64_t current_vpts = 0;
   int64_t current_apts = 0;
@@ -360,14 +392,16 @@ void AvSyncVideo::NotifyStart(int64_t timestamp) {
   number_of_hard_corrections_ = 0;
   in_soft_correction_ = false;
   difference_at_start_of_correction_ = 0;
-  av_sync_start_timestamp_ = timestamp;
+  playback_start_timestamp_us_ = timestamp;
+  first_audio_pts_received_ = false;
+  first_video_pts_received_ = false;
 
   StartAvSync();
 }
 
 void AvSyncVideo::NotifyStop() {
   StopAvSync();
-  av_sync_start_timestamp_ = INT64_MIN;
+  playback_start_timestamp_us_ = INT64_MIN;
 }
 
 void AvSyncVideo::NotifyPause() {

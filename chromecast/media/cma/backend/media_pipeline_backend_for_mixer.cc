@@ -73,21 +73,22 @@ bool MediaPipelineBackendForMixer::Initialize() {
 
 bool MediaPipelineBackendForMixer::Start(int64_t start_pts) {
   DCHECK_EQ(kStateInitialized, state_);
-  int64_t start_playback_timestamp_us = INT64_MIN;
-  if (!IsIgnorePtsMode()) {
-    start_playback_timestamp_us =
+  if (IsIgnorePtsMode()) {
+    start_playback_timestamp_us_ = INT64_MIN;
+  } else {
+    start_playback_timestamp_us_ =
         MonotonicClockNow() + kSyncedPlaybackStartDelayUs;
   }
 
-  if (audio_decoder_ && !audio_decoder_->Start(start_playback_timestamp_us))
+  if (audio_decoder_ && !audio_decoder_->Start(start_playback_timestamp_us_))
     return false;
   if (video_decoder_ && !video_decoder_->Start(start_pts, true))
     return false;
   if (video_decoder_ &&
-      !video_decoder_->SetPts(start_playback_timestamp_us, start_pts))
+      !video_decoder_->SetPts(start_playback_timestamp_us_, start_pts))
     return false;
   if (av_sync_) {
-    av_sync_->NotifyStart(start_playback_timestamp_us);
+    av_sync_->NotifyStart(start_playback_timestamp_us_);
   }
 
   state_ = kStatePlaying;
