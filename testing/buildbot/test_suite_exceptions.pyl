@@ -2986,10 +2986,4 @@
       'Win 10 Fast Ring',
     ],
   },
-  'zucchini_unittests': {
-    'remove_from': [
-      # chromium.win
-      'Win10 Tests x64',
-    ],
-  },
 }
