@@ -691,11 +691,14 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
             const int tile_col = AOMMIN(pbi->dec_tile_col, cm->tile_cols - 1);
             const int mi_col = tile_col * cm->tile_width;
             const int ssx = ctx->img.x_chroma_shift;
+            const int is_hbd =
+                (ctx->img.fmt & AOM_IMG_FMT_HIGHBITDEPTH) ? 1 : 0;
             int plane;
-            ctx->img.planes[0] += mi_col * MI_SIZE;
+            ctx->img.planes[0] += mi_col * MI_SIZE * (1 + is_hbd);
             if (num_planes > 1) {
               for (plane = 1; plane < MAX_MB_PLANE; ++plane) {
-                ctx->img.planes[plane] += mi_col * (MI_SIZE >> ssx);
+                ctx->img.planes[plane] +=
+                    mi_col * (MI_SIZE >> ssx) * (1 + is_hbd);
               }
             }
             ctx->img.d_w =

@@ -501,14 +501,14 @@ static uint32_t read_and_decode_one_tile_list(AV1Decoder *pbi,
       bufs[plane] = cur_frame->buffers[plane];
       strides[plane] =
           (plane > 0) ? cur_frame->strides[1] : cur_frame->strides[0];
-      if (is_hbd) {
-        bufs[plane] = (uint8_t *)CONVERT_TO_SHORTPTR(cur_frame->buffers[plane]);
-        strides[plane] =
-            (plane > 0) ? 2 * cur_frame->strides[1] : 2 * cur_frame->strides[0];
-      }
 
       bufs[plane] += mi_row * (MI_SIZE >> shift_y) * strides[plane] +
                      mi_col * (MI_SIZE >> shift_x);
+
+      if (is_hbd) {
+        bufs[plane] = (uint8_t *)CONVERT_TO_SHORTPTR(bufs[plane]);
+        strides[plane] *= 2;
+      }
 
       int w, h;
       w = (plane > 0 && shift_x > 0) ? ((tile_width_in_pixels + 1) >> shift_x)
