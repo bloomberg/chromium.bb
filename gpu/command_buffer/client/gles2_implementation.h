@@ -328,6 +328,26 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
     GLuint bound_texture_external_oes;
   };
 
+  // Prevents problematic reentrancy during error callbacks.
+  class DeferErrorCallbacks {
+   public:
+    explicit DeferErrorCallbacks(GLES2Implementation* gles2_implementation);
+    ~DeferErrorCallbacks();
+
+   private:
+    GLES2Implementation* gles2_implementation_;
+  };
+
+  struct DeferredErrorCallback {
+    // This takes std::string by value and uses std::move in the
+    // implementation, allowing the compiler to achieve zero copies
+    // when passing in a temporary.
+    DeferredErrorCallback(std::string message, int32_t id);
+
+    std::string message;
+    int32_t id = 0;
+  };
+
   // Checks for single threaded access.
   class SingleThreadChecker {
    public:
@@ -350,7 +370,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   void OnSwapBufferPresented(uint64_t swap_id,
                              const gfx::PresentationFeedback& feedback) final;
 
-  void SendErrorMessage(const char* message, int32_t id);
+  void SendErrorMessage(std::string message, int32_t id);
+  void CallDeferredErrorCallbacks();
 
   bool IsChromiumFramebufferMultisampleAvailable();
 
@@ -748,6 +769,8 @@ class GLES2_IMPL_EXPORT GLES2Implementation : public GLES2Interface,
   base::Optional<ScopedTransferBufferPtr> raster_mapped_buffer_;
 
   base::Callback<void(const char*, int32_t)> error_message_callback_;
+  bool deferring_error_callbacks_ = false;
+  std::deque<DeferredErrorCallback> deferred_error_callbacks_;
 
   int current_trace_stack_;
 
