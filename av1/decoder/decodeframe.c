@@ -2735,8 +2735,8 @@ static void tile_worker_hook_init(AV1Decoder *const pbi,
                                   uint8_t allow_update_cdf) {
   AV1_COMMON *cm = &pbi->common;
   ThreadData *const td = thread_data->td;
-  volatile int tile_row = tile_data->tile_info.tile_row;
-  volatile int tile_col = tile_data->tile_info.tile_col;
+  int tile_row = tile_data->tile_info.tile_row;
+  int tile_col = tile_data->tile_info.tile_col;
 
   td->xd = pbi->mb;
   td->xd.corrupted = 0;
@@ -2796,8 +2796,8 @@ static int tile_worker_hook(void *arg1, void *arg2) {
       tile_worker_hook_init(pbi, thread_data, tile_buffer, tile_data,
                             allow_update_cdf);
       // decode tile
-      volatile int tile_row = tile_data->tile_info.tile_row;
-      volatile int tile_col = tile_data->tile_info.tile_col;
+      int tile_row = tile_data->tile_info.tile_row;
+      int tile_col = tile_data->tile_info.tile_col;
       decode_tile(pbi, td, tile_row, tile_col);
     } else {
       break;
