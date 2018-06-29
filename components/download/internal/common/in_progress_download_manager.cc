@@ -484,8 +484,11 @@ void InProgressDownloadManager::StartDownloadWithItem(
 
 void InProgressDownloadManager::OnInitialized(
     std::unique_ptr<std::vector<DownloadDBEntry>> entries) {
-  for (const auto& entry : *entries)
-    in_progress_downloads_.emplace_back(CreateDownloadItemImpl(this, entry));
+  for (const auto& entry : *entries) {
+    auto item = CreateDownloadItemImpl(this, entry);
+    item->AddObserver(download_db_cache_.get());
+    in_progress_downloads_.emplace_back(std::move(item));
+  }
   is_initialized_ = true;
   for (auto& callback : on_initialized_callbacks_)
     std::move(*callback).Run();
