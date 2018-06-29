@@ -291,6 +291,7 @@ public class VariationsSeedLoader {
                 Log.e(TAG, "Faild requesting seed", e);
             } finally {
                 ContextUtils.getApplicationContext().unbindService(this);
+                VariationsUtils.closeSafely(mNewSeedFd);
             }
         }
 
