@@ -50,8 +50,8 @@ class ScreenTimeController : public KeyedService,
   // Show and update the lock screen when necessary.
   // |force_lock_by_policy|: If true, force to lock the screen based on the
   //                         screen time policy.
-  // |come_back_time|:       When the screen is available again.
-  void LockScreen(bool force_lock_by_policy, base::Time come_back_time);
+  // |next_unlock_time|:     When the screen is available again.
+  void LockScreen(bool force_lock_by_policy, base::Time next_unlock_time);
 
   // Show a notification indicating the remaining screen time.
   void ShowNotification(ScreenTimeController::TimeLimitNotificationType type,
@@ -90,6 +90,7 @@ class ScreenTimeController : public KeyedService,
   base::OneShotTimer exit_notification_timer_;
   base::OneShotTimer next_state_timer_;
   base::RepeatingTimer save_screen_time_timer_;
+  base::OneShotTimer reset_screen_time_timer_;
 
   // Timestamp to keep track of the screen start time for the current active
   // screen. This timestamp is periodically updated by
