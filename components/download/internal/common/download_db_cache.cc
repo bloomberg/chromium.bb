@@ -134,7 +134,7 @@ void DownloadDBCache::Initialize(InitializeCallback callback) {
     return;
   }
 
-  std::unique_ptr<std::vector<DownloadDBEntry>> entries;
+  auto entries = std::make_unique<std::vector<DownloadDBEntry>>();
   for (auto it = entries_.begin(); it != entries_.end(); ++it) {
     entries->emplace_back(it->second);
   }
