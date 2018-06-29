@@ -924,11 +924,10 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
  * @private
  */
 camera.views.Camera.prototype.updateVideoSize_ = function() {
-  var fill = this.recordMode_ || !camera.util.isWindowFullSize();
-
   // The video content keeps its aspect ratio and is filled up or letterboxed
   // inside the window's inner-bounds. Don't use app-window.innerBounds' width
   // and height properties during resizing as they are not updated immediately.
+  var fill = !camera.util.isWindowFullSize();
   var f = fill ? Math.max : Math.min;
   var scale = f(window.innerHeight / this.video_.videoHeight,
       window.innerWidth / this.video_.videoWidth);
