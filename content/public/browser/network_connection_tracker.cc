@@ -86,7 +86,7 @@ bool NetworkConnectionTracker::GetConnectionType(
   }
   if (!task_runner_->RunsTasksInCurrentSequence()) {
     connection_type_callbacks_.push_back(base::BindOnce(
-        &OnGetConnectionType, base::ThreadTaskRunnerHandle::Get(),
+        &OnGetConnectionType, base::SequencedTaskRunnerHandle::Get(),
         std::move(callback)));
   } else {
     connection_type_callbacks_.push_back(std::move(callback));
