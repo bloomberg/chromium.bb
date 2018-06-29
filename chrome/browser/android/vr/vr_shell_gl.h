@@ -307,7 +307,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   void ConnectPresentingService(
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options);
+      const device::XRDeviceRuntimeSessionOptions& options);
 
   void set_is_exiting(bool exiting) { is_exiting_ = exiting; }
 
@@ -332,11 +332,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
  private:
   void GvrInit(gvr_context* gvr_api);
-
   device::mojom::VRDisplayFrameTransportOptionsPtr
-  GetWebVrFrameTransportOptions(
-      const device::mojom::XRDeviceRuntimeSessionOptionsPtr&);
-
+  GetWebVrFrameTransportOptions(const device::XRDeviceRuntimeSessionOptions&);
   void InitializeRenderer();
   void UpdateViewports();
   void OnGpuProcessConnectionReady();

@@ -15,20 +15,17 @@ constexpr int kMaxImageHeightOrWidth = 8000;
 
 namespace device {
 
-VRDisplayImpl::VRDisplayImpl(
-    VRDeviceBase* device,
-    mojom::VRMagicWindowProviderRequest magic_window_request,
-    mojom::XRSessionControllerRequest session_request)
-    : magic_window_binding_(this),
-      session_controller_binding_(this),
-      device_(device) {
-  magic_window_binding_.Bind(std::move(magic_window_request));
-  session_controller_binding_.Bind(std::move(session_request));
-
-  // Unretained is safe because the binding will close when we are destroyed,
-  // so we won't receive any more callbacks after that.
-  session_controller_binding_.set_connection_error_handler(base::BindOnce(
-      &VRDisplayImpl::OnMojoConnectionError, base::Unretained(this)));
+VRDisplayImpl::VRDisplayImpl(VRDevice* device,
+                             mojom::VRServiceClient* service_client,
+                             mojom::VRDisplayInfoPtr display_info,
+                             mojom::VRDisplayHostPtr display_host,
+                             mojom::VRDisplayClientRequest client_request)
+    : binding_(this), device_(static_cast<VRDeviceBase*>(device)) {
+  mojom::VRMagicWindowProviderPtr magic_window_provider;
+  binding_.Bind(mojo::MakeRequest(&magic_window_provider));
+  service_client->OnDisplayConnected(
+      std::move(magic_window_provider), std::move(display_host),
+      std::move(client_request), std::move(display_info));
 }
 
 VRDisplayImpl::~VRDisplayImpl() = default;
@@ -77,7 +74,7 @@ void VRDisplayImpl::RequestHitTest(
   device_->RequestHitTest(std::move(ray), std::move(callback));
 }
 
-// XRSessionController
+// XrSessionController
 void VRDisplayImpl::SetFrameDataRestricted(bool frame_data_restricted) {
   restrict_frame_data_ = frame_data_restricted;
   if (device_->ShouldPauseTrackingWhenFrameDataRestricted()) {
@@ -89,10 +86,8 @@ void VRDisplayImpl::SetFrameDataRestricted(bool frame_data_restricted) {
   }
 }
 
-void VRDisplayImpl::OnMojoConnectionError() {
-  magic_window_binding_.Close();
-  session_controller_binding_.Close();
-  device_->EndMagicWindowSession(this);  // This call will destroy us.
+void VRDisplayImpl::StopSession() {
+  binding_.Close();
 }
 
 }  // namespace device

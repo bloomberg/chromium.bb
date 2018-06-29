@@ -23,15 +23,12 @@ OculusVRDeviceProvider::~OculusVRDeviceProvider() {
 }
 
 void OculusVRDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
-                                 mojom::VRDisplayInfoPtr,
-                                 mojom::XRRuntimePtr)> add_device_callback,
+    base::RepeatingCallback<void(unsigned int, VRDevice*)> add_device_callback,
     base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   CreateDevice();
   if (device_)
-    add_device_callback.Run(device_->GetId(), device_->GetVRDisplayInfo(),
-                            device_->BindXRRuntimePtr());
+    add_device_callback.Run(device_->GetId(), device_.get());
   initialized_ = true;
   std::move(initialization_complete).Run();
 }

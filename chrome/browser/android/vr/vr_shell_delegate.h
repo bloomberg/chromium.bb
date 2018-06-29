@@ -82,7 +82,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void SetDeviceId(unsigned int device_id) override;
   void StartWebXRPresentation(
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      const device::XRDeviceRuntimeSessionOptions& options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback) override;
   void OnListeningForActivateChanged(bool listening) override;
 
@@ -90,7 +90,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void SetListeningForActivate(bool listening);
   void OnPresentResult(
       device::mojom::VRDisplayInfoPtr display_info,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      const device::XRDeviceRuntimeSessionOptions& options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
       bool success);
 

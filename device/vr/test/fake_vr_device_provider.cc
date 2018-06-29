@@ -13,19 +13,17 @@ FakeVRDeviceProvider::FakeVRDeviceProvider() : VRDeviceProvider() {
 
 FakeVRDeviceProvider::~FakeVRDeviceProvider() {}
 
-void FakeVRDeviceProvider::AddDevice(std::unique_ptr<VRDeviceBase> device) {
+void FakeVRDeviceProvider::AddDevice(std::unique_ptr<VRDevice> device) {
   VRDeviceBase* device_base = static_cast<VRDeviceBase*>(device.get());
   devices_.push_back(std::move(device));
   if (initialized_)
-    add_device_callback_.Run(device_base->GetId(),
-                             device_base->GetVRDisplayInfo(),
-                             device_base->BindXRRuntimePtr());
+    add_device_callback_.Run(device_base->GetId(), devices_.back().get());
 }
 
 void FakeVRDeviceProvider::RemoveDevice(unsigned int device_id) {
   auto it = std::find_if(
       devices_.begin(), devices_.end(),
-      [device_id](const std::unique_ptr<VRDeviceBase>& device) {
+      [device_id](const std::unique_ptr<VRDevice>& device) {
         return static_cast<VRDeviceBase*>(device.get())->GetId() == device_id;
       });
   if (initialized_)
@@ -34,19 +32,15 @@ void FakeVRDeviceProvider::RemoveDevice(unsigned int device_id) {
 }
 
 void FakeVRDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
-                                 mojom::VRDisplayInfoPtr,
-                                 mojom::XRRuntimePtr)> add_device_callback,
+    base::RepeatingCallback<void(unsigned int, VRDevice*)> add_device_callback,
     base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   add_device_callback_ = std::move(add_device_callback);
   remove_device_callback_ = std::move(remove_device_callback);
 
-  for (std::unique_ptr<VRDeviceBase>& device : devices_) {
-    auto* device_base = static_cast<VRDeviceBase*>(device.get());
-    add_device_callback_.Run(device_base->GetId(),
-                             device_base->GetVRDisplayInfo(),
-                             device_base->BindXRRuntimePtr());
+  for (std::unique_ptr<VRDevice>& device : devices_) {
+    add_device_callback_.Run(static_cast<VRDeviceBase*>(device.get())->GetId(),
+                             device.get());
   }
   initialized_ = true;
   std::move(initialization_complete).Run();

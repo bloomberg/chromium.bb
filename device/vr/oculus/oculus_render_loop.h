@@ -34,7 +34,7 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   OculusRenderLoop(ovrSession session, ovrGraphicsLuid luid);
   ~OculusRenderLoop() override;
 
-  void RequestSession(mojom::XRDeviceRuntimeSessionOptionsPtr options,
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
                       RequestSessionCallback callback);
   void ExitPresent();
   base::WeakPtr<OculusRenderLoop> GetWeakPtr();

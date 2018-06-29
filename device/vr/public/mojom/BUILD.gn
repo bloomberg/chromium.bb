@@ -9,7 +9,6 @@ mojom_component("mojom") {
   macro_prefix = "DEVICE_VR_MOJO_BINDINGS"
 
   sources = [
-    "isolated_xr_service.mojom",
     "vr_service.mojom",
   ]
 

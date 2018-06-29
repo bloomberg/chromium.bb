@@ -57,7 +57,7 @@ class VR_EXPORT VRDeviceManager {
                            ProviderList fallback_providers);
 
   // Used by tests to check on device state.
-  device::mojom::XRRuntime* GetRuntime(unsigned int id);
+  device::VRDevice* GetDevice(unsigned int id);
 
   size_t NumberOfConnectedServices();
 
@@ -66,10 +66,7 @@ class VR_EXPORT VRDeviceManager {
   void OnProviderInitialized();
   bool AreAllProvidersInitialized();
 
-  void AddDevice(bool is_fallback,
-                 unsigned int id,
-                 device::mojom::VRDisplayInfoPtr info,
-                 device::mojom::XRRuntimePtr runtime);
+  void AddDevice(bool is_fallback, unsigned int id, device::VRDevice* device);
   void RemoveDevice(unsigned int id);
 
   ProviderList providers_;
