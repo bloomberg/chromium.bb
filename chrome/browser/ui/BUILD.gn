@@ -1930,7 +1930,6 @@ split_static_library("ui") {
       "views/select_file_dialog_extension_factory.cc",
       "views/select_file_dialog_extension_factory.h",
       "views/tabs/window_finder_ash.cc",
-      "views/touch_uma/touch_uma_ash.cc",
       "webui/chromeos/assistant_optin/assistant_optin_handler.cc",
       "webui/chromeos/assistant_optin/assistant_optin_handler.h",
       "webui/chromeos/assistant_optin/assistant_optin_screen_exit_code.h",
@@ -2996,6 +2995,8 @@ split_static_library("ui") {
       "views/task_manager_view.h",
       "views/toolbar/toolbar_actions_bar_bubble_views.cc",
       "views/toolbar/toolbar_actions_bar_bubble_views.h",
+      "views/touch_uma/touch_uma.cc",
+      "views/touch_uma/touch_uma.h",
       "views/translate/translate_bubble_view.cc",
       "views/translate/translate_bubble_view.h",
       "views/update_recommended_message_box.cc",
@@ -3317,7 +3318,6 @@ split_static_library("ui") {
         "views/toolbar/toolbar_ink_drop_util.h",
         "views/toolbar/toolbar_view.cc",
         "views/toolbar/toolbar_view.h",
-        "views/touch_uma/touch_uma.h",
         "views/translate/translate_icon_view.cc",
         "views/translate/translate_icon_view.h",
         "views/webshare/webshare_target_picker_view.cc",
@@ -3359,7 +3359,6 @@ split_static_library("ui") {
           "views/profiles/forced_reauthentication_dialog_view.h",
           "views/sync/one_click_signin_dialog_view.cc",
           "views/sync/one_click_signin_dialog_view.h",
-          "views/touch_uma/touch_uma.cc",
         ]
       }
 

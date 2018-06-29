@@ -300,7 +300,7 @@ void BrowserRootView::OnEventProcessingStarted(ui::Event* event) {
     if (gesture_event->type() == ui::ET_GESTURE_TAP &&
         gesture_event->location().y() <= 0 &&
         gesture_event->location().x() <= browser_view_->GetBounds().width()) {
-      TouchUMA::RecordGestureAction(TouchUMA::GESTURE_ROOTVIEWTOP_TAP);
+      TouchUMA::RecordGestureAction(TouchUMA::kGestureRootViewTopTap);
     }
   }
 

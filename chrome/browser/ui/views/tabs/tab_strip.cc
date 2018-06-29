@@ -2410,7 +2410,7 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
 
     controller_->CreateNewTab();
     if (event.type() == ui::ET_GESTURE_TAP)
-      TouchUMA::RecordGestureAction(TouchUMA::GESTURE_NEWTAB_TAP);
+      TouchUMA::RecordGestureAction(TouchUMA::kGestureNewTabTap);
   }
 }
 
@@ -2499,9 +2499,9 @@ void TabStrip::OnGestureEvent(ui::GestureEvent* event) {
       const int active_index = controller_->GetActiveIndex();
       DCHECK_NE(-1, active_index);
       Tab* active_tab = tab_at(active_index);
-      TouchUMA::GestureActionType action = TouchUMA::GESTURE_TABNOSWITCH_TAP;
+      TouchUMA::GestureActionType action = TouchUMA::kGestureTabNoSwitchTap;
       if (active_tab->tab_activated_with_last_tap_down())
-        action = TouchUMA::GESTURE_TABSWITCH_TAP;
+        action = TouchUMA::kGestureTabSwitchTap;
       TouchUMA::RecordGestureAction(action);
       break;
     }

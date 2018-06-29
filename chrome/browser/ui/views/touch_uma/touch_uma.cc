@@ -4,6 +4,9 @@
 
 #include "chrome/browser/ui/views/touch_uma/touch_uma.h"
 
+#include "base/metrics/histogram_macros.h"
+
 // static
 void TouchUMA::RecordGestureAction(GestureActionType action) {
+  UMA_HISTOGRAM_ENUMERATION("Event.Touch.GestureTarget", action);
 }
