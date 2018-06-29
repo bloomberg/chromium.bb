@@ -47,4 +47,5 @@ CryptoMessageParser* QuicCryptoHandshaker::crypto_message_parser() {
   return &crypto_framer_;
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

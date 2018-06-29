@@ -4665,4 +4665,5 @@ QuicString QuicFramer::VerboseDebugString() const {
   return str;
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

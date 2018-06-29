@@ -1170,4 +1170,5 @@ void QuicSentPacketManager::SetInitialRtt(QuicTime::Delta rtt) {
   rtt_stats_.set_initial_rtt(std::max(min_rtt, std::min(max_rtt, rtt)));
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

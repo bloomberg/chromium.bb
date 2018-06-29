@@ -743,4 +743,5 @@ bool QuicPacketCreator::HasIetfLongHeader() const {
          packet_.encryption_level < ENCRYPTION_FORWARD_SECURE;
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

@@ -202,4 +202,5 @@ bool QuicCryptoStream::RetransmitStreamData(QuicStreamOffset offset,
   return true;
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic

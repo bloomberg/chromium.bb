@@ -302,4 +302,5 @@ void QuicSpdyStream::ClearSession() {
   spdy_session_ = nullptr;
 }
 
+#undef ENDPOINT  // undef for jumbo builds
 }  // namespace quic
