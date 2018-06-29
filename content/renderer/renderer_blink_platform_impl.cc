@@ -71,7 +71,6 @@
 #include "content/renderer/storage_util.h"
 #include "content/renderer/web_database_observer_impl.h"
 #include "content/renderer/webgraphicscontext3d_provider_impl.h"
-#include "content/renderer/webpublicsuffixlist_impl.h"
 #include "content/renderer/worker_thread_registry.h"
 #include "device/gamepad/public/cpp/gamepads.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -758,12 +757,6 @@ RendererBlinkPlatformImpl::CreateMIDIAccessor(
     return accessor;
 
   return std::make_unique<RendererWebMIDIAccessorImpl>(client);
-}
-
-//------------------------------------------------------------------------------
-
-blink::WebPublicSuffixList* RendererBlinkPlatformImpl::PublicSuffixList() {
-  return &public_suffix_list_;
 }
 
 //------------------------------------------------------------------------------

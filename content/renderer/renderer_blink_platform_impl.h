@@ -22,7 +22,6 @@
 #include "content/common/content_export.h"
 #include "content/common/possibly_associated_interface_ptr.h"
 #include "content/renderer/top_level_blame_context.h"
-#include "content/renderer/webpublicsuffixlist_impl.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/common/screen_orientation/web_screen_orientation_type.h"
@@ -122,7 +121,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   viz::FrameSinkId GenerateFrameSinkId() override;
   bool IsLockedToSite() const override;
 
-  blink::WebPublicSuffixList* PublicSuffixList() override;
   blink::WebIDBFactory* IdbFactory() override;
   blink::WebFileSystem* FileSystem() override;
   blink::WebString FileSystemCreateOriginIdentifier(
@@ -295,8 +293,6 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
   std::unique_ptr<blink::WebIDBFactory> web_idb_factory_;
 
   std::unique_ptr<blink::WebBlobRegistry> blob_registry_;
-
-  WebPublicSuffixListImpl public_suffix_list_;
 
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
   scoped_refptr<IPC::SyncMessageFilter> sync_message_filter_;

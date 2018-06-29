@@ -32,45 +32,13 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/platform/platform.h"
-#include "third_party/blink/public/platform/web_public_suffix_list.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 
 namespace blink {
 
-class OriginAccessEntryTestSuffixList : public blink::WebPublicSuffixList {
- public:
-  size_t GetPublicSuffixLength(const blink::WebString&) override {
-    return length_;
-  }
-
-  void SetPublicSuffix(const blink::WebString& suffix) {
-    length_ = suffix.length();
-  }
-
- private:
-  size_t length_;
-};
-
-class OriginAccessEntryTestPlatform : public TestingPlatformSupport {
- public:
-  blink::WebPublicSuffixList* PublicSuffixList() override {
-    return &suffix_list_;
-  }
-
-  void SetPublicSuffix(const blink::WebString& suffix) {
-    suffix_list_.SetPublicSuffix(suffix);
-  }
-
- private:
-  OriginAccessEntryTestSuffixList suffix_list_;
-};
-
 TEST(OriginAccessEntryTest, PublicSuffixListTest) {
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("com");
-
   scoped_refptr<const SecurityOrigin> origin =
       SecurityOrigin::CreateFromString("http://www.google.com");
   OriginAccessEntry entry1("http", "google.com",
@@ -139,9 +107,6 @@ TEST(OriginAccessEntryTest, AllowSubdomainsTest) {
        OriginAccessEntry::kMatchesOrigin},
   };
 
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("com");
-
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin);
@@ -192,9 +157,6 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTest) {
       {"https", "", "http://beispiel.de/",
        OriginAccessEntry::kDoesNotMatchOrigin},
   };
-
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
     scoped_refptr<const SecurityOrigin> origin_to_test =
@@ -249,9 +211,6 @@ TEST(OriginAccessEntryTest, AllowRegisterableDomainsTestWithDottedSuffix) {
        OriginAccessEntry::kDoesNotMatchOrigin},
   };
 
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("appspot.com");
-
   for (const auto& test : inputs) {
     scoped_refptr<const SecurityOrigin> origin_to_test =
         SecurityOrigin::CreateFromString(test.origin);
@@ -300,9 +259,6 @@ TEST(OriginAccessEntryTest, DisallowSubdomainsTest) {
        OriginAccessEntry::kDoesNotMatchOrigin},
   };
 
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("com");
-
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message()
                  << "Host: " << test.host << ", Origin: " << test.origin);
@@ -331,9 +287,6 @@ TEST(OriginAccessEntryTest, IPAddressTest) {
       {"http", "", false},
   };
 
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("com");
-
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message() << "Host: " << test.host);
     OriginAccessEntry entry(test.protocol, test.host,
@@ -358,9 +311,6 @@ TEST(OriginAccessEntryTest, IPAddressMatchingTest) {
       {"http", "1.123", "http://192.0.0.123/",
        OriginAccessEntry::kDoesNotMatchOrigin},
   };
-
-  ScopedTestingPlatformSupport<OriginAccessEntryTestPlatform> platform;
-  platform->SetPublicSuffix("com");
 
   for (const auto& test : inputs) {
     SCOPED_TRACE(testing::Message()
