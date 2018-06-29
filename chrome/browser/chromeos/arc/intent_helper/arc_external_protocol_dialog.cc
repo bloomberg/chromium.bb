@@ -37,6 +37,14 @@ namespace arc {
 
 namespace {
 
+// The proxy activity for launching an ARC IME's settings activity. These names
+// have to be in sync with the ones used in ArcInputMethodManagerService.java on
+// the container side. Otherwise, the picker dialog might pop up unexpectedly.
+constexpr char kPackageForOpeningArcImeSettingsPage[] =
+    "org.chromium.arc.applauncher";
+constexpr char kActivityForOpeningArcImeSettingsPage[] =
+    "org.chromium.arc.applauncher.InputMethodSettingsActivity";
+
 // Shows the Chrome OS' original external protocol dialog as a fallback.
 void ShowFallbackExternalProtocolDialog(int render_process_host_id,
                                         int routing_id,
@@ -68,6 +76,12 @@ bool IsChromeAnAppCandidate(
       return true;
   }
   return false;
+}
+
+// Returns true if the |handler| is for opening ARC IME settings page.
+bool ForOpeningArcImeSettingsPage(const mojom::IntentHandlerInfoPtr& handler) {
+  return (handler->package_name == kPackageForOpeningArcImeSettingsPage) &&
+         (handler->activity_name == kActivityForOpeningArcImeSettingsPage);
 }
 
 // Shows |url| in the current tab.
@@ -195,12 +209,15 @@ GetActionResult GetAction(
     // 2) its package is not "Chrome" but it has been marked as
     // |in_out_safe_to_bypass_ui|, this means that we trust the current tab
     // since its content was originated from ARC.
+    // 3) its package and activity are for opening ARC IME settings page. The
+    // activity is launched with an explicit user action in chrome://settings.
     if (handlers.size() == 1) {
       const GetActionResult internal_result = GetActionInternal(
           original_url, handlers[0], out_url_and_activity_name);
 
       if ((internal_result == GetActionResult::HANDLE_URL_IN_ARC &&
-           *in_out_safe_to_bypass_ui) ||
+           (*in_out_safe_to_bypass_ui ||
+            ForOpeningArcImeSettingsPage(handlers[0]))) ||
           internal_result == GetActionResult::OPEN_URL_IN_CHROME) {
         // Make sure the |in_out_safe_to_bypass_ui| flag is actually marked, its
         // maybe not important for OPEN_URL_IN_CHROME but just for consistency.
