@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/webapk/webapk_install_service.h"
 
+#include <utility>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/bind.h"
@@ -60,9 +62,9 @@ void WebApkInstallService::InstallAsync(content::WebContents* web_contents,
 
 void WebApkInstallService::UpdateAsync(
     const base::FilePath& update_request_path,
-    const FinishCallback& finish_callback) {
+    FinishCallback finish_callback) {
   WebApkInstaller::UpdateAsync(browser_context_, update_request_path,
-                               finish_callback);
+                               std::move(finish_callback));
 }
 
 void WebApkInstallService::OnFinishedInstall(

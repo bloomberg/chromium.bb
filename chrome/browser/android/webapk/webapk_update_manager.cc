@@ -128,8 +128,8 @@ static void JNI_WebApkUpdateManager_StoreWebApkUpdateRequestToFile(
       base::FilePath(update_request_path), info, primary_icon, badge_icon,
       webapk_package, std::to_string(java_webapk_version),
       icon_url_to_murmur2_hash, java_is_manifest_stale, update_reason,
-      base::Bind(&OnStoredUpdateRequest,
-                 ScopedJavaGlobalRef<jobject>(java_callback)));
+      base::BindOnce(&OnStoredUpdateRequest,
+                     ScopedJavaGlobalRef<jobject>(java_callback)));
 }
 
 // static JNI method.
