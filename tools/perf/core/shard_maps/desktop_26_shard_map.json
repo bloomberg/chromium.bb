@@ -179,14 +179,6 @@
             "system_health.memory_mobile": {},
             "system_health.webview_startup": {},
             "tab_switching.typical_25": {},
-            "thread_times.key_hit_test_cases": {},
-            "thread_times.key_idle_power_cases": {},
-            "thread_times.key_mobile_sites_smooth": {},
-            "thread_times.key_noop_cases": {},
-            "thread_times.key_silk_cases": {},
-            "thread_times.simple_mobile_sites": {},
-            "thread_times.tough_compositor_cases": {},
-            "thread_times.tough_scrolling_cases": {},
             "tracing.tracing_with_background_memory_infra": {
                 "end": 1
             }

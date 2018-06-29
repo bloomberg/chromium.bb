@@ -6,8 +6,6 @@ from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 from page_sets.system_health import platforms
 
-from telemetry import story
-
 
 class KeyIdlePowerPage(rendering_story.RenderingStory):
   ABSTRACT_STORY = True
@@ -82,26 +80,3 @@ class SetTimeoutLongIdlePowerPage(KeyIdlePowerPage):
   # 90 seconds ensures the capture of activity after the 60-second
   # PowerMonitor suspend signal.
   DURATION_SECONDS = 90
-
-
-# TODO(crbug.com/760553):remove this class after
-# thread_times.key_idle_power_cases benchmark is completely replaced
-# by rendering benchmarks
-class KeyIdlePowerCasesPageSet(story.StorySet):
-
-  """ Key idle power cases """
-
-  def __init__(self):
-    super(KeyIdlePowerCasesPageSet, self).__init__()
-
-    page_classes = [
-        BlankIdlePowerPage,
-        AnimatedGifIdlePowerPage,
-        CssAnimationIdlePowerPage,
-        RequestAnimationIdlePowerPage,
-        SetTimeoutIdlePowerPage,
-        SetTimeoutLongIdlePowerPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))

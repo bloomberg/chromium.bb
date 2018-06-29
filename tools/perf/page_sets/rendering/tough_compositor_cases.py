@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -94,30 +93,3 @@ class JSFullScreenPage(ToughCompositorWaitPage):
 class NewTilingsPage(ToughCompositorWaitPage):
   BASE_NAME = 'new_tilings'
   URL = 'http://jsbin.com/covoqi/1/quiet?NEW_TILINGS'
-
-
-# TODO(crbug.com/760553):remove this class after
-# thread_times.tough_compositor_cases benchmark is completely
-# replaced by rendering benchmarks
-class ToughCompositorCasesPageSet(story.StorySet):
-
-  """ Touch compositor sites """
-
-  def __init__(self):
-    super(ToughCompositorCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_compositor_cases.json',
-      cloud_storage_bucket=story.PUBLIC_BUCKET)
-
-    page_classes = [
-        CCScrollTextPage,
-        JSScrollTextPage,
-        CCScroll200LayerPage,
-        JSScroll200LayerPage,
-        CCPosterCirclePage,
-        JSPosterCirclePage,
-        JSFullScreenPage,
-        NewTilingsPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))

@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 from telemetry.internal.actions import page_action
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -282,62 +281,3 @@ class ScrollingCanvas90000Page(ToughFastScrollingPage):
   BASE_NAME = 'canvas_90000_pixels_per_second'
   URL = 'file://../tough_scrolling_cases/canvas.html'
   SPEED_IN_PIXELS_PER_SECOND = 90000
-
-
-# TODO(crbug.com/760553):remove this class after
-# smoothness.tough_scrolling_cases benchmark is completely
-# replaced by rendering benchmarks
-class ToughScrollingCasesPageSet(story.StorySet):
-
-  """
-  Description: A collection of difficult scrolling tests
-  """
-
-  def __init__(self):
-    super(ToughScrollingCasesPageSet, self).__init__()
-
-    page_classes = [
-      ScrollingText5000Page,
-      ScrollingText10000Page,
-      ScrollingText15000Page,
-      ScrollingText20000Page,
-      ScrollingText30000Page,
-      ScrollingText40000Page,
-      ScrollingText50000Page,
-      ScrollingText60000Page,
-      ScrollingText75000Page,
-      ScrollingText90000Page,
-      ScrollingTextHover5000Page,
-      ScrollingTextHover10000Page,
-      ScrollingTextHover15000Page,
-      ScrollingTextHover20000Page,
-      ScrollingTextHover30000Page,
-      ScrollingTextHover40000Page,
-      ScrollingTextHover50000Page,
-      ScrollingTextHover60000Page,
-      ScrollingTextHover75000Page,
-      ScrollingTextHover90000Page,
-      ScrollingTextRaster5000Page,
-      ScrollingTextRaster10000Page,
-      ScrollingTextRaster15000Page,
-      ScrollingTextRaster20000Page,
-      ScrollingTextRaster30000Page,
-      ScrollingTextRaster40000Page,
-      ScrollingTextRaster50000Page,
-      ScrollingTextRaster60000Page,
-      ScrollingTextRaster75000Page,
-      ScrollingTextRaster90000Page,
-      ScrollingCanvas5000Page,
-      ScrollingCanvas10000Page,
-      ScrollingCanvas15000Page,
-      ScrollingCanvas20000Page,
-      ScrollingCanvas30000Page,
-      ScrollingCanvas40000Page,
-      ScrollingCanvas50000Page,
-      ScrollingCanvas60000Page,
-      ScrollingCanvas75000Page,
-      ScrollingCanvas90000Page,
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))
