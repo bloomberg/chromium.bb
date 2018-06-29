@@ -1976,6 +1976,12 @@ void RenderFrameImpl::OnSwapOut(
   bool is_main_frame = is_main_frame_;
   int routing_id = GetRoutingID();
 
+  // Before |this| is destroyed, grab the TaskRunner to be used for sending the
+  // SwapOut ACK.  This will be used to schedule SwapOut ACK to be sent after
+  // any postMessage IPCs scheduled from the unload event above.
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner =
+      GetTaskRunner(blink::TaskType::kPostedMessage);
+
   // Now that all of the cleanup is complete and the browser side is notified,
   // start using the RenderFrameProxy.
   //
@@ -2017,8 +2023,15 @@ void RenderFrameImpl::OnSwapOut(
     render_view->WasSwappedOut();
 
   // Notify the browser that this frame was swapped. Use the RenderThread
-  // directly because |this| is deleted.
-  RenderThread::Get()->Send(new FrameHostMsg_SwapOut_ACK(routing_id));
+  // directly because |this| is deleted.  Post a task to send the ACK, so that
+  // any postMessage IPCs scheduled from the unload handler are sent before
+  // the ACK (see https://crbug.com/857274).
+  auto send_swapout_ack = base::BindOnce(
+      [](int routing_id) {
+        RenderThread::Get()->Send(new FrameHostMsg_SwapOut_ACK(routing_id));
+      },
+      routing_id);
+  task_runner->PostTask(FROM_HERE, std::move(send_swapout_ack));
 }
 
 void RenderFrameImpl::OnSwapIn() {

@@ -4767,4 +4767,51 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
   process_exit_observer.Wait();
 }
 
+// Verify that when an OOPIF with an unload handler navigates cross-process,
+// its unload handler is able to send a postMessage to the parent frame.
+// See https://crbug.com/857274.
+IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerUnloadBrowserTest,
+                       PostMessageToParentWhenSubframeNavigates) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "a.com", "/cross_site_iframe_factory.html?a(b)"));
+  EXPECT_TRUE(NavigateToURL(shell(), main_url));
+  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
+                            ->GetFrameTree()
+                            ->root();
+  FrameTreeNode* child = root->child_at(0);
+
+  // Add an onmessage listener in the main frame.
+  EXPECT_TRUE(ExecuteScript(root, R"(
+      window.addEventListener('message', function(e) {
+        domAutomationController.send(e.data);
+      });)"));
+
+  // Add an unload handler in the child frame to send a postMessage to the
+  // parent frame.
+  AddUnloadHandler(child->current_frame_host(),
+                   "parent.postMessage('foo', '*')");
+
+  // Navigate the subframe cross-site to c.com and wait for the message.
+  GURL c_url(embedded_test_server()->GetURL("c.com", "/title1.html"));
+  std::string message;
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      base::StringPrintf("document.querySelector('iframe').src = '%s';",
+                         c_url.spec().c_str()),
+      &message));
+  EXPECT_EQ("foo", message);
+
+  // Now repeat the test with a remote-to-local navigation that brings the
+  // subframe back to a.com.
+  AddUnloadHandler(child->current_frame_host(),
+                   "parent.postMessage('bar', '*')");
+  GURL a_url(embedded_test_server()->GetURL("a.com", "/title2.html"));
+  EXPECT_TRUE(ExecuteScriptAndExtractString(
+      root,
+      base::StringPrintf("document.querySelector('iframe').src = '%s';",
+                         a_url.spec().c_str()),
+      &message));
+  EXPECT_EQ("bar", message);
+}
+
 }  // namespace content
