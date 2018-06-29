@@ -24,6 +24,7 @@
 #include "libassistant/contrib/core/macros.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/public/conversation_state_listener.h"
+#include "libassistant/shared/public/device_state_listener.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/device/public/mojom/battery_monitor.mojom.h"
@@ -53,7 +54,8 @@ class AssistantManagerServiceImpl
       public AssistantEventObserver,
       public assistant_client::ConversationStateListener,
       public assistant_client::AssistantManagerDelegate,
-      public ash::mojom::VoiceInteractionObserver {
+      public ash::mojom::VoiceInteractionObserver,
+      public assistant_client::DeviceStateListener {
  public:
   AssistantManagerServiceImpl(service_manager::Connector* connector,
                               device::mojom::BatteryMonitorPtr battery_monitor,
@@ -122,6 +124,9 @@ class AssistantManagerServiceImpl
   void OnAssistantFeatureAllowedChanged(
       ash::mojom::AssistantAllowedState state) override {}
 
+  // AddDeviceStateListener overrides
+  void OnStartFinished() override;
+
  private:
   void StartAssistantInternal(const std::string& access_token,
                               const std::string& arc_version);
@@ -161,6 +166,7 @@ class AssistantManagerServiceImpl
   void IsVoiceInteractionSetupCompleted(
       ash::mojom::VoiceInteractionController::IsSetupCompletedCallback
           callback);
+  void RegisterFallbackMediaHandler();
 
   void SendContextQueryAndRunCallback(RequestScreenContextCallback callback);
 
@@ -174,14 +180,13 @@ class AssistantManagerServiceImpl
   State state_ = State::STOPPED;
   PlatformApiImpl platform_api_;
   std::unique_ptr<action::CrosActionModule> action_module_;
+  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
   mojom::DeviceActionsPtr device_actions_;
   assistant_client::AssistantManagerInternal* assistant_manager_internal_;
   std::unique_ptr<CrosDisplayConnection> display_connection_;
   mojo::InterfacePtrSet<mojom::AssistantEventSubscriber> subscribers_;
-  scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
-
   ash::mojom::VoiceInteractionControllerPtr voice_interaction_controller_;
   mojo::Binding<ash::mojom::VoiceInteractionObserver>
       voice_interaction_observer_binding_;
