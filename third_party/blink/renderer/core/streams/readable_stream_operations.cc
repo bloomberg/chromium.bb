@@ -104,8 +104,10 @@ ScriptValue ReadableStreamOperations::CreateCountQueuingStrategy(
                                 "createBuiltInCountQueuingStrategy", args));
 }
 
-ScriptValue ReadableStreamOperations::GetReader(ScriptState* script_state,
-                                                ScriptValue stream) {
+ScriptValue ReadableStreamOperations::GetReader(
+    ScriptState* script_state,
+    ScriptValue stream,
+    ExceptionState& exception_state) {
   DCHECK(IsReadableStreamForDCheck(script_state, stream));
 
   v8::TryCatch block(script_state->GetIsolate());
@@ -114,7 +116,11 @@ ScriptValue ReadableStreamOperations::GetReader(ScriptState* script_state,
       script_state,
       V8ScriptRunner::CallExtra(script_state,
                                 "AcquireReadableStreamDefaultReader", args));
-  DCHECK(block.HasCaught() || !result.IsEmpty());
+  if (block.HasCaught()) {
+    exception_state.RethrowV8Exception(block.Exception());
+    return ScriptValue();
+  }
+  DCHECK(!result.IsEmpty());
   return result;
 }
 

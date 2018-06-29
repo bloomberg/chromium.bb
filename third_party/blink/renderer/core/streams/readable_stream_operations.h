@@ -53,7 +53,9 @@ class CORE_EXPORT ReadableStreamOperations {
 
   // AcquireReadableStreamDefaultReader
   // This function assumes |IsReadableStream(stream)|.
-  static ScriptValue GetReader(ScriptState*, ScriptValue stream);
+  static ScriptValue GetReader(ScriptState*,
+                               ScriptValue stream,
+                               ExceptionState&);
 
   // IsReadableStream, exception-catching version. Exceptions will be passed to
   // |exception_state|.

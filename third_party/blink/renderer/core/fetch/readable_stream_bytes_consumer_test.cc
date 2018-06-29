@@ -83,8 +83,8 @@ class ReadableStreamBytesConsumerTest : public testing::Test {
   }
 
   ReadableStreamBytesConsumer* CreateConsumer(ScriptValue stream) {
-    ScriptValue reader =
-        ReadableStreamOperations::GetReader(GetScriptState(), stream);
+    ScriptValue reader = ReadableStreamOperations::GetReader(
+        GetScriptState(), stream, ASSERT_NO_EXCEPTION);
     DCHECK(!reader.IsEmpty());
     DCHECK(reader.V8Value()->IsObject());
     return new ReadableStreamBytesConsumer(GetScriptState(), reader);
