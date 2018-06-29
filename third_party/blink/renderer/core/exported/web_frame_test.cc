@@ -39,6 +39,7 @@
 
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
+#include "cc/trees/layer_tree_host.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
@@ -6274,66 +6275,15 @@ TEST_F(WebFrameTest, MoveCaretStaysHorizontallyAlignedWhenMoved) {
 }
 #endif
 
-class CompositedSelectionBoundsTestLayerTreeView : public WebLayerTreeView {
- public:
-  CompositedSelectionBoundsTestLayerTreeView() : selection_cleared_(false) {}
-  ~CompositedSelectionBoundsTestLayerTreeView() override = default;
-
-  // WebLayerTreeView:
-  void RegisterSelection(const WebSelection& selection) override {
-    selection_ = std::make_unique<WebSelection>(selection);
-  }
-  void ClearSelection() override {
-    selection_cleared_ = true;
-    selection_.reset();
-  }
-
-  bool GetAndResetSelectionCleared() {
-    bool selection_cleared = selection_cleared_;
-    selection_cleared_ = false;
-    return selection_cleared;
-  }
-
-  const WebSelection* Selection() const { return selection_.get(); }
-  const WebSelectionBound* Start() const {
-    return selection_ ? &selection_->Start() : nullptr;
-  }
-  const WebSelectionBound* end() const {
-    return selection_ ? &selection_->end() : nullptr;
-  }
-
- private:
-  bool selection_cleared_;
-  std::unique_ptr<WebSelection> selection_;
-};
-
-class CompositedSelectionBoundsTestWebViewClient
-    : public FrameTestHelpers::TestWebViewClient {
- public:
-  ~CompositedSelectionBoundsTestWebViewClient() override = default;
-  WebLayerTreeView* InitializeLayerTreeView() override {
-    return &test_layer_tree_view_;
-  }
-
-  CompositedSelectionBoundsTestLayerTreeView& SelectionLayerTreeView() {
-    return test_layer_tree_view_;
-  }
-
- private:
-  CompositedSelectionBoundsTestLayerTreeView test_layer_tree_view_;
-};
-
 class CompositedSelectionBoundsTest
     : public WebFrameTest,
       private ScopedCompositedSelectionUpdateForTest {
  protected:
   CompositedSelectionBoundsTest()
-      : ScopedCompositedSelectionUpdateForTest(true),
-        fake_selection_layer_tree_view_(
-            fake_selection_web_view_client_.SelectionLayerTreeView()) {
+      : ScopedCompositedSelectionUpdateForTest(true) {
     RegisterMockedHttpURLLoad("Ahem.ttf");
 
-    web_view_helper_.Initialize(nullptr, &fake_selection_web_view_client_);
+    web_view_helper_.Initialize(nullptr, &web_view_client_);
     web_view_helper_.GetWebView()->GetSettings()->SetDefaultFontSize(12);
     web_view_helper_.GetWebView()->SetDefaultPageScaleLimits(1, 1);
     web_view_helper_.Resize(WebSize(640, 480));
@@ -6346,14 +6296,13 @@ class CompositedSelectionBoundsTest
                                 base_url_ + test_file);
     web_view_helper_.GetWebView()->UpdateAllLifecyclePhases();
 
-    const WebSelection* selection = fake_selection_layer_tree_view_.Selection();
-    const WebSelectionBound* select_start =
-        fake_selection_layer_tree_view_.Start();
-    const WebSelectionBound* select_end = fake_selection_layer_tree_view_.end();
+    cc::LayerTreeHost* layer_tree_host =
+        web_view_client_.compositor()->layer_tree_host();
+    const cc::LayerSelection& selection = layer_tree_host->selection();
 
-    EXPECT_FALSE(selection);
-    EXPECT_FALSE(select_start);
-    EXPECT_FALSE(select_end);
+    ASSERT_EQ(selection, cc::LayerSelection());
+    ASSERT_EQ(selection.start, cc::LayerSelectionBound());
+    ASSERT_EQ(selection.end, cc::LayerSelectionBound());
   }
 
   void RunTest(const char* test_file) {
@@ -6447,16 +6396,13 @@ class CompositedSelectionBoundsTest
         ->GetEventHandler()
         .HandleGestureEvent(gesture_event);
 
-    const WebSelection* selection = fake_selection_layer_tree_view_.Selection();
-    const WebSelectionBound* select_start =
-        fake_selection_layer_tree_view_.Start();
-    const WebSelectionBound* select_end = fake_selection_layer_tree_view_.end();
+    cc::LayerTreeHost* layer_tree_host =
+        web_view_client_.compositor()->layer_tree_host();
+    const cc::LayerSelection& selection = layer_tree_host->selection();
 
-    ASSERT_TRUE(selection);
-    ASSERT_TRUE(select_start);
-    ASSERT_TRUE(select_end);
-
-    EXPECT_FALSE(selection->IsNone());
+    ASSERT_NE(selection, cc::LayerSelection());
+    ASSERT_NE(selection.start, cc::LayerSelectionBound());
+    ASSERT_NE(selection.end, cc::LayerSelectionBound());
 
     blink::Node* layer_owner_node_for_start = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(), expected_result.Get(0));
@@ -6464,12 +6410,11 @@ class CompositedSelectionBoundsTest
     EXPECT_EQ(GetExpectedLayerForSelection(layer_owner_node_for_start)
                   ->CcLayer()
                   ->id(),
-              select_start->layer_id);
+              selection.start.layer_id);
 
-    EXPECT_EQ(start_edge_top_in_layer_x, select_start->edge_top_in_layer.x);
-    EXPECT_EQ(start_edge_top_in_layer_y, select_start->edge_top_in_layer.y);
-    EXPECT_EQ(start_edge_bottom_in_layer_x,
-              select_start->edge_bottom_in_layer.x);
+    EXPECT_EQ(start_edge_top_in_layer_x, selection.start.edge_top.x());
+    EXPECT_EQ(start_edge_top_in_layer_y, selection.start.edge_top.y());
+    EXPECT_EQ(start_edge_bottom_in_layer_x, selection.start.edge_bottom.x());
 
     blink::Node* layer_owner_node_for_end = V8Node::ToImplWithTypeCheck(
         v8::Isolate::GetCurrent(),
@@ -6478,11 +6423,11 @@ class CompositedSelectionBoundsTest
     ASSERT_TRUE(layer_owner_node_for_end);
     EXPECT_EQ(
         GetExpectedLayerForSelection(layer_owner_node_for_end)->CcLayer()->id(),
-        select_end->layer_id);
+        selection.end.layer_id);
 
-    EXPECT_EQ(end_edge_top_in_layer_x, select_end->edge_top_in_layer.x);
-    EXPECT_EQ(end_edge_top_in_layer_y, select_end->edge_top_in_layer.y);
-    EXPECT_EQ(end_edge_bottom_in_layer_x, select_end->edge_bottom_in_layer.x);
+    EXPECT_EQ(end_edge_top_in_layer_x, selection.end.edge_top.x());
+    EXPECT_EQ(end_edge_top_in_layer_y, selection.end.edge_top.y());
+    EXPECT_EQ(end_edge_bottom_in_layer_x, selection.end.edge_bottom.x());
 
     // Platform differences can introduce small stylistic deviations in
     // y-axis positioning, the details of which aren't relevant to
@@ -6497,10 +6442,10 @@ class CompositedSelectionBoundsTest
     }
 
     int y_bottom_deviation =
-        start_edge_bottom_in_layer_y - select_start->edge_bottom_in_layer.y;
+        start_edge_bottom_in_layer_y - selection.start.edge_bottom.y();
     EXPECT_GE(y_bottom_epsilon, std::abs(y_bottom_deviation));
     EXPECT_EQ(y_bottom_deviation,
-              end_edge_bottom_in_layer_y - select_end->edge_bottom_in_layer.y);
+              end_edge_bottom_in_layer_y - selection.end.edge_bottom.y());
 
     if (expected_result.Length() >= 15) {
       bool start_hidden = expected_result.Get(context, 13)
@@ -6512,8 +6457,8 @@ class CompositedSelectionBoundsTest
                             .As<v8::Boolean>()
                             ->Value();
 
-      EXPECT_EQ(start_hidden, select_start->hidden);
-      EXPECT_EQ(end_hidden, select_end->hidden);
+      EXPECT_EQ(start_hidden, selection.start.hidden);
+      EXPECT_EQ(end_hidden, selection.end.hidden);
     }
   }
 
@@ -6539,8 +6484,7 @@ class CompositedSelectionBoundsTest
                                          : clm->MainGraphicsLayer();
   }
 
-  CompositedSelectionBoundsTestWebViewClient fake_selection_web_view_client_;
-  CompositedSelectionBoundsTestLayerTreeView& fake_selection_layer_tree_view_;
+  FrameTestHelpers::TestWebViewClient web_view_client_;
   FrameTestHelpers::WebViewHelper web_view_helper_;
 };
 
@@ -8949,44 +8893,16 @@ TEST_F(WebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   EXPECT_FLOAT_EQ(5.0, web_view_impl->MaximumPageScaleFactor());
 }
 
-namespace {
-
-class TestFullscreenWebLayerTreeView : public WebLayerTreeView {
- public:
-  TestFullscreenWebLayerTreeView() = default;
-  ~TestFullscreenWebLayerTreeView() override = default;
-
-  // WebLayerTreeView:
-  void SetBackgroundColor(SkColor color) override {
-    has_transparent_background = SkColorGetA(color) < SK_AlphaOPAQUE;
-  }
-  bool has_transparent_background = false;
-};
-
-class TestFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
- public:
-  TestFullscreenWebViewClient() = default;
-  ~TestFullscreenWebViewClient() override = default;
-
-  // FrameTestHelpers::TestWebViewClient:
-  WebLayerTreeView* InitializeLayerTreeView() override {
-    return &test_fullscreen_layer_tree_view;
-  }
-  TestFullscreenWebLayerTreeView test_fullscreen_layer_tree_view;
-};
-
-}  // namespace
-
 TEST_F(WebFrameTest, OverlayFullscreenVideo) {
   ScopedForceOverlayFullscreenVideoForTest force_overlay_fullscreen_video(true);
   RegisterMockedHttpURLLoad("fullscreen_video.html");
-  TestFullscreenWebViewClient web_view_client;
+  FrameTestHelpers::TestWebViewClient web_view_client;
   FrameTestHelpers::WebViewHelper web_view_helper;
   WebViewImpl* web_view_impl = web_view_helper.InitializeAndLoad(
       base_url_ + "fullscreen_video.html", nullptr, &web_view_client);
 
-  const TestFullscreenWebLayerTreeView& layer_tree_view =
-      web_view_client.test_fullscreen_layer_tree_view;
+  const cc::LayerTreeHost* layer_tree_host =
+      web_view_client.compositor()->layer_tree_host();
 
   LocalFrame* frame = web_view_impl->MainFrameImpl()->GetFrame();
   std::unique_ptr<UserGestureIndicator> gesture =
@@ -8995,18 +8911,18 @@ TEST_F(WebFrameTest, OverlayFullscreenVideo) {
       ToHTMLVideoElement(frame->GetDocument()->getElementById("video"));
   EXPECT_TRUE(video->UsesOverlayFullscreenVideo());
   EXPECT_FALSE(video->IsFullscreen());
-  EXPECT_FALSE(layer_tree_view.has_transparent_background);
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 
   video->webkitEnterFullscreen();
   web_view_impl->DidEnterFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
   EXPECT_TRUE(video->IsFullscreen());
-  EXPECT_TRUE(layer_tree_view.has_transparent_background);
+  EXPECT_LT(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 
   web_view_impl->DidExitFullscreen();
   web_view_impl->UpdateAllLifecyclePhases();
   EXPECT_FALSE(video->IsFullscreen());
-  EXPECT_FALSE(layer_tree_view.has_transparent_background);
+  EXPECT_EQ(SkColorGetA(layer_tree_host->background_color()), SK_AlphaOPAQUE);
 }
 
 TEST_F(WebFrameTest, LayoutBlockPercentHeightDescendants) {
