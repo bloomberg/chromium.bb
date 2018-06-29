@@ -396,8 +396,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
                 if (!mPostResourceExtractionTasksCompleted) {
                     // TODO(yfriedman): Remove dependency on a command line flag for this.
                     DeviceUtilsImpl.addDeviceSpecificUserAgentSwitch();
-                    nativeSetCommandLineFlags(
-                            singleProcess, nativeIsPluginEnabled() ? getPlugins() : null);
+                    nativeSetCommandLineFlags(singleProcess);
                     mPostResourceExtractionTasksCompleted = true;
                 }
 
@@ -423,21 +422,14 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
         ResourceExtractor resourceExtractor = ResourceExtractor.get();
         resourceExtractor.startExtractingResources();
         resourceExtractor.waitForCompletion();
-        nativeSetCommandLineFlags(false, null);
+        nativeSetCommandLineFlags(false);
     }
 
-    private String getPlugins() {
-        return PepperPluginManager.getPlugins(ContextUtils.getApplicationContext());
-    }
-
-    private static native void nativeSetCommandLineFlags(
-            boolean singleProcess, String pluginDescriptor);
+    private static native void nativeSetCommandLineFlags(boolean singleProcess);
 
     // Is this an official build of Chrome? Only native code knows for sure. Official build
     // knowledge is needed very early in process startup.
     private static native boolean nativeIsOfficialBuild();
-
-    private static native boolean nativeIsPluginEnabled();
 
     private static native void nativeFlushStartupTasks();
 }

@@ -35,29 +35,14 @@ bool ShouldStartGpuProcessOnBrowserStartup() {
 static void JNI_BrowserStartupControllerImpl_SetCommandLineFlags(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
-    jboolean single_process,
-    const JavaParamRef<jstring>& plugin_descriptor) {
-  std::string plugin_str =
-      (plugin_descriptor == NULL
-           ? std::string()
-           : base::android::ConvertJavaStringToUTF8(env, plugin_descriptor));
-  SetContentCommandLineFlags(static_cast<bool>(single_process), plugin_str);
+    jboolean single_process) {
+  SetContentCommandLineFlags(static_cast<bool>(single_process));
 }
 
 static jboolean JNI_BrowserStartupControllerImpl_IsOfficialBuild(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz) {
 #if defined(OFFICIAL_BUILD)
-  return true;
-#else
-  return false;
-#endif
-}
-
-static jboolean JNI_BrowserStartupControllerImpl_IsPluginEnabled(
-    JNIEnv* env,
-    const JavaParamRef<jclass>& clazz) {
-#if BUILDFLAG(ENABLE_PLUGINS)
   return true;
 #else
   return false;

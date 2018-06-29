@@ -58,10 +58,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 
-#if BUILDFLAG(ENABLE_PLUGINS)
-#include "chrome/browser/pepper_broker_infobar_delegate.h"
-#endif
-
 using base::android::AttachCurrentThread;
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -332,13 +328,7 @@ bool TabWebContentsDelegateAndroid::RequestPpapiBrokerPermission(
     const GURL& url,
     const base::FilePath& plugin_path,
     const base::Callback<void(bool)>& callback) {
-#if BUILDFLAG(ENABLE_PLUGINS)
-    PepperBrokerInfoBarDelegate::Create(
-        web_contents, url, plugin_path, callback);
-    return true;
-#else
     return false;
-#endif
 }
 
 WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(

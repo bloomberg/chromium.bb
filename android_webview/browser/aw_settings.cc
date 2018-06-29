@@ -366,8 +366,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->supports_multiple_windows =
       Java_AwSettings_getSupportMultipleWindowsLocked(env, obj);
 
-  web_prefs->plugins_enabled =
-      !Java_AwSettings_getPluginsDisabledLocked(env, obj);
+  web_prefs->plugins_enabled = false;
 
   web_prefs->application_cache_enabled =
       Java_AwSettings_getAppCacheEnabledLocked(env, obj);
