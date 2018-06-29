@@ -511,6 +511,8 @@ void AudioHandler::BreakConnection() {
 }
 
 void AudioHandler::BreakConnectionWithLock() {
+  DCHECK(Context()->IsGraphOwner());
+
   AtomicDecrement(&connection_ref_count_);
 
 #if DEBUG_AUDIONODE_REFERENCES
