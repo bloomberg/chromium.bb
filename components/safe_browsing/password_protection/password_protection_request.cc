@@ -13,6 +13,7 @@
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/safe_browsing/db/whitelist_checker_client.h"
 #include "components/safe_browsing/password_protection/password_protection_navigation_throttle.h"
+#include "components/safe_browsing/web_ui/safe_browsing_ui.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/base/load_flags.h"
@@ -206,7 +207,7 @@ void PasswordProtectionRequest::FillRequestProto() {
             clicked_through_interstitial);
         reuse_event->set_sync_account_type(
             password_protection_service_->GetSyncAccountType());
-        reuse_event->set_resued_password_type(reused_password_type_);
+        reuse_event->set_reused_password_type(reused_password_type_);
         UMA_HISTOGRAM_ENUMERATION(
             "PasswordProtection.PasswordReuseSyncAccountType",
             reuse_event->sync_account_type(),
@@ -238,6 +239,9 @@ void PasswordProtectionRequest::FillRequestProto() {
 void PasswordProtectionRequest::SendRequest() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   FillRequestProto();
+
+  web_ui_token_ =
+      WebUIInfoSingleton::GetInstance()->AddToPGPings(*request_proto_);
 
   std::string serialized_request;
   if (!request_proto_->SerializeToString(&serialized_request)) {
@@ -332,10 +336,13 @@ void PasswordProtectionRequest::OnURLLoaderComplete(
   url_loader_.reset();  // We don't need it anymore.
   UMA_HISTOGRAM_TIMES("PasswordProtection.RequestNetworkDuration",
                       base::TimeTicks::Now() - request_start_time_);
-  if (response_body && response->ParseFromString(*response_body))
+  if (response_body && response->ParseFromString(*response_body)) {
+    WebUIInfoSingleton::GetInstance()->AddToPGResponses(web_ui_token_,
+                                                        *response);
     Finish(PasswordProtectionService::SUCCEEDED, std::move(response));
-  else
+  } else {
     Finish(PasswordProtectionService::RESPONSE_MALFORMED, nullptr);
+  }
 }
 
 void PasswordProtectionRequest::Finish(

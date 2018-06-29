@@ -51,6 +51,22 @@ cr.define('safe_browsing', function() {
     cr.addWebUIListener('sent-pg-event', function(result) {
       addPGEvent(result);
     });
+
+    cr.sendWithPromise('getPGPings', [])
+        .then((pgPings) => { pgPings.forEach(function (pgPing) {
+          addPGPing(pgPing);
+        })});
+    cr.addWebUIListener('pg-pings-update', function(result) {
+      addPGPing(result);
+    });
+
+    cr.sendWithPromise('getPGResponses', [])
+        .then((pgResponses) => { pgResponses.forEach(function (pgResponse) {
+          addPGResponse(pgResponse);
+        })});
+    cr.addWebUIListener('pg-responses-update', function(result) {
+      addPGResponse(result);
+    });
   }
 
   function addExperiments(result) {
@@ -124,6 +140,38 @@ cr.define('safe_browsing', function() {
     appendChildWithInnerText(logDiv, eventFormatted);
   }
 
+  function addPGPingRow(token) {
+    var row = $('pg-ping-list').insertRow();
+    row.className = 'content';
+    row.id = 'pg-ping-list-' + token;
+    row.insertCell();
+    row.insertCell();
+  }
+
+  function addPGPing(result) {
+    var token = result[0];
+    var request = result[1];
+
+    if ($('pg-ping-list-'+token) == undefined) {
+      addPGPingRow(token);
+    }
+
+    var cell = $('pg-ping-list-'+token).cells[0];
+    appendChildWithInnerText(cell, request);
+  }
+
+  function addPGResponse(result) {
+    var token = result[0];
+    var response = result[1];
+
+    if ($('pg-ping-list-'+token) == undefined) {
+      addPGPingRow(token);
+    }
+
+    var cell = $('pg-ping-list-'+token).cells[1];
+    appendChildWithInnerText(cell, response);
+  }
+
   function appendChildWithInnerText(logDiv, text) {
     if (!logDiv)
       return;
@@ -136,6 +184,8 @@ cr.define('safe_browsing', function() {
     addSentCSBRRsInfo: addSentCSBRRsInfo,
     addSentClientDownloadRequestsInfo: addSentClientDownloadRequestsInfo,
     addPGEvent: addPGEvent,
+    addPGPing: addPGPing,
+    addPGResponse: addPGResponse,
     initialize: initialize,
   };
 });

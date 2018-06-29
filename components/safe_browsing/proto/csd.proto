@@ -278,7 +278,7 @@ message LoginReputationClientRequest {
       // Non-Gaia enterprise password captured from enterprise login page.
       ENTERPRISE_PASSWORD = 4;
     }
-    optional ReusedPasswordType resued_password_type = 5
+    optional ReusedPasswordType reused_password_type = 5
         [default = REUSED_PASSWORD_TYPE_UNKNOWN];
   }
 

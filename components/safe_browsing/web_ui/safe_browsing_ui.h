@@ -18,7 +18,7 @@ namespace base {
 class ListValue;
 template <typename T>
 struct DefaultSingletonTraits;
-}
+}  // namespace base
 
 namespace safe_browsing {
 class WebUIInfoSingleton;
@@ -53,6 +53,14 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // currently open chrome://safe-browsing tab was opened.
   void GetPGEvents(const base::ListValue* args);
 
+  // Get the PhishGuard pings that have been sent since the oldest currently
+  // open chrome://safe-browsing tab was opened.
+  void GetPGPings(const base::ListValue* args);
+
+  // Get the PhishGuard responses that have been received since the oldest
+  // currently open chrome://safe-browsing tab was opened.
+  void GetPGResponses(const base::ListValue* args);
+
   // Register callbacks for WebUI messages.
   void RegisterMessages() override;
 
@@ -71,6 +79,17 @@ class SafeBrowsingUIHandler : public content::WebUIMessageHandler {
   // Called when any new PhishGuard events are sent while one or more WebUI tabs
   // are open.
   void NotifyPGEventJsListener(const sync_pb::UserEventSpecifics& event);
+
+  // Called when any new PhishGuard pings are sent while one or more WebUI tabs
+  // are open.
+  void NotifyPGPingJsListener(int token,
+                              const LoginReputationClientRequest& request);
+
+  // Called when any new PhishGuard responses are received while one or more
+  // WebUI tabs are open.
+  void NotifyPGResponseJsListener(
+      int token,
+      const LoginReputationClientResponse& response);
 
   content::BrowserContext* browser_context_;
 
@@ -118,6 +137,19 @@ class WebUIInfoSingleton {
   // Clear the list of sent PhishGuard events.
   void ClearPGEvents();
 
+  // Add the new ping to |pg_pings_| and send it to all the open
+  // chrome://safe-browsing tabs. Returns a token that can be used in
+  // |AddToPGReponses| to correlate a ping and response.
+  int AddToPGPings(const LoginReputationClientRequest& request);
+
+  // Add the new response to |pg_responses_| and send it to all the open
+  // chrome://safe-browsing tabs.
+  void AddToPGResponses(int token,
+                        const LoginReputationClientResponse& response);
+
+  // Clear the list of sent PhishGuard pings and responses.
+  void ClearPGPings();
+
   // Register the new WebUI listener object.
   void RegisterWebUIInstance(SafeBrowsingUIHandler* webui);
 
@@ -144,8 +176,22 @@ class WebUIInfoSingleton {
     return webui_instances_;
   }
 
+  // Get the list of PhishGuard events since the oldest currently open
+  // chrome://safe-browsing tab was opened.
   const std::vector<sync_pb::UserEventSpecifics>& pg_event_log() const {
     return pg_event_log_;
+  }
+
+  // Get the list of PhishGuard pings since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  const std::vector<LoginReputationClientRequest>& pg_pings() const {
+    return pg_pings_;
+  }
+
+  // Get the list of PhishGuard pings since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  const std::map<int, LoginReputationClientResponse>& pg_responses() const {
+    return pg_responses_;
   }
 
  private:
@@ -170,6 +216,14 @@ class WebUIInfoSingleton {
   // List of PhishGuard events sent since the oldest currently open
   // chrome://safe-browsing tab was opened.
   std::vector<sync_pb::UserEventSpecifics> pg_event_log_;
+
+  // List of PhishGuard pings sent since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::vector<LoginReputationClientRequest> pg_pings_;
+
+  // List of PhishGuard responses received since the oldest currently open
+  // chrome://safe-browsing tab was opened.
+  std::map<int, LoginReputationClientResponse> pg_responses_;
 
   // List of WebUI listener objects. "SafeBrowsingUIHandler*" cannot be const,
   // due to being used by functions that call AllowJavascript(), which is not
