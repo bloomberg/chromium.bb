@@ -20,9 +20,11 @@ import org.chromium.chrome.browser.download.DirectoryOption;
 /**
  * The preference used to save the download directory in download settings page.
  */
-public class DownloadLocationPreference extends DialogPreference {
+public class DownloadLocationPreference
+        extends DialogPreference implements DownloadDirectoryAdapter.Delegate {
     /**
-     * Provides data for the list of available download directories options.
+     * Provides data for the list of available download directories options. Uses an asynchronous
+     * operation to query the directory options.
      */
     private DownloadLocationPreferenceAdapter mAdapter;
 
@@ -36,13 +38,17 @@ public class DownloadLocationPreference extends DialogPreference {
      */
     public DownloadLocationPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mAdapter = new DownloadLocationPreferenceAdapter(context, this);
+
+        mAdapter = new DownloadLocationPreferenceAdapter(getContext(), this);
+        mAdapter.update();
     }
 
     /**
      * Updates the summary that shows the download location directory.
      */
     public void updateSummary() {
+        if (mAdapter.getSelectedItemId() < 0) return;
+
         DirectoryOption directoryOption =
                 (DirectoryOption) mAdapter.getItem(mAdapter.getSelectedItemId());
         final SpannableStringBuilder summaryBuilder = new SpannableStringBuilder();
@@ -62,5 +68,20 @@ public class DownloadLocationPreference extends DialogPreference {
         mListView = (ListView) (view.findViewById(R.id.location_preference_list_view));
         mListView.setAdapter(mAdapter);
         return view;
+    }
+
+    // DownloadDirectoryAdapter.Delegate implementation.
+    @Override
+    public void onDirectoryOptionsUpdated() {
+        if (mAdapter.getSelectedItemId() == DownloadDirectoryAdapter.NO_SELECTED_ITEM_ID) {
+            mAdapter.useFirstValidSelectableItemId();
+        }
+
+        updateSummary();
+    }
+
+    @Override
+    public void onDirectorySelectionChanged() {
+        updateSummary();
     }
 }

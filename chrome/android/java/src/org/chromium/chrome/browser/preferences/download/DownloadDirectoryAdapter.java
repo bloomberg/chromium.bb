@@ -5,11 +5,9 @@
 package org.chromium.chrome.browser.preferences.download;
 
 import android.content.Context;
-import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.widget.TextViewCompat;
-import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,11 +17,11 @@ import android.widget.TextView;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DirectoryOption;
+import org.chromium.chrome.browser.download.DownloadDirectoryProvider;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.widget.TintedImageView;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,6 +30,22 @@ import java.util.List;
  * download location.
  */
 public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
+    /**
+     * Delegate to handle directory options results and observe data changes.
+     */
+    public interface Delegate {
+        /**
+         * Called when available download directories are changed, like SD card removal. App level
+         * UI logic should update to match the new backend data.
+         */
+        void onDirectoryOptionsUpdated();
+
+        /**
+         * Called after the user selected another download directory option.
+         */
+        void onDirectorySelectionChanged();
+    }
+
     public static int NO_SELECTED_ITEM_ID = -1;
     public static int SELECTED_ITEM_NOT_INITIALIZED = -2;
 
@@ -39,18 +53,18 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
 
     private Context mContext;
     private LayoutInflater mLayoutInflater;
+    protected Delegate mDelegate;
 
     private List<DirectoryOption> mCanonicalOptions = new ArrayList<>();
     private List<DirectoryOption> mAdditionalOptions = new ArrayList<>();
     private List<DirectoryOption> mErrorOptions = new ArrayList<>();
 
-    public DownloadDirectoryAdapter(@NonNull Context context) {
+    public DownloadDirectoryAdapter(@NonNull Context context, Delegate delegate) {
         super(context, android.R.layout.simple_spinner_item);
 
         mContext = context;
+        mDelegate = delegate;
         mLayoutInflater = LayoutInflater.from(context);
-
-        refreshData();
     }
 
     @Override
@@ -149,26 +163,27 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
     }
 
     /**
-     * @return  ID of the directory option that matches the default download location or
-     *          NO_SELECTED_ITEM_ID if no item matches the default path.
+     * @return  ID of the directory option that matches the default download location.
      */
     public int getSelectedItemId() {
-        if (mSelectedPosition == SELECTED_ITEM_NOT_INITIALIZED) {
-            mSelectedPosition = initSelectedIdFromPref();
-        }
-
         return mSelectedPosition;
     }
 
-    private int initSelectedIdFromPref() {
-        if (!mErrorOptions.isEmpty()) return 0;
+    private void initSelectedIdFromPref() {
+        if (!mErrorOptions.isEmpty()) return;
+
+        int selectedId = NO_SELECTED_ITEM_ID;
+
         String defaultLocation = PrefServiceBridge.getInstance().getDownloadDefaultDirectory();
         for (int i = 0; i < getCount(); i++) {
             DirectoryOption option = (DirectoryOption) getItem(i);
             if (option == null) continue;
-            if (defaultLocation.equals(option.location)) return i;
+            if (defaultLocation.equals(option.location)) {
+                selectedId = i;
+                break;
+            }
         }
-        return NO_SELECTED_ITEM_ID;
+        mSelectedPosition = selectedId;
     }
 
     /**
@@ -199,48 +214,57 @@ public class DownloadDirectoryAdapter extends ArrayAdapter<Object> {
         return mErrorOptions.isEmpty();
     }
 
-    private void refreshData() {
-        setCanonicalDirectoryOptions();
-        setAdditionalDirectoryOptions();
-        adjustErrorDirectoryOption();
-    }
-
-    private void setCanonicalDirectoryOptions() {
+    /**
+     * Update the list of items.
+     */
+    public void update() {
         mCanonicalOptions.clear();
-        File directoryLocation =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS);
-        mCanonicalOptions.add(new DirectoryOption(mContext.getString(R.string.menu_downloads),
-                directoryLocation.getAbsolutePath(), directoryLocation.getUsableSpace(),
-                directoryLocation.getTotalSpace(), DirectoryOption.DEFAULT_OPTION));
+        mAdditionalOptions.clear();
+        mErrorOptions.clear();
+
+        // Retrieve all download directories.
+        DownloadDirectoryProvider.getInstance().getAllDirectoriesOptions(
+                (ArrayList<DirectoryOption> dirs) -> { onDirectoryOptionsRetrieved(dirs); });
     }
 
-    private void setAdditionalDirectoryOptions() {
-        mAdditionalOptions.clear();
-
-        // If there are no more additional directories, it is only the primary storage available.
-        String[] externalDirs = DownloadUtils.getAllDownloadDirectories();
-        if (externalDirs.length <= 1) return;
-
+    private void onDirectoryOptionsRetrieved(ArrayList<DirectoryOption> dirs) {
         int numOtherAdditionalDirectories = 0;
-        for (String dir : externalDirs) {
-            if (TextUtils.isEmpty(dir)) continue;
-
-            // Skip the directory that is in primary storage.
-            if (dir.contains(Environment.getExternalStorageDirectory().getAbsolutePath())) continue;
-
-            // Add index (ie. SD Card 2) if there is more than one secondary storage option.
-            String directoryName = (numOtherAdditionalDirectories > 0)
-                    ? mContext.getString(
-                              org.chromium.chrome.R.string.downloads_location_sd_card_number,
-                              numOtherAdditionalDirectories + 1)
-                    : mContext.getString(org.chromium.chrome.R.string.downloads_location_sd_card);
-
-            File file = new File(dir);
-            mAdditionalOptions.add(new DirectoryOption(directoryName, file.getAbsolutePath(),
-                    file.getUsableSpace(), file.getTotalSpace(),
-                    DirectoryOption.ADDITIONAL_OPTION));
-            numOtherAdditionalDirectories++;
+        for (DirectoryOption dir : dirs) {
+            DirectoryOption directory = (DirectoryOption) dir.clone();
+            switch (directory.type) {
+                case DirectoryOption.DEFAULT_OPTION:
+                    directory.name = mContext.getString(R.string.menu_downloads);
+                    mCanonicalOptions.add(directory);
+                    break;
+                case DirectoryOption.ADDITIONAL_OPTION:
+                    String directoryName = (numOtherAdditionalDirectories > 0)
+                            ? mContext.getString(org.chromium.chrome.R.string
+                                                         .downloads_location_sd_card_number,
+                                      numOtherAdditionalDirectories + 1)
+                            : mContext.getString(
+                                      org.chromium.chrome.R.string.downloads_location_sd_card);
+                    directory.name = directoryName;
+                    mAdditionalOptions.add(directory);
+                    numOtherAdditionalDirectories++;
+                    break;
+                case DirectoryOption.ERROR_OPTION:
+                    directory.name =
+                            mContext.getString(R.string.download_location_no_available_locations);
+                    mErrorOptions.add(directory);
+                    break;
+                default:
+                    break;
+            }
         }
+
+        // Setup the selection.
+        initSelectedIdFromPref();
+
+        // Update lower Android level UI widgets.
+        notifyDataSetChanged();
+
+        // Update higher app level UI logic.
+        if (mDelegate != null) mDelegate.onDirectoryOptionsUpdated();
     }
 
     private void adjustErrorDirectoryOption() {

@@ -28,12 +28,14 @@ import javax.annotation.Nullable;
 /**
  * Dialog that is displayed to ask user where they want to download the file.
  */
-public class DownloadLocationDialog extends ModalDialogView implements OnCheckedChangeListener {
+public class DownloadLocationDialog extends ModalDialogView
+        implements OnCheckedChangeListener, DownloadDirectoryAdapter.Delegate {
     private DownloadDirectoryAdapter mDirectoryAdapter;
 
     private AlertDialogEditText mFileName;
     private Spinner mFileLocation;
     private CheckBox mDontShowAgain;
+    private @DownloadLocationDialogType int mDialogType;
 
     /**
      * Create a {@link DownloadLocationDialog} with the given properties.
@@ -96,21 +98,10 @@ public class DownloadLocationDialog extends ModalDialogView implements OnChecked
             @DownloadLocationDialogType int dialogType, File suggestedPath, Params params) {
         super(controller, params);
 
-        mDirectoryAdapter = new DownloadDirectoryAdapter(context);
-
         mFileName = (AlertDialogEditText) params.customView.findViewById(R.id.file_name);
         mFileName.setText(suggestedPath.getName());
 
         mFileLocation = (Spinner) params.customView.findViewById(R.id.file_location);
-        mFileLocation.setAdapter(mDirectoryAdapter);
-
-        int selectedItemId = mDirectoryAdapter.getSelectedItemId();
-        if (selectedItemId == NO_SELECTED_ITEM_ID
-                || dialogType == DownloadLocationDialogType.LOCATION_FULL
-                || dialogType == DownloadLocationDialogType.LOCATION_NOT_FOUND) {
-            selectedItemId = mDirectoryAdapter.useFirstValidSelectableItemId();
-        }
-        mFileLocation.setSelection(selectedItemId);
 
         // Automatically check "don't show again" the first time the user is seeing the dialog.
         mDontShowAgain = (CheckBox) params.customView.findViewById(R.id.show_again_checkbox);
@@ -118,6 +109,11 @@ public class DownloadLocationDialog extends ModalDialogView implements OnChecked
                 == DownloadPromptStatus.SHOW_INITIAL;
         mDontShowAgain.setChecked(isInitial);
         mDontShowAgain.setOnCheckedChangeListener(this);
+
+        mDialogType = dialogType;
+
+        mDirectoryAdapter = new DownloadDirectoryAdapter(context, this);
+        mDirectoryAdapter.update();
     }
 
     // CompoundButton.OnCheckedChangeListener implementation.
@@ -155,4 +151,21 @@ public class DownloadLocationDialog extends ModalDialogView implements OnChecked
     boolean getDontShowAgain() {
         return mDontShowAgain != null && mDontShowAgain.isChecked();
     }
+
+    // DownloadDirectoryAdapter.Delegate implementation.
+    @Override
+    public void onDirectoryOptionsUpdated() {
+        int selectedItemId = mDirectoryAdapter.getSelectedItemId();
+        if (selectedItemId == NO_SELECTED_ITEM_ID
+                || mDialogType == DownloadLocationDialogType.LOCATION_FULL
+                || mDialogType == DownloadLocationDialogType.LOCATION_NOT_FOUND) {
+            selectedItemId = mDirectoryAdapter.useFirstValidSelectableItemId();
+        }
+
+        mFileLocation.setAdapter(mDirectoryAdapter);
+        mFileLocation.setSelection(selectedItemId);
+    }
+
+    @Override
+    public void onDirectorySelectionChanged() {}
 }

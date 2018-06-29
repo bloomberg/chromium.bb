@@ -5,7 +5,6 @@
 package org.chromium.chrome.browser.preferences.download;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.view.LayoutInflater;
@@ -15,7 +14,6 @@ import android.view.ViewGroup;
 import android.widget.RadioButton;
 import android.widget.TextView;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DirectoryOption;
 import org.chromium.chrome.browser.download.DownloadUtils;
@@ -26,19 +24,11 @@ import org.chromium.chrome.browser.preferences.PrefServiceBridge;
  */
 public class DownloadLocationPreferenceAdapter
         extends DownloadDirectoryAdapter implements OnClickListener {
-    private DownloadLocationPreference mPreference;
-
     /**
      * Constructor of DownloadLocationPreferenceAdapter.
      */
-    public DownloadLocationPreferenceAdapter(
-            Context context, DownloadLocationPreference preference) {
-        super(context);
-        mPreference = preference;
-
-        if (getSelectedItemId() == NO_SELECTED_ITEM_ID) {
-            useFirstValidSelectableItemId();
-        }
+    public DownloadLocationPreferenceAdapter(Context context, Delegate delegate) {
+        super(context, delegate);
     }
 
     @Override
@@ -65,7 +55,6 @@ public class DownloadLocationPreferenceAdapter
         DirectoryOption directoryOption = (DirectoryOption) getItem(position);
         if (directoryOption == null) return view;
 
-        // TODO(xingliu): Refactor these to base class.
         TextView titleText = (TextView) view.findViewById(R.id.title);
         titleText.setText(directoryOption.name);
 
@@ -106,15 +95,10 @@ public class DownloadLocationPreferenceAdapter
         // Update the native pref, which persists the download directory selected by the user.
         PrefServiceBridge.getInstance().setDownloadAndSaveFileDefaultDirectory(option.location);
 
-        // Update the android pref and update the summary in download settings page.
-        SharedPreferences.Editor editor = ContextUtils.getAppSharedPreferences().edit();
-        editor.putString(DownloadPreferences.PREF_LOCATION_CHANGE, option.location);
-        editor.apply();
-
         mSelectedPosition = selectedId;
 
         // Update the preference after selected position is updated.
-        mPreference.updateSummary();
+        if (mDelegate != null) mDelegate.onDirectorySelectionChanged();
 
         option.recordDirectoryOptionType();
 

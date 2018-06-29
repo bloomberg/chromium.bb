@@ -23,7 +23,6 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.FileUtils;
 import org.chromium.base.Log;
-import org.chromium.base.PathUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -1143,18 +1142,6 @@ public class DownloadUtils {
         cal.set(Calendar.SECOND, 0);
         cal.set(Calendar.MILLISECOND, 0);
         return cal.getTime();
-    }
-
-    /**
-     * Gets all of the directories available for downloads, including internal & external storage.
-     *
-     * If the external directories are not available for querying (on older versions of Android),
-     * return an array with just the internal directory.
-     *
-     * @return          The absolute paths of download directories.
-     */
-    public static String[] getAllDownloadDirectories() {
-        return PathUtils.getAllPrivateDownloadsDirectories();
     }
 
     /**
