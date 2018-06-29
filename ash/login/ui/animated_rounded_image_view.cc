@@ -4,6 +4,9 @@
 
 #include "ash/login/ui/animated_rounded_image_view.h"
 
+#include <limits>
+
+#include "base/numerics/ranges.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
@@ -11,6 +14,31 @@
 #include "ui/gfx/skia_util.h"
 
 namespace ash {
+namespace {
+
+// Decodes a single animation frame.
+class SingleFrameImageDecoder
+    : public AnimatedRoundedImageView::AnimationDecoder {
+ public:
+  SingleFrameImageDecoder(const gfx::ImageSkia& image) : image_(image) {}
+  ~SingleFrameImageDecoder() override = default;
+
+  // AnimatedRoundedImageView::AnimationDecoder:
+  AnimationFrames Decode(float image_scale) override {
+    AnimationFrame frame;
+    frame.image = image_;
+    return {frame};
+  }
+
+ private:
+  gfx::ImageSkia image_;
+
+  DISALLOW_COPY_AND_ASSIGN(SingleFrameImageDecoder);
+};
+
+}  // namespace
+
+AnimatedRoundedImageView::AnimationDecoder::~AnimationDecoder() = default;
 
 AnimatedRoundedImageView::AnimatedRoundedImageView(const gfx::Size& size,
                                                    int corner_radius)
@@ -18,24 +46,15 @@ AnimatedRoundedImageView::AnimatedRoundedImageView(const gfx::Size& size,
 
 AnimatedRoundedImageView::~AnimatedRoundedImageView() = default;
 
-void AnimatedRoundedImageView::SetAnimation(const AnimationFrames& animation) {
-  frames_.clear();
-  frames_.reserve(animation.size());
-  for (AnimationFrame frame : animation) {
-    // Try to get the best image quality for the animation.
-    frame.image = gfx::ImageSkiaOperations::CreateResizedImage(
-        frame.image, skia::ImageOperations::RESIZE_BEST, image_size_);
-    DCHECK(frame.image.bitmap()->isImmutable());
-    frames_.emplace_back(frame);
-  }
-
-  StartOrStopAnimation();
+void AnimatedRoundedImageView::SetAnimationDecoder(
+    std::unique_ptr<AnimationDecoder> decoder) {
+  decoder_ = std::move(decoder);
+  // Force a new decode.
+  frames_scale_ = NAN;
 }
 
 void AnimatedRoundedImageView::SetImage(const gfx::ImageSkia& image) {
-  AnimationFrame frame;
-  frame.image = image;
-  SetAnimation({frame});
+  SetAnimationDecoder(std::make_unique<SingleFrameImageDecoder>(image));
 }
 
 void AnimatedRoundedImageView::SetAnimationEnabled(bool enabled) {
@@ -49,6 +68,15 @@ gfx::Size AnimatedRoundedImageView::CalculatePreferredSize() const {
 }
 
 void AnimatedRoundedImageView::OnPaint(gfx::Canvas* canvas) {
+  // Rebuild animation frames if the scaling has changed.
+  if (decoder_ &&
+      !base::IsApproximatelyEqual(canvas->image_scale(), frames_scale_,
+                                  std::numeric_limits<float>::epsilon())) {
+    BuildAnimationFrames(canvas->image_scale());
+    StartOrStopAnimation();
+  }
+
+  // Nothing to render.
   if (frames_.empty())
     return;
 
@@ -95,6 +123,19 @@ void AnimatedRoundedImageView::UpdateAnimationFrame() {
       FROM_HERE, frames_[active_frame_].duration,
       base::BindRepeating(&AnimatedRoundedImageView::UpdateAnimationFrame,
                           base::Unretained(this)));
+}
+
+void AnimatedRoundedImageView::BuildAnimationFrames(float image_scale) {
+  frames_scale_ = image_scale;
+  AnimationFrames frames = decoder_->Decode(frames_scale_);
+  frames_.clear();
+  frames_.reserve(frames.size());
+  for (AnimationFrame frame : frames) {
+    frame.image = gfx::ImageSkiaOperations::CreateResizedImage(
+        frame.image, skia::ImageOperations::RESIZE_BEST, image_size_);
+    DCHECK(frame.image.bitmap()->isImmutable());
+    frames_.emplace_back(frame);
+  }
 }
 
 }  // namespace ash

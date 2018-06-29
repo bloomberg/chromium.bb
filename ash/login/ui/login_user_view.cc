@@ -91,6 +91,22 @@ int GetImageSize(LoginDisplayStyle style) {
   return kLargeUserImageSizeDp;
 }
 
+// An animation decoder which does not rescale based on the current image_scale.
+class PassthroughAnimationDecoder
+    : public AnimatedRoundedImageView::AnimationDecoder {
+ public:
+  PassthroughAnimationDecoder(const AnimationFrames& frames)
+      : frames_(frames) {}
+  ~PassthroughAnimationDecoder() override = default;
+
+  // AnimatedRoundedImageView::AnimationDecoder:
+  AnimationFrames Decode(float image_scale) override { return frames_; }
+
+ private:
+  AnimationFrames frames_;
+  DISALLOW_COPY_AND_ASSIGN(PassthroughAnimationDecoder);
+};
+
 }  // namespace
 
 // Renders a user's profile icon.
@@ -102,9 +118,6 @@ class LoginUserView::UserImage : public NonAccessibleView {
         weak_factory_(this) {
     SetLayoutManager(std::make_unique<views::FillLayout>());
 
-    // TODO(jdufault): We need to render a black border. We will probably have
-    // to add support directly to AnimatedRoundedImageView, since the existing
-    // views::Border renders based on bounds (ie, a rectangle).
     image_ = new AnimatedRoundedImageView(gfx::Size(size_, size_), size_ / 2);
     AddChildView(image_);
   }
@@ -136,7 +149,8 @@ class LoginUserView::UserImage : public NonAccessibleView {
       return;
     }
 
-    image_->SetAnimation(animation);
+    image_->SetAnimationDecoder(
+        std::make_unique<PassthroughAnimationDecoder>(animation));
   }
 
   AnimatedRoundedImageView* image_ = nullptr;
