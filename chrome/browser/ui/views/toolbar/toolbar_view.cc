@@ -46,6 +46,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/grit/theme_resources.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
@@ -61,6 +62,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/scoped_canvas.h"
 #include "ui/keyboard/keyboard_controller.h"
 #include "ui/native_theme/native_theme_aura.h"
 #include "ui/views/accessibility/view_accessibility.h"
@@ -106,8 +108,9 @@ const char ToolbarView::kViewClassName[] = "ToolbarView";
 ////////////////////////////////////////////////////////////////////////////////
 // ToolbarView, public:
 
-ToolbarView::ToolbarView(Browser* browser)
+ToolbarView::ToolbarView(Browser* browser, BrowserView* browser_view)
     : browser_(browser),
+      browser_view_(browser_view),
       app_menu_icon_controller_(browser->profile(), this),
       display_mode_(browser->SupportsWindowFeature(Browser::FEATURE_TABSTRIP)
                         ? DISPLAYMODE_NORMAL
@@ -601,6 +604,29 @@ void ToolbarView::Layout() {
   app_menu_button_->SetBounds(next_element_x, toolbar_button_y, app_menu_width,
                               toolbar_button_height);
   app_menu_button_->SetTrailingMargin(maximized ? end_padding : 0);
+}
+
+void ToolbarView::OnPaintBackground(gfx::Canvas* canvas) {
+  if (!is_display_mode_normal())
+    return;
+
+  const ui::ThemeProvider* tp = GetThemeProvider();
+
+  if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
+    canvas->TileImageInt(
+        *tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
+        bounds().x() +
+            browserView()->frame()->GetFrameView()->GetThemeBackgroundXInset(),
+        bounds().y(), 0, 0, width(), height());
+  } else {
+    canvas->FillRect(GetLocalBounds(),
+                     tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
+  }
+
+  // Toolbar/content separator.
+  BrowserView::Paint1pxHorizontalLine(
+      canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
+      GetLocalBounds(), true);
 }
 
 void ToolbarView::OnThemeChanged() {

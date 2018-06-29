@@ -63,7 +63,7 @@ class ToolbarView : public views::AccessiblePaneView,
   // The view class name.
   static const char kViewClassName[];
 
-  explicit ToolbarView(Browser* browser);
+  explicit ToolbarView(Browser* browser, BrowserView* browser_view);
   ~ToolbarView() override;
 
   // Create the contents of the Browser Toolbar.
@@ -110,6 +110,7 @@ class ToolbarView : public views::AccessiblePaneView,
 
   // Accessors.
   Browser* browser() const { return browser_; }
+  BrowserView* browserView() const { return browser_view_; }
   BrowserActionsContainer* browser_actions() const { return browser_actions_; }
   ToolbarButton* back_button() const { return back_; }
   ReloadButton* reload_button() const { return reload_; }
@@ -163,6 +164,7 @@ class ToolbarView : public views::AccessiblePaneView,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   void Layout() override;
+  void OnPaintBackground(gfx::Canvas* canvas) override;
   void OnThemeChanged() override;
   const char* GetClassName() const override;
   bool AcceleratorPressed(const ui::Accelerator& acc) override;
@@ -236,6 +238,7 @@ class ToolbarView : public views::AccessiblePaneView,
   BrowserAppMenuButton* app_menu_button_ = nullptr;
 
   Browser* const browser_;
+  BrowserView* const browser_view_;
 
   AppMenuIconController app_menu_icon_controller_;
 

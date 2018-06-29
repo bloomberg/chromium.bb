@@ -478,7 +478,7 @@ void OpaqueBrowserFrameView::OnPaint(gfx::Canvas* canvas) {
    * synthesize a good shadow color. */
 
   if (IsToolbarVisible() && IsTabStripVisible())
-    PaintToolbarBackground(canvas);
+    PaintToolbarTopStroke(canvas);
   PaintClientEdge(canvas);
 }
 
