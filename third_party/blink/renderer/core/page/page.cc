@@ -66,7 +66,6 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_scrollable_area.h"
 #include "third_party/blink/renderer/core/probe/core_probes.h"
-#include "third_party/blink/renderer/core/svg/graphics/svg_image_chrome_client.h"
 #include "third_party/blink/renderer/platform/graphics/graphics_layer.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_fetcher.h"
 #include "third_party/blink/renderer/platform/plugins/plugin_data.h"
@@ -346,14 +345,6 @@ void Page::ResetPluginData() {
   }
 }
 
-static void RestoreSVGImageAnimations() {
-  for (const Page* page : AllPages()) {
-    if (auto* svg_image_chrome_client =
-            ToSVGImageChromeClientOrNull(page->GetChromeClient()))
-      svg_image_chrome_client->RestoreAnimationIfNeeded();
-  }
-}
-
 void Page::SetValidationMessageClient(ValidationMessageClient* client) {
   validation_message_client_ = client;
 }
@@ -465,15 +456,11 @@ void Page::SetVisibilityState(mojom::PageVisibilityState visibility_state,
     return;
   visibility_state_ = visibility_state;
 
-  if (is_initial_state)
-    return;
-  NotifyPageVisibilityChanged();
+  if (!is_initial_state)
+    NotifyPageVisibilityChanged();
 
-  if (main_frame_) {
-    if (IsPageVisible())
-      RestoreSVGImageAnimations();
+  if (!is_initial_state && main_frame_)
     main_frame_->DidChangeVisibilityState();
-  }
 }
 
 mojom::PageVisibilityState Page::VisibilityState() const {

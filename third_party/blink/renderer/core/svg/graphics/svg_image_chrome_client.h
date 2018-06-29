@@ -49,8 +49,6 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
 
   void SuspendAnimation();
   void ResumeAnimation();
-  void RestoreAnimationIfNeeded();
-
   bool IsSuspended() const { return timeline_state_ >= kSuspended; }
 
  private:
@@ -61,7 +59,6 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
   void ScheduleAnimation(const LocalFrameView*) override;
 
   void SetTimer(std::unique_ptr<TimerBase>);
-  TimerBase* GetTimerForTesting() const { return animation_timer_.get(); }
   void AnimationTimerFired(TimerBase*);
 
   SVGImage* image_;
@@ -74,8 +71,6 @@ class CORE_EXPORT SVGImageChromeClient final : public EmptyChromeClient {
 
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, TimelineSuspendAndResume);
   FRIEND_TEST_ALL_PREFIXES(SVGImageTest, ResetAnimation);
-  FRIEND_TEST_ALL_PREFIXES(SVGImagePageVisibilityTest,
-                           PageVisibilityHiddenToVisible);
 };
 
 DEFINE_TYPE_CASTS(SVGImageChromeClient,

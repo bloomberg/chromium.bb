@@ -593,17 +593,6 @@ void SVGImage::ResetAnimation() {
   ScheduleTimelineRewind();
 }
 
-void SVGImage::RestoreAnimation() {
-  // If the image has no animations then do nothing.
-  if (!MaybeAnimated())
-    return;
-  // If there are no clients, or no client is going to render, then do nothing.
-  ImageObserver* image_observer = GetImageObserver();
-  if (!image_observer || image_observer->ShouldPauseAnimation(this))
-    return;
-  StartAnimation();
-}
-
 bool SVGImage::MaybeAnimated() {
   SVGSVGElement* root_element = SvgRootElement(page_.Get());
   if (!root_element)
