@@ -1605,8 +1605,8 @@ class LocalNTPInterceptionWebRequestAPITest
   DISALLOW_COPY_AND_ASSIGN(LocalNTPInterceptionWebRequestAPITest);
 };
 
-// Flaky on Win7x64. See crbug.com/853118.
-#if defined(OS_WIN)
+// Flaky on Win7x64 and Linux. See https://crbug.com/853118.
+#if defined(OS_WIN) || defined(OS_LINUX)
 #define MAYBE_OneGoogleBarRequestsHidden DISABLED_OneGoogleBarRequestsHidden
 #else
 #define MAYBE_OneGoogleBarRequestsHidden OneGoogleBarRequestsHidden
