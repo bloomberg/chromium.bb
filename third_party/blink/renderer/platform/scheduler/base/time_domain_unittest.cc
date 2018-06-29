@@ -31,11 +31,11 @@ class TaskQueueImplForTest : public internal::TaskQueueImpl {
   using TaskQueueImpl::SetDelayedWakeUpForTesting;
 };
 
-class MockTimeDomain : public TimeDomain {
+class TestTimeDomain : public TimeDomain {
  public:
-  MockTimeDomain() : now_(TimeTicks() + TimeDelta::FromSeconds(1)) {}
+  TestTimeDomain() : now_(TimeTicks() + TimeDelta::FromSeconds(1)) {}
 
-  ~MockTimeDomain() override = default;
+  ~TestTimeDomain() override = default;
 
   using TimeDomain::NextScheduledRunTime;
   using TimeDomain::SetNextWakeUpForQueue;
@@ -66,13 +66,13 @@ class MockTimeDomain : public TimeDomain {
  private:
   TimeTicks now_;
 
-  DISALLOW_COPY_AND_ASSIGN(MockTimeDomain);
+  DISALLOW_COPY_AND_ASSIGN(TestTimeDomain);
 };
 
 class TimeDomainTest : public testing::Test {
  public:
   void SetUp() final {
-    time_domain_ = WrapUnique(CreateMockTimeDomain());
+    time_domain_ = WrapUnique(CreateTestTimeDomain());
     task_queue_ = std::make_unique<TaskQueueImplForTest>(
         nullptr, time_domain_.get(), TaskQueue::Spec("test"));
   }
@@ -82,11 +82,11 @@ class TimeDomainTest : public testing::Test {
       task_queue_->UnregisterTaskQueue();
   }
 
-  virtual MockTimeDomain* CreateMockTimeDomain() {
-    return new MockTimeDomain();
+  virtual TestTimeDomain* CreateTestTimeDomain() {
+    return new TestTimeDomain();
   }
 
-  std::unique_ptr<MockTimeDomain> time_domain_;
+  std::unique_ptr<TestTimeDomain> time_domain_;
   std::unique_ptr<TaskQueueImplForTest> task_queue_;
 };
 

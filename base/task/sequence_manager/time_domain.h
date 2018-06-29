@@ -85,7 +85,7 @@ class PLATFORM_EXPORT TimeDomain {
  private:
   friend class internal::TaskQueueImpl;
   friend class TaskQueueManagerImpl;
-  friend class MockTimeDomain;
+  friend class TestTimeDomain;
 
   // Called when the TimeDomain is registered.
   // TODO(kraynov): Pass SequenceManager in the constructor.

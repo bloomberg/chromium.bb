@@ -13,7 +13,8 @@
 namespace base {
 namespace sequence_manager {
 
-// TODO(kraynov): Move to platform/scheduler/common.
+// TODO(kraynov): Merge into AutoAdvancingVirtualTimeDomain since
+// it's not used anywhere else.
 class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
  public:
   explicit VirtualTimeDomain(TimeTicks initial_time_ticks);
