@@ -120,32 +120,22 @@ class MODULES_EXPORT BaseAudioContext
   }
 
   // Document notification
-  void ContextDestroyed(ExecutionContext*) final;
+  void ContextDestroyed(ExecutionContext*) override;
   bool HasPendingActivity() const override;
 
   // Cannnot be called from the audio thread.
   AudioDestinationNode* destination() const;
 
   size_t CurrentSampleFrame() const {
-    // TODO: What is the correct value for the current frame if the destination
-    // node has gone away?  0 is a valid frame.
-    return destination_node_ ? destination_node_->GetAudioDestinationHandler()
-                                   .CurrentSampleFrame()
-                             : 0;
+    return destination_node_->GetAudioDestinationHandler().CurrentSampleFrame();
   }
 
   double currentTime() const {
-    // TODO: What is the correct value for the current time if the destination
-    // node has gone away? 0 is a valid time.
-    return destination_node_
-               ? destination_node_->GetAudioDestinationHandler().CurrentTime()
-               : 0;
+    return destination_node_->GetAudioDestinationHandler().CurrentTime();
   }
 
   float sampleRate() const {
-    return destination_node_
-               ? destination_node_->GetAudioDestinationHandler().SampleRate()
-               : ClosedContextSampleRate();
+    return destination_node_->GetAudioDestinationHandler().SampleRate();
   }
 
   String state() const;
@@ -348,8 +338,6 @@ class MODULES_EXPORT BaseAudioContext
 
   void SetContextState(AudioContextState);
 
-  virtual void DidClose() {}
-
   // Tries to handle AudioBufferSourceNodes that were started but became
   // disconnected or was never connected. Because these never get pulled
   // anymore, they will stay around forever. So if we can, try to stop them so
@@ -363,11 +351,6 @@ class MODULES_EXPORT BaseAudioContext
   // Vector of promises created by resume(). It takes time to handle them, so we
   // collect all of the promises here until they can be resolved or rejected.
   HeapVector<Member<ScriptPromiseResolver>> resume_resolvers_;
-
-  void SetClosedContextSampleRate(float new_sample_rate) {
-    closed_context_sample_rate_ = new_sample_rate;
-  }
-  float ClosedContextSampleRate() const { return closed_context_sample_rate_; }
 
   void RejectPendingDecodeAudioDataResolvers();
 
@@ -447,11 +430,6 @@ class MODULES_EXPORT BaseAudioContext
   AudioContextState context_state_;
 
   AsyncAudioDecoder audio_decoder_;
-
-  // When a context is closed, the sample rate is cleared.  But decodeAudioData
-  // can be called after the context has been closed and it needs the sample
-  // rate.  When the context is closed, the sample rate is saved here.
-  float closed_context_sample_rate_;
 
   // Vector of promises created by decodeAudioData.  This keeps the resolvers
   // alive until decodeAudioData finishes decoding and can tell the main thread

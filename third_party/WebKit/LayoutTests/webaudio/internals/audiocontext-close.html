@@ -158,7 +158,7 @@
                   if (window.gc)
                     gc();
                   should(context.destination, 'context.destination')
-                      .beEqualTo(null);
+                      .notBeEqualTo(null);
                 })
                 .then(task.done.bind(task));
           });

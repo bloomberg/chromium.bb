@@ -34,6 +34,9 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   ~AudioContext() override;
   void Trace(blink::Visitor*) override;
 
+  // For ContextLifeCycleObserver
+  void ContextDestroyed(ExecutionContext*) final;
+
   ScriptPromise closeContext(ScriptState*);
   bool IsContextClosed() const final;
 
@@ -53,8 +56,6 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
  protected:
   AudioContext(Document&, const WebAudioLatencyHint&);
   void Uninitialize() final;
-
-  void DidClose() final;
 
  private:
   friend class AudioContextAutoplayTest;
@@ -101,6 +102,8 @@ class MODULES_EXPORT AudioContext : public BaseAudioContext {
   void RecordAutoplayMetrics();
 
   void StopRendering();
+
+  void DidClose();
 
   unsigned context_id_;
   Member<ScriptPromiseResolver> close_resolver_;

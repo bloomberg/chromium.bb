@@ -96,7 +96,6 @@ BaseAudioContext::BaseAudioContext(Document* document,
       connection_count_(0),
       deferred_task_handler_(DeferredTaskHandler::Create()),
       context_state_(kSuspended),
-      closed_context_sample_rate_(-1),
       periodic_wave_sine_(nullptr),
       periodic_wave_square_(nullptr),
       periodic_wave_sawtooth_(nullptr),
@@ -152,7 +151,6 @@ void BaseAudioContext::Uninitialize() {
 
   // Reject any pending resolvers before we go away.
   RejectPendingResolvers();
-  DidClose();
 
   DCHECK(listener_);
   listener_->WaitForHRTFDatabaseLoaderThreadCompletion();
@@ -271,10 +269,6 @@ ScriptPromise BaseAudioContext::decodeAudioData(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  float rate = IsContextClosed() ? ClosedContextSampleRate() : sampleRate();
-
-  DCHECK_GT(rate, 0);
-
   v8::Isolate* isolate = script_state->GetIsolate();
   WTF::ArrayBufferContents buffer_contents;
   // Detach the audio array buffer from the main thread and start
@@ -286,7 +280,7 @@ ScriptPromise BaseAudioContext::decodeAudioData(
     decode_audio_resolvers_.insert(resolver);
 
     audio_decoder_.DecodeAsync(
-        audio, rate, ToV8PersistentCallbackFunction(success_callback),
+        audio, sampleRate(), ToV8PersistentCallbackFunction(success_callback),
         ToV8PersistentCallbackFunction(error_callback), resolver, this);
   } else {
     // If audioData is already detached (neutered) we need to reject the
