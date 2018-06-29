@@ -277,7 +277,9 @@ ComputedStyle* FirstLetterPseudoElement::StyleForFirstLetter(
   ComputedStyle* pseudo_style = style_container->GetCachedPseudoStyle(
       kPseudoIdFirstLetter, layout_object_container->FirstLineStyle());
   DCHECK(pseudo_style);
-
+  pseudo_style->UpdateIsStackingContext(false /* is_document_element */,
+                                        false /* is_in_top_layer */,
+                                        false /* is_svg_stacking */);
   return pseudo_style;
 }
 
