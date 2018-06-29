@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/core/html/shadow/shadow_element_names.h"
 #include "third_party/blink/renderer/core/input/event_handler.h"
 #include "third_party/blink/renderer/core/layout/layout_block_flow.h"
+#include "third_party/blink/renderer/core/layout/layout_object_factory.h"
 #include "third_party/blink/renderer/core/layout/layout_slider_container.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
 
@@ -75,8 +76,9 @@ void SliderThumbElement::SetPositionFromValue() {
         LayoutInvalidationReason::kSliderValueChanged);
 }
 
-LayoutObject* SliderThumbElement::CreateLayoutObject(const ComputedStyle&) {
-  return new LayoutBlockFlow(this);
+LayoutObject* SliderThumbElement::CreateLayoutObject(
+    const ComputedStyle& style) {
+  return LayoutObjectFactory::CreateBlockFlow(*this, style);
 }
 
 bool SliderThumbElement::IsDisabledFormControl() const {
