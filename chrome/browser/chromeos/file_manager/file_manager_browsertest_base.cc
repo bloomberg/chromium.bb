@@ -20,6 +20,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/crostini/crostini_manager.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/mount_test_util.h"
@@ -30,11 +32,14 @@
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/components/drivefs/drivefs_host.h"
 #include "chromeos/components/drivefs/fake_drivefs.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
+#include "chromeos/dbus/fake_cros_disks_client.h"
 #include "components/drive/chromeos/file_system_interface.h"
 #include "components/drive/service/fake_drive_service.h"
 #include "content/public/browser/browser_thread.h"
@@ -89,7 +94,7 @@ struct AddEntriesMessage {
   struct TestEntryInfo;
 
   // Represents the various volumes available for adding entries.
-  enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, USB_VOLUME };
+  enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, CROSTINI_VOLUME, USB_VOLUME };
 
   // Represents the different types of entries (e.g. file, folder).
   enum EntryType { FILE, DIRECTORY };
@@ -128,6 +133,8 @@ struct AddEntriesMessage {
       *volume = LOCAL_VOLUME;
     else if (value == "drive")
       *volume = DRIVE_VOLUME;
+    else if (value == "crostini")
+      *volume = CROSTINI_VOLUME;
     else if (value == "usb")
       *volume = USB_VOLUME;
     else
@@ -437,6 +444,31 @@ class DownloadsTestVolume : public LocalTestVolume {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadsTestVolume);
+};
+
+// CrostiniTestVolume: local test volume for the "Linux Files" directory.
+class CrostiniTestVolume : public LocalTestVolume {
+ public:
+  CrostiniTestVolume() : LocalTestVolume("Crostini") {}
+  ~CrostiniTestVolume() override = default;
+
+  // Create root dir so entries can be created, but volume is not mounted.
+  bool Initialize(Profile* profile) { return CreateRootDirectory(profile); }
+
+  bool Mount(Profile* profile) override {
+    return CreateRootDirectory(profile) &&
+           VolumeManager::Get(profile)->RegisterCrostiniDirectoryForTesting(
+               root_path());
+  }
+
+  const base::FilePath& mount_path() const { return root_path(); }
+
+  void Unmount(Profile* profile) {
+    VolumeManager::Get(profile)->RemoveSshfsCrostiniVolume(root_path());
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(CrostiniTestVolume);
 };
 
 // FakeTestVolume: local test volume with a given volume and device type.
@@ -813,9 +845,15 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverUnpacker);
   command_line->AppendSwitch(chromeos::switches::kDisableZipArchiverPacker);
 
-  if (IsDriveFsTest()) {
-    feature_list_.InitAndEnableFeature(drive::kDriveFs);
+  std::vector<base::Feature> enabled_features;
+  if (!IsGuestModeTest()) {
+    enabled_features.emplace_back(features::kCrostini);
+    enabled_features.emplace_back(features::kExperimentalCrostiniUI);
   }
+  if (IsDriveFsTest()) {
+    enabled_features.emplace_back(drive::kDriveFs);
+  }
+  feature_list_.InitWithFeatures(enabled_features, {});
 
   extensions::ExtensionApiTest::SetUpCommandLine(command_line);
 }
@@ -861,6 +899,18 @@ void FileManagerBrowserTestBase::SetUpInProcessBrowserTestFixture() {
   }
 }
 
+base::FilePath FileManagerBrowserTestBase::MaybeMountCrostini(
+    const std::string& source_path,
+    const std::vector<std::string>& mount_options) {
+  GURL source_url(source_path);
+  DCHECK(source_url.is_valid());
+  if (source_url.scheme() != "sshfs") {
+    return {};
+  }
+  CHECK(crostini_volume_->Mount(profile()));
+  return crostini_volume_->mount_path();
+}
+
 void FileManagerBrowserTestBase::SetUpOnMainThread() {
   extensions::ExtensionApiTest::SetUpOnMainThread();
   CHECK(profile());
@@ -875,6 +925,21 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     drive_volume_ = drive_volumes_[profile()->GetOriginalProfile()].get();
     drive_volume_->ConfigureShareUrlBase(share_url_base);
     test_util::WaitUntilDriveMountPointIsAdded(profile());
+
+    // Init crostini.  Set prefs to enable crostini and register CustomMountPointCallback.
+    // TODO(joelhockey): It would be better if the crostini interface allowed
+    // for testing without such tight coupling.
+    crostini_volume_ = std::make_unique<CrostiniTestVolume>();
+    browser()->profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kCrostiniEnabled, true);
+    crostini::CrostiniManager::GetInstance()->set_skip_restart_for_testing();
+    chromeos::DBusThreadManager* dbus_thread_manager =
+        chromeos::DBusThreadManager::Get();
+    static_cast<chromeos::FakeCrosDisksClient*>(
+        dbus_thread_manager->GetCrosDisksClient())
+        ->AddCustomMountPointCallback(
+            base::BindRepeating(&FileManagerBrowserTestBase::MaybeMountCrostini,
+                                base::Unretained(this)));
   }
 
   display_service_ =
@@ -1033,6 +1098,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
         case AddEntriesMessage::LOCAL_VOLUME:
           local_volume_->CreateEntry(*message.entries[i]);
           break;
+        case AddEntriesMessage::CROSTINI_VOLUME:
+          CHECK(crostini_volume_);
+          ASSERT_TRUE(crostini_volume_->Initialize(profile()));
+          crostini_volume_->CreateEntry(*message.entries[i]);
+          break;
         case AddEntriesMessage::DRIVE_VOLUME:
           if (drive_volume_) {
             drive_volume_->CreateEntry(*message.entries[i]);
@@ -1073,6 +1143,11 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
       ASSERT_TRUE(mtp_volume_->PrepareTestEntries(profile()));
 
     ASSERT_TRUE(mtp_volume_->Mount(profile()));
+    return;
+  }
+
+  if (name == "unmountCrostini") {
+    crostini_volume_->Unmount(profile());
     return;
   }
 

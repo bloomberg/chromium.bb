@@ -43,7 +43,7 @@ var DIRECTORY = {
       ENTRIES.directoryA.getExpectedRow(), ENTRIES.directoryD.getExpectedRow()
     ],
     name: 'Drive',
-    navItem: '#tree-item-autogen-id-4',
+    navItem: '#tree-item-autogen-id-5',
     treeItem: TREEITEM_DRIVE
   },
   A: {
@@ -295,13 +295,13 @@ testcase.traverseFolderShortcuts = function() {
           windowId, DIRECTORY.Drive, DIRECTORY.Drive).then(this.next);
     },
 
-    // Press Ctrl+5 to select 5th shortcut.
+    // Press Ctrl+6 to select 5th shortcut.
     // Current directory should be D.
     // Shortcut to C should be selected.
     function() {
       remoteCall.callRemoteTestUtil(
           'fakeKeyDown', windowId,
-          ['#file-list', '5', 'U+0034', true, false, false], this.next);
+          ['#file-list', '6', 'U+0034', true, false, false], this.next);
     },
     function(result) {
       chrome.test.assertTrue(result);

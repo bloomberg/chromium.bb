@@ -285,9 +285,16 @@ class VolumeManager : public KeyedService,
   // Add sshfs crostini volume mounted at specified path.
   void AddSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path);
 
+  // Removes specified sshfs crostini mount.
+  void RemoveSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path);
+
   // For testing purpose, registers a native local file system pointing to
   // |path| with DOWNLOADS type, and adds its volume info.
   bool RegisterDownloadsDirectoryForTesting(const base::FilePath& path);
+
+  // For testing purpose, registers a native local file system pointing to
+  // |path| with CROSTINI type, and adds its volume info.
+  bool RegisterCrostiniDirectoryForTesting(const base::FilePath& path);
 
   // For testing purpose, adds a volume info pointing to |path|, with TESTING
   // type. Assumes that the mount point is already registered.
@@ -361,7 +368,6 @@ class VolumeManager : public KeyedService,
   void DoUnmountEvent(chromeos::MountError error_code, const Volume& volume);
   void OnExternalStorageDisabledChangedUnmountCallback(
       chromeos::MountError error_code);
-  void RemoveSshfsCrostiniVolume(const base::FilePath& sshfs_mount_path);
 
   // Returns the path of the mount point for drive.
   base::FilePath GetDriveMountPointPath() const;

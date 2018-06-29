@@ -151,6 +151,17 @@ var BASIC_DRIVE_ENTRY_SET = [
 ];
 
 /**
+ * Basic entry set for the local crostini volume.
+ * @type {!Array<!TestEntryInfo>}
+ * @const
+ */
+var BASIC_CROSTINI_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.world,
+  ENTRIES.desktop,
+];
+
+/**
  * More complex entry set for Drive that includes entries with varying
  * permissions (such as read-only entries).
  *

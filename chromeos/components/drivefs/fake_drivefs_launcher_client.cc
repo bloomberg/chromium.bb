@@ -64,7 +64,7 @@ FakeDriveFsLauncherClient::FakeDriveFsLauncherClient(
       chromeos::DBusThreadManager::Get();
   static_cast<chromeos::FakeCrosDisksClient*>(
       dbus_thread_manager->GetCrosDisksClient())
-      ->SetCustomMountPointCallback(
+      ->AddCustomMountPointCallback(
           base::BindRepeating(&FakeDriveFsLauncherClient::MaybeMountDriveFs,
                               base::Unretained(this)));
 }

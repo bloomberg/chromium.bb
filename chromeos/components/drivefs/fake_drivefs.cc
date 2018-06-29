@@ -102,7 +102,7 @@ void FakeDriveFs::RegisterMountingForAccountId(
       chromeos::DBusThreadManager::Get();
   static_cast<chromeos::FakeCrosDisksClient*>(
       dbus_thread_manager->GetCrosDisksClient())
-      ->SetCustomMountPointCallback(base::BindRepeating(&MaybeMountDriveFs));
+      ->AddCustomMountPointCallback(base::BindRepeating(&MaybeMountDriveFs));
 
   GetRegisteredFakeDriveFsIntances().emplace_back(std::move(account_id_getter),
                                                   weak_factory_.GetWeakPtr());
