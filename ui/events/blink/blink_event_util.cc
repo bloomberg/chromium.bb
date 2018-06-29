@@ -262,8 +262,13 @@ WebInputEvent::DispatchType MergeDispatchTypes(
 
 bool CanCoalesce(const WebMouseEvent& event_to_coalesce,
                  const WebMouseEvent& event) {
-  return event.GetType() == event_to_coalesce.GetType() &&
-         event.GetType() == WebInputEvent::kMouseMove;
+  // Since we start supporting the stylus input and they are constructed as
+  // mouse events or touch events, we should check the ID and pointer type when
+  // coalescing mouse events.
+  return event.GetType() == WebInputEvent::kMouseMove &&
+         event.GetType() == event_to_coalesce.GetType() &&
+         event.id == event_to_coalesce.id &&
+         event.pointer_type == event_to_coalesce.pointer_type;
 }
 
 void Coalesce(const WebMouseEvent& event_to_coalesce, WebMouseEvent* event) {
@@ -382,6 +387,9 @@ bool CanCoalesce(const WebTouchEvent& event_to_coalesce,
     if (event_touch_index == kInvalidTouchIndex)
       return false;
     if (!unmatched_event_touches[event_touch_index])
+      return false;
+    if (event.touches[event_touch_index].pointer_type !=
+        event_to_coalesce.touches[i].pointer_type)
       return false;
     unmatched_event_touches[event_touch_index] = false;
   }
