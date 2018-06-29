@@ -35,10 +35,15 @@
 
       :host ::slotted(paper-button) {
         -webkit-margin-start: 32px;
+        background-color: transparent;
         border: none;
         color: var(--google-blue-300);
         min-width: 52px;
         padding: 8px;
+      }
+
+      :host ::slotted(paper-button:hover) {
+        background-color: transparent;
       }
     </style>
     <slot></slot>
