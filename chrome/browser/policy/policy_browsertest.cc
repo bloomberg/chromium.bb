@@ -3780,6 +3780,7 @@ IN_PROC_BROWSER_TEST_P(RestoreOnStartupPolicyTest, MAYBE_RunTest) {
       EXPECT_EQ(expected_urls_[i], web_contents->GetURL());
   }
 }
+#undef MAYBE_RunTest
 
 INSTANTIATE_TEST_CASE_P(RestoreOnStartupPolicyTestInstance,
                         RestoreOnStartupPolicyTest,
@@ -5915,7 +5916,13 @@ class PromotionalTabsEnabledPolicyTest
   DISALLOW_COPY_AND_ASSIGN(PromotionalTabsEnabledPolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
+#if defined(OS_LINUX) && defined(GOOGLE_CHROME_BUILD)
+// Passes then times out on official Linux builds; https://crbug.com/856995.
+#define MAYBE_RunTest DISABLED_RunTest
+#else
+#define MAYBE_RunTest RunTest
+#endif
+IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, MAYBE_RunTest) {
   TabStripModel* tab_strip = browser()->tab_strip_model();
   ASSERT_GE(tab_strip->count(), 1);
   const auto& url = tab_strip->GetWebContentsAt(0)->GetURL();
@@ -5934,6 +5941,7 @@ IN_PROC_BROWSER_TEST_P(PromotionalTabsEnabledPolicyTest, RunTest) {
       break;
   }
 }
+#undef MAYBE_RunTest
 
 INSTANTIATE_TEST_CASE_P(,
                         PromotionalTabsEnabledPolicyTest,
