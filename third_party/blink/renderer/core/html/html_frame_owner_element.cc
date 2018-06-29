@@ -124,8 +124,10 @@ void HTMLFrameOwnerElement::SetContentFrame(Frame& frame) {
 
   // Invalidate compositing inputs, because a remote frame child can cause the
   // owner to become composited.
-  if (auto* box = GetLayoutBox())
-    box->Layer()->SetNeedsCompositingInputsUpdate();
+  if (auto* box = GetLayoutBox()) {
+    if (auto* layer = box->Layer())
+      layer->SetNeedsCompositingInputsUpdate();
+  }
   SetNeedsStyleRecalc(kLocalStyleChange, StyleChangeReasonForTracing::Create(
                                              StyleChangeReason::kFrame));
 

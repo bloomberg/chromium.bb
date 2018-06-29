@@ -1,0 +1,14 @@
+<!doctype HTML>
+<object style="all: inherit;" id="target" data="http://www.example.org/"/>
+Test passes if it does not crash.
+<script>
+if (window.testRunner) {
+    window.testRunner.waitUntilDone();
+    window.testRunner.dumpAsText();
+}
+function go() {
+  target.setAttribute("classid", "test");
+  window.testRunner.notifyDone();
+}
+requestAnimationFrame(() => requestAnimationFrame(go));
+</script>
