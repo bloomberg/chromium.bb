@@ -12,6 +12,8 @@ typedef NSString GuideName;
 // The list of well-known UILayoutGuides.  When adding a new guide to the app,
 // create a constant for it below.
 
+// A guide that is constrained to match the frame of the tab's content area.
+extern GuideName* const kContentAreaGuide;
 // A guide that is constrained to match the frame of the secondary toolbar.
 extern GuideName* const kSecondaryToolbar;
 // A guide that is constrained to match the frame the secondary toolbar would

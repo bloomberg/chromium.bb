@@ -7,7 +7,7 @@
 
 #import "ios/chrome/browser/ui/util/layout_guide_names.h"
 
-// Adds NamedGuides with the GuideNames in |names| to |view|.
+// Creates NamedGuides with the GuideNames in |names| and adds them to |view|.
 void AddNamedGuidesToView(NSArray<GuideName*>* names, UIView* view);
 
 // Sets the constrained views for the NamedGuides indicated by the keys of
