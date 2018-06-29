@@ -106,7 +106,7 @@ found in the LICENSE file.
         <div id="category-container">
           <div id="wallpaper-set-by-message"></div>
           <div id="current-wallpaper-info-bar">
-            <img id="current-wallpaper-image"></img>
+            <img id="current-wallpaper-image" aria-hidden="true"></img>
             <div id="current-wallpaper-more-info">
               <div id="currently-set-message"
                   i18n-content="currentlySetLabel"></div>
@@ -132,7 +132,7 @@ found in the LICENSE file.
               </div>
             </div>
           </div>
-          <grid id="wallpaper-grid" class="image-picker"></grid>
+          <grid id="wallpaper-grid" class="image-picker" tabIndex="-1"></grid>
           <div id="spinner-container" hidden></div>
           <div class="progress-bar" hidden>
             <div class="progress-track"></div>
@@ -192,8 +192,9 @@ found in the LICENSE file.
   <div id="spinner" hidden></div>
   <div id="daily-refresh-banner-template" hidden>
     <div class="daily-refresh-banner">
-      <div class="daily-refresh-label" i18n-content="surpriseMeLabel"></div>
-      <span class="daily-refresh-slider">
+      <div class="daily-refresh-label" i18n-content="surpriseMeLabel"
+          aria-hidden="true"></div>
+      <span role="checkbox" tabIndex="0" class="daily-refresh-slider">
         <div class="ripple-circle"></div></span>
     </div>
   </div>
