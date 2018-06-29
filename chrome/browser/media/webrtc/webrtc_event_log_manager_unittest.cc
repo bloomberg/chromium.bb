@@ -718,12 +718,21 @@ class WebRtcEventLogManagerTestCacheClearing
 const base::TimeDelta WebRtcEventLogManagerTestCacheClearing::kEpsion =
     base::TimeDelta::FromHours(1);
 
-class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
+class WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled
     : public WebRtcEventLogManagerTestBase {
  public:
-  WebRtcEventLogManagerTestWithRemoteLoggingDisabled() {
+  WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled() {
+    // Show that the feature is not active if not explicitly ENABLED.
+    const bool disable = GetParam();
+    if (disable) {  // Otherwise, left to default value.
+      scoped_feature_list_.InitAndDisableFeature(
+          features::kWebRtcRemoteEventLog);
+    }
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
+
+  ~WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled() override =
+      default;
 };
 
 class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
@@ -733,20 +742,6 @@ class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
     scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
     scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
         ::switches::kWebRtcRemoteEventLogUploadNoSuppression);
-    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
-  }
-};
-
-class WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled
-    : public WebRtcEventLogManagerTestBase {
- public:
-  WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled() {
-    // Show that the feature is not active if not explicitly ENABLED.
-    const bool disable = GetParam();
-    if (disable) {  // Otherwise, left to default value.
-      scoped_feature_list_.InitAndDisableFeature(
-          features::kWebRtcRemoteEventLog);
-    }
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
 };
@@ -3120,36 +3115,36 @@ TEST_F(WebRtcEventLogManagerTestCacheClearing,
   WaitForPendingTasks(&run_loop);
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityPeerConnectionAdded) {
   EXPECT_TRUE(PeerConnectionAdded(rph_->GetID(), kLid));
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityPeerConnectionRemoved) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
   EXPECT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityPeerConnectionStopped) {
   PeerConnectionStopped(rph_->GetID(), kLid);  // No crash.
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityEnableLocalLogging) {
   ASSERT_TRUE(PeerConnectionAdded(rph_->GetID(), kLid));
   ASSERT_TRUE(EnableLocalLogging());
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityDisableLocalLogging) {
   ASSERT_TRUE(EnableLocalLogging());
   EXPECT_TRUE(DisableLocalLogging());
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityStartRemoteLogging) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
@@ -3159,7 +3154,7 @@ TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
   EXPECT_EQ(error_message, kStartRemoteLoggingFailureFeatureDisabled);
 }
 
-TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
+TEST_P(WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
        SanityOnWebRtcEventLogWrite) {
   const auto key = GetPeerConnectionKey(rph_.get(), kLid);
   ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
@@ -3167,6 +3162,11 @@ TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
   EXPECT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, "log"),
             std::make_pair(false, false));
 }
+
+INSTANTIATE_TEST_CASE_P(
+    ExplicitlyDisable,
+    WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled,
+    ::testing::Bool());
 
 TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
        UploadingNotSuppressedByActivePeerConnections) {
@@ -3191,24 +3191,6 @@ TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
   ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
   WaitForPendingTasks(&run_loop);
 }
-
-TEST_P(WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled,
-       RemoteBoundLoggingDisabled) {
-  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
-  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
-  EXPECT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
-}
-
-// Sanity
-TEST_P(WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled,
-       LocalLoggingStillAllowed) {
-  ASSERT_TRUE(EnableLocalLogging());
-}
-
-INSTANTIATE_TEST_CASE_P(
-    ExplicitlyDisable,
-    WebRtcEventLogManagerWhenRemoteLoggingDisabledOrNotEnabled,
-    ::testing::Bool());
 
 #else  // defined(OS_ANDROID)
 
