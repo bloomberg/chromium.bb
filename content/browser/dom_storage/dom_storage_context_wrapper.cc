@@ -153,7 +153,9 @@ DOMStorageContextWrapper::DOMStorageContextWrapper(
 
   if (base::FeatureList::IsEnabled(features::kMojoSessionStorage)) {
     mojo_session_state_ = new SessionStorageContextMojo(
-        mojo_task_runner_, connector, local_partition_path,
+        mojo_task_runner_, connector,
+        profile_path.empty() ? base::nullopt
+                             : base::make_optional(local_partition_path),
         std::string(kSessionStorageDirectory));
   }
 
