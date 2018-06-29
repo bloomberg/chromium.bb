@@ -258,7 +258,6 @@ struct macroblock {
   MvLimits mv_limits;
 
   uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
-  uint8_t blk_skip_drl[MAX_MIB_SIZE * MAX_MIB_SIZE];
 
   int skip;
   int skip_chroma_rd;
