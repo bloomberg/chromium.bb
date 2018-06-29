@@ -45,20 +45,20 @@ std::string FormatJournalKeyToStorageKey(const std::string& journal_key) {
   return kJournalStoragePrefix + journal_key;
 }
 
-// Check if the |storage_key| is for journal data.
-bool IsValidJournalKey(const std::string& storage_key) {
-  return base::StartsWith(storage_key, kJournalStoragePrefix,
+// Check if the |storage_key| is for content data.
+bool IsValidContentKey(const std::string& storage_key) {
+  return base::StartsWith(storage_key, kContentStoragePrefix,
                           base::CompareCase::SENSITIVE);
 }
 
-// Parse journal key from storage key. Return an empty string if |storage_key|
-// is not recognized as journal key. ex. content's storage key.
-std::string ParseJournalKey(const std::string& storage_key) {
-  if (!IsValidJournalKey(storage_key)) {
+// Parse content key from storage key. Return an empty string if |storage_key|
+// is not recognized as content key. ex. journal's storage key.
+std::string ParseContentKey(const std::string& storage_key) {
+  if (!IsValidContentKey(storage_key)) {
     return std::string();
   }
 
-  return storage_key.substr(strlen(kJournalStoragePrefix));
+  return storage_key.substr(strlen(kContentStoragePrefix));
 }
 
 bool DatabaseKeyFilter(const std::unordered_set<std::string>& key_set,
@@ -136,6 +136,14 @@ void FeedStorageDatabase::LoadContentByPrefix(const std::string& prefix,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
+void FeedStorageDatabase::LoadAllContentKeys(ContentKeyCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  storage_database_->LoadKeys(
+      base::BindOnce(&FeedStorageDatabase::OnLoadKeysForLoadAllContentKeys,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
 void FeedStorageDatabase::SaveContent(std::vector<KeyAndData> pairs,
                                       ConfirmationCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -204,11 +212,12 @@ void FeedStorageDatabase::LoadJournal(const std::string& key,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::LoadAllJournalKeys(JournalLoadCallback callback) {
+void FeedStorageDatabase::LoadAllJournals(LoadAllJournalsCallback callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  storage_database_->LoadKeys(
-      base::BindOnce(&FeedStorageDatabase::OnLoadKeysForLoadAllJournalKeys,
+  storage_database_->LoadEntriesWithFilter(
+      base::BindRepeating(&DatabasePrefixFilter, kJournalStoragePrefix),
+      base::BindOnce(&FeedStorageDatabase::OnLoadEntriesForLoadAllJournals,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
@@ -293,6 +302,27 @@ void FeedStorageDatabase::OnLoadEntriesForLoadContent(
   std::move(callback).Run(std::move(results));
 }
 
+void FeedStorageDatabase::OnLoadKeysForLoadAllContentKeys(
+    ContentKeyCallback callback,
+    bool success,
+    std::unique_ptr<std::vector<std::string>> keys) {
+  std::vector<std::string> results;
+
+  if (!success || !keys) {
+    DVLOG_IF(1, !success) << "FeedStorageDatabase load content keys failed.";
+    std::move(callback).Run(std::move(results));
+    return;
+  }
+
+  // Filter out journal keys, only keep content keys.
+  for (const std::string& key : *keys) {
+    if (IsValidContentKey(key))
+      results.emplace_back(ParseContentKey(key));
+  }
+
+  std::move(callback).Run(std::move(results));
+}
+
 void FeedStorageDatabase::OnGetEntryForLoadJournal(
     JournalLoadCallback callback,
     bool success,
@@ -366,22 +396,27 @@ void FeedStorageDatabase::OnGetEntryForCopyJournal(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void FeedStorageDatabase::OnLoadKeysForLoadAllJournalKeys(
-    JournalLoadCallback callback,
+void FeedStorageDatabase::OnLoadEntriesForLoadAllJournals(
+    LoadAllJournalsCallback callback,
     bool success,
-    std::unique_ptr<std::vector<std::string>> keys) {
-  std::vector<std::string> results;
+    std::unique_ptr<std::vector<FeedStorageProto>> entries) {
+  std::vector<std::vector<std::string>> results;
 
-  if (!success || !keys) {
-    DVLOG_IF(1, !success) << "FeedStorageDatabase load journal keys failed.";
+  if (!success || !entries) {
+    DVLOG_IF(1, !success) << "FeedStorageDatabase load journals failed.";
     std::move(callback).Run(std::move(results));
     return;
   }
 
-  // Filter out content keys, only keep journal keys.
-  for (const std::string& key : *keys) {
-    if (IsValidJournalKey(key))
-      results.emplace_back(ParseJournalKey(key));
+  for (const auto& entry : *entries) {
+    DCHECK(entry.has_key());
+    DCHECK_NE(entry.journal_data_size(), 0);
+
+    std::vector<std::string> journal;
+    for (int i = 0; i < entry.journal_data_size(); ++i) {
+      journal.emplace_back(entry.journal_data(i));
+    }
+    results.push_back(journal);
   }
 
   std::move(callback).Run(std::move(results));
