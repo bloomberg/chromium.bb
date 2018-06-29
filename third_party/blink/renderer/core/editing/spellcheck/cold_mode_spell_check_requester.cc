@@ -13,6 +13,7 @@
 #include "third_party/blink/renderer/core/editing/selection_template.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_check_requester.h"
 #include "third_party/blink/renderer/core/editing/spellcheck/spell_checker.h"
+#include "third_party/blink/renderer/core/editing/visible_position.h"
 #include "third_party/blink/renderer/core/editing/visible_units.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
@@ -106,16 +107,22 @@ void ColdModeSpellCheckRequester::ClearProgress() {
 void ColdModeSpellCheckRequester::RequestCheckingForNextChunk() {
   DCHECK(root_editable_);
 
+  const Position editable_end = Position::LastPositionInNode(*root_editable_);
   const int chunk_index = last_chunk_index_;
   const Position chunk_start = last_chunk_end_;
   const Position chunk_end =
-      CalculateCharacterSubrange(
-          EphemeralRange(chunk_start,
-                         Position::LastPositionInNode(*root_editable_)),
-          0, kColdModeChunkSize)
+      CalculateCharacterSubrange(EphemeralRange(chunk_start, editable_end), 0,
+                                 kColdModeChunkSize)
           .EndPosition();
-  const EphemeralRange chunk_range(chunk_start, chunk_end);
-  const EphemeralRange check_range = ExpandEndToSentenceBoundary(chunk_range);
+
+  // Chromium spellchecker requires complete sentences to be checked. However,
+  // EndOfSentence() sometimes returns null or out-of-editable positions, which
+  // are corrected here.
+  const Position extended_end =
+      EndOfSentence(CreateVisiblePosition(chunk_end)).DeepEquivalent();
+  const Position check_end =
+      extended_end.IsNull() ? chunk_end : std::min(extended_end, editable_end);
+  const EphemeralRange check_range(chunk_start, check_end);
 
   if (!GetSpellCheckRequester().RequestCheckingFor(check_range, chunk_index)) {
     // Fully checked.
