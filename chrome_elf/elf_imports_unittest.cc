@@ -155,6 +155,9 @@ TEST_F(ELFImportsTest, DISABLED_ChromeElfLoadSanityTestImpl) {
   ASSERT_TRUE(chrome_elf_module_handle != nullptr);
   // Loading chrome_elf.dll should not load user32.dll
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
+  // Note: Do not unload the chrome_elf DLL in any test where the elf hook has
+  // been applied (browser process type only).  This results in the shim code
+  // disappearing, but ntdll hook remaining, followed in tests by fireworks.
   EXPECT_TRUE(!!::FreeLibrary(chrome_elf_module_handle));
 }
 

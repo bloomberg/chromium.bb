@@ -40,6 +40,12 @@ bool GetUserDataDirectoryThunk(wchar_t* user_data_dir,
 
 void SetMetricsClientId(const char* client_id) {}
 
+//------------------------------------------------------------------------------
+// chrome_elf\third_party_dlls export test stubs.
+// - For use by \\chrome\browser\conflicts\* testing.
+// - Stubs should shadow third_party_dlls\logging_api.h and logs_unittest.cc.
+//------------------------------------------------------------------------------
+
 struct TestLogEntry {
   third_party_dlls::LogType log_type;
   uint8_t basename_hash[elf_sha1::kSHA1Length];
