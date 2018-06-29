@@ -963,9 +963,6 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
     }
   }
 
-  ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
-      content::NotificationService::AllSources());
-
   ASSERT_TRUE(embedded_test_server()->Start());
   GURL url(embedded_test_server()->GetURL("/"));
 
@@ -982,6 +979,8 @@ IN_PROC_BROWSER_TEST_F(ContextMenuBrowserTest, OpenLinkInProfile) {
   // Open the menu items. They should match their corresponding profiles in
   // |profiles_in_menu|.
   for (Profile* profile : profiles_in_menu) {
+    ui_test_utils::WindowedTabAddedNotificationObserver tab_observer(
+        content::NotificationService::AllSources());
     int command_id = menu->GetCommandIDByProfilePath(profile->GetPath());
     ASSERT_NE(-1, command_id);
     menu->ExecuteCommand(command_id, 0);
