@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_APP_CONTEXT_PROVIDER_CONTEXT_PROVIDER_IMPL_H_
-#define WEBRUNNER_APP_CONTEXT_PROVIDER_CONTEXT_PROVIDER_IMPL_H_
+#ifndef WEBRUNNER_SERVICE_CONTEXT_PROVIDER_CONTEXT_PROVIDER_IMPL_H_
+#define WEBRUNNER_SERVICE_CONTEXT_PROVIDER_CONTEXT_PROVIDER_IMPL_H_
 
 #include <lib/fidl/cpp/binding_set.h>
 
@@ -17,7 +17,7 @@ struct LaunchOptions;
 class Process;
 }  // namespace base
 
-namespace fuchsia {
+namespace webrunner {
 
 class WEBRUNNER_EXPORT ContextProviderImpl
     : public chromium::web::ContextProvider {
@@ -53,6 +53,6 @@ class WEBRUNNER_EXPORT ContextProviderImpl
   DISALLOW_COPY_AND_ASSIGN(ContextProviderImpl);
 };
 
-}  // namespace fuchsia
+}  // namespace webrunner
 
-#endif  // WEBRUNNER_APP_CONTEXT_PROVIDER_CONTEXT_PROVIDER_IMPL_H_
+#endif  // WEBRUNNER_SERVICE_CONTEXT_PROVIDER_CONTEXT_PROVIDER_IMPL_H_

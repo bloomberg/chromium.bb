@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/app/switches.h"
+#include "webrunner/service/switches.h"
 
-namespace fuchsia {
+namespace webrunner {
 
 const char kContextProcess[] = "context-process";
 
-}  // namespace fuchsia
+}  // namespace webrunner

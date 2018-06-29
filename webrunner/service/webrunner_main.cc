@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "content/public/app/content_main.h"
-#include "webrunner/app/webrunner_main_delegate.h"
+#include "webrunner/service/webrunner_main_delegate.h"
 
 int main(int argc, const char** argv) {
   webrunner::WebRunnerMainDelegate delegate;

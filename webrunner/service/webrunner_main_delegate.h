@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBRUNNER_APP_WEBRUNNER_MAIN_DELEGATE_H_
-#define WEBRUNNER_APP_WEBRUNNER_MAIN_DELEGATE_H_
+#ifndef WEBRUNNER_SERVICE_WEBRUNNER_MAIN_DELEGATE_H_
+#define WEBRUNNER_SERVICE_WEBRUNNER_MAIN_DELEGATE_H_
 
 #include <memory>
 
@@ -40,4 +40,4 @@ class WEBRUNNER_EXPORT WebRunnerMainDelegate
 
 }  // namespace webrunner
 
-#endif  // WEBRUNNER_APP_WEBRUNNER_MAIN_DELEGATE_H_
+#endif  // WEBRUNNER_SERVICE_WEBRUNNER_MAIN_DELEGATE_H_
