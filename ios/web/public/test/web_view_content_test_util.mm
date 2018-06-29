@@ -152,13 +152,11 @@ bool WaitForWebViewContainingImage(std::string image_id,
   });
 }
 
-bool IsWebViewContainingCssSelector(web::WebState* web_state,
-                                    const std::string& css_selector) {
-  // Script that tests presence of css selector.
-  char testCssSelectorJavaScriptTemplate[] =
-      "!!document.querySelector(\"%s\");";
-  std::string script = base::StringPrintf(testCssSelectorJavaScriptTemplate,
-                                          css_selector.c_str());
+bool IsWebViewContainingElement(web::WebState* web_state,
+                                const web::test::ElementSelector& selector) {
+  // Script that tests presence of element.
+  std::string script =
+      base::StringPrintf("!!(%s)", selector.GetSelectorScript().c_str());
 
   bool did_succeed = false;
   std::unique_ptr<base::Value> value =

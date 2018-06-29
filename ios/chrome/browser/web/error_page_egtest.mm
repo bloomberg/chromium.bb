@@ -13,6 +13,7 @@
 #import "ios/chrome/test/earl_grey/chrome_test_case.h"
 #include "ios/testing/embedded_test_server_handlers.h"
 #include "ios/web/public/features.h"
+#include "ios/web/public/test/element_selector.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
@@ -207,8 +208,9 @@ NSString* GetNSErrorMessage() {
 // TODO(crbug.com/840489): Remove this test.
 - (void)testErrorPageInIFrame {
   [ChromeEarlGrey loadURL:self.testServer->GetURL("/iframe?echo-query")];
-  [ChromeEarlGrey
-      waitForWebViewContainingCSSSelector:"iframe[src*='echo-query']"];
+  auto selector(web::test::ElementSelector::ElementSelectorCss(
+      "iframe[src*='echo-query']"));
+  [ChromeEarlGrey waitForWebViewContainingElement:selector];
 }
 
 @end

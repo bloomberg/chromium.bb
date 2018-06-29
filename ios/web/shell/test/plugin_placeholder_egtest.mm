@@ -9,6 +9,7 @@
 
 #include "base/strings/stringprintf.h"
 #import "base/test/ios/wait_util.h"
+#include "ios/web/public/test/element_selector.h"
 #import "ios/web/public/test/http_server/http_server.h"
 #include "ios/web/public/test/http_server/http_server_util.h"
 #import "ios/web/shell/test/earl_grey/shell_earl_grey.h"
@@ -21,6 +22,8 @@
 #endif
 
 namespace {
+
+using web::test::ElementSelector;
 
 // Loads a web page with given content.
 void LoadPage(const std::string& page_content) {
@@ -56,7 +59,9 @@ void LoadPage(const std::string& page_content) {
   // Verify that placeholder image is not displayed.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
   [ShellEarlGrey waitForWebViewContainingText:kFallbackText];
-  [ShellEarlGrey waitForWebViewNotContainingCSSSelector:"img"];
+  [ShellEarlGrey
+      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
+                                             "img")];
 }
 
 // Tests placeholder for a large <applet> with no fallback.
@@ -73,7 +78,9 @@ void LoadPage(const std::string& page_content) {
 
   // Verify that plugin object is replaced with placeholder image.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewContainingCSSSelector:"img[src*='data']"];
+  [ShellEarlGrey
+      waitForWebViewContainingElement:ElementSelector::ElementSelectorCss(
+                                          "img[src*='data']")];
 }
 
 // Tests placeholder for a large <object> with a flash embed fallback.
@@ -95,7 +102,9 @@ void LoadPage(const std::string& page_content) {
 
   // Verify that plugin object is replaced with placeholder image.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewContainingCSSSelector:"img[src*='data']"];
+  [ShellEarlGrey
+      waitForWebViewContainingElement:ElementSelector::ElementSelectorCss(
+                                          "img[src*='data']")];
 }
 
 // Tests that a large <object> with an embed fallback of unspecified type is
@@ -117,7 +126,9 @@ void LoadPage(const std::string& page_content) {
 
   // Verify that placeholder image is not displayed.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewNotContainingCSSSelector:"img"];
+  [ShellEarlGrey
+      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
+                                             "img")];
 }
 
 // Tests that a large <object> with text fallback is untouched.
@@ -139,7 +150,9 @@ void LoadPage(const std::string& page_content) {
   // Verify that placeholder image is not displayed.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
   [ShellEarlGrey waitForWebViewContainingText:kFallbackText];
-  [ShellEarlGrey waitForWebViewNotContainingCSSSelector:"img"];
+  [ShellEarlGrey
+      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
+                                             "img")];
 }
 
 // Tests placeholder for a large <object> with no fallback.
@@ -157,7 +170,9 @@ void LoadPage(const std::string& page_content) {
 
   // Verify that plugin object is replaced with placeholder image.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewContainingCSSSelector:"img[src*='data']"];
+  [ShellEarlGrey
+      waitForWebViewContainingElement:ElementSelector::ElementSelectorCss(
+                                          "img[src*='data']")];
 }
 
 // Tests that a large png <object> is untouched.
@@ -174,7 +189,9 @@ void LoadPage(const std::string& page_content) {
 
   // Verify that placeholder image is not displayed.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewNotContainingCSSSelector:"img"];
+  [ShellEarlGrey
+      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
+                                             "img")];
 }
 
 // Test that non-major plugins (e.g., top/side ads) don't get placeholders.
@@ -210,7 +227,9 @@ void LoadPage(const std::string& page_content) {
 
   // Verify that placeholder image is not displayed.
   [ShellEarlGrey waitForWebViewContainingText:kPageDescription];
-  [ShellEarlGrey waitForWebViewNotContainingCSSSelector:"img"];
+  [ShellEarlGrey
+      waitForWebViewNotContainingElement:ElementSelector::ElementSelectorCss(
+                                             "img")];
 }
 
 @end

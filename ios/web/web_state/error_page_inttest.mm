@@ -8,6 +8,7 @@
 #include "ios/web/public/features.h"
 #import "ios/web/public/navigation_manager.h"
 #include "ios/web/public/reload_type.h"
+#include "ios/web/public/test/element_selector.h"
 #include "ios/web/public/test/fakes/test_browser_state.h"
 #import "ios/web/public/test/navigation_test_util.h"
 #import "ios/web/public/test/web_test_with_web_state.h"
@@ -22,6 +23,7 @@
 #endif
 
 using testing::WaitUntilConditionOrTimeout;
+using web::test::ElementSelector;
 
 namespace web {
 
@@ -196,8 +198,9 @@ TEST_F(ErrorPageTest, RedirectToFailingURL) {
 TEST_F(ErrorPageTest, ErrorPageInIFrame) {
   test::LoadUrl(web_state(), server_.GetURL("/iframe?echo-query"));
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForPageLoadTimeout, ^{
-    return test::IsWebViewContainingCssSelector(web_state(),
-                                                "iframe[src*='echo-query']");
+    return test::IsWebViewContainingElement(
+        web_state(),
+        ElementSelector::ElementSelectorCss("iframe[src*='echo-query']"));
   }));
 }
 
