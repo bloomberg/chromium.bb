@@ -44,6 +44,7 @@ include_rules = [
   "+third_party/blink/public/platform/web_screen_info.h",
   "+third_party/blink/public/platform/web_scrollbar_buttons_placement.h",
   "+third_party/blink/public/platform/web_scroll_into_view_params.h",
+  "+third_party/blink/public/platform/web_scroll_types.h",
   "+third_party/blink/public/platform/web_storage_area.h",
   "+third_party/blink/public/platform/web_sudden_termination_disabler_type.h",
   "+third_party/blink/public/platform/web_touch_event.h",

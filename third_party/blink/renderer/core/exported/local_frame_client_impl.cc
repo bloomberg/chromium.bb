@@ -1032,6 +1032,13 @@ void LocalFrameClientImpl::ScrollRectToVisibleInParentFrame(
                                                          params);
 }
 
+void LocalFrameClientImpl::BubbleLogicalScrollInParentFrame(
+    ScrollDirection direction,
+    ScrollGranularity granularity) {
+  web_frame_->Client()->BubbleLogicalScrollInParentFrame(direction,
+                                                         granularity);
+}
+
 void LocalFrameClientImpl::SetVirtualTimePauser(
     WebScopedVirtualTimePauser virtual_time_pauser) {
   virtual_time_pauser_ = std::move(virtual_time_pauser);

@@ -257,6 +257,9 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const WebRect&,
       const WebScrollIntoViewParams&) override;
 
+  void BubbleLogicalScrollInParentFrame(ScrollDirection direction,
+                                        ScrollGranularity granularity) override;
+
   void SetVirtualTimePauser(WebScopedVirtualTimePauser) override;
 
   String evaluateInInspectorOverlayForTesting(const String& script) override;

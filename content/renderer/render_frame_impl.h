@@ -757,6 +757,9 @@ class CONTENT_EXPORT RenderFrameImpl
   void ScrollRectToVisibleInParentFrame(
       const blink::WebRect& rect_to_scroll,
       const blink::WebScrollIntoViewParams& params) override;
+  void BubbleLogicalScrollInParentFrame(
+      blink::WebScrollDirection direction,
+      blink::WebScrollGranularity granularity) override;
 
   // WebFrameSerializerClient implementation:
   void DidSerializeDataForFrame(

@@ -247,6 +247,12 @@ void RenderFrameProxyHost::ScrollRectToVisible(
   Send(new FrameMsg_ScrollRectToVisible(routing_id_, rect_to_scroll, params));
 }
 
+void RenderFrameProxyHost::BubbleLogicalScroll(
+    blink::WebScrollDirection direction,
+    blink::WebScrollGranularity granularity) {
+  Send(new FrameMsg_BubbleLogicalScroll(routing_id_, direction, granularity));
+}
+
 void RenderFrameProxyHost::SetDestructionCallback(
     DestructionCallback destruction_callback) {
   destruction_callback_ = std::move(destruction_callback);

@@ -15,6 +15,7 @@
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_sender.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
+#include "third_party/blink/public/platform/web_scroll_types.h"
 
 struct FrameHostMsg_OpenURL_Params;
 struct FrameMsg_PostMessage_Params;
@@ -130,6 +131,11 @@ class RenderFrameProxyHost
   // coordinates of the originating frame in OOPIF process.
   void ScrollRectToVisible(const gfx::Rect& rect_to_scroll,
                            const blink::WebScrollIntoViewParams& params);
+
+  // Continues to bubble a logical scroll from the frame's process. Bubbling
+  // continues from the frame owner element in the parent process.
+  void BubbleLogicalScroll(blink::WebScrollDirection direction,
+                           blink::WebScrollGranularity granularity);
 
   void set_render_frame_proxy_created(bool created) {
     render_frame_proxy_created_ = created;

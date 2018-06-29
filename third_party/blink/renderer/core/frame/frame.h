@@ -45,6 +45,7 @@
 #include "third_party/blink/renderer/core/page/frame_tree.h"
 #include "third_party/blink/renderer/platform/graphics/touch_action.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
+#include "third_party/blink/renderer/platform/scroll/scroll_types.h"
 #include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
@@ -239,6 +240,12 @@ class CORE_EXPORT Frame : public GarbageCollectedFinalized<Frame> {
   TouchAction InheritedEffectiveTouchAction() const {
     return inherited_effective_touch_action_;
   }
+
+  // Continues to bubble logical scroll from |child| in this frame.
+  // Returns true if the scroll was consumed locally.
+  virtual bool BubbleLogicalScrollFromChildFrame(ScrollDirection direction,
+                                                 ScrollGranularity granularity,
+                                                 Frame* child) = 0;
 
   const base::UnguessableToken& GetDevToolsFrameToken() const {
     return devtools_frame_token_;
