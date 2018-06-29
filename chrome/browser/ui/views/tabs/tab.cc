@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/debug/alias.h"
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/utf_string_conversions.h"
@@ -94,6 +95,10 @@ constexpr float kSelectedTabThrobScale = 0.95f - kSelectedTabOpacity;
 // refresh mode.
 constexpr int kTabSeparatorHeight = 20;
 constexpr int kTabSeparatorTouchHeight = 24;
+
+// Under refresh, thickness of the separator in dips painted on the left and
+// right edges of the tab.
+constexpr int kSeparatorThickness = 1;
 
 // Under material refresh, the spec for the favicon or title text is 12dips from
 // the left vertical edge of the tab. This edge is in the middle of the tab end
@@ -799,16 +804,12 @@ void Tab::OnMouseMoved(const ui::MouseEvent& event) {
 void Tab::OnMouseEntered(const ui::MouseEvent& event) {
   mouse_hovered_ = true;
   hover_controller_.Show(GlowHoverController::SUBTLE);
-  if (MD::IsRefreshUi())
-    RepaintSubsequentTab();
   Layout();
 }
 
 void Tab::OnMouseExited(const ui::MouseEvent& event) {
   mouse_hovered_ = false;
   hover_controller_.Hide();
-  if (MD::IsRefreshUi())
-    RepaintSubsequentTab();
   Layout();
 }
 
@@ -989,8 +990,6 @@ void Tab::ActiveStateChanged() {
   }
   OnButtonColorMaybeChanged();
   alert_indicator_button_->UpdateEnabledForMuteToggle();
-  if (MD::IsRefreshUi())
-    RepaintSubsequentTab();
   Layout();
 }
 
@@ -1140,14 +1139,15 @@ float Tab::GetInverseDiagonalSlope() {
 
 // static
 int Tab::GetOverlap() {
-  // We want to overlap the endcap portions entirely.
-  return GetTabEndcapWidth();
+  // We want to overlap the endcap portions entirely. Under refresh, we want to
+  // overlap by an extra dip on each end in order overlap the separators.
+  return GetTabEndcapWidth() + (MD::IsRefreshUi() ? kSeparatorThickness : 0);
 }
 
-void Tab::RepaintSubsequentTab() {
-  Tab* adjacent_tab = controller_->GetAdjacentTab(this, TabController::FORWARD);
-  if (adjacent_tab)
-    adjacent_tab->SchedulePaint();
+// static
+int Tab::GetTabSeparatorHeight() {
+  return MD::IsTouchOptimizedUiEnabled() ? kTabSeparatorTouchHeight
+                                         : kTabSeparatorHeight;
 }
 
 void Tab::MaybeAdjustLeftForPinnedTab(gfx::Rect* bounds,
@@ -1292,7 +1292,7 @@ void Tab::PaintTabBackground(gfx::Canvas* canvas,
   }
 
   if (!active)
-    PaintSeparator(canvas);
+    PaintSeparators(canvas);
 }
 
 void Tab::PaintTabBackgroundFill(gfx::Canvas* canvas,
@@ -1352,15 +1352,8 @@ void Tab::PaintTabBackgroundStroke(gfx::Canvas* canvas,
   canvas->DrawPath(path, flags);
 }
 
-void Tab::PaintSeparator(gfx::Canvas* canvas) {
+void Tab::PaintSeparators(gfx::Canvas* canvas) {
   if (!MD::IsRefreshUi())
-    return;
-
-  // If the tab to the left is active, the separator on this tab should not be
-  // painted.
-  Tab* previous_tab =
-      controller_->GetAdjacentTab(this, TabController::BACKWARD);
-  if (previous_tab && previous_tab->IsActive())
     return;
 
   gfx::ScopedCanvas scoped_canvas(canvas);
@@ -1370,34 +1363,68 @@ void Tab::PaintSeparator(gfx::Canvas* canvas) {
   const gfx::RectF aligned_bounds =
       ScaleAndAlignBounds(bounds(), endcap_width, scale);
 
-  gfx::RectF separator_bounds;
-  separator_bounds.set_size(gfx::SizeF(
-      scale, (MD::IsTouchOptimizedUiEnabled() ? kTabSeparatorTouchHeight
-                                              : kTabSeparatorHeight) *
-                 scale));
-  separator_bounds.set_origin(gfx::PointF(
+  const float separator_height = GetTabSeparatorHeight() * scale;
+  gfx::RectF leading_separator_bounds(
       aligned_bounds.x() + (endcap_width / 2) * scale,
-      aligned_bounds.y() +
-          (aligned_bounds.height() - separator_bounds.height()) / 2));
+      aligned_bounds.y() + (aligned_bounds.height() - separator_height) / 2,
+      kSeparatorThickness * scale, separator_height);
+  gfx::RectF trailing_separator_bounds(
+      aligned_bounds.right() - (endcap_width / 2) * scale -
+          kSeparatorThickness * scale,
+      leading_separator_bounds.y(), kSeparatorThickness * scale,
+      separator_height);
 
   gfx::PointF origin(bounds().origin());
   origin.Scale(scale);
-  separator_bounds.Offset(-origin.x(), -origin.y());
-  // The following will paint the separator using an opacity that should
+  leading_separator_bounds.Offset(-origin.x(), -origin.y());
+  trailing_separator_bounds.Offset(-origin.x(), -origin.y());
+
+  // The following will paint the separators using an opacity that should
   // cross-fade with the maximum hover animation value of this tab or the
-  // tab to the left. This will have the effect of fading out the separator
-  // while this tab's or the tab to the left's hover animation is progressing.
-  const double max_hover_value = std::max(
-      hover_controller_.GetAnimationValue(),
-      previous_tab ? previous_tab->hover_controller()->GetAnimationValue() : 0);
+  // subsequent tab. This will have the effect of fading out the separator
+  // while this tab's or the subsequent tab's hover animation is progressing.
+  // If the subsequent tab is active, don't consider its hover animation value.
+  // Without this active check and the subsequent tab is also dragged, the
+  // trailing separator on this tab will appear invisible (alpha = 0).
+  Tab* subsequent_tab = controller_->GetSubsequentTab(this);
+  float leading_alpha;
+  float trailing_alpha = leading_alpha =
+      std::max(hover_controller_.GetAnimationValue(),
+               subsequent_tab && !subsequent_tab->IsActive()
+                   ? subsequent_tab->hover_controller()->GetAnimationValue()
+                   : 0);
+  // When the tab's bounds are animating, inversely fade the leading or trailing
+  // separator based on the NTB position, the tab's index, and how close to the
+  // target bounds this tab is.
+  NewTabButtonPosition ntb_position = controller_->GetNewTabButtonPosition();
+  const gfx::Rect target_bounds =
+      controller_->GetTabAnimationTargetBounds(this);
+  const int tab_width = std::max(width(), target_bounds.width());
+  const float target_alpha =
+      1.0 -
+      float{std::min(std::abs(x() - target_bounds.x()), tab_width)} / tab_width;
+
+  if (ntb_position != LEADING && controller_->IsFirstVisibleTab(this))
+    leading_alpha = target_alpha;
+
+  if (ntb_position != AFTER_TABS && controller_->IsLastVisibleTab(this))
+    trailing_alpha = target_alpha;
+
+  // Swap the alphas if in RTL mode.
+  if (base::i18n::IsRTL())
+    std::swap(leading_alpha, trailing_alpha);
   cc::PaintFlags flags;
   const SkColor separator_color = controller_->GetTabSeparatorColor();
   flags.setAntiAlias(true);
+  flags.setColor(SkColorSetA(separator_color, gfx::Tween::IntValueBetween(
+                                                  leading_alpha, SK_AlphaOPAQUE,
+                                                  SK_AlphaTRANSPARENT)));
+  canvas->DrawRect(leading_separator_bounds, flags);
   flags.setColor(
       SkColorSetA(separator_color,
-                  gfx::Tween::IntValueBetween(max_hover_value, SK_AlphaOPAQUE,
+                  gfx::Tween::IntValueBetween(trailing_alpha, SK_AlphaOPAQUE,
                                               SK_AlphaTRANSPARENT)));
-  canvas->DrawRect(separator_bounds, flags);
+  canvas->DrawRect(trailing_separator_bounds, flags);
 }
 
 void Tab::UpdateIconVisibility() {

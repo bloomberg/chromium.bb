@@ -29,15 +29,16 @@ class View;
 // Controller for tabs.
 class TabController {
  public:
-  // Used in GetAdjacentTab to indicate which adjacent tab to retrieve. FORWARD
-  // will return the adjacent tab to the right. BACKWARD will return the
-  // adjacent tab to the left of the given tab.
-  enum Direction { FORWARD, BACKWARD };
 
   virtual const ui::ListSelectionModel& GetSelectionModel() const = 0;
 
   // Returns true if multiple selection is supported.
   virtual bool SupportsMultipleSelection() = 0;
+
+  // Under Refresh, returns where the new tab button should be placed. This is
+  // needed to determine which tab separators need to be faded in/out while
+  // animating into position.
+  virtual NewTabButtonPosition GetNewTabButtonPosition() const = 0;
 
   // Returns true if the close button for the given tab is forced to be hidden.
   virtual bool ShouldHideCloseButtonForTab(Tab* tab) const = 0;
@@ -83,6 +84,10 @@ class TabController {
   // Returns true if the specified Tab is pinned.
   virtual bool IsTabPinned(const Tab* tab) const = 0;
 
+  // Returns true if the specified tab is the first or last one visible.
+  virtual bool IsFirstVisibleTab(const Tab* tab) const = 0;
+  virtual bool IsLastVisibleTab(const Tab* tab) const = 0;
+
   // Returns true if the tab is a part of an incognito profile.
   virtual bool IsIncognito() const = 0;
 
@@ -104,9 +109,9 @@ class TabController {
   virtual Tab* GetTabAt(Tab* tab,
                         const gfx::Point& tab_in_tab_coordinates) = 0;
 
-  // Returns the next/previous tab in the model order. Returns nullptr if there
-  // isn't an adjacent tab in the given direction.
-  virtual Tab* GetAdjacentTab(Tab* tab, Direction direction) = 0;
+  // Returns the next tab in the model order. Returns nullptr if there
+  // isn't another tab beyond the given tab.
+  virtual Tab* GetSubsequentTab(Tab* tab) = 0;
 
   // Invoked when a mouse event occurs on |source|.
   virtual void OnMouseEventInTab(views::View* source,
@@ -148,6 +153,11 @@ class TabController {
   // |custom_image| is an outparam set to true if either the tab or the frame
   // background images have been customized; see implementation comments.
   virtual int GetBackgroundResourceId(bool* custom_image) const = 0;
+
+  // If the given tab is animating to its target destination, this returns the
+  // target bounds. If the tab isn't moving this will return the current bounds
+  // of the given tab.
+  virtual gfx::Rect GetTabAnimationTargetBounds(Tab* tab) = 0;
 
   // Returns the accessible tab name for this tab.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;

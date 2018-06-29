@@ -229,6 +229,7 @@ class TabStrip : public views::View,
   // TabController:
   const ui::ListSelectionModel& GetSelectionModel() const override;
   bool SupportsMultipleSelection() override;
+  NewTabButtonPosition GetNewTabButtonPosition() const override;
   bool ShouldHideCloseButtonForTab(Tab* tab) const override;
   bool ShouldShowCloseButtonOnHover() override;
   bool MaySetClip() override;
@@ -244,6 +245,8 @@ class TabStrip : public views::View,
   bool IsActiveTab(const Tab* tab) const override;
   bool IsTabSelected(const Tab* tab) const override;
   bool IsTabPinned(const Tab* tab) const override;
+  bool IsFirstVisibleTab(const Tab* tab) const override;
+  bool IsLastVisibleTab(const Tab* tab) const override;
   bool IsIncognito() const override;
   void MaybeStartDrag(
       Tab* tab,
@@ -252,7 +255,7 @@ class TabStrip : public views::View,
   void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override;
   bool EndDrag(EndDragReason reason) override;
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override;
-  Tab* GetAdjacentTab(Tab* tab, TabController::Direction direction) override;
+  Tab* GetSubsequentTab(Tab* tab) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
   bool ShouldPaintTab(
@@ -267,6 +270,7 @@ class TabStrip : public views::View,
   SkColor GetTabForegroundColor(TabState state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
+  gfx::Rect GetTabAnimationTargetBounds(Tab* tab) override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;
@@ -274,6 +278,7 @@ class TabStrip : public views::View,
   // views::View:
   void Layout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
+  void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;

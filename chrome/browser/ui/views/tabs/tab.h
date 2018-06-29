@@ -193,6 +193,9 @@ class Tab : public gfx::AnimationDelegate,
   // of the tab, in DIP.
   static int GetStrokeHeight();
 
+  // Returns the height of the separator between tabs.
+  static int GetTabSeparatorHeight();
+
   // Returns the inverse of the slope of the diagonal portion of the tab outer
   // border.  (This is a positive value, so it's specifically for the slope of
   // the leading edge.)
@@ -212,9 +215,6 @@ class Tab : public gfx::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
-
-  // Forces the tab to the right of this tab to repaint.
-  void RepaintSubsequentTab();
 
   // Invoked from Layout to adjust the position of the favicon or alert
   // indicator for pinned tabs. The visual_width parameter is how wide the
@@ -252,9 +252,9 @@ class Tab : public gfx::AnimationDelegate,
                                 bool active,
                                 SkColor color);
 
-  // Paints the separator line on the left edge of the tab if in material
-  // refresh mode.
-  void PaintSeparator(gfx::Canvas* canvas);
+  // Paints the separator lines on the left and right edge of the tab if in
+  // material refresh mode.
+  void PaintSeparators(gfx::Canvas* canvas);
 
   // Computes which icons are visible in the tab. Should be called everytime
   // before layout is performed.

@@ -831,6 +831,10 @@ bool TabStrip::SupportsMultipleSelection() {
   return touch_layout_ == nullptr;
 }
 
+NewTabButtonPosition TabStrip::GetNewTabButtonPosition() const {
+  return controller_->GetNewTabButtonPosition();
+}
+
 bool TabStrip::ShouldHideCloseButtonForTab(Tab* tab) const {
   if (tab->IsActive())
     return SingleTabMode();
@@ -916,6 +920,14 @@ bool TabStrip::IsTabPinned(const Tab* tab) const {
   int model_index = GetModelIndexOfTab(tab);
   return IsValidModelIndex(model_index) &&
          controller_->IsTabPinned(model_index);
+}
+
+bool TabStrip::IsFirstVisibleTab(const Tab* tab) const {
+  return GetModelIndexOfTab(tab) == 0;
+}
+
+bool TabStrip::IsLastVisibleTab(const Tab* tab) const {
+  return GetLastVisibleTab() == tab;
 }
 
 bool TabStrip::IsIncognito() const {
@@ -1019,13 +1031,12 @@ Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
   return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : nullptr;
 }
 
-Tab* TabStrip::GetAdjacentTab(Tab* tab, TabController::Direction direction) {
-  const int index = GetModelIndexOfTab(tab);
+Tab* TabStrip::GetSubsequentTab(Tab* tab) {
+  int index = GetModelIndexOfTab(tab);
   if (index < 0)
     return nullptr;
-  const int new_index = index + (direction == TabController::FORWARD ? 1 : -1);
-  return new_index < 0 || new_index >= tab_count() ? nullptr
-                                                   : tab_at(new_index);
+  ++index;
+  return index >= tab_count() ? nullptr : tab_at(index);
 }
 
 void TabStrip::OnMouseEventInTab(views::View* source,
@@ -1131,6 +1142,10 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
                   tp->HasCustomImage(IDR_THEME_FRAME) ||
                   (incognito && tp->HasCustomImage(IDR_THEME_FRAME_INCOGNITO));
   return id;
+}
+
+gfx::Rect TabStrip::GetTabAnimationTargetBounds(Tab* tab) {
+  return bounds_animator_.GetTargetBounds(tab);
 }
 
 void TabStrip::MouseMovedOutOfHost() {
@@ -1280,6 +1295,20 @@ void TabStrip::PaintChildren(const views::PaintInfo& paint_info) {
     }
     BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                         GetLocalBounds(), true);
+  }
+}
+
+void TabStrip::OnPaint(gfx::Canvas* canvas) {
+  views::View::OnPaint(canvas);
+  if (MD::IsRefreshUi() && GetNewTabButtonPosition() == TRAILING) {
+    float separator_height = Tab::GetTabSeparatorHeight();
+    gfx::RectF separator_bounds(
+        new_tab_button_bounds_.x() - Tab::GetOverlap() / 2,
+        (height() - separator_height) / 2, 1, separator_height);
+    cc::PaintFlags flags;
+    flags.setAntiAlias(true);
+    flags.setColor(GetTabSeparatorColor());
+    canvas->DrawRect(separator_bounds, flags);
   }
 }
 
