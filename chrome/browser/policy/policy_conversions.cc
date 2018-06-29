@@ -7,6 +7,7 @@
 #include <unordered_set>
 
 #include "base/json/json_writer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/policy/chrome_browser_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -110,30 +111,35 @@ void GetPolicyValues(
     bool convert_values,
     std::unique_ptr<std::unordered_set<std::string>> policy_names) {
   for (const auto& entry : map) {
-    if (entry.second.scope == policy::POLICY_SCOPE_USER && !with_user_policies)
+    const std::string& policy_name = entry.first;
+    const PolicyMap::Entry& policy = entry.second;
+    if (policy.scope == policy::POLICY_SCOPE_USER && !with_user_policies)
       continue;
+
     std::unique_ptr<base::DictionaryValue> value(new base::DictionaryValue);
     value->Set("value",
-               CopyAndMaybeConvert(entry.second.value.get(), convert_values));
-    if (entry.second.scope == policy::POLICY_SCOPE_USER)
-      value->SetString("scope", "user");
-    else
-      value->SetString("scope", "machine");
-    if (entry.second.level == policy::POLICY_LEVEL_RECOMMENDED)
-      value->SetString("level", "recommended");
-    else
-      value->SetString("level", "mandatory");
-    value->SetString("source", kPolicySources[entry.second.source].key);
+               CopyAndMaybeConvert(policy.value.get(), convert_values));
+    value->SetString("scope", (policy.scope == policy::POLICY_SCOPE_USER)
+                                  ? "user"
+                                  : "machine");
+    value->SetString("level", (policy.level == policy::POLICY_LEVEL_RECOMMENDED)
+                                  ? "recommended"
+                                  : "mandatory");
+    value->SetString("source", kPolicySources[policy.source].key);
     base::string16 error;
     if (policy_names &&
-        policy_names->find(entry.first) == policy_names->end()) {
+        policy_names->find(policy_name) == policy_names->end()) {
+      // We don't know what this policy is. This is an important error to show.
       error = l10n_util::GetStringUTF16(IDS_POLICY_UNKNOWN);
     } else {
-      error = errors->GetErrors(entry.first);
+      // The PolicyMap contains errors about retrieving the policy, while the
+      // PolicyErrorMap contains validation errors. Give priority to PolicyMap.
+      error = !policy.error.empty() ? base::UTF8ToUTF16(policy.error)
+                                    : errors->GetErrors(policy_name);
     }
     if (!error.empty())
       value->SetString("error", error);
-    values->SetWithoutPathExpansion(entry.first, std::move(value));
+    values->SetWithoutPathExpansion(policy_name, std::move(value));
   }
 }
 

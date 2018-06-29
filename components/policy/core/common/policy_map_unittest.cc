@@ -27,6 +27,9 @@ const char kTestPolicyName6[] = "policy.test.6";
 const char kTestPolicyName7[] = "policy.test.7";
 const char kTestPolicyName8[] = "policy.test.8";
 
+// Dummy error message.
+const char kTestError[] = "Test error message";
+
 // Utility functions for the tests.
 void SetPolicy(PolicyMap* map,
                const char* name,
@@ -65,12 +68,14 @@ TEST_F(PolicyMapTest, SetAndGet) {
   base::Value expected_b("bbb");
   EXPECT_TRUE(expected_b.Equals(map.GetValue(kTestPolicyName1)));
   SetPolicy(&map, kTestPolicyName1, CreateExternalDataFetcher("dummy"));
+  map.SetError(kTestPolicyName1, kTestError);
   EXPECT_FALSE(map.GetValue(kTestPolicyName1));
   const PolicyMap::Entry* entry = map.Get(kTestPolicyName1);
   ASSERT_TRUE(entry != nullptr);
   EXPECT_EQ(POLICY_LEVEL_MANDATORY, entry->level);
   EXPECT_EQ(POLICY_SCOPE_USER, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_CLOUD, entry->source);
+  EXPECT_EQ(kTestError, entry->error);
   EXPECT_TRUE(
       ExternalDataFetcher::Equals(entry->external_data_fetcher.get(),
                                   CreateExternalDataFetcher("dummy").get()));
@@ -82,6 +87,7 @@ TEST_F(PolicyMapTest, SetAndGet) {
   EXPECT_EQ(POLICY_LEVEL_RECOMMENDED, entry->level);
   EXPECT_EQ(POLICY_SCOPE_MACHINE, entry->scope);
   EXPECT_EQ(POLICY_SOURCE_ENTERPRISE_DEFAULT, entry->source);
+  EXPECT_EQ("", entry->error);
   EXPECT_FALSE(entry->external_data_fetcher);
 }
 

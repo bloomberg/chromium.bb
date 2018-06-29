@@ -25,6 +25,7 @@ PolicyMap::Entry PolicyMap::Entry::DeepCopy() const {
   copy.source = source;
   if (value)
     copy.value = value->CreateDeepCopy();
+  copy.error = error;
   if (external_data_fetcher) {
     copy.external_data_fetcher.reset(
         new ExternalDataFetcher(*external_data_fetcher));
@@ -47,6 +48,7 @@ bool PolicyMap::Entry::Equals(const PolicyMap::Entry& other) const {
   return level == other.level && scope == other.scope &&
          source == other.source &&  // Necessary for PolicyUIHandler observers.
                                     // They have to update when sources change.
+         error == other.error &&
          ((!value && !other.value) ||
           (value && other.value && *value == *other.value)) &&
          ExternalDataFetcher::Equals(external_data_fetcher.get(),
@@ -97,6 +99,10 @@ void PolicyMap::Set(
 
 void PolicyMap::Set(const std::string& policy, Entry entry) {
   map_[policy] = std::move(entry);
+}
+
+void PolicyMap::SetError(const std::string& policy, const std::string& error) {
+  map_[policy].error = error;
 }
 
 void PolicyMap::SetSourceForAll(PolicySource source) {
