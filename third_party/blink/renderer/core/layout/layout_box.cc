@@ -1112,41 +1112,33 @@ void LayoutBox::DispatchFakeMouseMoveEventSoon(EventHandler& event_handler) {
 }
 
 void LayoutBox::ScrollByRecursively(const ScrollOffset& delta) {
-  if (delta.IsZero())
+  if (delta.IsZero() || !HasOverflowClip())
     return;
 
-  if (HasOverflowClip()) {
-    PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
-    DCHECK(scrollable_area);
+  PaintLayerScrollableArea* scrollable_area = GetScrollableArea();
+  DCHECK(scrollable_area);
 
-    ScrollOffset new_scroll_offset = scrollable_area->GetScrollOffset() + delta;
-    scrollable_area->SetScrollOffset(new_scroll_offset, kProgrammaticScroll);
+  ScrollOffset new_scroll_offset = scrollable_area->GetScrollOffset() + delta;
+  scrollable_area->SetScrollOffset(new_scroll_offset, kProgrammaticScroll);
 
-    // If this layer can't do the scroll we ask the next layer up that can
-    // scroll to try.
-    ScrollOffset remaining_scroll_offset =
-        new_scroll_offset - scrollable_area->GetScrollOffset();
-    if (!remaining_scroll_offset.IsZero() && Parent()) {
-      if (LayoutBox* scrollable_box = EnclosingScrollableBox())
-        scrollable_box->ScrollByRecursively(remaining_scroll_offset);
+  // If this layer can't do the scroll we ask the next layer up that can
+  // scroll to try.
+  ScrollOffset remaining_scroll_offset =
+      new_scroll_offset - scrollable_area->GetScrollOffset();
+  if (!remaining_scroll_offset.IsZero() && Parent()) {
+    if (LayoutBox* scrollable_box = EnclosingScrollableBox())
+      scrollable_box->ScrollByRecursively(remaining_scroll_offset);
 
-      LocalFrame* frame = GetFrame();
-      if (frame && frame->GetPage())
-        frame->GetPage()
-            ->GetAutoscrollController()
-            .UpdateAutoscrollLayoutObject();
+    LocalFrame* frame = GetFrame();
+    if (frame && frame->GetPage()) {
+      frame->GetPage()
+          ->GetAutoscrollController()
+          .UpdateAutoscrollLayoutObject();
     }
-  } else if (View()->GetFrameView()) {
-    // If we are here, we were called on a layoutObject that can be
-    // programmatically scrolled, but doesn't have an overflow clip. Which means
-    // that it is a document node that can be scrolled.
-    // FIXME: Pass in DoubleSize. crbug.com/414283.
-    View()->GetFrameView()->ScrollBy(delta, kUserScroll);
-
-    // FIXME: If we didn't scroll the whole way, do we want to try looking at
-    // the frames ownerElement?
-    // https://bugs.webkit.org/show_bug.cgi?id=28237
   }
+  // FIXME: If we didn't scroll the whole way, do we want to try looking at
+  // the frames ownerElement?
+  // https://bugs.webkit.org/show_bug.cgi?id=28237
 }
 
 bool LayoutBox::NeedsPreferredWidthsRecalculation() const {

@@ -193,9 +193,7 @@ bool LayoutEmbeddedContent::NodeAtPoint(
         child_layout_view) {
       LayoutPoint adjusted_location = accumulated_offset + Location();
       LayoutPoint content_offset =
-          LayoutPoint(BorderLeft() + PaddingLeft(),
-                      BorderTop() + PaddingTop()) -
-          LayoutSize(local_frame_view->ScrollOffsetInt());
+          LayoutPoint(BorderLeft() + PaddingLeft(), BorderTop() + PaddingTop());
       HitTestLocation new_hit_test_location(
           location_in_container, -adjusted_location - content_offset);
       HitTestRequest new_hit_test_request(result.GetHitTestRequest().GetType() |

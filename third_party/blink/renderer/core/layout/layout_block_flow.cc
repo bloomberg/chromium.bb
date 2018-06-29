@@ -4224,12 +4224,6 @@ bool LayoutBlockFlow::HitTestFloats(
   if (!floating_objects_)
     return false;
 
-  LayoutPoint adjusted_location = accumulated_offset;
-  if (IsLayoutView()) {
-    ScrollOffset offset = ToLayoutView(this)->GetFrameView()->GetScrollOffset();
-    adjusted_location.Move(LayoutSize(offset));
-  }
-
   const FloatingObjectSet& floating_object_set = floating_objects_->Set();
   FloatingObjectSetIterator begin = floating_object_set.begin();
   for (FloatingObjectSetIterator it = floating_object_set.end(); it != begin;) {
@@ -4243,7 +4237,7 @@ bool LayoutBlockFlow::HitTestFloats(
       LayoutUnit y_offset = YPositionForFloatIncludingMargin(floating_object) -
                             floating_object.GetLayoutObject()->Location().Y();
       LayoutPoint child_point = FlipFloatForWritingModeForChild(
-          floating_object, adjusted_location + LayoutSize(x_offset, y_offset));
+          floating_object, accumulated_offset + LayoutSize(x_offset, y_offset));
       if (floating_object.GetLayoutObject()->HitTestAllPhases(
               result, location_in_container, child_point)) {
         UpdateHitTestResult(

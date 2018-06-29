@@ -89,7 +89,6 @@ void RemoteFrameView::UpdateViewportIntersectionsForSubtree(
     IntRect root_visible_rect(IntPoint(), local_root_view->Size());
     IntRect intersected_rect = EnclosingIntRect(rect);
     intersected_rect.Intersect(root_visible_rect);
-    intersected_rect.Move(-local_root_view->ScrollOffsetInt());
 
     // Translate the intersection rect from the root frame's coordinate space
     // to the remote frame's coordinate space.
@@ -125,7 +124,8 @@ IntRect RemoteFrameView::GetCompositingRect() {
   // that needs to be rastered by the OOPIF compositor.
   IntSize viewport_size = local_root_view->FrameRect().Size();
   if (local_root_view->GetPage()->MainFrame() != local_root_view->GetFrame()) {
-    viewport_size = local_root_view->RemoteViewportIntersection().Size();
+    viewport_size =
+        local_root_view->GetFrame().RemoteViewportIntersection().Size();
   }
 
   // The viewport size needs to account for intermediate CSS transforms before

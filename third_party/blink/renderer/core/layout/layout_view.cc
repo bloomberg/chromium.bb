@@ -378,7 +378,6 @@ const LayoutObject* LayoutView::PushMappingToContainer(
 
   if (geometry_map.GetMapCoordinatesFlags() & kTraverseDocumentBoundaries) {
     if (auto* parent_doc_layout_object = GetFrame()->OwnerLayoutObject()) {
-      offset = -LayoutSize(frame_view_->GetScrollOffset());
       offset += parent_doc_layout_object->ContentBoxOffset();
       container = parent_doc_layout_object;
     }
@@ -412,7 +411,6 @@ void LayoutView::MapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                                    mode & ~kIsFixed);
 
       transform_state.Move(parent_doc_layout_object->ContentBoxOffset());
-      transform_state.Move(LayoutSize(-GetFrame()->View()->GetScrollOffset()));
     }
   } else {
     DCHECK(this == ancestor || !ancestor);
@@ -428,8 +426,8 @@ void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
   // just use the viewport size (containing block) here because we want to
   // ensure this includes all children (so we can avoid walking them
   // explicitly).
-  rects.push_back(LayoutRect(LayoutPoint::Zero(),
-                             LayoutSize(GetFrameView()->ContentsSize())));
+  rects.push_back(
+      LayoutRect(LayoutPoint::Zero(), LayoutSize(GetFrameView()->Size())));
 }
 
 void LayoutView::Paint(const PaintInfo& paint_info,
@@ -555,15 +553,7 @@ bool LayoutView::MapToVisualRectInAncestorSpaceInternal(
 }
 
 LayoutSize LayoutView::OffsetForFixedPosition() const {
-  FloatSize adjustment;
-  if (frame_view_) {
-    adjustment += frame_view_->GetScrollOffset();
-  }
-
-  if (HasOverflowClip())
-    adjustment += FloatSize(ScrolledContentOffset());
-
-  return RoundedLayoutSize(adjustment);
+  return HasOverflowClip() ? LayoutSize(ScrolledContentOffset()) : LayoutSize();
 }
 
 void LayoutView::AbsoluteRects(Vector<IntRect>& rects,

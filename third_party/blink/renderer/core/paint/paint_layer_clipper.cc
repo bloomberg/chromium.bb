@@ -95,8 +95,6 @@ static void ApplyClipRects(const ClipRectsContext& context,
   DCHECK(box.ShouldClipOverflow() || box.HasClip());
   LayoutView* view = box.View();
   DCHECK(view);
-  if (clip_rects.Fixed() && &context.root_layer->GetLayoutObject() == view)
-    offset -= LayoutSize(view->GetFrameView()->GetScrollOffset());
 
   if (box.ShouldClipOverflow()) {
     ClipRect new_overflow_clip =

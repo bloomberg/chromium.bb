@@ -395,34 +395,18 @@ void MouseEventManager::SetNodeUnderMouse(
       EventHandlingUtil::LayerForNode(node_under_mouse_.Get());
   Page* page = frame_->GetPage();
 
-  if (last_node_under_mouse &&
-      (!node_under_mouse_ ||
-       node_under_mouse_->GetDocument() != frame_->GetDocument())) {
-    // The mouse has moved between frames.
-    if (LocalFrame* frame = last_node_under_mouse->GetDocument().GetFrame()) {
-      if (LocalFrameView* frame_view = frame->View())
-        frame_view->MouseExitedContentArea();
-    }
-  } else if (page && (layer_for_last_node &&
-                      (!layer_for_node_under_mouse ||
-                       layer_for_node_under_mouse != layer_for_last_node))) {
+  if (page && (layer_for_last_node &&
+               (!layer_for_node_under_mouse ||
+                layer_for_node_under_mouse != layer_for_last_node))) {
     // The mouse has moved between layers.
     if (ScrollableArea* scrollable_area_for_last_node =
             EventHandlingUtil::AssociatedScrollableArea(layer_for_last_node))
       scrollable_area_for_last_node->MouseExitedContentArea();
   }
 
-  if (node_under_mouse_ &&
-      (!last_node_under_mouse ||
-       last_node_under_mouse->GetDocument() != frame_->GetDocument())) {
-    // The mouse has moved between frames.
-    if (LocalFrame* frame = node_under_mouse_->GetDocument().GetFrame()) {
-      if (LocalFrameView* frame_view = frame->View())
-        frame_view->MouseEnteredContentArea();
-    }
-  } else if (page && (layer_for_node_under_mouse &&
-                      (!layer_for_last_node ||
-                       layer_for_node_under_mouse != layer_for_last_node))) {
+  if (page && (layer_for_node_under_mouse &&
+               (!layer_for_last_node ||
+                layer_for_node_under_mouse != layer_for_last_node))) {
     // The mouse has moved between layers.
     if (ScrollableArea* scrollable_area_for_node_under_mouse =
             EventHandlingUtil::AssociatedScrollableArea(

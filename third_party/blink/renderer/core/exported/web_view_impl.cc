@@ -2588,30 +2588,6 @@ WebFloatSize WebViewImpl::VisualViewportSize() const {
   return GetPage()->GetVisualViewport().VisibleRect().Size();
 }
 
-void WebViewImpl::ScrollAndRescaleViewports(
-    float scale_factor,
-    const IntPoint& main_frame_origin,
-    const FloatPoint& visual_viewport_origin) {
-  if (!GetPage())
-    return;
-
-  if (!MainFrameImpl())
-    return;
-
-  LocalFrameView* view = MainFrameImpl()->GetFrameView();
-  if (!view)
-    return;
-
-  // Order is important: visual viewport location is clamped based on
-  // main frame scroll position and visual viewport scale.
-
-  view->SetScrollOffset(ToScrollOffset(main_frame_origin), kProgrammaticScroll);
-
-  SetPageScaleFactor(scale_factor);
-
-  GetPage()->GetVisualViewport().SetLocation(visual_viewport_origin);
-}
-
 void WebViewImpl::SetPageScaleFactorAndLocation(float scale_factor,
                                                 const FloatPoint& location) {
   DCHECK(GetPage());
@@ -2723,9 +2699,11 @@ void WebViewImpl::RefreshPageScaleFactorAfterLayout() {
   GetPageScaleConstraintsSet().ComputeFinalConstraints();
 
   int vertical_scrollbar_width = 0;
-  if (view->VerticalScrollbar() &&
-      !view->VerticalScrollbar()->IsOverlayScrollbar())
-    vertical_scrollbar_width = view->VerticalScrollbar()->Width();
+  if (view->LayoutViewport()->VerticalScrollbar() &&
+      !view->LayoutViewport()->VerticalScrollbar()->IsOverlayScrollbar()) {
+    vertical_scrollbar_width =
+        view->LayoutViewport()->VerticalScrollbar()->Width();
+  }
   GetPageScaleConstraintsSet().AdjustFinalConstraintsToContentsSize(
       ContentsSize(), vertical_scrollbar_width,
       GetSettings()->ShrinksViewportContentToFit());

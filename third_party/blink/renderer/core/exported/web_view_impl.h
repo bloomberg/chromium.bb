@@ -475,10 +475,6 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void SetPageScaleFactorAndLocation(float, const FloatPoint&);
   void PropagateZoomFactorToLocalFrameRoots(Frame*, float);
 
-  void ScrollAndRescaleViewports(float scale_factor,
-                                 const IntPoint& main_frame_origin,
-                                 const FloatPoint& visual_viewport_origin);
-
   float MaximumLegiblePageScale() const;
   void RefreshPageScaleFactorAfterLayout();
   IntSize ContentsSize() const;

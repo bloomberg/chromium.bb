@@ -170,17 +170,17 @@ void IntersectionGeometry::ClipToRoot() {
 
 void IntersectionGeometry::MapTargetRectToTargetFrameCoordinates() {
   Document& target_document = target_->GetDocument();
-  LayoutSize scroll_position =
-      LayoutSize(target_document.View()->GetScrollOffset());
   MapRectUpToDocument(target_rect_, *target_, target_document);
-  target_rect_.Move(-scroll_position);
 }
 
 void IntersectionGeometry::MapRootRectToRootFrameCoordinates() {
-  root_->GetFrameView()->MapQuadToAncestorFrameIncludingScrollOffset(
-      root_rect_, root_,
-      RootIsImplicit() ? nullptr : root_->GetDocument().GetLayoutView(),
-      kUseTransforms | kApplyContainerFlip);
+  root_rect_ = LayoutRect(
+      root_
+          ->LocalToAncestorQuad(
+              FloatQuad(FloatRect(root_rect_)),
+              RootIsImplicit() ? nullptr : root_->GetDocument().GetLayoutView(),
+              kUseTransforms | kApplyContainerFlip)
+          .BoundingBox());
 }
 
 void IntersectionGeometry::MapIntersectionRectToTargetFrameCoordinates() {
@@ -188,16 +188,10 @@ void IntersectionGeometry::MapIntersectionRectToTargetFrameCoordinates() {
   if (RootIsImplicit()) {
     LocalFrame* target_frame = target_document.GetFrame();
     Frame& root_frame = target_frame->Tree().Top();
-    LayoutSize scroll_position =
-        LayoutSize(target_document.View()->GetScrollOffset());
     if (target_frame != &root_frame)
       MapRectDownToDocument(intersection_rect_, nullptr, target_document);
-    intersection_rect_.Move(-scroll_position);
   } else {
-    LayoutSize scroll_position =
-        LayoutSize(target_document.View()->GetScrollOffset());
     MapRectUpToDocument(intersection_rect_, *root_, root_->GetDocument());
-    intersection_rect_.Move(-scroll_position);
   }
 }
 
