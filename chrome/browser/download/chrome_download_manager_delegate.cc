@@ -640,6 +640,15 @@ void ChromeDownloadManagerDelegate::OpenDownload(DownloadItem* download) {
   MaybeSendDangerousDownloadOpenedReport(download,
                                          false /* show_download_in_folder */);
 
+#if defined(OS_ANDROID)
+  // TODO(shaktisahu@): Pull out to static helper method once
+  // DownloadManagerService goes away.  Put the helper method in the download
+  // component.
+  DownloadManagerService::GetInstance()->OpenDownload(download,
+                                                      0 /* download source */);
+  return;
+#endif
+
   if (!DownloadItemModel(download).ShouldPreferOpeningInBrowser()) {
     RecordDownloadOpenMethod(DOWNLOAD_OPEN_METHOD_DEFAULT_PLATFORM);
     OpenDownloadUsingPlatformHandler(download);
