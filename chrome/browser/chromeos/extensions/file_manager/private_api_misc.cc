@@ -695,7 +695,8 @@ void FileManagerPrivateMountCrostiniContainerFunction::RestartCallback(
 void FileManagerPrivateMountCrostiniContainerFunction::SshKeysCallback(
     crostini::ConciergeClientResult result,
     const std::string& container_public_key,
-    const std::string& host_private_key) {
+    const std::string& host_private_key,
+    const std::string& hostname) {
   if (result != crostini::ConciergeClientResult::SUCCESS) {
     Respond(Error(
         base::StringPrintf("Error fetching crostini ssh keys: %d", result)));
@@ -709,21 +710,20 @@ void FileManagerPrivateMountCrostiniContainerFunction::SshKeysCallback(
   self_ = this;
 
   // Call to sshfs to mount.
-  // Path = sshfs://<username>@linuxhost:
+  // Path = sshfs://<username>@<hostname>:
   // Label = crostini_<cryptohome_id>_<vm_name>_<container_name>
   Profile* profile = Profile::FromBrowserContext(browser_context());
-  std::string host = "linuxhost";
   std::string port = "2222";
   source_path_ = base::StringPrintf(
       "sshfs://%s@%s:", ContainerUserNameForProfile(profile).c_str(),
-      host.c_str());
+      hostname.c_str());
   mount_label_ = file_manager::util::GetCrostiniMountPointName(profile);
   std::vector<std::string> mount_options;
   std::string base64_known_hosts;
   std::string base64_identity;
   base::Base64Encode(host_private_key, &base64_identity);
   base::Base64Encode(
-      base::StringPrintf("[%s]:%s %s", host.c_str(), port.c_str(),
+      base::StringPrintf("[%s]:%s %s", hostname.c_str(), port.c_str(),
                          container_public_key.c_str()),
       &base64_known_hosts);
   mount_options.push_back("UserKnownHostsBase64=" + base64_known_hosts);

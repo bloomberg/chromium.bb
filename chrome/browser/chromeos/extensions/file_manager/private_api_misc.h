@@ -297,7 +297,8 @@ class FileManagerPrivateMountCrostiniContainerFunction
   void RestartCallback(crostini::ConciergeClientResult);
   void SshKeysCallback(crostini::ConciergeClientResult,
                        const std::string& container_public_key,
-                       const std::string& host_private_key);
+                       const std::string& host_private_key,
+                       const std::string& hostname);
 
   // DiskMountManager::Observer
   void OnMountEvent(chromeos::disks::DiskMountManager::MountEvent event,
