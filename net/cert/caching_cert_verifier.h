@@ -34,21 +34,6 @@ namespace net {
 class NET_EXPORT CachingCertVerifier : public CertVerifier,
                                        public CertDatabase::Observer {
  public:
-  // Visitor class to allow read-only inspection of the verification cache.
-  class NET_EXPORT CacheVisitor {
-   public:
-    virtual ~CacheVisitor() {}
-
-    // Called once for each entry in the cache, providing details about the
-    // cached entry.
-    // Returns true to continue iteration, or false to abort.
-    virtual bool VisitEntry(const RequestParams& params,
-                            int error,
-                            const CertVerifyResult& verify_result,
-                            base::Time verification_time,
-                            base::Time expiration_time) = 0;
-  };
-
   // Creates a CachingCertVerifier that will use |verifier| to perform the
   // actual verifications if they're not already cached or if the cached
   // item has expired.
@@ -75,13 +60,6 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
                 int error,
                 const CertVerifyResult& verify_result,
                 base::Time verification_time);
-
-  // Iterates through all of the non-expired entries in the cache, calling
-  // VisitEntry on |visitor| for each, until either all entries are
-  // iterated through or the |visitor| aborts.
-  // Note: During this call, it is not safe to call any non-const methods
-  // on the CachingCertVerifier.
-  void VisitEntries(CacheVisitor* visitor) const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, CacheHit);

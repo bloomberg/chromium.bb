@@ -5,7 +5,6 @@
 package org.chromium.net;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
@@ -394,42 +393,5 @@ public class BidirectionalStreamQuicTest {
         // Checks that detailed quic error code is not QUIC_NO_ERROR == 0.
         assertTrue("actual error " + quicException.getQuicDetailedErrorCode(),
                 0 < quicException.getQuicDetailedErrorCode());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"Cronet"})
-    @OnlyRunNativeCronet
-    // Test that certificate verify results are serialized and deserialized correctly.
-    public void testSerializeDeserialize() throws Exception {
-        setUp(QuicBidirectionalStreams.ENABLED);
-        String path = "/simple.txt";
-        String quicURL = QuicTestServer.getServerURL() + path;
-        TestBidirectionalStreamCallback callback = new TestBidirectionalStreamCallback();
-        BidirectionalStream stream =
-                mCronetEngine
-                        .newBidirectionalStreamBuilder(quicURL, callback, callback.getExecutor())
-                        .setHttpMethod("GET")
-                        .build();
-        stream.start();
-        callback.blockForDone();
-        assertTrue(stream.isDone());
-        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals("This is a simple text file served by QUIC.\n", callback.mResponseAsString);
-        assertEquals("quic/1+spdy/3", callback.mResponseInfo.getNegotiatedProtocol());
-
-        String serialized_data = mCronetEngine.getCertVerifierData(100);
-        assertFalse(serialized_data.isEmpty());
-
-        // Create a new builder and verify that the |serialized_data| is deserialized correctly.
-        ExperimentalCronetEngine.Builder builder =
-                new ExperimentalCronetEngine.Builder(getContext());
-        builder.enableQuic(true);
-        CronetTestUtil.setMockCertVerifierForTesting(
-                builder, QuicTestServer.createMockCertVerifier());
-        builder.setCertVerifierData(serialized_data);
-
-        String deserialized_data = builder.build().getCertVerifierData(100);
-        assertEquals(deserialized_data, serialized_data);
     }
 }

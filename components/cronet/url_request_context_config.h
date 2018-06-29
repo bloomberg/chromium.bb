@@ -108,9 +108,7 @@ struct URLRequestContextConfig {
       // Enable network quality estimator.
       bool enable_network_quality_estimator,
       // Enable bypassing of public key pinning for local trust anchors
-      bool bypass_public_key_pinning_for_local_trust_anchors,
-      // Certificate verifier cache data.
-      const std::string& cert_verifier_data);
+      bool bypass_public_key_pinning_for_local_trust_anchors);
   ~URLRequestContextConfig();
 
   // Configures |context_builder| based on |this|.
@@ -148,9 +146,6 @@ struct URLRequestContextConfig {
 
   // Enable public key pinning bypass for local trust anchors.
   const bool bypass_public_key_pinning_for_local_trust_anchors;
-
-  // Data to populte CertVerifierCache.
-  const std::string cert_verifier_data;
 
   // App-provided list of servers that support QUIC.
   std::vector<std::unique_ptr<QuicHint>> quic_hints;
@@ -244,9 +239,6 @@ struct URLRequestContextConfigBuilder {
 
   // Enable public key pinning bypass for local trust anchors.
   bool bypass_public_key_pinning_for_local_trust_anchors = true;
-
-  // Data to populate CertVerifierCache.
-  std::string cert_verifier_data = "";
 
  private:
   DISALLOW_COPY_AND_ASSIGN(URLRequestContextConfigBuilder);

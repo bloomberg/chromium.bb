@@ -569,9 +569,7 @@ TEST_F(StaleHostResolverTest, CreatedByContext) {
       // Enable network quality estimator.
       false,
       // Enable Public Key Pinning bypass for local trust anchors.
-      true,
-      // Certificate verifier cache data.
-      "");
+      true);
 
   net::URLRequestContextBuilder builder;
   net::NetLog net_log;

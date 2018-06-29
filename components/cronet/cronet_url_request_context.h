@@ -31,7 +31,6 @@ class TimeTicks;
 
 namespace net {
 enum EffectiveConnectionType;
-class CertVerifier;
 class NetLog;
 class ProxyConfigService;
 class URLRequestContext;
@@ -58,16 +57,6 @@ class CronetURLRequestContext {
 
     // Invoked on network thread immediately prior to destruction.
     virtual void OnDestroyNetworkThread() = 0;
-
-    // Invoked on network thread to initialze |cert_verifier| using
-    // |cert_verifier_data|.
-    virtual void OnInitCertVerifierData(
-        net::CertVerifier* cert_verifier,
-        const std::string& cert_verifier_data) = 0;
-
-    // Invoked on network thread to save |cert_verifier| data for use in
-    // OnInitCertVerifierData().
-    virtual void OnSaveCertVerifierData(net::CertVerifier* cert_verifier) = 0;
 
     // net::NetworkQualityEstimator::EffectiveConnectionTypeObserver forwarder.
     virtual void OnEffectiveConnectionTypeChanged(
@@ -137,10 +126,6 @@ class CronetURLRequestContext {
   // flush any remaining writes to disk.
   void StopNetLog();
 
-  // Posts a task to Network thread to get serialized results of certificate
-  // verifications of |context_|'s |cert_verifier|.
-  void GetCertVerifierData();
-
   // Default net::LOAD flags used to create requests.
   int default_load_flags() const;
 
@@ -183,10 +168,6 @@ class CronetURLRequestContext {
     // Runs a task that might depend on the context being initialized.
     void RunTaskAfterContextInit(
         base::OnceClosure task_to_run_after_context_init);
-
-    // Serializes results of certificate verifications of |context_|'s
-    // |cert_verifier|.
-    void GetCertVerifierData();
 
     // Configures the network quality estimator to observe requests to
     // localhost, to use smaller responses when estimating throughput, and to

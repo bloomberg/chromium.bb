@@ -92,7 +92,6 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     private String mExperimentalOptions;
     protected long mMockCertVerifier;
     private boolean mNetworkQualityEstimatorEnabled;
-    private String mCertVerifierData;
     private int mThreadPriority = INVALID_THREAD_PRIORITY;
 
     /**
@@ -377,19 +376,9 @@ public abstract class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     }
 
     @Override
-    public CronetEngineBuilderImpl setCertVerifierData(String certVerifierData) {
-        mCertVerifierData = certVerifierData;
-        return this;
-    }
-
-    @Override
     public CronetEngineBuilderImpl enableNetworkQualityEstimator(boolean value) {
         mNetworkQualityEstimatorEnabled = value;
         return this;
-    }
-
-    String certVerifierData() {
-        return mCertVerifierData;
     }
 
     @Override
