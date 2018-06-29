@@ -43,9 +43,13 @@ class WebContents;
     API_AVAILABLE(macos(10.12.2));
 
 - (void)webContentsTextSelectionChanged:(NSString*)text
+                                  range:(NSRange)range
     API_AVAILABLE(macos(10.12.2));
 
-- (void)requestSuggestionsForText:(NSString*)text API_AVAILABLE(macos(10.12.2));
+- (void)webContentsFinishedLoading API_AVAILABLE(macos(10.12.2));
+
+- (void)requestSuggestionsForText:(NSString*)text
+                          inRange:(NSRange)range API_AVAILABLE(macos(10.12.2));
 
 - (void)replaceSelectedText:(NSString*)text;
 
@@ -60,6 +64,8 @@ class WebContents;
 - (WebTextfieldTouchBarController*)controller;
 - (void)setWebContents:(content::WebContents*)webContents;
 - (content::WebContents*)webContents;
+- (void)setSelectionRange:(NSRange)range;
+- (NSRange)selectionRange;
 
 @end
 
