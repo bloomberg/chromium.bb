@@ -9,6 +9,9 @@
  * its implementation of the tool tip that displays the current slider value.
  * This component fires a |immediate-value-changed| event while the dragging is
  * active. This event includes the immediate value of the slider.
+ *
+ * TODO (crbug.com/858882): this control should be replaced with a common
+ * control like settings-slider or cr-slider.
  */
 
 /**
@@ -51,11 +54,13 @@ Polymer({
     /** True when the user is dragging the slider knob. */
     dragging: {type: Boolean, value: false, readOnly: true},
 
-    /** If true, the knob is expanded. */
-    expand: {type: Boolean, value: false, readOnly: true},
-
     /** @type {number} The index for the current slider value in |ticks|. */
-    index: {type: Number, value: 0, readOnly: true},
+    index: {
+      type: Number,
+      value: 0,
+      readOnly: true,
+      observer: 'onIndexChanged_',
+    },
 
     /** @type {string} The label for the minimum slider value */
     minLabel: {type: String, value: ''},
@@ -84,15 +89,32 @@ Polymer({
      * array contains a value and the label corresponding to that value.
      * @type {SliderTicks}
      */
-    ticks: {type: Array, value: []},
+    ticks: {
+      type: Array,
+      value: () => [],
+    },
+
+    /** @private */
+    holdDown_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
   },
 
-  listeners: {},
+  listeners: {
+    'blur': 'onBlur_',
+    'focus': 'onFocus_',
+    'keydown': 'onKeyDown_',
+    'pointerdown': 'onPointerDown_',
+    'pointerup': 'onPointerUp_',
+  },
 
   observers: [
-    'updateIndex_(pref.value)', 'updateKnobAndLabel_(index, disabled)',
-    'updateSliderParams_(ticks.*)', 'updateMarkers_(min, max)',
-    'updateDisabled_(ticks.*, pref.*)'
+    'updateIndex_(pref.value)',
+    'updateSliderParams_(ticks)',
+    'updateMarkers_(min, max)',
+    'updateDisabled_(ticks, pref.*)',
   ],
 
   hostAttributes: {role: 'slider', tabindex: 0},
@@ -103,14 +125,73 @@ Polymer({
     'up': 'increment_',
     'down': 'decrement_',
     'pagedown home': 'resetToMinIndex_',
-    'pageup end': 'resetToMaxIndex_'
+    'pageup end': 'resetToMaxIndex_',
   },
+
+  /** @private {boolean} */
+  usedMouse_: false,
 
   get _isRTL() {
     if (this.__isRTL === undefined) {
       this.__isRTL = window.getComputedStyle(this)['direction'] === 'rtl';
     }
     return this.__isRTL;
+  },
+
+  /** @private */
+  setRippleHoldDown_: function(holdDown) {
+    this.ensureRipple();
+    this._ripple.holdDown = holdDown;
+    this.holdDown_ = holdDown;
+  },
+
+  /** @private */
+  onFocus_: function() {
+    this.setRippleHoldDown_(true);
+  },
+
+  /** @private */
+  onBlur_: function() {
+    this.setRippleHoldDown_(false);
+  },
+
+  /** @private */
+  onChange_: function() {
+    this.setRippleHoldDown_(!this.usedMouse_);
+    this.usedMouse_ = false;
+  },
+
+  /** @private */
+  onKeyDown_: function() {
+    this.usedMouse_ = false;
+    if (!this.disabled)
+      this.onFocus_();
+  },
+
+  /**
+   * @param {!MouseEvent} event
+   * @private
+   */
+  onPointerDown_: function(event) {
+    if (this.disabled || event.button != 0) {
+      event.preventDefault();
+      return;
+    }
+    this.usedMouse_ = true;
+    this.setRippleHoldDown_(false);
+    setTimeout(() => {
+      this.setRippleHoldDown_(true);
+    });
+  },
+
+  /**
+   * @param {!MouseEvent} event
+   * @private
+   */
+  onPointerUp_: function(event) {
+    if (event.button != 0)
+      return;
+    this.setRippleHoldDown_(false);
   },
 
   /**
@@ -144,6 +225,7 @@ Polymer({
     newIndex = this.clampToRange_(newIndex, this.min, this.max);
     if (this.ticks[newIndex].value != this.pref.value)
       this.set('pref.value', this.ticks[newIndex].value);
+    this.onChange_();
   },
 
   /**
@@ -178,27 +260,6 @@ Polymer({
   },
 
   /**
-   * Overrides _focusChanged from PaperInkyFocusBehavior to create a ripple only
-   * on a focus received via a keyboard. Hide the ripple when the focus was not
-   * triggered via a keyboard event.
-   * @private
-   */
-  _focusedChanged: function(receivedFocusFromKeyboard) {
-    if (receivedFocusFromKeyboard) {
-      this.ensureRipple();
-    }
-    if (this.hasRipple()) {
-      // note, ripple must be un-hidden prior to setting `holdDown`
-      if (receivedFocusFromKeyboard) {
-        this._ripple.style.display = '';
-      } else {
-        this._ripple.style.display = 'none';
-      }
-      this._ripple.holdDown = receivedFocusFromKeyboard;
-    }
-  },
-
-  /**
    * Returns a string concatenated list of class names based on whether the
    * corresponding properties are set.
    * @return {string}
@@ -206,7 +267,6 @@ Polymer({
   getClassNames_: function() {
     return this.mergeClasses_({
       disabled: this.disabled,
-      expand: this.expand,
       dragging: this.dragging,
     });
   },
@@ -249,26 +309,11 @@ Polymer({
   },
 
   /**
-   * Handles the mouse down event for the slider knob.
-   * @private
-   */
-  knobDown_: function(event) {
-    this._setExpand(true);
-
-    // cancel selection
-    event.preventDefault();
-
-    // Without this the paper ripple is displayed on click.
-    this.focus();
-  },
-
-  /**
    * Handles the mouse drag and drop event for slider knob from start to end.
    * @param {Event} event
    * @private
    */
   knobTrack_: function(event) {
-    event.stopPropagation();
     switch (event.detail.state) {
       case 'start':
         this.knobTrackStart_();
@@ -383,23 +428,6 @@ Polymer({
       this.clampIndexAndUpdatePref_(this.index);
   },
 
-  /**
-   * Handles the event of the mouse moving out of the slider container.
-   * @private
-   */
-  onMouseOut_: function() {
-    // This is needed to hide the label after the user has clicked on the slider
-    this.blur();
-  },
-
-  /**
-   * Resets the knob back to its default state.
-   * @private
-   */
-  resetKnob_: function() {
-    this._setExpand(false);
-  },
-
   /** @private Handles the 'right' key press. */
   rightKeyPress_: function() {
     this._isRTL ? this.decrement_() : this.increment_();
@@ -413,22 +441,6 @@ Polymer({
   /** @private Handles the 'home' and 'page down' key press. */
   resetToMinIndex_: function() {
     this.clampIndexAndUpdatePref_(this.min);
-  },
-
-  /**
-   * Returs true if the label needs to be displayed to the user. If the |label|
-   * field for the current selected slider tick represented by |index| is not
-   * set, then this returns false.
-   * @param {SliderTicks} ticks Info related to the slider ticks.
-   * @param {number} index Index of the current selected slider value.
-   * @return {boolean}
-   */
-  shouldShowLabel_: function(ticks, index) {
-    if (!ticks || ticks.length == 0)
-      return false;
-    if (index < 0 || index >= ticks.length)
-      return false;
-    return (!!ticks[index].label && ticks[index].label.length != 0);
   },
 
   /**
@@ -475,12 +487,7 @@ Polymer({
    * Updates the knob position based on the the value of progress indicator.
    * @private
    */
-  updateKnobAndLabel_: function() {
-    if (this.disabled) {
-      this.$.sliderKnob.style.left = '0%';
-      this.$.label.style.left = '0%';
-      return;
-    }
+  onIndexChanged_: function() {
     this._setRatio(this._calcRatio(this.index) * 100);
 
     this.$.sliderKnob.style.left = this.ratio + '%';
