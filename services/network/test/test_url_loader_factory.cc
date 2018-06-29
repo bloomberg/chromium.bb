@@ -133,9 +133,10 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
 void TestURLLoaderFactory::SimulateResponse(
     TestURLLoaderFactory::PendingRequest request,
     std::string content,
-    int net_error) {
-  network::URLLoaderCompletionStatus status(net::OK);
-  ResourceResponseHead head = CreateResourceResponseHead(net::HTTP_OK);
+    int net_error,
+    net::HttpStatusCode http_status) {
+  network::URLLoaderCompletionStatus status(net_error);
+  ResourceResponseHead head = CreateResourceResponseHead(http_status);
   status.decoded_body_length = content.size();
   SimulateResponseImpl(request.client.get(), TestURLLoaderFactory::Redirects(),
                        head, content, status);
