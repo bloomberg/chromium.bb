@@ -137,7 +137,6 @@ class SyncableFileOperationRunnerTest : public testing::Test {
     SCOPED_TRACE(testing::Message() << location.ToString());
     EXPECT_EQ(expect, status);
     ++callback_count_;
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
   }
 
   bool CreateTempFile(base::FilePath* path) {
@@ -409,7 +408,7 @@ TEST_F(SyncableFileOperationRunnerTest, Cancel) {
           URL(kFile), 10, ExpectStatus(FROM_HERE, File::FILE_OK));
   file_system_.operation_runner()->Cancel(
       id, ExpectStatus(FROM_HERE, File::FILE_ERROR_INVALID_OPERATION));
-  base::RunLoop().Run();
+  content::RunAllTasksUntilIdle();
   EXPECT_EQ(2, callback_count_);
 }
 
