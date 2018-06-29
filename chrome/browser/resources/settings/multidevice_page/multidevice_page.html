@@ -8,24 +8,25 @@
 <link rel="import" href="../i18n_setup.html">
 <link rel="import" href="../settings_shared_css.html">
 <link rel="import" href="multidevice_browser_proxy.html">
+<link rel="import" href="multidevice_constants.html">
 
 <dom-module id="settings-multidevice-page">
   <template>
     <style include="settings-shared"></style>
     <div class="settings-box two-line first">
       <div class="start">
-        [[getLabelText_(mode)]]
-        <div class="secondary" id="multideviceSummary"
-            inner-h-t-m-l="[[getSubLabelInnerHtml_(mode)]]">
+        <div id="multidevice-label">[[getLabelText_(pageContentData)]]</div>
+        <div class="secondary"
+            inner-h-t-m-l="[[getSubLabelInnerHtml_(pageContentData)]]">
         </div>
       </div>
       <div class="separator"></div>
-      <template is="dom-if" if="[[showButton_(mode)]]" restamp>
+      <template is="dom-if" if="[[showButton_(pageContentData)]]" restamp>
         <paper-button class="secondary-button" on-click="handleClick_">
-          [[getButtonText_(mode)]]
+          [[getButtonText_(pageContentData)]]
         </paper-button>
       </template>
-      <template is="dom-if" if="[[showToggle_(mode)]]" restamp>
+      <template is="dom-if" if="[[showToggle_(pageContentData)]]" restamp>
         <cr-toggle></cr-toggle>
       </template>
     </div>

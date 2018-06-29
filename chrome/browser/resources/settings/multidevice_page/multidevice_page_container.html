@@ -1,11 +1,14 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
+<link rel="import" href="chrome://resources/html/cr.html">
+<link rel="import" href="multidevice_constants.html">
 <link rel="import" href="multidevice_page.html">
 
 <dom-module id="settings-multidevice-page-container">
   <template>
     <template is="dom-if" if="[[doesPotentialConnectedPhoneExist]]" restamp>
-      <settings-multidevice-page prefs="[[prefs]]" mode="[[mode_]]">
+      <settings-multidevice-page prefs="[[prefs]]"
+          page-content-data="[[pageContentData_]]">
       </settings-multidevice-page>
     </template>
   </template>

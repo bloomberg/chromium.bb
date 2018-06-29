@@ -1299,6 +1299,12 @@
         <structure name="IDR_SETTINGS_MULTIDEVICE_BROWSER_PROXY_JS"
                    file="multidevice_page/multidevice_browser_proxy.js"
                    type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_CONSTANTS_HTML"
+                   file="multidevice_page/multidevice_constants.html"
+                   type="chrome_html" />
+        <structure name="IDR_SETTINGS_MULTIDEVICE_CONSTANTS_JS"
+                   file="multidevice_page/multidevice_constants.js"
+                   type="chrome_html" />
         <structure name="IDR_SETTINGS_MULTIDEVICE_PAGE_HTML"
                    file="multidevice_page/multidevice_page.html"
                    type="chrome_html" />

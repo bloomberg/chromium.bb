@@ -13,6 +13,8 @@
  * the data retrieved from the browser proxy (i.e. the mode_ property).
  */
 
+cr.exportPath('settings');
+
 Polymer({
   is: 'settings-multidevice-page-container',
 
@@ -23,9 +25,8 @@ Polymer({
       notify: true,
     },
 
-    // TODO(jordynass): Set this based on data retrieved by browser proxy.
-    /** @type {settings.MultiDeviceSettingsMode} */
-    mode_: Number,
+    /** @type {MultiDevicePageContentData} */
+    pageContentData_: Object,
 
     /**
      * Whether a phone was found on the account that is either connected to the
@@ -35,13 +36,45 @@ Polymer({
     doesPotentialConnectedPhoneExist: {
       notify: true,
       type: Boolean,
-      computed: 'computeDoesPotentialConnectedPhoneExist(mode_)',
+      computed: 'computeDoesPotentialConnectedPhoneExist(pageContentData_)',
     },
   },
 
   /** @override */
   ready: function() {
-    this.mode_ = settings.MultiDeviceSettingsMode.NO_HOST_SET;
+    this.onStatusChanged_({
+      mode: settings.MultiDeviceSettingsMode.NO_HOST_SET,
+      hostDevice: null,
+    });
+  },
+
+  // TODO(jordynass): Set this as a callback for the browser proxy once it is
+  // added
+  /**
+   * @param {!MultiDevicePageContentData} newData
+   * @private
+   */
+  onStatusChanged_: function(newData) {
+    if (!this.isStatusChangeValid_(newData)) {
+      console.error('Invalid status change');
+      return;
+    }
+    this.pageContentData_ = newData;
+  },
+
+  /**
+   * If the new mode corresponds to no eligible host or unset potential hosts
+   * (i.e. NO_ELIGIBLE_HOSTS or NO_HOST_SET), then newHostDevice should be null
+   * or undefined. Otherwise it should be defined and non-null.
+   * @param {!MultiDevicePageContentData} newData
+   * @private
+   */
+  isStatusChangeValid_: function(newData) {
+    const noHostModes = [
+      settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS,
+      settings.MultiDeviceSettingsMode.NO_HOST_SET,
+    ];
+    return !newData.hostDevice == noHostModes.includes(newData.mode);
   },
 
   /**
@@ -49,6 +82,8 @@ Polymer({
    * @private
    */
   computeDoesPotentialConnectedPhoneExist: function() {
-    return this.mode_ != settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
+    return !!this.pageContentData_ &&
+        this.pageContentData_.mode !=
+        settings.MultiDeviceSettingsMode.NO_ELIGIBLE_HOSTS;
   },
 });
