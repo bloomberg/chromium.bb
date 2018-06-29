@@ -7,6 +7,7 @@
 import json
 import logging
 import os
+import re
 import shutil
 
 import archive
@@ -31,7 +32,7 @@ _NODE_SYMBOL_SIZE_KEY = 'value'
 _NODE_MAX_DEPTH_KEY = 'maxDepth'
 _NODE_LAST_PATH_ELEMENT_KEY = 'lastPathElement'
 
-_COMPACT_FILE_PATH_INDEX_KEY = 'p'
+_COMPACT_FILE_PATH_KEY = 'p'
 _COMPACT_FILE_COMPONENT_INDEX_KEY = 'c'
 _COMPACT_FILE_SYMBOLS_KEY = 's'
 _COMPACT_SYMBOL_NAME_KEY = 'n'
@@ -51,6 +52,11 @@ _SYMBOL_TYPE_DESCRIPTIONS = {
   'P': 'Non-Locale Pak Entries',
   'o': 'Other Entries',
 }
+
+# Capture one of: "::", "../", "./", "/", "#"
+_SPECIAL_CHAR_REGEX = re.compile(r'(::|(?:\.*\/)+|#)')
+# Insert zero-width space after capture group
+_ZERO_WIDTH_SPACE = r'\1\u200b'
 
 # The display name of the bucket where we put symbols without path.
 _NAME_SMALL_SYMBOL_BUCKET = '(Other)'
@@ -229,16 +235,14 @@ def _MakeTreeViewList(symbols, min_symbol_size):
     min_symbol_size: The minimum byte size needed for a symbol to be included.
   """
   file_nodes = {}
-  source_paths = IndexedSet()
   components = IndexedSet()
 
   # Build a container for symbols smaller than min_symbol_size
   small_symbols = {}
   small_file_node = None
   if min_symbol_size > 0:
-    path_index = source_paths.GetOrAdd(_NAME_SMALL_SYMBOL_BUCKET)
     small_file_node = {
-      _COMPACT_FILE_PATH_INDEX_KEY: path_index,
+      _COMPACT_FILE_PATH_KEY: _NAME_SMALL_SYMBOL_BUCKET,
       _COMPACT_FILE_COMPONENT_INDEX_KEY: components.GetOrAdd(''),
       _COMPACT_FILE_SYMBOLS_KEY: [],
     }
@@ -248,23 +252,28 @@ def _MakeTreeViewList(symbols, min_symbol_size):
   # and add all the file buckets into file_nodes
   for symbol in symbols:
     symbol_type = _GetSymbolType(symbol)
-    symbol_size = symbol.pss
+    symbol_size = round(symbol.pss, 2)
+    if symbol_size.is_integer():
+      symbol_size = int(symbol_size)
     if abs(symbol_size) >= min_symbol_size or symbol_type == 'm':
       path = symbol.source_path or symbol.object_path
       file_node = file_nodes.get(path)
       if file_node is None:
-        path_index = source_paths.GetOrAdd(path)
         component_index = components.GetOrAdd(symbol.component)
 
         file_node = {
-          _COMPACT_FILE_PATH_INDEX_KEY: path_index,
+          _COMPACT_FILE_PATH_KEY: path,
           _COMPACT_FILE_COMPONENT_INDEX_KEY: component_index,
           _COMPACT_FILE_SYMBOLS_KEY: [],
         }
         file_nodes[path] = file_node
 
+      # Insert zero-width spaces after certain characters to indicate to the
+      # browser it could add a line break there on small screen sizes.
+      symbol_name = _SPECIAL_CHAR_REGEX.sub(_ZERO_WIDTH_SPACE,
+                                            symbol.template_name)
       file_node[_COMPACT_FILE_SYMBOLS_KEY].append({
-        _COMPACT_SYMBOL_NAME_KEY: symbol.template_name,
+        _COMPACT_SYMBOL_NAME_KEY: symbol_name,
         _COMPACT_SYMBOL_TYPE_KEY: symbol_type,
         _COMPACT_SYMBOL_BYTE_SIZE_KEY: symbol_size,
       })
@@ -286,7 +295,6 @@ def _MakeTreeViewList(symbols, min_symbol_size):
 
   return {
     'file_nodes': list(file_nodes.values()),
-    'source_paths': source_paths.value_list,
     'components': components.value_list,
   }
 
