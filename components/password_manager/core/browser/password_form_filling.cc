@@ -117,8 +117,8 @@ void SendFillInformationToRenderer(
 
   if (is_blacklisted)
     driver->MatchingBlacklistedFormFound();
-
-  driver->AllowPasswordGenerationForForm(observed_form);
+  else
+    driver->AllowPasswordGenerationForForm(observed_form);
 
   if (best_matches.empty()) {
     driver->InformNoSavedCredentials();
