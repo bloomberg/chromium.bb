@@ -8842,12 +8842,12 @@ static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     *rd_stats = best_rd_stats;
     *rd_stats_y = best_rd_stats_y;
     *rd_stats_uv = best_rd_stats_uv;
-    ret_val = best_ret_val;
     *mbmi = best_mbmi;
     assert(IMPLIES(mbmi->comp_group_idx == 1,
                    mbmi->interinter_comp.type != COMPOUND_AVERAGE));
     memcpy(x->blk_skip, best_blk_skip,
            sizeof(best_blk_skip[0]) * xd->n8_h * xd->n8_w);
+    return RDCOST(x->rdmult, rd_stats->rate, rd_stats->dist);
   }
   if (early_terminate == INT64_MAX) return INT64_MAX;
   if (ret_val != 0) return ret_val;
