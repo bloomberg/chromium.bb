@@ -114,7 +114,8 @@ TEST_F(PasswordFormFillingTest, Autofill) {
     another_saved_match.password_value += ASCIIToUTF16("1");
     best_matches[another_saved_match.username_value] = &another_saved_match;
 
-    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form_));
+    EXPECT_CALL(driver_, AllowPasswordGenerationForForm(observed_form_))
+        .Times(is_blacklisted ? 0 : 1);
     EXPECT_CALL(driver_, InformNoSavedCredentials()).Times(0);
     PasswordFormFillData fill_data;
     EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));

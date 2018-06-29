@@ -4409,11 +4409,12 @@ TEST_F(PasswordFormManagerTest, TestUkmContextMetrics) {
 }
 
 TEST_F(PasswordFormManagerTest,
-       TestSendNotBlacklistedMessage_BlacklistedCredentials) {
+       TestNotSendNotBlacklistedMessage_BlacklistedCredentials) {
   // Signing up on a previously visited site. Credentials are found in the
   // password store, but they are blacklisted. AllowPasswordGenerationForForm
-  // is still called.
-  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_));
+  // is not called.
+  EXPECT_CALL(*(client()->mock_driver()), AllowPasswordGenerationForForm(_))
+      .Times(0);
   PasswordForm simulated_result = CreateSavedMatch(true);
   fake_form_fetcher()->SetNonFederated({&simulated_result}, 0u);
 }
