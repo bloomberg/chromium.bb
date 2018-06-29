@@ -4,8 +4,8 @@
 
 #include "services/device/geolocation/public_ip_address_location_notifier.h"
 
-#include "device/geolocation/wifi_data.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
+#include "services/device/geolocation/wifi_data.h"
 
 namespace device {
 

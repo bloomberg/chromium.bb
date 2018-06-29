@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/wifi_polling_policy.h"
+#include "services/device/geolocation/wifi_polling_policy.h"
 
 #include <memory>
 

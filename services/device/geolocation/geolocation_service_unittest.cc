@@ -8,11 +8,11 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/network/geolocation_handler.h"
 #endif
-#include "device/geolocation/geolocation_provider_impl.h"
-#include "device/geolocation/network_location_request.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "services/device/device_service_test_base.h"
+#include "services/device/geolocation/geolocation_provider_impl.h"
+#include "services/device/geolocation/network_location_request.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_config.mojom.h"

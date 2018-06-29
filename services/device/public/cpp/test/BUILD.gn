@@ -8,6 +8,8 @@ source_set("test_support") {
   sources = [
     "fake_sensor_and_provider.cc",
     "fake_sensor_and_provider.h",
+    "scoped_geolocation_overrider.cc",
+    "scoped_geolocation_overrider.h",
     "test_wake_lock_provider.cc",
     "test_wake_lock_provider.h",
   ]
@@ -15,6 +17,7 @@ source_set("test_support") {
   public_deps = [
     "//base",
     "//services/device/public/cpp/generic_sensor",
+    "//services/device/public/cpp/geolocation",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
   ]

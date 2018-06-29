@@ -13,8 +13,8 @@
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
 #include "content/public/test/browser_test_utils.h"
-#include "device/geolocation/public/cpp/scoped_geolocation_overrider.h"
 #include "net/dns/mock_host_resolver.h"
+#include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 
 class PermissionDelegationBrowserTest : public InProcessBrowserTest {
  public:

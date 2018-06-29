@@ -7,7 +7,6 @@ include_rules = [
   "+content/shell/android",
   # Needed for device APIs implemented as Mojo services in Java.
   "+device",
-  "+device/geolocation/public/java",
   # Mojo is needed for Mojo service registry kept in the browser.
   "+mojo/android",
   # Needed for implementing Device Service public component in java.
