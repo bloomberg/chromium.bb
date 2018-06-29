@@ -7,6 +7,10 @@
 
 #include <windows.h>
 #include <setupapi.h>
+
+// LogSeverity is both a macro in setupapi.h and a typedef in base/logging.h
+#undef LogSeverity
+
 #include <winioctl.h>
 
 #include <memory>
