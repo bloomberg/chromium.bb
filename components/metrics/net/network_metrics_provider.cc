@@ -208,6 +208,8 @@ void NetworkMetricsProvider::ProvideSystemProfileMetrics(
   // window, since OnConnectionTypeChanged() ignores transitions to the "none"
   // state.
   connection_type_ = net::NetworkChangeNotifier::GetConnectionType();
+  if (connection_type_ != net::NetworkChangeNotifier::CONNECTION_UNKNOWN)
+    network_change_notifier_initialized_ = true;
   // Reset the "ambiguous" flags, since a new metrics log session has started.
   connection_type_is_ambiguous_ = false;
   wifi_phy_layer_protocol_is_ambiguous_ = false;
