@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "components/user_manager/user_manager.h"
@@ -24,6 +25,9 @@ class LoginDisplayMojo : public LoginDisplay,
  public:
   explicit LoginDisplayMojo(LoginDisplayHostMojo* host);
   ~LoginDisplayMojo() override;
+
+  // Updates the state of the PIN keyboard.
+  void UpdatePinKeyboardState(const AccountId& account_id);
 
   // LoginDisplay:
   void ClearAndEnablePassword() override;
@@ -71,8 +75,12 @@ class LoginDisplayMojo : public LoginDisplay,
   void OnUserImageChanged(const user_manager::User& user) override;
 
  private:
+  void OnPinCanAuthenticate(const AccountId& account_id, bool can_authenticate);
+
   LoginDisplayHostMojo* const host_ = nullptr;  // Unowned.
   LoginDisplayWebUIHandler* webui_handler_ = nullptr;
+
+  base::WeakPtrFactory<LoginDisplayMojo> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginDisplayMojo);
 };

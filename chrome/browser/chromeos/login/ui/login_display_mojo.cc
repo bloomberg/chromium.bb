@@ -6,6 +6,8 @@
 
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
+#include "chrome/browser/chromeos/login/existing_user_controller.h"
+#include "chrome/browser/chromeos/login/quick_unlock/pin_backend.h"
 #include "chrome/browser/chromeos/login/screens/chrome_user_selection_screen.h"
 #include "chrome/browser/chromeos/login/screens/user_selection_screen.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_mojo.h"
@@ -23,12 +25,19 @@
 
 namespace chromeos {
 
-LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host) : host_(host) {
+LoginDisplayMojo::LoginDisplayMojo(LoginDisplayHostMojo* host)
+    : host_(host), weak_factory_(this) {
   user_manager::UserManager::Get()->AddObserver(this);
 }
 
 LoginDisplayMojo::~LoginDisplayMojo() {
   user_manager::UserManager::Get()->RemoveObserver(this);
+}
+
+void LoginDisplayMojo::UpdatePinKeyboardState(const AccountId& account_id) {
+  quick_unlock::PinBackend::GetInstance()->CanAuthenticate(
+      account_id, base::BindOnce(&LoginDisplayMojo::OnPinCanAuthenticate,
+                                 weak_factory_.GetWeakPtr(), account_id));
 }
 
 void LoginDisplayMojo::ClearAndEnablePassword() {}
@@ -63,6 +72,13 @@ void LoginDisplayMojo::Init(const user_manager::UserList& filtered_users,
   client->login_screen()->LoadUsers(
       user_selection_screen->UpdateAndReturnUserListForMojo(), show_guest);
   user_selection_screen->SetUsersLoaded(true /*loaded*/);
+
+  // Enable pin for any users who can use it.
+  if (user_manager::UserManager::IsInitialized()) {
+    for (const user_manager::User* user : filtered_users) {
+      UpdatePinKeyboardState(user->GetAccountId());
+    }
+  }
 }
 
 void LoginDisplayMojo::OnPreferencesChanged() {
@@ -247,6 +263,12 @@ void LoginDisplayMojo::OnUserImageChanged(const user_manager::User& user) {
   LoginScreenClient::Get()->login_screen()->SetAvatarForUser(
       user.GetAccountId(),
       UserSelectionScreen::BuildMojoUserAvatarForUser(&user));
+}
+
+void LoginDisplayMojo::OnPinCanAuthenticate(const AccountId& account_id,
+                                            bool can_authenticate) {
+  LoginScreenClient::Get()->login_screen()->SetPinEnabledForUser(
+      account_id, can_authenticate);
 }
 
 }  // namespace chromeos
