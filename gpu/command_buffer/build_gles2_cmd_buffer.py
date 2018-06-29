@@ -2973,6 +2973,7 @@ _FUNCTION_INFO = {
     'expectation': False,
     'extension': True,
     'trace_level': 1,
+    'trace_queueing_flow': True,
   },
   'SwapBuffersWithBoundsCHROMIUM': {
     'type': 'PUTn',

@@ -4511,6 +4511,11 @@ error::Error GLES2DecoderImpl::HandleSwapBuffers(
                        "flags GL_INVALID_VALUE");
     return error::kNoError;
   }
+  if (c.trace_id) {
+    TRACE_EVENT_WITH_FLOW0(TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue"),
+                           "CommandBufferQueue", c.trace_id,
+                           TRACE_EVENT_FLAG_FLOW_IN);
+  }
   DoSwapBuffers(swap_id, flags);
   return error::kNoError;
 }

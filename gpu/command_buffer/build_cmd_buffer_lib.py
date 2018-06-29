@@ -969,6 +969,10 @@ class TypeHandler(object):
       for cmd_type, name in arg.GetArgDecls():
         f.write("  %s %s;\n" % (cmd_type, name))
         total_args += 1
+    trace_queue = func.GetInfo('trace_queueing_flow', False)
+    if trace_queue:
+      f.write("  uint32_t trace_id;\n")
+      total_args += 1
 
     consts = func.GetCmdConstants()
     for const in consts:
@@ -1123,6 +1127,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     self.WriteHandlerDeferReadWrite(func, f);
     self.WriteServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
+    func.WriteQueueTraceEvent(f)
     func.WriteHandlerImplementation(f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
@@ -1135,6 +1140,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     self.WriteHandlerDeferReadWrite(func, f);
     self.WriteImmediateServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
+    func.WriteQueueTraceEvent(f)
     func.WriteHandlerImplementation(f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
@@ -1147,6 +1153,7 @@ static_assert(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
     self.WriteHandlerDeferReadWrite(func, f);
     self.WriteBucketServiceHandlerArgGetCode(func, f)
     func.WriteHandlerValidation(f)
+    func.WriteQueueTraceEvent(f)
     func.WriteHandlerImplementation(f)
     f.write("  return error::kNoError;\n")
     f.write("}\n")
@@ -5882,6 +5889,13 @@ class Function(object):
       arg.WriteValidationCode(f, self)
     self.WriteValidationCode(f)
 
+  def WriteQueueTraceEvent(self, f):
+    if self.GetInfo("trace_queueing_flow", False):
+      trace = 'TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue")'
+      f.write("""if (c.trace_id) {
+          TRACE_EVENT_WITH_FLOW0(%s, "CommandBufferQueue",
+          c.trace_id, TRACE_EVENT_FLAG_FLOW_IN);\n}""" % trace)
+
   def WritePassthroughHandlerValidation(self, f):
     """Writes validation code for the function."""
     for arg in self.GetOriginalArgs():
@@ -5897,19 +5911,12 @@ class Function(object):
 
   def WriteCmdFlag(self, f):
     """Writes the cmd cmd_flags constant."""
-    flags = []
     # By default trace only at the highest level 3.
     trace_level = int(self.GetInfo('trace_level', default = 3))
     if trace_level not in xrange(0, 4):
       raise KeyError("Unhandled trace_level: %d" % trace_level)
 
-    flags.append('CMD_FLAG_SET_TRACE_LEVEL(%d)' % trace_level)
-
-    if len(flags) > 0:
-      cmd_flags = ' | '.join(flags)
-    else:
-      cmd_flags = 0
-
+    cmd_flags = ('CMD_FLAG_SET_TRACE_LEVEL(%d)' % trace_level)
     f.write("  static const uint8_t cmd_flags = %s;\n" % cmd_flags)
 
 
@@ -5939,7 +5946,17 @@ class Function(object):
     args = self.GetCmdArgs()
     for arg in args:
       arg.WriteSetCode(f, 4, '_%s' % arg.name)
-    f.write("  }\n")
+    if self.GetInfo("trace_queueing_flow", False):
+      trace = 'TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue")'
+      f.write('bool is_tracing = false;')
+      f.write('TRACE_EVENT_CATEGORY_GROUP_ENABLED(%s, &is_tracing);' % trace)
+      f.write('if (is_tracing) {')
+      f.write('  trace_id = base::RandUint64();')
+      f.write('TRACE_EVENT_WITH_FLOW1(%s, "CommandBufferQueue",' % trace)
+      f.write('trace_id, TRACE_EVENT_FLAG_FLOW_OUT,')
+      f.write('"command", "%s");' % self.name)
+      f.write('} else {\n  trace_id = 0;\n}\n');
+    f.write("}\n")
     f.write("\n")
 
   def WriteCmdSet(self, f):

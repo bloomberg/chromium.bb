@@ -11753,6 +11753,17 @@ struct SwapBuffers {
     GLES2Util::MapUint64ToTwoUint32(static_cast<uint64_t>(_swap_id), &swap_id_0,
                                     &swap_id_1);
     flags = _flags;
+    bool is_tracing = false;
+    TRACE_EVENT_CATEGORY_GROUP_ENABLED(
+        TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue"), &is_tracing);
+    if (is_tracing) {
+      trace_id = base::RandUint64();
+      TRACE_EVENT_WITH_FLOW1(
+          TRACE_DISABLED_BY_DEFAULT("gpu_cmd_queue"), "CommandBufferQueue",
+          trace_id, TRACE_EVENT_FLAG_FLOW_OUT, "command", "SwapBuffers");
+    } else {
+      trace_id = 0;
+    }
   }
 
   void* Set(void* cmd, GLuint64 _swap_id, GLbitfield _flags) {
@@ -11769,9 +11780,10 @@ struct SwapBuffers {
   uint32_t swap_id_0;
   uint32_t swap_id_1;
   uint32_t flags;
+  uint32_t trace_id;
 };
 
-static_assert(sizeof(SwapBuffers) == 16, "size of SwapBuffers should be 16");
+static_assert(sizeof(SwapBuffers) == 20, "size of SwapBuffers should be 20");
 static_assert(offsetof(SwapBuffers, header) == 0,
               "offset of SwapBuffers header should be 0");
 static_assert(offsetof(SwapBuffers, swap_id_0) == 4,
