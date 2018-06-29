@@ -149,13 +149,13 @@ class CompositorDependencies {
             mojo::MakeRequest(&frame_sink_manager_client);
 
     // Setup HostFrameSinkManager with interface endpoints.
-    GetHostFrameSinkManager()->BindAndSetManager(
+    host_frame_sink_manager.BindAndSetManager(
         std::move(frame_sink_manager_client_request),
         base::ThreadTaskRunnerHandle::Get(), std::move(frame_sink_manager));
 
     // Set up a callback to automatically re-connect if we lose our
     // connection.
-    GetHostFrameSinkManager()->SetConnectionLostCallback(base::BindRepeating(
+    host_frame_sink_manager.SetConnectionLostCallback(base::BindRepeating(
         []() { CompositorDependencies::Get().CreateVizFrameSinkManager(); }));
 
     BrowserMainLoop::GetInstance()
@@ -196,6 +196,8 @@ class CompositorDependencies {
           /*shared_bitmap_manager=*/nullptr);
       surface_utils::ConnectWithLocalFrameSinkManager(
           &host_frame_sink_manager, frame_sink_manager_impl.get());
+    } else {
+      CreateVizFrameSinkManager();
     }
   }
 
@@ -625,12 +627,6 @@ CompositorImpl::CompositorImpl(CompositorClient* client,
       enable_viz_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       weak_factory_(this) {
-  // In Viz mode, we create the frame sink manager here. For some reason we
-  // can't do this in the CompositorDependencies constructor.
-  // TODO(ericrk): Investigate this.
-  if (enable_viz_)
-    CompositorDependencies::Get().CreateVizFrameSinkManager();
-
   GetHostFrameSinkManager()->RegisterFrameSinkId(frame_sink_id_, this);
   GetHostFrameSinkManager()->SetFrameSinkDebugLabel(frame_sink_id_,
                                                     "CompositorImpl");
