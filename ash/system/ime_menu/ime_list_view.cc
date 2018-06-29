@@ -63,6 +63,10 @@ class ImeListItemView : public ActionableView {
 
     // |id_label| contains the IME short name (e.g., 'US', 'GB', 'IT').
     views::Label* id_label = TrayPopupUtils::CreateDefaultLabel();
+    if (features::IsSystemTrayUnifiedEnabled()) {
+      id_label->SetEnabledColor(kUnifiedMenuTextColor);
+      id_label->SetAutoColorReadabilityEnabled(false);
+    }
     id_label->SetText(id);
     ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
     const gfx::FontList& base_font_list =

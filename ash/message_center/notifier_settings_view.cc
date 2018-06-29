@@ -253,6 +253,9 @@ class ScrollContentsView : public views::View {
 class EmptyNotifierView : public views::View {
  public:
   EmptyNotifierView() {
+    SkColor color = features::IsSystemTrayUnifiedEnabled()
+                        ? kUnifiedMenuTextColor
+                        : message_center_style::kEmptyViewColor;
     auto layout = std::make_unique<views::BoxLayout>(
         views::BoxLayout::kVertical, gfx::Insets(), 0);
     layout->set_main_axis_alignment(
@@ -262,16 +265,17 @@ class EmptyNotifierView : public views::View {
     SetLayoutManager(std::move(layout));
 
     views::ImageView* icon = new views::ImageView();
-    icon->SetImage(gfx::CreateVectorIcon(
-        kNotificationCenterEmptyIcon, message_center_style::kEmptyIconSize,
-        message_center_style::kEmptyViewColor));
+    icon->SetImage(gfx::CreateVectorIcon(kNotificationCenterEmptyIcon,
+                                         message_center_style::kEmptyIconSize,
+                                         color));
     icon->SetBorder(
         views::CreateEmptyBorder(message_center_style::kEmptyIconPadding));
     AddChildView(icon);
 
     views::Label* label = new views::Label(
         l10n_util::GetStringUTF16(IDS_ASH_MESSAGE_CENTER_NO_NOTIFIERS));
-    label->SetEnabledColor(message_center_style::kEmptyViewColor);
+    label->SetEnabledColor(color);
+    label->SetAutoColorReadabilityEnabled(false);
     label->SetSubpixelRenderingEnabled(false);
     // "Roboto-Medium, 12sp" is specified in the mock.
     label->SetFontList(
@@ -391,7 +395,9 @@ void NotifierSettingsView::NotifierButton::GridChanged() {
   if (!enabled()) {
     views::ImageView* policy_enforced_icon = new views::ImageView();
     policy_enforced_icon->SetImage(gfx::CreateVectorIcon(
-        kSystemMenuBusinessIcon, kEntryIconSize, gfx::kChromeIconGrey));
+        kSystemMenuBusinessIcon, kEntryIconSize,
+        features::IsSystemTrayUnifiedEnabled() ? kUnifiedMenuIconColor
+                                               : gfx::kChromeIconGrey));
     cs->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0, GridLayout::FIXED,
                   kEntryIconSize, 0);
     layout->AddView(policy_enforced_icon);
