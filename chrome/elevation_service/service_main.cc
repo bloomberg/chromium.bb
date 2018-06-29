@@ -63,6 +63,9 @@ HRESULT ServiceMain::RegisterClassObjects() {
   auto& module = Microsoft::WRL::Module<Microsoft::WRL::OutOfProc>::Create(
       this, &ServiceMain::SignalExit);
 
+  // Register the Elevator class factories.
+  RegisterElevatorFactories();
+
   // We hand-register a unique CLSID for each Chrome channel.
   Microsoft::WRL::ComPtr<IUnknown> factory;
   unsigned int flags = Microsoft::WRL::ModuleType::OutOfProc;
@@ -109,6 +112,9 @@ void ServiceMain::UnregisterClassObjects() {
       module.UnregisterCOMObject(nullptr, cookies_, base::size(cookies_));
   if (FAILED(hr))
     LOG(ERROR) << "NotificationActivator unregistration failed; hr: " << hr;
+
+  // Unregister the Elevator class factories.
+  UnregisterElevatorFactories();
 }
 
 bool ServiceMain::IsExitSignaled() {
@@ -243,6 +249,29 @@ void ServiceMain::WaitForExitSignal() {
 
 void ServiceMain::SignalExit() {
   exit_signal_.Signal();
+}
+
+void ServiceMain::RegisterElevatorFactories() {
+  // Elevators will register their class factories here by calling
+  // RegisterElevatorFactory().
+}
+
+void ServiceMain::UnregisterElevatorFactories() {
+  factories_.clear();
+}
+
+void ServiceMain::RegisterElevatorFactory(const base::string16& id,
+                                          IClassFactory* factory) {
+  DCHECK(factory);
+  DCHECK(!base::ContainsKey(factories_, id));
+
+  factories_.emplace(id, factory);
+}
+
+Microsoft::WRL::ComPtr<IClassFactory> ServiceMain::GetElevatorFactory(
+  const base::string16& id) {
+  auto it = factories_.find(id);
+  return it != factories_.end() ? it->second : nullptr;
 }
 
 }  // namespace elevation_service

@@ -45,18 +45,18 @@
 
 /* Forward Declarations */ 
 
-#ifndef __IRegisteredCommandElevator_FWD_DEFINED__
-#define __IRegisteredCommandElevator_FWD_DEFINED__
-typedef interface IRegisteredCommandElevator IRegisteredCommandElevator;
+#ifndef __IElevator_FWD_DEFINED__
+#define __IElevator_FWD_DEFINED__
+typedef interface IElevator IElevator;
 
-#endif 	/* __IRegisteredCommandElevator_FWD_DEFINED__ */
+#endif 	/* __IElevator_FWD_DEFINED__ */
 
 
-#ifndef __IRegisteredCommandElevator_FWD_DEFINED__
-#define __IRegisteredCommandElevator_FWD_DEFINED__
-typedef interface IRegisteredCommandElevator IRegisteredCommandElevator;
+#ifndef __IElevator_FWD_DEFINED__
+#define __IElevator_FWD_DEFINED__
+typedef interface IElevator IElevator;
 
-#endif 	/* __IRegisteredCommandElevator_FWD_DEFINED__ */
+#endif 	/* __IElevator_FWD_DEFINED__ */
 
 
 /* header files for imported files */
@@ -68,59 +68,57 @@ extern "C"{
 #endif 
 
 
-#ifndef __IRegisteredCommandElevator_INTERFACE_DEFINED__
-#define __IRegisteredCommandElevator_INTERFACE_DEFINED__
+#ifndef __IElevator_INTERFACE_DEFINED__
+#define __IElevator_INTERFACE_DEFINED__
 
-/* interface IRegisteredCommandElevator */
+/* interface IElevator */
 /* [unique][helpstring][uuid][oleautomation][object] */ 
 
 
-EXTERN_C const IID IID_IRegisteredCommandElevator;
+EXTERN_C const IID IID_IElevator;
 
 #if defined(__cplusplus) && !defined(CINTERFACE)
     
     MIDL_INTERFACE("A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C")
-    IRegisteredCommandElevator : public IUnknown
+    IElevator : public IUnknown
     {
     public:
-        virtual HRESULT STDMETHODCALLTYPE LaunchCommand( 
-            /* [string][in] */ const WCHAR *cmd_id,
-            /* [in] */ DWORD caller_proc_id,
-            /* [out] */ ULONG_PTR *proc_handle) = 0;
+        virtual HRESULT STDMETHODCALLTYPE GetElevatorFactory( 
+            /* [string][in] */ const WCHAR *elevator_id,
+            /* [out] */ IClassFactory **factory) = 0;
         
     };
     
     
 #else 	/* C style interface */
 
-    typedef struct IRegisteredCommandElevatorVtbl
+    typedef struct IElevatorVtbl
     {
         BEGIN_INTERFACE
         
         HRESULT ( STDMETHODCALLTYPE *QueryInterface )( 
-            IRegisteredCommandElevator * This,
+            IElevator * This,
             /* [in] */ REFIID riid,
             /* [annotation][iid_is][out] */ 
             _COM_Outptr_  void **ppvObject);
         
         ULONG ( STDMETHODCALLTYPE *AddRef )( 
-            IRegisteredCommandElevator * This);
+            IElevator * This);
         
         ULONG ( STDMETHODCALLTYPE *Release )( 
-            IRegisteredCommandElevator * This);
+            IElevator * This);
         
-        HRESULT ( STDMETHODCALLTYPE *LaunchCommand )( 
-            IRegisteredCommandElevator * This,
-            /* [string][in] */ const WCHAR *cmd_id,
-            /* [in] */ DWORD caller_proc_id,
-            /* [out] */ ULONG_PTR *proc_handle);
+        HRESULT ( STDMETHODCALLTYPE *GetElevatorFactory )( 
+            IElevator * This,
+            /* [string][in] */ const WCHAR *elevator_id,
+            /* [out] */ IClassFactory **factory);
         
         END_INTERFACE
-    } IRegisteredCommandElevatorVtbl;
+    } IElevatorVtbl;
 
-    interface IRegisteredCommandElevator
+    interface IElevator
     {
-        CONST_VTBL struct IRegisteredCommandElevatorVtbl *lpVtbl;
+        CONST_VTBL struct IElevatorVtbl *lpVtbl;
     };
 
     
@@ -128,18 +126,18 @@ EXTERN_C const IID IID_IRegisteredCommandElevator;
 #ifdef COBJMACROS
 
 
-#define IRegisteredCommandElevator_QueryInterface(This,riid,ppvObject)	\
+#define IElevator_QueryInterface(This,riid,ppvObject)	\
     ( (This)->lpVtbl -> QueryInterface(This,riid,ppvObject) ) 
 
-#define IRegisteredCommandElevator_AddRef(This)	\
+#define IElevator_AddRef(This)	\
     ( (This)->lpVtbl -> AddRef(This) ) 
 
-#define IRegisteredCommandElevator_Release(This)	\
+#define IElevator_Release(This)	\
     ( (This)->lpVtbl -> Release(This) ) 
 
 
-#define IRegisteredCommandElevator_LaunchCommand(This,cmd_id,caller_proc_id,proc_handle)	\
-    ( (This)->lpVtbl -> LaunchCommand(This,cmd_id,caller_proc_id,proc_handle) ) 
+#define IElevator_GetElevatorFactory(This,elevator_id,factory)	\
+    ( (This)->lpVtbl -> GetElevatorFactory(This,elevator_id,factory) ) 
 
 #endif /* COBJMACROS */
 
@@ -149,7 +147,7 @@ EXTERN_C const IID IID_IRegisteredCommandElevator;
 
 
 
-#endif 	/* __IRegisteredCommandElevator_INTERFACE_DEFINED__ */
+#endif 	/* __IElevator_INTERFACE_DEFINED__ */
 
 
 
