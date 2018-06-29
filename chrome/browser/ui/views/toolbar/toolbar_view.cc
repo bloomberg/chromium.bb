@@ -261,6 +261,11 @@ void ToolbarView::Update(WebContents* tab) {
     reload_->set_menu_enabled(chrome::IsDebuggerAttachedToCurrentTab(browser_));
 }
 
+void ToolbarView::RevertUrl() {
+  if (location_bar_)
+    location_bar_->Revert();
+}
+
 void ToolbarView::ResetTabState(WebContents* tab) {
   if (location_bar_)
     location_bar_->ResetTabState(tab);
