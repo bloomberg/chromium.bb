@@ -66,9 +66,17 @@ struct EmbeddedWorkerStartParams {
 };
 
 // Holds timing information about the start worker sequence for UMA.
+//
+// Keep this in sync with the validation check in
+// EmbeddedWorkerInstance::OnStarted.
+// TODO(falken): Make a typemap just for the validation check?
 struct EmbeddedWorkerStartTiming {
   // When the start worker message was received by the renderer.
   mojo_base.mojom.TimeTicks start_worker_received_time;
+  // When JavaScript evaluation on the worker thread started.
+  mojo_base.mojom.TimeTicks script_evaluation_start_time;
+  // When JavaScript evaluation on the worker thread finished.
+  mojo_base.mojom.TimeTicks script_evaluation_end_time;
 };
 
 // EmbeddedWorkerInstanceClient is the renderer-side ("Client") of

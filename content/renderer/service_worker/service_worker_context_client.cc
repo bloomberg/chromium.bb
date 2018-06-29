@@ -700,6 +700,7 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
     mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
     mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
     std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
+    mojom::EmbeddedWorkerStartTimingPtr start_timing,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner)
     : embedded_worker_id_(embedded_worker_id),
       service_worker_version_id_(service_worker_version_id),
@@ -710,7 +711,8 @@ ServiceWorkerContextClient::ServiceWorkerContextClient(
       proxy_(nullptr),
       pending_dispatcher_request_(std::move(dispatcher_request)),
       pending_controller_request_(std::move(controller_request)),
-      embedded_worker_client_(std::move(embedded_worker_client)) {
+      embedded_worker_client_(std::move(embedded_worker_client)),
+      start_timing_(std::move(start_timing)) {
   instance_host_ =
       mojom::ThreadSafeEmbeddedWorkerInstanceHostAssociatedPtr::Create(
           std::move(instance_host), main_thread_task_runner_);
@@ -854,8 +856,14 @@ void ServiceWorkerContextClient::WorkerContextStarted(
   TRACE_EVENT_NESTABLE_ASYNC_BEGIN0("ServiceWorker", "EVALUATE_SCRIPT", this);
 }
 
+void ServiceWorkerContextClient::WillEvaluateClassicScript() {
+  DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  start_timing_->script_evaluation_start_time = base::TimeTicks::Now();
+}
+
 void ServiceWorkerContextClient::DidEvaluateClassicScript(bool success) {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
+  start_timing_->script_evaluation_end_time = base::TimeTicks::Now();
   (*instance_host_)->OnScriptEvaluated(success);
 
   // Schedule a task to send back WorkerStarted asynchronously,
@@ -1472,10 +1480,7 @@ void ServiceWorkerContextClient::DispatchPaymentRequestEvent(
 
 void ServiceWorkerContextClient::SendWorkerStarted() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
-  mojom::EmbeddedWorkerStartTimingPtr timing =
-      mojom::EmbeddedWorkerStartTiming::New();
-  timing->start_worker_received_time = start_worker_received_time_;
-  (*instance_host_)->OnStarted(std::move(timing));
+  (*instance_host_)->OnStarted(std::move(start_timing_));
   TRACE_EVENT_NESTABLE_ASYNC_END0("ServiceWorker", "ServiceWorkerContextClient",
                                   this);
 

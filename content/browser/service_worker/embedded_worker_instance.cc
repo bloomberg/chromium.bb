@@ -334,12 +334,15 @@ class EmbeddedWorkerInstance::StartTask {
 
   StartTask(EmbeddedWorkerInstance* instance,
             const GURL& script_url,
-            mojom::EmbeddedWorkerInstanceClientRequest request)
+            mojom::EmbeddedWorkerInstanceClientRequest request,
+            base::TimeTicks start_time)
       : instance_(instance),
         request_(std::move(request)),
         state_(ProcessAllocationState::NOT_ALLOCATED),
         is_installed_(false),
         started_during_browser_startup_(false),
+        skip_recording_startup_time_(instance_->devtools_attached()),
+        start_time_(start_time),
         weak_factory_(this) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     TRACE_EVENT_NESTABLE_ASYNC_BEGIN1("ServiceWorker",
@@ -383,11 +386,20 @@ class EmbeddedWorkerInstance::StartTask {
     // TODO(nhiroki): Reconsider this bizarre layering.
   }
 
+  base::TimeTicks start_time() const { return start_time_; }
+
   void set_start_worker_sent_time(base::TimeTicks time) {
     start_worker_sent_time_ = time;
   }
   base::TimeTicks start_worker_sent_time() const {
     return start_worker_sent_time_;
+  }
+
+  void set_skip_recording_startup_time() {
+    skip_recording_startup_time_ = true;
+  }
+  bool skip_recording_startup_time() const {
+    return skip_recording_startup_time_;
   }
 
   void Start(mojom::EmbeddedWorkerStartParamsPtr params,
@@ -520,6 +532,8 @@ class EmbeddedWorkerInstance::StartTask {
   // Used for UMA.
   bool is_installed_;
   bool started_during_browser_startup_;
+  bool skip_recording_startup_time_;
+  base::TimeTicks start_time_;
   base::TimeTicks start_worker_sent_time_;
 
   base::WeakPtrFactory<StartTask> weak_factory_;
@@ -572,7 +586,7 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
   client_.set_connection_error_handler(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
   inflight_start_task_.reset(
-      new StartTask(this, params->script_url, std::move(request)));
+      new StartTask(this, params->script_url, std::move(request), step_time_));
   inflight_start_task_->Start(std::move(params), std::move(callback));
 }
 
@@ -810,16 +824,35 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
 
 void EmbeddedWorkerInstance::OnStarted(
     mojom::EmbeddedWorkerStartTimingPtr start_timing) {
+  if (!(start_timing->start_worker_received_time <=
+            start_timing->script_evaluation_start_time &&
+        start_timing->script_evaluation_start_time <=
+            start_timing->script_evaluation_end_time)) {
+    mojo::ReportBadMessage("EWI_BAD_START_TIMING");
+    return;
+  }
+
   if (!registry_->OnWorkerStarted(process_id(), embedded_worker_id_))
     return;
   // Stop is requested before OnStarted is sent back from the worker.
   if (status_ == EmbeddedWorkerStatus::STOPPING)
     return;
 
-  if (inflight_start_task_->is_installed()) {
-    ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
-        std::move(start_timing), inflight_start_task_->start_worker_sent_time(),
-        start_situation_);
+  if (inflight_start_task_->is_installed() &&
+      !inflight_start_task_->skip_recording_startup_time()) {
+    ServiceWorkerMetrics::StartTimes times;
+    times.local_start = inflight_start_task_->start_time();
+    times.local_start_worker_sent =
+        inflight_start_task_->start_worker_sent_time();
+    times.remote_start_worker_received =
+        start_timing->start_worker_received_time;
+    times.remote_script_evaluation_start =
+        start_timing->script_evaluation_start_time;
+    times.remote_script_evaluation_end =
+        start_timing->script_evaluation_end_time;
+    times.local_end = base::TimeTicks::Now();
+
+    ServiceWorkerMetrics::RecordStartWorkerTiming(times, start_situation_);
   }
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
   status_ = EmbeddedWorkerStatus::RUNNING;
@@ -898,8 +931,11 @@ void EmbeddedWorkerInstance::RemoveObserver(Listener* listener) {
 
 void EmbeddedWorkerInstance::SetDevToolsAttached(bool attached) {
   devtools_attached_ = attached;
-  if (attached)
-    registry_->OnDevToolsAttached(embedded_worker_id_);
+  if (!attached)
+    return;
+  if (inflight_start_task_)
+    inflight_start_task_->set_skip_recording_startup_time();
+  registry_->OnDevToolsAttached(embedded_worker_id_);
 }
 
 void EmbeddedWorkerInstance::OnNetworkAccessedForScriptLoad() {
