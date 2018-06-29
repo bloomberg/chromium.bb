@@ -89,7 +89,10 @@ class AvSyncVideo : public AvSync {
   int64_t number_of_soft_corrections_ = 0;
   int64_t last_vpts_value_recorded_ = 0;
   int64_t last_correction_timestamp_us = INT64_MIN;
-  int64_t av_sync_start_timestamp_ = INT64_MIN;
+  int64_t playback_start_timestamp_us_ = INT64_MIN;
+
+  bool first_audio_pts_received_ = false;
+  bool first_video_pts_received_ = false;
 
   MediaPipelineBackendForMixer* const backend_;
 };
