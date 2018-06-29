@@ -484,6 +484,7 @@ body.v2 {
   border-radius: 4px;
   height: 160px;
   margin-bottom: 8px;
+  outline: none;
   width: 160px;
 }
 
@@ -493,6 +494,11 @@ body.v2 {
 
 .v2 .image-picker [role=listitem][selected] {
   background-color: rgba(26, 115, 232, 0.08);
+}
+
+.v2 .image-picker [role=listitem]:not([selected]):focus {
+  border: 2px solid rgba(26, 115, 232, 0.4);
+  box-sizing: border-box;
 }
 
 .v2 .image-picker [role=listitem].daily-refresh-item {
@@ -540,17 +546,18 @@ body.v2 {
   display: block;
   height: 24px;
   position: absolute;
+  top: 4px;
   width: 24px;
 }
 
 .v2 #minimize-button {
   background-image: url(../images/ui/button_minimize.png);
-  right: 48px;
+  right: 52px;
 }
 
 .v2 #close-button {
   background-image: url(../images/ui/button_close.png);
-  right: 8px;
+  right: 12px;
 }
 
 .v2 .bottom-bar {
@@ -651,6 +658,7 @@ html[dir='rtl'] .v2 .top-header-contents .more-options {
 .v2 .top-header-contents .more-options > div:focus,
 .v2 #current-wallpaper-more-options > div:focus {
   border: 2px solid rgba(26, 115, 232, 0.4);
+  box-sizing: border-box;
   outline: none;
 }
 

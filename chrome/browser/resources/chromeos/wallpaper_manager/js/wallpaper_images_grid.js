@@ -86,10 +86,19 @@ cr.define('wallpapers', function() {
       }
 
       var imageEl = cr.doc.createElement('img');
-      // On the new picker, do not show the image until |cropImageToFitGrid_| is
-      // done.
-      if (loadTimeData.getBoolean('useNewWallpaperPicker'))
+      if (loadTimeData.getBoolean('useNewWallpaperPicker')) {
+        // On the new picker, do not show the image until |cropImageToFitGrid_|
+        // is done.
         imageEl.hidden = true;
+        imageEl.setAttribute('aria-hidden', 'true');
+        this.setAttribute('aria-label', this.dataItem.ariaLabel);
+        this.tabIndex = 0;
+        this.addEventListener('keypress', e => {
+          if (e.keyCode == 13)
+            this.parentNode.selectedItem = this.dataItem;
+        });
+      }
+
       imageEl.classList.add('thumbnail');
       cr.defineProperty(imageEl, 'offline', cr.PropertyKind.BOOL_ATTR);
       imageEl.offline = this.dataItem.availableOffline;
@@ -579,6 +588,8 @@ cr.define('wallpapers', function() {
       // updateActiveThumb_().
       this.checkmark_ = cr.doc.createElement('div');
       this.checkmark_.classList.add('check');
+      this.checkmark_.setAttribute(
+          'aria-label', loadTimeData.getString('setSuccessfullyMessage'));
       this.dataModel = new ArrayDataModel([]);
       this.thumbnailList_ = new ArrayDataModel([]);
       this.useNewWallpaperPicker_ =
