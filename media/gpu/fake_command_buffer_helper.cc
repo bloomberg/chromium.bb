@@ -106,7 +106,7 @@ void FakeCommandBufferHelper::SetCleared(GLuint service_id) {
 
 bool FakeCommandBufferHelper::BindImage(GLuint service_id,
                                         gl::GLImage* image,
-                                        bool client_managed) {
+                                        bool can_bind_to_sampler) {
   DVLOG(2) << __func__ << "(" << service_id << ")";
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(service_ids_.count(service_id));
