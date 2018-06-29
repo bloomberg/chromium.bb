@@ -1596,3 +1596,5 @@ void EntryImpl::Log(const char* msg) {
 }
 
 }  // namespace disk_cache
+
+#undef CACHE_UMA_BACKEND_IMPL_OBJ  // undef for jumbo builds

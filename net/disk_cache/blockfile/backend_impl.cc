@@ -2158,3 +2158,5 @@ void BackendImpl::FlushForTesting() {
 }
 
 }  // namespace disk_cache
+
+#undef CACHE_UMA_BACKEND_IMPL_OBJ  // undef for jumbo builds
