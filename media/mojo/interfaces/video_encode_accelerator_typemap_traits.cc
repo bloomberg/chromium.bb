@@ -5,6 +5,7 @@
 #include "media/mojo/interfaces/video_encode_accelerator_typemap_traits.h"
 
 #include "base/logging.h"
+#include "media/base/video_bitrate_allocation.h"
 
 namespace mojo {
 
@@ -43,6 +44,51 @@ bool EnumTraits<media::mojom::VideoEncodeAccelerator::Error,
   }
   NOTREACHED();
   return false;
+}
+
+// static
+std::vector<int32_t> StructTraits<media::mojom::VideoBitrateAllocationDataView,
+                                  media::VideoBitrateAllocation>::
+    bitrates(const media::VideoBitrateAllocation& bitrate_allocation) {
+  std::vector<int32_t> bitrates;
+  int sum_bps = 0;
+  for (size_t si = 0; si < media::VideoBitrateAllocation::kMaxSpatialLayers;
+       ++si) {
+    for (size_t ti = 0; ti < media::VideoBitrateAllocation::kMaxTemporalLayers;
+         ++ti) {
+      if (sum_bps == bitrate_allocation.GetSumBps()) {
+        // The rest is all zeros, no need to iterate further.
+        return bitrates;
+      }
+      const int layer_bitrate = bitrate_allocation.GetBitrateBps(si, ti);
+      bitrates.emplace_back(layer_bitrate);
+      sum_bps += layer_bitrate;
+    }
+  }
+  return bitrates;
+}
+
+// static
+bool StructTraits<media::mojom::VideoBitrateAllocationDataView,
+                  media::VideoBitrateAllocation>::
+    Read(media::mojom::VideoBitrateAllocationDataView data,
+         media::VideoBitrateAllocation* out_bitrate_allocation) {
+  ArrayDataView<int32_t> bitrates;
+  data.GetBitratesDataView(&bitrates);
+  size_t size = bitrates.size();
+  if (size > media::VideoBitrateAllocation::kMaxSpatialLayers *
+                 media::VideoBitrateAllocation::kMaxTemporalLayers) {
+    return false;
+  }
+  for (size_t i = 0; i < size; ++i) {
+    const int32_t bitrate = bitrates[i];
+    const size_t si = i / media::VideoBitrateAllocation::kMaxTemporalLayers;
+    const size_t ti = i % media::VideoBitrateAllocation::kMaxTemporalLayers;
+    if (!out_bitrate_allocation->SetBitrate(si, ti, bitrate)) {
+      return false;
+    }
+  }
+  return true;
 }
 
 }  // namespace mojo

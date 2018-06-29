@@ -153,14 +153,17 @@ void MojoVideoEncodeAcceleratorService::UseOutputBitstreamBuffer(
 }
 
 void MojoVideoEncodeAcceleratorService::RequestEncodingParametersChange(
-    uint32_t bitrate,
+    const media::VideoBitrateAllocation& bitrate_allocation,
     uint32_t framerate) {
-  DVLOG(2) << __func__ << " bitrate=" << bitrate << " framerate=" << framerate;
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   if (!encoder_)
     return;
-  encoder_->RequestEncodingParametersChange(bitrate, framerate);
+
+  DVLOG(2) << __func__ << " bitrate=" << bitrate_allocation.GetSumBps()
+           << " framerate=" << framerate;
+
+  encoder_->RequestEncodingParametersChange(bitrate_allocation, framerate);
 }
 
 void MojoVideoEncodeAcceleratorService::RequireBitstreamBuffers(

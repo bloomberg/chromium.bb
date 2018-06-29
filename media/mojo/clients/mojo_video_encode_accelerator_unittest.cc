@@ -83,7 +83,8 @@ class MockMojoVideoEncodeAccelerator : public mojom::VideoEncodeAccelerator {
   MOCK_METHOD2(DoUseOutputBitstreamBuffer,
                void(int32_t, mojo::ScopedSharedBufferHandle*));
 
-  MOCK_METHOD2(RequestEncodingParametersChange, void(uint32_t, uint32_t));
+  MOCK_METHOD2(RequestEncodingParametersChange,
+               void(const media::VideoBitrateAllocation&, uint32_t));
 
   void set_initialization_success(bool success) {
     initialization_success_ = success;
@@ -228,16 +229,45 @@ TEST_F(MojoVideoEncodeAcceleratorTest, EncodeOneFrame) {
 
 // Tests that a RequestEncodingParametersChange() ripples through correctly.
 TEST_F(MojoVideoEncodeAcceleratorTest, EncodingParametersChange) {
-  const uint32_t kNewBitrate = 123123u;
   const uint32_t kNewFramerate = 321321u;
+  const uint32_t kNewBitrate = 123123u;
+  VideoBitrateAllocation bitrate_allocation;
+  bitrate_allocation.SetBitrate(0, 0, kNewBitrate);
 
   // In a real world scenario, we should go through an Initialize() prologue,
   // but we can skip that in unit testing.
 
-  EXPECT_CALL(*mock_mojo_vea(),
-              RequestEncodingParametersChange(kNewBitrate, kNewFramerate));
+  EXPECT_CALL(*mock_mojo_vea(), RequestEncodingParametersChange(
+                                    bitrate_allocation, kNewFramerate));
   mojo_vea()->RequestEncodingParametersChange(kNewBitrate, kNewFramerate);
   base::RunLoop().RunUntilIdle();
+}
+
+// Tests that a RequestEncodingParametersChange() works with multi-dimensional
+// bitrate allocatio.
+TEST_F(MojoVideoEncodeAcceleratorTest,
+       EncodingParametersWithBitrateAllocation) {
+  const uint32_t kNewFramerate = 321321u;
+  const size_t kMaxNumBitrates = VideoBitrateAllocation::kMaxSpatialLayers *
+                                 VideoBitrateAllocation::kMaxTemporalLayers;
+
+  // Verify translation of VideoBitrateAllocation into vector of bitrates for
+  // everything from empty array up to max number of layers.
+  VideoBitrateAllocation bitrate_allocation;
+  for (size_t i = 0; i <= kMaxNumBitrates; ++i) {
+    if (i > 0) {
+      int layer_bitrate = i * 1000;
+      const size_t si = (i - 1) / VideoBitrateAllocation::kMaxTemporalLayers;
+      const size_t ti = (i - 1) % VideoBitrateAllocation::kMaxTemporalLayers;
+      bitrate_allocation.SetBitrate(si, ti, layer_bitrate);
+    }
+
+    EXPECT_CALL(*mock_mojo_vea(), RequestEncodingParametersChange(
+                                      bitrate_allocation, kNewFramerate));
+    mojo_vea()->RequestEncodingParametersChange(bitrate_allocation,
+                                                kNewFramerate);
+    base::RunLoop().RunUntilIdle();
+  }
 }
 
 // This test verifies the Initialize() communication prologue fails when the
