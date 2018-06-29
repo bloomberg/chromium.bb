@@ -1,5 +1,8 @@
 This is a testharness.js-based test.
 PASS Payment handler interfaces.
+FAIL Partial interface ServiceWorkerRegistration: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface ServiceWorkerGlobalScope: original interface defined assert_true: Original interface should be defined expected true got false
+FAIL Partial interface ServiceWorkerGlobalScope[2]: original interface defined assert_true: Original interface should be defined expected true got false
 PASS PaymentManager interface: existence and properties of interface object
 PASS PaymentManager interface object length
 PASS PaymentManager interface object name
@@ -10,6 +13,8 @@ PASS PaymentManager interface: attribute instruments
 PASS Unscopable handled correctly for instruments property on PaymentManager
 FAIL PaymentManager interface: operation requestPermission() assert_own_property: interface object missing static operation expected property "requestPermission" missing
 PASS Unscopable handled correctly for requestPermission() on PaymentManager
+PASS PaymentManager interface: attribute userHint
+PASS Unscopable handled correctly for userHint property on PaymentManager
 PASS PaymentInstruments interface: existence and properties of interface object
 PASS PaymentInstruments interface object length
 PASS PaymentInstruments interface object name
