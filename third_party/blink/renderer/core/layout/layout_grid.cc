@@ -280,8 +280,6 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
 
   SubtreeLayoutScope layout_scope(*this);
 
-  track_sizing_algorithm_.ClearBaselineAlignment();
-
   {
     // LayoutState needs this deliberate scope to pop before updating scroll
     // information (which may trigger relayout).
@@ -306,8 +304,6 @@ void LayoutGrid::UpdateBlockLayout(bool relayout_children) {
     PlaceItemsOnGrid(track_sizing_algorithm_, available_space_for_columns);
 
     PerformGridItemsPreLayout(track_sizing_algorithm_);
-
-    track_sizing_algorithm_.ComputeBaselineAlignmentContext();
 
     // 1- First, the track sizing algorithm is used to resolve the sizes of the
     // grid columns.
@@ -504,7 +500,6 @@ void LayoutGrid::ComputeIntrinsicLogicalWidths(
 
   PerformGridItemsPreLayout(algorithm);
 
-  algorithm.ComputeBaselineAlignmentContext();
   ComputeTrackSizesForIndefiniteSize(algorithm, kForColumns, min_logical_width,
                                      max_logical_width);
 

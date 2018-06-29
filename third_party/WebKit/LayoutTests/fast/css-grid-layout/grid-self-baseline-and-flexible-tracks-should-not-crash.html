@@ -1,0 +1,14 @@
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<div id="grid" style="display: inline-grid; grid-template-columns: 2fr;">
+    <div id="item" style="justify-self: baseline;"></div>
+</div>
+<br>
+<div id="grid" style="display: inline-grid; grid-template-columns: minmax(100px, 4fr);">
+    <div id="item" style="justify-self: baseline;"></div>
+</div>
+<script>
+    test(() => {}, "No crash or assertion failure.");
+</script>
+

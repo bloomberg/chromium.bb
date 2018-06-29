@@ -159,7 +159,7 @@ class GridBaselineAlignment {
 
   // Clearing the Baseline Alignment context and their internal
   // classes and data structures.
-  void Clear();
+  void Clear(GridAxis);
 
  private:
   const BaselineGroup& GetBaselineGroupForChild(ItemPosition,
