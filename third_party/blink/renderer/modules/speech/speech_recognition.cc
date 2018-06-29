@@ -25,6 +25,7 @@
 
 #include "third_party/blink/renderer/modules/speech/speech_recognition.h"
 
+#include <algorithm>
 #include "build/build_config.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -65,7 +66,7 @@ void SpeechRecognition::start(ExceptionState& exception_state) {
       MakeRequest(&session_, GetExecutionContext()->GetInterfaceInvalidator());
 
   controller_->Start(std::move(session_request), std::move(session_client),
-                     grammars_, lang_, continuous_, interim_results_,
+                     *grammars_, lang_, continuous_, interim_results_,
                      max_alternatives_);
   started_ = true;
 }
@@ -139,10 +140,8 @@ void SpeechRecognition::ErrorOccurred(
   if (error->code == mojom::blink::SpeechRecognitionErrorCode::kNoMatch) {
     DispatchEvent(SpeechRecognitionEvent::CreateNoMatch(nullptr));
   } else {
-    SpeechRecognitionError::ErrorCode error_code =
-        static_cast<SpeechRecognitionError::ErrorCode>(error->code);
     // TODO(primiano): message?
-    DispatchEvent(SpeechRecognitionError::Create(error_code, String()));
+    DispatchEvent(SpeechRecognitionError::Create(error->code, String()));
   }
 }
 
@@ -219,9 +218,7 @@ SpeechRecognition::SpeechRecognition(LocalFrame* frame,
       controller_(SpeechRecognitionController::From(frame)),
       started_(false),
       stopping_(false),
-      binding_(this) {
-  // FIXME: Need to hook up to get notified when the visibility changes.
-}
+      binding_(this) {}
 
 SpeechRecognition::~SpeechRecognition() = default;
 
