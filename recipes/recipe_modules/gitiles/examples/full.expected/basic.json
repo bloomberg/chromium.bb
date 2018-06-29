@@ -548,6 +548,49 @@
     "name": "fetch master:NONEXISTENT"
   },
   {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/chromium/src/+archive/refs/heads/master.tgz",
+      "--format",
+      "archive",
+      "--extract-to",
+      "[START_DIR]/archive"
+    ],
+    "name": "download https://chromium.googlesource.com/chromium/src @ refs/heads/master",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>extracted 1337 files - 7.19 MB@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gitiles]/resources/gerrit_client.py",
+      "--json-file",
+      "/path/to/tmp/json",
+      "--url",
+      "https://chromium.googlesource.com/chromium/src/+archive/refs/heads/master.tgz",
+      "--format",
+      "archive",
+      "--extract-to",
+      "[START_DIR]/archive2"
+    ],
+    "name": "download https://chromium.googlesource.com/chromium/src @ refs/heads/master (2)",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@<br/>extracted 10 files - 0.01 MB<br/>SKIPPED 4 files - 7.19 MB@@@",
+      "@@@STEP_LOG_LINE@skipped files@/root@@@",
+      "@@@STEP_LOG_LINE@skipped files@../relative@@@",
+      "@@@STEP_LOG_LINE@skipped files@sneaky/../../relative@@@",
+      "@@@STEP_LOG_END@skipped files@@@",
+      "@@@STEP_FAILURE@@@"
+    ]
+  },
+  {
     "name": "$result",
     "recipe_result": null,
     "status_code": 0

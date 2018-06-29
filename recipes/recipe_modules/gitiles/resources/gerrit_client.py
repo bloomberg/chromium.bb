@@ -15,6 +15,7 @@ import json
 import logging
 import os
 import sys
+import tarfile
 import time
 import urllib
 import urlparse
@@ -100,6 +101,16 @@ def main(arguments):
   parser = create_argparser()
   args = parser.parse_args(arguments)
 
+  if args.extract_to and args.format != "archive":
+    parser.error('--extract-to requires --format=archive')
+  if not args.extract_to and args.format == "archive":
+    parser.error('--format=archive requires --extract-to')
+
+  if args.extract_to:
+    # make sure it is absolute and ends with '/'
+    args.extract_to = os.path.join(os.path.abspath(args.extract_to), '')
+    os.makedirs(args.extract_to)
+
   parsed_url = urlparse.urlparse(args.url)
   if not parsed_url.scheme.startswith('http'):
     parser.error('Invalid URI scheme (expected http or https): %s' % args.url)
@@ -125,11 +136,49 @@ def main(arguments):
   elif args.format == 'text':
     # Text fetching will pack the text into structured JSON.
     def handler(conn):
-      result = ReadHttpResponse(conn, **kwargs).read()
       # Wrap in a structured JSON for export to recipe module.
       return {
-          'value': result or None,
+        'value': ReadHttpResponse(conn, **kwargs).read() or None,
       }
+  elif args.format == 'archive':
+    # Archive fetching hooks result to tarfile extraction. This implementation
+    # is able to do a streaming extraction operation without having to buffer
+    # the entire tarfile.
+    def handler(conn):
+      ret = {
+        'extracted': {
+          'filecount': 0,
+          'bytes': 0,
+        },
+        'skipped': {
+          'filecount': 0,
+          'bytes': 0,
+          'names': [],
+        }
+      }
+      fileobj = ReadHttpResponse(conn, **kwargs)
+      with tarfile.open(mode='r|*', fileobj=fileobj) as tf:
+        # monkeypatch the TarFile object to allow printing messages and
+        # collecting stats for each extracted file. extractall makes a single
+        # linear pass over the tarfile, which is compatible with
+        # ReadHttpResponse; other naive implementations (such as `getmembers`)
+        # do random access over the file and would require buffering the whole
+        # thing (!!).
+        em = tf._extract_member
+        def _extract_member(tarinfo, targetpath):
+          if not os.path.abspath(targetpath).startswith(args.extract_to):
+            print 'Skipping %s' % (tarinfo.name,)
+            ret['skipped']['filecount'] += 1
+            ret['skipped']['bytes'] += tarinfo.size
+            ret['skipped']['names'].append(tarinfo.name)
+            return
+          print 'Extracting %s' % (tarinfo.name,)
+          ret['extracted']['filecount'] += 1
+          ret['extracted']['bytes'] += tarinfo.size
+          return em(tarinfo, targetpath)
+        tf._extract_member = _extract_member
+        tf.extractall(args.extract_to)
+      return ret
 
   if args.log_start:
     query_params['s'] = args.log_start
@@ -158,10 +207,13 @@ def main(arguments):
 def create_argparser():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '-j', '--json-file', required=True,
+      '-j', '--json-file',
       help='Path to json file for output.')
   parser.add_argument(
-      '-f', '--format', required=True, choices=('json', 'text'))
+      '--extract-to',
+      help='Local path to extract archive url. Must not exist.')
+  parser.add_argument(
+      '-f', '--format', required=True, choices=('json', 'text', 'archive'))
   parser.add_argument(
       '-u', '--url', required=True,
       help='Url of gitiles. For example, '

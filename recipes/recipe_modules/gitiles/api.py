@@ -1,4 +1,4 @@
-# Copyright 2014 The Chromium Authors. All rights reserved.
+# Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -11,21 +11,33 @@ class Gitiles(recipe_api.RecipeApi):
   """Module for polling a git repository using the Gitiles web interface."""
 
   def _fetch(self, url, step_name, fmt, attempts=None, add_json_log=True,
-             log_limit=None, log_start=None, **kwargs):
+             log_limit=None, log_start=None, extract_to=None, **kwargs):
     """Fetches information from Gitiles.
 
     Arguments:
+      fmt (str): one of ('text', 'json', 'archive'). Instructs the underlying
+        gitiles_client tool how to process the HTTP response.
+          * text - implies the response is base64 encoded
+          * json - implies the response is JSON
+          * archive - implies the response is a compressed tarball; requires
+            `extract_to`.
+      extract_to (Path): When fmt=='archive', instructs gitiles_client to
+        extract the archive to this non-existant folder.
       log_limit: for log URLs, limit number of results. None implies 1 page,
         as returned by Gitiles.
       log_start: for log URLs, the start cursor for paging.
       add_json_log: if True, will spill out json into log.
     """
-    assert fmt in ('json', 'text')
+    assert fmt in ('json', 'text', 'archive')
+
     args = [
         '--json-file', self.m.json.output(add_json_log=add_json_log),
         '--url', url,
         '--format', fmt,
     ]
+    if fmt == 'archive':
+      assert extract_to is not None, 'archive format requires extract_to'
+      args.extend(['--extract-to', extract_to])
     if attempts:
       args.extend(['--attempts', attempts])
     if log_limit is not None:
@@ -37,9 +49,8 @@ class Gitiles(recipe_api.RecipeApi):
       args.extend([
           '--accept-statuses',
           ','.join([str(s) for s in accept_statuses])])
-    a = self.m.python(
+    return self.m.python(
         step_name, self.resource('gerrit_client.py'), args, **kwargs)
-    return a
 
   def refs(self, url, step_name='refs', attempts=None):
     """Returns a list of refs in the remote repository."""
@@ -140,3 +151,52 @@ class Gitiles(recipe_api.RecipeApi):
     if step_result.json.output['value'] is None:
       return None
     return base64.b64decode(step_result.json.output['value'])
+
+  def download_archive(self, repository_url, destination,
+                       revision='refs/heads/master'):
+    """Downloads an archive of the repo and extracts it to `destination`.
+
+    If the gitiles server attempts to provide a tarball with paths which escape
+    `destination`, this function will extract all valid files and then
+    raise StepFailure with an attribute `StepFailure.gitiles_skipped_files`
+    containing the names of the files that were skipped.
+
+    Args:
+      repository_url (str): Full URL to the repository
+      destination (Path): Local path to extract the archive to. Must not exist
+        prior to this call.
+      revision (str): The ref or revision in the repo to download. Defaults to
+        'refs/heads/master'.
+    """
+    step_name = 'download %s @ %s' % (repository_url, revision)
+    fetch_url = self.m.url.join(repository_url, '+archive/%s.tgz' % (revision,))
+    step_result = self._fetch(
+      fetch_url,
+      step_name,
+      fmt='archive',
+      add_json_log=False,
+      extract_to=destination,
+      step_test_data=lambda: self.m.json.test_api.output({
+        'extracted': {
+          'filecount': 1337,
+          'bytes': 7192345,
+        },
+      })
+    )
+    self.m.path.mock_add_paths(destination)
+    j = step_result.json.output
+    if j['extracted']['filecount']:
+      stat = j['extracted']
+      step_result.presentation.step_text += (
+        '<br/>extracted %s files - %.02f MB' % (
+          stat['filecount'], stat['bytes'] / (1000.0**2)))
+    if j.get('skipped', {}).get('filecount'):
+      stat = j['skipped']
+      step_result.presentation.step_text += (
+        '<br/>SKIPPED %s files - %.02f MB' % (
+          stat['filecount'], stat['bytes'] / (1000.0**2)))
+      step_result.presentation.logs['skipped files'] = stat['names']
+      step_result.presentation.status = self.m.step.FAILURE
+      ex = self.m.step.StepFailure(step_name)
+      ex.gitiles_skipped_files = stat['names']
+      raise ex
