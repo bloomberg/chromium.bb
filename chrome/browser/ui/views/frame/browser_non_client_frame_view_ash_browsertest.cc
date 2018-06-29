@@ -16,6 +16,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
+#include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -371,6 +372,13 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest, IncognitoAvatar) {
   const bool should_have_avatar = GetParam() == switches::kTopChromeMDMaterial;
   const bool has_avatar = !!frame_view->profile_indicator_icon();
   EXPECT_EQ(should_have_avatar, has_avatar);
+}
+
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       IncognitoMarkedAsAssistantBlocked) {
+  Browser* incognito_browser = CreateIncognitoBrowser();
+  EXPECT_TRUE(incognito_browser->window()->GetNativeWindow()->GetProperty(
+      ash::kBlockedForAssistantSnapshotKey));
 }
 
 // Tests that FrameCaptionButtonContainer has been relaid out in response to

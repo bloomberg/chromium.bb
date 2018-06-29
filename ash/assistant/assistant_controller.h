@@ -24,6 +24,10 @@ namespace base {
 class UnguessableToken;
 }  // namespace base
 
+namespace ui {
+class LayerTreeOwner;
+}  // namespace ui
+
 namespace ash {
 
 class AssistantControllerObserver;
@@ -98,6 +102,8 @@ class AssistantController : public mojom::AssistantController,
     DCHECK(assistant_ui_controller_);
     return assistant_ui_controller_.get();
   }
+
+  std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshotForTest();
 
  private:
   // The observer list should be initialized early so that sub-controllers may
