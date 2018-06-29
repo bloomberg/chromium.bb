@@ -297,45 +297,21 @@ void BrowserNonClientFrameView::LayoutIncognitoButton() {
   profile_indicator_icon()->SetVisible(true);
 }
 
-void BrowserNonClientFrameView::PaintToolbarBackground(
+void BrowserNonClientFrameView::PaintToolbarTopStroke(
     gfx::Canvas* canvas) const {
-  gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
-  if (toolbar_bounds.IsEmpty())
-    return;
-  gfx::Point toolbar_origin(toolbar_bounds.origin());
-  ConvertPointToTarget(browser_view(), this, &toolbar_origin);
-  toolbar_bounds.set_origin(toolbar_origin);
-
-  const ui::ThemeProvider* tp = GetThemeProvider();
-  const int x = toolbar_bounds.x();
-  const int y = toolbar_bounds.y();
-  const int w = toolbar_bounds.width();
-
-  // Background.
-  if (tp->HasCustomImage(IDR_THEME_TOOLBAR)) {
-    canvas->TileImageInt(*tp->GetImageSkiaNamed(IDR_THEME_TOOLBAR),
-                         x + GetThemeBackgroundXInset(),
-                         y - GetTopInset(false) - Tab::GetStrokeHeight(), x, y,
-                         w, toolbar_bounds.height());
-  } else {
-    canvas->FillRect(toolbar_bounds,
-                     tp->GetColor(ThemeProperties::COLOR_TOOLBAR));
-  }
-
-  gfx::ScopedCanvas scoped_canvas(canvas);
   if (TabStrip::ShouldDrawStrokes()) {
-    // Top stroke.
+    gfx::Rect toolbar_bounds(browser_view()->GetToolbarBounds());
     gfx::Rect tabstrip_bounds =
         GetMirroredRect(GetBoundsForTabStrip(browser_view()->tabstrip()));
+
+    gfx::ScopedCanvas scoped_canvas(canvas);
     canvas->ClipRect(tabstrip_bounds, SkClipOp::kDifference);
-    const gfx::Rect separator_rect(x, tabstrip_bounds.bottom(), w, 0);
+
+    const gfx::Rect separator_rect(toolbar_bounds.x(), tabstrip_bounds.bottom(),
+                                   toolbar_bounds.width(), 0);
     BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                         separator_rect, true);
   }
-  // Toolbar/content separator.
-  BrowserView::Paint1pxHorizontalLine(
-      canvas, tp->GetColor(ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR),
-      toolbar_bounds, true);
 }
 
 void BrowserNonClientFrameView::ViewHierarchyChanged(

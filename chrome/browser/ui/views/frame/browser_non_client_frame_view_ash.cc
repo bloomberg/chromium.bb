@@ -530,7 +530,7 @@ void BrowserNonClientFrameViewAsh::OnPaint(gfx::Canvas* canvas) {
   if (browser_view()->IsToolbarVisible() &&
       !browser_view()->toolbar()->GetPreferredSize().IsEmpty() &&
       browser_view()->IsTabStripVisible()) {
-    PaintToolbarBackground(canvas);
+    PaintToolbarTopStroke(canvas);
   }
 }
 

@@ -2199,7 +2199,7 @@ void BrowserView::InitViews() {
   top_container_->AddChildView(tabstrip_);  // Takes ownership.
   tabstrip_controller->InitFromModel(tabstrip_);
 
-  toolbar_ = new ToolbarView(browser_.get());
+  toolbar_ = new ToolbarView(browser_.get(), this);
   top_container_->AddChildView(toolbar_);
   toolbar_->Init();
 
