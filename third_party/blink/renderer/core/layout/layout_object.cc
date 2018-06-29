@@ -3534,10 +3534,6 @@ bool LayoutObject::WillRenderImage() {
   if (GetDocument().IsContextPaused())
     return false;
 
-  // Suspend animations when the page is not visible.
-  if (GetDocument().hidden())
-    return false;
-
   // If we're not in a window (i.e., we're dormant from being in a background
   // tab) then we don't want to render either.
   return GetDocument().View()->IsVisible();
