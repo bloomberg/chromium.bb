@@ -135,6 +135,7 @@ TEST(BlinkEventUtilTest, TouchEventCoalescing) {
   blink::WebTouchPoint touch_point;
   touch_point.id = 1;
   touch_point.state = blink::WebTouchPoint::kStateMoved;
+  touch_point.pointer_type = blink::WebPointerProperties::PointerType::kTouch;
 
   blink::WebTouchEvent coalesced_event;
   coalesced_event.SetType(blink::WebInputEvent::kTouchMove);
@@ -153,6 +154,10 @@ TEST(BlinkEventUtilTest, TouchEventCoalescing) {
   Coalesce(event_to_be_coalesced, &coalesced_event);
   EXPECT_EQ(8, coalesced_event.touches[0].movement_x);
   EXPECT_EQ(6, coalesced_event.touches[0].movement_y);
+
+  coalesced_event.touches[0].pointer_type =
+      blink::WebPointerProperties::PointerType::kPen;
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }
 
 TEST(BlinkEventUtilTest, WebMouseWheelEventCoalescing) {
@@ -218,6 +223,36 @@ TEST(BlinkEventUtilTest, WebGestureEventCoalescing) {
   EXPECT_EQ(5, coalesced_event.data.scroll_update.delta_y);
 
   event_to_be_coalesced.resending_plugin_id = 3;
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+}
+
+TEST(BlinkEventUtilTest, MouseEventCoalescing) {
+  blink::WebMouseEvent coalesced_event;
+  coalesced_event.SetType(blink::WebInputEvent::kMouseMove);
+  coalesced_event.movement_x = 5;
+  coalesced_event.movement_y = 10;
+  coalesced_event.id = 1;
+  coalesced_event.pointer_type =
+      blink::WebPointerProperties::PointerType::kMouse;
+
+  blink::WebMouseEvent event_to_be_coalesced;
+  event_to_be_coalesced.SetType(blink::WebInputEvent::kMouseMove);
+  event_to_be_coalesced.movement_x = 3;
+  event_to_be_coalesced.movement_y = -4;
+  event_to_be_coalesced.id = 1;
+  event_to_be_coalesced.pointer_type =
+      blink::WebPointerProperties::PointerType::kMouse;
+
+  EXPECT_TRUE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+  Coalesce(event_to_be_coalesced, &coalesced_event);
+  EXPECT_EQ(8, coalesced_event.movement_x);
+  EXPECT_EQ(6, coalesced_event.movement_y);
+
+  event_to_be_coalesced.id = 3;
+  EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
+
+  event_to_be_coalesced.pointer_type =
+      blink::WebPointerProperties::PointerType::kPen;
   EXPECT_FALSE(CanCoalesce(event_to_be_coalesced, coalesced_event));
 }
 
