@@ -29,7 +29,7 @@ public class DirectoryOption {
     /**
      * Name of the current download directory.
      */
-    public final String name;
+    public String name;
 
     /**
      * The absolute path of the download location.
@@ -49,15 +49,27 @@ public class DirectoryOption {
     /**
      * The type of the directory option.
      */
-    public final int type;
+    public final @DownloadLocationDirectoryType int type;
 
     public DirectoryOption(String name, String location, long availableSpace, long totalSpace,
             @DownloadLocationDirectoryType int type) {
+        this(location, availableSpace, totalSpace, type);
         this.name = name;
+    }
+
+    public DirectoryOption(String location, long availableSpace, long totalSpace,
+            @DownloadLocationDirectoryType int type) {
         this.location = location;
         this.availableSpace = availableSpace;
         this.totalSpace = totalSpace;
         this.type = type;
+    }
+
+    @Override
+    public Object clone() {
+        DirectoryOption directoryOption = new DirectoryOption(
+                this.name, this.location, this.availableSpace, this.totalSpace, this.type);
+        return directoryOption;
     }
 
     /**

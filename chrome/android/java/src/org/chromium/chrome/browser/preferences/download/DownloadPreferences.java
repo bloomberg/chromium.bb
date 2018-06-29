@@ -38,8 +38,6 @@ public class DownloadPreferences
         mLocationPromptEnabledPref.setOnPreferenceChangeListener(this);
 
         mLocationChangePref = (DownloadLocationPreference) findPreference(PREF_LOCATION_CHANGE);
-
-        updateData();
     }
 
     @Override
