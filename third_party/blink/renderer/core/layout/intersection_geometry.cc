@@ -155,10 +155,8 @@ void IntersectionGeometry::ClipToRoot() {
   LayoutBox* local_ancestor = nullptr;
   if (!RootIsImplicit() || root_->GetDocument().IsInMainFrame())
     local_ancestor = ToLayoutBox(root_);
-  VisualRectFlags flags = static_cast<VisualRectFlags>(
-      RuntimeEnabledFeatures::IntersectionObserverGeometryMapperEnabled()
-          ? (kUseGeometryMapper | kEdgeInclusive)
-          : kEdgeInclusive);
+  VisualRectFlags flags =
+      static_cast<VisualRectFlags>(kUseGeometryMapper | kEdgeInclusive);
   does_intersect_ = target_->MapToVisualRectInAncestorSpace(
       local_ancestor, intersection_rect_, flags);
   if (!does_intersect_ || !local_ancestor)

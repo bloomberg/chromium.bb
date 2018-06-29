@@ -194,10 +194,6 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kReducedReferrerGranularity))
     WebRuntimeFeatures::EnableReducedReferrerGranularity(true);
 
-  WebRuntimeFeatures::EnableIntersectionObserverGeometryMapper(
-      base::FeatureList::IsEnabled(
-          features::kIntersectionObserverGeometryMapper));
-
   if (command_line.HasSwitch(switches::kDisablePermissionsAPI))
     WebRuntimeFeatures::EnablePermissionsAPI(false);
 

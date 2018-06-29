@@ -59,14 +59,7 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
 
 }  // namespace
 
-class IntersectionObserverTest
-    : public testing::WithParamInterface<bool>,
-      public SimTest,
-      ScopedIntersectionObserverGeometryMapperForTest {
- public:
-  IntersectionObserverTest()
-      : ScopedIntersectionObserverGeometryMapperForTest(GetParam()) {}
-};
+class IntersectionObserverTest : public SimTest {};
 
 class IntersectionObserverV2Test : public IntersectionObserverTest,
                                    public ScopedIntersectionObserverV2ForTest {
@@ -75,10 +68,7 @@ class IntersectionObserverV2Test : public IntersectionObserverTest,
       : IntersectionObserverTest(), ScopedIntersectionObserverV2ForTest(true) {}
 };
 
-INSTANTIATE_TEST_CASE_P(All, IntersectionObserverTest, testing::Bool());
-INSTANTIATE_TEST_CASE_P(All, IntersectionObserverV2Test, testing::Bool());
-
-TEST_P(IntersectionObserverTest, ObserveSchedulesFrame) {
+TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete("<div id='target'></div>");
@@ -102,7 +92,7 @@ TEST_P(IntersectionObserverTest, ObserveSchedulesFrame) {
   EXPECT_TRUE(Compositor().NeedsBeginFrame());
 }
 
-TEST_P(IntersectionObserverTest, ResumePostsTask) {
+TEST_F(IntersectionObserverTest, ResumePostsTask) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -162,7 +152,7 @@ TEST_P(IntersectionObserverTest, ResumePostsTask) {
   EXPECT_EQ(observer_delegate->CallCount(), 3);
 }
 
-TEST_P(IntersectionObserverTest, DisconnectClearsNotifications) {
+TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -198,7 +188,7 @@ TEST_P(IntersectionObserverTest, DisconnectClearsNotifications) {
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 }
 
-TEST_P(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
+TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   WebView().GetSettings()->SetForceZeroLayoutHeight(true);
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
@@ -256,7 +246,7 @@ TEST_P(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 }
 
-TEST_P(IntersectionObserverV2Test, TrackVisibilityInit) {
+TEST_F(IntersectionObserverV2Test, TrackVisibilityInit) {
   IntersectionObserverInit observer_init;
   DummyExceptionStateForTesting exception_state;
   TestIntersectionObserverDelegate* observer_delegate =
@@ -270,7 +260,7 @@ TEST_P(IntersectionObserverV2Test, TrackVisibilityInit) {
   EXPECT_TRUE(observer->trackVisibility());
 }
 
-TEST_P(IntersectionObserverV2Test, BasicOcclusion) {
+TEST_F(IntersectionObserverV2Test, BasicOcclusion) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -318,7 +308,7 @@ TEST_P(IntersectionObserverV2Test, BasicOcclusion) {
   EXPECT_FALSE(observer_delegate->LastEntry()->isVisible());
 }
 
-TEST_P(IntersectionObserverV2Test, BasicOpacity) {
+TEST_F(IntersectionObserverV2Test, BasicOpacity) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
@@ -366,7 +356,7 @@ TEST_P(IntersectionObserverV2Test, BasicOpacity) {
   EXPECT_FALSE(observer_delegate->LastEntry()->isVisible());
 }
 
-TEST_P(IntersectionObserverV2Test, BasicTransform) {
+TEST_F(IntersectionObserverV2Test, BasicTransform) {
   WebView().Resize(WebSize(800, 600));
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
