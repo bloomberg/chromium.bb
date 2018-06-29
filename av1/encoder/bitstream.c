@@ -2533,11 +2533,13 @@ static void write_dec_model_op_parameters(AV1_COMMON *const cm,
   //  aom_wb_write_bit(wb, cm->op_params[op_num].has_parameters);
   //  if (!cm->op_params[op_num].has_parameters) return;
 
-  aom_wb_write_literal(wb, cm->op_params[op_num].decoder_buffer_delay,
-                       cm->buffer_model.encoder_decoder_buffer_delay_length);
+  aom_wb_write_unsigned_literal(
+      wb, cm->op_params[op_num].decoder_buffer_delay,
+      cm->buffer_model.encoder_decoder_buffer_delay_length);
 
-  aom_wb_write_literal(wb, cm->op_params[op_num].encoder_buffer_delay,
-                       cm->buffer_model.encoder_decoder_buffer_delay_length);
+  aom_wb_write_unsigned_literal(
+      wb, cm->op_params[op_num].encoder_buffer_delay,
+      cm->buffer_model.encoder_decoder_buffer_delay_length);
 
   aom_wb_write_bit(wb, cm->op_params[op_num].low_delay_mode_flag);
 

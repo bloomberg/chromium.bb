@@ -3389,10 +3389,10 @@ void av1_read_op_parameters_info(AV1_COMMON *const cm,
                        op_num + 1);
   }
 
-  cm->op_params[op_num].decoder_buffer_delay = aom_rb_read_literal(
+  cm->op_params[op_num].decoder_buffer_delay = aom_rb_read_unsigned_literal(
       rb, cm->buffer_model.encoder_decoder_buffer_delay_length);
 
-  cm->op_params[op_num].encoder_buffer_delay = aom_rb_read_literal(
+  cm->op_params[op_num].encoder_buffer_delay = aom_rb_read_unsigned_literal(
       rb, cm->buffer_model.encoder_decoder_buffer_delay_length);
 
   cm->op_params[op_num].low_delay_mode_flag = aom_rb_read_bit(rb);

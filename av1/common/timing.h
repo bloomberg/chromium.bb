@@ -35,8 +35,8 @@ typedef struct aom_dec_model_op_parameters {
   int decoder_model_param_present_flag;
   int64_t bitrate;
   int64_t buffer_size;
-  int decoder_buffer_delay;
-  int encoder_buffer_delay;
+  uint32_t decoder_buffer_delay;
+  uint32_t encoder_buffer_delay;
   int low_delay_mode_flag;
   int display_model_param_present_flag;
   int initial_display_delay;
