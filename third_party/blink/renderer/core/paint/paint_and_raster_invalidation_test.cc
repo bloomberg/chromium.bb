@@ -9,6 +9,9 @@
 
 namespace blink {
 
+using ::testing::MatchesRegex;
+using ::testing::UnorderedElementsAre;
+
 void SetUpHTML(PaintAndRasterInvalidationTest& test) {
   test.SetBodyInnerHTML(R"HTML(
     <style>
@@ -62,7 +65,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
     target->setAttribute(HTMLNames::styleAttr, "height: 200px");
     GetDocument().View()->UpdateAllLifecyclePhases();
     EXPECT_THAT(GetCcLayerClient()->TakeDebugInfo(GetCcLayer())->ToString(),
-                testing::MatchesRegex(
+                MatchesRegex(
                     "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
                     "\\{\"geometry_rect\":\\[8,108,100,100\\],"
                     "\"reason\":\"incremental\","
@@ -71,7 +74,7 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
     target->setAttribute(HTMLNames::styleAttr, "height: 200px; width: 200px");
     GetDocument().View()->UpdateAllLifecyclePhases();
     EXPECT_THAT(GetCcLayerClient()->TakeDebugInfo(GetCcLayer())->ToString(),
-                testing::MatchesRegex(
+                MatchesRegex(
                     "\\{\"layer_name\":.*\"annotated_invalidation_rects\":\\["
                     "\\{\"geometry_rect\":\\[108,8,100,200\\],"
                     "\"reason\":\"incremental\","
@@ -89,164 +92,159 @@ TEST_P(PaintAndRasterInvalidationTest, TrackingForTracing) {
 TEST_P(PaintAndRasterInvalidationTest, IncrementalInvalidationExpand) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(50, 0, 50, 200), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[0].reason);
-  EXPECT_EQ(IntRect(0, 100, 100, 100), raster_invalidations[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(50, 0, 50, 200),
+                                         PaintInvalidationReason::kIncremental},
+                  RasterInvalidationInfo{
+                      object, object->DebugName(), IntRect(0, 100, 100, 100),
+                      PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(PaintAndRasterInvalidationTest, IncrementalInvalidationShrink) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 20px; height: 80px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(20, 0, 30, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[0].reason);
-  EXPECT_EQ(IntRect(0, 80, 50, 20), raster_invalidations[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(20, 0, 30, 100),
+                                         PaintInvalidationReason::kIncremental},
+                  RasterInvalidationInfo{
+                      object, object->DebugName(), IntRect(0, 80, 50, 20),
+                      PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(PaintAndRasterInvalidationTest, IncrementalInvalidationMixed) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 100px; height: 80px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(50, 0, 50, 80), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[0].reason);
-  EXPECT_EQ(IntRect(0, 80, 50, 20), raster_invalidations[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(50, 0, 50, 80),
+                                         PaintInvalidationReason::kIncremental},
+                  RasterInvalidationInfo{
+                      object, object->DebugName(), IntRect(0, 80, 50, 20),
+                      PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(PaintAndRasterInvalidationTest, SubpixelVisualRectChagne) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 100.6px; height: 70.3px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 50, 100), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 0, 101, 71), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 50, 100),
+                                         PaintInvalidationReason::kGeometry},
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 101, 71),
+                                         PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 50px; height: 100px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 101, 71), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 0, 50, 100), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 50, 100),
+                                         PaintInvalidationReason::kGeometry},
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 101, 71),
+                                         PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(PaintAndRasterInvalidationTest, SubpixelVisualRectChangeWithTransform) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
   target->setAttribute(HTMLNames::classAttr, "background transform");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 100.6px; height: 70.3px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 100, 200), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 0, 202, 142), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 100, 200),
+                                         PaintInvalidationReason::kGeometry},
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 202, 142),
+                                         PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "width: 50px; height: 100px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(2u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 202, 142), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
-  EXPECT_EQ(IntRect(0, 0, 100, 200), (*raster_invalidations)[1].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[1].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 100, 200),
+                                         PaintInvalidationReason::kGeometry},
+                  RasterInvalidationInfo{object, object->DebugName(),
+                                         IntRect(0, 0, 202, 142),
+                                         PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(PaintAndRasterInvalidationTest, SubpixelWithinPixelsChange) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
-  LayoutObject* target_object = target->GetLayoutObject();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100),
-            target_object->FirstFragment().VisualRect());
+  LayoutObject* object = target->GetLayoutObject();
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr,
                        "margin-top: 0.6px; width: 50px; height: 99.3px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100),
-            target_object->FirstFragment().VisualRect());
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 50, 100), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), IntRect(0, 0, 50, 100),
+                  PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr,
                        "margin-top: 0.6px; width: 49.3px; height: 98.5px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  EXPECT_EQ(LayoutRect(0, 0, 50, 100),
-            target_object->FirstFragment().VisualRect());
-  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 50, 100), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
+  EXPECT_EQ(LayoutRect(0, 0, 50, 100), object->FirstFragment().VisualRect());
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), IntRect(0, 0, 50, 100),
+                  PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
 TEST_P(PaintAndRasterInvalidationTest, ResizeRotated) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
   target->setAttribute(HTMLNames::styleAttr, "transform: rotate(45deg)");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
@@ -254,15 +252,13 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeRotated) {
   target->setAttribute(HTMLNames::styleAttr,
                        "transform: rotate(45deg); width: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations->size());
   auto expected_rect = EnclosingIntRect(
       TransformationMatrix().Rotate(45).MapRect(FloatRect(50, 0, 150, 100)));
   expected_rect.Intersect(IntRect(0, 0, 800, 600));
-  EXPECT_EQ(expected_rect, (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            (*raster_invalidations)[0].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), expected_rect,
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -276,20 +272,19 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeRotatedChild) {
       "red'></div>");
   GetDocument().View()->UpdateAllLifecyclePhases();
   Element* child = GetDocument().getElementById("child");
+  auto* child_object = child->GetLayoutObject();
 
   GetDocument().View()->SetTracksPaintInvalidations(true);
   child->setAttribute(HTMLNames::styleAttr,
                       "width: 100px; height: 50px; background: red");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations->size());
   auto expected_rect = EnclosingIntRect(
       TransformationMatrix().Rotate(45).MapRect(FloatRect(50, 0, 50, 50)));
   expected_rect.Intersect(IntRect(0, 0, 800, 600));
-  EXPECT_EQ(expected_rect, (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            (*raster_invalidations)[0].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  child_object, child_object->DebugName(), expected_rect,
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -308,16 +303,12 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "height: 3000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(0, 2000, 800, 1000), raster_invalidations[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(
-                ViewScrollingContentsDisplayItemClient()),
-            raster_invalidations[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[0].reason);
-
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          ViewScrollingContentsDisplayItemClient(),
+          ViewScrollingContentsDisplayItemClient()->DebugName(),
+          IntRect(0, 2000, 800, 1000), PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the viewport. No paint invalidation.
@@ -345,16 +336,13 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedLayoutViewGradientResize) {
   target->setAttribute(HTMLNames::styleAttr, "height: 3000px");
   GetDocument().View()->UpdateAllLifecyclePhases();
 
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(0, 0, 800, 3000), raster_invalidations[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(
-                ViewScrollingContentsDisplayItemClient()),
-            raster_invalidations[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
-            raster_invalidations[0].reason);
-
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          ViewScrollingContentsDisplayItemClient(),
+          ViewScrollingContentsDisplayItemClient()->DebugName(),
+          IntRect(0, 0, 800, 3000),
+          PaintInvalidationReason::kBackgroundOnScrollingContentsLayer}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the viewport. No paint invalidation.
@@ -400,15 +388,12 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewResize) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   // The iframe doesn't have anything visible by itself, so we only issue raster
   // invalidation for the frame contents.
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(
-      static_cast<const DisplayItemClient*>(content->GetLayoutObject()->View()),
-      raster_invalidations[0].client);
-  EXPECT_EQ(IntRect(0, 100, 100, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[0].reason);
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          content->GetLayoutObject()->View(),
+          content->GetLayoutObject()->View()->DebugName(),
+          IntRect(0, 100, 100, 100), PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -442,29 +427,24 @@ TEST_P(PaintAndRasterInvalidationTest, NonCompositedLayoutViewGradientResize) {
   GetDocument().View()->SetTracksPaintInvalidations(true);
   content->setAttribute(HTMLNames::styleAttr, "height: 500px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto* raster_invalidations =
-      &GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(IntRect(0, 0, 100, 100), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(frame_layout_view),
-            (*raster_invalidations)[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kBackground,
-            (*raster_invalidations)[0].reason);
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          frame_layout_view, frame_layout_view->DebugName(),
+          IntRect(0, 0, 100, 100), PaintInvalidationReason::kBackground}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the iframe.
   GetDocument().View()->SetTracksPaintInvalidations(true);
   iframe->setAttribute(HTMLNames::styleAttr, "height: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  raster_invalidations = &GetRasterInvalidationTracking()->Invalidations();
   // The iframe doesn't have anything visible by itself, so we only issue raster
   // invalidation for the frame contents.
-  ASSERT_EQ(1u, raster_invalidations->size());
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(frame_layout_view),
-            (*raster_invalidations)[0].client);
-  EXPECT_EQ(IntRect(0, 0, 100, 200), (*raster_invalidations)[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kGeometry,
-            (*raster_invalidations)[0].reason);
+  EXPECT_THAT(
+      GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          frame_layout_view, frame_layout_view->DebugName(),
+          IntRect(0, 0, 100, 200), PaintInvalidationReason::kGeometry}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -509,15 +489,11 @@ TEST_P(PaintAndRasterInvalidationTest,
   // No invalidation on the container layer.
   EXPECT_FALSE(container_raster_invalidation_tracking()->HasInvalidations());
   // Incremental invalidation of background on contents layer.
-  const auto& contents_raster_invalidations =
-      contents_raster_invalidation_tracking()->Invalidations();
-  ASSERT_EQ(1u, contents_raster_invalidations.size());
-  EXPECT_EQ(IntRect(0, 500, 500, 500), contents_raster_invalidations[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(
-                target_obj->Layer()->GraphicsLayerBacking()),
-            contents_raster_invalidations[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            contents_raster_invalidations[0].reason);
+  const auto* client = target_obj->Layer()->GraphicsLayerBacking();
+  EXPECT_THAT(contents_raster_invalidation_tracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  client, client->DebugName(), IntRect(0, 500, 500, 500),
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the container.
@@ -561,14 +537,11 @@ TEST_P(PaintAndRasterInvalidationTest,
       container_layer->GetRasterInvalidationTracking()->HasInvalidations());
   // Full invalidation of background on contents layer because the gradient
   // background is resized.
-  const auto& contents_raster_invalidations =
-      contents_layer->GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, contents_raster_invalidations.size());
-  EXPECT_EQ(IntRect(0, 0, 500, 1000), contents_raster_invalidations[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(contents_layer),
-            contents_raster_invalidations[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kBackgroundOnScrollingContentsLayer,
-            contents_raster_invalidations[0].reason);
+  EXPECT_THAT(
+      contents_layer->GetRasterInvalidationTracking()->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          contents_layer, contents_layer->DebugName(), IntRect(0, 0, 500, 1000),
+          PaintInvalidationReason::kBackgroundOnScrollingContentsLayer}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 
   // Resize the container.
@@ -588,6 +561,7 @@ TEST_P(PaintAndRasterInvalidationTest,
        NonCompositedBackgroundAttachmentLocalResize) {
   SetUpHTML(*this);
   Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
   target->setAttribute(HTMLNames::classAttr, "background local-background");
   target->SetInnerHTMLFromString(
       "<div id=child style='width: 500px; height: 500px'></div>",
@@ -608,14 +582,10 @@ TEST_P(PaintAndRasterInvalidationTest,
   GetDocument().View()->SetTracksPaintInvalidations(true);
   target->setAttribute(HTMLNames::styleAttr, "height: 200px");
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
-  EXPECT_EQ(IntRect(0, 100, 50, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(target->GetLayoutObject()),
-            raster_invalidations[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental,
-            raster_invalidations[0].reason);
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  object, object->DebugName(), IntRect(0, 100, 50, 100),
+                  PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -640,15 +610,12 @@ TEST_P(PaintAndRasterInvalidationTest, CompositedSolidBackgroundResize) {
       ToLayoutBoxModelObject(target->GetLayoutObject());
   GraphicsLayer* scrolling_contents_layer =
       target_object->Layer()->GraphicsLayerBacking();
-  const auto& invalidations =
+  EXPECT_THAT(
       scrolling_contents_layer->GetRasterInvalidationTracking()
-          ->Invalidations();
-
-  ASSERT_EQ(1u, invalidations.size());
-  EXPECT_EQ(IntRect(50, 0, 50, 500), invalidations[0].rect);
-  EXPECT_EQ(static_cast<const DisplayItemClient*>(scrolling_contents_layer),
-            invalidations[0].client);
-  EXPECT_EQ(PaintInvalidationReason::kIncremental, invalidations[0].reason);
+          ->Invalidations(),
+      UnorderedElementsAre(RasterInvalidationInfo{
+          scrolling_contents_layer, scrolling_contents_layer->DebugName(),
+          IntRect(50, 0, 50, 500), PaintInvalidationReason::kIncremental}));
   GetDocument().View()->SetTracksPaintInvalidations(false);
 }
 
@@ -746,13 +713,12 @@ TEST_P(PaintAndRasterInvalidationTest, DelayedFullPaintInvalidation) {
   // Scroll target into view.
   GetDocument().domWindow()->scrollTo(0, 4000);
   GetDocument().View()->UpdateAllLifecyclePhases();
-  const auto& raster_invalidations =
-      GetRasterInvalidationTracking()->Invalidations();
-  ASSERT_EQ(1u, raster_invalidations.size());
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(RasterInvalidationInfo{
+                  target, target->DebugName(), IntRect(0, 4000, 100, 100),
+                  PaintInvalidationReason::kFull}));
   EXPECT_EQ(PaintInvalidationReason::kNone,
             target->FullPaintInvalidationReason());
-  EXPECT_EQ(IntRect(0, 4000, 100, 100), raster_invalidations[0].rect);
-  EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
   EXPECT_FALSE(target->NeedsPaintOffsetAndVisualRectUpdate());
   GetDocument().View()->SetTracksPaintInvalidations(false);
 };
@@ -798,27 +764,23 @@ TEST_P(PaintAndRasterInvalidationTest, SVGHiddenContainer) {
   // Should invalidate raster for real_rect only.
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     // SPv2 creates composited layers for the rect and its mask.
-    const auto& rect_raster_invalidations =
-        GetRasterInvalidationTracking(1)->Invalidations();
-    ASSERT_EQ(1u, rect_raster_invalidations.size());
-    EXPECT_EQ(IntRect(0, 0, 7, 8), rect_raster_invalidations[0].rect);
-    EXPECT_EQ(PaintInvalidationReason::kFull,
-              rect_raster_invalidations[0].reason);
-    const auto& mask_raster_invalidations =
-        GetRasterInvalidationTracking(2)->Invalidations();
-    ASSERT_EQ(1u, mask_raster_invalidations.size());
-    EXPECT_EQ(IntRect(0, 0, 7, 8), mask_raster_invalidations[0].rect);
-    EXPECT_EQ(PaintInvalidationReason::kFull,
-              mask_raster_invalidations[0].reason);
+    EXPECT_THAT(GetRasterInvalidationTracking(1)->Invalidations(),
+                UnorderedElementsAre(RasterInvalidationInfo{
+                    real_rect, real_rect->DebugName(), IntRect(0, 0, 7, 8),
+                    PaintInvalidationReason::kFull}));
+    EXPECT_THAT(GetRasterInvalidationTracking(2)->Invalidations(),
+                UnorderedElementsAre(RasterInvalidationInfo{
+                    real_rect, real_rect->DebugName(), IntRect(0, 0, 7, 8),
+                    PaintInvalidationReason::kFull}));
   } else {
-    const auto& raster_invalidations =
-        GetRasterInvalidationTracking()->Invalidations();
-    // The first is for the rect itself, the second is for its mask.
-    ASSERT_EQ(2u, raster_invalidations.size());
-    EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[0].rect);
-    EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[0].reason);
-    EXPECT_EQ(IntRect(155, 166, 7, 8), raster_invalidations[1].rect);
-    EXPECT_EQ(PaintInvalidationReason::kFull, raster_invalidations[1].reason);
+    EXPECT_THAT(GetRasterInvalidationTracking(1)->Invalidations(),
+                UnorderedElementsAre(
+                    RasterInvalidationInfo{real_rect, real_rect->DebugName(),
+                                           IntRect(155, 166, 7, 8),
+                                           PaintInvalidationReason::kFull},
+                    RasterInvalidationInfo{real_rect, real_rect->DebugName(),
+                                           IntRect(155, 166, 7, 8),
+                                           PaintInvalidationReason::kFull}));
   }
 
   GetDocument().View()->SetTracksPaintInvalidations(false);

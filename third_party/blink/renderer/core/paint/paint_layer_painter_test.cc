@@ -162,7 +162,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequence) {
   EXPECT_TRUE(PaintWithoutCommit());
   EXPECT_EQ(6, NumCachedNewItems());
 
-  Commit();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 7,
@@ -253,7 +253,7 @@ TEST_P(PaintLayerPainterTest, CachedSubsequenceOnInterestRectChange) {
   // pair.
   EXPECT_EQ(5, NumCachedNewItems());
 
-  Commit();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 6,
@@ -334,7 +334,7 @@ TEST_P(PaintLayerPainterTest,
   EXPECT_TRUE(PaintWithoutCommit(&interest_rect));
   EXPECT_EQ(4, NumCachedNewItems());
 
-  Commit();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(
       RootPaintController().GetDisplayItemList(), 5,

@@ -26,6 +26,7 @@ class PaintChunkSubset {
   class Iterator {
    public:
     const PaintChunk& operator*() const { return subset_[offset_]; }
+    const PaintChunk* operator->() const { return &subset_[offset_]; }
     bool operator!=(const Iterator& other) const {
       DCHECK_EQ(&subset_, &other.subset_);
       return offset_ != other.offset_;
@@ -34,6 +35,9 @@ class PaintChunkSubset {
       ++offset_;
       return *this;
     }
+
+    // The index in the whole paint chunks set.
+    size_t OriginalIndex() const { return subset_.OriginalIndex(offset_); }
 
    private:
     friend class PaintChunkSubset;
@@ -52,8 +56,15 @@ class PaintChunkSubset {
     return subset_indices_ ? subset_indices_->size() : chunks_.size();
   }
 
-  const PaintChunk& operator[](int i) const {
-    return chunks_[subset_indices_ ? (*subset_indices_)[i] : i];
+  // |i| is an index in the subset.
+  const PaintChunk& operator[](size_t i) const {
+    return chunks_[OriginalIndex(i)];
+  }
+
+  // |i| is an index in the subset.
+  // Returns the index in the whole paint chunks set.
+  size_t OriginalIndex(size_t i) const {
+    return subset_indices_ ? (*subset_indices_)[i] : i;
   }
 
  private:

@@ -35,7 +35,7 @@
         {
           "object": "LayoutSVGRect rect id='filtered'",
           "rect": [140, 100, 36, 36],
-          "reason": "style change"
+          "reason": "appeared"
         },
         {
           "object": "LayoutSVGContainer g",

@@ -15,9 +15,6 @@
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/testing/paint_test_configurations.h"
 
-using testing::ElementsAre;
-using testing::UnorderedElementsAre;
-
 namespace blink {
 
 // Tests using this class will be tested with under-invalidation-checking
@@ -42,16 +39,12 @@ TEST_P(PaintControllerTest, NestedRecorders) {
   InitRootChunk();
 
   DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 200, 200));
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 1,
                       TestDisplayItem(client, kBackgroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  // Raster invalidation for the whole chunk will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateBasic) {
@@ -66,7 +59,7 @@ TEST_P(PaintControllerTest, UpdateBasic) {
 
   EXPECT_EQ(0, NumCachedNewItems());
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
                       TestDisplayItem(first, kBackgroundType),
@@ -74,10 +67,6 @@ TEST_P(PaintControllerTest, UpdateBasic) {
                       TestDisplayItem(first, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  // Raster invalidation for the whole chunk will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  GetPaintController().FinishCycle();
 
   InitRootChunk();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 300, 300));
@@ -90,17 +79,13 @@ TEST_P(PaintControllerTest, UpdateBasic) {
   EXPECT_EQ(1, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(first, kBackgroundType),
                       TestDisplayItem(first, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // |second| disappeared from the chunk.
-              UnorderedElementsAre(FloatRect(100, 100, 200, 200)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrder) {
@@ -141,7 +126,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
   EXPECT_EQ(2, NumIndexedItems());       // first
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
                       TestDisplayItem(second, kBackgroundType),
@@ -152,10 +137,6 @@ TEST_P(PaintControllerTest, UpdateSwapOrder) {
                       TestDisplayItem(unaffected, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Bounds of |second| (old and new are the same).
-              UnorderedElementsAre(FloatRect(100, 100, 50, 200)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
@@ -197,7 +178,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
   EXPECT_EQ(2, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
                       TestDisplayItem(second, kBackgroundType),
@@ -208,12 +189,6 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithInvalidation) {
                       TestDisplayItem(unaffected, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Bounds of |first| (old and new are the same).
-              UnorderedElementsAre(FloatRect(100, 100, 100, 100)));
-  // No need to invalidate raster of |second|, because the client (|first|)
-  // which swapped order with it has been invalidated.
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
@@ -244,7 +219,7 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
   EXPECT_EQ(0, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
                       TestDisplayItem(first, kBackgroundType),
@@ -252,10 +227,6 @@ TEST_P(PaintControllerTest, UpdateNewItemInMiddle) {
                       TestDisplayItem(second, kBackgroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // |third| newly appeared in the chunk.
-              UnorderedElementsAre(FloatRect(125, 100, 200, 50)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
@@ -298,7 +269,7 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
   EXPECT_EQ(2, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
                       TestDisplayItem(first, kBackgroundType),
@@ -309,10 +280,6 @@ TEST_P(PaintControllerTest, UpdateInvalidationWithPhases) {
                       TestDisplayItem(third, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Bounds of |second| (old and new are the same).
-              UnorderedElementsAre(FloatRect(100, 100, 50, 200)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, IncrementalRasterInvalidation) {
@@ -340,21 +307,9 @@ TEST_P(PaintControllerTest, IncrementalRasterInvalidation) {
     DrawRect(context, *client, kBackgroundType,
              FloatRect(client->VisualRect()));
   }
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              UnorderedElementsAre(FloatRect(200, 100, 50, 100),    // 0: right
-                                   FloatRect(100, 200, 100, 50),    // 1: bottom
-                                   FloatRect(200, 100, 50, 80),     // 2: right
-                                   FloatRect(100, 180, 100, 20),    // 2: bottom
-                                   FloatRect(180, 100, 20, 100),    // 3: right
-                                   FloatRect(100, 200, 80, 50),     // 3: bottom
-                                   FloatRect(200, 100, 50, 150),    // 4: right
-                                   FloatRect(100, 200, 150, 50),    // 4: bottom
-                                   FloatRect(180, 100, 20, 100),    // 5: right
-                                   FloatRect(100, 180, 100, 20)));  // 5: bottom
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
@@ -381,7 +336,7 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
   DrawRect(context, second, kForegroundType, FloatRect(150, 250, 100, 100));
   EXPECT_EQ(0, NumCachedNewItems());
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(first, kBackgroundType),
@@ -390,13 +345,6 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
                       TestDisplayItem(second, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              UnorderedElementsAre(
-                  // |first| newly appeared in the chunk.
-                  FloatRect(100, 100, 150, 150),
-                  // Old and new bounds of |second|.
-                  FloatRect(200, 200, 50, 50), FloatRect(150, 250, 100, 100)));
-  GetPaintController().FinishCycle();
 
   InitRootChunk();
   DrawRect(context, second, kBackgroundType, FloatRect(150, 250, 100, 100));
@@ -409,17 +357,13 @@ TEST_P(PaintControllerTest, UpdateAddFirstOverlap) {
   EXPECT_EQ(2, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(second, kBackgroundType),
                       TestDisplayItem(second, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // |first| disappeared from the chunk.
-              UnorderedElementsAre(FloatRect(100, 100, 150, 150)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
@@ -446,7 +390,7 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   DrawRect(context, second, kBackgroundType, FloatRect(200, 200, 50, 50));
   DrawRect(context, second, kForegroundType, FloatRect(200, 200, 50, 50));
   EXPECT_EQ(0, NumCachedNewItems());
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(first, kBackgroundType),
@@ -455,13 +399,6 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
                       TestDisplayItem(second, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              UnorderedElementsAre(
-                  // The bigger of old and new bounds of |first|.
-                  FloatRect(100, 100, 150, 150),
-                  // |second| newly appeared in the chunk.
-                  FloatRect(200, 200, 50, 50)));
-  GetPaintController().FinishCycle();
 
   InitRootChunk();
   first.Invalidate();
@@ -470,88 +407,13 @@ TEST_P(PaintControllerTest, UpdateAddLastOverlap) {
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, first, kForegroundType, FloatRect(100, 100, 150, 150));
   EXPECT_EQ(0, NumCachedNewItems());
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(first, kBackgroundType),
                       TestDisplayItem(first, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              UnorderedElementsAre(
-                  // The bigger of old and new bounds of |first|.
-                  FloatRect(100, 100, 150, 150),
-                  // |second| disappeared from the chunk.
-                  FloatRect(200, 200, 50, 50)));
-  GetPaintController().FinishCycle();
-}
-
-TEST_P(PaintControllerTest, UpdateClip) {
-  FakeDisplayItemClient first("first", LayoutRect(100, 100, 150, 150));
-  FakeDisplayItemClient second("second", LayoutRect(100, 100, 200, 200));
-  GraphicsContext context(GetPaintController());
-
-  auto clip = CreateClip(c0(), &t0(), FloatRoundedRect(1, 1, 2, 2));
-  auto properties = DefaultPaintChunkProperties();
-  properties.SetClip(clip.get());
-  GetPaintController().UpdateCurrentPaintChunkProperties(
-      PaintChunk::Id(first, kClipType), properties);
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
-  CommitAndFinishCycle();
-
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundType),
-                      TestDisplayItem(second, kBackgroundType));
-
-  InitRootChunk();
-  first.Invalidate();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
-
-  EXPECT_EQ(1, NumCachedNewItems());
-#if DCHECK_IS_ON()
-  EXPECT_EQ(1, NumSequentialMatches());
-  EXPECT_EQ(0, NumOutOfOrderMatches());
-  EXPECT_EQ(1, NumIndexedItems());
-#endif
-
-  GetPaintController().CommitNewDisplayItems();
-
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundType),
-                      TestDisplayItem(second, kBackgroundType));
-
-  EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  // This is a new chunk. Raster invalidation for the whole chunk will be
-  // issued during PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  GetPaintController().FinishCycle();
-
-  InitRootChunk();
-  second.Invalidate();
-  DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
-
-  auto clip2 = CreateClip(c0(), &t0(), FloatRoundedRect(1, 1, 2, 2));
-  auto properties2 = DefaultPaintChunkProperties();
-  properties2.SetClip(clip2.get());
-  GetPaintController().UpdateCurrentPaintChunkProperties(
-      PaintChunk::Id(second, kClipType), properties2);
-  DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 200, 200));
-  GetPaintController().CommitNewDisplayItems();
-
-  EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
-                      TestDisplayItem(first, kBackgroundType),
-                      TestDisplayItem(second, kBackgroundType));
-
-  EXPECT_EQ(2u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // |second| disappeared from the first chunk.
-              UnorderedElementsAre(FloatRect(100, 100, 200, 200)));
-  // This is a new chunk. Raster invalidation for the whole chunk will be
-  // issued during PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(1));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, CachedDisplayItems) {
@@ -585,7 +447,7 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
   InitRootChunk();
   DrawRect(context, first, kBackgroundType, FloatRect(100, 100, 150, 150));
   DrawRect(context, second, kBackgroundType, FloatRect(100, 100, 150, 150));
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 2,
                       TestDisplayItem(first, kBackgroundType),
@@ -602,9 +464,12 @@ TEST_P(PaintControllerTest, CachedDisplayItems) {
                   GetPaintController().GetDisplayItemList()[1])
                   .GetPaintRecord());
   }
-  GetPaintController().FinishCycle();
   EXPECT_TRUE(ClientCacheIsValid(first));
   EXPECT_TRUE(ClientCacheIsValid(second));
+
+  InvalidateAll();
+  EXPECT_FALSE(ClientCacheIsValid(first));
+  EXPECT_FALSE(ClientCacheIsValid(second));
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
@@ -649,7 +514,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
   DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
                       TestDisplayItem(container2, kBackgroundType),
@@ -662,14 +527,6 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildren) {
                       TestDisplayItem(container1, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(
-      *GetRasterInvalidationRects(0),
-      UnorderedElementsAre(
-          // Bounds of |container2| which was moved behind |container1|.
-          FloatRect(100, 200, 100, 100),
-          // Bounds of |content2| which was moved along with |container2|.
-          FloatRect(100, 200, 50, 200)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
@@ -715,7 +572,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
   DrawRect(context, content1, kBackgroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, content1, kForegroundType, FloatRect(100, 100, 50, 200));
   DrawRect(context, container1, kForegroundType, FloatRect(100, 100, 100, 100));
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
                       TestDisplayItem(container2, kBackgroundType),
@@ -728,16 +585,6 @@ TEST_P(PaintControllerTest, UpdateSwapOrderWithChildrenAndInvalidation) {
                       TestDisplayItem(container1, kForegroundType));
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(
-      *GetRasterInvalidationRects(0),
-      UnorderedElementsAre(
-          // Bounds of |container1| (old and new are the same).
-          FloatRect(100, 100, 100, 100),
-          // Bounds of |container2| which was moved behind |container1|.
-          FloatRect(100, 200, 100, 100),
-          // Bounds of |content2| which was moved along with |container2|.
-          FloatRect(100, 200, 50, 200)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceForcePaintChunk) {
@@ -840,7 +687,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
     DrawRect(context, container2, kForegroundType,
              FloatRect(100, 200, 100, 100));
   }
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
                       TestDisplayItem(container1, kBackgroundType),
@@ -868,11 +715,6 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
             GetPaintController().PaintChunks()[0].id);
   EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
             GetPaintController().PaintChunks()[1].id);
-  // Raster invalidation for the whole chunks will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  EXPECT_FALSE(GetRasterInvalidationRects(1));
-  GetPaintController().FinishCycle();
 
   // Simulate the situation when |container1| gets a z-index that is greater
   // than that of |container2|.
@@ -928,7 +770,7 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
   EXPECT_EQ(0, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 8,
                       TestDisplayItem(container2, kBackgroundType),
@@ -955,10 +797,6 @@ TEST_P(PaintControllerTest, CachedSubsequenceSwapOrder) {
             GetPaintController().PaintChunks()[0].id);
   EXPECT_EQ(PaintChunk::Id(container1, kBackgroundType),
             GetPaintController().PaintChunks()[1].id);
-  // Swapping order of chunks should not invalidate anything.
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  EXPECT_FALSE(GetRasterInvalidationRects(1));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, CachedSubsequenceAndDisplayItemsSwapOrder) {
@@ -1143,7 +981,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
       PaintChunk::Id(container2, kBackgroundType), container2_properties);
   DrawRect(context, container2, kBackgroundType, FloatRect(100, 200, 100, 100));
   DrawRect(context, content2, kBackgroundType, FloatRect(100, 200, 50, 200));
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(container1, kBackgroundType),
@@ -1156,11 +994,6 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
             GetPaintController().PaintChunks()[0].id);
   EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
             GetPaintController().PaintChunks()[1].id);
-  // Raster invalidation for the whole chunks will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  EXPECT_FALSE(GetRasterInvalidationRects(1));
-  GetPaintController().FinishCycle();
 
   // Move content2 into container1, without invalidation.
   GetPaintController().UpdateCurrentPaintChunkProperties(
@@ -1179,7 +1012,7 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
   EXPECT_EQ(1, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(container1, kBackgroundType),
@@ -1192,12 +1025,6 @@ TEST_P(PaintControllerTest, UpdateSwapOrderCrossingChunks) {
             GetPaintController().PaintChunks()[0].id);
   EXPECT_EQ(PaintChunk::Id(container2, kBackgroundType),
             GetPaintController().PaintChunks()[1].id);
-  // |content2| is invalidated raster on both the old chunk and the new chunk.
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              UnorderedElementsAre(FloatRect(100, 200, 50, 200)));
-  EXPECT_THAT(*GetRasterInvalidationRects(1),
-              UnorderedElementsAre(FloatRect(100, 200, 50, 200)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, OutOfOrderNoCrash) {
@@ -1294,7 +1121,7 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
                FloatRect(100, 200, 50, 200));
     }
   }
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 6,
                       TestDisplayItem(container1, kBackgroundType),
@@ -1335,14 +1162,6 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
             GetPaintController().PaintChunks()[3].id);
   EXPECT_EQ(PaintChunk::Id(content2, kBackgroundType),
             GetPaintController().PaintChunks()[4].id);
-  // Raster invalidation for the whole chunks will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  EXPECT_FALSE(GetRasterInvalidationRects(1));
-  EXPECT_FALSE(GetRasterInvalidationRects(2));
-  EXPECT_FALSE(GetRasterInvalidationRects(3));
-  EXPECT_FALSE(GetRasterInvalidationRects(4));
-  GetPaintController().FinishCycle();
 
   // Invalidate container1 but not content1.
   container1.Invalidate();
@@ -1400,7 +1219,7 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
   EXPECT_EQ(0, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 4,
                       TestDisplayItem(content2, kForegroundType),
@@ -1430,15 +1249,6 @@ TEST_P(PaintControllerTest, CachedNestedSubsequenceUpdate) {
             GetPaintController().PaintChunks()[1].id);
   EXPECT_EQ(PaintChunk::Id(container1, kForegroundType),
             GetPaintController().PaintChunks()[2].id);
-  // This is a new chunk. Raster invalidation of the whole chunk will be
-  // issued during PaintArtifactCompositor::Update().
-  EXPECT_TRUE(GetRasterInvalidationRects(0)->IsEmpty());
-  // This chunk didn't change.
-  EXPECT_TRUE(GetRasterInvalidationRects(1)->IsEmpty());
-  // |container1| is invalidated.
-  EXPECT_THAT(*GetRasterInvalidationRects(2),
-              UnorderedElementsAre(FloatRect(100, 100, 100, 100)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, SkipCache) {
@@ -1458,7 +1268,7 @@ TEST_P(PaintControllerTest, SkipCache) {
   DrawRect(context, content, kForegroundType, rect2);
   GetPaintController().EndSkippingCache();
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
                       TestDisplayItem(multicol, kBackgroundType),
@@ -1475,10 +1285,6 @@ TEST_P(PaintControllerTest, SkipCache) {
   EXPECT_NE(record1, record2);
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  // Raster invalidation for the whole chunk will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  GetPaintController().FinishCycle();
 
   InitRootChunk();
   // Draw again with nothing invalidated.
@@ -1497,7 +1303,7 @@ TEST_P(PaintControllerTest, SkipCache) {
   EXPECT_EQ(0, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
                       TestDisplayItem(multicol, kBackgroundType),
@@ -1511,10 +1317,6 @@ TEST_P(PaintControllerTest, SkipCache) {
                          .GetPaintRecord());
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Bounds of |content| (old and new are the same);
-              UnorderedElementsAre(FloatRect(100, 100, 100, 100)));
-  GetPaintController().FinishCycle();
 
   InitRootChunk();
   // Now the multicol becomes 3 columns and repaints.
@@ -1540,16 +1342,9 @@ TEST_P(PaintControllerTest, SkipCache) {
                          GetPaintController().NewDisplayItemList()[2])
                          .GetPaintRecord());
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              UnorderedElementsAre(
-                  // Bounds of |multicol| (old and new are the same);
-                  FloatRect(100, 100, 200, 200),
-                  // Bounds of |content| (old and new are the same);
-                  FloatRect(100, 100, 100, 100)));
-  GetPaintController().FinishCycle();
 }
 
 TEST_P(PaintControllerTest, PartialSkipCache) {
@@ -1607,7 +1402,7 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
   EXPECT_EQ(0, NumIndexedItems());
 #endif
 
-  GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle();
 
   EXPECT_DISPLAY_LIST(GetPaintController().GetDisplayItemList(), 3,
                       TestDisplayItem(content, kBackgroundType),
@@ -1622,7 +1417,6 @@ TEST_P(PaintControllerTest, PartialSkipCache) {
   EXPECT_NE(record2, static_cast<const DrawingDisplayItem&>(
                          GetPaintController().GetDisplayItemList()[2])
                          .GetPaintRecord());
-  GetPaintController().FinishCycle();
 }
 
 
@@ -1704,62 +1498,6 @@ TEST_P(PaintControllerTest, BeginAndEndFrame) {
   EXPECT_FALSE(result.image_painted);
 }
 
-TEST_P(PaintControllerTest, PartialInvalidation) {
-  FakeDisplayItemClient client("client", LayoutRect(100, 100, 300, 300));
-  GraphicsContext context(GetPaintController());
-
-  // Test partial rect invalidation in a new chunk.
-  InitRootChunk();
-  client.SetPartialInvalidationVisualRect(LayoutRect(200, 200, 100, 100));
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
-  GetPaintController().CommitNewDisplayItems();
-  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
-  // Raster invalidation for the whole new chunk will be issued during
-  // PaintArtifactCompositor::Update().
-  EXPECT_FALSE(GetRasterInvalidationRects(0));
-  GetPaintController().FinishCycle();
-  EXPECT_EQ(LayoutRect(), client.PartialInvalidationVisualRect());
-
-  // Test partial rect invalidation without other invalidations.
-  InitRootChunk();
-  client.SetPartialInvalidationVisualRect(LayoutRect(150, 160, 170, 180));
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
-  GetPaintController().CommitNewDisplayItems();
-  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Partial invalidation.
-              UnorderedElementsAre(FloatRect(150, 160, 170, 180)));
-  GetPaintController().FinishCycle();
-  EXPECT_EQ(LayoutRect(), client.PartialInvalidationVisualRect());
-
-  // Test partial rect invalidation with full invalidation.
-  InitRootChunk();
-  client.SetPartialInvalidationVisualRect(LayoutRect(150, 160, 170, 180));
-  client.Invalidate();
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 300));
-  GetPaintController().CommitNewDisplayItems();
-  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Partial invalidation is shadowed by full invalidation.
-              UnorderedElementsAre(FloatRect(100, 100, 300, 300)));
-  GetPaintController().FinishCycle();
-  EXPECT_EQ(LayoutRect(), client.PartialInvalidationVisualRect());
-
-  // Test partial rect invalidation with incremental invalidation.
-  InitRootChunk();
-  client.SetPartialInvalidationVisualRect(LayoutRect(150, 160, 170, 180));
-  client.SetVisualRect(LayoutRect(100, 100, 300, 400));
-  DrawRect(context, client, kBackgroundType, FloatRect(100, 100, 300, 400));
-  GetPaintController().CommitNewDisplayItems();
-  ASSERT_EQ(1u, GetPaintController().PaintChunks().size());
-  EXPECT_THAT(*GetRasterInvalidationRects(0),
-              // Both partial invalidation and incremental invalidation.
-              UnorderedElementsAre(FloatRect(100, 400, 300, 100),
-                                   FloatRect(150, 160, 170, 180)));
-  GetPaintController().FinishCycle();
-  EXPECT_EQ(LayoutRect(), client.PartialInvalidationVisualRect());
-}
-
 TEST_P(PaintControllerTest, InvalidateAll) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
@@ -1787,41 +1525,6 @@ TEST_P(PaintControllerTest, InvalidateAll) {
   InvalidateAll();
   EXPECT_TRUE(GetPaintController().GetPaintArtifact().IsEmpty());
   EXPECT_TRUE(GetPaintController().CacheIsAllInvalid());
-}
-
-TEST_P(PaintControllerTest, TransientPaintController) {
-  FakeDisplayItemClient client("client", LayoutRect(100, 100, 300, 300));
-  GraphicsContext context(GetPaintController());
-  InitRootChunk();
-  DrawRect(context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
-  CommitAndFinishCycle();
-  EXPECT_TRUE(client.IsCacheable());
-  EXPECT_TRUE(ClientCacheIsValid(GetPaintController(), client));
-
-  auto transient_controller =
-      PaintController::Create(PaintController::kTransient);
-  GraphicsContext transient_context(*transient_controller);
-  InitRootChunk(*transient_controller);
-  DrawRect(transient_context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
-  transient_controller->CommitNewDisplayItems();
-
-  // Painting on a transient PaintController doesn't affect cache status in a
-  // multi-paint PaintController.
-  EXPECT_TRUE(client.IsCacheable());
-  EXPECT_TRUE(ClientCacheIsValid(GetPaintController(), client));
-  // EXPECT_FALSE(ClientCacheIsValid(*transient_controller, client));
-
-  InitRootChunk(*transient_controller);
-  transient_controller->BeginSkippingCache();
-  DrawRect(transient_context, client, kBackgroundType, FloatRect(1, 2, 3, 4));
-  transient_controller->EndSkippingCache();
-  transient_controller->CommitNewDisplayItems();
-
-  // Skipping cache on a transient PaintController doesn't affect cache status
-  // in a multi-paint PaintController.
-  EXPECT_TRUE(client.IsCacheable());
-  EXPECT_TRUE(ClientCacheIsValid(GetPaintController(), client));
-  // EXPECT_FALSE(ClientCacheIsValid(*transient_controller, client));
 }
 
 // Death tests don't work properly on Android.
@@ -1868,31 +1571,6 @@ TEST_P(PaintControllerTest, DuplicatedSubsequences) {
     DrawRect(context, client, kForegroundType, FloatRect(100, 100, 100, 100));
   }
   CommitAndFinishCycle();
-}
-
-TEST_P(PaintControllerTest, DisplayItemIsCacheable) {
-  GraphicsContext context(GetPaintController());
-
-  {
-    auto client =
-        std::make_unique<FakeDisplayItemClient>("test", LayoutRect(1, 2, 3, 4));
-    auto uncacheable_client =
-        std::make_unique<FakeDisplayItemClient>("test", LayoutRect(1, 2, 3, 4));
-    uncacheable_client->Invalidate(PaintInvalidationReason::kUncacheable);
-
-    InitRootChunk();
-    DrawRect(context, *client, kForegroundType, FloatRect(1, 2, 3, 4));
-    DrawRect(context, *uncacheable_client, kForegroundType,
-             FloatRect(1, 2, 3, 4));
-    CommitAndFinishCycle();
-    EXPECT_TRUE(GetPaintController().GetDisplayItemList()[0].IsCacheable());
-    EXPECT_FALSE(GetPaintController().GetDisplayItemList()[1].IsCacheable());
-  }
-
-  // We can still access DisplayItem::IsCacheable() after the clients are
-  // destroyed.
-  EXPECT_TRUE(GetPaintController().GetDisplayItemList()[0].IsCacheable());
-  EXPECT_FALSE(GetPaintController().GetDisplayItemList()[1].IsCacheable());
 }
 
 class PaintControllerUnderInvalidationTest

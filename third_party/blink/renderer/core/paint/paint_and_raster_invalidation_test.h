@@ -39,7 +39,8 @@ class PaintAndRasterInvalidationTest : public PaintControllerPaintTest {
       size_t index = 0) const {
     if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
       return static_cast<ContentLayerClientImpl*>(GetCcLayerClient(index))
-          ->GetRasterInvalidationTrackingForTesting();
+          ->GetRasterInvalidator()
+          .GetTracking();
     }
     return GetLayoutView()
         .Layer()

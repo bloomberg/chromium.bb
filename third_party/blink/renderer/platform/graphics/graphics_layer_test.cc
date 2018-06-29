@@ -99,6 +99,11 @@ class GraphicsLayerTest : public testing::Test, public PaintTestConfigurations {
     return layer.PaintWithoutCommit(interest_rect);
   }
 
+  void CommitAndFinishCycle(GraphicsLayer& layer) {
+    layer.GetPaintController().CommitNewDisplayItems();
+    layer.GetPaintController().FinishCycle();
+  }
+
   const RasterInvalidator* GetInternalRasterInvalidator(
       const GraphicsLayer& layer) {
     return layer.raster_invalidator_.get();
@@ -213,23 +218,23 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
 TEST_P(GraphicsLayerTest, Paint) {
   IntRect interest_rect(1, 2, 3, 4);
   EXPECT_TRUE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
-  graphics_layer_->GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle(*graphics_layer_);
 
   client_.SetNeedsRepaint(true);
   EXPECT_TRUE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
-  graphics_layer_->GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle(*graphics_layer_);
 
   client_.SetNeedsRepaint(false);
   EXPECT_FALSE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
 
   interest_rect.Move(IntSize(10, 20));
   EXPECT_TRUE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
-  graphics_layer_->GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle(*graphics_layer_);
   EXPECT_FALSE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
 
   graphics_layer_->SetNeedsDisplay();
   EXPECT_TRUE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
-  graphics_layer_->GetPaintController().CommitNewDisplayItems();
+  CommitAndFinishCycle(*graphics_layer_);
   EXPECT_FALSE(PaintWithoutCommit(*graphics_layer_, &interest_rect));
 }
 

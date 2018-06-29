@@ -56,6 +56,8 @@ const char* PaintInvalidationReasonToString(PaintInvalidationReason reason) {
       return "uncacheable";
     case PaintInvalidationReason::kJustCreated:
       return "just created";
+    case PaintInvalidationReason::kReordered:
+      return "reordered";
     case PaintInvalidationReason::kChunkAppeared:
       return "chunk appeared";
     case PaintInvalidationReason::kChunkDisappeared:

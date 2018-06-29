@@ -21,7 +21,7 @@ bool PaintChunker::IsInInitialState() const {
   if (current_properties_ != UninitializedProperties())
     return false;
 
-  DCHECK(data_.chunks.IsEmpty());
+  DCHECK(chunks_.IsEmpty());
   return true;
 }
 
@@ -61,7 +61,7 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
     force_new_chunk_ = true;
 
   size_t new_chunk_begin_index;
-  if (data_.chunks.IsEmpty()) {
+  if (chunks_.IsEmpty()) {
     new_chunk_begin_index = 0;
   } else {
     auto& last_chunk = LastChunk();
@@ -77,9 +77,9 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
     new_chunk_begin_index = last_chunk.end_index;
   }
 
-  data_.chunks.emplace_back(new_chunk_begin_index, new_chunk_begin_index + 1,
-                            next_chunk_id_ ? *next_chunk_id_ : item.GetId(),
-                            current_properties_);
+  chunks_.emplace_back(new_chunk_begin_index, new_chunk_begin_index + 1,
+                       next_chunk_id_ ? *next_chunk_id_ : item.GetId(),
+                       current_properties_);
   next_chunk_id_ = base::nullopt;
 
   // When forcing a new chunk, we still need to force new chunk for the next
@@ -90,27 +90,11 @@ bool PaintChunker::IncrementDisplayItemIndex(const DisplayItem& item) {
   return true;
 }
 
-void PaintChunker::TrackRasterInvalidation(const PaintChunk& chunk,
-                                           const RasterInvalidationInfo& info) {
-  size_t index = ChunkIndex(chunk);
-  auto& trackings = data_.raster_invalidation_trackings;
-  if (trackings.size() <= index)
-    trackings.resize(index + 1);
-  trackings[index].push_back(info);
-}
-
-void PaintChunker::Clear() {
-  data_.Clear();
+Vector<PaintChunk> PaintChunker::ReleasePaintChunks() {
   next_chunk_id_ = base::nullopt;
   current_properties_ = UninitializedProperties();
-}
-
-PaintChunksAndRasterInvalidations PaintChunker::ReleaseData() {
-  next_chunk_id_ = base::nullopt;
-  current_properties_ = UninitializedProperties();
-  data_.chunks.ShrinkToFit();
-  data_.raster_invalidation_rects.ShrinkToFit();
-  return std::move(data_);
+  chunks_.ShrinkToFit();
+  return std::move(chunks_);
 }
 
 }  // namespace blink

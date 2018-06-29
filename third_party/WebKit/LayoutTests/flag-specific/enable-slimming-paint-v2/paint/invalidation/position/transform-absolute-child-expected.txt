@@ -7,7 +7,7 @@
       "backgroundColor": "#FFFFFF",
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
           "rect": [135, 127, 400, 50],
           "reason": "paint property change"
         },
@@ -22,7 +22,7 @@
           "reason": "paint property change"
         },
         {
-          "object": "LayoutBlockFlow (relative positioned) DIV id='box'",
+          "object": "LayoutBlockFlow (relative positioned) DIV id='box' class='rotated'",
           "rect": [58, 50, 204, 204],
           "reason": "paint property change"
         }

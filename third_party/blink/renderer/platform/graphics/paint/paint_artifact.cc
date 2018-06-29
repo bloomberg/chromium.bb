@@ -19,11 +19,11 @@ namespace {
 
 void ComputeChunkBoundsAndOpaqueness(const DisplayItemList& display_items,
                                      Vector<PaintChunk>& paint_chunks) {
-  // This happens in tests testing paint chunks without display items.
-  if (display_items.IsEmpty())
-    return;
-
   for (PaintChunk& chunk : paint_chunks) {
+    // This happens in tests testing paint chunks without display items.
+    if (!chunk.size())
+      continue;
+
     FloatRect bounds;
     SkRegion known_to_be_opaque_region;
     for (const DisplayItem& item : display_items.ItemsInPaintChunk(chunk)) {
@@ -49,39 +49,29 @@ void ComputeChunkBoundsAndOpaqueness(const DisplayItemList& display_items,
 PaintArtifact::PaintArtifact() : display_item_list_(0) {}
 
 PaintArtifact::PaintArtifact(DisplayItemList display_items,
-                             PaintChunksAndRasterInvalidations data)
-    : display_item_list_(std::move(display_items)),
-      chunks_and_invalidations_(std::move(data)) {
-  ComputeChunkBoundsAndOpaqueness(display_item_list_,
-                                  chunks_and_invalidations_.chunks);
+                             Vector<PaintChunk> chunks)
+    : display_item_list_(std::move(display_items)), chunks_(std::move(chunks)) {
+  ComputeChunkBoundsAndOpaqueness(display_item_list_, chunks_);
 }
-
-PaintArtifact::PaintArtifact(PaintArtifact&& source)
-    : display_item_list_(std::move(source.display_item_list_)),
-      chunks_and_invalidations_(std::move(source.chunks_and_invalidations_)) {}
 
 PaintArtifact::~PaintArtifact() = default;
 
-PaintArtifact& PaintArtifact::operator=(PaintArtifact&& source) {
-  display_item_list_ = std::move(source.display_item_list_);
-  chunks_and_invalidations_ = std::move(source.chunks_and_invalidations_);
-  return *this;
+scoped_refptr<PaintArtifact> PaintArtifact::Create(
+    DisplayItemList display_items,
+    Vector<PaintChunk> chunks) {
+  return base::AdoptRef(
+      new PaintArtifact(std::move(display_items), std::move(chunks)));
 }
 
-void PaintArtifact::Reset() {
-  display_item_list_.Clear();
-  chunks_and_invalidations_.Clear();
+scoped_refptr<PaintArtifact> PaintArtifact::Empty() {
+  DEFINE_STATIC_REF(PaintArtifact, empty, base::AdoptRef(new PaintArtifact()));
+  return empty;
 }
 
 size_t PaintArtifact::ApproximateUnsharedMemoryUsage() const {
-  // This function must be called after a full document life cycle update,
-  // when we have cleared raster invalidation information.
-  DCHECK(chunks_and_invalidations_.raster_invalidation_rects.IsEmpty());
-  DCHECK(chunks_and_invalidations_.raster_invalidation_trackings.IsEmpty());
   size_t total_size = sizeof(*this) + display_item_list_.MemoryUsageInBytes() +
-                      chunks_and_invalidations_.chunks.capacity() *
-                          sizeof(chunks_and_invalidations_.chunks[0]);
-  for (const auto& chunk : chunks_and_invalidations_.chunks)
+                      chunks_.capacity() * sizeof(chunks_[0]);
+  for (const auto& chunk : chunks_)
     total_size += chunk.MemoryUsageInBytes();
   return total_size;
 }
@@ -113,12 +103,10 @@ void PaintArtifact::AppendToDisplayItemList(const FloatSize& visual_rect_offset,
 }
 
 void PaintArtifact::FinishCycle() {
-  for (auto& chunk : chunks_and_invalidations_.chunks) {
+  for (auto& chunk : chunks_) {
     chunk.client_is_just_created = false;
     chunk.properties.ClearChangedToRoot();
   }
-  chunks_and_invalidations_.raster_invalidation_rects.clear();
-  chunks_and_invalidations_.raster_invalidation_trackings.clear();
 }
 
 }  // namespace blink

@@ -3027,7 +3027,7 @@ void LocalFrameView::PushPaintArtifactToCompositor(
                            UkmMetricNames::kCompositing);
 
   paint_artifact_compositor_->Update(
-      paint_controller_->GetPaintArtifact(), composited_element_ids,
+      paint_controller_->GetPaintArtifactShared(), composited_element_ids,
       frame_->GetPage()->GetVisualViewport().GetPageScaleNode());
 }
 
@@ -3502,10 +3502,6 @@ void LocalFrameView::SetTracksPaintInvalidations(
                                ? new Vector<ObjectPaintInvalidation>
                                : nullptr);
       if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
-        if (!paint_controller_)
-          paint_controller_ = PaintController::Create();
-        paint_controller_->SetTracksRasterInvalidations(
-            track_paint_invalidations);
         if (paint_artifact_compositor_) {
           paint_artifact_compositor_->SetTracksRasterInvalidations(
               track_paint_invalidations);

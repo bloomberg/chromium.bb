@@ -49,12 +49,8 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
       cc::Layer*) override;
   void DidChangeScrollbarsHiddenIfOverlay(bool) override {}
 
-  void SetTracksRasterInvalidations(bool should_track) {
-    raster_invalidator_.SetTracksRasterInvalidations(should_track);
-  }
-
   bool Matches(const PaintChunk& paint_chunk) const {
-    return raster_invalidator_.Matches(paint_chunk);
+    return id_ && paint_chunk.Matches(*id_);
   }
 
   struct LayerAsJSONContext {
@@ -69,17 +65,15 @@ class PLATFORM_EXPORT ContentLayerClientImpl : public cc::ContentLayerClient,
   std::unique_ptr<JSONObject> LayerAsJSON(LayerAsJSONContext&) const;
 
   scoped_refptr<cc::PictureLayer> UpdateCcPictureLayer(
-      const PaintArtifact&,
+      scoped_refptr<const PaintArtifact>,
       const PaintChunkSubset&,
       const gfx::Rect& layer_bounds,
       const PropertyTreeState&);
 
-  const RasterInvalidationTracking* GetRasterInvalidationTrackingForTesting()
-      const {
-    return raster_invalidator_.GetTracking();
-  }
+  RasterInvalidator& GetRasterInvalidator() { return raster_invalidator_; }
 
  private:
+  base::Optional<PaintChunk::Id> id_;
   scoped_refptr<cc::PictureLayer> cc_picture_layer_;
   scoped_refptr<cc::DisplayItemList> cc_display_item_list_;
   RasterInvalidator raster_invalidator_;
