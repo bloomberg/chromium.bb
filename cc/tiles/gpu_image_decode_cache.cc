@@ -138,12 +138,18 @@ bool DrawAndScaleImage(const DrawImage& draw_image, SkPixmap* target_pixmap) {
   sk_sp<SkColorSpace> color_space = target_pixmap->info().refColorSpace();
 
   const PaintImage& paint_image = draw_image.paint_image();
-  SkISize supported_size =
-      paint_image.GetSupportedDecodeSize(pixmap.bounds().size());
-
+  const bool is_original_decode =
+      SkISize::Make(paint_image.width(), paint_image.height()) ==
+      pixmap.bounds().size();
   const bool is_nearest_neighbor =
       draw_image.filter_quality() == kNone_SkFilterQuality;
-  if (supported_size == pixmap.bounds().size() && !is_nearest_neighbor) {
+
+  SkISize supported_size =
+      paint_image.GetSupportedDecodeSize(pixmap.bounds().size());
+  // We can directly decode into target pixmap if we are doing an original
+  // decode or we are decoding to scale without nearest neighbor filtering.
+  const bool can_directly_decode = is_original_decode || !is_nearest_neighbor;
+  if (supported_size == pixmap.bounds().size() && can_directly_decode) {
     SkImageInfo info = pixmap.info();
     return paint_image.Decode(pixmap.writable_addr(), &info, color_space,
                               draw_image.frame_index());
