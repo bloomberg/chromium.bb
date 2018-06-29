@@ -444,7 +444,7 @@ static void generate_chroma_grain_blocks(
   int num_pos_chroma = 2 * params->ar_coeff_lag * (params->ar_coeff_lag + 1);
   if (params->num_y_points > 0) ++num_pos_chroma;
   int rounding_offset = (1 << (params->ar_coeff_shift - 1));
-  int chroma_grain_samples = chroma_block_size_y * chroma_block_size_x;
+  int chroma_grain_block_size = chroma_block_size_y * chroma_grain_stride;
 
   if (params->num_cb_points || params->chroma_scaling_from_luma) {
     init_random_generator(7 << 5, params->random_seed);
@@ -456,7 +456,8 @@ static void generate_chroma_grain_blocks(
              ((1 << gauss_sec_shift) >> 1)) >>
             gauss_sec_shift;
   } else {
-    memset(cr_grain_block, 0, sizeof(*cr_grain_block) * chroma_grain_samples);
+    memset(cb_grain_block, 0,
+           sizeof(*cb_grain_block) * chroma_grain_block_size);
   }
 
   if (params->num_cr_points || params->chroma_scaling_from_luma) {
@@ -469,7 +470,8 @@ static void generate_chroma_grain_blocks(
              ((1 << gauss_sec_shift) >> 1)) >>
             gauss_sec_shift;
   } else {
-    memset(cb_grain_block, 0, sizeof(*cb_grain_block) * chroma_grain_samples);
+    memset(cr_grain_block, 0,
+           sizeof(*cr_grain_block) * chroma_grain_block_size);
   }
 
   for (int i = top_pad; i < chroma_block_size_y - bottom_pad; i++)
