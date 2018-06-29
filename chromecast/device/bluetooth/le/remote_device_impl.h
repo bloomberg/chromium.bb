@@ -6,20 +6,24 @@
 #define CHROMECAST_DEVICE_BLUETOOTH_LE_REMOTE_DEVICE_IMPL_H_
 
 #include <atomic>
+#include <deque>
 #include <map>
+#include <queue>
 #include <vector>
 
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_checker.h"
+#include "chromecast/device/bluetooth/le/remote_characteristic.h"
+#include "chromecast/device/bluetooth/le/remote_descriptor.h"
 #include "chromecast/device/bluetooth/le/remote_device.h"
 
 namespace chromecast {
 namespace bluetooth {
 
 class GattClientManagerImpl;
-class RemoteCharacteristic;
-class RemoteDescriptor;
+class RemoteCharacteristicImpl;
+class RemoteDescriptorImpl;
 
 class RemoteDeviceImpl : public RemoteDevice {
  public:
@@ -48,6 +52,24 @@ class RemoteDeviceImpl : public RemoteDevice {
       const bluetooth_v2_shlib::Uuid& uuid) override;
   const bluetooth_v2_shlib::Addr& addr() const override;
 
+  void ReadCharacteristic(
+      scoped_refptr<RemoteCharacteristicImpl> characteristic,
+      bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+      RemoteCharacteristic::ReadCallback cb);
+  void WriteCharacteristic(
+      scoped_refptr<RemoteCharacteristicImpl> characteristic,
+      bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+      bluetooth_v2_shlib::Gatt::WriteType write_type,
+      std::vector<uint8_t> value,
+      RemoteCharacteristic::StatusCallback cb);
+  void ReadDescriptor(scoped_refptr<RemoteDescriptorImpl> descriptor,
+                      bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+                      RemoteDescriptor::ReadCallback cb);
+  void WriteDescriptor(scoped_refptr<RemoteDescriptorImpl> descriptor,
+                       bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+                       std::vector<uint8_t> value,
+                       RemoteDescriptor::StatusCallback cb);
+
  private:
   friend class GattClientManagerImpl;
 
@@ -63,8 +85,15 @@ class RemoteDeviceImpl : public RemoteDevice {
   void SetMtu(int mtu);
 
   scoped_refptr<RemoteCharacteristic> CharacteristicFromHandle(uint16_t handle);
-  scoped_refptr<RemoteDescriptor> DescriptorFromHandle(uint16_t handle);
 
+  void OnCharacteristicRead(bool status,
+                            uint16_t handle,
+                            const std::vector<uint8_t>& value);
+  void OnCharacteristicWrite(bool status, uint16_t handle);
+  void OnDescriptorRead(bool status,
+                        uint16_t handle,
+                        const std::vector<uint8_t>& value);
+  void OnDescriptorWrite(bool status, uint16_t handle);
   void OnGetServices(
       const std::vector<bluetooth_v2_shlib::Gatt::Service>& services);
   void OnServicesRemoved(uint16_t start_handle, uint16_t end_handle);
@@ -74,6 +103,29 @@ class RemoteDeviceImpl : public RemoteDevice {
   // end Friend methods for GattClientManagerImpl
 
   void ConnectComplete(bool success);
+
+  // Add an operation to the queue. Certain operations can only be executed
+  // serially.
+  void EnqueueOperation(base::OnceClosure op);
+
+  // Notify that the currently queued operation has completed.
+  void NotifyQueueOperationComplete();
+
+  void RequestMtuImpl(int mtu);
+  void ReadCharacteristicImpl(
+      scoped_refptr<RemoteCharacteristicImpl> descriptor,
+      bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req);
+  void WriteCharacteristicImpl(
+      scoped_refptr<RemoteCharacteristicImpl> descriptor,
+      bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+      bluetooth_v2_shlib::Gatt::WriteType write_type,
+      std::vector<uint8_t> value);
+  void ReadDescriptorImpl(scoped_refptr<RemoteDescriptorImpl> descriptor,
+                          bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req);
+  void WriteDescriptorImpl(scoped_refptr<RemoteDescriptorImpl> descriptor,
+                           bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
+                           std::vector<uint8_t> value);
+  void ClearServices();
 
   const base::WeakPtr<GattClientManagerImpl> gatt_client_manager_;
   const bluetooth_v2_shlib::Addr addr_;
@@ -93,16 +145,24 @@ class RemoteDeviceImpl : public RemoteDevice {
   bool rssi_pending_ = false;
   RssiCallback rssi_cb_;
 
-  bool mtu_pending_ = false;
-  StatusCallback mtu_cb_;
-
   std::atomic<bool> connected_{false};
   std::atomic<int> mtu_{kDefaultMtu};
   std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteService>>
       uuid_to_service_;
-  std::map<uint16_t, scoped_refptr<RemoteCharacteristic>>
+  std::map<uint16_t, scoped_refptr<RemoteCharacteristicImpl>>
       handle_to_characteristic_;
-  std::map<uint16_t, scoped_refptr<RemoteDescriptor>> handle_to_descriptor_;
+
+  std::deque<base::OnceClosure> command_queue_;
+  std::queue<StatusCallback> mtu_callbacks_;
+  std::map<uint16_t, std::queue<RemoteCharacteristic::ReadCallback>>
+      handle_to_characteristic_read_cbs_;
+  std::map<uint16_t, std::queue<RemoteCharacteristic::StatusCallback>>
+      handle_to_characteristic_write_cbs_;
+  std::map<uint16_t, std::queue<RemoteDescriptor::ReadCallback>>
+      handle_to_descriptor_read_cbs_;
+  std::map<uint16_t, std::queue<RemoteDescriptor::StatusCallback>>
+      handle_to_descriptor_write_cbs_;
+
   DISALLOW_COPY_AND_ASSIGN(RemoteDeviceImpl);
 };
 

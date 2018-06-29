@@ -13,7 +13,7 @@ namespace bluetooth {
 // static
 std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteCharacteristic>>
 RemoteServiceImpl::CreateCharMap(
-    RemoteDevice* remote_device,
+    RemoteDeviceImpl* remote_device,
     base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     const bluetooth_v2_shlib::Gatt::Service& service,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner) {
@@ -26,7 +26,7 @@ RemoteServiceImpl::CreateCharMap(
 }
 
 RemoteServiceImpl::RemoteServiceImpl(
-    RemoteDevice* remote_device,
+    RemoteDeviceImpl* remote_device,
     base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     const bluetooth_v2_shlib::Gatt::Service& service,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
