@@ -21,7 +21,12 @@ void IsInstalledGetterCallback(
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
   ScriptContext* script_context =
       ScriptContextSet::GetContextByV8Context(context);
-  DCHECK(script_context);
+
+  // The ScriptContext may have been invalidated if e.g. the frame was removed.
+  // Return undefined in this case.
+  if (!script_context)
+    return;
+
   auto* core =
       static_cast<AppBindingsCore*>(info.Data().As<v8::External>()->Value());
   // Since this is more-or-less an API, log it as an API call.
