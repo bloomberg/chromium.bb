@@ -64,7 +64,12 @@ FeaturePodButton* NetworkFeaturePodController::CreateButton() {
 }
 
 void NetworkFeaturePodController::OnIconPressed() {
-  SetNetworkEnabled(!button_->IsToggled());
+  bool was_enabled = button_->IsToggled();
+  SetNetworkEnabled(!was_enabled);
+
+  // If network was disabled, show network list as well as enabling network.
+  if (!was_enabled)
+    tray_controller_->ShowNetworkDetailedView();
 }
 
 void NetworkFeaturePodController::OnLabelPressed() {

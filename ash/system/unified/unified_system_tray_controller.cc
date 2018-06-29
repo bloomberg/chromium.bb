@@ -151,7 +151,7 @@ void UnifiedSystemTrayController::ToggleExpanded() {
   UMA_HISTOGRAM_ENUMERATION("ChromeOS.SystemTray.ToggleExpanded",
                             TOGGLE_EXPANDED_TYPE_BY_BUTTON,
                             TOGGLE_EXPANDED_TYPE_COUNT);
-  if (animation_->IsShowing())
+  if (IsExpanded())
     animation_->Hide();
   else
     animation_->Show();
@@ -170,7 +170,7 @@ void UnifiedSystemTrayController::OnClearAllAnimationEnded() {
 
 void UnifiedSystemTrayController::BeginDrag(const gfx::Point& location) {
   drag_init_point_ = location;
-  was_expanded_ = animation_->IsShowing();
+  was_expanded_ = IsExpanded();
 }
 
 void UnifiedSystemTrayController::UpdateDrag(const gfx::Point& location) {
@@ -217,6 +217,9 @@ void UnifiedSystemTrayController::ShowUserChooserWidget() {
 }
 
 void UnifiedSystemTrayController::ShowNetworkDetailedView() {
+  if (!IsExpanded())
+    return;
+
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_NETWORK_VIEW);
   ShowDetailedView(
@@ -224,6 +227,9 @@ void UnifiedSystemTrayController::ShowNetworkDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowBluetoothDetailedView() {
+  if (!IsExpanded())
+    return;
+
   Shell::Get()->metrics()->RecordUserMetricsAction(
       UMA_STATUS_AREA_DETAILED_BLUETOOTH_VIEW);
   ShowDetailedView(
@@ -258,6 +264,9 @@ void UnifiedSystemTrayController::ShowAudioDetailedView() {
 }
 
 void UnifiedSystemTrayController::ShowNotifierSettingsView() {
+  if (!IsExpanded())
+    return;
+
   DCHECK(Shell::Get()->session_controller()->ShouldShowNotificationTray());
   DCHECK(!Shell::Get()->session_controller()->IsScreenLocked());
   ShowDetailedView(std::make_unique<UnifiedNotifierSettingsController>(this));
@@ -360,6 +369,10 @@ double UnifiedSystemTrayController::GetDragExpandedAmount(
     return base::ClampToRange(std::max(0.0, -y_diff) / kDragThreshold, 0.0,
                               1.0);
   }
+}
+
+bool UnifiedSystemTrayController::IsExpanded() const {
+  return animation_->IsShowing();
 }
 
 }  // namespace ash

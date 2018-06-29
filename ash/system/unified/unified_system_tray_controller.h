@@ -136,6 +136,9 @@ class ASH_EXPORT UnifiedSystemTrayController : public gfx::AnimationDelegate {
   // keeps returning 1.0.
   double GetDragExpandedAmount(const gfx::Point& location) const;
 
+  // Return true if UnifiedSystemTray is expanded.
+  bool IsExpanded() const;
+
   // Model that stores UI specific variables. Unowned.
   UnifiedSystemTrayModel* const model_;
 
