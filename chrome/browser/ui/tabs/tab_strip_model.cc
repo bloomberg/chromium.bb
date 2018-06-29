@@ -1291,15 +1291,20 @@ bool TabStripModel::InternalCloseTabs(
   base::WeakPtr<TabStripModel> ref = weak_factory_.GetWeakPtr();
   if (closing_all) {
     for (auto& observer : observers_)
-      observer.WillCloseAllTabs();
+      observer.WillCloseAllTabs(this);
   }
   const bool closed_all = CloseWebContentses(items, close_types);
   if (!ref)
     return closed_all;
-  if (closing_all && !closed_all) {
+  if (closing_all) {
+    // CloseAllTabsStopped is sent with reason kCloseAllCompleted if
+    // closed_all; otherwise kCloseAllCanceled is sent.
     for (auto& observer : observers_)
-      observer.CloseAllTabsCanceled();
+      observer.CloseAllTabsStopped(
+          this, closed_all ? TabStripModelObserver::kCloseAllCompleted
+                           : TabStripModelObserver::kCloseAllCanceled);
   }
+
   return closed_all;
 }
 
