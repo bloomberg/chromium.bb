@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL picture-in-picture-default-feature-policy Uncaught SyntaxError: Unexpected token ;
+Harness: the test ran to completion.
+

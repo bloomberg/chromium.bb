@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL wrong-service-in-services-member Uncaught SyntaxError: Unexpected token ;
+Harness: the test ran to completion.
+
