@@ -230,7 +230,9 @@ void MediaRouterMojoImpl::CreateRoute(
 
   if (IsTabMirroringMediaSource(MediaSource(source_id))) {
     // Ensure the CastRemotingConnector is created before mirroring starts.
-    CastRemotingConnector::Get(web_contents);
+    CastRemotingConnector* const connector =
+        CastRemotingConnector::Get(web_contents);
+    connector->ResetRemotingPermission();
   }
 
   MediaRouterMetrics::RecordMediaSinkType(sink->icon_type());
