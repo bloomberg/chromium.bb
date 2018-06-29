@@ -11,6 +11,7 @@
 #include <wrl/module.h>
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "chrome/elevation_service/elevation_service_idl.h"
 
 namespace elevation_service {
@@ -18,12 +19,12 @@ namespace elevation_service {
 class Elevator
     : public Microsoft::WRL::RuntimeClass<
           Microsoft::WRL::RuntimeClassFlags<Microsoft::WRL::ClassicCom>,
-          IRegisteredCommandElevator> {
+          IElevator> {
  public:
   Elevator() = default;
 
-  IFACEMETHOD(LaunchCommand)
-  (const WCHAR* cmd_id, DWORD caller_proc_id, ULONG_PTR* proc_handle);
+  IFACEMETHOD(GetElevatorFactory)(const base::char16* elevator_id,
+                                  IClassFactory** factory);
 
  private:
   ~Elevator() override;

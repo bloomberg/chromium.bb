@@ -9,19 +9,16 @@ import "ocidl.idl";
   object,
   oleautomation,
   uuid(A949CB4E-C4F9-44C4-B213-6BF8AA9AC69C),
-  helpstring("IRegisteredCommandElevator Interface"),
+  helpstring("IElevator Interface"),
   pointer_default(unique)
 ]
-interface IRegisteredCommandElevator : IUnknown
+interface IElevator : IUnknown
 {
-  // Runs a command elevated.
+  // Returns the class factory for a specific elevator.
   //
-  // @param event_id Unique id for the command
-  // @param caller_proc_id The process id of the calling process
-  // @param proc_handle The process handle valid in the caller's context
-  HRESULT LaunchCommand([in, string] const WCHAR* cmd_id,
-                        [in] DWORD caller_proc_id,
-                        [out] ULONG_PTR* proc_handle);
+  // @param elevator_id Unique id for the elevator.
+  HRESULT GetElevatorFactory([in, string] const WCHAR* elevator_id,
+                             [out] IClassFactory** factory);
 };
 
 [
@@ -32,5 +29,5 @@ interface IRegisteredCommandElevator : IUnknown
 library ElevatorLib {
   importlib("stdole2.tlb");
 
-  interface IRegisteredCommandElevator;
+  interface IElevator;
 };

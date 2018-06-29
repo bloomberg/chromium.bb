@@ -46,8 +46,8 @@
 
 #include "elevation_service_idl.h"
 
-#define TYPE_FORMAT_STRING_SIZE   11                                
-#define PROC_FORMAT_STRING_SIZE   51                                
+#define TYPE_FORMAT_STRING_SIZE   29                                
+#define PROC_FORMAT_STRING_SIZE   45                                
 #define EXPR_FORMAT_STRING_SIZE   1                                 
 #define TRANSMIT_AS_TABLE_SIZE    0            
 #define WIRE_MARSHAL_TABLE_SIZE   0            
@@ -83,8 +83,8 @@ extern const elevation_service_idl_MIDL_EXPR_FORMAT_STRING elevation_service_idl
 extern const MIDL_STUB_DESC Object_StubDesc;
 
 
-extern const MIDL_SERVER_INFO IRegisteredCommandElevator_ServerInfo;
-extern const MIDL_STUBLESS_PROXY_INFO IRegisteredCommandElevator_ProxyInfo;
+extern const MIDL_SERVER_INFO IElevator_ServerInfo;
+extern const MIDL_STUBLESS_PROXY_INFO IElevator_ProxyInfo;
 
 
 
@@ -97,17 +97,17 @@ static const elevation_service_idl_MIDL_PROC_FORMAT_STRING elevation_service_idl
         0,
         {
 
-	/* Procedure LaunchCommand */
+	/* Procedure GetElevatorFactory */
 
 			0x33,		/* FC_AUTO_HANDLE */
 			0x6c,		/* Old Flags:  object, Oi2 */
 /*  2 */	NdrFcLong( 0x0 ),	/* 0 */
 /*  6 */	NdrFcShort( 0x3 ),	/* 3 */
-/*  8 */	NdrFcShort( 0x28 ),	/* X64 Stack size/offset = 40 */
-/* 10 */	NdrFcShort( 0x8 ),	/* 8 */
-/* 12 */	NdrFcShort( 0x24 ),	/* 36 */
-/* 14 */	0x46,		/* Oi2 Flags:  clt must size, has return, has ext, */
-			0x4,		/* 4 */
+/*  8 */	NdrFcShort( 0x20 ),	/* X64 Stack size/offset = 32 */
+/* 10 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 12 */	NdrFcShort( 0x8 ),	/* 8 */
+/* 14 */	0x47,		/* Oi2 Flags:  srv must size, clt must size, has return, has ext, */
+			0x3,		/* 3 */
 /* 16 */	0xa,		/* 10 */
 			0x1,		/* Ext Flags:  new corr desc, */
 /* 18 */	NdrFcShort( 0x0 ),	/* 0 */
@@ -115,31 +115,23 @@ static const elevation_service_idl_MIDL_PROC_FORMAT_STRING elevation_service_idl
 /* 22 */	NdrFcShort( 0x0 ),	/* 0 */
 /* 24 */	NdrFcShort( 0x0 ),	/* 0 */
 
-	/* Parameter cmd_id */
+	/* Parameter elevator_id */
 
 /* 26 */	NdrFcShort( 0x10b ),	/* Flags:  must size, must free, in, simple ref, */
 /* 28 */	NdrFcShort( 0x8 ),	/* X64 Stack size/offset = 8 */
 /* 30 */	NdrFcShort( 0x4 ),	/* Type Offset=4 */
 
-	/* Parameter caller_proc_id */
+	/* Parameter factory */
 
-/* 32 */	NdrFcShort( 0x48 ),	/* Flags:  in, base type, */
+/* 32 */	NdrFcShort( 0x13 ),	/* Flags:  must size, must free, out, */
 /* 34 */	NdrFcShort( 0x10 ),	/* X64 Stack size/offset = 16 */
-/* 36 */	0x8,		/* FC_LONG */
-			0x0,		/* 0 */
-
-	/* Parameter proc_handle */
-
-/* 38 */	NdrFcShort( 0x2150 ),	/* Flags:  out, base type, simple ref, srv alloc size=8 */
-/* 40 */	NdrFcShort( 0x18 ),	/* X64 Stack size/offset = 24 */
-/* 42 */	0xb9,		/* FC_UINT3264 */
-			0x0,		/* 0 */
+/* 36 */	NdrFcShort( 0x6 ),	/* Type Offset=6 */
 
 	/* Return value */
 
-/* 44 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
-/* 46 */	NdrFcShort( 0x20 ),	/* X64 Stack size/offset = 32 */
-/* 48 */	0x8,		/* FC_LONG */
+/* 38 */	NdrFcShort( 0x70 ),	/* Flags:  out, return, base type, */
+/* 40 */	NdrFcShort( 0x18 ),	/* X64 Stack size/offset = 24 */
+/* 42 */	0x8,		/* FC_LONG */
 			0x0,		/* 0 */
 
 			0x0
@@ -157,9 +149,22 @@ static const elevation_service_idl_MIDL_TYPE_FORMAT_STRING elevation_service_idl
 			0x25,		/* FC_C_WSTRING */
 			0x5c,		/* FC_PAD */
 /*  6 */	
-			0x11, 0xc,	/* FC_RP [alloced_on_stack] [simple_pointer] */
-/*  8 */	0xb9,		/* FC_UINT3264 */
-			0x5c,		/* FC_PAD */
+			0x11, 0x10,	/* FC_RP [pointer_deref] */
+/*  8 */	NdrFcShort( 0x2 ),	/* Offset= 2 (10) */
+/* 10 */	
+			0x2f,		/* FC_IP */
+			0x5a,		/* FC_CONSTANT_IID */
+/* 12 */	NdrFcLong( 0x1 ),	/* 1 */
+/* 16 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 18 */	NdrFcShort( 0x0 ),	/* 0 */
+/* 20 */	0xc0,		/* 192 */
+			0x0,		/* 0 */
+/* 22 */	0x0,		/* 0 */
+			0x0,		/* 0 */
+/* 24 */	0x0,		/* 0 */
+			0x0,		/* 0 */
+/* 26 */	0x0,		/* 0 */
+			0x46,		/* 70 */
 
 			0x0
         }
@@ -170,50 +175,50 @@ static const elevation_service_idl_MIDL_TYPE_FORMAT_STRING elevation_service_idl
    GUID={0x00000000,0x0000,0x0000,{0xC0,0x00,0x00,0x00,0x00,0x00,0x00,0x46}} */
 
 
-/* Object interface: IRegisteredCommandElevator, ver. 0.0,
+/* Object interface: IElevator, ver. 0.0,
    GUID={0xA949CB4E,0xC4F9,0x44C4,{0xB2,0x13,0x6B,0xF8,0xAA,0x9A,0xC6,0x9C}} */
 
 #pragma code_seg(".orpc")
-static const unsigned short IRegisteredCommandElevator_FormatStringOffsetTable[] =
+static const unsigned short IElevator_FormatStringOffsetTable[] =
     {
     0
     };
 
-static const MIDL_STUBLESS_PROXY_INFO IRegisteredCommandElevator_ProxyInfo =
+static const MIDL_STUBLESS_PROXY_INFO IElevator_ProxyInfo =
     {
     &Object_StubDesc,
     elevation_service_idl__MIDL_ProcFormatString.Format,
-    &IRegisteredCommandElevator_FormatStringOffsetTable[-3],
+    &IElevator_FormatStringOffsetTable[-3],
     0,
     0,
     0
     };
 
 
-static const MIDL_SERVER_INFO IRegisteredCommandElevator_ServerInfo = 
+static const MIDL_SERVER_INFO IElevator_ServerInfo = 
     {
     &Object_StubDesc,
     0,
     elevation_service_idl__MIDL_ProcFormatString.Format,
-    &IRegisteredCommandElevator_FormatStringOffsetTable[-3],
+    &IElevator_FormatStringOffsetTable[-3],
     0,
     0,
     0,
     0};
-CINTERFACE_PROXY_VTABLE(4) _IRegisteredCommandElevatorProxyVtbl = 
+CINTERFACE_PROXY_VTABLE(4) _IElevatorProxyVtbl = 
 {
-    &IRegisteredCommandElevator_ProxyInfo,
-    &IID_IRegisteredCommandElevator,
+    &IElevator_ProxyInfo,
+    &IID_IElevator,
     IUnknown_QueryInterface_Proxy,
     IUnknown_AddRef_Proxy,
     IUnknown_Release_Proxy ,
-    (void *) (INT_PTR) -1 /* IRegisteredCommandElevator::LaunchCommand */
+    (void *) (INT_PTR) -1 /* IElevator::GetElevatorFactory */
 };
 
-const CInterfaceStubVtbl _IRegisteredCommandElevatorStubVtbl =
+const CInterfaceStubVtbl _IElevatorStubVtbl =
 {
-    &IID_IRegisteredCommandElevator,
-    &IRegisteredCommandElevator_ServerInfo,
+    &IID_IElevator,
+    &IElevator_ServerInfo,
     4,
     0, /* pure interpreted */
     CStdStubBuffer_METHODS
@@ -245,19 +250,19 @@ static const MIDL_STUB_DESC Object_StubDesc =
 
 const CInterfaceProxyVtbl * const _elevation_service_idl_ProxyVtblList[] = 
 {
-    ( CInterfaceProxyVtbl *) &_IRegisteredCommandElevatorProxyVtbl,
+    ( CInterfaceProxyVtbl *) &_IElevatorProxyVtbl,
     0
 };
 
 const CInterfaceStubVtbl * const _elevation_service_idl_StubVtblList[] = 
 {
-    ( CInterfaceStubVtbl *) &_IRegisteredCommandElevatorStubVtbl,
+    ( CInterfaceStubVtbl *) &_IElevatorStubVtbl,
     0
 };
 
 PCInterfaceName const _elevation_service_idl_InterfaceNamesList[] = 
 {
-    "IRegisteredCommandElevator",
+    "IElevator",
     0
 };
 

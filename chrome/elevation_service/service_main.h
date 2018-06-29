@@ -6,7 +6,9 @@
 #define CHROME_ELEVATION_SERVICE_SERVICE_MAIN_H_
 
 #include <windows.h>
+#include <wrl/implements.h>
 
+#include "base/containers/flat_map.h"
 #include "base/no_destructor.h"
 #include "base/synchronization/waitable_event.h"
 
@@ -40,6 +42,10 @@ class ServiceMain {
   // Returns true when the last object is released, or if the service is asked
   // to exit.
   bool IsExitSignaled();
+
+  // Returns the class factory for the elevator with the specified id.
+  Microsoft::WRL::ComPtr<IClassFactory> GetElevatorFactory(
+      const base::string16& id);
 
  private:
   ServiceMain();
@@ -80,6 +86,14 @@ class ServiceMain {
   // Called when the last object is released or if the service is asked to exit.
   void SignalExit();
 
+  // Registers class factories for all supported elevators.
+  void RegisterElevatorFactories();
+  void UnregisterElevatorFactories();
+
+  // Registers |factory| as the factory for the elevator identified by |id|.
+  void RegisterElevatorFactory(const base::string16& id,
+                               IClassFactory* factory);
+
   // The action routine to be executed.
   int (ServiceMain::*run_routine_)();
 
@@ -92,6 +106,11 @@ class ServiceMain {
   // This event is signaled when the last COM instance is released, or if the
   // service control manager asks the service to exit.
   base::WaitableEvent exit_signal_;
+
+  using FactoryMap = base::flat_map<base::string16,
+                                    Microsoft::WRL::ComPtr<IClassFactory>>;
+  // The map containing all the Elevator class factories.
+  FactoryMap factories_;
 
   friend class base::NoDestructor<ServiceMain>;
 
