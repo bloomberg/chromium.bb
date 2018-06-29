@@ -6,7 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_COMMON_THROTTLING_THROTTLED_TIME_DOMAIN_H_
 
 #include "base/macros.h"
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain_forward.h"
 
 namespace blink {
 namespace scheduler {

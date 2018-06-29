@@ -48,10 +48,10 @@ namespace base {
 namespace sequence_manager {
 
 namespace internal {
+class RealTimeDomain;
 class TaskQueueImpl;
 }  // namespace internal
 
-class RealTimeDomain;
 class TaskQueue;
 class TaskTimeObserver;
 class TimeDomain;
@@ -204,7 +204,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     ObserverList<MessageLoop::TaskObserver> task_observers;
     ObserverList<TaskTimeObserver> task_time_observers;
     std::set<TimeDomain*> time_domains;
-    std::unique_ptr<RealTimeDomain> real_time_domain;
+    std::unique_ptr<internal::RealTimeDomain> real_time_domain;
 
     // List of task queues managed by this TaskQueueManager.
     // - active_queues contains queues that are still running tasks.

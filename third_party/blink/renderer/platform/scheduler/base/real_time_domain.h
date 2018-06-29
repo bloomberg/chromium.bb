@@ -9,10 +9,11 @@
 
 #include "base/macros.h"
 #include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/scheduler/base/time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/time_domain_forward.h"
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 
 class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
  public:
@@ -31,6 +32,7 @@ class PLATFORM_EXPORT RealTimeDomain : public TimeDomain {
   DISALLOW_COPY_AND_ASSIGN(RealTimeDomain);
 };
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
 

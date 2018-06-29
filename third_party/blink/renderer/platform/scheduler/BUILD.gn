@@ -25,7 +25,7 @@ blink_platform_sources("scheduler") {
     "base/thread_controller_impl.cc",
     "base/thread_controller_impl.h",
     "base/time_domain.cc",
-    "base/time_domain.h",
+    "base/time_domain_forward.h",
     "base/virtual_time_domain.cc",
     "base/virtual_time_domain.h",
     "base/work_queue.cc",
