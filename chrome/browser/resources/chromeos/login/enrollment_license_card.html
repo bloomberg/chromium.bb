@@ -5,6 +5,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_radio_button/cr_radio_button.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-flex-layout/iron-flex-layout-classes.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-radio-group/paper-radio-group.html">
 
 <!--
@@ -17,46 +18,47 @@
     'disabled'   - Whether the UI disabled. Could be used to disable the UI
                    during blocking IO operations.
     'selected'   - Selected license type.
-    'buttonText' - Text on the confirmation button.
 
   Events:
     'buttonclick' - Fired when user confirms license type selection.
 -->
 <dom-module id="enrollment-license-card">
-    <template>
-        <link rel="stylesheet" href="gaia_input_form.css">
-        <link rel="stylesheet" href="enrollment_license_card.css">
-        <link rel="stylesheet" href="gaia_card_parameters.css">
+  <template>
+    <link rel="stylesheet" href="gaia_input_form.css">
+    <link rel="stylesheet" href="enterprise_card_footer.css">
+    <link rel="stylesheet" href="enrollment_license_card.css">
 
-        <gaia-card id="license-selection-prompt-card" class="fit">
-            <div slot="header" class="flex vertical layout end-justified">
-                <h1 class="welcome-message" style="text-transform:capitalize"
-                    i18n-content="licenseSelectionCardTitle"></h1>
-            </div>
-            <div slot="footer" class="flex vertical layout justified">
-                <div>
-                    <p class="license-card-explanation"
-                          i18n-content="licenseSelectionCardExplanation"></p>
-                    <paper-radio-group selected="{{selected}}"
-                        selectable="cr-radio-button">
-                        <template is="dom-repeat" items="[[licenses]]"
-                                  id="repeatTemplate">
-                            <cr-radio-button
-                                disabled$="[[or_(item.disabled, disabled)]]"
-                                hidden$="[[item.hidden]]" name="[[item.id]]">
-                                [[formatTitle_(item)]]
-                            </cr-radio-button>
-                        </template>
-                    </paper-radio-group>
-                </div>
-                <div class="horizontal-reverse justified layout center">
-                    <gaia-button id="submitButton" class="self-end"
-                                 disabled="[[disabled]]"
-                                 on-tap="buttonClicked_">
-                        <span>[[buttonText]]</span>
-                    </gaia-button>
-                </div>
-            </div>
-        </gaia-card>
-    </template>
+    <enterprise-card id="license-selection-prompt-card" class="fit">
+      <enterprise-header slot="header"
+                         i18n-values="header-title:oauthEnrollScreenTitle;
+                   header-comment:licenseSelectionCardExplanation">
+        <hd-iron-icon slot="enterprise-icon"
+                      icon1x="enterprise-header-32:briefcase"
+                      icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+      </enterprise-header>
+      <div slot="content" class="content flex vertical layout justified">
+        <div>
+          <paper-radio-group selected="{{selected}}"
+                             selectable="cr-radio-button">
+            <template is="dom-repeat" items="[[licenses]]"
+                      id="repeatTemplate">
+              <cr-radio-button class="license-radio-button"
+                               disabled$="[[or_(item.disabled, disabled)]]"
+                               hidden$="[[item.hidden]]" name="[[item.id]]">
+                [[formatTitle_(item)]]
+              </cr-radio-button>
+            </template>
+          </paper-radio-group>
+        </div>
+      </div>
+      <div slot="footer" class="footer">
+        <div class="horizontal-reverse justified layout center">
+          <oobe-next-button disabled="[[disabled]]"
+                            on-tap="buttonClicked_"
+                            id="submitButton" class="self-start">
+          </oobe-next-button>
+        </div>
+      </div>
+    </enterprise-card>
+  </template>
 </dom-module>

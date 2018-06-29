@@ -3,18 +3,43 @@
      found in the LICENSE file. -->
 
 <link rel="import" href="chrome://oobe/custom_elements.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-iconset-svg/iron-iconset-svg.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
 <link rel="stylesheet" href="gaia_card_parameters.css">
 
 <div id="oauth-enrollment" class="step no-logo hidden" hidden>
   <div id="oauth-enroll-step-contents">
     <link rel="stylesheet" href="oobe_flex_layout.css">
+    <link rel="stylesheet" href="enterprise_card_footer.css">
     <div id="oauth-enroll-step-signin">
-      <webview id="oauth-enroll-auth-view" name="oauth-enroll-auth-view">
-      </webview>
+      <oobe-dialog class="gaia-dialog" role="dialog" id="enrollment-gaia-dialog"
+                   has-buttons no-header no-footer-padding>
+        <div slot="footer" class="flex layout vertical">
+          <webview id="oauth-enroll-auth-view" name="oauth-enroll-auth-view">
+          </webview>
+        </div>
+        <div slot="bottom-buttons" class="flex layout horizontal center">
+          <oobe-back-button id="oobe-signin-back-button"></oobe-back-button>
+          <div class="flex">
+          </div>
+        </div>
+      </oobe-dialog>
     </div>
     <div id="oauth-enroll-step-working">
-      <throbber-notice class="fit" i18n-values="text:oauthEnrollWorking">
-      </throbber-notice>
+        <enterprise-card id="oauth-enroll-working"
+            class="with-progress" no-footer>
+            <enterprise-header slot="header"
+                i18n-values="header-title:oauthEnrollScreenTitle;">
+              <hd-iron-icon slot="enterprise-icon"
+                  icon1x="enterprise-header-32:briefcase"
+                  icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+            </enterprise-header >
+            <div slot="content" class="layout vertical start">
+                <div class="oauth-enroll-step-message">
+                    <span i18n-content="oauthEnrollWorking"></span>
+                </div>
+            </div>
+        </enterprise-card>
     </div>
     <div id="oauth-enroll-step-license">
       <enrollment-license-card id="oauth-enroll-license-ui"
@@ -24,8 +49,8 @@
     <div id="oauth-enroll-step-ad-join">
       <offline-ad-login id="oauth-enroll-ad-join-ui" is-domain-join
           class="fit" i18n-values=
-          "ad-welcome-message:oauthEnrollAdDomainJoinWelcomeMessage;
-           user-name-label:adEnrollmentLoginUsername">
+              "ad-welcome-message:oauthEnrollAdDomainJoinWelcomeMessage;
+              user-name-label:adEnrollmentLoginUsername">
       </offline-ad-login>
     </div>
     <div id="oauth-enroll-step-error" role="alert">
@@ -34,46 +59,81 @@
       </notification-card>
     </div>
     <div id="oauth-enroll-step-success" role="alert">
-      <notification-card id="oauth-enroll-success-card" type="success"
-          i18n-values="button-label:oauthEnrollDone"
-          i18n-content="oauthEnrollSuccess">
-      </notification-card>
+      <enterprise-card id="oauth-enroll-success-card">
+        <enterprise-header slot="header"
+            i18n-values="header-title:oauthEnrollSuccessTitle;
+                header-comment:oauthEnrollSuccess">
+          <hd-iron-icon slot="enterprise-icon"
+              icon1x="enterprise-header-32:briefcase"
+              icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+        </enterprise-header >
+        <div slot="content" class="layout vertical center">
+          <img srcset="images/enrollment_success_illustration_1x.png 1x,
+                  images/enrollment_success_illustration_2x.png 2x"
+                i18n-values="alt:enrollmentSuccessIllustrationTitle">
+        </div>
+        <div slot="footer"
+            class="footer horizontal-reverse justified layout center">
+          <gaia-button i18n-content="oauthEnrollDone"
+              id="enroll-success-done-button" class="autofocus"></gaia-button>
+        </div>
+      </enterprise-card>
     </div>
-    <div id="oauth-enroll-step-abe-success" role="alert">
-      <notification-card id="oauth-enroll-abe-success-card" type="success"
-          i18n-values="button-label:oauthEnrollDone">
-      </notification-card>
+      <div id="oauth-enroll-step-abe-success" role="alert">
+        <enterprise-card id="oauth-enroll-abe-success-card">
+            <enterprise-header slot="header"
+               i18n-values="header-title:oauthEnrollSuccessTitle;
+                   header-comment:oauthEnrollSuccess">
+              <hd-iron-icon slot="enterprise-icon"
+                  icon1x="enterprise-header-32:briefcase"
+                  icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+            </enterprise-header >
+            <div class="layout vertical center">
+                <img srcset="images/enrollment_success_illustration_1x.png 1x,
+                         images/enrollment_success_illustration_2x.png 2x"
+                     i18n-values="alt:enrollmentSuccessIllustrationTitle">
+            </div>
+          <div slot="footer"
+              class="footer horizontal-reverse justified layout center">
+            <gaia-button i18n-content="oauthEnrollDone"
+                id="enroll-success-abe-done-button"
+                class="autofocus"></gaia-button>
+           </div>
+        </enterprise-card>
     </div>
     <div id="oauth-enroll-step-attribute-prompt">
-      <gaia-card id="oauth-enroll-attribute-prompt-card" class="fit">
-        <div slot="header" class="flex vertical layout end-justified">
-          <h1 class="welcome-message" style="text-transform:capitalize"
-              i18n-content="oauthEnrollScreenTitle"></h1>
-          <p class="enterprise-info"
-              i18n-content="oauthEnrollDeviceInformation"></p>
-        </div>
-        <div slot="footer" class="flex vertical layout justified">
-          <div class="oauth-enroll-step-message">
-            <span id="oauth-enroll-attribute-prompt-message"
-                  i18n-content="oauthEnrollAttributeExplanation"></span>
-            <a href="#" id="oauth-enroll-learn-more-link"
-               class="oauth-enroll-link"
-               i18n-content="oauthEnrollExplainAttributeLink"></a>
-            <gaia-input-form id="oauth-enroll-attribute-input"
-                             i18n-values="button-text:oauthEnrollNextBtn">
-              <gaia-input slot="inputs" id="oauth-enroll-asset-id" type="text"
-                  i18n-values="label:oauthEnrollAssetIdLabel">
-              </gaia-input>
-              <gaia-input slot="inputs" id="oauth-enroll-location" type="text"
-                  i18n-values="label:oauthEnrollLocationLabel">
-              </gaia-input>
-              <gaia-button type="link" id="oauth-enroll-skip-button"
-                  i18n-content="oauthEnrollSkip">
-              </gaia-button>
-            </gaia-input-form>
-          </div>
-        </div>
-      </gaia-card>
+        <enterprise-card id="oauth-enroll-attribute-prompt-card">
+            <enterprise-header slot="header"
+               i18n-values="header-title:oauthEnrollScreenTitle;
+                   header-comment:oauthEnrollDeviceInformation">
+              <hd-iron-icon slot="enterprise-icon"
+                  icon1x="enterprise-header-32:briefcase"
+                  icon2x="enterprise-header-64:briefcase"></hd-iron-icon>
+            </enterprise-header >
+            <div slot="content" class="layout vertical start">
+                <div class="oauth-enroll-step-message">
+                    <span id="oauth-enroll-attribute-prompt-message"
+                        i18n-content="oauthEnrollAttributeExplanation"></span>
+                    <a href="#" id="oauth-enroll-learn-more-link"
+                        class="oauth-enroll-link"
+                        i18n-content="oauthEnrollExplainAttributeLink"></a>
+                </div>
+                <gaia-input id="oauth-enroll-asset-id" type="text"
+                    class="autofocus"
+                    i18n-values="label:oauthEnrollAssetIdLabel">
+                </gaia-input>
+                <gaia-input id="oauth-enroll-location" type="text"
+                    i18n-values="label:oauthEnrollLocationLabel">
+                </gaia-input>
+            </div>
+            <div slot="footer" class="footer">
+                <oobe-next-button
+                    id="enroll-attributes-submit-button"></oobe-next-button>
+                <oobe-text-button
+                    id="enroll-attributes-skip-button"
+                    i18n-content="oauthEnrollSkip"></oobe-text-button>
+            </div>
+        </enterprise-card>
     </div>
     <div id="oauth-enroll-step-attribute-prompt-error">
       <notification-card id="oauth-enroll-attribute-prompt-error-card"
