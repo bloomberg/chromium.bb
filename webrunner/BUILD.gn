@@ -13,21 +13,37 @@ config("webrunner_implementation") {
   defines = [ "WEBRUNNER_IMPLEMENTATION" ]
 }
 
-executable("webrunner") {
+# Uber-target, used by buildbots and :gn_all for discovery of all buildable
+# webrunner code.
+group("webrunner") {
+  testonly = true
   deps = [
-    ":webrunner_lib",
+    ":service_exec",
+    ":service_unittests",
+  ]
+}
+
+fuchsia_package("service_pkg") {
+  binary = ":service_exec"
+  package_name_override = "chromium"
+}
+
+executable("service_exec") {
+  deps = [
+    ":fidl",
+    ":service_lib",
     "//base",
     "//content/public/app:both",
   ]
 
   sources = [
-    "app/webrunner_main.cc",
+    "service/webrunner_main.cc",
   ]
 }
 
-component("webrunner_lib") {
+component("service_lib") {
   deps = [
-    ":webrunner_pak",
+    ":service_pak",
     "//base",
     "//components/version_info",
     "//content/public/app:both",
@@ -40,7 +56,7 @@ component("webrunner_lib") {
   ]
 
   data_deps = [
-    ":webrunner_pak",
+    ":service_pak",
   ]
   data = [
     "$root_out_dir/webrunner.pak",
@@ -51,12 +67,6 @@ component("webrunner_lib") {
   configs += [ ":webrunner_implementation" ]
 
   sources = [
-    "app/context_provider/context_provider_impl.cc",
-    "app/context_provider/context_provider_impl.h",
-    "app/switches.cc",
-    "app/switches.h",
-    "app/webrunner_main_delegate.cc",
-    "app/webrunner_main_delegate.h",
     "browser/webrunner_browser_context.cc",
     "browser/webrunner_browser_context.h",
     "browser/webrunner_browser_main.cc",
@@ -74,20 +84,16 @@ component("webrunner_lib") {
     "common/webrunner_content_client.cc",
     "common/webrunner_content_client.h",
     "common/webrunner_export.h",
+    "service/context_provider/context_provider_impl.cc",
+    "service/context_provider/context_provider_impl.h",
+    "service/switches.cc",
+    "service/switches.h",
+    "service/webrunner_main_delegate.cc",
+    "service/webrunner_main_delegate.h",
   ]
 }
 
-fuchsia_package("webrunner_pkg") {
-  binary = ":webrunner"
-  package_name_override = "webrunner"
-}
-
-fuchsia_package_runner("webrunner_runner") {
-  package = ":webrunner_pkg"
-  package_name_override = "webrunner"
-}
-
-repack("webrunner_pak") {
+repack("service_pak") {
   sources = [
     "$root_gen_dir/components/components_resources.pak",
     "$root_gen_dir/components/strings/components_strings_en-US.pak",
@@ -125,13 +131,13 @@ repack("webrunner_pak") {
   output = "$root_out_dir/webrunner.pak"
 }
 
-test("webrunner_unittests") {
+test("service_unittests") {
   sources = [
-    "app/context_provider/context_provider_impl_unittest.cc",
+    "service/context_provider/context_provider_impl_unittest.cc",
   ]
   deps = [
     ":fidl",
-    ":webrunner_lib",
+    ":service_lib",
     "//base/test:run_all_unittests",
     "//base/test:test_support",
     "//testing/gmock",

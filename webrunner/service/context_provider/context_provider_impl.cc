@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/app/context_provider/context_provider_impl.h"
+#include "webrunner/service/context_provider/context_provider_impl.h"
 
 #include <fuchsia/sys/cpp/fidl.h>
 #include <zircon/processargs.h>
@@ -17,9 +17,9 @@
 #include "base/fuchsia/scoped_zx_handle.h"
 #include "base/logging.h"
 #include "base/process/launch.h"
-#include "webrunner/app/switches.h"
+#include "webrunner/service/switches.h"
 
-namespace fuchsia {
+namespace webrunner {
 namespace {
 
 // Relaunches the current executable as a Context process.
@@ -76,4 +76,4 @@ void ContextProviderImpl::Bind(
   bindings_.AddBinding(this, std::move(request));
 }
 
-}  // namespace fuchsia
+}  // namespace webrunner

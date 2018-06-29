@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webrunner/app/context_provider/context_provider_impl.h"
+#include "webrunner/service/context_provider/context_provider_impl.h"
 
 #include <lib/fidl/cpp/binding.h>
 #include <zircon/processargs.h>
@@ -22,7 +22,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/multiprocess_func_list.h"
 
-namespace fuchsia {
+namespace webrunner {
 namespace {
 
 class MockFrameObserver : public chromium::web::FrameObserver {
@@ -153,4 +153,4 @@ TEST_F(ContextProviderImplTest, MultipleClients) {
   r.Run();
 }
 
-}  // namespace fuchsia
+}  // namespace webrunner
