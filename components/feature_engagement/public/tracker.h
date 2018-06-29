@@ -65,7 +65,7 @@ class Tracker : public KeyedService {
   // Invoked when the tracker has been initialized. The |success| parameter
   // indicates that the initialization was a success and the tracker is ready to
   // receive calls.
-  using OnInitializedCallback = base::Callback<void(bool success)>;
+  using OnInitializedCallback = base::OnceCallback<void(bool success)>;
 
   // The |storage_dir| is the path to where all local storage will be.
   // The |bakground_task_runner| will be used for all disk reads and writes.

@@ -248,11 +248,11 @@ bool TrackerImpl::IsInitialized() const {
 void TrackerImpl::AddOnInitializedCallback(OnInitializedCallback callback) {
   if (IsInitializationFinished()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, IsInitialized()));
+        FROM_HERE, base::BindOnce(std::move(callback), IsInitialized()));
     return;
   }
 
-  on_initialized_callbacks_.push_back(callback);
+  on_initialized_callbacks_.push_back(std::move(callback));
 }
 
 void TrackerImpl::OnEventModelInitializationFinished(bool success) {
@@ -286,7 +286,7 @@ void TrackerImpl::MaybePostInitializedCallbacks() {
 
   for (auto& callback : on_initialized_callbacks_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(callback, IsInitialized()));
+        FROM_HERE, base::BindOnce(std::move(callback), IsInitialized()));
   }
 
   on_initialized_callbacks_.clear();
