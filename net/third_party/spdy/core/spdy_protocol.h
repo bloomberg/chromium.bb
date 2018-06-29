@@ -450,11 +450,11 @@ class SPDY_EXPORT_PRIVATE SpdyFrameIR {
  protected:
   SpdyFrameIR() : stream_id_(0) {}
   explicit SpdyFrameIR(SpdyStreamId stream_id) : stream_id_(stream_id) {}
+  SpdyFrameIR(const SpdyFrameIR&) = delete;
+  SpdyFrameIR& operator=(const SpdyFrameIR&) = delete;
 
  private:
   SpdyStreamId stream_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyFrameIR);
 };
 
 // Abstract class intended to be inherited by IRs that have the option of a FIN
@@ -468,11 +468,11 @@ class SPDY_EXPORT_PRIVATE SpdyFrameWithFinIR : public SpdyFrameIR {
  protected:
   explicit SpdyFrameWithFinIR(SpdyStreamId stream_id)
       : SpdyFrameIR(stream_id), fin_(false) {}
+  SpdyFrameWithFinIR(const SpdyFrameWithFinIR&) = delete;
+  SpdyFrameWithFinIR& operator=(const SpdyFrameWithFinIR&) = delete;
 
  private:
   bool fin_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithFinIR);
 };
 
 // Abstract class intended to be inherited by IRs that contain a header
@@ -494,11 +494,12 @@ class SPDY_EXPORT_PRIVATE SpdyFrameWithHeaderBlockIR
  protected:
   SpdyFrameWithHeaderBlockIR(SpdyStreamId stream_id,
                              SpdyHeaderBlock header_block);
+  SpdyFrameWithHeaderBlockIR(const SpdyFrameWithHeaderBlockIR&) = delete;
+  SpdyFrameWithHeaderBlockIR& operator=(const SpdyFrameWithHeaderBlockIR&) =
+      delete;
 
  private:
   SpdyHeaderBlock header_block_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyFrameWithHeaderBlockIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyDataIR : public SpdyFrameWithFinIR {
@@ -514,6 +515,8 @@ class SPDY_EXPORT_PRIVATE SpdyDataIR : public SpdyFrameWithFinIR {
 
   // Use in conjunction with SetDataShallow() for shallow-copy on data.
   explicit SpdyDataIR(SpdyStreamId stream_id);
+  SpdyDataIR(const SpdyDataIR&) = delete;
+  SpdyDataIR& operator=(const SpdyDataIR&) = delete;
 
   ~SpdyDataIR() override;
 
@@ -571,13 +574,13 @@ class SPDY_EXPORT_PRIVATE SpdyDataIR : public SpdyFrameWithFinIR {
   bool padded_;
   // padding_payload_len_ = desired padding length - len(padding length field).
   int padding_payload_len_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyDataIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameIR {
  public:
   SpdyRstStreamIR(SpdyStreamId stream_id, SpdyErrorCode error_code);
+  SpdyRstStreamIR(const SpdyRstStreamIR&) = delete;
+  SpdyRstStreamIR& operator=(const SpdyRstStreamIR&) = delete;
 
   ~SpdyRstStreamIR() override;
 
@@ -592,13 +595,13 @@ class SPDY_EXPORT_PRIVATE SpdyRstStreamIR : public SpdyFrameIR {
 
  private:
   SpdyErrorCode error_code_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyRstStreamIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
  public:
   SpdySettingsIR();
+  SpdySettingsIR(const SpdySettingsIR&) = delete;
+  SpdySettingsIR& operator=(const SpdySettingsIR&) = delete;
   ~SpdySettingsIR() override;
 
   // Overwrites as appropriate.
@@ -617,13 +620,13 @@ class SPDY_EXPORT_PRIVATE SpdySettingsIR : public SpdyFrameIR {
  private:
   SettingsMap values_;
   bool is_ack_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdySettingsIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
  public:
   explicit SpdyPingIR(SpdyPingId id) : id_(id), is_ack_(false) {}
+  SpdyPingIR(const SpdyPingIR&) = delete;
+  SpdyPingIR& operator=(const SpdyPingIR&) = delete;
   SpdyPingId id() const { return id_; }
 
   bool is_ack() const { return is_ack_; }
@@ -638,8 +641,6 @@ class SPDY_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
  private:
   SpdyPingId id_;
   bool is_ack_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyPingIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
@@ -661,6 +662,8 @@ class SPDY_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
   SpdyGoAwayIR(SpdyStreamId last_good_stream_id,
                SpdyErrorCode error_code,
                SpdyString description);
+  SpdyGoAwayIR(const SpdyGoAwayIR&) = delete;
+  SpdyGoAwayIR& operator=(const SpdyGoAwayIR&) = delete;
 
   ~SpdyGoAwayIR() override;
 
@@ -688,8 +691,6 @@ class SPDY_EXPORT_PRIVATE SpdyGoAwayIR : public SpdyFrameIR {
   SpdyErrorCode error_code_;
   const SpdyString description_store_;
   const SpdyStringPiece description_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyGoAwayIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
@@ -698,6 +699,8 @@ class SPDY_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
       : SpdyHeadersIR(stream_id, SpdyHeaderBlock()) {}
   SpdyHeadersIR(SpdyStreamId stream_id, SpdyHeaderBlock header_block)
       : SpdyFrameWithHeaderBlockIR(stream_id, std::move(header_block)) {}
+  SpdyHeadersIR(const SpdyHeadersIR&) = delete;
+  SpdyHeadersIR& operator=(const SpdyHeadersIR&) = delete;
 
   void Visit(SpdyFrameVisitor* visitor) const override;
 
@@ -730,8 +733,6 @@ class SPDY_EXPORT_PRIVATE SpdyHeadersIR : public SpdyFrameWithHeaderBlockIR {
   bool exclusive_ = false;
   bool padded_ = false;
   int padding_payload_len_ = 0;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyHeadersIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameIR {
@@ -740,6 +741,9 @@ class SPDY_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameIR {
       : SpdyFrameIR(stream_id) {
     set_delta(delta);
   }
+  SpdyWindowUpdateIR(const SpdyWindowUpdateIR&) = delete;
+  SpdyWindowUpdateIR& operator=(const SpdyWindowUpdateIR&) = delete;
+
   int32_t delta() const { return delta_; }
   void set_delta(int32_t delta) {
     DCHECK_LE(0, delta);
@@ -755,8 +759,6 @@ class SPDY_EXPORT_PRIVATE SpdyWindowUpdateIR : public SpdyFrameIR {
 
  private:
   int32_t delta_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyWindowUpdateIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyPushPromiseIR
@@ -771,6 +773,8 @@ class SPDY_EXPORT_PRIVATE SpdyPushPromiseIR
         promised_stream_id_(promised_stream_id),
         padded_(false),
         padding_payload_len_(0) {}
+  SpdyPushPromiseIR(const SpdyPushPromiseIR&) = delete;
+  SpdyPushPromiseIR& operator=(const SpdyPushPromiseIR&) = delete;
   SpdyStreamId promised_stream_id() const { return promised_stream_id_; }
 
   void Visit(SpdyFrameVisitor* visitor) const override;
@@ -794,13 +798,13 @@ class SPDY_EXPORT_PRIVATE SpdyPushPromiseIR
 
   bool padded_;
   int padding_payload_len_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyPushPromiseIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyContinuationIR : public SpdyFrameIR {
  public:
   explicit SpdyContinuationIR(SpdyStreamId stream_id);
+  SpdyContinuationIR(const SpdyContinuationIR&) = delete;
+  SpdyContinuationIR& operator=(const SpdyContinuationIR&) = delete;
   ~SpdyContinuationIR() override;
 
   void Visit(SpdyFrameVisitor* visitor) const override;
@@ -818,12 +822,13 @@ class SPDY_EXPORT_PRIVATE SpdyContinuationIR : public SpdyFrameIR {
  private:
   std::unique_ptr<SpdyString> encoding_;
   bool end_headers_;
-  DISALLOW_COPY_AND_ASSIGN(SpdyContinuationIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameIR {
  public:
   explicit SpdyAltSvcIR(SpdyStreamId stream_id);
+  SpdyAltSvcIR(const SpdyAltSvcIR&) = delete;
+  SpdyAltSvcIR& operator=(const SpdyAltSvcIR&) = delete;
   ~SpdyAltSvcIR() override;
 
   SpdyString origin() const { return origin_; }
@@ -845,7 +850,6 @@ class SPDY_EXPORT_PRIVATE SpdyAltSvcIR : public SpdyFrameIR {
  private:
   SpdyString origin_;
   SpdyAltSvcWireFormat::AlternativeServiceVector altsvc_vector_;
-  DISALLOW_COPY_AND_ASSIGN(SpdyAltSvcIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
@@ -858,6 +862,8 @@ class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
         parent_stream_id_(parent_stream_id),
         weight_(weight),
         exclusive_(exclusive) {}
+  SpdyPriorityIR(const SpdyPriorityIR&) = delete;
+  SpdyPriorityIR& operator=(const SpdyPriorityIR&) = delete;
   SpdyStreamId parent_stream_id() const { return parent_stream_id_; }
   int weight() const { return weight_; }
   bool exclusive() const { return exclusive_; }
@@ -872,7 +878,6 @@ class SPDY_EXPORT_PRIVATE SpdyPriorityIR : public SpdyFrameIR {
   SpdyStreamId parent_stream_id_;
   int weight_;
   bool exclusive_;
-  DISALLOW_COPY_AND_ASSIGN(SpdyPriorityIR);
 };
 
 // Represents a frame of unrecognized type.
@@ -887,6 +892,8 @@ class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
         flags_(flags),
         length_(payload.size()),
         payload_(std::move(payload)) {}
+  SpdyUnknownIR(const SpdyUnknownIR&) = delete;
+  SpdyUnknownIR& operator=(const SpdyUnknownIR&) = delete;
   uint8_t type() const { return type_; }
   uint8_t flags() const { return flags_; }
   int length() const { return length_; }
@@ -909,8 +916,6 @@ class SPDY_EXPORT_PRIVATE SpdyUnknownIR : public SpdyFrameIR {
   uint8_t flags_;
   int length_;
   const SpdyString payload_;
-
-  DISALLOW_COPY_AND_ASSIGN(SpdyUnknownIR);
 };
 
 class SPDY_EXPORT_PRIVATE SpdySerializedFrame {
@@ -934,6 +939,8 @@ class SPDY_EXPORT_PRIVATE SpdySerializedFrame {
     // |other| is no longer responsible for the buffer.
     other.owns_buffer_ = false;
   }
+  SpdySerializedFrame(const SpdySerializedFrame&) = delete;
+  SpdySerializedFrame& operator=(const SpdySerializedFrame&) = delete;
 
   SpdySerializedFrame& operator=(SpdySerializedFrame&& other) {
     // Free buffer if necessary.
@@ -988,7 +995,6 @@ class SPDY_EXPORT_PRIVATE SpdySerializedFrame {
  private:
   size_t size_;
   bool owns_buffer_;
-  DISALLOW_COPY_AND_ASSIGN(SpdySerializedFrame);
 };
 
 // This interface is for classes that want to process SpdyFrameIRs without
@@ -1014,10 +1020,9 @@ class SPDY_EXPORT_PRIVATE SpdyFrameVisitor {
 
  protected:
   SpdyFrameVisitor() {}
+  SpdyFrameVisitor(const SpdyFrameVisitor&) = delete;
+  SpdyFrameVisitor& operator=(const SpdyFrameVisitor&) = delete;
   virtual ~SpdyFrameVisitor() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyFrameVisitor);
 };
 
 // Optionally, and in addition to SpdyFramerVisitorInterface, a class supporting

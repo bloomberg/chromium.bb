@@ -176,9 +176,8 @@ class SpdyTestDeframer : public SpdyFramerVisitorInterface {
 
  protected:
   SpdyTestDeframer() {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(SpdyTestDeframer);
+  SpdyTestDeframer(const SpdyTestDeframer&) = delete;
+  SpdyTestDeframer& operator=(const SpdyTestDeframer&) = delete;
 };
 
 // CollectedFrame holds the result of one call to SpdyDeframerVisitorInterface,

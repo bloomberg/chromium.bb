@@ -26,6 +26,8 @@ namespace spdy {
 class SPDY_EXPORT_PRIVATE HpackOutputStream {
  public:
   HpackOutputStream();
+  HpackOutputStream(const HpackOutputStream&) = delete;
+  HpackOutputStream& operator=(const HpackOutputStream&) = delete;
   ~HpackOutputStream();
 
   // Appends the lower |bit_size| bits of |bits| to the internal buffer.
@@ -69,8 +71,6 @@ class SPDY_EXPORT_PRIVATE HpackOutputStream {
   // If 0, the buffer ends on a byte boundary. If non-zero, the buffer
   // ends on the nth most significant bit. Guaranteed to be < 8.
   size_t bit_offset_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackOutputStream);
 };
 
 }  // namespace spdy

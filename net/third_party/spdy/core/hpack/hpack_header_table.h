@@ -74,6 +74,8 @@ class SPDY_EXPORT_PRIVATE HpackHeaderTable {
       unordered_map<SpdyStringPiece, const HpackEntry*, base::StringPieceHash>;
 
   HpackHeaderTable();
+  HpackHeaderTable(const HpackHeaderTable&) = delete;
+  HpackHeaderTable& operator=(const HpackHeaderTable&) = delete;
 
   ~HpackHeaderTable();
 
@@ -171,8 +173,6 @@ class SPDY_EXPORT_PRIVATE HpackHeaderTable {
   size_t total_insertions_;
 
   std::unique_ptr<DebugVisitorInterface> debug_visitor_;
-
-  DISALLOW_COPY_AND_ASSIGN(HpackHeaderTable);
 };
 
 }  // namespace spdy
