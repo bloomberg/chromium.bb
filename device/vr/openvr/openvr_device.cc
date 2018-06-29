@@ -148,7 +148,6 @@ OpenVRDevice::OpenVRDevice(vr::IVRSystem* vr)
     : VRDeviceBase(VRDeviceId::OPENVR_DEVICE_ID),
       vr_system_(vr),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      exclusive_controller_binding_(this),
       weak_ptr_factory_(this) {
   DCHECK(vr_system_);
   SetVRDisplayInfo(CreateVRDisplayInfo(vr_system_, GetId()));
@@ -170,9 +169,8 @@ void OpenVRDevice::Shutdown() {
     render_loop_->Stop();
 }
 
-void OpenVRDevice::RequestSession(
-    mojom::XRDeviceRuntimeSessionOptionsPtr options,
-    mojom::XRRuntime::RequestSessionCallback callback) {
+void OpenVRDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                                  VRDeviceRequestSessionCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
@@ -186,12 +184,12 @@ void OpenVRDevice::RequestSession(
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&OpenVRRenderLoop::RequestSession,
-                                render_loop_->GetWeakPtr(), std::move(options),
+                                render_loop_->GetWeakPtr(), options,
                                 std::move(my_callback)));
 }
 
 void OpenVRDevice::OnRequestSessionResult(
-    mojom::XRRuntime::RequestSessionCallback callback,
+    VRDeviceRequestSessionCallback callback,
     bool result,
     mojom::VRSubmitFrameClientRequest request,
     mojom::VRPresentationProviderPtrInfo provider_info,
@@ -207,17 +205,7 @@ void OpenVRDevice::OnRequestSessionResult(
   connection->client_request = std::move(request);
   connection->provider = std::move(provider_info);
   connection->transport_options = std::move(transport_options);
-
-  mojom::XRSessionControllerPtr session_controller;
-  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
-
-  // Use of Unretained is safe because the callback will only occur if the
-  // binding is not destroyed.
-  exclusive_controller_binding_.set_connection_error_handler(
-      base::BindOnce(&OpenVRDevice::OnPresentingControllerMojoConnectionError,
-                     base::Unretained(this)));
-
-  std::move(callback).Run(std::move(connection), std::move(session_controller));
+  std::move(callback).Run(std::move(connection), this);
 
   using ViewerMap = std::map<std::string, VrViewerType>;
   CR_DEFINE_STATIC_LOCAL(ViewerMap, viewer_types,
@@ -235,19 +223,18 @@ void OpenVRDevice::OnRequestSessionResult(
   base::UmaHistogramSparse("VRViewerType", static_cast<int>(type));
 }
 
-// XRSessionController
+// XrSessionController
 void OpenVRDevice::SetFrameDataRestricted(bool restricted) {
   // Presentation sessions can not currently be restricted.
   DCHECK(false);
 }
 
-void OpenVRDevice::OnPresentingControllerMojoConnectionError() {
+void OpenVRDevice::StopSession() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(&OpenVRRenderLoop::ExitPresent, render_loop_->GetWeakPtr()));
   render_loop_->Stop();
   OnExitPresent();
-  exclusive_controller_binding_.Close();
 }
 
 void OpenVRDevice::OnMagicWindowFrameDataRequest(

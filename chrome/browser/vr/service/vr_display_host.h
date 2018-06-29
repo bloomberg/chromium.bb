@@ -62,12 +62,12 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   bool IsAnotherHostPresenting();
 
   bool InternalSupportsSession(device::mojom::XRSessionOptions* options);
-  void OnMagicWindowSessionCreated(bool success);
 
   // TODO(https://crbug.com/837538): Instead, check before returning this
   // object.
   bool IsSecureContextRequirementSatisfied();
 
+  std::unique_ptr<device::VRDisplayImpl> display_;
   BrowserXrDevice* browser_device_ = nullptr;
   bool in_focused_frame_ = false;
   bool listening_for_activate_ = false;
@@ -75,10 +75,6 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   content::RenderFrameHost* render_frame_host_;
   mojo::Binding<device::mojom::VRDisplayHost> binding_;
   device::mojom::VRDisplayClientPtr client_;
-
-  device::mojom::XRSessionControllerPtr magic_window_controller_;
-
-  base::WeakPtrFactory<VRDisplayHost> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDisplayHost);
 };

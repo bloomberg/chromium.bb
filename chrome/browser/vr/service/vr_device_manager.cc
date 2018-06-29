@@ -138,8 +138,7 @@ void VRDeviceManager::RemoveService(VRServiceImpl* service) {
 
 void VRDeviceManager::AddDevice(bool is_fallback,
                                 unsigned int id,
-                                device::mojom::VRDisplayInfoPtr info,
-                                device::mojom::XRRuntimePtr runtime) {
+                                device::VRDevice* device) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(devices_.find(id) == devices_.end());
 
@@ -153,8 +152,7 @@ void VRDeviceManager::AddDevice(bool is_fallback,
       service->RemoveDevice(device);
   }
 
-  devices_[id] = std::make_unique<BrowserXrDevice>(
-      std::move(runtime), std::move(info), is_fallback);
+  devices_[id] = std::make_unique<BrowserXrDevice>(device, is_fallback);
   if (!is_fallback || devices_.size() == 1) {
     BrowserXrDevice* device_to_add = devices_[id].get();
     for (VRServiceImpl* service : services_)
@@ -185,7 +183,7 @@ void VRDeviceManager::RecordVrStartupHistograms() {
 #endif
 }
 
-device::mojom::XRRuntime* VRDeviceManager::GetRuntime(unsigned int id) {
+device::VRDevice* VRDeviceManager::GetDevice(unsigned int id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (id == 0)
@@ -195,7 +193,7 @@ device::mojom::XRRuntime* VRDeviceManager::GetRuntime(unsigned int id) {
   if (iter == devices_.end())
     return nullptr;
 
-  return iter->second->GetRuntime();
+  return iter->second->GetDevice();
 }
 
 void VRDeviceManager::InitializeProviders() {

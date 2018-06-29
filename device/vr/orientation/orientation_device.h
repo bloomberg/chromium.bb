@@ -43,9 +43,8 @@ class DEVICE_VR_EXPORT VROrientationDevice : public VRDeviceBase,
   ~VROrientationDevice() override;
 
   // VRDevice
-  void RequestSession(
-      mojom::XRDeviceRuntimeSessionOptionsPtr options,
-      mojom::XRRuntime::RequestSessionCallback callback) override;
+  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+                      VRDeviceRequestSessionCallback callback) override;
 
   // VRDeviceBase
   void OnMagicWindowFrameDataRequest(

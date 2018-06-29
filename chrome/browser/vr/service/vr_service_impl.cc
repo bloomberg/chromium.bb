@@ -67,6 +67,7 @@ void VRServiceImpl::SetClient(device::mojom::VRServiceClientPtr service_client,
 }
 
 void VRServiceImpl::InitializationComplete() {
+  DCHECK(!set_client_callback_.is_null());
   base::ResetAndReturn(&set_client_callback_).Run();
 }
 
@@ -76,7 +77,8 @@ void VRServiceImpl::ConnectDevice(BrowserXrDevice* device) {
   // Client should always be set as this is called through SetClient.
   DCHECK(client_);
   DCHECK(displays_.find(device) == displays_.end());
-  device::mojom::VRDisplayInfoPtr display_info = device->GetVRDisplayInfo();
+  device::mojom::VRDisplayInfoPtr display_info =
+      device->GetDevice()->GetVRDisplayInfo();
   DCHECK(display_info);
   if (!display_info)
     return;

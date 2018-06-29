@@ -21,12 +21,9 @@ class VRDisplayImplTest : public testing::Test {
   VRDisplayImplTest() {}
   ~VRDisplayImplTest() override {}
   void onDisplaySynced() {}
-  void onPresentComplete(
-      device::mojom::XRPresentationConnectionPtr connection,
-      mojom::XRSessionControllerPtr exclusive_session_controller) {
+  void onPresentComplete(device::mojom::XRPresentationConnectionPtr connection,
+                         XrSessionController* exclusive_session_controller) {
     is_request_presenting_success_ = connection ? true : false;
-
-    exclusive_session_controller_ = std::move(exclusive_session_controller);
   }
 
  protected:
@@ -37,27 +34,23 @@ class VRDisplayImplTest : public testing::Test {
     client_ = std::make_unique<FakeVRServiceClient>(mojo::MakeRequest(&proxy));
   }
 
-  std::unique_ptr<VRDisplayImpl> MakeDisplay(
-      mojom::XRSessionControllerPtr* controller) {
-    mojom::VRMagicWindowProviderPtr session;
+  std::unique_ptr<VRDisplayImpl> MakeDisplay() {
+    mojom::VRDisplayClientPtr display_client;
     auto display = std::make_unique<VRDisplayImpl>(
-        device(), mojo::MakeRequest(&session), mojo::MakeRequest(controller));
-    static_cast<mojom::XRSessionController*>(display.get())
-        ->SetFrameDataRestricted(true);
+        device(), client(), device()->GetVRDisplayInfo(), nullptr,
+        mojo::MakeRequest(&display_client));
+    display->SetFrameDataRestricted(true);
     return display;
   }
 
   void RequestSession(VRDisplayImpl* display_impl) {
     device_->RequestSession(
-        mojom::XRDeviceRuntimeSessionOptionsPtr(),
+        XRDeviceRuntimeSessionOptions(),
         base::BindOnce(&VRDisplayImplTest::onPresentComplete,
                        base::Unretained(this)));
   }
 
-  void ExitPresent() {
-    device_->StopSession();
-    exclusive_session_controller_ = nullptr;
-  }
+  void ExitPresent() { device_->StopSession(); }
 
   bool presenting() { return device_->IsPresenting(); }
   VRDeviceBase* device() { return device_.get(); }
@@ -67,20 +60,15 @@ class VRDisplayImplTest : public testing::Test {
   bool is_request_presenting_success_ = false;
   std::unique_ptr<FakeVRDevice> device_;
   std::unique_ptr<FakeVRServiceClient> client_;
-  mojom::XRSessionControllerPtr exclusive_session_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(VRDisplayImplTest);
 };
 
 TEST_F(VRDisplayImplTest, DevicePresentationIsolation) {
-  mojom::XRSessionControllerPtr controller1;
-  std::unique_ptr<VRDisplayImpl> display_1 = MakeDisplay(&controller1);
-  static_cast<mojom::XRSessionController*>(display_1.get())
-      ->SetFrameDataRestricted(false);
-  mojom::XRSessionControllerPtr controller2;
-  std::unique_ptr<VRDisplayImpl> display_2 = MakeDisplay(&controller2);
-  static_cast<mojom::XRSessionController*>(display_2.get())
-      ->SetFrameDataRestricted(false);
+  std::unique_ptr<VRDisplayImpl> display_1 = MakeDisplay();
+  display_1->SetFrameDataRestricted(false);
+  std::unique_ptr<VRDisplayImpl> display_2 = MakeDisplay();
+  display_2->SetFrameDataRestricted(false);
 
   // When not presenting either service should be able to access the device.
   EXPECT_FALSE(device()->HasExclusiveSession());

@@ -12,15 +12,12 @@ GvrDeviceProvider::GvrDeviceProvider() = default;
 GvrDeviceProvider::~GvrDeviceProvider() = default;
 
 void GvrDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int,
-                                 mojom::VRDisplayInfoPtr,
-                                 mojom::XRRuntimePtr)> add_device_callback,
+    base::RepeatingCallback<void(unsigned int, VRDevice*)> add_device_callback,
     base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   vr_device_ = GvrDevice::Create();
   if (vr_device_)
-    add_device_callback.Run(vr_device_->GetId(), vr_device_->GetVRDisplayInfo(),
-                            vr_device_->BindXRRuntimePtr());
+    add_device_callback.Run(vr_device_->GetId(), vr_device_.get());
   initialized_ = true;
   std::move(initialization_complete).Run();
 }

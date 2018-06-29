@@ -9,7 +9,6 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
 #include "device/vr/vr_export.h"
@@ -20,22 +19,27 @@ namespace device {
 
 class VRDeviceBase;
 
-// VR device process implementation of a VRMagicWindowProvider within a WebVR
-// or WebXR site session.
-// VRDisplayImpl objects are owned by their respective XRRuntime instances.
-// TODO(offenwanger): Rename this.
+// Browser process representation of a VRDevice within a WebVR site session
+// (see VRServiceImpl). VRDisplayImpl receives/sends VR device events
+// from/to mojom::VRDisplayClient (the render process representation of a VR
+// device).
+// VRDisplayImpl objects are owned by their respective VRServiceImpl instances.
+// TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
-                                       public mojom::XRSessionController {
+                                       public XrSessionController {
  public:
-  VRDisplayImpl(VRDeviceBase* device,
-                mojom::VRMagicWindowProviderRequest,
-                mojom::XRSessionControllerRequest);
+  VRDisplayImpl(VRDevice* device,
+                mojom::VRServiceClient* service_client,
+                mojom::VRDisplayInfoPtr display_info,
+                mojom::VRDisplayHostPtr display_host,
+                mojom::VRDisplayClientRequest client_request);
   ~VRDisplayImpl() override;
 
-  device::VRDeviceBase* device() { return device_; };
+  // XrSessionController
+  void SetFrameDataRestricted(bool paused) override;
+  void StopSession() override;
 
-  // Accessible to tests.
- protected:
+ private:
   // mojom::VRMagicWindowProvider
   void GetFrameData(GetFrameDataCallback callback) override;
   void UpdateSessionGeometry(const gfx::Size& frame_size,
@@ -43,14 +47,9 @@ class DEVICE_VR_EXPORT VRDisplayImpl : public mojom::VRMagicWindowProvider,
   void RequestHitTest(mojom::XRRayPtr ray,
                       RequestHitTestCallback callback) override;
 
-  // mojom::XRSessionController
-  void SetFrameDataRestricted(bool paused) override;
-
-  void OnMojoConnectionError();
-
-  mojo::Binding<mojom::VRMagicWindowProvider> magic_window_binding_;
-  mojo::Binding<mojom::XRSessionController> session_controller_binding_;
+  mojo::Binding<mojom::VRMagicWindowProvider> binding_;
   device::VRDeviceBase* device_;
+
   bool restrict_frame_data_ = true;
 
   // TODO(offenwanger) When device tracks it's own sessions, let it track this

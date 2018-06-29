@@ -5,10 +5,7 @@
 #ifndef CHROME_BROWSER_VR_SERVICE_BROWSER_XR_DEVICE_H_
 #define CHROME_BROWSER_VR_SERVICE_BROWSER_XR_DEVICE_H_
 
-#include "device/vr/public/mojom/isolated_xr_service.mojom.h"
-#include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_device.h"
-#include "mojo/public/cpp/bindings/binding.h"
 
 namespace vr {
 
@@ -18,14 +15,19 @@ class VRDisplayHost;
 // There is one BrowserXrDevice per VRDevice (ie - one per runtime).
 // It manages browser-side handling of state, like which VRDisplayHost is
 // listening for device activation.
-class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
+class BrowserXrDevice : public device::VRDeviceEventListener {
  public:
-  explicit BrowserXrDevice(device::mojom::XRRuntimePtr device,
-                           device::mojom::VRDisplayInfoPtr info,
-                           bool is_fallback);
+  explicit BrowserXrDevice(device::VRDevice* device, bool is_fallback);
   ~BrowserXrDevice() override;
 
-  device::mojom::XRRuntime* GetRuntime() { return device_.get(); }
+  device::VRDevice* GetDevice() { return device_; }
+
+  // device::VRDeviceEventListener
+  void OnChanged(device::mojom::VRDisplayInfoPtr vr_device_info) override;
+  void OnExitPresent() override;
+  void OnActivate(device::mojom::VRDisplayEventReason reason,
+                  base::OnceCallback<void(bool)> on_handled) override;
+  void OnDeactivate(device::mojom::VRDisplayEventReason reason) override;
 
   // Methods called by VRDisplayHost to interact with the device.
   void OnDisplayHostAdded(VRDisplayHost* display);
@@ -33,7 +35,7 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
   void ExitPresent(VRDisplayHost* display);
   void RequestSession(
       VRDisplayHost* display,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      const device::XRDeviceRuntimeSessionOptions& options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback);
   VRDisplayHost* GetPresentingDisplayHost() { return presenting_display_host_; }
   void UpdateListeningForActivate(VRDisplayHost* display);
@@ -45,27 +47,18 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
   bool IsFallbackDevice() { return is_fallback_; }
 
  private:
-  // device::XRRuntimeEventListener
-  void OnDisplayInfoChanged(
-      device::mojom::VRDisplayInfoPtr vr_device_info) override;
-  void OnExitPresent() override;
-  void OnDeviceActivated(device::mojom::VRDisplayEventReason reason,
-                         base::OnceCallback<void(bool)> on_handled) override;
-  void OnDeviceIdle(device::mojom::VRDisplayEventReason reason) override;
-
-  void OnInitialDevicePropertiesReceived(
-      device::mojom::VRDisplayInfoPtr display_info);
   void StopExclusiveSession();
   void OnListeningForActivate(bool is_listening);
   void OnRequestSessionResult(
       VRDisplayHost* display,
-      device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      const device::XRDeviceRuntimeSessionOptions& options,
       device::mojom::VRDisplayHost::RequestSessionCallback callback,
       device::mojom::XRPresentationConnectionPtr connection,
-      device::mojom::XRSessionControllerPtr exclusive_session_controller);
+      device::XrSessionController* exclusive_session_controller);
 
-  device::mojom::XRRuntimePtr device_;
-  device::mojom::XRSessionControllerPtr exclusive_session_controller_;
+  // Not owned by this class, but valid while BrowserXrDevice is alive.
+  device::VRDevice* device_;
+  device::XrSessionController* exclusive_session_controller_ = nullptr;
 
   std::set<VRDisplayHost*> displays_;
   device::mojom::VRDisplayInfoPtr display_info_;
@@ -73,8 +66,6 @@ class BrowserXrDevice : public device::mojom::XRRuntimeEventListener {
   VRDisplayHost* listening_for_activation_display_host_ = nullptr;
   VRDisplayHost* presenting_display_host_ = nullptr;
   bool is_fallback_;
-
-  mojo::Binding<device::mojom::XRRuntimeEventListener> binding_;
 
   base::WeakPtrFactory<BrowserXrDevice> weak_ptr_factory_;
 };
