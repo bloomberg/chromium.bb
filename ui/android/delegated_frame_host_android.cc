@@ -60,14 +60,14 @@ DelegatedFrameHostAndroid::DelegatedFrameHostAndroid(
     ui::ViewAndroid* view,
     viz::HostFrameSinkManager* host_frame_sink_manager,
     Client* client,
-    const viz::FrameSinkId& frame_sink_id)
+    const viz::FrameSinkId& frame_sink_id,
+    bool enable_surface_synchronization)
     : frame_sink_id_(frame_sink_id),
       view_(view),
       host_frame_sink_manager_(host_frame_sink_manager),
       client_(client),
       begin_frame_source_(this),
-      enable_surface_synchronization_(
-          features::IsSurfaceSynchronizationEnabled()),
+      enable_surface_synchronization_(enable_surface_synchronization),
       enable_viz_(
           base::FeatureList::IsEnabled(features::kVizDisplayCompositor)),
       frame_evictor_(std::make_unique<viz::FrameEvictor>(this)) {
@@ -221,8 +221,10 @@ void DelegatedFrameHostAndroid::AttachToCompositor(
   // browser in cases where the renderer hangs or another factor prevents a
   // frame from being produced. If we already have delegated content, no need
   // to take the lock.
-  if (!enable_viz_ && compositor->IsDrawingFirstVisibleFrame() &&
-      !HasDelegatedContent()) {
+  // If surface synchronization is enabled, then it will block browser UI until
+  // a renderer frame is available instead.
+  if (!enable_surface_synchronization_ &&
+      compositor->IsDrawingFirstVisibleFrame() && !HasDelegatedContent()) {
     compositor_attach_until_frame_lock_ = compositor->GetCompositorLock(
         this, base::TimeDelta::FromSeconds(kFirstFrameTimeoutSeconds));
   }

@@ -57,7 +57,8 @@ class UI_ANDROID_EXPORT DelegatedFrameHostAndroid
   DelegatedFrameHostAndroid(ViewAndroid* view,
                             viz::HostFrameSinkManager* host_frame_sink_manager,
                             Client* client,
-                            const viz::FrameSinkId& frame_sink_id);
+                            const viz::FrameSinkId& frame_sink_id,
+                            bool enable_surface_synchronization);
 
   ~DelegatedFrameHostAndroid() override;
 

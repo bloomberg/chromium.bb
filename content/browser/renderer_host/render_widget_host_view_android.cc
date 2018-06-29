@@ -198,7 +198,7 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
   if (using_browser_compositor_) {
     delegated_frame_host_ = std::make_unique<ui::DelegatedFrameHostAndroid>(
         &view_, CompositorImpl::GetHostFrameSinkManager(), this,
-        host()->GetFrameSinkId());
+        host()->GetFrameSinkId(), features::IsSurfaceSynchronizationEnabled());
     if (is_showing_) {
       delegated_frame_host_->WasShown(
           local_surface_id_allocator_.GetCurrentLocalSurfaceId(),

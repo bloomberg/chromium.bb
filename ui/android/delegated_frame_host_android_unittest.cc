@@ -82,10 +82,18 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
         lock_manager_(task_runner_, &lock_manager_client_) {
     host_frame_sink_manager_.SetLocalManager(&frame_sink_manager_impl_);
     frame_sink_manager_impl_.SetLocalClient(&host_frame_sink_manager_);
+  }
+
+  void SetUp() override {
     view_.SetLayer(cc::SolidColorLayer::Create());
     frame_host_ = std::make_unique<DelegatedFrameHostAndroid>(
-        &view_, &host_frame_sink_manager_, &client_, frame_sink_id_);
+        &view_, &host_frame_sink_manager_, &client_, frame_sink_id_,
+        ShouldEnableSurfaceSynchronization());
   }
+
+  void TearDown() override { frame_host_.reset(); }
+
+  virtual bool ShouldEnableSurfaceSynchronization() const { return false; }
 
   ui::CompositorLock* GetLock(CompositorLockClient* client,
                               base::TimeDelta time_delta) {
@@ -129,6 +137,24 @@ class DelegatedFrameHostAndroidTest : public testing::Test {
   scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
   CompositorLockManager lock_manager_;
 };
+
+class DelegatedFrameHostAndroidSurfaceSynchronizationTest
+    : public DelegatedFrameHostAndroidTest {
+ public:
+  DelegatedFrameHostAndroidSurfaceSynchronizationTest() = default;
+  ~DelegatedFrameHostAndroidSurfaceSynchronizationTest() override = default;
+
+  bool ShouldEnableSurfaceSynchronization() const override { return true; }
+};
+
+// If surface synchronization is enabled then we should not be acquiring a
+// compositor lock on attach.
+TEST_F(DelegatedFrameHostAndroidSurfaceSynchronizationTest,
+       NoCompositorLockOnAttach) {
+  EXPECT_CALL(compositor_, IsDrawingFirstVisibleFrame()).Times(0);
+  EXPECT_CALL(compositor_, DoGetCompositorLock(_, _)).Times(0);
+  frame_host_->AttachToCompositor(&compositor_);
+}
 
 TEST_F(DelegatedFrameHostAndroidTest, CompositorLockDuringFirstFrame) {
   // Attach during the first frame, lock will be taken.
