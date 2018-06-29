@@ -35,6 +35,7 @@
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
 #include "net/net_buildflags.h"
 #include "services/network/network_service.h"
+#include "services/network/public/cpp/cross_thread_shared_url_loader_factory_info.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
@@ -220,9 +221,8 @@ class SystemNetworkContextManager::URLLoaderFactoryForSystem
 
   // SharedURLLoaderFactory implementation:
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> Clone() override {
-    NOTREACHED() << "This isn't supported. SharedURLLoaderFactory can only be"
-                    " used on the UI thread.";
-    return nullptr;
+    return std::make_unique<network::CrossThreadSharedURLLoaderFactoryInfo>(
+        this);
   }
 
   void Shutdown() { manager_ = nullptr; }

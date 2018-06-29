@@ -23,6 +23,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace invalidation {
@@ -67,7 +68,7 @@ void TiclProfileSettingsProviderTest::SetUp() {
           new ProfileIdentityProvider(&token_service_)),
       std::unique_ptr<TiclSettingsProvider>(
           new TiclProfileSettingsProvider(&pref_service_)),
-      &gcm_driver_, request_context_getter_));
+      &gcm_driver_, request_context_getter_, nullptr /* url_loader_factory */));
   invalidation_service_->Init(std::unique_ptr<syncer::InvalidationStateTracker>(
       new syncer::FakeInvalidationStateTracker));
 }

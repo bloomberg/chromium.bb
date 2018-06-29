@@ -24,6 +24,10 @@
 #include "google/cacheinvalidation/include/system-resources.h"
 #include "jingle/notifier/base/notifier_options.h"
 
+namespace network {
+class SharedURLLoaderFactoryInfo;
+}  // namespace network
+
 namespace syncer {
 
 class GCMNetworkChannelDelegate;
@@ -135,7 +139,8 @@ class INVALIDATION_EXPORT SyncNetworkChannel
   static std::unique_ptr<SyncNetworkChannel> CreatePushClientChannel(
       const notifier::NotifierOptions& notifier_options);
   static std::unique_ptr<SyncNetworkChannel> CreateGCMNetworkChannel(
-      scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+      std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+          url_loader_factory_info,
       std::unique_ptr<GCMNetworkChannelDelegate> delegate);
 
   // Get the count of how many valid received messages were received.

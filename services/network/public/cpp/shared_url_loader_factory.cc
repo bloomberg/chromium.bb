@@ -9,6 +9,7 @@ namespace network {
 // static
 scoped_refptr<SharedURLLoaderFactory> SharedURLLoaderFactory::Create(
     std::unique_ptr<SharedURLLoaderFactoryInfo> info) {
+  DCHECK(info);
   return info->CreateFactory();
 }
 

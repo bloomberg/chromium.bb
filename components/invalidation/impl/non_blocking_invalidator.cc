@@ -20,6 +20,7 @@
 #include "components/invalidation/public/invalidation_handler.h"
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "jingle/notifier/listener/push_client.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace syncer {
 
@@ -324,10 +325,11 @@ NetworkChannelCreator
 }
 
 NetworkChannelCreator NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
-    scoped_refptr<net::URLRequestContextGetter> request_context_getter,
+    std::unique_ptr<network::SharedURLLoaderFactoryInfo>
+        url_loader_factory_info,
     std::unique_ptr<GCMNetworkChannelDelegate> delegate) {
   return base::Bind(&SyncNetworkChannel::CreateGCMNetworkChannel,
-                    request_context_getter,
+                    base::Passed(&url_loader_factory_info),
                     base::Passed(&delegate));
 }
 

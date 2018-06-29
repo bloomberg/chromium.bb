@@ -20,6 +20,7 @@
 #include "components/invalidation/public/object_id_invalidation_map.h"
 #include "google_apis/gaia/gaia_constants.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 static const char* kOAuth2Scopes[] = {
   GaiaConstants::kGoogleTalkOAuth2Scope
@@ -60,7 +61,8 @@ TiclInvalidationService::TiclInvalidationService(
     std::unique_ptr<IdentityProvider> identity_provider,
     std::unique_ptr<TiclSettingsProvider> settings_provider,
     gcm::GCMDriver* gcm_driver,
-    const scoped_refptr<net::URLRequestContextGetter>& request_context)
+    const scoped_refptr<net::URLRequestContextGetter>& request_context,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
     : user_agent_(user_agent),
       identity_provider_(std::move(identity_provider)),
       settings_provider_(std::move(settings_provider)),
@@ -68,7 +70,8 @@ TiclInvalidationService::TiclInvalidationService(
       request_access_token_backoff_(&kRequestAccessTokenBackoffPolicy),
       network_channel_type_(GCM_NETWORK_CHANNEL),
       gcm_driver_(gcm_driver),
-      request_context_(request_context) {}
+      request_context_(request_context),
+      url_loader_factory_(std::move(url_loader_factory)) {}
 
 TiclInvalidationService::~TiclInvalidationService() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -368,7 +371,8 @@ void TiclInvalidationService::StartInvalidator(
           gcm_driver_, identity_provider_.get()));
       network_channel_creator =
           syncer::NonBlockingInvalidator::MakeGCMNetworkChannelCreator(
-              request_context_, gcm_invalidation_bridge_->CreateDelegate());
+              url_loader_factory_->Clone(),
+              gcm_invalidation_bridge_->CreateDelegate());
       break;
     }
     default: {
