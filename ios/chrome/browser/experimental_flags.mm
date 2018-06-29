@@ -25,7 +25,6 @@
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/user_feedback_features.h"
 #include "ios/web/public/web_view_creation_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -114,11 +113,11 @@ bool IsNewClearBrowsingDataUIEnabled() {
 }
 
 bool IsNewFeedbackKitEnabled() {
-  return base::FeatureList::IsEnabled(kFeedbackKitV2);
+  return true;
 }
 
 bool IsNewFeedbackKitEnabledWithSSOService() {
-  return base::FeatureList::IsEnabled(kFeedbackKitV2WithSSOService);
+  return true;
 }
 
 bool IsThirdPartyKeyboardWorkaroundEnabled() {

@@ -117,12 +117,6 @@ extern const char kNewClearBrowsingDataUIDescription[];
 extern const char kExternalSearchName[];
 extern const char kExternalSearchDescription[];
 
-// Title and description for the flags to enable use of FeedbackKit V2.
-extern const char kFeedbackKitV2Name[];
-extern const char kFeedbackKitV2Description[];
-extern const char kFeedbackKitV2WithSSOServiceName[];
-extern const char kFeedbackKitV2WithSSOServiceDescription[];
-
 // Title and description for the command line switch used to determine the
 // active fullscreen viewport adjustment mode.
 extern const char kFullscreenViewportAdjustmentExperimentName[];

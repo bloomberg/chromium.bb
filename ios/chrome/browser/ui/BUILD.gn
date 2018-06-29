@@ -88,8 +88,6 @@ source_set("feature_flags") {
   sources = [
     "ui_feature_flags.cc",
     "ui_feature_flags.h",
-    "user_feedback_features.cc",
-    "user_feedback_features.h",
   ]
   deps = [
     "//base",

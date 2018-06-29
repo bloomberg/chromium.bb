@@ -140,13 +140,6 @@ const char kNewClearBrowsingDataUIDescription[] =
 const char kExternalSearchName[] = "External Search";
 const char kExternalSearchDescription[] = "Enable support for External Search.";
 
-const char kFeedbackKitV2Name[] = "FeedbackKit V2";
-const char kFeedbackKitV2Description[] = "Enable use of FeedbackKit V2.";
-const char kFeedbackKitV2WithSSOServiceName[] =
-    "FeedbackKit V2 with SSOService configured for FeedbackKit";
-const char kFeedbackKitV2WithSSOServiceDescription[] =
-    "Send SSOService with configuration for FeedbackKit V2.";
-
 const char kFullscreenViewportAdjustmentExperimentName[] =
     "Fullscreen Viewport Adjustment Mode";
 const char kFullscreenViewportAdjustmentExperimentDescription[] =
