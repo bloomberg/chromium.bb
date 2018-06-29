@@ -27,12 +27,12 @@
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_count_uses_time_source.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
@@ -1609,10 +1609,10 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   CreateTaskQueues(2u);
 
   TimeTicks start_time_ticks = manager_->NowTicks();
-  std::unique_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(start_time_ticks));
-  std::unique_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(start_time_ticks));
+  std::unique_ptr<MockTimeDomain> domain_a =
+      std::make_unique<MockTimeDomain>(start_time_ticks);
+  std::unique_ptr<MockTimeDomain> domain_b =
+      std::make_unique<MockTimeDomain>(start_time_ticks);
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
   runners_[0]->SetTimeDomain(domain_a.get());
@@ -1633,13 +1633,13 @@ TEST_F(TaskQueueManagerTest, TimeDomainsAreIndependant) {
   runners_[1]->PostDelayedTask(FROM_HERE, BindOnce(&TestTask, 6, &run_order),
                                TimeDelta::FromMilliseconds(30));
 
-  domain_b->AdvanceNowTo(start_time_ticks + TimeDelta::FromMilliseconds(50));
+  domain_b->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(4u, 5u, 6u));
 
-  domain_a->AdvanceNowTo(start_time_ticks + TimeDelta::FromMilliseconds(50));
+  domain_a->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   RunLoop().RunUntilIdle();
@@ -1656,8 +1656,8 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   CreateTaskQueues(1u);
 
   TimeTicks start_time_ticks = manager_->NowTicks();
-  std::unique_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(start_time_ticks));
+  std::unique_ptr<MockTimeDomain> domain_a =
+      std::make_unique<MockTimeDomain>(start_time_ticks);
   manager_->RegisterTimeDomain(domain_a.get());
   runners_[0]->SetTimeDomain(domain_a.get());
 
@@ -1671,17 +1671,17 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigration) {
   runners_[0]->PostDelayedTask(FROM_HERE, BindOnce(&TestTask, 4, &run_order),
                                TimeDelta::FromMilliseconds(40));
 
-  domain_a->AdvanceNowTo(start_time_ticks + TimeDelta::FromMilliseconds(20));
+  domain_a->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(20));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
   RunLoop().RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1u, 2u));
 
-  std::unique_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(start_time_ticks));
+  std::unique_ptr<MockTimeDomain> domain_b =
+      std::make_unique<MockTimeDomain>(start_time_ticks);
   manager_->RegisterTimeDomain(domain_b.get());
   runners_[0]->SetTimeDomain(domain_b.get());
 
-  domain_b->AdvanceNowTo(start_time_ticks + TimeDelta::FromMilliseconds(50));
+  domain_b->SetNowTicks(start_time_ticks + TimeDelta::FromMilliseconds(50));
   manager_->MaybeScheduleImmediateWork(FROM_HERE);
 
   RunLoop().RunUntilIdle();
@@ -1697,10 +1697,10 @@ TEST_F(TaskQueueManagerTest, TimeDomainMigrationWithIncomingImmediateTasks) {
   CreateTaskQueues(1u);
 
   TimeTicks start_time_ticks = manager_->NowTicks();
-  std::unique_ptr<VirtualTimeDomain> domain_a(
-      new VirtualTimeDomain(start_time_ticks));
-  std::unique_ptr<VirtualTimeDomain> domain_b(
-      new VirtualTimeDomain(start_time_ticks));
+  std::unique_ptr<MockTimeDomain> domain_a =
+      std::make_unique<MockTimeDomain>(start_time_ticks);
+  std::unique_ptr<MockTimeDomain> domain_b =
+      std::make_unique<MockTimeDomain>(start_time_ticks);
   manager_->RegisterTimeDomain(domain_a.get());
   manager_->RegisterTimeDomain(domain_b.get());
 
@@ -2837,8 +2837,8 @@ TEST_F(TaskQueueManagerTest, SetTimeDomainForDisabledQueue) {
   // We should not get a notification for a disabled queue.
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_, _)).Times(0);
 
-  std::unique_ptr<VirtualTimeDomain> domain(
-      new VirtualTimeDomain(manager_->NowTicks()));
+  std::unique_ptr<MockTimeDomain> domain =
+      std::make_unique<MockTimeDomain>(manager_->NowTicks());
   manager_->RegisterTimeDomain(domain.get());
   runners_[0]->SetTimeDomain(domain.get());
 

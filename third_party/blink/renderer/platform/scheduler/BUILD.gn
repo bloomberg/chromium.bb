@@ -157,6 +157,8 @@ jumbo_source_set("test_support") {
   testonly = true
 
   sources = [
+    "base/test/mock_time_domain.cc",
+    "base/test/mock_time_domain.h",
     "base/test/task_queue_manager_for_test.cc",
     "base/test/task_queue_manager_for_test.h",
     "base/test/test_count_uses_time_source.cc",

@@ -16,7 +16,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
@@ -146,11 +146,11 @@ class TaskQueueSelectorTest : public testing::Test {
 
  protected:
   void SetUp() final {
-    virtual_time_domain_ = std::make_unique<VirtualTimeDomain>(
-        TimeTicks() + TimeDelta::FromSeconds(1));
+    time_domain_ = std::make_unique<MockTimeDomain>(TimeTicks() +
+                                                    TimeDelta::FromSeconds(1));
     for (size_t i = 0; i < kTaskQueueCount; i++) {
       std::unique_ptr<TaskQueueImpl> task_queue =
-          std::make_unique<TaskQueueImpl>(nullptr, virtual_time_domain_.get(),
+          std::make_unique<TaskQueueImpl>(nullptr, time_domain_.get(),
                                           TaskQueue::Spec("test"));
       selector_.AddQueue(task_queue.get());
       task_queues_.push_back(std::move(task_queue));
@@ -174,14 +174,14 @@ class TaskQueueSelectorTest : public testing::Test {
   }
 
   std::unique_ptr<TaskQueueImpl> NewTaskQueueWithBlockReporting() {
-    return std::make_unique<TaskQueueImpl>(nullptr, virtual_time_domain_.get(),
+    return std::make_unique<TaskQueueImpl>(nullptr, time_domain_.get(),
                                            TaskQueue::Spec("test"));
   }
 
   const size_t kTaskQueueCount = 5;
   RepeatingClosure test_closure_;
   TaskQueueSelectorForTest selector_;
-  std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
+  std::unique_ptr<TimeDomain> time_domain_;
   std::vector<std::unique_ptr<TaskQueueImpl>> task_queues_;
   std::map<TaskQueueImpl*, size_t> queue_to_index_map_;
   std::unique_ptr<HistogramTester> histogram_tester_;

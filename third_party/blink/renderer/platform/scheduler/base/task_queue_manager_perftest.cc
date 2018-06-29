@@ -19,28 +19,29 @@
 #include "testing/perf/perf_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
-#include "third_party/blink/renderer/platform/scheduler/base/virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
 
 namespace base {
 namespace sequence_manager {
 
-// To reduce noise related to the OS timer, we use a virtual time domain to
+// To reduce noise related to the OS timer, we use a mock time domain to
 // fast forward the timers.
-class PerfTestTimeDomain : public VirtualTimeDomain {
+class PerfTestTimeDomain : public MockTimeDomain {
  public:
-  PerfTestTimeDomain() : VirtualTimeDomain(TimeTicks::Now()) {}
+  PerfTestTimeDomain() : MockTimeDomain(TimeTicks::Now()) {}
   ~PerfTestTimeDomain() override = default;
 
   Optional<TimeDelta> DelayTillNextTask(LazyNow* lazy_now) override {
     Optional<TimeTicks> run_time = NextScheduledRunTime();
     if (!run_time)
       return nullopt;
-    AdvanceNowTo(*run_time);
-    return TimeDelta();  // Makes DoWork post an immediate continuation.
+    SetNowTicks(*run_time);
+    // Makes SequenceManager to continue immediately.
+    return TimeDelta();
   }
 
   void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override {
@@ -49,8 +50,7 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
       RequestDoWork();
   }
 
-  const char* GetName() const override { return "PerfTestTimeDomain"; }
-
+ private:
   DISALLOW_COPY_AND_ASSIGN(PerfTestTimeDomain);
 };
 
@@ -70,7 +70,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
 
   void TearDown() override {
     queues_.clear();
-    manager_->UnregisterTimeDomain(virtual_time_domain_.get());
+    manager_->UnregisterTimeDomain(time_domain_.get());
     manager_.reset();
   }
 
@@ -82,12 +82,12 @@ class TaskQueueManagerPerfTest : public testing::Test {
                                                DefaultTickClock::GetInstance());
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
-    virtual_time_domain_.reset(new PerfTestTimeDomain());
-    manager_->RegisterTimeDomain(virtual_time_domain_.get());
+    time_domain_.reset(new PerfTestTimeDomain());
+    manager_->RegisterTimeDomain(time_domain_.get());
 
     for (size_t i = 0; i < num_queues; i++) {
       queues_.push_back(manager_->CreateTaskQueue<TestTaskQueue>(
-          TaskQueue::Spec("test").SetTimeDomain(virtual_time_domain_.get())));
+          TaskQueue::Spec("test").SetTimeDomain(time_domain_.get())));
     }
 
     delayed_task_closure_ = BindRepeating(
@@ -200,7 +200,7 @@ class TaskQueueManagerPerfTest : public testing::Test {
   std::unique_ptr<MessageLoop> message_loop_;
   std::unique_ptr<SequenceManager> manager_;
   std::unique_ptr<RunLoop> run_loop_;
-  std::unique_ptr<VirtualTimeDomain> virtual_time_domain_;
+  std::unique_ptr<TimeDomain> time_domain_;
   std::vector<scoped_refptr<SingleThreadTaskRunner>> queues_;
   RepeatingClosure delayed_task_closure_;
   RepeatingClosure immediate_task_closure_;
