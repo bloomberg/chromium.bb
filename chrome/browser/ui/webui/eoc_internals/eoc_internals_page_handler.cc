@@ -20,15 +20,16 @@ using contextual_suggestions::ContextualSuggestionsFetch;
 using contextual_suggestions::ContextualSuggestionsResult;
 
 namespace {
-std::string GetAreChromeFlagsSetupString() {
+bool AreChromeFlagsSetup() {
   return (base::FeatureList::IsEnabled(
               contextual_suggestions::kContextualSuggestionsBottomSheet) ||
           base::FeatureList::IsEnabled(
               contextual_suggestions::kContextualSuggestionsButton)) &&
-                 base::FeatureList::IsEnabled(
-                     chrome::android::kChromeModernDesign)
-             ? "true"
-             : "false";
+         base::FeatureList::IsEnabled(chrome::android::kChromeModernDesign);
+}
+
+std::string GetAreChromeFlagsSetupString() {
+  return AreChromeFlagsSetup() ? "true" : "false";
 }
 }  // namespace
 
@@ -88,6 +89,11 @@ void EocInternalsPageHandler::GetCachedMetricEvents(
 
 void EocInternalsPageHandler::ClearCachedMetricEvents(
     ClearCachedMetricEventsCallback callback) {
+  if (!AreChromeFlagsSetup()) {
+    std::move(callback).Run();
+    return;
+  }
+
   contextual_content_suggestions_service_->GetDebuggingReporter()
       ->ClearEvents();
   std::move(callback).Run();
@@ -140,6 +146,11 @@ void EocInternalsPageHandler::GetCachedSuggestionResults(
 
 void EocInternalsPageHandler::ClearCachedSuggestionResults(
     ClearCachedSuggestionResultsCallback callback) {
+  if (!AreChromeFlagsSetup()) {
+    std::move(callback).Run();
+    return;
+  }
+
   contextual_content_suggestions_service_->ClearCachedResultsForDebugging();
   std::move(callback).Run();
 }
