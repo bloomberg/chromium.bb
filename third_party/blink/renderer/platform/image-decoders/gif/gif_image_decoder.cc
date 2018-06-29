@@ -35,7 +35,10 @@ namespace blink {
 GIFImageDecoder::GIFImageDecoder(AlphaOption alpha_option,
                                  const ColorBehavior& color_behavior,
                                  size_t max_decoded_bytes)
-    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+    : ImageDecoder(alpha_option,
+                   ImageDecoder::kDefaultBitDepth,
+                   color_behavior,
+                   max_decoded_bytes),
       repetition_count_(kAnimationLoopOnce) {}
 
 GIFImageDecoder::~GIFImageDecoder() = default;

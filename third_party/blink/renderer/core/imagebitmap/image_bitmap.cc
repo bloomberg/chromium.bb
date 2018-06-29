@@ -509,10 +509,12 @@ static scoped_refptr<StaticBitmapImage> CropImageAndApplyColorSpaceConversion(
   // skia_image is premultiplied.
   if (!skia_image->isOpaque() && image->Data() &&
       skia_image->alphaType() == kPremul_SkAlphaType) {
+    const bool data_complete = true;
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
-        image->Data(), true,
+        image->Data(), data_complete,
         parsed_options.premultiply_alpha ? ImageDecoder::kAlphaPremultiplied
                                          : ImageDecoder::kAlphaNotPremultiplied,
+        ImageDecoder::kDefaultBitDepth,
         parsed_options.has_color_space_conversion ? ColorBehavior::Tag()
                                                   : ColorBehavior::Ignore()));
     if (!decoder)

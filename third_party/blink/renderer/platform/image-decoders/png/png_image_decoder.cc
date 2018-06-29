@@ -46,11 +46,16 @@
 
 namespace blink {
 
-PNGImageDecoder::PNGImageDecoder(AlphaOption alpha_option,
-                                 const ColorBehavior& color_behavior,
-                                 size_t max_decoded_bytes,
-                                 size_t offset)
-    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+PNGImageDecoder::PNGImageDecoder(
+    AlphaOption alpha_option,
+    HighBitDepthDecodingOption high_bit_depth_decoding_option,
+    const ColorBehavior& color_behavior,
+    size_t max_decoded_bytes,
+    size_t offset)
+    : ImageDecoder(alpha_option,
+                   high_bit_depth_decoding_option,
+                   color_behavior,
+                   max_decoded_bytes),
       offset_(offset),
       current_frame_(0),
       // It would be logical to default to kAnimationNone, but BitmapImage uses

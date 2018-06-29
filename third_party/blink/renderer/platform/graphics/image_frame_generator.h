@@ -133,7 +133,8 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                              size_t index,
                              const SkISize& scaled_size,
                              SkBitmap::Allocator&,
-                             ImageDecoder::AlphaOption);
+                             ImageDecoder::AlphaOption,
+                             ImageDecoder::HighBitDepthDecodingOption);
   // This method should only be called while decode_mutex_ is locked.
   // Returns a pointer to frame |index|'s ImageFrame, if available.
   // Sets |used_external_allocator| to true if the the image was decoded into
@@ -144,6 +145,7 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                      ImageDecoder**,
                      SkBitmap::Allocator& external_allocator,
                      ImageDecoder::AlphaOption,
+                     ImageDecoder::HighBitDepthDecodingOption,
                      const SkISize& scaled_size,
                      bool& used_external_allocator);
 

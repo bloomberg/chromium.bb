@@ -117,6 +117,12 @@ class PLATFORM_EXPORT ImageDecoder {
       Platform::kNoDecodedImageByteLimit;
 
   enum AlphaOption { kAlphaPremultiplied, kAlphaNotPremultiplied };
+  enum HighBitDepthDecodingOption {
+    // Decode everything to 8-8-8-8 pixel format (kN32 channel order).
+    kDefaultBitDepth,
+    // Decode high bit depth images to half float pixel format.
+    kHighBitDepthToHalfFloat
+  };
 
   virtual ~ImageDecoder() = default;
 
@@ -128,16 +134,19 @@ class PLATFORM_EXPORT ImageDecoder {
       scoped_refptr<SegmentReader> data,
       bool data_complete,
       AlphaOption,
+      HighBitDepthDecodingOption,
       const ColorBehavior&,
       const SkISize& desired_size = SkISize::MakeEmpty());
   static std::unique_ptr<ImageDecoder> Create(
       scoped_refptr<SharedBuffer> data,
       bool data_complete,
       AlphaOption alpha_option,
+      HighBitDepthDecodingOption high_bit_depth_decoding_option,
       const ColorBehavior& color_behavior,
       const SkISize& desired_size = SkISize::MakeEmpty()) {
     return Create(SegmentReader::CreateFromSharedBuffer(std::move(data)),
-                  data_complete, alpha_option, color_behavior, desired_size);
+                  data_complete, alpha_option, high_bit_depth_decoding_option,
+                  color_behavior, desired_size);
   }
 
   virtual String FilenameExtension() const = 0;
@@ -316,9 +325,11 @@ class PLATFORM_EXPORT ImageDecoder {
 
  protected:
   ImageDecoder(AlphaOption alpha_option,
+               HighBitDepthDecodingOption high_bit_depth_decoding_option,
                const ColorBehavior& color_behavior,
                size_t max_decoded_bytes)
       : premultiply_alpha_(alpha_option == kAlphaPremultiplied),
+        high_bit_depth_decoding_option_(high_bit_depth_decoding_option),
         color_behavior_(color_behavior),
         max_decoded_bytes_(max_decoded_bytes),
         purge_aggressively_(false) {}
@@ -398,6 +409,7 @@ class PLATFORM_EXPORT ImageDecoder {
   scoped_refptr<SegmentReader> data_;  // The encoded data.
   Vector<ImageFrame, 1> frame_buffer_cache_;
   const bool premultiply_alpha_;
+  const HighBitDepthDecodingOption high_bit_depth_decoding_option_;
   const ColorBehavior color_behavior_;
   ImageOrientation orientation_;
 

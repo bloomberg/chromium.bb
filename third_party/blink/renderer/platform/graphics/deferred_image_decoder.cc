@@ -63,7 +63,8 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::Create(
     ImageDecoder::AlphaOption alpha_option,
     const ColorBehavior& color_behavior) {
   std::unique_ptr<ImageDecoder> metadata_decoder =
-      ImageDecoder::Create(data, data_complete, alpha_option, color_behavior);
+      ImageDecoder::Create(data, data_complete, alpha_option,
+                           ImageDecoder::kDefaultBitDepth, color_behavior);
   if (!metadata_decoder)
     return nullptr;
 

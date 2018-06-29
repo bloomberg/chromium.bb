@@ -43,7 +43,10 @@ static const size_t kSizeOfFileHeader = 14;
 BMPImageDecoder::BMPImageDecoder(AlphaOption alpha_option,
                                  const ColorBehavior& color_behavior,
                                  size_t max_decoded_bytes)
-    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+    : ImageDecoder(alpha_option,
+                   ImageDecoder::kDefaultBitDepth,
+                   color_behavior,
+                   max_decoded_bytes),
       decoded_offset_(0) {}
 
 BMPImageDecoder::~BMPImageDecoder() = default;

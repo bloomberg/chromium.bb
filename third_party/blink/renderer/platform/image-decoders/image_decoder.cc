@@ -69,6 +69,7 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     scoped_refptr<SegmentReader> data,
     bool data_complete,
     AlphaOption alpha_option,
+    HighBitDepthDecodingOption high_bit_depth_decoding_option,
     const ColorBehavior& color_behavior,
     const SkISize& desired_size) {
   // At least kLongestSignatureLength bytes are needed to sniff the signature.
@@ -97,8 +98,9 @@ std::unique_ptr<ImageDecoder> ImageDecoder::Create(
     decoder.reset(
         new JPEGImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
   } else if (MatchesPNGSignature(contents)) {
-    decoder.reset(
-        new PNGImageDecoder(alpha_option, color_behavior, max_decoded_bytes));
+    decoder.reset(new PNGImageDecoder(alpha_option,
+                                      high_bit_depth_decoding_option,
+                                      color_behavior, max_decoded_bytes));
   } else if (MatchesGIFSignature(contents)) {
     decoder.reset(
         new GIFImageDecoder(alpha_option, color_behavior, max_decoded_bytes));

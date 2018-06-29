@@ -206,9 +206,10 @@ void BackgroundFetchIconLoader::DidFinishLoading(
     return;
   if (data_) {
     // Decode data.
+    const bool data_complete = true;
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-        data_, true /* data_complete*/, ImageDecoder::kAlphaPremultiplied,
-        ColorBehavior::TransformToSRGB());
+        data_, data_complete, ImageDecoder::kAlphaPremultiplied,
+        ImageDecoder::kDefaultBitDepth, ColorBehavior::TransformToSRGB());
     if (decoder) {
       // the |ImageFrame*| is owned by the decoder.
       ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);
