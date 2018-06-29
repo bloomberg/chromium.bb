@@ -546,6 +546,8 @@ EmbeddedWorkerInstance::~EmbeddedWorkerInstance() {
   DCHECK(status_ == EmbeddedWorkerStatus::STOPPING ||
          status_ == EmbeddedWorkerStatus::STOPPED)
       << static_cast<int>(status_);
+  for (auto& observer : listener_list_)
+    observer.OnDestroyed();
   devtools_proxy_.reset();
   if (registry_->GetWorker(embedded_worker_id_))
     registry_->RemoveWorker(process_id(), embedded_worker_id_);
