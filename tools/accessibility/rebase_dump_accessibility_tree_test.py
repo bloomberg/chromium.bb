@@ -111,18 +111,18 @@ def Run():
   #print(json.dumps(data, indent=4))
 
   for builder in data:
-    #print builder['result']
+    print builder['builder_name'], builder['result']
     if builder['result'] == 'FAILURE':
-      url = builder['url']
-      tokens = url.split('/')
-      if len(tokens) < 9:
-        continue
-      bucket = tokens[4]
-      platform = tokens[6]
-      build = tokens[8]
-      logdog_prefix = 'chromium/bb/%s/%s/%s' % (bucket, platform, build)
-      logdog_steps = '%s/+/recipes/steps/**' % logdog_prefix
-      logdog_query = 'cit logdog query -results 999 -path "%s"' % logdog_steps
+      logdog_tokens = [
+          'chromium',
+          'buildbucket',
+          'cr-buildbucket.appspot.com',
+          builder['buildbucket_id'],
+          '+',
+          'steps',
+          '**']
+      logdog_path = '/'.join(logdog_tokens)
+      logdog_query = 'cit logdog query -results 999 -path "%s"' % logdog_path
       print (BRIGHT_COLOR + '=> %s' + NORMAL_COLOR) % logdog_query
       steps = os.popen(logdog_query).readlines()
       a11y_step = None
