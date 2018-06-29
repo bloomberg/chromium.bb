@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -71,19 +70,3 @@ class NoOpScrollPage(NoOpTouchScrollPage):
 class NoOpTouchHandlerPage(NoOpTouchScrollPage):
   BASE_NAME = 'no_op_touch_handler'
   URL = 'file://../key_noop_cases/no_op_touch_handler.html'
-
-
-# TODO(crbug.com/760553):remove this class after
-# thread_times.key_noop_cases benchmark is completely
-# replaced by rendering benchmarks
-class KeyNoOpCasesPageSet(story.StorySet):
-
-  """ Key no-op cases """
-
-  def __init__(self):
-    super(KeyNoOpCasesPageSet, self).__init__()
-
-    self.AddStory(NoOpRafPage(self))
-    self.AddStory(NoOpSetTimeoutPage(self))
-    self.AddStory(NoOpScrollPage(self))
-    self.AddStory(NoOpTouchHandlerPage(self))

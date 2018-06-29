@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import polymer
 from page_sets.rendering import story_tags
@@ -48,12 +47,3 @@ class PaperCalculatorHitTest(polymer.PolymerPage):
   def TapButton(self, action_runner):
     with action_runner.CreateInteraction('Action_TapAction'):
       action_runner.TapElement(element_function='''window.__tapTarget''')
-
-# TODO(crbug.com/760553):remove this class once thread_times.key_hit_test_cases
-# benchmark is completely replaced by rendering benchmarks
-class KeyHitTestCasesPageSet(story.StorySet):
-
-  def __init__(self):
-    super(KeyHitTestCasesPageSet, self).__init__()
-
-    self.AddStory(PaperCalculatorHitTest(self))
