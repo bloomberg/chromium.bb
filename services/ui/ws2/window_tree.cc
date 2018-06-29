@@ -947,13 +947,18 @@ bool WindowTree::SetCursorImpl(const ClientWindowId& window_id,
     return false;
   }
   if (!IsClientCreatedWindow(window) && !IsClientRootWindow(window)) {
-    DVLOG(1) << "SetCursor failed (access denied)";
+    DVLOG(1) << "SerCursor failed (access denied)";
     return false;
   }
 
   auto* server_window = ServerWindow::GetMayBeNull(window);
 
-  ui::Cursor old_cursor_type = cursor.ToNativeCursor();
+  // Convert from CursorData to Cursor. TODO(estade): remove this conversion.
+  // See class level comment on CursorData. Also support kCustom, i.e. image
+  // cursors.
+  ui::Cursor old_cursor_type(cursor.cursor_type());
+  if (cursor.cursor_type() == ui::CursorType::kCustom)
+    NOTIMPLEMENTED_LOG_ONCE();
 
   // Ask our delegate to set the cursor. This will save the cursor for toplevels
   // and also update the active cursor if appropriate (i.e. if |window| is the
