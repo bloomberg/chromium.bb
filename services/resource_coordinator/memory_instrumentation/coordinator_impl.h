@@ -201,6 +201,7 @@ class CoordinatorImpl : public Coordinator,
   mojom::HeapProfilerPtr heap_profiler_;
 
   THREAD_CHECKER(thread_checker_);
+  base::WeakPtrFactory<CoordinatorImpl> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(CoordinatorImpl);
 };
 
