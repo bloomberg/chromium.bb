@@ -104,8 +104,6 @@ void HostContextFactoryPrivate::ConfigureCompositor(
 
   // Create LayerTreeFrameSink with the browser end of CompositorFrameSink.
   cc::mojo_embedder::AsyncLayerTreeFrameSink::InitParams params;
-  params.context_provider = std::move(context_provider);
-  params.worker_context_provider = std::move(worker_context_provider);
   params.compositor_task_runner = compositor->task_runner();
   params.gpu_memory_buffer_manager =
       compositor->context_factory()->GetGpuMemoryBufferManager();
@@ -119,7 +117,8 @@ void HostContextFactoryPrivate::ConfigureCompositor(
           /*should_ask_for_child_region=*/false);
   compositor->SetLayerTreeFrameSink(
       std::make_unique<cc::mojo_embedder::AsyncLayerTreeFrameSink>(
-          std::move(params)));
+          std::move(context_provider), std::move(worker_context_provider),
+          &params));
 #if defined(OS_WIN)
   gfx::RenderingWindowManager::GetInstance()->DoSetParentOnChild(
       compositor->widget());

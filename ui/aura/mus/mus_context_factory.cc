@@ -45,7 +45,6 @@ void MusContextFactory::OnEstablishedGpuChannel(
   }
   std::unique_ptr<cc::LayerTreeFrameSink> layer_tree_frame_sink =
       window_port->RequestLayerTreeFrameSink(std::move(context_provider),
-                                             compositor->task_runner(),
                                              gpu_->gpu_memory_buffer_manager());
   compositor->SetLayerTreeFrameSink(std::move(layer_tree_frame_sink));
 }
