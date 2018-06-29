@@ -96,7 +96,7 @@ class TestOperation : public MessageTransferOperation {
     last_sequence_number_ = sequence_number;
   }
 
-  uint32_t GetTimeoutSeconds() override { return timeout_seconds_; }
+  uint32_t GetMessageTimeoutSeconds() override { return timeout_seconds_; }
 
   void set_timeout_seconds(uint32_t timeout_seconds) {
     timeout_seconds_ = timeout_seconds;
@@ -146,6 +146,10 @@ class TestTimerFactory : public TimerFactory {
 
   base::MockOneShotTimer* GetTimerForDeviceId(const std::string& device_id) {
     return device_id_to_timer_map_[device_id_for_next_timer_];
+  }
+
+  void ClearTimerForDeviceId(const std::string& device_id) {
+    device_id_to_timer_map_.erase(device_id_for_next_timer_);
   }
 
   void set_device_id_for_next_timer(
@@ -200,8 +204,15 @@ class MessageTransferOperationTest : public testing::Test {
   }
 
   void ConstructOperation(cryptauth::RemoteDeviceRefList remote_devices) {
+    test_timer_factory_ = new TestTimerFactory();
+
     if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
       for (auto remote_device : remote_devices) {
+        // Prepare for connection timeout timers to be made for each remote
+        // device.
+        test_timer_factory_->set_device_id_for_next_timer(
+            remote_device.GetDeviceId());
+
         auto fake_connection_attempt =
             std::make_unique<secure_channel::FakeConnectionAttempt>();
         remote_device_to_fake_connection_attempt_map_[remote_device] =
@@ -212,7 +223,6 @@ class MessageTransferOperationTest : public testing::Test {
       }
     }
 
-    test_timer_factory_ = new TestTimerFactory();
     operation_ = base::WrapUnique(new TestOperation(
         remote_devices, fake_device_sync_client_.get(),
         fake_secure_channel_client_.get(), fake_ble_connection_manager_.get()));
@@ -236,6 +246,11 @@ class MessageTransferOperationTest : public testing::Test {
 
     VerifyOperationStartedAndFinished(true /* has_started */,
                                       false /* has_finished */);
+
+    if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi)) {
+      for (const auto& remote_device : operation_->remote_devices())
+        VerifyConnectionTimerCreatedForDevice(remote_device);
+    }
   }
 
   void VerifyOperationStartedAndFinished(bool has_started, bool has_finished) {
@@ -284,6 +299,12 @@ class MessageTransferOperationTest : public testing::Test {
   void VerifyDefaultTimerCreatedForDevice(
       cryptauth::RemoteDeviceRef remote_device) {
     VerifyTimerCreatedForDevice(remote_device, kTestTimeoutSeconds);
+  }
+
+  void VerifyConnectionTimerCreatedForDevice(
+      cryptauth::RemoteDeviceRef remote_device) {
+    VerifyTimerCreatedForDevice(
+        remote_device, MessageTransferOperation::kConnectionTimeoutSeconds);
   }
 
   void VerifyTimerCreatedForDevice(cryptauth::RemoteDeviceRef remote_device,
@@ -383,7 +404,18 @@ TEST_F(MessageTransferOperationTest,
 }
 
 TEST_F(MessageTransferOperationTest,
-       MultiDeviceApiEnabled_TestAuthenticatesButTimesOut) {
+       MultiDeviceApiEnabled_TestTimesOutBeforeAuthentication) {
+  SetMultiDeviceApiEnabled();
+
+  ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
+  InitializeOperation();
+
+  GetTimerForDevice(test_devices_[0])->Fire();
+  EXPECT_TRUE(operation_->has_operation_finished());
+}
+
+TEST_F(MessageTransferOperationTest,
+       MultiDeviceApiEnabled_TestAuthenticatesButThenTimesOut) {
   SetMultiDeviceApiEnabled();
 
   ConstructOperation(cryptauth::RemoteDeviceRefList{test_devices_[0]});
@@ -431,6 +463,9 @@ TEST_F(MessageTransferOperationTest, MultiDeviceApiEnabled_MultipleDevices) {
 
   ConstructOperation(test_devices_);
   InitializeOperation();
+
+  for (const auto& remote_device : test_devices_)
+    test_timer_factory_->ClearTimerForDeviceId(remote_device.GetDeviceId());
 
   // Authenticate |test_devices_[0]|'s channel.
   CreateAuthenticatedChannelForDevice(test_devices_[0]);

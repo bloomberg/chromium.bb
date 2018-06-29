@@ -213,7 +213,7 @@ void ConnectTetheringOperation::NotifyObserversOfConnectionFailure(
     observer.OnConnectTetheringFailure(remote_device_, error_code);
 }
 
-uint32_t ConnectTetheringOperation::GetTimeoutSeconds() {
+uint32_t ConnectTetheringOperation::GetMessageTimeoutSeconds() {
   return setup_required_
              ? ConnectTetheringOperation::kSetupRequiredResponseTimeoutSeconds
              : ConnectTetheringOperation::
