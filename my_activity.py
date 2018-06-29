@@ -763,9 +763,12 @@ class MyActivity(object):
     for issue_uid in issues:
       if changes_by_issue_uid[issue_uid] or not skip_empty_own:
         self.print_issue(issues[issue_uid])
-      for change in changes_by_issue_uid[issue_uid]:
-        print '',  # this prints one space due to comma, but no newline
-        self.print_change(change)
+      if changes_by_issue_uid[issue_uid]:
+        print
+        for change in changes_by_issue_uid[issue_uid]:
+          print '   ',  # this prints one space due to comma, but no newline
+          self.print_change(change)
+        print
 
     # Changes referencing others' issues.
     for issue_uid in ref_issues:
@@ -994,9 +997,9 @@ def main():
   options.begin, options.end = begin, end
 
   if options.markdown:
-    options.output_format = ' * [{title}]({url})'
-    options.output_format_heading = '### {heading} ###'
-    options.output_format_no_url = ' * {title}'
+    options.output_format_heading = '### {heading}\n'
+    options.output_format = '  * [{title}]({url})'
+    options.output_format_no_url = '  * {title}'
   logging.info('Searching for activity by %s', options.user)
   logging.info('Using range %s to %s', options.begin, options.end)
 
