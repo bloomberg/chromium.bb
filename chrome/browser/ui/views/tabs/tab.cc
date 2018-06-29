@@ -543,7 +543,7 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
   DCHECK_EQ(close_button_, sender);
   controller_->CloseTab(this, source);
   if (event.type() == ui::ET_GESTURE_TAP)
-    TouchUMA::RecordGestureAction(TouchUMA::GESTURE_TABCLOSE_TAP);
+    TouchUMA::RecordGestureAction(TouchUMA::kGestureTabCloseTap);
 }
 
 void Tab::ShowContextMenuForView(views::View* source,

@@ -1631,6 +1631,37 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="5" label="INSUFFICIENT_RESOURCES"/>
 </enum>
 
+<enum name="AshGestureActionType">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Omnibox pinch (deprecated, see crbug.com/826476)"/>
+  <int value="2" label="Omnibox scroll (deprecated, see crbug.com/826476)"/>
+  <int value="3" label="Tabstrip pinch (deprecated, see crbug.com/826476)"/>
+  <int value="4" label="Tabstrip scroll (deprecated, see crbug.com/826476)"/>
+  <int value="5" label="Bezel scroll"/>
+  <int value="6" label="Desktop scroll"/>
+  <int value="7" label="Desktop pinch"/>
+  <int value="8" label="Webpage pinch"/>
+  <int value="9" label="Webpage scroll"/>
+  <int value="10" label="Webpage tap"/>
+  <int value="11" label="Tabstrip tap (deprecated, see crbug.com/826476)"/>
+  <int value="12" label="Bezel down"/>
+  <int value="13"
+      label="Tab switched tap (deprecated, see Event.Touch.GestureType)"/>
+  <int value="14"
+      label="Active tab tap (deprecated, see Event.Touch.GestureType)"/>
+  <int value="15"
+      label="Tab close button tap (deprecated, see Event.Touch.GestureType)"/>
+  <int value="16"
+      label="New tab button tap (deprecated, see Event.Touch.GestureType)"/>
+  <int value="17"
+      label="Top edge of browser window tap (deprecated, see
+             Event.Touch.GestureType)"/>
+  <int value="18" label="Window size button tap"/>
+  <int value="19"
+      label="Area surrounding tabstrip tap (deprecated, see crbug.com/826476)"/>
+  <int value="20" label="Window resized double tap"/>
+</enum>
+
 <enum name="AshNightLightDisplayCrtcCtmSupportType">
   <summary>
     Defines the possible displays' color transform matrix support types
@@ -4689,6 +4720,14 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="3" label="Copy link"/>
   <int value="4" label="Share link"/>
   <int value="5" label="App provided items"/>
+</enum>
+
+<enum name="BrowserGestureActionType">
+  <int value="0" label="Tab switched tap"/>
+  <int value="1" label="Active tab tap"/>
+  <int value="2" label="Tab close button tap"/>
+  <int value="3" label="New tab button tap"/>
+  <int value="4" label="Top edge of browser window tap"/>
 </enum>
 
 <enum name="BrowserServicesVerificationResult">
@@ -21784,30 +21823,6 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="User denied use of geolocation"/>
   <int value="2" label="Geoposition could not be determined"/>
   <int value="3" label="Timeout"/>
-</enum>
-
-<enum name="GestureActionType">
-  <int value="0" label="Unknown"/>
-  <int value="1" label="Omnibox pinch"/>
-  <int value="2" label="Omnibox scroll"/>
-  <int value="3" label="Tabstrip pinch"/>
-  <int value="4" label="Tabstrip scroll"/>
-  <int value="5" label="Bezel scroll"/>
-  <int value="6" label="Desktop scroll"/>
-  <int value="7" label="Desktop pinch"/>
-  <int value="8" label="Webpage pinch"/>
-  <int value="9" label="Webpage scroll"/>
-  <int value="10" label="Webpage tap"/>
-  <int value="11" label="Tabstrip tap"/>
-  <int value="12" label="Bezel down"/>
-  <int value="13" label="Tab switched tap"/>
-  <int value="14" label="Active tab tap"/>
-  <int value="15" label="Tab close button tap"/>
-  <int value="16" label="New tab button tap"/>
-  <int value="17" label="Top edge of window tap"/>
-  <int value="18" label="Window size button tap"/>
-  <int value="19" label="Area surrounding tabstrip tap"/>
-  <int value="20" label="Window resized double tap"/>
 </enum>
 
 <enum name="GestureMergeState">

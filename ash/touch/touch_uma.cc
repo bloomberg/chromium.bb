@@ -16,7 +16,6 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/geometry/point_conversions.h"
-#include "ui/views/widget/widget.h"
 
 namespace {
 
@@ -164,46 +163,6 @@ GestureActionType TouchUMA::FindGestureActionType(
       return GESTURE_WEBPAGE_SCROLL;
     if (event.type() == ui::ET_GESTURE_TAP)
       return GESTURE_WEBPAGE_TAP;
-    return GESTURE_UNKNOWN;
-  }
-
-  views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
-  if (!widget)
-    return GESTURE_UNKNOWN;
-
-  // |widget| may be in the process of destroying if it has ownership
-  // views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET and |event| was
-  // dispatched as part of gesture state cleanup. In this case the RootView
-  // of |widget| may no longer exist, so check before calling into any
-  // RootView methods.
-  if (!widget->GetRootView())
-    return GESTURE_UNKNOWN;
-
-  views::View* view =
-      widget->GetRootView()->GetEventHandlerForPoint(event.location());
-  if (!view)
-    return GESTURE_UNKNOWN;
-
-  name = view->GetClassName();
-
-  const char kTabStrip[] = "TabStrip";
-  const char kTab[] = "BrowserTab";
-  if (name == kTabStrip || name == kTab) {
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_TABSTRIP_SCROLL;
-    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
-      return GESTURE_TABSTRIP_PINCH;
-    if (event.type() == ui::ET_GESTURE_TAP)
-      return GESTURE_TABSTRIP_TAP;
-    return GESTURE_UNKNOWN;
-  }
-
-  const char kOmnibox[] = "BrowserOmniboxViewViews";
-  if (name == kOmnibox) {
-    if (event.type() == ui::ET_GESTURE_SCROLL_BEGIN)
-      return GESTURE_OMNIBOX_SCROLL;
-    if (event.type() == ui::ET_GESTURE_PINCH_BEGIN)
-      return GESTURE_OMNIBOX_PINCH;
     return GESTURE_UNKNOWN;
   }
 

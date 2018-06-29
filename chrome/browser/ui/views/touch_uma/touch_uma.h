@@ -10,11 +10,12 @@
 class TouchUMA {
  public:
   enum GestureActionType {
-    GESTURE_TABSWITCH_TAP,
-    GESTURE_TABNOSWITCH_TAP,
-    GESTURE_TABCLOSE_TAP,
-    GESTURE_NEWTAB_TAP,
-    GESTURE_ROOTVIEWTOP_TAP,
+    kGestureTabSwitchTap = 0,
+    kGestureTabNoSwitchTap = 1,
+    kGestureTabCloseTap = 2,
+    kGestureNewTabTap = 3,
+    kGestureRootViewTopTap = 4,
+    kMaxValue = kGestureRootViewTopTap,
   };
 
   static void RecordGestureAction(GestureActionType action);
