@@ -305,6 +305,11 @@ public class BottomSheet extends FrameLayout
         boolean swipeToDismissEnabled();
 
         /**
+         * @return Whether the peek state is enabled.
+         */
+        boolean isPeekStateEnabled();
+
+        /**
          * @return Whether a slimmer peek UI should be used for this content.
          */
         boolean useSlimPeek();
@@ -749,7 +754,8 @@ public class BottomSheet extends FrameLayout
      *         close the sheet or peek it.
      */
     private @SheetState int getMinSwipableSheetState() {
-        return swipeToDismissEnabled() ? SHEET_STATE_HIDDEN : SHEET_STATE_PEEK;
+        return swipeToDismissEnabled() || !mSheetContent.isPeekStateEnabled() ? SHEET_STATE_HIDDEN
+                : SHEET_STATE_PEEK;
     }
 
     @Override
@@ -1412,6 +1418,7 @@ public class BottomSheet extends FrameLayout
         int prevState = nextState;
         for (int i = getMinSwipableSheetState(); i < sStates.length; i++) {
             if (sStates[i] == SHEET_STATE_HALF && shouldSkipHalfState) continue;
+            if (sStates[i] == SHEET_STATE_PEEK && !mSheetContent.isPeekStateEnabled()) continue;
             prevState = nextState;
             nextState = sStates[i];
             // The values in PanelState are ascending, they should be kept that way in order for
