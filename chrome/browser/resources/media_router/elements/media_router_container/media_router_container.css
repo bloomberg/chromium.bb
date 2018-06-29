@@ -119,6 +119,7 @@
 
 cr-checkbox {
   --cr-checkbox-checked-box-color: white;
+  --cr-checkbox-label-color: white;
   --cr-checkbox-mark-color: var(--paper-blue-700);
   --cr-checkbox-ripple-checked-color: white;
   --cr-checkbox-ripple-unchecked-color: white;
