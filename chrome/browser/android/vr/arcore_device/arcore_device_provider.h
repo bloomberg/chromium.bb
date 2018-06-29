@@ -19,8 +19,9 @@ class ARCoreDeviceProvider : public VRDeviceProvider {
   ARCoreDeviceProvider();
   ~ARCoreDeviceProvider() override;
   void Initialize(
-      base::RepeatingCallback<void(unsigned int, VRDevice*)>
-          add_device_callback,
+      base::RepeatingCallback<void(unsigned int,
+                                   mojom::VRDisplayInfoPtr,
+                                   mojom::XRRuntimePtr)> add_device_callback,
       base::RepeatingCallback<void(unsigned int)> remove_device_callback,
       base::OnceClosure initialization_complete) override;
   bool Initialized() override;

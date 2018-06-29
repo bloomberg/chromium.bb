@@ -18,16 +18,16 @@ namespace device {
 
 class GvrDelegateProvider;
 
-// TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
-                                   public XrSessionController {
+                                   public mojom::XRSessionController {
  public:
   static std::unique_ptr<GvrDevice> Create();
   ~GvrDevice() override;
 
   // VRDeviceBase
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override;
+  void RequestSession(
+      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntime::RequestSessionCallback callback) override;
   void PauseTracking() override;
   void ResumeTracking() override;
 
@@ -44,18 +44,21 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   void OnMagicWindowFrameDataRequest(
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
 
-  void OnRequestSessionResult(VRDeviceRequestSessionCallback callback,
+  void OnRequestSessionResult(mojom::XRRuntime::RequestSessionCallback callback,
                               mojom::XRPresentationConnectionPtr connection);
 
-  // XrSessionController
+  // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
-  void StopSession() override;
+
+  void OnPresentingControllerMojoConnectionError();
 
   GvrDevice();
   GvrDelegateProvider* GetGvrDelegateProvider();
 
   base::android::ScopedJavaGlobalRef<jobject> non_presenting_context_;
   std::unique_ptr<gvr::GvrApi> gvr_api_;
+
+  mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
 
   base::WeakPtrFactory<GvrDevice> weak_ptr_factory_;
 

@@ -13,11 +13,9 @@ namespace device {
 
 class MockVRDisplayImpl : public VRDisplayImpl {
  public:
-  MockVRDisplayImpl(device::VRDevice* device,
-                    mojom::VRServiceClient* service_client,
-                    mojom::VRDisplayInfoPtr display_info,
-                    mojom::VRDisplayHostPtr display_host,
-                    mojom::VRDisplayClientRequest request,
+  MockVRDisplayImpl(device::VRDeviceBase* device,
+                    mojom::VRMagicWindowProviderRequest session,
+                    mojom::XRSessionControllerRequest controller,
                     bool in_frame_focused);
   ~MockVRDisplayImpl() override;
 

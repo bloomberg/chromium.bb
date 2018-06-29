@@ -193,9 +193,9 @@ void OculusRenderLoop::UpdateLayerBounds(int16_t frame_id,
 };
 
 void OculusRenderLoop::RequestSession(
-    const XRDeviceRuntimeSessionOptions& options,
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
-  DCHECK(options.exclusive);
+  DCHECK(options->exclusive);
 #if defined(OS_WIN)
   if (!texture_helper_.SetAdapterLUID(*reinterpret_cast<LUID*>(&luid_)) ||
       !texture_helper_.EnsureInitialized()) {

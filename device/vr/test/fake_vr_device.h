@@ -15,21 +15,25 @@ namespace device {
 
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase,
-                                      public XrSessionController {
+                                      public mojom::XRSessionController {
  public:
   FakeVRDevice(unsigned int id);
   ~FakeVRDevice() override;
 
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override;
+  void RequestSession(
+      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntime::RequestSessionCallback callback) override;
   void SetPose(mojom::VRPosePtr pose) { pose_ = std::move(pose); }
 
-  void StopSession() override;
   void SetFrameDataRestricted(bool restricted) override {}
 
   using VRDeviceBase::IsPresenting;  // Make it public for tests.
 
+  void StopSession() { OnPresentingControllerMojoConnectionError(); }
+
  private:
+  void OnPresentingControllerMojoConnectionError();
+
   void OnMagicWindowFrameDataRequest(
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
 
@@ -37,6 +41,8 @@ class DEVICE_VR_EXPORT FakeVRDevice : public VRDeviceBase,
   mojom::VREyeParametersPtr InitEye(float fov, float offset, uint32_t size);
 
   mojom::VRPosePtr pose_;
+
+  mojo::Binding<mojom::XRSessionController> controller_binding_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRDevice);
 };
