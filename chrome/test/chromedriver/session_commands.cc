@@ -414,11 +414,10 @@ Status ExecuteClose(Session* session,
   if (status.IsError())
     return status;
 
-  status = session->chrome->GetWebViewIds(&web_view_ids,
-                                          session->w3c_compliant);
+  status = ExecuteGetWindowHandles(session, base::DictionaryValue(), value);
   if ((status.code() == kChromeNotReachable && is_last_web_view) ||
-      (status.IsOk() && web_view_ids.empty())) {
-    // If no window is open, close is the equivalent of calling "quit".
+      (status.IsOk() && (*value)->GetList().empty())) {
+    // If the only open window was closed, close is the same as calling "quit".
     session->quit = true;
     return session->chrome->Quit();
   }
