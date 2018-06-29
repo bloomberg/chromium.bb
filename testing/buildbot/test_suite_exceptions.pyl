@@ -860,35 +860,6 @@
       'Linux Chromium OS ASan LSan Tests (1)',
     ],
   },
-  'content_shell_crash_test': {
-    'remove_from': [
-      # chromium.fyi
-      'Chromium Mac 10.13',
-      # On chromium.linux, unclear why these only run on "Linux Tests".
-      'Linux Tests (dbg)(1)',
-      'Linux Tests (dbg)(1)(32)',
-      # On chromium.mac, unclear why these only run on "Mac10.13 Tests".
-      'Mac10.10 Tests',
-      'Mac10.11 Tests',
-      'Mac10.12 Tests',
-      'Mac10.13 Tests (dbg)',
-      # crbug.com/846729 - re-enable when this passes reliably.
-      'Win7 Tests (1)',
-      # On chromium.win, unclear why these only run on "Win7 Tests (1)".
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64 (dbg)',
-      'Win7 Tests (dbg)(1)',
-      # client.v8.chromium
-      'Linux - Future (dbg)',
-    ],
-    'modifications': {
-      'Mac10.13 Tests': {
-        # Remove this once the tests is not flaky on Mac os 10.13
-        # See crbug.com/813163
-        'experiment_percentage': 100,
-      },
-    }
-  },
   'content_shell_test_apk': {
     'remove_gtest_from': [
       # chromium.android.fyi
