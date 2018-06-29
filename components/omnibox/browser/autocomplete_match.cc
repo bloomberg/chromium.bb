@@ -239,7 +239,7 @@ const gfx::VectorIcon& AutocompleteMatch::TypeToVectorIcon(Type type,
     case Type::SEARCH_OTHER_ENGINE:
     case Type::CONTACT_DEPRECATED:
     case Type::VOICE_SUGGEST:
-      if (is_refresh_ui || is_touch_ui)
+      if (is_touch_ui && !is_refresh_ui)
         return omnibox::kTouchableSearchIcon;
       else
         return vector_icons::kSearchIcon;
