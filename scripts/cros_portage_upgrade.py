@@ -99,8 +99,8 @@ class PInfo(object):
 class Upgrader(object):
   """A class to perform various tasks related to updating Portage packages."""
 
-  PORTAGE_GIT_URL = '%s/external/github.com/gentoo/gentoo.git' % (
-      site_config.params.EXTERNAL_GOB_URL)
+  # Use main repo until https://crbug.com/858925 is fixed.
+  PORTAGE_GIT_URL = 'git://anongit.gentoo.org/repo/gentoo.git'
   GIT_REMOTE = 'origin'
   GIT_BRANCH = 'master'
   GIT_REMOTE_BRANCH = '%s/%s' % (GIT_REMOTE, GIT_BRANCH)
