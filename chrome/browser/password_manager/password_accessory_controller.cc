@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/android/preferences/preferences_launcher.h"
 #include "chrome/browser/password_manager/password_accessory_view_interface.h"
 #include "chrome/browser/password_manager/password_generation_dialog_view_interface.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
@@ -197,6 +198,10 @@ void PasswordAccessoryController::GeneratedPasswordAccepted(
 
 void PasswordAccessoryController::GeneratedPasswordRejected() {
   dialog_view_.reset();
+}
+
+void PasswordAccessoryController::OnSavedPasswordsLinkClicked() {
+  chrome::android::PreferencesLauncher::ShowPasswordSettings();
 }
 
 gfx::NativeView PasswordAccessoryController::container_view() const {

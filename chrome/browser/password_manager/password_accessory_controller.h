@@ -83,6 +83,10 @@ class PasswordAccessoryController
   // Called from the modal dialog if the user rejected the generated password.
   void GeneratedPasswordRejected();
 
+  // Called from the modal dialog when the user taps on the link contained
+  // in the explanation text that leads to the saved passwords.
+  void OnSavedPasswordsLinkClicked();
+
   // The web page view containing the focused field.
   gfx::NativeView container_view() const;
 
