@@ -118,6 +118,7 @@ SRC_RESOURCES= \
 	src/sounds/shutter.ogg \
 	src/sounds/tick.ogg \
 	src/views/main.html \
+        src/LICENSE \
 
 # Path for the Camera resources. Relative, with a trailing slash.
 SRC_PATH=src/
