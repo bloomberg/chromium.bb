@@ -1620,7 +1620,6 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
      IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_ACCOUNT},
     {"syncSignInPromptWithNoAccount",
      IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_WITH_NO_ACCOUNT},
-    {"syncSignInPromptSecondary", IDS_SETTINGS_SYNC_SIGN_IN_PROMPT_SECONDARY},
 #endif
     {"syncUnifiedConsentToggleTitle",
      IDS_SETTINGS_PEOPLE_SYNC_UNIFIED_CONSENT_TOGGLE_TITLE},
@@ -1641,16 +1640,23 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"deleteProfileWarningWithoutCounts",
      IDS_SETTINGS_SYNC_DISCONNECT_DELETE_PROFILE_WARNING_WITHOUT_COUNTS},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
-    {"sync", IDS_SETTINGS_SYNC},
-    {"syncDescription", IDS_SETTINGS_SYNC_DESCRIPTION},
-    {"personalizationSectionLabel", IDS_SETTINGS_PERSONALIZATION_SECTION_LABEL},
-    {"personalizationSectionDesc", IDS_SETTINGS_PERSONALIZATION_SECTION_DESC},
-    {"personalizationExpandA11yLabel",
-     IDS_SETTINGS_PERSONALIZATION_SECTION_ACCESSIBILITY_LABEL},
+    {"sync", IsUnifiedConsentEnabled(profile)
+                 ? IDS_SETTINGS_SYNC_UNIFIED_CONSENT
+                 : IDS_SETTINGS_SYNC},
+    {"syncDescription", IsUnifiedConsentEnabled(profile)
+                            ? IDS_SETTINGS_SYNC_DESCRIPTION_UNIFIED_CONSENT
+                            : IDS_SETTINGS_SYNC_DESCRIPTION},
+    {"nonPersonalizedServicesSectionLabel",
+     IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_LABEL},
+    {"nonPersonalizedServicesSectionDesc",
+     IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_DESC},
+    {"nonPersonalizedServicesExpandA11yLabel",
+     IDS_SETTINGS_NON_PERSONALIZED_SERVICES_SECTION_ACCESSIBILITY_LABEL},
     {"syncExpandA11yLabel", IDS_SETTINGS_SYNC_SECTION_ACCESSIBILITY_LABEL},
-    {"syncAndPersonalization", IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION},
+    {"syncAndNonPersonalizedServices",
+     IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES},
     {"syncPageTitle", IsUnifiedConsentEnabled(profile)
-                          ? IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION
+                          ? IDS_SETTINGS_SYNC_SYNC_AND_NON_PERSONALIZED_SERVICES
                           : IDS_SETTINGS_SYNC_PAGE_TITLE},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},
