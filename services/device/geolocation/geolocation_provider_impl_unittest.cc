@@ -177,6 +177,7 @@ TEST_F(GeolocationProviderTest, OnPermissionGrantedWithoutObservers) {
   EXPECT_FALSE(provider()->user_did_opt_into_location_services_for_testing());
   provider()->UserDidOptIntoLocationServices();
   EXPECT_TRUE(provider()->user_did_opt_into_location_services_for_testing());
+  provider()->clear_user_did_opt_into_location_services_for_testing();
 }
 
 TEST_F(GeolocationProviderTest, StartStop) {

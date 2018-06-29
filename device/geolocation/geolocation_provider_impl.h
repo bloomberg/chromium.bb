@@ -79,6 +79,10 @@ class GeolocationProviderImpl : public GeolocationProvider,
     return user_did_opt_into_location_services_;
   }
 
+  void clear_user_did_opt_into_location_services_for_testing() {
+    user_did_opt_into_location_services_ = false;
+  }
+
   // Safe to call while there are no GeolocationProviderImpl clients
   // registered.
   void SetArbitratorForTesting(std::unique_ptr<LocationProvider> arbitrator);
