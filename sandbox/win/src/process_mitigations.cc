@@ -30,12 +30,6 @@ using GetProcessMitigationPolicyFunction =
     decltype(&GetProcessMitigationPolicy);
 using SetThreadInformationFunction = decltype(&SetThreadInformation);
 
-// Defines that will eventually be in winbase.h.
-// TODO(pennymac): Remove these once the toolchain updates sufficiently.  Values
-// and formatting match 10.0.17133.0 SDK.
-#define PROCESS_CREATION_MITIGATION_POLICY2_RESTRICT_INDIRECT_BRANCH_PREDICTION_ALWAYS_ON \
-  (0x00000001ui64 << 16)
-
 // Returns a two-element array of mitigation flags supported on this machine.
 // - This function is only useful on >= base::win::VERSION_WIN8.
 const ULONG64* GetSupportedMitigations() {
