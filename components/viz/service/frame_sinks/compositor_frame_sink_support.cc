@@ -40,9 +40,6 @@ CompositorFrameSinkSupport::CompositorFrameSinkSupport(
 }
 
 CompositorFrameSinkSupport::~CompositorFrameSinkSupport() {
-  if (!destruction_callback_.is_null())
-    std::move(destruction_callback_).Run();
-
   // Unregister |this| as a BeginFrameObserver so that the
   // BeginFrameSource does not call into |this| after it's deleted.
   callback_received_begin_frame_ = true;
@@ -84,11 +81,6 @@ void CompositorFrameSinkSupport::SetUpHitTest(
 void CompositorFrameSinkSupport::SetAggregatedDamageCallbackForTesting(
     AggregatedDamageCallback callback) {
   aggregated_damage_callback_ = std::move(callback);
-}
-
-void CompositorFrameSinkSupport::SetDestructionCallback(
-    base::OnceClosure callback) {
-  destruction_callback_ = std::move(callback);
 }
 
 void CompositorFrameSinkSupport::SetBeginFrameSource(
