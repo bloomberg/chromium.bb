@@ -53,9 +53,11 @@
 #endif
 
 #if defined(GPU_CLIENT_DEBUG)
-#define GPU_CLIENT_SINGLE_THREAD_CHECK() SingleThreadChecker checker(this);
+#define GPU_CLIENT_SINGLE_THREAD_CHECK() \
+  DeferErrorCallbacks deferrer(this);    \
+  SingleThreadChecker checker(this);
 #else  // !defined(GPU_CLIENT_DEBUG)
-#define GPU_CLIENT_SINGLE_THREAD_CHECK()
+#define GPU_CLIENT_SINGLE_THREAD_CHECK() DeferErrorCallbacks deferrer(this);
 #endif  // defined(GPU_CLIENT_DEBUG)
 
 // Check that destination pointers point to initialized memory.
@@ -143,6 +145,24 @@ bool IsReadbackUsage(GLenum usage) {
 GLES2Implementation::GLStaticState::GLStaticState() = default;
 
 GLES2Implementation::GLStaticState::~GLStaticState() = default;
+
+GLES2Implementation::DeferErrorCallbacks::DeferErrorCallbacks(
+    GLES2Implementation* gles2_implementation)
+    : gles2_implementation_(gles2_implementation) {
+  DCHECK_EQ(false, gles2_implementation_->deferring_error_callbacks_);
+  gles2_implementation_->deferring_error_callbacks_ = true;
+}
+
+GLES2Implementation::DeferErrorCallbacks::~DeferErrorCallbacks() {
+  DCHECK_EQ(true, gles2_implementation_->deferring_error_callbacks_);
+  gles2_implementation_->deferring_error_callbacks_ = false;
+  gles2_implementation_->CallDeferredErrorCallbacks();
+}
+
+GLES2Implementation::DeferredErrorCallback::DeferredErrorCallback(
+    std::string message,
+    int32_t id)
+    : message(std::move(message)), id(id) {}
 
 GLES2Implementation::SingleThreadChecker::SingleThreadChecker(
     GLES2Implementation* gles2_implementation)
@@ -357,9 +377,30 @@ void GLES2Implementation::OnGpuControlSwapBuffersCompleted(
   pending_swap_callbacks_.erase(found);
 }
 
-void GLES2Implementation::SendErrorMessage(const char* message, int32_t id) {
-  if (!error_message_callback_.is_null())
-    error_message_callback_.Run(message, id);
+void GLES2Implementation::SendErrorMessage(std::string message, int32_t id) {
+  if (error_message_callback_.is_null())
+    return;
+
+  if (deferring_error_callbacks_) {
+    deferred_error_callbacks_.emplace_back(std::move(message), id);
+    return;
+  }
+
+  error_message_callback_.Run(message.c_str(), id);
+}
+
+void GLES2Implementation::CallDeferredErrorCallbacks() {
+  if (error_message_callback_.is_null()) {
+    // User probably cleared this out.
+    deferred_error_callbacks_.clear();
+    return;
+  }
+
+  std::deque<DeferredErrorCallback> local_callbacks;
+  std::swap(deferred_error_callbacks_, local_callbacks);
+  for (auto c : local_callbacks) {
+    error_message_callback_.Run(c.message.c_str(), c.id);
+  }
 }
 
 void GLES2Implementation::OnSwapBufferPresented(
@@ -539,7 +580,7 @@ void GLES2Implementation::SetGLError(
   if (!error_message_callback_.is_null()) {
     std::string temp(GLES2Util::GetStringError(error)  + " : " +
                      function_name + ": " + (msg ? msg : ""));
-    error_message_callback_.Run(temp.c_str(), 0);
+    SendErrorMessage(temp.c_str(), 0);
   }
   error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
 
