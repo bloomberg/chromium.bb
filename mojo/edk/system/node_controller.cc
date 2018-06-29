@@ -23,7 +23,6 @@
 #include "mojo/edk/system/broker_host.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
-#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/request_context.h"
 #include "mojo/edk/system/user_message_impl.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -205,12 +204,13 @@ void NodeController::AcceptBrokerClientInvitation(
 #if !defined(OS_MACOSX) && !defined(OS_NACL_SFI) && !defined(OS_FUCHSIA)
   // Use the bootstrap channel for the broker and receive the node's channel
   // synchronously as the first message from the broker.
+  DCHECK(connection_params.endpoint().is_valid());
   base::ElapsedTimer timer;
-  broker_.reset(new Broker(connection_params.TakeChannelHandle()));
-  ScopedInternalPlatformHandle platform_handle =
-      broker_->GetInviterInternalPlatformHandle();
+  broker_ = std::make_unique<Broker>(
+      connection_params.TakeEndpoint().TakePlatformHandle());
+  PlatformChannelEndpoint endpoint = broker_->GetInviterEndpoint();
 
-  if (!platform_handle.is_valid()) {
+  if (!endpoint.is_valid()) {
     // Most likely the inviter's side of the channel has already been closed and
     // the broker was unable to negotiate a NodeChannel pipe. In this case we
     // can cancel our connection to our inviter.
@@ -218,7 +218,7 @@ void NodeController::AcceptBrokerClientInvitation(
     CancelPendingPortMerges();
     return;
   }
-  connection_params = ConnectionParams(std::move(platform_handle));
+  connection_params = ConnectionParams(std::move(endpoint));
 #endif
 
   io_task_runner_->PostTask(
@@ -324,16 +324,13 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
 
 #if !defined(OS_MACOSX) && !defined(OS_NACL) && !defined(OS_FUCHSIA)
   PlatformChannel node_channel;
-  ScopedInternalPlatformHandle server_handle =
-      PlatformHandleToScopedInternalPlatformHandle(
-          node_channel.TakeLocalEndpoint().TakePlatformHandle());
+  ConnectionParams node_connection_params(node_channel.TakeLocalEndpoint());
   // BrokerHost owns itself.
-  BrokerHost* broker_host = new BrokerHost(
-      target_process.get(), connection_params.TakeChannelHandle(),
-      process_error_callback);
-  bool channel_ok =
-      broker_host->SendChannel(PlatformHandleToScopedInternalPlatformHandle(
-          node_channel.TakeRemoteEndpoint().TakePlatformHandle()));
+  BrokerHost* broker_host =
+      new BrokerHost(target_process.get(), std::move(connection_params),
+                     process_error_callback);
+  bool channel_ok = broker_host->SendChannel(
+      node_channel.TakeRemoteEndpoint().TakePlatformHandle());
 
 #if defined(OS_WIN)
   if (!channel_ok) {
@@ -341,9 +338,8 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
     // session boundary. In that case we fall back to a named pipe.
     NamedPlatformChannel::Options options;
     NamedPlatformChannel named_channel(options);
-    server_handle = PlatformHandleToScopedInternalPlatformHandle(
-        named_channel.TakeServerEndpoint().TakePlatformHandle());
-    server_handle.get().needs_connection = true;
+    node_connection_params =
+        ConnectionParams(named_channel.TakeServerEndpoint());
     broker_host->SendNamedChannel(named_channel.GetServerName());
   }
 #else
@@ -351,7 +347,7 @@ void NodeController::SendBrokerClientInvitationOnIOThread(
 #endif  // defined(OS_WIN)
 
   scoped_refptr<NodeChannel> channel =
-      NodeChannel::Create(this, ConnectionParams(std::move(server_handle)),
+      NodeChannel::Create(this, std::move(node_connection_params),
                           io_task_runner_, process_error_callback);
 
 #else  // !defined(OS_MACOSX) && !defined(OS_NACL)
@@ -807,7 +803,7 @@ void NodeController::OnAcceptInvitation(const ports::NodeName& from_node,
 
     if (!inviter) {
       // Yes, we're the broker. We can initialize the client directly.
-      channel->AcceptBrokerClient(name_, ScopedInternalPlatformHandle());
+      channel->AcceptBrokerClient(name_, PlatformHandle());
     } else {
       // We aren't the broker, so wait for a broker connection.
       base::AutoLock lock(broker_lock_);
@@ -834,9 +830,7 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
   }
 
   PlatformChannel broker_channel;
-  ConnectionParams connection_params(
-      PlatformHandleToScopedInternalPlatformHandle(
-          broker_channel.TakeLocalEndpoint().TakePlatformHandle()));
+  ConnectionParams connection_params(broker_channel.TakeLocalEndpoint());
   scoped_refptr<NodeChannel> client =
       NodeChannel::Create(this, std::move(connection_params), io_task_runner_,
                           ProcessErrorCallback());
@@ -857,15 +851,12 @@ void NodeController::OnAddBrokerClient(const ports::NodeName& from_node,
            << " from peer " << from_node;
 
   sender->BrokerClientAdded(
-      client_name,
-      PlatformHandleToScopedInternalPlatformHandle(
-          broker_channel.TakeRemoteEndpoint().TakePlatformHandle()));
+      client_name, broker_channel.TakeRemoteEndpoint().TakePlatformHandle());
 }
 
-void NodeController::OnBrokerClientAdded(
-    const ports::NodeName& from_node,
-    const ports::NodeName& client_name,
-    ScopedInternalPlatformHandle broker_channel) {
+void NodeController::OnBrokerClientAdded(const ports::NodeName& from_node,
+                                         const ports::NodeName& client_name,
+                                         PlatformHandle broker_channel) {
   scoped_refptr<NodeChannel> client = GetPeerChannel(client_name);
   if (!client) {
     DLOG(ERROR) << "BrokerClientAdded for unknown client " << client_name;
@@ -883,10 +874,9 @@ void NodeController::OnBrokerClientAdded(
   client->AcceptBrokerClient(from_node, std::move(broker_channel));
 }
 
-void NodeController::OnAcceptBrokerClient(
-    const ports::NodeName& from_node,
-    const ports::NodeName& broker_name,
-    ScopedInternalPlatformHandle broker_channel) {
+void NodeController::OnAcceptBrokerClient(const ports::NodeName& from_node,
+                                          const ports::NodeName& broker_name,
+                                          PlatformHandle broker_channel) {
   DCHECK(!GetConfiguration().is_broker_process);
 
   // This node should already have an inviter in bootstrap mode.
@@ -920,9 +910,10 @@ void NodeController::OnAcceptBrokerClient(
     broker = inviter;
   } else {
     DCHECK(broker_channel.is_valid());
-    broker =
-        NodeChannel::Create(this, ConnectionParams(std::move(broker_channel)),
-                            io_task_runner_, ProcessErrorCallback());
+    broker = NodeChannel::Create(
+        this,
+        ConnectionParams(PlatformChannelEndpoint(std::move(broker_channel))),
+        io_task_runner_, ProcessErrorCallback());
     AddPeer(broker_name, broker, true /* start_channel */);
   }
 
@@ -1039,21 +1030,19 @@ void NodeController::OnRequestIntroduction(const ports::NodeName& from_node,
   scoped_refptr<NodeChannel> new_friend = GetPeerChannel(name);
   if (!new_friend) {
     // We don't know who they're talking about!
-    requestor->Introduce(name, ScopedInternalPlatformHandle());
+    requestor->Introduce(name, PlatformHandle());
   } else {
     PlatformChannel new_channel;
-    requestor->Introduce(
-        name, PlatformHandleToScopedInternalPlatformHandle(
-                  new_channel.TakeLocalEndpoint().TakePlatformHandle()));
+    requestor->Introduce(name,
+                         new_channel.TakeLocalEndpoint().TakePlatformHandle());
     new_friend->Introduce(
-        from_node, PlatformHandleToScopedInternalPlatformHandle(
-                       new_channel.TakeRemoteEndpoint().TakePlatformHandle()));
+        from_node, new_channel.TakeRemoteEndpoint().TakePlatformHandle());
   }
 }
 
 void NodeController::OnIntroduce(const ports::NodeName& from_node,
                                  const ports::NodeName& name,
-                                 ScopedInternalPlatformHandle channel_handle) {
+                                 PlatformHandle channel_handle) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   if (!channel_handle.is_valid()) {
@@ -1065,9 +1054,10 @@ void NodeController::OnIntroduce(const ports::NodeName& from_node,
     return;
   }
 
-  scoped_refptr<NodeChannel> channel =
-      NodeChannel::Create(this, ConnectionParams(std::move(channel_handle)),
-                          io_task_runner_, ProcessErrorCallback());
+  scoped_refptr<NodeChannel> channel = NodeChannel::Create(
+      this,
+      ConnectionParams(PlatformChannelEndpoint(std::move(channel_handle))),
+      io_task_runner_, ProcessErrorCallback());
 
   DVLOG(1) << "Adding new peer " << name << " via broker introduction.";
   AddPeer(name, channel, true /* start_channel */);

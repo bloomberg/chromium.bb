@@ -18,8 +18,6 @@
 #include "build/build_config.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
-#include "mojo/edk/system/platform_handle.h"
-#include "mojo/edk/system/platform_handle_utils.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/mac/mach_logging.h"
@@ -373,17 +371,6 @@ Channel::Message::Header* Channel::Message::header() const {
   return reinterpret_cast<Header*>(data_);
 }
 
-void Channel::Message::SetHandles(
-    std::vector<ScopedInternalPlatformHandle> new_handles) {
-  std::vector<PlatformHandleInTransit> handles;
-  handles.reserve(new_handles.size());
-  for (auto& h : new_handles) {
-    handles.emplace_back(PlatformHandleInTransit(
-        ScopedInternalPlatformHandleToPlatformHandle(std::move(h))));
-  }
-  SetHandles(std::move(handles));
-}
-
 void Channel::Message::SetHandles(std::vector<PlatformHandle> new_handles) {
   std::vector<PlatformHandleInTransit> handles;
   handles.reserve(new_handles.size());
@@ -465,18 +452,6 @@ std::vector<PlatformHandleInTransit> Channel::Message::TakeHandles() {
   else
     header()->num_handles = 0;
   return std::move(handle_vector_);
-}
-
-std::vector<ScopedInternalPlatformHandle>
-Channel::Message::TakeInternalHandles() {
-  auto handles = TakeHandles();
-  std::vector<ScopedInternalPlatformHandle> internal_handles;
-  internal_handles.reserve(handles.size());
-  for (auto& h : handles) {
-    internal_handles.emplace_back(
-        PlatformHandleToScopedInternalPlatformHandle(h.TakeHandle()));
-  }
-  return internal_handles;
 }
 
 std::vector<PlatformHandleInTransit>

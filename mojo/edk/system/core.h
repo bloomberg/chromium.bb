@@ -20,7 +20,6 @@
 #include "mojo/edk/system/handle_signals_state.h"
 #include "mojo/edk/system/handle_table.h"
 #include "mojo/edk/system/node_controller.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/buffer.h"
 #include "mojo/public/c/system/data_pipe.h"

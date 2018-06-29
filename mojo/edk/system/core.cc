@@ -1340,13 +1340,18 @@ MojoResult Core::SendInvitation(
   if (!endpoint.is_valid())
     return MOJO_RESULT_INVALID_ARGUMENT;
 
-  auto endpoint_handle =
-      PlatformHandleToScopedInternalPlatformHandle(std::move(endpoint));
-
+  ConnectionParams connection_params;
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_FUCHSIA))
-  if (transport_endpoint->type == MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER)
-    endpoint_handle.get().needs_connection = true;
+  if (transport_endpoint->type ==
+      MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
+    connection_params =
+        ConnectionParams(PlatformChannelServerEndpoint(std::move(endpoint)));
+  }
 #endif
+  if (!connection_params.server_endpoint().is_valid()) {
+    connection_params =
+        ConnectionParams(PlatformChannelEndpoint(std::move(endpoint)));
+  }
 
   // At this point everything else has been validated, so we can take ownership
   // of the dispatcher.
@@ -1358,13 +1363,12 @@ MojoResult Core::SendInvitation(
     if (result != MOJO_RESULT_OK) {
       // Release ownership of the endpoint platform handle, per the API
       // contract. The caller retains ownership on failure.
-      ignore_result(endpoint_handle.release());
+      connection_params.TakeEndpoint().TakePlatformHandle().release();
+      connection_params.TakeServerEndpoint().TakePlatformHandle().release();
       return result;
     }
     DCHECK_EQ(removed_dispatcher.get(), invitation_dispatcher);
   }
-
-  ConnectionParams connection_params(std::move(endpoint_handle));
 
   std::vector<std::pair<std::string, ports::PortRef>> attached_ports;
   InvitationDispatcher::PortMapping attached_port_map =
@@ -1429,19 +1433,23 @@ MojoResult Core::AcceptInvitation(
     return MOJO_RESULT_INVALID_ARGUMENT;
   }
 
-  auto endpoint_handle =
-      PlatformHandleToScopedInternalPlatformHandle(std::move(endpoint));
-
+  ConnectionParams connection_params;
 #if defined(OS_WIN) || (defined(OS_POSIX) && !defined(OS_FUCHSIA))
-  if (transport_endpoint->type == MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER)
-    endpoint_handle.get().needs_connection = true;
+  if (transport_endpoint->type ==
+      MOJO_INVITATION_TRANSPORT_TYPE_CHANNEL_SERVER) {
+    connection_params =
+        ConnectionParams(PlatformChannelServerEndpoint(std::move(endpoint)));
+  }
 #endif
+  if (!connection_params.server_endpoint().is_valid()) {
+    connection_params =
+        ConnectionParams(PlatformChannelEndpoint(std::move(endpoint)));
+  }
 
   bool is_isolated =
       options && (options->flags & MOJO_ACCEPT_INVITATION_FLAG_ISOLATED);
   NodeController* const node_controller = GetNodeController();
   RequestContext request_context;
-  ConnectionParams connection_params(std::move(endpoint_handle));
   if (is_isolated) {
     // For an isolated invitation, we simply mint a new port pair here and send
     // one name to the remote endpoint while stashing the other in the accepted

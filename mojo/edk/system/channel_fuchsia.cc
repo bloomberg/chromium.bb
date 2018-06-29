@@ -21,6 +21,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_for_io.h"
+#include "base/stl_util.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
 #include "mojo/edk/system/platform_handle_in_transit.h"
@@ -32,10 +33,9 @@ namespace {
 
 const size_t kMaxBatchReadCapacity = 256 * 1024;
 
-bool UnwrapInternalPlatformHandle(
-    PlatformHandleInTransit handle,
-    Channel::Message::HandleInfoEntry* info_out,
-    std::vector<PlatformHandleInTransit>* handles_out) {
+bool UnwrapPlatformHandle(PlatformHandleInTransit handle,
+                          Channel::Message::HandleInfoEntry* info_out,
+                          std::vector<PlatformHandleInTransit>* handles_out) {
   DCHECK(handle.handle().is_valid());
 
   if (!handle.handle().is_valid_fd()) {
@@ -84,7 +84,7 @@ bool UnwrapInternalPlatformHandle(
   return true;
 }
 
-PlatformHandle WrapInternalPlatformHandles(
+PlatformHandle WrapPlatformHandles(
     Channel::Message::HandleInfoEntry info,
     base::circular_deque<base::ScopedZxHandle>* handles) {
   PlatformHandle out_handle;
@@ -173,8 +173,8 @@ class MessageView {
     std::vector<PlatformHandleInTransit> in_handles = std::move(handles_);
     handles_.reserve(in_handles.size());
     for (size_t i = 0; i < in_handles.size(); i++) {
-      if (!UnwrapInternalPlatformHandle(std::move(in_handles[i]),
-                                        &handles_info[i], &handles_))
+      if (!UnwrapPlatformHandle(std::move(in_handles[i]), &handles_info[i],
+                                &handles_))
         return std::vector<PlatformHandleInTransit>();
     }
     return std::move(handles_);
@@ -197,7 +197,7 @@ class ChannelFuchsia : public Channel,
                  scoped_refptr<base::TaskRunner> io_task_runner)
       : Channel(delegate),
         self_(this),
-        handle_(connection_params.TakeChannelHandle()),
+        handle_(connection_params.TakeEndpoint().TakePlatformHandle()),
         io_task_runner_(io_task_runner) {
     CHECK(handle_.is_valid());
   }
@@ -277,7 +277,7 @@ class ChannelFuchsia : public Channel,
     handles->reserve(num_handles);
     for (size_t i = 0; i < num_handles; ++i) {
       handles->emplace_back(
-          WrapInternalPlatformHandles(handles_info[i], &incoming_handles_));
+          WrapPlatformHandles(handles_info[i], &incoming_handles_));
     }
     return true;
   }
@@ -295,7 +295,7 @@ class ChannelFuchsia : public Channel,
     read_watch_.reset(
         new base::MessagePumpForIO::ZxHandleWatchController(FROM_HERE));
     base::MessageLoopCurrentForIO::Get()->WatchZxHandle(
-        handle_.get().as_handle(), true /* persistent */,
+        handle_.GetHandle().get(), true /* persistent */,
         ZX_CHANNEL_READABLE | ZX_CHANNEL_PEER_CLOSED, read_watch_.get(), this);
   }
 
@@ -304,7 +304,7 @@ class ChannelFuchsia : public Channel,
 
     read_watch_.reset();
     if (leak_handle_)
-      ignore_result(handle_.release());
+      handle_.release();
     handle_.reset();
 
     // May destroy the |this| if it was the last reference.
@@ -321,7 +321,7 @@ class ChannelFuchsia : public Channel,
   // base::MessagePumpForIO::ZxHandleWatcher:
   void OnZxHandleSignalled(zx_handle_t handle, zx_signals_t signals) override {
     DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
-    CHECK_EQ(handle, handle_.get().as_handle());
+    CHECK_EQ(handle, handle_.GetHandle().get());
     DCHECK((ZX_CHANNEL_READABLE | ZX_CHANNEL_PEER_CLOSED) & signals);
 
     // We always try to read message(s), even if ZX_CHANNEL_PEER_CLOSED, since
@@ -342,8 +342,8 @@ class ChannelFuchsia : public Channel,
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
 
       zx_status_t read_result = zx_channel_read(
-          handle_.get().as_handle(), 0, buffer, handles, buffer_capacity,
-          arraysize(handles), &bytes_read, &handles_read);
+          handle_.GetHandle().get(), 0, buffer, handles, buffer_capacity,
+          base::size(handles), &bytes_read, &handles_read);
       if (read_result == ZX_OK) {
         for (size_t i = 0; i < handles_read; ++i) {
           incoming_handles_.push_back(base::ScopedZxHandle(handles[i]));
@@ -355,7 +355,7 @@ class ChannelFuchsia : public Channel,
           break;
         }
       } else if (read_result == ZX_ERR_BUFFER_TOO_SMALL) {
-        DCHECK_LE(handles_read, arraysize(handles));
+        DCHECK_LE(handles_read, base::size(handles));
         next_read_size = bytes_read;
       } else if (read_result == ZX_ERR_SHOULD_WAIT) {
         break;
@@ -389,7 +389,7 @@ class ChannelFuchsia : public Channel,
       zx_handle_t handles[ZX_CHANNEL_MAX_MSG_HANDLES] = {};
       size_t handles_count = outgoing_handles.size();
 
-      DCHECK_LE(handles_count, arraysize(handles));
+      DCHECK_LE(handles_count, base::size(handles));
       for (size_t i = 0; i < handles_count; ++i) {
         DCHECK(outgoing_handles[i].handle().is_valid());
         handles[i] = outgoing_handles[i].handle().GetHandle().get();
@@ -398,7 +398,7 @@ class ChannelFuchsia : public Channel,
       write_bytes = std::min(message_view.data_num_bytes(),
                              static_cast<size_t>(ZX_CHANNEL_MAX_MSG_BYTES));
       zx_status_t result =
-          zx_channel_write(handle_.get().as_handle(), 0, message_view.data(),
+          zx_channel_write(handle_.GetHandle().get(), 0, message_view.data(),
                            write_bytes, handles, handles_count);
       // zx_channel_write() consumes |handles| whether or not it succeeds, so
       // release() our copies now, to avoid them being double-closed.
@@ -440,7 +440,7 @@ class ChannelFuchsia : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  ScopedInternalPlatformHandle handle_;
+  PlatformHandle handle_;
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These members are only used on the IO thread.

@@ -299,7 +299,7 @@ void DataPipeConsumerDispatcher::StartSerialize(uint32_t* num_bytes,
 bool DataPipeConsumerDispatcher::EndSerialize(
     void* destination,
     ports::PortName* ports,
-    ScopedInternalPlatformHandle* platform_handles) {
+    PlatformHandle* platform_handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   memcpy(&state->options, &options_, sizeof(MojoCreateDataPipeOptions));
   memset(state->padding, 0, sizeof(state->padding));
@@ -327,9 +327,7 @@ bool DataPipeConsumerDispatcher::EndSerialize(
   if (!handle.is_valid() || ignored_handle.is_valid())
     return false;
 
-  platform_handles[0] =
-      PlatformHandleToScopedInternalPlatformHandle(std::move(handle));
-
+  platform_handles[0] = std::move(handle);
   return true;
 }
 
@@ -364,7 +362,7 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
                                         size_t num_bytes,
                                         const ports::PortName* ports,
                                         size_t num_ports,
-                                        ScopedInternalPlatformHandle* handles,
+                                        PlatformHandle* handles,
                                         size_t num_handles) {
   if (num_ports != 1 || num_handles != 1 ||
       num_bytes != sizeof(SerializedState)) {
@@ -382,10 +380,8 @@ DataPipeConsumerDispatcher::Deserialize(const void* data,
   if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
 
-  auto buffer_handle =
-      ScopedInternalPlatformHandleToPlatformHandle(std::move(handles[0]));
   auto region_handle = CreateSharedMemoryRegionHandleFromPlatformHandles(
-      std::move(buffer_handle), PlatformHandle());
+      std::move(handles[0]), PlatformHandle());
   auto region = base::subtle::PlatformSharedMemoryRegion::Take(
       std::move(region_handle),
       base::subtle::PlatformSharedMemoryRegion::Mode::kUnsafe,

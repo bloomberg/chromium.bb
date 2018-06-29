@@ -20,7 +20,7 @@ namespace test {
 // Gets a (scoped) |PlatformHandle| from the given (scoped) |FILE|.
 PlatformHandle PlatformHandleFromFILE(base::ScopedFILE fp);
 
-// Gets a (scoped) |FILE| from a (scoped) |InternalPlatformHandle|.
+// Gets a (scoped) |FILE| from a (scoped) |PlatformHandle|.
 base::ScopedFILE FILEFromPlatformHandle(PlatformHandle h, const char* mode);
 
 }  // namespace test

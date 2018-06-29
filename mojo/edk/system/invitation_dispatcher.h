@@ -13,7 +13,6 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/ports/port_ref.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 
 namespace mojo {

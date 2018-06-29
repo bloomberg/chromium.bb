@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "mojo/edk/system/ports/port_ref.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/public/c/system/macros.h"
 
 namespace mojo {

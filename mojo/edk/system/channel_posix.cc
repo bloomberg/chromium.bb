@@ -22,7 +22,6 @@
 #include "base/task_runner.h"
 #include "build/build_config.h"
 #include "mojo/edk/system/core.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/public/cpp/platform/socket_utils_posix.h"
 
 #if !defined(OS_NACL)
@@ -102,12 +101,13 @@ class ChannelPosix : public Channel,
   ChannelPosix(Delegate* delegate,
                ConnectionParams connection_params,
                scoped_refptr<base::TaskRunner> io_task_runner)
-      : Channel(delegate),
-        self_(this),
-        handle_(connection_params.TakeChannelHandle()),
-        io_task_runner_(io_task_runner)
-  {
-    CHECK(handle_.is_valid());
+      : Channel(delegate), self_(this), io_task_runner_(io_task_runner) {
+    if (connection_params.server_endpoint().is_valid())
+      server_ = connection_params.TakeServerEndpoint();
+    else
+      socket_ = connection_params.TakeEndpoint().TakePlatformHandle().TakeFD();
+
+    CHECK(server_.is_valid() || socket_.is_valid());
   }
 
   void Start() override {
@@ -284,15 +284,15 @@ class ChannelPosix : public Channel,
     read_watcher_.reset(
         new base::MessagePumpForIO::FdWatchController(FROM_HERE));
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
-    if (handle_.get().needs_connection) {
+    if (server_.is_valid()) {
       base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-          handle_.get().handle, false /* persistent */,
+          server_.platform_handle().GetFD().get(), false /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
     } else {
       write_watcher_.reset(
           new base::MessagePumpForIO::FdWatchController(FROM_HERE));
       base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-          handle_.get().handle, true /* persistent */,
+          socket_.get(), true /* persistent */,
           base::MessagePumpForIO::WATCH_READ, read_watcher_.get(), this);
       base::AutoLock lock(write_lock_);
       FlushOutgoingMessagesNoLock();
@@ -312,7 +312,7 @@ class ChannelPosix : public Channel,
     if (io_task_runner_->RunsTasksInCurrentSequence()) {
       pending_write_ = true;
       base::MessageLoopCurrentForIO::Get()->WatchFileDescriptor(
-          handle_.get().handle, false /* persistent */,
+          socket_.get(), false /* persistent */,
           base::MessagePumpForIO::WATCH_WRITE, write_watcher_.get(), this);
     } else {
       io_task_runner_->PostTask(
@@ -326,9 +326,13 @@ class ChannelPosix : public Channel,
 
     read_watcher_.reset();
     write_watcher_.reset();
-    if (leak_handle_)
-      ignore_result(handle_.release());
-    handle_.reset();
+    if (leak_handle_) {
+      ignore_result(socket_.release());
+      server_.TakePlatformHandle().release();
+    } else {
+      socket_.reset();
+      ignore_result(server_.TakePlatformHandle());
+    }
 #if defined(OS_MACOSX)
     fds_to_close_.clear();
 #endif
@@ -406,26 +410,25 @@ class ChannelPosix : public Channel,
 
   // base::MessagePumpForIO::FdWatcher:
   void OnFileCanReadWithoutBlocking(int fd) override {
-    CHECK_EQ(fd, handle_.get().handle);
-    if (handle_.get().needs_connection) {
+    if (server_.is_valid()) {
+      CHECK_EQ(fd, server_.platform_handle().GetFD().get());
 #if !defined(OS_NACL)
       read_watcher_.reset();
       base::MessageLoopCurrent::Get()->RemoveDestructionObserver(this);
 
-      base::ScopedFD accept_fd;
-      AcceptSocketConnection(handle_.get().handle, &accept_fd);
-      if (!accept_fd.is_valid()) {
+      AcceptSocketConnection(server_.platform_handle().GetFD().get(), &socket_);
+      ignore_result(server_.TakePlatformHandle());
+      if (!socket_.is_valid()) {
         OnError(Error::kConnectionFailed);
         return;
       }
-      handle_ = ScopedInternalPlatformHandle(
-          InternalPlatformHandle(accept_fd.release()));
       StartOnIOThread();
 #else
       NOTREACHED();
 #endif
       return;
     }
+    CHECK_EQ(fd, socket_.get());
 
     bool validation_error = false;
     bool read_error = false;
@@ -439,8 +442,8 @@ class ChannelPosix : public Channel,
       DCHECK_GT(buffer_capacity, 0u);
 
       std::vector<base::ScopedFD> incoming_fds;
-      ssize_t read_result = SocketRecvmsg(handle_.get().handle, buffer,
-                                          buffer_capacity, &incoming_fds);
+      ssize_t read_result =
+          SocketRecvmsg(socket_.get(), buffer, buffer_capacity, &incoming_fds);
       for (auto& fd : incoming_fds)
         incoming_fds_.emplace_back(std::move(fd));
 
@@ -485,7 +488,7 @@ class ChannelPosix : public Channel,
   // cannot be written, it's queued and a wait is initiated to write the message
   // ASAP on the I/O thread.
   bool WriteNoLock(MessageView message_view) {
-    if (handle_.get().needs_connection) {
+    if (server_.is_valid()) {
       outgoing_messages_.emplace_front(std::move(message_view));
       return true;
     }
@@ -502,7 +505,7 @@ class ChannelPosix : public Channel,
         for (size_t i = 0; i < handles.size(); ++i)
           fds[i] = handles[i].TakeHandle().TakeFD();
         // TODO: Handle lots of handles.
-        result = SendmsgWithHandles(handle_.get().handle, &iov, 1, fds);
+        result = SendmsgWithHandles(socket_.get(), &iov, 1, fds);
         if (result >= 0) {
 #if defined(OS_MACOSX)
           // There is a bug on OSX which makes it dangerous to close
@@ -534,7 +537,7 @@ class ChannelPosix : public Channel,
           }
         }
       } else {
-        result = SocketWrite(handle_.get().handle, message_view.data(),
+        result = SocketWrite(socket_.get(), message_view.data(),
                              message_view.data_num_bytes());
       }
 
@@ -687,7 +690,14 @@ class ChannelPosix : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  ScopedInternalPlatformHandle handle_;
+  // We may be initialized with a server socket, in which case this will be
+  // valid until it accepts an incoming connection.
+  PlatformChannelServerEndpoint server_;
+
+  // The socket over which to communicate. May be passed in at construction time
+  // or accepted over |server_|.
+  base::ScopedFD socket_;
+
   scoped_refptr<base::TaskRunner> io_task_runner_;
 
   // These watchers must only be accessed on the IO thread.

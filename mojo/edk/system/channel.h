@@ -14,7 +14,6 @@
 #include "build/build_config.h"
 #include "mojo/edk/system/connection_params.h"
 #include "mojo/edk/system/platform_handle_in_transit.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
 
@@ -91,7 +90,7 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
     struct MachPortsEntry {
-      // Index of Mach port in the original vector of InternalPlatformHandles.
+      // Index of Mach port in the original vector of PlatformHandleInTransits.
       uint16_t index;
 
       // Mach port name.
@@ -186,11 +185,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Channel
 
     // Note: SetHandles() and TakeHandles() invalidate any previous value of
     // handles().
-    void SetHandles(std::vector<ScopedInternalPlatformHandle> new_handles);
     void SetHandles(std::vector<PlatformHandle> new_handles);
     void SetHandles(std::vector<PlatformHandleInTransit> new_handles);
     std::vector<PlatformHandleInTransit> TakeHandles();
-    std::vector<ScopedInternalPlatformHandle> TakeInternalHandles();
     // Version of TakeHandles that returns a vector of platform handles suitable
     // for transfer over an underlying OS mechanism. i.e. file descriptors over
     // a unix domain socket. Any handle that cannot be transferred this way,
