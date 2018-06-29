@@ -82,11 +82,12 @@
         syncStatus.signinAllowed)]]">
       <settings-sync-account-control always-show-promo
           sync-status="[[syncStatus]]"
-          promo-label-with-account="$i18n{syncSignInPromptWithAccount}"
-          promo-label-with-no-account="$i18n{syncSignInPromptWithNoAccount}"
-          promo-secondary-label-with-account="$i18n{syncSignInPromptSecondary}"
+          promo-label-with-account="$i18n{peopleSignInPrompt}"
+          promo-label-with-no-account="$i18n{peopleSignInPrompt}"
+          promo-secondary-label-with-account=
+              "$i18n{peopleSignInPromptSecondaryWithAccount}"
           promo-secondary-label-with-no-account=
-              "$i18n{syncSignInPromptSecondary}">
+              "$i18n{peopleSignInPromptSecondaryWithNoAccount}">
       </settings-sync-account-control>
     </template>
 </if>
@@ -403,8 +404,10 @@
       <div class="settings-box two-line" id="personalize-section-toggle"
           actionable on-click="toggleExpandButton_">
         <div class="start">
-          <div>$i18n{personalizationSectionLabel}</div>
-          <div class="secondary">$i18n{personalizationSectionDesc}</div>
+          <div>$i18n{nonPersonalizedServicesSectionLabel}</div>
+          <div class="secondary">
+            $i18n{nonPersonalizedServicesSectionDesc}
+          </div>
         </div>
         <cr-expand-button expanded="{{personalizeSectionOpened_}}"
             alt="$i18n{syncExpandA11yLabel}">
