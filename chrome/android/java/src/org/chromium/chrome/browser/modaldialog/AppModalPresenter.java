@@ -29,7 +29,10 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
         mDialog.setOnCancelListener(dialogInterface -> cancelCurrentDialog());
         ViewGroup container = (ViewGroup) LayoutInflater.from(mContext).inflate(
                 R.layout.modal_dialog_container, null);
+        // We use the Android Dialog dim for app modal dialog, so a custom scrim is not needed.
+        container.findViewById(R.id.scrim).setVisibility(View.GONE);
         mDialog.setContentView(container);
+
         FrameLayout.LayoutParams params =
                 new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT,
                         ViewGroup.LayoutParams.WRAP_CONTENT, Gravity.CENTER);
