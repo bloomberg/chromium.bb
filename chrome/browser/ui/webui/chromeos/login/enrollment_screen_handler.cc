@@ -529,6 +529,10 @@ void EnrollmentScreenHandler::DeclareLocalizedValues(
   builder->Add("oauthEnrollSkip", IDS_ENTERPRISE_ENROLLMENT_SKIP);
   builder->AddF("oauthEnrollSuccess", IDS_ENTERPRISE_ENROLLMENT_SUCCESS,
                 ui::GetChromeOSDeviceName());
+  builder->Add("oauthEnrollSuccessTitle",
+               IDS_ENTERPRISE_ENROLLMENT_SUCCESS_TITLE);
+  builder->Add("enrollmentSuccessIllustrationTitle",
+               IDS_ENTERPRISE_ENROLLMENT_SUCCESS_ILLUSTRATION_TITLE);
   builder->Add("oauthEnrollDeviceInformation",
                IDS_ENTERPRISE_ENROLLMENT_DEVICE_INFORMATION);
   builder->Add("oauthEnrollExplainAttributeLink",

@@ -173,11 +173,15 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.authenticator_.addEventListener(
           'dialogShown', (function(e) {
                            this.navigation_.disabled = true;
+                           $('oobe-signin-back-button').disabled = true;
+                           // TODO(alemate): update the visual style.
                          }).bind(this));
 
       this.authenticator_.addEventListener(
           'dialogHidden', (function(e) {
                             this.navigation_.disabled = false;
+                            $('oobe-signin-back-button').disabled = false;
+                            // TODO(alemate): update the visual style.
                           }).bind(this));
 
       this.authenticator_.insecureContentBlockedCallback =
@@ -195,16 +199,22 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
 
       $('oauth-enroll-error-card')
           .addEventListener('buttonclick', this.doRetry_.bind(this));
-      function doneCallback() {
-        chrome.send('oauthEnrollClose', ['done']);
-      }
 
       $('oauth-enroll-attribute-prompt-error-card')
-          .addEventListener('buttonclick', doneCallback);
-      $('oauth-enroll-success-card')
-          .addEventListener('buttonclick', doneCallback);
-      $('oauth-enroll-abe-success-card')
-          .addEventListener('buttonclick', doneCallback);
+          .addEventListener(
+              'buttonclick', this.onEnrollmentFinished_.bind(this));
+
+      $('enroll-success-done-button')
+          .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
+      $('enroll-success-abe-done-button')
+          .addEventListener('tap', this.onEnrollmentFinished_.bind(this));
+
+      $('enroll-attributes-skip-button')
+          .addEventListener('tap', this.onSkipButtonClicked.bind(this));
+      $('enroll-attributes-submit-button')
+          .addEventListener('tap', this.onAttributesSubmitted.bind(this));
+
+
       $('oauth-enroll-active-directory-join-error-card')
           .addEventListener('buttonclick', function() {
             this.showStep(STEP_AD_JOIN);
@@ -213,22 +223,18 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       this.navigation_.addEventListener('close', this.cancel.bind(this));
       this.navigation_.addEventListener('refresh', this.cancel.bind(this));
 
-      this.navigation_.addEventListener('back', function() {
-        this.navigation_.backVisible = false;
-        if (this.currentStep_ == STEP_SIGNIN)
-          $('oauth-enroll-auth-view').back();
-      }.bind(this));
+      this.navigation_.addEventListener(
+          'back', this.onBackButtonClicked_.bind(this, false));
 
-      $('oauth-enroll-attribute-prompt-card')
-          .addEventListener('submit', this.onAttributesSubmitted.bind(this));
+      $('oobe-signin-back-button')
+          .addEventListener('tap', this.onBackButtonClicked_.bind(this, true));
+
 
       $('oauth-enroll-learn-more-link')
           .addEventListener('click', function(event) {
             chrome.send('oauthEnrollOnLearnMore');
           });
 
-      $('oauth-enroll-skip-button')
-          .addEventListener('click', this.onSkipButtonClicked.bind(this));
 
       this.licenseUi_.addEventListener('buttonclick', function() {
         chrome.send('onLicenseTypeSelected', [this.licenseUi_.selected]);
@@ -271,7 +277,7 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       var gaiaParams = {};
       gaiaParams.gaiaUrl = data.gaiaUrl;
       gaiaParams.clientId = data.clientId;
-      gaiaParams.gaiaPath = 'embedded/setup/chromeos';
+      gaiaParams.chromeOSApiVersion = 2;
       gaiaParams.isNewGaiaFlow = true;
       gaiaParams.needPassword = false;
       gaiaParams.hl = data.hl;
@@ -384,11 +390,11 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
       } else if (step == STEP_ERROR) {
         $('oauth-enroll-error-card').submitButton.focus();
       } else if (step == STEP_SUCCESS) {
-        $('oauth-enroll-success-card').submitButton.focus();
+        $('oauth-enroll-success-card').focus();
       } else if (step == STEP_ABE_SUCCESS) {
-        $('oauth-enroll-abe-success-card').submitButton.focus();
+        $('oauth-enroll-abe-success-card').focus();
       } else if (step == STEP_ATTRIBUTE_PROMPT) {
-        $('oauth-enroll-asset-id').focus();
+        $('oauth-enroll-step-attribute-prompt').focus();
       } else if (step == STEP_ATTRIBUTE_PROMPT_ERROR) {
         $('oauth-enroll-attribute-prompt-error-card').submitButton.focus();
       } else if (step == STEP_ACTIVE_DIRECTORY_JOIN_ERROR) {
@@ -477,6 +483,23 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
     },
 
     /**
+     * Skips the device attribute update,
+     * shows the successful enrollment step.
+     */
+    onBackButtonClicked_: function(cancelOnClick) {
+      this.navigation_.backVisible = false;
+      if (this.currentStep_ == STEP_SIGNIN) {
+        if (this.lastBackMessageValue_) {
+          this.lastBackMessageValue_ = false;
+          $('oauth-enroll-auth-view').back();
+        } else if (cancelOnClick) {
+          this.cancel();
+        }
+      }
+    },
+
+
+    /**
      * Uploads the device attributes to server. This goes to C++ side through
      * |chrome| and launches the device attribute update negotiation.
      */
@@ -504,10 +527,18 @@ login.createScreen('OAuthEnrollmentScreen', 'oauth-enrollment', function() {
           this.currentStep_ == STEP_SIGNIN && this.lastBackMessageValue_;
       this.navigation_.refreshVisible =
           this.isAtTheBeginning() && !this.isManualEnrollment_;
-      this.navigation_.closeVisible = (this.currentStep_ == STEP_SIGNIN ||
-                                       this.currentStep_ == STEP_ERROR) &&
-          !this.navigation_.refreshVisible;
+      this.navigation_.closeVisible =
+          (this.currentStep_ == STEP_ERROR && !this.navigation_.refreshVisible)
+          || this.currentStep_ == STEP_LICENSE_TYPE;
       $('login-header-bar').updateUI_();
+    },
+
+    /**
+     * Notifies chrome that enrollment have finished.
+     */
+    onEnrollmentFinished_: function() {
+      chrome.send('oauthEnrollClose', ['done']);
     }
+
   };
 });

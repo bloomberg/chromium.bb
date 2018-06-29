@@ -3,9 +3,9 @@
  * found in the LICENSE file. */
 
 #oauth-enrollment {
-  height: 528px;
+  height: 640px;
   padding: 0;
-  width: 448px;
+  width: 768px;
 }
 
 #oauth-enrollment.saml {
@@ -23,10 +23,7 @@
   display: none;
 }
 
-.oauth-enroll-state-working #oauth-enroll-step-working,
-.oauth-enroll-state-error #oauth-enroll-step-error,
-.oauth-enroll-state-success #oauth-enroll-step-success,
-.oauth-enroll-state-abe-success #oauth-enroll-step-abe-success {
+.oauth-enroll-state-error #oauth-enroll-step-error {
   display: table;
   height: 480px;
   margin: 0 auto;
@@ -39,6 +36,9 @@
 .oauth-enroll-state-signin #oauth-enroll-step-signin,
 .oauth-enroll-state-ad-join #oauth-enroll-step-ad-join,
 .oauth-enroll-state-license #oauth-enroll-step-license,
+.oauth-enroll-state-success #oauth-enroll-step-success,
+.oauth-enroll-state-abe-success #oauth-enroll-step-abe-success,
+.oauth-enroll-state-working #oauth-enroll-step-working,
 .oauth-enroll-state-attribute-prompt
     #oauth-enroll-step-attribute-prompt {
   display: block;
@@ -48,10 +48,10 @@
 
 #oauth-enroll-auth-view {
   display: block;
-  height: 100%;
+  height: 560px;
   overflow: hidden;
   padding: 0;
-  width: 100%;
+  width: 768px;
 }
 
 #oauth-enroll-learn-more-link {
@@ -65,7 +65,7 @@
 
 .oauth-enroll-step-message {
   display: inline-block;
-  max-width: 400px;
+  padding-top: 20px;
   text-align: left;
   vertical-align: top;
 }

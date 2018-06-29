@@ -297,7 +297,7 @@ class EnterpriseEnrollmentTest : public LoginManagerTest {
     js_checker().ExecuteAsync("$('oauth-enroll-asset-id').value = 'asset_id'");
     js_checker().ExecuteAsync("$('oauth-enroll-location').value = 'location'");
     js_checker().Evaluate(
-        "$('oauth-enroll-attribute-prompt-card').fire('submit')");
+        "$('enroll-attributes-submit-button').fire('tap')");
   }
 
   // Completes the enrollment process.
