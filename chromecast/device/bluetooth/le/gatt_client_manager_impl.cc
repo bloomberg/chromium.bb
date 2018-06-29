@@ -161,15 +161,7 @@ void GattClientManagerImpl::OnCharacteristicReadResponse(
                       value);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
-  auto characteristic = it->second->CharacteristicFromHandle(handle);
-  if (!characteristic) {
-    LOG(ERROR) << "No such characteristic";
-    return;
-  }
-
-  auto* char_impl =
-      static_cast<RemoteCharacteristicImpl*>(characteristic.get());
-  char_impl->OnReadComplete(status, value);
+  it->second->OnCharacteristicRead(status, handle, value);
 }
 
 void GattClientManagerImpl::OnCharacteristicWriteResponse(
@@ -179,15 +171,7 @@ void GattClientManagerImpl::OnCharacteristicWriteResponse(
   MAKE_SURE_IO_THREAD(OnCharacteristicWriteResponse, addr, status, handle);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
-  auto characteristic = it->second->CharacteristicFromHandle(handle);
-  if (!characteristic) {
-    LOG(ERROR) << "No such characteristic";
-    return;
-  }
-
-  auto* char_impl =
-      static_cast<RemoteCharacteristicImpl*>(characteristic.get());
-  char_impl->OnWriteComplete(status);
+  it->second->OnCharacteristicWrite(status, handle);
 }
 
 void GattClientManagerImpl::OnDescriptorReadResponse(
@@ -198,14 +182,7 @@ void GattClientManagerImpl::OnDescriptorReadResponse(
   MAKE_SURE_IO_THREAD(OnDescriptorReadResponse, addr, status, handle, value);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
-  auto descriptor = it->second->DescriptorFromHandle(handle);
-  if (!descriptor) {
-    LOG(ERROR) << "No such descriptor";
-    return;
-  }
-
-  auto* desc_impl = static_cast<RemoteDescriptorImpl*>(descriptor.get());
-  desc_impl->OnReadComplete(status, value);
+  it->second->OnDescriptorRead(status, handle, value);
 }
 
 void GattClientManagerImpl::OnDescriptorWriteResponse(
@@ -215,14 +192,7 @@ void GattClientManagerImpl::OnDescriptorWriteResponse(
   MAKE_SURE_IO_THREAD(OnDescriptorWriteResponse, addr, status, handle);
   auto it = addr_to_device_.find(addr);
   CHECK_DEVICE_EXISTS_IT(it);
-  auto descriptor = it->second->DescriptorFromHandle(handle);
-  if (!descriptor) {
-    LOG(ERROR) << "No such descriptor";
-    return;
-  }
-
-  auto* desc_impl = static_cast<RemoteDescriptorImpl*>(descriptor.get());
-  desc_impl->OnWriteComplete(status);
+  it->second->OnDescriptorWrite(status, handle);
 }
 
 void GattClientManagerImpl::OnReadRemoteRssi(

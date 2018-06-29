@@ -18,6 +18,7 @@ namespace chromecast {
 namespace bluetooth {
 
 class GattClientManagerImpl;
+class RemoteDeviceImpl;
 
 class RemoteDescriptorImpl : public RemoteDescriptor {
  public:
@@ -35,35 +36,28 @@ class RemoteDescriptorImpl : public RemoteDescriptor {
   uint16_t handle() const override;
   bluetooth_v2_shlib::Gatt::Permissions permissions() const override;
 
+  // Mark the object as out of scope.
+  void Invalidate();
+
  private:
   friend class GattClientManagerImpl;
   friend class RemoteCharacteristicImpl;
   friend class RemoteDeviceImpl;
 
   RemoteDescriptorImpl(
-      RemoteDevice* device,
+      RemoteDeviceImpl* device,
       base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
       const bluetooth_v2_shlib::Gatt::Descriptor* characteristic,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~RemoteDescriptorImpl() override;
 
-  void OnConnectChanged(bool connected);
-  void OnReadComplete(bool status, const std::vector<uint8_t>& value);
-  void OnWriteComplete(bool status);
-
-  RemoteDevice* const device_;
-  const base::WeakPtr<GattClientManagerImpl> gatt_client_manager_;
+  RemoteDeviceImpl* const device_;
+  base::WeakPtr<GattClientManagerImpl> gatt_client_manager_;
   const bluetooth_v2_shlib::Gatt::Descriptor* const descriptor_;
 
   // All bluetooth_v2_shlib calls are run on this task_runner. All members must
   // be accessed on this task_runner.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
-
-  ReadCallback read_callback_;
-  StatusCallback write_callback_;
-
-  bool pending_read_ = false;
-  bool pending_write_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(RemoteDescriptorImpl);
 };

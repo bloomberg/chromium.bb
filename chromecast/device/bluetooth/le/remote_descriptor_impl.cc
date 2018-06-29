@@ -6,7 +6,7 @@
 
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
-#include "chromecast/device/bluetooth/le/remote_device.h"
+#include "chromecast/device/bluetooth/le/remote_device_impl.h"
 
 #define EXEC_CB_AND_RET(cb, ret, ...)        \
   do {                                       \
@@ -32,7 +32,7 @@ namespace chromecast {
 namespace bluetooth {
 
 RemoteDescriptorImpl::RemoteDescriptorImpl(
-    RemoteDevice* device,
+    RemoteDeviceImpl* device,
     base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     const bluetooth_v2_shlib::Gatt::Descriptor* descriptor,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
@@ -53,22 +53,13 @@ void RemoteDescriptorImpl::ReadAuth(
     ReadCallback callback) {
   MAKE_SURE_IO_THREAD(ReadAuth, auth_req,
                       BindToCurrentSequence(std::move(callback)));
+  DCHECK(callback);
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false, {});
   }
 
-  if (pending_read_) {
-    LOG(ERROR) << "Read already pending";
-    EXEC_CB_AND_RET(callback, false, {});
-  }
-
-  if (!gatt_client_manager_->gatt_client()->ReadDescriptor(
-          device_->addr(), *descriptor_, auth_req)) {
-    EXEC_CB_AND_RET(callback, false, {});
-  }
-  pending_read_ = true;
-  read_callback_ = std::move(callback);
+  device_->ReadDescriptor(this, auth_req, std::move(callback));
 }
 
 void RemoteDescriptorImpl::Read(ReadCallback callback) {
@@ -82,21 +73,13 @@ void RemoteDescriptorImpl::WriteAuth(
     StatusCallback callback) {
   MAKE_SURE_IO_THREAD(WriteAuth, auth_req, value,
                       BindToCurrentSequence(std::move(callback)));
+  DCHECK(callback);
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false);
   }
-  if (pending_write_) {
-    LOG(ERROR) << "Write already pending";
-    EXEC_CB_AND_RET(callback, false);
-  }
 
-  if (!gatt_client_manager_->gatt_client()->WriteDescriptor(
-          device_->addr(), *descriptor_, auth_req, value)) {
-    EXEC_CB_AND_RET(callback, false);
-  }
-  pending_write_ = true;
-  write_callback_ = std::move(callback);
+  device_->WriteDescriptor(this, auth_req, value, std::move(callback));
 }
 
 void RemoteDescriptorImpl::Write(const std::vector<uint8_t>& value,
@@ -123,39 +106,9 @@ bluetooth_v2_shlib::Gatt::Permissions RemoteDescriptorImpl::permissions()
   return descriptor_->permissions;
 }
 
-void RemoteDescriptorImpl::OnConnectChanged(bool connected) {
+void RemoteDescriptorImpl::Invalidate() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (connected) {
-    return;
-  }
-
-  pending_read_ = false;
-  pending_write_ = false;
-
-  if (read_callback_) {
-    LOG(ERROR) << "Read failed: Device disconnected";
-    std::move(read_callback_).Run(false, std::vector<uint8_t>());
-  }
-
-  if (write_callback_) {
-    LOG(ERROR) << "Write failed: Device disconnected";
-    std::move(write_callback_).Run(false);
-  }
-}
-
-void RemoteDescriptorImpl::OnReadComplete(bool status,
-                                          const std::vector<uint8_t>& value) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  pending_read_ = false;
-  if (read_callback_)
-    std::move(read_callback_).Run(status, value);
-}
-
-void RemoteDescriptorImpl::OnWriteComplete(bool status) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  pending_write_ = false;
-  if (write_callback_)
-    std::move(write_callback_).Run(status);
+  gatt_client_manager_.reset();
 }
 
 }  // namespace bluetooth

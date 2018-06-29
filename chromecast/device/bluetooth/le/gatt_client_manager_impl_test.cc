@@ -87,6 +87,7 @@ std::vector<bluetooth_v2_shlib::Gatt::Service> GenerateServices() {
   characteristic.properties =
       static_cast<bluetooth_v2_shlib::Gatt::Properties>(0);
   characteristic.descriptors.clear();
+  service.characteristics.push_back(characteristic);
 
   ret.push_back(service);
 
@@ -658,6 +659,62 @@ TEST_F(GattClientManagerTest, GetServicesSuccessAfterConnectCallback) {
   EXPECT_FALSE(cb_called);
   delegate->OnGetServices(kTestAddr1, kServices);
   EXPECT_TRUE(cb_called);
+}
+
+TEST_F(GattClientManagerTest, Queuing) {
+  const std::vector<uint8_t> kTestData1 = {0x1, 0x2, 0x3};
+  const std::vector<uint8_t> kTestData2 = {0x4, 0x5, 0x6};
+  const std::vector<uint8_t> kTestData3 = {0x7, 0x8, 0x9};
+  const auto kServices = GenerateServices();
+  const bluetooth_v2_shlib::Gatt::Client::AuthReq kAuthReq =
+      bluetooth_v2_shlib::Gatt::Client::AUTH_REQ_MITM;
+  const bluetooth_v2_shlib::Gatt::WriteType kWriteType =
+      bluetooth_v2_shlib::Gatt::WRITE_TYPE_DEFAULT;
+
+  Connect(kTestAddr1);
+  scoped_refptr<RemoteDevice> device = GetDevice(kTestAddr1);
+  bluetooth_v2_shlib::Gatt::Client::Delegate* delegate =
+      gatt_client_->delegate();
+  delegate->OnServicesAdded(kTestAddr1, kServices);
+  std::vector<scoped_refptr<RemoteService>> services =
+      GetServices(device.get());
+  ASSERT_EQ(kServices.size(), services.size());
+
+  auto service = services[0];
+  std::vector<scoped_refptr<RemoteCharacteristic>> characteristics =
+      service->GetCharacteristics();
+  ASSERT_GE(characteristics.size(), 2ul);
+  auto characteristic1 = characteristics[0];
+  auto characteristic2 = characteristics[1];
+
+  // Issue a write to one characteristic.
+  EXPECT_CALL(*gatt_client_,
+              WriteCharacteristic(kTestAddr1, characteristic1->characteristic(),
+                                  kAuthReq, kWriteType, kTestData1))
+      .WillOnce(Return(true));
+  characteristic1->WriteAuth(kAuthReq, kWriteType, kTestData1, cb_.Get());
+
+  // Issue a read to another characteristic. The shlib should not get the call
+  // until after the read's callback.
+  EXPECT_CALL(*gatt_client_,
+              ReadCharacteristic(kTestAddr1, characteristic2->characteristic(),
+                                 kAuthReq))
+      .Times(0);
+  base::MockCallback<RemoteCharacteristic::ReadCallback> read_cb;
+  characteristic2->ReadAuth(kAuthReq, read_cb.Get());
+
+  EXPECT_CALL(cb_, Run(true));
+  EXPECT_CALL(*gatt_client_,
+              ReadCharacteristic(kTestAddr1, characteristic2->characteristic(),
+                                 kAuthReq))
+      .WillOnce(Return(true));
+  delegate->OnCharacteristicWriteResponse(kTestAddr1, true,
+                                          characteristic1->handle());
+
+  EXPECT_CALL(read_cb, Run(true, kTestData2));
+  delegate->OnCharacteristicReadResponse(kTestAddr1, true,
+                                         characteristic2->handle(), kTestData2);
+  base::RunLoop().RunUntilIdle();
 }
 
 }  // namespace bluetooth

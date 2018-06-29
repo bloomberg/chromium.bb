@@ -7,7 +7,7 @@
 #include "chromecast/base/bind_to_task_runner.h"
 #include "chromecast/device/bluetooth/le/gatt_client_manager_impl.h"
 #include "chromecast/device/bluetooth/le/remote_descriptor_impl.h"
-#include "chromecast/device/bluetooth/le/remote_device.h"
+#include "chromecast/device/bluetooth/le/remote_device_impl.h"
 
 #define EXEC_CB_AND_RET(cb, ret, ...)        \
   do {                                       \
@@ -75,7 +75,7 @@ std::unique_ptr<bluetooth_v2_shlib::Gatt::Descriptor> MaybeCreateFakeCccd(
 }  // namespace
 
 RemoteCharacteristicImpl::RemoteCharacteristicImpl(
-    RemoteDevice* device,
+    RemoteDeviceImpl* device,
     base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
     const bluetooth_v2_shlib::Gatt::Characteristic* characteristic,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
@@ -145,11 +145,17 @@ void RemoteCharacteristicImpl::SetRegisterNotification(bool enable,
     EXEC_CB_AND_RET(cb, false);
   }
 
+  if (notification_enabled_ == enable) {
+    EXEC_CB_AND_RET(cb, true);
+  }
+
   if (!gatt_client_manager_->gatt_client()->SetCharacteristicNotification(
           device_->addr(), *characteristic_, enable)) {
     LOG(ERROR) << "Set characteristic notification failed";
     EXEC_CB_AND_RET(cb, false);
   }
+
+  notification_enabled_ = enable;
 
   // If device has no CCCD and we needed to create a fake one, just return
   // success.
@@ -187,21 +193,13 @@ void RemoteCharacteristicImpl::ReadAuth(
     ReadCallback callback) {
   MAKE_SURE_IO_THREAD(ReadAuth, auth_req,
                       BindToCurrentSequence(std::move(callback)));
+  DCHECK(callback);
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false, {});
   }
-  if (pending_read_) {
-    LOG(ERROR) << "Read already pending";
-    EXEC_CB_AND_RET(callback, false, {});
-  }
 
-  if (!gatt_client_manager_->gatt_client()->ReadCharacteristic(
-          device_->addr(), *characteristic_, auth_req)) {
-    EXEC_CB_AND_RET(callback, false, {});
-  }
-  pending_read_ = true;
-  read_callback_ = std::move(callback);
+  device_->ReadCharacteristic(this, auth_req, std::move(callback));
 }
 
 void RemoteCharacteristicImpl::Read(ReadCallback callback) {
@@ -216,22 +214,14 @@ void RemoteCharacteristicImpl::WriteAuth(
     StatusCallback callback) {
   MAKE_SURE_IO_THREAD(WriteAuth, auth_req, write_type, value,
                       BindToCurrentSequence(std::move(callback)));
+  DCHECK(callback);
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false);
   }
-  if (pending_write_) {
-    LOG(ERROR) << "Write already pending";
-    EXEC_CB_AND_RET(callback, false);
-  }
 
-  if (!gatt_client_manager_->gatt_client()->WriteCharacteristic(
-          device_->addr(), *characteristic_, auth_req, write_type, value)) {
-    EXEC_CB_AND_RET(callback, false);
-  }
-
-  pending_write_ = true;
-  write_callback_ = std::move(callback);
+  device_->WriteCharacteristic(this, auth_req, write_type, value,
+                               std::move(callback));
 }
 
 void RemoteCharacteristicImpl::Write(const std::vector<uint8_t>& value,
@@ -283,41 +273,12 @@ bluetooth_v2_shlib::Gatt::Properties RemoteCharacteristicImpl::properties()
   return characteristic_->properties;
 }
 
-void RemoteCharacteristicImpl::OnConnectChanged(bool connected) {
+void RemoteCharacteristicImpl::Invalidate() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
-  if (connected) {
-    return;
+  for (auto& item : uuid_to_descriptor_) {
+    static_cast<RemoteDescriptorImpl*>(item.second.get())->Invalidate();
   }
-
-  pending_read_ = false;
-  pending_write_ = false;
-
-  if (read_callback_) {
-    LOG(ERROR) << "Read failed: Device disconnected";
-    std::move(read_callback_).Run(false, std::vector<uint8_t>());
-  }
-
-  if (write_callback_) {
-    LOG(ERROR) << "Write failed: Device disconnected";
-    std::move(write_callback_).Run(false);
-  }
-}
-
-void RemoteCharacteristicImpl::OnReadComplete(
-    bool status,
-    const std::vector<uint8_t>& value) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  pending_read_ = false;
-  if (read_callback_) {
-    std::move(read_callback_).Run(status, value);
-  }
-}
-
-void RemoteCharacteristicImpl::OnWriteComplete(bool status) {
-  DCHECK(io_task_runner_->BelongsToCurrentThread());
-  pending_write_ = false;
-  if (write_callback_)
-    std::move(write_callback_).Run(status);
+  gatt_client_manager_.reset();
 }
 
 }  // namespace bluetooth

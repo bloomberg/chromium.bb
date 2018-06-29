@@ -17,6 +17,7 @@ namespace chromecast {
 namespace bluetooth {
 
 class GattClientManagerImpl;
+class RemoteDeviceImpl;
 
 class RemoteServiceImpl : public RemoteService {
  public:
@@ -33,14 +34,14 @@ class RemoteServiceImpl : public RemoteService {
   friend class RemoteDeviceImpl;
 
   static std::map<bluetooth_v2_shlib::Uuid, scoped_refptr<RemoteCharacteristic>>
-  CreateCharMap(RemoteDevice* remote_device,
+  CreateCharMap(RemoteDeviceImpl* remote_device,
                 base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
                 const bluetooth_v2_shlib::Gatt::Service& service,
                 scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
 
   // May only be constructed by RemoteDevice.
   explicit RemoteServiceImpl(
-      RemoteDevice* remote_device,
+      RemoteDeviceImpl* remote_device,
       base::WeakPtr<GattClientManagerImpl> gatt_client_manager,
       const bluetooth_v2_shlib::Gatt::Service& service,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
