@@ -157,9 +157,10 @@ void NotificationImageLoader::DidFinishLoading(
     NOTIFICATION_HISTOGRAM_COUNTS(LoadFileSize, type_, data_->size(),
                                   10000000 /* ~10mb max */);
 
+    const bool data_complete = true;
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-        data_, true /* dataComplete */, ImageDecoder::kAlphaPremultiplied,
-        ColorBehavior::TransformToSRGB());
+        data_, data_complete, ImageDecoder::kAlphaPremultiplied,
+        ImageDecoder::kDefaultBitDepth, ColorBehavior::TransformToSRGB());
     if (decoder) {
       // The |ImageFrame*| is owned by the decoder.
       ImageFrame* image_frame = decoder->DecodeFrameBufferAtIndex(0);

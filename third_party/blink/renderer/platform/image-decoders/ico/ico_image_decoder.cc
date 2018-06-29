@@ -44,7 +44,10 @@ static const size_t kSizeOfDirEntry = 16;
 ICOImageDecoder::ICOImageDecoder(AlphaOption alpha_option,
                                  const ColorBehavior& color_behavior,
                                  size_t max_decoded_bytes)
-    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+    : ImageDecoder(alpha_option,
+                   ImageDecoder::kDefaultBitDepth,
+                   color_behavior,
+                   max_decoded_bytes),
       fast_reader_(nullptr),
       decoded_offset_(0),
       dir_entries_count_(0),
@@ -213,8 +216,8 @@ bool ICOImageDecoder::DecodeAtIndex(size_t index) {
     AlphaOption alpha_option =
         premultiply_alpha_ ? kAlphaPremultiplied : kAlphaNotPremultiplied;
     png_decoders_[index] = std::make_unique<PNGImageDecoder>(
-        alpha_option, color_behavior_, max_decoded_bytes_,
-        dir_entry.image_offset_);
+        alpha_option, ImageDecoder::kDefaultBitDepth, color_behavior_,
+        max_decoded_bytes_, dir_entry.image_offset_);
     SetDataForPNGDecoderAtIndex(index);
   }
   auto* png_decoder = png_decoders_[index].get();

@@ -41,6 +41,7 @@ class TestImageDecoder : public ImageDecoder {
  public:
   TestImageDecoder()
       : ImageDecoder(kAlphaNotPremultiplied,
+                     ImageDecoder::kDefaultBitDepth,
                      ColorBehavior::TransformToSRGB(),
                      kNoDecodedImageByteLimit) {}
 

@@ -2813,8 +2813,10 @@ void WebGLImageConversion::ImageExtractor::ExtractImage(
        (has_alpha && !premultiply_alpha)) &&
       image_->Data()) {
     // Attempt to get raw unpremultiplied image data.
+    const bool data_complete = true;
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
-        image_->Data(), true, ImageDecoder::kAlphaNotPremultiplied,
+        image_->Data(), data_complete, ImageDecoder::kAlphaNotPremultiplied,
+        ImageDecoder::kDefaultBitDepth,
         ignore_color_space ? ColorBehavior::Ignore()
                            : ColorBehavior::TransformToSRGB()));
     if (!decoder || !decoder->FrameCount())

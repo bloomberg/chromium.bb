@@ -72,8 +72,10 @@ void DecodeFailure(ImageMeta* image) {
 }
 
 void DecodeImageData(SharedBuffer* data, ImageMeta* image) {
+  const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder = ImageDecoder::Create(
-      data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore());
+      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore());
 
   auto start = CurrentTimeTicks();
 

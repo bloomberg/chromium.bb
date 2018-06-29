@@ -122,7 +122,10 @@ namespace blink {
 WEBPImageDecoder::WEBPImageDecoder(AlphaOption alpha_option,
                                    const ColorBehavior& color_behavior,
                                    size_t max_decoded_bytes)
-    : ImageDecoder(alpha_option, color_behavior, max_decoded_bytes),
+    : ImageDecoder(alpha_option,
+                   ImageDecoder::kDefaultBitDepth,
+                   color_behavior,
+                   max_decoded_bytes),
       decoder_(nullptr),
       format_flags_(0),
       frame_background_has_alpha_(false),

@@ -35,8 +35,8 @@ namespace {
 std::unique_ptr<ImageDecoder> CreatePNGDecoder(
     ImageDecoder::AlphaOption alpha_option) {
   return std::make_unique<PNGImageDecoder>(
-      alpha_option, ColorBehavior::TransformToSRGB(),
-      ImageDecoder::kNoDecodedImageByteLimit);
+      alpha_option, ImageDecoder::kDefaultBitDepth,
+      ColorBehavior::TransformToSRGB(), ImageDecoder::kNoDecodedImageByteLimit);
 }
 
 std::unique_ptr<ImageDecoder> CreatePNGDecoder() {
@@ -914,8 +914,9 @@ TEST(AnimatedPNGTests, Offset) {
   // Use the same defaults as CreatePNGDecoder, except use the (arbitrary)
   // non-zero offset.
   auto decoder = std::make_unique<PNGImageDecoder>(
-      ImageDecoder::kAlphaNotPremultiplied, ColorBehavior::TransformToSRGB(),
-      ImageDecoder::kNoDecodedImageByteLimit, kOffset);
+      ImageDecoder::kAlphaNotPremultiplied, ImageDecoder::kDefaultBitDepth,
+      ColorBehavior::TransformToSRGB(), ImageDecoder::kNoDecodedImageByteLimit,
+      kOffset);
   decoder->SetData(data, true);
   ASSERT_EQ(kExpectedFrameCount, decoder->FrameCount());
 

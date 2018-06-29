@@ -46,8 +46,10 @@
 namespace blink {
 
 WebImage WebImage::FromData(const WebData& data, const WebSize& desired_size) {
+  const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
-      data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore()));
+      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable())
     return WebImage();
 
@@ -83,8 +85,10 @@ WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
   // never hit in practice.
   const size_t kMaxFrameCount = 8;
 
+  const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
-      data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore()));
+      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable())
     return WebVector<WebImage>();
 
@@ -114,8 +118,10 @@ WebVector<WebImage> WebImage::FramesFromData(const WebData& data) {
 
 WebVector<WebImage::AnimationFrame> WebImage::AnimationFromData(
     const WebData& data) {
+  const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
-      data, true, ImageDecoder::kAlphaPremultiplied, ColorBehavior::Ignore()));
+      data, data_complete, ImageDecoder::kAlphaPremultiplied,
+      ImageDecoder::kDefaultBitDepth, ColorBehavior::Ignore()));
   if (!decoder || !decoder->IsSizeAvailable() || decoder->FrameCount() == 0)
     return WebVector<WebImage::AnimationFrame>();
 

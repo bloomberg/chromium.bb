@@ -319,10 +319,11 @@ void ImageBitmapFactories::ImageBitmapLoader::DecodeImageOnDecoderThread(
   bool ignore_color_space = false;
   if (color_space_conversion_option == "none")
     ignore_color_space = true;
+  const bool data_complete = true;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::Create(
       SegmentReader::CreateFromSkData(SkData::MakeWithoutCopy(
           array_buffer->Data(), array_buffer->ByteLength())),
-      true, alpha_op,
+      data_complete, alpha_op, ImageDecoder::kDefaultBitDepth,
       ignore_color_space ? ColorBehavior::Ignore() : ColorBehavior::Tag()));
   sk_sp<SkImage> frame;
   if (decoder) {

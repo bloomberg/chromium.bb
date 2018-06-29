@@ -73,6 +73,7 @@ class MockImageDecoder : public ImageDecoder {
 
   MockImageDecoder(MockImageDecoderClient* client)
       : ImageDecoder(kAlphaPremultiplied,
+                     ImageDecoder::kDefaultBitDepth,
                      ColorBehavior::TransformToSRGB(),
                      kNoDecodedImageByteLimit),
         client_(client) {}
