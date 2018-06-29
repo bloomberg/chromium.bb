@@ -1153,12 +1153,12 @@ namespace em = enterprise_management;
 namespace {
 
 std::unique_ptr<base::Value> DecodeIntegerValue(
-    google::protobuf::int64 value) {
+    google::protobuf::int64 value, std::string* error) {
   if (value < std::numeric_limits<int>::min() ||
       value > std::numeric_limits<int>::max()) {
-    LOG(WARNING) << "Integer value " << value
-                 << " out of numeric limits, ignoring.";
-    return nullptr;
+    LOG(WARNING) << "Integer value out of numeric limits: " << value;
+    *error = "Number out of range - invalid int32";
+    return std::make_unique<base::Value>(std::to_string(value));
   }
 
   return base::WrapUnique(
@@ -1173,16 +1173,23 @@ std::unique_ptr<base::ListValue> DecodeStringList(
   return list_value;
 }
 
-std::unique_ptr<base::Value> DecodeJson(const std::string& json) {
-  std::unique_ptr<base::Value> root =
-      base::JSONReader::Read(json, base::JSON_ALLOW_TRAILING_COMMAS);
+std::unique_ptr<base::Value> DecodeJson(const std::string& json,
+                                        std::string* error) {
 
-  if (!root)
-    LOG(WARNING) << "Invalid JSON string, ignoring: " << json;
+  std::unique_ptr<base::Value> parsed_value =
+      base::JSONReader::ReadAndReturnError(
+          json, base::JSON_ALLOW_TRAILING_COMMAS, nullptr, error);
+
+  if (!parsed_value) {
+    // Can't parse as JSON so return it as a string for the handler to validate.
+    LOG(WARNING) << "Invalid JSON: " << json;
+    return std::make_unique<base::Value>(json);
+  }
 
   // Accept any Value type that parsed as JSON, and leave it to the handler to
   // convert and check the concrete type.
-  return root;
+  error->clear();
+  return parsed_value;
 }
 
 // Returns true and sets |level| to a PolicyLevel if the policy has been set
@@ -1228,13 +1235,13 @@ def _CreateValue(type, arg):
   if type == 'Type::BOOLEAN':
     return 'new base::Value(%s)' % arg
   elif type == 'Type::INTEGER':
-    return 'DecodeIntegerValue(%s)' % arg
+    return 'DecodeIntegerValue(%s, &error)' % arg
   elif type == 'Type::STRING':
     return 'new base::Value(%s)' % arg
   elif type == 'Type::LIST':
     return 'DecodeStringList(%s)' % arg
   elif type == 'Type::DICTIONARY' or type == 'TYPE_EXTERNAL':
-    return 'DecodeJson(%s)' % arg
+    return 'DecodeJson(%s, &error)' % arg
   else:
     raise NotImplementedError('Unknown type %s' % type)
 
@@ -1252,23 +1259,21 @@ def _WriteCloudPolicyDecoderCode(f, policy):
   f.write('    const em::%s& policy_proto = policy.%s();\n' %
           (proto_type, membername))
   f.write('    PolicyLevel level;\n'
-          '    if (GetPolicyLevel(policy_proto, &level)) {\n')
+          '    if (GetPolicyLevel(policy_proto, &level)) {\n'
+          '      std::string error;\n')
   f.write('      std::unique_ptr<base::Value> value(%s);\n' %
           (_CreateValue(policy.policy_type, 'policy_proto.value()')))
-  # TODO(bartfab): |value| == NULL indicates that the policy value could not be
-  # parsed successfully. Surface such errors in the UI.
-  f.write('      if (value) {\n')
-  f.write('        std::unique_ptr<ExternalDataFetcher>\n')
-  f.write('            external_data_fetcher(%s);\n' %
+  f.write('      std::unique_ptr<ExternalDataFetcher>\n')
+  f.write('          external_data_fetcher(%s);\n' %
           _CreateExternalDataFetcher(policy.policy_type, policy.name))
-  f.write('        map->Set(key::k%s, \n' % policy.name)
-  f.write('                 level, \n'
-          '                 scope, \n'
-          '                 POLICY_SOURCE_CLOUD, \n'
-          '                 std::move(value), \n'
-          '                 std::move(external_data_fetcher));\n'
-          '      }\n'
-          '    }\n'
+  f.write('      map->Set(key::k%s, \n' % policy.name)
+  f.write('               level, \n'
+          '               scope, \n'
+          '               POLICY_SOURCE_CLOUD, \n'
+          '               std::move(value), \n'
+          '               std::move(external_data_fetcher));\n')
+  f.write('      map->SetError(key::k%s, error);\n' % policy.name)
+  f.write('    }\n'
           '  }\n')
 
 
