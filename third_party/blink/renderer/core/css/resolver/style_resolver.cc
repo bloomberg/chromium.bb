@@ -804,57 +804,6 @@ scoped_refptr<AnimatableValue> StyleResolver::CreateAnimatableValueSnapshot(
   return CSSAnimatableValueFactory::Create(property, *state.Style());
 }
 
-PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
-                                                          PseudoId pseudo_id) {
-  if (!parent.CanGeneratePseudoElement(pseudo_id))
-    return nullptr;
-
-  if (pseudo_id == kPseudoIdFirstLetter &&
-      (parent.IsSVGElement() ||
-       !FirstLetterPseudoElement::FirstLetterTextLayoutObject(parent)))
-    return nullptr;
-
-  ComputedStyle* parent_style = parent.MutableComputedStyle();
-  DCHECK(parent_style);
-
-  if (ComputedStyle* cached_style =
-          parent_style->GetCachedPseudoStyle(pseudo_id)) {
-    if (!PseudoElementLayoutObjectIsNeeded(cached_style))
-      return nullptr;
-    return PseudoElement::Create(&parent, pseudo_id);
-  }
-
-  const ComputedStyle* layout_parent_style = parent_style;
-  if (parent.HasDisplayContentsStyle()) {
-    ContainerNode* layout_parent =
-        LayoutTreeBuilderTraversal::LayoutParent(parent);
-    DCHECK(layout_parent);
-    layout_parent_style = layout_parent->GetComputedStyle();
-  }
-
-  StyleResolverState state(GetDocument(), &parent, parent_style,
-                           layout_parent_style);
-  if (!PseudoStyleForElementInternal(parent, pseudo_id, state))
-    return nullptr;
-  scoped_refptr<ComputedStyle> style = state.TakeStyle();
-  DCHECK(style);
-  style->UpdateIsStackingContext(
-      false /* is_document_element */,
-      pseudo_id == kPseudoIdBackdrop /* is_in_top_layer */,
-      false /* is_svg_stacking */);
-  parent_style->AddCachedPseudoStyle(style);
-
-  if (!PseudoElementLayoutObjectIsNeeded(style.get()))
-    return nullptr;
-
-  PseudoElement* pseudo = PseudoElement::Create(&parent, pseudo_id);
-
-  SetAnimationUpdateIfNeeded(state, *pseudo);
-  if (ElementAnimations* element_animations = pseudo->GetElementAnimations())
-    element_animations->CssAnimations().MaybeApplyPendingUpdate(pseudo);
-  return pseudo;
-}
-
 bool StyleResolver::PseudoStyleForElementInternal(
     Element& element,
     const PseudoStyleRequest& pseudo_style_request,

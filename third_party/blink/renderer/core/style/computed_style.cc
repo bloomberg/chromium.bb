@@ -426,9 +426,7 @@ ComputedStyle* ComputedStyle::GetCachedPseudoStyle(PseudoId pid) const {
 
 ComputedStyle* ComputedStyle::AddCachedPseudoStyle(
     scoped_refptr<ComputedStyle> pseudo) {
-  if (!pseudo)
-    return nullptr;
-
+  DCHECK(pseudo);
   DCHECK_GT(pseudo->StyleType(), kPseudoIdNone);
 
   ComputedStyle* result = pseudo.get();

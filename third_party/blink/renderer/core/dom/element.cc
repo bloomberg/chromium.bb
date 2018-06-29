@@ -1958,8 +1958,14 @@ Node::InsertionNotificationRequest Element::InsertedInto(
 
 void Element::RemovedFrom(ContainerNode* insertion_point) {
   bool was_in_document = insertion_point->isConnected();
-
-  DCHECK(!HasRareData() || !GetElementRareData()->HasPseudoElements());
+  if (HasRareData()) {
+    // If we detached the layout tree with LazyReattachIfAttached, we might not
+    // have cleared the pseudo elements if we remove the element before calling
+    // AttachLayoutTree again. We don't clear pseudo elements on
+    // DetachLayoutTree() if we intend to attach again to avoid recreating the
+    // pseudo elements.
+    GetElementRareData()->ClearPseudoElements();
+  }
 
   if (Fullscreen::IsFullscreenElement(*this)) {
     SetContainsFullScreenElementOnAncestorsCrossingFrameBoundaries(false);
@@ -2058,11 +2064,13 @@ void Element::AttachLayoutTree(AttachContext& context) {
 
   if (HasRareData() && !GetLayoutObject() &&
       !GetElementRareData()->GetComputedStyle()) {
+    ElementRareData* rare_data = GetElementRareData();
     if (ElementAnimations* element_animations =
-            GetElementRareData()->GetElementAnimations()) {
+            rare_data->GetElementAnimations()) {
       element_animations->CssAnimations().Cancel();
       element_animations->SetAnimationStyleChange(false);
     }
+    rare_data->ClearPseudoElements();
   }
 
   SelectorFilterParentScope filter_scope(*this);
@@ -2075,7 +2083,7 @@ void Element::AttachLayoutTree(AttachContext& context) {
   children_context.use_previous_in_flow = true;
 
   ClearNeedsReattachLayoutTree();
-  CreateAndAttachPseudoElementIfNeeded(kPseudoIdBefore, children_context);
+  AttachPseudoElement(kPseudoIdBefore, children_context);
 
   // When a shadow root exists, it does the work of attaching the children.
   if (ShadowRoot* shadow_root = GetShadowRoot()) {
@@ -2087,13 +2095,19 @@ void Element::AttachLayoutTree(AttachContext& context) {
   SetNonAttachedStyle(nullptr);
   AddCallbackSelectors();
 
-  CreateAndAttachPseudoElementIfNeeded(kPseudoIdAfter, children_context);
-  CreateAndAttachPseudoElementIfNeeded(kPseudoIdBackdrop, children_context);
+  AttachPseudoElement(kPseudoIdAfter, children_context);
+  AttachPseudoElement(kPseudoIdBackdrop, children_context);
 
   // We create the first-letter element after the :before, :after and
   // children are attached because the first letter text could come
   // from any of them.
-  CreateAndAttachPseudoElementIfNeeded(kPseudoIdFirstLetter, children_context);
+  //
+  // TODO(futhark@chromium.org: Replace with AttachPseudoElement when we create
+  // ::first-letter elements during style recalc.
+  if (PseudoElement* first_letter =
+          CreatePseudoElementIfNeeded(kPseudoIdFirstLetter)) {
+    first_letter->AttachLayoutTree(children_context);
+  }
 
   if (layout_object) {
     if (!layout_object->IsFloatingOrOutOfFlowPositioned())
@@ -2109,7 +2123,10 @@ void Element::DetachLayoutTree(const AttachContext& context) {
   RemoveCallbackSelectors();
   if (HasRareData()) {
     ElementRareData* data = GetElementRareData();
-    data->ClearPseudoElements();
+    if (context.performing_reattach)
+      data->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
+    else
+      data->ClearPseudoElements();
 
     // attachLayoutTree() will clear the computed style for us when inside
     // recalcStyle.
@@ -2133,11 +2150,16 @@ void Element::DetachLayoutTree(const AttachContext& context) {
       element_animations->ClearBaseComputedStyle();
     }
 
+    DetachPseudoElement(kPseudoIdBefore, context);
+
     if (ShadowRoot* shadow_root = data->GetShadowRoot())
       shadow_root->DetachLayoutTree(context);
   }
 
   ContainerNode::DetachLayoutTree(context);
+
+  DetachPseudoElement(kPseudoIdAfter, context);
+  DetachPseudoElement(kPseudoIdBackdrop, context);
 
   if (!context.performing_reattach && IsUserActionElement()) {
     if (IsHovered())
@@ -2278,7 +2300,17 @@ void Element::RecalcStyle(StyleRecalcChange change) {
       ClearNeedsStyleRecalc();
   }
 
+  if (change >= kUpdatePseudoElements || ChildNeedsStyleRecalc()) {
+    // ChildrenCanHaveStyle(), hence ShouldCallRecalcStyleForChildren(),
+    // returns false for <object> elements below. Yet, they may have ::backdrop
+    // elements.
+    UpdatePseudoElement(kPseudoIdBackdrop, change);
+  }
+
   if (ShouldCallRecalcStyleForChildren(change)) {
+    // TODO(futhark@chromium.org): Pseudo elements are feature-less and match
+    // the same features as their originating element. Move the filter scope
+    // inside the if-block for shadow-including descendants below.
     SelectorFilterParentScope filter_scope(*this);
 
     UpdatePseudoElement(kPseudoIdBefore, change);
@@ -2292,7 +2324,6 @@ void Element::RecalcStyle(StyleRecalcChange change) {
     }
 
     UpdatePseudoElement(kPseudoIdAfter, change);
-    UpdatePseudoElement(kPseudoIdBackdrop, change);
 
     // If our children have changed then we need to force the first-letter
     // checks as we don't know if they effected the first letter or not.
@@ -2498,6 +2529,7 @@ void Element::RebuildPseudoElementLayoutTree(
     else if (UpdateFirstLetter(element))
       return;
   }
+
   if (element && element->NeedsRebuildLayoutTree(whitespace_attacher))
     element->RebuildLayoutTree(whitespace_attacher);
 }
@@ -3901,46 +3933,49 @@ void Element::CancelFocusAppearanceUpdate() {
 
 void Element::UpdatePseudoElement(PseudoId pseudo_id,
                                   StyleRecalcChange change) {
-  // TODO(futhark@chromium.org): Update pseudo elements and style as part of
-  // style recalc also when re-attaching.
-  if (change == kReattach)
+  // TODO(futhark@chromium.org): Update ::first-letter pseudo elements and style
+  // as part of style recalc also when re-attaching.
+  if (change == kReattach && pseudo_id == kPseudoIdFirstLetter)
     return;
 
-  DCHECK(!NeedsStyleRecalc());
   PseudoElement* element = GetPseudoElement(pseudo_id);
+  if (!element) {
+    if (change >= kUpdatePseudoElements)
+      element = CreatePseudoElementIfNeeded(pseudo_id);
+    // TODO(futhark@chromium.org): We cannot SetNeedsReattachLayoutTree() for
+    // ::first-letter inside CreatePseudoElementIfNeeded() because it may be
+    // called from layout tree attachment.
+    if (element && pseudo_id == kPseudoIdFirstLetter)
+      element->SetNeedsReattachLayoutTree();
+    return;
+  }
 
-  if (element && (change == kUpdatePseudoElements ||
-                  element->ShouldCallRecalcStyle(change))) {
-    if (pseudo_id == kPseudoIdFirstLetter && UpdateFirstLetter(element))
-      return;
-
-    // Need to clear the cached style if the PseudoElement wants a recalc so it
-    // computes a new style.
-    if (element->NeedsStyleRecalc())
-      MutableComputedStyle()->RemoveCachedPseudoStyle(pseudo_id);
-
-    bool remove_pseudo = !CanGeneratePseudoElement(pseudo_id);
-    if (!remove_pseudo) {
-      // PseudoElement styles hang off their parent element's style so if we
-      // needed a style recalc we should Force one on the pseudo.
-      element->RecalcStyle(change == kUpdatePseudoElements ? kForce : change);
-      remove_pseudo =
-          element->NeedsReattachLayoutTree() &&
-          !PseudoElementLayoutObjectIsNeeded(element->GetNonAttachedStyle());
+  if (change == kUpdatePseudoElements ||
+      element->ShouldCallRecalcStyle(change)) {
+    if (pseudo_id == kPseudoIdFirstLetter) {
+      if (UpdateFirstLetter(element))
+        return;
+      // Need to clear the cached style if the PseudoElement wants a recalc so
+      // it computes a new style.
+      if (element->NeedsStyleRecalc())
+        MutableComputedStyle()->RemoveCachedPseudoStyle(kPseudoIdFirstLetter);
     }
-    if (remove_pseudo)
-      GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
-  } else if (pseudo_id == kPseudoIdFirstLetter && element &&
+    if (CanGeneratePseudoElement(pseudo_id)) {
+      element->RecalcStyle(change == kUpdatePseudoElements ? kForce : change);
+      if (!element->NeedsReattachLayoutTree())
+        return;
+      if (PseudoElementLayoutObjectIsNeeded(element->GetNonAttachedStyle()))
+        return;
+    }
+    GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
+  } else if (pseudo_id == kPseudoIdFirstLetter &&
              change >= kUpdatePseudoElements &&
              !FirstLetterPseudoElement::FirstLetterTextLayoutObject(*element)) {
-    // This can happen if we change to a float, for example. We need to cleanup
-    // the first-letter pseudoElement and then fix the text of the original
-    // remaining text layoutObject.  This can be seen in Test 7 of
+    // We can end up here if we change to a float, for example. We need to
+    // cleanup the first-letter PseudoElement and then fix the text of the
+    // original remaining text LayoutObject. This can be seen in Test 7 of
     // fast/css/first-letter-removed-added.html
-    GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
-  } else if (change >= kUpdatePseudoElements) {
-    if (PseudoElement* new_pseudo = CreatePseudoElementIfNeeded(pseudo_id))
-      new_pseudo->SetNeedsReattachLayoutTree();
+    GetElementRareData()->SetPseudoElement(kPseudoIdFirstLetter, nullptr);
   }
 }
 
@@ -3969,30 +4004,51 @@ bool Element::UpdateFirstLetter(Element* element) {
 PseudoElement* Element::CreatePseudoElementIfNeeded(PseudoId pseudo_id) {
   if (IsPseudoElement())
     return nullptr;
-
-  // Document::ensureStyleResolver is not inlined and shows up on profiles,
-  // avoid it here.
-  PseudoElement* element = GetDocument()
-                               .GetStyleEngine()
-                               .EnsureResolver()
-                               .CreatePseudoElementIfNeeded(*this, pseudo_id);
-  if (!element)
+  if (!CanGeneratePseudoElement(pseudo_id))
     return nullptr;
+  if (pseudo_id == kPseudoIdFirstLetter) {
+    if (IsSVGElement())
+      return nullptr;
+    if (!FirstLetterPseudoElement::FirstLetterTextLayoutObject(*this))
+      return nullptr;
+  }
+
+  PseudoElement* pseudo_element = PseudoElement::Create(this, pseudo_id);
+  EnsureElementRareData().SetPseudoElement(pseudo_id, pseudo_element);
+  pseudo_element->InsertedInto(this);
+
+  scoped_refptr<ComputedStyle> pseudo_style =
+      pseudo_element->StyleForLayoutObject();
+  if (!PseudoElementLayoutObjectIsNeeded(pseudo_style.get())) {
+    GetElementRareData()->SetPseudoElement(pseudo_id, nullptr);
+    return nullptr;
+  }
 
   if (pseudo_id == kPseudoIdBackdrop)
-    GetDocument().AddToTopLayer(element, this);
-  element->InsertedInto(this);
+    GetDocument().AddToTopLayer(pseudo_element, this);
 
-  probe::pseudoElementCreated(element);
+  pseudo_element->SetNonAttachedStyle(std::move(pseudo_style));
 
-  EnsureElementRareData().SetPseudoElement(pseudo_id, element);
-  return element;
+  // TODO(futhark@chromium.org): We cannot SetNeedsReattachLayoutTree() for
+  // ::first-letter inside CreatePseudoElementIfNeeded() because it may be
+  // called from layout tree attachment.
+  if (pseudo_id != kPseudoIdFirstLetter)
+    pseudo_element->SetNeedsReattachLayoutTree();
+
+  probe::pseudoElementCreated(pseudo_element);
+
+  return pseudo_element;
 }
 
-void Element::CreateAndAttachPseudoElementIfNeeded(PseudoId pseudo_id,
-                                                   AttachContext& context) {
-  if (PseudoElement* pseudo_element = CreatePseudoElementIfNeeded(pseudo_id))
+void Element::AttachPseudoElement(PseudoId pseudo_id, AttachContext& context) {
+  if (PseudoElement* pseudo_element = GetPseudoElement(pseudo_id))
     pseudo_element->AttachLayoutTree(context);
+}
+
+void Element::DetachPseudoElement(PseudoId pseudo_id,
+                                  const AttachContext& context) {
+  if (PseudoElement* pseudo_element = GetPseudoElement(pseudo_id))
+    pseudo_element->DetachLayoutTree(context);
 }
 
 PseudoElement* Element::GetPseudoElement(PseudoId pseudo_id) const {
@@ -4046,9 +4102,6 @@ scoped_refptr<ComputedStyle> Element::StyleForPseudoElement(
     return GetDocument().EnsureStyleResolver().PseudoStyleForElement(
         this, request, style, layout_parent_style);
   }
-
-  if (!GetLayoutObject())
-    return nullptr;
 
   if (!parent_style)
     parent_style = style;

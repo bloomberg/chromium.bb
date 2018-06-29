@@ -105,7 +105,7 @@ PseudoElement::PseudoElement(Element* parent, PseudoId pseudo_id)
 
 scoped_refptr<ComputedStyle> PseudoElement::CustomStyleForLayoutObject() {
   scoped_refptr<ComputedStyle> original_style =
-      ParentOrShadowHostElement()->CachedStyleForPseudoElement(
+      ParentOrShadowHostElement()->StyleForPseudoElement(
           PseudoStyleRequest(pseudo_id_));
   if (!original_style || original_style->Display() != EDisplay::kContents)
     return original_style;
@@ -184,13 +184,18 @@ bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return PseudoElementLayoutObjectIsNeeded(&style);
 }
 
-void PseudoElement::DidRecalcStyle(StyleRecalcChange) {
+void PseudoElement::DidRecalcStyle(StyleRecalcChange change) {
+  // If the pseudo element is being re-attached, its anonymous LayoutObjects for
+  // generated content will be destroyed and possibly recreated during layout
+  // tree rebuild. Thus, propagating style to generated content now is futile.
+  if (change == kReattach)
+    return;
   if (!GetLayoutObject())
     return;
 
   // The layoutObjects inside pseudo elements are anonymous so they don't get
   // notified of recalcStyle and must have the style propagated downward
-  // manually similar to LayoutObject::propagateStyleToAnonymousChildren.
+  // manually similar to LayoutObject::PropagateStyleToAnonymousChildren.
   LayoutObject* layout_object = GetLayoutObject();
   for (LayoutObject* child = layout_object->NextInPreOrder(layout_object);
        child; child = child->NextInPreOrder(layout_object)) {

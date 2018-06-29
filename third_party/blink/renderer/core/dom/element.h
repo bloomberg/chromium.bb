@@ -976,7 +976,8 @@ class CORE_EXPORT Element : public ContainerNode {
   bool UpdateFirstLetter(Element*);
 
   inline PseudoElement* CreatePseudoElementIfNeeded(PseudoId);
-  void CreateAndAttachPseudoElementIfNeeded(PseudoId, AttachContext&);
+  void AttachPseudoElement(PseudoId, AttachContext&);
+  void DetachPseudoElement(PseudoId, const AttachContext&);
 
   ShadowRoot& CreateAndAttachShadowRoot(ShadowRootType);
 
