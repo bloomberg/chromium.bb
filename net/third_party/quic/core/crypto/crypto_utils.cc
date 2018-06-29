@@ -457,4 +457,5 @@ void CryptoUtils::HashHandshakeMessage(const CryptoHandshakeMessage& message,
   output->assign(reinterpret_cast<const char*>(digest), sizeof(digest));
 }
 
+#undef RETURN_STRING_LITERAL  // undef for jumbo builds
 }  // namespace quic

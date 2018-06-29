@@ -325,4 +325,5 @@ QuicString ParsedQuicVersionVectorToString(
   return result;
 }
 
+#undef RETURN_STRING_LITERAL  // undef for jumbo builds
 }  // namespace quic
