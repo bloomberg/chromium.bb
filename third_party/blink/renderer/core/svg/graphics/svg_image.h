@@ -73,6 +73,7 @@ class CORE_EXPORT SVGImage final : public Image {
 
   void StartAnimation() override;
   void ResetAnimation() override;
+  void RestoreAnimation();
 
   PaintImage::CompletionState completion_state() const {
     return load_state_ == LoadState::kLoadCompleted
