@@ -841,7 +841,7 @@ void VrShellGl::SubmitFrameWithTextureHandle(
 
 void VrShellGl::ConnectPresentingService(
     device::mojom::VRDisplayInfoPtr display_info,
-    const device::XRDeviceRuntimeSessionOptions& options) {
+    device::mojom::XRDeviceRuntimeSessionOptionsPtr options) {
   ClosePresentationBindings();
 
   device::mojom::VRPresentationProviderPtr provider;
@@ -1058,7 +1058,7 @@ void VrShellGl::GvrInit(gvr_context* gvr_api) {
 
 device::mojom::VRDisplayFrameTransportOptionsPtr
 VrShellGl::GetWebVrFrameTransportOptions(
-    const device::XRDeviceRuntimeSessionOptions& options) {
+    const device::mojom::XRDeviceRuntimeSessionOptionsPtr& options) {
   DVLOG(1) << __FUNCTION__;
 
   MetricsUtilAndroid::XRRenderPath render_path =
@@ -1086,7 +1086,7 @@ VrShellGl::GetWebVrFrameTransportOptions(
     if (gl::GLFence::IsGpuFenceSupported()) {
       webxr_use_gpu_fence_ = true;
       if (base::AndroidHardwareBufferCompat::IsSupportAvailable() &&
-          !options.use_legacy_webvr_render_path) {
+          !options->use_legacy_webvr_render_path) {
         // Currently, SharedBuffer mode is only supported for WebXR via
         // XRWebGlDrawingBuffer, WebVR 1.1 doesn't use that.
         webxr_use_shared_buffer_draw_ = true;

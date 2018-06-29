@@ -18,32 +18,36 @@ namespace device {
 
 class OculusRenderLoop;
 
-class OculusDevice : public VRDeviceBase, public XrSessionController {
+class OculusDevice : public VRDeviceBase, public mojom::XRSessionController {
  public:
   explicit OculusDevice(ovrSession session, ovrGraphicsLuid luid);
   ~OculusDevice() override;
 
   // VRDeviceBase
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override;
+  void RequestSession(
+      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntime::RequestSessionCallback callback) override;
   void OnMagicWindowFrameDataRequest(
       mojom::VRMagicWindowProvider::GetFrameDataCallback callback) override;
   void OnRequestSessionResult(
-      VRDeviceRequestSessionCallback callback,
+      mojom::XRRuntime::RequestSessionCallback callback,
       bool result,
       mojom::VRSubmitFrameClientRequest request,
       mojom::VRPresentationProviderPtrInfo provider_info,
       mojom::VRDisplayFrameTransportOptionsPtr transport_options);
 
  private:
-  // XrSessionController
+  // XRSessionController
   void SetFrameDataRestricted(bool restricted) override;
-  void StopSession() override;
+
+  void OnPresentingControllerMojoConnectionError();
 
   std::unique_ptr<OculusRenderLoop> render_loop_;
   mojom::VRDisplayInfoPtr display_info_;
   ovrSession session_;
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
+
+  mojo::Binding<mojom::XRSessionController> exclusive_controller_binding_;
 
   base::WeakPtrFactory<OculusDevice> weak_ptr_factory_;
 

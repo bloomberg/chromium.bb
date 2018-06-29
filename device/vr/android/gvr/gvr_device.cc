@@ -143,7 +143,9 @@ std::unique_ptr<GvrDevice> GvrDevice::Create() {
 }
 
 GvrDevice::GvrDevice()
-    : VRDeviceBase(VRDeviceId::GVR_DEVICE_ID), weak_ptr_factory_(this) {
+    : VRDeviceBase(VRDeviceId::GVR_DEVICE_ID),
+      exclusive_controller_binding_(this),
+      weak_ptr_factory_(this) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider || delegate_provider->ShouldDisableGvrDevice())
     return;
@@ -167,19 +169,20 @@ GvrDevice::~GvrDevice() {
   Java_NonPresentingGvrContext_shutdown(env, non_presenting_context_);
 }
 
-void GvrDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                               VRDeviceRequestSessionCallback callback) {
+void GvrDevice::RequestSession(
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntime::RequestSessionCallback callback) {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (!delegate_provider) {
     std::move(callback).Run(nullptr, nullptr);
     return;
   }
 
-  if (options.exclusive) {
+  if (options->exclusive) {
     // StartWebXRPresentation is async as we may trigger a DON (Device ON) flow
     // that pauses Chrome.
     delegate_provider->StartWebXRPresentation(
-        GetVRDisplayInfo(), options,
+        GetVRDisplayInfo(), std::move(options),
         base::BindOnce(&GvrDevice::OnRequestSessionResult,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   } else {
@@ -192,7 +195,7 @@ void GvrDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
 }
 
 void GvrDevice::OnRequestSessionResult(
-    VRDeviceRequestSessionCallback callback,
+    mojom::XRRuntime::RequestSessionCallback callback,
     mojom::XRPresentationConnectionPtr connection) {
   if (!connection) {
     std::move(callback).Run(nullptr, nullptr);
@@ -201,20 +204,33 @@ void GvrDevice::OnRequestSessionResult(
 
   OnStartPresenting();
 
-  std::move(callback).Run(std::move(connection), this);
+  mojom::XRSessionControllerPtr session_controller;
+  // Close the binding to ensure any previous sessions were closed.
+  // TODO(billorr): Only do this in OnPresentingControllerMojoConnectionError.
+  exclusive_controller_binding_.Close();
+  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+
+  // Unretained is safe because the error handler won't be called after the
+  // binding has been destroyed.
+  exclusive_controller_binding_.set_connection_error_handler(
+      base::BindOnce(&GvrDevice::OnPresentingControllerMojoConnectionError,
+                     base::Unretained(this)));
+
+  std::move(callback).Run(std::move(connection), std::move(session_controller));
 }
 
-// XrSessionController
+// XRSessionController
 void GvrDevice::SetFrameDataRestricted(bool restricted) {
   // Presentation sessions can not currently be restricted.
   DCHECK(false);
 }
 
-void GvrDevice::StopSession() {
+void GvrDevice::OnPresentingControllerMojoConnectionError() {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();
   OnExitPresent();
+  exclusive_controller_binding_.Close();
 }
 
 void GvrDevice::OnMagicWindowFrameDataRequest(

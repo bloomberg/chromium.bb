@@ -35,7 +35,7 @@ class VRDeviceManagerForTesting : public VRDeviceManager {
   }
 
   // Expose this test-only method as public for tests.
-  using VRDeviceManager::GetDevice;
+  using VRDeviceManager::GetRuntime;
 };
 
 class VRServiceImplForTesting : public VRServiceImpl {
@@ -118,24 +118,8 @@ TEST_F(VRDeviceManagerTest, GetNoDevicesTest) {
   EXPECT_TRUE(Provider()->Initialized());
 
   // GetDeviceByIndex should return nullptr if an invalid index in queried.
-  device::VRDevice* queried_device = DeviceManager()->GetDevice(1);
+  device::mojom::XRRuntime* queried_device = DeviceManager()->GetRuntime(1);
   EXPECT_EQ(nullptr, queried_device);
-}
-
-TEST_F(VRDeviceManagerTest, GetDevicesTest) {
-  device::FakeVRDevice* device1 = new device::FakeVRDevice(1);
-  Provider()->AddDevice(base::WrapUnique(device1));
-  // VRDeviceManager will query devices as a side effect.
-  auto service_1 = BindService();
-  // Should have successfully returned one device.
-  EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->GetId()));
-
-  device::FakeVRDevice* device2 = new device::FakeVRDevice(2);
-  Provider()->AddDevice(base::WrapUnique(device2));
-  auto service_2 = BindService();
-  // Querying the WebVRDevice index should return the correct device.
-  EXPECT_EQ(device1, DeviceManager()->GetDevice(device1->GetId()));
-  EXPECT_EQ(device2, DeviceManager()->GetDevice(device2->GetId()));
 }
 
 // Ensure that services are registered with the device manager as they are

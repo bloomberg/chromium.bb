@@ -33,7 +33,7 @@ class OpenVRRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   OpenVRRenderLoop(vr::IVRSystem* vr);
   ~OpenVRRenderLoop() override;
 
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
+  void RequestSession(mojom::XRDeviceRuntimeSessionOptionsPtr options,
                       RequestSessionCallback callback);
   void ExitPresent();
   base::WeakPtr<OpenVRRenderLoop> GetWeakPtr();

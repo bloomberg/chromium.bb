@@ -21,11 +21,14 @@ VROrientationDeviceProvider::VROrientationDeviceProvider(
 VROrientationDeviceProvider::~VROrientationDeviceProvider() = default;
 
 void VROrientationDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int, VRDevice*)> add_device_callback,
+    base::RepeatingCallback<void(unsigned int,
+                                 mojom::VRDisplayInfoPtr,
+                                 mojom::XRRuntimePtr)> add_device_callback,
     base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   if (device_ && device_->IsAvailable()) {
-    add_device_callback.Run(device_->GetId(), device_.get());
+    add_device_callback.Run(device_->GetId(), device_->GetVRDisplayInfo(),
+                            device_->BindXRRuntimePtr());
     return;
   }
 
@@ -51,7 +54,8 @@ void VROrientationDeviceProvider::DeviceInitialized() {
 
   // If the device successfully connected to the orientation APIs, provide it.
   if (device_->IsAvailable()) {
-    add_device_callback_.Run(device_->GetId(), device_.get());
+    add_device_callback_.Run(device_->GetId(), device_->GetVRDisplayInfo(),
+                             device_->BindXRRuntimePtr());
   }
 
   initialized_ = true;
