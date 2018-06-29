@@ -47,9 +47,11 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     # an interaction that lasts 20 milliseconds.
     cc_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
     cc_main.name = 'Compositor'
-    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 10, 10)
+    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 10, 10,
+        args={'step': 'GenerateCompositorFrame'})
     cc_main.EndSlice(11, 11)
-    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 12, 12)
+    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 12, 12,
+        args={'step': 'GenerateCompositorFrame'})
     cc_main.EndSlice(13, 13)
 
     # [      X       ]   [ Z ]
@@ -105,7 +107,8 @@ class ThreadTimesTimelineMetricUnittest(unittest.TestCase):
     # Create one frame swap.
     cc_main = model.GetOrCreateProcess(1).GetOrCreateThread(3)
     cc_main.name = 'Compositor'
-    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 10, 10)
+    cc_main.BeginSlice('cc_cat', timeline.FrameTraceName, 10, 10,
+        args={'step': 'GenerateCompositorFrame'})
     cc_main.EndSlice(11, 11)
 
     # [      X       ]
