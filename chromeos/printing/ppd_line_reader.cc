@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/strings/string_util.h"
+#include "net/base/completion_once_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/filter/gzip_header.h"
 #include "net/filter/gzip_source_stream.h"
@@ -44,7 +45,7 @@ class StringSourceStream : public net::SourceStream {
   // This source always reads sychronously, so never uses the callback.
   int Read(net::IOBuffer* dest_buffer,
            int buffer_size,
-           const net::CompletionCallback&) override {
+           net::CompletionOnceCallback) override {
     int read_size = src_.size() - read_ofs_;
     if (read_size > buffer_size) {
       read_size = buffer_size;

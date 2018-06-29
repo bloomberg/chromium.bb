@@ -63,9 +63,10 @@ class URLRequestJob::URLRequestJobSourceStream : public SourceStream {
   // SourceStream implementation:
   int Read(IOBuffer* dest_buffer,
            int buffer_size,
-           const CompletionCallback& callback) override {
+           CompletionOnceCallback callback) override {
     DCHECK(job_);
-    return job_->ReadRawDataHelper(dest_buffer, buffer_size, callback);
+    return job_->ReadRawDataHelper(dest_buffer, buffer_size,
+                                   std::move(callback));
   }
 
   std::string Description() const override { return std::string(); }
@@ -512,7 +513,7 @@ void URLRequestJob::ReadRawDataComplete(int result) {
   // Notify SourceStream.
   DCHECK(!read_raw_callback_.is_null());
 
-  base::ResetAndReturn(&read_raw_callback_).Run(result);
+  std::move(read_raw_callback_).Run(result);
   // |this| may be destroyed at this point.
 }
 
@@ -657,7 +658,7 @@ void URLRequestJob::SourceStreamReadComplete(bool synchronous, int result) {
 
 int URLRequestJob::ReadRawDataHelper(IOBuffer* buf,
                                      int buf_size,
-                                     const CompletionCallback& callback) {
+                                     CompletionOnceCallback callback) {
   DCHECK(!raw_read_buffer_);
 
   // Keep a pointer to the read buffer, so URLRequestJob::GatherRawReadStats()
@@ -673,7 +674,7 @@ int URLRequestJob::ReadRawDataHelper(IOBuffer* buf,
     // GatherRawReadStats so we can account for the completed read.
     GatherRawReadStats(result);
   } else {
-    read_raw_callback_ = callback;
+    read_raw_callback_ = std::move(callback);
   }
   return result;
 }

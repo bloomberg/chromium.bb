@@ -8,6 +8,7 @@
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
+#include "net/base/completion_once_callback.h"
 #include "net/filter/source_stream.h"
 
 namespace content {
@@ -19,7 +20,7 @@ class CONTENT_EXPORT DataPipeToSourceStream final : public net::SourceStream {
 
   int Read(net::IOBuffer* buf,
            int buf_size,
-           const net::CompletionCallback& callback) override;
+           net::CompletionOnceCallback callback) override;
   std::string Description() const override;
 
  private:
@@ -33,7 +34,7 @@ class CONTENT_EXPORT DataPipeToSourceStream final : public net::SourceStream {
 
   scoped_refptr<net::IOBuffer> output_buf_;
   int output_buf_size_ = 0;
-  net::CompletionCallback pending_callback_;
+  net::CompletionOnceCallback pending_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(DataPipeToSourceStream);
 };

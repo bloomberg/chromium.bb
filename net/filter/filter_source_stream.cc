@@ -4,6 +4,8 @@
 
 #include "net/filter/filter_source_stream.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/logging.h"
@@ -40,7 +42,7 @@ FilterSourceStream::~FilterSourceStream() = default;
 
 int FilterSourceStream::Read(IOBuffer* read_buffer,
                              int read_buffer_size,
-                             const CompletionCallback& callback) {
+                             CompletionOnceCallback callback) {
   DCHECK_EQ(STATE_NONE, next_state_);
   DCHECK(read_buffer);
   DCHECK_LT(0, read_buffer_size);
@@ -61,7 +63,7 @@ int FilterSourceStream::Read(IOBuffer* read_buffer,
   int rv = DoLoop(OK);
 
   if (rv == ERR_IO_PENDING)
-    callback_ = callback;
+    callback_ = std::move(callback);
   return rv;
 }
 
