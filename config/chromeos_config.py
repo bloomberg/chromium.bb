@@ -3478,6 +3478,21 @@ def FirmwareBuilders(site_config, boards_dict, ge_build_config):
       schedule='with 12h interval',
   )
 
+  site_config.AddWithoutTemplate(
+      'prototype-firmwarebranch',
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_unittest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=['samus'],
+      display_label=config_lib.DISPLAY_LABEL_FIRMWARE,
+      build_type=constants.GENERIC_TYPE,
+      builder_class_name='firmware_builders.FirmwareBranchBuilder',
+      build_timeout=60 * 60,
+      description='TOT builder to build a firmware branch.',
+      doc='https://goto.google.com/tot-for-firmware-branches',
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+  )
+
 
 def FactoryBuilders(site_config, boards_dict, ge_build_config):
   """Create all factory build configs.
