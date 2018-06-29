@@ -2414,6 +2414,18 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "app_shell_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "aura_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "base_unittests"
       },
       {
@@ -2520,6 +2532,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "chrome_elf_import_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "chrome_elf_unittests"
       },
       {
@@ -2549,6 +2567,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "components_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "compositor_unittests"
       },
       {
         "swarming": {
@@ -2723,6 +2747,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "install_static_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "installer_util_unittests"
       },
       {
@@ -2883,6 +2913,12 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
+        "test": "services_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
         "test": "setup_unittests"
       },
       {
@@ -2974,6 +3010,12 @@
           "can_use_on_swarming_builders": false
         },
         "test": "webkit_unit_tests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": false
+        },
+        "test": "wm_unittests"
       },
       {
         "swarming": {
