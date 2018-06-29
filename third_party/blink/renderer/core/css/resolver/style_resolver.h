@@ -133,8 +133,6 @@ class CORE_EXPORT StyleResolver final
     return style_not_yet_available_;
   }
 
-  PseudoElement* CreatePseudoElementIfNeeded(Element& parent, PseudoId);
-
   void SetRuleUsageTracker(StyleRuleUsageTracker*);
   void UpdateMediaType();
 
