@@ -35,7 +35,7 @@ using ActiveAccountAccessTokenCallback =
 // "active Gaia account is context-dependent": the purpose of this abstraction
 // layer is to allow invalidation to interact with either device identity or
 // user identity via a uniform interface.
-class IdentityProvider : public OAuth2TokenService::Observer {
+class IdentityProvider {
  public:
   class Observer {
    public:
@@ -60,7 +60,7 @@ class IdentityProvider : public OAuth2TokenService::Observer {
     virtual ~Observer();
   };
 
-  ~IdentityProvider() override;
+  virtual ~IdentityProvider();
 
   // Gets the active account's account ID.
   virtual std::string GetActiveAccountId() = 0;
@@ -85,17 +85,16 @@ class IdentityProvider : public OAuth2TokenService::Observer {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
-  // OAuth2TokenService::Observer:
-  void OnRefreshTokenAvailable(const std::string& account_id) override;
-  void OnRefreshTokenRevoked(const std::string& account_id) override;
-
  protected:
   IdentityProvider();
 
-  // DEPRECATED: Do not add further usage of this API, as it is in the process
-  // of being removed. See https://crbug.com/809452.
-  // Gets the token service vending OAuth tokens for all logged-in accounts.
-  virtual OAuth2TokenService* GetTokenService() = 0;
+  // Processes a refresh token update, firing the observer callback if
+  // |account_id| is the active account.
+  void ProcessRefreshTokenUpdateForAccount(const std::string& account_id);
+
+  // Processes a refresh token removal, firing the observer callback if
+  // |account_id| is the active account.
+  void ProcessRefreshTokenRemovalForAccount(const std::string& account_id);
 
   // Fires an OnActiveAccountLogin notification.
   void FireOnActiveAccountLogin();
@@ -105,14 +104,6 @@ class IdentityProvider : public OAuth2TokenService::Observer {
 
  private:
   base::ObserverList<Observer, true> observers_;
-
-  // Tracks the number of observers in order to allow for adding/removing this
-  // object as an observer of GetTokenService() when the observer count flips
-  // from/to 0. This is necessary because GetTokenService() is a pure virtual
-  // method and cannot be called in the destructor of this object.
-  // TODO(809452): Push observing of the token service into the subclasses of
-  // this class.
-  int num_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(IdentityProvider);
 };

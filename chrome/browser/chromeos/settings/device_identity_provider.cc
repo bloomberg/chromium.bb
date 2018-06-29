@@ -11,9 +11,17 @@ namespace chromeos {
 
 DeviceIdentityProvider::DeviceIdentityProvider(
     chromeos::DeviceOAuth2TokenService* token_service)
-    : token_service_(token_service) {}
+    : token_service_(token_service) {
+  // TODO(blundell): Can |token_service_| ever actually be non-null?
+  if (token_service_)
+    token_service_->AddObserver(this);
+}
 
-DeviceIdentityProvider::~DeviceIdentityProvider() {}
+DeviceIdentityProvider::~DeviceIdentityProvider() {
+  // TODO(blundell): Can |token_service_| ever actually be non-null?
+  if (token_service_)
+    token_service_->RemoveObserver(this);
+}
 
 std::string DeviceIdentityProvider::GetActiveAccountId() {
   return token_service_->GetRobotAccountId();
@@ -44,8 +52,14 @@ void DeviceIdentityProvider::InvalidateAccessToken(
                                         access_token);
 }
 
-OAuth2TokenService* DeviceIdentityProvider::GetTokenService() {
-  return token_service_;
+void DeviceIdentityProvider::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  ProcessRefreshTokenUpdateForAccount(account_id);
+}
+
+void DeviceIdentityProvider::OnRefreshTokenRevoked(
+    const std::string& account_id) {
+  ProcessRefreshTokenRemovalForAccount(account_id);
 }
 
 }  // namespace chromeos

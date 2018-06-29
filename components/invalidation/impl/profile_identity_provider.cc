@@ -13,18 +13,23 @@ ProfileIdentityProvider::ProfileIdentityProvider(
     SigninManagerBase* signin_manager,
     ProfileOAuth2TokenService* token_service)
     : signin_manager_(signin_manager), token_service_(token_service) {
+  // TODO(blundell): Can |token_service_| ever actually be non-null?
+  if (token_service_)
+    token_service_->AddObserver(this);
   signin_manager_->AddObserver(this);
 }
 
 ProfileIdentityProvider::~ProfileIdentityProvider() {
+  // TODO(blundell): Can |token_service_| ever actually be non-null?
+  if (token_service_)
+    token_service_->RemoveObserver(this);
+
   // In unittests |signin_manager_| is allowed to be null.
   // TODO(809452): Eliminate this short-circuit when this class is converted to
   // take in IdentityManager, at which point the tests can use
   // IdentityTestEnvironment.
-  if (!signin_manager_)
-    return;
-
-  signin_manager_->RemoveObserver(this);
+  if (signin_manager_)
+    signin_manager_->RemoveObserver(this);
 }
 
 std::string ProfileIdentityProvider::GetActiveAccountId() {
@@ -63,10 +68,6 @@ void ProfileIdentityProvider::InvalidateAccessToken(
                                         access_token);
 }
 
-OAuth2TokenService* ProfileIdentityProvider::GetTokenService() {
-  return token_service_;
-}
-
 void ProfileIdentityProvider::GoogleSigninSucceeded(
     const std::string& account_id,
     const std::string& username) {
@@ -76,6 +77,16 @@ void ProfileIdentityProvider::GoogleSigninSucceeded(
 void ProfileIdentityProvider::GoogleSignedOut(const std::string& account_id,
                                               const std::string& username) {
   FireOnActiveAccountLogout();
+}
+
+void ProfileIdentityProvider::OnRefreshTokenAvailable(
+    const std::string& account_id) {
+  ProcessRefreshTokenUpdateForAccount(account_id);
+}
+
+void ProfileIdentityProvider::OnRefreshTokenRevoked(
+    const std::string& account_id) {
+  ProcessRefreshTokenRemovalForAccount(account_id);
 }
 
 }  // namespace invalidation
