@@ -35,7 +35,6 @@
 
 namespace media {
 class AndroidVideoSurfaceChooser;
-class UnalignedSharedMemory;
 class PromotionHintAggregator;
 
 // A VideoDecodeAccelerator implementation for Android. This class decodes the
@@ -305,8 +304,8 @@ class MEDIA_GPU_EXPORT AndroidVideoDecodeAccelerator
 
     BitstreamBuffer buffer;
 
-    // |memory| is not mapped, and may be null if buffer has no data.
-    std::unique_ptr<UnalignedSharedMemory> memory;
+    // |memory| may be null if buffer has no data.
+    std::unique_ptr<WritableUnalignedMapping> memory;
   };
 
   // Encoded bitstream buffers to be passed to media codec, queued until an
