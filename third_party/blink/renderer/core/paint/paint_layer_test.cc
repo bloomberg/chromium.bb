@@ -1260,7 +1260,7 @@ TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
 TEST_P(PaintLayerTest, FrameViewContentSize) {
   SetBodyInnerHTML(
       "<style> body { width: 1200px; height: 900px; margin: 0 } </style>");
-  EXPECT_EQ(IntSize(800, 600), GetDocument().View()->ContentsSize());
+  EXPECT_EQ(IntSize(800, 600), GetDocument().View()->Size());
 }
 
 TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {

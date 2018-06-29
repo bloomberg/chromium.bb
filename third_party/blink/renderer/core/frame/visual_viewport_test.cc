@@ -373,7 +373,8 @@ TEST_P(VisualViewportTest, TestResizeAfterHorizontalScroll) {
   // After resizing the scale changes 2.0 -> 4.0
   EXPECT_FLOAT_SIZE_EQ(FloatSize(50, 25), visual_viewport.VisibleRect().Size());
 
-  EXPECT_EQ(ScrollOffset(0, 0), GetFrame()->View()->GetScrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 0),
+            GetFrame()->View()->LayoutViewport()->GetScrollOffset());
   EXPECT_FLOAT_SIZE_EQ(FloatSize(150, 0), visual_viewport.GetScrollOffset());
 }
 

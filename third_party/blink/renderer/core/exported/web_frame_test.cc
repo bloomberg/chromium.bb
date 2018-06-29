@@ -1612,12 +1612,12 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidth) {
   EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
                                 ->MainFrameImpl()
                                 ->GetFrameView()
-                                ->ContentsSize()
+                                ->Size()
                                 .Width());
   EXPECT_EQ(viewport_height, web_view_helper.GetWebView()
                                  ->MainFrameImpl()
                                  ->GetFrameView()
-                                 ->ContentsSize()
+                                 ->Size()
                                  .Height());
 }
 
@@ -1644,12 +1644,12 @@ TEST_F(WebFrameTest, NoWideViewportIgnoresPageViewportWidthButAccountsScale) {
   EXPECT_EQ(viewport_width / 2, web_view_helper.GetWebView()
                                     ->MainFrameImpl()
                                     ->GetFrameView()
-                                    ->ContentsSize()
+                                    ->Size()
                                     .Width());
   EXPECT_EQ(viewport_height / 2, web_view_helper.GetWebView()
                                      ->MainFrameImpl()
                                      ->GetFrameView()
-                                     ->ContentsSize()
+                                     ->Size()
                                      .Height());
 }
 
@@ -1705,12 +1705,12 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithXhtmlMp) {
   EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
                                 ->MainFrameImpl()
                                 ->GetFrameView()
-                                ->ContentsSize()
+                                ->Size()
                                 .Width());
   EXPECT_EQ(viewport_height, web_view_helper.GetWebView()
                                  ->MainFrameImpl()
                                  ->GetFrameView()
-                                 ->ContentsSize()
+                                 ->Size()
                                  .Height());
 }
 
@@ -1734,7 +1734,7 @@ TEST_F(WebFrameTest, NoWideViewportAndHeightInMeta) {
   EXPECT_EQ(viewport_width, web_view_helper.GetWebView()
                                 ->MainFrameImpl()
                                 ->GetFrameView()
-                                ->ContentsSize()
+                                ->Size()
                                 .Width());
 }
 
@@ -1758,13 +1758,13 @@ TEST_F(WebFrameTest, WideViewportSetsTo980WithAutoWidth) {
   EXPECT_EQ(980, web_view_helper.GetWebView()
                      ->MainFrameImpl()
                      ->GetFrameView()
-                     ->ContentsSize()
+                     ->Size()
                      .Width());
   EXPECT_EQ(980.0 / viewport_width * viewport_height,
             web_view_helper.GetWebView()
                 ->MainFrameImpl()
                 ->GetFrameView()
-                ->ContentsSize()
+                ->Size()
                 .Height());
 }
 
@@ -1928,7 +1928,7 @@ TEST_F(WebFrameTest, PermanentInitialPageScaleFactorAffectsLayoutWidth) {
             web_view_helper.GetWebView()
                 ->MainFrameImpl()
                 ->GetFrameView()
-                ->ContentsSize()
+                ->Size()
                 .Width());
   EXPECT_EQ(enforced_page_scale_factor,
             web_view_helper.GetWebView()->PageScaleFactor());
@@ -2222,8 +2222,8 @@ TEST_F(WebFrameTest, FrameOwnerPropertiesScrolling) {
 
   LocalFrameView* frame_view =
       static_cast<WebLocalFrameImpl*>(local_frame)->GetFrameView();
-  EXPECT_EQ(nullptr, frame_view->HorizontalScrollbar());
-  EXPECT_EQ(nullptr, frame_view->VerticalScrollbar());
+  EXPECT_EQ(nullptr, frame_view->LayoutViewport()->HorizontalScrollbar());
+  EXPECT_EQ(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 }
 
 TEST_F(WebFrameTest, SetForceZeroLayoutHeightWorksAcrossNavigations) {
@@ -2471,8 +2471,9 @@ TEST_F(WebFrameTest, OverflowHiddenDisablesScrolling) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
-  EXPECT_FALSE(view->UserInputScrollable(kVerticalScrollbar));
-  EXPECT_FALSE(view->UserInputScrollable(kHorizontalScrollbar));
+  EXPECT_FALSE(view->LayoutViewport()->UserInputScrollable(kVerticalScrollbar));
+  EXPECT_FALSE(
+      view->LayoutViewport()->UserInputScrollable(kHorizontalScrollbar));
 }
 
 TEST_F(WebFrameTest, OverflowHiddenDisablesScrollingWithSetCanHaveScrollbars) {
@@ -2490,12 +2491,14 @@ TEST_F(WebFrameTest, OverflowHiddenDisablesScrollingWithSetCanHaveScrollbars) {
   web_view_helper.Resize(WebSize(viewport_width, viewport_height));
 
   LocalFrameView* view = web_view_helper.LocalMainFrame()->GetFrameView();
-  EXPECT_FALSE(view->UserInputScrollable(kVerticalScrollbar));
-  EXPECT_FALSE(view->UserInputScrollable(kHorizontalScrollbar));
+  EXPECT_FALSE(view->LayoutViewport()->UserInputScrollable(kVerticalScrollbar));
+  EXPECT_FALSE(
+      view->LayoutViewport()->UserInputScrollable(kHorizontalScrollbar));
 
   web_view_helper.LocalMainFrame()->SetCanHaveScrollbars(true);
-  EXPECT_FALSE(view->UserInputScrollable(kVerticalScrollbar));
-  EXPECT_FALSE(view->UserInputScrollable(kHorizontalScrollbar));
+  EXPECT_FALSE(view->LayoutViewport()->UserInputScrollable(kVerticalScrollbar));
+  EXPECT_FALSE(
+      view->LayoutViewport()->UserInputScrollable(kHorizontalScrollbar));
 }
 
 TEST_F(WebFrameTest, IgnoreOverflowHiddenQuirk) {
@@ -2680,12 +2683,12 @@ TEST_F(WebFrameTest, pageScaleFactorDoesntShrinkFrameView) {
   int viewport_width_minus_scrollbar = viewport_width;
   int viewport_height_minus_scrollbar = viewport_height;
 
-  if (view->VerticalScrollbar() &&
-      !view->VerticalScrollbar()->IsOverlayScrollbar())
+  if (view->LayoutViewport()->VerticalScrollbar() &&
+      !view->LayoutViewport()->VerticalScrollbar()->IsOverlayScrollbar())
     viewport_width_minus_scrollbar -= 15;
 
-  if (view->HorizontalScrollbar() &&
-      !view->HorizontalScrollbar()->IsOverlayScrollbar())
+  if (view->LayoutViewport()->HorizontalScrollbar() &&
+      !view->LayoutViewport()->HorizontalScrollbar()->IsOverlayScrollbar())
     viewport_height_minus_scrollbar -= 15;
 
   web_view_helper.GetWebView()->SetPageScaleFactor(2);
@@ -3421,14 +3424,10 @@ void SetScaleAndScrollAndLayout(WebViewImpl* web_view,
 }
 
 void SimulatePageScale(WebViewImpl* web_view_impl, float& scale) {
-  ScrollOffset scroll_delta =
-      ToScrollOffset(
-          web_view_impl->FakePageScaleAnimationTargetPositionForTesting()) -
-      web_view_impl->MainFrameImpl()->GetFrameView()->GetScrollOffset();
   float scale_delta =
       web_view_impl->FakePageScaleAnimationPageScaleForTesting() /
       web_view_impl->PageScaleFactor();
-  web_view_impl->ApplyViewportDeltas(WebFloatSize(), FloatSize(scroll_delta),
+  web_view_impl->ApplyViewportDeltas(WebFloatSize(), WebFloatSize(),
                                      WebFloatSize(), scale_delta, 0);
   scale = web_view_impl->PageScaleFactor();
 }

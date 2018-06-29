@@ -2321,6 +2321,7 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()
                    ->GetFrameView()
+                   ->LayoutViewport()
                    ->MaximumScrollOffset()
                    .Height());
 
@@ -2361,6 +2362,7 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()
                    ->GetFrameView()
+                   ->LayoutViewport()
                    ->MaximumScrollOffset()
                    .Height());
 
@@ -2376,6 +2378,7 @@ TEST_F(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()->GetScrollOffset().height);
   ASSERT_EQ(0, web_view_impl->MainFrameImpl()
                    ->GetFrameView()
+                   ->LayoutViewport()
                    ->MaximumScrollOffset()
                    .Height());
 
@@ -4926,7 +4929,7 @@ TEST_F(WebViewTest, DeviceEmulationResetScrollbars) {
 
   // The visual viewport should now proivde the scrollbars instead of the view.
   EXPECT_TRUE(frame_view->VisualViewportSuppliesScrollbars());
-  EXPECT_EQ(nullptr, frame_view->VerticalScrollbar());
+  EXPECT_EQ(nullptr, frame_view->LayoutViewport()->VerticalScrollbar());
 
   web_view->DisableDeviceEmulation();
 

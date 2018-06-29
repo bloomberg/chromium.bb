@@ -1010,7 +1010,7 @@ TEST_P(ScrollingCoordinatorTest, IframeWindowTouchHandler) {
     EXPECT_EQ(child_graphics_layer->Size(),
               IntSize(region_child_frame.bounds().size()));
   } else {
-    EXPECT_EQ(child_frame->GetFrameView()->ContentsSize(),
+    EXPECT_EQ(child_frame->GetFrameView()->Size(),
               IntRect(region_child_frame.bounds()).Size());
   }
 }
