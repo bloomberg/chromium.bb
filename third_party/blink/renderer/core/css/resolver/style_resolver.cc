@@ -838,6 +838,10 @@ PseudoElement* StyleResolver::CreatePseudoElementIfNeeded(Element& parent,
     return nullptr;
   scoped_refptr<ComputedStyle> style = state.TakeStyle();
   DCHECK(style);
+  style->UpdateIsStackingContext(
+      false /* is_document_element */,
+      pseudo_id == kPseudoIdBackdrop /* is_in_top_layer */,
+      false /* is_svg_stacking */);
   parent_style->AddCachedPseudoStyle(style);
 
   if (!PseudoElementLayoutObjectIsNeeded(style.get()))
