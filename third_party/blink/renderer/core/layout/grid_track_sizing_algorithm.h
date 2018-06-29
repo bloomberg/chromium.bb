@@ -100,9 +100,7 @@ class GridTrackSizingAlgorithm final {
   LayoutUnit MinContentSize() const { return min_content_size_; };
   LayoutUnit MaxContentSize() const { return max_content_size_; };
 
-  void ComputeBaselineAlignmentContext();
   LayoutUnit BaselineOffsetForChild(const LayoutBox&, GridAxis) const;
-  void ClearBaselineAlignment();
 
   LayoutSize EstimatedGridAreaBreadthForChild(const LayoutBox& child) const;
 
@@ -157,7 +155,7 @@ class GridTrackSizingAlgorithm final {
   LayoutUnit GridAreaBreadthForChild(const LayoutBox&,
                                      GridTrackSizingDirection) const;
 
-  void UpdateBaselineAlignmentContext(LayoutBox&);
+  void ComputeBaselineAlignmentContext();
   void UpdateBaselineAlignmentContext(LayoutBox&, GridAxis);
   bool CanParticipateInBaselineAlignment(const LayoutBox&, GridAxis) const;
 

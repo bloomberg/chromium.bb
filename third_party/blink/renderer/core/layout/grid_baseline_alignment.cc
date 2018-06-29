@@ -160,9 +160,11 @@ LayoutUnit GridBaselineAlignment::BaselineOffsetForChild(
   return LayoutUnit();
 }
 
-void GridBaselineAlignment::Clear() {
-  row_axis_alignment_context_.clear();
-  col_axis_alignment_context_.clear();
+void GridBaselineAlignment::Clear(GridAxis baseline_axis) {
+  if (baseline_axis == kGridColumnAxis)
+    row_axis_alignment_context_.clear();
+  else
+    col_axis_alignment_context_.clear();
 }
 
 BaselineGroup::BaselineGroup(WritingMode block_flow,

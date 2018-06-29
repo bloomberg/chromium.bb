@@ -242,11 +242,15 @@ LayoutUnit GridTrackSizingAlgorithm::GridAreaBreadthForChild(
 
 bool GridTrackSizingAlgorithm::IsIntrinsicSizedGridArea(const LayoutBox& child,
                                                         GridAxis axis) const {
+  DCHECK(WasSetup());
   GridTrackSizingDirection direction = GridDirectionForAxis(axis);
   const GridSpan& span = grid_.GridItemSpan(child, direction);
   for (const auto& track_position : span) {
     GridTrackSize track_size = RawGridTrackSize(direction, track_position);
+    // We consider fr units as 'auto' for the min sizing function.
+    // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/2611
     if (track_size.IsContentSized() || track_size.IsFitContent() ||
+        track_size.MinTrackBreadth().IsFlex() ||
         (track_size.MaxTrackBreadth().IsFlex() && !FreeSpace(direction)))
       return true;
   }
@@ -436,6 +440,7 @@ bool GridTrackSizingAlgorithm::CanParticipateInBaselineAlignment(
 void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContext(
     LayoutBox& child,
     GridAxis baseline_axis) {
+  DCHECK(WasSetup());
   DCHECK(CanParticipateInBaselineAlignment(child, baseline_axis));
   DCHECK(!child.NeedsLayout());
 
@@ -459,11 +464,6 @@ LayoutUnit GridTrackSizingAlgorithm::BaselineOffsetForChild(
       grid_.GridItemSpan(child, GridDirectionForAxis(baseline_axis));
   return baseline_alignment_.BaselineOffsetForChild(align, span.StartLine(),
                                                     child, baseline_axis);
-}
-
-void GridTrackSizingAlgorithm::ClearBaselineAlignment() {
-  baseline_alignment_.Clear();
-  baseline_alignment_.SetBlockFlow(layout_grid_->StyleRef().GetWritingMode());
 }
 
 LayoutUnit GridTrackSizingAlgorithmStrategy::ComputeTrackBasedSize() const {
@@ -837,6 +837,8 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // Flex sizes are invalid as a min sizing function. However we still can have
   // a flexible |minTrackBreadth| if the track had a flex size directly (e.g.
   // "1fr"), the spec says that in this case it implies an automatic minimum.
+  // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/2611
+  // TODO(jfernandez): We may have to change IsIntrinsicSizedGridArea too.
   if (min_track_breadth.IsFlex())
     min_track_breadth = Length(kAuto);
 
@@ -1571,30 +1573,22 @@ void GridTrackSizingAlgorithm::Setup(
   }
   Tracks(direction).resize(num_tracks);
 
+  ComputeBaselineAlignmentContext();
+
   needs_setup_ = false;
 }
 
-void GridTrackSizingAlgorithm::UpdateBaselineAlignmentContext(
-    LayoutBox& child) {
-  bool can_participate_in_row_axis_baseline =
-      CanParticipateInBaselineAlignment(child, kGridRowAxis);
-  bool can_participate_in_column_axis_baseline =
-      CanParticipateInBaselineAlignment(child, kGridColumnAxis);
-  if (!can_participate_in_row_axis_baseline &&
-      !can_participate_in_column_axis_baseline)
-    return;
-
-  if (can_participate_in_row_axis_baseline)
-    UpdateBaselineAlignmentContext(child, kGridRowAxis);
-  if (can_participate_in_column_axis_baseline)
-    UpdateBaselineAlignmentContext(child, kGridColumnAxis);
-}
-
 void GridTrackSizingAlgorithm::ComputeBaselineAlignmentContext() {
-  ClearBaselineAlignment();
+  if (sizing_state_ > kRowSizingFirstIteration)
+    return;
+  GridAxis axis = GridAxisForDirection(direction_);
+  baseline_alignment_.Clear(axis);
+  baseline_alignment_.SetBlockFlow(layout_grid_->StyleRef().GetWritingMode());
   for (auto* child = layout_grid_->FirstInFlowChildBox(); child;
-       child = child->NextInFlowSiblingBox())
-    UpdateBaselineAlignmentContext(*child);
+       child = child->NextInFlowSiblingBox()) {
+    if (CanParticipateInBaselineAlignment(*child, axis))
+      UpdateBaselineAlignmentContext(*child, axis);
+  }
 }
 
 // Described in https://drafts.csswg.org/css-grid/#algo-track-sizing
