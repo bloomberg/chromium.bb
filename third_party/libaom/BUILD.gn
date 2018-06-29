@@ -75,12 +75,6 @@ if (enable_av1_decoder) {
       sources += aom_dsp_common_asm_ssse3
       sources += aom_ports_asm_x86
       defines = [ "CHROMIUM" ]
-      if (is_android) {
-        # TODO(johannkoenig): this was for vp8 assembly. May no longer apply.
-        # On Android, define __ANDROID__ to use alternative standard library
-        # functions.
-        defines += [ "__ANDROID__" ]
-      }
       include_dirs = libaom_include_dirs
     }
 
