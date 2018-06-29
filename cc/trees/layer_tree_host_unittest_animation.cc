@@ -191,7 +191,7 @@ class LayerTreeHostAnimationTestAddKeyframeModel
     KeyframeModel* keyframe_model =
         animation_->GetKeyframeModel(TargetProperty::OPACITY);
     if (keyframe_model)
-      animation_->RemoveKeyframeModel(keyframe_model->id());
+      animation_->RemoveKeyframeModels();
 
     EndTest();
   }
@@ -429,7 +429,7 @@ class LayerTreeHostAnimationTestSynchronizeAnimationStartTimes
     KeyframeModel* keyframe_model =
         animation_child_->GetKeyframeModel(TargetProperty::OPACITY);
     main_start_time_ = keyframe_model->start_time();
-    animation_child_->RemoveKeyframeModel(keyframe_model->id());
+    animation_child_->RemoveKeyframeModels();
     EndTest();
   }
 
@@ -480,7 +480,7 @@ class LayerTreeHostAnimationTestAnimationFinishedEvents
     KeyframeModel* keyframe_model =
         animation_->GetKeyframeModel(TargetProperty::OPACITY);
     if (keyframe_model)
-      animation_->RemoveKeyframeModel(keyframe_model->id());
+      animation_->RemoveKeyframeModels();
     EndTest();
   }
 
@@ -520,9 +520,7 @@ class LayerTreeHostAnimationTestDoNotSkipLayersWithAnimatedOpacity
         static_cast<SingleKeyframeEffectAnimation*>(
             timeline_impl->GetAnimationById(animation_id_));
 
-    KeyframeModel* keyframe_model_impl =
-        animation_impl->GetKeyframeModel(TargetProperty::OPACITY);
-    animation_impl->RemoveKeyframeModel(keyframe_model_impl->id());
+    animation_impl->RemoveKeyframeModels();
     EndTest();
   }
 
@@ -1128,9 +1126,7 @@ class LayerTreeHostAnimationTestScrollOffsetAnimationRemoval
       case 1: {
         EXPECT_GE(scroll_layer_->CurrentScrollOffset().x(), 100);
         EXPECT_GE(scroll_layer_->CurrentScrollOffset().y(), 200);
-        KeyframeModel* keyframe_model =
-            animation_child_->GetKeyframeModel(TargetProperty::SCROLL_OFFSET);
-        animation_child_->RemoveKeyframeModel(keyframe_model->id());
+        animation_child_->RemoveKeyframeModels();
         scroll_layer_->SetScrollOffset(final_postion_);
         break;
       }
@@ -1296,9 +1292,12 @@ class LayerTreeHostAnimationTestAnimationsAddedToNewAndExistingLayers
     EXPECT_EQ(KeyframeModel::RUNNING, child_keyframe_model->run_state());
     EXPECT_EQ(root_keyframe_model->start_time(),
               child_keyframe_model->start_time());
-    animation_impl->AbortKeyframeModels(TargetProperty::OPACITY, false);
-    animation_impl->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
-    animation_child_impl->AbortKeyframeModels(TargetProperty::OPACITY, false);
+    animation_impl->AbortKeyframeModelsWithProperty(TargetProperty::OPACITY,
+                                                    false);
+    animation_impl->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                    false);
+    animation_child_impl->AbortKeyframeModelsWithProperty(
+        TargetProperty::OPACITY, false);
     EndTest();
   }
 
@@ -1376,7 +1375,8 @@ class LayerTreeHostAnimationTestPendingTreeAnimatesFirstCommit
     // And the sync tree layer should know it is animating.
     EXPECT_TRUE(child->screen_space_transform_is_animating());
 
-    animation_impl->AbortKeyframeModels(TargetProperty::TRANSFORM, false);
+    animation_impl->AbortKeyframeModelsWithProperty(TargetProperty::TRANSFORM,
+                                                    false);
     EndTest();
   }
 
@@ -1590,9 +1590,7 @@ class LayerTreeHostAnimationTestRemoveKeyframeModel
         AddAnimatedTransformToAnimation(animation_child_.get(), 1.0, 5, 5);
         break;
       case 2:
-        KeyframeModel* keyframe_model =
-            animation_child_->GetKeyframeModel(TargetProperty::TRANSFORM);
-        animation_child_->RemoveKeyframeModel(keyframe_model->id());
+        animation_child_->RemoveKeyframeModels();
         gfx::Transform transform;
         transform.Translate(10.f, 10.f);
         layer_->SetTransform(transform);
@@ -1692,9 +1690,7 @@ class LayerTreeHostAnimationTestIsAnimating
         AddAnimatedTransformToAnimation(animation_.get(), 1.0, 5, 5);
         break;
       case 2:
-        KeyframeModel* keyframe_model =
-            animation_->GetKeyframeModel(TargetProperty::TRANSFORM);
-        animation_->RemoveKeyframeModel(keyframe_model->id());
+        animation_->RemoveKeyframeModels();
         break;
     }
   }

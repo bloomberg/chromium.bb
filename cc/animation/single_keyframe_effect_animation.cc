@@ -72,20 +72,16 @@ void SingleKeyframeEffectAnimation::AddKeyframeModel(
                                     GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimation::PauseKeyframeModel(int keyframe_model_id,
-                                                       double time_offset) {
-  PauseKeyframeModelForKeyframeEffect(keyframe_model_id, time_offset,
-                                      GetKeyframeEffect()->id());
+void SingleKeyframeEffectAnimation::RemoveKeyframeModels() {
+  RemoveKeyframeModelsForKeyframeEffect(GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimation::RemoveKeyframeModel(int keyframe_model_id) {
-  RemoveKeyframeModelForKeyframeEffect(keyframe_model_id,
-                                       GetKeyframeEffect()->id());
+void SingleKeyframeEffectAnimation::PauseKeyframeEffect(double time_offset) {
+  Animation::PauseKeyframeEffect(time_offset, GetKeyframeEffect()->id());
 }
 
-void SingleKeyframeEffectAnimation::AbortKeyframeModel(int keyframe_model_id) {
-  AbortKeyframeModelForKeyframeEffect(keyframe_model_id,
-                                      GetKeyframeEffect()->id());
+void SingleKeyframeEffectAnimation::AbortKeyframeEffect() {
+  Animation::AbortKeyframeEffect(GetKeyframeEffect()->id());
 }
 
 bool SingleKeyframeEffectAnimation::NotifyKeyframeModelFinishedForTesting(

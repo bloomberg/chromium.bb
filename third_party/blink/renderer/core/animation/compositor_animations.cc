@@ -367,9 +367,7 @@ void CompositorAnimations::StartAnimationOnCompositor(
     const Animation* animation,
     CompositorAnimation& compositor_animation,
     const EffectModel& effect,
-    Vector<int>& started_keyframe_model_ids,
     double animation_playback_rate) {
-  DCHECK(started_keyframe_model_ids.IsEmpty());
   DCHECK(CheckCanStartAnimationOnCompositor(timing, element, animation, effect,
                                             animation_playback_rate)
              .Ok());
@@ -382,18 +380,13 @@ void CompositorAnimations::StartAnimationOnCompositor(
                            keyframe_effect, keyframe_models,
                            animation_playback_rate);
   DCHECK(!keyframe_models.IsEmpty());
-  for (auto& compositor_keyframe_model : keyframe_models) {
-    int id = compositor_keyframe_model->Id();
+  for (auto& compositor_keyframe_model : keyframe_models)
     compositor_animation.AddKeyframeModel(std::move(compositor_keyframe_model));
-    started_keyframe_model_ids.push_back(id);
-  }
-  DCHECK(!started_keyframe_model_ids.IsEmpty());
 }
 
 void CompositorAnimations::CancelAnimationOnCompositor(
     const Element& element,
-    CompositorAnimation* compositor_animation,
-    int id) {
+    CompositorAnimation* compositor_animation) {
   if (!CheckCanStartElementOnCompositor(element).Ok()) {
     // When an element is being detached, we cancel any associated
     // Animations for CSS animations. But by the time we get
@@ -403,13 +396,12 @@ void CompositorAnimations::CancelAnimationOnCompositor(
     return;
   }
   if (compositor_animation)
-    compositor_animation->RemoveKeyframeModel(id);
+    compositor_animation->RemoveKeyframeModels();
 }
 
 void CompositorAnimations::PauseAnimationForTestingOnCompositor(
     const Element& element,
     const Animation& animation,
-    int id,
     double pause_time) {
   // FIXME: CheckCanStartAnimationOnCompositor queries compositingState, which
   // is not necessarily up to date.
@@ -420,7 +412,7 @@ void CompositorAnimations::PauseAnimationForTestingOnCompositor(
   CompositorAnimation* compositor_animation =
       animation.GetCompositorAnimation();
   DCHECK(compositor_animation);
-  compositor_animation->PauseKeyframeModel(id, pause_time);
+  compositor_animation->PauseKeyframeEffect(pause_time);
 }
 
 void CompositorAnimations::AttachCompositedLayers(

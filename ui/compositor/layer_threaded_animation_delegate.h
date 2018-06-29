@@ -15,9 +15,9 @@ namespace ui {
 // Attach CC keyframe_models using this interface.
 class COMPOSITOR_EXPORT LayerThreadedAnimationDelegate {
  public:
-  virtual void AddThreadedAnimation(
+  virtual void AddThreadedKeyframeModel(
       std::unique_ptr<cc::KeyframeModel> keyframe_model) = 0;
-  virtual void RemoveThreadedAnimation(int keyframe_model_id) = 0;
+  virtual void RemoveThreadedKeyframeModels() = 0;
 
  protected:
   virtual ~LayerThreadedAnimationDelegate() {}

@@ -9,7 +9,8 @@
 
 namespace ui {
 
-TestLayerThreadedAnimationDelegate::TestLayerThreadedAnimationDelegate() {}
+TestLayerThreadedAnimationDelegate::TestLayerThreadedAnimationDelegate()
+    : number_of_remove_threaded_keyframe_models_calls_(0) {}
 
 TestLayerThreadedAnimationDelegate::~TestLayerThreadedAnimationDelegate() {}
 
@@ -171,10 +172,11 @@ void TestLayerAnimationDelegate::CreateCcLayer() {
   cc_layer_ = cc::Layer::Create();
 }
 
-void TestLayerThreadedAnimationDelegate::AddThreadedAnimation(
+void TestLayerThreadedAnimationDelegate::AddThreadedKeyframeModel(
     std::unique_ptr<cc::KeyframeModel> keyframe_model) {}
 
-void TestLayerThreadedAnimationDelegate::RemoveThreadedAnimation(
-    int keyframe_model_id) {}
+void TestLayerThreadedAnimationDelegate::RemoveThreadedKeyframeModels() {
+  ++number_of_remove_threaded_keyframe_models_calls_;
+}
 
 }  // namespace ui

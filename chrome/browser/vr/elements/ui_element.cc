@@ -319,7 +319,7 @@ void UiElement::SetVisible(bool visible) {
 
 void UiElement::SetVisibleImmediately(bool visible) {
   opacity_ = visible ? opacity_when_visible_ : 0.0;
-  animation_.RemoveKeyframeModels(OPACITY);
+  animation_.RemoveKeyframeModelsWithProperty(OPACITY);
 }
 
 bool UiElement::IsVisible() const {
@@ -807,12 +807,12 @@ void UiElement::AddKeyframeModel(
   animation_.AddKeyframeModel(std::move(keyframe_model));
 }
 
-void UiElement::RemoveKeyframeModel(int keyframe_model_id) {
-  animation_.RemoveKeyframeModel(keyframe_model_id);
+void UiElement::RemoveKeyframeModels() {
+  animation_.RemoveKeyframeModels();
 }
 
-void UiElement::RemoveKeyframeModels(int target_property) {
-  animation_.RemoveKeyframeModels(target_property);
+void UiElement::RemoveKeyframeModelsWithProperty(int target_property) {
+  animation_.RemoveKeyframeModelsWithProperty(target_property);
 }
 
 bool UiElement::IsAnimatingProperty(TargetProperty property) const {

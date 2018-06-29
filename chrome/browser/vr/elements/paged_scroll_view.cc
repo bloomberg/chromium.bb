@@ -26,7 +26,7 @@ PagedScrollView::~PagedScrollView() {}
 void PagedScrollView::OnScrollBegin(
     std::unique_ptr<blink::WebGestureEvent> gesture,
     const gfx::PointF& position) {
-  animation().RemoveKeyframeModels(SCROLL_OFFSET);
+  animation().RemoveKeyframeModelsWithProperty(SCROLL_OFFSET);
   scroll_drag_delta_ = 0.0f;
 }
 

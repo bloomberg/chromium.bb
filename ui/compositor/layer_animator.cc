@@ -182,13 +182,13 @@ void LayerAnimator::DetachLayerFromAnimation() {
     animation_->DetachElement();
 }
 
-void LayerAnimator::AddThreadedAnimation(
-    std::unique_ptr<cc::KeyframeModel> animation) {
-  animation_->AddKeyframeModel(std::move(animation));
+void LayerAnimator::AddThreadedKeyframeModel(
+    std::unique_ptr<cc::KeyframeModel> keyframe_model) {
+  animation_->AddKeyframeModel(std::move(keyframe_model));
 }
 
-void LayerAnimator::RemoveThreadedAnimation(int keyframe_model_id) {
-  animation_->RemoveKeyframeModel(keyframe_model_id);
+void LayerAnimator::RemoveThreadedKeyframeModels() {
+  animation_->RemoveKeyframeModels();
 }
 
 cc::SingleKeyframeEffectAnimation* LayerAnimator::GetAnimationForTesting()

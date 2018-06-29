@@ -165,6 +165,13 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
   // The currently animating element.
   LayerAnimationElement* CurrentElement() const;
 
+  // True if the sequence contains any element that runs on the compositor.
+  bool HasThreadedElement(LayerAnimationDelegate* delegate) const;
+
+  // Removes all the threaded keyframe models associated with the sequence from
+  // cc.
+  void RemoveThreadedKeyframeModels(LayerAnimationDelegate* delegate);
+
   // The union of all the properties modified by all elements in the sequence.
   LayerAnimationElement::AnimatableProperties properties_;
 
@@ -200,6 +207,9 @@ class COMPOSITOR_EXPORT LayerAnimationSequence
 
   // Used to tag animation elements to obtain metrics of animation performance.
   AnimationMetricsReporter* animation_metrics_reporter_;
+
+  // True if the sequence has finished threaded element.
+  bool has_finished_threaded_element_;
 
   DISALLOW_COPY_AND_ASSIGN(LayerAnimationSequence);
 };

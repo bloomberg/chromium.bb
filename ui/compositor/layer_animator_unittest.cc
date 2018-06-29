@@ -1670,6 +1670,113 @@ TEST(LayerAnimatorTest, ThreadedCyclicSequences) {
   EXPECT_FALSE(test_controller.animator()->is_animating());
 }
 
+TEST(LayerAnimatorTest, RemoveKeyframeModelsFromThreadedCyclicSequences) {
+  TestLayerAnimationDelegate delegate;
+  TestLayerThreadedAnimationDelegate* threaded_delegate =
+      static_cast<TestLayerThreadedAnimationDelegate*>(
+          delegate.GetThreadedAnimationDelegate());
+  LayerAnimatorTestController test_controller(
+      CreateDefaultTestAnimator(&delegate));
+  LayerAnimator* animator = test_controller.animator();
+
+  double start_opacity(0.0);
+  double target_opacity(1.0);
+
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+
+  delegate.SetOpacityFromAnimation(start_opacity,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
+
+  LayerAnimationSequence* sequence = new LayerAnimationSequence(
+      LayerAnimationElement::CreateOpacityElement(target_opacity, delta));
+
+  sequence->AddElement(
+      LayerAnimationElement::CreateOpacityElement(start_opacity, delta));
+
+  sequence->set_is_cyclic(true);
+
+  animator->StartAnimation(sequence);
+
+  base::TimeTicks start_time = animator->last_step_time();
+  base::TimeTicks effective_start = start_time + delta;
+
+  animator->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
+      test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
+          ->animation_group_id());
+  animator->Step(effective_start + delta);
+  EXPECT_TRUE(animator->is_animating());
+
+  // Don't remove threaded keyframe models when only part of the sequence is
+  // finished.
+  EXPECT_EQ(threaded_delegate->GetNumberOfRemoveThreadedKeyframeModelsCalls(),
+            0);
+
+  base::TimeTicks second_effective_start = effective_start + 2 * delta;
+  animator->OnThreadedAnimationStarted(
+      second_effective_start, cc::TargetProperty::OPACITY,
+      test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
+          ->animation_group_id());
+  animator->Step(second_effective_start + delta);
+  // Both threaded element are finished. Remove the keyframe models.
+  EXPECT_EQ(threaded_delegate->GetNumberOfRemoveThreadedKeyframeModelsCalls(),
+            1);
+
+  base::TimeTicks third_effective_start = second_effective_start + 2 * delta;
+  animator->OnThreadedAnimationStarted(
+      third_effective_start, cc::TargetProperty::OPACITY,
+      test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
+          ->animation_group_id());
+  // Finish both elements in one step.
+  animator->Step(third_effective_start + 2 * delta);
+  EXPECT_EQ(threaded_delegate->GetNumberOfRemoveThreadedKeyframeModelsCalls(),
+            2);
+
+  base::TimeTicks fourth_effective_start = third_effective_start + 2 * delta;
+  animator->OnThreadedAnimationStarted(
+      fourth_effective_start, cc::TargetProperty::OPACITY,
+      test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
+          ->animation_group_id());
+  animator->Step(fourth_effective_start + 1000 * delta);
+  EXPECT_EQ(threaded_delegate->GetNumberOfRemoveThreadedKeyframeModelsCalls(),
+            3);
+
+  animator->StopAnimatingProperty(LayerAnimationElement::OPACITY);
+  EXPECT_EQ(threaded_delegate->GetNumberOfRemoveThreadedKeyframeModelsCalls(),
+            4);
+  EXPECT_FALSE(animator->is_animating());
+}
+
+TEST(LayerAnimatorTest, RemoveKeyframeModelsByAbortingSequence) {
+  TestLayerAnimationDelegate delegate;
+  TestLayerThreadedAnimationDelegate* threaded_delegate =
+      static_cast<TestLayerThreadedAnimationDelegate*>(
+          delegate.GetThreadedAnimationDelegate());
+  LayerAnimatorTestController test_controller(
+      CreateDefaultTestAnimator(&delegate));
+  LayerAnimator* animator = test_controller.animator();
+  base::TimeDelta delta = base::TimeDelta::FromSeconds(1);
+  base::TimeTicks start_time = animator->last_step_time();
+  base::TimeTicks effective_start = start_time + 0.5 * delta;
+
+  delegate.SetOpacityFromAnimation(0.f,
+                                   PropertyChangeReason::NOT_FROM_ANIMATION);
+  LayerAnimationSequence* sequence = new LayerAnimationSequence(
+      LayerAnimationElement::CreateOpacityElement(1.f, delta));
+
+  animator->StartAnimation(sequence);
+  animator->OnThreadedAnimationStarted(
+      effective_start, cc::TargetProperty::OPACITY,
+      test_controller.GetRunningSequence(LayerAnimationElement::OPACITY)
+          ->animation_group_id());
+  animator->Step(effective_start + 0.5 * delta);
+  EXPECT_TRUE(animator->is_animating());
+
+  animator->AbortAllAnimations();
+  EXPECT_EQ(threaded_delegate->GetNumberOfRemoveThreadedKeyframeModelsCalls(),
+            1);
+}
+
 TEST(LayerAnimatorTest, AddObserverExplicit) {
   TestLayerAnimationObserver observer;
   TestLayerAnimationDelegate delegate;

@@ -55,9 +55,9 @@ class PLATFORM_EXPORT CompositorAnimation : public cc::AnimationDelegate {
   bool IsElementAttached() const;
 
   void AddKeyframeModel(std::unique_ptr<CompositorKeyframeModel>);
-  void RemoveKeyframeModel(int keyframe_model_id);
-  void PauseKeyframeModel(int keyframe_model_id, double time_offset);
-  void AbortKeyframeModel(int keyframe_model_id);
+  void RemoveKeyframeModels();
+  void PauseKeyframeEffect(double time_offset);
+  void AbortKeyframeEffect();
 
   void UpdateScrollTimelineId(base::Optional<cc::ElementId>);
 

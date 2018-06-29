@@ -167,7 +167,6 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
   std::unique_ptr<CompositorKeyframeModel> float_keyframe_model(
       CompositorKeyframeModel::Create(*curve, CompositorTargetProperty::OPACITY,
                                       0, 0));
-  int keyframe_model_id = float_keyframe_model->Id();
 
   std::unique_ptr<CompositorAnimationTimeline> compositor_timeline =
       CompositorAnimationTimeline::Create();
@@ -196,7 +195,7 @@ TEST_P(GraphicsLayerTest, updateLayerShouldFlattenTransformWithAnimations) {
 
   EXPECT_TRUE(
       mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
-  animation.GetCompositorAnimation()->RemoveKeyframeModel(keyframe_model_id);
+  animation.GetCompositorAnimation()->RemoveKeyframeModels();
   EXPECT_FALSE(
       mutator->HasTickingKeyframeModelForTesting(cc_layer_->element_id()));
 

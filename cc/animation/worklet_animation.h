@@ -62,7 +62,7 @@ class CC_ANIMATION_EXPORT WorkletAnimation final
   // require updating the ElementId for the ScrollTimeline scroll source.
   void PromoteScrollTimelinePendingToActive() override;
 
-  void RemoveKeyframeModel(int keyframe_model_id) override;
+  void RemoveKeyframeModels() override;
 
  private:
   ~WorkletAnimation() override;
