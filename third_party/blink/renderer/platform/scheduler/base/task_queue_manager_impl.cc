@@ -274,20 +274,9 @@ void TaskQueueManagerImpl::MaybeScheduleImmediateWork(
   controller_->ScheduleWork();
 }
 
-void TaskQueueManagerImpl::MaybeScheduleDelayedWork(
-    const Location& from_here,
-    TimeDomain* requesting_time_domain,
-    TimeTicks now,
-    TimeTicks run_time) {
-  // TODO(kraynov): Convert time domains to use LazyNow.
-  LazyNow lazy_now(now);
-  controller_->SetNextDelayedDoWork(&lazy_now, run_time);
-}
-
-// TODO(kraynov): Remove after simplifying TimeDomain.
-void TaskQueueManagerImpl::CancelDelayedWork(TimeDomain* requesting_time_domain,
-                                             TimeTicks run_time) {
-  controller_->SetNextDelayedDoWork(nullptr, TimeTicks::Max());
+void TaskQueueManagerImpl::SetNextDelayedDoWork(LazyNow* lazy_now,
+                                                TimeTicks run_time) {
+  controller_->SetNextDelayedDoWork(lazy_now, run_time);
 }
 
 Optional<PendingTask> TaskQueueManagerImpl::TakeTask() {

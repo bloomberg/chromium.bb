@@ -43,7 +43,7 @@ class PerfTestTimeDomain : public VirtualTimeDomain {
     return TimeDelta();  // Makes DoWork post an immediate continuation.
   }
 
-  void RequestWakeUpAt(TimeTicks now, TimeTicks run_time) override {
+  void SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) override {
     // De-dupe DoWorks.
     if (NumberOfScheduledWakeUps() == 1u)
       RequestDoWork();

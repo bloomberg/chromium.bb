@@ -29,8 +29,8 @@ class PLATFORM_EXPORT ThrottledTimeDomain
 
  protected:
   const char* GetName() const override;
-  void RequestWakeUpAt(base::TimeTicks now, base::TimeTicks run_time) override;
-  void CancelWakeUpAt(base::TimeTicks run_time) override;
+  void SetNextDelayedDoWork(base::sequence_manager::LazyNow* lazy_now,
+                            base::TimeTicks run_time) override;
 
  private:
   // Next task run time provided by task queue throttler. Note that it does not
