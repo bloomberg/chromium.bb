@@ -105,6 +105,9 @@ class WebServiceWorkerContextClient {
   // The worker script successfully loaded. Called on the main thread when the
   // script is served from ResourceLoader or on the worker thread when the
   // script is served via WebServiceWorkerInstalledScriptsManager.
+  //
+  // This may be called before or after WorkerContextStarted(). Script
+  // evaluation does not start until WillEvaluateClassicScript().
   virtual void WorkerScriptLoaded() {}
 
   // Called when a WorkerGlobalScope was created for the worker thread. This
@@ -112,7 +115,16 @@ class WebServiceWorkerContextClient {
   // WorkerGlobalScope. The proxy is owned by WorkerGlobalScope and should not
   // be destroyed by the caller. No proxy methods should be called after
   // willDestroyWorkerContext() is called.
+  //
+  // This may be called before or after WorkerScriptLoaded(). Script evaluation
+  // does not start until WillEvaluateClassicScript().
   virtual void WorkerContextStarted(WebServiceWorkerContextProxy*) {}
+
+  // Called immediately before V8 script evaluation starts. This means all setup
+  // is finally complete: the script has been loaded, the worker thread has
+  // started, the script has been passed to the worker thread, and CSP and
+  // ReferrerPolicy information has been set on the worker thread.
+  virtual void WillEvaluateClassicScript() {}
 
   // Called when initial script evaluation finished. |success| is true if the
   // evaluation completed with no uncaught exception.
@@ -125,6 +137,9 @@ class WebServiceWorkerContextClient {
   // and then initializes the worker context if "needed" and calls
   // DidInitializeWorkerContext(), but it's not clear when the context would
   // already be initialized.)
+  //
+  // This function is used to support service workers in Chrome extensions.
+  //
   // TODO(nhiroki): Can you clarify this code and comment?
   virtual void DidInitializeWorkerContext(v8::Local<v8::Context> context) {}
 

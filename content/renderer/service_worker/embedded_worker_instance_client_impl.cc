@@ -53,8 +53,11 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
   DCHECK(!wrapper_);
   TRACE_EVENT0("ServiceWorker",
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
+  auto start_timing = mojom::EmbeddedWorkerStartTiming::New();
+  start_timing->start_worker_received_time = base::TimeTicks::Now();
   service_manager::mojom::InterfaceProviderPtr interface_provider(
       std::move(params->provider_info->interface_provider));
+
   auto client = std::make_unique<ServiceWorkerContextClient>(
       params->embedded_worker_id, params->service_worker_version_id,
       params->scope, params->script_url,
@@ -62,10 +65,10 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       std::move(params->dispatcher_request),
       std::move(params->controller_request), std::move(params->instance_host),
       std::move(params->provider_info), std::move(temporal_self_),
+      std::move(start_timing),
       RenderThreadImpl::current()
           ->GetWebMainThreadScheduler()
           ->DefaultTaskRunner());
-  client->set_start_worker_received_time(base::TimeTicks::Now());
   // Record UMA to indicate StartWorker is received on renderer.
   StartWorkerHistogramEnum metric =
       params->is_installed ? StartWorkerHistogramEnum::RECEIVED_ON_INSTALLED

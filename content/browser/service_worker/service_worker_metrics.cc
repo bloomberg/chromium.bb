@@ -29,18 +29,30 @@ std::string StartSituationToSuffix(
   switch (situation) {
     case ServiceWorkerMetrics::StartSituation::UNKNOWN:
       NOTREACHED();
-      return "_Unknown";
+      return ".Unknown";
     case ServiceWorkerMetrics::StartSituation::DURING_STARTUP:
-      return "_DuringStartup";
+      return ".DuringStartup";
     case ServiceWorkerMetrics::StartSituation::NEW_PROCESS:
-      return "_NewProcess";
+      return ".NewProcess";
     case ServiceWorkerMetrics::StartSituation::EXISTING_UNREADY_PROCESS:
-      return "_ExistingUnreadyProcess";
+      return ".ExistingUnreadyProcess";
     case ServiceWorkerMetrics::StartSituation::EXISTING_READY_PROCESS:
-      return "_ExistingReadyProcess";
+      return ".ExistingReadyProcess";
   }
   NOTREACHED() << static_cast<int>(situation);
-  return "_Unknown";
+  return ".Unknown";
+}
+
+// TODO(falken): Remove this when the associated UMA are removed.
+std::string StartSituationToDeprecatedSuffix(
+    ServiceWorkerMetrics::StartSituation situation) {
+  // Don't change this returned string. It is written (in hashed form) into
+  // logs.
+  std::string suffix = StartSituationToSuffix(situation);
+  // Replace '.' separator with '_'.
+  DCHECK(suffix.length() > 1 && suffix[0] == '.');
+  suffix[0] = '_';
+  return suffix;
 }
 
 std::string EventTypeToSuffix(ServiceWorkerMetrics::EventType event_type) {
@@ -493,12 +505,13 @@ void ServiceWorkerMetrics::RecordStartWorkerTime(base::TimeDelta time,
                                                  EventType purpose) {
   if (is_installed) {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartWorker.Time", time);
-    RecordSuffixedMediumTimeHistogram("ServiceWorker.StartWorker.Time",
-                                      StartSituationToSuffix(start_situation),
-                                      time);
     RecordSuffixedMediumTimeHistogram(
         "ServiceWorker.StartWorker.Time",
-        StartSituationToSuffix(start_situation) + EventTypeToSuffix(purpose),
+        StartSituationToDeprecatedSuffix(start_situation), time);
+    RecordSuffixedMediumTimeHistogram(
+        "ServiceWorker.StartWorker.Time",
+        StartSituationToDeprecatedSuffix(start_situation) +
+            EventTypeToSuffix(purpose),
         time);
   } else {
     UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartNewWorker.Time", time);
@@ -768,16 +781,16 @@ void ServiceWorkerMetrics::RecordTimeToSendStartWorker(
     StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToSendStartWorker";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                    duration);
+  RecordSuffixedMediumTimeHistogram(
+      name, StartSituationToDeprecatedSuffix(situation), duration);
 }
 
 void ServiceWorkerMetrics::RecordTimeToStartThread(base::TimeDelta duration,
                                                    StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToStartThread";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                    duration);
+  RecordSuffixedMediumTimeHistogram(
+      name, StartSituationToDeprecatedSuffix(situation), duration);
 }
 
 void ServiceWorkerMetrics::RecordTimeToEvaluateScript(
@@ -785,40 +798,73 @@ void ServiceWorkerMetrics::RecordTimeToEvaluateScript(
     StartSituation situation) {
   std::string name = "EmbeddedWorkerInstance.Start.TimeToEvaluateScript";
   UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(name, StartSituationToSuffix(situation),
-                                    duration);
+  RecordSuffixedMediumTimeHistogram(
+      name, StartSituationToDeprecatedSuffix(situation), duration);
 }
 
-void ServiceWorkerMetrics::RecordStartMessageLatencyType(
-    CrossProcessTimeDelta type) {
-  UMA_HISTOGRAM_ENUMERATION(
-      "EmbeddedWorkerInstance.Start.StartMessageLatency.Type", type,
-      CrossProcessTimeDelta::NUM_TYPES);
-}
-
-void ServiceWorkerMetrics::RecordEmbeddedWorkerStartTiming(
-    mojom::EmbeddedWorkerStartTimingPtr start_timing,
-    base::TimeTicks start_worker_sent_time,
-    StartSituation situation) {
+void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
+                                                   StartSituation situation) {
+  // Bail if the timings across processes weren't consistent.
   if (!base::TimeTicks::IsHighResolution() ||
       !base::TimeTicks::IsConsistentAcrossProcesses()) {
-    RecordStartMessageLatencyType(CrossProcessTimeDelta::INACCURATE_CLOCK);
+    RecordStartWorkerTimingClockConsistency(
+        CrossProcessTimeDelta::INACCURATE_CLOCK);
     return;
   }
-  if (start_timing->start_worker_received_time < start_worker_sent_time) {
-    RecordStartMessageLatencyType(CrossProcessTimeDelta::NEGATIVE);
+  if (times.remote_start_worker_received < times.local_start_worker_sent ||
+      times.local_end < times.remote_script_evaluation_end) {
+    RecordStartWorkerTimingClockConsistency(CrossProcessTimeDelta::NEGATIVE);
     return;
   }
+  RecordStartWorkerTimingClockConsistency(CrossProcessTimeDelta::NORMAL);
 
-  RecordStartMessageLatencyType(CrossProcessTimeDelta::NORMAL);
+  // Total duration.
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartTiming.Duration",
+                             times.local_end - times.local_start);
+  RecordSuffixedMediumTimeHistogram("ServiceWorker.StartTiming.Duration",
+                                    StartSituationToSuffix(situation),
+                                    times.local_end - times.local_start);
 
-  const base::TimeDelta start_worker_message_latency =
-      start_timing->start_worker_received_time - start_worker_sent_time;
-  UMA_HISTOGRAM_MEDIUM_TIMES("EmbeddedWorkerInstance.Start.StartMessageLatency",
-                             start_worker_message_latency);
-  RecordSuffixedMediumTimeHistogram(
-      "EmbeddedWorkerInstance.Start.StartMessageLatency",
-      StartSituationToSuffix(situation), start_worker_message_latency);
+  // SentStartWorker milestone.
+  UMA_HISTOGRAM_MEDIUM_TIMES("ServiceWorker.StartTiming.StartToSentStartWorker",
+                             times.local_start_worker_sent - times.local_start);
+
+  // ReceivedStartWorker milestone.
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.StartToReceivedStartWorker",
+      times.remote_start_worker_received - times.local_start);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.SentStartWorkerToReceivedStartWorker",
+      times.remote_start_worker_received - times.local_start_worker_sent);
+
+  // ScriptEvaluationStart milestone.
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.StartToScriptEvaluationStart",
+      times.remote_script_evaluation_start - times.local_start);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.ReceivedStartWorkerToScriptEvaluationStart",
+      times.remote_script_evaluation_start -
+          times.remote_start_worker_received);
+
+  // ScriptEvaluationEnd milestone.
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.StartToScriptEvaluationEnd",
+      times.remote_script_evaluation_end - times.local_start);
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.ScriptEvaluationStartToScriptEvaluationEnd",
+      times.remote_script_evaluation_end -
+          times.remote_script_evaluation_start);
+
+  // End milestone.
+  UMA_HISTOGRAM_MEDIUM_TIMES(
+      "ServiceWorker.StartTiming.ScriptEvaluationEndToEnd",
+      times.local_end - times.remote_script_evaluation_end);
+}
+
+void ServiceWorkerMetrics::RecordStartWorkerTimingClockConsistency(
+    CrossProcessTimeDelta type) {
+  UMA_HISTOGRAM_ENUMERATION("ServiceWorker.StartTiming.ClockConsistency", type,
+                            CrossProcessTimeDelta::NUM_TYPES);
 }
 
 void ServiceWorkerMetrics::RecordStartStatusAfterFailure(

@@ -247,6 +247,28 @@ class ServiceWorkerMetrics {
     NUM_TYPES
   };
 
+  // These are prefixed with "local" or "remote" to indicate whether the browser
+  // process or renderer process recorded the timing (browser is local).
+  struct StartTimes {
+    // The browser started the service worker startup sequence.
+    base::TimeTicks local_start;
+
+    // The browser sent the start worker IPC to the renderer.
+    base::TimeTicks local_start_worker_sent;
+
+    // The renderer received the start worker IPC.
+    base::TimeTicks remote_start_worker_received;
+
+    // The renderer started script evaluation on the worker thread.
+    base::TimeTicks remote_script_evaluation_start;
+
+    // The renderer finished script evaluation on the worker thread.
+    base::TimeTicks remote_script_evaluation_end;
+
+    // The browser received the worker started IPC.
+    base::TimeTicks local_end;
+  };
+
   class ScopedEventRecorder {
    public:
     explicit ScopedEventRecorder(EventType start_worker_purpose);
@@ -317,6 +339,8 @@ class ServiceWorkerMetrics {
 
   // Records the time taken to successfully start a worker. |is_installed|
   // indicates whether the version has been installed.
+  //
+  // TODO(crbug.com/855952): Replace this with RecordStartWorkerTiming().
   static void RecordStartWorkerTime(base::TimeDelta time,
                                     bool is_installed,
                                     StartSituation start_situation,
@@ -380,6 +404,8 @@ class ServiceWorkerMetrics {
   static void RecordTimeBetweenEvents(base::TimeDelta time);
 
   // The following record steps of EmbeddedWorkerInstance's start sequence.
+  // TODO(crbug.com/855952): Remove most of these and replace with
+  // RecordStartWorkingTiming().
   static void RecordProcessCreated(bool is_new_process);
   static void RecordTimeToSendStartWorker(base::TimeDelta duration,
                                           StartSituation start_situation);
@@ -387,11 +413,11 @@ class ServiceWorkerMetrics {
                                       StartSituation start_situation);
   static void RecordTimeToEvaluateScript(base::TimeDelta duration,
                                          StartSituation start_situation);
-  static void RecordStartMessageLatencyType(CrossProcessTimeDelta type);
-  CONTENT_EXPORT static void RecordEmbeddedWorkerStartTiming(
-      mojom::EmbeddedWorkerStartTimingPtr start_timing,
-      base::TimeTicks start_worker_sent_time,
-      StartSituation start_situation);
+
+  CONTENT_EXPORT static void RecordStartWorkerTiming(const StartTimes& times,
+                                                     StartSituation situation);
+  static void RecordStartWorkerTimingClockConsistency(
+      CrossProcessTimeDelta type);
 
   // Records the result of a start attempt that occurred after the worker had
   // failed |failure_count| consecutive times.

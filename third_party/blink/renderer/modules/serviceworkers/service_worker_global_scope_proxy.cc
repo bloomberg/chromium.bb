@@ -627,6 +627,7 @@ void ServiceWorkerGlobalScopeProxy::WillEvaluateClassicScript(
     size_t cached_metadata_size) {
   DCHECK(WorkerGlobalScope()->IsContextThread());
   worker_global_scope_->CountWorkerScript(script_size, cached_metadata_size);
+  Client().WillEvaluateClassicScript();
 }
 
 void ServiceWorkerGlobalScopeProxy::WillEvaluateImportedClassicScript(

@@ -80,8 +80,12 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   static ServiceWorkerContextClient* ThreadSpecificInstance();
 
   // Called on the main thread.
-  // |is_script_streaming| is true if the script is already installed and will
-  // be streamed from the browser process.
+  // |is_starting_installed_worker| is true if the script is already installed
+  // and will be streamed from the browser process.
+  //
+  // |start_timing| should be initially populated with
+  // |start_worker_received_time|. This instance will fill in the rest during
+  // startup.
   ServiceWorkerContextClient(
       int embedded_worker_id,
       int64_t service_worker_version_id,
@@ -93,14 +97,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojom::EmbeddedWorkerInstanceHostAssociatedPtrInfo instance_host,
       mojom::ServiceWorkerProviderInfoForStartWorkerPtr provider_info,
       std::unique_ptr<EmbeddedWorkerInstanceClientImpl> embedded_worker_client,
+      mojom::EmbeddedWorkerStartTimingPtr start_timing,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner);
   ~ServiceWorkerContextClient() override;
-
-  // Called on the main thread.
-  void set_start_worker_received_time(
-      base::TimeTicks start_worker_received_time) {
-    start_worker_received_time_ = start_worker_received_time;
-  }
 
   // Returns the service worker object described by |info|. Creates a new object
   // if needed, or else returns the existing one.
@@ -129,6 +128,7 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   void WorkerScriptLoaded() override;
   void WorkerContextStarted(
       blink::WebServiceWorkerContextProxy* proxy) override;
+  void WillEvaluateClassicScript() override;
   void DidEvaluateClassicScript(bool success) override;
   void DidInitializeWorkerContext(v8::Local<v8::Context> context) override;
   void WillDestroyWorkerContext(v8::Local<v8::Context> context) override;
@@ -439,7 +439,9 @@ class CONTENT_EXPORT ServiceWorkerContextClient
   // destructed on the worker thread in willDestroyWorkerContext.
   std::unique_ptr<WorkerContextData> context_;
 
-  base::TimeTicks start_worker_received_time_;
+  // Accessed on the worker thread. Passed to the browser process after worker
+  // startup completes.
+  mojom::EmbeddedWorkerStartTimingPtr start_timing_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };
