@@ -6,6 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/testapp/vr_test_context.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
@@ -36,27 +37,18 @@ GlRenderer::GlRenderer(const scoped_refptr<gl::GLSurface>& surface,
 GlRenderer::~GlRenderer() {}
 
 bool GlRenderer::Initialize() {
-  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                       gl::GLContextAttribs());
-  if (!context_.get()) {
-    LOG(ERROR) << "Failed to create GL context";
+  auto graphics_delegate = std::make_unique<GraphicsDelegate>(surface_);
+  if (!graphics_delegate->Initialize()) {
     return false;
   }
 
-  if (!context_->MakeCurrent(surface_.get())) {
-    LOG(ERROR) << "Failed to make GL context current";
-    return false;
-  }
-
-  vr_->OnGlInitialized();
+  vr_->OnGlInitialized(std::move(graphics_delegate));
 
   PostRenderFrameTask(gfx::SwapResult::SWAP_ACK);
   return true;
 }
 
 void GlRenderer::RenderFrame() {
-  context_->MakeCurrent(surface_.get());
-
   // Checking and clearing GL errors can be expensive, but we can afford to do
   // this in the testapp as a sanity check.  Clear errors before drawing UI,
   // then assert no new errors after drawing.  See https://crbug.com/768905.

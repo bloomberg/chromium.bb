@@ -40,7 +40,6 @@ class WaitableEvent;
 }
 
 namespace gl {
-class GLContext;
 class GLFence;
 class GLFenceAndroidNativeFenceSync;
 class GLFenceEGL;
@@ -65,6 +64,7 @@ namespace vr {
 class BrowserUiInterface;
 class FPSMeter;
 class GlBrowserInterface;
+class GraphicsDelegate;
 class MailboxToSurfaceBridge;
 class ScopedGpuTrace;
 class SlidingTimeDeltaAverage;
@@ -461,7 +461,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool webvr_vsync_align_;
 
   scoped_refptr<gl::GLSurface> surface_;
-  scoped_refptr<gl::GLContext> context_;
+  std::unique_ptr<GraphicsDelegate> graphics_delegate_;
   scoped_refptr<gl::SurfaceTexture> content_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> content_overlay_surface_texture_;
   scoped_refptr<gl::SurfaceTexture> ui_surface_texture_;

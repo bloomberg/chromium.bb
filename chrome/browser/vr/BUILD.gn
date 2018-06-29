@@ -134,6 +134,8 @@ component("vr_common") {
     "ganesh_surface_provider.h",
     "gesture_detector.cc",
     "gesture_detector.h",
+    "graphics_delegate.cc",
+    "graphics_delegate.h",
     "keyboard_delegate.h",
     "keyboard_ui_interface.h",
     "macros.h",

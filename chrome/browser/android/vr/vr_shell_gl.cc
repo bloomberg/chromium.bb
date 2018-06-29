@@ -31,6 +31,7 @@
 #include "chrome/browser/android/vr/vr_shell.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/elements/ui_element.h"
+#include "chrome/browser/vr/graphics_delegate.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "chrome/browser/vr/model/assets.h"
 #include "chrome/browser/vr/model/camera_model.h"
@@ -58,6 +59,7 @@
 #include "ui/gl/gl_fence_android_native_fence_sync.h"
 #include "ui/gl/gl_fence_egl.h"
 #include "ui/gl/gl_image_ahardwarebuffer.h"
+#include "ui/gl/gl_share_group.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/init/gl_factory.h"
 
@@ -390,15 +392,9 @@ void VrShellGl::InitializeGl(gfx::AcceleratedWidget window) {
     return;
   }
 
-  context_ = gl::init::CreateGLContext(nullptr, surface_.get(),
-                                       gl::GLContextAttribs());
-  if (!context_.get()) {
-    LOG(ERROR) << "gl::init::CreateGLContext failed";
-    ForceExitVr();
-    return;
-  }
-  if (!context_->MakeCurrent(surface_.get())) {
-    LOG(ERROR) << "gl::GLContext::MakeCurrent() failed";
+  graphics_delegate_ = std::make_unique<GraphicsDelegate>(surface_);
+
+  if (!graphics_delegate_->Initialize()) {
     ForceExitVr();
     return;
   }
@@ -1524,7 +1520,15 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
     ui_controller_update_time_.AddSample(controller_time);
   }
 
+  if (!graphics_delegate_->MakeSkiaContextCurrent()) {
+    ForceExitVr();
+    return;
+  }
   bool textures_changed = ui_->scene()->UpdateTextures();
+  if (!graphics_delegate_->MakeMainContextCurrent()) {
+    ForceExitVr();
+    return;
+  }
 
   // TODO(mthiesse): Determine if a visible controller is actually drawn in the
   // viewport.
