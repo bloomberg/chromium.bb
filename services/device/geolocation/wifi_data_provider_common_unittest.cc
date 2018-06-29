@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/wifi_data_provider_common.h"
+#include "services/device/geolocation/wifi_data_provider_common.h"
 
 #include <memory>
 
@@ -14,7 +14,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "device/geolocation/wifi_data_provider_manager.h"
+#include "services/device/geolocation/wifi_data_provider_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

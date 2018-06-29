@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/network_location_provider.h"
+#include "services/device/geolocation/network_location_provider.h"
 
 #include <stddef.h>
 
@@ -20,12 +20,12 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "device/geolocation/location_arbitrator.h"
-#include "device/geolocation/public/cpp/geoposition.h"
-#include "device/geolocation/wifi_data_provider.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
+#include "services/device/geolocation/location_arbitrator.h"
+#include "services/device/geolocation/wifi_data_provider.h"
+#include "services/device/public/cpp/geolocation/geoposition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace device {

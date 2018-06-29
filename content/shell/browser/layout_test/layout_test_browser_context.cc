@@ -21,7 +21,7 @@
 #include "content/shell/browser/layout_test/layout_test_url_request_context_getter.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 #include "content/test/mock_background_sync_controller.h"
-#include "device/geolocation/public/cpp/scoped_geolocation_overrider.h"
+#include "services/device/public/cpp/test/scoped_geolocation_overrider.h"
 
 #if defined(OS_WIN)
 #include "base/base_paths_win.h"

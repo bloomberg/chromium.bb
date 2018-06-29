@@ -10,3 +10,23 @@ android_library("nfc_java") {
     "//base:base_java",
   ]
 }
+
+android_library("geolocation_java") {
+  java_files = [ "src/org/chromium/device/geolocation/LocationProvider.java" ]
+}
+
+android_library("geolocation_java_test_support") {
+  testonly = true
+
+  java_files = [
+    "src/org/chromium/device/geolocation/LocationProviderOverrider.java",
+    "src/org/chromium/device/geolocation/MockLocationProvider.java",
+  ]
+  deps = [
+    ":geolocation_java",
+    "//base:base_java",
+
+    # Ideally this dependency should be removed. http://crbug.com/850357
+    "//services/device/geolocation:geolocation_java",
+  ]
+}

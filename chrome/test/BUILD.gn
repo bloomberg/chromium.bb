@@ -979,6 +979,7 @@ test("browser_tests") {
       "//mojo/public/cpp/system",
       "//net",
       "//net:test_support",
+      "//services/device/public/cpp/test:test_support",
       "//services/device/public/mojom",
       "//services/network/public/cpp",
       "//services/service_manager/public/cpp",

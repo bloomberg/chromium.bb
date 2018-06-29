@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/geolocation/location_arbitrator.h"
+#include "services/device/geolocation/location_arbitrator.h"
 
 #include <memory>
 #include <utility>
@@ -10,10 +10,10 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/test/scoped_task_environment.h"
-#include "device/geolocation/fake_location_provider.h"
-#include "device/geolocation/public/cpp/geoposition.h"
-#include "device/geolocation/public/cpp/location_provider.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/device/geolocation/fake_location_provider.h"
+#include "services/device/public/cpp/geolocation/geoposition.h"
+#include "services/device/public/cpp/geolocation/location_provider.h"
 #include "services/device/public/mojom/geoposition.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"

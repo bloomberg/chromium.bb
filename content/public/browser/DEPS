@@ -3,9 +3,8 @@ include_rules = [
   # TODO(qinmin): move it to services/download when download becomes a service.
   "+components/download/public/common",
   "+components/viz/common",
-  "+device/geolocation/public/cpp",
   "+device/usb/public/mojom",
-  "+services/device/public/mojom",
+  "+services/device/public",
   "+services/network/public/cpp",
   "+services/service_manager/sandbox",
   "+services/resource_coordinator/public",

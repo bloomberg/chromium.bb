@@ -27,7 +27,6 @@ source_set("lib") {
 
   deps = [
     "//base",
-    "//device/geolocation",
     "//services/device/fingerprint",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
@@ -106,13 +105,13 @@ source_set("tests") {
     "//base/test:test_support",
     "//base/third_party/dynamic_annotations",
     "//device/base/synchronization",
-    "//device/geolocation:test_support",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
     "//services/device/generic_sensor",
     "//services/device/geolocation",
+    "//services/device/geolocation:test_support",
     "//services/device/power_monitor",
     "//services/device/public/cpp:device_features",
     "//services/device/public/cpp/power_monitor",
@@ -153,7 +152,7 @@ source_set("tests") {
     ]
     deps += [
       ":device_service_jni_headers",
-      "//device/geolocation/public/java:geolocation_java_test_support",
+      "//services/device/public/java:geolocation_java_test_support",
       "//services/device/vibration/android:vibration_jni_headers",
     ]
   } else {
@@ -233,10 +232,10 @@ source_set("test_support") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//device/geolocation/public/cpp",
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
+    "//services/device/public/cpp/geolocation",
     "//services/device/public/mojom:constants",
     "//services/service_manager/public/cpp",
     "//services/service_manager/public/cpp:service_test_support",
@@ -268,12 +267,12 @@ if (is_android) {
     ]
     deps = [
       "//base:base_java",
-      "//device/geolocation:geolocation_java",
       "//mojo/android:system_java",
       "//mojo/public/java:bindings_java",
       "//mojo/public/java:system_java",
       "//services/device/battery/android:battery_monitor_java",
       "//services/device/generic_sensor:java",
+      "//services/device/geolocation:geolocation_java",
       "//services/device/nfc/android:java",
       "//services/device/public/java:nfc_java",
       "//services/device/public/mojom:mojom_java",
