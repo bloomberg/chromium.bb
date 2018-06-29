@@ -51,7 +51,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
       network::mojom::URLLoaderClientPtr client,
       const net::MutableNetworkTrafficAnnotationTag& traffic_annotation,
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
-      scoped_refptr<network::SharedURLLoaderFactory> fallback_factory);
+      scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ~ServiceWorkerSubresourceLoader() override;
 
@@ -155,6 +156,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
   };
   Status status_ = Status::kNotStarted;
 
+  // The task runner where this loader is running.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
+
   base::WeakPtrFactory<ServiceWorkerSubresourceLoader> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoader);
@@ -173,10 +177,14 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   // default URLLoaderFactory for network fallback. This should be the
   // URLLoaderFactory that directly goes to network without going through
   // any custom URLLoader factories.
+  // |task_runner| is the runner where this loader runs. (We need to pass
+  // this around because calling base::SequencedTaskRunnerHandle is
+  // prohibited in the renderer :()
   static void Create(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
-      network::mojom::URLLoaderFactoryRequest request);
+      network::mojom::URLLoaderFactoryRequest request,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   ~ServiceWorkerSubresourceLoaderFactory() override;
 
@@ -195,7 +203,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   ServiceWorkerSubresourceLoaderFactory(
       scoped_refptr<ControllerServiceWorkerConnector> controller_connector,
       scoped_refptr<network::SharedURLLoaderFactory> fallback_factory,
-      network::mojom::URLLoaderFactoryRequest request);
+      network::mojom::URLLoaderFactoryRequest request,
+      scoped_refptr<base::SequencedTaskRunner> task_runner);
 
   void OnConnectionError();
 
@@ -205,6 +214,9 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoaderFactory
   scoped_refptr<network::SharedURLLoaderFactory> fallback_factory_;
 
   mojo::BindingSet<network::mojom::URLLoaderFactory> bindings_;
+
+  // The task runner where this factory is running.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerSubresourceLoaderFactory);
 };

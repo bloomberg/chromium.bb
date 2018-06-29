@@ -260,6 +260,8 @@ class FakeControllerServiceWorker : public mojom::ControllerServiceWorker {
     return fetch_event_request_;
   }
 
+  void Disconnect() { bindings_.CloseAllBindings(); }
+
  private:
   int fetch_event_count_ = 0;
   network::ResourceRequest fetch_event_request_;
@@ -337,8 +339,6 @@ class ServiceWorkerProviderContextTest : public testing::Test {
         mojo::MakeRequest(&loader), 0, 0, network::mojom::kURLLoadOptionNone,
         request, loader_client.CreateInterfacePtr(),
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
-    // Need to run one more loop to make a Mojo call.
-    base::RunLoop().RunUntilIdle();
   }
 
   bool ContainsRegistration(ServiceWorkerProviderContext* provider_context,
@@ -629,6 +629,12 @@ TEST_F(ServiceWorkerProviderContextTest, SetControllerServiceWorker) {
   EXPECT_EQ(1, fake_controller2.fetch_event_count());
   // The request should not go to the network.
   EXPECT_EQ(1UL, fake_loader_factory_.clients_count());
+
+  // Perform a request again, but then drop the controller connection.
+  // The outcome is not deterministic but should not crash.
+  StartRequest(subresource_loader_factory4, kURL4);
+  fake_controller4.Disconnect();
+  base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(ServiceWorkerProviderContextTest, ControllerWithoutFetchHandler) {

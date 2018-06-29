@@ -41,7 +41,8 @@ void CreateSubresourceLoaderFactoryForProviderContext(
     const std::string& client_id,
     std::unique_ptr<network::SharedURLLoaderFactoryInfo> fallback_factory_info,
     mojom::ControllerServiceWorkerConnectorRequest connector_request,
-    network::mojom::URLLoaderFactoryRequest request) {
+    network::mojom::URLLoaderFactoryRequest request,
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
   mojom::ControllerServiceWorkerPtr controller_ptr;
   controller_ptr.Bind(std::move(controller_ptr_info));
   auto connector = base::MakeRefCounted<ControllerServiceWorkerConnector>(
@@ -50,7 +51,7 @@ void CreateSubresourceLoaderFactoryForProviderContext(
   ServiceWorkerSubresourceLoaderFactory::Create(
       std::move(connector),
       network::SharedURLLoaderFactory::Create(std::move(fallback_factory_info)),
-      std::move(request));
+      std::move(request), std::move(task_runner));
 }
 
 }  // namespace
@@ -223,7 +224,8 @@ ServiceWorkerProviderContext::GetSubresourceLoaderFactory() {
                        std::move(state->controller_endpoint), state->client_id,
                        state->fallback_loader_factory->Clone(),
                        mojo::MakeRequest(&state->controller_connector),
-                       mojo::MakeRequest(&state->subresource_loader_factory)));
+                       mojo::MakeRequest(&state->subresource_loader_factory),
+                       task_runner));
   }
   return state->subresource_loader_factory.get();
 }
