@@ -15,6 +15,7 @@ class AssistantUiModelObserver;
 // Enumeration of Assistant entry/exit points.
 enum class AssistantSource {
   kUnspecified,
+  kDeepLink,
   kHotkey,
   kHotword,
   kLongPressLauncher,

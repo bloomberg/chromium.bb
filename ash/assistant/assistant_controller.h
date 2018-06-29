@@ -15,6 +15,7 @@
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/public/interfaces/web_contents_manager.mojom.h"
 #include "base/macros.h"
+#include "base/observer_list.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "ui/gfx/geometry/rect.h"
@@ -25,6 +26,7 @@ class UnguessableToken;
 
 namespace ash {
 
+class AssistantControllerObserver;
 class AssistantInteractionController;
 class AssistantUiController;
 
@@ -36,6 +38,10 @@ class AssistantController : public mojom::AssistantController,
   ~AssistantController() override;
 
   void BindRequest(mojom::AssistantControllerRequest request);
+
+  // Adds/removes the specified |observer|.
+  void AddObserver(AssistantControllerObserver* observer);
+  void RemoveObserver(AssistantControllerObserver* observer);
 
   // Requests that WebContents, uniquely identified by |id_token|, be created
   // and managed according to the specified |params|. When the WebContents is
@@ -94,6 +100,10 @@ class AssistantController : public mojom::AssistantController,
   }
 
  private:
+  // The observer list should be initialized early so that sub-controllers may
+  // register as observers during their construction.
+  base::ObserverList<AssistantControllerObserver> observers_;
+
   mojo::BindingSet<mojom::AssistantController> assistant_controller_bindings_;
 
   mojo::BindingSet<mojom::ManagedWebContentsOpenUrlDelegate>

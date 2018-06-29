@@ -94,6 +94,7 @@ component("ash") {
     "ash_service.h",
     "assistant/assistant_controller.cc",
     "assistant/assistant_controller.h",
+    "assistant/assistant_controller_observer.h",
     "assistant/assistant_interaction_controller.cc",
     "assistant/assistant_interaction_controller.h",
     "assistant/assistant_ui_controller.cc",

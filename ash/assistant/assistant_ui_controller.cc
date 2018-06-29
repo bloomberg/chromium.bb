@@ -7,6 +7,7 @@
 #include "ash/assistant/assistant_controller.h"
 #include "ash/assistant/assistant_interaction_controller.h"
 #include "ash/assistant/ui/assistant_container_view.h"
+#include "ash/assistant/util/deep_link_util.h"
 #include "ash/public/interfaces/assistant_setup.mojom.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
@@ -40,11 +41,13 @@ void ShowToast(const std::string& id, int message_id) {
 AssistantUiController::AssistantUiController(
     AssistantController* assistant_controller)
     : assistant_controller_(assistant_controller) {
+  assistant_controller_->AddObserver(this);
   Shell::Get()->highlighter_controller()->AddObserver(this);
 }
 
 AssistantUiController::~AssistantUiController() {
   Shell::Get()->highlighter_controller()->RemoveObserver(this);
+  assistant_controller_->RemoveObserver(this);
 
   if (container_view_)
     container_view_->GetWidget()->RemoveObserver(this);
@@ -133,11 +136,15 @@ bool AssistantUiController::OnCaptionButtonPressed(CaptionButtonId id) {
   return false;
 }
 
+// TODO(dmblack): This event doesn't need to be handled here anymore. Move it
+// out of AssistantUiController.
 void AssistantUiController::OnDialogPlateButtonPressed(DialogPlateButtonId id) {
   if (id != DialogPlateButtonId::kSettings)
     return;
 
-  UpdateUiMode(AssistantUiMode::kWebUi);
+  // Launch Assistant Settings via deep link.
+  assistant_controller_->OpenUrl(
+      assistant::util::CreateAssistantSettingsDeepLink());
 }
 
 void AssistantUiController::OnHighlighterEnabledChanged(
@@ -155,6 +162,19 @@ void AssistantUiController::OnHighlighterEnabledChanged(
       // No action necessary.
       break;
   }
+}
+
+void AssistantUiController::OnDeepLinkReceived(const GURL& url) {
+  if (!assistant::util::IsWebDeepLink(url))
+    return;
+
+  ShowUi(AssistantSource::kDeepLink);
+  UpdateUiMode(AssistantUiMode::kWebUi);
+}
+
+void AssistantUiController::OnUrlOpened(const GURL& url) {
+  // We close Assistant UI when opening a URL in a new tab.
+  HideUi(AssistantSource::kUnspecified);
 }
 
 void AssistantUiController::ShowUi(AssistantSource source) {
