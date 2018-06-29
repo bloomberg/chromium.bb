@@ -14,9 +14,10 @@
 #include "base/strings/string_piece.h"
 #include "mojo/edk/embedder/process_error_callback.h"
 #include "mojo/edk/system/channel.h"
+#include "mojo/edk/system/connection_params.h"
 #include "mojo/edk/system/platform_handle_in_transit.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -27,11 +28,11 @@ class BrokerHost : public Channel::Delegate,
                    public base::MessageLoopCurrent::DestructionObserver {
  public:
   BrokerHost(base::ProcessHandle client_process,
-             ScopedInternalPlatformHandle handle,
+             ConnectionParams connection_params,
              const ProcessErrorCallback& process_error_callback);
 
   // Send |handle| to the client, to be used to establish a NodeChannel to us.
-  bool SendChannel(ScopedInternalPlatformHandle handle);
+  bool SendChannel(PlatformHandle handle);
 
 #if defined(OS_WIN)
   // Sends a named channel to the client. Like above, but for named pipes.

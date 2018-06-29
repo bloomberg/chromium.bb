@@ -9,7 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/writable_shared_memory_region.h"
 #include "base/synchronization/lock.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -19,14 +20,14 @@ namespace edk {
 class Broker {
  public:
   // Note: This is blocking, and will wait for the first message over
-  // |platform_handle|.
-  explicit Broker(ScopedInternalPlatformHandle platform_handle);
+  // the endpoint handle in |handle|.
+  explicit Broker(PlatformHandle handle);
   ~Broker();
 
   // Returns the platform handle that should be used to establish a NodeChannel
   // to the process which is inviting us to join its network. This is the first
   // handle read off the Broker channel upon construction.
-  ScopedInternalPlatformHandle GetInviterInternalPlatformHandle();
+  PlatformChannelEndpoint GetInviterEndpoint();
 
   // Request a shared buffer from the broker process. Blocks the current thread.
   base::WritableSharedMemoryRegion GetWritableSharedMemoryRegion(
@@ -34,11 +35,11 @@ class Broker {
 
  private:
   // Handle to the broker process, used for synchronous IPCs.
-  ScopedInternalPlatformHandle sync_channel_;
+  PlatformHandle sync_channel_;
 
-  // Handle to the inviter process which is recieved in the first first message
-  // over |sync_channel_|.
-  ScopedInternalPlatformHandle inviter_channel_;
+  // Channel endpoint connected to the inviter process. Recieved in the first
+  // first message over |sync_channel_|.
+  PlatformChannelEndpoint inviter_endpoint_;
 
   // Lock to only allow one sync message at a time. This avoids having to deal
   // with message ordering since we can only have one request at a time

@@ -7,8 +7,9 @@
 
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/platform/platform_channel_endpoint.h"
+#include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 
 namespace mojo {
 namespace edk {
@@ -16,15 +17,28 @@ namespace edk {
 // A set of parameters used when establishing a connection to another process.
 class MOJO_SYSTEM_IMPL_EXPORT ConnectionParams {
  public:
-  explicit ConnectionParams(ScopedInternalPlatformHandle channel);
+  ConnectionParams();
+  explicit ConnectionParams(PlatformChannelEndpoint endpoint);
+  explicit ConnectionParams(PlatformChannelServerEndpoint server_endpoint);
+  ConnectionParams(ConnectionParams&&);
+  ~ConnectionParams();
 
-  ConnectionParams(ConnectionParams&& params);
-  ConnectionParams& operator=(ConnectionParams&& params);
+  ConnectionParams& operator=(ConnectionParams&&);
 
-  ScopedInternalPlatformHandle TakeChannelHandle();
+  const PlatformChannelEndpoint& endpoint() const { return endpoint_; }
+  const PlatformChannelServerEndpoint& server_endpoint() const {
+    return server_endpoint_;
+  }
+
+  PlatformChannelEndpoint TakeEndpoint() { return std::move(endpoint_); }
+
+  PlatformChannelServerEndpoint TakeServerEndpoint() {
+    return std::move(server_endpoint_);
+  }
 
  private:
-  ScopedInternalPlatformHandle channel_;
+  PlatformChannelEndpoint endpoint_;
+  PlatformChannelServerEndpoint server_endpoint_;
 
   DISALLOW_COPY_AND_ASSIGN(ConnectionParams);
 };

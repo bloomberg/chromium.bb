@@ -122,7 +122,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
     size_t num_bytes,
     const ports::PortName* ports,
     size_t num_ports,
-    ScopedInternalPlatformHandle* platform_handles,
+    PlatformHandle* platform_handles,
     size_t num_platform_handles) {
   if (num_bytes != sizeof(SerializedState)) {
     LOG(ERROR) << "Invalid serialized shared buffer dispatcher (bad size)";
@@ -147,8 +147,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
       MOJO_PLATFORM_SHARED_MEMORY_REGION_ACCESS_MODE_WRITABLE) {
     if (num_platform_handles != 2)
       return nullptr;
-    handles[1] = ScopedInternalPlatformHandleToPlatformHandle(
-        std::move(platform_handles[1]));
+    handles[1] = std::move(platform_handles[1]);
   } else {
     if (num_platform_handles != 1)
       return nullptr;
@@ -157,8 +156,7 @@ scoped_refptr<SharedBufferDispatcher> SharedBufferDispatcher::Deserialize(
   if (num_platform_handles != 1)
     return nullptr;
 #endif
-  handles[0] = ScopedInternalPlatformHandleToPlatformHandle(
-      std::move(platform_handles[0]));
+  handles[0] = std::move(platform_handles[0]);
 
   base::UnguessableToken guid = base::UnguessableToken::Deserialize(
       serialized_state->guid_high, serialized_state->guid_low);
@@ -323,10 +321,9 @@ void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
 #endif
 }
 
-bool SharedBufferDispatcher::EndSerialize(
-    void* destination,
-    ports::PortName* ports,
-    ScopedInternalPlatformHandle* handles) {
+bool SharedBufferDispatcher::EndSerialize(void* destination,
+                                          ports::PortName* ports,
+                                          PlatformHandle* handles) {
   SerializedState* serialized_state =
       static_cast<SerializedState*>(destination);
   base::AutoLock lock(lock_);
@@ -363,10 +360,8 @@ bool SharedBufferDispatcher::EndSerialize(
     ExtractPlatformHandlesFromSharedMemoryRegionHandle(
         region.PassPlatformHandle(), &platform_handles[0],
         &platform_handles[1]);
-    handles[0] = PlatformHandleToScopedInternalPlatformHandle(
-        std::move(platform_handles[0]));
-    handles[1] = PlatformHandleToScopedInternalPlatformHandle(
-        std::move(platform_handles[1]));
+    handles[0] = std::move(platform_handles[0]);
+    handles[1] = std::move(platform_handles[1]);
     return true;
   }
 #endif
@@ -375,8 +370,7 @@ bool SharedBufferDispatcher::EndSerialize(
   PlatformHandle ignored_handle;
   ExtractPlatformHandlesFromSharedMemoryRegionHandle(
       region.PassPlatformHandle(), &platform_handle, &ignored_handle);
-  handles[0] =
-      PlatformHandleToScopedInternalPlatformHandle(std::move(platform_handle));
+  handles[0] = std::move(platform_handle);
   return true;
 }
 

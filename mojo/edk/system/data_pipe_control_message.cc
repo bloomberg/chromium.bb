@@ -6,7 +6,6 @@
 
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports/event.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/user_message_impl.h"
 
 namespace mojo {

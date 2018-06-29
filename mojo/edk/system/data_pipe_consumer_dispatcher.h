@@ -17,7 +17,6 @@
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/dispatcher.h"
 #include "mojo/edk/system/ports/port_ref.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/edk/system/watcher_set.h"
 
@@ -58,7 +57,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
                       uint32_t* num_handles) override;
   bool EndSerialize(void* destination,
                     ports::PortName* ports,
-                    ScopedInternalPlatformHandle* handles) override;
+                    PlatformHandle* handles) override;
   bool BeginTransit() override;
   void CompleteTransitAndClose() override;
   void CancelTransit() override;
@@ -68,7 +67,7 @@ class MOJO_SYSTEM_IMPL_EXPORT DataPipeConsumerDispatcher final
       size_t num_bytes,
       const ports::PortName* ports,
       size_t num_ports,
-      ScopedInternalPlatformHandle* handles,
+      PlatformHandle* handles,
       size_t num_handles);
 
  private:

@@ -38,7 +38,7 @@
 #define SHARED_BUFFER_PLATFORM_HANDLE_TYPE SIMPLE_PLATFORM_HANDLE_TYPE
 #endif
 
-uint64_t InternalPlatformHandleValueFromPlatformFile(base::PlatformFile file) {
+uint64_t PlatformHandleValueFromPlatformFile(base::PlatformFile file) {
 #if defined(OS_WIN)
   return reinterpret_cast<uint64_t>(file);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -46,7 +46,7 @@ uint64_t InternalPlatformHandleValueFromPlatformFile(base::PlatformFile file) {
 #endif
 }
 
-base::PlatformFile PlatformFileFromInternalPlatformHandleValue(uint64_t value) {
+base::PlatformFile PlatformFileFromPlatformHandleValue(uint64_t value) {
 #if defined(OS_WIN)
   return reinterpret_cast<base::PlatformFile>(value);
 #elif defined(OS_POSIX) || defined(OS_FUCHSIA)
@@ -60,7 +60,7 @@ namespace {
 
 using PlatformWrapperTest = test::MojoTestBase;
 
-TEST_F(PlatformWrapperTest, WrapInternalPlatformHandle) {
+TEST_F(PlatformWrapperTest, WrapPlatformHandle) {
   // Create a temporary file and write a message to it.
   base::FilePath temp_file_path;
   ASSERT_TRUE(base::CreateTemporaryFile(&temp_file_path));
@@ -81,7 +81,7 @@ TEST_F(PlatformWrapperTest, WrapInternalPlatformHandle) {
     os_file.struct_size = sizeof(MojoPlatformHandle);
     os_file.type = SIMPLE_PLATFORM_HANDLE_TYPE;
     os_file.value =
-        InternalPlatformHandleValueFromPlatformFile(file.TakePlatformFile());
+        PlatformHandleValueFromPlatformFile(file.TakePlatformFile());
     EXPECT_EQ(MOJO_RESULT_OK,
               MojoWrapPlatformHandle(&os_file, nullptr, &wrapped_handle));
 
@@ -101,8 +101,7 @@ DEFINE_TEST_CLIENT_TEST_WITH_PIPE(ReadPlatformFile, PlatformWrapperTest, h) {
   ASSERT_EQ(MOJO_RESULT_OK, MojoUnwrapPlatformHandle(wrapped_handle, nullptr,
                                                      &platform_handle));
   EXPECT_EQ(SIMPLE_PLATFORM_HANDLE_TYPE, platform_handle.type);
-  base::File file(
-      PlatformFileFromInternalPlatformHandleValue(platform_handle.value));
+  base::File file(PlatformFileFromPlatformHandleValue(platform_handle.value));
 
   // Expect to read the same message from the file.
   std::vector<char> data(message.size());

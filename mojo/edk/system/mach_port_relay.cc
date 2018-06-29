@@ -13,7 +13,6 @@
 #include "base/mac/scoped_mach_port.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {

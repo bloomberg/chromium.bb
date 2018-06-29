@@ -15,7 +15,6 @@
 #include "mojo/edk/system/channel.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
-#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/request_context.h"
 
 namespace mojo {
@@ -283,10 +282,9 @@ void NodeChannel::AcceptPeer(const ports::NodeName& sender_name,
 void NodeChannel::AddBrokerClient(const ports::NodeName& client_name,
                                   ScopedProcessHandle process_handle) {
   AddBrokerClientData* data;
-  std::vector<ScopedInternalPlatformHandle> handles;
+  std::vector<PlatformHandle> handles;
 #if defined(OS_WIN)
-  handles.emplace_back(ScopedInternalPlatformHandle(
-      InternalPlatformHandle(process_handle.release())));
+  handles.emplace_back(base::win::ScopedHandle(process_handle.release()));
 #endif
   Channel::MessagePtr message =
       CreateMessage(MessageType::ADD_BROKER_CLIENT, sizeof(AddBrokerClientData),
@@ -300,13 +298,12 @@ void NodeChannel::AddBrokerClient(const ports::NodeName& client_name,
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::BrokerClientAdded(
-    const ports::NodeName& client_name,
-    ScopedInternalPlatformHandle broker_channel) {
+void NodeChannel::BrokerClientAdded(const ports::NodeName& client_name,
+                                    PlatformHandle broker_channel) {
   BrokerClientAddedData* data;
-  std::vector<ScopedInternalPlatformHandle> handles;
+  std::vector<PlatformHandle> handles;
   if (broker_channel.is_valid())
-    handles.push_back(std::move(broker_channel));
+    handles.emplace_back(std::move(broker_channel));
   Channel::MessagePtr message =
       CreateMessage(MessageType::BROKER_CLIENT_ADDED,
                     sizeof(BrokerClientAddedData), handles.size(), &data);
@@ -315,13 +312,12 @@ void NodeChannel::BrokerClientAdded(
   WriteChannelMessage(std::move(message));
 }
 
-void NodeChannel::AcceptBrokerClient(
-    const ports::NodeName& broker_name,
-    ScopedInternalPlatformHandle broker_channel) {
+void NodeChannel::AcceptBrokerClient(const ports::NodeName& broker_name,
+                                     PlatformHandle broker_channel) {
   AcceptBrokerClientData* data;
-  std::vector<ScopedInternalPlatformHandle> handles;
+  std::vector<PlatformHandle> handles;
   if (broker_channel.is_valid())
-    handles.push_back(std::move(broker_channel));
+    handles.emplace_back(std::move(broker_channel));
   Channel::MessagePtr message =
       CreateMessage(MessageType::ACCEPT_BROKER_CLIENT,
                     sizeof(AcceptBrokerClientData), handles.size(), &data);
@@ -350,11 +346,11 @@ void NodeChannel::RequestIntroduction(const ports::NodeName& name) {
 }
 
 void NodeChannel::Introduce(const ports::NodeName& name,
-                            ScopedInternalPlatformHandle channel_handle) {
+                            PlatformHandle channel_handle) {
   IntroductionData* data;
-  std::vector<ScopedInternalPlatformHandle> handles;
+  std::vector<PlatformHandle> handles;
   if (channel_handle.is_valid())
-    handles.push_back(std::move(channel_handle));
+    handles.emplace_back(std::move(channel_handle));
   Channel::MessagePtr message = CreateMessage(
       MessageType::INTRODUCE, sizeof(IntroductionData), handles.size(), &data);
   message->SetHandles(std::move(handles));
@@ -400,10 +396,9 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // above stated assumption. We should not leak handles in cases where we
   // outlive the broker, as we may continue existing and eventually accept a new
   // broker invitation.
-  std::vector<ScopedInternalPlatformHandle> handles =
-      message->TakeInternalHandles();
+  std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
   for (auto& handle : handles)
-    ignore_result(handle.release());
+    handle.TakeHandle().release();
 
 #else
   DCHECK(message->has_mach_ports());
@@ -413,8 +408,7 @@ void NodeChannel::RelayEventMessage(const ports::NodeName& destination,
   // moves them back to the relayed message. This is necessary because the
   // message may contain fds which need to be attached to the outer message so
   // that they can be transferred to the broker.
-  std::vector<ScopedInternalPlatformHandle> handles =
-      message->TakeInternalHandles();
+  std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
   size_t num_bytes = sizeof(RelayEventMessageData) + message->data_num_bytes();
   RelayEventMessageData* data;
   Channel::MessagePtr relay_message = CreateMessage(
@@ -462,20 +456,12 @@ NodeChannel::~NodeChannel() {
   ShutDown();
 }
 
-void NodeChannel::OnChannelMessage(
-    const void* payload,
-    size_t payload_size,
-    std::vector<PlatformHandle> platform_handles) {
+void NodeChannel::OnChannelMessage(const void* payload,
+                                   size_t payload_size,
+                                   std::vector<PlatformHandle> handles) {
   DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
 
   RequestContext request_context(RequestContext::Source::SYSTEM);
-
-  std::vector<ScopedInternalPlatformHandle> handles;
-  handles.reserve(platform_handles.size());
-  for (auto& h : platform_handles) {
-    handles.emplace_back(
-        PlatformHandleToScopedInternalPlatformHandle(std::move(h)));
-  }
 
   // Ensure this NodeChannel stays alive through the extent of this method. The
   // delegate may have the only other reference to this object and it may choose
@@ -518,7 +504,7 @@ void NodeChannel::OnChannelMessage(
           break;
         }
         delegate_->OnAddBrokerClient(remote_node_name_, data->client_name,
-                                     handles.at(0).release().handle);
+                                     handles[0].ReleaseHandle());
 #else
         if (!handles.empty()) {
           DLOG(ERROR) << "Dropping invalid AddBrokerClient message.";
@@ -540,7 +526,7 @@ void NodeChannel::OnChannelMessage(
           break;
         }
         delegate_->OnBrokerClientAdded(remote_node_name_, data->client_name,
-                                       std::move(handles.at(0)));
+                                       std::move(handles[0]));
         return;
       }
       break;
@@ -549,14 +535,14 @@ void NodeChannel::OnChannelMessage(
     case MessageType::ACCEPT_BROKER_CLIENT: {
       const AcceptBrokerClientData* data;
       if (GetMessagePayload(payload, payload_size, &data)) {
-        ScopedInternalPlatformHandle broker_channel;
+        PlatformHandle broker_channel;
         if (handles.size() > 1) {
           DLOG(ERROR) << "Dropping invalid AcceptBrokerClient message.";
           break;
         }
-        if (handles.size() == 1) {
-          broker_channel = std::move(handles.at(0));
-        }
+        if (handles.size() == 1)
+          broker_channel = std::move(handles[0]);
+
         delegate_->OnAcceptBrokerClient(remote_node_name_, data->broker_name,
                                         std::move(broker_channel));
         return;
@@ -604,10 +590,10 @@ void NodeChannel::OnChannelMessage(
           DLOG(ERROR) << "Dropping invalid introduction message.";
           break;
         }
-        ScopedInternalPlatformHandle channel_handle;
-        if (handles.size() == 1) {
-          channel_handle = std::move(handles.at(0));
-        }
+        PlatformHandle channel_handle;
+        if (handles.size() == 1)
+          channel_handle = std::move(handles[0]);
+
         delegate_->OnIntroduce(remote_node_name_, data->name,
                                std::move(channel_handle));
         return;

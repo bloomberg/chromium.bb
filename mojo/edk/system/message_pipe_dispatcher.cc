@@ -223,10 +223,9 @@ void MessagePipeDispatcher::StartSerialize(uint32_t* num_bytes,
   *num_handles = 0;
 }
 
-bool MessagePipeDispatcher::EndSerialize(
-    void* destination,
-    ports::PortName* ports,
-    ScopedInternalPlatformHandle* handles) {
+bool MessagePipeDispatcher::EndSerialize(void* destination,
+                                         ports::PortName* ports,
+                                         PlatformHandle* handles) {
   SerializedState* state = static_cast<SerializedState*>(destination);
   state->pipe_id = pipe_id_;
   state->endpoint = static_cast<int8_t>(endpoint_);
@@ -266,7 +265,7 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
     size_t num_bytes,
     const ports::PortName* ports,
     size_t num_ports,
-    ScopedInternalPlatformHandle* handles,
+    PlatformHandle* handles,
     size_t num_handles) {
   if (num_ports != 1 || num_handles || num_bytes != sizeof(SerializedState))
     return nullptr;

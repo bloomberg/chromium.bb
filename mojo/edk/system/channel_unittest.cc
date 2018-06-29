@@ -184,7 +184,7 @@ TEST(ChannelTest, OnReadNonLegacyMessage) {
 class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
  public:
   ChannelTestShutdownAndWriteDelegate(
-      ScopedInternalPlatformHandle handle,
+      PlatformChannelEndpoint endpoint,
       scoped_refptr<base::TaskRunner> task_runner,
       scoped_refptr<Channel> client_channel,
       std::unique_ptr<base::Thread> client_thread,
@@ -192,7 +192,7 @@ class ChannelTestShutdownAndWriteDelegate : public Channel::Delegate {
       : quit_closure_(std::move(quit_closure)),
         client_channel_(std::move(client_channel)),
         client_thread_(std::move(client_thread)) {
-    channel_ = Channel::Create(this, ConnectionParams(std::move(handle)),
+    channel_ = Channel::Create(this, ConnectionParams(std::move(endpoint)),
                                std::move(task_runner));
     channel_->Start();
   }
@@ -249,11 +249,9 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   client_thread->StartWithOptions(
       base::Thread::Options(base::MessageLoop::TYPE_IO, 0));
 
-  scoped_refptr<Channel> client_channel = Channel::Create(
-      nullptr,
-      ConnectionParams(PlatformHandleToScopedInternalPlatformHandle(
-          channel.TakeRemoteEndpoint().TakePlatformHandle())),
-      client_thread->task_runner());
+  scoped_refptr<Channel> client_channel =
+      Channel::Create(nullptr, ConnectionParams(channel.TakeRemoteEndpoint()),
+                      client_thread->task_runner());
   client_channel->Start();
 
   // On the "client" IO thread, create and write a message.
@@ -268,10 +266,9 @@ TEST(ChannelTest, PeerShutdownDuringRead) {
   // is received.
   base::RunLoop run_loop;
   ChannelTestShutdownAndWriteDelegate server_delegate(
-      PlatformHandleToScopedInternalPlatformHandle(
-          channel.TakeLocalEndpoint().TakePlatformHandle()),
-      message_loop.task_runner(), std::move(client_channel),
-      std::move(client_thread), run_loop.QuitClosure());
+      channel.TakeLocalEndpoint(), message_loop.task_runner(),
+      std::move(client_channel), std::move(client_thread),
+      run_loop.QuitClosure());
 
   run_loop.Run();
 }

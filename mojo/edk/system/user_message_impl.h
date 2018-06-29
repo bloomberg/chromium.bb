@@ -17,7 +17,6 @@
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/port_ref.h"
 #include "mojo/edk/system/ports/user_message.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/types.h"

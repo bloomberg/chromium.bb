@@ -21,8 +21,8 @@
 #include "base/process/process_handle.h"
 #include "base/synchronization/lock.h"
 #include "base/task_runner.h"
+#include "base/win/scoped_handle.h"
 #include "base/win/win_util.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -34,13 +34,20 @@ class ChannelWin : public Channel,
                    public base::MessagePumpForIO::IOHandler {
  public:
   ChannelWin(Delegate* delegate,
-             ScopedInternalPlatformHandle handle,
+             ConnectionParams connection_params,
              scoped_refptr<base::TaskRunner> io_task_runner)
-      : Channel(delegate),
-        self_(this),
-        handle_(std::move(handle)),
-        io_task_runner_(io_task_runner) {
-    CHECK(handle_.is_valid());
+      : Channel(delegate), self_(this), io_task_runner_(io_task_runner) {
+    if (connection_params.server_endpoint().is_valid()) {
+      handle_ = connection_params.TakeServerEndpoint()
+                    .TakePlatformHandle()
+                    .TakeHandle();
+      needs_connection_ = true;
+    } else {
+      handle_ =
+          connection_params.TakeEndpoint().TakePlatformHandle().TakeHandle();
+    }
+
+    CHECK(handle_.IsValid());
   }
 
   void Start() override {
@@ -130,12 +137,11 @@ class ChannelWin : public Channel,
 
   void StartOnIOThread() {
     base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
-    base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(
-        handle_.get().handle, this);
+    base::MessageLoopCurrentForIO::Get()->RegisterIOHandler(handle_.Get(),
+                                                            this);
 
-    if (handle_.get().needs_connection) {
-      BOOL ok = ConnectNamedPipe(handle_.get().handle,
-                                 &connect_context_.overlapped);
+    if (needs_connection_) {
+      BOOL ok = ::ConnectNamedPipe(handle_.Get(), &connect_context_.overlapped);
       if (ok) {
         PLOG(ERROR) << "Unexpected success while waiting for pipe connection";
         OnError(Error::kConnectionFailed);
@@ -177,11 +183,12 @@ class ChannelWin : public Channel,
 
     // BUG(crbug.com/583525): This function is expected to be called once, and
     // |handle_| should be valid at this point.
-    CHECK(handle_.is_valid());
-    CancelIo(handle_.get().handle);
+    CHECK(handle_.IsValid());
+    CancelIo(handle_.Get());
     if (leak_handle_)
-      ignore_result(handle_.release());
-    handle_.reset();
+      ignore_result(handle_.Take());
+    else
+      handle_.Close();
 
     // Allow |this| to be destroyed as soon as no IO is pending.
     self_ = nullptr;
@@ -280,12 +287,9 @@ class ChannelWin : public Channel,
     char* buffer = GetReadBuffer(&buffer_capacity);
     DCHECK_GT(buffer_capacity, 0u);
 
-    BOOL ok = ReadFile(handle_.get().handle,
-                       buffer,
-                       static_cast<DWORD>(buffer_capacity),
-                       NULL,
-                       &read_context_.overlapped);
-
+    BOOL ok =
+        ::ReadFile(handle_.Get(), buffer, static_cast<DWORD>(buffer_capacity),
+                   NULL, &read_context_.overlapped);
     if (ok || GetLastError() == ERROR_IO_PENDING) {
       is_read_pending_ = true;
       AddRef();
@@ -298,10 +302,9 @@ class ChannelWin : public Channel,
   // cannot be written, it's queued and a wait is initiated to write the message
   // ASAP on the I/O thread.
   bool WriteNoLock(const Channel::MessagePtr& message) {
-    BOOL ok = WriteFile(handle_.get().handle, message->data(),
+    BOOL ok = WriteFile(handle_.Get(), message->data(),
                         static_cast<DWORD>(message->data_num_bytes()), NULL,
                         &write_context_.overlapped);
-
     if (ok || GetLastError() == ERROR_IO_PENDING) {
       is_write_pending_ = true;
       AddRef();
@@ -334,7 +337,12 @@ class ChannelWin : public Channel,
   // Keeps the Channel alive at least until explicit shutdown on the IO thread.
   scoped_refptr<Channel> self_;
 
-  ScopedInternalPlatformHandle handle_;
+  // The pipe handle this Channel uses for communication.
+  base::win::ScopedHandle handle_;
+
+  // Indicates whether |handle_| must wait for a connection.
+  bool needs_connection_ = false;
+
   const scoped_refptr<base::TaskRunner> io_task_runner_;
 
   base::MessagePumpForIO::IOContext connect_context_;
@@ -362,8 +370,7 @@ scoped_refptr<Channel> Channel::Create(
     Delegate* delegate,
     ConnectionParams connection_params,
     scoped_refptr<base::TaskRunner> io_task_runner) {
-  return new ChannelWin(delegate, connection_params.TakeChannelHandle(),
-                        io_task_runner);
+  return new ChannelWin(delegate, std::move(connection_params), io_task_runner);
 }
 
 }  // namespace edk

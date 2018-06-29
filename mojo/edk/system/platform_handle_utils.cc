@@ -21,63 +21,6 @@
 namespace mojo {
 namespace edk {
 
-PlatformHandle ScopedInternalPlatformHandleToPlatformHandle(
-    ScopedInternalPlatformHandle handle) {
-#if defined(OS_FUCHSIA)
-  if (handle.get().is_valid_fd())
-    return PlatformHandle(base::ScopedFD(handle.release().as_fd()));
-  else
-    return PlatformHandle(base::ScopedZxHandle(handle.release().as_handle()));
-#elif defined(OS_POSIX)
-  if (handle.get().type == InternalPlatformHandle::Type::POSIX) {
-    return PlatformHandle(base::ScopedFD(handle.release().handle));
-  }
-#elif defined(OS_WIN)
-  return PlatformHandle(base::win::ScopedHandle(handle.release().handle));
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (handle.get().type == InternalPlatformHandle::Type::MACH) {
-    return PlatformHandle(
-        base::mac::ScopedMachSendRight(handle.release().port));
-  }
-#endif
-
-  return PlatformHandle();
-}
-
-ScopedInternalPlatformHandle PlatformHandleToScopedInternalPlatformHandle(
-    PlatformHandle handle) {
-#if defined(OS_FUCHSIA)
-  if (handle.is_fd()) {
-    return ScopedInternalPlatformHandle(
-        InternalPlatformHandle::ForFd(handle.ReleaseFD()));
-  } else if (handle.is_handle()) {
-    return ScopedInternalPlatformHandle(
-        InternalPlatformHandle::ForHandle(handle.ReleaseHandle()));
-  }
-#elif defined(OS_POSIX)
-  if (handle.is_fd()) {
-    return ScopedInternalPlatformHandle(
-        InternalPlatformHandle(handle.ReleaseFD()));
-  }
-#elif defined(OS_WIN)
-  if (handle.is_handle()) {
-    return ScopedInternalPlatformHandle(
-        InternalPlatformHandle(handle.ReleaseHandle()));
-  }
-#endif
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  if (handle.is_mach_port()) {
-    return ScopedInternalPlatformHandle(
-        InternalPlatformHandle(handle.ReleaseMachPort()));
-  }
-#endif
-
-  return ScopedInternalPlatformHandle();
-}
-
 void ExtractPlatformHandlesFromSharedMemoryRegionHandle(
     base::subtle::PlatformSharedMemoryRegion::ScopedPlatformHandle handle,
     PlatformHandle* extracted_handle,

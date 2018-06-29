@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "mojo/edk/system/broker_messages.h"
 #include "mojo/edk/system/platform_handle_utils.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 
 #if defined(OS_WIN)
 #include <windows.h>
@@ -23,7 +22,7 @@ namespace mojo {
 namespace edk {
 
 BrokerHost::BrokerHost(base::ProcessHandle client_process,
-                       ScopedInternalPlatformHandle platform_handle,
+                       ConnectionParams connection_params,
                        const ProcessErrorCallback& process_error_callback)
     : process_error_callback_(process_error_callback)
 #if defined(OS_WIN)
@@ -31,11 +30,12 @@ BrokerHost::BrokerHost(base::ProcessHandle client_process,
       client_process_(ScopedProcessHandle::CloneFrom(client_process))
 #endif
 {
-  CHECK(platform_handle.is_valid());
+  CHECK(connection_params.endpoint().is_valid() ||
+        connection_params.server_endpoint().is_valid());
 
   base::MessageLoopCurrent::Get()->AddDestructionObserver(this);
 
-  channel_ = Channel::Create(this, ConnectionParams(std::move(platform_handle)),
+  channel_ = Channel::Create(this, std::move(connection_params),
                              base::ThreadTaskRunnerHandle::Get());
   channel_->Start();
 }
@@ -62,7 +62,7 @@ bool BrokerHost::PrepareHandlesForClient(
 #endif
 }
 
-bool BrokerHost::SendChannel(ScopedInternalPlatformHandle handle) {
+bool BrokerHost::SendChannel(PlatformHandle handle) {
   CHECK(handle.is_valid());
   CHECK(channel_);
 
@@ -76,8 +76,7 @@ bool BrokerHost::SendChannel(ScopedInternalPlatformHandle handle) {
       CreateBrokerMessage(BrokerMessageType::INIT, 1, nullptr);
 #endif
   std::vector<PlatformHandleInTransit> handles(1);
-  handles[0] = PlatformHandleInTransit(
-      ScopedInternalPlatformHandleToPlatformHandle(std::move(handle)));
+  handles[0] = PlatformHandleInTransit(std::move(handle));
 
   // This may legitimately fail on Windows if the client process is in another
   // session, e.g., is an elevated process.

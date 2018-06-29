@@ -17,10 +17,8 @@
 #include "base/strings/string_piece.h"
 #include "base/synchronization/lock.h"
 #include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/platform_handle.h"
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/port_ref.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/edk/system/watch.h"
 #include "mojo/public/c/system/buffer.h"
@@ -28,6 +26,7 @@
 #include "mojo/public/c/system/message_pipe.h"
 #include "mojo/public/c/system/trap.h"
 #include "mojo/public/c/system/types.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace mojo {
 namespace edk {
@@ -177,13 +176,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   // will close.
   //
   // NOTE: Transit MAY still fail after this call returns. Implementations
-  // should not assume InternalPlatformHandle ownership has transferred until
+  // should not assume PlatformHandle ownership has transferred until
   // CompleteTransitAndClose() is called. In other words, if CancelTransit() is
-  // called, the implementation should retain its InternalPlatformHandles in
-  // working condition.
+  // called, the implementation should retain its PlatformHandles in working
+  // condition.
   virtual bool EndSerialize(void* destination,
                             ports::PortName* ports,
-                            ScopedInternalPlatformHandle* handles);
+                            PlatformHandle* handles);
 
   // Does whatever is necessary to begin transit of the dispatcher.  This
   // should return |true| if transit is OK, or false if the underlying resource
@@ -200,14 +199,13 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
   virtual void CancelTransit();
 
   // Deserializes a specific dispatcher type from an incoming message.
-  static scoped_refptr<Dispatcher> Deserialize(
-      Type type,
-      const void* bytes,
-      size_t num_bytes,
-      const ports::PortName* ports,
-      size_t num_ports,
-      ScopedInternalPlatformHandle* platform_handles,
-      size_t platform_handle_count);
+  static scoped_refptr<Dispatcher> Deserialize(Type type,
+                                               const void* bytes,
+                                               size_t num_bytes,
+                                               const ports::PortName* ports,
+                                               size_t num_ports,
+                                               PlatformHandle* platform_handles,
+                                               size_t platform_handle_count);
 
  protected:
   friend class base::RefCountedThreadSafe<Dispatcher>;

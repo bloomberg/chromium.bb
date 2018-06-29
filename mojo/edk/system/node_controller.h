@@ -27,9 +27,9 @@
 #include "mojo/edk/system/ports/name.h"
 #include "mojo/edk/system/ports/node.h"
 #include "mojo/edk/system/ports/node_delegate.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/scoped_process_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
+#include "mojo/public/cpp/platform/platform_handle.h"
 
 namespace base {
 class PortProvider;
@@ -195,14 +195,12 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
   void OnAddBrokerClient(const ports::NodeName& from_node,
                          const ports::NodeName& client_name,
                          base::ProcessHandle process_handle) override;
-  void OnBrokerClientAdded(
-      const ports::NodeName& from_node,
-      const ports::NodeName& client_name,
-      ScopedInternalPlatformHandle broker_channel) override;
-  void OnAcceptBrokerClient(
-      const ports::NodeName& from_node,
-      const ports::NodeName& broker_name,
-      ScopedInternalPlatformHandle broker_channel) override;
+  void OnBrokerClientAdded(const ports::NodeName& from_node,
+                           const ports::NodeName& client_name,
+                           PlatformHandle broker_channel) override;
+  void OnAcceptBrokerClient(const ports::NodeName& from_node,
+                            const ports::NodeName& broker_name,
+                            PlatformHandle broker_channel) override;
   void OnEventMessage(const ports::NodeName& from_node,
                       Channel::MessagePtr message) override;
   void OnRequestPortMerge(const ports::NodeName& from_node,
@@ -212,7 +210,7 @@ class MOJO_SYSTEM_IMPL_EXPORT NodeController : public ports::NodeDelegate,
                              const ports::NodeName& name) override;
   void OnIntroduce(const ports::NodeName& from_node,
                    const ports::NodeName& name,
-                   ScopedInternalPlatformHandle channel_handle) override;
+                   PlatformHandle channel_handle) override;
   void OnBroadcast(const ports::NodeName& from_node,
                    Channel::MessagePtr message) override;
 #if defined(OS_WIN) || (defined(OS_MACOSX) && !defined(OS_IOS))

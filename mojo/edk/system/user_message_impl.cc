@@ -20,7 +20,6 @@
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_channel.h"
 #include "mojo/edk/system/node_controller.h"
-#include "mojo/edk/system/platform_handle_utils.h"
 #include "mojo/edk/system/ports/event.h"
 #include "mojo/edk/system/ports/message_filter.h"
 #include "mojo/edk/system/ports/node.h"
@@ -153,7 +152,7 @@ MojoResult CreateOrExtendSerializedEventMessage(
   DispatcherHeader* new_dispatcher_headers;
   char* new_dispatcher_data;
   size_t total_num_dispatchers = num_new_dispatchers;
-  std::vector<ScopedInternalPlatformHandle> handles;
+  std::vector<PlatformHandle> handles;
   if (original_message) {
     DCHECK(original_header);
     size_t original_dispatcher_headers_size =
@@ -177,9 +176,12 @@ MojoResult CreateOrExtendSerializedEventMessage(
     memcpy(dispatcher_data, original_dispatcher_data,
            original_dispatcher_data_size);
     new_dispatcher_data = dispatcher_data + original_dispatcher_data_size;
-    auto handles = original_message->TakeInternalHandles();
-    if (!handles.empty())
+    auto handles_in_transit = original_message->TakeHandles();
+    if (!handles_in_transit.empty()) {
       handles.resize(num_handles);
+      for (size_t i = 0; i < handles_in_transit.size(); ++i)
+        handles[i] = handles_in_transit[i].TakeHandle();
+    }
     memcpy(reinterpret_cast<char*>(header) + header_size,
            reinterpret_cast<char*>(original_header) + original_header_size,
            original_payload_size);
@@ -191,9 +193,8 @@ MojoResult CreateOrExtendSerializedEventMessage(
         reinterpret_cast<char*>(new_dispatcher_headers + num_new_dispatchers);
   }
 
-  if (handles.empty() && num_new_handles) {
+  if (handles.empty() && num_new_handles)
     handles.resize(num_new_handles);
-  }
 
   header->num_dispatchers =
       base::CheckedNumeric<uint32_t>(total_num_dispatchers).ValueOrDie();
@@ -241,7 +242,7 @@ MojoResult CreateOrExtendSerializedEventMessage(
       // retain ownership when message creation fails, so these are not actually
       // leaking.
       for (auto& handle : handles)
-        ignore_result(handle.release());
+        handle.release();
 
       // Leave the original message in place on failure if applicable.
       if (original_message)
@@ -583,8 +584,13 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
       dispatcher_headers + header->num_dispatchers);
   size_t port_index = 0;
   size_t platform_handle_index = 0;
-  std::vector<ScopedInternalPlatformHandle> msg_handles =
-      channel_message_->TakeInternalHandles();
+  std::vector<PlatformHandleInTransit> handles_in_transit =
+      channel_message_->TakeHandles();
+  std::vector<PlatformHandle> msg_handles(handles_in_transit.size());
+  for (size_t i = 0; i < handles_in_transit.size(); ++i) {
+    DCHECK(!handles_in_transit[i].owning_process().is_valid());
+    msg_handles[i] = handles_in_transit[i].TakeHandle();
+  }
   for (size_t i = 0; i < header->num_dispatchers; ++i) {
     const DispatcherHeader& dh = dispatcher_headers[i];
     auto type = static_cast<Dispatcher::Type>(dh.type);
@@ -611,7 +617,7 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
       return MOJO_RESULT_ABORTED;
     }
 
-    ScopedInternalPlatformHandle* out_handles =
+    PlatformHandle* out_handles =
         !msg_handles.empty() ? msg_handles.data() + platform_handle_index
                              : nullptr;
     dispatchers[i].dispatcher = Dispatcher::Deserialize(

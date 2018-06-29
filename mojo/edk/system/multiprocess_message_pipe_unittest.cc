@@ -23,7 +23,6 @@
 #include "base/strings/string_split.h"
 #include "build/build_config.h"
 #include "mojo/edk/system/handle_signals_state.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/edk/test/mojo_test_base.h"
 #include "mojo/edk/test/test_utils.h"
@@ -402,7 +401,7 @@ TEST_F(MultiprocessMessagePipeTest, SharedBufferPassing) {
   });
 }
 
-DEFINE_TEST_CLIENT_WITH_PIPE(CheckInternalPlatformHandleFile,
+DEFINE_TEST_CLIENT_WITH_PIPE(CheckPlatformHandleFile,
                              MultiprocessMessagePipeTest,
                              h) {
   HandleSignalsState hss;
@@ -450,12 +449,11 @@ class MultiprocessMessagePipeTestWithPipeCount
     : public MultiprocessMessagePipeTest,
       public testing::WithParamInterface<size_t> {};
 
-TEST_P(MultiprocessMessagePipeTestWithPipeCount,
-       InternalPlatformHandlePassing) {
+TEST_P(MultiprocessMessagePipeTestWithPipeCount, PlatformHandlePassing) {
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
 
-  RunTestClient("CheckInternalPlatformHandleFile", [&](MojoHandle h) {
+  RunTestClient("CheckPlatformHandleFile", [&](MojoHandle h) {
     std::vector<MojoHandle> handles;
 
     size_t pipe_count = GetParam();

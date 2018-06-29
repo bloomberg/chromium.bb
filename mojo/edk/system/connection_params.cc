@@ -11,19 +11,21 @@
 namespace mojo {
 namespace edk {
 
-ConnectionParams::ConnectionParams(ScopedInternalPlatformHandle channel)
-    : channel_(std::move(channel)) {}
+ConnectionParams::ConnectionParams() = default;
 
-ConnectionParams::ConnectionParams(ConnectionParams&& params) {
-  *this = std::move(params);
-}
+ConnectionParams::ConnectionParams(PlatformChannelEndpoint endpoint)
+    : endpoint_(std::move(endpoint)) {}
+
+ConnectionParams::ConnectionParams(
+    PlatformChannelServerEndpoint server_endpoint)
+    : server_endpoint_(std::move(server_endpoint)) {}
+
+ConnectionParams::ConnectionParams(ConnectionParams&&) = default;
+
+ConnectionParams::~ConnectionParams() = default;
 
 ConnectionParams& ConnectionParams::operator=(ConnectionParams&& params) =
     default;
-
-ScopedInternalPlatformHandle ConnectionParams::TakeChannelHandle() {
-  return std::move(channel_);
-}
 
 }  // namespace edk
 }  // namespace mojo

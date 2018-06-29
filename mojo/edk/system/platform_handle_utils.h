@@ -6,7 +6,6 @@
 #define MOJO_EDK_SYSTEM_PLATFORM_HANDLE_UTILS_H_
 
 #include "base/memory/platform_shared_memory_region.h"
-#include "mojo/edk/system/scoped_platform_handle.h"
 #include "mojo/edk/system/system_impl_export.h"
 #include "mojo/public/c/system/platform_handle.h"
 #include "mojo/public/c/system/types.h"
@@ -14,13 +13,6 @@
 
 namespace mojo {
 namespace edk {
-
-// Conversion between an internal handle type and the public PlatformHandle.
-MOJO_SYSTEM_IMPL_EXPORT PlatformHandle
-ScopedInternalPlatformHandleToPlatformHandle(
-    ScopedInternalPlatformHandle handle);
-MOJO_SYSTEM_IMPL_EXPORT ScopedInternalPlatformHandle
-PlatformHandleToScopedInternalPlatformHandle(PlatformHandle handle);
 
 // Converts a base shared memory platform handle into one (maybe two on POSIX)
 // PlatformHandle(s).
