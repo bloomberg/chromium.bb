@@ -26,6 +26,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -208,7 +209,12 @@ class LoginUserMenuView : public LoginBaseBubbleView,
                    : username;
 
       views::View* container = create_and_add_horizontal_margin_container();
-      container->AddChildView(CreateLabel(display_username, SK_ColorWHITE));
+      username_label_ = CreateLabel(display_username, SK_ColorWHITE);
+      // Do not change these two lines. Without them, the remove user button
+      // will be pushed out of the box when the user has a long name.
+      username_label_->SetMultiLine(true);
+      username_label_->SetMaxLines(1);
+      container->AddChildView(username_label_);
       add_space(container, kBubbleBetweenChildSpacingDp);
       container->AddChildView(CreateLabel(
           email, SkColorSetA(SK_ColorWHITE, kSubMessageColorAlpha)));
@@ -231,6 +237,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       auto make_label = [this](const base::string16& text) {
         views::Label* label = CreateLabel(text, SK_ColorWHITE);
         label->SetMultiLine(true);
+        label->SetAllowCharacterBreak(true);
         // Make sure to set a maximum label width, otherwise text wrapping will
         // significantly increase width and layout may not work correctly if
         // the input string is very long.
@@ -310,8 +317,8 @@ class LoginUserMenuView : public LoginBaseBubbleView,
     if (!remove_user_confirm_data_->visible()) {
       remove_user_confirm_data_->SetVisible(true);
       remove_user_label_->SetEnabledColor(kRemoveUserConfirmColor);
+      SetSize(GetPreferredSize());
       SizeToContents();
-      GetWidget()->SetSize(size());
       Layout();
       if (on_remove_user_warning_shown_)
         std::move(on_remove_user_warning_shown_).Run();
@@ -326,6 +333,12 @@ class LoginUserMenuView : public LoginBaseBubbleView,
       std::move(on_remove_user_requested_).Run();
   }
 
+  views::View* remove_user_button() { return remove_user_button_; }
+
+  views::View* remove_user_confirm_data() { return remove_user_confirm_data_; }
+
+  views::Label* username_label() { return username_label_; }
+
  private:
   LoginBubble* bubble_ = nullptr;
   base::OnceClosure on_remove_user_warning_shown_;
@@ -333,6 +346,7 @@ class LoginUserMenuView : public LoginBaseBubbleView,
   views::View* remove_user_confirm_data_ = nullptr;
   views::Label* remove_user_label_ = nullptr;
   ButtonWithContent* remove_user_button_ = nullptr;
+  views::Label* username_label_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LoginUserMenuView);
 };
@@ -361,6 +375,22 @@ class LoginTooltipView : public LoginBaseBubbleView {
 
 // static
 const int LoginBubble::kUserMenuRemoveUserButtonIdForTest = 1;
+
+LoginBubble::TestApi::TestApi(LoginBaseBubbleView* bubble_view)
+    : bubble_view_(bubble_view) {}
+
+views::View* LoginBubble::TestApi::user_menu_remove_user_button() {
+  return static_cast<LoginUserMenuView*>(bubble_view_)->remove_user_button();
+}
+
+views::View* LoginBubble::TestApi::remove_user_confirm_data() {
+  return static_cast<LoginUserMenuView*>(bubble_view_)
+      ->remove_user_confirm_data();
+}
+
+views::Label* LoginBubble::TestApi::username_label() {
+  return static_cast<LoginUserMenuView*>(bubble_view_)->username_label();
+}
 
 LoginBubble::LoginBubble() {
   Shell::Get()->AddPreTargetHandler(this);

@@ -15,6 +15,7 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/views/animation/test/ink_drop_host_view_test_api.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
@@ -424,6 +425,47 @@ TEST_F(LoginBubbleTest, TestShowSelectionMenu) {
 
   bubble_->Close();
   EXPECT_FALSE(bubble_->IsVisible());
+}
+
+TEST_F(LoginBubbleTest, LongUserNameLaidOutCorrectly) {
+  ui::test::EventGenerator& generator = GetEventGenerator();
+
+  EXPECT_FALSE(bubble_->IsVisible());
+
+  bubble_->ShowUserMenu(
+      base::UTF8ToUTF16("NedHasAReallyLongName StarkHasAReallyLongName"),
+      base::UTF8ToUTF16("reallylonggaianame@gmail.com"),
+      user_manager::UserType::USER_TYPE_REGULAR, false /*is_owner*/, container_,
+      bubble_opener_, true /*show_remove_user*/, base::OnceClosure(),
+      base::OnceClosure());
+
+  EXPECT_TRUE(bubble_->IsVisible());
+
+  views::View* bubble_view = bubble_->bubble_view();
+
+  LoginBubble::TestApi user_menu(bubble_->bubble_view());
+  views::View* username_label = user_menu.username_label();
+  views::View* remove_user_button = user_menu.user_menu_remove_user_button();
+  views::View* remove_user_confirm_data = user_menu.remove_user_confirm_data();
+
+  EXPECT_TRUE(bubble_view->GetBoundsInScreen().Contains(
+      remove_user_button->GetBoundsInScreen()));
+  EXPECT_TRUE(username_label->visible());
+  EXPECT_FALSE(remove_user_confirm_data->visible());
+
+  // This component doesn't seem to play well with the mouse click generator,
+  // so we use a keypress to trigger ButtonPressed instead.
+  bubble_view->GetWidget()->GetFocusManager()->SetFocusedView(
+      remove_user_button);
+  generator.PressKey(ui::KeyboardCode::VKEY_RETURN, 0);
+
+  EXPECT_TRUE(username_label->visible());
+  EXPECT_TRUE(remove_user_confirm_data->visible());
+  EXPECT_TRUE(remove_user_button->GetBoundsInScreen().y() >=
+              remove_user_confirm_data->GetBoundsInScreen().y() +
+                  remove_user_confirm_data->GetBoundsInScreen().height());
+  EXPECT_TRUE(bubble_view->GetBoundsInScreen().Contains(
+      remove_user_button->GetBoundsInScreen()));
 }
 
 }  // namespace ash

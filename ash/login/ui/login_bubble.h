@@ -11,6 +11,7 @@
 #include "components/user_manager/user_type.h"
 #include "ui/aura/client/focus_change_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
+#include "ui/views/controls/label.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -26,6 +27,17 @@ class ASH_EXPORT LoginBubble : public views::WidgetObserver,
                                public ui::LayerAnimationObserver,
                                public aura::client::FocusChangeObserver {
  public:
+  class TestApi {
+   public:
+    explicit TestApi(LoginBaseBubbleView* bubble_view);
+    views::View* user_menu_remove_user_button();
+    views::View* remove_user_confirm_data();
+    views::Label* username_label();
+
+   private:
+    LoginBaseBubbleView* bubble_view_;
+  };
+
   static const int kUserMenuRemoveUserButtonIdForTest;
 
   // Flags passed to ShowErrorBubble().
