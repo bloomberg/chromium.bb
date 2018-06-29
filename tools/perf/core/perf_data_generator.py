@@ -60,29 +60,6 @@ def add_builder(waterfall, name, additional_compile_targets=None):
   return waterfall
 
 
-_VALID_SWARMING_DIMENSIONS = {
-    'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
-    'device_os', 'device_type', 'device_os_flavor'}
-_VALID_PERF_POOLS = {
-    'Chrome-perf', 'chrome.tests.perf', 'chrome.tests.perf-webview'}
-
-
-def _ValidateSwarmingDimension(tester_name, swarming_dimensions):
-  for dimension in swarming_dimensions:
-    for k, v in dimension.iteritems():
-      if k not in _VALID_SWARMING_DIMENSIONS:
-        raise ValueError('Invalid swarming dimension in %s: %s' % (
-            tester_name, k))
-      if k == 'pool' and v not in _VALID_PERF_POOLS:
-        raise ValueError('Invalid perf pool %s in %s' % (v, tester_name))
-      if k == 'os' and v == 'Android':
-        if (not 'device_type' in dimension.keys() or
-            not 'device_os' in dimension.keys() or
-            not 'device_os_flavor' in dimension.keys()):
-          raise ValueError(
-              'Invalid android dimensions %s in %s' % (v, tester_name))
-
-
 def add_tester(waterfall, name, perf_id, platform, target_bits=64,
                num_host_shards=1, num_device_shards=1, swarming=None,
                replace_system_webview=False):
@@ -104,7 +81,6 @@ def add_tester(waterfall, name, perf_id, platform, target_bits=64,
   }
 
   if swarming:
-    _ValidateSwarmingDimension(name, swarming)
     waterfall['testers'][name]['swarming_dimensions'] = swarming
     waterfall['testers'][name]['swarming'] = True
 
@@ -1000,7 +976,7 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'isolate': 'performance_test_suite',
           'extra_args': [
             '--run-ref-build',
-            '--test-shard-map-filename=mobile_39_shard_map.json',
+            '--test-shard-map-filename=android_go_14_shard_map.json',
           ],
           'num_shards': 14
         }
@@ -1289,15 +1265,11 @@ def generate_performance_test(tester_config, test):
   return result
 
 
-def load_and_update_new_recipe_fyi_json():
+def load_and_update_new_recipe_fyi_json(fyi_waterfall_file):
   tests = {}
-  filename = 'chromium.perf.fyi.json'
-  buildbot_dir = os.path.join(
-      path_util.GetChromiumSrcDir(), 'testing', 'buildbot')
-  fyi_filepath = os.path.join(buildbot_dir, filename)
-  with open(fyi_filepath) as fp_r:
+  with open(fyi_waterfall_file) as fp_r:
     tests = json.load(fp_r)
-  with open(fyi_filepath, 'w') as fp:
+  with open(fyi_waterfall_file, 'w') as fp:
     # We have loaded what is there, we want to update or add
     # what we have listed here
     get_new_recipe_testers(NEW_PERF_RECIPE_FYI_TESTERS, tests)
@@ -1359,6 +1331,9 @@ def main(args):
   waterfall_file = os.path.join(
       path_util.GetChromiumSrcDir(), 'testing', 'buildbot',
       'chromium.perf.json')
+  fyi_waterfall_file = os.path.join(
+      path_util.GetChromiumSrcDir(), 'testing', 'buildbot',
+      'chromium.perf.fyi.json')
 
   benchmark_file = os.path.join(
       path_util.GetChromiumSrcDir(), 'tools', 'perf', 'benchmark.csv')
@@ -1373,7 +1348,6 @@ def main(args):
              'configs and benchmark.csv.') % sys.argv[0]
       return 1
   else:
-    load_and_update_new_recipe_fyi_json()
+    load_and_update_new_recipe_fyi_json(fyi_waterfall_file)
     update_all_tests(get_waterfall_config(), waterfall_file)
-    update_benchmark_csv(benchmark_file)
   return 0
