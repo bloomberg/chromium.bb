@@ -52,15 +52,15 @@ SpeechRecognitionController* SpeechRecognitionController::Create(
 void SpeechRecognitionController::Start(
     mojom::blink::SpeechRecognitionSessionRequest session_request,
     mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
-    const SpeechGrammarList* grammars,
+    const SpeechGrammarList& grammars,
     const String& lang,
     bool continuous,
     bool interim_results,
     unsigned long max_alternatives) {
   mojom::blink::StartSpeechRecognitionRequestParamsPtr msg_params =
       mojom::blink::StartSpeechRecognitionRequestParams::New();
-  for (unsigned i = 0; i < grammars->length(); i++) {
-    SpeechGrammar* grammar = grammars->item(i);
+  for (unsigned i = 0; i < grammars.length(); i++) {
+    SpeechGrammar* grammar = grammars.item(i);
     msg_params->grammars.push_back(mojom::blink::SpeechRecognitionGrammar::New(
         grammar->src(), grammar->weight()));
   }

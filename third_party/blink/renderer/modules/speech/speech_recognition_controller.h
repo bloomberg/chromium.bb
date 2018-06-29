@@ -48,7 +48,7 @@ class SpeechRecognitionController final
 
   void Start(mojom::blink::SpeechRecognitionSessionRequest session_request,
              mojom::blink::SpeechRecognitionSessionClientPtrInfo session_client,
-             const SpeechGrammarList* grammars,
+             const SpeechGrammarList& grammars,
              const String& lang,
              bool continuous,
              bool interim_results,

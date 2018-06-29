@@ -28,34 +28,38 @@
 
 namespace blink {
 
-static String ErrorCodeToString(SpeechRecognitionError::ErrorCode code) {
+static String ErrorCodeToString(mojom::blink::SpeechRecognitionErrorCode code) {
   switch (code) {
-    case SpeechRecognitionError::kErrorCodeOther:
+    case mojom::blink::SpeechRecognitionErrorCode::kNone:
       return "other";
-    case SpeechRecognitionError::kErrorCodeNoSpeech:
+    case mojom::blink::SpeechRecognitionErrorCode::kNoSpeech:
       return "no-speech";
-    case SpeechRecognitionError::kErrorCodeAborted:
+    case mojom::blink::SpeechRecognitionErrorCode::kAborted:
       return "aborted";
-    case SpeechRecognitionError::kErrorCodeAudioCapture:
+    case mojom::blink::SpeechRecognitionErrorCode::kAudioCapture:
       return "audio-capture";
-    case SpeechRecognitionError::kErrorCodeNetwork:
+    case mojom::blink::SpeechRecognitionErrorCode::kNetwork:
       return "network";
-    case SpeechRecognitionError::kErrorCodeNotAllowed:
+    case mojom::blink::SpeechRecognitionErrorCode::kNotAllowed:
       return "not-allowed";
-    case SpeechRecognitionError::kErrorCodeServiceNotAllowed:
+    case mojom::blink::SpeechRecognitionErrorCode::kServiceNotAllowed:
       return "service-not-allowed";
-    case SpeechRecognitionError::kErrorCodeBadGrammar:
+    case mojom::blink::SpeechRecognitionErrorCode::kBadGrammar:
       return "bad-grammar";
-    case SpeechRecognitionError::kErrorCodeLanguageNotSupported:
+    case mojom::blink::SpeechRecognitionErrorCode::kLanguageNotSupported:
       return "language-not-supported";
+    case mojom::blink::SpeechRecognitionErrorCode::kNoMatch:
+      NOTREACHED();
+      break;
   }
 
   NOTREACHED();
   return String();
 }
 
-SpeechRecognitionError* SpeechRecognitionError::Create(ErrorCode code,
-                                                       const String& message) {
+SpeechRecognitionError* SpeechRecognitionError::Create(
+    mojom::blink::SpeechRecognitionErrorCode code,
+    const String& message) {
   return new SpeechRecognitionError(ErrorCodeToString(code), message);
 }
 

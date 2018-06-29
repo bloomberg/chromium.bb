@@ -26,6 +26,7 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SPEECH_SPEECH_RECOGNITION_ERROR_H_
 
+#include "third_party/blink/public/mojom/speech/speech_recognition_error_code.mojom-blink.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
 #include "third_party/blink/renderer/modules/speech/speech_recognition_error_init.h"
@@ -37,21 +38,9 @@ class MODULES_EXPORT SpeechRecognitionError final : public Event {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  enum ErrorCode {
-    // FIXME: This is an unspecified error and Chromium should stop using it.
-    kErrorCodeOther = 0,
-
-    kErrorCodeNoSpeech = 1,
-    kErrorCodeAborted = 2,
-    kErrorCodeAudioCapture = 3,
-    kErrorCodeNetwork = 4,
-    kErrorCodeNotAllowed = 5,
-    kErrorCodeServiceNotAllowed = 6,
-    kErrorCodeBadGrammar = 7,
-    kErrorCodeLanguageNotSupported = 8
-  };
-
-  static SpeechRecognitionError* Create(ErrorCode, const String&);
+  static SpeechRecognitionError* Create(
+      mojom::blink::SpeechRecognitionErrorCode,
+      const String&);
   static SpeechRecognitionError* Create(const AtomicString&,
                                         const SpeechRecognitionErrorInit&);
 
