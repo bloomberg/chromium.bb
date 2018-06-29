@@ -33,6 +33,10 @@ namespace ash {
 
 void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
   property_converter->RegisterPrimitiveProperty(
+      kBlockedForAssistantSnapshotKey,
+      mojom::kBlockedForAssistantSnapshot_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kCanConsumeSystemKeysKey, mojom::kCanConsumeSystemKeys_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
@@ -103,6 +107,7 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
 DEFINE_UI_CLASS_PROPERTY_KEY(BackdropWindowMode,
                              kBackdropWindowMode,
                              BackdropWindowMode::kAuto);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kBlockedForAssistantSnapshotKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(bool, kCanConsumeSystemKeysKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(FrameBackButtonState,
                              kFrameBackButtonStateKey,
