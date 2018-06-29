@@ -190,3 +190,17 @@ TEST_F(AXTreeSourceAuraTest, Serialize) {
   ASSERT_EQ(ax::mojom::Role::kTextField,
             out_update2.nodes[text_field_update_index].role);
 }
+
+TEST_F(AXTreeSourceAuraTest, SerializeWindowSetsClipsChildren) {
+  AXTreeSourceAura ax_tree;
+  AuraAXTreeSerializer ax_serializer(&ax_tree);
+  AXAuraObjWrapper* widget_wrapper =
+      AXAuraObjCache::GetInstance()->GetOrCreate(widget_);
+  ui::AXNodeData node_data;
+  ax_tree.SerializeNode(widget_wrapper, &node_data);
+  EXPECT_EQ(ax::mojom::Role::kWindow, node_data.role);
+  bool clips_children = false;
+  EXPECT_TRUE(node_data.GetBoolAttribute(
+      ax::mojom::BoolAttribute::kClipsChildren, &clips_children));
+  EXPECT_TRUE(clips_children);
+}
