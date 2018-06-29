@@ -3524,20 +3524,12 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
     boards_dict: A dict mapping board types to board name collections.
     ge_build_config: Dictionary containing the decoded GE configuration file.
   """
-  # TODO: Use this to stop generating unnecessary configs for release branches.
-  is_release_branch = ge_build_config[config_lib.CONFIG_TEMPLATE_RELEASE_BRANCH]
-
   board_configs = CreateInternalBoardConfigs(
       site_config, boards_dict, ge_build_config)
 
   unified_builds = config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config)
   unified_board_names = set([b[config_lib.CONFIG_TEMPLATE_REFERENCE_BOARD_NAME]
                              for b in unified_builds])
-
-  if is_release_branch:
-    master_waterfall = waterfall.WATERFALL_RELEASE
-  else:
-    master_waterfall = waterfall.WATERFALL_INTERNAL
 
   ### Master release config.
   master_config = site_config.Add(
@@ -3550,7 +3542,10 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       afdo_use=False,
       branch_util_test=True,
-      active_waterfall=master_waterfall,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      # Because PST is 8 hours from UTC, these times are the same in both. But
+      # daylight savings time is NOT adjusted for
+      schedule='  0 2,10,18 * * *',
   )
 
   ### Release configs.
@@ -3583,21 +3578,9 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.release,
   )
 
-  def _GetConfigWaterfall(builder):
-    if builder == config_lib.CONFIG_TEMPLATE_RELEASE:
-      if is_release_branch:
-        return waterfall.WATERFALL_RELEASE
-      else:
-        return waterfall.WATERFALL_INTERNAL
-    else:
-      # Currently just support RELEASE builders
-      raise ValueError('Do not support builder %s.' % builder)
-
   hw_test_list = HWTestList(ge_build_config)
 
   for unibuild in config_lib.GetUnifiedBuildConfigAllBuilds(ge_build_config):
-    active_waterfall = _GetConfigWaterfall(
-        unibuild[config_lib.CONFIG_TEMPLATE_BUILDER])
     models = []
     for model in unibuild[config_lib.CONFIG_TEMPLATE_MODELS]:
       name = model[config_lib.CONFIG_TEMPLATE_MODEL_NAME]
@@ -3634,7 +3617,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         site_config.templates.release,
         models=models,
         important=not unibuild[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
-        active_waterfall=active_waterfall,
+        active_waterfall=waterfall.WATERFALL_SWARMING,
         hw_tests=(hw_test_list.SharedPoolCanary(pool=pool) +
                   hw_test_list.CtsGtsQualTests()),
     )
@@ -3653,12 +3636,12 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       # Currently just support RELEASE builders
       raise Exception('Do not support other builders.')
 
-  def _GetConfigValues(builder, board):
+  def _GetConfigValues(board):
     """Get and return config values from template"""
 
     config_values = {
         'important': not board[config_lib.CONFIG_TEMPLATE_EXPERIMENTAL],
-        'active_waterfall': _GetConfigWaterfall(builder)
+        'active_waterfall': waterfall.WATERFALL_SWARMING,
     }
 
     return config_values
@@ -3670,7 +3653,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
         config_name = GetConfigName(builder,
                                     board[config_lib.CONFIG_TEMPLATE_NAME])
         site_config[config_name].apply(
-            _GetConfigValues(builder, board),
+            _GetConfigValues(board),
         )
         master_config.AddSlave(site_config[config_name])
 
@@ -3686,7 +3669,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
           config_name = GetConfigName(builder,
                                       board[config_lib.CONFIG_TEMPLATE_NAME])
           site_config[config_name].apply(
-              _GetConfigValues(builder, board),
+              _GetConfigValues(board),
           )
           master_config.AddSlave(site_config[config_name])
 
@@ -3696,7 +3679,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
           config_name = GetConfigName(builder,
                                       board[config_lib.CONFIG_TEMPLATE_NAME])
           site_config[config_name].apply(
-              _GetConfigValues(builder, board),
+              _GetConfigValues(board),
               buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
               chrome_sdk_build_chrome=False,
               vm_tests=[],
@@ -3955,10 +3938,6 @@ def ApplyCustomOverrides(site_config, ge_build_config):
 
       'betty-release':
           site_config.templates.tast_vm_canary_tests,
-
-      'zoombini-release': {
-          'active_waterfall': waterfall.WATERFALL_SWARMING,
-      },
   }
 
   for config_name, overrides  in overwritten_configs.iteritems():
