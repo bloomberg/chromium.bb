@@ -2065,9 +2065,6 @@ load_fbdev_backend(struct weston_compositor *c,
 
 	parse_options(fbdev_options, ARRAY_LENGTH(fbdev_options), argc, argv);
 
-	if (!config.device)
-		config.device = strdup("/dev/fb0");
-
 	config.base.struct_version = WESTON_FBDEV_BACKEND_CONFIG_VERSION;
 	config.base.struct_size = sizeof(struct weston_fbdev_backend_config);
 	config.configure_device = configure_input_device;
