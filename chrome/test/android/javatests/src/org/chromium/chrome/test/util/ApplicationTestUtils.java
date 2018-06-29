@@ -12,6 +12,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
 import android.os.PowerManager;
+import android.util.Pair;
 
 import org.junit.Assert;
 
@@ -28,6 +29,10 @@ import org.chromium.content.browser.test.util.Coordinates;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
 
+import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.Callable;
 
 /**
@@ -105,12 +110,43 @@ public class ApplicationTestUtils {
 
     /** Waits until Chrome is in the background. */
     public static void waitUntilChromeInBackground() {
-        CriteriaHelper.pollInstrumentationThread(new Criteria() {
+        CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
                 int state = ApplicationStatus.getStateForApplication();
-                return state == ApplicationState.HAS_STOPPED_ACTIVITIES
+                boolean retVal = state == ApplicationState.HAS_STOPPED_ACTIVITIES
                         || state == ApplicationState.HAS_DESTROYED_ACTIVITIES;
+                if (!retVal) updateVisibleActivitiesError();
+                return retVal;
+            }
+
+            private void updateVisibleActivitiesError() {
+                List<WeakReference<Activity>> activities = ApplicationStatus.getRunningActivities();
+                List<Pair<Activity, Integer>> visibleActivities = new ArrayList<>();
+                for (WeakReference<Activity> activityRef : activities) {
+                    Activity activity = activityRef.get();
+                    if (activity == null) continue;
+                    @ActivityState
+                    int activityState = ApplicationStatus.getStateForActivity(activity);
+                    if (activityState != ActivityState.DESTROYED
+                            && activityState != ActivityState.STOPPED) {
+                        visibleActivities.add(Pair.create(activity, activityState));
+                    }
+                }
+                if (visibleActivities.isEmpty()) {
+                    updateFailureReason(
+                            "No visible activities, application status response is suspect.");
+                } else {
+                    StringBuilder error = new StringBuilder("Unexpected visible activities: ");
+                    for (Pair<Activity, Integer> visibleActivityState : visibleActivities) {
+                        Activity activity = visibleActivityState.first;
+                        error.append(
+                                String.format(Locale.US, "\n\tActivity: %s, State: %d, Intent: %s",
+                                        activity.getClass().getSimpleName(),
+                                        visibleActivityState.second, activity.getIntent()));
+                    }
+                    updateFailureReason(error.toString());
+                }
             }
         });
     }
