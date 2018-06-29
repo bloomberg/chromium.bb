@@ -277,7 +277,10 @@ cr.define('cr.ui.dialogs', function() {
     var self = this;
     setTimeout(function() {
       // Wait until the transition is done before removing the dialog.
-      self.parentNode_.removeChild(self.container_);
+      // It is possible to show/hide/show/hide and have hide called twice
+      // and container_ already removed from parentNode_.
+      if (self.parentNode_ === self.container_.parentNode)
+        self.parentNode_.removeChild(self.container_);
       if (opt_onHide)
         opt_onHide();
     }, BaseDialog.ANIMATE_STABLE_DURATION);
