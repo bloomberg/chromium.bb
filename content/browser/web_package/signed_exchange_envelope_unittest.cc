@@ -157,6 +157,18 @@ TEST(SignedExchangeEnvelopeTest, RelativeURL) {
   ASSERT_FALSE(header.has_value());
 }
 
+TEST(SignedExchangeEnvelopeTest, HttpURLShouldFail) {
+  auto header = GenerateHeaderAndParse(
+      kSignatureString,
+      {
+          {kUrlKey, "http://test.example.org/test/"}, {kMethodKey, "GET"},
+      },
+      {
+          {kStatusKey, "200"},
+      });
+  ASSERT_FALSE(header.has_value());
+}
+
 TEST(SignedExchangeEnvelopeTest, StatefulRequestHeader) {
   auto header =
       GenerateHeaderAndParse(kSignatureString,

@@ -101,6 +101,11 @@ bool ParseRequestMap(const cbor::CBORValue& value,
         devtools_proxy, ":url can't have a fragment.");
     return false;
   }
+  if (!out->request_url().SchemeIs("https")) {
+    signed_exchange_utils::ReportErrorAndTraceEvent(
+        devtools_proxy, ":url scheme must be 'https'.");
+    return false;
+  }
 
   auto method_iter = request_map.find(
       cbor::CBORValue(kMethodKey, cbor::CBORValue::Type::BYTE_STRING));
