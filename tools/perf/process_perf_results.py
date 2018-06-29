@@ -5,7 +5,6 @@
 
 import argparse
 import json
-import multiprocessing as mp
 import os
 import shutil
 import sys
@@ -65,7 +64,7 @@ def _GetMachineGroup(build_properties):
 def _upload_perf_results(json_to_upload, name, configuration_name,
     build_properties, oauth_file, tmp_dir, output_json_file):
   """Upload the contents of result JSON(s) to the perf dashboard."""
-  args= [
+  args = [
       '--tmp-dir', tmp_dir,
       '--buildername', build_properties['buildername'],
       '--buildnumber', build_properties['buildnumber'],
@@ -87,6 +86,7 @@ def _upload_perf_results(json_to_upload, name, configuration_name,
     args.append('--send-as-histograms')
 
   return upload_results_to_perf_dashboard.main(args)
+
 
 def _is_histogram(json_file):
   with open(json_file) as f:
@@ -322,49 +322,6 @@ def _merge_perf_results(benchmark_name, results_filename, directories):
                  begin_time, end_time)
 
 
-def _upload_individual(
-    benchmark_name, directories, configuration_name,
-    build_properties, output_json_file, service_account_file):
-  tmpfile_dir = tempfile.mkdtemp('resultscache')
-  try:
-    upload_begin_time = time.time()
-    # There are potentially multiple directores with results, re-write and
-    # merge them if necessary
-    results_filename = None
-    if len(directories) > 1:
-      merge_perf_dir = os.path.join(
-          os.path.abspath(tmpfile_dir), benchmark_name)
-      if not os.path.exists(merge_perf_dir):
-        os.makedirs(merge_perf_dir)
-      results_filename = os.path.join(
-          merge_perf_dir, 'merged_perf_results.json')
-      _merge_perf_results(benchmark_name, results_filename, directories)
-    else:
-      # It was only written to one shard, use that shards data
-      results_filename = join(directories[0], 'perf_results.json')
-
-    print 'Uploading perf results from %s benchmark' % benchmark_name
-    # We generate an oauth token for every benchmark upload in the event
-    # the token could time out, see crbug.com/854162
-    with oauth_api.with_access_token(
-        service_account_file, ("%s_tok" % benchmark_name)) as oauth_file:
-      with open(output_json_file, 'w') as oj:
-        upload_fail = _upload_perf_results(
-          results_filename,
-          benchmark_name, configuration_name, build_properties,
-          oauth_file, tmpfile_dir, oj)
-        upload_end_time = time.time()
-        print_duration(('%s upload time' % (benchmark_name)),
-                       upload_begin_time, upload_end_time)
-        return (benchmark_name, upload_fail)
-  finally:
-    shutil.rmtree(tmpfile_dir)
-
-
-def _upload_individual_benchmark(params):
-  return _upload_individual(*params)
-
-
 def _handle_perf_results(
     benchmark_enabled_map, benchmark_directory_map, configuration_name,
     build_properties, service_account_file, extra_links):
@@ -378,52 +335,45 @@ def _handle_perf_results(
       0 if this upload to perf dashboard succesfully, 1 otherwise.
   """
   begin_time = time.time()
-  tmpfile_dir = tempfile.mkdtemp('outputresults')
+  tmpfile_dir = tempfile.mkdtemp('resultscache')
   try:
     # Upload all eligible benchmarks to the perf dashboard
-    results_dict = {}
-
-    invocations = []
-    for benchmark_name, directories in benchmark_directory_map.iteritems():
-      if not benchmark_enabled_map[benchmark_name]:
-        continue
-      # Create a place to write the perf results that you will write out to
-      # logdog.
-      output_json_file = os.path.join(
-          os.path.abspath(tmpfile_dir), (str(uuid.uuid4()) + benchmark_name))
-      results_dict[benchmark_name] = output_json_file
-      invocations.append((
-          benchmark_name, directories, configuration_name,
-          build_properties, output_json_file, service_account_file))
-
-    # Kick off the uploads in mutliple processes
-    cpus = mp.cpu_count()
-    pool = mp.Pool(cpus)
-    result_iterator = pool.map(_upload_individual_benchmark,
-                               invocations)
-
-    # Keep a mapping of benchmarks to their upload results
-    benchmark_upload_result_map = {}
-    for result in result_iterator:
-      benchmark_upload_result_map[result[0]] = bool(result[1])
-
     logdog_dict = {}
-    upload_failure = False
     logdog_stream = None
     logdog_label = 'Results Dashboard'
-    for benchmark_name, output_file in results_dict.iteritems():
-      print "Benchmark: %s, file: %s" % (benchmark_name, output_file)
-      failure = benchmark_upload_result_map[benchmark_name]
-      upload_failure = upload_failure or failure
-      is_reference = '.reference' in benchmark_name
-      _write_perf_data_to_logfile(
-        benchmark_name, output_file,
-        configuration_name, build_properties, logdog_dict,
-        is_reference, failure)
+    upload_failure = False
+    with oauth_api.with_access_token(service_account_file) as oauth_file:
+      for benchmark_name, directories in benchmark_directory_map.iteritems():
+        if not benchmark_enabled_map[benchmark_name]:
+          continue
+        upload_begin_time = time.time()
+        # There are potentially multiple directores with results, re-write and
+        # merge them if necessary
+        results_filename = None
+        if len(directories) > 1:
+          merge_perf_dir = os.path.join(
+              os.path.abspath(tmpfile_dir), benchmark_name)
+          if not os.path.exists(merge_perf_dir):
+            os.makedirs(merge_perf_dir)
+          results_filename = os.path.join(
+              merge_perf_dir, 'merged_perf_results.json')
+          _merge_perf_results(benchmark_name, results_filename, directories)
+        else:
+          # It was only written to one shard, use that shards data
+          results_filename = join(directories[0], 'perf_results.json')
+        print 'Uploading perf results from %s benchmark' % benchmark_name
+        upload_fail = _upload_and_write_perf_data_to_logfile(
+            benchmark_name, results_filename, configuration_name,
+            build_properties, oauth_file, tmpfile_dir, logdog_dict,
+            ('.reference' in benchmark_name))
+        upload_failure = upload_failure or upload_fail
+        upload_end_time = time.time()
+        print_duration(('%s upload time' % (benchmark_name)),
+                       upload_begin_time, upload_end_time)
 
     logdog_file_name = _generate_unique_logdog_filename('Results_Dashboard_')
     logdog_stream = logdog_helper.text(logdog_file_name,
-        json.dumps(dict(logdog_dict), sort_keys=True,
+        json.dumps(logdog_dict, sort_keys=True,
                    indent=4, separators=(',', ': ')),
         content_type=JSON_CONTENT_TYPE)
     if upload_failure:
@@ -438,15 +388,18 @@ def _handle_perf_results(
     shutil.rmtree(tmpfile_dir)
 
 
-def _write_perf_data_to_logfile(benchmark_name, output_file,
-    configuration_name, build_properties,
-    logdog_dict, is_ref, upload_failure):
+def _upload_and_write_perf_data_to_logfile(benchmark_name, results_file,
+    configuration_name, build_properties, oauth_file,
+    tmpfile_dir, logdog_dict, is_ref):
+  upload_failure = False
   # logdog file to write perf results to
   output_json_file = logdog_helper.open_text(benchmark_name)
-  with open(output_file) as f:
-    results = json.load(f)
-    json.dump(results, output_json_file,
-            indent=4, separators=(',', ': '))
+
+  # upload results and write perf results to logdog file
+  upload_failure = _upload_perf_results(
+    results_file,
+    benchmark_name, configuration_name, build_properties,
+    oauth_file, tmpfile_dir, output_json_file)
 
   output_json_file.close()
 
@@ -474,6 +427,7 @@ def _write_perf_data_to_logfile(benchmark_name, output_file,
     logdog_dict[base_benchmark_name]['perf_results'] = \
         output_json_file.get_viewer_url()
 
+  return upload_failure
 
 def print_duration(step, start, end):
   print 'Duration of %s: %d seconds' % (step, end-start)
