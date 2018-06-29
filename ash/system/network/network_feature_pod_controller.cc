@@ -14,13 +14,36 @@
 
 using chromeos::NetworkHandler;
 using chromeos::NetworkTypePattern;
+using chromeos::NetworkState;
 
 namespace ash {
 
 namespace {
 
 void SetNetworkEnabled(bool enabled) {
-  // TODO(tetsui): Handle other types of networks.
+  const NetworkState* network =
+      NetworkHandler::Get()->network_state_handler()->ConnectedNetworkByType(
+          NetworkTypePattern::NonVirtual());
+
+  // For cellular and tether, users are only allowed to disable them from
+  // feature pod toggle.
+  if (!enabled && network && network->Matches(NetworkTypePattern::Cellular())) {
+    NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+        NetworkTypePattern::Cellular(), false,
+        chromeos::network_handler::ErrorCallback());
+    return;
+  }
+
+  if (!enabled && network && network->Matches(NetworkTypePattern::Tether())) {
+    NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
+        NetworkTypePattern::Tether(), false,
+        chromeos::network_handler::ErrorCallback());
+    return;
+  }
+
+  if (network && !network->Matches(NetworkTypePattern::WiFi()))
+    return;
+
   NetworkHandler::Get()->network_state_handler()->SetTechnologyEnabled(
       NetworkTypePattern::WiFi(), enabled,
       chromeos::network_handler::ErrorCallback());
