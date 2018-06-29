@@ -116,10 +116,9 @@ void AddKeyframeModelToElementWithExistingKeyframeEffect(
     scoped_refptr<AnimationTimeline> timeline,
     std::unique_ptr<KeyframeModel> keyframe_model);
 
-void RemoveKeyframeModelFromElementWithExistingKeyframeEffect(
+void RemoveKeyframeModelsFromElementWithExistingKeyframeEffect(
     ElementId element_id,
-    scoped_refptr<AnimationTimeline> timeline,
-    int keyframe_model_id);
+    scoped_refptr<AnimationTimeline> timeline);
 
 KeyframeModel* GetKeyframeModelFromElementWithExistingKeyframeEffect(
     ElementId element_id,

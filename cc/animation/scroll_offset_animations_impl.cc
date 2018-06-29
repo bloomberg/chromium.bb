@@ -155,8 +155,8 @@ void ScrollOffsetAnimationsImpl::ScrollAnimationApplyAdjustment(
 
 void ScrollOffsetAnimationsImpl::ScrollAnimationAbort(bool needs_completion) {
   DCHECK(scroll_offset_animation_);
-  scroll_offset_animation_->AbortKeyframeModels(TargetProperty::SCROLL_OFFSET,
-                                                needs_completion);
+  scroll_offset_animation_->AbortKeyframeModelsWithProperty(
+      TargetProperty::SCROLL_OFFSET, needs_completion);
 }
 
 void ScrollOffsetAnimationsImpl::NotifyAnimationFinished(

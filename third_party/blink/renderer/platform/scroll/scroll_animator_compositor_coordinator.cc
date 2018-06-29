@@ -82,12 +82,12 @@ bool ScrollAnimatorCompositorCoordinator::AddAnimation(
 
 void ScrollAnimatorCompositorCoordinator::RemoveAnimation() {
   if (compositor_animation_->IsElementAttached())
-    compositor_animation_->RemoveKeyframeModel(compositor_animation_id_);
+    compositor_animation_->RemoveKeyframeModels();
 }
 
 void ScrollAnimatorCompositorCoordinator::AbortAnimation() {
   if (compositor_animation_->IsElementAttached())
-    compositor_animation_->AbortKeyframeModel(compositor_animation_id_);
+    compositor_animation_->AbortKeyframeEffect();
 }
 
 void ScrollAnimatorCompositorCoordinator::CancelAnimation() {

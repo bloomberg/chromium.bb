@@ -205,8 +205,8 @@ TEST_F(WorkletAnimationTest, WorkletAnimationStateTestWithSingleKeyframeModel) {
   const float end_opacity = .3f;
   const double duration = 1.;
 
-  int keyframe_model_id = AddOpacityTransitionToAnimation(
-      worklet_animation_.get(), duration, start_opacity, end_opacity, true);
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
 
   ScrollTree scroll_tree;
   std::unique_ptr<MutatorEvents> events = host_->CreateEvents();
@@ -250,8 +250,8 @@ TEST_F(WorkletAnimationTest, WorkletAnimationStateTestWithSingleKeyframeModel) {
   EXPECT_EQ(state->removed_animations.size(), 0u);
 
   // WorkletAnimation sets state to REMOVED when JavaScript fires cancel() which
-  // leads to RemoveKeyframeModel.
-  worklet_animation_impl_->RemoveKeyframeModel(keyframe_model_id);
+  // leads to RemoveKeyframeModels.
+  worklet_animation_impl_->RemoveKeyframeModels();
   host_impl_->UpdateAnimationState(true, events.get());
   state.reset(new MutatorInputState());
   worklet_animation_impl_->UpdateInputState(state.get(), time, scroll_tree,
@@ -275,8 +275,8 @@ TEST_F(WorkletAnimationTest, SkipUnchangedAnimations) {
   const float end_opacity = .3f;
   const double duration = 1.;
 
-  int keyframe_model_id = AddOpacityTransitionToAnimation(
-      worklet_animation_.get(), duration, start_opacity, end_opacity, true);
+  AddOpacityTransitionToAnimation(worklet_animation_.get(), duration,
+                                  start_opacity, end_opacity, true);
 
   ScrollTree scroll_tree;
   std::unique_ptr<MutatorEvents> events = host_->CreateEvents();
@@ -308,7 +308,7 @@ TEST_F(WorkletAnimationTest, SkipUnchangedAnimations) {
   state.reset(new MutatorInputState());
   // Input state gets updated when the worklet animation is to be removed even
   // the input time doesn't change.
-  worklet_animation_impl_->RemoveKeyframeModel(keyframe_model_id);
+  worklet_animation_impl_->RemoveKeyframeModels();
   worklet_animation_impl_->UpdateInputState(state.get(), time, scroll_tree,
                                             true);
   EXPECT_EQ(state->updated_animations.size(), 0u);

@@ -45,7 +45,7 @@ void Throbber::SetCircleGrowAnimationEnabled(bool enabled) {
       SetScale(scale_before_animation_.scale.x, scale_before_animation_.scale.y,
                scale_before_animation_.scale.z);
     }
-    animation().RemoveKeyframeModels(CIRCLE_GROW);
+    animation().RemoveKeyframeModelsWithProperty(CIRCLE_GROW);
     return;
   }
 

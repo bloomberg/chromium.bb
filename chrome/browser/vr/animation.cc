@@ -153,15 +153,11 @@ void Animation::AddKeyframeModel(
   keyframe_models_.push_back(std::move(keyframe_model));
 }
 
-void Animation::RemoveKeyframeModel(int keyframe_model_id) {
-  base::EraseIf(keyframe_models_,
-                [keyframe_model_id](
-                    const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
-                  return keyframe_model->id() == keyframe_model_id;
-                });
+void Animation::RemoveKeyframeModels() {
+  keyframe_models_.clear();
 }
 
-void Animation::RemoveKeyframeModels(int target_property) {
+void Animation::RemoveKeyframeModelsWithProperty(int target_property) {
   base::EraseIf(keyframe_models_,
                 [target_property](
                     const std::unique_ptr<cc::KeyframeModel>& keyframe_model) {
@@ -344,7 +340,7 @@ void Animation::TransitionValueTo(base::TimeTicks monotonic_time,
     return;
   }
 
-  RemoveKeyframeModels(target_property);
+  RemoveKeyframeModelsWithProperty(target_property);
 
   std::unique_ptr<typename AnimationTraits<ValueType>::KeyframedCurveType>
       curve(AnimationTraits<ValueType>::KeyframedCurveType::Create());
