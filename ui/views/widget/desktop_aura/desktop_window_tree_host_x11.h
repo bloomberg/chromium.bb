@@ -192,6 +192,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
 
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
+
   // Initializes our X11 surface to draw on. This method performs all
   // initialization related to talking to the X11 server.
   void InitX11Window(const Widget::InitParams& params);
@@ -204,6 +205,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // window size to the monitor size causes the WM to set the EWMH for
   // fullscreen.
   gfx::Size AdjustSize(const gfx::Size& requested_size);
+
+  // If mapped, sends a message to the window manager to enable or disable the
+  // states |state1| and |state2|.  Otherwise, the states will be enabled or
+  // disabled on the next map.
+  void SetWMSpecState(bool enabled, XAtom state1, XAtom state2);
 
   // Called when |xwindow_|'s _NET_WM_STATE property is updated.
   void OnWMStateUpdated();
@@ -337,8 +343,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   // _NET_WM_DESKTOP is unset.
   base::Optional<int> workspace_;
 
-  // The window manager state bits.
-  base::flat_set<::Atom> window_properties_;
+  // The window manager state bits as indicated by the server.  May be
+  // out-of-sync.  May include bits set by non-Chrome apps.
+  base::flat_set<::Atom> window_properties_in_server_;
+
+  // The window manager state bits that Chrome has set.
+  base::flat_set<::Atom> window_properties_in_client_;
 
   // Whether |xwindow_| was requested to be fullscreen via SetFullscreen().
   bool is_fullscreen_;
