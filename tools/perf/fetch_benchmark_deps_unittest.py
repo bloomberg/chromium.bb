@@ -28,7 +28,7 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
   """
 
   def testFetchWPRs(self):
-    test_name = 'smoothness.top_25_smooth'
+    test_name = 'system_health.common_desktop'
     deps_fd, deps_path = tempfile.mkstemp()
     args = [test_name, '--output-deps=%s' % deps_path]
     with mock.patch.object(archive_info.WprArchiveInfo,
@@ -42,7 +42,7 @@ class FetchBenchmarkDepsUnittest(unittest.TestCase):
             # pylint: disable=protected-access
             os.path.normpath(mock_download.call_args[0][0]._file_path),
             os.path.join(path_util.GetPerfStorySetsDir(), 'data',
-            'top_25_smooth.json'))
+            'system_health_desktop.json'))
         # This benchmark doesn't use any static local files.
         self.assertFalse(mock_get.called)
 

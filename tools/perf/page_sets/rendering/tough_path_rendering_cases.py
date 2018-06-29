@@ -1,8 +1,6 @@
 # Copyright 2015 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -44,30 +42,3 @@ class ChalkboardPage(rendering_story.RenderingStory):
       action_runner.EvaluateJavaScript(
           'document.getElementById("StartButton").click()')
       action_runner.Wait(20)
-
-
-# TODO(crbug.com/760553): remove this class after
-# smoothness.tough_path_rendering_cases benchmark is completely replaced
-# by rendering benchmarks
-class ToughPathRenderingCasesPageSet(story.StorySet):
-
-  """
-  Description: Self-driven path rendering examples
-  """
-
-  def __init__(self):
-    super(ToughPathRenderingCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_path_rendering_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
-
-    page_classes = [
-      GUIMarkVectorChartPage,
-      MotionMarkCanvasFillShapesPage,
-      MotionMarkCanvasStrokeShapesPage,
-      ChalkboardPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(
-          page_set=self,
-          shared_page_state_class=shared_page_state.SharedPageState))

@@ -1,7 +1,6 @@
 # Copyright 2014 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from telemetry import story
 from telemetry.page import shared_page_state
 
 from page_sets.rendering import rendering_story
@@ -222,62 +221,3 @@ class BouncingPNGImagesPage(ToughCanvasPage):
   BASE_NAME = 'bouncing_png_images'
   # pylint: disable=line-too-long
   URL = 'file://../tough_canvas_cases/rendering_throughput/bouncing_png_images.html'
-
-
-# TODO(crbug.com/760553):remove this class after smoothness.tough_canvas_cases
-# benchmark is completely replaced by rendering benchmarks
-class ToughCanvasCasesPageSet(story.StorySet):
-
-  """
-  Description: Self-driven Canvas2D animation examples
-  """
-
-  def __init__(self):
-    super(ToughCanvasCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_canvas_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
-
-    # Crashes on Galaxy Nexus. crbug.com/314131
-    # TODO(rnephew): Rerecord this story.
-    # self.AddStory(MicrosofFirefliesPage(self))
-
-    page_classes = [
-        GeoAPIsPage,
-        RunwayPage,
-        MicrosoftFishIETankPage,
-        MicrosoftSpeedReadingPage,
-        Kevs3DPage,
-        MegiDishPage,
-        ManInBluePage,
-        Mix10KPage,
-        CraftyMindPage,
-        ChipTunePage,
-        JarroDoversonPage,
-        EffectGamesPage,
-        SpielzeugzPage,
-        HakimPage,
-        MicrosoftSnowPage,
-        MicrosoftWorkerFountainsPage,
-        MicrosoftTweetMapPage,
-        MicrosoftVideoCityPage,
-        MicrosoftAsteroidBeltPage,
-        SmashCatPage,
-        BouncingBallsShadowPage,
-        BouncingBalls15Page,
-        CanvasFontCyclerPage,
-        CanvasAnimationNoClearPage,
-        CanvasToBlobPage,
-        ManyImagesPage,
-        CanvasArcPage,
-        CanvasLinesPage,
-        PutGetImageDataPage,
-        FillShapesPage,
-        StrokeShapesPage,
-        BouncingClippedRectanglesPage,
-        BouncingGradientCirclesPage,
-        BouncingSVGImagesPage,
-        BouncingPNGImagesPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))

@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -80,30 +79,3 @@ class WowWikkiPathologicalPage(PathologicalMobileSitesPage):
 class LinkedInPathologicalPage(PathologicalMobileSitesPage):
   BASE_NAME = 'linkedin_pathological'
   URL = 'https://www.linkedin.com/in/linustorvalds'
-
-
-# TODO(crbug.com/760553):remove this class after
-# smoothness.pathological_mobile_sites benchmark is completely
-# replaced by rendering benchmarks
-class PathologicalMobileSitesPageSet(story.StorySet):
-
-  """Pathologically bad and janky sites on mobile."""
-
-  def __init__(self):
-    super(PathologicalMobileSitesPageSet, self).__init__(
-        archive_data_file='../data/pathological_mobile_sites.json',
-        cloud_storage_bucket=story.PARTNER_BUCKET)
-
-    page_classes = [CnnPathologicalPage,
-                    EspnPathologicalPage,
-                    RecodePathologicalPage,
-                    YahooSportsPathologicalPage,
-                    LaTimesPathologicalPage,
-                    PbsPathologicalPage,
-                    GuardianPathologicalPage,
-                    ZDNetPathologicalPage,
-                    WowWikkiPathologicalPage,
-                    LinkedInPathologicalPage]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))

@@ -2,9 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from telemetry import story
-
-from page_sets import webgl_supported_shared_state
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 
@@ -95,35 +92,3 @@ class KenRussellPage(ToughWebglPage):
   BASE_NAME = 'animometer_webgl'
   # pylint: disable=line-too-long
   URL = 'http://kenrussell.github.io/webgl-animometer/Animometer/tests/3d/webgl.html'
-
-
-# TODO(crbug.com/760553):remove this class after smoothness.tough_webgl_cases
-# benchmark is completely replaced by rendering benchmarks
-class ToughWebglCasesPageSet(story.StorySet):
-
-  """
-  Description: Self-driven WebGL animation examples
-  """
-
-  def __init__(self):
-    super(ToughWebglCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_webgl_cases.json',
-      cloud_storage_bucket=story.PUBLIC_BUCKET)
-
-    page_classes = [
-      NvidiaVertexBufferObjectPage,
-      SansAngelesPage,
-      ParticlesPage,
-      EarthPage,
-      ManyPlanetsDeepPage,
-      AquariumPage,
-      Aquarium20KFishPage,
-      BlobPage,
-      DynamicCubeMapPage,
-      KenRussellPage
-    ]
-    for page_class in page_classes:
-      self.AddStory(page_class(
-          self,
-          shared_page_state_class=(
-            webgl_supported_shared_state.WebGLSupportedSharedState)))

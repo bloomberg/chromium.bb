@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -67,26 +66,3 @@ class PirateMarkPage(rendering_story.RenderingStory):
       action_runner.EvaluateJavaScript(
           'document.getElementById("benchmarkButtonText").click()')
       action_runner.Wait(10)
-
-# TODO(crbug.com/760553):remove this class after smoothness.tough_filters_cases
-# benchmark is completely replaced by rendering benchmarks
-class ToughFiltersCasesPageSet(story.StorySet):
-
-  """
-  Description: Self-driven filters animation examples
-  """
-
-  def __init__(self):
-    super(ToughFiltersCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_filters_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
-
-    page_classes = [
-        MotionMarkPage,
-        FilterTerrainSVGPage,
-        AnalogClockSVGPage,
-        PirateMarkPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))

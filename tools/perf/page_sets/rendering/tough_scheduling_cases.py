@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -143,32 +142,3 @@ class SecondBatchJsMediumPage(SecondBatchJsPage):
 class SecondBatchJsHeavyPage(SecondBatchJsPage):
   BASE_NAME = 'second_batch_js_heavy'
   URL = 'file://../tough_scheduling_cases/second_batch_js.html?heavy'
-
-
-# TODO(crbug.com/760553):remove this class after
-# smoothness.tough_scheduling_cases benchmark is completely
-# replaced by rendering benchmarks
-class ToughSchedulingCasesPageSet(story.StorySet):
-
-  """Tough scheduler latency test cases."""
-
-  def __init__(self):
-    super(ToughSchedulingCasesPageSet, self).__init__(
-        cloud_storage_bucket=story.INTERNAL_BUCKET)
-
-    page_classes = [
-        SimpleTextPage,
-        TouchHandlerScrollingPage,
-        RafScrollingPage,
-        RafCanvasScrollingPage,
-        RafAnimationScrollingPage,
-        RafTouchAnimationScrollingPage,
-        TouchDraggingPage,
-        SynchronizedScrollOffsetPage,
-        SecondBatchLightJsPage,
-        SecondBatchJsMediumPage,
-        SecondBatchJsHeavyPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))

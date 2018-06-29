@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -39,26 +38,3 @@ class UnscaledImageDecodePage(ToughImageDecodePage):
 class ViewPortWidthImageDecodePage(ToughImageDecodePage):
   BASE_NAME = 'cats_viewport_width'
   URL = 'http://localhost:9000/cats-viewport-width.html'
-
-
-# TODO(crbug.com/760553):remove this class after
-# smoothness.tough_image_decode_cases benchmark is completely
-# replaced by rendering benchmarks
-class ToughImageDecodeCasesPageSet(story.StorySet):
-
-  """
-  Description: A collection of difficult image decode tests
-  """
-
-  def __init__(self):
-    super(ToughImageDecodeCasesPageSet, self).__init__(
-      archive_data_file='../data/tough_image_decode_cases.json',
-      cloud_storage_bucket=story.PUBLIC_BUCKET)
-
-    page_classes = [
-      UnscaledImageDecodePage,
-      ViewPortWidthImageDecodePage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))
