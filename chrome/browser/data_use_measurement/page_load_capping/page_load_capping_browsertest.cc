@@ -47,26 +47,78 @@ const char kImagePrefix[] = "/image";
 class PageLoadCappingBrowserTest : public InProcessBrowserTest {
  public:
   PageLoadCappingBrowserTest()
-      : https_test_server_(std::make_unique<net::EmbeddedTestServer>(
-            net::EmbeddedTestServer::TYPE_HTTPS)) {
-    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-    {
-      scoped_refptr<base::FieldTrial> trial =
-          base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
-      std::map<std::string, std::string> feature_parameters = {
-          {"PageCapMiB", "0"},
-          {"PageFuzzingKiB", "0"},
-          {"OptOutStoreDisabled", "true"}};
-      base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
-          "TrialName1", "GroupName1", feature_parameters);
+      : https_test_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
-      feature_list->RegisterFieldTrialOverride(
-          data_use_measurement::page_load_capping::features::
-              kDetectingHeavyPages.name,
-          base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
-    }
+  void PostToSelf() {
+    EXPECT_FALSE(waiting_);
+    base::RunLoop run_loop;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                  run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  void WaitForRequest() {
+    EXPECT_FALSE(waiting_);
+    waiting_ = true;
+    run_loop_ = std::make_unique<base::RunLoop>();
+    run_loop_->Run();
+    run_loop_.reset();
+  }
+
+  GURL GetURL(const std::string& url_string) {
+    return https_test_server_.GetURL(url_string);
+  }
+
+  void NavigateToHeavyPage() { NavigateToHeavyPageAnchor(std::string()); }
+
+  void NavigateToHeavyPageAnchor(const std::string& anchor) {
+    ui_test_utils::NavigateToURL(
+        browser(), GetURL(std::string("/page_capping.html").append(anchor)));
+  }
+
+  size_t images_attempted() const { return images_attempted_; }
+
+  content::WebContents* contents() const {
+    return browser()->tab_strip_model()->GetActiveWebContents();
+  }
+
+  size_t InfoBarCount() const {
+    return InfoBarService::FromWebContents(contents())->infobar_count();
+  }
+
+  void ClickInfoBarLink() {
+    InfoBarService::FromWebContents(contents())
+        ->infobar_at(0)
+        ->delegate()
+        ->AsConfirmInfoBarDelegate()
+        ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+  }
+
+ private:
+  void SetUp() override {
+    std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
+    scoped_refptr<base::FieldTrial> trial =
+        base::FieldTrialList::CreateFieldTrial("TrialName1", "GroupName1");
+    std::map<std::string, std::string> feature_parameters = {
+        {"PageCapMiB", "0"},
+        {"PageFuzzingKiB", "0"},
+        {"OptOutStoreDisabled", "true"}};
+    base::FieldTrialParamAssociator::GetInstance()->AssociateFieldTrialParams(
+        "TrialName1", "GroupName1", feature_parameters);
+
+    feature_list->RegisterFieldTrialOverride(
+        data_use_measurement::page_load_capping::features::kDetectingHeavyPages
+            .name,
+        base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial.get());
 
     scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+
+    https_test_server_.RegisterRequestHandler(base::BindRepeating(
+        &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
+    https_test_server_.ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+    ASSERT_TRUE(https_test_server_.Start());
+
+    InProcessBrowserTest::SetUp();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(
@@ -91,28 +143,7 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
     return not_found_response;
   }
 
-  void PostToSelf() {
-    EXPECT_FALSE(waiting_);
-    base::RunLoop run_loop;
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                  run_loop.QuitClosure());
-    run_loop.Run();
-  }
-
-  void WaitForRequest() {
-    EXPECT_FALSE(waiting_);
-    waiting_ = true;
-    run_loop_ = std::make_unique<base::RunLoop>();
-    run_loop_->Run();
-    run_loop_.reset();
-  }
-
-  size_t images_attempted() const { return images_attempted_; }
-
- protected:
-  std::unique_ptr<net::EmbeddedTestServer> https_test_server_;
-
- private:
+  net::EmbeddedTestServer https_test_server_;
   size_t images_attempted_ = 0u;
   bool waiting_ = false;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -122,23 +153,11 @@ class PageLoadCappingBrowserTest : public InProcessBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
   // Tests that subresource loading can be blocked from the browser process.
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
 
-  ASSERT_TRUE(https_test_server_->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   // Load a mostly empty page.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  // Pause sub-resource loading.
-  InfoBarService::FromWebContents(contents)
-      ->infobar_at(0)
-      ->delegate()
-      ->AsConfirmInfoBarDelegate()
-      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+  NavigateToHeavyPage();
+  // Pause subresource loading.
+  ClickInfoBarLink();
 
   // Adds images to the page. They should not be allowed to load.
   // Running this 20 times makes 20 round trips to the renderer, making it very
@@ -152,36 +171,22 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingBlocksLoads) {
             .append(kImagePrefix)
             .append(base::IntToString(i))
             .append(".png';");
-    EXPECT_TRUE(content::ExecuteScript(contents, create_image_script));
+    EXPECT_TRUE(content::ExecuteScript(contents(), create_image_script));
   }
 
   // No images should be loaded as subresource loading was paused.
   EXPECT_EQ(0u, images_attempted());
-  https_test_server_.reset();
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingBlocksLoadsAndResume) {
   // Tests that after triggerring subresource pausing, resuming allows deferred
   // requests to be initiated.
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
 
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-
-  ASSERT_TRUE(https_test_server_->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   // Load a mostly empty page.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  // Pause sub-resource loading.
-  InfoBarService::FromWebContents(contents)
-      ->infobar_at(0)
-      ->delegate()
-      ->AsConfirmInfoBarDelegate()
-      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+  NavigateToHeavyPage();
+  // Pause subresource loading.
+  ClickInfoBarLink();
 
   // Adds an image to the page. It should not be allowed to load at first.
   // PageLoadCappingBlocksLoads tests that it is not loaded more robustly
@@ -191,36 +196,24 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
           "document.body.appendChild(image); image.src = '")
           .append(kImagePrefix)
           .append(".png';");
-  ASSERT_TRUE(content::ExecuteScript(contents, create_image_script));
+  ASSERT_TRUE(content::ExecuteScript(contents(), create_image_script));
 
   // Previous image should be allowed to load now.
-  InfoBarService::FromWebContents(contents)
-      ->infobar_at(0)
-      ->delegate()
-      ->AsConfirmInfoBarDelegate()
-      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+  ClickInfoBarLink();
 
   // An image should be fetched because subresource loading was paused then
   // resumed.
   if (images_attempted() < 1u)
     WaitForRequest();
   EXPECT_EQ(1u, images_attempted());
-  https_test_server_.reset();
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingAllowLoads) {
   // Tests that the image request loads normally when the page has not been
   // paused.
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  ASSERT_TRUE(https_test_server_->Start());
 
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   // Load a mostly empty page.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
+  NavigateToHeavyPage();
 
   // Adds an image to the page. It should be allowed to load.
   std::string create_image_script =
@@ -229,36 +222,24 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest, PageLoadCappingAllowLoads) {
           "document.body.appendChild(image); image.src = '")
           .append(kImagePrefix)
           .append(".png';");
-  ASSERT_TRUE(content::ExecuteScript(contents, create_image_script));
+  ASSERT_TRUE(content::ExecuteScript(contents(), create_image_script));
 
   // An image should be fetched because subresource loading was never paused.
   if (images_attempted() < 1u)
     WaitForRequest();
   EXPECT_EQ(1u, images_attempted());
-  https_test_server_.reset();
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingBlockNewFrameLoad) {
   // Tests that the image request loads normally when the page has not been
   // paused.
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  ASSERT_TRUE(https_test_server_->Start());
 
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   // Load a mostly empty page.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  // Pause sub-resource loading.
-  InfoBarService::FromWebContents(contents)
-      ->infobar_at(0)
-      ->delegate()
-      ->AsConfirmInfoBarDelegate()
-      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
-  content::TestNavigationObserver load_observer(contents);
+  NavigateToHeavyPage();
+  // Pause subresource loading.
+  ClickInfoBarLink();
+  content::TestNavigationObserver load_observer(contents());
 
   // Adds an image to the page. It should be allowed to load.
   std::string create_iframe_script = std::string(
@@ -266,23 +247,22 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
       "var html = '<body>NewFrame</body>';"
       "iframe.src = 'data:text/html;charset=utf-8,' + encodeURI(html);"
       "document.body.appendChild(iframe);");
-  content::ExecuteScriptAsync(contents, create_iframe_script);
+  content::ExecuteScriptAsync(contents(), create_iframe_script);
 
   // Make sure the DidFinishNavigation occured.
   load_observer.Wait();
   PostToSelf();
 
   size_t j = 0;
-  for (auto* frame : contents->GetAllFrames()) {
+  for (auto* frame : contents()->GetAllFrames()) {
     for (size_t i = 0; i < 20; ++i) {
       std::string create_image_script =
           std::string(
               "var image = document.createElement('img'); "
               "document.body.appendChild(image); image.src = '")
-              .append(https_test_server_
-                          ->GetURL(std::string(kImagePrefix)
-                                       .append(base::IntToString(++j))
-                                       .append(".png';"))
+              .append(GetURL(std::string(kImagePrefix)
+                                 .append(base::IntToString(++j))
+                                 .append(".png';"))
                           .spec());
 
       EXPECT_TRUE(content::ExecuteScript(frame, create_image_script));
@@ -292,30 +272,18 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   // An image should not be fetched because subresource loading was paused in
   // both frames.
   EXPECT_EQ(0u, images_attempted());
-  https_test_server_.reset();
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingBlockNewFrameLoadResume) {
   // Tests that the image request loads normally when the page has not been
   // paused.
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  ASSERT_TRUE(https_test_server_->Start());
 
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   // Load a mostly empty page.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  // Pause sub-resource loading.
-  InfoBarService::FromWebContents(contents)
-      ->infobar_at(0)
-      ->delegate()
-      ->AsConfirmInfoBarDelegate()
-      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
-  content::TestNavigationObserver load_observer(contents);
+  NavigateToHeavyPage();
+  // Pause subresource loading.
+  ClickInfoBarLink();
+  content::TestNavigationObserver load_observer(contents());
 
   // Adds an image to the page. It should be allowed to load.
   std::string create_iframe_script = std::string(
@@ -323,22 +291,20 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
       "var html = '<body>NewFrame</body>';"
       "iframe.src = 'data:text/html;charset=utf-8,' + encodeURI(html);"
       "document.body.appendChild(iframe);");
-  content::ExecuteScriptAsync(contents, create_iframe_script);
+  content::ExecuteScriptAsync(contents(), create_iframe_script);
 
   // Make sure the DidFinishNavigation occured.
   load_observer.Wait();
   PostToSelf();
 
-  for (auto* frame : contents->GetAllFrames()) {
-    if (contents->GetMainFrame() == frame)
+  for (auto* frame : contents()->GetAllFrames()) {
+    if (contents()->GetMainFrame() == frame)
       continue;
     std::string create_image_script =
         std::string(
             "var image = document.createElement('img'); "
             "document.body.appendChild(image); image.src = '")
-            .append(https_test_server_
-                        ->GetURL(std::string(kImagePrefix).append(".png';"))
-                        .spec());
+            .append(GetURL(std::string(kImagePrefix).append(".png';")).spec());
     ASSERT_TRUE(content::ExecuteScript(frame, create_image_script));
   }
 
@@ -347,114 +313,75 @@ IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
   EXPECT_EQ(0u, images_attempted());
 
   // Previous image should be allowed to load now.
-  InfoBarService::FromWebContents(contents)
-      ->infobar_at(0)
-      ->delegate()
-      ->AsConfirmInfoBarDelegate()
-      ->LinkClicked(WindowOpenDisposition::CURRENT_TAB);
+  ClickInfoBarLink();
 
   // An image should be fetched because subresource loading was resumed.
   if (images_attempted() < 1u)
     WaitForRequest();
   EXPECT_EQ(1u, images_attempted());
-
-  https_test_server_.reset();
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingInfobarShownAfterSamePageNavigation) {
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
+  // Verifies that same page navigations do not dismiss the InfoBar.
 
-  ASSERT_TRUE(https_test_server_->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
   // Load a page.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
+  NavigateToHeavyPage();
 
-  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+  ASSERT_EQ(1u, InfoBarCount());
   infobars::InfoBar* infobar =
-      InfoBarService::FromWebContents(contents)->infobar_at(0);
+      InfoBarService::FromWebContents(contents())->infobar_at(0);
 
   // Navigate on the page to an anchor.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html#anchor"));
+  NavigateToHeavyPageAnchor("#anchor");
 
-  EXPECT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
-  EXPECT_EQ(infobar, InfoBarService::FromWebContents(contents)->infobar_at(0));
-
-  https_test_server_.reset();
+  EXPECT_EQ(1u, InfoBarCount());
+  EXPECT_EQ(infobar,
+            InfoBarService::FromWebContents(contents())->infobar_at(0));
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
                        PageLoadCappingInfoBarNotShownAfterBlacklisted) {
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-
-  ASSERT_TRUE(https_test_server_->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  // Load a page and ignore the InfoBar.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+  // Verifies the blacklist prevents over-showing the InfoBar.
 
   // Load a page and ignore the InfoBar.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+  NavigateToHeavyPage();
+  ASSERT_EQ(1u, InfoBarCount());
+
+  // Load a page and ignore the InfoBar.
+  NavigateToHeavyPage();
+  ASSERT_EQ(1u, InfoBarCount());
 
   // Load a page and due to session policy blacklisting, the InfoBar should not
   // show.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(0u, InfoBarService::FromWebContents(contents)->infobar_count());
-
-  https_test_server_.reset();
+  NavigateToHeavyPage();
+  ASSERT_EQ(0u, InfoBarCount());
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadCappingBrowserTest,
-                       NavigationDataREmovedFromBlacklist) {
-  https_test_server_->RegisterRequestHandler(base::BindRepeating(
-      &PageLoadCappingBrowserTest::HandleRequest, base::Unretained(this)));
-  https_test_server_->ServeFilesFromSourceDirectory(base::FilePath(kDocRoot));
-
-  ASSERT_TRUE(https_test_server_->Start());
-
-  content::WebContents* contents =
-      browser()->tab_strip_model()->GetActiveWebContents();
-  // Load a page and ignore the InfoBar.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+                       NavigationDataRemovedFromBlacklist) {
+  // Verifies that clearing browsing data resets blacklist rules.
 
   // Load a page and ignore the InfoBar.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
+  NavigateToHeavyPage();
+  ASSERT_EQ(1u, InfoBarCount());
+
+  // Load a page and ignore the InfoBar.
+  NavigateToHeavyPage();
+  ASSERT_EQ(1u, InfoBarCount());
 
   // Load a page and due to session policy blacklisting, the InfoBar should not
   // show.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(0u, InfoBarService::FromWebContents(contents)->infobar_count());
+  NavigateToHeavyPage();
+  ASSERT_EQ(0u, InfoBarCount());
 
   // Clear the navigation history.
-  content::BrowsingDataRemover* remover =
-      content::BrowserContext::GetBrowsingDataRemover(browser()->profile());
-  remover->Remove(base::Time(), base::Time::Max(),
-                  ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
-                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
+  content::BrowserContext::GetBrowsingDataRemover(browser()->profile())
+      ->Remove(base::Time(), base::Time::Max(),
+               ChromeBrowsingDataRemoverDelegate::DATA_TYPE_HISTORY,
+               content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB);
 
   // After clearing history, the InfoBar should be allowed again.
-  ui_test_utils::NavigateToURL(
-      browser(), https_test_server_->GetURL("/page_capping.html"));
-  ASSERT_EQ(1u, InfoBarService::FromWebContents(contents)->infobar_count());
-
-  https_test_server_.reset();
+  NavigateToHeavyPage();
+  ASSERT_EQ(1u, InfoBarCount());
 }
