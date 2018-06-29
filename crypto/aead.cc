@@ -24,6 +24,9 @@ Aead::Aead(AeadAlgorithm algorithm) : key_(nullptr) {
     case AES_256_GCM:
       aead_ = EVP_aead_aes_256_gcm();
       break;
+    case AES_256_GCM_SIV:
+      aead_ = EVP_aead_aes_256_gcm_siv();
+      break;
   }
 }
 
