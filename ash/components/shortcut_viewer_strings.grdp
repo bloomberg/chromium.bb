@@ -105,11 +105,11 @@
   <message name="IDS_KSV_DESCRIPTION_LOCK_SCREEN" desc="Description of the command in keyboard shortcut viewer.">
     Lock screen
   </message>
-  <message name="IDS_KSV_DESCRIPTION_CHANGE_SCREEN_RESOLUTION" desc="Description of the command in keyboard shortcut viewer.">
-    Make items on your screen larger or smaller
+  <message name="IDS_KSV_DESCRIPTION_DISPLAY_ZOOM_OUT" desc="Description of the command in keyboard shortcut viewer.">
+    Display Zoom out
   </message>
-  <message name="IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION" desc="Human readable version of the keyboard shortcut.">
-    <ph name="ctrl">$1<ex>Ctrl</ex></ph><ph name="separator1">$2<ex>+</ex></ph><ph name="shift">$3<ex>Shift</ex></ph><ph name="separator2">$4<ex>+</ex></ph><ph name="plus">$5<ex>v</ex></ph> or <ph name="minus">$6<ex>v</ex></ph>
+  <message name="IDS_KSV_DESCRIPTION_DISPLAY_ZOOM_IN" desc="Description of the command in keyboard shortcut viewer.">
+    Display Zoom in
   </message>
   <message name="IDS_KSV_DESCRIPTION_DRAG_LINK_IN_SAME_TAB" desc="Description of the command in keyboard shortcut viewer.">
     Open the link in the tab
@@ -181,7 +181,7 @@
     Open new tab
   </message>
   <message name="IDS_KSV_DESCRIPTION_SCALE_UI_RESET" desc="Description of the command in keyboard shortcut viewer.">
-    Reset screen resolution to default
+    Reset display zoom level
   </message>
   <message name="IDS_KSV_DESCRIPTION_ROTATE_SCREEN" desc="Description of the command in keyboard shortcut viewer.">
     Rotate screen 90 degrees
@@ -274,7 +274,7 @@
     Zoom out on the page
   </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_ZOOM_NORMAL" desc="Description of the command in keyboard shortcut viewer.">
-    Reset zoom level
+    Reset zoom level on the page
   </message>
   <message name="IDS_KSV_DESCRIPTION_IDC_ZOOM_PLUS" desc="Description of the command in keyboard shortcut viewer.">
     Zoom in on the page
@@ -517,10 +517,10 @@
     Turn brightness up
   </message>
   <message name="IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_OUT" desc="Description of the command in keyboard shortcut viewer.">
-    Zoom out
+    Zoom out (when docked OR fullscreen magnifiers enabled)
   </message>
   <message name="IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_IN" desc="Description of the command in keyboard shortcut viewer.">
-    Zoom in
+    Zoom in (when docked OR fullscreen magnifiers enabled)
   </message>
   <message name="IDS_KSV_DESCRIPTION_VOLUME_MUTE" desc="Description of the command in keyboard shortcut viewer.">
     Mute sound

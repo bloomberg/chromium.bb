@@ -206,13 +206,17 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
 
       {// |categories|
        {ShortcutCategory::kSystemAndDisplay},
-       IDS_KSV_DESCRIPTION_CHANGE_SCREEN_RESOLUTION,
-       IDS_KSV_SHORTCUT_CHANGE_SCREEN_RESOLUTION,
+       IDS_KSV_DESCRIPTION_DISPLAY_ZOOM_OUT,
+       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|
-       {},
-       // |shortcut_key_codes|
-       {ui::VKEY_CONTROL, ui::VKEY_UNKNOWN, ui::VKEY_SHIFT, ui::VKEY_UNKNOWN,
-        ui::VKEY_OEM_PLUS, ui::VKEY_OEM_MINUS}},
+       {{ui::VKEY_OEM_MINUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
+
+      {// |categories|
+       {ShortcutCategory::kSystemAndDisplay},
+       IDS_KSV_DESCRIPTION_DISPLAY_ZOOM_IN,
+       IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
+       // |accelerator_ids|
+       {{ui::VKEY_OEM_PLUS, ui::EF_CONTROL_DOWN | ui::EF_SHIFT_DOWN}}},
 
       {// |categories|
        {ShortcutCategory::kTabAndWindow},
@@ -1077,14 +1081,14 @@ const std::vector<KeyboardShortcutItem>& GetKeyboardShortcutItemList() {
        {{ui::VKEY_BRIGHTNESS_UP, ui::EF_NONE}}},
 
       {// |categories|
-       {ShortcutCategory::kSystemAndDisplay},
+       {ShortcutCategory::kAccessibility},
        IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_OUT,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|
        {{ui::VKEY_BRIGHTNESS_DOWN, ui::EF_CONTROL_DOWN | ui::EF_ALT_DOWN}}},
 
       {// |categories|
-       {ShortcutCategory::kSystemAndDisplay},
+       {ShortcutCategory::kAccessibility},
        IDS_KSV_DESCRIPTION_MAGNIFY_SCREEN_ZOOM_IN,
        IDS_KSV_SHORTCUT_TWO_MODIFIERS_ONE_KEY,
        // |accelerator_ids|
