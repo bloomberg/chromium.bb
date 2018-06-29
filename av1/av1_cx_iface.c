@@ -1119,7 +1119,7 @@ static aom_codec_err_t encoder_init(aom_codec_ctx_t *ctx,
     }
 
     priv->extra_cfg = default_extra_cfg;
-    once(av1_initialize_enc);
+    aom_once(av1_initialize_enc);
 
     res = validate_config(priv, &priv->cfg, &priv->extra_cfg);
 

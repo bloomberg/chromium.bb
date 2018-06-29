@@ -1642,4 +1642,6 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
                           dst_stride, dst, dst_stride, blk_col, blk_row, plane);
 }
 
-void av1_init_intra_predictors(void) { once(init_intra_predictors_internal); }
+void av1_init_intra_predictors(void) {
+  aom_once(init_intra_predictors_internal);
+}

@@ -98,7 +98,7 @@ AV1Decoder *av1_decoder_create(BufferPool *const pool) {
   memset(cm->frame_contexts, 0, FRAME_CONTEXTS * sizeof(*cm->frame_contexts));
 
   pbi->need_resync = 1;
-  once(initialize_dec);
+  aom_once(initialize_dec);
 
   // Initialize the references to not point to any frame buffers.
   memset(&cm->ref_frame_map, -1, sizeof(cm->ref_frame_map));
