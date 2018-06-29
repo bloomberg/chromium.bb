@@ -71,8 +71,20 @@ TEST_F(NetworkSessionConfiguratorTest, Defaults) {
   EXPECT_EQ(0u, params_.origins_to_force_quic_on.size());
 }
 
-TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialHttp2Disable) {
+TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialGroupNameDoesNotMatter) {
   base::FieldTrialList::CreateFieldTrial("HTTP2", "Disable");
+
+  ParseFieldTrials();
+
+  EXPECT_TRUE(params_.enable_http2);
+}
+
+TEST_F(NetworkSessionConfiguratorTest, Http2FieldTrialDisable) {
+  std::map<std::string, std::string> field_trial_params;
+  field_trial_params["http2_enabled"] = "false";
+  variations::AssociateVariationParams("HTTP2", "Experiment",
+                                       field_trial_params);
+  base::FieldTrialList::CreateFieldTrial("HTTP2", "Experiment");
 
   ParseFieldTrials();
 

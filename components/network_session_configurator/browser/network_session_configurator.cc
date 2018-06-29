@@ -39,9 +39,7 @@ const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicFieldTrialEnabledGroupName[] = "Enabled";
 const char kQuicFieldTrialHttpsEnabledGroupName[] = "HttpsEnabled";
 
-// Field trial for HTTP/2.
 const char kHttp2FieldTrialName[] = "HTTP2";
-const char kHttp2FieldTrialDisablePrefix[] = "Disable";
 
 // Gets the value of the specified command line switch, as an integer. If unable
 // to convert it to an int (It's not an int, or the switch is not present)
@@ -121,7 +119,7 @@ void ConfigureHttp2Params(const base::CommandLine& command_line,
                           base::StringPiece http2_trial_group,
                           const VariationParameters& http2_trial_params,
                           net::HttpNetworkSession::Params* params) {
-  if (http2_trial_group.starts_with(kHttp2FieldTrialDisablePrefix)) {
+  if (GetVariationParam(http2_trial_params, "http2_enabled") == "false") {
     params->enable_http2 = false;
     return;
   }
