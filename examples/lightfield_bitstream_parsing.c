@@ -231,7 +231,8 @@ int main(int argc, char **argv) {
 
     // Write the OBU size using a fixed length_field_size of 4 bytes.
     saved_obu_size_loc = tl;
-    aom_wb_write_literal(&wb, 0, 32);
+    // aom_wb_write_unsigned_literal(&wb, data, bits) requires that bits <= 32.
+    aom_wb_write_unsigned_literal(&wb, 0, 32);
     tl += 4;
     tile_list_obu_header_size += 4;
 
