@@ -32,7 +32,6 @@ suite('DisplaySizeSlider', function() {
 
     assertFalse(slider.disabled);
     assertFalse(slider.dragging);
-    assertFalse(slider.expand);
     expectEquals(selectedIndex, slider.index);
     expectEquals(ticks.length - 1, slider.markers.length);
     expectEquals(ticks[selectedIndex].value, slider.pref.value);
@@ -161,23 +160,12 @@ suite('DisplaySizeSlider', function() {
     expectEquals(ticks[slider.index].label, slider.$.labelText.innerText);
   });
 
-  test('check knob expansion', function() {
-    assertFalse(slider.expand);
-    let oldIndex = slider.index;
-
-    MockInteractions.down(slider.$.sliderKnob);
-    assertTrue(slider.expand);
-    expectEquals(oldIndex, slider.index);
-    expectEquals(ticks[oldIndex].value, slider.pref.value);
-
-
-    MockInteractions.up(slider.$.sliderKnob);
-    assertFalse(slider.expand);
-    expectEquals(oldIndex, slider.index);
-    expectEquals(ticks[oldIndex].value, slider.pref.value);
-  });
-
   test('mouse interactions with the slider knobs', function() {
+    // The label should be visible when focused.
+    expectEquals('none', getComputedStyle(slider.$.labelContainer).display);
+    slider.focus();
+    expectEquals('block', getComputedStyle(slider.$.labelContainer).display);
+
     let dragEventReceived = false;
     let valueInEvent = null;
     slider.addEventListener('immediate-value-changed', function(e) {
@@ -196,12 +184,6 @@ suite('DisplaySizeSlider', function() {
     let currentPos = MockInteractions.middleOfNode(sliderKnob);
     let nextPos = {x: currentPos.x + tickWidth, y: currentPos.y};
     MockInteractions.move(sliderKnob, currentPos, nextPos);
-
-    // Mouse is still down. So the slider should still be expanded.
-    assertTrue(slider.expand);
-
-    // The label should be visible.
-    expectEquals('block', getComputedStyle(slider.$.labelContainer).display);
 
     // We moved by 1 tick width, so the slider index must have increased.
     expectEquals(oldIndex + 1, slider.index);

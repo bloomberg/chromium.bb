@@ -1,5 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
+
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_behavior.html">
+<link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-behaviors/paper-inky-focus-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-a11y-keys-behavior/iron-a11y-keys-behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-range-behavior/iron-range-behavior.html">
@@ -61,16 +63,14 @@
         z-index: 10;
       }
 
-      /* Show the label on keyboard focus and mouse hover */
-      .dragging #labelContainer,
-      :host(:focus) #labelContainer,
       #sliderContainer:hover #labelContainer,
-      .hover #labelContainer {
+      .hover #labelContainer,
+      :host([hold-down_]) #labelContainer {
         display: block;
       }
 
       .label {
-        background: var(--google-blue-700);
+        background: var(--google-blue-600);
         border-radius: 14px;
         color: white;
         font-size: 12px;
@@ -111,7 +111,7 @@
       }
       .slider-markers::after,
       .slider-marker::after {
-        background-color: #000;
+        background-color: rgba(255, 255, 255, 0.54);
         border-radius: 50%;
         content: '';
         display: block;
@@ -121,7 +121,6 @@
       }
 
       #sliderBar {
-        --paper-progress-container-color: var(--paper-grey-400);
         --paper-progress-height: 2px;
         background-color: transparent;
         padding: 15px 0;
@@ -142,24 +141,20 @@
       }
 
       .slider-knob-inner {
-        background-color: var(--google-blue-700);
-        border: 2px solid var(--google-blue-700);
+        background-color: var(--google-blue-600);
+        border: 2px solid var(--google-blue-600);
         border-radius: 50%;
         box-sizing: border-box;
-        height: calc(100% - 20px);
-        margin: 10px;
+        height: 10px;
+        margin: 11px;
         transition-duration: 180ms;
         transition-property: transform, background-color, border;
         transition-timing-function: ease;
-        width: calc(100% - 20px);
-      }
-
-      .expand > .slider-knob > .slider-knob-inner {
-        transform: scale(1.5);
+        width: 10px;
       }
 
       paper-ripple {
-        color: var(--google-blue-700);
+        color: var(--google-blue-600);
       }
 
       #subLabelContainer {
@@ -176,8 +171,13 @@
       }
 
       paper-progress {
-        --paper-progress-active-color: var(--google-blue-700);
-        --paper-progress-disabled-active-color: var(--paper-grey-400);
+        --paper-progress-active-color: var(--google-blue-600);
+        --paper-progress-container-color: var(--google-blue-600-opacity-24);
+        --paper-progress-disabled-active-color: var(--google-grey-600);
+      }
+
+      paper-progress[disabled] {
+        --paper-progress-container-color: var(--google-grey-600-opacity-24);
       }
 
       /* Styles for disabled state */
@@ -185,19 +185,17 @@
         pointer-events: none;
       }
 
-      .disabled > .slider-knob > .slider-knob-inner {
-        transform: scale3d(0.75, 0.75, 1);
+      #subLabelContainer[disabled] {
+        color: var(--google-grey-600);
       }
 
-      #subLabelContainer[disabled] {
-        color: var(--paper-grey-400);
+      .slider-knob-inner[disabled] {
+        background-color: var(--google-grey-600);
+        border: 2px solid white;
       }
     </style>
-    <div id="sliderContainer"
-        class$="[[getClassNames_(expand, disabled, dragging)]]"
-        on-mouseout="onMouseOut_">
-      <div id="labelContainer" hidden$="[[shouldShowLabel_(ticks, index)]]"
-          aria-label="[[getLabelForIndex_(ticks, index)]]">
+    <div id="sliderContainer" class$="[[getClassNames_(disabled, dragging)]]">
+      <div id="labelContainer" aria-label="[[getLabelForIndex_(ticks, index)]]">
         <div id="label" class="label">
           <div id="labelText">
             [[getLabelForIndex_(ticks, index)]]
@@ -211,17 +209,15 @@
         </paper-progress>
       </div>
 
-      <template is="dom-if" if="[[!disabled]]">
-        <div class="slider-markers">
-          <template is="dom-repeat" items="[[markers]]">
-            <div class="slider-marker"></div>
-          </template>
-        </div>
-      </template>
 
-      <div id="sliderKnob" class="slider-knob" on-down="knobDown_"
-          on-up="resetKnob_" on-track="knobTrack_">
-        <div class="slider-knob-inner"></div>
+      <div class="slider-markers">
+        <template is="dom-repeat" items="[[markers]]">
+          <div class="slider-marker"></div>
+        </template>
+      </div>
+
+      <div id="sliderKnob" class="slider-knob" on-track="knobTrack_">
+        <div class="slider-knob-inner" disabled$="[[disabled]]"></div>
       </div>
       <div id="subLabelContainer" disabled$="[[disabled]]">
         <div id="subLabelMin">[[minLabel]]</div>

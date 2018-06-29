@@ -43,8 +43,8 @@ Polymer({
     'pointerup': 'onPointerUp_',
   },
 
-  /** @type {boolean} */
-  usedMouse: false,
+  /** @private {boolean} */
+  usedMouse_: false,
 
   /** @override */
   attached: function() {
@@ -65,14 +65,14 @@ Polymer({
 
   /** @private */
   onChange_: function() {
-    this.$.slider._setExpand(!this.usedMouse);
-    this.$.slider.getRipple().holdDown = !this.usedMouse;
-    this.usedMouse = false;
+    this.$.slider._setExpand(!this.usedMouse_);
+    this.$.slider.getRipple().holdDown = !this.usedMouse_;
+    this.usedMouse_ = false;
   },
 
   /** @private */
   onKeyDown_: function() {
-    this.usedMouse = false;
+    this.usedMouse_ = false;
     if (!this.disabled)
       this.onFocus_();
   },
@@ -86,7 +86,7 @@ Polymer({
       event.preventDefault();
       return;
     }
-    this.usedMouse = true;
+    this.usedMouse_ = true;
     setTimeout(() => {
       this.$.slider.getRipple().holdDown = true;
     });
