@@ -184,6 +184,13 @@ void OmniboxTextView::Dim() {
       result_view_->GetColor(OmniboxPart::RESULTS_TEXT_DIMMED));
 }
 
+const base::string16& OmniboxTextView::text() const {
+  static const base::string16 kEmptyString;
+  if (!render_text_)
+    return kEmptyString;
+  return render_text_->text();
+}
+
 void OmniboxTextView::SetText(const base::string16& text) {
   render_text_.reset();
   render_text_ = CreateRenderText(text);
