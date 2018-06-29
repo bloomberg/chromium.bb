@@ -1069,13 +1069,13 @@ void CrostiniManager::OnGetContainerSshKeys(
     base::Optional<vm_tools::concierge::ContainerSshKeysResponse> reply) {
   if (!reply.has_value()) {
     LOG(ERROR) << "Failed to get ssh keys. Empty response.";
-    std::move(callback).Run(ConciergeClientResult::DBUS_ERROR, "", "");
+    std::move(callback).Run(ConciergeClientResult::DBUS_ERROR, "", "", "");
     return;
   }
   vm_tools::concierge::ContainerSshKeysResponse response = reply.value();
   std::move(callback).Run(ConciergeClientResult::SUCCESS,
                           response.container_public_key(),
-                          response.host_private_key());
+                          response.host_private_key(), response.hostname());
 }
 
 void CrostiniManager::RemoveCrostini(Profile* profile,

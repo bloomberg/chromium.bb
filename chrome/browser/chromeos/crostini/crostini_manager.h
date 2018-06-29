@@ -97,7 +97,8 @@ class CrostiniManager : public chromeos::ConciergeClient::Observer,
   using GetContainerSshKeysCallback =
       base::OnceCallback<void(ConciergeClientResult result,
                               const std::string& container_public_key,
-                              const std::string& host_private_key)>;
+                              const std::string& host_private_key,
+                              const std::string& hostname)>;
   // The type of the callback for CrostiniManager::RestartCrostini.
   using RestartCrostiniCallback = ConciergeClientCallback;
   // The type of the callback for CrostiniManager::RemoveCrostini.
