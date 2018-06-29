@@ -6,6 +6,7 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/metrics/histogram_macros.h"
 #import "base/strings/sys_string_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -63,6 +64,7 @@ int FontSizeTabHelper::GetSystemSuggestedFontSize() const {
   UIContentSizeCategory category =
       UIApplication.sharedApplication.preferredContentSizeCategory;
   NSNumber* font_size = font_size_map[category];
+  UMA_HISTOGRAM_BOOLEAN("Accessibility.iOS.NewLargerTextCategory", !font_size);
   return font_size ? font_size.intValue : 100;
 }
 
