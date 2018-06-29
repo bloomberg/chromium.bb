@@ -365,6 +365,25 @@ because the stage that threw the exception should be marked as failing.""")
     return success
 
 
+class ManifestVersionedBuilder(Builder):
+  """Base class for most custom Builder classes.
+
+  This class uses ManifestVersionedSync, which is appropriate for most builders
+  without specific sync requirements.
+  """
+  def GetVersionInfo(self):
+    """Returns the CrOS version info from the chromiumos-overlay."""
+    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
+
+  def GetSyncInstance(self):
+    """Returns an instance of a SyncStage that should be run."""
+    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
+
+  def RunStages(self):
+    """Subclasses must override this method."""
+    raise NotImplementedError()
+
+
 class PreCqBuilder(Builder):
   """Builder that runs PreCQ tests.
 
@@ -389,14 +408,6 @@ class PreCqBuilder(Builder):
     self.patch_pool.gerrit_patches = []
 
     return self.sync_stage
-
-  def GetCompletionInstance(self):
-    """Return the completion instance.
-
-    Returns:
-      generic_stages.BuilderStage subclass, or None if completion hasn't run.
-    """
-    return self.completion_instance
 
   def RunStages(self):
     """Run something after sync/reexec."""

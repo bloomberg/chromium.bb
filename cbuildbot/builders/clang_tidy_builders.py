@@ -7,24 +7,14 @@
 
 from __future__ import print_function
 
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import chrome_stages
-from chromite.cbuildbot.stages import sync_stages
 
 
-class ClangTidyBuilder(generic_builders.Builder):
+class ClangTidyBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that creates builds for clang-tidy warnings in Chrome OS."""
-
-  def GetVersionInfo(self):
-    """Returns the CrOS version info from the chromiumos-overlay."""
-    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
-
-  def GetSyncInstance(self):
-    """Returns an instance of a SyncStage that should be run."""
-    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
 
   def RunStages(self):
     """Run stages for clang-tidy builder."""

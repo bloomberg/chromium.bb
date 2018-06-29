@@ -11,19 +11,10 @@ from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.stages import build_stages
 from chromite.cbuildbot.stages import infra_stages
-from chromite.cbuildbot.stages import sync_stages
 
 
-class InfraGoBuilder(generic_builders.Builder):
+class InfraGoBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that builds infra Go binaries."""
-
-  def GetVersionInfo(self):
-    """Returns the CrOS version info from the chromiumos-overlay."""
-    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
-
-  def GetSyncInstance(self):
-    """Returns an instance of a SyncStage that should be run."""
-    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
 
   def RunStages(self):
     """Build and upload infra Go binaries."""

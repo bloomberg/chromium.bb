@@ -11,7 +11,6 @@ from __future__ import print_function
 from chromite.lib import cros_logging as logging
 from chromite.lib import parallel
 
-from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot.builders import generic_builders
 from chromite.cbuildbot.builders import simple_builders
 from chromite.cbuildbot.stages import build_stages
@@ -19,7 +18,6 @@ from chromite.cbuildbot.stages import android_stages
 from chromite.cbuildbot.stages import artifact_stages
 from chromite.cbuildbot.stages import chrome_stages
 from chromite.cbuildbot.stages import generic_stages
-from chromite.cbuildbot.stages import sync_stages
 from chromite.cbuildbot.stages import test_stages
 from chromite.cbuildbot.stages import vm_test_stages
 
@@ -36,48 +34,32 @@ class FailStage(generic_stages.BuilderStage):
     raise Exception('!!!Oh, no! A Fail Stage!!!')
 
 
-class SucessBuilder(generic_builders.PreCqBuilder):
+class SucessBuilder(generic_builders.ManifestVersionedBuilder):
   """Very minimal builder that always passes."""
-  def RunTestStages(self):
+  def RunStages(self):
     """Run a success stage!"""
     self._RunStage(SuccessStage)
 
 
-class FailBuilder(generic_builders.PreCqBuilder):
+class FailBuilder(generic_builders.ManifestVersionedBuilder):
   """Very minimal builder that always fails."""
-  def RunTestStages(self):
+  def RunStages(self):
     """Run fail stage!"""
     self._RunStage(FailStage)
 
 
-class ManifestVersionedSyncBuilder(generic_builders.Builder):
+class ManifestVersionedSyncBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that performs sync, then exits."""
-
-  def GetVersionInfo(self):
-    """Returns the CrOS version info from the chromiumos-overlay."""
-    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
-
-  def GetSyncInstance(self):
-    """Returns an instance of a SyncStage that should be run."""
-    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
 
   def RunStages(self):
     """Run something after sync/reexec."""
     self._RunStage(SuccessStage)
 
 
-class UnittestStressBuilder(generic_builders.Builder):
+class UnittestStressBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that runs unittests repeatedly to reproduce flake failures."""
 
   TEST_CYCLES = 20
-
-  def GetVersionInfo(self):
-    """Returns the CrOS version info from the chromiumos-overlay."""
-    return manifest_version.VersionInfo.from_repo(self._run.buildroot)
-
-  def GetSyncInstance(self):
-    """Returns an instance of a SyncStage that should be run."""
-    return self._GetStageInstance(sync_stages.ManifestVersionedSyncStage)
 
   def RunStages(self):
     """Run something after sync/reexec."""
