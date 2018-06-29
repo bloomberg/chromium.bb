@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -33,16 +32,3 @@ class ImageDecodingPage(rendering_story.RenderingStory):
 class YuvDecodingPage(ImageDecodingPage):
   BASE_NAME = 'yuv_decoding'
   URL = 'file://../image_decoding_cases/yuv_decoding.html'
-
-
-# TODO(crbug.com/760553):remove this class after
-# smoothness.image_decoding_cases benchmark is completely
-# replaced by rendering benchmarks
-class ImageDecodingCasesPageSet(story.StorySet):
-
-  """ A directed benchmark of accelerated jpeg image decoding performance """
-
-  def __init__(self):
-    super(ImageDecodingCasesPageSet, self).__init__()
-
-    self.AddStory(YuvDecodingPage(self))

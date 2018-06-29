@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.login_helpers import google_login
 from page_sets.rendering import rendering_story
@@ -132,16 +131,3 @@ class GoogleMapsPage(KeyDesktopMoveCasesPage):
         action_runner.DragPage(left_start_ratio=0.5, top_start_ratio=0.75,
                                left_end_ratio=0.75, top_end_ratio=0.5)
     # TODO(ssid): Add zoom gestures after fixing bug crbug.com/462214.
-
-
-class KeyDesktopMoveCasesPageSet(story.StorySet):
-
-  """ Special cases for move gesture """
-
-  def __init__(self):
-    super(KeyDesktopMoveCasesPageSet, self).__init__(
-      archive_data_file='../data/key_desktop_move_cases.json',
-      cloud_storage_bucket=story.PARTNER_BUCKET)
-
-    self.AddStory(GmailMouseScrollPage(self))
-    self.AddStory(GoogleMapsPage(self))

@@ -4,9 +4,6 @@
 
 import os
 
-from telemetry import story
-
-from page_sets import webgl_supported_shared_state
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
 
@@ -52,17 +49,3 @@ class MapsPage(rendering_story.RenderingStory):
     action_runner.EvaluateJavaScript('startTest()')
     with action_runner.CreateInteraction('MapAnimation'):
       action_runner.WaitForJavaScriptCondition('window.testDone', timeout=120)
-
-# TODO(crbug.com/760553):remove this class after smoothness.maps
-# benchmark is completely replaced by rendering benchmarks
-class MapsPageSet(story.StorySet):
-
-  """ Google Maps examples """
-
-  def __init__(self):
-    super(MapsPageSet,self).__init__(cloud_storage_bucket=story.PUBLIC_BUCKET)
-
-    self.AddStory(MapsPage(
-        self,
-        shared_page_state_class=(
-          webgl_supported_shared_state.WebGLSupportedSharedState)))

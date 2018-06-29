@@ -2,7 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 from telemetry.page import shared_page_state
-from telemetry import story
 
 from page_sets.rendering import rendering_story
 from page_sets.rendering import story_tags
@@ -57,28 +56,3 @@ class LargeTextureUploadsPage(ToughTextureUploadPage):
 class ExtraLargeTextureUploadsPage(ToughTextureUploadPage):
   BASE_NAME = 'extra_large_texture_uploads'
   URL = 'file://../tough_texture_upload_cases/extra_large_texture_uploads.html'
-
-
-# TODO(crbug.com/760553):remove this class once
-# smoothness.tough_texture_upload_cases benchmark is completely replaced
-# by rendering benchmarks
-class ToughTextureUploadCasesPageSet(story.StorySet):
-
-  """
-  Description: A collection of texture upload performance tests
-  """
-
-  def __init__(self):
-    super(ToughTextureUploadCasesPageSet, self).__init__()
-
-    page_classes = [
-      BackgroundColorAnimationPage,
-      BackgroundColorAnimationWithGradientPage,
-      SmallTextureUploadsPage,
-      MediumTextureUploadsPage,
-      LargeTextureUploadsPage,
-      ExtraLargeTextureUploadsPage
-    ]
-
-    for page_class in page_classes:
-      self.AddStory(page_class(self))
