@@ -874,14 +874,6 @@ gfx::Size Tab::CalculatePreferredSize() const {
   return gfx::Size(GetStandardWidth(), GetLayoutConstant(TAB_HEIGHT));
 }
 
-void Tab::ViewHierarchyChanged(const ViewHierarchyChangedDetails& details) {
-  // If this hierarchy changed has resulted in us being part of a widget
-  // hierarchy for the first time, we can now get at the theme provider, and
-  // should recalculate the button color.
-  if (details.is_add)
-    OnButtonColorMaybeChanged();
-}
-
 void Tab::PaintChildren(const views::PaintInfo& info) {
   // Clip children to 1 dp inside the tab's fill path.  This has no effect
   // except when the tab is too narrow to completely show even one icon, at
@@ -910,6 +902,10 @@ void Tab::OnPaint(gfx::Canvas* canvas) {
     return;
 
   PaintTab(canvas, clip);
+}
+
+void Tab::AddedToWidget() {
+  OnButtonColorMaybeChanged();
 }
 
 void Tab::OnThemeChanged() {
