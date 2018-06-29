@@ -69,18 +69,6 @@
       },
     },
   },
-  'app_shell_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Win 10 Fast Ring',
-    ],
-  },
-  'aura_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Win 10 Fast Ring',
-    ],
-  },
   'base_unittests': {
     'modifications': {
       # chromium.android
@@ -381,12 +369,6 @@
     'remove_from': [
       'Linux x64',
       'Mac',
-    ],
-  },
-  'chrome_elf_import_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Win 10 Fast Ring',
     ],
   },
   'chrome_public_test_apk': {
@@ -722,12 +704,6 @@
         },
       },
     },
-  },
-  'compositor_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Win 10 Fast Ring',
-    ],
   },
   'content_browsertests': {
     'modifications': {
@@ -1404,12 +1380,6 @@
       'Win V8 FYI Release (NVIDIA)',
     ],
   },
-  'install_static_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Win 10 Fast Ring',
-    ],
-  },
   'interactive_ui_tests': {
     'modifications': {
       # chromium.win
@@ -1764,8 +1734,6 @@
       # chromium.gpu.fyi
       # The face and barcode detection tests fail on the Mac Pros.
       'Mac Pro FYI Release (AMD)',
-      # chromium.fyi
-      'Win 10 Fast Ring',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
       'Cast Linux',
@@ -2941,11 +2909,5 @@
         },
       },
     },
-  },
-  'wm_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'Win 10 Fast Ring',
-    ],
   },
 }
