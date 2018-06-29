@@ -100,7 +100,7 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   if (new_current_vpts != last_vpts_value_recorded_) {
-    video_pts_->AddSample(now, new_current_vpts, 1.0);
+    video_pts_->AddSample(new_vpts_timestamp, new_current_vpts, 1.0);
     last_vpts_value_recorded_ = new_current_vpts;
   }
 
