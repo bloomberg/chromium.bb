@@ -15,6 +15,17 @@
         display: flex;
         flex-direction: row;
       }
+
+      /* URLs should always be displayed in a LTR embedding - see
+       * https://url.spec.whatwg.org/#url-rendering. */
+      .url-directionality {
+        direction: ltr;
+        unicode-bidi: embed;
+      }
+
+      .site-representation {
+        display: flex;
+      }
     </style>
     <div id="collapseParent">
       <div class="settings-box list-item">
@@ -23,8 +34,14 @@
           <div class="favicon-image"
               style$="[[getSiteGroupIcon_(siteGroup)]]">
           </div>
-          <div class="middle text-elide" id="displayName">
-            [[displayName_]]
+          <div class="site-representation middle text-elide" id="displayName">
+            <span class="url-directionality">[[displayName_]]</span>
+            <span class="secondary" hidden$="[[!scheme_(siteGroup)]]">
+              &nbsp;$i18nPolymer{siteSettingsSiteRepresentationSeparator}&nbsp;
+            </span>
+            <span class="secondary" hidden$="[[!scheme_(siteGroup)]]">
+              [[scheme_(siteGroup)]]
+            </span>
           </div>
           <div hidden$="[[!grouped_(siteGroup)]]">
             <paper-icon-button-light id="expandIcon" class="icon-expand-more">
@@ -57,8 +74,18 @@
               <div class="favicon-image"
                   style$="[[computeSiteIcon(item)]]">
               </div>
-              <div class="middle text-elide">
-                [[item]]
+              <div class="site-representation middle text-elide">
+                <span class="url-directionality">
+                  [[siteRepresentation_(siteGroup, index)]]
+                </span>
+                <span class="secondary"
+                    hidden$="[[!scheme_(siteGroup, index)]]">
+                  &nbsp;$i18nPolymer{siteSettingsSiteRepresentationSeparator}&nbsp;
+                </span>
+                <span class="secondary"
+                    hidden$="[[!scheme_(siteGroup, index)]]">
+                  [[scheme_(siteGroup, index)]]
+                </span>
               </div>
             </div>
           </template>

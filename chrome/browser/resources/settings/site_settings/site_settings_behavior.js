@@ -188,7 +188,6 @@ const SiteSettingsBehaviorImpl = {
    */
   getCategoryList: function() {
     if (this.contentTypes_.length == 0) {
-      /** @type {!Array<settings.ContentSettingsTypes>} */
       for (let typeName in settings.ContentSettingsTypes) {
         const contentType = settings.ContentSettingsTypes[typeName];
         // <if expr="not chromeos">

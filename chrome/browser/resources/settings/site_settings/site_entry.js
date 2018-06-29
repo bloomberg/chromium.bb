@@ -24,9 +24,7 @@ Polymer({
 
     /**
      * The name to display beside the icon. If grouped_() is true, it will be
-     * the eTLD+1 for all the origins, otherwise, it will match the origin more
-     * closely in an appropriate site representation.
-     * @type {!string}
+     * the eTLD+1 for all the origins, otherwise, it will return the host.
      * @private
      */
     displayName_: String,
@@ -44,14 +42,60 @@ Polymer({
   },
 
   /**
+   * Returns a user-friendly name for the origin corresponding to |originIndex|.
+   * If grouped_() is true and |originIndex| is not provided, returns the eTLD+1
+   * for all the origins, otherwise, return the host for that origin.
+   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * @param {!number=} originIndex Optional index of the origin to get a
+   *     user-friendly name for. If not provided, returns the eTLD+1 name, if
+   *     there is one, otherwise defaults to the first origin.
+   * @return {string} The user-friendly name.
+   * @private
+   */
+  siteRepresentation_: function(siteGroup, originIndex) {
+    if (!siteGroup)
+      return '';
+    if (this.grouped_(siteGroup) && originIndex === undefined) {
+      if (siteGroup.etldPlus1 != '')
+        return siteGroup.etldPlus1;
+      // Fall back onto using the host of the first origin, if no eTLD+1 name
+      // was computed.
+      return this.toUrl(siteGroup.origins[0]).host;
+    }
+    originIndex = originIndex === undefined ? 0 : originIndex;
+    const url = this.toUrl(siteGroup.origins[originIndex]);
+    return url.host;
+  },
+
+  /**
    * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
    * @private
    */
   onSiteGroupChanged_: function(siteGroup) {
-    // TODO(https://crbug.com/835712): Present the origin in a user-friendly
-    // site representation when ungrouped.
-    this.displayName_ =
-        this.grouped_(siteGroup) ? siteGroup.etldPlus1 : siteGroup.origins[0];
+    this.displayName_ = this.siteRepresentation_(siteGroup);
+  },
+
+  /**
+   * Returns any non-HTTPS scheme/protocol for the origin corresponding to
+   * |originIndex|. Otherwise, returns a empty string.
+   * @param {SiteGroup} siteGroup The eTLD+1 group of origins.
+   * @param {!number=} originIndex Optional index of the origin to get the
+   *     non-HTTPS scheme for. If not provided, returns an empty string for
+   *     grouped |siteGroup|s but defaults to 0 for non-grouped.
+   * @return {string} The scheme if non-HTTPS, or empty string if HTTPS.
+   * @private
+   */
+  scheme_: function(siteGroup, originIndex) {
+    if (!siteGroup || (this.grouped_(siteGroup) && originIndex === undefined))
+      return '';
+    originIndex = originIndex === undefined ? 0 : originIndex;
+
+    const url = this.toUrl(siteGroup.origins[originIndex]);
+    const scheme = url.protocol.replace(new RegExp(':*$'), '');
+    /** @type{string} */ const HTTPS_SCHEME = 'https';
+    if (scheme == HTTPS_SCHEME)
+      return '';
+    return scheme;
   },
 
   /**
