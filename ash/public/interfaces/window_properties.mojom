@@ -4,11 +4,6 @@
 
 module ash.mojom;
 
-// A bool to indicate whether this window should be replaced by a black
-// rectangle in assistant screenshot for privacy purpose.
-const string kBlockedForAssistantSnapshot_Property =
-  "ash:blocked-for-assistant-snapshot";
-
 // V1 apps can intercept system keys. This will let the app handle F-keys instead
 // of the window manager.
 const string kCanConsumeSystemKeys_Property =

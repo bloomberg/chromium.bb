@@ -9,103 +9,14 @@
 #include "ash/assistant/assistant_ui_controller.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/new_window_controller.h"
-#include "ash/public/cpp/shell_window_ids.h"
-#include "ash/public/cpp/window_properties.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/wm/mru_window_tracker.h"
 #include "base/bind.h"
 #include "base/memory/scoped_refptr.h"
-#include "base/stl_util.h"
-#include "base/task_scheduler/post_task.h"
 #include "base/unguessable_token.h"
-#include "ui/aura/client/aura_constants.h"
-#include "ui/compositor/layer_tree_owner.h"
-#include "ui/gfx/codec/jpeg_codec.h"
-#include "ui/gfx/skbitmap_operations.h"
 #include "ui/snapshot/snapshot.h"
-#include "ui/snapshot/snapshot_aura.h"
-#include "ui/wm/core/window_util.h"
 
 namespace ash {
-
-namespace {
-
-// When screenshot's width or height is smaller than this size, we will stop
-// downsampling.
-constexpr int kScreenshotMaxWidth = 1366;
-constexpr int kScreenshotMaxHeight = 768;
-
-std::vector<uint8_t> DownsampleAndEncodeImage(gfx::Image image) {
-  std::vector<uint8_t> res;
-  // We'll downsample the screenshot to avoid exceeding max allowed size on
-  // assistant server side if we are taking screenshot from high-res screen.
-  gfx::JPEGCodec::Encode(
-      SkBitmapOperations::DownsampleByTwoUntilSize(
-          image.AsBitmap(), kScreenshotMaxWidth, kScreenshotMaxHeight),
-      100 /* quality */, &res);
-  return res;
-}
-
-void EncodeScreenshotAndRunCallback(
-    AssistantController::RequestScreenshotCallback callback,
-    std::unique_ptr<ui::LayerTreeOwner> layer_owner,
-    gfx::Image image) {
-  base::PostTaskWithTraitsAndReplyWithResult(
-      FROM_HERE,
-      base::TaskTraits{base::MayBlock(), base::TaskPriority::USER_BLOCKING},
-      base::BindOnce(&DownsampleAndEncodeImage, std::move(image)),
-      std::move(callback));
-}
-
-std::unique_ptr<ui::LayerTreeOwner> CreateLayerForAssistantSnapshot(
-    aura::Window* root_window) {
-  using LayerSet = base::flat_set<const ui::Layer*>;
-  LayerSet excluded_layers;
-  LayerSet blocked_layers;
-
-  aura::Window* overlay_container =
-      ash::Shell::GetContainer(root_window, kShellWindowId_OverlayContainer);
-  if (overlay_container)
-    excluded_layers.insert(overlay_container->layer());
-
-  MruWindowTracker::WindowList windows =
-      Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-
-  for (aura::Window* window : windows) {
-    if (window->GetProperty(kBlockedForAssistantSnapshotKey))
-      blocked_layers.insert(window->layer());
-  }
-
-  return ::wm::RecreateLayersWithClosure(
-      root_window,
-      base::BindRepeating(
-          [](LayerSet blocked_layers, LayerSet excluded_layers,
-             ui::LayerOwner* owner) -> std::unique_ptr<ui::Layer> {
-            // Parent layer is excluded meaning that it's pointless to clone
-            // current child and all its descendants. This reduces the number
-            // of layers to create.
-            if (base::ContainsKey(blocked_layers, owner->layer()->parent()))
-              return nullptr;
-            if (base::ContainsKey(blocked_layers, owner->layer())) {
-              // Blocked layers are replaced with solid black layers so that
-              // they won't be included in the screenshot but still preserve
-              // the window stacking.
-              auto layer =
-                  std::make_unique<ui::Layer>(ui::LayerType::LAYER_SOLID_COLOR);
-              layer->SetBounds(owner->layer()->bounds());
-              layer->SetColor(SK_ColorBLACK);
-              return layer;
-            }
-            if (excluded_layers.count(owner->layer()))
-              return nullptr;
-            return owner->RecreateLayer();
-
-          },
-          std::move(blocked_layers), std::move(excluded_layers)));
-}
-
-}  // namespace
 
 AssistantController::AssistantController()
     : assistant_interaction_controller_(
@@ -175,29 +86,18 @@ void AssistantController::RequestScreenshot(
     const gfx::Rect& rect,
     RequestScreenshotCallback callback) {
   // TODO(muyuanli): handle multi-display when assistant's behavior is defined.
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-
-  std::unique_ptr<ui::LayerTreeOwner> layer_owner =
-      CreateLayerForAssistantSnapshot(root_window);
-
-  ui::Layer* root_layer = layer_owner->root();
-
+  auto* root_window = Shell::GetPrimaryRootWindow();
   gfx::Rect source_rect =
       rect.IsEmpty() ? gfx::Rect(root_window->bounds().size()) : rect;
-
-  // The root layer might have a scaling transform applied (if the user has
-  // changed the UI scale via Ctrl-Shift-Plus/Minus).
-  // Clear the transform so that the snapshot is taken at 1:1 scale relative
-  // to screen pixels.
-  root_layer->SetTransform(gfx::Transform());
-  root_window->layer()->Add(root_layer);
-  root_window->layer()->StackAtBottom(root_layer);
-
-  ui::GrabLayerSnapshotAsync(
-      root_layer, source_rect,
-      base::BindRepeating(&EncodeScreenshotAndRunCallback,
-                          base::Passed(std::move(callback)),
-                          base::Passed(std::move(layer_owner))));
+  ui::GrabWindowSnapshotAsyncJPEG(
+      root_window, source_rect,
+      base::BindRepeating(
+          [](RequestScreenshotCallback callback,
+             scoped_refptr<base::RefCountedMemory> data) {
+            std::move(callback).Run(std::vector<uint8_t>(
+                data->front(), data->front() + data->size()));
+          },
+          base::Passed(&callback)));
 }
 
 void AssistantController::ManageWebContents(
@@ -277,12 +177,6 @@ void AssistantController::OpenUrl(const GURL& url) {
 
   for (AssistantControllerObserver& observer : observers_)
     observer.OnUrlOpened(url);
-}
-
-std::unique_ptr<ui::LayerTreeOwner>
-AssistantController::CreateLayerForAssistantSnapshotForTest() {
-  aura::Window* root_window = Shell::GetPrimaryRootWindow();
-  return CreateLayerForAssistantSnapshot(root_window);
 }
 
 }  // namespace ash
