@@ -473,7 +473,7 @@ bool OmniboxViewViews::HandleEarlyTabActions(const ui::KeyEvent& event) {
   }
 
   // If tabbing forwards (shift is not pressed) and tab switch button is not
-  // selected, selected it.
+  // selected, select it.
   if (model()->popup_model()->SelectedLineHasTabMatch() &&
       model()->popup_model()->selected_line_state() ==
           OmniboxPopupModel::NORMAL &&

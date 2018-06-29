@@ -194,6 +194,7 @@ void OmniboxPopupModel::SetSelectedLineState(LineState state) {
   if (state == TAB_SWITCH) {
     const AutocompleteMatch& match = result().match_at(selected_line_);
     DCHECK(match.has_tab_match);
+    old_focused_url_ = result().match_at(selected_line_).destination_url;
   }
 
   selected_line_state_ = state;
@@ -240,12 +241,25 @@ bool OmniboxPopupModel::IsStarredMatch(const AutocompleteMatch& match) const {
 void OmniboxPopupModel::OnResultChanged() {
   rich_suggestion_bitmaps_.clear();
   const AutocompleteResult& result = this->result();
+  size_t old_selected_line = selected_line_;
   selected_line_ = result.default_match() == result.end() ?
       kNoMatch : static_cast<size_t>(result.default_match() - result.begin());
   // There had better not be a nonempty result set with no default match.
   CHECK((selected_line_ != kNoMatch) || result.empty());
   has_selected_match_ = false;
-  selected_line_state_ = NORMAL;
+  // If selected line state was |TAB_SWITCH| and nothing has changed, leave it.
+  if (selected_line_ != kNoMatch) {
+    const bool has_focused_match =
+        selected_line_state_ == TAB_SWITCH &&
+        result.match_at(selected_line_).has_tab_match;
+    const bool has_changed =
+        selected_line_ != old_selected_line ||
+        result.match_at(selected_line_).destination_url != old_focused_url_;
+    if (!has_focused_match || has_changed)
+      selected_line_state_ = NORMAL;
+  } else {
+    selected_line_state_ = NORMAL;
+  }
 
   bool popup_was_open = view_->IsOpen();
   view_->UpdatePopupAppearance();
