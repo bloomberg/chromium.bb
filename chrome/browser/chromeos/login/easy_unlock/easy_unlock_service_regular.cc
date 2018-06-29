@@ -31,8 +31,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/gcm/gcm_profile_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
-#include "chrome/browser/signin/signin_manager_factory.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/extensions/api/easy_unlock_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -44,7 +43,6 @@
 #include "chromeos/components/proximity_auth/proximity_auth_system.h"
 #include "chromeos/components/proximity_auth/screenlock_bridge.h"
 #include "chromeos/components/proximity_auth/switches.h"
-#include "components/cryptauth/cryptauth_access_token_fetcher.h"
 #include "components/cryptauth/cryptauth_client_impl.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_enrollment_utils.h"
@@ -66,6 +64,7 @@
 #include "extensions/browser/event_router.h"
 #include "extensions/common/constants.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/identity/public/cpp/identity_manager.h"
 
 namespace chromeos {
 
@@ -337,13 +336,16 @@ EasyUnlockService::Type EasyUnlockServiceRegular::GetType() const {
 }
 
 AccountId EasyUnlockServiceRegular::GetAccountId() const {
-  const SigninManagerBase* signin_manager =
-      SigninManagerFactory::GetForProfileIfExists(profile());
-  // |profile| has to be a signed-in profile with SigninManager already
+  identity::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile());
+  // |profile| has to be a signed-in profile with IdentityManager already
   // created. Otherwise, just crash to collect stack.
-  DCHECK(signin_manager);
-  const AccountInfo account_info =
-      signin_manager->GetAuthenticatedAccountInfo();
+  DCHECK(identity_manager);
+  const AccountInfo account_info = identity_manager->GetPrimaryAccountInfo();
+  // A regular signed-in (i.e., non-login) profile should always have an email.
+  // TODO(crbug.com/857494): Enable this DCHECK once all browser tests create
+  // correctly signed in profiles.
+  // DCHECK(!account_info.email.empty());
   return account_info.email.empty()
              ? EmptyAccountId()
              : AccountId::FromUserEmailGaiaId(
