@@ -5,6 +5,7 @@
 #ifndef ASH_LOGIN_UI_ANIMATED_ROUNDED_IMAGE_VIEW_H_
 #define ASH_LOGIN_UI_ANIMATED_ROUNDED_IMAGE_VIEW_H_
 
+#include <cmath>
 #include <vector>
 
 #include "ash/login/ui/animation_frame.h"
@@ -20,13 +21,20 @@ namespace ash {
 // A custom image view with rounded edges.
 class AnimatedRoundedImageView : public views::View {
  public:
+  // Provides animation frames.
+  class AnimationDecoder {
+   public:
+    virtual ~AnimationDecoder();
+    virtual AnimationFrames Decode(float image_scale) = 0;
+  };
+
   // Constructs a new rounded image view with rounded corners of radius
   // |corner_radius|.
   AnimatedRoundedImageView(const gfx::Size& size, int corner_radius);
   ~AnimatedRoundedImageView() override;
 
   // Show an animation.
-  void SetAnimation(const AnimationFrames& animation);
+  void SetAnimationDecoder(std::unique_ptr<AnimationDecoder> decoder);
 
   // Show a static image.
   void SetImage(const gfx::ImageSkia& image);
@@ -34,13 +42,14 @@ class AnimatedRoundedImageView : public views::View {
   // Start or stop animation.
   void SetAnimationEnabled(bool enabled);
 
-  // Overridden from views::View.
+  // views::View:
   gfx::Size CalculatePreferredSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
   void StartOrStopAnimation();
   void UpdateAnimationFrame();
+  void BuildAnimationFrames(float image_scale);
 
   // If true and there are multiple frames, the animation will play. If false,
   // only the first frame in the animation will be shown.
@@ -49,7 +58,13 @@ class AnimatedRoundedImageView : public views::View {
   // Currently displayed animation frame.
   int active_frame_ = 0;
 
+  // Used to fetch animation frames for a given scale.
+  std::unique_ptr<AnimationDecoder> decoder_;
+  // The scale that |frames_| is using.
+  float frames_scale_ = NAN;
+  // The raw decoded animation frames.
   AnimationFrames frames_;
+
   const gfx::Size image_size_;
   const int corner_radius_;
 
