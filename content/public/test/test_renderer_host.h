@@ -34,6 +34,10 @@ namespace display {
 class Screen;
 }
 
+namespace net {
+class NetworkChangeNotifier;
+}
+
 namespace ui {
 class ScopedOleInitializer;
 }
@@ -264,6 +268,8 @@ class RenderViewHostTestHarness : public testing::Test {
 
  private:
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
+
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
 
   std::unique_ptr<ContentBrowserSanityChecker> sanity_checker_;
 

@@ -29,6 +29,7 @@
 #include "content/test/test_render_view_host_factory.h"
 #include "content/test/test_render_widget_host_factory.h"
 #include "content/test/test_web_contents.h"
+#include "net/base/network_change_notifier.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 
@@ -247,6 +248,12 @@ void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
 }
 
 void RenderViewHostTestHarness::SetUp() {
+  // Create and own a NetworkChangeNotifier so that it will not be created
+  // during the initialization of the global leaky singleton NetworkService. The
+  // global NetworkService's NetworkChangeNotifier can affect subsequent unit
+  // tests.
+  network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
+
   // ContentTestSuiteBase might have already initialized
   // MaterialDesignController in unit_tests suite.
   ui::test::MaterialDesignControllerTestAPI::Uninitialize();
