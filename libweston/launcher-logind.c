@@ -762,17 +762,20 @@ launcher_logind_connect(struct weston_launcher **out, struct weston_compositor *
 		free(t);
 		goto err_session;
 	}
-	free(t);
 
-	r = weston_sd_session_get_vt(wl->sid, &wl->vtnr);
-	if (r < 0) {
-		weston_log("logind: session not running on a VT\n");
-		goto err_session;
-	} else if (tty > 0 && wl->vtnr != (unsigned int )tty) {
-		weston_log("logind: requested VT --tty=%d differs from real session VT %u\n",
-			   tty, wl->vtnr);
-		r = -EINVAL;
-		goto err_session;
+	r = strcmp(t, "seat0");
+	free(t);
+	if (r == 0) {
+		r = weston_sd_session_get_vt(wl->sid, &wl->vtnr);
+		if (r < 0) {
+			weston_log("logind: session not running on a VT\n");
+			goto err_session;
+		} else if (tty > 0 && wl->vtnr != (unsigned int )tty) {
+			weston_log("logind: requested VT --tty=%d differs from real session VT %u\n",
+				   tty, wl->vtnr);
+			r = -EINVAL;
+			goto err_session;
+		}
 	}
 
 	loop = wl_display_get_event_loop(compositor->wl_display);

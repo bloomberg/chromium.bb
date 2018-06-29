@@ -104,6 +104,10 @@ WL_EXPORT void
 weston_setup_vt_switch_bindings(struct weston_compositor *compositor)
 {
 	uint32_t key;
+	struct weston_launcher *launcher = compositor->launcher;
+
+	if (launcher->iface->get_vt(launcher) <= 0)
+		return;
 
 	if (compositor->vt_switching == false)
 		return;
