@@ -59,8 +59,10 @@ class ChannelWin : public Channel,
       // If we know the remote process handle, we transfer all outgoing handles
       // to the process now rewriting them in the message.
       std::vector<PlatformHandleInTransit> handles = message->TakeHandles();
-      for (auto& handle : handles)
-        handle.TransferToProcess(remote_process().Clone());
+      for (auto& handle : handles) {
+        if (handle.handle().is_valid())
+          handle.TransferToProcess(remote_process().Clone());
+      }
       message->SetHandles(std::move(handles));
     }
 
