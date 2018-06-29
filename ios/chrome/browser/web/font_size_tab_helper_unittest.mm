@@ -7,6 +7,7 @@
 #import <UIKit/UIKit.h>
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
@@ -46,6 +47,7 @@ class FontSizeTabHelperTest : public PlatformTest {
   UIContentSizeCategory preferred_content_size_category_ =
       UIContentSizeCategoryLarge;
   id application_ = nil;
+  base::HistogramTester histogram_tester_;
 
   DISALLOW_COPY_AND_ASSIGN(FontSizeTabHelperTest);
 };
@@ -59,19 +61,25 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithDefaultFontSize) {
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
   EXPECT_EQ("", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", false, 1);
 
   // Change PreferredContentSizeCategory and send
-  //   UIContentSizeCategoryDidChangeNotification.
+  // UIContentSizeCategoryDidChangeNotification.
   preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
   EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", false, 2);
   web_state_.ClearLastExecutedJavascript();
 
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
   EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", false, 3);
 }
 
 // Tests that a web page's font size is set properly in a procedure started
@@ -84,6 +92,8 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
   EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", false, 1);
   web_state_.ClearLastExecutedJavascript();
 
   // Change PreferredContentSizeCategory and send
@@ -92,10 +102,46 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
   SendUIContentSizeCategoryDidChangeNotification();
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
   EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", false, 2);
   web_state_.ClearLastExecutedJavascript();
 
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
   EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", false, 3);
+}
+
+// Tests that UMA log is sent when
+// |UIApplication.sharedApplication.preferredContentSizeCategory| returns an
+// unrecognizable category.
+TEST_F(FontSizeTabHelperTest, PageLoadedWithUnrecognizableFontSize) {
+  std::string last_executed_js;
+  preferred_content_size_category_ = @"This is a new Category";
+
+  // Load web page.
+  web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
+  EXPECT_EQ("", last_executed_js);
+  histogram_tester_.ExpectUniqueSample(
+      "Accessibility.iOS.NewLargerTextCategory", true, 1);
+
+  // Change PreferredContentSizeCategory and send
+  // UIContentSizeCategoryDidChangeNotification.
+  preferred_content_size_category_ = UIContentSizeCategoryExtraExtraLarge;
+  SendUIContentSizeCategoryDidChangeNotification();
+  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  histogram_tester_.ExpectBucketCount("Accessibility.iOS.NewLargerTextCategory",
+                                      false, 1);
+  web_state_.ClearLastExecutedJavascript();
+
+  // Reload web page.
+  web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
+  last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  histogram_tester_.ExpectBucketCount("Accessibility.iOS.NewLargerTextCategory",
+                                      false, 2);
 }
