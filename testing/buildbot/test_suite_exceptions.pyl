@@ -57,9 +57,6 @@
   },
   'angle_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
       # chromium.gpu.fyi
       # On Android, these are already run on the main waterfall.
       'Android FYI Release (Nexus 5X)',
@@ -386,13 +383,6 @@
       'Mac',
     ],
   },
-  'chrome_app_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
-    ],
-  },
   'chrome_elf_import_unittests': {
     'remove_from': [
       # chromium.fyi
@@ -635,9 +625,6 @@
       # chromium.chromiumos
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1103,9 +1090,6 @@
   },
   'device_unittests': {
     'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
       # chromium.win
       'Win7 Tests (dbg)(1)',
     ],
@@ -1166,9 +1150,6 @@
   },
   'extensions_browsertests': {
     'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
       # On chromium.mac, unclear why these aren't run.
       'Mac10.10 Tests',
       'Mac10.11 Tests',
@@ -1378,13 +1359,6 @@
       'Linux ChromiumOS MSan Tests',
     ],
   },
-  'gn_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
-    ],
-  },
   'headless_browsertests': {
     'remove_from': [
       # chromium.clang
@@ -1529,13 +1503,6 @@
     'remove_from': [
       # chromium.fyi
       'Mojo ChromiumOS',
-    ],
-  },
-  'mac_installer_unittests': {
-    'remove_from': [
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
     ],
   },
   'media_blink_unittests': {
@@ -1798,8 +1765,6 @@
       # The face and barcode detection tests fail on the Mac Pros.
       'Mac Pro FYI Release (AMD)',
       # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
       'Win 10 Fast Ring',
       # On chromium.linux, unclear why these aren't run on Cast.
       'Cast Audio Linux',
@@ -1969,9 +1934,6 @@
       # chromium.chromiumos
       'linux-chromeos-dbg',
       'linux-chromeos-rel',
-      # chromium.fyi
-      'mac-views-rel',
-      'Chromium Mac 10.13',
     ],
   },
   'sql_unittests': {
