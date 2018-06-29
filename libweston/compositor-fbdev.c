@@ -384,6 +384,14 @@ fbdev_frame_buffer_open(const char *fb_dev,
 		return -1;
 	}
 
+	/* Attempt to wake up the framebuffer device, needed for secondary
+	 * framebuffer devices */
+	if (fbdev_set_screen_info(fd, screen_info) < 0) {
+		weston_log("Failed to set mode settings. "
+		           "Attempting to open output anyway.\n");
+	}
+
+
 	return fd;
 }
 
