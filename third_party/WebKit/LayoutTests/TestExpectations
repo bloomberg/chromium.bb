@@ -4729,7 +4729,7 @@ crbug.com/856955 [ Win10 Linux ] inspector-protocol/animation/animation-multiple
 
 # Sheriff 2018-06-28
 crbug.com/857414 [ Win Mac10.10 Mac10.11 ] http/tests/devtools/sources/debugger-breakpoints/event-listener-breakpoints-webaudio.js [ Pass Timeout ]
-crbug.com/857520 [ Mac Win7 ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
+crbug.com/857520 [ Mac Win ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
 
 # Sheriff 2018-06-29
 crbug.com/859064 [ Mac10.13 ] http/tests/devtools/console-resource-errors.js [ Failure ]
