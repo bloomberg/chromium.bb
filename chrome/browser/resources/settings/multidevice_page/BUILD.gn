@@ -7,6 +7,7 @@ import("//third_party/closure_compiler/compile_js.gni")
 js_type_check("closure_compile") {
   deps = [
     ":multidevice_browser_proxy",
+    ":multidevice_constants",
     ":multidevice_page",
     ":multidevice_page_container",
   ]
@@ -18,8 +19,16 @@ js_library("multidevice_browser_proxy") {
   ]
 }
 
+js_library("multidevice_constants") {
+  deps = [
+    "//ui/webui/resources/js:cr",
+  ]
+}
+
 js_library("multidevice_page") {
   deps = [
+    ":multidevice_browser_proxy",
+    ":multidevice_constants",
     "//ui/webui/resources/js:cr",
     "//ui/webui/resources/js:i18n_behavior",
   ]
@@ -27,6 +36,8 @@ js_library("multidevice_page") {
 
 js_library("multidevice_page_container") {
   deps = [
+    ":multidevice_constants",
     ":multidevice_page",
+    "//ui/webui/resources/js:cr",
   ]
 }

@@ -9,39 +9,23 @@
 
 cr.exportPath('settings');
 
-/**
- * The possible statuses of hosts on the logged in account that determine the
- * page content.
- * @enum {number}
- */
-settings.MultiDeviceSettingsMode = {
-  NO_ELIGIBLE_HOSTS: 0,
-  NO_HOST_SET: 1,
-  HOST_SET_WAITING_FOR_SERVER: 2,
-  HOST_SET_WAITING_FOR_VERIFICATION: 3,
-  HOST_SET_VERIFIED: 4,
-};
-
 Polymer({
   is: 'settings-multidevice-page',
 
   behaviors: [I18nBehavior],
 
   properties: {
-    /** Preferences state. */
+    /** SettingsPrefsElement 'prefs' Object reference. See prefs.js. */
     prefs: {
       type: Object,
       notify: true,
     },
 
-    /** @type {settings.MultiDeviceSettingsMode} */
-    mode: {
-      type: Number,
-      value: settings.MultiDeviceSettingsMode.NO_HOST_SET,
-    },
+    /** @type {MultiDevicePageContentData} */
+    pageContentData: Object,
 
     // TODO(jordynass): Set this variable once the information is retrieved from
-    // multidevice setup service.
+    // prefs.
     /**
      * @type {boolean|undefined}
      * If a host has been verified, this is true if that host is and enabled and
@@ -63,10 +47,9 @@ Polymer({
    * @private
    */
   getLabelText_: function() {
-    if (this.mode == settings.MultiDeviceSettingsMode.NO_HOST_SET)
-      return this.i18n('multideviceSetupItemHeading');
-    // TODO(jordynass): Fill in with real device name.
-    return 'Device Name Placeholder';
+    return !!this.pageContentData.hostDevice ?
+        this.pageContentData.hostDevice.name :
+        this.i18n('multideviceSetupItemHeading');
   },
 
   /**
@@ -74,7 +57,7 @@ Polymer({
    * @private
    */
   getSubLabelInnerHtml_: function() {
-    switch (this.mode) {
+    switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18nAdvanced('multideviceSetupSummary');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
@@ -92,7 +75,7 @@ Polymer({
    * @private
    */
   getButtonText_: function() {
-    switch (this.mode) {
+    switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         return this.i18n('multideviceSetupButton');
       case settings.MultiDeviceSettingsMode.HOST_SET_WAITING_FOR_SERVER:
@@ -109,7 +92,8 @@ Polymer({
    * @private
    */
   showButton_: function() {
-    return this.mode != settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
+    return this.pageContentData.mode !=
+        settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
   /**
@@ -117,12 +101,13 @@ Polymer({
    * @private
    */
   showToggle_: function() {
-    return this.mode == settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
+    return this.pageContentData.mode ==
+        settings.MultiDeviceSettingsMode.HOST_SET_VERIFIED;
   },
 
   /** @private */
   handleClick_: function() {
-    switch (this.mode) {
+    switch (this.pageContentData.mode) {
       case settings.MultiDeviceSettingsMode.NO_HOST_SET:
         this.browserProxy_.showMultiDeviceSetupDialog();
         return;
