@@ -908,15 +908,9 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             statusBarColor = ColorUtils.getColorWithOverlay(
                     statusBarColor, scrimColorOpaque, mStatusBarScrimFraction * scrimColorAlpha);
 
-            int systemUiVisibility = root.getSystemUiVisibility();
             boolean needsDarkStatusBarIcons =
                     !ColorUtils.shouldUseLightForegroundOnBackground(statusBarColor);
-            if (needsDarkStatusBarIcons) {
-                systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            } else if (!needsDarkStatusBarIcons) {
-                systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-            }
-            root.setSystemUiVisibility(systemUiVisibility);
+            ApiCompatibilityUtils.setStatusBarIconColor(root, needsDarkStatusBarIcons);
         } else {
             statusBarColor = isDefaultThemeColor ? Color.BLACK
                                                  : ColorUtils.getDarkenedColorForStatusBar(color);

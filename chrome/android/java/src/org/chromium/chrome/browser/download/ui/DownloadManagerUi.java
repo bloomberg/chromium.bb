@@ -18,7 +18,6 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
@@ -193,7 +192,6 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
     private BasicNativePage mNativePage;
     private Activity mActivity;
     private ViewGroup mMainView;
-    private TextView mEmptyView;
     private DownloadManagerToolbar mToolbar;
     private SelectableListLayout<DownloadHistoryItemWrapper> mSelectableListLayout;
     private boolean mIsSeparateActivity;
@@ -227,7 +225,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         mSelectableListLayout = (SelectableListLayout<DownloadHistoryItemWrapper>)
                 mMainView.findViewById(R.id.selectable_list);
 
-        mEmptyView = mSelectableListLayout.initializeEmptyView(
+        mSelectableListLayout.initializeEmptyView(
                 VectorDrawableCompat.create(
                         mActivity.getResources(), R.drawable.downloads_big, mActivity.getTheme()),
                 R.string.download_manager_ui_empty, R.string.download_manager_no_results);
@@ -258,7 +256,7 @@ public class DownloadManagerUi implements OnMenuItemClickListener, SearchDelegat
         mToolbar = (DownloadManagerToolbar) mSelectableListLayout.initializeToolbar(
                 R.layout.download_manager_toolbar, mBackendProvider.getSelectionDelegate(), 0, null,
                 normalGroupId, R.id.selection_mode_menu_group, R.color.modern_primary_color, this,
-                true);
+                true, isSeparateActivity);
         mToolbar.getMenu().setGroupVisible(normalGroupId, true);
         mToolbar.setManager(this);
         mToolbar.initialize(mFilterAdapter);

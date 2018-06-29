@@ -174,19 +174,23 @@ public class SelectableListLayout<E>
      *                                   background color will be used.
      * @param listener The OnMenuItemClickListener to set on the toolbar.
      * @param showShadowOnSelection Whether to show the toolbar shadow on selection.
+     * @param updateStatusBarColor Whether the status bar color should be updated to match the
+     *                             toolbar color. If true, the status bar will only be updated if
+     *                             the current device fully supports theming and is on Android M+.
      * @return The initialized SelectionToolbar.
      */
     public SelectableListToolbar<E> initializeToolbar(int toolbarLayoutId,
             SelectionDelegate<E> delegate, int titleResId, @Nullable DrawerLayout drawerLayout,
             int normalGroupResId, int selectedGroupResId,
             @Nullable Integer normalBackgroundColorResId,
-            @Nullable OnMenuItemClickListener listener, boolean showShadowOnSelection) {
+            @Nullable OnMenuItemClickListener listener, boolean showShadowOnSelection,
+            boolean updateStatusBarColor) {
         mToolbarStub.setLayoutResource(toolbarLayoutId);
         @SuppressWarnings("unchecked")
         SelectableListToolbar<E> toolbar = (SelectableListToolbar<E>) mToolbarStub.inflate();
         mToolbar = toolbar;
         mToolbar.initialize(delegate, titleResId, drawerLayout, normalGroupResId,
-                selectedGroupResId, normalBackgroundColorResId);
+                selectedGroupResId, normalBackgroundColorResId, updateStatusBarColor);
 
         if (listener != null) {
             mToolbar.setOnMenuItemClickListener(listener);
