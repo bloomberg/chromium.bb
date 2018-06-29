@@ -1912,6 +1912,8 @@ def _CreateParser():
 
 def main(argv):
   """Main function."""
+  cros_build_lib.Die('Please wait until crbug.com/858925 has been resolved')
+
   parser = _CreateParser()
   options = parser.parse_args(argv)
   # TODO: Can't freeze until options.host modification below is sorted.
