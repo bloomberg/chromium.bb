@@ -2990,6 +2990,12 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_CLEAR_STORAGE_CONFIRMATION" desc="Text for the dialog that warns about clearing storage used by a site (excluding cookies).">
     All data stored by <ph name="SITE">$1<ex>www.example.com</ex></ph> will be deleted, except for cookies.
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_RESET_DIALOG_TITLE" desc="Title of the dialog that warns about resetting all permissions for a group of sites.">
+    Reset site permissions?
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SITE_GROUP_RESET_CONFIRMATION" desc="Text for the dialog that warns about resetting all permissions for a group of sites.">
+    Sites under <ph name="SITE_GROUP_NAME">$1<ex>google.co.uk</ex></ph> will also be reset.
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_MULTIPLE" desc="Text for the dialog that warns about deleting all site data.">
     This will delete any data stored on your device for all the sites shown. Do you want to continue?
   </message>

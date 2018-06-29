@@ -22,6 +22,12 @@ suite('SiteEntry', function() {
   ]);
 
   /**
+   * The mock proxy object to use during test.
+   * @type {TestSiteSettingsPrefsBrowserProxy}
+   */
+  let browserProxy;
+
+  /**
    * A site list element created before each test.
    * @type {SiteList}
    */
@@ -35,6 +41,9 @@ suite('SiteEntry', function() {
 
   // Initialize a site-list before each test.
   setup(function() {
+    browserProxy = new TestSiteSettingsPrefsBrowserProxy();
+    settings.SiteSettingsPrefsBrowserProxyImpl.instance_ = browserProxy;
+
     PolymerTest.clearBody();
     testElement = document.createElement('site-entry');
     assertTrue(!!testElement);
@@ -106,4 +115,49 @@ suite('SiteEntry', function() {
         TEST_MULTIPLE_SITE_GROUP.origins[1],
         settings.getQueryParameters().get('site'));
   });
+
+  test('with single origin does not show overflow menu', function() {
+    testElement.siteGroup = TEST_SINGLE_SITE_GROUP;
+    Polymer.dom.flush();
+    const overflowMenuButton = testElement.$.overflowMenuButton;
+    assertTrue(overflowMenuButton.closest('.row-aligned').hidden);
+  });
+
+  test(
+      'with multiple origins can reset settings via overflow menu', function() {
+        testElement.siteGroup = TEST_MULTIPLE_SITE_GROUP;
+        Polymer.dom.flush();
+        const overflowMenuButton = testElement.$.overflowMenuButton;
+        assertFalse(overflowMenuButton.closest('.row-aligned').hidden);
+
+        // Open the reset settings dialog and make sure both cancelling the
+        // action and resetting all permissions work.
+        const overflowMenu = testElement.$.menu.get();
+        const menuItems = overflowMenu.querySelectorAll('.dropdown-item');
+        ['cancel-button', 'action-button'].forEach(buttonType => {
+          // Test clicking on the overflow menu button opens the menu.
+          assertFalse(overflowMenu.open);
+          overflowMenuButton.click();
+          assertTrue(overflowMenu.open);
+
+          // Open the reset settings dialog and tap the |buttonType| button.
+          assertFalse(testElement.$.confirmResetSettings.open);
+          menuItems[0].click();
+          assertTrue(testElement.$.confirmResetSettings.open);
+          const actionButtonList =
+              testElement.$.confirmResetSettings.getElementsByClassName(
+                  buttonType);
+          assertEquals(1, actionButtonList.length);
+          actionButtonList[0].click();
+
+          // Check the dialog and overflow menu are now both closed.
+          assertFalse(testElement.$.confirmResetSettings.open);
+          assertFalse(overflowMenu.open);
+        });
+
+        // Ensure a call was made to setOriginPermissions for each origin.
+        assertEquals(
+            TEST_MULTIPLE_SITE_GROUP.origins.length,
+            browserProxy.getCallCount('setOriginPermissions'));
+      });
 });

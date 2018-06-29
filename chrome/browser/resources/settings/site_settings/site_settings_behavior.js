@@ -32,6 +32,18 @@ const SiteSettingsBehaviorImpl = {
     category: String,
 
     /**
+     * A cached list of ContentSettingsTypes with a standard allow-block-ask
+     * pattern that are currently enabled for use. This property is the same
+     * across all elements with SiteSettingsBehavior ('static').
+     * @type {Array<settings.ContentSettingsTypes>}
+     * @private
+     */
+    contentTypes_: {
+      type: Array,
+      value: [],
+    },
+
+    /**
      * The browser proxy used to retrieve and change information about site
      * settings categories and the sites within.
      * @type {settings.SiteSettingsPrefsBrowserProxy}
@@ -98,7 +110,6 @@ const SiteSettingsBehaviorImpl = {
    * Returns the icon to use for a given site.
    * @param {string} site The url of the site to fetch the icon for.
    * @return {string} The background-image style with the favicon.
-   * @private
    */
   computeSiteIcon: function(site) {
     site = this.removePatternWildcard(site);
@@ -168,6 +179,56 @@ const SiteSettingsBehaviorImpl = {
       enforcement: enforcement,
       controlledBy: controlledBy,
     };
+  },
+
+  /**
+   * Returns list of categories for each setting.ContentSettingsTypes that are
+   * currently enabled.
+   * @return {!Array<!settings.ContentSettingsTypes>}
+   */
+  getCategoryList: function() {
+    if (this.contentTypes_.length == 0) {
+      /** @type {!Array<settings.ContentSettingsTypes>} */
+      for (let typeName in settings.ContentSettingsTypes) {
+        const contentType = settings.ContentSettingsTypes[typeName];
+        // <if expr="not chromeos">
+        if (contentType == settings.ContentSettingsTypes.PROTECTED_CONTENT)
+          continue;
+        // </if>
+        // Some categories store their data in a custom way.
+        if (contentType == settings.ContentSettingsTypes.COOKIES ||
+            contentType == settings.ContentSettingsTypes.PROTOCOL_HANDLERS ||
+            contentType == settings.ContentSettingsTypes.ZOOM_LEVELS) {
+          continue;
+        }
+        this.contentTypes_.push(contentType);
+      }
+    }
+
+    const addOrRemoveSettingWithFlag = (type, flag) => {
+      if (loadTimeData.getBoolean(flag)) {
+        if (!this.contentTypes_.includes(type))
+          this.contentTypes_.push(type);
+      } else {
+        if (this.contentTypes_.includes(type))
+          this.contentTypes_.splice(this.contentTypes_.indexOf(type), 1);
+      }
+    };
+    // These categories are gated behind flags.
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.SENSORS, 'enableSensorsContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.ADS,
+        'enableSafeBrowsingSubresourceFilter');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.SOUND, 'enableSoundContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.CLIPBOARD,
+        'enableClipboardContentSetting');
+    addOrRemoveSettingWithFlag(
+        settings.ContentSettingsTypes.PAYMENT_HANDLER,
+        'enablePaymentHandlerContentSetting');
+    return this.contentTypes_.slice(0);
   },
 
 };
