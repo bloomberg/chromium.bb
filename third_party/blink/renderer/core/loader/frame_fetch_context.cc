@@ -590,12 +590,12 @@ void FrameFetchContext::DispatchDidReceiveResponse(
   if (frame_url == NullURL())
     frame_url = document_loader_->Url();
 
-  // Check if |response| belongs to a resource in the main frame, and if belongs
-  // to the same origin as frame top request. Also, the accept-ch-lifetime
-  // header is honored only on the navigation responses.
-  if (SecurityOrigin::AreSameSchemeHostPort(response.Url(), frame_url) &&
-      GetFrame()->IsMainFrame() &&
-      (resource->GetType() == Resource::kMainResource)) {
+  // The accept-ch-lifetime header is honored only on the navigation responses.
+  // Further, the navigation response should be from a top level frame (i.e.,
+  // main frame) or the origin of the response should match the origin of the
+  // top level frame.
+  if ((resource->GetType() == Resource::kMainResource) &&
+      (IsMainFrame() || IsFirstPartyOrigin(response.Url()))) {
     ParseAndPersistClientHints(response);
   }
 
@@ -900,8 +900,6 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     ResourceRequest& request) {
   WebEnabledClientHints enabled_hints;
 
-  bool is_1p_origin = false;
-
   // If the feature is enabled, then client hints are allowed only on secure
   // URLs.
   if (!ClientHintsPreferences::IsClientHintsAllowed(request.Url()))
@@ -912,16 +910,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
   if (!AllowScriptFromSourceWithoutNotifying(request.Url()))
     return;
 
-  if (IsDetached())
-    return;
-
-  is_1p_origin =
-      GetFrame()
-          ->Tree()
-          .Top()
-          .GetSecurityContext()
-          ->GetSecurityOrigin()
-          ->IsSameSchemeHostPort(SecurityOrigin::Create(request.Url()).get());
+  bool is_1p_origin = IsFirstPartyOrigin(request.Url());
 
   if (!base::FeatureList::IsEnabled(kAllowClientHintsToThirdParty) &&
       !is_1p_origin) {
@@ -1073,6 +1062,18 @@ bool FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
     return false;
   }
   return true;
+}
+
+bool FrameFetchContext::IsFirstPartyOrigin(const KURL& url) const {
+  if (IsDetached())
+    return false;
+
+  return GetFrame()
+      ->Tree()
+      .Top()
+      .GetSecurityContext()
+      ->GetSecurityOrigin()
+      ->IsSameSchemeHostPort(SecurityOrigin::Create(url).get());
 }
 
 bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
