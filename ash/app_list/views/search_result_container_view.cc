@@ -11,12 +11,7 @@
 
 namespace app_list {
 
-SearchResultContainerView::SearchResultContainerView()
-    : delegate_(nullptr),
-      selected_index_(-1),
-      num_results_(0),
-      results_(NULL),
-      update_factory_(this) {}
+SearchResultContainerView::SearchResultContainerView() = default;
 
 SearchResultContainerView::~SearchResultContainerView() {
   if (results_)
@@ -33,23 +28,6 @@ void SearchResultContainerView::SetResults(
     results_->AddObserver(this);
 
   Update();
-}
-
-void SearchResultContainerView::SetSelectedIndex(int selected_index) {
-  DCHECK(IsValidSelectionIndex(selected_index));
-  int old_selected = selected_index_;
-  selected_index_ = selected_index;
-  UpdateSelectedIndex(old_selected, selected_index_);
-}
-
-void SearchResultContainerView::ClearSelectedIndex() {
-  int old_selected = selected_index_;
-  selected_index_ = -1;
-  UpdateSelectedIndex(old_selected, selected_index_);
-}
-
-bool SearchResultContainerView::IsValidSelectionIndex(int index) const {
-  return index >= 0 && index <= num_results() - 1;
 }
 
 void SearchResultContainerView::NotifyFirstResultYIndex(int /*y_index*/) {
@@ -97,16 +75,6 @@ void SearchResultContainerView::ListItemsChanged(size_t /*start*/,
   ScheduleUpdate();
 }
 
-void SearchResultContainerView::OnContainerSelected(
-    bool /*from_bottom*/,
-    bool /*directional_movement*/) {
-  NOTREACHED();
-}
-
-views::View* SearchResultContainerView::GetSelectedView() {
-  return nullptr;
-}
-
 SearchResultBaseView* SearchResultContainerView::GetFirstResultView() {
   return nullptr;
 }
@@ -120,8 +88,5 @@ void SearchResultContainerView::ScheduleUpdate() {
                                   update_factory_.GetWeakPtr()));
   }
 }
-
-void SearchResultContainerView::UpdateSelectedIndex(int /*old_selected*/,
-                                                    int /*new_selected*/) {}
 
 }  // namespace app_list

@@ -65,7 +65,6 @@ class SearchResultListViewTest : public views::ViewsTestBase {
 
     // Adding results will schedule Update().
     RunPendingMessages();
-    view_->OnContainerSelected(false, false);
   }
 
   int GetOpenResultCountAndReset(int ranking) {
@@ -76,10 +75,6 @@ class SearchResultListViewTest : public views::ViewsTestBase {
   }
 
   int GetResultCount() const { return view_->num_results(); }
-
-  int GetSelectedIndex() const { return view_->selected_index(); }
-
-  void ResetSelectedIndex() { view_->SetSelectedIndex(0); }
 
   void AddTestResultAtIndex(int index) {
     GetResults()->Add(std::make_unique<TestSearchResult>());

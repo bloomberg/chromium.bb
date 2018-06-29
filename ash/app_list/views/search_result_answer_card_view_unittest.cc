@@ -62,7 +62,6 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
 
     // Adding results will schedule Update().
     RunPendingMessages();
-    result_container_view_->OnContainerSelected(false, false);
   }
 
   int GetOpenResultCountAndReset(int ranking) {
@@ -71,8 +70,6 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
     view_delegate_.open_search_result_counts().clear();
     return result;
   }
-
-  void ClearSelectedIndex() { result_container_view_->ClearSelectedIndex(); }
 
   void DeleteResult() {
     GetResults()->DeleteAt(0);
@@ -93,8 +90,6 @@ class SearchResultAnswerCardViewTest : public views::ViewsTestBase {
   int GetYSize() const { return result_container_view_->GetYSize(); }
 
   int GetResultCountFromView() { return result_container_view_->num_results(); }
-
-  int GetSelectedIndex() { return result_container_view_->selected_index(); }
 
   double GetContainerScore() const {
     return result_container_view_->container_score();
@@ -134,24 +129,12 @@ TEST_F(SearchResultAnswerCardViewTest, Basic) {
   EXPECT_EQ(search_card_view(), result_view()->parent()->parent()->parent());
   ASSERT_TRUE(search_card_view()->visible());
 
-  EXPECT_EQ(0, GetSelectedIndex());
   EXPECT_EQ(1, GetYSize());
 }
 
-TEST_F(SearchResultAnswerCardViewTest, KeyboardEvents) {
+TEST_F(SearchResultAnswerCardViewTest, OpenResult) {
   EXPECT_TRUE(KeyPress(ui::VKEY_RETURN));
   EXPECT_EQ(1, GetOpenResultCountAndReset(0));
-
-  // When navigating up/down/next off the the result, pass the event to the
-  // parent to handle.
-  EXPECT_FALSE(KeyPress(ui::VKEY_DOWN));
-  EXPECT_EQ(0, GetSelectedIndex());
-
-  EXPECT_FALSE(KeyPress(ui::VKEY_UP));
-  EXPECT_EQ(0, GetSelectedIndex());
-
-  EXPECT_FALSE(KeyPress(ui::VKEY_TAB));
-  EXPECT_EQ(0, GetSelectedIndex());
 }
 
 TEST_F(SearchResultAnswerCardViewTest, SpokenFeedback) {

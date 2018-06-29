@@ -31,11 +31,8 @@ class APP_LIST_EXPORT SearchResultTileItemListView
   ~SearchResultTileItemListView() override;
 
   // Overridden from SearchResultContainerView:
-  void OnContainerSelected(bool from_bottom,
-                           bool directional_movement) override;
   void NotifyFirstResultYIndex(int y_index) override;
   int GetYSize() override;
-  views::View* GetSelectedView() override;
   SearchResultBaseView* GetFirstResultView() override;
 
   // Overridden from views::View:
@@ -49,7 +46,6 @@ class APP_LIST_EXPORT SearchResultTileItemListView
  private:
   // Overridden from SearchResultContainerView:
   int DoUpdate() override;
-  void UpdateSelectedIndex(int old_selected, int new_selected) override;
 
   std::vector<SearchResultTileItemView*> tile_views_;
 

@@ -101,7 +101,6 @@ class SearchResultTileItemListViewTest
     // Adding results calls SearchResultContainerView::ScheduleUpdate().
     // It will post a delayed task to update the results and relayout.
     RunPendingMessages();
-    view_->OnContainerSelected(false, false);
   }
 
   int GetOpenResultCount(int ranking) {
