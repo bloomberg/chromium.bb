@@ -1175,8 +1175,6 @@
       'Mac10.12 Tests',
       'Mac10.13 Tests',
       'Mac10.13 Tests (dbg)',
-      # chromium.memory
-      'Mac ASan 64 Tests (1)',  # https://crbug.com/853172
       # chromium.win
       'Win10 Tests x64 (dbg)',
     ],
