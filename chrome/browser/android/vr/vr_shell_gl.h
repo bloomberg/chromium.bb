@@ -292,6 +292,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   }
 
   void SetWebVrMode(bool enabled);
+  void CreateSurfaceBridge(gl::SurfaceTexture* surface_texture);
   void CreateOrResizeWebVRSurface(const gfx::Size& size);
   void WebVrCreateOrResizeSharedBufferImage(WebXrSharedBuffer* buffer,
                                             const gfx::Size& size);
