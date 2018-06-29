@@ -25,6 +25,7 @@
 #include "chromeos/system/version_loader.h"
 #include "libassistant/shared/internal_api/assistant_manager_delegate.h"
 #include "libassistant/shared/internal_api/assistant_manager_internal.h"
+#include "libassistant/shared/internal_api/media_manager.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "url/gurl.h"
 
@@ -94,6 +95,18 @@ void AssistantManagerServiceImpl::SetAccessToken(
   // dummy value like "0".
   assistant_manager_->SetAuthTokens({std::pair<std::string, std::string>(
       /* user_id: */ "0", access_token)});
+}
+
+void AssistantManagerServiceImpl::RegisterFallbackMediaHandler() {
+  // Register handler for media actions.
+  auto* media_manager = assistant_manager_internal_->GetMediaManager();
+  media_manager->RegisterFallbackMediaHandler(
+      [this](std::string play_media_args_proto) {
+        std::string url = GetWebUrlFromMediaArgs(play_media_args_proto);
+        if (!url.empty()) {
+          OnOpenUrl(url);
+        }
+      });
 }
 
 void AssistantManagerServiceImpl::EnableListening(bool enable) {
@@ -368,6 +381,7 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
   assistant_manager_internal_->RegisterActionModule(action_module_.get());
   assistant_manager_internal_->SetAssistantManagerDelegate(this);
   assistant_manager_->AddConversationStateListener(this);
+  assistant_manager_->AddDeviceStateListener(this);
 
   SetAccessToken(access_token);
 
@@ -466,6 +480,10 @@ void AssistantManagerServiceImpl::HandleUpdateSettingsResponse(
     base::RepeatingCallback<void(const std::string&)> callback,
     const std::string& result) {
   callback.Run(result);
+}
+
+void AssistantManagerServiceImpl::OnStartFinished() {
+  RegisterFallbackMediaHandler();
 }
 
 void AssistantManagerServiceImpl::OnConversationTurnStartedOnMainThread() {
