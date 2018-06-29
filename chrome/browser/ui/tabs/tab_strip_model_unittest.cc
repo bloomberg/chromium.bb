@@ -259,13 +259,14 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     REPLACED,
     CLOSE_ALL,
     CLOSE_ALL_CANCELED,
+    CLOSE_ALL_COMPLETED,
   };
 
   struct State {
     State(WebContents* a_dst_contents,
           int a_dst_index,
           TabStripModelObserverAction a_action)
-        : src_contents(NULL),
+        : src_contents(nullptr),
           dst_contents(a_dst_contents),
           src_index(-1),
           dst_index(a_dst_index),
@@ -284,10 +285,13 @@ class MockTabStripModelObserver : public TabStripModelObserver {
 
   int GetStateCount() const { return static_cast<int>(states_.size()); }
 
-  // Returns (by way of parameters) the number of state's with CLOSE_ALL and
-  // CLOSE_ALL_CANCELED.
-  void GetCloseCounts(int* close_all_count, int* close_all_canceled_count) {
-    *close_all_count = *close_all_canceled_count = 0;
+  // Returns (by way of parameters) the number of state's with CLOSE_ALL,
+  // CLOSE_ALL_CANCELED and CLOSE_ALL_COMPLETED.
+  void GetCloseCounts(int* close_all_count,
+                      int* close_all_canceled_count,
+                      int* close_all_completed_count) {
+    *close_all_count = *close_all_canceled_count = *close_all_completed_count =
+        0;
     for (int i = 0; i < GetStateCount(); ++i) {
       switch (GetStateAt(i).action) {
         case CLOSE_ALL:
@@ -295,6 +299,9 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           break;
         case CLOSE_ALL_CANCELED:
           (*close_all_canceled_count)++;
+          break;
+        case CLOSE_ALL_COMPLETED:
+          (*close_all_completed_count)++;
           break;
         default:
           break;
@@ -379,11 +386,16 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     states_.push_back(State(contents, index, PINNED));
   }
   void TabStripEmpty() override { empty_ = true; }
-  void WillCloseAllTabs() override {
-    states_.push_back(State(NULL, -1, CLOSE_ALL));
+  void WillCloseAllTabs(TabStripModel* tab_strip_model) override {
+    states_.push_back(State(nullptr, -1, CLOSE_ALL));
   }
-  void CloseAllTabsCanceled() override {
-    states_.push_back(State(NULL, -1, CLOSE_ALL_CANCELED));
+  void CloseAllTabsStopped(TabStripModel* tab_strip_model,
+                           CloseAllStoppedReason reason) override {
+    if (reason == kCloseAllCanceled) {
+      states_.push_back(State(nullptr, -1, CLOSE_ALL_CANCELED));
+    } else if (reason == kCloseAllCompleted) {
+      states_.push_back(State(nullptr, -1, CLOSE_ALL_COMPLETED));
+    }
   }
 
   void ClearStates() { states_.clear(); }
@@ -622,10 +634,13 @@ TEST_F(TabStripModelTest, TestBasicAPI) {
   observer.ClearStates();
   tabstrip.CloseAllTabs();
 
-  int close_all_count = 0, close_all_canceled_count = 0;
-  observer.GetCloseCounts(&close_all_count, &close_all_canceled_count);
+  int close_all_count = 0, close_all_canceled_count = 0,
+      close_all_completed_count = 0;
+  observer.GetCloseCounts(&close_all_count, &close_all_canceled_count,
+                          &close_all_completed_count);
   EXPECT_EQ(1, close_all_count);
   EXPECT_EQ(0, close_all_canceled_count);
+  EXPECT_EQ(1, close_all_completed_count);
 
   // TabStripModel should now be empty.
   EXPECT_TRUE(tabstrip.empty());

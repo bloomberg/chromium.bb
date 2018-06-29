@@ -1536,12 +1536,14 @@ void BrowserView::TabStripEmpty() {
   UpdateUIForContents(nullptr);
 }
 
-void BrowserView::WillCloseAllTabs() {
+void BrowserView::WillCloseAllTabs(TabStripModel* tab_strip_model) {
   web_contents_close_handler_->WillCloseAllTabs();
 }
 
-void BrowserView::CloseAllTabsCanceled() {
-  web_contents_close_handler_->CloseAllTabsCanceled();
+void BrowserView::CloseAllTabsStopped(TabStripModel* tab_strip_model,
+                                      CloseAllStoppedReason reason) {
+  if (reason == kCloseAllCanceled)
+    web_contents_close_handler_->CloseAllTabsCanceled();
 }
 
 ///////////////////////////////////////////////////////////////////////////////

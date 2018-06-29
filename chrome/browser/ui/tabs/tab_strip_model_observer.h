@@ -45,6 +45,13 @@ class TabStripModelObserver {
     CHANGE_REASON_USER_GESTURE = 1 << 1,
   };
 
+  enum CloseAllStoppedReason {
+    // Used to indicate that CloseAllTab event is canceled.
+    kCloseAllCanceled = 0,
+    // Used to indicate that CloseAllTab event complete successfully.
+    kCloseAllCompleted = 1,
+  };
+
   // A new WebContents was inserted into the TabStripModel at the
   // specified index. |foreground| is whether or not it was opened in the
   // foreground (selected).
@@ -143,10 +150,13 @@ class TabStripModelObserver {
   // necessarily the result of CloseAllTabs(). For example, if the user closes
   // the last tab WillCloseAllTabs() is sent. If the close does not succeed
   // during the current event (say unload handlers block it) then
-  // CloseAllTabsCanceled() is sent. Also note that if the last tab is detached
+  // CloseAllTabsStopped() is sent with reason 'CANCELED'. On the other hand if
+  // the close does finish then CloseAllTabsStopped() is sent with reason
+  // 'COMPLETED'. Also note that if the last tab is detached
   // (DetachWebContentsAt()) then this is not sent.
-  virtual void WillCloseAllTabs();
-  virtual void CloseAllTabsCanceled();
+  virtual void WillCloseAllTabs(TabStripModel* tab_strip_model);
+  virtual void CloseAllTabsStopped(TabStripModel* tab_strip_model,
+                                   CloseAllStoppedReason reason);
 
   // The specified tab at |index| requires the display of a UI indication to the
   // user that it needs their attention. The UI indication is set iff
