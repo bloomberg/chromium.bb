@@ -227,10 +227,10 @@ LayoutUnit ComputeInlineSizeForUnpositionedFloat(
   // Here we need to lay out the float. However, it is possible that we are
   // not inside Layout, in which case we may not be able to actually lay out
   // the node. Instead, we have to fallback to legacy sizing.
-  if (!unpositioned_float->node.GetLayoutObject()
+  if (!unpositioned_float->node.GetLayoutBox()
            ->GetFrameView()
            ->IsInPerformLayout()) {
-    LayoutObject* layout_object = unpositioned_float->node.GetLayoutObject();
+    LayoutObject* layout_object = unpositioned_float->node.GetLayoutBox();
     SECURITY_DCHECK(layout_object->IsBox());
     LayoutBox* box = ToLayoutBox(layout_object);
     LayoutBox::LogicalExtentComputedValues values;
@@ -317,8 +317,8 @@ NGPositionedFloat PositionFloat(LayoutUnit origin_block_offset,
   // Add the float as an exclusion.
   scoped_refptr<NGExclusion> exclusion = CreateExclusion(
       float_fragment, float_margin_bfc_offset, unpositioned_float->margins,
-      ToLayoutBox(unpositioned_float->node.GetLayoutObject()),
-      *unpositioned_float, parent_space, parent_space.Direction(),
+      unpositioned_float->node.GetLayoutBox(), *unpositioned_float,
+      parent_space, parent_space.Direction(),
       unpositioned_float->IsRight() ? EFloat::kRight : EFloat::kLeft);
   exclusion_space->Add(std::move(exclusion));
 

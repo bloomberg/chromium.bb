@@ -183,10 +183,6 @@ NGPhysicalSize NGLayoutInputNode::InitialContainingBlockSize() const {
                         LayoutUnit(icb_size.Height())};
 }
 
-LayoutObject* NGLayoutInputNode::GetLayoutObject() const {
-  return box_;
-}
-
 const ComputedStyle& NGLayoutInputNode::Style() const {
   return box_->StyleRef();
 }

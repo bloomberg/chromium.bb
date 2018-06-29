@@ -51,7 +51,7 @@ NGOutOfFlowLayoutPart::NGOutOfFlowLayoutPart(
       NGPhysicalOffset(physical_borders.left, physical_borders.top);
 }
 
-void NGOutOfFlowLayoutPart::Run(LayoutObject* only_layout) {
+void NGOutOfFlowLayoutPart::Run(LayoutBox* only_layout) {
   Vector<NGOutOfFlowPositionedDescendant> descendant_candidates;
   container_builder_->GetAndClearOutOfFlowDescendantCandidates(
       &descendant_candidates, container_builder_->GetLayoutObject());
@@ -60,12 +60,12 @@ void NGOutOfFlowLayoutPart::Run(LayoutObject* only_layout) {
     ComputeInlineContainingBlocks(descendant_candidates);
     for (auto& candidate : descendant_candidates) {
       if (IsContainingBlockForDescendant(candidate) &&
-          (!only_layout || candidate.node.GetLayoutObject() == only_layout)) {
+          (!only_layout || candidate.node.GetLayoutBox() == only_layout)) {
         NGLogicalOffset offset;
         scoped_refptr<NGLayoutResult> result =
             LayoutDescendant(candidate, &offset);
         container_builder_->AddChild(std::move(result), offset);
-        if (candidate.node.GetLayoutObject() != only_layout)
+        if (candidate.node.GetLayoutBox() != only_layout)
           candidate.node.UseOldOutOfFlowPositioning();
       } else {
         container_builder_->AddOutOfFlowDescendant(candidate);
@@ -380,7 +380,7 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
   offset->block_offset += container_info.default_container_offset.block_offset;
 
   base::Optional<LayoutUnit> y = ComputeAbsoluteDialogYPosition(
-      *descendant.node.GetLayoutObject(),
+      *descendant.node.GetLayoutBox(),
       layout_result->PhysicalFragment()->Size().height);
   if (y.has_value()) {
     if (IsHorizontalWritingMode(container_writing_mode))
@@ -444,11 +444,11 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::GenerateFragment(
 
   // Legacy Grid and Flexbox seem to handle oof margins correctly
   // on their own, and break if we set them here.
-  if (!descendant.GetLayoutObject()
+  if (!descendant.GetLayoutBox()
            ->ContainingBlock()
            ->Style()
            ->IsDisplayFlexibleOrGridBox())
-    ToLayoutBox(descendant.GetLayoutObject())->SetMargin(node_position.margins);
+    descendant.GetLayoutBox()->SetMargin(node_position.margins);
 
   return result;
 }

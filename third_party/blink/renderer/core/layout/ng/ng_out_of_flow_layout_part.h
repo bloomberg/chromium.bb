@@ -15,6 +15,7 @@
 namespace blink {
 
 class ComputedStyle;
+class LayoutBox;
 class LayoutObject;
 class NGBlockNode;
 class NGFragmentBuilder;
@@ -43,7 +44,7 @@ class CORE_EXPORT NGOutOfFlowLayoutPart {
   // will get laid out; any additional ones will be stored as out-of-flow
   // descendants in the builder for use via
   // LayoutResult::OutOfFlowPositionedDescendants.
-  void Run(LayoutObject* only_layout = nullptr);
+  void Run(LayoutBox* only_layout = nullptr);
 
  private:
   // Information needed to position descendant within a containing block.

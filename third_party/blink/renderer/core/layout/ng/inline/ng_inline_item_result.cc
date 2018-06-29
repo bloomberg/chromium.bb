@@ -26,7 +26,7 @@ void NGLineInfo::SetLineStyle(const NGInlineNode& node,
                               bool is_after_forced_break) {
   use_first_line_style_ = use_first_line_style;
   items_data_ = &items_data;
-  line_style_ = node.GetLayoutObject()->Style(use_first_line_style_);
+  line_style_ = node.GetLayoutBox()->Style(use_first_line_style_);
 
   if (line_style_->ShouldUseTextIndent(is_first_line, is_after_forced_break)) {
     // 'text-indent' applies to block container, and percentage is of its

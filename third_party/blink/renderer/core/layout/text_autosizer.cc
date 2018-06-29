@@ -1348,8 +1348,8 @@ TextAutosizer::DeferUpdatePageInfo::DeferUpdatePageInfo(Page* page)
 
 TextAutosizer::NGLayoutScope::NGLayoutScope(const NGBlockNode& node,
                                             LayoutUnit inline_size)
-    : text_autosizer_(node.GetLayoutObject()->GetDocument().GetTextAutosizer()),
-      block_(ToLayoutBlockFlow(node.GetLayoutObject())) {
+    : text_autosizer_(node.GetLayoutBox()->GetDocument().GetTextAutosizer()),
+      block_(ToLayoutBlockFlow(node.GetLayoutBox())) {
   if (!text_autosizer_ || !text_autosizer_->ShouldHandleLayout() ||
       block_->IsLayoutNGListMarker()) {
     // Bail if text autosizing isn't enabled, but also if this is a

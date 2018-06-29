@@ -565,7 +565,7 @@ void NGInlineNode::ShapeText(const String& text_content,
 void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
   // First check if the document has any :first-line rules.
   DCHECK(!data->first_line_items_);
-  LayoutObject* layout_object = GetLayoutObject();
+  LayoutObject* layout_object = GetLayoutBox();
   if (!layout_object->GetDocument().GetStyleEngine().UsesFirstLineRules())
     return;
 
@@ -610,7 +610,7 @@ void NGInlineNode::ShapeTextForFirstLineIfNeeded(NGInlineNodeData* data) {
     if (item.Type() == NGInlineItem::kOpenTag) {
       if (item.layout_object_->IsAnonymous() &&
           item.layout_object_->IsLayoutInline() &&
-          item.layout_object_->Parent() == GetLayoutObject() &&
+          item.layout_object_->Parent() == GetLayoutBox() &&
           ToLayoutInline(item.layout_object_)->IsFirstLineAnonymous()) {
         item.should_create_box_fragment_ = true;
       }
