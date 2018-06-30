@@ -88,6 +88,16 @@ class DataUseMeasurement {
   // Makes the full name of the histogram. It is made from |prefix| and suffix
   // which is made based on network and application status. suffix is a string
   // representing whether the data use was on the send ("Upstream") or receive
+  // ("Downstream") path, and whether the app was in the "Foreground" or
+  // "Background".
+  std::string GetHistogramNameWithConnectionType(
+      const char* prefix,
+      TrafficDirection dir,
+      DataUseUserData::AppState app_state) const;
+
+  // Makes the full name of the histogram. It is made from |prefix| and suffix
+  // which is made based on network and application status. suffix is a string
+  // representing whether the data use was on the send ("Upstream") or receive
   // ("Downstream") path, whether the app was in the "Foreground" or
   // "Background", and whether a "Cellular" or "WiFi" network was use. For
   // example, "Prefix.Upstream.Foreground.Cellular" is a possible output.
@@ -125,14 +135,11 @@ class DataUseMeasurement {
   // Records data use histograms of services. It gets the size of exchanged
   // message, its direction (which is upstream or downstream) and reports to the
   // histogram DataUse.Services.{Dimensions} with, services as the buckets.
-  // |app_state| indicates the app state which can be foreground, background, or
-  // unknown.
-  void ReportDataUsageServices(
-      data_use_measurement::DataUseUserData::ServiceName service,
-      TrafficDirection dir,
-      DataUseUserData::AppState app_state,
-      bool is_connection_cellular,
-      int64_t message_size) const;
+  // |app_state| indicates the app state which can be foreground, or background.
+  void ReportDataUsageServices(int32_t traffic_annotation_hash,
+                               TrafficDirection dir,
+                               DataUseUserData::AppState app_state,
+                               int64_t message_size) const;
 
   // Records data use histograms split on TrafficDirection, AppState and
   // TabState.
@@ -153,13 +160,16 @@ class DataUseMeasurement {
       bool is_tab_visible,
       int64_t bytes);
 
+  // Returns true if the |request| is initiated by user traffic.
+  bool IsUserRequest(const net::URLRequest& request) const;
+
   // Classifier for identifying if an URL request is user initiated.
   std::unique_ptr<URLRequestClassifier> url_request_classifier_;
 
-  // Callback for updating data use prefs.
-  // TODO(rajendrant): If a similar mechanism would need be used for components
-  // other than metrics, then the better approach would be to refactor this
-  // class to support registering arbitrary observers. crbug.com/601185
+  // Callback for updating metrics about data use of user traffic and services.
+  // TODO(rajendrant): Change this to not report data use service name. Instead
+  // pass a bool to distinguish if the data use is for metrics services
+  // (UMA, UKM).
   metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
 
   // DataUseAscriber used to get the attributes of data use.

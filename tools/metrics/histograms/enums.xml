@@ -9313,6 +9313,9 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DataUseServices">
+  <obsolete>
+    Replaced by DataUseServicesHash in June, 2018.
+  </obsolete>
   <int value="0" label="Not Tagged"/>
   <int value="1" label="Suggestions"/>
   <int value="2" label="Translate"/>
@@ -9355,6 +9358,123 @@ Called by update_net_error_codes.py.-->
   <int value="39" label="Payments"/>
   <int value="40" label="LargeIconService"/>
   <int value="41" label="MachineIntelligence"/>
+</enum>
+
+<enum name="DataUseServicesHash">
+<!-- Generated from the network annotation tag hashes in tools/traffic_annotation/summary/annotations.xml -->
+
+  <int value="485305" label="DATA_REDUCTION_PROXY"/>
+  <int value="727478" label="UKM"/>
+  <int value="727528" label="UMA"/>
+  <int value="1112842" label="GAIA"/>
+  <int value="1313982" label="SAFE_BROWSING"/>
+  <int value="3813491" label="OMNIBOX"/>
+  <int value="3989826" label="DOM_DISTILLER"/>
+  <int value="4300475" label="SIGNIN"/>
+  <int value="4598626" label="GAIA"/>
+  <int value="5021348" label="SYNC"/>
+  <int value="5492492" label="GOOGLE_URL_TRACKER"/>
+  <int value="5637379" label="GAIA"/>
+  <int value="6019475" label="SAFE_BROWSING"/>
+  <int value="7687691" label="OMNIBOX"/>
+  <int value="8250451" label="DATA_REDUCTION_PROXY"/>
+  <int value="8561691" label="SAFE_BROWSING"/>
+  <int value="9459438" label="POLICY"/>
+  <int value="13211343" label="SUGGESTIONS"/>
+  <int value="14257952" label="SUPERVISED_USER"/>
+  <int value="15418154" label="NTP_SNIPPETS_SUGGESTIONS"/>
+  <int value="16653985" label="NTP_SNIPPETS_THUMBNAILS"/>
+  <int value="17400350" label="WEB_HISTORY_SERVICE"/>
+  <int value="18300705" label="GCM_DRIVER"/>
+  <int value="22265491" label="POLICY"/>
+  <int value="24978481" label="CLOUD_PRINT"/>
+  <int value="26216847" label="GAIA"/>
+  <int value="27071967" label="SAFE_BROWSING"/>
+  <int value="27915688" label="GAIA"/>
+  <int value="29057242" label="GCM_DRIVER"/>
+  <int value="29188932" label="GAIA"/>
+  <int value="30913825" label="SUPERVISED_USER"/>
+  <int value="32585152" label="GAIA"/>
+  <int value="35370363" label="SUGGESTIONS"/>
+  <int value="35565745" label="GAIA"/>
+  <int value="36859107" label="SEARCH_PROVIDER_LOGOS"/>
+  <int value="39877119" label="GAIA"/>
+  <int value="42848942" label="SAFE_BROWSING"/>
+  <int value="43206794" label="SUPERVISED_USER"/>
+  <int value="44494884" label="NTP_TILES"/>
+  <int value="44583821" label="SAFE_BROWSING"/>
+  <int value="44606780" label="RAPPOR"/>
+  <int value="46188932" label="NETWORK_TIME_TRACKER"/>
+  <int value="47815025" label="OMNIBOX"/>
+  <int value="49544361" label="NTP_SNIPPETS_THUMBNAILS"/>
+  <int value="49601082" label="WEB_RESOURCE_SERVICE"/>
+  <int value="50755044" label="NTP_TILES"/>
+  <int value="50859288" label="CLOUD_PRINT"/>
+  <int value="56434025" label="NTP_SNIPPETS_SUGGESTIONS"/>
+  <int value="57144960" label="SYNC"/>
+  <int value="60946824" label="WEB_HISTORY_SERVICE"/>
+  <int value="61656965" label="GCM_DRIVER"/>
+  <int value="61684939" label="OMNIBOX"/>
+  <int value="65957842" label="GCM_DRIVER"/>
+  <int value="66322287" label="SAFE_BROWSING"/>
+  <int value="66590631" label="SAFE_BROWSING"/>
+  <int value="67638271" label="CLOUD_PRINT"/>
+  <int value="68561428" label="DATA_REDUCTION_PROXY"/>
+  <int value="68745894" label="SAFE_BROWSING"/>
+  <int value="70126372" label="SAFE_BROWSING"/>
+  <int value="71251498" label="CLOUD_PRINT"/>
+  <int value="71578042" label="CLOUD_PRINT"/>
+  <int value="72354423" label="INVALIDATION"/>
+  <int value="73107389" label="OMNIBOX"/>
+  <int value="75153841" label="SAFE_BROWSING"/>
+  <int value="77597059" label="DOMAIN_RELIABILITY"/>
+  <int value="78544924" label="SUPERVISED_USER"/>
+  <int value="79957943" label="SAFE_BROWSING"/>
+  <int value="82167736" label="GAIA"/>
+  <int value="82462683" label="GAIA"/>
+  <int value="83476155" label="GAIA"/>
+  <int value="84045030" label="PAYMENTS"/>
+  <int value="84212388" label="OMNIBOX"/>
+  <int value="84575287" label="TRACING_UPLOADER"/>
+  <int value="88754904" label="CAPTIVE_PORTAL"/>
+  <int value="88863520" label="AUTOFILL"/>
+  <int value="91597383" label="GAIA"/>
+  <int value="95588446" label="AUTOFILL"/>
+  <int value="95682324" label="MACHINE_INTELLIGENCE"/>
+  <int value="95711309" label="NTP_SNIPPETS_SUGGESTIONS"/>
+  <int value="97978464" label="GAIA"/>
+  <int value="98658519" label="SIGNIN"/>
+  <int value="102935425" label="SAFE_BROWSING"/>
+  <int value="103133150" label="NTP_TILES"/>
+  <int value="104798869" label="AUTOFILL"/>
+  <int value="106980485" label="SAFE_BROWSING"/>
+  <int value="108804096" label="DOMAIN_RELIABILITY"/>
+  <int value="108903331" label="PROFILE_DOWNLOADER"/>
+  <int value="109200878" label="OMNIBOX"/>
+  <int value="110307337" label="WEB_HISTORY_SERVICE"/>
+  <int value="111712433" label="CLOUD_PRINT"/>
+  <int value="113231892" label="UPDATE_CLIENT"/>
+  <int value="115188287" label="VARIATIONS"/>
+  <int value="115907811" label="SAFE_BROWSING"/>
+  <int value="116426676" label="GAIA"/>
+  <int value="117649486" label="SPELL_CHECKER"/>
+  <int value="117782019" label="POLICY"/>
+  <int value="119542033" label="GCM_DRIVER"/>
+  <int value="119677115" label="SUPERVISED_USER"/>
+  <int value="124950347" label="SAFE_BROWSING"/>
+  <int value="125522256" label="SAFE_BROWSING"/>
+  <int value="125596241" label="UPDATE_CLIENT"/>
+  <int value="126122632" label="WEB_HISTORY_SERVICE"/>
+  <int value="131236802" label="DATA_REDUCTION_PROXY"/>
+  <int value="132055347" label="CLOUD_PRINT"/>
+  <int value="132553989" label="SPELL_CHECKER"/>
+  <int value="133982351" label="GAIA"/>
+  <int value="134289752" label="GAIA"/>
+  <int value="134729048" label="FEEDBACK_UPLOADER"/>
+  <int value="135967426" label="SAFE_BROWSING"/>
+  <int value="137116619" label="TRANSLATE"/>
+  <int value="137420486" label="CLOUD_PRINT"/>
+  <int value="137457845" label="WEB_HISTORY_SERVICE"/>
 </enum>
 
 <enum name="DCLayerResult">

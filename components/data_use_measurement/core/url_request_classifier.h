@@ -21,9 +21,6 @@ class URLRequestClassifier {
  public:
   virtual ~URLRequestClassifier() {}
 
-  // Returns true if the URLRequest |request| is initiated by user traffic.
-  virtual bool IsUserRequest(const net::URLRequest& request) const = 0;
-
   // Returns the content type of the URL request |request| with response headers
   // |response_headers|. |is_app_foreground| and |is_tab_visible| indicate the
   // current app and tab visibility state.

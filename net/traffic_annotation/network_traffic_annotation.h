@@ -24,7 +24,7 @@ constexpr uint32_t recursive_hash<1>(const char* str) {
 }
 
 // Entry point to function that computes hash as constant expression.
-#define COMPUTE_STRING_HASH(S) \
+#define COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(S) \
   static_cast<int32_t>(recursive_hash<sizeof(S) - 1>(S))
 
 constexpr int TRAFFIC_ANNOTATION_UNINITIALIZED = -1;
@@ -85,7 +85,8 @@ template <size_t N1, size_t N2>
 constexpr NetworkTrafficAnnotationTag DefineNetworkTrafficAnnotation(
     const char (&unique_id)[N1],
     const char (&proto)[N2]) {
-  return NetworkTrafficAnnotationTag({COMPUTE_STRING_HASH(unique_id)});
+  return NetworkTrafficAnnotationTag(
+      {COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id)});
 }
 
 // There are cases where the network traffic annotation cannot be fully
@@ -111,9 +112,11 @@ DefinePartialNetworkTrafficAnnotation(const char (&unique_id)[N1],
                                       const char (&proto)[N3]) {
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   return PartialNetworkTrafficAnnotationTag(
-      {COMPUTE_STRING_HASH(unique_id), COMPUTE_STRING_HASH(completing_id)});
+      {COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id),
+       COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(completing_id)});
 #else
-  return PartialNetworkTrafficAnnotationTag({COMPUTE_STRING_HASH(unique_id)});
+  return PartialNetworkTrafficAnnotationTag(
+      {COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id)});
 #endif
 }
 
@@ -128,11 +131,11 @@ NetworkTrafficAnnotationTag CompleteNetworkTrafficAnnotation(
     const char (&proto)[N2]) {
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   DCHECK(partial_annotation.completing_id_hash_code ==
-             COMPUTE_STRING_HASH(unique_id) ||
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id) ||
          partial_annotation.unique_id_hash_code ==
-             COMPUTE_STRING_HASH("test_partial") ||
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("test_partial") ||
          partial_annotation.unique_id_hash_code ==
-             COMPUTE_STRING_HASH("undefined"));
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("undefined"));
 #endif
   return NetworkTrafficAnnotationTag({partial_annotation.unique_id_hash_code});
 }
@@ -149,13 +152,14 @@ NetworkTrafficAnnotationTag BranchedCompleteNetworkTrafficAnnotation(
     const char (&proto)[N3]) {
 #if !defined(NDEBUG) || defined(DCHECK_ALWAYS_ON)
   DCHECK(partial_annotation.completing_id_hash_code ==
-             COMPUTE_STRING_HASH(unique_id) ||
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id) ||
          partial_annotation.unique_id_hash_code ==
-             COMPUTE_STRING_HASH("test_partial") ||
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("test_partial") ||
          partial_annotation.unique_id_hash_code ==
-             COMPUTE_STRING_HASH("undefined"));
+             COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH("undefined"));
 #endif
-  return NetworkTrafficAnnotationTag({COMPUTE_STRING_HASH(unique_id)});
+  return NetworkTrafficAnnotationTag(
+      {COMPUTE_NETWORK_TRAFFIC_ANNOTATION_ID_HASH(unique_id)});
 }
 
 // Example for joining N x 1 partial annotations:
@@ -297,7 +301,5 @@ struct MutablePartialNetworkTrafficAnnotationTag {
 #define MISSING_TRAFFIC_ANNOTATION     \
   net::DefineNetworkTrafficAnnotation( \
       "missing", "Function called without traffic annotation.")
-
-#undef COMPUTE_STRING_HASH
 
 #endif  // NET_TRAFFIC_ANNOTATION_NETWORK_TRAFFIC_ANNOTATION_H_
