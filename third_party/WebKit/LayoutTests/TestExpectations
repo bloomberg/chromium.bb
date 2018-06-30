@@ -2799,6 +2799,7 @@ crbug.com/849859 external/wpt/css/css-animations/Element-getAnimations-dynamic-c
 crbug.com/849859 external/wpt/web-animations/timing-model/animations/pausing-an-animation.html [ Failure ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 external/wpt/css/css-text/white-space/break-spaces-001.html [ Failure ]
 crbug.com/626703 external/wpt/html/editing/focus/sequential-focus-navigation-and-the-tabindex-attribute/focus-tabindex-negative.html [ Timeout ]
 crbug.com/626703 [ Mac10.12 Mac10.13 ] external/wpt/compat/webkit-text-fill-color-property-002.html [ Failure ]
 crbug.com/626703 external/wpt/html/editing/focus/focus-02.html [ Timeout ]
@@ -4709,7 +4710,7 @@ crbug.com/854910 [ Mac ] fast/scroll-behavior/smooth-scroll/track-scroll.html [ 
 crbug.com/854910 [ Mac ] virtual/scroll_customization/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Failure Pass ]
 crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/AbsoluteOrientationSensor-iframe-access.https.html [ Failure Pass ]
 crbug.com/855222 [ Mac ] external/wpt/orientation-sensor/RelativeOrientationSensor-iframe-access.https.html [ Failure Pass ]
-crbug.com/855222 [ Mac ] external/wpt/magnetometer/Magnetometer-iframe-access.https.html [ Failure Pass ]
+crbug.com/855222 [ Mac10.10 Mac10.11 Mac10.12 Retina ] external/wpt/magnetometer/Magnetometer-iframe-access.https.html [ Failure Pass ]
 
 # Sheriff 2018-06-22
 crbug.com/855055 [ Mac ] virtual/threaded/animations/interpolation/svg-stroke-dasharray-interpolation.html [ Pass Timeout ]
