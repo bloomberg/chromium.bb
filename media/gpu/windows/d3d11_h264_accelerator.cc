@@ -156,7 +156,8 @@ Status D3D11H264Accelerator::SubmitSlice(
     const H264Picture::Vector& ref_pic_list1,
     const scoped_refptr<H264Picture>& pic,
     const uint8_t* data,
-    size_t size) {
+    size_t size,
+    const std::vector<SubsampleEntry>& subsamples) {
   scoped_refptr<D3D11H264Picture> our_pic(
       static_cast<D3D11H264Picture*>(pic.get()));
   DXVA_PicParams_H264 pic_param = {};

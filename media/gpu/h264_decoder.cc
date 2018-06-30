@@ -1214,10 +1214,10 @@ bool H264Decoder::ProcessCurrentSlice() {
   if (!pps)
     return false;
 
-  return accelerator_->SubmitSlice(pps, slice_hdr, ref_pic_list0, ref_pic_list1,
-                                   curr_pic_.get(), slice_hdr->nalu_data,
-                                   slice_hdr->nalu_size) ==
-         H264Accelerator::Status::kOk;
+  return accelerator_->SubmitSlice(
+             pps, slice_hdr, ref_pic_list0, ref_pic_list1, curr_pic_.get(),
+             slice_hdr->nalu_data, slice_hdr->nalu_size,
+             parser_.GetCurrentSubsamples()) == H264Accelerator::Status::kOk;
 }
 
 #define SET_ERROR_AND_RETURN()         \

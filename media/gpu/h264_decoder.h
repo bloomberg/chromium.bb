@@ -14,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "media/base/limits.h"
+#include "media/base/subsample_entry.h"
 #include "media/gpu/accelerated_video_decoder.h"
 #include "media/gpu/h264_dpb.h"
 #include "media/gpu/media_gpu_export.h"
@@ -75,20 +76,23 @@ class MEDIA_GPU_EXPORT H264Decoder : public AcceleratedVideoDecoder {
     // |pic| (same as in SubmitFrameMetadata()), the parsed header for the
     // current slice in |slice_hdr|, and the reordered |ref_pic_listX|,
     // as per H264 spec.
-    // |data| pointing to the full slice (including the unparsed header| of
+    // |data| pointing to the full slice (including the unparsed header) of
     // |size| in bytes.
+    // |subsamples| specifies which part of the slice data is encrypted.
     // This must be called one or more times per frame, before SubmitDecode().
     // Note that |data| does not have to remain valid after this call returns.
     // Returns kOk if successful, kNoKey if the buffer is encrypted and could
     // not be processed because the key for decryption is missing, or kFail
     // if there are errors.
-    virtual Status SubmitSlice(const H264PPS* pps,
-                               const H264SliceHeader* slice_hdr,
-                               const H264Picture::Vector& ref_pic_list0,
-                               const H264Picture::Vector& ref_pic_list1,
-                               const scoped_refptr<H264Picture>& pic,
-                               const uint8_t* data,
-                               size_t size) = 0;
+    virtual Status SubmitSlice(
+        const H264PPS* pps,
+        const H264SliceHeader* slice_hdr,
+        const H264Picture::Vector& ref_pic_list0,
+        const H264Picture::Vector& ref_pic_list1,
+        const scoped_refptr<H264Picture>& pic,
+        const uint8_t* data,
+        size_t size,
+        const std::vector<SubsampleEntry>& subsamples) = 0;
 
     // Execute the decode in hardware for |pic|, using all the slices and
     // metadata submitted via SubmitFrameMetadata() and SubmitSlice() since

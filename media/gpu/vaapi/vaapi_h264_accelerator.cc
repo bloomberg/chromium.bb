@@ -193,7 +193,8 @@ Status VaapiH264Accelerator::SubmitSlice(
     const H264Picture::Vector& ref_pic_list1,
     const scoped_refptr<H264Picture>& pic,
     const uint8_t* data,
-    size_t size) {
+    size_t size,
+    const std::vector<SubsampleEntry>& subsamples) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   VASliceParameterBufferH264 slice_param;
   memset(&slice_param, 0, sizeof(slice_param));
