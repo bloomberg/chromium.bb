@@ -10,7 +10,7 @@
 namespace device {
 
 VRDeviceBase::VRDeviceBase(VRDeviceId id)
-    : id_(static_cast<unsigned int>(id)) {}
+    : id_(static_cast<unsigned int>(id)), runtime_binding_(this) {}
 
 VRDeviceBase::~VRDeviceBase() = default;
 
@@ -45,8 +45,11 @@ void VRDeviceBase::SetMagicWindowEnabled(bool enabled) {
   magic_window_enabled_ = enabled;
 }
 
-void VRDeviceBase::SetVRDeviceEventListener(VRDeviceEventListener* listener) {
-  listener_ = listener;
+void VRDeviceBase::ListenToDeviceChanges(
+    mojom::XRRuntimeEventListenerPtr listener,
+    mojom::XRRuntime::ListenToDeviceChangesCallback callback) {
+  listener_ = std::move(listener);
+  std::move(callback).Run(display_info_.Clone());
 }
 
 void VRDeviceBase::GetFrameData(
@@ -83,13 +86,19 @@ void VRDeviceBase::SetVRDisplayInfo(mojom::VRDisplayInfoPtr display_info) {
     return;
 
   if (listener_)
-    listener_->OnChanged(display_info_.Clone());
+    listener_->OnDisplayInfoChanged(display_info_.Clone());
 }
 
 void VRDeviceBase::OnActivate(mojom::VRDisplayEventReason reason,
                               base::Callback<void(bool)> on_handled) {
   if (listener_)
-    listener_->OnActivate(reason, std::move(on_handled));
+    listener_->OnDeviceActivated(reason, std::move(on_handled));
+}
+
+mojom::XRRuntimePtr VRDeviceBase::BindXRRuntimePtr() {
+  mojom::XRRuntimePtr runtime;
+  runtime_binding_.Bind(mojo::MakeRequest(&runtime));
+  return runtime;
 }
 
 bool VRDeviceBase::ShouldPauseTrackingWhenFrameDataRestricted() {
@@ -119,6 +128,22 @@ void VRDeviceBase::RequestHitTest(
     mojom::VRMagicWindowProvider::RequestHitTestCallback callback) {
   NOTREACHED() << "Unexpected call to a device without hit-test support";
   std::move(callback).Run(base::nullopt);
+}
+
+void VRDeviceBase::RequestMagicWindowSession(
+    mojom::VRMagicWindowProviderRequest provider_request,
+    mojom::XRSessionControllerRequest controller_request,
+    mojom::XRRuntime::RequestMagicWindowSessionCallback callback) {
+  magic_window_sessions_.push_back(std::make_unique<VRDisplayImpl>(
+      this, std::move(provider_request), std::move(controller_request)));
+  std::move(callback).Run(true);
+}
+
+void VRDeviceBase::EndMagicWindowSession(VRDisplayImpl* session) {
+  base::EraseIf(magic_window_sessions_,
+                [&](const std::unique_ptr<VRDisplayImpl>& item) {
+                  return item.get() == session;
+                });
 }
 
 }  // namespace device

@@ -139,9 +139,9 @@ void VROrientationDevice::HandleSensorError() {
 }
 
 void VROrientationDevice::RequestSession(
-    const XRDeviceRuntimeSessionOptions& options,
-    VRDeviceRequestSessionCallback callback) {
-  DCHECK(!options.exclusive);
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntime::RequestSessionCallback callback) {
+  DCHECK(!options->exclusive);
   // TODO(offenwanger): Perform a check to see if sensors are available when
   // RequestSession is called for non-exclusive sessions.
   std::move(callback).Run(nullptr, nullptr);

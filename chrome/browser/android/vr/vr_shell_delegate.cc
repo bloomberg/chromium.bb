@@ -175,7 +175,7 @@ void VrShellDelegate::RecordVrStartAction(
 
 void VrShellDelegate::OnPresentResult(
     device::mojom::VRDisplayInfoPtr display_info,
-    const device::XRDeviceRuntimeSessionOptions& options,
+    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
     bool success) {
   DVLOG(1) << __FUNCTION__ << ": success=" << success;
@@ -191,7 +191,7 @@ void VrShellDelegate::OnPresentResult(
     pending_successful_present_request_ = true;
     on_present_result_callback_ = base::BindOnce(
         &VrShellDelegate::OnPresentResult, base::Unretained(this),
-        std::move(display_info), options, std::move(callback));
+        std::move(display_info), std::move(options), std::move(callback));
     return;
   }
 
@@ -206,7 +206,8 @@ void VrShellDelegate::OnPresentResult(
 
   DVLOG(1) << __FUNCTION__ << ": connecting presenting service";
   request_present_response_callback_ = std::move(callback);
-  vr_shell_->ConnectPresentingService(std::move(display_info), options);
+  vr_shell_->ConnectPresentingService(std::move(display_info),
+                                      std::move(options));
 }
 
 void VrShellDelegate::SendRequestPresentReply(
@@ -298,7 +299,7 @@ void VrShellDelegate::SetDeviceId(unsigned int device_id) {
 
 void VrShellDelegate::StartWebXRPresentation(
     device::mojom::VRDisplayInfoPtr display_info,
-    const device::XRDeviceRuntimeSessionOptions& options,
+    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback) {
   if (!on_present_result_callback_.is_null() ||
       !request_present_response_callback_.is_null()) {
@@ -308,9 +309,9 @@ void VrShellDelegate::StartWebXRPresentation(
     return;
   }
 
-  on_present_result_callback_ =
-      base::BindOnce(&VrShellDelegate::OnPresentResult, base::Unretained(this),
-                     std::move(display_info), options, std::move(callback));
+  on_present_result_callback_ = base::BindOnce(
+      &VrShellDelegate::OnPresentResult, base::Unretained(this),
+      std::move(display_info), std::move(options), std::move(callback));
 
   // If/When VRShell is ready for use it will call SetPresentResult.
   JNIEnv* env = AttachCurrentThread();

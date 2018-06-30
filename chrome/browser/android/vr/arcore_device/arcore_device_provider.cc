@@ -13,12 +13,15 @@ ARCoreDeviceProvider::ARCoreDeviceProvider() = default;
 ARCoreDeviceProvider::~ARCoreDeviceProvider() = default;
 
 void ARCoreDeviceProvider::Initialize(
-    base::RepeatingCallback<void(unsigned int, device::VRDevice*)>
-        add_device_callback,
+    base::RepeatingCallback<void(unsigned int,
+                                 mojom::VRDisplayInfoPtr,
+                                 mojom::XRRuntimePtr)> add_device_callback,
     base::RepeatingCallback<void(unsigned int)> remove_device_callback,
     base::OnceClosure initialization_complete) {
   arcore_device_ = base::WrapUnique(new ARCoreDevice());
-  add_device_callback.Run(arcore_device_->GetId(), arcore_device_.get());
+  add_device_callback.Run(arcore_device_->GetId(),
+                          arcore_device_->GetVRDisplayInfo(),
+                          arcore_device_->BindXRRuntimePtr());
   initialized_ = true;
   std::move(initialization_complete).Run();
 }
