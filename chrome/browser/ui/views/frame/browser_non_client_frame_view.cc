@@ -173,10 +173,11 @@ bool BrowserNonClientFrameView::ShouldPaintAsThemed() const {
 }
 
 bool BrowserNonClientFrameView::IsSingleTabModeAvailable() const {
-  // Single-tab mode is only available in Refresh. The special color we use
-  // won't be visible if there's a frame image, but since it's used to determine
-  // constrast of other UI elements, the theme color should be used instead.
-  return MD::IsRefreshUi() && GetFrameImage().isNull();
+  // Single-tab mode is only available in Refresh and when the window is active.
+  // The special color we use won't be visible if there's a frame image, but
+  // since it's used to determine constrast of other UI elements, the theme
+  // color should be used instead.
+  return MD::IsRefreshUi() && ShouldPaintAsActive() && GetFrameImage().isNull();
 }
 
 bool BrowserNonClientFrameView::ShouldPaintAsSingleTabMode() const {
@@ -328,11 +329,17 @@ void BrowserNonClientFrameView::ActivationChanged(bool active) {
   set_active_state_override(&active);
   UpdateProfileIcons();
 
-  // Changing the activation state may change the toolbar top separator color
-  // that's used as the stroke around tabs/the new tab button. Under Refresh,
-  // the inactive tabs' backgrounds may match the frame accent color so the text
-  // color needs to be recalculated.
-  browser_view_->tabstrip()->FrameColorsChanged();
+  if (MD::IsRefreshUi()) {
+    // Single-tab mode's availability depends on activation, but even if it's
+    // unavailable for other reasons the inactive tabs' text color still needs
+    // to be recalculated if the frame color changes. SingleTabModeChanged will
+    // handle both cases.
+    browser_view_->tabstrip()->SingleTabModeChanged();
+  } else {
+    // The toolbar top separator color (used as the stroke around the tabs and
+    // the new tab button) needs to be recalculated.
+    browser_view_->tabstrip()->FrameColorsChanged();
+  }
 
   set_active_state_override(nullptr);
 
