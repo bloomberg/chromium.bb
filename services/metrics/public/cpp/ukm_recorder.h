@@ -97,6 +97,9 @@ class METRICS_EXPORT UkmRecorder {
   // Add an entry to the UkmEntry list.
   virtual void AddEntry(mojom::UkmEntryPtr entry) = 0;
 
+  // Disables sampling for testing purposes.
+  virtual void DisableSamplingForTesting(){};
+
  private:
   friend DelegatingUkmRecorder;
   friend IOSChromePasswordManagerClient;

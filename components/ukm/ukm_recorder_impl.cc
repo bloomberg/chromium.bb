@@ -18,6 +18,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "components/ukm/ukm_source.h"
+#include "components/variations/variations_associated_data.h"
 #include "services/metrics/public/cpp/ukm_decode.h"
 #include "services/metrics/public/cpp/ukm_source_id.h"
 #include "third_party/metrics_proto/ukm/entry.pb.h"
@@ -172,6 +173,43 @@ bool HasUnknownMetrics(const ukm::builders::DecodeMap& decode_map,
 UkmRecorderImpl::UkmRecorderImpl() : recording_enabled_(false) {}
 UkmRecorderImpl::~UkmRecorderImpl() = default;
 
+// static
+void UkmRecorderImpl::CreateFallbackSamplingTrial(
+    bool is_stable_channel,
+    base::FeatureList* feature_list) {
+  static const char kSampledGroup_Stable[] = "Sampled_NoSeed_Stable";
+  static const char kSampledGroup_Other[] = "Sampled_NoSeed_Other";
+  const char* sampled_group = kSampledGroup_Other;
+  int default_sampling = 1;  // Sampling is 1-in-N; this is N.
+
+  // Nothing is sampled out except for "stable" which omits almost everything
+  // in this configuration. This is done so that clients that fail to receive
+  // a configuration from the server do not bias aggregated results because
+  // of a relatively large number of records from them.
+  if (is_stable_channel) {
+    sampled_group = kSampledGroup_Stable;
+    default_sampling = 1000000;
+  }
+
+  scoped_refptr<base::FieldTrial> trial(
+      base::FieldTrialList::FactoryGetFieldTrial(
+          kUkmSamplingRateFeature.name, 100, sampled_group,
+          base::FieldTrialList::kNoExpirationYear, 1, 1,
+          base::FieldTrial::ONE_TIME_RANDOMIZED, nullptr));
+
+  // Everybody (100%) should have a sampling configuration.
+  std::map<std::string, std::string> params = {
+      {"_default_sampling", base::IntToString(default_sampling)}};
+  variations::AssociateVariationParams(trial->trial_name(), sampled_group,
+                                       params);
+  trial->AppendGroup(sampled_group, 100);
+
+  // Setup the feature.
+  feature_list->RegisterFieldTrialOverride(
+      kUkmSamplingRateFeature.name, base::FeatureList::OVERRIDE_ENABLE_FEATURE,
+      trial.get());
+}
+
 void UkmRecorderImpl::SourceCounts::Reset() {
   *this = SourceCounts();
 }
@@ -186,6 +224,10 @@ void UkmRecorderImpl::DisableRecording() {
   DVLOG(1) << "UkmRecorderImpl::DisableRecording";
   recording_enabled_ = false;
   extensions_enabled_ = false;
+}
+
+void UkmRecorderImpl::DisableSamplingForTesting() {
+  sampling_enabled_ = false;
 }
 
 void UkmRecorderImpl::Purge() {
@@ -444,8 +486,9 @@ void UkmRecorderImpl::AddEntry(mojom::UkmEntryPtr entry) {
   int sampling_rate = (found != event_sampling_rates_.end())
                           ? found->second
                           : default_sampling_rate_;
-  if (sampling_rate == 0 ||
-      (sampling_rate > 1 && base::RandInt(1, sampling_rate) != 1)) {
+  if (sampling_enabled_ &&
+      (sampling_rate == 0 ||
+       (sampling_rate > 1 && base::RandInt(1, sampling_rate) != 1))) {
     RecordDroppedEntry(DroppedDataReason::SAMPLED_OUT);
     event_aggregate.dropped_due_to_sampling++;
     for (auto& metric : entry->metrics)

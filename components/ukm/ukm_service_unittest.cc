@@ -53,7 +53,9 @@ std::string Entry1And2Whitelist() {
 // A small shim exposing UkmRecorder methods to tests.
 class TestRecordingHelper {
  public:
-  explicit TestRecordingHelper(UkmRecorder* recorder) : recorder_(recorder) {}
+  explicit TestRecordingHelper(UkmRecorder* recorder) : recorder_(recorder) {
+    recorder_->DisableSamplingForTesting();
+  }
 
   void UpdateSourceURL(SourceId source_id, const GURL& url) {
     recorder_->UpdateSourceURL(source_id, url);
