@@ -4728,3 +4728,4 @@ crbug.com/857520 [ Mac Win ] external/wpt/accelerometer/Accelerometer-iframe-acc
 # Sheriff 2018-06-29
 crbug.com/859064 [ Linux Win10 Mac10.13 ] http/tests/devtools/console-resource-errors.js [ Failure ]
 crbug.com/859169 [ Win7 ] http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
+crbug.com/859270 [ Mac10.12 ] external/wpt/gyroscope/Gyroscope-iframe-access.https.html [ Timeout ]
