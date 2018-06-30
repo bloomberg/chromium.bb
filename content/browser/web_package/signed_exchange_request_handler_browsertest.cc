@@ -4,6 +4,7 @@
 
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_restrictions.h"
@@ -28,6 +29,7 @@
 #include "net/cert/cert_verify_result.h"
 #include "net/cert/mock_cert_verifier.h"
 #include "net/test/cert_test_util.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/test_data_directory.h"
 #include "net/test/url_request/url_request_mock_http_job.h"
@@ -73,7 +75,12 @@ class NavigationFailureObserver : public WebContentsObserver {
 class SignedExchangeRequestHandlerBrowserTest : public ContentBrowserTest {
  public:
   SignedExchangeRequestHandlerBrowserTest()
-      : mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()){};
+      : mock_cert_verifier_(std::make_unique<net::MockCertVerifier>()) {
+    // This installs "root_ca_cert.pem" from which our test certificates are
+    // created. (Needed for the tests that use real certificate, i.e.
+    // RealCertVerifier)
+    net::EmbeddedTestServer::RegisterTestCerts();
+  }
 
   void SetUp() override {
     SignedExchangeHandler::SetCertVerifierForTesting(mock_cert_verifier_.get());
@@ -290,6 +297,53 @@ IN_PROC_BROWSER_TEST_F(
   NavigationEntry* entry =
       shell()->web_contents()->GetController().GetVisibleEntry();
   EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+}
+
+IN_PROC_BROWSER_TEST_F(SignedExchangeRequestHandlerBrowserTest,
+                       RealCertVerifier) {
+  InstallUrlInterceptor(
+      GURL("https://cert.example.org/cert.msg"),
+      "content/test/data/htxg/test.example.org.public.pem.cbor");
+
+  // Use "real" CertVerifier.
+  SignedExchangeHandler::SetCertVerifierForTesting(nullptr);
+
+  embedded_test_server()->RegisterRequestMonitor(
+      base::BindRepeating([](const net::test_server::HttpRequest& request) {
+        if (request.relative_url == "/htxg/test.example.org_test.htxg") {
+          const auto& accept_value = request.headers.find("accept")->second;
+          EXPECT_THAT(accept_value,
+                      ::testing::HasSubstr("application/signed-exchange;v=b1"));
+        }
+      }));
+  embedded_test_server()->ServeFilesFromSourceDirectory("content/test/data");
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url = embedded_test_server()->GetURL("/htxg/test.example.org_test.htxg");
+
+  // "test.example.org_test.htxg" should pass CertVerifier::Verify() and then
+  // fail at SignedExchangeHandler::CheckOCSPStatus() because of the dummy OCSP
+  // response.
+  // TODO(https://crbug.com/815024): Make this test pass the OCSP check. We'll
+  // need to either generate an OCSP response on the fly, or override the OCSP
+  // verification time.
+  content::ConsoleObserverDelegate console_observer(shell()->web_contents(),
+                                                    "*OCSP*");
+  shell()->web_contents()->SetDelegate(&console_observer);
+
+  NavigationFailureObserver failure_observer(shell()->web_contents());
+  NavigateToURL(shell(), url);
+  EXPECT_TRUE(failure_observer.did_fail());
+  NavigationEntry* entry =
+      shell()->web_contents()->GetController().GetVisibleEntry();
+  EXPECT_EQ(PAGE_TYPE_ERROR, entry->GetPageType());
+
+  // Verify that it failed at the OCSP check step.
+  // TODO(https://crbug.com/803774): Find a better way than matching against the
+  // error message. We can probably make DevToolsProxy derive some context from
+  // StoragePartition so that we can record and extract the detailed error
+  // status for testing via that.
+  EXPECT_TRUE(base::StartsWith(console_observer.message(), "OCSP check failed.",
+                               base::CompareCase::SENSITIVE));
 }
 
 }  // namespace content
