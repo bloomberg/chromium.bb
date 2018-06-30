@@ -1481,6 +1481,7 @@ component("net") {
       "third_party/quic/platform/api/quic_file_utils.h",
       "third_party/quic/platform/api/quic_flag_utils.h",
       "third_party/quic/platform/api/quic_flags.h",
+      "third_party/quic/platform/api/quic_hkdf.h",
       "third_party/quic/platform/api/quic_hostname_utils.cc",
       "third_party/quic/platform/api/quic_hostname_utils.h",
       "third_party/quic/platform/api/quic_interval.h",
@@ -1526,6 +1527,7 @@ component("net") {
       "third_party/quic/platform/impl/quic_flag_utils_impl.h",
       "third_party/quic/platform/impl/quic_flags_impl.cc",
       "third_party/quic/platform/impl/quic_flags_impl.h",
+      "third_party/quic/platform/impl/quic_hkdf_impl.h",
       "third_party/quic/platform/impl/quic_hostname_utils_impl.cc",
       "third_party/quic/platform/impl/quic_hostname_utils_impl.h",
       "third_party/quic/platform/impl/quic_interval_impl.h",
@@ -3048,6 +3050,7 @@ source_set("quic_test_tools") {
   testonly = true
   sources = [
     "quic/chromium/crypto_test_utils_chromium.cc",
+    "third_party/quic/platform/api/quic_hkdf_test.cc",
     "third_party/quic/platform/api/quic_mock_log.h",
     "third_party/quic/platform/api/quic_test.h",
     "third_party/quic/platform/api/quic_test_loopback.cc",

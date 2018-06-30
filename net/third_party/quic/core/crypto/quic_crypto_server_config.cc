@@ -37,6 +37,7 @@
 #include "net/third_party/quic/platform/api/quic_endian.h"
 #include "net/third_party/quic/platform/api/quic_fallthrough.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/platform/api/quic_hkdf.h"
 #include "net/third_party/quic/platform/api/quic_hostname_utils.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_reference_counted.h"
@@ -61,10 +62,10 @@ const int kMaxTokenAddresses = 4;
 
 QuicString DeriveSourceAddressTokenKey(
     QuicStringPiece source_address_token_secret) {
-  crypto::HKDF hkdf(
-      source_address_token_secret, QuicStringPiece() /* no salt */,
-      "QUIC source address token key", CryptoSecretBoxer::GetKeySize(),
-      0 /* no fixed IV needed */, 0 /* no subkey secret */);
+  QuicHKDF hkdf(source_address_token_secret, QuicStringPiece() /* no salt */,
+                "QUIC source address token key",
+                CryptoSecretBoxer::GetKeySize(), 0 /* no fixed IV needed */,
+                0 /* no subkey secret */);
   return string(hkdf.server_write_key());
 }
 
