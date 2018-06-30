@@ -249,6 +249,9 @@ def _CreateParser():
                          'where the build occurs. For external build configs, '
                          "defaults to 'trybot' directory at top level of your "
                          'repo-managed checkout.')
+  parser.add_option('--workspace', type='path',
+                    api=constants.REEXEC_API_WORKSPACE,
+                    help='Root directory for a secondary checkout .')
   parser.add_option('--bootstrap-dir', type='path',
                     help='Bootstrapping cbuildbot may involve checking out '
                          'multiple copies of chromite. All these checkouts '
