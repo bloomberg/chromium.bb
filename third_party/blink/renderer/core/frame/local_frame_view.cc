@@ -226,8 +226,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
                         this,
                         &LocalFrameView::DidScrollTimerFired),
       needs_update_geometries_(false),
-      horizontal_scrollbar_mode_(kScrollbarAuto),
-      vertical_scrollbar_mode_(kScrollbarAuto),
       root_layer_did_scroll_(false),
       frame_timing_requests_dirty_(true),
       hidden_for_throttling_(false),
@@ -236,7 +234,6 @@ LocalFrameView::LocalFrameView(LocalFrame& frame, IntRect frame_rect)
       current_update_lifecycle_phases_target_state_(
           DocumentLifecycle::kUninitialized),
       past_layout_lifecycle_update_(false),
-      scroll_anchor_(this),
       suppress_adjust_view_size_(false),
       allows_layout_invalidation_after_layout_clean_(true),
       needs_intersection_observation_(false),
@@ -282,10 +279,8 @@ void LocalFrameView::Trace(blink::Visitor* visitor) {
   visitor->Trace(scrollbars_);
   visitor->Trace(viewport_scrollable_area_);
   visitor->Trace(visibility_observer_);
-  visitor->Trace(scroll_anchor_);
   visitor->Trace(anchoring_adjustment_queue_);
   visitor->Trace(print_context_);
-  ScrollableArea::Trace(visitor);
 }
 
 void LocalFrameView::Reset() {
@@ -412,8 +407,6 @@ void LocalFrameView::Dispose() {
   if (viewport_scrollable_area_)
     viewport_scrollable_area_->ClearScrollableArea();
 
-  ClearScrollableArea();
-
   // Destroy |m_autoSizeInfo| as early as possible, to avoid dereferencing
   // partially destroyed |this| via |m_autoSizeInfo->m_frameView|.
   auto_size_info_.Clear();
@@ -440,17 +433,6 @@ void LocalFrameView::Dispose() {
 #if DCHECK_IS_ON()
   has_been_disposed_ = true;
 #endif
-}
-
-void LocalFrameView::SnapAfterScrollbarDragging(
-    ScrollbarOrientation orientation) {
-  SnapCoordinator* snap_coordinator =
-      frame_->GetDocument()->GetSnapCoordinator();
-  if (!snap_coordinator)
-    return;
-  snap_coordinator->PerformSnapping(*GetLayoutBox(),
-                                    orientation == kHorizontalScrollbar,
-                                    orientation == kVerticalScrollbar);
 }
 
 void LocalFrameView::InvalidateAllCustomScrollbarsOnActiveChanged() {
@@ -578,28 +560,6 @@ CompositorAnimationTimeline* LocalFrameView::GetCompositorAnimationTimeline()
   return c ? c->GetCompositorAnimationTimeline() : nullptr;
 }
 
-LayoutBox* LocalFrameView::GetLayoutBox() const {
-  return GetLayoutView();
-}
-
-FloatQuad LocalFrameView::LocalToVisibleContentQuad(
-    const FloatQuad& quad,
-    const LayoutObject* local_object,
-    MapCoordinatesFlags flags) const {
-  LayoutBox* box = GetLayoutBox();
-  if (!box)
-    return quad;
-  DCHECK(local_object);
-  FloatQuad result = local_object->LocalToAncestorQuad(quad, box, flags);
-  result.Move(-GetScrollOffset());
-  return result;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner> LocalFrameView::GetTimerTaskRunner()
-    const {
-  return frame_->GetTaskRunner(TaskType::kInternalDefault);
-}
-
 bool LocalFrameView::ShouldUseCustomScrollbars(
     Element*& custom_scrollbar_element) const {
   custom_scrollbar_element = nullptr;
@@ -673,12 +633,6 @@ void LocalFrameView::UpdateCountersAfterStyleChange() {
   auto* layout_view = GetLayoutView();
   DCHECK(layout_view);
   layout_view->UpdateCounters();
-}
-
-bool LocalFrameView::ShouldScrollOnMainThread() const {
-  if (GetMainThreadScrollingReasons())
-    return true;
-  return ScrollableArea::ShouldScrollOnMainThread();
 }
 
 void LocalFrameView::CountObjectsNeedingLayout(unsigned& needs_layout_objects,
@@ -1397,10 +1351,6 @@ void LocalFrameView::MarkViewportConstrainedObjectsForLayout(
   }
 }
 
-IntPoint LocalFrameView::LastKnownMousePosition() const {
-  return frame_->GetEventHandler().LastKnownMousePositionInRootFrame();
-}
-
 bool LocalFrameView::ShouldSetCursor() const {
   Page* page = GetFrame().GetPage();
   return page &&
@@ -1503,11 +1453,6 @@ bool LocalFrameView::InvalidateViewportConstrainedObjects() {
       fast_path_allowed = false;
   }
   return fast_path_allowed;
-}
-
-bool LocalFrameView::RestoreScrollAnchor(
-    const SerializedAnchor& serialized_anchor) {
-  return false;
 }
 
 void LocalFrameView::ProcessUrlFragment(const KURL& url,
@@ -1748,24 +1693,6 @@ PlatformChromeClient* LocalFrameView::GetChromeClient() const {
   if (!page)
     return nullptr;
   return &page->GetChromeClient();
-}
-
-SmoothScrollSequencer* LocalFrameView::GetSmoothScrollSequencer() const {
-  Page* page = GetFrame().GetPage();
-  if (!page)
-    return nullptr;
-  return page->GetSmoothScrollSequencer();
-}
-
-void LocalFrameView::ContentsResized() {
-  if (frame_->IsMainFrame() && frame_->GetDocument()) {
-    if (TextAutosizer* text_autosizer =
-            frame_->GetDocument()->GetTextAutosizer())
-      text_autosizer->UpdatePageInfoInAllFrames();
-  }
-
-  ScrollableArea::ContentsResized();
-  SetNeedsLayout();
 }
 
 void LocalFrameView::HandleLoadCompleted() {
@@ -2212,19 +2139,6 @@ void LocalFrameView::PostLayoutTimerFired(TimerBase*) {
   PerformPostLayoutTasks();
 }
 
-bool LocalFrameView::ShouldUseIntegerScrollOffset() const {
-  if (frame_->GetSettings() &&
-      !frame_->GetSettings()->GetPreferCompositingToLCDTextEnabled())
-    return true;
-
-  return ScrollableArea::ShouldUseIntegerScrollOffset();
-}
-
-bool LocalFrameView::IsActive() const {
-  Page* page = GetFrame().GetPage();
-  return page && page->GetFocusController().IsActive();
-}
-
 void LocalFrameView::SetInputEventsScaleForEmulation(
     float content_scale_factor) {
   input_events_scale_factor_for_emulation_ = content_scale_factor;
@@ -2235,58 +2149,10 @@ float LocalFrameView::InputEventsScaleFactor() const {
   return page_scale * input_events_scale_factor_for_emulation_;
 }
 
-bool LocalFrameView::ScrollbarsCanBeActive() const {
-  if (frame_->View() != this)
-    return false;
-
-  return !!frame_->GetDocument();
-}
-
-void LocalFrameView::ScrollbarVisibilityChanged() {
-  if (auto* layout_view = GetLayoutView())
-    layout_view->ClearHitTestCache();
-}
-
-void LocalFrameView::ScrollbarFrameRectChanged() {
-  SetNeedsPaintPropertyUpdate();
-}
-
-IntRect LocalFrameView::ScrollableAreaBoundingBox() const {
-  auto* owner_layout_object = GetFrame().OwnerLayoutObject();
-  if (!owner_layout_object)
-    return FrameRect();
-
-  LocalFrameView* local_root = GetFrame().LocalFrameRoot().View();
-  return local_root->RootFrameToDocument(local_root->ConvertToRootFrame(
-      owner_layout_object->AbsoluteContentQuad(kTraverseDocumentBoundaries)
-          .EnclosingBoundingBox()));
-}
-
-bool LocalFrameView::ShouldSuspendScrollAnimations() const {
-  return !frame_->GetDocument()->LoadEventFinished();
-}
-
-void LocalFrameView::ScrollbarStyleChanged() {
-  // FIXME: Why does this only apply to the main frame?
-  if (!frame_->IsMainFrame())
-    return;
-  ContentsResized();
-}
-
-bool LocalFrameView::ScheduleAnimation() {
-  if (auto* client = ToChromeClient(GetChromeClient())) {
-    client->ScheduleAnimation(this);
-    return true;
-  }
-  return false;
-}
-
 void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
   Page* page = frame_->GetPage();
   if (!page)
     return;
-
-  ContentAreaWillPaint();
 
   if (!scrollable_areas_)
     return;
@@ -2297,16 +2163,6 @@ void LocalFrameView::NotifyPageThatContentAreaWillPaint() const {
 
     scrollable_area->ContentAreaWillPaint();
   }
-}
-
-CompositorElementId LocalFrameView::GetCompositorElementId() const {
-  return CompositorElementIdFromUniqueObjectId(
-      GetLayoutView()->UniqueId(), CompositorElementIdNamespace::kScroll);
-}
-
-bool LocalFrameView::ScrollAnimatorEnabled() const {
-  return frame_->GetSettings() &&
-         frame_->GetSettings()->GetScrollAnimatorEnabled();
 }
 
 void LocalFrameView::UpdateDocumentAnnotatedRegions() const {
@@ -2371,19 +2227,6 @@ LocalFrameView* LocalFrameView::ParentFrameView() const {
     return ToLocalFrame(parent_frame)->View();
 
   return nullptr;
-}
-
-void LocalFrameView::DidChangeGlobalRootScroller() {
-  // Being the global root scroller will affect clipping size due to browser
-  // controls behavior so we need to update compositing based on updated clip
-  // geometry.
-  SetNeedsCompositingUpdate(kCompositingUpdateAfterGeometryChange);
-  SetNeedsPaintPropertyUpdate();
-
-  // Avoid drawing two sets of scrollbars when visual viewport provides
-  // scrollbars.
-  if (frame_->GetSettings() && frame_->GetSettings()->GetViewportEnabled())
-    VisualViewportScrollbarsChanged();
 }
 
 void LocalFrameView::VisualViewportScrollbarsChanged() {
@@ -2511,8 +2354,7 @@ void LocalFrameView::NotifyResizeObservers() {
         SourceLocation::Capture(frame_->GetDocument()), nullptr);
     frame_->GetDocument()->DispatchErrorEvent(error, kNotSharableCrossOrigin);
     // Ensure notifications will get delivered in next cycle.
-    if (LocalFrameView* frame_view = frame_->View())
-      frame_view->ScheduleAnimation();
+    ScheduleAnimation();
   }
 
   DCHECK(!GetLayoutView()->NeedsLayout());
@@ -3444,12 +3286,6 @@ IntPoint LocalFrameView::ConvertToContainingEmbeddedContentView(
       ConvertToContainingEmbeddedContentView(LayoutPoint(local_point)));
 }
 
-IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentView(
-    const IntPoint& parent_point) const {
-  return RoundedIntPoint(
-      ConvertFromContainingEmbeddedContentView(DoublePoint(parent_point)));
-}
-
 void LocalFrameView::SetInitialTracksPaintInvalidationsForTesting(
     bool track_paint_invalidations) {
   g_initial_track_all_paint_invalidations = track_paint_invalidations;
@@ -3538,6 +3374,11 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
   ResizerAreaSet::iterator it = resizer_areas_->find(&resizer_box);
   if (it != resizer_areas_->end())
     resizer_areas_->erase(it);
+}
+
+void LocalFrameView::ScheduleAnimation() {
+  if (auto* client = ToChromeClient(GetChromeClient()))
+    client->ScheduleAnimation(this);
 }
 
 bool LocalFrameView::FrameIsScrollableDidChange() {
@@ -3709,55 +3550,15 @@ void LocalFrameView::FrameRectsChanged() {
 void LocalFrameView::SetLayoutSizeInternal(const IntSize& size) {
   if (layout_size_ == size)
     return;
-
   layout_size_ = size;
-  ContentsResized();
-}
 
-void LocalFrameView::DidAddScrollbar(Scrollbar& scrollbar,
-                                     ScrollbarOrientation orientation) {
-  ScrollableArea::DidAddScrollbar(scrollbar, orientation);
-}
+  if (frame_->IsMainFrame() && frame_->GetDocument()) {
+    if (TextAutosizer* text_autosizer =
+            frame_->GetDocument()->GetTextAutosizer())
+      text_autosizer->UpdatePageInfoInAllFrames();
+  }
 
-PaintLayer* LocalFrameView::Layer() const {
-  auto* layout_view = GetLayoutView();
-  if (!layout_view || !layout_view->Compositor())
-    return nullptr;
-
-  return layout_view->Compositor()->RootLayer();
-}
-
-IntSize LocalFrameView::MaximumScrollOffsetInt() const {
-  return IntSize();
-}
-
-IntSize LocalFrameView::VisibleContentSize(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  NOTREACHED();
-  return IntSize();
-}
-
-IntRect LocalFrameView::VisibleContentRect(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  NOTREACHED();
-  return IntRect();
-}
-
-LayoutRect LocalFrameView::VisibleScrollSnapportRect(
-    IncludeScrollbarsInRect scrollbar_inclusion) const {
-  const ComputedStyle* style = GetLayoutBox()->Style();
-  LayoutRect visible_content_rect((LayoutPoint()), LayoutSize(Size()));
-  LayoutRectOutsets padding(
-      MinimumValueForLength(style->ScrollPaddingTop(),
-                            visible_content_rect.Height()),
-      MinimumValueForLength(style->ScrollPaddingRight(),
-                            visible_content_rect.Width()),
-      MinimumValueForLength(style->ScrollPaddingBottom(),
-                            visible_content_rect.Height()),
-      MinimumValueForLength(style->ScrollPaddingLeft(),
-                            visible_content_rect.Width()));
-  visible_content_rect.Contract(padding);
-  return visible_content_rect;
+  SetNeedsLayout();
 }
 
 void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
@@ -3771,28 +3572,10 @@ void LocalFrameView::ClipPaintRect(FloatRect* paint_rect) const {
           IntRect(IntPoint(), Size())));
 }
 
-IntSize LocalFrameView::MinimumScrollOffsetInt() const {
-  return IntSize();
-}
-
-int LocalFrameView::ScrollSize(ScrollbarOrientation orientation) const {
-  return 0;
-}
-
-void LocalFrameView::UpdateScrollOffset(const ScrollOffset& offset,
-                                        ScrollType scroll_type) {
-  // Don't scroll the LocalFrameView!
-  NOTREACHED();
-}
-
 void LocalFrameView::DidChangeScrollOffset() {
   GetFrame().Client()->DidChangeScrollOffset();
   if (GetFrame().IsMainFrame())
     GetFrame().GetPage()->GetChromeClient().MainFrameScrollOffsetChanged();
-}
-
-void LocalFrameView::ClearScrollAnchor() {
-  scroll_anchor_.Clear();
 }
 
 bool LocalFrameView::ShouldIgnoreOverflowHidden() const {
@@ -3892,64 +3675,6 @@ IntPoint LocalFrameView::SoonToBeRemovedUnscaledViewportToContents(
       frame_->GetPage()->GetVisualViewport().ViewportCSSPixelsToRootFrame(
           point_in_viewport));
   return ConvertFromRootFrame(point_in_root_frame);
-}
-
-LayoutRect LocalFrameView::ScrollIntoView(
-    const LayoutRect& rect_in_absolute,
-    const WebScrollIntoViewParams& params) {
-  GetLayoutBox()->SetPendingOffsetToScroll(LayoutSize());
-
-  LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
-
-  ScrollOffset new_scroll_offset =
-      ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
-          scroll_snapport_rect, rect_in_absolute, params.GetScrollAlignmentX(),
-          params.GetScrollAlignmentY(), GetScrollOffset()));
-  ScrollOffset old_scroll_offset = GetScrollOffset();
-  if (params.GetScrollType() == kUserScroll) {
-    if (!UserInputScrollable(kHorizontalScrollbar))
-      new_scroll_offset.SetWidth(old_scroll_offset.Width());
-    if (!UserInputScrollable(kVerticalScrollbar))
-      new_scroll_offset.SetHeight(old_scroll_offset.Height());
-  }
-
-  if (new_scroll_offset != old_scroll_offset) {
-    new_scroll_offset = ShouldUseIntegerScrollOffset()
-                            ? ScrollOffset(FlooredIntSize(new_scroll_offset))
-                            : new_scroll_offset;
-    if (params.is_for_scroll_sequence) {
-      DCHECK(params.GetScrollType() == kProgrammaticScroll ||
-             params.GetScrollType() == kUserScroll);
-      ScrollBehavior behavior =
-          DetermineScrollBehavior(params.GetScrollBehavior(),
-                                  GetLayoutBox()->Style()->GetScrollBehavior());
-      GetSmoothScrollSequencer()->QueueAnimation(this, new_scroll_offset,
-                                                 behavior);
-      ScrollOffset scroll_offset_difference =
-          new_scroll_offset - old_scroll_offset;
-      GetLayoutBox()->SetPendingOffsetToScroll(
-          -LayoutSize(scroll_offset_difference));
-    } else {
-      SetScrollOffset(new_scroll_offset, params.GetScrollType());
-    }
-  }
-
-  // Scrolling the LocalFrameView cannot change the input rect's location
-  // relative to the document.
-  // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
-  // value to the visible content rect, but this does not.
-  return rect_in_absolute;
-}
-
-ScrollBehavior LocalFrameView::ScrollBehaviorStyle() const {
-  Element* scroll_element = frame_->GetDocument()->scrollingElement();
-  LayoutObject* layout_object =
-      scroll_element ? scroll_element->GetLayoutObject() : nullptr;
-  if (layout_object &&
-      layout_object->Style()->GetScrollBehavior() == kScrollBehaviorSmooth)
-    return kScrollBehaviorSmooth;
-
-  return kScrollBehaviorInstant;
 }
 
 void LocalFrameView::Paint(GraphicsContext& context,
@@ -4071,15 +3796,6 @@ FloatPoint LocalFrameView::ConvertFromRootFrame(
     return ConvertFromContainingEmbeddedContentView(parent_point);
   }
   return point_in_root_frame;
-}
-
-IntPoint LocalFrameView::ConvertFromContainingEmbeddedContentViewToScrollbar(
-    const Scrollbar& scrollbar,
-    const IntPoint& parent_point) const {
-  IntPoint new_point = parent_point;
-  // Scrollbars won't be transformed within us
-  new_point.MoveBy(-scrollbar.Location());
-  return new_point;
 }
 
 void LocalFrameView::SetParentVisible(bool visible) {
@@ -4632,13 +4348,6 @@ void LocalFrameView::ApplyTransformForTopFrameSpace(
 LayoutUnit LocalFrameView::CaretWidth() const {
   return LayoutUnit(
       std::max<float>(1.0, GetChromeClient()->WindowToViewportScalar(1)));
-}
-
-ScrollbarTheme& LocalFrameView::GetPageScrollbarTheme() const {
-  Page* page = frame_->GetPage();
-  DCHECK(page);
-
-  return page->GetScrollbarTheme();
 }
 
 UkmTimeAggregator& LocalFrameView::EnsureUkmTimeAggregator() {
