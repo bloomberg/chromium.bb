@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL correct-services Uncaught SyntaxError: Unexpected token ;
-Harness: the test ran to completion.
-

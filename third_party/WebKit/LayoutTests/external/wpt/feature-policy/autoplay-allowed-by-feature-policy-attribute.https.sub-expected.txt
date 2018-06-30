@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL autoplay-allowed-by-feature-policy-attribute Uncaught SyntaxError: Unexpected token ;
-Harness: the test ran to completion.
-

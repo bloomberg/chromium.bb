@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Default action is canceled if the click event is canceled. Uncaught SyntaxError: Unexpected token ;
-Harness: the test ran to completion.
-
