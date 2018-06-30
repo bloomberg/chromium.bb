@@ -87,8 +87,11 @@ class PLATFORM_EXPORT MainThreadMetricsHelper : public MetricsHelper {
     TaskDurationPerQueueTypeMetricReporter background_fourth_minute;
     TaskDurationPerQueueTypeMetricReporter background_fifth_minute;
     TaskDurationPerQueueTypeMetricReporter background_after_fifth_minute;
+    TaskDurationPerQueueTypeMetricReporter background_after_tenth_minute;
     TaskDurationPerQueueTypeMetricReporter
         background_keep_active_after_fifth_minute;
+    TaskDurationPerQueueTypeMetricReporter
+        background_keep_active_after_tenth_minute;
     TaskDurationPerQueueTypeMetricReporter hidden;
     TaskDurationPerQueueTypeMetricReporter visible;
     TaskDurationPerQueueTypeMetricReporter hidden_music;
