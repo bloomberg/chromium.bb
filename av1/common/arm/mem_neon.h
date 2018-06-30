@@ -22,11 +22,13 @@ static INLINE void store_row2_u8_8x8(uint8_t *s, int p, const uint8x8_t s0,
   s += p;
 }
 
-static INLINE void load_u8_4x1(const uint8_t *s, uint8x8_t *const s0,
-                               int lane) {
-  *s0 = vreinterpret_u8_u32(
-      vld1_lane_u32((uint32_t *)s, vreinterpret_u32_u8(*s0), lane));
-}
+/* These intrinsics require immediate values, so we must use #defines
+   to enforce that. */
+#define load_u8_4x1(s, s0, lane)                                           \
+  do {                                                                     \
+    *(s0) = vreinterpret_u8_u32(                                           \
+        vld1_lane_u32((uint32_t *)(s), vreinterpret_u32_u8(*(s0)), lane)); \
+  } while (0)
 
 static INLINE void load_u8_8x8(const uint8_t *s, ptrdiff_t p,
                                uint8x8_t *const s0, uint8x8_t *const s1,
@@ -134,10 +136,12 @@ static INLINE void load_s16_4x4(const int16_t *s, ptrdiff_t p,
   *s3 = vld1_s16(s);
 }
 
-static INLINE void store_u8_4x1(const uint8_t *s, uint8x8_t const s0,
-                                int lane) {
-  vst1_lane_u32((uint32_t *)s, vreinterpret_u32_u8(s0), lane);
-}
+/* These intrinsics require immediate values, so we must use #defines
+   to enforce that. */
+#define store_u8_4x1(s, s0, lane)                                  \
+  do {                                                             \
+    vst1_lane_u32((uint32_t *)(s), vreinterpret_u32_u8(s0), lane); \
+  } while (0)
 
 static INLINE void store_u8_8x8(uint8_t *s, ptrdiff_t p, const uint8x8_t s0,
                                 const uint8x8_t s1, const uint8x8_t s2,
