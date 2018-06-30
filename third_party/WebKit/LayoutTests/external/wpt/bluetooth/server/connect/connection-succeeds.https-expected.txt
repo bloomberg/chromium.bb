@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL connection-succeeds Uncaught SyntaxError: Unexpected token ;
-Harness: the test ran to completion.
-

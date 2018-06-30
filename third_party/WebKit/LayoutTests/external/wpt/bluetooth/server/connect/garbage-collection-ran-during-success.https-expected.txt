@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL garbage-collection-ran-during-success Uncaught SyntaxError: Unexpected token ;
-Harness: the test ran to completion.
-
