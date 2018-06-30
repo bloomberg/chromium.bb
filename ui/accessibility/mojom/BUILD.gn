@@ -6,6 +6,7 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 mojom("mojom") {
   sources = [
+    "ax_action_data.mojom",
     "ax_assistant_structure.mojom",
     "ax_event.mojom",
     "ax_host.mojom",

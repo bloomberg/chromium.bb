@@ -11,14 +11,17 @@
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/service.h"
+#include "ui/accessibility/ax_host_delegate.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 
 // Forwards accessibility events from clients in other processes that use aura
 // and views (e.g. the Chrome OS keyboard shortcut_viewer) to accessibility
 // extensions. Renderers, PDF, etc. use a different path. Created when the first
-// client connects over mojo.
+// client connects over mojo. Implements AXHostDelegate by routing actions over
+// mojo to the remote process.
 class AXHostService : public service_manager::Service,
-                      public ax::mojom::AXHost {
+                      public ax::mojom::AXHost,
+                      public ui::AXHostDelegate {
  public:
   AXHostService();
   ~AXHostService() override;
@@ -39,6 +42,9 @@ class AXHostService : public service_manager::Service,
   void HandleAccessibilityEvent(int32_t tree_id,
                                 const std::vector<ui::AXTreeUpdate>& updates,
                                 const ui::AXEvent& event) override;
+
+  // ui::AXHostDelegate:
+  void PerformAction(const ui::AXActionData& data) override;
 
   void FlushForTesting();
 

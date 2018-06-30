@@ -21,6 +21,7 @@ class Connector;
 }
 
 namespace ui {
+struct AXActionData;
 struct AXNodeData;
 struct AXTreeData;
 }  // namespace ui
@@ -61,6 +62,7 @@ class VIEWS_MUS_EXPORT AXRemoteHost : public ax::mojom::AXRemoteHost,
 
   // ax::mojom::AXRemoteHost:
   void OnAutomationEnabled(bool enabled) override;
+  void PerformAction(const ui::AXActionData& action) override;
 
   // WidgetObserver:
   void OnWidgetDestroying(Widget* widget) override;

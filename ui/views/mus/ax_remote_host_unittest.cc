@@ -4,6 +4,8 @@
 
 #include "ui/views/mus/ax_remote_host.h"
 
+#include "base/macros.h"
+#include "testing/gtest/include/gtest/gtest.h"
 #include "ui/accessibility/mojom/ax_host.mojom.h"
 #include "ui/views/accessibility/ax_aura_obj_cache.h"
 #include "ui/views/mus/mus_client_test_api.h"
@@ -49,6 +51,26 @@ class TestAXHostService : public ax::mojom::AXHost {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAXHostService);
+};
+
+// TestView senses accessibility actions.
+class TestView : public View {
+ public:
+  TestView() = default;
+  ~TestView() override = default;
+
+  // View:
+  bool HandleAccessibleAction(const ui::AXActionData& action) override {
+    ++action_count_;
+    last_action_ = action;
+    return true;
+  }
+
+  int action_count_ = 0;
+  ui::AXActionData last_action_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestView);
 };
 
 AXRemoteHost* CreateRemote(TestAXHostService* service) {
@@ -107,6 +129,25 @@ TEST_F(AXRemoteHostTest, CreateWidgetThenEnableAutomation) {
   EXPECT_EQ(ax::mojom::Event::kLoadComplete, service.last_event_.event_type);
   EXPECT_EQ(AXAuraObjCache::GetInstance()->GetID(widget->client_view()),
             service.last_event_.id);
+}
+
+TEST_F(AXRemoteHostTest, PerformAction) {
+  TestAXHostService service(true /*automation_enabled*/);
+  AXRemoteHost* remote = CreateRemote(&service);
+
+  // Create a view to sense the action.
+  TestView view;
+  AXAuraObjCache::GetInstance()->GetOrCreate(&view);
+
+  // Request an action on the view.
+  ui::AXActionData action;
+  action.action = ax::mojom::Action::kScrollDown;
+  action.target_node_id = AXAuraObjCache::GetInstance()->GetID(&view);
+  remote->PerformAction(action);
+
+  // View received the action.
+  EXPECT_EQ(1, view.action_count_);
+  EXPECT_EQ(ax::mojom::Action::kScrollDown, view.last_action_.action);
 }
 
 }  // namespace

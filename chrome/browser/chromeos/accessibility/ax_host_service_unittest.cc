@@ -28,10 +28,16 @@ class TestAXRemoteHost : ax::mojom::AXRemoteHost {
     ++automation_enabled_count_;
     last_automation_enabled_ = enabled;
   }
+  void PerformAction(const ui::AXActionData& action) override {
+    ++perform_action_count_;
+    last_action_ = action;
+  }
 
   mojo::Binding<ax::mojom::AXRemoteHost> binding_;
   int automation_enabled_count_ = 0;
   bool last_automation_enabled_ = false;
+  int perform_action_count_ = 0;
+  ui::AXActionData last_action_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAXRemoteHost);
@@ -77,6 +83,24 @@ TEST_F(AXHostServiceTest, EnableThenAddClient) {
   // Remote received initial state.
   EXPECT_EQ(1, remote.automation_enabled_count_);
   EXPECT_TRUE(remote.last_automation_enabled_);
+}
+
+TEST_F(AXHostServiceTest, PerformAction) {
+  AXHostService service;
+  AXHostService::SetAutomationEnabled(true);
+
+  TestAXRemoteHost remote;
+  service.SetRemoteHost(remote.CreateInterfacePtr());
+  service.FlushForTesting();
+
+  ui::AXActionData action;
+  action.action = ax::mojom::Action::kScrollUp;
+  service.PerformAction(action);
+  service.FlushForTesting();
+
+  // Remote interface received the action.
+  EXPECT_EQ(1, remote.perform_action_count_);
+  EXPECT_EQ(ax::mojom::Action::kScrollUp, remote.last_action_.action);
 }
 
 }  // namespace
