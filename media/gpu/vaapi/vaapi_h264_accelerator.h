@@ -38,7 +38,8 @@ class VaapiH264Accelerator : public H264Decoder::H264Accelerator {
                      const H264Picture::Vector& ref_pic_list1,
                      const scoped_refptr<H264Picture>& pic,
                      const uint8_t* data,
-                     size_t size) override;
+                     size_t size,
+                     const std::vector<SubsampleEntry>& subsamples) override;
   Status SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
   void Reset() override;

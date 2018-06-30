@@ -284,7 +284,8 @@ class V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator
                      const H264Picture::Vector& ref_pic_list1,
                      const scoped_refptr<H264Picture>& pic,
                      const uint8_t* data,
-                     size_t size) override;
+                     size_t size,
+                     const std::vector<SubsampleEntry>& subsamples) override;
 
   Status SubmitDecode(const scoped_refptr<H264Picture>& pic) override;
   bool OutputPicture(const scoped_refptr<H264Picture>& pic) override;
@@ -2330,7 +2331,8 @@ V4L2SliceVideoDecodeAccelerator::V4L2H264Accelerator::SubmitSlice(
     const H264Picture::Vector& ref_pic_list1,
     const scoped_refptr<H264Picture>& pic,
     const uint8_t* data,
-    size_t size) {
+    size_t size,
+    const std::vector<SubsampleEntry>& subsamples) {
   if (num_slices_ == kMaxSlices) {
     VLOGF(1) << "Over limit of supported slices per frame";
     return Status::kFail;

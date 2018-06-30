@@ -64,7 +64,14 @@ class MockH264Accelerator : public H264Decoder::H264Accelerator {
                      const H264Picture::Vector& ref_pic_list1,
                      const scoped_refptr<H264Picture>& pic,
                      const uint8_t* data,
-                     size_t size) override {
+                     size_t size,
+                     const std::vector<SubsampleEntry>& subsamples) override {
+    size_t subsample_total_size = 0;
+    for (const auto& sample : subsamples) {
+      subsample_total_size += sample.cypher_bytes;
+      subsample_total_size += sample.clear_bytes;
+    }
+    EXPECT_EQ(subsample_total_size, size);
     return Status::kOk;
   }
 
