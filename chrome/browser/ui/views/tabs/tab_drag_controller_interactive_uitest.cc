@@ -1899,9 +1899,8 @@ void DragTabToWindowInSeparateDisplayStep2(
   gfx::Point target_point(
       GetCenterInScreenCoordinates(target_tab_strip->tab_at(0)));
 
-  // Move it close to the beginning of the target tabstrip.
-  target_point.set_x(
-      target_point.x() - target_tab_strip->tab_at(0)->width() / 2 + 10);
+  // Move it closer to the beginning of the tab so it will drop before that tab.
+  target_point.Offset(-20, 0);
   ASSERT_TRUE(test->DragInputToAsync(target_point));
 }
 
@@ -2024,22 +2023,17 @@ IN_PROC_BROWSER_TEST_P(DetachToBrowserInSeparateDisplayTabDragControllerTest,
   TabStrip* tab_strip2 = GetTabStripForBrowser(browser2);
   ResetIDs(browser2->tab_strip_model(), 100);
 
-  // Move both browsers to the second display.
+  // Move both browsers to be side by side on the second display.
   aura::Window::Windows roots = ash::Shell::GetAllRootWindows();
   ASSERT_EQ(2u, roots.size());
   aura::Window* second_root = roots[1];
   gfx::Rect work_area = display::Screen::GetScreen()
                             ->GetDisplayNearestWindow(second_root)
                             .work_area();
+  work_area.set_width(work_area.width() / 2);
   browser()->window()->SetBounds(work_area);
-
-  // position both browser windows side by side on the second screen.
-  gfx::Rect work_area2(work_area);
-  work_area.set_width(work_area.width()/2);
-  browser()->window()->SetBounds(work_area);
-  work_area2.set_x(work_area2.x() + work_area2.width()/2);
-  work_area2.set_width(work_area2.width()/2);
-  browser2->window()->SetBounds(work_area2);
+  work_area.set_x(work_area.right());
+  browser2->window()->SetBounds(work_area);
   EXPECT_EQ(second_root,
             browser()->window()->GetNativeWindow()->GetRootWindow());
   EXPECT_EQ(second_root,
