@@ -445,23 +445,6 @@ TEST_F(OmniboxViewViewsTest, RevertOnBlur) {
   EXPECT_FALSE(omnibox_view()->model()->user_input_in_progress());
 }
 
-TEST_F(OmniboxViewViewsTest, MouseMoveAndExitSetsHoveredState) {
-  // Starting state should not be hovered
-  EXPECT_EQ(omnibox_view()->IsHovered(), false);
-
-  // Moving the mouse over the view should put the view in the hovered state.
-  omnibox_view()->OnMouseMoved(CreateEvent(ui::ET_MOUSE_MOVED, 0));
-  EXPECT_EQ(omnibox_view()->IsHovered(), true);
-
-  // Continuing to move over the view should not change the state.
-  omnibox_view()->OnMouseMoved(CreateEvent(ui::ET_MOUSE_MOVED, 0));
-  EXPECT_EQ(omnibox_view()->IsHovered(), true);
-
-  // But exiting should revert the HOVERED state.
-  omnibox_view()->OnMouseExited(CreateEvent(ui::ET_MOUSE_MOVED, 0));
-  EXPECT_EQ(omnibox_view()->IsHovered(), false);
-}
-
 class OmniboxViewViewsSteadyStateElisionsTest : public OmniboxViewViewsTest {
  protected:
   const int kCharacterWidth = 10;

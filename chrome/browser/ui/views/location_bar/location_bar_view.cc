@@ -271,6 +271,10 @@ void LocationBarView::Init() {
   Update(nullptr);
 
   size_animation_.Reset(1);
+
+  // This is for hover effect mouse event handling.
+  set_notify_enter_exit_on_child(true);
+  hover_animation_.SetSlideDuration(200);
 }
 
 bool LocationBarView::IsInitialized() const {
@@ -799,13 +803,14 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
 }
 
 void LocationBarView::RefreshBackground() {
-  // Note we are not using hover state color when focused; only in steady state.
-  const OmniboxPartState state =
-      (omnibox_view_->HasFocus() || !omnibox_view_->IsHovered())
-          ? OmniboxPartState::NORMAL
-          : OmniboxPartState::HOVERED;
+  const SkColor normal = GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND,
+                                         tint(), OmniboxPartState::NORMAL);
+  const SkColor hovered = GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND,
+                                          tint(), OmniboxPartState::HOVERED);
+  const double opacity = hover_animation_.GetCurrentValue();
   SkColor background_color =
-      GetOmniboxColor(OmniboxPart::LOCATION_BAR_BACKGROUND, tint(), state);
+      gfx::Tween::ColorValueBetween(opacity, normal, hovered);
+
   SkColor border_color = GetBorderColor();
 
   if (IsRounded()) {
@@ -1194,6 +1199,15 @@ void LocationBarView::OnPaintBorder(gfx::Canvas* canvas) {
   BrowserView::Paint1pxHorizontalLine(canvas, border_color, bounds, true);
 }
 
+void LocationBarView::OnMouseEntered(const ui::MouseEvent& event) {
+  // Only show the hover animation when omnibox is in unfocused steady state.
+  if (!omnibox_view_->HasFocus())
+    hover_animation_.Show();
+}
+void LocationBarView::OnMouseExited(const ui::MouseEvent& event) {
+  hover_animation_.Hide();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private views::DragController implementation:
 
@@ -1236,6 +1250,8 @@ void LocationBarView::AnimationProgressed(const gfx::Animation* animation) {
   } else if (animation == &text_indent_animation_) {
     Layout();
     SchedulePaint();
+  } else if (animation == &hover_animation_) {
+    RefreshBackground();
   } else {
     NOTREACHED();
   }
@@ -1246,7 +1262,14 @@ void LocationBarView::AnimationEnded(const gfx::Animation* animation) {
     AnimationProgressed(animation);
     if (animation->GetCurrentValue() == 0)
       SetVisible(false);
+  } else if (animation == &hover_animation_) {
+    AnimationProgressed(animation);
   }
+}
+
+void LocationBarView::AnimationCanceled(const gfx::Animation* animation) {
+  if (animation == &hover_animation_)
+    AnimationProgressed(animation);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1285,6 +1308,10 @@ void LocationBarView::OnOmniboxFocused() {
   if (focus_ring_)
     focus_ring_->SchedulePaint();
 
+  // Only show hover animation in unfocused steady state.  Since focusing
+  // the omnibox is intentional, snapping is better than transitioning here.
+  hover_animation_.Reset();
+
   if (IsRounded())
     RefreshBackground();
 }
@@ -1295,10 +1322,6 @@ void LocationBarView::OnOmniboxBlurred() {
 
   if (IsRounded())
     RefreshBackground();
-}
-
-void LocationBarView::OnOmniboxHoverChanged() {
-  RefreshBackground();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
