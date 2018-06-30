@@ -227,7 +227,7 @@ camera.views.Camera = function(context, router) {
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
   get capturing() {
-    return document.body.classList.contains('capturing');
+    return (this.stream_ != null);
   }
 };
 
@@ -889,17 +889,7 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
             stream.getVideoTracks()[0].readyState == 'ended') {
           clearInterval(this.watchdog_);
           this.watchdog_ = null;
-          if (this.taking_) {
-            this.endTakePicture_();
-          }
-          this.mediaRecorder_ = null;
-          this.imageCapture_ = null;
-          this.photoCapabilities_ = null;
-          // Try reconnecting the camera to capture new streams.
-          document.body.classList.remove('capturing');
-          this.updateToolbar_();
-          this.stream_ = null;
-          this.start_();
+          this.onstop_();
         }
       }.bind(this), 100);
 
@@ -1006,13 +996,38 @@ camera.views.Camera.prototype.sortVideoDeviceIds_ = function() {
 };
 
 /**
+ * Stop handler when the camera stream is stopped.
+ * @private
+ */
+camera.views.Camera.prototype.onstop_ = function() {
+  if (this.taking_) {
+    this.endTakePicture_();
+  }
+  this.mediaRecorder_ = null;
+  this.imageCapture_ = null;
+  this.photoCapabilities_ = null;
+  // Try reconnecting the camera to capture new streams.
+  this.stream_ = null;
+  document.body.classList.remove('capturing');
+  this.updateToolbar_();
+  this.start_();
+};
+
+/**
  * Stops the camera stream so it retries opening the camera stream on new
  * device or with new constraints.
+ * @private
  */
 camera.views.Camera.prototype.stop_ = function() {
+  if (this.watchdog_) {
+    clearInterval(this.watchdog_);
+    this.watchdog_ = null;
+  }
   // TODO(mtomasz): Prevent blink. Clear somehow the video tag.
-  if (this.stream_)
+  if (this.stream_) {
     this.stream_.getVideoTracks()[0].stop();
+  }
+  this.onstop_();
 };
 
 /**
