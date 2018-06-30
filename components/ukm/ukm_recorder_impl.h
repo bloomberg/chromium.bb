@@ -42,11 +42,22 @@ class UkmRecorderImpl : public UkmRecorder {
   UkmRecorderImpl();
   ~UkmRecorderImpl() override;
 
+  // Unconditionally attempts to create a field trial to control client side
+  // metrics/crash sampling to use as a fallback when one hasn't been
+  // provided. This is expected to occur on first-run on platforms that don't
+  // have first-run variations support. This should only be called when there is
+  // no existing field trial controlling the sampling feature.
+  static void CreateFallbackSamplingTrial(bool is_stable_channel,
+                                          base::FeatureList* feature_list);
+
   // Enables/disables recording control if data is allowed to be collected. The
   // |extensions| flag separately controls recording of chrome-extension://
   // URLs; this flag should reflect the "sync extensions" user setting.
   void EnableRecording(bool extensions);
   void DisableRecording();
+
+  // Disables sampling for testing purposes.
+  void DisableSamplingForTesting() override;
 
   // Deletes stored recordings.
   void Purge();
@@ -114,6 +125,9 @@ class UkmRecorderImpl : public UkmRecorder {
 
   // Indicates whether recording is enabled for extensions.
   bool extensions_enabled_ = false;
+
+  // Indicates if sampling has been enabled.
+  bool sampling_enabled_ = true;
 
   // Callback for checking extension IDs.
   IsWebstoreExtensionCallback is_webstore_extension_callback_;
