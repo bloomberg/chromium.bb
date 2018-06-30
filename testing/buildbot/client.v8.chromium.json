@@ -402,6 +402,18 @@
       },
       {
         "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_unittests"
+      },
+      {
+        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 3
         },
@@ -482,6 +494,20 @@
       {
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "devtools_closure_compile",
+        "name": "devtools_closure_compile",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
+        "isolate_name": "devtools_eslint",
+        "name": "devtools_eslint",
         "swarming": {
           "can_use_on_swarming_builders": true
         }
