@@ -42,9 +42,12 @@ std::unique_ptr<AuthenticatorRequestSheetView> CreateSheetViewForCurrentStepOf(
           std::make_unique<AuthenticatorTransportSelectorSheetModel>(
               dialog_model));
       break;
+    case Step::kUsbInsert:
+      sheet_view = std::make_unique<AuthenticatorRequestSheetView>(
+          std::make_unique<AuthenticatorInsertUsbSheetModel>(dialog_model));
+      break;
     case Step::kErrorTimedOut:
     case Step::kCompleted:
-    case Step::kUsbInsert:
     case Step::kUsbActivate:
     case Step::kUsbVerifying:
     case Step::kBlePowerOnAutomatic:

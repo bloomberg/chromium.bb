@@ -19,7 +19,13 @@ void AuthenticatorRequestDialogModel::SetCurrentStep(Step step) {
 void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
     AuthenticatorTransport transport) {
   DCHECK_EQ(current_step(), Step::kTransportSelection);
-  // TODO(engedy): Use transport here.
+  switch (transport) {
+    case AuthenticatorTransport::kUsb:
+      SetCurrentStep(Step::kUsbInsert);
+      break;
+    default:
+      break;
+  }
 }
 
 void AuthenticatorRequestDialogModel::TryIfBleAdapterIsPowered() {
@@ -50,7 +56,10 @@ void AuthenticatorRequestDialogModel::TryUsbDevice() {
 
 void AuthenticatorRequestDialogModel::Cancel() {}
 
-void AuthenticatorRequestDialogModel::Back() {}
+void AuthenticatorRequestDialogModel::Back() {
+  // For now, return to the initial step all the time.
+  SetCurrentStep(Step::kInitial);
+}
 
 void AuthenticatorRequestDialogModel::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);
