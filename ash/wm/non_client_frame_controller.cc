@@ -379,7 +379,11 @@ int NonClientFrameController::GetMaxTitleBarButtonWidth() {
   return GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).width() * 3;
 }
 
-void NonClientFrameController::SetClientArea(const gfx::Insets& insets) {
+void NonClientFrameController::SetClientArea(
+    const gfx::Insets& insets,
+    const std::vector<gfx::Rect>& additional_client_areas) {
+  client_area_insets_ = insets;
+  additional_client_areas_ = additional_client_areas;
   static_cast<WmNativeWidgetAura*>(widget_->native_widget())
       ->SetHeaderHeight(insets.top());
 }

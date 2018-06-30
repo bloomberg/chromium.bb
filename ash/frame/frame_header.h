@@ -100,6 +100,10 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
   void SetCaptionButtonContainer(
       FrameCaptionButtonContainerView* caption_button_container);
 
+  void set_button_color_mode(FrameCaptionButton::ColorMode button_color_mode) {
+    button_color_mode_ = button_color_mode;
+  }
+
   views::View* view() { return view_; }
 
   FrameCaptionButtonContainerView* caption_button_container() {
@@ -131,8 +135,6 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
 
   gfx::Rect GetTitleBounds() const;
 
-  FrameCaptionButton::ColorMode GetButtonColorMode();
-
   // The widget that the caption buttons act on. This can be different from
   // |view_|'s widget.
   views::Widget* target_widget_;
@@ -141,6 +143,8 @@ class ASH_EXPORT FrameHeader : public gfx::AnimationDelegate {
   views::View* view_;
   FrameCaptionButton* back_button_ = nullptr;  // May remain nullptr.
   views::View* left_header_view_ = nullptr;    // May remain nullptr.
+  FrameCaptionButton::ColorMode button_color_mode_ =
+      FrameCaptionButton::ColorMode::kDefault;
   FrameCaptionButtonContainerView* caption_button_container_ = nullptr;
 
   // The height of the header to paint.

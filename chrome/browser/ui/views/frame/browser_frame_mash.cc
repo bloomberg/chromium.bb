@@ -75,6 +75,15 @@ views::Widget::InitParams BrowserFrameMash::GetWidgetParams() {
   properties[ash::mojom::kCanConsumeSystemKeys_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int64_t>(browser->is_app()));
+  // Set the frame color for WebUI windows, e.g. settings.
+  if (!browser->is_type_tabbed() && browser->is_trusted_source()) {
+    properties[ui::mojom::WindowManager::kFrameActiveColor_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(
+            static_cast<int64_t>(BrowserFrameAsh::kMdWebUiFrameColor));
+    properties[ui::mojom::WindowManager::kFrameInactiveColor_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(
+            static_cast<int64_t>(BrowserFrameAsh::kMdWebUiFrameColor));
+  }
 
   aura::WindowTreeHostMusInitParams window_tree_host_init_params =
       aura::CreateInitParamsForTopLevel(

@@ -101,6 +101,11 @@ DefaultFrameHeader::DefaultFrameHeader(
 
 DefaultFrameHeader::~DefaultFrameHeader() = default;
 
+void DefaultFrameHeader::SetThemeColor(SkColor theme_color) {
+  set_button_color_mode(FrameCaptionButton::ColorMode::kThemed);
+  SetFrameColorsImpl(theme_color, theme_color);
+}
+
 void DefaultFrameHeader::SetWidthInPixels(int width_in_pixels) {
   if (width_in_pixels_ == width_in_pixels)
     return;
@@ -139,6 +144,24 @@ void DefaultFrameHeader::DoPaintHeader(gfx::Canvas* canvas) {
 
 void DefaultFrameHeader::DoSetFrameColors(SkColor active_frame_color,
                                           SkColor inactive_frame_color) {
+  set_button_color_mode(FrameCaptionButton::ColorMode::kDefault);
+  SetFrameColorsImpl(active_frame_color, inactive_frame_color);
+}
+
+AshLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {
+  return AshLayoutSize::kNonBrowserCaption;
+}
+
+SkColor DefaultFrameHeader::GetTitleColor() const {
+  return color_utils::IsDark(GetCurrentFrameColor()) ? kLightTitleTextColor
+                                                     : kTitleTextColor;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// DefaultFrameHeader, private:
+
+void DefaultFrameHeader::SetFrameColorsImpl(SkColor active_frame_color,
+                                            SkColor inactive_frame_color) {
   bool updated = false;
   if (active_frame_color_.target_color() != active_frame_color) {
     active_frame_color_.SetTargetColor(active_frame_color);
@@ -154,18 +177,6 @@ void DefaultFrameHeader::DoSetFrameColors(SkColor active_frame_color,
     view()->SchedulePaint();
   }
 }
-
-AshLayoutSize DefaultFrameHeader::GetButtonLayoutSize() const {
-  return AshLayoutSize::kNonBrowserCaption;
-}
-
-SkColor DefaultFrameHeader::GetTitleColor() const {
-  return color_utils::IsDark(GetCurrentFrameColor()) ? kLightTitleTextColor
-                                                     : kTitleTextColor;
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// DefaultFrameHeader, private:
 
 SkColor DefaultFrameHeader::GetCurrentFrameColor() const {
   return mode() == MODE_ACTIVE ? active_frame_color_.target_color()

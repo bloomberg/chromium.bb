@@ -25,11 +25,7 @@ namespace ash {
 class ASH_EXPORT FrameCaptionButton : public views::Button {
  public:
   enum Animate { ANIMATE_YES, ANIMATE_NO };
-
-  enum class ColorMode {
-    kDefault,  // Most windows.
-    kThemed,   // Windows that have been themed by PWA manifest.
-  };
+  enum class ColorMode { kDefault, kThemed };
 
   static const char kViewClassName[];
 
