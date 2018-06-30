@@ -94,3 +94,14 @@ void AuthenticatorTransportSelectorSheetModel::OnTransportSelected(
     AuthenticatorTransport transport) {
   dialog_model()->StartGuidedFlowForTransport(transport);
 }
+
+// AuthenticatorInsertUsbSheetModel
+// ---------------------------------------------
+
+base::string16 AuthenticatorInsertUsbSheetModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_TITLE);
+}
+
+base::string16 AuthenticatorInsertUsbSheetModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_INSERT_DESCRIPTION);
+}
