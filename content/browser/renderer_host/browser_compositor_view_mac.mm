@@ -302,6 +302,8 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
   if (new_size_dip == dfh_size_dip_ && new_display == dfh_display_)
     return false;
 
+  bool is_resize = !dfh_size_dip_.IsEmpty() && new_size_dip != dfh_size_dip_;
+
   bool needs_new_surface_id =
       new_size_dip != dfh_size_dip_ ||
       new_display.device_scale_factor() != dfh_display_.device_scale_factor();
@@ -317,7 +319,7 @@ bool BrowserCompositorMac::UpdateNSViewAndDisplay(
       recyclable_compositor_->Suspend();
     GetDelegatedFrameHost()->EmbedSurface(
         dfh_local_surface_id_allocator_.GenerateId(), dfh_size_dip_,
-        GetDeadlinePolicy());
+        GetDeadlinePolicy(is_resize));
   }
 
   if (recyclable_compositor_) {
@@ -347,7 +349,7 @@ void BrowserCompositorMac::SynchronizeVisualProperties(
     }
     GetDelegatedFrameHost()->EmbedSurface(
         dfh_local_surface_id_allocator_.GetCurrentLocalSurfaceId(),
-        dfh_size_dip_, GetDeadlinePolicy());
+        dfh_size_dip_, GetDeadlinePolicy(true /* is_resize */));
   }
   client_->SynchronizeVisualProperties();
 }
@@ -631,9 +633,12 @@ ui::Compositor* BrowserCompositorMac::GetCompositorForTesting() const {
   return nullptr;
 }
 
-cc::DeadlinePolicy BrowserCompositorMac::GetDeadlinePolicy() const {
-  // Determined empirically for smoothness.
-  uint32_t frames_to_wait = 8;
+cc::DeadlinePolicy BrowserCompositorMac::GetDeadlinePolicy(
+    bool is_resize) const {
+  // Determined empirically for smoothness. Don't wait for non-resize frames,
+  // as it can cause jank at new tab creation.
+  // https://crbug.com/855364
+  uint32_t frames_to_wait = is_resize ? 8 : 0;
 
   // When using the RecyclableCompositor, never wait for frames to arrive
   // (surface sync is managed by the Suspend/Unsuspend lock).
