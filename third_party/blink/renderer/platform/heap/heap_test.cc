@@ -65,7 +65,7 @@ class IntWrapper : public GarbageCollectedFinalized<IntWrapper> {
  public:
   static IntWrapper* Create(int x) { return new IntWrapper(x); }
 
-  virtual ~IntWrapper() { ++destructor_calls_; }
+  virtual ~IntWrapper() { AtomicIncrement(&destructor_calls_); }
 
   static int destructor_calls_;
   void Trace(blink::Visitor* visitor) {}
@@ -510,7 +510,7 @@ class ThreadedTesterBase {
           *threads.back()->GetTaskRunner(), FROM_HERE,
           CrossThreadBind(ThreadFunc, CrossThreadUnretained(tester)));
     }
-    while (tester->threads_to_finish_) {
+    while (AcquireLoad(&tester->threads_to_finish_)) {
       test::YieldCurrentThread();
     }
     delete tester;
@@ -528,7 +528,7 @@ class ThreadedTesterBase {
   virtual ~ThreadedTesterBase() = default;
 
   inline bool Done() const {
-    return gc_count_ >= kNumberOfThreads * kGcPerThread;
+    return AcquireLoad(&gc_count_) >= kNumberOfThreads * kGcPerThread;
   }
 
   volatile int gc_count_;
