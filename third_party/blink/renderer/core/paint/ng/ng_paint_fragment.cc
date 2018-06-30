@@ -342,6 +342,7 @@ void NGPaintFragment::PaintInlineBoxForDescendants(
     const LayoutPoint& paint_offset,
     const LayoutInline* layout_object,
     NGPhysicalOffset offset) const {
+  DCHECK(layout_object);
   for (const auto& child : Children()) {
     if (child->GetLayoutObject() == layout_object) {
       NGBoxFragmentPainter(*child).PaintInlineBox(
