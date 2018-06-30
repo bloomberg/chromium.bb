@@ -277,6 +277,15 @@ class BASE_EXPORT MessageLoop : public MessagePump::Delegate,
   // A recent snapshot of Time::Now(), used to check delayed_work_queue_.
   TimeTicks recent_time_;
 
+  // Non-null when the last thing this MessageLoop did is become idle with
+  // pending delayed tasks. Used to report metrics on the following wake up.
+  struct ScheduledWakeup {
+    // The scheduled time of the next delayed task when this loop became idle.
+    TimeTicks next_run_time;
+    // The delta until |next_run_time| when this loop became idle.
+    TimeDelta intended_sleep;
+  } scheduled_wakeup_;
+
   ObserverList<DestructionObserver> destruction_observers_;
 
   // A boolean which prevents unintentional reentrant task execution (e.g. from
