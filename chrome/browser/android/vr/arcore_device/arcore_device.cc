@@ -138,8 +138,9 @@ void ARCoreDevice::OnARCoreGlThreadInitialized() {
   is_arcore_gl_thread_initialized_ = true;
 }
 
-void ARCoreDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void ARCoreDevice::RequestSession(
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntime::RequestSessionCallback callback) {
   DCHECK(IsOnMainThread());
 
   // TODO(https://crbug.com/849568): Instead of splitting the initialization
@@ -159,8 +160,8 @@ void ARCoreDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
                      GetWeakPtr(), std::move(callback));
 
   SatisfyRequestSessionPreconditions(
-      options.render_process_id, options.render_frame_id,
-      options.has_user_activation, std::move(preconditions_complete_callback));
+      options->render_process_id, options->render_frame_id,
+      options->has_user_activation, std::move(preconditions_complete_callback));
 }
 
 void ARCoreDevice::SatisfyRequestSessionPreconditions(
@@ -380,7 +381,7 @@ void ARCoreDevice::OnRequestCameraPermissionResult(
 }
 
 void ARCoreDevice::OnRequestSessionPreconditionsComplete(
-    VRDeviceRequestSessionCallback callback,
+    mojom::XRRuntime::RequestSessionCallback callback,
     bool success) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);
@@ -403,7 +404,7 @@ void ARCoreDevice::OnRequestSessionPreconditionsComplete(
 }
 
 void ARCoreDevice::OnARCoreGlInitializationComplete(
-    VRDeviceRequestSessionCallback callback,
+    mojom::XRRuntime::RequestSessionCallback callback,
     bool success) {
   DCHECK(IsOnMainThread());
   DCHECK(is_arcore_gl_thread_initialized_);

@@ -9,17 +9,33 @@
 
 namespace vr {
 
-BrowserXrDevice::BrowserXrDevice(device::VRDevice* device, bool is_fallback)
-    : device_(device), is_fallback_(is_fallback), weak_ptr_factory_(this) {
-  device_->SetVRDeviceEventListener(this);
-  display_info_ = device->GetVRDisplayInfo();
+BrowserXrDevice::BrowserXrDevice(device::mojom::XRRuntimePtr device,
+                                 device::mojom::VRDisplayInfoPtr display_info,
+                                 bool is_fallback)
+    : device_(std::move(device)),
+      display_info_(std::move(display_info)),
+      is_fallback_(is_fallback),
+      binding_(this),
+      weak_ptr_factory_(this) {
+  device::mojom::XRRuntimeEventListenerPtr listener;
+  binding_.Bind(mojo::MakeRequest(&listener));
+
+  // Unretained is safe because we are calling through an InterfacePtr we own,
+  // so we won't be called after device_ is destroyed.
+  device_->ListenToDeviceChanges(
+      std::move(listener),
+      base::BindOnce(&BrowserXrDevice::OnInitialDevicePropertiesReceived,
+                     base::Unretained(this)));
 }
 
-BrowserXrDevice::~BrowserXrDevice() {
-  device_->SetVRDeviceEventListener(nullptr);
+void BrowserXrDevice::OnInitialDevicePropertiesReceived(
+    device::mojom::VRDisplayInfoPtr display_info) {
+  OnDisplayInfoChanged(std::move(display_info));
 }
 
-void BrowserXrDevice::OnChanged(
+BrowserXrDevice::~BrowserXrDevice() = default;
+
+void BrowserXrDevice::OnDisplayInfoChanged(
     device::mojom::VRDisplayInfoPtr vr_device_info) {
   display_info_ = vr_device_info.Clone();
   for (VRDisplayHost* display : displays_) {
@@ -29,7 +45,6 @@ void BrowserXrDevice::OnChanged(
 
 void BrowserXrDevice::StopExclusiveSession() {
   if (exclusive_session_controller_) {
-    exclusive_session_controller_->StopSession();
     exclusive_session_controller_ = nullptr;
     presenting_display_host_ = nullptr;
   }
@@ -42,8 +57,9 @@ void BrowserXrDevice::OnExitPresent() {
   }
 }
 
-void BrowserXrDevice::OnActivate(device::mojom::VRDisplayEventReason reason,
-                                 base::OnceCallback<void(bool)> on_handled) {
+void BrowserXrDevice::OnDeviceActivated(
+    device::mojom::VRDisplayEventReason reason,
+    base::OnceCallback<void(bool)> on_handled) {
   if (listening_for_activation_display_host_) {
     listening_for_activation_display_host_->OnActivate(reason,
                                                        std::move(on_handled));
@@ -52,7 +68,7 @@ void BrowserXrDevice::OnActivate(device::mojom::VRDisplayEventReason reason,
   }
 }
 
-void BrowserXrDevice::OnDeactivate(device::mojom::VRDisplayEventReason reason) {
+void BrowserXrDevice::OnDeviceIdle(device::mojom::VRDisplayEventReason reason) {
   for (VRDisplayHost* display : displays_) {
     display->OnDeactivate(reason);
   }
@@ -72,7 +88,7 @@ void BrowserXrDevice::OnDisplayHostRemoved(VRDisplayHost* display) {
   if (display == listening_for_activation_display_host_) {
     // Not listening for activation.
     listening_for_activation_display_host_ = nullptr;
-    GetDevice()->SetListeningForActivate(false);
+    device_->SetListeningForActivate(false);
   }
 }
 
@@ -84,32 +100,32 @@ void BrowserXrDevice::ExitPresent(VRDisplayHost* display) {
 
 void BrowserXrDevice::RequestSession(
     VRDisplayHost* display,
-    const device::XRDeviceRuntimeSessionOptions& options,
+    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback) {
   device_->RequestSession(
-      options, base::BindOnce(&BrowserXrDevice::OnRequestSessionResult,
-                              weak_ptr_factory_.GetWeakPtr(), display, options,
-                              std::move(callback)));
+      options->Clone(), base::BindOnce(&BrowserXrDevice::OnRequestSessionResult,
+                                       weak_ptr_factory_.GetWeakPtr(), display,
+                                       options->Clone(), std::move(callback)));
 }
 
 void BrowserXrDevice::OnRequestSessionResult(
     VRDisplayHost* display,
-    const device::XRDeviceRuntimeSessionOptions& options,
+    device::mojom::XRDeviceRuntimeSessionOptionsPtr options,
     device::mojom::VRDisplayHost::RequestSessionCallback callback,
     device::mojom::XRPresentationConnectionPtr connection,
-    device::XrSessionController* exclusive_session_controller) {
+    device::mojom::XRSessionControllerPtr exclusive_session_controller) {
   if (connection && (displays_.find(display) != displays_.end())) {
-    if (options.exclusive) {
+    if (options->exclusive) {
       presenting_display_host_ = display;
-      exclusive_session_controller_ = exclusive_session_controller;
+      exclusive_session_controller_ = std::move(exclusive_session_controller);
     }
     std::move(callback).Run(std::move(connection));
   } else {
     std::move(callback).Run(nullptr);
     if (connection) {
-      // The device has been removed, but we still got connection, so make sure
-      // to clean up this weird state.
-      exclusive_session_controller_ = exclusive_session_controller;
+      // The device has been removed, but we still got a connection, so make
+      // sure to clean up this weird state.
+      exclusive_session_controller_ = std::move(exclusive_session_controller);
       StopExclusiveSession();
     }
   }

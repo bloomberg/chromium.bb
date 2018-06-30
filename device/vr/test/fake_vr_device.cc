@@ -7,7 +7,7 @@
 namespace device {
 
 FakeVRDevice::FakeVRDevice(unsigned int id)
-    : VRDeviceBase(static_cast<VRDeviceId>(id)) {
+    : VRDeviceBase(static_cast<VRDeviceId>(id)), controller_binding_(this) {
   SetVRDisplayInfo(InitBasicDevice());
 }
 
@@ -50,14 +50,27 @@ mojom::VREyeParametersPtr FakeVRDevice::InitEye(float fov,
   return eye;
 }
 
-void FakeVRDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void FakeVRDevice::RequestSession(
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntime::RequestSessionCallback callback) {
   OnStartPresenting();
-  std::move(callback).Run(mojom::XRPresentationConnection::New(), this);
+
+  mojom::XRSessionControllerPtr exclusive_session_controller;
+  controller_binding_.Bind(mojo::MakeRequest(&exclusive_session_controller));
+
+  // Unretained is safe because the error handler won't be called after
+  // controller_binding_ is destroyed.
+  controller_binding_.set_connection_error_handler(
+      base::BindOnce(&FakeVRDevice::OnPresentingControllerMojoConnectionError,
+                     base::Unretained(this)));
+
+  std::move(callback).Run(mojom::XRPresentationConnection::New(),
+                          std::move(exclusive_session_controller));
 }
 
-void FakeVRDevice::StopSession() {
+void FakeVRDevice::OnPresentingControllerMojoConnectionError() {
   OnExitPresent();
+  controller_binding_.Close();
 }
 
 void FakeVRDevice::OnMagicWindowFrameDataRequest(

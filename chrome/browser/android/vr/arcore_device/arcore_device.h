@@ -34,8 +34,9 @@ class ARCoreDevice : public VRDeviceBase {
   // VRDeviceBase implementation.
   void PauseTracking() override;
   void ResumeTracking() override;
-  void RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                      VRDeviceRequestSessionCallback callback) override;
+  void RequestSession(
+      mojom::XRDeviceRuntimeSessionOptionsPtr options,
+      mojom::XRRuntime::RequestSessionCallback callback) override;
 
   base::WeakPtr<ARCoreDevice> GetWeakPtr() {
     return weak_ptr_factory_.GetWeakPtr();
@@ -102,10 +103,11 @@ class ARCoreDevice : public VRDeviceBase {
       base::OnceCallback<void(bool)> callback,
       bool was_android_camera_permission_granted);
   void OnRequestSessionPreconditionsComplete(
-      VRDeviceRequestSessionCallback callback,
+      mojom::XRRuntime::RequestSessionCallback callback,
       bool success);
-  void OnARCoreGlInitializationComplete(VRDeviceRequestSessionCallback callback,
-                                        bool success);
+  void OnARCoreGlInitializationComplete(
+      mojom::XRRuntime::RequestSessionCallback callback,
+      bool success);
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   std::unique_ptr<vr::MailboxToSurfaceBridge> mailbox_bridge_;

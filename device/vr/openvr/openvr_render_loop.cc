@@ -146,9 +146,9 @@ void OpenVRRenderLoop::UpdateLayerBounds(int16_t frame_id,
 };
 
 void OpenVRRenderLoop::RequestSession(
-    const XRDeviceRuntimeSessionOptions& options,
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
     RequestSessionCallback callback) {
-  DCHECK(options.exclusive);
+  DCHECK(options->exclusive);
 #if defined(OS_WIN)
   int32_t adapter_index;
   vr::VRSystem()->GetDXGIOutputInfo(&adapter_index);

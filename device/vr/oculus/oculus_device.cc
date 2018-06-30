@@ -87,6 +87,7 @@ OculusDevice::OculusDevice(ovrSession session, ovrGraphicsLuid luid)
     : VRDeviceBase(VRDeviceId::OCULUS_DEVICE_ID),
       session_(session),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+      exclusive_controller_binding_(this),
       weak_ptr_factory_(this) {
   SetVRDisplayInfo(CreateVRDisplayInfo(GetId(), session_));
 
@@ -95,8 +96,9 @@ OculusDevice::OculusDevice(ovrSession session, ovrGraphicsLuid luid)
 
 OculusDevice::~OculusDevice() {}
 
-void OculusDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
-                                  VRDeviceRequestSessionCallback callback) {
+void OculusDevice::RequestSession(
+    mojom::XRDeviceRuntimeSessionOptionsPtr options,
+    mojom::XRRuntime::RequestSessionCallback callback) {
   if (!render_loop_->IsRunning())
     render_loop_->Start();
 
@@ -110,12 +112,12 @@ void OculusDevice::RequestSession(const XRDeviceRuntimeSessionOptions& options,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&OculusRenderLoop::RequestSession,
-                                render_loop_->GetWeakPtr(), options,
+                                render_loop_->GetWeakPtr(), std::move(options),
                                 std::move(on_request_present_result)));
 }
 
 void OculusDevice::OnRequestSessionResult(
-    VRDeviceRequestSessionCallback callback,
+    mojom::XRRuntime::RequestSessionCallback callback,
     bool result,
     mojom::VRSubmitFrameClientRequest request,
     mojom::VRPresentationProviderPtrInfo provider_info,
@@ -131,20 +133,31 @@ void OculusDevice::OnRequestSessionResult(
   connection->client_request = std::move(request);
   connection->provider = std::move(provider_info);
   connection->transport_options = std::move(transport_options);
-  std::move(callback).Run(std::move(connection), this);
+
+  mojom::XRSessionControllerPtr session_controller;
+  exclusive_controller_binding_.Bind(mojo::MakeRequest(&session_controller));
+
+  // Unretained is safe because the error handler won't be called after the
+  // binding has been destroyed.
+  exclusive_controller_binding_.set_connection_error_handler(
+      base::BindOnce(&OculusDevice::OnPresentingControllerMojoConnectionError,
+                     base::Unretained(this)));
+
+  std::move(callback).Run(std::move(connection), std::move(session_controller));
 }
 
-// XrSessionController
+// XRSessionController
 void OculusDevice::SetFrameDataRestricted(bool restricted) {
   // Presentation sessions can not currently be restricted.
   DCHECK(false);
 }
 
-void OculusDevice::StopSession() {
+void OculusDevice::OnPresentingControllerMojoConnectionError() {
   render_loop_->task_runner()->PostTask(
       FROM_HERE, base::BindOnce(&OculusRenderLoop::ExitPresent,
                                 render_loop_->GetWeakPtr()));
   OnExitPresent();
+  exclusive_controller_binding_.Close();
 }
 
 void OculusDevice::OnMagicWindowFrameDataRequest(
