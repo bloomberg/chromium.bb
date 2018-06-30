@@ -449,12 +449,18 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer, bool was_changed) {
 
   WebGLRenderingContextBase* webgl_context = layer->context();
 
-  if (!was_changed || frame_id_ < 0) {
+  if (frame_id_ < 0) {
+    // There is no valid frame_id_, and the browser side is not currently
+    // expecting a frame to be submitted. That can happen for the first
+    // exclusive frame if the animation loop submits without a preceding
+    // exclusive GetFrameData response, in that case frame_id_ is -1 (see
+    // https://crbug.com/855722).
+    return;
+  }
+
+  if (!was_changed) {
     // Just tell the device side that there was no submitted frame instead of
-    // executing the implicit end-of-frame submit. Also do this if there is no
-    // valid frame_id_. That can happen for the first exclusive frame if the
-    // animation loop submits without a preceding exclusive GetFrameData
-    // response, in that case frame_id_ is -1 (see https://crbug.com/855722).
+    // executing the implicit end-of-frame submit.
     frame_transport_->FrameSubmitMissing(presentation_provider_.get(),
                                          webgl_context->ContextGL(), frame_id_);
     return;
