@@ -91,9 +91,6 @@ class OmniboxViewViews : public OmniboxView,
   // "Search Google or type a URL" when the Omnibox is empty and unfocused.
   void InstallPlaceholderText();
 
-  // Returns true if the omnibox is currently hovered.
-  bool IsHovered() const;
-
   // OmniboxView:
   void EmphasizeURLComponents() override;
   void Update() override;
@@ -186,9 +183,6 @@ class OmniboxViewViews : public OmniboxView,
 
   void ClearAccessibilityLabel();
 
-  // Sets the hovered state for omnibox.
-  void SetHovered(bool hovered);
-
   // Returns true if the user text was updated with the full URL (without
   // steady-state elisions).  |gesture| is the user gesture causing unelision.
   bool UnapplySteadyStateElisions(UnelisionGesture gesture);
@@ -242,10 +236,6 @@ class OmniboxViewViews : public OmniboxView,
   bool IsTextEditCommandEnabled(ui::TextEditCommand command) const override;
   void ExecuteTextEditCommand(ui::TextEditCommand command) override;
 
-  // views::View:
-  void OnMouseMoved(const ui::MouseEvent& event) override;
-  void OnMouseExited(const ui::MouseEvent& event) override;
-
   // chromeos::input_method::InputMethodManager::CandidateWindowObserver:
 #if defined(OS_CHROMEOS)
   void CandidateWindowOpened(
@@ -281,9 +271,6 @@ class OmniboxViewViews : public OmniboxView,
 
   // TemplateURLServiceObserver:
   void OnTemplateURLServiceChanged() override;
-
-  // Holds hover state for visual hinting.
-  bool hovered_;
 
   // When true, the location bar view is read only and also is has a slightly
   // different presentation (smaller font size). This is used for popups.

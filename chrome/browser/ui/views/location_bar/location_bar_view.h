@@ -267,9 +267,6 @@ class LocationBarView : public LocationBar,
   void OnOmniboxFocused();
   void OnOmniboxBlurred();
 
-  // Called when omnibox detects change in hover state
-  void OnOmniboxHoverChanged();
-
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   FRIEND_TEST_ALL_PREFIXES(TouchLocationBarViewBrowserTest,
@@ -373,6 +370,8 @@ class LocationBarView : public LocationBar,
   void OnFocus() override;
   void OnPaint(gfx::Canvas* canvas) override;
   void OnPaintBorder(gfx::Canvas* canvas) override;
+  void OnMouseEntered(const ui::MouseEvent& event) override;
+  void OnMouseExited(const ui::MouseEvent& event) override;
 
   // views::DragController:
   void WriteDragDataForView(View* sender,
@@ -390,6 +389,7 @@ class LocationBarView : public LocationBar,
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
+  void AnimationCanceled(const gfx::Animation* animation) override;
 
   // ChromeOmniboxEditController:
   void OnChanged() override;
@@ -471,6 +471,9 @@ class LocationBarView : public LocationBar,
 
   // Animation to indent the text when opening the suggestions dropdown.
   gfx::SlideAnimation text_indent_animation_{this};
+
+  // Animation to change whole location bar background color on hover.
+  gfx::SlideAnimation hover_animation_{this};
 
   // Whether we're in popup mode. This value also controls whether the location
   // bar is read-only.
