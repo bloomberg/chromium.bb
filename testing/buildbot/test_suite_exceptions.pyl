@@ -854,12 +854,6 @@
       },
     },
   },
-  'content_browsertests --mus': {
-    'remove_from': [
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)',
-    ],
-  },
   'content_shell_test_apk': {
     'remove_gtest_from': [
       # chromium.android.fyi
@@ -1971,13 +1965,6 @@
       },
     },
   },
-  'surface_sync_browser_tests': {
-    'remove_from': [
-      # chromium.fyi
-      'Chromium Mac 10.13', # https://crbug.com/828031
-      'mac-views-rel', # https://crbug.com/828031
-    ],
-  },
   'swiftshader_unittests': {
     'remove_from': [
       # Save capacity on the hardware where we have only a few machines.
@@ -2354,12 +2341,6 @@
         },
       },
     },
-  },
-  'viz_screenshot_sync_tests': {
-    'remove_from': [
-      # These tests don't work on TSAN right now.
-      'Linux FYI GPU TSAN Release',
-    ],
   },
   'viz_unittests': {
     'remove_from': [
