@@ -7,7 +7,7 @@ suite('focus-row-behavior', function() {
 
   suiteSetup(function() {
     document.body.innerHTML = `
-      <dom-module is="focus-row-element">
+      <dom-module id="focus-row-element">
         <template>
           <div id="container" focus-row-container>
             <span>fake text</span>
