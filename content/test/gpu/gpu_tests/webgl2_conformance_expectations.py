@@ -558,10 +558,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'texsubimage3d_pbo_3d_01.html',
         ['mac', ('nvidia', 0xfe9)], bug=614174)
 
-    self.Flaky('deqp/functional/gles3/transformfeedback/' +
-        'random_separate_points.html',
-        ['mac', ('nvidia', 0xfe9)], bug=857112)
-
     self.Fail('deqp/functional/gles3/fragmentoutput/array.fixed.html',
         ['mac', ('nvidia', 0xfe9)], bug=483282)
     self.Fail('deqp/functional/gles3/fragmentoutput/basic.fixed.html',
