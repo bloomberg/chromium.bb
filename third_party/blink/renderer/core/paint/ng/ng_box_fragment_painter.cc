@@ -724,6 +724,13 @@ void NGBoxFragmentPainter::PaintTextChild(const NGPaintFragment& text_fragment,
   // Inline blocks should be painted by PaintAtomicInlineChild.
   DCHECK(!text_fragment.PhysicalFragment().IsAtomicInline());
 
+  // Only paint during the foreground/selection phases.
+  if (paint_info.phase != PaintPhase::kForeground &&
+      paint_info.phase != PaintPhase::kSelection &&
+      paint_info.phase != PaintPhase::kTextClip &&
+      paint_info.phase != PaintPhase::kMask)
+    return;
+
   // The text clip phase already has a DrawingRecorder. Text clips are initiated
   // only in BoxPainterBase::PaintFillLayer, which is already within a
   // DrawingRecorder.
