@@ -369,8 +369,6 @@ void LayoutTableCell::SetIsSpanningCollapsedRow(bool spanning_collapsed_row) {
   if (is_spanning_collapsed_row_ != spanning_collapsed_row) {
     is_spanning_collapsed_row_ = spanning_collapsed_row;
     SetShouldClipOverflow(ComputeShouldClipOverflow());
-  } else {
-    is_spanning_collapsed_row_ = spanning_collapsed_row;
   }
 }
 
@@ -379,8 +377,6 @@ void LayoutTableCell::SetIsSpanningCollapsedColumn(
   if (is_spanning_collapsed_column_ != spanning_collapsed_column) {
     is_spanning_collapsed_column_ = spanning_collapsed_column;
     SetShouldClipOverflow(ComputeShouldClipOverflow());
-  } else {
-    is_spanning_collapsed_column_ = spanning_collapsed_column;
   }
 }
 
