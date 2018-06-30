@@ -344,7 +344,7 @@ def _handle_perf_results(
     upload_failure = False
     with oauth_api.with_access_token(service_account_file) as oauth_file:
       for benchmark_name, directories in benchmark_directory_map.iteritems():
-        if not benchmark_enabled_map[benchmark_name]:
+        if not benchmark_enabled_map.get(benchmark_name, False):
           continue
         upload_begin_time = time.time()
         # There are potentially multiple directores with results, re-write and
