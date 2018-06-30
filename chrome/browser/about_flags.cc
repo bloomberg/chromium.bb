@@ -518,6 +518,18 @@ const FeatureEntry::Choice kTopChromeMaterialDesignChoices[] = {
      switches::kTopChromeMD,
      switches::kTopChromeMDMaterialRefreshTouchOptimized}};
 
+const FeatureEntry::Choice kNewTabButtonPositionChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {flag_descriptions::kNewTabButtonPositionOppositeCaption,
+     switches::kNewTabButtonPosition,
+     switches::kNewTabButtonPositionOppositeCaption},
+    {flag_descriptions::kNewTabButtonPositionLeading,
+     switches::kNewTabButtonPosition, switches::kNewTabButtonPositionLeading},
+    {flag_descriptions::kNewTabButtonPositionAfterTabs,
+     switches::kNewTabButtonPosition, switches::kNewTabButtonPositionAfterTabs},
+    {flag_descriptions::kNewTabButtonPositionTrailing,
+     switches::kNewTabButtonPosition, switches::kNewTabButtonPositionTrailing}};
+
 #if defined(OS_CHROMEOS)
 const FeatureEntry::Choice kAshShelfColorChoices[] = {
     {flags_ui::kGenericExperimentChoiceDefault, "", ""},
@@ -1451,6 +1463,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kCloseButtonsInactiveTabs,
      flag_descriptions::kCloseButtonsInactiveTabsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kCloseButtonsInactiveTabs)},
+    {"new-tab-button-position", flag_descriptions::kNewTabButtonPosition,
+     flag_descriptions::kNewTabButtonPositionDescription, kOsDesktop,
+     MULTI_VALUE_TYPE(kNewTabButtonPositionChoices)},
     {"site-settings", flag_descriptions::kSiteSettings,
      flag_descriptions::kSiteSettingsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kSiteSettings)},

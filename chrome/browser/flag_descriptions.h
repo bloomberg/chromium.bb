@@ -695,6 +695,13 @@ extern const char kNewUsbBackendDescription[];
 extern const char kNewblueName[];
 extern const char kNewblueDescription[];
 
+extern const char kNewTabButtonPosition[];
+extern const char kNewTabButtonPositionDescription[];
+extern const char kNewTabButtonPositionOppositeCaption[];
+extern const char kNewTabButtonPositionLeading[];
+extern const char kNewTabButtonPositionAfterTabs[];
+extern const char kNewTabButtonPositionTrailing[];
+
 extern const char kNostatePrefetchName[];
 extern const char kNostatePrefetchDescription[];
 

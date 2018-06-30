@@ -8,7 +8,6 @@
 
 #include "base/auto_reset.h"
 #include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
 #include "build/build_config.h"
@@ -310,13 +309,19 @@ bool BrowserTabStripController::IsCompatibleWith(TabStrip* other) const {
 
 NewTabButtonPosition BrowserTabStripController::GetNewTabButtonPosition()
     const {
-  constexpr base::Feature kRefreshNewTabButtonAfterTabs = {
-      "RefreshNewTabButtonAfterTabs", base::FEATURE_DISABLED_BY_DEFAULT};
-  if (!ui::MaterialDesignController::IsRefreshUi() ||
-      base::FeatureList::IsEnabled(kRefreshNewTabButtonAfterTabs)) {
+  const std::string switch_value =
+      base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kNewTabButtonPosition);
+  if (switch_value == switches::kNewTabButtonPositionOppositeCaption)
+    return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
+  if (switch_value == switches::kNewTabButtonPositionLeading)
+    return LEADING;
+  if (switch_value == switches::kNewTabButtonPositionAfterTabs)
     return AFTER_TABS;
-  }
-  return GetFrameView()->CaptionButtonsOnLeadingEdge() ? TRAILING : LEADING;
+  if (switch_value == switches::kNewTabButtonPositionTrailing)
+    return TRAILING;
+
+  return AFTER_TABS;
 }
 
 void BrowserTabStripController::CreateNewTab() {
