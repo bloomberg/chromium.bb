@@ -2334,6 +2334,7 @@ crbug.com/599670 [ Win ] http/tests/devtools/resource-parameters-ipv6.js [ Pass 
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
+crbug.com/472330 fast/writing-mode/table-percent-width-quirk.html [ Failure ]
 
 # These are the failing tests because Chrome hasn't implemented according to the spec.
 crbug.com/645988 external/wpt/uievents/order-of-events/focus-events/focus-manual.html [ Failure ]
