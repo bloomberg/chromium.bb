@@ -7,7 +7,8 @@
         "media:media": [ "media.mojom.MediaService" ]
       },
       "requires": {
-        "*": [ "app" ]
+        "*": [ "app" ],
+        "chromecast": [ "multizone" ]
       }
     }
   }
