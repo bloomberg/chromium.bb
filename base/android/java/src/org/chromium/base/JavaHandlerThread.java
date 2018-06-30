@@ -11,6 +11,7 @@ import android.os.MessageQueue;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 
 import java.lang.Thread.UncaughtExceptionHandler;
 
@@ -18,6 +19,7 @@ import java.lang.Thread.UncaughtExceptionHandler;
  * Thread in Java with an Android Handler. This class is not thread safe.
  */
 @JNINamespace("base::android")
+@MainDex
 public class JavaHandlerThread {
     private final HandlerThread mThread;
 
