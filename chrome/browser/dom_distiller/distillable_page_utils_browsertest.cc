@@ -134,8 +134,9 @@ class DistillablePageUtilsBrowserTestOption : public InProcessBrowserTest {
 using DistillablePageUtilsBrowserTestAlways =
     DistillablePageUtilsBrowserTestOption<kAlwaysTrue>;
 
+// This test should be updated to use QuitClosure. See crbug.com/859151.
 IN_PROC_BROWSER_TEST_F(DistillablePageUtilsBrowserTestAlways,
-                       TestDelegate) {
+                       DISABLED_TestDelegate) {
   for (unsigned i = 0; i < sizeof(kAllPaths) / sizeof(kAllPaths[0]); ++i) {
     testing::InSequence dummy;
     EXPECT_CALL(holder_, OnResult(true, true, _))
