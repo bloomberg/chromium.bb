@@ -51,10 +51,16 @@ static_library("dom_keyboard_layout") {
     "keycodes/dom/dom_keyboard_layout_manager.cc",
     "keycodes/dom/dom_keyboard_layout_map_base.cc",
     "keycodes/dom/dom_keyboard_layout_map_base.h",
-    "keycodes/dom/dom_keyboard_layout_map_mac.mm",
-    "keycodes/dom/dom_keyboard_layout_map_ozone.cc",
-    "keycodes/dom/dom_keyboard_layout_map_win.cc",
   ]
+
+  # Make sure we don't compile two versions of dom_keyboard_layout_map*
+  if (is_mac) {
+    sources += [ "keycodes/dom/dom_keyboard_layout_map_mac.mm" ]
+  } else if (is_win) {
+    sources += [ "keycodes/dom/dom_keyboard_layout_map_win.cc" ]
+  } else {
+    sources += [ "keycodes/dom/dom_keyboard_layout_map_ozone.cc" ]
+  }
 
   deps = [
     ":dom_keycode_converter",
