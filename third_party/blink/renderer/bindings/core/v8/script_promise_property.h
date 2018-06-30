@@ -50,7 +50,7 @@ class ScriptPromiseProperty : public ScriptPromisePropertyBase {
   // property holder).
   //
   // When implementing a ScriptPromiseProperty add the property name
-  // to ScriptPromiseProperties.h and pass
+  // to script_promise_properties.h and pass
   // ScriptPromiseProperty::Foo to create. The name must be unique
   // per kind of holder.
   template <typename PassHolderType>
