@@ -51,6 +51,7 @@ class DEVICE_VR_EXPORT GvrDevice : public VRDeviceBase,
   void SetFrameDataRestricted(bool restricted) override;
 
   void OnPresentingControllerMojoConnectionError();
+  void StopPresenting();
 
   GvrDevice();
   GvrDelegateProvider* GetGvrDelegateProvider();
