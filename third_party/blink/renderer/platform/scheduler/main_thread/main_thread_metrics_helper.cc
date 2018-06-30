@@ -66,9 +66,14 @@ MainThreadMetricsHelper::PerQueueTypeDurationReporters::
                               ".Background.FifthMinute"),
       background_after_fifth_minute(DURATION_PER_QUEUE_TYPE_METRIC_NAME
                                     ".Background.AfterFifthMinute"),
+      background_after_tenth_minute(DURATION_PER_QUEUE_TYPE_METRIC_NAME
+                                    ".Background.AfterTenthMinute"),
       background_keep_active_after_fifth_minute(
           DURATION_PER_QUEUE_TYPE_METRIC_NAME
           ".Background.KeepAlive.AfterFifthMinute"),
+      background_keep_active_after_tenth_minute(
+          DURATION_PER_QUEUE_TYPE_METRIC_NAME
+          ".Background.KeepAlive.AfterTenthMinute"),
       hidden(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".Hidden"),
       visible(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".Visible"),
       hidden_music(DURATION_PER_QUEUE_TYPE_METRIC_NAME ".HiddenMusic") {}
@@ -297,6 +302,14 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
             std::max(backgrounded_at + base::TimeDelta::FromMinutes(5),
                      end_time)));
 
+    per_queue_type_reporters_.background_after_tenth_minute.RecordTask(
+        queue_type,
+        DurationOfIntervalOverlap(
+            start_time, end_time,
+            backgrounded_at + base::TimeDelta::FromMinutes(10),
+            std::max(backgrounded_at + base::TimeDelta::FromMinutes(10),
+                     end_time)));
+
     if (main_thread_scheduler_->main_thread_only()
             .keep_active_fetch_or_worker) {
       per_queue_type_reporters_.background_keep_active_after_fifth_minute
@@ -306,6 +319,14 @@ void MainThreadMetricsHelper::RecordTaskMetrics(
                   start_time, end_time,
                   backgrounded_at + base::TimeDelta::FromMinutes(5),
                   std::max(backgrounded_at + base::TimeDelta::FromMinutes(5),
+                           end_time)));
+      per_queue_type_reporters_.background_keep_active_after_tenth_minute
+          .RecordTask(
+              queue_type,
+              DurationOfIntervalOverlap(
+                  start_time, end_time,
+                  backgrounded_at + base::TimeDelta::FromMinutes(10),
+                  std::max(backgrounded_at + base::TimeDelta::FromMinutes(10),
                            end_time)));
     }
 
@@ -478,6 +499,11 @@ void MainThreadMetricsHelper::RecordBackgroundMainThreadTaskLoad(
       if (time_since_backgrounded > base::TimeDelta::FromMinutes(5)) {
         UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
                                  ".Background.AfterFifthMinute",
+                                 load_percentage);
+      }
+      if (time_since_backgrounded > base::TimeDelta::FromMinutes(10)) {
+        UMA_HISTOGRAM_PERCENTAGE(MAIN_THREAD_LOAD_METRIC_NAME
+                                 ".Background.AfterTenthMinute",
                                  load_percentage);
       }
       break;
