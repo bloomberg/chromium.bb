@@ -3961,6 +3961,17 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       description='Builder always passes as quickly as possible.',
   )
 
+  # Used by cbuildbot/stages/sync_stages_unittest
+  site_config.AddWithoutTemplate(
+      'sync-test-cbuildbot',
+      site_config.templates.no_hwtest_builder,
+      site_config.templates.no_vmtest_builder,
+      boards=[],
+      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
+      builder_class_name='test_builders.SucessBuilder',
+      description='Used by sync_stages_unittest.',
+  )
+
   site_config.AddWithoutTemplate(
       'fail-build',
       site_config.templates.external,
@@ -4050,20 +4061,6 @@ def SpecialtyBuilders(site_config, boards_dict, ge_build_config):
       archive=False,
       gs_path=os.path.join(constants.TRASH_BUCKET, 'branch-util-noise/')
   )
-
-  site_config.AddWithoutTemplate(
-      'sync-test-cbuildbot',
-      site_config.templates.no_hwtest_builder,
-      boards=[],
-      display_label=config_lib.DISPLAY_LABEL_TRYJOB,
-      build_type=constants.INCREMENTAL_TYPE,
-      builder_class_name='test_builders.ManifestVersionedSyncBuilder',
-      chroot_replace=True,
-      description='Sync tryjob to help with cbuildbot development',
-      active_waterfall=waterfall.WATERFALL_SWARMING,
-  )
-
-
 
   site_config.AddWithoutTemplate(
       'betty-vmtest-informational',

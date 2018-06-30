@@ -48,14 +48,6 @@ class FailBuilder(generic_builders.ManifestVersionedBuilder):
     self._RunStage(FailStage)
 
 
-class ManifestVersionedSyncBuilder(generic_builders.ManifestVersionedBuilder):
-  """Builder that performs sync, then exits."""
-
-  def RunStages(self):
-    """Run something after sync/reexec."""
-    self._RunStage(SuccessStage)
-
-
 class UnittestStressBuilder(generic_builders.ManifestVersionedBuilder):
   """Builder that runs unittests repeatedly to reproduce flake failures."""
 
