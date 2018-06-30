@@ -19,6 +19,7 @@
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
+#include "net/third_party/quic/platform/api/quic_hkdf.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
@@ -205,8 +206,8 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
     nonce = nonce_storage;
   }
 
-  crypto::HKDF hkdf(premaster_secret, nonce, hkdf_input, key_bytes,
-                    nonce_prefix_bytes, subkey_secret_bytes);
+  QuicHKDF hkdf(premaster_secret, nonce, hkdf_input, key_bytes,
+                nonce_prefix_bytes, subkey_secret_bytes);
 
   // Key derivation depends on the key diversification method being employed.
   // both the client and the server support never doing key diversification.
@@ -298,8 +299,8 @@ bool CryptoUtils::ExportKeyingMaterial(QuicStringPiece subkey_secret,
   info.append(reinterpret_cast<char*>(&context_length), sizeof(context_length));
   info.append(context.data(), context.length());
 
-  crypto::HKDF hkdf(subkey_secret, QuicStringPiece() /* no salt */, info,
-                    result_len, 0 /* no fixed IV */, 0 /* no subkey secret */);
+  QuicHKDF hkdf(subkey_secret, QuicStringPiece() /* no salt */, info,
+                result_len, 0 /* no fixed IV */, 0 /* no subkey secret */);
   *result = QuicString(hkdf.client_write_key());
   return true;
 }
