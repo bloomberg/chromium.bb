@@ -197,6 +197,7 @@ test("accessibility_unittests") {
     "ax_tree_combiner_unittest.cc",
     "ax_tree_serializer_unittest.cc",
     "ax_tree_unittest.cc",
+    "mojom/ax_action_data_mojom_traits_unittest.cc",
     "mojom/ax_event_mojom_traits_unittest.cc",
     "mojom/ax_node_data_mojom_traits_unittest.cc",
     "mojom/ax_tree_data_mojom_traits_unittest.cc",
@@ -222,6 +223,7 @@ test("accessibility_unittests") {
     "//ui/accessibility/mojom",
     "//ui/base",
     "//ui/gfx",
+    "//ui/gfx:test_support",
     "//ui/gfx/geometry",
   ]
 

@@ -17,10 +17,10 @@ namespace ui {
 struct AX_EXPORT AXActionData {
   AXActionData();
   AXActionData(const AXActionData& other);
-  virtual ~AXActionData();
+  ~AXActionData();
 
   // Return a string representation of this data, for debugging.
-  virtual std::string ToString() const;
+  std::string ToString() const;
 
   // This is a simple serializable struct. All member variables should be
   // public and copyable.

@@ -92,6 +92,11 @@ void AXRemoteHost::OnAutomationEnabled(bool enabled) {
     Disable();
 }
 
+void AXRemoteHost::PerformAction(const ui::AXActionData& action) {
+  // TODO(jamescook): Support ax::mojom::Action::kHitTest.
+  tree_source_->HandleAccessibleAction(action);
+}
+
 void AXRemoteHost::OnWidgetDestroying(Widget* widget) {
   DCHECK_EQ(widget_, widget);
   StopMonitoringWidget();

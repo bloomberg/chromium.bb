@@ -10,12 +10,14 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "ui/accessibility/ax_event.h"
 #include "ui/aura/env.h"
+#include "ui/views/mus/ax_remote_host.h"
 
 AXHostService* AXHostService::instance_ = nullptr;
 
 bool AXHostService::automation_enabled_ = false;
 
-AXHostService::AXHostService() {
+AXHostService::AXHostService()
+    : ui::AXHostDelegate(views::AXRemoteHost::kRemoteAXTreeID) {
   DCHECK(!instance_);
   instance_ = this;
   registry_.AddInterface<ax::mojom::AXHost>(
@@ -62,6 +64,13 @@ void AXHostService::HandleAccessibilityEvent(
   // Forward the tree updates and the event to the accessibility extension.
   extensions::AutomationEventRouter::GetInstance()->DispatchAccessibilityEvents(
       event_bundle);
+}
+
+void AXHostService::PerformAction(const ui::AXActionData& data) {
+  // TODO(jamescook): This assumes a single remote host. Need to have one
+  // AXHostDelegate per remote host and only send to the appropriate one.
+  if (remote_host_)
+    remote_host_->PerformAction(data);
 }
 
 void AXHostService::FlushForTesting() {

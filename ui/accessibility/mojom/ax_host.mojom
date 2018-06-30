@@ -5,6 +5,7 @@
 module ax.mojom;
 
 import "ui/accessibility/ax_enums.mojom";
+import "ui/accessibility/mojom/ax_action_data.mojom";
 import "ui/accessibility/mojom/ax_event.mojom";
 import "ui/accessibility/mojom/ax_tree_update.mojom";
 
@@ -34,5 +35,6 @@ interface AXRemoteHost {
   // enabled.
   OnAutomationEnabled(bool enabled);
 
-  // TODO(jamescook): PerformAction.
+  // Performs an accessibility action inside the remote app.
+  PerformAction(AXActionData data);
 };

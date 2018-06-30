@@ -5,9 +5,13 @@
 #ifndef UI_ACCESSIBILITY_AX_HOST_DELEGATE_H_
 #define UI_ACCESSIBILITY_AX_HOST_DELEGATE_H_
 
-#include "ui/accessibility/ax_action_data.h"
+#include <stdint.h>
+
+#include "ui/accessibility/ax_export.h"
 
 namespace ui {
+
+struct AXActionData;
 
 // Classes that host an accessibility tree in the browser process that also wish
 // to become visible to accessibility clients (e.g. for relaying targets to
