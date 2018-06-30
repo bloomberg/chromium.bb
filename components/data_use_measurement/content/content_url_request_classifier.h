@@ -13,13 +13,9 @@ class URLRequest;
 
 namespace data_use_measurement {
 
-// Returns true if the URLRequest |request| is initiated by user traffic.
-bool IsUserRequest(const net::URLRequest& request);
-
 class ContentURLRequestClassifier : public URLRequestClassifier {
  private:
   // UrlRequestClassifier:
-  bool IsUserRequest(const net::URLRequest& request) const override;
   DataUseUserData::DataUseContentType GetContentType(
       const net::URLRequest& request,
       const net::HttpResponseHeaders& response_headers) const override;

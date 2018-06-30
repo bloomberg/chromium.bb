@@ -37,15 +37,6 @@ class TestURLRequestClassifier : public base::SupportsUserData::Data,
 
   TestURLRequestClassifier() : content_type_(DataUseUserData::OTHER) {}
 
-  bool IsUserRequest(const net::URLRequest& request) const override {
-    return request.GetUserData(kUserDataKey) != nullptr;
-  }
-
-  static void MarkAsUserRequest(net::URLRequest* request) {
-    request->SetUserData(kUserDataKey,
-                         std::make_unique<TestURLRequestClassifier>());
-  }
-
   DataUseUserData::DataUseContentType GetContentType(
       const net::URLRequest& request,
       const net::HttpResponseHeaders& response_headers) const override {
@@ -134,12 +125,18 @@ class DataUseMeasurementTest : public testing::Test {
                                               base::span<net::MockWrite>());
     socket_factory_->AddSocketDataProvider(&socket_data);
 
+    const auto traffic_annotation =
+        (is_user_request == kServiceRequest)
+            ? TRAFFIC_ANNOTATION_FOR_TESTS
+            : net::DefineNetworkTrafficAnnotation("blink_resource_loader",
+                                                  "blink resource loaded will "
+                                                  "be treated as "
+                                                  "user-initiated request");
+
     std::unique_ptr<net::URLRequest> request(
         context_->CreateRequest(GURL("http://foo.com"), net::DEFAULT_PRIORITY,
-                                &test_delegate, TRAFFIC_ANNOTATION_FOR_TESTS));
-    if (is_user_request == kUserRequest) {
-      TestURLRequestClassifier::MarkAsUserRequest(request.get());
-    } else {
+                                &test_delegate, traffic_annotation));
+    if (is_user_request == kServiceRequest) {
       request->SetUserData(
           data_use_measurement::DataUseUserData::kUserDataKey,
           std::make_unique<data_use_measurement::DataUseUserData>(
