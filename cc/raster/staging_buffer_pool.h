@@ -13,6 +13,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner.h"
 #include "base/synchronization/lock.h"
@@ -100,6 +101,11 @@ class CC_EXPORT StagingBufferPool
   // Overriden from base::MemoryCoordinatorClient.
   void OnPurgeMemory() override;
 
+  // TODO(gyuyoung): OnMemoryPressure is deprecated. So this should be removed
+  // when the memory coordinator is enabled by default.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
   scoped_refptr<base::SequencedTaskRunner> task_runner_;
   viz::RasterContextProvider* const worker_context_provider_;
   const bool use_partial_raster_;
@@ -118,6 +124,8 @@ class CC_EXPORT StagingBufferPool
   const base::TimeDelta staging_buffer_expiration_delay_;
   bool reduce_memory_usage_pending_;
   base::Closure reduce_memory_usage_callback_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   base::WeakPtrFactory<StagingBufferPool> weak_ptr_factory_;
 
