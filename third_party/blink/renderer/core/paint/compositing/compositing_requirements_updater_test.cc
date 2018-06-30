@@ -47,4 +47,86 @@ TEST_F(CompositingRequirementsUpdaterTest, FixedPosOverlap) {
   EXPECT_EQ(CompositingReason::kNone, fixed->Layer()->GetCompositingReasons());
 }
 
+TEST_F(CompositingRequirementsUpdaterTest,
+       NoOverlapReasonForNonSelfPaintingLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+       overflow: auto;
+       width: 100px;
+       height: 100px;
+       margin-top: -50px;
+     }
+    </style>
+    <div style="position: relative; width: 500px; height: 300px;
+        will-change: transform"></div>
+    <div id=target></div>
+  )HTML");
+
+  PaintLayer* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  EXPECT_FALSE(target->GetCompositingReasons());
+
+  // Now make |target| self-painting.
+  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  EXPECT_EQ(CompositingReason::kOverlap, target->GetCompositingReasons());
+}
+
+TEST_F(CompositingRequirementsUpdaterTest,
+       NoAssumedOverlapReasonForNonSelfPaintingLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+       overflow: auto;
+       width: 100px;
+       height: 100px;
+     }
+    </style>
+    <div style="position: relative; width: 500px; height: 300px;
+        transform: translateZ(0)"></div>
+    <div id=target></div>
+  )HTML");
+
+  PaintLayer* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  EXPECT_FALSE(target->GetCompositingReasons());
+
+  // Now make |target| self-painting.
+  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(CompositingReason::kAssumedOverlap,
+            target->GetCompositingReasons());
+}
+
+TEST_F(CompositingRequirementsUpdaterTest,
+       NoDescendantReasonForNonSelfPaintingLayer) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        overflow: auto;
+        width: 100px;
+        height: 100px;
+      }
+    </style>
+    <div id=target>
+      <div style="backface-visibility: hidden"></div>
+    </div>
+  )HTML");
+
+  PaintLayer* target =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("target"))->Layer();
+  EXPECT_FALSE(target->GetCompositingReasons());
+
+  // Now make |target| self-painting.
+  GetDocument().getElementById("target")->setAttribute(HTMLNames::styleAttr,
+                                                       "position: relative");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_EQ(CompositingReason::kClipsCompositingDescendants,
+            target->GetCompositingReasons());
+}
+
 }  // namespace blink
