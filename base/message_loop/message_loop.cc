@@ -14,6 +14,7 @@
 #include "base/message_loop/message_pump_default.h"
 #include "base/message_loop/message_pump_for_io.h"
 #include "base/message_loop/message_pump_for_ui.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/run_loop.h"
 #include "base/third_party/dynamic_annotations/dynamic_annotations.h"
 #include "base/threading/thread_id_name_manager.h"
@@ -32,6 +33,37 @@ MessageLoop::MessagePumpFactory* message_pump_for_ui_factory_ = nullptr;
 
 std::unique_ptr<MessagePump> ReturnPump(std::unique_ptr<MessagePump> pump) {
   return pump;
+}
+
+enum class ScheduledWakeupResult {
+  // The MessageLoop went to sleep with a timeout and woke up because of that
+  // timeout.
+  kCompleted,
+  // The MessageLoop went to sleep with a timeout but was woken up before it
+  // fired.
+  kInterrupted,
+};
+
+// Reports a ScheduledWakeup's result when waking up from a non-infinite sleep.
+// Reports are using a 14 day spread (maximum examined delay for
+// https://crbug.com/850450#c3), with 50 buckets that still yields 7 buckets
+// under 16ms and hence plenty of resolution.
+void ReportScheduledWakeupResult(ScheduledWakeupResult result,
+                                 TimeDelta intended_sleep) {
+  switch (result) {
+    case ScheduledWakeupResult::kCompleted:
+      UMA_HISTOGRAM_CUSTOM_TIMES("MessageLoop.ScheduledSleep.Completed",
+                                 intended_sleep,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromDays(14), 50);
+      break;
+    case ScheduledWakeupResult::kInterrupted:
+      UMA_HISTOGRAM_CUSTOM_TIMES("MessageLoop.ScheduledSleep.Interrupted",
+                                 intended_sleep,
+                                 base::TimeDelta::FromMilliseconds(1),
+                                 base::TimeDelta::FromDays(14), 50);
+      break;
+  }
 }
 
 }  // namespace
@@ -357,6 +389,20 @@ bool MessageLoop::DoWork() {
 
   // Execute oldest task.
   while (incoming_task_queue_->triage_tasks().HasTasks()) {
+    if (!scheduled_wakeup_.next_run_time.is_null()) {
+      // While the frontmost task may racily be ripe. The MessageLoop was awaken
+      // without needing the timeout anyways. Since this metric is about
+      // determining whether sleeping for long periods ever succeeds: it's
+      // easier to just consider any untriaged task as an interrupt (this also
+      // makes the logic simpler for untriaged delayed tasks which may alter the
+      // top of the task queue prior to DoDelayedWork() but did cause a wakeup
+      // regardless -- per currently requiring this immediate triage step even
+      // for long delays).
+      ReportScheduledWakeupResult(ScheduledWakeupResult::kInterrupted,
+                                  scheduled_wakeup_.intended_sleep);
+      scheduled_wakeup_ = ScheduledWakeup();
+    }
+
     PendingTask pending_task = incoming_task_queue_->triage_tasks().Pop();
     if (pending_task.task.IsCancelled())
       continue;
@@ -383,6 +429,17 @@ bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
   if (!task_execution_allowed_ ||
       !incoming_task_queue_->delayed_tasks().HasTasks()) {
     recent_time_ = *next_delayed_work_time = TimeTicks();
+
+    // It's possible to be woken up by a system event and have it cancel the
+    // upcoming delayed task from under us before DoDelayedWork() -- see comment
+    // under |next_run_time > recent_time_|. This condition covers the special
+    // case where such a system event cancelled *all* pending delayed tasks.
+    if (!scheduled_wakeup_.next_run_time.is_null()) {
+      ReportScheduledWakeupResult(ScheduledWakeupResult::kInterrupted,
+                                  scheduled_wakeup_.intended_sleep);
+      scheduled_wakeup_ = ScheduledWakeup();
+    }
+
     return false;
   }
 
@@ -395,12 +452,39 @@ bool MessageLoop::DoDelayedWork(TimeTicks* next_delayed_work_time) {
 
   TimeTicks next_run_time =
       incoming_task_queue_->delayed_tasks().Peek().delayed_run_time;
+
   if (next_run_time > recent_time_) {
     recent_time_ = TimeTicks::Now();  // Get a better view of Now();
     if (next_run_time > recent_time_) {
       *next_delayed_work_time = next_run_time;
+
+      // If the loop was woken up early by an untriaged task:
+      // |scheduled_wakeup_| will have been handled already in DoWork(). If it
+      // wasn't, it means the early wake up was caused by a system event (e.g.
+      // MessageLoopForUI or IO).
+      if (!scheduled_wakeup_.next_run_time.is_null()) {
+        // Handling the system event may have resulted in cancelling the
+        // upcoming delayed task (and then it being pruned by
+        // DelayedTaskQueue::HasTasks()); hence, we cannot check for strict
+        // equality here. We can however check that the pending task is either
+        // still there or that a later delay replaced it in front of the queue.
+        // There shouldn't have been new tasks added in |delayed_tasks()| per
+        // DoWork() not having triaged new tasks since the last DoIdleWork().
+        DCHECK_GE(next_run_time, scheduled_wakeup_.next_run_time);
+
+        ReportScheduledWakeupResult(ScheduledWakeupResult::kInterrupted,
+                                    scheduled_wakeup_.intended_sleep);
+        scheduled_wakeup_ = ScheduledWakeup();
+      }
+
       return false;
     }
+  }
+
+  if (next_run_time == scheduled_wakeup_.next_run_time) {
+    ReportScheduledWakeupResult(ScheduledWakeupResult::kCompleted,
+                                scheduled_wakeup_.intended_sleep);
+    scheduled_wakeup_ = ScheduledWakeup();
   }
 
   PendingTask pending_task = incoming_task_queue_->delayed_tasks().Pop();
@@ -417,23 +501,61 @@ bool MessageLoop::DoIdleWork() {
   if (ProcessNextDelayedNonNestableTask())
     return true;
 
-  if (ShouldQuitWhenIdle())
-    pump_->Quit();
-
-  incoming_task_queue_->ReportMetricsOnIdle();
-
-  // When we return we will do a kernel wait for more tasks.
 #if defined(OS_WIN)
-  // On Windows we activate the high resolution timer so that the wait
-  // _if_ triggered by the timer happens with good resolution. If we don't
-  // do this the default resolution is 15ms which might not be acceptable
-  // for some tasks.
-  bool high_res = incoming_task_queue_->HasPendingHighResolutionTasks();
-  if (high_res != in_high_res_mode_) {
-    in_high_res_mode_ = high_res;
+  bool need_high_res_timers = false;
+#endif
+
+  if (ShouldQuitWhenIdle()) {
+    pump_->Quit();
+  } else {
+    incoming_task_queue_->ReportMetricsOnIdle();
+
+    if (incoming_task_queue_->delayed_tasks().HasTasks()) {
+      TimeTicks scheduled_wakeup_time =
+          incoming_task_queue_->delayed_tasks().Peek().delayed_run_time;
+
+      if (!scheduled_wakeup_.next_run_time.is_null()) {
+        // It's possible for DoIdleWork() to be invoked twice in a row (e.g. if
+        // the MessagePump processed system work and became idle twice in a row
+        // without application tasks in between -- some pumps with a native
+        // message loop do not invoke DoWork() / DoDelayedWork() when awaken for
+        // system work only). As in DoDelayedWork(), we cannot check for strict
+        // equality below as the system work may have cancelled the frontmost
+        // task.
+        DCHECK_GE(scheduled_wakeup_time, scheduled_wakeup_.next_run_time);
+
+        ReportScheduledWakeupResult(ScheduledWakeupResult::kInterrupted,
+                                    scheduled_wakeup_.intended_sleep);
+        scheduled_wakeup_ = ScheduledWakeup();
+      }
+
+      // Store the remaining delay as well as the programmed wakeup time in
+      // order to know next time this MessageLoop wakes up whether it woke up
+      // because of this pending task (is it still the frontmost task in the
+      // queue?) and be able to report the slept delta (which is lost if not
+      // saved here).
+      scheduled_wakeup_ = ScheduledWakeup{
+          scheduled_wakeup_time, scheduled_wakeup_time - TimeTicks::Now()};
+    }
+
+#if defined(OS_WIN)
+    // On Windows we activate the high resolution timer so that the wait
+    // _if_ triggered by the timer happens with good resolution. If we don't
+    // do this the default resolution is 15ms which might not be acceptable
+    // for some tasks.
+    need_high_res_timers =
+        incoming_task_queue_->HasPendingHighResolutionTasks();
+#endif
+  }
+
+#if defined(OS_WIN)
+  if (in_high_res_mode_ != need_high_res_timers) {
+    in_high_res_mode_ = need_high_res_timers;
     Time::ActivateHighResolutionTimer(in_high_res_mode_);
   }
 #endif
+
+  // When we return we will do a kernel wait for more tasks.
   return false;
 }
 
