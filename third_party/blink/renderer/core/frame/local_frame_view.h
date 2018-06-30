@@ -44,10 +44,6 @@
 #include "third_party/blink/renderer/platform/graphics/graphics_layer_client.h"
 #include "third_party/blink/renderer/platform/scroll/scrollable_area.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace blink {
 
 class AXObjectCache;
@@ -92,8 +88,7 @@ typedef unsigned long long DOMTimeStamp;
 
 class CORE_EXPORT LocalFrameView final
     : public GarbageCollectedFinalized<LocalFrameView>,
-      public FrameView,
-      public ScrollableArea {
+      public FrameView {
   USING_GARBAGE_COLLECTED_MIXIN(LocalFrameView);
 
   friend class PaintControllerPaintTestBase;
@@ -139,8 +134,6 @@ class CORE_EXPORT LocalFrameView final
   }
   bool CanHaveScrollbars() const { return can_have_scrollbars_; }
   bool VisualViewportSuppliesScrollbars();
-
-  void SnapAfterScrollbarDragging(ScrollbarOrientation) override;
 
   void SetLayoutOverflowSize(const IntSize&);
 
@@ -365,20 +358,12 @@ class CORE_EXPORT LocalFrameView final
   FloatPoint ConvertToLayoutObject(const LayoutObject&,
                                    const FloatPoint&) const;
 
-  IntPoint LastKnownMousePosition() const override;
   bool ShouldSetCursor() const;
 
   void SetCursor(const Cursor&);
 
-  bool ScrollbarsCanBeActive() const override;
-  void ScrollbarVisibilityChanged() override;
-  void ScrollbarFrameRectChanged() override;
-
   // FIXME: Remove this method once plugin loading is decoupled from layout.
   void FlushAnyPendingPostLayoutTasks();
-
-  bool ShouldSuspendScrollAnimations() const override;
-  void ScrollbarStyleChanged() override;
 
   static void SetInitialTracksPaintInvalidationsForTesting(bool);
 
@@ -413,50 +398,17 @@ class CORE_EXPORT LocalFrameView final
   void RemoveResizerArea(LayoutBox&);
   const ResizerAreaSet* ResizerAreas() const { return resizer_areas_.get(); }
 
-  bool ShouldUseIntegerScrollOffset() const override;
-
-  bool IsActive() const override;
-
-  // Override scrollbar notifications to update the AXObject cache.
-  void DidAddScrollbar(Scrollbar&, ScrollbarOrientation) override;
+  void ScheduleAnimation();
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
   // passed around the LocalFrameView layout methods can be true while this
   // returns false.
   bool IsSubtreeLayout() const { return !layout_subtree_root_list_.IsEmpty(); }
 
-  IntSize MaximumScrollOffsetInt() const override;
-
-  // ScrollableArea interface
-  IntRect ScrollableAreaBoundingBox() const override;
-  CompositorElementId GetCompositorElementId() const override;
-  bool ScrollAnimatorEnabled() const override;
-  bool ShouldScrollOnMainThread() const override;
-  PaintLayer* Layer() const override;
-  int ScrollSize(ScrollbarOrientation) const override;
-  bool IsScrollCornerVisible() const override { return false; }
-  bool UserInputScrollable(ScrollbarOrientation) const override {
-    return false;
-  }
-  bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
-  bool ScheduleAnimation() override;
-  CompositorAnimationHost* GetCompositorAnimationHost() const override;
-  CompositorAnimationTimeline* GetCompositorAnimationTimeline() const override;
-  LayoutBox* GetLayoutBox() const override;
-  FloatQuad LocalToVisibleContentQuad(const FloatQuad&,
-                                      const LayoutObject*,
-                                      unsigned = 0) const final;
-  scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
-
-  LayoutRect ScrollIntoView(const LayoutRect& rect_in_absolute,
-                            const WebScrollIntoViewParams& params) override;
-
   // The window that hosts the LocalFrameView. The LocalFrameView will
   // communicate scrolls and repaints to the host window in the window's
   // coordinate space.
-  PlatformChromeClient* GetChromeClient() const override;
-
-  SmoothScrollSequencer* GetSmoothScrollSequencer() const override;
+  PlatformChromeClient* GetChromeClient() const;
 
   // Functions for child manipulation and inspection.
   bool IsSelfVisible() const {
@@ -481,42 +433,10 @@ class CORE_EXPORT LocalFrameView final
   void RemoveScrollbar(Scrollbar*);
   void AddScrollbar(Scrollbar*);
 
-  // The visible content rect has a location that is the scrolled offset of
-  // the document. The width and height are the layout viewport width and
-  // height. By default the scrollbars themselves are excluded from this
-  // rectangle, but an optional boolean argument allows them to be included.
-  IntRect VisibleContentRect(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const override;
-  IntSize VisibleContentSize(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const;
-
-  // The visible scroll snapport rect is contracted from the visible content
-  // rect, by the amount of the document's scroll-padding.
-  LayoutRect VisibleScrollSnapportRect(
-      IncludeScrollbarsInRect = kExcludeScrollbars) const override;
-
   // Clips the provided rect to the visible content area. For this purpose, we
   // also query the chrome client for any active overrides to the visible area
   // (e.g. DevTool's viewport override).
   void ClipPaintRect(FloatRect*) const;
-
-  // TODO(chrishtr) these methods are wrong, fix all callsites.
-  IntSize ContentsSize() const override { return Size(); }
-  int ContentsWidth() const { return ContentsSize().Width(); }
-  int ContentsHeight() const { return ContentsSize().Height(); }
-
-  // Functions for querying the current scrolled offset (both as a point, a
-  // size, or as individual X and Y values).  Be careful in using the Float
-  // version getScrollOffset() and getScrollOffset(). They are meant to be used
-  // to communicate the fractional scroll offset with chromium compositor which
-  // can do sub-pixel positioning.  Do not call these if the scroll offset is
-  // used in Blink for positioning. Use the Int version instead.
-  IntSize ScrollOffsetInt() const override { return IntSize(); }
-  ScrollOffset GetScrollOffset() const override { return scroll_offset_; }
-  IntSize MinimumScrollOffsetInt()
-      const override;  // The minimum offset we can be scrolled to.
-  int ScrollX() const { return ScrollOffsetInt().Width(); }
-  int ScrollY() const { return ScrollOffsetInt().Height(); }
 
   // Indicates the root layer's scroll offset changed since the last frame
   void SetRootLayerDidScroll() { root_layer_did_scroll_ = true; }
@@ -547,7 +467,7 @@ class CORE_EXPORT LocalFrameView final
   FloatPoint ConvertToRootFrame(const FloatPoint&) const;
   LayoutRect ConvertToRootFrame(const LayoutRect&) const;
   IntRect ConvertFromRootFrame(const IntRect&) const;
-  IntPoint ConvertFromRootFrame(const IntPoint&) const override;
+  IntPoint ConvertFromRootFrame(const IntPoint&) const;
   FloatPoint ConvertFromRootFrame(const FloatPoint&) const;
   LayoutPoint ConvertFromRootFrame(const LayoutPoint&) const;
   IntPoint ConvertSelfToChild(const EmbeddedContentView&,
@@ -579,12 +499,6 @@ class CORE_EXPORT LocalFrameView final
 
   void Show() override;
   void Hide() override;
-
-  IntRect ScrollCornerRect() const override { return IntRect(); }
-
-  IntPoint ConvertFromContainingEmbeddedContentViewToScrollbar(
-      const Scrollbar&,
-      const IntPoint&) const override;
 
   bool IsLocalFrameView() const override { return true; }
 
@@ -640,10 +554,6 @@ class CORE_EXPORT LocalFrameView final
   // queries.
   FloatSize ViewportSizeForMediaQueries() const;
 
-  bool RestoreScrollAnchor(const SerializedAnchor&) override;
-  ScrollAnchor* GetScrollAnchor() override { return &scroll_anchor_; }
-  void ClearScrollAnchor();
-  bool ShouldPerformScrollAnchoring() const override { return false; }
   void EnqueueScrollAnchoringAdjustment(ScrollableArea*);
   void DequeueScrollAnchoringAdjustment(ScrollableArea*);
   void PerformScrollAnchoringAdjustments();
@@ -671,24 +581,6 @@ class CORE_EXPORT LocalFrameView final
   MainThreadScrollingReasons MainThreadScrollingReasonsPerFrame() const;
 
   bool HasVisibleSlowRepaintViewportConstrainedObjects() const;
-
-  // Called on a view for a LocalFrame with a RemoteFrame parent. This makes
-  // viewport intersection available that accounts for remote ancestor frames
-  // and their respective scroll positions, clips, etc.
-  void SetViewportIntersectionFromParent(const IntRect&);
-  IntRect RemoteViewportIntersection();
-
-  // This method uses localToAncestorQuad to map a rect into an ancestor's
-  // coordinate space, while guaranteeing that the top-level scroll offset
-  // is accounted for. This is needed because LayoutView::mapLocalToAncestor()
-  // implicitly includes the ancestor frame's scroll offset when there is
-  // a remote frame in the ancestor chain, but does not include it when
-  // there are only local frames in the frame tree.
-  void MapQuadToAncestorFrameIncludingScrollOffset(
-      LayoutRect&,
-      const LayoutObject* descendant,
-      const LayoutView* ancestor,
-      MapCoordinatesFlags mode);
 
   bool MapToVisualRectInTopFrameSpace(LayoutRect&);
 
@@ -718,8 +610,6 @@ class CORE_EXPORT LocalFrameView final
     return paint_artifact_compositor_.get();
   }
 
-  ScrollbarTheme& GetPageScrollbarTheme() const override;
-
   enum ForceThrottlingInvalidationBehavior {
     kDontForceThrottlingInvalidation,
     kForceThrottlingInvalidation
@@ -742,13 +632,13 @@ class CORE_EXPORT LocalFrameView final
   void ScrollableAreasDidChange();
 
   ScrollingCoordinatorContext* GetScrollingContext() const;
+  CompositorAnimationHost* GetCompositorAnimationHost() const;
+  CompositorAnimationTimeline* GetCompositorAnimationTimeline() const;
 
   void ScrollAndFocusFragmentAnchor();
   JankTracker& GetJankTracker() { return jank_tracker_; }
 
  protected:
-  ScrollBehavior ScrollBehaviorStyle() const override;
-
   void NotifyFrameRectsChangedIfNeeded();
 
  private:
@@ -760,8 +650,6 @@ class CORE_EXPORT LocalFrameView final
 
   LocalFrameView* ParentFrameView() const;
   LayoutSVGRoot* EmbeddedReplacedContent() const;
-
-  void UpdateScrollOffset(const ScrollOffset&, ScrollType) override;
 
   void DispatchEventsForPrintingOnAllFrames();
 
@@ -797,8 +685,6 @@ class CORE_EXPORT LocalFrameView final
 
   DocumentLifecycle& Lifecycle() const;
 
-  void ContentsResized() override;
-
   // Methods to do point conversion via layoutObjects, in order to take
   // transforms into account.
   IntRect ConvertToContainingEmbeddedContentView(const IntRect&) const;
@@ -812,8 +698,6 @@ class CORE_EXPORT LocalFrameView final
   FloatPoint ConvertFromContainingEmbeddedContentView(const FloatPoint&) const;
   DoublePoint ConvertFromContainingEmbeddedContentView(
       const DoublePoint&) const;
-
-  void DidChangeGlobalRootScroller() override;
 
   void UpdateGeometriesIfNeeded();
 
@@ -868,8 +752,6 @@ class CORE_EXPORT LocalFrameView final
       DocumentLifecycle::LifecycleState) override;
 
   void NotifyResizeObservers();
-
-  void ScrollControlWasSetNeedsPaintInvalidation() override {}
 
   bool CheckLayoutInvalidationIsAllowed() const;
 
@@ -949,13 +831,8 @@ class CORE_EXPORT LocalFrameView final
   bool has_been_disposed_ = false;
 #endif
 
-  ScrollbarMode horizontal_scrollbar_mode_;
-  ScrollbarMode vertical_scrollbar_mode_;
-
   PluginSet plugins_;
   HeapHashSet<Member<Scrollbar>> scrollbars_;
-
-  ScrollOffset scroll_offset_;
 
   // TODO(bokan): This is unneeded when root-layer-scrolls is turned on.
   // crbug.com/417782.
@@ -986,7 +863,6 @@ class CORE_EXPORT LocalFrameView final
       current_update_lifecycle_phases_target_state_;
   bool past_layout_lifecycle_update_;
 
-  ScrollAnchor scroll_anchor_;
   using AnchoringAdjustmentQueue =
       HeapLinkedHashSet<WeakMember<ScrollableArea>>;
   AnchoringAdjustmentQueue anchoring_adjustment_queue_;
@@ -1062,11 +938,6 @@ DEFINE_TYPE_CASTS(LocalFrameView,
                   embedded_content_view,
                   embedded_content_view->IsLocalFrameView(),
                   embedded_content_view.IsLocalFrameView());
-DEFINE_TYPE_CASTS(LocalFrameView,
-                  ScrollableArea,
-                  scrollableArea,
-                  scrollableArea->IsLocalFrameView(),
-                  scrollableArea.IsLocalFrameView());
 
 }  // namespace blink
 
