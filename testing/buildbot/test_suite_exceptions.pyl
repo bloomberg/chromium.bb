@@ -346,9 +346,6 @@
   },
   'cast_unittests': {
     'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
       # Unclear why these largely aren't run on Android.
       # TODO(kbr): why are the cast unit tests not run on the Cast bots?!
       'Cast Audio Linux',
@@ -356,13 +353,6 @@
       # chromium.clang
       'ToTAndroidCFI',
       'ToTLinuxThinLTO',
-    ],
-  },
-  'cc_unittests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
     ],
   },
   'checkbins': {
@@ -585,13 +575,6 @@
       },
     },
   },
-  'chromedriver_unittests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-    ],
-  },
   'chromevox_tests': {
     'modifications': {
       # Takes a long time under msan for some reason.
@@ -604,9 +587,6 @@
   },
   'components_browsertests': {
     'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
       # On chromium.linux, unclear why these aren't run on the Cast bots.
       'Cast Audio Linux',
       'Cast Linux',
@@ -1647,12 +1627,6 @@
       'ToTWinThinLTO64',
     ],
   },
-  'printing_unittests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-    ],
-  },
  'remoting_unittests': {
     'remove_from': [
       # chromium.linux
@@ -1867,13 +1841,6 @@
         ],
       },
     },
-  },
-  'snapshot_unittests': {
-    'remove_from': [
-      # chromium.chromiumos
-      'linux-chromeos-dbg',
-      'linux-chromeos-rel',
-    ],
   },
   'sql_unittests': {
     'remove_from': [
