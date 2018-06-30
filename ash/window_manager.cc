@@ -455,7 +455,7 @@ void WindowManager::OnWmSetClientArea(
       NonClientFrameController::Get(window);
   if (!non_client_frame_controller)
     return;
-  non_client_frame_controller->SetClientArea(insets);
+  non_client_frame_controller->SetClientArea(insets, additional_client_areas);
 }
 
 bool WindowManager::IsWindowActive(aura::Window* window) {

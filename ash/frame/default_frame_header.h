@@ -26,6 +26,8 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
                      FrameCaptionButtonContainerView* caption_button_container);
   ~DefaultFrameHeader() override;
 
+  void SetThemeColor(SkColor theme_color);
+
   SkColor active_frame_color_for_testing() {
     return active_frame_color_.target_color();
   }
@@ -45,6 +47,10 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(DefaultFrameHeaderTest, FrameColors);
+
+  // Updates the frame colors and ensures buttons are up to date.
+  void SetFrameColorsImpl(SkColor active_frame_color,
+                          SkColor inactive_frame_color);
 
   gfx::SlideAnimation* GetAnimationForActiveFrameColorForTest();
   SkColor GetActiveFrameColorForPaintForTest();
@@ -66,6 +72,7 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader {
     gfx::SlideAnimation animation_;
     SkColor start_color_ = kDefaultFrameColor;
     SkColor target_color_ = kDefaultFrameColor;
+    ;
     SkColor current_color_ = kDefaultFrameColor;
 
     DISALLOW_COPY_AND_ASSIGN(ColorAnimator);

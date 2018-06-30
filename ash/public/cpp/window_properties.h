@@ -159,11 +159,6 @@ ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
 ASH_PUBLIC_EXPORT extern const aura::WindowProperty<SkColor>* const
     kFrameInactiveColorKey;
 
-// True when the frame colors were provided by a hosted app, i.e. by a
-// progressive web app manifest.
-ASH_PUBLIC_EXPORT extern const aura::WindowProperty<bool>* const
-    kFrameIsThemedByHostedAppKey;
-
 // A property key to store ash::WindowPinType for a window.
 // When setting this property to PINNED or TRUSTED_PINNED, the window manager
 // will try to fullscreen the window and pin it on the top of the screen. If the
