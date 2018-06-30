@@ -89,7 +89,7 @@ cdm::SessionType ToCdmSessionType(CdmSessionType session_type) {
     case CdmSessionType::kPersistentLicense:
       return cdm::kPersistentLicense;
     case CdmSessionType::kPersistentUsageRecord:
-      return cdm::kPersistentKeyRelease;
+      return cdm::kPersistentUsageRecord;
   }
 
   NOTREACHED() << "Unexpected session type: " << static_cast<int>(session_type);
