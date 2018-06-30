@@ -5,13 +5,13 @@
 // https://github.com/WICG/async-cookies-api/blob/gh-pages/explainer.md
 
 dictionary CookieListItem {
-  USVString name;
+  required USVString name;
   USVString value;
-  USVString? domain;
-  USVString path;
-  DOMTimeStamp? expires;
-  boolean secure;
-  CookieSameSite sameSite;
+  USVString? domain = null;
+  USVString path = "/";
+  DOMTimeStamp? expires = null;
+  boolean secure = true;
+  CookieSameSite sameSite = "strict";
 };
 
 typedef sequence<CookieListItem> CookieList;

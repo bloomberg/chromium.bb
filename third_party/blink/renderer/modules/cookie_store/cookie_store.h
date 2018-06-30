@@ -20,8 +20,10 @@
 
 namespace blink {
 
+class CookieStoreDeleteOptions;
 class CookieStoreGetOptions;
 class CookieStoreSetOptions;
+class CookieStoreSetExtraOptions;
 class ScriptPromiseResolver;
 class ScriptState;
 
@@ -43,35 +45,26 @@ class CookieStore final : public EventTargetWithInlineData,
                            std::move(subscription_backend));
   }
 
+  ScriptPromise getAll(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise getAll(ScriptState*,
                        const CookieStoreGetOptions&,
                        ExceptionState&);
-  ScriptPromise getAll(ScriptState*,
-                       const String& name,
-                       const CookieStoreGetOptions&,
-                       ExceptionState&);
+  ScriptPromise get(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise get(ScriptState*,
-                    const CookieStoreGetOptions&,
-                    ExceptionState&);
-  ScriptPromise get(ScriptState*,
-                    const String& name,
                     const CookieStoreGetOptions&,
                     ExceptionState&);
 
   ScriptPromise set(ScriptState*,
-                    const CookieStoreSetOptions&,
+                    const CookieStoreSetExtraOptions&,
                     ExceptionState&);
   ScriptPromise set(ScriptState*,
                     const String& name,
                     const String& value,
                     const CookieStoreSetOptions&,
                     ExceptionState&);
+  ScriptPromise Delete(ScriptState*, const String& name, ExceptionState&);
   ScriptPromise Delete(ScriptState*,
-                       const CookieStoreSetOptions&,
-                       ExceptionState&);
-  ScriptPromise Delete(ScriptState*,
-                       const String& name,
-                       const CookieStoreSetOptions&,
+                       const CookieStoreDeleteOptions&,
                        ExceptionState&);
   ScriptPromise subscribeToChanges(
       ScriptState*,
@@ -113,14 +106,13 @@ class CookieStore final : public EventTargetWithInlineData,
               network::mojom::blink::RestrictedCookieManagerPtr backend,
               blink::mojom::blink::CookieStorePtr subscription_backend);
 
-  // Common code in CookieStore::{get,getAll,has}.
+  // Common code in CookieStore::{get,getAll}.
   //
   // All cookie-reading methods use the same RestrictedCookieManager API, and
   // only differ in how they present the returned data. The difference is
   // captured in the DoReadBackendResultConverter argument, which should point
   // to one of the static methods below.
   ScriptPromise DoRead(ScriptState*,
-                       const String& name,
                        const CookieStoreGetOptions&,
                        DoReadBackendResultConverter,
                        ExceptionState&);
@@ -139,10 +131,7 @@ class CookieStore final : public EventTargetWithInlineData,
 
   // Common code in CookieStore::delete and CookieStore::set.
   ScriptPromise DoWrite(ScriptState*,
-                        const String& name,
-                        const String& value,
-                        const CookieStoreSetOptions&,
-                        bool is_deletion,
+                        const CookieStoreSetExtraOptions&,
                         ExceptionState&);
 
   static void OnSetCanonicalCookieResult(ScriptPromiseResolver*,
