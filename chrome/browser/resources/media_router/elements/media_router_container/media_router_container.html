@@ -1,8 +1,8 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_elements/cr_checkbox/cr_checkbox.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_input/cr_input.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-item/paper-item.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-listbox/paper-listbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner-lite.html">
@@ -159,16 +159,13 @@
         <template is="dom-if" if="[[searchEnabled_]]">
           <div id="sink-search">
             <div class="sink-content">
-              <div>
-                <paper-icon-button id="sink-search-icon" icon="media-router:search"
-                    on-tap="searchButtonClick_" title="[[i18n('searchButtonTitle')]]">
-                </paper-icon-button>
-              </div>
-              <div id="search-input-container">
-                <paper-input id="sink-search-input" label="[[i18n('searchInputLabel')]]"
-                    no-label-float value="{{searchInputText_}}">
-                </paper-input>
-              </div>
+              <paper-icon-button id="sink-search-icon"
+                  icon="media-router:search" on-tap="searchButtonClick_"
+                  title="[[i18n('searchButtonTitle')]]">
+              </paper-icon-button>
+              <cr-input id="sink-search-input" value="{{searchInputText_}}"
+                  placeholder="[[i18n('searchInputLabel')]]">
+              </cr-input>
             </div>
           </div>
         </template>
