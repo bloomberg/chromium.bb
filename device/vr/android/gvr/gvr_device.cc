@@ -162,6 +162,13 @@ GvrDevice::GvrDevice()
 }
 
 GvrDevice::~GvrDevice() {
+  if (HasExclusiveSession()) {
+    // We potentially could be destroyed during a navigation before processing
+    // the exclusive session connection error handler.  In this case, the
+    // delegate thinks we are still presenting.
+    StopPresenting();
+  }
+
   GvrDelegateProviderFactory::SetDevice(nullptr);
   if (!non_presenting_context_.obj())
     return;
@@ -226,6 +233,10 @@ void GvrDevice::SetFrameDataRestricted(bool restricted) {
 }
 
 void GvrDevice::OnPresentingControllerMojoConnectionError() {
+  StopPresenting();
+}
+
+void GvrDevice::StopPresenting() {
   GvrDelegateProvider* delegate_provider = GetGvrDelegateProvider();
   if (delegate_provider)
     delegate_provider->ExitWebVRPresent();
