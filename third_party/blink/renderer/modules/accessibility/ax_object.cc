@@ -800,6 +800,18 @@ bool AXObject::IsPasswordFieldAndShouldHideValue() const {
   return IsPasswordField();
 }
 
+bool AXObject::IsTextObject() const {
+  // Objects with |kLineBreakRole| are HTML <br> elements and are not backed by
+  // DOM text nodes. We can't mark them as text objects for that reason.
+  switch (RoleValue()) {
+    case kInlineTextBoxRole:
+    case kStaticTextRole:
+      return true;
+    default:
+      return false;
+  }
+}
+
 bool AXObject::IsClickable() const {
   if (IsButton() || IsLink() || IsTextControl())
     return true;

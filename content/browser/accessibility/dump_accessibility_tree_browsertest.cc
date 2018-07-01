@@ -986,7 +986,7 @@ IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBoundsInherits) {
   RunHtmlTest(FILE_PATH_LITERAL("bounds-inherits.html"));
 }
 
-IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibiltyBoundsClips) {
+IN_PROC_BROWSER_TEST_F(DumpAccessibilityTreeTest, AccessibilityBoundsClips) {
   RunHtmlTest(FILE_PATH_LITERAL("bounds-clips.html"));
 }
 

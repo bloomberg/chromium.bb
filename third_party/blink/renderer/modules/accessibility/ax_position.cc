@@ -20,9 +20,12 @@ namespace blink {
 
 // static
 const AXPosition AXPosition::CreatePositionBeforeObject(const AXObject& child) {
+  if (child.IsDetached())
+    return {};
+
   // If |child| is a text object, make behavior the same as
   // |CreateFirstPositionInObject| so that equality would hold.
-  if (child.GetNode() && child.GetNode()->IsTextNode())
+  if (child.IsTextObject())
     return CreateFirstPositionInObject(child);
 
   const AXObject* parent = child.ParentObjectUnignored();
@@ -35,9 +38,12 @@ const AXPosition AXPosition::CreatePositionBeforeObject(const AXObject& child) {
 
 // static
 const AXPosition AXPosition::CreatePositionAfterObject(const AXObject& child) {
+  if (child.IsDetached())
+    return {};
+
   // If |child| is a text object, make behavior the same as
   // |CreateLastPositionInObject| so that equality would hold.
-  if (child.GetNode() && child.GetNode()->IsTextNode())
+  if (child.IsTextObject())
     return CreateLastPositionInObject(child);
 
   const AXObject* parent = child.ParentObjectUnignored();
@@ -51,7 +57,10 @@ const AXPosition AXPosition::CreatePositionAfterObject(const AXObject& child) {
 // static
 const AXPosition AXPosition::CreateFirstPositionInObject(
     const AXObject& container) {
-  if (container.GetNode() && container.GetNode()->IsTextNode()) {
+  if (container.IsDetached())
+    return {};
+
+  if (container.IsTextObject()) {
     AXPosition position(container);
     position.text_offset_or_child_index_ = 0;
     DCHECK(position.IsValid());
@@ -71,7 +80,10 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
 // static
 const AXPosition AXPosition::CreateLastPositionInObject(
     const AXObject& container) {
-  if (container.GetNode() && container.GetNode()->IsTextNode()) {
+  if (container.IsDetached())
+    return {};
+
+  if (container.IsTextObject()) {
     AXPosition position(container);
     position.text_offset_or_child_index_ = position.MaxTextOffset();
     DCHECK(position.IsValid());
@@ -93,8 +105,9 @@ const AXPosition AXPosition::CreatePositionInTextObject(
     const AXObject& container,
     const int offset,
     const TextAffinity affinity) {
-  DCHECK(container.GetNode() && container.GetNode()->IsTextNode())
-      << "Text positions should be anchored to a text node.";
+  if (container.IsDetached() || !container.IsTextObject())
+    return {};
+
   AXPosition position(container);
   position.text_offset_or_child_index_ = offset;
   position.affinity_ = affinity;
@@ -214,6 +227,16 @@ int AXPosition::MaxTextOffset() const {
     return 0;
   }
 
+  if (container_object_->IsAXInlineTextBox() || !container_object_->GetNode()) {
+    // 1. The |Node| associated with an inline text box contains all the text in
+    // the static text object parent, whilst the inline text box might contain
+    // only part of it.
+    // 2. Some accessibility objects, such as those used for CSS "::before" and
+    // "::after" content, don't have an associated text node. We retrieve the
+    // text from the inline text box or layout object itself.
+    return container_object_->ComputedName().length();
+  }
+
   // TODO(nektar): Use LayoutNG offset mapping instead of |TextIterator|.
   const auto first_position =
       Position::FirstPositionInNode(*container_object_->GetNode());
@@ -225,29 +248,38 @@ int AXPosition::MaxTextOffset() const {
 bool AXPosition::IsValid() const {
   if (!container_object_ || container_object_->IsDetached())
     return false;
-  if (!container_object_->GetNode() ||
+  if (!container_object_->GetDocument())
+    return false;
+  // Some container objects, such as those for CSS "::before" and "::after"
+  // text, don't have associated DOM nodes.
+  if (container_object_->GetNode() &&
       !container_object_->GetNode()->isConnected()) {
     return false;
   }
 
-  if (!container_object_->GetNode()->IsTextNode()) {
+  if (IsTextPosition()) {
+    if (text_offset_or_child_index_ > MaxTextOffset())
+      return false;
+  } else {
     if (text_offset_or_child_index_ > container_object_->ChildCount())
       return false;
   }
 
-  DCHECK(container_object_->GetNode()->GetDocument().IsActive());
-  DCHECK(!container_object_->GetNode()->GetDocument().NeedsLayoutTreeUpdate());
+  DCHECK(container_object_->GetDocument()->IsActive());
+  DCHECK(!container_object_->GetDocument()->NeedsLayoutTreeUpdate());
 #if DCHECK_IS_ON()
-  DCHECK_EQ(container_object_->GetNode()->GetDocument().DomTreeVersion(),
+  DCHECK_EQ(container_object_->GetDocument()->DomTreeVersion(),
             dom_tree_version_);
-  DCHECK_EQ(container_object_->GetNode()->GetDocument().StyleVersion(),
-            style_version_);
+  DCHECK_EQ(container_object_->GetDocument()->StyleVersion(), style_version_);
 #endif  // DCHECK_IS_ON()
   return true;
 }
 
 bool AXPosition::IsTextPosition() const {
-  return container_object_ && container_object_->GetNode()->IsTextNode();
+  // We don't call |IsValid| from here because |IsValid| uses this method.
+  if (!container_object_)
+    return false;
+  return container_object_->IsTextObject();
 }
 
 const AXPosition AXPosition::CreateNextPosition() const {
@@ -286,7 +318,7 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
     if (container_object_->ChildCount()) {
       const AXObject* last_child = container_object_->LastChild();
       // Dont skip over any intervening text.
-      if (last_child->GetNode() && last_child->GetNode()->IsTextNode())
+      if (last_child->IsTextObject())
         return CreatePositionAfterObject(*last_child);
 
       return CreatePositionBeforeObject(*last_child);
@@ -306,10 +338,8 @@ const AXPosition AXPosition::CreatePreviousPosition() const {
   }
 
   // Dont skip over any intervening text.
-  if (object_before_position->GetNode() &&
-      object_before_position->GetNode()->IsTextNode()) {
+  if (object_before_position->IsTextObject())
     return CreatePositionAfterObject(*object_before_position);
-  }
 
   return CreatePositionBeforeObject(*object_before_position);
 }
@@ -365,7 +395,10 @@ const AXPosition AXPosition::AsValidDOMPosition(
   // object after a tree position are mock or virtual objects, since mock or
   // virtual objects will not be present in the DOM tree. Alternatively, in the
   // case of an "after children" position, we need to check if the last child of
-  // the container object is mock or virtual and adjust accordingly.
+  // the container object is mock or virtual and adjust accordingly. Abstract
+  // inline text boxes and static text nodes for CSS "::before" and "::after"
+  // positions are also considered to be virtual since they don't have an
+  // associated DOM node.
 
   // More Explaination:
   // If the child after a tree position doesn't have an associated node in the
@@ -383,7 +416,8 @@ const AXPosition AXPosition::AsValidDOMPosition(
   DCHECK(container);
   const AXObject* child = ChildAfterTreePosition();
   const AXObject* last_child = container->LastChild();
-  if (container->IsMockObject() || container->IsVirtualObject() ||
+  if ((IsTextPosition() && !container->GetNode()) ||
+      container->IsMockObject() || container->IsVirtualObject() ||
       (!child && last_child &&
        (!last_child->GetNode() || last_child->IsMockObject() ||
         last_child->IsVirtualObject())) ||
@@ -398,7 +432,7 @@ const AXPosition AXPosition::AsValidDOMPosition(
   }
 
   if (container->GetNode())
-    return this->AsUnignoredPosition(adjustment_behavior);
+    return *this;
 
   DCHECK(container->IsAXLayoutObject())
       << "Non virtual and non mock AX objects that are not associated to a DOM "
@@ -423,7 +457,7 @@ const AXPosition AXPosition::AsValidDOMPosition(
 
 const PositionWithAffinity AXPosition::ToPositionWithAffinity(
     const AXPositionAdjustmentBehavior adjustment_behavior) const {
-  const AXPosition adjusted_position = AsValidDOMPosition();
+  const AXPosition adjusted_position = AsValidDOMPosition(adjustment_behavior);
   if (!adjusted_position.IsValid())
     return {};
 

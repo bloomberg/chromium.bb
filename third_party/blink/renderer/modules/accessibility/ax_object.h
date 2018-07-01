@@ -510,6 +510,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   virtual bool IsSpinButton() const { return RoleValue() == kSpinButtonRole; }
   bool IsTabItem() const { return RoleValue() == kTabRole; }
   virtual bool IsTextControl() const { return false; }
+  bool IsTextObject() const;
   bool IsTree() const { return RoleValue() == kTreeRole; }
   virtual bool IsVirtualObject() const { return false; }
   bool IsWebArea() const { return RoleValue() == kWebAreaRole; }
