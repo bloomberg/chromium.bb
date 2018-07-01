@@ -20,6 +20,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/test/test_browser_dialog.h"
 #include "chrome/common/chrome_features.h"
+#include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
@@ -28,6 +29,7 @@
 #include "net/base/mock_network_change_notifier.h"
 #include "net/base/network_change_notifier_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/views/window/dialog_client_view.h"
 
 // ChromeBrowserMainExtraParts used to install a MockNetworkChangeNotifier.
@@ -197,7 +199,9 @@ IN_PROC_BROWSER_TEST_F(CrostiniInstallerViewBrowserTest, InstallFlow_Offline) {
 
   ActiveView()->GetDialogClientView()->AcceptWindow();
   EXPECT_FALSE(ActiveView()->GetWidget()->IsClosed());
-  EXPECT_FALSE(HasAcceptButton());
+  EXPECT_TRUE(HasAcceptButton());
+  EXPECT_EQ(ActiveView()->GetDialogButtonLabel(ui::DIALOG_BUTTON_OK),
+            l10n_util::GetStringUTF16(IDS_CROSTINI_INSTALLER_RETRY_BUTTON));
   EXPECT_TRUE(HasCancelButton());
 
   ActiveView()->GetDialogClientView()->CancelWindow();

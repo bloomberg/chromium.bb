@@ -12,6 +12,7 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
+class ImageView;
 class Label;
 class ProgressBar;
 }  // namespace views
@@ -48,7 +49,6 @@ class CrostiniInstallerView
   // views::DialogDelegateView:
   int GetDialogButtons() const override;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const override;
-  base::string16 GetWindowTitle() const override;
   bool ShouldShowCloseButton() const override;
   bool Accept() override;
   bool Cancel() override;
@@ -85,11 +85,15 @@ class CrostiniInstallerView
   void ShowLoginShell();
   void StepProgress();
   void SetMessageLabel();
+  void SetBigMessageLabel();
 
   void RecordSetupResultHistogram(SetupResult result);
 
   State state_ = State::PROMPT;
+  views::ImageView* logo_image_ = nullptr;
+  views::Label* big_message_label_ = nullptr;
   views::Label* message_label_ = nullptr;
+  views::ImageView* big_image_ = nullptr;
   views::ProgressBar* progress_bar_ = nullptr;
   Profile* profile_;
   crostini::CrostiniManager::RestartId restart_id_ =

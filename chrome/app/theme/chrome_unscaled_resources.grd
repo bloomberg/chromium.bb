@@ -115,6 +115,7 @@
         <!-- Crostini icons -->
         <include name="IDR_LOGO_CROSTINI_TERMINAL" file="crostini/logo_crostini_terminal.png" type="BINDATA" />
         <include name="IDR_LOGO_CROSTINI_DEFAULT" file="crostini/logo_crostini_default.png" type="BINDATA" />
+        <include name="IDR_LINUX_ILLUSTRATION" file="crostini/linux_illustration_2x.png" type="BINDATA" />
       </if>
     </includes>
   </release>
