@@ -23,6 +23,9 @@ enum AshTextContext {
   // A button that appears within a row of the tray popup.
   CONTEXT_TRAY_POPUP_BUTTON,
 
+  // A headline label that appears in a larger window.
+  CONTEXT_HEADLINE_OVERSIZED,
+
   ASH_TEXT_CONTEXT_END
 };
 

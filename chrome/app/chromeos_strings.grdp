@@ -4966,9 +4966,7 @@ Installing Linux will download <ph name="DOWNLOAD_SIZE">$1<ex>300MB</ex></ph> of
     Install
   </message>
   <message name="IDS_CROSTINI_INSTALLER_INSTALLING" desc="Text shown in the Crostini installer dialog while  Linux is installing.">
-    Installing Linux... 
-
-    This process may take a few minutes.
+    Installing Linux...
   </message>
   <message name="IDS_CROSTINI_INSTALLER_ERROR_TITLE" desc="Title of the Crostini installer when an error occurs.">
     Error installing Linux...
@@ -4977,19 +4975,22 @@ Installing Linux will download <ph name="DOWNLOAD_SIZE">$1<ex>300MB</ex></ph> of
     Linux installation is complete.
   </message>
     <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM component is loading">
-    Downloading the virtual machine.
+    This process may take a few minutes. Downloading the virtual machine.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM service is starting">
-    Starting the virtual machine.
+    This process may take a few minutes. Starting the virtual machine.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_MESSAGE" desc="Text shown in the Crostini installer dialog when the disk image is being created">
-    Starting the virtual machine.
+    This process may take a few minutes. Starting the virtual machine.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_TERMINA_VM_MESSAGE" desc="Text shown in the Crostini installer dialog when the VM itself is starting">
-    Starting the virtual machine.
+    This process may take a few minutes. Starting the virtual machine.
   </message>
   <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_MESSAGE" desc="Text shown in the Crostini installer dialog when the container inside the VM is starting">
-    Starting the Linux container.
+    This process may take a few minutes. Starting the Linux container.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_RETRY_BUTTON" desc="Retry button of the Crostini installer dialog that starts the install steps again.">
+    Retry
   </message>
   <message name="IDS_CROSTINI_INSTALLER_OFFLINE_ERROR" desc="Text shown in the Crostini installer dialog when there is no internet connection">
     <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is offline. Connect to the Internet and try again.
