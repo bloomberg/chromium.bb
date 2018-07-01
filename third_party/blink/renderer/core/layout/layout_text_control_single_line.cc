@@ -34,12 +34,8 @@
 #include "third_party/blink/renderer/core/layout/hit_test_result.h"
 #include "third_party/blink/renderer/core/layout/layout_analyzer.h"
 #include "third_party/blink/renderer/core/layout/layout_theme.h"
-#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
-#include "third_party/blink/renderer/core/paint/paint_info.h"
-#include "third_party/blink/renderer/core/paint/paint_layer.h"
-#include "third_party/blink/renderer/core/paint/theme_painter.h"
+#include "third_party/blink/renderer/core/paint/text_control_single_line_painter.h"
 #include "third_party/blink/renderer/platform/fonts/simple_font_data.h"
-#include "third_party/blink/renderer/platform/graphics/paint/drawing_recorder.h"
 
 namespace blink {
 
@@ -67,37 +63,9 @@ inline HTMLElement* LayoutTextControlSingleLine::InnerSpinButtonElement()
       ShadowElementNames::SpinButton()));
 }
 
-// TODO(wangxianzhu): Move this into TextControlSingleLinePainter.
 void LayoutTextControlSingleLine::Paint(const PaintInfo& paint_info,
                                         const LayoutPoint& paint_offset) const {
-  LayoutTextControl::Paint(paint_info, paint_offset);
-
-  if (ShouldPaintSelfBlockBackground(paint_info.phase) &&
-      should_draw_caps_lock_indicator_) {
-    // TODO(wangxianzhu): This display item may have conflicting id with the
-    // normal background. Should we allocate another DisplayItem::Type?
-    if (DrawingRecorder::UseCachedDrawingIfPossible(paint_info.context, *this,
-                                                    paint_info.phase))
-      return;
-
-    LayoutRect contents_rect = ContentBoxRect();
-
-    // Center in the block progression direction.
-    if (IsHorizontalWritingMode())
-      contents_rect.SetY((Size().Height() - contents_rect.Height()) / 2);
-    else
-      contents_rect.SetX((Size().Width() - contents_rect.Width()) / 2);
-
-    // Convert the rect into the coords used for painting the content.
-    AdjustPaintOffsetScope adjustment(*this, paint_info, paint_offset);
-    const auto& local_paint_info = adjustment.GetPaintInfo();
-    contents_rect.MoveBy(adjustment.AdjustedPaintOffset());
-    IntRect snapped_rect = PixelSnappedIntRect(contents_rect);
-    DrawingRecorder recorder(local_paint_info.context, *this,
-                             local_paint_info.phase);
-    LayoutTheme::GetTheme().Painter().PaintCapsLockIndicator(
-        *this, local_paint_info, snapped_rect);
-  }
+  TextControlSingleLinePainter(*this).Paint(paint_info, paint_offset);
 }
 
 void LayoutTextControlSingleLine::UpdateLayout() {

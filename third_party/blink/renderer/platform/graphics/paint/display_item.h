@@ -62,6 +62,7 @@ class PLATFORM_EXPORT DisplayItem {
     kDrawingPaintPhaseFirst = kDrawingFirst,
     kDrawingPaintPhaseLast = kDrawingFirst + kPaintPhaseMax,
     kBoxDecorationBackground,
+    kCapsLockIndicator,
     kCaret,
     kClippingMask,
     kColumnRules,
