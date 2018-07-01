@@ -1570,6 +1570,12 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
+        "test": "extensions_browsertests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
         "test": "extensions_unittests"
       },
       {
@@ -1607,6 +1613,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "headless_browsertests"
       },
       {
         "swarming": {
@@ -2945,6 +2957,12 @@
           "can_use_on_swarming_builders": true
         },
         "test": "crypto_unittests"
+      },
+      {
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        },
+        "test": "device_unittests"
       },
       {
         "swarming": {
