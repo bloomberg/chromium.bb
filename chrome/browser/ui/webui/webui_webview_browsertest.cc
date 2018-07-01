@@ -203,9 +203,17 @@ IN_PROC_BROWSER_TEST_F(
       base::Value(GetTestUrl("empty.html").spec())));
 }
 
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// TODO(crbug.com/859320) Fails on CrOS dbg with --enable-features=Mash.
+#define MAYBE_AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView \
+  DISABLED_AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView
+#else
+#define MAYBE_AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView \
+  AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView
+#endif
 IN_PROC_BROWSER_TEST_F(
     WebUIWebViewBrowserTest,
-    AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
+    MAYBE_AddContentScriptToOneWebViewShouldNotInjectToTheOtherWebView) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(
@@ -228,8 +236,16 @@ IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
       base::Value(GetTestUrl("empty.html").spec())));
 }
 
+#if defined(OS_CHROMEOS) && !defined(NDEBUG)
+// TODO(crbug.com/859320) Fails on CrOS dbg with --enable-features=Mash.
+#define MAYBE_AddContentScriptsWithNewWindowAPI \
+  DISABLED_AddContentScriptsWithNewWindowAPI
+#else
+#define MAYBE_AddContentScriptsWithNewWindowAPI \
+  AddContentScriptsWithNewWindowAPI
+#endif
 IN_PROC_BROWSER_TEST_F(WebUIWebViewBrowserTest,
-                       AddContentScriptsWithNewWindowAPI) {
+                       MAYBE_AddContentScriptsWithNewWindowAPI) {
   ui_test_utils::NavigateToURL(browser(), GetWebViewEnabledWebUIURL());
 
   ASSERT_TRUE(WebUIBrowserTest::RunJavascriptAsyncTest(

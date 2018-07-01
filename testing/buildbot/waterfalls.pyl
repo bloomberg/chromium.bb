@@ -503,7 +503,7 @@
       },
       'linux-chromeos-dbg': {
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_dbg_gtests',
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'linux-chromeos-rel': {
@@ -511,7 +511,7 @@
           'gn_all',
         ],
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_rel_gtests',
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
     },
@@ -2973,12 +2973,12 @@
       },
       'Linux Chromium OS ASan LSan Tests (1)': {
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_rel_gtests',
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'Linux ChromiumOS MSan Tests': {
         'test_suites': {
-          'gtest_tests': 'linux_chromeos_rel_gtests',
+          'gtest_tests': 'linux_chromeos_gtests',
         },
       },
       'Linux MSan Tests': {

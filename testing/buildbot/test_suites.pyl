@@ -1803,24 +1803,6 @@
     },
   },
 
-  'linux_chromeos_rel_specific_gtests': {
-    # Chrome OS only.
-    'chromevox_tests': {},
-    'exo_unittests': {},
-    'gl_unittests_ozone': {},
-    'ozone_gl_unittests': {
-      'args': [
-        '--ozone-platform=headless',
-      ],
-    },
-    'ozone_unittests': {},
-    'ozone_x11_unittests': {},
-    'select_to_speak_extension_tests': {},
-    'views_mus_unittests': {},
-    'views_mus_interactive_ui_tests': {},
-    'wayland_client_perftests': {},
-  },
-
   'linux_chromeos_specific_gtests': {
     # Chrome OS only.
     'app_list_unittests': {},
@@ -1829,8 +1811,22 @@
     'aura_unittests': {},
     'chromeos_components_unittests': {},
     'chromeos_unittests': {},
+    'chromevox_tests': {},
+    'exo_unittests': {},
+    'gl_unittests_ozone': {},
     'keyboard_unittests': {},
+    'ozone_gl_unittests': {
+      'args': [
+        '--ozone-platform=headless',
+      ],
+    },
+    'ozone_unittests': {},
+    'ozone_x11_unittests': {},
+    'select_to_speak_extension_tests': {},
     'ui_chromeos_unittests': {},
+    'views_mus_unittests': {},
+    'views_mus_interactive_ui_tests': {},
+    'wayland_client_perftests': {},
   },
 
   'linux_flavor_specific_chromium_gtests': {
@@ -2432,33 +2428,18 @@
     'vr_platform_specific_chromium_gtests',
   ],
 
-  'linux_chromeos_dbg_gtests': [
+  'linux_chromeos_gtests': [
     # This is:
     #   linux_chromium_gtests
     #   - linux_specific_chromium_gtests
     #   - non_android_and_cast_and_chromeos_chromium_gtests
     #   + linux_chromeos_specific_gtests
-    'aura_gtests',
-    'chromium_gtests',
-    'chromium_gtests_for_devices_with_graphical_output',
-    'chromium_gtests_for_linux_and_chromeos_only',
-    'linux_chromeos_specific_gtests',
-    'linux_flavor_specific_chromium_gtests',
-    'non_android_chromium_gtests',
-    'non_mac_chromium_gtests',
-  ],
-
-  'linux_chromeos_rel_gtests': [
-    # This is:
-    #   linux_chromeos_dbg_gtests
-    #   + linux_chromeos_rel_specific_gtests
     #   + mash_chromium_gtests
     'aura_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
     'chromium_gtests_for_linux_and_chromeos_only',
     'linux_chromeos_specific_gtests',
-    'linux_chromeos_rel_specific_gtests',
     'linux_flavor_specific_chromium_gtests',
     'mash_chromium_gtests',
     'non_android_chromium_gtests',
