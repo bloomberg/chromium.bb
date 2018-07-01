@@ -18,7 +18,7 @@ namespace base {
 namespace sequence_manager {
 namespace internal {
 
-// A LazilyDeallocatedDeque specialized for the TaskQueueManager's usage
+// A LazilyDeallocatedDeque specialized for the SequenceManager's usage
 // patterns. The queue generally grows while tasks are added and then removed
 // until empty and the cycle repeats.
 //

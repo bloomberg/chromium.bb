@@ -19,7 +19,7 @@ namespace base {
 namespace sequence_manager {
 
 // Create SequenceManager using MessageLoop on the current thread.
-// implementation is located in task_queue_manager_impl.cc.
+// implementation is located in sequence_manager_impl.cc.
 // TODO(kraynov): Move to SequenceManager class.
 // TODO(scheduler-dev): Rename to TakeOverCurrentThread when we'll stop using
 // MessageLoop and will actually take over a thread.

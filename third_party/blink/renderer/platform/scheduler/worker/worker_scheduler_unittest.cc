@@ -10,7 +10,7 @@
 #include "base/test/test_mock_time_task_runner.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/task_queue_throttler.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/functional.h"
@@ -81,7 +81,7 @@ class WorkerSchedulerTest : public testing::Test {
       : mock_task_runner_(new base::TestMockTimeTaskRunner()),
         scheduler_(new WorkerThreadSchedulerForTest(
             WebThreadType::kTestThread,
-            base::sequence_manager::TaskQueueManagerForTest::Create(
+            base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
                 mock_task_runner_,
                 mock_task_runner_->GetMockTickClock()),

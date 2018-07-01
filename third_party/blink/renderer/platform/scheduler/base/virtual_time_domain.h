@@ -27,7 +27,7 @@ class PLATFORM_EXPORT VirtualTimeDomain : public TimeDomain {
 
   // Advances this time domain to |now|. NOTE |now| is supposed to be
   // monotonically increasing.  NOTE it's the responsibility of the caller to
-  // call TaskQueueManager::MaybeScheduleImmediateWork if needed.
+  // call SequenceManager::MaybeScheduleImmediateWork if needed.
   void AdvanceNowTo(TimeTicks now);
 
  protected:

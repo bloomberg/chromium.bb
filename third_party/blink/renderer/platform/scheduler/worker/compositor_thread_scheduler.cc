@@ -20,9 +20,9 @@ namespace blink {
 namespace scheduler {
 
 CompositorThreadScheduler::CompositorThreadScheduler(
-    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager)
+    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager)
     : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
-          std::move(task_queue_manager),
+          std::move(sequence_manager),
           this,
           TaskType::kCompositorThreadTaskQueueDefault)) {}
 

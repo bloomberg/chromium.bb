@@ -37,7 +37,7 @@ class GracefulQueueShutdownHelper;
 }  // namespace internal
 
 class TimeDomain;
-class TaskQueueManagerImpl;
+class SequenceManagerImpl;
 
 class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
  public:
@@ -282,7 +282,7 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
  private:
   friend class internal::TaskQueueImpl;
-  friend class TaskQueueManagerImpl;
+  friend class SequenceManagerImpl;
 
   bool IsOnMainThread() const;
 
@@ -304,7 +304,7 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
   const PlatformThreadId thread_id_;
 
-  const WeakPtr<TaskQueueManagerImpl> task_queue_manager_;
+  const WeakPtr<SequenceManagerImpl> sequence_manager_;
 
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_queue_shutdown_helper_;

@@ -24,7 +24,7 @@
 #include "third_party/blink/public/platform/web_mouse_wheel_event.h"
 #include "third_party/blink/public/platform/web_touch_event.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/child/features.h"
 #include "third_party/blink/renderer/platform/scheduler/common/throttling/budget_pool.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
@@ -302,7 +302,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   void SetUp() override {
     CreateTestTaskRunner();
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::TaskQueueManagerForTest::Create(
+        base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
         base::nullopt));
   }
@@ -2097,7 +2097,7 @@ class MainThreadSchedulerImplWithMessageLoopTest
   void SetUp() override {
     clock_.Advance(base::TimeDelta::FromMilliseconds(5));
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::TaskQueueManagerForTest::Create(
+        base::sequence_manager::SequenceManagerForTest::Create(
             message_loop_.get(), message_loop_->task_runner(), &clock_),
         base::nullopt));
   }
@@ -3840,7 +3840,7 @@ class MainThreadSchedulerImplWithInitalVirtualTimeTest
   void SetUp() override {
     CreateTestTaskRunner();
     Initialize(std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::TaskQueueManagerForTest::Create(
+        base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
         base::Time::FromJsTime(1000000.0)));
   }

@@ -2,12 +2,12 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_
 
 #include "base/single_thread_task_runner.h"
 #include "base/time/tick_clock.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
 
 namespace base {
 class MessageLoop;
@@ -16,17 +16,17 @@ class MessageLoop;
 namespace base {
 namespace sequence_manager {
 
-class TaskQueueManagerForTest : public TaskQueueManagerImpl {
+class SequenceManagerForTest : public SequenceManagerImpl {
  public:
-  explicit TaskQueueManagerForTest(
+  explicit SequenceManagerForTest(
       std::unique_ptr<internal::ThreadController> thread_controller);
 
-  ~TaskQueueManagerForTest() override = default;
+  ~SequenceManagerForTest() override = default;
 
-  // Creates TaskQueueManagerImpl using ThreadControllerImpl constructed with
+  // Creates SequenceManagerImpl using ThreadControllerImpl constructed with
   // the given arguments. ThreadControllerImpl is slightly overridden to skip
   // nesting observers registration if message loop is absent.
-  static std::unique_ptr<TaskQueueManagerForTest> Create(
+  static std::unique_ptr<SequenceManagerForTest> Create(
       MessageLoop* message_loop,
       scoped_refptr<SingleThreadTaskRunner> task_runner,
       const TickClock* clock);
@@ -37,11 +37,11 @@ class TaskQueueManagerForTest : public TaskQueueManagerImpl {
   size_t QueuesToDeleteCount() const;
   size_t QueuesToShutdownCount();
 
-  using TaskQueueManagerImpl::GetNextSequenceNumber;
-  using TaskQueueManagerImpl::WakeUpReadyDelayedQueues;
+  using SequenceManagerImpl::GetNextSequenceNumber;
+  using SequenceManagerImpl::WakeUpReadyDelayedQueues;
 };
 
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_TASK_QUEUE_MANAGER_FOR_TEST_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TEST_SEQUENCE_MANAGER_FOR_TEST_H_

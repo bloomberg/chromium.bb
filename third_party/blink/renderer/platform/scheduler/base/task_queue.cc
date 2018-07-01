@@ -6,8 +6,8 @@
 
 #include "base/bind_helpers.h"
 #include "base/optional.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 
 namespace base {
 namespace sequence_manager {
@@ -16,8 +16,7 @@ TaskQueue::TaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
                      const TaskQueue::Spec& spec)
     : impl_(std::move(impl)),
       thread_id_(PlatformThread::CurrentId()),
-      task_queue_manager_(impl_ ? impl_->GetTaskQueueManagerWeakPtr()
-                                : nullptr),
+      sequence_manager_(impl_ ? impl_->GetSequenceManagerWeakPtr() : nullptr),
       graceful_queue_shutdown_helper_(
           impl_ ? impl_->GetGracefulQueueShutdownHelper() : nullptr) {}
 
@@ -63,7 +62,7 @@ void TaskQueue::ShutdownTaskQueue() {
   AutoLock lock(impl_lock_);
   if (!impl_)
     return;
-  if (!task_queue_manager_) {
+  if (!sequence_manager_) {
     impl_.reset();
     return;
   }
@@ -72,7 +71,7 @@ void TaskQueue::ShutdownTaskQueue() {
       internal::TaskQueueImpl::OnTaskStartedHandler());
   impl_->SetOnTaskCompletedHandler(
       internal::TaskQueueImpl::OnTaskCompletedHandler());
-  task_queue_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
+  sequence_manager_->UnregisterTaskQueueImpl(TakeTaskQueueImpl());
 }
 
 bool TaskQueue::RunsTasksInCurrentSequence() const {

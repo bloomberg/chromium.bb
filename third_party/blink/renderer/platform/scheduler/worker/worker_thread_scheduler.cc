@@ -95,10 +95,10 @@ base::Optional<base::TimeDelta> GetMaxThrottlingDelay() {
 
 WorkerThreadScheduler::WorkerThreadScheduler(
     WebThreadType thread_type,
-    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager,
+    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
     WorkerSchedulerProxy* proxy)
     : NonMainThreadSchedulerImpl(std::make_unique<NonMainThreadSchedulerHelper>(
-          std::move(task_queue_manager),
+          std::move(sequence_manager),
           this,
           TaskType::kWorkerThreadTaskQueueDefault)),
       idle_helper_(helper(),

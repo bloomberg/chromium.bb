@@ -254,9 +254,9 @@ bool IsBlockingEvent(const blink::WebInputEvent& web_input_event) {
 }  // namespace
 
 MainThreadSchedulerImpl::MainThreadSchedulerImpl(
-    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager,
+    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
     base::Optional<base::Time> initial_virtual_time)
-    : helper_(std::move(task_queue_manager), this),
+    : helper_(std::move(sequence_manager), this),
       idle_helper_(&helper_,
                    this,
                    "MainThreadSchedulerIdlePeriod",

@@ -37,13 +37,12 @@ TestingPlatformSupportWithMockScheduler::
     : mock_task_runner_(
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true)) {
   DCHECK(IsMainThread());
-  std::unique_ptr<base::sequence_manager::TaskQueueManagerForTest>
-      task_queue_manager =
-          base::sequence_manager::TaskQueueManagerForTest::Create(
-              nullptr, mock_task_runner_, &clock_);
-  task_queue_manager_ = task_queue_manager.get();
+  std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
+      sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
+          nullptr, mock_task_runner_, &clock_);
+  sequence_manager_ = sequence_manager.get();
   scheduler_ = std::make_unique<scheduler::MainThreadSchedulerImpl>(
-      std::move(task_queue_manager), base::nullopt);
+      std::move(sequence_manager), base::nullopt);
   thread_ = scheduler_->CreateMainThread();
   // Set the work batch size to one so RunPendingTasks behaves as expected.
   scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
@@ -100,11 +99,10 @@ void TestingPlatformSupportWithMockScheduler::RunForPeriodSeconds(
   for (;;) {
     // If we've run out of immediate work then fast forward to the next delayed
     // task, but don't pass |deadline|.
-    if (!task_queue_manager_->HasImmediateWork()) {
+    if (!sequence_manager_->HasImmediateWork()) {
       base::sequence_manager::LazyNow lazy_now(&clock_);
       base::Optional<base::TimeDelta> delay =
-          task_queue_manager_->GetRealTimeDomain()->DelayTillNextTask(
-              &lazy_now);
+          sequence_manager_->GetRealTimeDomain()->DelayTillNextTask(&lazy_now);
       if (!delay)
         break;
 

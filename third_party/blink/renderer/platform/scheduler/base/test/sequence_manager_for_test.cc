@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 
@@ -37,40 +37,40 @@ class ThreadControllerForTest : public internal::ThreadControllerImpl {
 
 }  // namespace
 
-TaskQueueManagerForTest::TaskQueueManagerForTest(
+SequenceManagerForTest::SequenceManagerForTest(
     std::unique_ptr<internal::ThreadController> thread_controller)
-    : TaskQueueManagerImpl(std::move(thread_controller)) {}
+    : SequenceManagerImpl(std::move(thread_controller)) {}
 
 // static
-std::unique_ptr<TaskQueueManagerForTest> TaskQueueManagerForTest::Create(
+std::unique_ptr<SequenceManagerForTest> SequenceManagerForTest::Create(
     MessageLoop* message_loop,
     scoped_refptr<SingleThreadTaskRunner> task_runner,
     const TickClock* clock) {
-  return std::make_unique<TaskQueueManagerForTest>(
+  return std::make_unique<SequenceManagerForTest>(
       std::make_unique<ThreadControllerForTest>(message_loop,
                                                 std::move(task_runner), clock));
 }
 
-size_t TaskQueueManagerForTest::ActiveQueuesCount() const {
+size_t SequenceManagerForTest::ActiveQueuesCount() const {
   return main_thread_only().active_queues.size();
 }
 
-bool TaskQueueManagerForTest::HasImmediateWork() const {
+bool SequenceManagerForTest::HasImmediateWork() const {
   return !main_thread_only().selector.AllEnabledWorkQueuesAreEmpty();
 }
 
-size_t TaskQueueManagerForTest::PendingTasksCount() const {
+size_t SequenceManagerForTest::PendingTasksCount() const {
   size_t task_count = 0;
   for (auto* const queue : main_thread_only().active_queues)
     task_count += queue->GetNumberOfPendingTasks();
   return task_count;
 }
 
-size_t TaskQueueManagerForTest::QueuesToDeleteCount() const {
+size_t SequenceManagerForTest::QueuesToDeleteCount() const {
   return main_thread_only().queues_to_delete.size();
 }
 
-size_t TaskQueueManagerForTest::QueuesToShutdownCount() {
+size_t SequenceManagerForTest::QueuesToShutdownCount() {
   TakeQueuesToGracefullyShutdownFromHelper();
   return main_thread_only().queues_to_gracefully_shutdown.size();
 }

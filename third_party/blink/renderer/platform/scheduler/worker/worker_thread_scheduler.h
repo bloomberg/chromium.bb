@@ -38,10 +38,10 @@ class PLATFORM_EXPORT WorkerThreadScheduler
       public IdleHelper::Delegate,
       public base::sequence_manager::TaskTimeObserver {
  public:
-  WorkerThreadScheduler(WebThreadType thread_type,
-                        std::unique_ptr<base::sequence_manager::SequenceManager>
-                            task_queue_manager,
-                        WorkerSchedulerProxy* proxy);
+  WorkerThreadScheduler(
+      WebThreadType thread_type,
+      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
+      WorkerSchedulerProxy* proxy);
   ~WorkerThreadScheduler() override;
 
   // WebThreadScheduler implementation:
