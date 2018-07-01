@@ -46,8 +46,6 @@
 #include "third_party/boringssl/src/include/openssl/sha.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-using std::string;
-
 namespace quic {
 
 namespace {
@@ -66,7 +64,7 @@ QuicString DeriveSourceAddressTokenKey(
                 "QUIC source address token key",
                 CryptoSecretBoxer::GetKeySize(), 0 /* no fixed IV needed */,
                 0 /* no subkey secret */);
-  return string(hkdf.server_write_key());
+  return QuicString(hkdf.server_write_key());
 }
 
 }  // namespace
@@ -710,7 +708,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
             total_framing_overhead, chlo_packet_size, requested_config,
             primary_config, std::move(done_cb)));
     proof_source_->GetProof(
-        server_address, string(info.sni), primary_config->serialized,
+        server_address, QuicString(info.sni), primary_config->serialized,
         version.transport_version, chlo_hash, std::move(cb));
     helper.DetachCallback();
     return;
@@ -921,7 +919,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
         return;
       }
 
-      params->channel_id = string(key);
+      params->channel_id = QuicString(key);
     }
   }
 
@@ -955,7 +953,7 @@ void QuicCryptoServerConfig::ProcessClientHelloAfterGetProof(
     std::unique_ptr<KeyExchange> forward_secure_key_exchange(
         key_exchange->NewKeyPair(rand));
     forward_secure_public_value =
-        string(forward_secure_key_exchange->public_value());
+        QuicString(forward_secure_key_exchange->public_value());
     if (!forward_secure_key_exchange->CalculateSharedKey(
             public_value, &params->forward_secure_premaster_secret)) {
       helper.Fail(QUIC_INVALID_CRYPTO_MESSAGE_PARAMETER,
@@ -1007,7 +1005,7 @@ QuicCryptoServerConfig::GetConfigWithScid(
   configs_lock_.AssertReaderHeld();
 
   if (!requested_scid.empty()) {
-    ConfigMap::const_iterator it = configs_.find((string(requested_scid)));
+    ConfigMap::const_iterator it = configs_.find((QuicString(requested_scid)));
     if (it != configs_.end()) {
       // We'll use the config that the client requested in order to do
       // key-agreement.
@@ -1265,7 +1263,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
             *this, found_error, server_address.host(), version,
             requested_config, primary_config, signed_config, client_hello_state,
             std::move(done_cb)));
-    proof_source_->GetProof(server_address, string(info->sni),
+    proof_source_->GetProof(server_address, QuicString(info->sni),
                             serialized_config, version, chlo_hash,
                             std::move(cb));
     helper.DetachCallback();
@@ -1493,12 +1491,12 @@ void QuicCryptoServerConfig::BuildRejection(
 
   QuicStringPiece client_common_set_hashes;
   if (client_hello.GetStringPiece(kCCS, &client_common_set_hashes)) {
-    params->client_common_set_hashes = string(client_common_set_hashes);
+    params->client_common_set_hashes = QuicString(client_common_set_hashes);
   }
 
   QuicStringPiece client_cached_cert_hashes;
   if (client_hello.GetStringPiece(kCCRT, &client_cached_cert_hashes)) {
-    params->client_cached_cert_hashes = string(client_cached_cert_hashes);
+    params->client_cached_cert_hashes = QuicString(client_cached_cert_hashes);
   } else {
     params->client_cached_cert_hashes.clear();
   }
@@ -1600,7 +1598,7 @@ QuicCryptoServerConfig::ParseConfigProtobuf(
     QUIC_LOG(WARNING) << "Server config message is missing SCID";
     return nullptr;
   }
-  config->id = string(scid);
+  config->id = QuicString(scid);
 
   if (msg->GetTaglist(kAEAD, &config->aead) != QUIC_NO_ERROR) {
     QUIC_LOG(WARNING) << "Server config message is missing AEAD";

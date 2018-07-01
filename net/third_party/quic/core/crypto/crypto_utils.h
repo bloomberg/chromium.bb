@@ -77,7 +77,7 @@ class QUIC_EXPORT_PRIVATE CryptoUtils {
   // |label|, and |out_len|, respectively.
   static std::vector<uint8_t> QhkdfExpand(const EVP_MD* prf,
                                           const std::vector<uint8_t>& secret,
-                                          const std::string& label,
+                                          const QuicString& label,
                                           size_t out_len);
 
   // SetKeyAndIV derives the key and IV from the given packet protection secret

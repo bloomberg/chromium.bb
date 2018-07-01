@@ -94,6 +94,20 @@ struct QUIC_EXPORT_PRIVATE WriteResult {
   WriteResult(WriteStatus status, int bytes_written_or_error_code);
   WriteResult();
 
+  bool operator==(const WriteResult& other) const {
+    if (status != other.status) {
+      return false;
+    }
+    switch (status) {
+      case WRITE_STATUS_OK:
+        return bytes_written == other.bytes_written;
+      case WRITE_STATUS_BLOCKED:
+        return true;
+      default:
+        return error_code == other.error_code;
+    }
+  }
+
   WriteStatus status;
   union {
     int bytes_written;  // only valid when status is WRITE_STATUS_OK

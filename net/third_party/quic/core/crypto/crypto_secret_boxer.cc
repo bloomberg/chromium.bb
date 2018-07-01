@@ -14,8 +14,6 @@
 #include "third_party/boringssl/src/include/openssl/aead.h"
 #include "third_party/boringssl/src/include/openssl/crypto.h"
 
-using std::string;
-
 namespace quic {
 
 // Defined kKeySize for GetKeySize() and SetKey().
@@ -44,12 +42,12 @@ size_t CryptoSecretBoxer::GetKeySize() {
 // kAEAD is the AEAD used for boxing: AES-128-GCM-SIV.
 static const EVP_AEAD* (*const kAEAD)() = EVP_aead_aes_128_gcm_siv;
 
-void CryptoSecretBoxer::SetKeys(const std::vector<string>& keys) {
+void CryptoSecretBoxer::SetKeys(const std::vector<QuicString>& keys) {
   DCHECK(!keys.empty());
   const EVP_AEAD* const aead = kAEAD();
   std::unique_ptr<State> new_state(new State);
 
-  for (const string& key : keys) {
+  for (const QuicString& key : keys) {
     DCHECK_EQ(kKeySize, key.size());
     bssl::UniquePtr<EVP_AEAD_CTX> ctx(
         EVP_AEAD_CTX_new(aead, reinterpret_cast<const uint8_t*>(key.data()),
@@ -66,8 +64,8 @@ void CryptoSecretBoxer::SetKeys(const std::vector<string>& keys) {
   state_ = std::move(new_state);
 }
 
-string CryptoSecretBoxer::Box(QuicRandom* rand,
-                              QuicStringPiece plaintext) const {
+QuicString CryptoSecretBoxer::Box(QuicRandom* rand,
+                                  QuicStringPiece plaintext) const {
   // The box is formatted as:
   //   12 bytes of random nonce
   //   n bytes of ciphertext
@@ -75,7 +73,7 @@ string CryptoSecretBoxer::Box(QuicRandom* rand,
   size_t out_len =
       kBoxNonceSize + plaintext.size() + EVP_AEAD_max_overhead(kAEAD());
 
-  string ret;
+  QuicString ret;
   uint8_t* out = reinterpret_cast<uint8_t*>(base::WriteInto(&ret, out_len + 1));
 
   // Write kBoxNonceSize bytes of random nonce to the beginning of the output
@@ -103,7 +101,7 @@ string CryptoSecretBoxer::Box(QuicRandom* rand,
 }
 
 bool CryptoSecretBoxer::Unbox(QuicStringPiece in_ciphertext,
-                              string* out_storage,
+                              QuicString* out_storage,
                               QuicStringPiece* out) const {
   if (in_ciphertext.size() <= kBoxNonceSize) {
     return false;

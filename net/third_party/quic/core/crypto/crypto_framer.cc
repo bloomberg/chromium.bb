@@ -15,8 +15,6 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_string_piece.h"
 
-using std::string;
-
 namespace quic {
 
 namespace {
@@ -331,7 +329,7 @@ QuicErrorCode CryptoFramer::Process(QuicStringPiece input,
       break;
   }
   // Save any remaining data.
-  buffer_ = string(reader.PeekRemainingPayload());
+  buffer_ = QuicString(reader.PeekRemainingPayload());
   return QUIC_NO_ERROR;
 }
 

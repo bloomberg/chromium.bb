@@ -19,8 +19,6 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "third_party/boringssl/src/include/openssl/tls1.h"
 
-using std::string;
-
 namespace quic {
 
 // static
@@ -60,12 +58,12 @@ void QuicDecrypter::DiversifyPreliminaryKey(QuicStringPiece preliminary_key,
                                             size_t nonce_prefix_size,
                                             QuicString* out_key,
                                             QuicString* out_nonce_prefix) {
-  QuicHKDF hkdf((string(preliminary_key)) + (string(nonce_prefix)),
+  QuicHKDF hkdf((QuicString(preliminary_key)) + (QuicString(nonce_prefix)),
                 QuicStringPiece(nonce.data(), nonce.size()),
                 "QUIC key diversification", 0, key_size, 0, nonce_prefix_size,
                 0);
-  *out_key = string(hkdf.server_write_key());
-  *out_nonce_prefix = string(hkdf.server_write_iv());
+  *out_key = QuicString(hkdf.server_write_key());
+  *out_nonce_prefix = QuicString(hkdf.server_write_iv());
 }
 
 }  // namespace quic
