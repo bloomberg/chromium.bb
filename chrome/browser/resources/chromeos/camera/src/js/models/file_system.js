@@ -319,7 +319,7 @@ camera.models.FileSystem.generatePictureName_ = function(isVideo, time) {
       pad(now.getDate()) + '_' + pad(now.getHours()) + pad(now.getMinutes()) +
       pad(now.getSeconds());
 
-  return result + (isVideo ? '.webm' : '.jpg');
+  return result + (isVideo ? '.mkv' : '.jpg');
 };
 
 /**
@@ -330,9 +330,11 @@ camera.models.FileSystem.generatePictureName_ = function(isVideo, time) {
 camera.models.FileSystem.regulatePictureName = function(entry) {
   if (camera.models.FileSystem.hasVideoPrefix(entry) ||
       camera.models.FileSystem.hasImagePrefix_(entry)) {
-    var match = entry.name.match(/(\w{3}_\d{8}_\d{6})(?:_(\d+))(\..+)?$/);
-    if (match && match[2]) {
-      return match[1] + ' (' + match[2] + ')' + match[3];
+    var match = entry.name.match(/(\w{3}_\d{8}_\d{6})(?:_(\d+))?(\..+)?$/);
+    if (match) {
+      var idx = match[2] ? ' (' + match[2] + ')' : '';
+      var ext = match[3] ? match[3].replace(/\.webm$/, '.mkv') : '';
+      return match[1] + idx + ext;
     }
   } else {
     // Early pictures are in legacy file name format (crrev.com/c/310064).

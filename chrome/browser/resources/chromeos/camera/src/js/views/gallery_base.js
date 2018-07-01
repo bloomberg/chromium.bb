@@ -152,6 +152,7 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
         function() { onError(fileEntry.name); });
   }.bind(this);
 
+  // TODO(yuli): Move this into file_system.js and handle filename conflicts.
   chrome.fileSystem.chooseEntry({
     type: 'openDirectory'
   }, function(dirEntry) {
@@ -159,7 +160,8 @@ camera.views.GalleryBase.prototype.exportSelection = function() {
       return;
 
     var savePictureAsFile = function(picture) {
-      dirEntry.getFile(picture.pictureEntry.name, {
+      dirEntry.getFile(
+          camera.models.FileSystem.regulatePictureName(picture.pictureEntry), {
         create: true, exclusive: false
       }, function(fileEntry) {
           exportPicture(fileEntry, picture);
