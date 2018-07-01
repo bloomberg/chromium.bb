@@ -191,12 +191,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "extensions_unittests"
       },
       {
@@ -755,12 +749,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "extensions_unittests"
       },
       {
@@ -798,18 +786,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "gpu_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "headless_unittests"
       },
       {
         "swarming": {
@@ -1483,18 +1459,6 @@
           ]
         },
         "test": "display_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "8086:0a2e",
-              "os": "Mac-10.12.6"
-            }
-          ]
-        },
-        "test": "extensions_browsertests"
       },
       {
         "swarming": {
@@ -2372,12 +2336,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "extensions_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "extensions_unittests"
       },
       {
@@ -2926,12 +2884,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "display_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "extensions_browsertests"
       },
       {
         "swarming": {

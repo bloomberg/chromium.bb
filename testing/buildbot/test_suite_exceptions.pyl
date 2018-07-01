@@ -1009,7 +1009,17 @@
       },
     },
   },
+  'dbus_unittests': {
+    'remove_from': [
+      # chromium.linux
+      'Linux Tests (dbg)(1)(32)',
+    ],
+  },
   'device_unittests': {
+    'remove_from': [
+      # chromium.win
+      'Win7 Tests (dbg)(1)',
+    ],
     'modifications': {
       'android-marshmallow-arm64-rel': {
         'swarming': {
@@ -1027,6 +1037,24 @@
         },
       },
     },
+  },
+  'devtools_closure_compile': {
+    'remove_from': [
+      # On chromium.linux, unclear why these only run on "Linux Tests".
+      'Linux Tests (dbg)(1)',
+      'Linux Tests (dbg)(1)(32)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
+    ],
+  },
+  'devtools_eslint': {
+    'remove_from': [
+      # On chromium.linux, unclear why these only run on "Linux Tests".
+      'Linux Tests (dbg)(1)',
+      'Linux Tests (dbg)(1)(32)',
+      # client.v8.chromium
+      'Linux - Future (dbg)',
+    ],
   },
   'events_unittests': {
     'modifications': {
@@ -1046,6 +1074,23 @@
         },
       },
     },
+  },
+  'extensions_browsertests': {
+    'remove_from': [
+      # On chromium.mac, unclear why these aren't run.
+      'Mac10.10 Tests',
+      'Mac10.11 Tests',
+      'Mac10.12 Tests',
+      'Mac10.13 Tests',
+      'Mac10.13 Tests (dbg)',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
+    ],
+  },
+  'filesystem_service_unittests': {
+    'remove_from': [
+      'Linux Tests (dbg)(1)(32)',
+    ],
   },
   'gin_unittests': {
     'remove_from': [
@@ -1245,17 +1290,31 @@
     'remove_from': [
       # chromium.clang
       'ToTLinuxASan',  # https://crbug.com/843732
+      # chromium.linux
+      'Linux Tests (dbg)(1)(32)',
+      # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
+      'Mac10.11 Tests',
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
       'Linux TSan Tests',  # https://crbug.com/843734
+      # client.v8.chromium
+      'Linux - Future (dbg)',
+      # chromium.win
+      'Win10 Tests x64 (dbg)',
     ],
   },
   'headless_unittests': {
     'remove_from': [
       # chromium.clang
       'ToTLinuxASan',  # https://crbug.com/843732
+      # chromium.linux
+      'Linux Tests (dbg)(1)(32)',
+      # On chromium.mac, unclear why these aren't run on "Mac10.11 Tests".
+      'Mac10.11 Tests',
       # chromium.memory
       'Linux ASan LSan Tests (1)',  # https://crbug.com/843732
+      # client.v8.chromium
+      'Linux - Future (dbg)'
     ],
   },
   'info_collection_tests': {
@@ -1353,22 +1412,13 @@
   },
   'mash_browser_tests': {
     'remove_from': [
+      # chromium.memory
+      # Unclear why this isn't run. http://crbug.com/814403
+      'Linux Chromium OS ASan LSan Tests (1)',
+      'Linux ChromiumOS MSan Tests',  # https://crbug.com/830944
       # Not needed on chromium.fyi because suite is on main waterfall.
       'Mojo ChromiumOS',
     ],
-    'modifications': {
-      # chromium.memory
-      'Linux Chromium OS ASan LSan Tests (1)': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-      'Linux ChromiumOS MSan Tests': {
-        'swarming': {
-          'shards': 20,
-        },
-      },
-    },
   },
   'mash_unittests': {
     'remove_from': [
@@ -1396,6 +1446,12 @@
       'Fuchsia x64',
       # chromium.fyi
       'Fuchsia ARM64',
+    ],
+  },
+  'metrics_python_tests': {
+    'remove_from': [
+      # chromium.fyi
+      'Chromium Mac 10.13',
     ],
   },
   'mojo_test_apk': {
@@ -1428,6 +1484,12 @@
       # chromium.memory
       'Linux TSan Tests',  # The TSan bot sets enable_nacl=false
       'Mac ASan 64 Tests (1)',  # The mac asan bot sets enable_nacl=false
+    ],
+  },
+  'native_theme_unittests': {
+    'remove_from': [
+      # chromium.linux
+      'Linux Tests (dbg)(1)(32)',
     ],
   },
   'net_unittests': {
@@ -1886,7 +1948,7 @@
     ],
   },
   'tab_capture_end2end_tests': {
-    # Run these only on Release bots.
+    # Run these only on Release bots, and don't run them on TSAN.
     'remove_from': [
       # chromium.gpu
       'Linux Debug (NVIDIA)',
