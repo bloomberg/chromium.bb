@@ -224,6 +224,13 @@ camera.views.Camera = function(context, router) {
   this.recordEndSound_.src = '../sounds/record_end.ogg';
 };
 
+/**
+ * Video recording MIME type. Mkv with AVC1 is the only preferred format.
+ * @type {string}
+ * @const
+ */
+camera.views.Camera.RECORD_MIMETYPE = 'video/x-matroska;codecs=avc1';
+
 camera.views.Camera.prototype = {
   __proto__: camera.View.prototype,
   get capturing() {
@@ -743,16 +750,15 @@ camera.views.Camera.prototype.doTakePicture_ = function(timeout) {
 camera.views.Camera.prototype.createBlobOnRecordStop_ = function(
     onSuccess, onFailure, onFinish) {
   var recordedChunks = [];
-  this.mediaRecorder_.ondataavailable = function(event) {
+  var ondataavailable = function(event) {
     if (event.data && event.data.size > 0) {
       recordedChunks.push(event.data);
     }
-  }.bind(this);
-
-  this.mediaRecorder_.onstop = function(event) {
-    this.enableAudio_(false);
+  };
+  var onstop = function(event) {
     // TODO(yuli): Handle insufficient storage.
-    var recordedBlob = new Blob(recordedChunks, {type: 'video/webm'});
+    var recordedBlob = new Blob(
+        recordedChunks, {type: camera.views.Camera.RECORD_MIMETYPE});
     recordedChunks = [];
     if (recordedBlob.size) {
       onSuccess(recordedBlob);
@@ -760,10 +766,13 @@ camera.views.Camera.prototype.createBlobOnRecordStop_ = function(
       onFailure();
     }
     onFinish();
+    this.mediaRecorder_.removeEventListener('dataavailable', ondataavailable);
+    this.mediaRecorder_.removeEventListener('stop', onstop);
   }.bind(this);
+  this.mediaRecorder_.addEventListener('dataavailable', ondataavailable);
+  this.mediaRecorder_.addEventListener('stop', onstop);
 
   // Start recording.
-  this.enableAudio_(true);
   this.mediaRecorder_.start();
 };
 
@@ -818,22 +827,14 @@ camera.views.Camera.prototype.createBlobOnPhotoTake_ = function(
  * @private
  */
 camera.views.Camera.prototype.createMediaRecorder_ = function(stream) {
-  if (!window.MediaRecorder) {
-    return null;
-  }
-
-  // Webm with H264 is the only preferred MediaRecorder video recording format.
-  var type = 'video/webm; codecs=h264';
-  if (!MediaRecorder.isTypeSupported(type)) {
-    console.error('MediaRecorder does not support mimeType: ' + type);
-    return null;
-  }
   try {
-    var options = {mimeType: type};
+    if (!MediaRecorder.isTypeSupported(camera.views.Camera.RECORD_MIMETYPE)) {
+      throw 'The preferred mimeType is not supported.';
+    }
+    var options = {mimeType: camera.views.Camera.RECORD_MIMETYPE};
     return new MediaRecorder(stream, options);
   } catch (e) {
-    console.error('Unable to create MediaRecorder: ' + e + '. mimeType: ' +
-        type);
+    console.error('Unable to create MediaRecorder: ' + e);
     return null;
   }
 };
@@ -872,10 +873,6 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
  camera.views.Camera.prototype.startWithConstraints_ =
      function(constraints, onSuccess, onFailure) {
   navigator.mediaDevices.getUserMedia(constraints).then(function(stream) {
-    if (this.recordMode_) {
-      // Disable audio stream until video recording is started.
-      this.enableAudio_(false);
-    }
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
     this.video_.srcObject = stream;
@@ -898,9 +895,16 @@ camera.views.Camera.prototype.updateVideoDeviceId_ = function(constraints) {
       this.context_.onAspectRatio(
           this.video_.videoWidth / this.video_.videoHeight);
       this.updateVideoSize_();
-      this.updateToolbar_();
       this.updateVideoDeviceId_(constraints);
       this.updateMirroring_();
+      if (this.recordMode_) {
+        // TODO(yuli): Enable/disable audio by the microphone settings.
+        var track = this.stream_ && this.stream_.getAudioTracks()[0];
+        if (track) {
+          track.enabled = true;
+        }
+      }
+      this.updateToolbar_();
       onSuccess();
     }.bind(this);
     // Load the stream and wait for the metadata.
