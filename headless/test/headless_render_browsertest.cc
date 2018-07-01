@@ -505,11 +505,10 @@ class ServerRedirectToFailure : public HeadlessRenderTest {
 };
 // Flaky on Linux. https://crbug.com/839747
 #if defined(OS_LINUX)
-#define MAYBE_HEADLESS_RENDER_BROWSERTEST DISABLED_HEADLESS_RENDER_BROWSERTEST
+DISABLED_HEADLESS_RENDER_BROWSERTEST(ServerRedirectToFailure);
 #else
-#define MAYBE_HEADLESS_RENDER_BROWSERTEST HEADLESS_RENDER_BROWSERTEST
+HEADLESS_RENDER_BROWSERTEST(ServerRedirectToFailure);
 #endif
-MAYBE_HEADLESS_RENDER_BROWSERTEST(ServerRedirectToFailure);
 
 class ServerRedirectRelativeChain : public HeadlessRenderTest {
  private:
@@ -1006,7 +1005,11 @@ class RedirectInvalidUrl : public HeadlessRenderTest {
   }
 };
 // Flaky on Linux. https://crbug.com/839747
-MAYBE_HEADLESS_RENDER_BROWSERTEST(RedirectInvalidUrl);
+#if defined(OS_LINUX)
+DISABLED_HEADLESS_RENDER_BROWSERTEST(RedirectInvalidUrl);
+#else
+HEADLESS_RENDER_BROWSERTEST(RedirectInvalidUrl);
+#endif
 
 class RedirectKeepsFragment : public HeadlessRenderTest {
  private:
@@ -1169,7 +1172,11 @@ class CookieSetFromJs_NoCookies : public CookieSetFromJs {
 };
 
 // Flaky on Linux. https://crbug.com/839747
-MAYBE_HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs_NoCookies);
+#if defined(OS_LINUX)
+DISABLED_HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs_NoCookies);
+#else
+HEADLESS_RENDER_BROWSERTEST(CookieSetFromJs_NoCookies);
+#endif
 
 class CookieUpdatedFromJs : public HeadlessRenderTest {
  private:
@@ -1464,7 +1471,12 @@ class SvgExamples : public HeadlessRenderTest {
     return ScreenshotOptions("svg_examples.png", 0, 0, 400, 600, 1);
   }
 };
+#if defined(OS_LINUX) && defined(ARCH_CPU_X86) && !defined(NDEBUG)
+// https://crbug.com/859325
+DISABLED_HEADLESS_RENDER_BROWSERTEST(SvgExamples);
+#else
 HEADLESS_RENDER_BROWSERTEST(SvgExamples);
+#endif
 
 // Ensures that basic <canvas> painting is supported.
 class Canvas : public HeadlessRenderTest {
