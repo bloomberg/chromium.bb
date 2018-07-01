@@ -4,7 +4,7 @@ package base.sequence_manager;
 
 // Describes the grammar of the fuzzer's test description. At a high level, it
 // describes a sequence of actions that can be executed.
-message TaskQueueManagerTestDescription {
+message SequenceManagerTestDescription {
   // NEXT ID = 2
 
   enum QueuePriority {
@@ -40,7 +40,7 @@ message TaskQueueManagerTestDescription {
     repeated Action action = 3;
   }
 
-  // Describes the grammar of TaskQueueManager::CreateTaskQueue.
+  // Describes the grammar of SequenceManager::CreateTaskQueue.
   message CreateTaskQueueAction {
     // NEXT ID = 2
 

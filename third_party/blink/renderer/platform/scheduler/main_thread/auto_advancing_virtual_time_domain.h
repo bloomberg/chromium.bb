@@ -53,7 +53,7 @@ class PLATFORM_EXPORT AutoAdvancingVirtualTimeDomain
   void SetObserver(Observer* observer);
 
   // Controls whether or not virtual time is allowed to advance, when the
-  // TaskQueueManager runs out of immediate work to do.
+  // SequenceManager runs out of immediate work to do.
   void SetCanAdvanceVirtualTime(bool can_advance_virtual_time);
 
   // If non-null, virtual time may not advance past |virtual_time_fence|.

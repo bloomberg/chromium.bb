@@ -24,10 +24,10 @@ class PLATFORM_EXPORT SchedulerHelper
  public:
   explicit SchedulerHelper(
       std::unique_ptr<base::sequence_manager::SequenceManager>
-          task_queue_manager);
+          sequence_manager);
   ~SchedulerHelper() override;
 
-  // TaskQueueManager::Observer implementation:
+  // SequenceManager::Observer implementation:
   void OnBeginNestedRunLoop() override;
   void OnExitNestedRunLoop() override;
 
@@ -61,7 +61,7 @@ class PLATFORM_EXPORT SchedulerHelper
   void Shutdown();
 
   // Returns true if Shutdown() has been called. Otherwise returns false.
-  bool IsShutdown() const { return !task_queue_manager_.get(); }
+  bool IsShutdown() const { return !sequence_manager_.get(); }
 
   inline void CheckOnValidThread() const {
     DCHECK(thread_checker_.CalledOnValidThread());
@@ -103,7 +103,7 @@ class PLATFORM_EXPORT SchedulerHelper
       TaskType default_task_type);
 
   base::ThreadChecker thread_checker_;
-  std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager_;
+  std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager_;
 
  private:
   friend class SchedulerHelperTest;

@@ -139,7 +139,7 @@ void ThreadControllerImpl::RestoreDefaultTaskRunner() {
 }
 
 void ThreadControllerImpl::DidQueueTask(const PendingTask& pending_task) {
-  task_annotator_.DidQueueTask("TaskQueueManager::PostTask", pending_task);
+  task_annotator_.DidQueueTask("SequenceManager::PostTask", pending_task);
 }
 
 void ThreadControllerImpl::DoWork(WorkType work_type) {

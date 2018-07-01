@@ -11,7 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 
 using testing::ElementsAreArray;
 
@@ -92,7 +92,7 @@ class WorkerThreadSchedulerTest : public testing::Test {
             base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME,
             base::test::ScopedTaskEnvironment::ExecutionMode::QUEUED),
         scheduler_(new WorkerThreadSchedulerForTest(
-            base::sequence_manager::TaskQueueManagerForTest::Create(
+            base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
                 task_environment_.GetMainThreadTaskRunner(),
                 task_environment_.GetMockTickClock()),

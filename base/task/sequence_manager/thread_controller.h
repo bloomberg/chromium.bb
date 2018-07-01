@@ -20,7 +20,7 @@ namespace internal {
 
 class SequencedTaskSource;
 
-// Implementation of this interface is used by TaskQueueManager to schedule
+// Implementation of this interface is used by SequenceManager to schedule
 // actual work to be run. Hopefully we can stop using MessageLoop and this
 // interface will become more concise.
 class ThreadController {
@@ -59,7 +59,7 @@ class ThreadController {
   virtual void SetSequencedTaskSource(SequencedTaskSource*) = 0;
 
   // TODO(altimin): Get rid of the methods below.
-  // These methods exist due to current integration of TaskQueueManager
+  // These methods exist due to current integration of SequenceManager
   // with MessageLoop.
 
   virtual bool RunsTasksInCurrentSequence() = 0;

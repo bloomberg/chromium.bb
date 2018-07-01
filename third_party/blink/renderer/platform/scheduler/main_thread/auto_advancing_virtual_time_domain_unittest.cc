@@ -10,7 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/worker/non_main_thread_scheduler_helper.h"
@@ -32,7 +32,7 @@ class AutoAdvancingVirtualTimeDomainTest : public testing::Test {
     test_task_runner_->AdvanceMockTickClock(
         base::TimeDelta::FromMilliseconds(5));
     scheduler_helper_.reset(new NonMainThreadSchedulerHelper(
-        base::sequence_manager::TaskQueueManagerForTest::Create(
+        base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, test_task_runner_, test_task_runner_->GetMockTickClock()),
         nullptr, TaskType::kInternalTest));
 

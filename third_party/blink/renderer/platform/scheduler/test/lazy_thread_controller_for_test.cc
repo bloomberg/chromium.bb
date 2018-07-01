@@ -49,7 +49,7 @@ void LazyThreadControllerForTest::AddNestingObserver(
   // EnsureMessageLoop() is invoked. This works around a state issue where
   // otherwise many tests fail because of the following sequence:
   //   1) blink::scheduler::CreateRendererSchedulerForTests()
-  //       -> TaskQueueManager::TaskQueueManager()
+  //       -> SequenceManager::SequenceManager()
   //       -> LazySchedulerMessageLoopDelegateForTests::AddNestingObserver()
   //   2) Any test framework with a base::MessageLoop member (and not caring
   //      about the blink scheduler) does:
@@ -57,13 +57,13 @@ void LazyThreadControllerForTest::AddNestingObserver(
   //            FROM_HERE, an_init_task_with_a_nested_loop);
   //        RunLoop.RunUntilIdle();
   //   3) |a_task_with_a_nested_loop| triggers
-  //          TaskQueueManager::OnBeginNestedLoop() which:
+  //          SequenceManager::OnBeginNestedLoop() which:
   //            a) flags any_thread().is_nested = true;
   //            b) posts a task to self, which triggers:
   //                 LazySchedulerMessageLoopDelegateForTests::PostDelayedTask()
-  //   4) This self-task in turn triggers TaskQueueManager::DoWork()
+  //   4) This self-task in turn triggers SequenceManager::DoWork()
   //      which expects to be the only one to trigger nested loops (doesn't
-  //      support TaskQueueManager::OnBeginNestedLoop() being invoked before
+  //      support SequenceManager::OnBeginNestedLoop() being invoked before
   //      it kicks in), resulting in it hitting:
   //      DCHECK_EQ(any_thread().is_nested, delegate_->IsNested()); (1 vs 0).
   // TODO(skyostil): fix this convolution as part of http://crbug.com/495659.

@@ -28,13 +28,13 @@ class GracefulQueueShutdownHelper
   void GracefullyShutdownTaskQueue(
       std::unique_ptr<internal::TaskQueueImpl> queue);
 
-  void OnTaskQueueManagerDeleted();
+  void OnSequenceManagerDeleted();
 
   std::vector<std::unique_ptr<internal::TaskQueueImpl>> TakeQueues();
 
  private:
   Lock lock_;
-  bool task_queue_manager_deleted_;
+  bool sequence_manager_deleted_;
   std::vector<std::unique_ptr<internal::TaskQueueImpl>> queues_;
 
   DISALLOW_COPY_AND_ASSIGN(GracefulQueueShutdownHelper);

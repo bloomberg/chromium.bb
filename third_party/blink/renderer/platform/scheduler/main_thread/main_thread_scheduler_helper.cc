@@ -13,9 +13,9 @@ namespace scheduler {
 using base::sequence_manager::TaskQueue;
 
 MainThreadSchedulerHelper::MainThreadSchedulerHelper(
-    std::unique_ptr<base::sequence_manager::SequenceManager> task_queue_manager,
+    std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
     MainThreadSchedulerImpl* main_thread_scheduler)
-    : SchedulerHelper(std::move(task_queue_manager)),
+    : SchedulerHelper(std::move(sequence_manager)),
       main_thread_scheduler_(main_thread_scheduler),
       default_task_queue_(
           NewTaskQueue(MainThreadTaskQueue::QueueCreationParams(
@@ -27,8 +27,8 @@ MainThreadSchedulerHelper::MainThreadSchedulerHelper(
                            .SetShouldNotifyObservers(false))) {
   InitDefaultQueues(default_task_queue_, control_task_queue_,
                     TaskType::kMainThreadTaskQueueDefault);
-  task_queue_manager_->EnableCrashKeys("blink_scheduler_task_file_name",
-                                       "blink_scheduler_task_function_name");
+  sequence_manager_->EnableCrashKeys("blink_scheduler_task_file_name",
+                                     "blink_scheduler_task_function_name");
 }
 
 MainThreadSchedulerHelper::~MainThreadSchedulerHelper() {
@@ -57,7 +57,7 @@ scoped_refptr<TaskQueue> MainThreadSchedulerHelper::ControlTaskQueue() {
 scoped_refptr<MainThreadTaskQueue> MainThreadSchedulerHelper::NewTaskQueue(
     const MainThreadTaskQueue::QueueCreationParams& params) {
   scoped_refptr<MainThreadTaskQueue> task_queue =
-      task_queue_manager_->CreateTaskQueue<MainThreadTaskQueue>(
+      sequence_manager_->CreateTaskQueue<MainThreadTaskQueue>(
           params.spec, params, main_thread_scheduler_);
   if (params.fixed_priority)
     task_queue->SetQueuePriority(params.fixed_priority.value());

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_IMPL_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_IMPL_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_IMPL_H_
+#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_IMPL_H_
 
 #include <list>
 #include <map>
@@ -68,7 +68,7 @@ class TimeDomain;
 //    the incoming task queue (if any) are moved here. The work queues are
 //    registered with the selector as input to the scheduling decision.
 //
-class PLATFORM_EXPORT TaskQueueManagerImpl
+class PLATFORM_EXPORT SequenceManagerImpl
     : public SequenceManager,
       public internal::SequencedTaskSource,
       public internal::TaskQueueSelector::Observer,
@@ -76,13 +76,13 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
  public:
   using Observer = SequenceManager::Observer;
 
-  ~TaskQueueManagerImpl() override;
+  ~SequenceManagerImpl() override;
 
   // Assume direct control over current thread and create a SequenceManager.
   // This function should be called only once per thread.
   // This function assumes that a MessageLoop is initialized for
   // the current thread.
-  static std::unique_ptr<TaskQueueManagerImpl> CreateOnCurrentThread();
+  static std::unique_ptr<SequenceManagerImpl> CreateOnCurrentThread();
 
   // SequenceManager implementation:
   void SetObserver(Observer* observer) override;
@@ -136,22 +136,22 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
   scoped_refptr<internal::GracefulQueueShutdownHelper>
   GetGracefulQueueShutdownHelper() const;
 
-  WeakPtr<TaskQueueManagerImpl> GetWeakPtr();
+  WeakPtr<SequenceManagerImpl> GetWeakPtr();
 
  protected:
   // Create a task queue manager where |controller| controls the thread
   // on which the tasks are eventually run.
-  explicit TaskQueueManagerImpl(
+  explicit SequenceManagerImpl(
       std::unique_ptr<internal::ThreadController> controller);
 
   friend class internal::TaskQueueImpl;
-  friend class TaskQueueManagerForTest;
+  friend class SequenceManagerForTest;
 
  private:
   enum class ProcessTaskResult {
     kDeferred,
     kExecuted,
-    kTaskQueueManagerDeleted,
+    kSequenceManagerDeleted,
   };
 
   struct AnyThread {
@@ -162,7 +162,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     internal::IncomingImmediateWorkList* incoming_immediate_work_list = nullptr;
   };
 
-  // TaskQueueManager maintains a queue of non-nestable tasks since they're
+  // SequenceManager maintains a queue of non-nestable tasks since they're
   // uncommon and allocating an extra deque per TaskQueue will waste the memory.
   using NonNestableTaskDeque =
       circular_deque<internal::TaskQueueImpl::DeferredNonNestableTask>;
@@ -202,7 +202,7 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     std::set<TimeDomain*> time_domains;
     std::unique_ptr<internal::RealTimeDomain> real_time_domain;
 
-    // List of task queues managed by this TaskQueueManager.
+    // List of task queues managed by this SequenceManager.
     // - active_queues contains queues that are still running tasks.
     //   Most often they are owned by relevant TaskQueues, but
     //   queues_to_gracefully_shutdown_ are included here too.
@@ -320,12 +320,12 @@ class PLATFORM_EXPORT TaskQueueManagerImpl
     return main_thread_only_;
   }
 
-  WeakPtrFactory<TaskQueueManagerImpl> weak_factory_;
+  WeakPtrFactory<SequenceManagerImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(TaskQueueManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(SequenceManagerImpl);
 };
 
 }  // namespace sequence_manager
 }  // namespace base
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_TASK_QUEUE_MANAGER_IMPL_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_SEQUENCE_MANAGER_IMPL_H_

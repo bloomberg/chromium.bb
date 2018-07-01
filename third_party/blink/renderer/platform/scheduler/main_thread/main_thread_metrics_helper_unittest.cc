@@ -11,7 +11,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/page/launching_process_state.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
 #include "third_party/blink/renderer/platform/scheduler/test/fake_frame_scheduler.h"
@@ -27,10 +27,9 @@ namespace {
 class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
  public:
   MainThreadSchedulerImplForTest(
-      std::unique_ptr<base::sequence_manager::SequenceManager>
-          task_queue_manager,
+      std::unique_ptr<base::sequence_manager::SequenceManager> sequence_manager,
       base::Optional<base::Time> initial_virtual_time)
-      : MainThreadSchedulerImpl(std::move(task_queue_manager),
+      : MainThreadSchedulerImpl(std::move(sequence_manager),
                                 initial_virtual_time){};
 
   using MainThreadSchedulerImpl::SetCurrentUseCaseForTest;
@@ -57,7 +56,7 @@ class MainThreadMetricsHelperTest : public testing::Test {
   void SetUp() override {
     histogram_tester_.reset(new base::HistogramTester());
     scheduler_ = std::make_unique<MainThreadSchedulerImplForTest>(
-        base::sequence_manager::TaskQueueManagerForTest::Create(
+        base::sequence_manager::SequenceManagerForTest::Create(
             nullptr, task_environment_.GetMainThreadTaskRunner(),
             task_environment_.GetMockTickClock()),
         base::nullopt);

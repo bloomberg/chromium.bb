@@ -6,8 +6,8 @@
 
 #include <set>
 
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_manager_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 
 namespace base {
@@ -20,7 +20,7 @@ TimeDomain::~TimeDomain() {
 }
 
 void TimeDomain::OnRegisterWithSequenceManager(
-    TaskQueueManagerImpl* sequence_manager) {
+    SequenceManagerImpl* sequence_manager) {
   DCHECK(sequence_manager);
   DCHECK(!sequence_manager_);
   sequence_manager_ = sequence_manager;
@@ -32,7 +32,7 @@ SequenceManager* TimeDomain::sequence_manager() const {
 }
 
 // TODO(kraynov): https://crbug.com/857101 Consider making an interface
-// for TaskQueueManagerImpl which will expose SetNextDelayedDoWork and
+// for SequenceManagerImpl which will expose SetNextDelayedDoWork and
 // MaybeScheduleImmediateWork methods to make the functions below pure-virtual.
 
 void TimeDomain::SetNextDelayedDoWork(LazyNow* lazy_now, TimeTicks run_time) {

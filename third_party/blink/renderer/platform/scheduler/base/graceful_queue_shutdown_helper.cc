@@ -11,21 +11,21 @@ namespace sequence_manager {
 namespace internal {
 
 GracefulQueueShutdownHelper::GracefulQueueShutdownHelper()
-    : task_queue_manager_deleted_(false) {}
+    : sequence_manager_deleted_(false) {}
 
 GracefulQueueShutdownHelper::~GracefulQueueShutdownHelper() = default;
 
 void GracefulQueueShutdownHelper::GracefullyShutdownTaskQueue(
     std::unique_ptr<internal::TaskQueueImpl> task_queue) {
   AutoLock lock(lock_);
-  if (task_queue_manager_deleted_)
+  if (sequence_manager_deleted_)
     return;
   queues_.push_back(std::move(task_queue));
 }
 
-void GracefulQueueShutdownHelper::OnTaskQueueManagerDeleted() {
+void GracefulQueueShutdownHelper::OnSequenceManagerDeleted() {
   AutoLock lock(lock_);
-  task_queue_manager_deleted_ = true;
+  sequence_manager_deleted_ = true;
   queues_.clear();
 }
 

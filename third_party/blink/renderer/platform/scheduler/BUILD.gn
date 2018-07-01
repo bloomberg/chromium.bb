@@ -13,12 +13,12 @@ blink_platform_sources("scheduler") {
     "base/real_time_domain.cc",
     "base/real_time_domain.h",
     "base/sequence_manager_forward.h",
+    "base/sequence_manager_impl.cc",
+    "base/sequence_manager_impl.h",
     "base/task_queue.cc",
     "base/task_queue_forward.h",
     "base/task_queue_impl.cc",
     "base/task_queue_impl_forward.h",
-    "base/task_queue_manager_impl.cc",
-    "base/task_queue_manager_impl.h",
     "base/task_queue_selector.cc",
     "base/task_queue_selector.h",
     "base/task_queue_selector_logic.h",
@@ -159,8 +159,8 @@ jumbo_source_set("test_support") {
   sources = [
     "base/test/mock_time_domain.cc",
     "base/test/mock_time_domain.h",
-    "base/test/task_queue_manager_for_test.cc",
-    "base/test/task_queue_manager_for_test.h",
+    "base/test/sequence_manager_for_test.cc",
+    "base/test/sequence_manager_for_test.h",
     "base/test/test_count_uses_time_source.cc",
     "base/test/test_count_uses_time_source.h",
     "base/test/test_task_queue.cc",
@@ -191,7 +191,7 @@ jumbo_source_set("unit_tests") {
   sources = [
     "base/intrusive_heap_unittest.cc",
     "base/lazily_deallocated_deque_unittest.cc",
-    "base/task_queue_manager_impl_unittest.cc",
+    "base/sequence_manager_impl_unittest.cc",
     "base/task_queue_selector_unittest.cc",
     "base/time_domain_unittest.cc",
     "base/work_queue_sets_unittest.cc",
@@ -239,7 +239,7 @@ source_set("perf_tests") {
   testonly = true
 
   sources = [
-    "base/task_queue_manager_perftest.cc",
+    "base/sequence_manager_perftest.cc",
   ]
 
   deps = [
@@ -253,8 +253,8 @@ source_set("perf_tests") {
   configs += [ "//third_party/blink/renderer/platform:blink_platform_config" ]
 }
 
-proto_library("task_queue_manager_test_description_proto") {
+proto_library("sequence_manager_test_description_proto") {
   sources = [
-    "base/proto/task_queue_manager_test_description.proto",
+    "base/proto/sequence_manager_test_description.proto",
   ]
 }

@@ -22,10 +22,10 @@ namespace sequence_manager {
 
 class TaskQueueImplForTest : public internal::TaskQueueImpl {
  public:
-  TaskQueueImplForTest(TaskQueueManagerImpl* task_queue_manager,
+  TaskQueueImplForTest(SequenceManagerImpl* sequence_manager,
                        TimeDomain* time_domain,
                        const TaskQueue::Spec& spec)
-      : TaskQueueImpl(task_queue_manager, time_domain, spec) {}
+      : TaskQueueImpl(sequence_manager, time_domain, spec) {}
   ~TaskQueueImplForTest() {}
 
   using TaskQueueImpl::SetDelayedWakeUpForTesting;

@@ -8,7 +8,7 @@
 #include <memory>
 #include "base/test/simple_test_tick_clock.h"
 #include "third_party/blink/public/platform/web_thread.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/testing/testing_platform_support.h"
 #include "third_party/blink/renderer/platform/wtf/noncopyable.h"
 
@@ -69,8 +69,8 @@ class TestingPlatformSupportWithMockScheduler : public TestingPlatformSupport {
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<scheduler::MainThreadSchedulerImpl> scheduler_;
-  base::sequence_manager::TaskQueueManagerForTest*
-      task_queue_manager_;  // Owned by scheduler_.
+  base::sequence_manager::SequenceManagerForTest*
+      sequence_manager_;  // Owned by scheduler_.
   std::unique_ptr<WebThread> thread_;
 };
 

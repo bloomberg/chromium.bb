@@ -165,7 +165,7 @@ class TaskQueueSelectorTest : public testing::Test {
 
   void TearDown() final {
     for (std::unique_ptr<TaskQueueImpl>& task_queue : task_queues_) {
-      // Note since this test doesn't have a TaskQueueManager we need to
+      // Note since this test doesn't have a SequenceManager we need to
       // manually remove |task_queue| from the |selector_|.  Normally
       // UnregisterTaskQueue would do that.
       selector_.RemoveQueue(task_queue.get());

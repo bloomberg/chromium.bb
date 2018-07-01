@@ -20,7 +20,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/mock_time_domain.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/test/test_task_time_observer.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
@@ -54,9 +54,9 @@ class PerfTestTimeDomain : public MockTimeDomain {
   DISALLOW_COPY_AND_ASSIGN(PerfTestTimeDomain);
 };
 
-class TaskQueueManagerPerfTest : public testing::Test {
+class SequenceManagerPerfTest : public testing::Test {
  public:
-  TaskQueueManagerPerfTest()
+  SequenceManagerPerfTest()
       : num_queues_(0),
         max_tasks_in_flight_(0),
         num_tasks_in_flight_(0),
@@ -77,9 +77,9 @@ class TaskQueueManagerPerfTest : public testing::Test {
   void Initialize(size_t num_queues) {
     num_queues_ = num_queues;
     message_loop_.reset(new MessageLoop());
-    manager_ = TaskQueueManagerForTest::Create(message_loop_.get(),
-                                               message_loop_->task_runner(),
-                                               DefaultTickClock::GetInstance());
+    manager_ = SequenceManagerForTest::Create(message_loop_.get(),
+                                              message_loop_->task_runner(),
+                                              DefaultTickClock::GetInstance());
     manager_->AddTaskTimeObserver(&test_task_time_observer_);
 
     time_domain_.reset(new PerfTestTimeDomain());
@@ -91,10 +91,10 @@ class TaskQueueManagerPerfTest : public testing::Test {
     }
 
     delayed_task_closure_ = BindRepeating(
-        &TaskQueueManagerPerfTest::TestDelayedTask, Unretained(this));
+        &SequenceManagerPerfTest::TestDelayedTask, Unretained(this));
 
     immediate_task_closure_ = BindRepeating(
-        &TaskQueueManagerPerfTest::TestImmediateTask, Unretained(this));
+        &SequenceManagerPerfTest::TestImmediateTask, Unretained(this));
   }
 
   void TestDelayedTask() {
@@ -209,55 +209,51 @@ class TaskQueueManagerPerfTest : public testing::Test {
   TestTaskTimeObserver test_task_time_observer_;
 };
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_OneQueue) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(1u);
 
   max_tasks_in_flight_ = 200;
-  Benchmark(
-      "run 10000 delayed tasks with one queue",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                    Unretained(this), 10000));
+  Benchmark("run 10000 delayed tasks with one queue",
+            BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestDelayedTask,
+                          Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_FourQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(4u);
 
   max_tasks_in_flight_ = 200;
-  Benchmark(
-      "run 10000 delayed tasks with four queues",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                    Unretained(this), 10000));
+  Benchmark("run 10000 delayed tasks with four queues",
+            BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestDelayedTask,
+                          Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_EightQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(8u);
 
   max_tasks_in_flight_ = 200;
-  Benchmark(
-      "run 10000 delayed tasks with eight queues",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                    Unretained(this), 10000));
+  Benchmark("run 10000 delayed tasks with eight queues",
+            BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestDelayedTask,
+                          Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandDelayedTasks_ThirtyTwoQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(32u);
 
   max_tasks_in_flight_ = 200;
-  Benchmark(
-      "run 10000 delayed tasks with thirty two queues",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestDelayedTask,
-                    Unretained(this), 10000));
+  Benchmark("run 10000 delayed tasks with thirty two queues",
+            BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestDelayedTask,
+                          Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(1u);
@@ -265,11 +261,11 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_OneQueue) {
   max_tasks_in_flight_ = 200;
   Benchmark(
       "run 10000 immediate tasks with one queue",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+      BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestImmediateTask,
                     Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(4u);
@@ -277,11 +273,11 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_FourQueues) {
   max_tasks_in_flight_ = 200;
   Benchmark(
       "run 10000 immediate tasks with four queues",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+      BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestImmediateTask,
                     Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(8u);
@@ -289,11 +285,11 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_EightQueues) {
   max_tasks_in_flight_ = 200;
   Benchmark(
       "run 10000 immediate tasks with eight queues",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+      BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestImmediateTask,
                     Unretained(this), 10000));
 }
 
-TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
+TEST_F(SequenceManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
   if (!ThreadTicks::IsSupported())
     return;
   Initialize(32u);
@@ -301,7 +297,7 @@ TEST_F(TaskQueueManagerPerfTest, RunTenThousandImmediateTasks_ThirtyTwoQueues) {
   max_tasks_in_flight_ = 200;
   Benchmark(
       "run 10000 immediate tasks with thirty two queues",
-      BindRepeating(&TaskQueueManagerPerfTest::ResetAndCallTestImmediateTask,
+      BindRepeating(&SequenceManagerPerfTest::ResetAndCallTestImmediateTask,
                     Unretained(this), 10000));
 }
 

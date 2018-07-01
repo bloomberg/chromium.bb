@@ -9,7 +9,7 @@
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/test/task_queue_manager_for_test.h"
+#include "third_party/blink/renderer/platform/scheduler/base/test/sequence_manager_for_test.h"
 #include "third_party/blink/renderer/platform/scheduler/common/idle_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/common/scheduler_helper.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/main_thread_scheduler_helper.h"
@@ -32,7 +32,7 @@ class IdleCanceledDelayedTaskSweeperTest : public testing::Test,
   IdleCanceledDelayedTaskSweeperTest()
       : mock_task_runner_(new cc::OrderedSimpleTaskRunner(&clock_, true)),
         scheduler_helper_(new MainThreadSchedulerHelper(
-            base::sequence_manager::TaskQueueManagerForTest::Create(
+            base::sequence_manager::SequenceManagerForTest::Create(
                 nullptr,
                 mock_task_runner_,
                 &clock_),
