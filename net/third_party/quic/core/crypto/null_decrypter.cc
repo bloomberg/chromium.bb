@@ -11,8 +11,6 @@
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_uint128.h"
 
-using std::string;
-
 namespace quic {
 
 NullDecrypter::NullDecrypter(Perspective perspective)

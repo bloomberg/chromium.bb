@@ -32,8 +32,6 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "third_party/boringssl/src/include/openssl/ssl.h"
 
-using std::string;
-
 namespace quic {
 
 namespace {
@@ -185,7 +183,7 @@ QuicCryptoClientConfig::CachedState::SetServerConfig(
   }
 
   if (!matches_existing) {
-    server_config_ = string(server_config);
+    server_config_ = QuicString(server_config);
     SetProofInvalid();
     scfg_ = std::move(new_scfg_storage);
   }
@@ -225,9 +223,9 @@ void QuicCryptoClientConfig::CachedState::SetProof(
   // If the proof has changed then it needs to be revalidated.
   SetProofInvalid();
   certs_ = certs;
-  cert_sct_ = string(cert_sct);
-  chlo_hash_ = string(chlo_hash);
-  server_config_sig_ = string(signature);
+  cert_sct_ = QuicString(cert_sct);
+  chlo_hash_ = QuicString(chlo_hash);
+  server_config_sig_ = QuicString(signature);
 }
 
 void QuicCryptoClientConfig::CachedState::Clear() {
@@ -338,12 +336,12 @@ QuicCryptoClientConfig::CachedState::proof_verify_details() const {
 
 void QuicCryptoClientConfig::CachedState::set_source_address_token(
     QuicStringPiece token) {
-  source_address_token_ = string(token);
+  source_address_token_ = QuicString(token);
 }
 
 void QuicCryptoClientConfig::CachedState::set_cert_sct(
     QuicStringPiece cert_sct) {
-  cert_sct_ = string(cert_sct);
+  cert_sct_ = QuicString(cert_sct);
 }
 
 void QuicCryptoClientConfig::CachedState::SetProofVerifyDetails(
@@ -820,7 +818,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
 
   QuicStringPiece nonce;
   if (rej.GetStringPiece(kServerNonceTag, &nonce)) {
-    out_params->server_nonce = string(nonce);
+    out_params->server_nonce = QuicString(nonce);
   }
 
   if (rej.tag() == kSREJ) {
@@ -832,7 +830,7 @@ QuicErrorCode QuicCryptoClientConfig::ProcessRejection(
     connection_id = QuicEndian::NetToHost64(connection_id);
     cached->add_server_designated_connection_id(connection_id);
     if (!nonce.empty()) {
-      cached->add_server_nonce(string(nonce));
+      cached->add_server_nonce(QuicString(nonce));
     }
     return QUIC_NO_ERROR;
   }

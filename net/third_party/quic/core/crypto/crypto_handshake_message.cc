@@ -17,8 +17,6 @@
 #include "net/third_party/quic/platform/api/quic_string.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using std::string;
-
 namespace quic {
 
 CryptoHandshakeMessage::CryptoHandshakeMessage() : tag_(0), minimum_size_(0) {}
@@ -89,7 +87,7 @@ void CryptoHandshakeMessage::SetVersion(QuicTag tag,
 
 void CryptoHandshakeMessage::SetStringPiece(QuicTag tag,
                                             QuicStringPiece value) {
-  tag_value_map_[tag] = string(value);
+  tag_value_map_[tag] = QuicString(value);
 }
 
 void CryptoHandshakeMessage::Erase(QuicTag tag) {

@@ -28,8 +28,6 @@
 #include "third_party/boringssl/src/include/openssl/hkdf.h"
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
-using std::string;
-
 namespace quic {
 
 // static
@@ -108,9 +106,9 @@ void CryptoUtils::CreateTlsInitialCrypters(Perspective perspective,
   }
   handshake_secret.resize(handshake_secret_len);
 
-  const string client_label = "client hs";
-  const string server_label = "server hs";
-  string encryption_label, decryption_label;
+  const QuicString client_label = "client hs";
+  const QuicString server_label = "server hs";
+  QuicString encryption_label, decryption_label;
   if (perspective == Perspective::IS_CLIENT) {
     encryption_label = client_label;
     decryption_label = server_label;
@@ -202,7 +200,7 @@ bool CryptoUtils::DeriveKeys(QuicStringPiece premaster_secret,
   QuicStringPiece nonce = client_nonce;
   QuicString nonce_storage;
   if (!server_nonce.empty()) {
-    nonce_storage = string(client_nonce) + string(server_nonce);
+    nonce_storage = QuicString(client_nonce) + QuicString(server_nonce);
     nonce = nonce_storage;
   }
 
@@ -294,7 +292,7 @@ bool CryptoUtils::ExportKeyingMaterial(QuicStringPiece subkey_secret,
     return false;
   }
   uint32_t context_length = static_cast<uint32_t>(context.length());
-  QuicString info = string(label);
+  QuicString info = QuicString(label);
   info.push_back('\0');
   info.append(reinterpret_cast<char*>(&context_length), sizeof(context_length));
   info.append(context.data(), context.length());

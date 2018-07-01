@@ -17,7 +17,8 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/spdy/core/spdy_protocol.h"
 
-using base::IntToString;
+using spdy::SpdyHeaderBlock;
+using spdy::SpdyPriority;
 
 namespace quic {
 #define ENDPOINT                                                   \
@@ -41,7 +42,7 @@ QuicSpdyStream::QuicSpdyStream(QuicStreamId id, QuicSpdySession* spdy_session)
 QuicSpdyStream::~QuicSpdyStream() {}
 
 size_t QuicSpdyStream::WriteHeaders(
-    spdy::SpdyHeaderBlock header_block,
+    SpdyHeaderBlock header_block,
     bool fin,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   size_t bytes_written = spdy_session_->WriteHeaders(
@@ -62,7 +63,7 @@ void QuicSpdyStream::WriteOrBufferBody(
 }
 
 size_t QuicSpdyStream::WriteTrailers(
-    spdy::SpdyHeaderBlock trailer_block,
+    SpdyHeaderBlock trailer_block,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   if (fin_sent()) {
     QUIC_BUG << "Trailers cannot be sent after a FIN, on stream " << id();
@@ -132,7 +133,7 @@ void QuicSpdyStream::ConsumeHeaderList() {
   }
 }
 
-void QuicSpdyStream::OnStreamHeadersPriority(spdy::SpdyPriority priority) {
+void QuicSpdyStream::OnStreamHeadersPriority(SpdyPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   SetPriority(priority);
 }
@@ -222,7 +223,7 @@ void QuicSpdyStream::OnTrailingHeadersComplete(
       QuicStreamFrame(id(), fin, final_byte_offset, QuicStringPiece()));
 }
 
-void QuicSpdyStream::OnPriorityFrame(spdy::SpdyPriority priority) {
+void QuicSpdyStream::OnPriorityFrame(SpdyPriority priority) {
   DCHECK_EQ(Perspective::IS_SERVER, session()->connection()->perspective());
   SetPriority(priority);
 }
@@ -264,10 +265,9 @@ bool QuicSpdyStream::FinishedReadingHeaders() const {
   return headers_decompressed_ && header_list_.empty();
 }
 
-bool QuicSpdyStream::ParseHeaderStatusCode(const spdy::SpdyHeaderBlock& header,
+bool QuicSpdyStream::ParseHeaderStatusCode(const SpdyHeaderBlock& header,
                                            int* status_code) const {
-  spdy::SpdyHeaderBlock::const_iterator it =
-      header.find(spdy::kHttp2StatusHeader);
+  SpdyHeaderBlock::const_iterator it = header.find(spdy::kHttp2StatusHeader);
   if (it == header.end()) {
     return false;
   }

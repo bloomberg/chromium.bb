@@ -11,8 +11,6 @@
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-using std::string;
-
 namespace quic {
 
 size_t GetPacketHeaderSize(QuicTransportVersion version,
