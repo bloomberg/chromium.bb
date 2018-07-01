@@ -4307,6 +4307,20 @@
       },
       {
         "args": [
+          "--enable-features=Mash",
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter"
+        ],
+        "name": "mash_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1800,
+          "shards": 20
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
           "--enable-features=VizDisplayCompositor",
           "--test-launcher-filter-file=../../testing/buildbot/filters/viz.browser_tests.filter"
         ],
@@ -4894,6 +4908,20 @@
         "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 10
+        },
+        "test": "browser_tests"
+      },
+      {
+        "args": [
+          "--enable-features=Mash",
+          "--override-use-software-gl-for-tests",
+          "--test-launcher-filter-file=../../testing/buildbot/filters/mash.browser_tests.filter"
+        ],
+        "name": "mash_browser_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "hard_timeout": 1800,
+          "shards": 20
         },
         "test": "browser_tests"
       },
