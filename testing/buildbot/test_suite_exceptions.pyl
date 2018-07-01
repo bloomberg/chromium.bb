@@ -1357,6 +1357,12 @@
       'Mojo ChromiumOS',
     ],
     'modifications': {
+      # chromium.chromiumos
+      'linux-chromeos-dbg': {
+        'swarming': {
+          'shards': 20,
+        },
+      },
       # chromium.memory
       'Linux Chromium OS ASan LSan Tests (1)': {
         'swarming': {
@@ -2331,6 +2337,11 @@
       'Win10 Tests x64',
       'Win7 Tests (1)',
       'Win7 Tests (dbg)(1)',
+    ],
+  },
+  'wayland_client_perftests': {
+    'remove_from': [
+      'linux-chromeos-dbg',  # https://crbug.com/859307
     ],
   },
   'webgl_conformance_d3d9_passthrough_tests': {
