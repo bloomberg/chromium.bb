@@ -49,8 +49,8 @@ class GeneralLossAlgorithmTest : public QuicTest {
 
   void VerifyLosses(QuicPacketNumber largest_newly_acked,
                     const std::vector<QuicPacketNumber>& losses_expected) {
-    if (largest_newly_acked > unacked_packets_.largest_observed()) {
-      unacked_packets_.IncreaseLargestObserved(largest_newly_acked);
+    if (largest_newly_acked > unacked_packets_.largest_acked()) {
+      unacked_packets_.IncreaseLargestAcked(largest_newly_acked);
     }
     LostPacketVector lost_packets;
     loss_algorithm_.DetectLosses(unacked_packets_, clock_.Now(), rtt_stats_,
@@ -173,7 +173,7 @@ TEST_F(GeneralLossAlgorithmTest, DontEarlyRetransmitNeuteredPacket) {
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
 
   // Early retransmit when the final packet gets acked and the first is nacked.
-  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.IncreaseLargestAcked(2);
   unacked_packets_.RemoveFromInFlight(2);
   VerifyLosses(2, std::vector<QuicPacketNumber>{});
   EXPECT_EQ(clock_.Now() + 0.25 * rtt_stats_.smoothed_rtt(),
@@ -188,7 +188,7 @@ TEST_F(GeneralLossAlgorithmTest, EarlyRetransmitWithLargerUnackablePackets) {
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
 
   // Early retransmit when the final packet gets acked and the first is nacked.
-  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.IncreaseLargestAcked(2);
   unacked_packets_.RemoveFromInFlight(2);
   VerifyLosses(2, std::vector<QuicPacketNumber>{});
   EXPECT_EQ(clock_.Now() + 0.25 * rtt_stats_.smoothed_rtt(),
@@ -212,7 +212,7 @@ TEST_F(GeneralLossAlgorithmTest, AlwaysLosePacketSent1RTTEarlier) {
 
   // Wait another RTT and ack 2.
   clock_.AdvanceTime(rtt_stats_.smoothed_rtt());
-  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.IncreaseLargestAcked(2);
   unacked_packets_.RemoveFromInFlight(2);
   VerifyLosses(2, {1});
 }

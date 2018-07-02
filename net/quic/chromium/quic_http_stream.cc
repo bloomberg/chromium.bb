@@ -82,10 +82,6 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_UNKNOWN_VERSION;
     case quic::QUIC_VERSION_35:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_35;
-    case quic::QUIC_VERSION_37:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_37;
-    case quic::QUIC_VERSION_38:
-      return HttpResponseInfo::CONNECTION_INFO_QUIC_38;
     case quic::QUIC_VERSION_39:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_39;
     case quic::QUIC_VERSION_41:

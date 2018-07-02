@@ -139,6 +139,18 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
     return has_non_app_limited_sample_;
   }
 
+  // Sets the pacing and CWND gain used in STARTUP.  Must be greater than 1.
+  void set_high_gain(float high_gain) {
+    DCHECK_LT(1.0f, high_gain);
+    high_gain_ = high_gain;
+  }
+
+  // Sets the gain used in DRAIN.  Must be less than 1.
+  void set_drain_gain(float drain_gain) {
+    DCHECK_GT(1.0f, drain_gain);
+    drain_gain_ = drain_gain;
+  }
+
   DebugState ExportDebugState() const;
 
  private:
@@ -147,12 +159,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
                          QuicRoundTripCount,
                          QuicRoundTripCount>
       MaxBandwidthFilter;
-
-  typedef WindowedFilter<QuicTime::Delta,
-                         MaxFilter<QuicTime::Delta>,
-                         QuicRoundTripCount,
-                         QuicRoundTripCount>
-      MaxAckDelayFilter;
 
   typedef WindowedFilter<QuicByteCount,
                          MaxFilter<QuicByteCount>,
@@ -269,6 +275,12 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The smallest value the |congestion_window_| can achieve.
   QuicByteCount min_congestion_window_;
 
+  // The pacing and CWND gain applied during the STARTUP phase.
+  float high_gain_;
+
+  // The pacing gain applied during the DRAIN phase.
+  float drain_gain_;
+
   // The current pacing rate of the connection.
   QuicBandwidth pacing_rate_;
 
@@ -280,9 +292,6 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   // The gain used for the congestion window during PROBE_BW.  Latched from
   // quic_bbr_cwnd_gain flag.
   const float congestion_window_gain_constant_;
-  // The coefficient by which mean RTT variance is added to the congestion
-  // window.  Latched from quic_bbr_rtt_variation_weight flag.
-  const float rtt_variance_weight_;
   // The number of RTTs to stay in STARTUP mode.  Defaults to 3.
   QuicRoundTripCount num_startup_rtts_;
   // If true, exit startup if 1RTT has passed with no bandwidth increase and
@@ -326,6 +335,8 @@ class QUIC_EXPORT_PRIVATE BbrSender : public SendAlgorithmInterface {
   QuicPacketNumber end_recovery_at_;
   // A window used to limit the number of bytes in flight during loss recovery.
   QuicByteCount recovery_window_;
+  // If true, consider all samples in recovery app-limited.
+  bool is_app_limited_recovery_;
 
   // When true, pace at 1.5x and disable packet conservation in STARTUP.
   bool slower_startup_;

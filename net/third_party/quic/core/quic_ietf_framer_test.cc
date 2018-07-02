@@ -106,8 +106,6 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
 
   bool OnStreamFrame(const QuicStreamFrame& frame) override { return true; }
 
-  bool OnAckFrame(const QuicAckFrame& frame) override { return true; }
-
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     return true;
@@ -297,24 +295,6 @@ class QuicIetfFramerTest : public QuicTestWithParam<ParsedQuicVersion> {
     // framing and upshift on deframing results in clearing the 3
     // low-order bits ... The masking basically does the same thing,
     // so the compare works properly.
-    if (!framer_.use_incremental_ack_processing()) {
-      // incremental ack processing does not set these in the
-      // QuicAckFrame so test them only if we are not doing
-      // incremental ack.
-      EXPECT_EQ(transmit_frame.ack_delay_time.ToMicroseconds() & ~0x7,
-                receive_frame.ack_delay_time.ToMicroseconds() & ~0x7);
-      EXPECT_EQ(transmit_frame.packets.NumIntervals(),
-                receive_frame.packets.NumIntervals());
-      // now go through the two sets of intervals....
-      auto xmit_itr = transmit_frame.packets.begin();  // first range
-      auto recv_itr = receive_frame.packets.begin();   // first range
-      while (xmit_itr != transmit_frame.packets.end()) {
-        EXPECT_EQ(xmit_itr->max(), recv_itr->max());
-        EXPECT_EQ(xmit_itr->min(), recv_itr->min());
-        xmit_itr++;
-        recv_itr++;
-      }
-    }
     return true;
   }
 
@@ -727,16 +707,6 @@ TEST_F(QuicIetfFramerTest, AckFrameNoRanges) {
 
   // Now check that the received frame matches the sent frame.
   EXPECT_EQ(transmit_frame.largest_acked, receive_frame.largest_acked);
-
-  if (!framer_.use_incremental_ack_processing()) {
-    // Transmit QuicAckFrame had no explicit ranges -- which means no
-    // intervals are in the frame.
-    EXPECT_EQ(0u, transmit_frame.packets.NumIntervals());
-    // However, the actual serialization generates a FirstAckBlock and,
-    // therefore, when we deserialize, we should get a single interval
-    // in the Receive QuicAckFrame.
-    EXPECT_EQ(1u, receive_frame.packets.NumIntervals());
-  }
 }
 
 TEST_F(QuicIetfFramerTest, PathChallengeFrame) {

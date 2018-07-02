@@ -668,9 +668,7 @@ void QuicConfig::SetDefaults() {
 
   SetInitialStreamFlowControlWindowToSend(kMinimumFlowControlSendWindow);
   SetInitialSessionFlowControlWindowToSend(kMinimumFlowControlSendWindow);
-  if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
-    SetSupportMaxHeaderListSize();
-  }
+  SetSupportMaxHeaderListSize();
 }
 
 void QuicConfig::ToHandshakeMessage(CryptoHandshakeMessage* out) const {

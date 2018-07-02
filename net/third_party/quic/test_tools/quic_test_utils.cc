@@ -149,8 +149,6 @@ MockFramerVisitor::MockFramerVisitor() {
 
   ON_CALL(*this, OnStreamFrame(_)).WillByDefault(testing::Return(true));
 
-  ON_CALL(*this, OnAckFrame(_)).WillByDefault(testing::Return(true));
-
   ON_CALL(*this, OnStopWaitingFrame(_)).WillByDefault(testing::Return(true));
 
   ON_CALL(*this, OnPaddingFrame(_)).WillByDefault(testing::Return(true));
@@ -198,10 +196,6 @@ bool NoOpFramerVisitor::OnPacketHeader(const QuicPacketHeader& header) {
 }
 
 bool NoOpFramerVisitor::OnStreamFrame(const QuicStreamFrame& frame) {
-  return true;
-}
-
-bool NoOpFramerVisitor::OnAckFrame(const QuicAckFrame& frame) {
   return true;
 }
 
@@ -572,6 +566,11 @@ TestQuicSpdyServerSession::CreateQuicCryptoServerStream(
       &helper_);
 }
 
+void TestQuicSpdyServerSession::OnCryptoHandshakeEvent(
+    CryptoHandshakeEvent event) {
+  QuicSession::OnCryptoHandshakeEvent(event);
+}
+
 QuicCryptoServerStream* TestQuicSpdyServerSession::GetMutableCryptoStream() {
   return static_cast<QuicCryptoServerStream*>(
       QuicServerSessionBase::GetMutableCryptoStream());
@@ -599,6 +598,11 @@ TestQuicSpdyClientSession::~TestQuicSpdyClientSession() {}
 
 bool TestQuicSpdyClientSession::IsAuthorized(const string& authority) {
   return true;
+}
+
+void TestQuicSpdyClientSession::OnCryptoHandshakeEvent(
+    CryptoHandshakeEvent event) {
+  QuicSession::OnCryptoHandshakeEvent(event);
 }
 
 QuicCryptoClientStream* TestQuicSpdyClientSession::GetMutableCryptoStream() {

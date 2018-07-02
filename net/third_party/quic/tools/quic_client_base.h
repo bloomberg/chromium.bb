@@ -106,8 +106,11 @@ class QuicClientBase {
   // Returns true if there are any outstanding requests.
   bool WaitForEvents();
 
-  // Migrate to a new socket during an active connection.
+  // Migrate to a new socket (new_host) during an active connection.
   bool MigrateSocket(const QuicIpAddress& new_host);
+
+  // Migrate to a new socket (new_host, port) during an active connection.
+  bool MigrateSocketWithSpecifiedPort(const QuicIpAddress& new_host, int port);
 
   QuicSession* session();
 

@@ -25,9 +25,6 @@ enum QuicTransportVersion {
   QUIC_VERSION_UNSUPPORTED = 0,
 
   QUIC_VERSION_35 = 35,  // Allows endpoints to independently set stream limit.
-  QUIC_VERSION_37 = 37,  // Add perspective into null encryption.
-  QUIC_VERSION_38 = 38,  // PADDING frame is a 1-byte frame with type 0x00.
-                         // Respect NSTP connection option.
   QUIC_VERSION_39 = 39,  // Integers and floating numbers are written in big
                          // endian. Dot not ack acks. Send a connection level
                          // WINDOW_UPDATE every 20 sent packets which do not
@@ -101,9 +98,8 @@ using QuicVersionLabelVector = std::vector<QuicVersionLabel>;
 // IMPORTANT: if you are adding to this list, follow the instructions at
 // http://sites/quic/adding-and-removing-versions
 static const QuicTransportVersion kSupportedTransportVersions[] = {
-    QUIC_VERSION_99, QUIC_VERSION_44, QUIC_VERSION_43,
-    QUIC_VERSION_42, QUIC_VERSION_41, QUIC_VERSION_39,
-    QUIC_VERSION_38, QUIC_VERSION_37, QUIC_VERSION_35};
+    QUIC_VERSION_99, QUIC_VERSION_44, QUIC_VERSION_43, QUIC_VERSION_42,
+    QUIC_VERSION_41, QUIC_VERSION_39, QUIC_VERSION_35};
 
 // This vector contains all crypto handshake protocols that are supported.
 static const HandshakeProtocol kSupportedHandshakeProtocols[] = {

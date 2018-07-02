@@ -416,7 +416,7 @@ class QUIC_EXPORT_PRIVATE QuicConnection
 
   // Called when an error occurs while attempting to write a packet to the
   // network.
-  void OnWriteError(int error_code);
+  virtual void OnWriteError(int error_code);
 
   // Whether |result| represents a MSG TOO BIG write error.
   bool IsMsgTooBig(const WriteResult& result);
@@ -468,7 +468,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   void OnDecryptedPacket(EncryptionLevel level) override;
   bool OnPacketHeader(const QuicPacketHeader& header) override;
   bool OnStreamFrame(const QuicStreamFrame& frame) override;
-  bool OnAckFrame(const QuicAckFrame& frame) override;
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override;
   bool OnAckRange(QuicPacketNumber start,
@@ -927,6 +926,9 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Writes as many pending retransmissions as possible.
   void WritePendingRetransmissions();
 
+  // Writes new data if congestion control allows.
+  void WriteNewData();
+
   // Queues |packet| in the hopes that it can be decrypted in the
   // future, when a new key is installed.
   void QueueUndecryptablePacket(const QuicEncryptedPacket& packet);
@@ -1106,9 +1108,6 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // When true, close the QUIC connection after 5 RTOs.  Due to the min rto of
   // 200ms, this is over 5 seconds.
   bool close_connection_after_five_rtos_;
-  // When true, close the QUIC connection when there are no open streams after
-  // 3 consecutive RTOs.
-  bool close_connection_after_three_rtos_;
 
   QuicReceivedPacketManager received_packet_manager_;
 
@@ -1117,6 +1116,8 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // How many retransmittable packets have arrived without sending an ack.
   QuicPacketCount num_retransmittable_packets_received_since_last_ack_sent_;
   // Whether there were missing packets in the last sent ack.
+  // TODO(ianswett): Deprecate with
+  // quic_reloadable_flag_quic_ack_reordered_packets.
   bool last_ack_had_missing_packets_;
   // How many consecutive packets have arrived without sending an ack.
   QuicPacketCount num_packets_received_since_last_ack_sent_;
@@ -1316,6 +1317,12 @@ class QUIC_EXPORT_PRIVATE QuicConnection
   // Latched value of
   // gfe2_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked.
   const bool add_to_blocked_list_if_writer_blocked_;
+
+  // Latched value of quic_reloadable_flag_quic_ack_reordered_packets.
+  const bool ack_reordered_packets_;
+
+  // Latched value of quic_reloadable_flag_quic_retransmissions_app_limited.
+  const bool retransmissions_app_limited_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnection);
 };

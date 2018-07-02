@@ -146,10 +146,7 @@ class QuicSpdySession::SpdyFramerVisitor
       // TODO(fayang): Need to support spdy::SETTINGS_MAX_HEADER_LIST_SIZE when
       // clients are actually sending it.
       case spdy::SETTINGS_MAX_HEADER_LIST_SIZE:
-        if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
-          break;
-        }
-        QUIC_FALLTHROUGH_INTENDED;
+        break;
       default:
         CloseConnection(
             QuicStrCat("Unsupported field of HTTP/2 SETTINGS frame: ", id),
@@ -476,8 +473,7 @@ QuicSpdyStream* QuicSpdySession::GetSpdyDataStream(
 
 void QuicSpdySession::OnCryptoHandshakeEvent(CryptoHandshakeEvent event) {
   QuicSession::OnCryptoHandshakeEvent(event);
-  if (GetQuicReloadableFlag(quic_send_max_header_list_size) &&
-      event == HANDSHAKE_CONFIRMED && config()->SupportMaxHeaderListSize()) {
+  if (event == HANDSHAKE_CONFIRMED && config()->SupportMaxHeaderListSize()) {
     SendMaxHeaderListSize(max_inbound_header_list_size_);
   }
 }
