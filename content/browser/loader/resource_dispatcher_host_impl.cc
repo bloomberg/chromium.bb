@@ -1548,10 +1548,6 @@ void ResourceDispatcherHostImpl::BeginNavigationRequest(
     AppCacheNavigationHandleCore* appcache_handle_core,
     uint32_t url_loader_options,
     const GlobalRequestID& global_request_id) {
-  // PlzNavigate: BeginNavigationRequest currently should only be used for the
-  // browser-side navigations project.
-  CHECK(IsBrowserSideNavigationEnabled());
-
   DCHECK(url_loader_client.is_bound());
   DCHECK(url_loader_request.is_pending());
 

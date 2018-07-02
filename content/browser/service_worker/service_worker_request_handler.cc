@@ -83,8 +83,6 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
     bool is_parent_frame_secure,
     scoped_refptr<network::ResourceRequestBody> body,
     const base::Callback<WebContents*(void)>& web_contents_getter) {
-  CHECK(IsBrowserSideNavigationEnabled());
-
   // Only create a handler when there is a ServiceWorkerNavigationHandlerCore
   // to take ownership of a pre-created SeviceWorkerProviderHost.
   if (!navigation_handle_core)
@@ -93,6 +91,10 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
   // This is the legacy path used by non-NetworkService and
   // non-S13nServiceWorker. The NetworkService/S13nServiceWorker path is
   // InitializeForNavigationNetworkService().
+  //
+  // This function can still be called with a null navigation_handle_core by
+  // ResourceDispatcherHostImpl::BeginNavigationRequest when S13nSW is on and
+  // NetworkService is off, so this DCHECK must be after the null check above.
   DCHECK(!ServiceWorkerUtils::IsServicificationEnabled());
 
   // Create the handler even for insecure HTTP since it's used in the
@@ -165,8 +167,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
   // Initialize the SWProviderHost.
   base::WeakPtr<ServiceWorkerProviderHost> provider_host =
       ServiceWorkerProviderHost::PreCreateNavigationHost(
-          navigation_handle_core->context_wrapper()->context()->AsWeakPtr(),
-          is_parent_frame_secure, web_contents_getter);
+          context->AsWeakPtr(), is_parent_frame_secure, web_contents_getter);
 
   std::unique_ptr<ServiceWorkerRequestHandler> handler(
       provider_host->CreateRequestHandler(
