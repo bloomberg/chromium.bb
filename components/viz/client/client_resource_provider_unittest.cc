@@ -107,7 +107,6 @@ TEST_P(ClientResourceProviderTest, TransferableResourceReleased) {
 TEST_P(ClientResourceProviderTest, TransferableResourceSendToParent) {
   MockReleaseCallback release;
   TransferableResource tran = MakeTransferableResource(use_gpu(), 'a', 15);
-  tran.buffer_format = gfx::BufferFormat::RGBX_8888;
   ResourceId id = provider().ImportResource(
       tran, SingleReleaseCallback::Create(base::BindOnce(
                 &MockReleaseCallback::Released, base::Unretained(&release))));
@@ -132,7 +131,6 @@ TEST_P(ClientResourceProviderTest, TransferableResourceSendToParent) {
   EXPECT_EQ(exported[0].mailbox_holder.sync_token, verified_sync_token);
   EXPECT_EQ(exported[0].mailbox_holder.texture_target,
             tran.mailbox_holder.texture_target);
-  EXPECT_EQ(exported[0].buffer_format, tran.buffer_format);
 
   // Exported resources are not released when removed, until the export returns.
   EXPECT_CALL(release, Released(_, _)).Times(0);
@@ -182,7 +180,6 @@ TEST_P(ClientResourceProviderTest, TransferableResourceSendTwoToParent) {
     EXPECT_EQ(exported[i].mailbox_holder.sync_token, verified_sync_token);
     EXPECT_EQ(exported[i].mailbox_holder.texture_target,
               tran[i].mailbox_holder.texture_target);
-    EXPECT_EQ(exported[i].buffer_format, tran[i].buffer_format);
   }
 
   provider().RemoveImportedResource(id1);

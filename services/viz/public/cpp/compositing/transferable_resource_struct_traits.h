@@ -24,11 +24,6 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
     return static_cast<viz::mojom::ResourceFormat>(resource.format);
   }
 
-  static gfx::mojom::BufferFormat buffer_format(
-      const viz::TransferableResource& resource) {
-    return static_cast<gfx::mojom::BufferFormat>(resource.buffer_format);
-  }
-
   static uint32_t filter(const viz::TransferableResource& resource) {
     return resource.filter;
   }

@@ -47,6 +47,11 @@ VIZ_RESOURCE_FORMAT_EXPORT bool IsGpuMemoryBufferFormatSupported(
 // display compositor.
 VIZ_RESOURCE_FORMAT_EXPORT bool IsBitmapFormatSupported(ResourceFormat format);
 
+VIZ_RESOURCE_FORMAT_EXPORT ResourceFormat
+GetResourceFormat(gfx::BufferFormat format);
+
+VIZ_RESOURCE_FORMAT_EXPORT bool GLSupportsFormat(ResourceFormat format);
+
 }  // namespace viz
 
 #endif  // COMPONENTS_VIZ_COMMON_RESOURCES_RESOURCE_FORMAT_UTILS_H_

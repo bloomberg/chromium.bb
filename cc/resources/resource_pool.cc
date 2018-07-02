@@ -306,7 +306,6 @@ void ResourcePool::PrepareForExport(const InUsePoolResource& resource) {
         resource.resource_->size(), resource.resource_->format());
   }
   transferable.format = resource.resource_->format();
-  transferable.buffer_format = viz::BufferFormat(transferable.format);
   transferable.color_space = resource.resource_->color_space();
   resource.resource_->set_resource_id(resource_provider_->ImportResource(
       std::move(transferable),

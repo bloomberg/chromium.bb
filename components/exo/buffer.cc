@@ -23,6 +23,7 @@
 #include "components/exo/layer_tree_frame_sink_holder.h"
 #include "components/viz/common/gpu/context_provider.h"
 #include "components/viz/common/resources/resource_format.h"
+#include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/single_release_callback.h"
 #include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
@@ -458,7 +459,7 @@ bool Buffer::ProduceTransferableResource(
     resource->mailbox_holder = gpu::MailboxHolder(contents_texture->mailbox(),
                                                   sync_token, texture_target_);
     resource->is_overlay_candidate = is_overlay_candidate_;
-    resource->buffer_format = gpu_memory_buffer_->GetFormat();
+    resource->format = viz::GetResourceFormat(gpu_memory_buffer_->GetFormat());
 
     // The contents texture will be released when no longer used by the
     // compositor.

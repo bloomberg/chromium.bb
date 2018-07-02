@@ -311,6 +311,7 @@ void HeadsUpDisplayLayerImpl::UpdateHudTexture(
     SkPixmap pixmap;
     staging_surface_->peekPixels(&pixmap);
     gl->BindTexture(backing->texture_target, backing->texture_id);
+    DCHECK(GLSupportsFormat(pool_resource.format()));
     gl->TexSubImage2D(
         backing->texture_target, 0, 0, 0, pool_resource.size().width(),
         pool_resource.size().height(), GLDataFormat(pool_resource.format()),

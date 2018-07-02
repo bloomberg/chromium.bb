@@ -757,10 +757,13 @@ GLenum GLRenderer::GetFramebufferCopyTextureFormat() {
   // texture. Otherwise, we use the format of the default framebuffer. But
   // whatever the format is, convert it to a valid format for CopyTexSubImage2D.
   GLenum format;
-  if (!current_framebuffer_texture_)
+  if (!current_framebuffer_texture_) {
     format = output_surface_->GetFramebufferCopyTextureFormat();
-  else
-    format = GLCopyTextureInternalFormat(BackbufferFormat());
+  } else {
+    ResourceFormat resource_format = BackbufferFormat();
+    DCHECK(GLSupportsFormat(resource_format));
+    format = GLCopyTextureInternalFormat(resource_format);
+  }
   // Verify the format is valid for GLES2's glCopyTexSubImage2D.
   DCHECK(format == GL_ALPHA || format == GL_LUMINANCE ||
          format == GL_LUMINANCE_ALPHA || format == GL_RGB ||
