@@ -6,8 +6,10 @@
 #define COMPONENTS_FEED_CORE_FEED_SCHEDULER_HOST_H_
 
 #include "base/callback.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/user_classifier.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -35,11 +37,17 @@ enum NativeRequestBehavior {
   NO_REQUEST_WITH_TIMEOUT
 };
 
+enum class TriggerType;
+
 // Implementation of the Feed Scheduler Host API. The scheduler host decides
 // what content is allowed to be shown, based on its age, and when to fetch new
 // content.
 class FeedSchedulerHost {
  public:
+  // The TriggerType enum specifies values for the events that can trigger
+  // refreshing articles.
+  enum class TriggerType { NTP_SHOWN = 0, FOREGROUNDED = 1, FIXED_TIMER = 2 };
+
   FeedSchedulerHost(PrefService* pref_service, base::Clock* clock);
   ~FeedSchedulerHost();
 
@@ -82,10 +90,12 @@ class FeedSchedulerHost {
   // upgrades that change the way tasks are stored.
   void OnTaskReschedule();
 
+  // Called when a suggestion is consumed to update what kind of user the
+  // scheduler should be optimizing for.
+  void OnSuggestionConsumed();
+
  private:
-  // The TriggerType enum specifies values for the events that can trigger
-  // refreshing articles.
-  enum class TriggerType;
+  FRIEND_TEST_ALL_PREFIXES(FeedSchedulerHostTest, GetTriggerThreshold);
 
   // Determines whether a refresh should be performed for the given |trigger|.
   // If this method is called and returns true we presume the refresh will
@@ -109,6 +119,9 @@ class FeedSchedulerHost {
 
   // Non-owning reference to clock to get current time.
   base::Clock* clock_;
+
+  // Persists NTP and article usage over time and provides a classification.
+  UserClassifier user_classifier_;
 
   // Callback to request that an async refresh be started.
   base::RepeatingClosure refresh_callback_;
