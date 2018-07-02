@@ -13,15 +13,12 @@
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 #include "net/third_party/quic/core/crypto/quic_encrypter.h"
 #include "net/third_party/quic/core/quic_data_reader.h"
-#include "net/third_party/quic/core/quic_epoll_alarm_factory.h"
-#include "net/third_party/quic/core/quic_epoll_connection_helper.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/core/quic_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
 #include "net/third_party/quic/platform/api/quic_test.h"
-#include "net/third_party/quic/test_tools/mock_epoll_server.h"
 #include "net/third_party/quic/test_tools/mock_quic_session_visitor.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 #include "net/third_party/quic/test_tools/quic_time_wait_list_manager_peer.h"
@@ -74,19 +71,65 @@ class FramerVisitorCapturingPublicReset : public NoOpFramerVisitor {
   QuicConnectionId connection_id_;
 };
 
-class MockFakeTimeEpollServer : public FakeTimeEpollServer {
+class MockAlarmFactory;
+class MockAlarm : public QuicAlarm {
  public:
-  MOCK_METHOD2(RegisterAlarm,
-               void(int64_t timeout_in_us,
-                    net::EpollAlarmCallbackInterface* alarm));
+  explicit MockAlarm(QuicArenaScopedPtr<Delegate> delegate,
+                     int alarm_index,
+                     MockAlarmFactory* factory)
+      : QuicAlarm(std::move(delegate)),
+        alarm_index_(alarm_index),
+        factory_(factory) {}
+  virtual ~MockAlarm() {}
+
+  void SetImpl() override;
+  void CancelImpl() override;
+
+ private:
+  int alarm_index_;
+  MockAlarmFactory* factory_;
 };
+
+class MockAlarmFactory : public QuicAlarmFactory {
+ public:
+  ~MockAlarmFactory() override {}
+
+  // Creates a new platform-specific alarm which will be configured to notify
+  // |delegate| when the alarm fires. Returns an alarm allocated on the heap.
+  // Caller takes ownership of the new alarm, which will not yet be "set" to
+  // fire.
+  QuicAlarm* CreateAlarm(QuicAlarm::Delegate* delegate) override {
+    return new MockAlarm(QuicArenaScopedPtr<QuicAlarm::Delegate>(delegate),
+                         alarm_index_++, this);
+  }
+  QuicArenaScopedPtr<QuicAlarm> CreateAlarm(
+      QuicArenaScopedPtr<QuicAlarm::Delegate> delegate,
+      QuicConnectionArena* arena) override {
+    if (arena != nullptr) {
+      return arena->New<MockAlarm>(std::move(delegate), alarm_index_++, this);
+    }
+    return QuicArenaScopedPtr<MockAlarm>(
+        new MockAlarm(std::move(delegate), alarm_index_++, this));
+  }
+  MOCK_METHOD2(OnAlarmSet, void(int, QuicTime));
+  MOCK_METHOD1(OnAlarmCancelled, void(int));
+
+ private:
+  int alarm_index_ = 0;
+};
+
+void MockAlarm::SetImpl() {
+  factory_->OnAlarmSet(alarm_index_, deadline());
+}
+
+void MockAlarm::CancelImpl() {
+  factory_->OnAlarmCancelled(alarm_index_);
+}
 
 class QuicTimeWaitListManagerTest : public QuicTest {
  protected:
   QuicTimeWaitListManagerTest()
-      : helper_(&epoll_server_, QuicAllocator::BUFFER_POOL),
-        alarm_factory_(&epoll_server_),
-        time_wait_list_manager_(&writer_, &visitor_, &helper_, &alarm_factory_),
+      : time_wait_list_manager_(&writer_, &visitor_, &clock_, &alarm_factory_),
         connection_id_(45),
         client_address_(TestPeerIPAddress(), kTestPort),
         writer_is_blocked_(false) {}
@@ -142,9 +185,8 @@ class QuicTimeWaitListManagerTest : public QuicTest {
                                                 false, packet_number, "data");
   }
 
-  NiceMock<MockFakeTimeEpollServer> epoll_server_;
-  QuicEpollConnectionHelper helper_;
-  QuicEpollAlarmFactory alarm_factory_;
+  MockClock clock_;
+  MockAlarmFactory alarm_factory_;
   StrictMock<MockPacketWriter> writer_;
   StrictMock<MockQuicSessionVisitor> visitor_;
   QuicTimeWaitListManager time_wait_list_manager_;
@@ -304,7 +346,6 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
   const size_t kOldConnectionIdCount = 31;
 
   // Add connection_ids such that their expiry time is time_wait_period_.
-  epoll_server_.set_now_in_usec(0);
   for (size_t connection_id = 1; connection_id <= kOldConnectionIdCount;
        ++connection_id) {
     EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
@@ -316,7 +357,7 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
   // 2 * time_wait_period_.
   const QuicTime::Delta time_wait_period =
       QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
-  epoll_server_.set_now_in_usec(time_wait_period.ToMicroseconds());
+  clock_.AdvanceTime(time_wait_period);
   for (size_t connection_id = kOldConnectionIdCount + 1;
        connection_id <= kConnectionIdCount; ++connection_id) {
     EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id));
@@ -326,12 +367,11 @@ TEST_F(QuicTimeWaitListManagerTest, CleanUpOldConnectionIds) {
 
   QuicTime::Delta offset = QuicTime::Delta::FromMicroseconds(39);
   // Now set the current time as time_wait_period + offset usecs.
-  epoll_server_.set_now_in_usec((time_wait_period + offset).ToMicroseconds());
+  clock_.AdvanceTime(offset);
   // After all the old connection_ids are cleaned up, check the next alarm
   // interval.
-  int64_t next_alarm_time = epoll_server_.ApproximateNowInUsec() +
-                            (time_wait_period - offset).ToMicroseconds();
-  EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
+  QuicTime next_alarm_time = clock_.Now() + time_wait_period - offset;
+  EXPECT_CALL(alarm_factory_, OnAlarmSet(_, next_alarm_time));
 
   time_wait_list_manager_.CleanUpOldConnectionIds();
   for (size_t connection_id = 1; connection_id <= kConnectionIdCount;
@@ -399,7 +439,6 @@ TEST_F(QuicTimeWaitListManagerTest, SendQueuedPackets) {
 
 TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
   // Add connection_ids such that their expiry time is time_wait_period_.
-  epoll_server_.set_now_in_usec(0);
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id_));
   AddConnectionId(connection_id_, QuicTimeWaitListManager::DO_NOTHING);
   EXPECT_TRUE(IsConnectionIdInTimeWait(connection_id_));
@@ -424,13 +463,11 @@ TEST_F(QuicTimeWaitListManagerTest, AddConnectionIdTwice) {
       QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
 
   QuicTime::Delta offset = QuicTime::Delta::FromMicroseconds(39);
+  clock_.AdvanceTime(offset + time_wait_period);
   // Now set the current time as time_wait_period + offset usecs.
-  epoll_server_.set_now_in_usec((time_wait_period + offset).ToMicroseconds());
-  // After the connection_ids are cleaned up, check the next alarm interval.
-  int64_t next_alarm_time =
-      epoll_server_.ApproximateNowInUsec() + time_wait_period.ToMicroseconds();
+  QuicTime next_alarm_time = clock_.Now() + time_wait_period;
+  EXPECT_CALL(alarm_factory_, OnAlarmSet(_, next_alarm_time));
 
-  EXPECT_CALL(epoll_server_, RegisterAlarm(next_alarm_time, _));
   time_wait_list_manager_.CleanUpOldConnectionIds();
   EXPECT_FALSE(IsConnectionIdInTimeWait(connection_id_));
   EXPECT_EQ(0u, time_wait_list_manager_.num_connections());
@@ -445,19 +482,18 @@ TEST_F(QuicTimeWaitListManagerTest, ConnectionIdsOrderedByTime) {
 
   // 1 will hash lower than 2, but we add it later. They should come out in the
   // add order, not hash order.
-  epoll_server_.set_now_in_usec(0);
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id1));
   AddConnectionId(connection_id1, QuicTimeWaitListManager::DO_NOTHING);
-  epoll_server_.set_now_in_usec(10);
+  clock_.AdvanceTime(QuicTime::Delta::FromMicroseconds(10));
   EXPECT_CALL(visitor_, OnConnectionAddedToTimeWaitList(connection_id2));
   AddConnectionId(connection_id2, QuicTimeWaitListManager::DO_NOTHING);
   EXPECT_EQ(2u, time_wait_list_manager_.num_connections());
 
   const QuicTime::Delta time_wait_period =
       QuicTimeWaitListManagerPeer::time_wait_period(&time_wait_list_manager_);
-  epoll_server_.set_now_in_usec(time_wait_period.ToMicroseconds() + 1);
+  clock_.AdvanceTime(time_wait_period - QuicTime::Delta::FromMicroseconds(9));
 
-  EXPECT_CALL(epoll_server_, RegisterAlarm(_, _));
+  EXPECT_CALL(alarm_factory_, OnAlarmSet(_, _));
 
   time_wait_list_manager_.CleanUpOldConnectionIds();
   EXPECT_FALSE(IsConnectionIdInTimeWait(connection_id1));

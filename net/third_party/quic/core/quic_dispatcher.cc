@@ -870,7 +870,7 @@ bool QuicDispatcher::ShouldAttemptCheapStatelessRejection() {
 }
 
 QuicTimeWaitListManager* QuicDispatcher::CreateQuicTimeWaitListManager() {
-  return new QuicTimeWaitListManager(writer_.get(), this, helper_.get(),
+  return new QuicTimeWaitListManager(writer_.get(), this, helper_->GetClock(),
                                      alarm_factory_.get());
 }
 

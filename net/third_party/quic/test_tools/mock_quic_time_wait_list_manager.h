@@ -15,7 +15,7 @@ class MockTimeWaitListManager : public QuicTimeWaitListManager {
  public:
   MockTimeWaitListManager(QuicPacketWriter* writer,
                           Visitor* visitor,
-                          QuicConnectionHelperInterface* helper,
+                          const QuicClock* clock,
                           QuicAlarmFactory* alarm_factory);
   ~MockTimeWaitListManager() override;
 

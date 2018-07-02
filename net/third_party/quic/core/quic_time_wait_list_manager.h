@@ -14,7 +14,6 @@
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_blocked_writer_interface.h"
-#include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_framer.h"
 #include "net/third_party/quic/core/quic_packet_writer.h"
 #include "net/third_party/quic/core/quic_packets.h"
@@ -59,13 +58,13 @@ class QuicTimeWaitListManager : public QuicBlockedWriterInterface {
         QuicConnectionId connection_id) = 0;
   };
 
-  // writer - the entity that writes to the socket. (Owned by the dispatcher)
-  // visitor - the entity that manages blocked writers. (The dispatcher)
-  // helper - provides a clock (Owned by the dispatcher)
-  // alarm_factory - used to run clean up alarms. (Owned by the dispatcher)
+  // writer - the entity that writes to the socket. (Owned by the caller)
+  // visitor - the entity that manages blocked writers. (Owned by the caller)
+  // clock - provide a clock (Owned by the caller)
+  // alarm_factory - used to run clean up alarms. (Owned by the caller)
   QuicTimeWaitListManager(QuicPacketWriter* writer,
                           Visitor* visitor,
-                          QuicConnectionHelperInterface* helper,
+                          const QuicClock* clock,
                           QuicAlarmFactory* alarm_factory);
   ~QuicTimeWaitListManager() override;
 
