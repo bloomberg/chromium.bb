@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SCHEDULER_H_
 #define COMPONENTS_OFFLINE_PAGES_CORE_BACKGROUND_SCHEDULER_H_
 
+#include <stdint.h>
+
 #include "components/offline_pages/core/background/device_conditions.h"
 
 namespace offline_pages {
@@ -38,7 +40,7 @@ class Scheduler {
   // so we can continue processing background download requests.  This will
   // not overwrite existing tasks.
   virtual void BackupSchedule(const TriggerConditions& trigger_conditions,
-                              long delay_in_seconds) = 0;
+                              int64_t delay_in_seconds) = 0;
 
   // Unschedules the currently scheduled task, if any.
   virtual void Unschedule() = 0;

@@ -21,7 +21,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
-using base::android::RunCallbackAndroid;
+using base::android::RunBooleanCallbackAndroid;
 using base::android::ScopedJavaGlobalRef;
 
 void JNI_ChildAccountService_ListenForChildStatusReceived(
@@ -31,10 +31,9 @@ void JNI_ChildAccountService_ListenForChildStatusReceived(
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ChildAccountService* service = ChildAccountServiceFactory::GetForProfile(
       profile_manager->GetLastUsedProfile());
-  // Needed to disambiguate RunCallbackAndroid
-  void (*runCallback)(const JavaRef<jobject>&, bool) = &RunCallbackAndroid;
-  service->AddChildStatusReceivedCallback(base::BindOnce(
-      runCallback, ScopedJavaGlobalRef<jobject>(callback), true));
+  service->AddChildStatusReceivedCallback(
+      base::BindOnce(&RunBooleanCallbackAndroid,
+                     ScopedJavaGlobalRef<jobject>(callback), true));
 }
 
 void ReauthenticateChildAccount(content::WebContents* web_contents,

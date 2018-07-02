@@ -189,7 +189,7 @@ void ContextualSuggestionsBridge::OnSuggestionsAvailable(
 
   RegisterSyntheticFieldTrials(result);
 
-  RunCallbackAndroid(j_callback, j_result);
+  RunObjectCallbackAndroid(j_callback, j_result);
 }
 
 void ContextualSuggestionsBridge::OnImageFetched(
@@ -199,7 +199,7 @@ void ContextualSuggestionsBridge::OnImageFetched(
   if (!image.IsEmpty())
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
 
-  RunCallbackAndroid(j_callback, j_bitmap);
+  RunObjectCallbackAndroid(j_callback, j_bitmap);
 }
 
 }  // namespace contextual_suggestions

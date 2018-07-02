@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include <vector>
+#include <map>
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
@@ -51,14 +51,14 @@ class ContextMenuHelperImageRequest : public ImageDecoder::ImageRequest {
 
  protected:
   void OnImageDecoded(const SkBitmap& decoded_image) override {
-    base::android::RunCallbackAndroid(jcallback_,
-                                      gfx::ConvertToJavaBitmap(&decoded_image));
+    base::android::RunObjectCallbackAndroid(
+        jcallback_, gfx::ConvertToJavaBitmap(&decoded_image));
     delete this;
   }
 
   void OnDecodeImageFailed() override {
     base::android::ScopedJavaLocalRef<jobject> j_bitmap;
-    base::android::RunCallbackAndroid(jcallback_, j_bitmap);
+    base::android::RunObjectCallbackAndroid(jcallback_, j_bitmap);
     delete this;
   }
 
@@ -77,7 +77,7 @@ void OnRetrieveImageForShare(
     const base::android::JavaRef<jobject>& jcallback,
     const std::vector<uint8_t>& thumbnail_data,
     const gfx::Size& original_size) {
-  base::android::RunCallbackAndroid(jcallback, thumbnail_data);
+  base::android::RunByteArrayCallbackAndroid(jcallback, thumbnail_data);
 }
 
 void OnRetrieveImageForContextMenu(
@@ -94,7 +94,7 @@ ContextMenuHelper::ContextMenuHelper(content::WebContents* web_contents)
     : web_contents_(web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   java_obj_.Reset(
-      env, Java_ContextMenuHelper_create(env, reinterpret_cast<long>(this),
+      env, Java_ContextMenuHelper_create(env, reinterpret_cast<int64_t>(this),
                                          web_contents_->GetJavaWebContents())
                .obj());
   DCHECK(!java_obj_.is_null());

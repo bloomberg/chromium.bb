@@ -75,7 +75,7 @@ void FeedImageLoaderBridge::OnImageFetched(
   if (!image.IsEmpty()) {
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
   }
-  RunCallbackAndroid(callback, j_bitmap);
+  RunObjectCallbackAndroid(callback, j_bitmap);
 }
 
 }  // namespace feed

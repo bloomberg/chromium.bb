@@ -16,11 +16,6 @@ using base::android::JavaParamRef;
 namespace download {
 namespace android {
 
-void CallTaskFinishedCallback(const base::android::JavaRef<jobject>& j_callback,
-                              bool needs_reschedule) {
-  RunCallbackAndroid(j_callback, needs_reschedule);
-}
-
 // static
 void JNI_DownloadBackgroundTask_StartBackgroundTask(
     JNIEnv* env,
@@ -32,7 +27,7 @@ void JNI_DownloadBackgroundTask_StartBackgroundTask(
   DCHECK(profile);
 
   TaskFinishedCallback finish_callback =
-      base::BindOnce(&CallTaskFinishedCallback,
+      base::BindOnce(&base::android::RunBooleanCallbackAndroid,
                      base::android::ScopedJavaGlobalRef<jobject>(jcallback));
 
   DownloadService* download_service =

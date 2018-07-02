@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_OFFLINE_PAGES_ANDROID_BACKGROUND_SCHEDULER_BRIDGE_H_
 #define CHROME_BROWSER_OFFLINE_PAGES_ANDROID_BACKGROUND_SCHEDULER_BRIDGE_H_
 
-#include "components/offline_pages/core/background/scheduler.h"
+#include <stdint.h>
+#include <memory>
 
 #include "base/android/jni_android.h"
+#include "components/offline_pages/core/background/scheduler.h"
 
 namespace offline_pages {
 namespace android {
@@ -22,7 +24,7 @@ class BackgroundSchedulerBridge : public Scheduler {
   // Scheduler implementation.
   void Schedule(const TriggerConditions& trigger_conditions) override;
   void BackupSchedule(const TriggerConditions& trigger_conditions,
-                      long delay_in_seconds) override;
+                      int64_t delay_in_seconds) override;
   void Unschedule() override;
   const DeviceConditions& GetCurrentDeviceConditions() override;
 

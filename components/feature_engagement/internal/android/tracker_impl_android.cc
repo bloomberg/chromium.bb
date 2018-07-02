@@ -159,11 +159,8 @@ void TrackerImplAndroid::AddOnInitializedCallback(
     JNIEnv* env,
     const base::android::JavaRef<jobject>& jobj,
     const base::android::JavaParamRef<jobject>& j_callback_obj) {
-  // Disambiguate RunCallbackAndroid to get the reference to the bool version.
-  void (*runBoolCallback)(const base::android::JavaRef<jobject>&, bool) =
-      &base::android::RunCallbackAndroid;
   tracker_impl_->AddOnInitializedCallback(base::BindOnce(
-      runBoolCallback,
+      &base::android::RunBooleanCallbackAndroid,
       base::android::ScopedJavaGlobalRef<jobject>(j_callback_obj)));
 }
 

@@ -705,7 +705,7 @@ void OnStorageInfoReady(const ScopedJavaGlobalRef<jobject>& java_callback,
         env, list, host, static_cast<jint>(i->type), i->usage);
   }
 
-  base::android::RunCallbackAndroid(java_callback, list);
+  base::android::RunObjectCallbackAndroid(java_callback, list);
 }
 
 void OnLocalStorageCleared(const ScopedJavaGlobalRef<jobject>& java_callback) {
@@ -776,7 +776,7 @@ void OnLocalStorageModelInfoLoaded(
         env, map, origin, full_origin, info.size, important);
   }
 
-  base::android::RunCallbackAndroid(java_callback, map);
+  base::android::RunObjectCallbackAndroid(java_callback, map);
 }
 
 }  // anonymous namespace

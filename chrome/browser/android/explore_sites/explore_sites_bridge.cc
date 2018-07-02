@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/explore_sites/explore_sites_bridge.h"
 
+#include <string>
+#include <utility>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -68,7 +71,7 @@ void GotNTPCategoriesFromJson(
     }
   }
 
-  base::android::RunCallbackAndroid(j_callback_ref, j_result_ref);
+  base::android::RunObjectCallbackAndroid(j_callback_ref, j_result_ref);
 }
 
 void OnGetIconDone(std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
@@ -80,7 +83,7 @@ void OnGetIconDone(std::unique_ptr<image_fetcher::ImageFetcher> image_fetcher,
   if (!image.IsEmpty()) {
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
   }
-  base::android::RunCallbackAndroid(j_callback_obj, j_bitmap);
+  base::android::RunObjectCallbackAndroid(j_callback_obj, j_bitmap);
 
   // Delete |image_fetcher| when appropriate.
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE,

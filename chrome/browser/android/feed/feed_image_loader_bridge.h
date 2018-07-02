@@ -11,30 +11,28 @@
 
 namespace feed {
 
-using base::android::JavaParamRef;
-using base::android::ScopedJavaGlobalRef;
-
 class FeedImageManager;
 
 // Native counterpart of FeedImageLoaderBridge.java. Holds non-owning pointers
 // to native implementation, to which operations are delegated. Results are
 // passed back by a single argument callback so
-// base::android::RunCallbackAndroid() can be used. This bridge is instantiated,
-// owned, and destroyed from Java.
+// base::android::RunObjectCallbackAndroid() can be used. This bridge is
+// instantiated, owned, and destroyed from Java.
 class FeedImageLoaderBridge {
  public:
   explicit FeedImageLoaderBridge(FeedImageManager* feed_image_manager);
   ~FeedImageLoaderBridge();
 
-  void Destroy(JNIEnv* j_env, const JavaParamRef<jobject>& j_this);
+  void Destroy(JNIEnv* j_env,
+               const base::android::JavaParamRef<jobject>& j_this);
 
   void FetchImage(JNIEnv* j_env,
-                  const JavaParamRef<jobject>& j_this,
-                  const JavaParamRef<jobjectArray>& j_urls,
-                  const JavaParamRef<jobject>& j_callback);
+                  const base::android::JavaParamRef<jobject>& j_this,
+                  const base::android::JavaParamRef<jobjectArray>& j_urls,
+                  const base::android::JavaParamRef<jobject>& j_callback);
 
  private:
-  void OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
+  void OnImageFetched(base::android::ScopedJavaGlobalRef<jobject> callback,
                       const gfx::Image& image);
 
   FeedImageManager* feed_image_manager_;

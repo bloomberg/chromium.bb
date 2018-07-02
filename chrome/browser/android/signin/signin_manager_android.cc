@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <vector>
-
 #include "chrome/browser/android/signin/signin_manager_android.h"
+
+#include <utility>
+#include <vector>
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
@@ -130,7 +131,7 @@ class ProfileDataRemover : public content::BrowsingDataRemover::Observer {
 void UserManagementDomainFetched(
     base::android::ScopedJavaGlobalRef<jobject> callback,
     const std::string& dm_token, const std::string& client_id) {
-  base::android::RunCallbackAndroid(callback, !dm_token.empty());
+  base::android::RunBooleanCallbackAndroid(callback, !dm_token.empty());
 }
 
 }  // namespace

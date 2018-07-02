@@ -30,7 +30,7 @@ void SchedulerStub::Schedule(const TriggerConditions& trigger_conditions) {
 }
 
 void SchedulerStub::BackupSchedule(const TriggerConditions& trigger_conditions,
-                                   long delay_in_seconds) {
+                                   int64_t delay_in_seconds) {
   backup_schedule_called_ = true;
   schedule_delay_ = delay_in_seconds;
   trigger_conditions_ = trigger_conditions;

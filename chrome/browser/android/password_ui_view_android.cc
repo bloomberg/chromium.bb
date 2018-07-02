@@ -240,14 +240,12 @@ void PasswordUIViewAndroid::PostSerializedPasswords(
         *export_target_for_testing_ = serialization_result;
       } else {
         if (serialization_result.entries_count) {
-          base::android::RunCallbackAndroid(success_callback,
-                                            serialization_result.entries_count);
+          base::android::RunIntCallbackAndroid(
+              success_callback, serialization_result.entries_count);
         } else {
-          base::android::RunCallbackAndroid(
-              error_callback, base::android::ConvertUTF8ToJavaString(
-                                  base::android::AttachCurrentThread(),
-                                  logging::SystemErrorCodeToString(
-                                      serialization_result.error)));
+          base::android::RunStringCallbackAndroid(
+              error_callback,
+              logging::SystemErrorCodeToString(serialization_result.error));
         }
       }
       break;

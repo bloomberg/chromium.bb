@@ -4,6 +4,11 @@
 
 #include "chrome/browser/offline_pages/android/evaluation/offline_page_evaluation_bridge.h"
 
+#include <memory>
+#include <string>
+#include <utility>
+#include <vector>
+
 #include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
@@ -109,12 +114,7 @@ void GetAllPagesCallback(
   JNIEnv* env = base::android::AttachCurrentThread();
   JNI_OfflinePageEvaluationBridge_ToJavaOfflinePageList(env, j_result_obj,
                                                         result);
-  base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
-}
-
-void OnPushRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
-                        bool result) {
-  base::android::RunCallbackAndroid(j_callback_obj, result);
+  base::android::RunObjectCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
 void OnGetAllRequestsDone(
@@ -125,13 +125,13 @@ void OnGetAllRequestsDone(
   ScopedJavaLocalRef<jobjectArray> j_result_obj =
       JNI_OfflinePageEvaluationBridge_CreateJavaSavePageRequests(
           env, std::move(all_requests));
-  base::android::RunCallbackAndroid(j_callback_obj, j_result_obj);
+  base::android::RunObjectCallbackAndroid(j_callback_obj, j_result_obj);
 }
 
 void OnRemoveRequestsDone(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
                           const MultipleItemStatuses& removed_request_results) {
-  base::android::RunCallbackAndroid(j_callback_obj,
-                                    int(removed_request_results.size()));
+  base::android::RunIntCallbackAndroid(
+      j_callback_obj, static_cast<int>(removed_request_results.size()));
 }
 
 std::unique_ptr<KeyedService> GetTestingRequestCoordinator(
@@ -322,10 +322,10 @@ bool OfflinePageEvaluationBridge::PushRequestProcessing(
     const JavaParamRef<jobject>& j_callback_obj) {
   ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
   DCHECK(request_coordinator_);
-  base::android::RunCallbackAndroid(j_callback_obj, false);
+  base::android::RunBooleanCallbackAndroid(j_callback_obj, false);
 
-  return request_coordinator_->StartImmediateProcessing(
-      base::Bind(&OnPushRequestsDone, j_callback_ref));
+  return request_coordinator_->StartImmediateProcessing(base::BindRepeating(
+      &base::android::RunBooleanCallbackAndroid, j_callback_ref));
 }
 
 void OfflinePageEvaluationBridge::SavePageLater(
