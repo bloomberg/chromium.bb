@@ -595,10 +595,15 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
   return res;
 }
 
-aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
-                                 aom_film_grain_t *grain_params) {
+// If grain_params->apply_grain is false, returns img. Otherwise, adds film
+// grain to img, saves the result in *grain_img_ptr (allocating *grain_img_ptr
+// if necessary), and returns *grain_img_ptr.
+static aom_image_t *add_grain_if_needed(aom_image_t *img,
+                                        aom_image_t **grain_img_ptr,
+                                        aom_film_grain_t *grain_params) {
   if (!grain_params->apply_grain) return img;
 
+  aom_image_t *grain_img_buf = *grain_img_ptr;
   if (grain_img_buf &&
       (img->d_w != grain_img_buf->d_w || img->d_h != grain_img_buf->d_h ||
        img->fmt != grain_img_buf->fmt || !(img->d_h % 2) || !(img->d_w % 2))) {
@@ -609,6 +614,7 @@ aom_image_t *add_grain_if_needed(aom_image_t *img, aom_image_t *grain_img_buf,
     int w_even = img->d_w % 2 ? img->d_w + 1 : img->d_w;
     int h_even = img->d_h % 2 ? img->d_h + 1 : img->d_h;
     grain_img_buf = aom_img_alloc(NULL, img->fmt, w_even, h_even, 16);
+    *grain_img_ptr = grain_img_buf;
     grain_img_buf->bit_depth = img->bit_depth;
   }
 
@@ -709,7 +715,7 @@ static aom_image_t *decoder_get_frame(aom_codec_alg_priv_t *ctx,
           img = &ctx->img;
           img->temporal_id = cm->temporal_layer_id;
           img->spatial_id = cm->spatial_layer_id;
-          return add_grain_if_needed(img, ctx->image_with_grain, grain_params);
+          return add_grain_if_needed(img, &ctx->image_with_grain, grain_params);
         }
       } else {
         // Decoding failed. Release the worker thread.
