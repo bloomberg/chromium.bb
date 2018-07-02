@@ -156,14 +156,6 @@ public class OAuth2TokenServiceIntegrationTest {
             // Adding an observer should not lead to a callback.
             Assert.assertEquals(0, mObserver.getRevokedCallCount());
 
-            // First seed the account state (some native classes make the assumption that
-            // a notification that a token was revoked for a given account was preceded by a
-            // notifictation that that account was available).
-            mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT1);
-            mOAuth2TokenService.fireRefreshTokenAvailable(TEST_ACCOUNT2);
-
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
-
             // An observer should be called with the correct account.
             mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT1);
             Assert.assertEquals(1, mObserver.getRevokedCallCount());
@@ -174,9 +166,8 @@ public class OAuth2TokenServiceIntegrationTest {
             mOAuth2TokenService.fireRefreshTokenRevoked(TEST_ACCOUNT2);
             Assert.assertEquals(1, mObserver.getRevokedCallCount());
 
-            // No other observer interface method should have been called after the initial seeding
-            // of the accounts.
-            Assert.assertEquals(2, mObserver.getAvailableCallCount());
+            // No other observer interface method should ever have been called.
+            Assert.assertEquals(0, mObserver.getAvailableCallCount());
             Assert.assertEquals(0, mObserver.getLoadedCallCount());
         });
     }
