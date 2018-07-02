@@ -20,20 +20,15 @@ namespace {
 using TableViewTextButtonItemTest = PlatformTest;
 }
 
-// Tests that the UILabels and delegate are set properly after a call to
-// |configureCell:|.
+// Tests that the UILabels are set properly after a call to |configureCell:|.
 TEST_F(TableViewTextButtonItemTest, SetProperties) {
   NSString* text = @"You need to do something.";
   NSString* buttonText = @"Tap to do something.";
-
-  id<TextButtonItemDelegate> mock_delegate =
-      [OCMockObject mockForProtocol:@protocol(TextButtonItemDelegate)];
 
   TableViewTextButtonItem* item =
       [[TableViewTextButtonItem alloc] initWithType:0];
   item.text = text;
   item.buttonText = buttonText;
-  item.delegate = mock_delegate;
 
   id cell = [[[item cellClass] alloc] init];
   ASSERT_TRUE([cell isMemberOfClass:[TableViewTextButtonCell class]]);
@@ -42,31 +37,9 @@ TEST_F(TableViewTextButtonItemTest, SetProperties) {
       base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
   EXPECT_FALSE(textButtonCell.textLabel.text);
   EXPECT_FALSE(textButtonCell.button.titleLabel.text);
-  EXPECT_FALSE(textButtonCell.delegate);
 
   [item configureCell:textButtonCell
            withStyler:[[ChromeTableViewStyler alloc] init]];
   EXPECT_NSEQ(text, textButtonCell.textLabel.text);
   EXPECT_NSEQ(buttonText, textButtonCell.button.titleLabel.text);
-  EXPECT_TRUE(textButtonCell.delegate);
-}
-
-// Test that pressing the button invokes delegate.
-TEST_F(TableViewTextButtonItemTest, DelegateCalled) {
-  TableViewTextButtonItem* item =
-      [[TableViewTextButtonItem alloc] initWithType:0];
-  id cell = [[[item cellClass] alloc] init];
-  ASSERT_TRUE([cell isMemberOfClass:[TableViewTextButtonCell class]]);
-
-  TableViewTextButtonCell* textButtonCell =
-      base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
-  id<TextButtonItemDelegate> mock_delegate =
-      [OCMockObject mockForProtocol:@protocol(TextButtonItemDelegate)];
-  [textButtonCell setDelegate:mock_delegate];
-
-  OCMockObject* mock_delegate_obj = (OCMockObject*)mock_delegate;
-  [[mock_delegate_obj expect] performButtonAction];
-  UIButton* button = textButtonCell.button;
-  [button sendActionsForControlEvents:UIControlEventTouchUpInside];
-  EXPECT_OCMOCK_VERIFY(mock_delegate_obj);
 }

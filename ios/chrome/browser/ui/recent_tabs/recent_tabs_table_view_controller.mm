@@ -104,7 +104,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
 @interface RecentTabsTableViewController ()<SigninPromoViewConsumer,
                                             SigninPresenter,
                                             SyncPresenter,
-                                            TextButtonItemDelegate,
                                             UIGestureRecognizerDelegate> {
   std::unique_ptr<synced_sessions::SyncedSessions> _syncedSessions;
 }
@@ -426,7 +425,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
       l10n_util::GetNSString(IDS_IOS_OPEN_TABS_SYNC_IS_OFF_MOBILE);
   signinSyncOffItem.buttonText =
       l10n_util::GetNSString(IDS_IOS_OPEN_TABS_ENABLE_SYNC_MOBILE);
-  signinSyncOffItem.delegate = self;
   [self.tableViewModel addItem:signinSyncOffItem
        toSectionWithIdentifier:SectionIdentifierOtherDevices];
 }
@@ -658,6 +656,14 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   // ItemTypeOtherDevicesNoSessions should not be selectable.
   if (itemTypeSelected == ItemTypeOtherDevicesNoSessions) {
     cell.selectionStyle = UITableViewCellSelectionStyleNone;
+  }
+  // Set button action method for ItemTypeOtherDevicesSyncOff.
+  if (itemTypeSelected == ItemTypeOtherDevicesSyncOff) {
+    TableViewTextButtonCell* tableViewTextButtonCell =
+        base::mac::ObjCCastStrict<TableViewTextButtonCell>(cell);
+    [tableViewTextButtonCell.button addTarget:self
+                                       action:@selector(updateSyncState)
+                             forControlEvents:UIControlEventTouchUpInside];
   }
 
   return cell;
@@ -1093,9 +1099,15 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   [self.dispatcher showSyncPassphraseSettingsFromViewController:self];
 }
 
-#pragma mark - TextButtonItemDelegate
+#pragma mark - SigninPresenter
 
-- (void)performButtonAction {
+- (void)showSignin:(ShowSigninCommand*)command {
+  [self.dispatcher showSignin:command baseViewController:self];
+}
+
+#pragma mark - Private Helpers
+
+- (void)updateSyncState {
   SyncSetupService::SyncServiceState syncState =
       GetSyncStateForBrowserState(_browserState);
   if (ShouldShowSyncSignin(syncState)) {
@@ -1105,12 +1117,6 @@ const int kRecentlyClosedTabsSectionIndex = 0;
   } else if (ShouldShowSyncPassphraseSettings(syncState)) {
     [self showSyncPassphraseSettings];
   }
-}
-
-#pragma mark - SigninPresenter
-
-- (void)showSignin:(ShowSigninCommand*)command {
-  [self.dispatcher showSignin:command baseViewController:self];
 }
 
 @end

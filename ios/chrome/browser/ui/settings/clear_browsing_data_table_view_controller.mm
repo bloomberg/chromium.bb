@@ -30,8 +30,7 @@ class ChromeBrowserState;
 }
 
 @interface ClearBrowsingDataTableViewController ()<
-    TableViewTextLinkCellDelegate,
-    TextButtonItemDelegate>
+    TableViewTextLinkCellDelegate>
 
 // TODO(crbug.com/850699): remove direct dependency and replace with
 // delegate.
@@ -121,7 +120,10 @@ class ChromeBrowserState;
           base::mac::ObjCCastStrict<TableViewTextButtonCell>(cellToReturn);
       tableViewTextButtonCell.selectionStyle =
           UITableViewCellSelectionStyleNone;
-      tableViewTextButtonCell.delegate = self;
+      [tableViewTextButtonCell.button
+                 addTarget:self
+                    action:@selector(showClearBrowsingDataAlertController)
+          forControlEvents:UIControlEventTouchUpInside];
       break;
     }
     case ItemTypeDataTypeBrowsingHistory:
@@ -178,9 +180,9 @@ class ChromeBrowserState;
   [self.localDispatcher openURL:copiedURL];
 }
 
-#pragma mark - TextButtonItemDelegate
+#pragma mark - Private Helpers
 
-- (void)performButtonAction {
+- (void)showClearBrowsingDataAlertController {
   BrowsingDataRemoveMask dataTypeMaskToRemove =
       BrowsingDataRemoveMask::REMOVE_NOTHING;
   NSArray* dataTypeItems = [self.tableViewModel
