@@ -1350,7 +1350,12 @@
       status: "stable",
     },
     {
-      name: "WebUSBOnDedicatedAndSharedWorkers",
+      name: "WebUSBOnDedicatedWorkers",
+      status: "experimental",
+      depends_on: ["WebUSB"],
+    },
+    {
+      name: "WebUSBOnSharedWorkers",
       status: "test",
       depends_on: ["WebUSB"],
     },

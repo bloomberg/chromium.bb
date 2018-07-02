@@ -5,9 +5,9 @@
 // https://wicg.github.io/webusb/#enumeration
 
 [
-    Exposed=(DedicatedWorker, SharedWorker),
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers),
     ImplementedAs=WorkerNavigatorUSB,
     SecureContext
 ] partial interface WorkerNavigator {
-    [CallWith=ScriptState, SameObject, RuntimeEnabled=WebUSBOnDedicatedAndSharedWorkers] readonly attribute USB usb;
+    [CallWith=ScriptState, SameObject] readonly attribute USB usb;
 };

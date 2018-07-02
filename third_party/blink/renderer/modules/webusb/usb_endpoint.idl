@@ -17,7 +17,7 @@ enum USBEndpointType {
 
 [
     Constructor(USBAlternateInterface alternate, octet endpointNumber, USBDirection direction),
-    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers, SharedWorker WebUSBOnDedicatedAndSharedWorkers, Window WebUSB),
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB),
     RaisesException=Constructor
 ] interface USBEndpoint {
     readonly attribute octet endpointNumber;
