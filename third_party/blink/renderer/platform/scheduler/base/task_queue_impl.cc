@@ -254,7 +254,7 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueueFromMainThread(
   main_thread_only().sequence_manager->DidQueueTask(pending_task);
   main_thread_only().delayed_incoming_queue.push(std::move(pending_task));
 
-  LazyNow lazy_now = main_thread_only().time_domain->CreateLazyNow();
+  LazyNow lazy_now(now);
   UpdateDelayedWakeUp(&lazy_now);
 
   TraceQueueSize();
