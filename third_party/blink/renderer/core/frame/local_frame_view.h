@@ -421,7 +421,7 @@ class CORE_EXPORT LocalFrameView final
     return self_visible_ && parent_visible_;
   }  // Whether or not we are actually visible.
   void SetParentVisible(bool) override;
-  void SetSelfVisible(bool v) { self_visible_ = v; }
+  void SetSelfVisible(bool);
   void AttachToLayout() override;
   void DetachFromLayout() override;
   bool IsAttached() const override { return is_attached_; }

@@ -190,6 +190,9 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
         info.needs_reparent_scroll_for_fixed = false;
   }
 
+  PaintLayerCompositor* compositor =
+      layer->GetLayoutObject().View()->Compositor();
+
   // The sequence of updates to compositing triggers goes like this:
   // 1. Apply all triggers from kComboAllDirectNonStyleDeterminedReasons for
   //    |layer|. This may depend on ancestor composited scrolling (i.e. step
@@ -212,7 +215,7 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
 
   if (layer->GetScrollableArea()) {
     layer->GetScrollableArea()->UpdateNeedsCompositedScrolling(
-        layer->GetLayoutObject().View()->Compositor()->CanBeComposited(layer) &&
+        compositor->CanBeComposited(layer) &&
         layer->DirectCompositingReasons());
     layer->GetScrollableArea()->SetHasPaintLayerScrollChild(false);
   }
@@ -228,7 +231,9 @@ void CompositingInputsUpdater::UpdateRecursive(PaintLayer* layer,
       UpdateRecursive(child, update_type, info);
     descendant_has_direct_compositing_reason |=
         child->DescendantHasDirectOrScrollingCompositingReason() ||
-        child->DirectCompositingReasons() || child->NeedsCompositedScrolling();
+        child->NeedsCompositedScrolling() ||
+        (compositor->CanBeComposited(child) &&
+         child->DirectCompositingReasons());
   }
   layer->SetDescendantHasDirectOrScrollingCompositingReason(
       descendant_has_direct_compositing_reason);
