@@ -66,8 +66,7 @@ TEST(FormPredictionsTest, ConvertToFormPredictions) {
       ++expected_predictions;
   }
 
-  FormPredictions actual_predictions =
-      ConvertToFormPredictions(form_data, form_structure);
+  FormPredictions actual_predictions = ConvertToFormPredictions(form_structure);
 
   // Check whether actual predictions are equal to expected ones.
   EXPECT_EQ(expected_predictions, actual_predictions.size());

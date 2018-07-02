@@ -40,22 +40,14 @@ CredentialFieldType DeriveFromServerFieldType(ServerFieldType type) {
   }
 }
 
-FormPredictions ConvertToFormPredictions(const FormData& observed_form,
-                                         const FormStructure& form_structure) {
-  DCHECK_EQ(CalculateFormSignature(observed_form),
-            form_structure.form_signature());
-  DCHECK_EQ(observed_form.fields.size(), form_structure.field_count());
+FormPredictions ConvertToFormPredictions(const FormStructure& form_structure) {
   FormPredictions result;
-  if (observed_form.fields.size() != form_structure.field_count()) {
-    // TODO(https://crbug.com/831123). Find the reason why this can happen. See
-    // https://crbug.com/853149#c6 for some ideas.
-    return result;
-  }
-  for (size_t i = 0; i < observed_form.fields.size(); ++i) {
-    uint32_t unique_id = observed_form.fields[i].unique_renderer_id;
-    ServerFieldType server_type = form_structure.field(i)->server_type();
+
+  for (const auto& field : form_structure) {
+    ServerFieldType server_type = field->server_type();
     if (IsCredentialRelatedPrediction(server_type))
-      result[unique_id] = PasswordFieldPrediction{.type = server_type};
+      result[field->unique_renderer_id] =
+          PasswordFieldPrediction{.type = server_type};
   }
 
   return result;
