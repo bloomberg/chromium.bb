@@ -176,6 +176,9 @@ class ChangeListLoader {
   // The team drive id for the changes being loaded by this change list loader.
   const std::string team_drive_id_;
 
+  // The formatted team drive id message used for logging.
+  const std::string team_drive_msg_;
+
   // The root entry path for changes being loaded by this change list loader.
   // Can be a team drive root entry or for the users default corpus will be the
   // drive root entry.
