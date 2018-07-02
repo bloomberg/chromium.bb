@@ -251,7 +251,7 @@ bool GridTrackSizingAlgorithm::IsIntrinsicSizedGridArea(const LayoutBox& child,
     // TODO(jfernandez): https://github.com/w3c/csswg-drafts/issues/2611
     if (track_size.IsContentSized() || track_size.IsFitContent() ||
         track_size.MinTrackBreadth().IsFlex() ||
-        (track_size.MaxTrackBreadth().IsFlex() && !FreeSpace(direction)))
+        (track_size.MaxTrackBreadth().IsFlex() && !AvailableSpace(direction)))
       return true;
   }
   return false;
