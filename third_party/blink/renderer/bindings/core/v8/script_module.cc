@@ -11,6 +11,9 @@
 #include "third_party/blink/renderer/core/script/modulator.h"
 #include "third_party/blink/renderer/core/script/script_module_resolver.h"
 #include "third_party/blink/renderer/platform/bindings/exception_state.h"
+#include "third_party/blink/renderer/platform/bindings/script_state.h"
+#include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
 
 namespace blink {
 

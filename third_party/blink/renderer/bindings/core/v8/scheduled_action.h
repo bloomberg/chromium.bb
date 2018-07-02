@@ -42,6 +42,7 @@ namespace blink {
 
 class LocalFrame;
 class ExecutionContext;
+class ScriptValue;
 class WorkerGlobalScope;
 
 class ScheduledAction final
