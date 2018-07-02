@@ -95,7 +95,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   String PlainText() const;
 
   // Returns first letter part of |LayoutTextFragment|.
-  virtual LayoutText* GetFirstLetterPart() { return nullptr; }
+  virtual LayoutText* GetFirstLetterPart() const { return nullptr; }
 
   InlineTextBox* CreateInlineTextBox(int start, unsigned short length);
   void DirtyOrDeleteLineBoxesIfNeeded(bool full_layout);
