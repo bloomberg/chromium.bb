@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 
 namespace base {
+
 namespace debug {
 struct CrashKeyString;
 }  // namespace debug
@@ -42,19 +43,18 @@ struct CrashKeyString;
 namespace trace_event {
 class ConvertableToTraceFormat;
 }  // namespace trace_event
-}  // namespace base
 
-namespace base {
 namespace sequence_manager {
 
-namespace internal {
-class RealTimeDomain;
-class TaskQueueImpl;
-}  // namespace internal
-
+class SequenceManagerForTest;
 class TaskQueue;
 class TaskTimeObserver;
 class TimeDomain;
+
+namespace internal {
+
+class RealTimeDomain;
+class TaskQueueImpl;
 
 // The task queue manager provides N task queues and a selector interface for
 // choosing which task queue to service next. Each task queue consists of two
@@ -145,7 +145,7 @@ class PLATFORM_EXPORT SequenceManagerImpl
       std::unique_ptr<internal::ThreadController> controller);
 
   friend class internal::TaskQueueImpl;
-  friend class SequenceManagerForTest;
+  friend class ::base::sequence_manager::SequenceManagerForTest;
 
  private:
   enum class ProcessTaskResult {
@@ -325,6 +325,7 @@ class PLATFORM_EXPORT SequenceManagerImpl
   DISALLOW_COPY_AND_ASSIGN(SequenceManagerImpl);
 };
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
 

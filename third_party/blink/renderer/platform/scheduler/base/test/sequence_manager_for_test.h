@@ -16,7 +16,7 @@ class MessageLoop;
 namespace base {
 namespace sequence_manager {
 
-class SequenceManagerForTest : public SequenceManagerImpl {
+class SequenceManagerForTest : public internal::SequenceManagerImpl {
  public:
   explicit SequenceManagerForTest(
       std::unique_ptr<internal::ThreadController> thread_controller);
@@ -37,8 +37,8 @@ class SequenceManagerForTest : public SequenceManagerImpl {
   size_t QueuesToDeleteCount() const;
   size_t QueuesToShutdownCount();
 
-  using SequenceManagerImpl::GetNextSequenceNumber;
-  using SequenceManagerImpl::WakeUpReadyDelayedQueues;
+  using internal::SequenceManagerImpl::GetNextSequenceNumber;
+  using internal::SequenceManagerImpl::WakeUpReadyDelayedQueues;
 };
 
 }  // namespace sequence_manager

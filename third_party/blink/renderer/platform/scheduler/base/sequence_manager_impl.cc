@@ -26,6 +26,12 @@
 namespace base {
 namespace sequence_manager {
 
+std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
+  return internal::SequenceManagerImpl::CreateOnCurrentThread();
+}
+
+namespace internal {
+
 namespace {
 
 constexpr base::TimeDelta kLongTaskTraceEventThreshold =
@@ -46,10 +52,6 @@ void SweepCanceledDelayedTasksInQueue(
 }
 
 }  // namespace
-
-std::unique_ptr<SequenceManager> CreateSequenceManagerOnCurrentThread() {
-  return SequenceManagerImpl::CreateOnCurrentThread();
-}
 
 SequenceManagerImpl::SequenceManagerImpl(
     std::unique_ptr<internal::ThreadController> controller)
@@ -698,5 +700,6 @@ internal::TaskQueueImpl* SequenceManagerImpl::currently_executing_task_queue()
   return main_thread_only().task_execution_stack.rbegin()->task_queue;
 }
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base

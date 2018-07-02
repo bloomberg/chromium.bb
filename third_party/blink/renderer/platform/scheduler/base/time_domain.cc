@@ -20,7 +20,7 @@ TimeDomain::~TimeDomain() {
 }
 
 void TimeDomain::OnRegisterWithSequenceManager(
-    SequenceManagerImpl* sequence_manager) {
+    internal::SequenceManagerImpl* sequence_manager) {
   DCHECK(sequence_manager);
   DCHECK(!sequence_manager_);
   sequence_manager_ = sequence_manager;

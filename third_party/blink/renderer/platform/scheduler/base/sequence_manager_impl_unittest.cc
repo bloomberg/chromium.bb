@@ -47,6 +47,9 @@ using base::sequence_manager::internal::EnqueueOrder;
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
+// To avoid symbol collisions in jumbo builds.
+namespace sequence_manager_impl_unittest {
 
 class SequenceManagerTestBase : public testing::Test {
  protected:
@@ -3184,5 +3187,7 @@ TEST_F(SequenceManagerTest, TaskQueueUsedInTaskDestructorAfterShutdown) {
   test_executed.Wait();
 }
 
+}  // namespace sequence_manager_impl_unittest
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
