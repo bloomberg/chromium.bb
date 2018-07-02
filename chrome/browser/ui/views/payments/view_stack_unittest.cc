@@ -7,8 +7,8 @@
 #include "base/observer_list.h"
 #include "base/run_loop.h"
 #include "chrome/browser/ui/views/payments/view_stack.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "ui/gfx/animation/test_animation_delegate.h"
-#include "ui/views/test/views_test_base.h"
 
 class TestStackView : public views::View {
  public:
@@ -43,7 +43,7 @@ class TestStackView : public views::View {
   DISALLOW_COPY_AND_ASSIGN(TestStackView);
 };
 
-class ViewStackTest : public views::ViewsTestBase {
+class ViewStackTest : public ChromeViewsTestBase {
  public:
   ViewStackTest() : view_stack_(std::make_unique<ViewStack>()) {
     view_stack_->SetBounds(0, 0, 10, 10);

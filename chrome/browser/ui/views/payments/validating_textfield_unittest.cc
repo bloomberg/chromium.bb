@@ -11,13 +11,13 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/views/payments/validation_delegate.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/views/controls/textfield/textfield.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace payments {
 
-class ValidatingTextfieldTest : public views::ViewsTestBase {
+class ValidatingTextfieldTest : public ChromeViewsTestBase {
  public:
   ValidatingTextfieldTest() {}
   ~ValidatingTextfieldTest() override {}

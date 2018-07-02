@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/views/profiles/profile_indicator_icon.h"
 #include "chrome/browser/ui/views/tab_icon_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/signin/core/browser/profile_management_switches.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia.h"
@@ -19,7 +20,6 @@
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/controls/button/menu_button.h"
 #include "ui/views/controls/label.h"
-#include "ui/views/test/views_test_base.h"
 
 namespace {
 
@@ -88,13 +88,13 @@ class TestLayoutDelegate : public OpaqueBrowserFrameViewLayoutDelegate {
 
 }  // namespace
 
-class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
+class OpaqueBrowserFrameViewLayoutTest : public ChromeViewsTestBase {
  public:
   OpaqueBrowserFrameViewLayoutTest() {}
   ~OpaqueBrowserFrameViewLayoutTest() override {}
 
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
+    ChromeViewsTestBase::SetUp();
 
     delegate_.reset(new TestLayoutDelegate);
     auto layout = std::make_unique<OpaqueBrowserFrameViewLayout>();
@@ -131,7 +131,7 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   void TearDown() override {
     widget_->CloseNow();
 
-    views::ViewsTestBase::TearDown();
+    ChromeViewsTestBase::TearDown();
   }
 
  protected:
