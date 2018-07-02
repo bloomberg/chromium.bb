@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.feed;
 
+import android.support.annotation.NonNull;
+
+import com.google.android.libraries.feed.api.common.MutationContext;
 import com.google.android.libraries.feed.api.requestmanager.RequestManager;
+import com.google.android.libraries.feed.api.sessionmanager.SessionManager;
 import com.google.android.libraries.feed.host.scheduler.SchedulerApi;
 import com.google.search.now.wire.feed.FeedQueryProto.FeedQuery.RequestReason;
 
+import org.chromium.base.Callback;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -20,6 +25,7 @@ import org.chromium.components.feed.NativeRequestBehavior;
 public class FeedSchedulerBridge implements SchedulerApi {
     private long mNativeBridge;
     private RequestManager mRequestManager;
+    private SessionManager mSessionManager;
 
     /**
      * Creates a FeedSchedulerBridge for accessing native scheduling logic.
@@ -30,24 +36,28 @@ public class FeedSchedulerBridge implements SchedulerApi {
         mNativeBridge = nativeInit(profile);
     }
 
-    /*
-     * Cleans up native half of this bridge.
-     */
+    /** Cleans up the native half of this bridge. */
     public void destroy() {
         assert mNativeBridge != 0;
         nativeDestroy(mNativeBridge);
         mNativeBridge = 0;
     }
 
-    /*
-     * Sets our copy of the RequestManager. Should be done as early as possible, as the scheduler
-     * will be unable to trigger refreshes until after it has a reference to a RequestManager. When
-     * this is called, it is assumed that the RequestManager is initialized and can be used.
+    /**
+     * Sets our copies for various interfaces provided by the Feed library. Should be done as early
+     * as possible, as the scheduler will be unable to trigger refreshes until after it has the
+     * mechanisms to correctly do so. When this is called, it is assumed that the given
+     * RequestManager and SessionManager are initialized and can be used immediately.
      *
      * @param requestManager The interface that allows us make refresh requests.
+     * @param sessionManager The interface that provides correct consumtion of refresh results.
      */
-    public void setRequestManager(RequestManager requestManager) {
+    public void initializeFeedDependencies(
+            @NonNull RequestManager requestManager, @NonNull SessionManager sessionManager) {
+        assert mRequestManager == null;
+        assert mSessionManager == null;
         mRequestManager = requestManager;
+        mSessionManager = sessionManager;
     }
 
     @Override
@@ -98,20 +108,36 @@ public class FeedSchedulerBridge implements SchedulerApi {
         nativeOnForegrounded(mNativeBridge);
     }
 
-    public void onFixedTimer() {
+    public void onFixedTimer(Runnable onCompletion) {
         assert mNativeBridge != 0;
-        nativeOnFixedTimer(mNativeBridge);
+        // Convert to single argument Callback to make invoking from native more convenient.
+        nativeOnFixedTimer(mNativeBridge, (Void ignored) -> onCompletion.run());
+    }
+
+    public void onTaskReschedule() {
+        assert mNativeBridge != 0;
+        nativeOnTaskReschedule(mNativeBridge);
     }
 
     @CalledByNative
     private boolean triggerRefresh() {
-        if (mRequestManager != null) {
-            mRequestManager.triggerRefresh(RequestReason.SCHEDULED_REFRESH, ignored -> {});
+        if (mRequestManager != null && mSessionManager != null) {
+            mRequestManager.triggerRefresh(RequestReason.SCHEDULED_REFRESH,
+                    mSessionManager.getUpdateConsumer(MutationContext.EMPTY_CONTEXT));
             return true;
         }
         return false;
     }
 
+    @CalledByNative
+    private void scheduleWakeUp(long thresholdMs) {
+        FeedRefreshTask.scheduleWakeUp(thresholdMs);
+    }
+
+    @CalledByNative
+    private void cancelWakeUp() {
+        FeedRefreshTask.cancelWakeUp();
+    }
     private native long nativeInit(Profile profile);
     private native void nativeDestroy(long nativeFeedSchedulerBridge);
     private native int nativeShouldSessionRequestData(long nativeFeedSchedulerBridge,
@@ -121,5 +147,7 @@ public class FeedSchedulerBridge implements SchedulerApi {
     private native void nativeOnRequestError(
             long nativeFeedSchedulerBridge, int networkResponseCode);
     private native void nativeOnForegrounded(long nativeFeedSchedulerBridge);
-    private native void nativeOnFixedTimer(long nativeFeedSchedulerBridge);
+    private native void nativeOnFixedTimer(
+            long nativeFeedSchedulerBridge, Callback<Void> onCompletion);
+    private native void nativeOnTaskReschedule(long nativeFeedSchedulerBridge);
 }

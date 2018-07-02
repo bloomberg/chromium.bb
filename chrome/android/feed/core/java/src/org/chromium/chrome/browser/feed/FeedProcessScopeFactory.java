@@ -33,7 +33,7 @@ public class FeedProcessScopeFactory {
         return sFeedProcessScope;
     }
 
-    /*
+    /**
      * @return The {@link FeedSchedulerBridge} that was given to the {@link FeedProcessScope}.
      */
     public static FeedSchedulerBridge getFeedSchedulerBridge() {
@@ -62,6 +62,7 @@ public class FeedProcessScopeFactory {
                                 new LoggingApiImpl(), new FeedNetworkBridge(profile),
                                 sFeedSchedulerBridge, lifecycleListener, DebugBehavior.SILENT)
                         .build();
-        sFeedSchedulerBridge.setRequestManager(sFeedProcessScope.getRequestManager());
+        sFeedSchedulerBridge.initializeFeedDependencies(
+                sFeedProcessScope.getRequestManager(), sFeedProcessScope.getSessionManager());
     }
 }

@@ -8,6 +8,8 @@ namespace feed {
 
 namespace prefs {
 
+const char kBackgroundRefreshPeriod[] = "feed.background_refresh_period";
+
 const char kLastFetchAttemptTime[] = "feed.last_fetch_attempt";
 
 const char kUserClassifierAverageNTPOpenedPerHour[] =

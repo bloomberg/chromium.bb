@@ -9,10 +9,22 @@
 #include "base/time/clock.h"
 #include "base/time/time.h"
 #include "components/feed/core/pref_names.h"
+#include "components/feed/core/time_serialization.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 
 namespace feed {
+
+namespace {
+
+// Run the given closure if it is valid.
+void TryRun(base::OnceClosure closure) {
+  if (closure) {
+    std::move(closure).Run();
+  }
+}
+
+}  // namespace
 
 enum class FeedSchedulerHost::TriggerType {
   NTP_SHOWN = 0,
@@ -30,6 +42,29 @@ FeedSchedulerHost::~FeedSchedulerHost() {}
 // static
 void FeedSchedulerHost::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterTimePref(prefs::kLastFetchAttemptTime, base::Time());
+  registry->RegisterTimeDeltaPref(prefs::kBackgroundRefreshPeriod,
+                                  base::TimeDelta());
+}
+
+void FeedSchedulerHost::Initialize(
+    base::RepeatingClosure refresh_callback,
+    ScheduleBackgroundTaskCallback schedule_background_task_callback) {
+  // There should only ever be one scheduler host and bridge created. Neither
+  // are ever destroyed before shutdown, and this method should only be called
+  // once as the bridge is constructed.
+  DCHECK(!refresh_callback_);
+  DCHECK(!schedule_background_task_callback_);
+
+  refresh_callback_ = std::move(refresh_callback);
+  schedule_background_task_callback_ =
+      std::move(schedule_background_task_callback);
+
+  base::TimeDelta old_period =
+      pref_service_->GetTimeDelta(prefs::kBackgroundRefreshPeriod);
+  base::TimeDelta new_period = GetTriggerThreshold(TriggerType::FIXED_TIMER);
+  if (old_period != new_period) {
+    ScheduleFixedTimerWakeUp(new_period);
+  }
 }
 
 NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
@@ -59,34 +94,40 @@ NativeRequestBehavior FeedSchedulerHost::ShouldSessionRequestData(
 void FeedSchedulerHost::OnReceiveNewContent(
     base::Time content_creation_date_time) {
   pref_service_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
-  ScheduleFixedTimerWakeUp();
+  TryRun(std::move(fixed_timer_completion_));
+  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::FIXED_TIMER));
 }
 
 void FeedSchedulerHost::OnRequestError(int network_response_code) {
   pref_service_->SetTime(prefs::kLastFetchAttemptTime, clock_->Now());
+  TryRun(std::move(fixed_timer_completion_));
 }
 
 void FeedSchedulerHost::OnForegrounded() {
-  DCHECK(trigger_refresh_);
+  DCHECK(refresh_callback_);
   if (ShouldRefresh(TriggerType::FOREGROUNDED)) {
-    trigger_refresh_.Run();
+    refresh_callback_.Run();
   }
 }
 
-void FeedSchedulerHost::OnFixedTimer() {
-  DCHECK(trigger_refresh_);
+void FeedSchedulerHost::OnFixedTimer(base::OnceClosure on_completion) {
+  DCHECK(refresh_callback_);
   if (ShouldRefresh(TriggerType::FIXED_TIMER)) {
-    trigger_refresh_.Run();
+    // There shouldn't typically be anything in |fixed_timer_completion_| right
+    // now, but if there was, run it before we replace it.
+    TryRun(std::move(fixed_timer_completion_));
+
+    fixed_timer_completion_ = std::move(on_completion);
+    refresh_callback_.Run();
+  } else {
+    // The task driving this doesn't need to stay around, since no work is being
+    // done on its behalf.
+    TryRun(std::move(on_completion));
   }
 }
 
-void FeedSchedulerHost::RegisterTriggerRefreshCallback(
-    base::RepeatingClosure callback) {
-  // There should only ever be one scheduler host and bridge created. This may
-  // stop being true eventually.
-  DCHECK(trigger_refresh_.is_null());
-
-  trigger_refresh_ = std::move(callback);
+void FeedSchedulerHost::OnTaskReschedule() {
+  ScheduleFixedTimerWakeUp(GetTriggerThreshold(TriggerType::FIXED_TIMER));
 }
 
 bool FeedSchedulerHost::ShouldRefresh(TriggerType trigger) {
@@ -102,11 +143,12 @@ bool FeedSchedulerHost::IsContentStale(base::Time content_creation_date_time) {
 
 base::TimeDelta FeedSchedulerHost::GetTriggerThreshold(TriggerType trigger) {
   // TODO(skym): Select Finch param based on trigger and user classification.
-  return base::TimeDelta();
+  return base::TimeDelta::FromMinutes(1);
 }
 
-void FeedSchedulerHost::ScheduleFixedTimerWakeUp() {
-  // TODO(skym): Implementation, call out to injected scheduling dependency.
+void FeedSchedulerHost::ScheduleFixedTimerWakeUp(base::TimeDelta period) {
+  pref_service_->SetTimeDelta(prefs::kBackgroundRefreshPeriod, period);
+  schedule_background_task_callback_.Run(period);
 }
 
 }  // namespace feed

@@ -2230,11 +2230,8 @@ if (enable_offline_pages_harness) {
 }
 
 if (enable_feed_in_chrome) {
-  chrome_junit_test_java_sources += [
-    "junit/src/org/chromium/chrome/browser/feed/FeedImageLoaderTest.java",
-    "junit/src/org/chromium/chrome/browser/feed/StreamLifecycleManagerTest.java",
-  ]
-  chrome_test_java_sources += feed_conformance_test_sources
+  chrome_junit_test_java_sources += feed_junit_test_java_sources
+  chrome_test_java_sources += feed_test_java_sources
 }
 
 # This is enable_arcore, not package_arcore because the apk merger, for

@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 
 class PrefRegistrySimple;
 class PrefService;
@@ -14,6 +15,7 @@ class PrefService;
 namespace base {
 class Clock;
 class Time;
+class TimeDelta;
 }  // namespace base
 
 namespace feed {
@@ -41,7 +43,19 @@ class FeedSchedulerHost {
   FeedSchedulerHost(PrefService* pref_service, base::Clock* clock);
   ~FeedSchedulerHost();
 
+  using ScheduleBackgroundTaskCallback =
+      base::RepeatingCallback<void(base::TimeDelta)>;
+
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
+  // Provide dependent pieces of functionality the scheduler relies on. Should
+  // be called exactly once before other public methods are called. This is
+  // separate from the constructor because the FeedHostService owns and creates
+  // this class, while these providers need to be bridged through the JNI into a
+  // specific place that the FeedHostService does not know of.
+  void Initialize(
+      base::RepeatingClosure refresh_callback,
+      ScheduleBackgroundTaskCallback schedule_background_task_callback);
 
   // Called when the NTP is opened to decide how to handle displaying and
   // refreshing content.
@@ -59,11 +73,14 @@ class FeedSchedulerHost {
   // Called when browser is opened, launched, or foregrounded.
   void OnForegrounded();
 
-  // Called when the scheduled fixed timer wakes up.
-  void OnFixedTimer();
+  // Called when the scheduled fixed timer wakes up, |on_completion| will be
+  // invoked when the refresh completes, regardless of success. If no refresh
+  // is started for this trigger, |on_completion| is run immediately.
+  void OnFixedTimer(base::OnceClosure on_completion);
 
-  // Registers a callback to trigger a refresh.
-  void RegisterTriggerRefreshCallback(base::RepeatingClosure callback);
+  // Called when the background task may need to be rescheduled, such as on OS
+  // upgrades that change the way tasks are stored.
+  void OnTaskReschedule();
 
  private:
   // The TriggerType enum specifies values for the events that can trigger
@@ -79,22 +96,31 @@ class FeedSchedulerHost {
   // |content_creation_date_time| is old enough to be considered stale.
   bool IsContentStale(base::Time content_creation_date_time);
 
-  // Schedules a task to wakeup and try to refresh. Overrides previously
-  // scheduled tasks.
-  void ScheduleFixedTimerWakeUp();
-
   // Returns the time threshold for content or previous refresh attempt to be
   // considered old enough for a given trigger to warrant a refresh.
   base::TimeDelta GetTriggerThreshold(TriggerType trigger);
 
-  // Callback to request that an async refresh be started.
-  base::RepeatingClosure trigger_refresh_;
+  // Schedules a task to wakeup and try to refresh. Overrides previously
+  // scheduled tasks.
+  void ScheduleFixedTimerWakeUp(base::TimeDelta period);
 
   // Non-owning reference to pref service providing durable storage.
   PrefService* pref_service_;
 
   // Non-owning reference to clock to get current time.
   base::Clock* clock_;
+
+  // Callback to request that an async refresh be started.
+  base::RepeatingClosure refresh_callback_;
+
+  // Provides ability to schedule and cancel persistent background fixed timer
+  // wake ups that will call into OnFixedTimer().
+  ScheduleBackgroundTaskCallback schedule_background_task_callback_;
+
+  // When a background wake up has caused a fixed timer refresh, this callback
+  // will be valid and holds a way to inform the task driving this wake up that
+  // the refresh has completed. Is called on refresh success or failure.
+  base::OnceClosure fixed_timer_completion_;
 
   DISALLOW_COPY_AND_ASSIGN(FeedSchedulerHost);
 };
