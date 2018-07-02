@@ -1053,7 +1053,7 @@ ruby > rt {
     text-align: start;
 }
 
-ruby > rp {
+rp {
     display: none;
 }
 
