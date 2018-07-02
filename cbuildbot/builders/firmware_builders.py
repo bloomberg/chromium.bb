@@ -17,10 +17,11 @@ class FirmwareBranchBuilder(generic_builders.ManifestVersionedBuilder):
   def RunStages(self):
     """Prepare the working directory, and use it for the firmware branch.."""
     workspace_dir = self._run.options.workspace
-    firmware_branch = 'master'
+    firmware_branch = self._run.config.workspace_branch
 
     self._RunStage(workspace_stages.WorkspaceCleanStage,
-                   workspace_dir)
+                   workspace_dir=workspace_dir)
 
     self._RunStage(workspace_stages.WorkspaceSyncStage,
-                   workspace_dir, firmware_branch)
+                   workspace_dir=workspace_dir,
+                   workspace_branch=firmware_branch)
