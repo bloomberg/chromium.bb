@@ -233,7 +233,10 @@ void ArcAuthService::OnAccountInfoReady(mojom::AccountInfoPtr account_info,
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* instance = ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->auth(),
                                                OnAccountInfoReady);
-  DCHECK(instance);
+  if (!instance) {
+    LOG(ERROR) << "Auth instance is not available.";
+    return;
+  }
   instance->OnAccountInfoReady(std::move(account_info), status);
 }
 
