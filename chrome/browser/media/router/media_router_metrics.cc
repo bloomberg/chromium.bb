@@ -59,12 +59,18 @@ const char MediaRouterMetrics::kHistogramPresentationUrlType[] =
     "MediaRouter.PresentationRequest.AvailabilityUrlType";
 const char MediaRouterMetrics::kHistogramRouteCreationOutcome[] =
     "MediaRouter.Route.CreationOutcome";
+const char MediaRouterMetrics::kHistogramUiDeviceCount[] =
+    "MediaRouter.Ui.Device.Count";
 const char MediaRouterMetrics::kHistogramUiDialogPaint[] =
     "MediaRouter.Ui.Dialog.Paint";
 const char MediaRouterMetrics::kHistogramUiDialogLoadedWithData[] =
     "MediaRouter.Ui.Dialog.LoadedWithData";
 const char MediaRouterMetrics::kHistogramUiFirstAction[] =
     "MediaRouter.Ui.FirstAction";
+const char MediaRouterMetrics::kHistogramStartLocalPosition[] =
+    "MediaRouter.Ui.Action.StartLocalPosition";
+const char MediaRouterMetrics::kHistogramStartLocalSessionSuccessful[] =
+    "MediaRouter.Ui.Action.StartLocalSessionSuccessful";
 
 // static
 void MediaRouterMetrics::RecordMediaRouterDialogOrigin(
@@ -146,6 +152,21 @@ void MediaRouterMetrics::RecordPresentationUrlType(const GURL& url) {
 void MediaRouterMetrics::RecordMediaSinkType(SinkIconType sink_icon_type) {
   UMA_HISTOGRAM_ENUMERATION(kHistogramMediaSinkType, sink_icon_type,
                             SinkIconType::TOTAL_COUNT);
+}
+
+// static
+void MediaRouterMetrics::RecordDeviceCount(int device_count) {
+  UMA_HISTOGRAM_COUNTS_100(kHistogramUiDeviceCount, device_count);
+}
+
+// static
+void MediaRouterMetrics::RecordStartRouteDeviceIndex(int index) {
+  base::UmaHistogramSparse(kHistogramStartLocalPosition, std::min(index, 100));
+}
+
+// static
+void MediaRouterMetrics::RecordStartLocalSessionSuccessful(bool success) {
+  UMA_HISTOGRAM_BOOLEAN(kHistogramStartLocalSessionSuccessful, success);
 }
 
 }  // namespace media_router

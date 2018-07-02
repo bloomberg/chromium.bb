@@ -737,8 +737,7 @@ void MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
-  base::UmaHistogramSparse("MediaRouter.Ui.Action.StartLocalPosition",
-                           std::min(index, 100));
+  MediaRouterMetrics::RecordStartRouteDeviceIndex(index);
 }
 
 void MediaRouterWebUIMessageHandler::OnReportFilter(const base::ListValue*) {
@@ -800,9 +799,8 @@ void MediaRouterWebUIMessageHandler::OnReportRouteCreation(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
-
-  UMA_HISTOGRAM_BOOLEAN("MediaRouter.Ui.Action.StartLocalSessionSuccessful",
-                        route_created_successfully);
+  MediaRouterMetrics::RecordStartLocalSessionSuccessful(
+      route_created_successfully);
 }
 
 void MediaRouterWebUIMessageHandler::OnReportRouteCreationOutcome(
@@ -841,7 +839,7 @@ void MediaRouterWebUIMessageHandler::OnReportSinkCount(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
-  UMA_HISTOGRAM_COUNTS_100("MediaRouter.Ui.Device.Count", sink_count);
+  MediaRouterMetrics::RecordDeviceCount(sink_count);
 }
 
 void MediaRouterWebUIMessageHandler::OnReportTimeToClickSink(
