@@ -421,12 +421,13 @@ class ContextualSuggestionsMediator
     }
 
     private void maybeShowContentInSheet() {
+        if (!mModel.hasSuggestions() || mSuggestionsSource == null) return;
+
         // For the auto-peeking UX, when the controls scroll completely off-screen, the suggestions
         // are "shown" but remain hidden since their offset from the bottom of the screen is
         // determined by the top controls.
         if (!mToolbarButtonEnabled
-                && (mDidSuggestionsShowForTab || !mModel.hasSuggestions()
-                           || mSuggestionsSource == null || !areBrowserControlsHidden()
+                && (mDidSuggestionsShowForTab || !areBrowserControlsHidden()
                            || !mHasReachedTargetScrollPercentage || !mHasPeekDelayPassed
                            || !hasRemainingPeek())) {
             return;
