@@ -66,7 +66,7 @@ class OmniboxTextView : public views::View {
   // kTextStyles constant defined in the .cc file and is used to style the text,
   // including setting the font size, color, and baseline style.  See the
   // TextStyle struct in the .cc file for more.
-  void AppendText(const base::string16& text, int text_type) const;
+  void AppendText(const base::string16& text, int text_type);
 
   // Updates the cached maximum line height.
   void UpdateLineHeight();
@@ -81,7 +81,11 @@ class OmniboxTextView : public views::View {
   bool wrap_text_lines_;
 
   // The primary data for this class.
-  mutable std::unique_ptr<gfx::RenderText> render_text_;
+  std::unique_ptr<gfx::RenderText> render_text_;
+  // The classifications most recently passed to SetText. Used to exit
+  // early instead of setting text when the text and classifications
+  // match the current state of the view.
+  std::unique_ptr<ACMatchClassifications> cached_classifications_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTextView);
 };

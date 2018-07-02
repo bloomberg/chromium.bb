@@ -448,8 +448,8 @@ void OmniboxMatchCellView::LayoutSplit(int icon_view_width, int text_indent) {
   int row_height = child_area.height();
   int y = child_area.y();
   icon_view_->SetBounds(child_area.x(), y, icon_view_width, row_height);
-  int content_width = content_view_->CalculatePreferredSize().width();
-  int description_width = description_view_->CalculatePreferredSize().width();
+  int content_width = content_view_->GetPreferredSize().width();
+  int description_width = description_view_->GetPreferredSize().width();
   gfx::Size separator_size = separator_view_->CalculatePreferredSize();
   OmniboxPopupModel::ComputeMatchMaxWidths(
       content_width, separator_size.width(), description_width,

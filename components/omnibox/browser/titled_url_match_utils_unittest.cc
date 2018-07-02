@@ -53,11 +53,6 @@ class MockTitledUrlNode : public bookmarks::TitledUrlNode {
 
 }  // namespace
 
-bool operator==(const ACMatchClassification& lhs,
-                const ACMatchClassification& rhs) {
-  return (lhs.offset == rhs.offset) && (lhs.style == rhs.style);
-}
-
 TEST(TitledUrlMatchUtilsTest, TitledUrlMatchToAutocompleteMatch) {
   base::string16 input_text(base::ASCIIToUTF16("goo"));
   base::string16 match_title(base::ASCIIToUTF16("Google Search"));

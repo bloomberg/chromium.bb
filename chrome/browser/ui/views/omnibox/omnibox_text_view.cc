@@ -192,13 +192,28 @@ const base::string16& OmniboxTextView::text() const {
 }
 
 void OmniboxTextView::SetText(const base::string16& text) {
+  if (cached_classifications_) {
+    cached_classifications_.reset();
+  } else if (render_text_ && render_text_->text() == text) {
+    // Only exit early if |cached_classifications_| was empty,
+    // i.e. the last time text was set was through this method.
+    return;
+  }
+
   render_text_.reset();
   render_text_ = CreateRenderText(text);
   UpdateLineHeight();
+  SetPreferredSize(CalculatePreferredSize());
 }
 
 void OmniboxTextView::SetText(const base::string16& text,
                               const ACMatchClassifications& classifications) {
+  if (render_text_ && render_text_->text() == text && cached_classifications_ &&
+      classifications == *cached_classifications_)
+    return;
+
+  cached_classifications_ =
+      std::make_unique<ACMatchClassifications>(classifications);
   render_text_ = CreateRenderText(text);
 
   const size_t text_length = render_text_->text().length();
@@ -230,9 +245,11 @@ void OmniboxTextView::SetText(const base::string16& text,
   }
 
   UpdateLineHeight();
+  SetPreferredSize(CalculatePreferredSize());
 }
 
 void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
+  cached_classifications_.reset();
   wrap_text_lines_ = line.num_text_lines() > 1;
   render_text_.reset();
   render_text_ = CreateRenderText(base::string16());
@@ -258,6 +275,7 @@ void OmniboxTextView::SetText(const SuggestionAnswer::ImageLine& line) {
   }
 
   // Add the "additional" and "status" text from |line|, if any.
+  // Also updates preferred size.
   AppendExtraText(line);
 
   UpdateLineHeight();
@@ -273,6 +291,7 @@ void OmniboxTextView::AppendExtraText(const SuggestionAnswer::ImageLine& line) {
   if (text_field) {
     AppendText(space + text_field->text(), text_field->type());
   }
+  SetPreferredSize(CalculatePreferredSize());
 }
 
 int OmniboxTextView::GetLineHeight() const {
@@ -291,8 +310,7 @@ std::unique_ptr<gfx::RenderText> OmniboxTextView::CreateRenderText(
   return render_text;
 }
 
-void OmniboxTextView::AppendText(const base::string16& text,
-                                 int text_type) const {
+void OmniboxTextView::AppendText(const base::string16& text, int text_type) {
   if (text.empty())
     return;
   int offset = render_text_->text().length();
