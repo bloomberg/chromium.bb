@@ -158,7 +158,7 @@ DownloadHandler* DownloadHandler::GetForProfile(Profile* profile) {
   DriveIntegrationService* service =
       DriveIntegrationServiceFactory::FindForProfile(profile);
   if (!service || !service->IsMounted())
-    return NULL;
+    return nullptr;
   return service->download_handler();
 }
 
@@ -170,8 +170,8 @@ void DownloadHandler::Initialize(
   drive_tmp_download_path_ = drive_tmp_download_path;
 
   if (download_manager) {
-    notifier_.reset(
-        new download::AllDownloadItemNotifier(download_manager, this));
+    notifier_ = std::make_unique<download::AllDownloadItemNotifier>(
+        download_manager, this);
     // Remove any persisted Drive DownloadItem. crbug.com/171384
     DownloadManager::DownloadVector downloads;
     download_manager->GetAllDownloads(&downloads);
@@ -184,8 +184,8 @@ void DownloadHandler::Initialize(
 
 void DownloadHandler::ObserveIncognitoDownloadManager(
     DownloadManager* download_manager) {
-  notifier_incognito_.reset(
-      new download::AllDownloadItemNotifier(download_manager, this));
+  notifier_incognito_ = std::make_unique<download::AllDownloadItemNotifier>(
+      download_manager, this);
 }
 
 void DownloadHandler::SubstituteDriveDownloadPath(
@@ -223,7 +223,7 @@ void DownloadHandler::SetDownloadParams(const base::FilePath& drive_path,
     // This may have been previously set if the default download folder is
     // /drive, and the user has now changed the download target to a local
     // folder.
-    download->SetUserData(&kDrivePathKey, NULL);
+    download->SetUserData(&kDrivePathKey, nullptr);
     download->SetDisplayName(base::FilePath());
   }
 }
@@ -245,7 +245,7 @@ base::FilePath DownloadHandler::GetCacheFilePath(const DownloadItem* download) {
 bool DownloadHandler::IsDriveDownload(const DownloadItem* download) {
   // We use the existence of the DriveUserData object in download as a
   // signal that this is a download to Drive.
-  return GetDriveUserData(download) != NULL;
+  return GetDriveUserData(download) != nullptr;
 }
 
 void DownloadHandler::CheckForFileExistence(
@@ -365,7 +365,7 @@ void DownloadHandler::OnDownloadUpdated(
       break;
 
     case DownloadItem::CANCELLED:
-      download->SetUserData(&kDrivePathKey, NULL);
+      download->SetUserData(&kDrivePathKey, nullptr);
       break;
 
     case DownloadItem::INTERRUPTED:
@@ -432,7 +432,7 @@ DownloadManager* DownloadHandler::GetDownloadManager(void* manager_id) {
     return notifier_->GetManager();
   if (notifier_incognito_ && manager_id == notifier_incognito_->GetManager())
     return notifier_incognito_->GetManager();
-  return NULL;
+  return nullptr;
 }
 
 }  // namespace drive

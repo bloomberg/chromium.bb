@@ -128,7 +128,7 @@ FileSystemBackendDelegate::CreateFileStreamWriter(
 storage::WatcherManager* FileSystemBackendDelegate::GetWatcherManager(
     storage::FileSystemType type) {
   NOTIMPLEMENTED();
-  return NULL;
+  return nullptr;
 }
 
 void FileSystemBackendDelegate::GetRedirectURLForContents(

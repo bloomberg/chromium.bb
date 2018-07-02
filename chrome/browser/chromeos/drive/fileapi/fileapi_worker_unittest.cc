@@ -133,7 +133,7 @@ class FileApiWorkerTest : public testing::Test {
 TEST_F(FileApiWorkerTest, RunFileSystemCallbackSuccess) {
   DummyFileSystem dummy_file_system;
 
-  FileSystemInterface* file_system = NULL;
+  FileSystemInterface* file_system = nullptr;
   RunFileSystemCallback(
       base::Bind(&GetFileSystem, &dummy_file_system),
       google_apis::test_util::CreateCopyResultCallback(&file_system),
@@ -143,19 +143,19 @@ TEST_F(FileApiWorkerTest, RunFileSystemCallbackSuccess) {
 }
 
 TEST_F(FileApiWorkerTest, RunFileSystemCallbackFail) {
-  FileSystemInterface* file_system = NULL;
+  FileSystemInterface* file_system = nullptr;
 
   // Make sure on_error_callback is called if file_system_getter returns NULL.
   int num_called = 0;
   RunFileSystemCallback(
-      base::Bind(&GetFileSystem, static_cast<FileSystemInterface*>(NULL)),
+      base::Bind(&GetFileSystem, static_cast<FileSystemInterface*>(nullptr)),
       google_apis::test_util::CreateCopyResultCallback(&file_system),
       base::Bind(&Increment, &num_called));
   EXPECT_EQ(1, num_called);
 
   // Just make sure this null |on_error_callback| doesn't cause a crash.
   RunFileSystemCallback(
-      base::Bind(&GetFileSystem, static_cast<FileSystemInterface*>(NULL)),
+      base::Bind(&GetFileSystem, static_cast<FileSystemInterface*>(nullptr)),
       google_apis::test_util::CreateCopyResultCallback(&file_system),
       base::Closure());
 }

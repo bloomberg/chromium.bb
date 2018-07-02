@@ -196,7 +196,7 @@ FileSystemInterface* GetFileSystemFromUrl(const storage::FileSystemURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   Profile* profile = util::ExtractProfileFromPath(url.path());
-  return profile ? util::GetFileSystemByProfile(profile) : NULL;
+  return profile ? util::GetFileSystemByProfile(profile) : nullptr;
 }
 
 void RunFileSystemCallback(

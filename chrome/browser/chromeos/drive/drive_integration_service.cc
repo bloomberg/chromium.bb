@@ -4,6 +4,8 @@
 
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
@@ -212,7 +214,7 @@ class DriveIntegrationService::PreferenceWatcher {
  public:
   explicit PreferenceWatcher(PrefService* pref_service)
       : pref_service_(pref_service),
-        integration_service_(NULL),
+        integration_service_(nullptr),
         weak_ptr_factory_(this) {
     DCHECK(pref_service);
     pref_change_registrar_.Init(pref_service);
@@ -351,7 +353,7 @@ DriveIntegrationService::DriveIntegrationService(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(profile && !profile->IsOffTheRecord());
 
-  logger_.reset(new EventLogger);
+  logger_ = std::make_unique<EventLogger>();
   blocking_task_runner_ = base::CreateSequencedTaskRunnerWithTraits(
       {base::MayBlock(), base::TaskPriority::USER_BLOCKING,
        base::WithBaseSyncPrimitives()});
@@ -379,12 +381,12 @@ DriveIntegrationService::DriveIntegrationService(
       url_loader_factory = g_browser_process->system_network_context_manager()
                                ->GetSharedURLLoaderFactory();
     }
-    drive_service_.reset(new DriveAPIService(
+    drive_service_ = std::make_unique<DriveAPIService>(
         oauth_service, g_browser_process->system_request_context(),
         url_loader_factory, blocking_task_runner_.get(),
         GURL(google_apis::DriveApiUrlGenerator::kBaseUrlForProduction),
         GURL(google_apis::DriveApiUrlGenerator::kBaseThumbnailUrlForProduction),
-        GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET));
+        GetDriveUserAgent(), NO_TRAFFIC_ANNOTATION_YET);
   }
 
   device::mojom::WakeLockProviderPtr wake_lock_provider;
@@ -394,18 +396,18 @@ DriveIntegrationService::DriveIntegrationService(
   connector->BindInterface(device::mojom::kServiceName,
                            mojo::MakeRequest(&wake_lock_provider));
 
-  scheduler_.reset(new JobScheduler(
+  scheduler_ = std::make_unique<JobScheduler>(
       profile_->GetPrefs(), logger_.get(), drive_service_.get(),
-      blocking_task_runner_.get(), std::move(wake_lock_provider)));
+      blocking_task_runner_.get(), std::move(wake_lock_provider));
   metadata_storage_.reset(new internal::ResourceMetadataStorage(
       cache_root_directory_.Append(kMetadataDirectory),
       blocking_task_runner_.get()));
   cache_.reset(new internal::FileCache(
       metadata_storage_.get(),
       cache_root_directory_.Append(kCacheFileDirectory),
-      blocking_task_runner_.get(),
-      NULL /* free_disk_space_getter */));
-  drive_app_registry_.reset(new DriveAppRegistry(drive_service_.get()));
+      blocking_task_runner_.get(), nullptr /* free_disk_space_getter */));
+  drive_app_registry_ =
+      std::make_unique<DriveAppRegistry>(drive_service_.get());
 
   resource_metadata_.reset(new internal::ResourceMetadata(
       metadata_storage_.get(), cache_.get(), blocking_task_runner_));
@@ -417,9 +419,9 @@ DriveIntegrationService::DriveIntegrationService(
                 logger_.get(), cache_.get(), scheduler_.get(),
                 resource_metadata_.get(), blocking_task_runner_.get(),
                 cache_root_directory_.Append(kTemporaryFileDirectory)));
-  download_handler_.reset(new DownloadHandler(file_system()));
-  debug_info_collector_.reset(new DebugInfoCollector(
-      resource_metadata_.get(), file_system(), blocking_task_runner_.get()));
+  download_handler_ = std::make_unique<DownloadHandler>(file_system());
+  debug_info_collector_ = std::make_unique<DebugInfoCollector>(
+      resource_metadata_.get(), file_system(), blocking_task_runner_.get());
 
   SetEnabled(drive::util::IsDriveEnabledForProfile(profile));
 }
@@ -698,8 +700,9 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
 
   // Initialize Download Handler for hooking downloads to the Drive folder.
   content::DownloadManager* download_manager =
-      g_browser_process->download_status_updater() ?
-      BrowserContext::GetDownloadManager(profile_) : NULL;
+      g_browser_process->download_status_updater()
+          ? BrowserContext::GetDownloadManager(profile_)
+          : nullptr;
   download_handler_->Initialize(
       download_manager,
       cache_root_directory_.Append(kTemporaryFileDirectory));
@@ -711,7 +714,8 @@ void DriveIntegrationService::InitializeAfterMetadataInitialized(
           BrowserContext::GetDownloadManager(
               profile_->GetOffTheRecordProfile()));
     }
-    profile_notification_registrar_.reset(new content::NotificationRegistrar);
+    profile_notification_registrar_ =
+        std::make_unique<content::NotificationRegistrar>();
     profile_notification_registrar_->Add(
         this,
         chrome::NOTIFICATION_PROFILE_CREATED,
@@ -767,7 +771,7 @@ void DriveIntegrationService::Observe(
 //===================== DriveIntegrationServiceFactory =======================
 
 DriveIntegrationServiceFactory::FactoryCallback*
-    DriveIntegrationServiceFactory::factory_for_test_ = NULL;
+    DriveIntegrationServiceFactory::factory_for_test_ = nullptr;
 
 DriveIntegrationServiceFactory::ScopedFactoryForTest::ScopedFactoryForTest(
     FactoryCallback* factory_for_test) {
@@ -775,7 +779,7 @@ DriveIntegrationServiceFactory::ScopedFactoryForTest::ScopedFactoryForTest(
 }
 
 DriveIntegrationServiceFactory::ScopedFactoryForTest::~ScopedFactoryForTest() {
-  factory_for_test_ = NULL;
+  factory_for_test_ = nullptr;
 }
 
 // static
@@ -818,18 +822,18 @@ KeyedService* DriveIntegrationServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  DriveIntegrationService* service = NULL;
+  DriveIntegrationService* service = nullptr;
   if (!factory_for_test_) {
-    DriveIntegrationService::PreferenceWatcher* preference_watcher = NULL;
+    DriveIntegrationService::PreferenceWatcher* preference_watcher = nullptr;
     if (chromeos::IsProfileAssociatedWithGaiaAccount(profile)) {
       // Drive File System can be enabled.
       preference_watcher =
           new DriveIntegrationService::PreferenceWatcher(profile->GetPrefs());
     }
 
-    service = new DriveIntegrationService(
-        profile, preference_watcher,
-        NULL, std::string(), base::FilePath(), NULL);
+    service =
+        new DriveIntegrationService(profile, preference_watcher, nullptr,
+                                    std::string(), base::FilePath(), nullptr);
   } else {
     service = factory_for_test_->Run(profile);
   }

@@ -8,6 +8,7 @@
 
 #include <algorithm>
 #include <cstring>
+#include <memory>
 #include <utility>
 
 #include "base/callback_helpers.h"
@@ -249,7 +250,7 @@ void NetworkReaderProxy::OnGetContent(std::unique_ptr<std::string> data) {
   if (is_full_download_ && remaining_content_length_ == 0)
     job_canceller_.Reset();
 
-  buffer_ = NULL;
+  buffer_ = nullptr;
   buffer_length_ = 0;
   DCHECK(!callback_.is_null());
   base::ResetAndReturn(&callback_).Run(result);
@@ -273,7 +274,7 @@ void NetworkReaderProxy::OnCompleted(FileError error) {
     return;
   }
 
-  buffer_ = NULL;
+  buffer_ = nullptr;
   buffer_length_ = 0;
   base::ResetAndReturn(&callback_).Run(error_code_);
 }
@@ -343,7 +344,7 @@ DriveFileStreamReader::~DriveFileStreamReader() {
 
 bool DriveFileStreamReader::IsInitialized() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return reader_proxy_.get() != NULL;
+  return reader_proxy_.get() != nullptr;
 }
 
 void DriveFileStreamReader::Initialize(
@@ -417,10 +418,9 @@ void DriveFileStreamReader::InitializeAfterGetFileContentInitialized(
 
   if (local_cache_file_path.empty()) {
     // The file is not cached, and being downloaded.
-    reader_proxy_.reset(
-        new internal::NetworkReaderProxy(
-            range_start, range_length,
-            entry->file_info().size(), cancel_download_closure_));
+    reader_proxy_ = std::make_unique<internal::NetworkReaderProxy>(
+        range_start, range_length, entry->file_info().size(),
+        cancel_download_closure_);
     callback.Run(net::OK, std::move(entry));
     return;
   }
@@ -454,8 +454,8 @@ void DriveFileStreamReader::InitializeAfterLocalFileOpen(
     return;
   }
 
-  reader_proxy_.reset(
-      new internal::LocalReaderProxy(std::move(file_reader), length));
+  reader_proxy_ = std::make_unique<internal::LocalReaderProxy>(
+      std::move(file_reader), length);
   callback.Run(net::OK, std::move(entry));
 }
 
