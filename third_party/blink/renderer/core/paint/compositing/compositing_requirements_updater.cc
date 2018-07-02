@@ -248,7 +248,8 @@ static void CheckSubtreeHasNoCompositing(PaintLayer* layer) {
       kNegativeZOrderChildren | kNormalFlowChildren | kPositiveZOrderChildren);
   while (PaintLayer* cur_layer = iterator.Next()) {
     DCHECK(cur_layer->GetCompositingState() == kNotComposited);
-    DCHECK(!cur_layer->DirectCompositingReasons());
+    DCHECK(!cur_layer->DirectCompositingReasons() ||
+           !layer->Compositor()->CanBeComposited(cur_layer));
     CheckSubtreeHasNoCompositing(cur_layer);
   }
 }
@@ -287,8 +288,11 @@ void CompositingRequirementsUpdater::UpdateRecursive(
       !current_recursion_data.compositing_ancestor_->IsRootLayer();
   const bool ignore_lcd_text = has_non_root_composited_scrolling_ancestor;
 
-  CompositingReasons direct_from_paint_layer =
-      layer->DirectCompositingReasons();
+  const bool layer_can_be_composited = compositor->CanBeComposited(layer);
+
+  CompositingReasons direct_from_paint_layer = 0;
+  if (layer_can_be_composited)
+    direct_from_paint_layer = layer->DirectCompositingReasons();
 
   if (compositing_reason_finder_.RequiresCompositingForScrollDependentPosition(
           layer,
@@ -296,14 +300,18 @@ void CompositingRequirementsUpdater::UpdateRecursive(
     direct_from_paint_layer |= CompositingReason::kScrollDependentPosition;
   }
 
-  DCHECK(
-      direct_from_paint_layer ==
-      compositing_reason_finder_.DirectReasons(
-          layer, ignore_lcd_text || moves_with_respect_to_compositing_ancestor))
-      << " Expected: "
-      << CompositingReason::ToString(
-             compositing_reason_finder_.DirectReasons(layer, ignore_lcd_text))
-      << " Actual: " << CompositingReason::ToString(direct_from_paint_layer);
+#if DCHECK_IS_ON()
+  if (layer_can_be_composited) {
+    DCHECK(direct_from_paint_layer ==
+           compositing_reason_finder_.DirectReasons(
+               layer,
+               ignore_lcd_text || moves_with_respect_to_compositing_ancestor))
+        << " Expected: "
+        << CompositingReason::ToString(
+               compositing_reason_finder_.DirectReasons(layer, ignore_lcd_text))
+        << " Actual: " << CompositingReason::ToString(direct_from_paint_layer);
+  }
+#endif
 
   direct_reasons |= direct_from_paint_layer;
 
@@ -320,7 +328,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   // testing is not used, we must assume we overlap if there is anything
   // composited behind us in paint-order.
   CompositingReasons overlap_compositing_reason =
-      current_recursion_data.subtree_is_compositing_
+      (layer_can_be_composited &&
+       current_recursion_data.subtree_is_compositing_)
           ? CompositingReason::kAssumedOverlap
           : CompositingReason::kNone;
 
@@ -337,7 +346,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
         unclipped_descendants_to_remove.push_back(i);
         continue;
       }
-      if (layer->ScrollsWithRespectTo(unclipped_descendant))
+      if (layer_can_be_composited &&
+          layer->ScrollsWithRespectTo(unclipped_descendant))
         reasons_to_composite |= CompositingReason::kAssumedOverlap;
     }
 
@@ -372,7 +382,7 @@ void CompositingRequirementsUpdater::UpdateRecursive(
   }
 
   absolute_descendant_bounding_box = abs_bounds;
-  if (current_recursion_data.testing_overlap_ &&
+  if (layer_can_be_composited && current_recursion_data.testing_overlap_ &&
       !RequiresCompositingOrSquashing(direct_reasons)) {
     bool overlaps =
         overlap_map.OverlapsLayers(abs_bounds, use_clipped_bounding_rect);
@@ -573,7 +583,8 @@ void CompositingRequirementsUpdater::UpdateRecursive(
             compositing_reason_finder_, layer,
             child_recursion_data.subtree_is_compositing_,
             any_descendant_has3d_transform);
-    reasons_to_composite |= subtree_compositing_reasons;
+    if (layer_can_be_composited)
+      reasons_to_composite |= subtree_compositing_reasons;
     if (!will_be_composited_or_squashed && can_be_composited &&
         RequiresCompositingOrSquashing(subtree_compositing_reasons)) {
       child_recursion_data.compositing_ancestor_ = layer;

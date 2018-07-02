@@ -3821,6 +3821,16 @@ void LocalFrameView::SetParentVisible(bool visible) {
       });
 }
 
+void LocalFrameView::SetSelfVisible(bool visible) {
+  if (visible != self_visible_) {
+    // Frame view visibility affects PLC::CanBeComposited, which in turn
+    // affects compositing inputs.
+    if (LayoutView* view = GetLayoutView())
+      view->Layer()->SetNeedsCompositingInputsUpdate();
+  }
+  self_visible_ = visible;
+}
+
 void LocalFrameView::Show() {
   if (!IsSelfVisible()) {
     SetSelfVisible(true);
