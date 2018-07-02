@@ -116,8 +116,8 @@ public class ImageViewTinterTest {
 
     private void checkSetTintWorksCorrectly(ImageViewTinterOwner view) {
         ImageView imageView = (ImageView) view;
-        int color =
-                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.light_active_color);
+        int color = ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.default_icon_color_blue);
 
         Assert.assertNull(imageView.getColorFilter());
         if (imageView.getDrawable() == null) {

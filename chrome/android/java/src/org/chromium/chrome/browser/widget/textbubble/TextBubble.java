@@ -188,8 +188,8 @@ public class TextBubble implements AnchoredPopupWindow.LayoutObserver {
         addOnDismissListener(mDismissListener);
 
         // Set predefined styles for the TextBubble.
-        mDrawable.setBubbleColor(
-                ApiCompatibilityUtils.getColor(mContext.getResources(), R.color.google_blue_500));
+        mDrawable.setBubbleColor(ApiCompatibilityUtils.getColor(
+                mContext.getResources(), R.color.light_active_color));
     }
 
     /** Shows the bubble. Will have no effect if the bubble is already showing. */

@@ -18,5 +18,5 @@
     android:textAlignment="center"
     android:textColor="@color/white_alpha_90"
     android:textSize="@dimen/keyboard_accessory_text_size"
-    app:buttonColor="@color/google_blue_500"
+    app:buttonColor="@color/light_active_color"
     app:buttonRaised="false"/>

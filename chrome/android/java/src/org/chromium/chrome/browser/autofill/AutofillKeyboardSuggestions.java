@@ -153,7 +153,7 @@ public class AutofillKeyboardSuggestions
         Drawable drawable = AppCompatResources.getDrawable(getContext(), suggestion.getIconId());
         if (isKeyboardAccessoryHint) {
             drawable.setColorFilter(
-                    ApiCompatibilityUtils.getColor(getResources(), R.color.google_blue_500),
+                    ApiCompatibilityUtils.getColor(getResources(), R.color.default_icon_color_blue),
                     PorterDuff.Mode.SRC_IN);
         } else {
             icon.setContentDescription(suggestion.getLabel());
