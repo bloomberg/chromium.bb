@@ -37,6 +37,7 @@ TestingPlatformSupportWithMockScheduler::
     : mock_task_runner_(
           base::MakeRefCounted<cc::OrderedSimpleTaskRunner>(&clock_, true)) {
   DCHECK(IsMainThread());
+  clock_.Advance(base::TimeDelta::FromSeconds(1));
   std::unique_ptr<base::sequence_manager::SequenceManagerForTest>
       sequence_manager = base::sequence_manager::SequenceManagerForTest::Create(
           nullptr, mock_task_runner_, &clock_);

@@ -114,10 +114,8 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
                         base::TimeDelta window_duration,
                         int steps_per_window);
 
-  void OnTopLevelTaskStarted(base::TimeTicks task_start_time,
-                             MainThreadTaskQueue* queue);
-  void OnTopLevelTaskCompleted(base::TimeTicks task_end_time);
-  void OnBeginNestedRunLoop();
+  void OnExecutionStarted(base::TimeTicks now, MainThreadTaskQueue* queue);
+  void OnExecutionStopped(base::TimeTicks now);
   void OnRendererStateChanged(bool backgrounded,
                               base::TimeTicks transition_time);
 
@@ -128,11 +126,13 @@ class PLATFORM_EXPORT QueueingTimeEstimator {
   Client* client_;  // NOT OWNED.
   const base::TimeDelta window_step_width_;
   base::TimeTicks step_start_time_;
-  base::TimeTicks current_task_start_time_;
+
+  // Tasks that arrive in the busy period need to wait in a task queue.
+  bool busy_ = false;
+  base::TimeTicks busy_period_start_time_;
+
   // |renderer_backgrounded_| is the renderer's current status.
   bool renderer_backgrounded_;
-  bool processing_task_;
-  bool in_nested_message_loop_;
   Calculator calculator_;
 
   DISALLOW_ASSIGN(QueueingTimeEstimator);

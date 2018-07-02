@@ -58,9 +58,7 @@ base::TimeDelta ExpectedQueueingTimeFromTask(base::TimeTicks task_start,
        (task_end - task_in_step_end_time)) /
       2;
 
-  return base::TimeDelta::FromMillisecondsD(
-      probability_of_this_task *
-      expected_queueing_duration_within_task.InMillisecondsF());
+  return probability_of_this_task * expected_queueing_duration_within_task;
 }
 
 }  // namespace
@@ -72,39 +70,31 @@ QueueingTimeEstimator::QueueingTimeEstimator(
     : client_(client),
       window_step_width_(window_duration / steps_per_window),
       renderer_backgrounded_(kLaunchingProcessIsBackgrounded),
-      processing_task_(false),
-      in_nested_message_loop_(false),
       calculator_(steps_per_window) {
   DCHECK_GE(steps_per_window, 1);
 }
 
-void QueueingTimeEstimator::OnTopLevelTaskStarted(
-    base::TimeTicks task_start_time,
-    MainThreadTaskQueue* queue) {
-  AdvanceTime(task_start_time);
-  current_task_start_time_ = task_start_time;
-  processing_task_ = true;
+void QueueingTimeEstimator::OnExecutionStarted(base::TimeTicks now,
+                                               MainThreadTaskQueue* queue) {
+  DCHECK(!busy_);
+  AdvanceTime(now);
+  busy_ = true;
+  busy_period_start_time_ = now;
   calculator_.UpdateStatusFromTaskQueue(queue);
 }
 
-void QueueingTimeEstimator::OnTopLevelTaskCompleted(
-    base::TimeTicks task_end_time) {
-  DCHECK(processing_task_);
-  AdvanceTime(task_end_time);
-  processing_task_ = false;
-  current_task_start_time_ = base::TimeTicks();
-  in_nested_message_loop_ = false;
-}
-
-void QueueingTimeEstimator::OnBeginNestedRunLoop() {
-  in_nested_message_loop_ = true;
+void QueueingTimeEstimator::OnExecutionStopped(base::TimeTicks now) {
+  DCHECK(busy_);
+  AdvanceTime(now);
+  busy_ = false;
+  busy_period_start_time_ = base::TimeTicks();
 }
 
 void QueueingTimeEstimator::OnRendererStateChanged(
     bool backgrounded,
     base::TimeTicks transition_time) {
   DCHECK_NE(backgrounded, renderer_backgrounded_);
-  if (!processing_task_)
+  if (!busy_)
     AdvanceTime(transition_time);
   renderer_backgrounded_ = backgrounded;
 }
@@ -112,18 +102,18 @@ void QueueingTimeEstimator::OnRendererStateChanged(
 void QueueingTimeEstimator::AdvanceTime(base::TimeTicks current_time) {
   if (step_start_time_.is_null()) {
     // Ignore any time before the first task.
-    if (!processing_task_)
+    if (!busy_)
       return;
 
-    step_start_time_ = current_task_start_time_;
+    step_start_time_ = busy_period_start_time_;
   }
   base::TimeTicks reference_time =
-      processing_task_ ? current_task_start_time_ : step_start_time_;
-  if (in_nested_message_loop_ || renderer_backgrounded_ ||
+      busy_ ? busy_period_start_time_ : step_start_time_;
+  if (renderer_backgrounded_ ||
       current_time - reference_time > kInvalidPeriodThreshold) {
-    // Skip steps when the renderer was backgrounded, when we are at a nested
-    // message loop, when a task took too long, or when we remained idle for
-    // too long. May cause |step_start_time_| to go slightly into the future.
+    // Skip steps when the renderer was backgrounded, when a task took too long,
+    // or when we remained idle for too long. May cause |step_start_time_| to go
+    // slightly into the future.
     // TODO(npm): crbug.com/776013. Base skipping long tasks/idling on a signal
     // that we've been suspended.
     step_start_time_ =
@@ -132,18 +122,18 @@ void QueueingTimeEstimator::AdvanceTime(base::TimeTicks current_time) {
     return;
   }
   while (TimePastStepEnd(current_time)) {
-    if (processing_task_) {
+    if (busy_) {
       // Include the current task in this window.
       calculator_.AddQueueingTime(ExpectedQueueingTimeFromTask(
-          current_task_start_time_, current_time, step_start_time_,
+          busy_period_start_time_, current_time, step_start_time_,
           step_start_time_ + window_step_width_));
     }
     calculator_.EndStep(client_);
     step_start_time_ += window_step_width_;
   }
-  if (processing_task_) {
+  if (busy_) {
     calculator_.AddQueueingTime(ExpectedQueueingTimeFromTask(
-        current_task_start_time_, current_time, step_start_time_,
+        busy_period_start_time_, current_time, step_start_time_,
         step_start_time_ + window_step_width_));
   }
 }

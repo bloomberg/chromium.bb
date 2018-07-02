@@ -2488,8 +2488,12 @@ void MainThreadSchedulerImpl::BroadcastIntervention(
 void MainThreadSchedulerImpl::OnTaskStarted(MainThreadTaskQueue* queue,
                                             const TaskQueue::Task& task,
                                             base::TimeTicks start) {
+  main_thread_only().running_queues.push(queue);
+  queueing_time_estimator_.OnExecutionStarted(start, queue);
+  if (main_thread_only().nested_runloop)
+    return;
+
   main_thread_only().current_task_start_time = start;
-  queueing_time_estimator_.OnTopLevelTaskStarted(start, queue);
   main_thread_only().task_description_for_tracing = TaskDescriptionForTracing{
       static_cast<TaskType>(task.task_type()),
       queue
@@ -2509,7 +2513,12 @@ void MainThreadSchedulerImpl::OnTaskCompleted(
     base::TimeTicks end,
     base::Optional<base::TimeDelta> thread_time) {
   DCHECK_LE(start, end);
-  queueing_time_estimator_.OnTopLevelTaskCompleted(end);
+  DCHECK(!main_thread_only().running_queues.empty());
+  DCHECK(!queue || main_thread_only().running_queues.top().get() == queue);
+  main_thread_only().running_queues.pop();
+  queueing_time_estimator_.OnExecutionStopped(end);
+  if (main_thread_only().nested_runloop)
+    return;
 
   if (queue)
     task_queue_throttler()->OnTaskRunTimeReported(queue, start, end);
@@ -2635,13 +2644,15 @@ TaskQueue::QueuePriority MainThreadSchedulerImpl::ComputePriority(
 }
 
 void MainThreadSchedulerImpl::OnBeginNestedRunLoop() {
-  queueing_time_estimator_.OnBeginNestedRunLoop();
-
+  queueing_time_estimator_.OnExecutionStopped(real_time_domain()->Now());
   main_thread_only().nested_runloop = true;
   ApplyVirtualTimePolicy();
 }
 
 void MainThreadSchedulerImpl::OnExitNestedRunLoop() {
+  DCHECK(!main_thread_only().running_queues.empty());
+  queueing_time_estimator_.OnExecutionStarted(
+      real_time_domain()->Now(), main_thread_only().running_queues.top().get());
   main_thread_only().nested_runloop = false;
   ApplyVirtualTimePolicy();
 }

@@ -782,11 +782,18 @@ TEST_F(PageSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
       VirtualTimePolicy::kDeterministicLoading);
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
+  TaskQueue::Task task{
+      TaskQueue::PostedTask(base::OnceClosure(), base::Location()),
+      base::TimeTicks()};
+  scheduler_->OnTaskStarted(nullptr, task, base::TimeTicks());
   scheduler_->OnBeginNestedRunLoop();
   EXPECT_FALSE(scheduler_->VirtualTimeAllowedToAdvance());
 
   scheduler_->OnExitNestedRunLoop();
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
+  scheduler_->OnTaskCompleted(nullptr, task, base::TimeTicks(),
+                              scheduler_->real_time_domain()->Now(),
+                              base::nullopt);
 }
 
 TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
@@ -984,6 +991,11 @@ TEST_F(PageSchedulerImplTest,
   page_scheduler_->EnableVirtualTime();
   page_scheduler_->SetMaxVirtualTimeTaskStarvationCount(100);
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kAdvance);
+
+  TaskQueue::Task task{
+      TaskQueue::PostedTask(base::OnceClosure(), base::Location()),
+      base::TimeTicks()};
+  scheduler_->OnTaskStarted(nullptr, task, base::TimeTicks());
   scheduler_->OnBeginNestedRunLoop();
 
   int count = 0;

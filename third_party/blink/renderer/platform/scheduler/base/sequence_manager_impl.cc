@@ -28,12 +28,9 @@ namespace sequence_manager {
 
 namespace {
 
-const double kLongTaskTraceEventThreshold = 0.05;
+constexpr base::TimeDelta kLongTaskTraceEventThreshold =
+    base::TimeDelta::FromMilliseconds(50);
 const double kSamplingRateForRecordingCPUTime = 0.01;
-
-double MonotonicTimeInSeconds(TimeTicks time_ticks) {
-  return (time_ticks - TimeTicks()).InSecondsF();
-}
 
 // Magic value to protect against memory corruption and bail out
 // early when detected.
@@ -239,7 +236,7 @@ void SequenceManagerImpl::WakeUpReadyDelayedQueues(LazyNow* lazy_now) {
 
 void SequenceManagerImpl::OnBeginNestedRunLoop() {
   main_thread_only().nesting_depth++;
-  if (main_thread_only().observer && main_thread_only().nesting_depth == 1)
+  if (main_thread_only().observer)
     main_thread_only().observer->OnBeginNestedRunLoop();
 }
 
@@ -256,9 +253,9 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
           std::move(non_nestable_task));
       main_thread_only().non_nestable_task_queue.pop_front();
     }
-    if (main_thread_only().observer)
-      main_thread_only().observer->OnExitNestedRunLoop();
   }
+  if (main_thread_only().observer)
+    main_thread_only().observer->OnExitNestedRunLoop();
 }
 
 void SequenceManagerImpl::OnQueueHasIncomingImmediateWork(
@@ -429,12 +426,11 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
     }
 
     bool notify_time_observers =
-        main_thread_only().nesting_depth == 0 &&
-        (main_thread_only().task_time_observers.might_have_observers() ||
-         executing_task->task_queue->RequiresTaskTiming());
+        main_thread_only().task_time_observers.might_have_observers() ||
+        executing_task->task_queue->RequiresTaskTiming();
     if (notify_time_observers) {
       executing_task->task_start_time = time_before_task->Now();
-      {
+      if (main_thread_only().nesting_depth == 0) {
         TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                      "SequenceManager.WillProcessTaskTimeObservers");
         for (auto& observer : main_thread_only().task_time_observers)
@@ -470,18 +466,16 @@ void SequenceManagerImpl::NotifyDidProcessTask(
   if (!executing_task.task_queue->GetShouldNotifyObservers())
     return;
 
-  double task_start_time_sec =
-      MonotonicTimeInSeconds(executing_task.task_start_time);
-  double task_end_time_sec = 0;
+  TimeTicks task_start_time = executing_task.task_start_time;
+  TimeTicks task_end_time =
+      task_start_time.is_null() ? TimeTicks() : time_after_task->Now();
+  DCHECK(task_start_time.is_null() || !task_end_time.is_null());
 
-  if (task_start_time_sec) {
-    task_end_time_sec = MonotonicTimeInSeconds(time_after_task->Now());
-
+  if (!task_start_time.is_null() && main_thread_only().nesting_depth == 0) {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.DidProcessTaskTimeObservers");
     for (auto& observer : main_thread_only().task_time_observers) {
-      observer.DidProcessTask(executing_task.task_start_time,
-                              time_after_task->Now());
+      observer.DidProcessTask(task_start_time, task_end_time);
     }
   }
 
@@ -502,17 +496,19 @@ void SequenceManagerImpl::NotifyDidProcessTask(
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                  "SequenceManager.QueueOnTaskCompleted");
-    if (task_start_time_sec && task_end_time_sec) {
-      executing_task.task_queue->OnTaskCompleted(
-          executing_task.pending_task, executing_task.task_start_time,
-          time_after_task->Now(), thread_time);
+    if (!task_start_time.is_null()) {
+      executing_task.task_queue->OnTaskCompleted(executing_task.pending_task,
+                                                 task_start_time, task_end_time,
+                                                 thread_time);
     }
   }
 
-  if (task_start_time_sec && task_end_time_sec &&
-      task_end_time_sec - task_start_time_sec > kLongTaskTraceEventThreshold) {
+  if (!task_start_time.is_null() &&
+      task_end_time - task_start_time > kLongTaskTraceEventThreshold &&
+      main_thread_only().nesting_depth == 0) {
     TRACE_EVENT_INSTANT1("blink", "LongTask", TRACE_EVENT_SCOPE_THREAD,
-                         "duration", task_end_time_sec - task_start_time_sec);
+                         "duration",
+                         (task_end_time - task_start_time).InSecondsF());
   }
 }
 
