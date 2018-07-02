@@ -135,6 +135,16 @@ class BookmarkModelTypeProcessor : public syncer::ModelTypeProcessor,
   // entities.
   void NudgeForCommitIfNeeded();
 
+  // Builds the commit requests list.
+  std::vector<syncer::CommitRequestData> BuildCommitRequestsForLocalChanges(
+      size_t max_entries);
+
+  // Instantiates the required objects to track metadata and starts observing
+  // changes from the bookmark model.
+  void StartTrackingMetadata(
+      std::vector<NodeMetadataPair> nodes_metadata,
+      std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
+
   // Stores the start callback in between OnSyncStarting() and
   // DecodeSyncMetadata().
   StartCallback start_callback_;

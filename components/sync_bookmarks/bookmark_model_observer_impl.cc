@@ -4,6 +4,17 @@
 
 #include "components/sync_bookmarks/bookmark_model_observer_impl.h"
 
+#include <utility>
+
+#include "base/guid.h"
+#include "base/strings/utf_string_conversions.h"
+#include "components/bookmarks/browser/bookmark_model.h"
+#include "components/bookmarks/browser/bookmark_node.h"
+#include "components/sync/base/hash_util.h"
+#include "components/sync/base/unique_position.h"
+#include "components/sync/engine/non_blocking_sync_common.h"
+#include "components/sync_bookmarks/synced_bookmark_tracker.h"
+
 namespace sync_bookmarks {
 
 BookmarkModelObserverImpl::BookmarkModelObserverImpl(
@@ -40,7 +51,104 @@ void BookmarkModelObserverImpl::BookmarkNodeAdded(
     bookmarks::BookmarkModel* model,
     const bookmarks::BookmarkNode* parent,
     int index) {
-  NOTIMPLEMENTED();
+  const bookmarks::BookmarkNode* node = parent->GetChild(index);
+  // TODO(crbug.com/516866): continue only if
+  // model->client()->CanSyncNode(node).
+
+  const SyncedBookmarkTracker::Entity* parent_entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(parent);
+  if (!parent_entity) {
+    DLOG(WARNING) << "Bookmark parent lookup failed";
+    return;
+  }
+  // Similar to the diectory implementation here:
+  // https://cs.chromium.org/chromium/src/components/sync/syncable/mutable_entry.cc?l=237&gsn=CreateEntryKernel
+  // Assign a temp server id for the entity. Will be overriden by the actual
+  // server id upon receiving commit response.
+  const std::string sync_id = base::GenerateGUID();
+  const int64_t server_version = syncer::kUncommittedVersion;
+  const base::Time creation_time = base::Time::Now();
+  const sync_pb::UniquePosition unique_position =
+      ComputePosition(*parent, index, sync_id).ToProto();
+
+  sync_pb::EntitySpecifics specifics;
+  sync_pb::BookmarkSpecifics* bm_specifics = specifics.mutable_bookmark();
+  bm_specifics->set_url(node->url().spec());
+  // TODO(crbug.com/516866): Set the favicon.
+  bm_specifics->set_title(base::UTF16ToUTF8(node->GetTitle()));
+  bm_specifics->set_creation_time_us(
+      node->date_added().ToDeltaSinceWindowsEpoch().InMicroseconds());
+
+  bm_specifics->set_icon_url(node->icon_url() ? node->icon_url()->spec()
+                                              : std::string());
+  // TODO(crbug.com/516866): update the implementation to be similar to the
+  // directory implementation
+  // https://cs.chromium.org/chromium/src/components/sync_bookmarks/bookmark_change_processor.cc?l=882&rcl=f38001d936d8b2abb5743e85cbc88c72746ae3d2
+  if (node->GetMetaInfoMap()) {
+    for (const std::pair<std::string, std::string>& pair :
+         *node->GetMetaInfoMap()) {
+      sync_pb::MetaInfo* meta_info = bm_specifics->add_meta_info();
+      meta_info->set_key(pair.first);
+      meta_info->set_value(pair.second);
+    }
+  }
+  bookmark_tracker_->Add(sync_id, node, server_version, creation_time,
+                         unique_position, specifics);
+  // Mark the entity that it needs to be committed.
+  bookmark_tracker_->IncrementSequenceNumber(sync_id);
+  nudge_for_commit_closure_.Run();
+}
+
+syncer::UniquePosition BookmarkModelObserverImpl::ComputePosition(
+    const bookmarks::BookmarkNode& parent,
+    int index,
+    const std::string& sync_id) {
+  const std::string& suffix = syncer::GenerateSyncableBookmarkHash(
+      bookmark_tracker_->model_type_state().cache_guid(), sync_id);
+  DCHECK_NE(0, parent.child_count());
+
+  if (parent.child_count() == 1) {
+    // No siblings, the parent has no other children.
+    return syncer::UniquePosition::InitialPosition(suffix);
+  }
+  if (index == 0) {
+    const bookmarks::BookmarkNode* successor_node = parent.GetChild(1);
+    const SyncedBookmarkTracker::Entity* successor_entity =
+        bookmark_tracker_->GetEntityForBookmarkNode(successor_node);
+    DCHECK(successor_entity);
+    // Insert at the beginning.
+    return syncer::UniquePosition::Before(
+        syncer::UniquePosition::FromProto(
+            successor_entity->metadata()->unique_position()),
+        suffix);
+  }
+  if (index == parent.child_count() - 1) {
+    // Insert at the end.
+    const bookmarks::BookmarkNode* predecessor_node =
+        parent.GetChild(index - 1);
+    const SyncedBookmarkTracker::Entity* predecessor_entity =
+        bookmark_tracker_->GetEntityForBookmarkNode(predecessor_node);
+    DCHECK(predecessor_entity);
+    return syncer::UniquePosition::After(
+        syncer::UniquePosition::FromProto(
+            predecessor_entity->metadata()->unique_position()),
+        suffix);
+  }
+  // Insert in the middle.
+  const bookmarks::BookmarkNode* successor_node = parent.GetChild(index + 1);
+  const SyncedBookmarkTracker::Entity* successor_entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(successor_node);
+  DCHECK(successor_entity);
+  const bookmarks::BookmarkNode* predecessor_node = parent.GetChild(index - 1);
+  const SyncedBookmarkTracker::Entity* predecessor_entity =
+      bookmark_tracker_->GetEntityForBookmarkNode(predecessor_node);
+  DCHECK(predecessor_entity);
+  return syncer::UniquePosition::Between(
+      syncer::UniquePosition::FromProto(
+          predecessor_entity->metadata()->unique_position()),
+      syncer::UniquePosition::FromProto(
+          successor_entity->metadata()->unique_position()),
+      suffix);
 }
 
 void BookmarkModelObserverImpl::BookmarkNodeRemoved(

@@ -43,6 +43,9 @@ bool SyncedBookmarkTracker::Entity::IsUnsynced() const {
 
 bool SyncedBookmarkTracker::Entity::MatchesData(
     const syncer::EntityData& data) const {
+  // TODO(crbug.com/516866): Check parent id and unique position.
+  // TODO(crbug.com/516866): Compare the actual specifics instead of the
+  // specifics hash.
   if (metadata_->is_deleted() || data.is_deleted()) {
     // In case of deletion, no need to check the specifics.
     return metadata_->is_deleted() == data.is_deleted();
@@ -63,10 +66,13 @@ SyncedBookmarkTracker::SyncedBookmarkTracker(
     std::vector<NodeMetadataPair> nodes_metadata,
     std::unique_ptr<sync_pb::ModelTypeState> model_type_state)
     : model_type_state_(std::move(model_type_state)) {
+  DCHECK(model_type_state_);
   for (NodeMetadataPair& node_metadata : nodes_metadata) {
     const std::string& sync_id = node_metadata.second->server_id();
-    sync_id_to_entities_map_[sync_id] = std::make_unique<Entity>(
-        node_metadata.first, std::move(node_metadata.second));
+    auto entity = std::make_unique<Entity>(node_metadata.first,
+                                           std::move(node_metadata.second));
+    bookmark_node_to_entities_map_[node_metadata.first] = entity.get();
+    sync_id_to_entities_map_[sync_id] = std::move(entity);
   }
 }
 
@@ -76,6 +82,13 @@ const SyncedBookmarkTracker::Entity* SyncedBookmarkTracker::GetEntityForSyncId(
     const std::string& sync_id) const {
   auto it = sync_id_to_entities_map_.find(sync_id);
   return it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
+}
+
+const SyncedBookmarkTracker::Entity*
+SyncedBookmarkTracker::GetEntityForBookmarkNode(
+    const bookmarks::BookmarkNode* node) const {
+  auto it = bookmark_node_to_entities_map_.find(node);
+  return it != bookmark_node_to_entities_map_.end() ? it->second : nullptr;
 }
 
 void SyncedBookmarkTracker::Add(const std::string& sync_id,
@@ -90,12 +103,14 @@ void SyncedBookmarkTracker::Add(const std::string& sync_id,
   metadata->set_server_id(sync_id);
   metadata->set_server_version(server_version);
   metadata->set_creation_time(syncer::TimeToProtoTime(creation_time));
+  metadata->set_modification_time(syncer::TimeToProtoTime(creation_time));
   metadata->set_sequence_number(0);
   metadata->set_acked_sequence_number(0);
   metadata->mutable_unique_position()->CopyFrom(unique_position);
   HashSpecifics(specifics, metadata->mutable_specifics_hash());
-  sync_id_to_entities_map_[sync_id] =
-      std::make_unique<Entity>(bookmark_node, std::move(metadata));
+  auto entity = std::make_unique<Entity>(bookmark_node, std::move(metadata));
+  bookmark_node_to_entities_map_[bookmark_node] = entity.get();
+  sync_id_to_entities_map_[sync_id] = std::move(entity);
 }
 
 void SyncedBookmarkTracker::Update(const std::string& sync_id,
@@ -114,6 +129,9 @@ void SyncedBookmarkTracker::Update(const std::string& sync_id,
 }
 
 void SyncedBookmarkTracker::Remove(const std::string& sync_id) {
+  const Entity* entity = GetEntityForSyncId(sync_id);
+  DCHECK(entity);
+  bookmark_node_to_entities_map_.erase(entity->bookmark_node());
   sync_id_to_entities_map_.erase(sync_id);
 }
 
@@ -153,6 +171,49 @@ bool SyncedBookmarkTracker::HasLocalChanges() const {
     }
   }
   return false;
+}
+
+std::vector<const SyncedBookmarkTracker::Entity*>
+SyncedBookmarkTracker::GetEntitiesWithLocalChanges(size_t max_entries) const {
+  // TODO(crbug.com/516866): Reorder local changes to e.g. parent creation
+  // before child creation and the otherway around for deletions.
+  std::vector<const SyncedBookmarkTracker::Entity*> entities_with_local_changes;
+  for (const std::pair<const std::string, std::unique_ptr<Entity>>& pair :
+       sync_id_to_entities_map_) {
+    Entity* entity = pair.second.get();
+    if (entity->IsUnsynced()) {
+      entities_with_local_changes.push_back(entity);
+    }
+  }
+  return entities_with_local_changes;
+}
+
+void SyncedBookmarkTracker::UpdateUponCommitResponse(
+    const std::string& old_id,
+    const std::string& new_id,
+    int64_t acked_sequence_number,
+    int64_t server_version) {
+  // TODO(crbug.com/516866): Update specifics if we decide to keep it.
+  auto it = sync_id_to_entities_map_.find(old_id);
+  Entity* entity =
+      it != sync_id_to_entities_map_.end() ? it->second.get() : nullptr;
+  if (it == sync_id_to_entities_map_.end()) {
+    DLOG(WARNING) << "Trying to update a non existing entity.";
+    return;
+  }
+  const bookmarks::BookmarkNode* node = entity->bookmark_node();
+  // TODO(crbug.com/516866): For tombstones, node would be null and the DCHECK
+  // below would be invalid. Handle deletions here may be or in the processor.
+  DCHECK(node);
+
+  if (old_id != new_id) {
+    auto it = sync_id_to_entities_map_.find(old_id);
+    entity->metadata()->set_server_id(new_id);
+    sync_id_to_entities_map_[new_id] = std::move(it->second);
+    sync_id_to_entities_map_.erase(old_id);
+  }
+  entity->metadata()->set_acked_sequence_number(acked_sequence_number);
+  entity->metadata()->set_server_version(server_version);
 }
 
 std::size_t SyncedBookmarkTracker::TrackedEntitiesCountForTest() const {

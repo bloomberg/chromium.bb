@@ -97,6 +97,12 @@ SyncerError NonBlockingTypeCommitContribution::ProcessCommitResponse(
         CommitResponseData response_data;
         const CommitRequestData& commit_request = commit_requests_[i];
         response_data.id = entry_response.id_string();
+        if (response_data.id != commit_request.entity->id) {
+          // Server has changed the sync id in the request. Write back the
+          // original sync id. This is useful for data types without a notion of
+          // a client tag such as bookmarks.
+          response_data.id_in_request = commit_request.entity->id;
+        }
         response_data.response_version = entry_response.version();
         response_data.client_tag_hash = commit_request.entity->client_tag_hash;
         response_data.sequence_number = commit_request.sequence_number;
@@ -190,20 +196,17 @@ void NonBlockingTypeCommitContribution::PopulateCommitProto(
 
 void NonBlockingTypeCommitContribution::AdjustCommitProto(
     sync_pb::SyncEntity* commit_proto) {
-  // Initial commits need our help to generate a client ID.
   if (commit_proto->version() == kUncommittedVersion) {
-    DCHECK(commit_proto->id_string().empty()) << commit_proto->id_string();
-    // TODO(crbug.com/516866): This is incorrect for bookmarks for two reasons:
-    // 1) Won't be able to match previously committed bookmarks to the ones
-    //    with server ID.
-    // 2) Recommitting an item in a case of failing to receive commit response
-    //    would result in generating a different client ID, which in turn
-    //    would result in a duplication.
-    // We should generate client ID on the frontend side instead.
-    commit_proto->set_id_string(base::GenerateGUID());
     commit_proto->set_version(0);
-  } else {
-    DCHECK(!commit_proto->id_string().empty());
+    // Initial commits need our help to generate a client ID if they don't have
+    // any. Bookmarks create their own IDs on the frontend side to be able to
+    // match them after commits. For other data types we generate one here. And
+    // since bookmarks don't have client tags, their server id should be stable
+    // across restarts in case of recommitting an item, it doesn't result in
+    // creating a duplicate.
+    if (commit_proto->id_string().empty()) {
+      commit_proto->set_id_string(base::GenerateGUID());
+    }
   }
 
   // Encrypt the specifics and hide the title if necessary.
