@@ -27,6 +27,7 @@
 #include "chrome/browser/chromeos/system/timezone_resolver_manager.h"
 #include "chrome/browser/chromeos/tpm_firmware_update.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
@@ -47,8 +48,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/ui_base_features.h"
-#include "ui/display/display.h"
-#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event_sink.h"
 #include "ui/gfx/geometry/size.h"
@@ -89,7 +88,8 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
                                  JSCallsContainer* js_calls_container)
     : BaseWebUIHandler(js_calls_container),
       oobe_ui_(oobe_ui),
-      version_info_updater_(this) {
+      version_info_updater_(this),
+      weak_ptr_factory_(this) {
   DCHECK(js_calls_container);
   set_call_js_prefix(kJsScreenPath);
   if (features::IsAshInBrowserProcess()) {
@@ -106,6 +106,13 @@ CoreOobeHandler::CoreOobeHandler(OobeUI* oobe_ui,
   tablet_mode_client->AddObserver(this);
 
   OobeConfiguration::Get()->AddObserver(this);
+
+  // |connector| may be null in tests.
+  auto* connector = ash_util::GetServiceManagerConnector();
+  if (connector) {
+    connector->BindInterface(ash::mojom::kServiceName,
+                             &cros_display_config_ptr_);
+  }
 }
 
 CoreOobeHandler::~CoreOobeHandler() {
@@ -207,6 +214,9 @@ void CoreOobeHandler::RegisterMessages() {
   AddCallback("raiseTabKeyEvent", &CoreOobeHandler::HandleRaiseTabKeyEvent);
   AddCallback("setOobeBootstrappingSlave",
               &CoreOobeHandler::HandleSetOobeBootstrappingSlave);
+  // Note: Used by enterprise_RemoraRequisitionDisplayUsage.py:
+  // TODO(felixe): Use chrome.system.display or cros_display_config.mojom,
+  // https://crbug.com/858958.
   AddRawCallback("getPrimaryDisplayNameForTesting",
                  &CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting);
   AddCallback("setupDemoMode", &CoreOobeHandler::HandleSetupDemoMode);
@@ -614,15 +624,25 @@ void CoreOobeHandler::HandleGetPrimaryDisplayNameForTesting(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  const auto primary_display_id =
-      display::Screen::GetScreen()->GetPrimaryDisplay().id();
-  const display::DisplayManager* display_manager =
-      ash::Shell::Get()->display_manager();
-  const std::string display_name =
-      display_manager->GetDisplayNameForId(primary_display_id);
+  cros_display_config_ptr_->GetDisplayUnitInfoList(
+      false /* single_unified */,
+      base::BindOnce(&CoreOobeHandler::GetPrimaryDisplayNameCallback,
+                     weak_ptr_factory_.GetWeakPtr(), callback_id->Clone()));
+}
 
+void CoreOobeHandler::GetPrimaryDisplayNameCallback(
+    const base::Value& callback_id,
+    std::vector<ash::mojom::DisplayUnitInfoPtr> info_list) {
   AllowJavascript();
-  ResolveJavascriptCallback(*callback_id, base::Value(display_name));
+  std::string display_name;
+  for (const ash::mojom::DisplayUnitInfoPtr& info : info_list) {
+    if (info->is_primary) {
+      display_name = info->name;
+      break;
+    }
+  }
+  DCHECK(!display_name.empty());
+  ResolveJavascriptCallback(callback_id, base::Value(display_name));
 }
 
 void CoreOobeHandler::HandleSetupDemoMode() {

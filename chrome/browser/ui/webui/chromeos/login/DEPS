@@ -1,9 +1,9 @@
 specific_include_rules = {
-  # TODO(mash): Fix. https://crbug.com/770866
+  # TODO(mash): Fix. https://crbug.com/856375.
   "core_oobe_handler\.cc": [
     "+ash/shell.h",
   ],
-  # TODO(mash): Fix. https://crbug.com/678990
+  # TODO(mash): Fix or deprecate. https://crbug.com/678990
   "signin_screen_handler\.cc": [
     "+ash/detachable_base",
     "+ash/shell.h",
