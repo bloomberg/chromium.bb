@@ -134,7 +134,7 @@ Polymer({
       type: Boolean,
       value: false,
       computed: 'computeSyncSectionDisabled_(' +
-          'unifiedConsentEnabled, syncStatus.signedIn)',
+          'unifiedConsentEnabled, syncStatus.signedIn, syncStatus.disabled)',
     },
 
     /** @private */
@@ -216,7 +216,8 @@ Polymer({
    * @private
    */
   computeSyncSectionDisabled_() {
-    return this.unifiedConsentEnabled && !this.syncStatus.signedIn;
+    return !!this.unifiedConsentEnabled &&
+        (!this.syncStatus.signedIn || !!this.syncStatus.disabled);
   },
 
   /** @protected */
@@ -575,6 +576,14 @@ Polymer({
         !!this.syncStatus.syncSystemEnabled && !!this.syncStatus.signinAllowed;
   },
   // </if>
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowSyncControls_: function() {
+    return !!this.unifiedConsentEnabled && !this.syncStatus.disabled;
+  },
 });
 
 })();

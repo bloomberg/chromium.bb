@@ -106,6 +106,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: '',
         statusAction: settings.StatusAction.NO_ACTION,
         hasError: false,
+        disabled: false,
       };
       sync_test_util.simulateStoredAccounts([
         {
@@ -201,6 +202,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
         hasError: false,
+        disabled: false,
       };
       sync_test_util.simulateStoredAccounts([
         {
@@ -241,6 +243,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         hasError: true,
         statusAction: settings.StatusAction.CONFIRM_SYNC_SETTINGS,
+        disabled: false,
       };
       assertTrue(testElement.$$('#sync-icon-container')
                      .classList.contains('sync-problem'));
@@ -256,14 +259,31 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         hasError: true,
         statusAction: settings.StatusAction.REAUTHENTICATE,
+        disabled: false,
       };
       assertTrue(testElement.$$('#sync-icon-container')
-                     .classList.contains('sync-disabled'));
+                     .classList.contains('sync-paused'));
       assertTrue(!!testElement.$$('[icon=\'settings:sync-disabled\']'));
       displayedText = userInfo.querySelector('span:not([hidden])').textContent;
       assertFalse(displayedText.includes('barName'));
       assertFalse(displayedText.includes('fooName'));
       assertTrue(displayedText.includes('Sync is paused'));
+
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        statusAction: settings.StatusAction.NO_ACTION,
+        hasError: false,
+        disabled: true,
+      };
+
+      assertTrue(testElement.$$('#sync-icon-container')
+                     .classList.contains('sync-disabled'));
+      assertTrue(!!testElement.$$('[icon=\'settings:sync\']'));
+      displayedText = userInfo.querySelector('span:not([hidden])').textContent;
+      assertFalse(displayedText.includes('barName'));
+      assertFalse(displayedText.includes('fooName'));
+      assertTrue(displayedText.includes('Sync disabled'));
     });
 
     test('embedded in another page', function() {
@@ -277,6 +297,7 @@ cr.define('settings_sync_account_control', function() {
         signedInUsername: 'bar@bar.com',
         statusAction: settings.StatusAction.NO_ACTION,
         hasError: false,
+        disabled: false,
       };
 
       assertVisible(testElement.$$('#turn-off'), false);

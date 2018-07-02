@@ -95,12 +95,14 @@
           in the C++ code after a change in the pref is observed. -->
     <settings-toggle-button class="first" pref="{{prefs.unified_consent_given}}"
         label="$i18n{syncUnifiedConsentToggleTitle}"
-        hidden="[[!unifiedConsentEnabled]]">
+        hidden="[[!shouldShowSyncControls_(unifiedConsentEnabled,
+                   syncStatus.disabled)]]">
     </settings-toggle-button>
     <div class="settings-box two-line" id="sync-section-toggle"
         actionable$="[[!syncSectionDisabled_]]"
         on-click="toggleExpandButton_"
-        hidden="[[!unifiedConsentEnabled]]">
+        hidden="[[!shouldShowSyncControls_(unifiedConsentEnabled,
+                   syncStatus.disabled)]]">
       <div class="start">
         <div>$i18n{sync}</div>
         <div class="secondary">$i18n{syncDescription}</div>

@@ -79,8 +79,12 @@
         background: var(--settings-error-color);
       }
 
-      #sync-icon-container.sync-disabled {
+      #sync-icon-container.sync-paused {
         background: var(--google-blue-500);
+      }
+
+      #sync-icon-container.sync-disabled {
+        background: var(--google-grey-400);
       }
 
       #sync-icon-container iron-icon {
@@ -155,26 +159,27 @@
           <img class="account-icon" alt=""
               src="[[getAccountImageSrc_(shownAccount_.avatarImage)]]">
           <div id="sync-icon-container" hidden="[[!syncStatus.signedIn]]"
-              class$="[[getSyncIcon_(
-                  syncStatus.hasError, syncStatus.statusAction)]]">
+              class$="[[getSyncIconStyle_(
+                  syncStatus.hasError, syncStatus.statusAction,
+                  syncStatus.disabled)]]">
             <iron-icon icon$="settings:[[getSyncIcon_(
-                syncStatus.hasError, syncStatus.statusAction)]]"></iron-icon>
+                syncStatus.hasError, syncStatus.statusAction,
+                syncStatus.disabled)]]"></iron-icon>
           </div>
         </div>
         <div class="middle two-line no-min-width">
           <div class="flex text-elide" id="user-info">
-            <span hidden="[[syncStatus.hasError]]">
-              [[shownAccount_.fullName]]
-            </span>
-            <span hidden="[[!syncStatus.hasError]]">
-              [[getErrorLabel_('$i18nPolymer{syncNotWorking}',
-                  '$i18nPolymer{syncPaused}', syncStatus.hasError,
-                  syncStatus.statusAction)]]
+            <span>
+              [[getAvatarRowTitle_(shownAccount_.fullName,
+                  '$i18nPolymer{syncNotWorking}', '$i18nPolymer{syncPaused}',
+                  '$i18nPolymer{syncDisabled}', syncStatus.hasError,
+                  syncStatus.statusAction, syncStatus.disabled)]]
             </span>
             <div class="secondary">
               [[getAccountLabel_(
                   '$i18nPolymer{syncingTo}', shownAccount_.email,
-                  syncStatus.hasError, syncStatus.signedIn)]]
+                  syncStatus.hasError, syncStatus.signedIn,
+                  syncStatus.disabled)]]
             </div>
           </div>
         </div>

@@ -131,7 +131,7 @@ cr.define('settings_people_page_sync_page', function() {
       // When unified-consent is disabled and signed in, sync-section should be
       // visible and open by default. Accordion toggle row should not be present
       // and bottom items should not have classes used for indentation.
-      syncPage.syncStatus = {signedIn: true};
+      syncPage.syncStatus = {signedIn: true, disabled: false};
       syncPage.unifiedConsentEnabled = false;
       Polymer.dom.flush();
       assertTrue(ironCollapse.opened);
@@ -150,7 +150,7 @@ cr.define('settings_people_page_sync_page', function() {
       // When unified-consent is enabled and signed in, sync-section should be
       // visible and open by default. Accordion toggle row should be present,
       // and bottom items should have classes used for indentation.
-      syncPage.syncStatus = {signedIn: true};
+      syncPage.syncStatus = {signedIn: true, disabled: false};
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(ironCollapse.opened);
@@ -181,7 +181,7 @@ cr.define('settings_people_page_sync_page', function() {
 
       // When unified-consent is enabled and signed out, sync-section should be
       // hidden, and the accordion toggle row should be visible not actionable.
-      syncPage.syncStatus = {signedIn: false};
+      syncPage.syncStatus = {signedIn: false, disabled: false};
       syncPage.unifiedConsentEnabled = true;
       Polymer.dom.flush();
       assertTrue(ironCollapse.hidden);
@@ -189,6 +189,19 @@ cr.define('settings_people_page_sync_page', function() {
       assertFalse(syncSectionToggle.hasAttribute('actionable'));
       assertFalse(expandIcon.expanded);
       assertTrue(expandIcon.disabled);
+    });
+
+    test('SyncSectionLayout_UnifiedConsentEnabled_SyncDisabled', function() {
+      const ironCollapse = syncPage.$$('#sync-section');
+      const syncSectionToggle = syncPage.$$('#sync-section-toggle');
+
+      // When unified-consent is enabled and sync is disabled, the sync-section
+      // should be hidden.
+      syncPage.syncStatus = {signedIn: false, disabled: true};
+      syncPage.unifiedConsentEnabled = true;
+      Polymer.dom.flush();
+      assertTrue(ironCollapse.hidden);
+      assertTrue(syncSectionToggle.hidden);
     });
 
     test('LoadingAndTimeout', function() {

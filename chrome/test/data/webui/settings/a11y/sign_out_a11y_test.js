@@ -67,6 +67,7 @@ AccessibilityTest.define('SettingsA11ySignOut', {
         signedIn: false,
         signinAllowed: true,
         syncSystemEnabled: true,
+        disabled: false,
       });
     }
   },
@@ -85,6 +86,7 @@ AccessibilityTest.define('SettingsA11ySignOut', {
             signedInUsername: 'bar@bar.com',
             statusAction: settings.StatusAction.NO_ACTION,
             hasError: false,
+            disabled: false,
           };
           disconnectButton = syncAccountControl.$$('#turn-off');
         } else {
