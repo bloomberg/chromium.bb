@@ -80,9 +80,9 @@ public class TasksUma {
 
         RecordHistogram.recordCountHistogram("Tabs.Tasks.TabsInGroupCount", tabsInGroupCount);
 
-        double tabsInGroupRatio = tabsInGroupCount * 1.0 / totalTabCount;
+        double tabsInGroupRatioPercent = tabsInGroupCount * 1.0 / totalTabCount * 100.0;
         RecordHistogram.recordPercentageHistogram(
-                "Tabs.Tasks.TabsInGroupRatio", (int) tabsInGroupRatio * 100);
+                "Tabs.Tasks.TabsInGroupRatio", (int) tabsInGroupRatioPercent);
 
         if (tabGroupCount != 0) {
             int averageGroupSize = tabsInGroupCount / tabGroupCount;
@@ -91,14 +91,14 @@ public class TasksUma {
             Log.d(TAG, "AverageGroupSize: %d", averageGroupSize);
         }
 
-        double tabGroupDensity = tabGroupCount * 1.0 / totalTabCount;
+        double tabGroupDensityPercent = tabGroupCount * 1.0 / totalTabCount * 100.0;
         RecordHistogram.recordPercentageHistogram(
-                "Tabs.Tasks.TabGroupDensity", (int) tabGroupDensity * 100);
+                "Tabs.Tasks.TabGroupDensity", (int) tabGroupDensityPercent);
 
         Log.d(TAG, "TotalTabCount: %d", totalTabCount);
         Log.d(TAG, "TabGroupCount: %d", tabGroupCount);
         Log.d(TAG, "TabsInGroupCount: %d", tabsInGroupCount);
-        Log.d(TAG, "TabsInGroupRatio: %f", tabsInGroupRatio);
-        Log.d(TAG, "TabGroupDensity: %f", tabGroupDensity);
+        Log.d(TAG, "TabsInGroupRatioPercent: %d", (int) tabsInGroupRatioPercent);
+        Log.d(TAG, "TabGroupDensityPercent: %d", (int) tabGroupDensityPercent);
     }
 }
