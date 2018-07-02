@@ -66,6 +66,11 @@ message VmInfo {
 
   // The virtual socket context id assigned to the VM.
   int64 cid = 3;
+
+  // The handle to a 9p server managed by the seneschal system service.  Use
+  // this handle when making requests to that service to manage the files shared
+  // with this VM.
+  uint64 seneschal_server_handle = 4;
 }
 
 // Information that must be included with every StartVm dbus message.
@@ -78,7 +83,10 @@ message StartVmRequest {
   repeated DiskImage disks = 2;
 
   // Path to a shared directory that will be mounted via NFS inside the VM.
-  string shared_directory = 3;
+  // DEPRECATED: The server never did anything with this field.  Instead callers
+  // should use the |shared_dir_handle| field of the VmInfo message to get a
+  // server handle that can be used in requests to the seneschal system service.
+  string shared_directory = 3 [deprecated = true];
 
   // The human-readable name to be assigned to this VM.
   string name = 4;
