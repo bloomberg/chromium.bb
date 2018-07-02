@@ -59,7 +59,10 @@ public class SuggestionsBinder {
     private final @Nullable TextView mSnippetTextView;
     private final TextView mPublisherTextView;
     private final TextView mAgeTextView;
-    private final TintedImageView mThumbnailView;
+    // TODO(twellington): Try to change this back to a TintedImageView. This was changed for a crash
+    // in contextual suggestions that occurs when trying to mutate state when tinting a
+    // LayerDrawable that contains a RoundedBitmapDrawable on older versions of Android.
+    private final ImageView mThumbnailView;
     private final @Nullable ImageView mVideoBadge;
     private final ImageView mOfflineBadge;
     private final @Nullable ImageView mOfflineBadgePublisherRow;
@@ -252,7 +255,7 @@ public class SuggestionsBinder {
         } else {
             mThumbnailView.setImageResource(R.drawable.ic_snippet_thumbnail_placeholder);
         }
-        mThumbnailView.setTint(null);
+        if (!mIsContextual) ((TintedImageView) mThumbnailView).setTint(null);
 
         // Fetch thumbnail for the current article.
         mImageFetcher.makeArticleThumbnailRequest(
@@ -300,7 +303,7 @@ public class SuggestionsBinder {
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
         mThumbnailView.setImageDrawable(thumbnail);
-        mThumbnailView.setTint(null);
+        if (!mIsContextual) ((TintedImageView) mThumbnailView).setTint(null);
     }
 
     private void setThumbnailFromFileType(@DownloadFilter.Type int fileType) {
@@ -312,7 +315,7 @@ public class SuggestionsBinder {
         mThumbnailView.setBackgroundColor(iconBackgroundColor);
         mThumbnailView.setImageResource(
                 DownloadUtils.getIconResId(fileType, DownloadUtils.ICON_SIZE_36_DP));
-        mThumbnailView.setTint(iconForegroundColorList);
+        if (!mIsContextual) ((TintedImageView) mThumbnailView).setTint(iconForegroundColorList);
     }
 
     private void setDefaultFaviconOnView(int faviconSizePx) {
@@ -341,7 +344,7 @@ public class SuggestionsBinder {
 
         mThumbnailView.setScaleType(ImageView.ScaleType.CENTER_CROP);
         mThumbnailView.setBackground(null);
-        mThumbnailView.setTint(null);
+        if (!mIsContextual) ((TintedImageView) mThumbnailView).setTint(null);
         int duration = (int) (FADE_IN_ANIMATION_TIME_MS
                 * ChromeAnimation.Animation.getAnimationMultiplier());
         if (duration == 0) {
