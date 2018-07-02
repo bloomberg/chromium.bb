@@ -5,10 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_H_
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_SCHEDULER_BASE_WORK_QUEUE_H_
 
-#include <stddef.h>
-
-#include <set>
-
 #include "base/task/sequence_manager/enqueue_order.h"
 #include "base/task/sequence_manager/intrusive_heap.h"
 #include "base/task/sequence_manager/sequenced_task_source.h"

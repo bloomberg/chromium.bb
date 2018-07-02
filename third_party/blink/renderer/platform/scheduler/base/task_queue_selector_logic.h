@@ -7,6 +7,7 @@
 
 namespace base {
 namespace sequence_manager {
+namespace internal {
 
 // Used to describe the logic trigerred when a task queue is selected to
 // service.
@@ -29,6 +30,7 @@ enum class TaskQueueSelectorLogic {
   kCount = 9,
 };
 
+}  // namespace internal
 }  // namespace sequence_manager
 }  // namespace base
 
