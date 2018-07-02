@@ -188,10 +188,6 @@ struct OrderByCreationTimeDesc {
   }
 };
 
-// Constants for use in VLOG
-const int kVlogPerCookieMonster = 1;
-const int kVlogGarbageCollection = 5;
-const int kVlogSetCookies = 7;
 // Mozilla sorts on the path length (longest first), and then it
 // sorts by creation time (oldest first).
 // The RFC says the sort order for the domain attribute is undefined.
@@ -725,7 +721,8 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
     return;
   }
 
-  VLOG(kVlogSetCookies) << "SetCookie() line: " << cookie_line;
+  VLOG(net::cookie_util::kVlogSetCookies)
+      << "SetCookie() line: " << cookie_line;
 
   Time creation_time = CurrentTime();
   last_time_seen_ = creation_time;
@@ -734,7 +731,8 @@ void CookieMonster::SetCookieWithOptions(const GURL& url,
       CanonicalCookie::Create(url, cookie_line, creation_time, options));
 
   if (!cc.get()) {
-    VLOG(kVlogSetCookies) << "WARNING: Failed to allocate CanonicalCookie";
+    VLOG(net::cookie_util::kVlogSetCookies)
+        << "WARNING: Failed to allocate CanonicalCookie";
     MaybeRunCookieCallback(std::move(callback), false);
     return;
   }
@@ -1242,13 +1240,13 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
         "SetCookie() not clobbering httponly cookie or secure cookie for "
         "insecure scheme";
 
-    VLOG(kVlogSetCookies) << error;
+    VLOG(net::cookie_util::kVlogSetCookies) << error;
     MaybeRunCookieCallback(std::move(callback), false);
     return;
   }
 
-  VLOG(kVlogSetCookies) << "SetCookie() key: " << key
-                        << " cc: " << cc->DebugString();
+  VLOG(net::cookie_util::kVlogSetCookies)
+      << "SetCookie() key: " << key << " cc: " << cc->DebugString();
 
   // Realize that we might be setting an expired cookie, and the only point
   // was to delete the cookie which we've already done.
@@ -1283,7 +1281,8 @@ void CookieMonster::SetCanonicalCookie(std::unique_ptr<CanonicalCookie> cc,
 
     InternalInsertCookie(key, std::move(cc), true);
   } else {
-    VLOG(kVlogSetCookies) << "SetCookie() not storing already expired cookie.";
+    VLOG(net::cookie_util::kVlogSetCookies)
+        << "SetCookie() not storing already expired cookie.";
   }
 
   // We assume that hopefully setting a cookie will be less common than
@@ -1359,9 +1358,9 @@ void CookieMonster::InternalDeleteCookie(CookieMap::iterator it,
                 "kChangeCauseMapping size should match DeletionCause size");
 
   CanonicalCookie* cc = it->second.get();
-  VLOG(kVlogSetCookies) << "InternalDeleteCookie()"
-                        << ", cause:" << deletion_cause
-                        << ", cc: " << cc->DebugString();
+  VLOG(net::cookie_util::kVlogSetCookies)
+      << "InternalDeleteCookie()"
+      << ", cause:" << deletion_cause << ", cc: " << cc->DebugString();
 
   if ((cc->IsPersistent() || persist_session_cookies_) && store_.get() &&
       sync_to_store)
@@ -1382,7 +1381,8 @@ size_t CookieMonster::GarbageCollect(const Time& current,
 
   // Collect garbage for this key, minding cookie priorities.
   if (cookies_.count(key) > kDomainMaxCookies) {
-    VLOG(kVlogGarbageCollection) << "GarbageCollect() key: " << key;
+    VLOG(net::cookie_util::kVlogGarbageCollection)
+        << "GarbageCollect() key: " << key;
 
     CookieItVector* cookie_its;
 
@@ -1392,7 +1392,8 @@ size_t CookieMonster::GarbageCollect(const Time& current,
         GarbageCollectExpired(current, cookies_.equal_range(key), cookie_its);
 
     if (cookie_its->size() > kDomainMaxCookies) {
-      VLOG(kVlogGarbageCollection) << "Deep Garbage Collect domain.";
+      VLOG(net::cookie_util::kVlogGarbageCollection)
+          << "Deep Garbage Collect domain.";
       size_t purge_goal =
           cookie_its->size() - (kDomainMaxCookies - kDomainPurgeCookies);
       DCHECK(purge_goal > kDomainPurgeCookies);
@@ -1470,7 +1471,8 @@ size_t CookieMonster::GarbageCollect(const Time& current,
   // Collect garbage for everything. With firefox style we want to preserve
   // cookies accessed in kSafeFromGlobalPurgeDays, otherwise evict.
   if (cookies_.size() > kMaxCookies && earliest_access_time_ < safe_date) {
-    VLOG(kVlogGarbageCollection) << "GarbageCollect() everything";
+    VLOG(net::cookie_util::kVlogGarbageCollection)
+        << "GarbageCollect() everything";
     CookieItVector cookie_its;
 
     num_deleted += GarbageCollectExpired(
@@ -1478,7 +1480,8 @@ size_t CookieMonster::GarbageCollect(const Time& current,
         &cookie_its);
 
     if (cookie_its.size() > kMaxCookies) {
-      VLOG(kVlogGarbageCollection) << "Deep Garbage Collect everything.";
+      VLOG(net::cookie_util::kVlogGarbageCollection)
+          << "Deep Garbage Collect everything.";
       size_t purge_goal = cookie_its.size() - (kMaxCookies - kPurgeCookies);
       DCHECK(purge_goal > kPurgeCookies);
 
@@ -1694,7 +1697,7 @@ bool CookieMonster::HasCookieableScheme(const GURL& url) {
   }
 
   // The scheme didn't match any in our whitelist.
-  VLOG(kVlogPerCookieMonster)
+  VLOG(net::cookie_util::kVlogPerCookieMonster)
       << "WARNING: Unsupported cookie scheme: " << url.scheme();
   return false;
 }

@@ -63,8 +63,6 @@ namespace net {
 
 namespace {
 
-const int kVlogSetCookies = 7;
-
 // Determine the cookie domain to use for setting the specified cookie.
 bool GetCookieDomain(const GURL& url,
                      const ParsedCookie& pc,
@@ -195,18 +193,20 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   ParsedCookie parsed_cookie(cookie_line);
 
   if (!parsed_cookie.IsValid()) {
-    VLOG(kVlogSetCookies) << "WARNING: Couldn't parse cookie";
+    VLOG(net::cookie_util::kVlogSetCookies) << "WARNING: Couldn't parse cookie";
     return nullptr;
   }
 
   if (options.exclude_httponly() && parsed_cookie.IsHttpOnly()) {
-    VLOG(kVlogSetCookies) << "Create() is not creating a httponly cookie";
+    VLOG(net::cookie_util::kVlogSetCookies)
+        << "Create() is not creating a httponly cookie";
     return nullptr;
   }
 
   std::string cookie_domain;
   if (!GetCookieDomain(url, parsed_cookie, &cookie_domain)) {
-    VLOG(kVlogSetCookies) << "Create() failed to get a cookie domain";
+    VLOG(net::cookie_util::kVlogSetCookies)
+        << "Create() failed to get a cookie domain";
     return nullptr;
   }
 
@@ -215,7 +215,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   // URL does not have a secure scheme, the cookie should be thrown away.
   // https://tools.ietf.org/html/draft-ietf-httpbis-cookie-alone
   if (parsed_cookie.IsSecure() && !url.SchemeIsCryptographic()) {
-    VLOG(kVlogSetCookies)
+    VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() is trying to create a secure cookie from an insecure URL";
     return nullptr;
   }
@@ -236,7 +236,7 @@ std::unique_ptr<CanonicalCookie> CanonicalCookie::Create(
   bool is_cookie_valid = IsCookiePrefixValid(prefix, url, parsed_cookie);
   RecordCookiePrefixMetrics(prefix, is_cookie_valid);
   if (!is_cookie_valid) {
-    VLOG(kVlogSetCookies)
+    VLOG(net::cookie_util::kVlogSetCookies)
         << "Create() failed because the cookie violated prefix rules.";
     return nullptr;
   }
