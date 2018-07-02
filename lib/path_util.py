@@ -13,12 +13,13 @@ import tempfile
 
 from chromite.lib import constants
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_logging as logging
 from chromite.lib import git
 from chromite.lib import osutils
 
 
 GENERAL_CACHE_DIR = '.cache'
-CHROME_CACHE_DIR = '.cros_cache'
+CHROME_CACHE_DIR = 'cros_cache'
 
 CHECKOUT_TYPE_UNKNOWN = 'unknown'
 CHECKOUT_TYPE_GCLIENT = 'gclient'
@@ -279,7 +280,13 @@ def FindCacheDir():
   if checkout.type == CHECKOUT_TYPE_REPO:
     path = os.path.join(checkout.root, GENERAL_CACHE_DIR)
   elif checkout.type == CHECKOUT_TYPE_GCLIENT:
-    path = os.path.join(checkout.root, CHROME_CACHE_DIR)
+    path = os.path.join(checkout.chrome_src_dir, 'build', CHROME_CACHE_DIR)
+    # Notify the user that the previous location is no longer used.
+    old_path = os.path.join(checkout.root, '.cros_cache')
+    if os.path.exists(old_path):
+      logging.warning(
+          "The location of Chrome's cache dir has changed. The old path at %s "
+          "can safely be removed.", old_path)
   elif checkout.type == CHECKOUT_TYPE_UNKNOWN:
     path = os.path.join(tempfile.gettempdir(), 'chromeos-cache')
   else:

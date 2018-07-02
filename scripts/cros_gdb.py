@@ -23,6 +23,7 @@ from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.lib import namespaces
 from chromite.lib import osutils
+from chromite.lib import path_util
 from chromite.lib import qemu
 from chromite.lib import remote_access
 from chromite.lib import retry_util
@@ -186,8 +187,8 @@ To install the debug symbols for all available packages, run:
     else:
       self.chrome_path = os.path.realpath(os.path.join(os.path.dirname(
           os.path.realpath(__file__)), "../../../.."))
-      self.sdk_path = os.path.join(self.chrome_path,
-                                   '.cros_cache/chrome-sdk/tarballs/')
+      self.sdk_path = os.path.join(
+          path_util.FindCacheDir(), 'chrome-sdk/tarballs/')
       self.sysroot = self.SimpleChromeSysroot()
       self.cross_gdb = self.SimpleChromeGdb()
 

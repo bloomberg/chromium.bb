@@ -140,7 +140,8 @@ class FindCacheDirTest(cros_test_lib.MockTempDirTestCase):
     self.cwd_mock.return_value = self.gclient_root
     self.assertEquals(
         path_util.FindCacheDir(),
-        os.path.join(self.gclient_root, path_util.CHROME_CACHE_DIR))
+        os.path.join(self.gclient_root, 'src', 'build',
+                     path_util.CHROME_CACHE_DIR))
 
   def testTempdir(self):
     """Test when we are not in any checkout."""
