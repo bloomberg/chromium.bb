@@ -41,13 +41,10 @@ class _CommonSystemHealthBenchmark(perf_benchmark.PerfBenchmark):
     cat_filter.AddIncludedCategory('accessibility')
 
     options = timeline_based_measurement.Options(cat_filter)
-    options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
     options.SetTimelineBasedMetrics([
-        'clockSyncLatencyMetric',
         'cpuTimeMetric',
-        'powerMetric',
         'tracingMetric',
         'accessibilityMetric',
         'limitedCpuTimeMetric'
