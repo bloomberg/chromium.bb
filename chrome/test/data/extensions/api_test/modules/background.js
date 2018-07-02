@@ -5,6 +5,14 @@
 // TODO(devlin): Sadly, there's no good way of checking that the import
 // succeeds, so in the failure case the test just times out, rather than
 // giving a useful error.
-import {pass} from '/module.js';
+import {pass as jsPass} from '/module.js';
+import {pass as mjsPass} from '/module.mjs';
 
-pass();
+chrome.test.runTests([
+  function jsModule() {
+    jsPass();
+  },
+  function mjsModule() {
+    mjsPass();
+  },
+]);

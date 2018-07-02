@@ -97,7 +97,7 @@ static const MimeInfo kPrimaryMappings[] = {
     {"multipart/related", "mht,mhtml"},
     {"text/css", "css"},
     {"text/html", "html,htm,shtml,shtm"},
-    {"text/javascript", "js"},
+    {"text/javascript", "js,mjs"},
     {"text/xml", "xml"},
     {"video/mp4", "mp4,m4v"},
     {"video/ogg", "ogv,ogm"},
