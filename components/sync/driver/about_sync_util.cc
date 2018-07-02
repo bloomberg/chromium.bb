@@ -8,11 +8,11 @@
 #include <utility>
 #include <vector>
 
+#include "base/i18n/time_formatting.h"
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/driver/sync_token_status.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -20,8 +20,6 @@
 #include "components/sync/engine/sync_string_conversions.h"
 #include "components/sync/model/time.h"
 #include "components/sync/protocol/proto_enum_conversions.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/l10n/time_format.h"
 #include "url/gurl.h"
 
 namespace syncer {
@@ -201,26 +199,31 @@ std::string GetVersionString(version_info::Channel channel) {
 }
 
 std::string GetTimeStr(base::Time time, const std::string& default_msg) {
-  std::string time_str;
   if (time.is_null())
-    time_str = default_msg;
-  else
-    time_str = GetTimeDebugString(time);
-  return time_str;
+    return default_msg;
+  return GetTimeDebugString(time);
+}
+
+// Analogous to GetTimeDebugString from components/sync/base/time.h. Consider
+// moving it there if more places need this.
+std::string GetTimeDeltaDebugString(base::TimeDelta t) {
+  base::string16 result;
+  if (!base::TimeDurationFormat(t, base::DURATION_WIDTH_WIDE, &result)) {
+    return "Invalid TimeDelta?!";
+  }
+  return base::UTF16ToUTF8(result);
 }
 
 std::string GetLastSyncedTimeString(base::Time last_synced_time) {
   if (last_synced_time.is_null())
-    return l10n_util::GetStringUTF8(IDS_SYNC_TIME_NEVER);
+    return "Never";
 
   base::TimeDelta time_since_last_sync = base::Time::Now() - last_synced_time;
 
   if (time_since_last_sync < base::TimeDelta::FromMinutes(1))
-    return l10n_util::GetStringUTF8(IDS_SYNC_TIME_JUST_NOW);
+    return "Just now";
 
-  return base::UTF16ToUTF8(ui::TimeFormat::Simple(
-      ui::TimeFormat::FORMAT_ELAPSED, ui::TimeFormat::LENGTH_SHORT,
-      time_since_last_sync));
+  return GetTimeDeltaDebugString(time_since_last_sync) + " ago";
 }
 
 std::string GetConnectionStatus(const SyncTokenStatus& status) {

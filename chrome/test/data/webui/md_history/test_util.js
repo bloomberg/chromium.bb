@@ -187,5 +187,5 @@ function createWindow(tabUrls) {
     return {sessionId: 456, timestamp: 0, title: tabUrl, url: tabUrl};
   });
 
-  return {tabs: tabs, sessionId: '123', userVisibleTimestamp: 'A while ago'};
+  return {tabs: tabs, sessionId: '123'};
 }

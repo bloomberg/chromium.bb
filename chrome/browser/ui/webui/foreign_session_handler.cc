@@ -34,7 +34,6 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/l10n/time_format.h"
 #include "ui/base/webui/web_ui_util.h"
 
@@ -111,15 +110,6 @@ std::unique_ptr<base::DictionaryValue> BuildWindowData(
   // Please update it whenever you add or remove any keys here.
   dictionary->SetString("type", "window");
   dictionary->SetDouble("timestamp", modification_time.ToInternalValue());
-  const base::TimeDelta last_synced = base::Time::Now() - modification_time;
-  // If clock skew leads to a future time, or we last synced less than a minute
-  // ago, output "Just now".
-  dictionary->SetString(
-      "userVisibleTimestamp",
-      last_synced < base::TimeDelta::FromMinutes(1)
-          ? l10n_util::GetStringUTF16(IDS_SYNC_TIME_JUST_NOW)
-          : ui::TimeFormat::Simple(ui::TimeFormat::FORMAT_ELAPSED,
-                                   ui::TimeFormat::LENGTH_SHORT, last_synced));
 
   dictionary->SetInteger("sessionId", window_id.id());
   return dictionary;

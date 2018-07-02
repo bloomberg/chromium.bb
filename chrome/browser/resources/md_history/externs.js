@@ -54,7 +54,6 @@ let ForeignSessionTab;
  * The type of the foreign session tab object. This definition is based on
  * chrome/browser/ui/webui/foreign_session_handler.cc:
  * @typedef {{timestamp: number,
- *            userVisibleTimestamp: string,
  *            sessionId: number,
  *            tabs: Array<ForeignSessionTab>}}
  */
