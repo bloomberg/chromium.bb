@@ -125,12 +125,11 @@ void DisplayItemRasterInvalidator::AddRasterInvalidation(
     const FloatRect& rect,
     PaintInvalidationReason reason,
     RasterInvalidator::ClientIsOldOrNew old_or_new) {
-  auto r = invalidator_.ClipByLayerBounds(mapper_.MapVisualRect(rect));
+  IntRect r = invalidator_.ClipByLayerBounds(mapper_.MapVisualRect(rect));
   if (r.IsEmpty())
     return;
 
-  invalidator_.AddRasterInvalidation(EnclosingIntRect(r), client, reason,
-                                     old_or_new);
+  invalidator_.AddRasterInvalidation(r, client, reason, old_or_new);
 }
 
 void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
@@ -172,7 +171,7 @@ void DisplayItemRasterInvalidator::GenerateRasterInvalidation(
   GenerateIncrementalRasterInvalidation(client, *old_visual_rect,
                                         *new_visual_rect);
 
-  auto partial_rect = client.PartialInvalidationVisualRect();
+  LayoutRect partial_rect = client.PartialInvalidationVisualRect();
   if (!partial_rect.IsEmpty()) {
     AddRasterInvalidation(client, FloatRect(partial_rect), reason,
                           kClientIsNew);
