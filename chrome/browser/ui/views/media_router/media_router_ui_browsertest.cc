@@ -136,7 +136,8 @@ class MediaRouterUIBrowserTest : public InProcessBrowserTest {
         MediaRouterDialogController::GetOrCreateForWebContents(
             browser()->tab_strip_model()->GetActiveWebContents());
     content::ContextMenuParams params;
-    params.page_url = web_contents->GetController().GetActiveEntry()->GetURL();
+    params.page_url =
+        web_contents->GetController().GetLastCommittedEntry()->GetURL();
     TestRenderViewContextMenu menu(web_contents->GetMainFrame(), params);
     menu.Init();
 
