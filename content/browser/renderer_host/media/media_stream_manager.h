@@ -175,19 +175,22 @@ class CONTENT_EXPORT MediaStreamManager
                       GenerateStreamCallback generate_stream_cb,
                       DeviceStoppedCallback device_stopped_cb);
 
+  // Cancel an open request identified by |page_request_id| for the given frame.
+  // Must be called on the IO thread.
   void CancelRequest(int render_process_id,
                      int render_frame_id,
                      int page_request_id);
 
-  // Cancel an open request identified by |label|.
+  // Cancel an open request identified by |label|. Must be called on the IO
+  // thread.
   void CancelRequest(const std::string& label);
 
   // Cancel all requests for the given |render_process_id| and
-  // |render_frame_id|.
+  // |render_frame_id|. Must be called on the IO thread.
   void CancelAllRequests(int render_process_id, int render_frame_id);
 
   // Closes the stream device for a certain render frame. The stream must have
-  // been opened by a call to GenerateStream.
+  // been opened by a call to GenerateStream. Must be called on the IO thread.
   void StopStreamDevice(int render_process_id,
                         int render_frame_id,
                         const std::string& device_id,
@@ -218,7 +221,7 @@ class CONTENT_EXPORT MediaStreamManager
                                    std::string* device_id) const;
 
   // Find |device_id| in the list of |requests_|, and returns its session id,
-  // or MediaStreamDevice::kNoId if not found.
+  // or MediaStreamDevice::kNoId if not found. Must be called on the IO thread.
   int VideoDeviceIdToSessionId(const std::string& device_id) const;
 
   // Called by UI to make sure the device monitor is started so that UI receive
@@ -283,6 +286,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // Set whether the capturing is secure for the capturing session with given
   // |session_id|, |render_process_id|, and the MediaStreamType |type|.
+  // Must be called on the IO thread.
   void SetCapturingLinkSecured(int render_process_id,
                                int session_id,
                                content::MediaStreamType type,
@@ -295,7 +299,7 @@ class CONTENT_EXPORT MediaStreamManager
 
   // This method is called when an audio or video device is removed. It makes
   // sure all MediaStreams that use a removed device are stopped and that the
-  // render process is notified.
+  // render process is notified. Must be called on the IO thread.
   void StopRemovedDevice(MediaDeviceType type,
                          const MediaDeviceInfo& media_device_info);
 
@@ -370,7 +374,6 @@ class CONTENT_EXPORT MediaStreamManager
   // Called when audio output parameters have been read if needed.
   void PostRequestToUI(
       const std::string& label,
-      DeviceRequest* request,
       const MediaDeviceEnumeration& enumeration,
       const base::Optional<media::AudioParameters>& output_parameters);
   // Returns true if a device with |device_id| has already been requested with
