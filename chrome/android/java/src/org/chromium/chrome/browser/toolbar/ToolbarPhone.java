@@ -2789,12 +2789,12 @@ public class ToolbarPhone extends ToolbarLayout
         if (mExperimentalButton == null) {
             ViewStub viewStub = findViewById(R.id.experimental_button_stub);
             mExperimentalButton = (TintedImageButton) viewStub.inflate();
-            mBrowsingModeViews.add(mExperimentalButton);
         } else {
             assert mExperimentalButton.getVisibility()
                     == View.GONE : "#disableExperimentalButton() should be called first.";
         }
 
+        mBrowsingModeViews.add(mExperimentalButton);
         mExperimentalButton.setOnClickListener(onClickListener);
         mExperimentalButton.setImageResource(drawableResId);
         mExperimentalButton.setContentDescription(
@@ -2810,6 +2810,7 @@ public class ToolbarPhone extends ToolbarLayout
         if (mExperimentalButton == null) return;
 
         mExperimentalButton.setVisibility(View.GONE);
+        mBrowsingModeViews.remove(mExperimentalButton);
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
     }
 

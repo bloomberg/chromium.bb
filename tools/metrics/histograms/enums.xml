@@ -28015,6 +28015,7 @@ from previous Chrome versions.
   <int value="-78035185" label="custom_summary"/>
   <int value="-77872983" label="BookmarkAppsMac:disabled"/>
   <int value="-76631048" label="disable-offline-auto-reload-visible-only"/>
+  <int value="-75418012" label="ContextualSuggestionsOptOut:disabled"/>
   <int value="-72455054" label="WebVrAutopresent:disabled"/>
   <int value="-70595606" label="ash-enable-unified-desktop"/>
   <int value="-69427025" label="OfflinePagesPrefetchingUI:enabled"/>
@@ -29037,6 +29038,7 @@ from previous Chrome versions.
   <int value="2101151142" label="disable-direct-write"/>
   <int value="2104788328" label="use-winrt-midi-api"/>
   <int value="2113804526" label="EnableAppShortcutSearch:enabled"/>
+  <int value="2114843059" label="ContextualSuggestionsOptOut:enabled"/>
   <int value="2119964154" label="enable-download-resumption"/>
   <int value="2121056855" label="IncreaseInputAudioBufferSize:disabled"/>
   <int value="2121550859" label="PreferHtmlOverPlugins:enabled"/>
