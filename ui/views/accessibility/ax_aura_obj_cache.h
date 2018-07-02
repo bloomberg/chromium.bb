@@ -69,9 +69,6 @@ class VIEWS_EXPORT AXAuraObjCache : public aura::client::FocusChangeObserver {
   // Lookup a cached entry based on an id.
   AXAuraObjWrapper* Get(int32_t id);
 
-  // Remove a cached entry based on an id.
-  void Remove(int32_t id);
-
   // Get all top level windows this cache knows about.
   void GetTopLevelWindows(std::vector<AXAuraObjWrapper*>* children);
 

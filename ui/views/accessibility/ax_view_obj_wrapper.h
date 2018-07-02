@@ -29,7 +29,7 @@ class AXViewObjWrapper : public AXAuraObjWrapper {
   bool HandleAccessibleAction(const ui::AXActionData& action) override;
 
  private:
-  View* view_;
+  View* const view_;
 
   DISALLOW_COPY_AND_ASSIGN(AXViewObjWrapper);
 };
