@@ -1,29 +1,25 @@
-<pre id="console"></pre>
+<!doctype>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
 <div id="test1">Lorem<span style="float: left;">-</span>ipsum</div>
 <div id="test2">Lorem<span style="float: left;"></span>ipsum</div>
 <div id="test3">Lorem<div style="position: absolute;">-</div>ipsum</div>
 <div id="test4">Lorem<div style="position: absolute;"></div>ipsum</div>
 <script>
-    function log(message)
-    {
-        var console = document.getElementById("console");
-        console.appendChild(document.createTextNode(message + "\n"));
-    }
-
-    function test(id, expected)
-    {
-        var actual = document.getElementById(id).innerText;
-        if (actual == expected)
-            log(id + " PASS: innerText is " + actual + " as expected");
-        else
-            log(id + " FAIL: innerText is " + actual + " instead of " + expected);
-    }
-
-    if (window.testRunner)
-        testRunner.dumpAsText();
-
-    test("test1", "Lorem-ipsum");
-    test("test2", "Loremipsum");
-    test("test3", "Lorem-ipsum");
-    test("test4", "Loremipsum");
+test(() => assert_equals(
+  'Lorem-ipsum',
+  document.getElementById('test1').innerText),
+  '1 float:left minus');
+test(() => assert_equals(
+  'Loremipsum',
+  document.getElementById('test2').innerText),
+  '2 float:left empty');
+test(() => assert_equals(
+  'Lorem-ipsum',
+  document.getElementById('test3').innerText),
+  '3 position:absolute minus');
+test(() => assert_equals(
+  'Loremipsum',
+  document.getElementById('test4').innerText),
+  '4 position:absolute empty');
 </script>
