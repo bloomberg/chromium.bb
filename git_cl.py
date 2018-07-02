@@ -5797,7 +5797,7 @@ def CMDformat(parser, args):
   diff_files = [x for x in diff_files if os.path.isfile(x)]
 
   if opts.js:
-    CLANG_EXTS.append('.js')
+    CLANG_EXTS.extend(['.js', '.ts'])
 
   clang_diff_files = [x for x in diff_files if MatchingFileType(x, CLANG_EXTS)]
   python_diff_files = [x for x in diff_files if MatchingFileType(x, ['.py'])]
