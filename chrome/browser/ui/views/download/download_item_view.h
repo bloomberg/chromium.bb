@@ -148,6 +148,43 @@ class DownloadItemView : public views::InkDropHostView,
     MALICIOUS_MODE    // Displaying the malicious download warning.
   };
 
+  static constexpr int kTextWidth = 140;
+
+  // Vertical padding between filename and status text.
+  static constexpr int kVerticalTextPadding = 1;
+
+  static constexpr int kTooltipMaxWidth = 800;
+
+  // Padding before the icon and at end of the item.
+  static constexpr int kStartPadding = 12;
+  static constexpr int kEndPadding = 6;
+
+  // Horizontal padding between progress indicator and filename/status text.
+  static constexpr int kProgressTextPadding = 8;
+
+  // The space between the Save and Discard buttons when prompting for a
+  // dangerous download.
+  static constexpr int kSaveDiscardButtonPadding = 5;
+
+  // The touchable space around the dropdown button's icon.
+  static constexpr int kDropdownBorderWidth = 10;
+
+  // The space on the right side of the dangerous download label.
+  static constexpr int kLabelPadding = 8;
+
+  // Height/width of the warning icon, also in dp.
+  static constexpr int kWarningIconSize = 24;
+
+  // How long the 'download complete' animation should last for.
+  static constexpr int kCompleteAnimationDurationMs = 2500;
+
+  // How long the 'download interrupted' animation should last for.
+  static constexpr int kInterruptedAnimationDurationMs = 2500;
+
+  // How long we keep the item disabled after the user clicked it to open the
+  // downloaded item.
+  static constexpr int kDisabledOnOpenDuration = 3000;
+
   void OpenDownload();
 
   // Submits the downloaded file to the safebrowsing download feedback service.
