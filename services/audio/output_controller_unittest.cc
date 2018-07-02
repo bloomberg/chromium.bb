@@ -347,6 +347,7 @@ class OutputControllerTest : public ::testing::Test {
         .WillRepeatedly(Return());
     EXPECT_CALL(mock_sync_reader_, Read(_))
         .WillOnce(Invoke([barrier](AudioBus* data) {
+          data->Zero();
           data->channel(0)[0] = kBufferNonZeroData;
           barrier.Run();
         }))
