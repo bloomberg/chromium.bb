@@ -194,7 +194,7 @@ bool OobeUIDialogDelegate::HandleContextMenu(
 }
 
 std::vector<ui::Accelerator> OobeUIDialogDelegate::GetAccelerators() {
-  // TODO(crbug.com/809648): Adding necessory accelerators.
+  // TODO(crbug.com/809648): Adding necessary accelerators.
   std::vector<ui::Accelerator> output;
 
   for (const auto& pair : accel_map_)
@@ -206,11 +206,10 @@ std::vector<ui::Accelerator> OobeUIDialogDelegate::GetAccelerators() {
 bool OobeUIDialogDelegate::AcceleratorPressed(
     const ui::Accelerator& accelerator) {
   if (ui::VKEY_ESCAPE == accelerator.key_code()) {
-    // The widget should not be closed until the login is done.
-    // Consume the escape key here so WebDialogView won't have a chance to
-    // close the widget.
-    if (closable_by_esc_)
-      Hide();
+    // The widget should not be closed until the login is done. Consume the
+    // escape key here so WebDialogView won't have a chance to close the widget.
+    if (closable_by_esc_ && controller_)
+      controller_->HideGaiaDialog();
     return true;
   }
 
