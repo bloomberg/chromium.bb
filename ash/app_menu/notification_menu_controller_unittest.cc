@@ -13,7 +13,6 @@
 #include "ui/views/controls/menu/submenu_view.h"
 
 namespace ash {
-namespace test {
 namespace {
 
 constexpr char kTestAppId[] = "test-app-id";
@@ -33,6 +32,23 @@ void BuildAndSendNotification(const std::string& app_id,
       std::move(notification));
 }
 
+class TestAppMenuModelAdapter : public AppMenuModelAdapter {
+ public:
+  TestAppMenuModelAdapter(const std::string& app_id,
+                          std::unique_ptr<ui::SimpleMenuModel> model)
+      : AppMenuModelAdapter(app_id,
+                            std::move(model),
+                            nullptr,
+                            ui::MENU_SOURCE_TYPE_LAST,
+                            base::OnceClosure()) {}
+
+ private:
+  // AppMenuModelAdapter overrides:
+  void RecordHistogramOnMenuClosed() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(TestAppMenuModelAdapter);
+};
+
 }  // namespace
 
 class NotificationMenuControllerTest : public AshTestBase {
@@ -50,20 +66,25 @@ class NotificationMenuControllerTest : public AshTestBase {
   }
 
   void BuildMenu() {
-    model_ = std::make_unique<ui::SimpleMenuModel>(
-        nullptr /*ui::SimpleMenuModel::Delegate not required*/);
-    model_->AddItem(0, base::ASCIIToUTF16("item 1"));
-    model_->AddItem(1, base::ASCIIToUTF16("item 2"));
+    test_app_menu_model_adapter_ = std::make_unique<TestAppMenuModelAdapter>(
+        kTestAppId,
+        std::make_unique<ui::SimpleMenuModel>(
+            nullptr /*ui::SimpleMenuModel::Delegate not required*/));
+    test_app_menu_model_adapter_->model()->AddItem(
+        0, base::ASCIIToUTF16("item 0"));
+    test_app_menu_model_adapter_->model()->AddItem(
+        1, base::ASCIIToUTF16("item 1"));
 
-    delegate_ = std::make_unique<views::MenuModelAdapter>(model_.get());
-    root_menu_item_view_ = new views::MenuItemView(delegate_.get());
+    root_menu_item_view_ =
+        new views::MenuItemView(test_app_menu_model_adapter_.get());
     host_view_ = std::make_unique<views::View>();
     host_view_->AddChildView(root_menu_item_view_);
-    delegate_->BuildMenu(root_menu_item_view_);
+    test_app_menu_model_adapter_->BuildMenu(root_menu_item_view_);
 
     notification_menu_controller_ =
         std::make_unique<NotificationMenuController>(
-            kTestAppId, root_menu_item_view_, model_.get());
+            kTestAppId, root_menu_item_view_,
+            test_app_menu_model_adapter_.get());
   }
 
   views::MenuItemView* root_menu_item_view() { return root_menu_item_view_; }
@@ -74,8 +95,7 @@ class NotificationMenuControllerTest : public AshTestBase {
   // Allows the dtor to access the restricted views::MenuItemView dtor.
   std::unique_ptr<views::View> host_view_;
   std::unique_ptr<NotificationMenuController> notification_menu_controller_;
-  std::unique_ptr<ui::SimpleMenuModel> model_;
-  std::unique_ptr<views::MenuModelAdapter> delegate_;
+  std::unique_ptr<TestAppMenuModelAdapter> test_app_menu_model_adapter_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuControllerTest);
 };
@@ -152,5 +172,4 @@ TEST_F(NotificationMenuControllerTest, MultipleNotifications) {
   EXPECT_EQ(2, root_menu_item_view()->GetSubmenu()->child_count());
 }
 
-}  // namespace test
 }  // namespace ash

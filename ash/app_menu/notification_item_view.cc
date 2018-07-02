@@ -9,6 +9,7 @@
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/message_center/views/proportional_image_view.h"
+#include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/menu/menu_config.h"
@@ -38,14 +39,31 @@ constexpr SkColor kNotificationTitleTextColor =
 
 }  // namespace
 
-NotificationItemView::NotificationItemView(const base::string16& title,
-                                           const base::string16& message,
-                                           const gfx::Image& icon,
-                                           const std::string notification_id)
-    : title_(title), message_(message), notification_id_(notification_id) {
+NotificationItemView::NotificationItemView(
+    NotificationItemView::Delegate* delegate,
+    message_center::SlideOutController::Delegate* slide_out_controller_delegate,
+    const base::string16& title,
+    const base::string16& message,
+    const gfx::Image& icon,
+    const std::string& notification_id)
+    : delegate_(delegate),
+      slide_out_controller_(
+          std::make_unique<message_center::SlideOutController>(
+              this,
+              slide_out_controller_delegate)),
+      title_(title),
+      message_(message),
+      notification_id_(notification_id) {
+  DCHECK(delegate_);
+  DCHECK(slide_out_controller_delegate);
+
+  // Paint to a new layer so |slide_out_controller_| can control the opacity.
+  SetPaintToLayer();
+  layer()->SetFillsBoundsOpaquely(true);
   SetBorder(views::CreateEmptyBorder(
       gfx::Insets(kNotificationVerticalPadding, kNotificationHorizontalPadding,
                   kNotificationVerticalPadding, kIconHorizontalPadding)));
+  SetBackground(views::CreateSolidBackground(SK_ColorWHITE));
 
   text_container_ = new views::View();
   text_container_->SetLayoutManager(std::make_unique<views::BoxLayout>(
@@ -98,6 +116,37 @@ void NotificationItemView::Layout() {
       width() - insets.right() - kProportionalIconViewSize.width(),
       insets.top() + kIconVerticalPadding, kProportionalIconViewSize.width(),
       kProportionalIconViewSize.height());
+}
+
+bool NotificationItemView::OnMousePressed(const ui::MouseEvent& event) {
+  return true;
+}
+
+bool NotificationItemView::OnMouseDragged(const ui::MouseEvent& event) {
+  return true;
+}
+
+void NotificationItemView::OnMouseReleased(const ui::MouseEvent& event) {
+  gfx::Point location(event.location());
+  views::View::ConvertPointToScreen(this, &location);
+  if (!event.IsOnlyLeftMouseButton() ||
+      !GetBoundsInScreen().Contains(location)) {
+    return;
+  }
+
+  delegate_->ActivateNotificationAndClose(notification_id_);
+}
+
+void NotificationItemView::OnGestureEvent(ui::GestureEvent* event) {
+  // Drag gestures are handled by |slide_out_controller_|.
+  switch (event->type()) {
+    case ui::ET_GESTURE_TAP:
+      event->SetHandled();
+      delegate_->ActivateNotificationAndClose(notification_id_);
+      return;
+    default:
+      return;
+  }
 }
 
 }  // namespace ash
