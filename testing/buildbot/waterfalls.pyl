@@ -2881,6 +2881,13 @@
         ],
       },
       'mac-cocoa-rel': {
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'Mac-10.13',
+            },
+          ],
+        },
         'test_suites': {
           'gtest_tests': 'chromium_browser_tests',
         },
