@@ -15,6 +15,9 @@
 
 namespace content {
 
+// Wrapper around a webrtc::RTCStatsReport that also filters out any stats
+// objects that aren't whitelisted, and any members that aren't standardized
+// (using RTCStatsMemberInterface::is_standardized).
 class CONTENT_EXPORT RTCStatsReport : public blink::WebRTCStatsReport {
  public:
   RTCStatsReport(
