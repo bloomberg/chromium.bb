@@ -200,6 +200,8 @@ void FakeArcSupport::PostMessageFromNativeHost(
     }
   } else if (action == "closeWindow") {
     // Do nothing as emulation.
+  } else if (action == "setWindowBounds") {
+    // Do nothing as emulation.
   } else {
     // Unknown or unsupported action.
     NOTREACHED() << message_string;
