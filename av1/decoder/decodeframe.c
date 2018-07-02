@@ -1441,7 +1441,7 @@ static void decode_partition(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   const struct macroblockd_plane *const pd_u = &xd->plane[1];
   if (get_plane_block_size(subsize, pd_u->subsampling_x, pd_u->subsampling_y) ==
       BLOCK_INVALID) {
-    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+    aom_internal_error(xd->error_info, AOM_CODEC_CORRUPT_FRAME,
                        "Block size %dx%d invalid with this subsampling mode",
                        block_size_wide[subsize], block_size_high[subsize]);
   }
@@ -2758,6 +2758,7 @@ static void tile_worker_hook_init(AV1Decoder *const pbi,
   }
 #endif
   av1_init_macroblockd(cm, &td->xd, td->dqcoeff);
+  td->xd.error_info = &thread_data->error_info;
   av1_init_above_context(cm, &td->xd, tile_row);
 
   // Initialise the tile context from the frame context
@@ -2783,6 +2784,8 @@ static int tile_worker_hook(void *arg1, void *arg2) {
     thread_data->td->xd.corrupted = 1;
     return 0;
   }
+  thread_data->error_info.setjmp = 1;
+
   allow_update_cdf = cm->large_scale_tile ? 0 : 1;
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
 
