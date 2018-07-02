@@ -213,7 +213,7 @@ abstract class ListItemViewHolder extends ViewHolder {
                     itemView.getResources().getInteger(R.integer.list_item_level_default));
             mThumbnail.setImageResource(mIconId);
             mThumbnail.setTint(AppCompatResources.getColorStateList(
-                    itemView.getContext(), R.color.google_blue_500));
+                    itemView.getContext(), R.color.default_icon_color_blue));
         }
     }
 

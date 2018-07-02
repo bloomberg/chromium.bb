@@ -4,25 +4,48 @@
      found in the LICENSE file. -->
 
 <resources>
-    <!-- Common colors -->
+    <!-- Common text colors -->
     <color name="default_text_color">@color/black_alpha_87</color>
     <color name="default_primary_color">#F2F2F2</color>
     <color name="default_text_color_link">@color/modern_blue_600</color>
-    <!-- Deprecated. Use dark_mode_tint or default_icon_color for icons instead. -->
-    <color name="light_normal_color">#5A5A5A</color>
-    <color name="light_active_color">@color/google_blue_500</color>
-    <color name="default_icon_color">@color/modern_grey_800</color>
-    <color name="light_icon_color">@color/modern_grey_500</color>
     <color name="input_underline_error_color">#D32F2F</color>
     <color name="explanation_text_color">#909090</color>
     <color name="text_highlight_color">#C6DAFC</color>
-    <color name="dark_action_bar_color">#263238</color>
     <color name="descriptive_text_color">#646464</color>
     <color name="error_text_color">@color/google_red_700</color>
+
+    <!-- Common control colors for toggles, checkboxes, ratio buttons and accent. -->
+    <!-- Deprecated. Use dark_mode_tint or default_icon_color for icons instead. -->
+    <color name="light_normal_color">#5A5A5A</color>
+    <color name="light_active_color">@color/modern_blue_600</color>
+
+    <!-- Common icon colors for drawables. -->
+    <color name="default_icon_color">@color/modern_grey_800</color>
+    <color name="default_icon_color_blue">@color/modern_blue_600</color>
+    <color name="light_icon_color">@color/modern_grey_500</color>
+
+    <!-- Other common colors -->
+    <color name="dark_action_bar_color">#263238</color>
+    <color name="modal_dialog_scrim_color">#7F000000</color>
+
+    <!-- Modern color palette -->
+    <color name="black_alpha_11">#1D000000</color>
+    <color name="black_alpha_12">#1F000000</color>
+    <color name="black_alpha_20">#33000000</color>
+    <color name="black_alpha_24">#3D000000</color>
+    <color name="black_alpha_30">#4D000000</color>
+    <color name="black_alpha_40">#66000000</color>
+    <color name="black_alpha_65">#A6000000</color>
+    <color name="white_alpha_50">#80FFFFFF</color>
+    <color name="white_alpha_90">#E6FFFFFF</color>
+
+    <color name="modern_light_grey">#F1F3F4</color>
+    <color name="modern_grey_800">#3C4043</color>
+    <color name="modern_grey_500">#9AA0A6</color>
+
+    <!-- Old color palette -->
     <color name="google_blue_grey_500">#607D8B</color>
     <color name="google_blue_50">#E3F2FD</color>
-    <color name="google_blue_500">#4285F4</color>
-    <color name="google_blue_700">#3367D6</color>
     <color name="google_red_700">#C53929</color>
     <color name="google_green_700">#0B8043</color>
     <color name="google_grey_50">#FAFAFA</color>
@@ -32,23 +55,7 @@
     <color name="google_grey_400">#BDBDBD</color>
     <color name="google_grey_500">#9E9E9E</color>
     <color name="google_grey_600">#757575</color>
-    <color name="black_alpha_11">#1D000000</color>
-    <color name="black_alpha_12">#1F000000</color>
-    <color name="white_alpha_50">#80FFFFFF</color>
-    <color name="black_alpha_65">#A6000000</color>
-    <color name="white_alpha_90">#E6FFFFFF</color>
     <color name="light_grey">#CCCCCC</color>
-    <color name="modal_dialog_scrim_color">#7F000000</color>
-
-    <color name="modern_light_grey">#F1F3F4</color>
-    <color name="modern_grey_800">#3C4043</color>
-    <color name="modern_grey_500">#9AA0A6</color>
-
-    <!-- New list of common text colors -->
-    <color name="black_alpha_20">#33000000</color>
-    <color name="black_alpha_24">#3D000000</color>
-    <color name="black_alpha_30">#4D000000</color>
-    <color name="black_alpha_40">#66000000</color>
 
     <!-- Infobar colors -->
     <color name="infobar_accent_blue">@color/modern_blue_600</color>
@@ -125,7 +132,7 @@
     <color name="snippets_list_header_text_color">#646464</color>
     <color name="suggestions_modern_bg">@android:color/white</color>
     <color name="tile_view_text">@color/black_alpha_54</color>
-    <color name="suggestions_offline_badge_tint">@color/google_blue_500</color>
+    <color name="suggestions_offline_badge_tint">@color/default_icon_color_blue</color>
 
     <!-- Incognito NTP Colors. -->
     <color name="incognito_emphasis">@android:color/white</color>
@@ -200,7 +207,7 @@
     <!-- Other colors -->
     <color name="media_viewer_bg">#000000</color>
     <color name="image_viewer_bg">#0E0E0E</color>
-    <color name="google_blue_500_alpha_38_opaque">#B7D1FB</color>
+    <color name="modern_blue_600_alpha_38_opaque">#A8CAF6</color>
     <color name="toolbar_shadow_color">@color/black_alpha_11</color>
     <color name="bottom_system_nav_color">@android:color/white</color>
     <color name="bottom_system_nav_divider_color">@color/black_alpha_12</color>

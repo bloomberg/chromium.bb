@@ -454,7 +454,7 @@ public class PageInfoController implements ModalDialogView.Controller {
 
             if (permissionParams.warningTextResource != 0) {
                 permissionParams.iconResource = R.drawable.exclamation_triangle;
-                permissionParams.iconTintColorResource = R.color.google_blue_700;
+                permissionParams.iconTintColorResource = R.color.default_icon_color_blue;
                 permissionParams.clickCallback =
                         createPermissionClickCallback(intentOverride, androidPermissions);
             }

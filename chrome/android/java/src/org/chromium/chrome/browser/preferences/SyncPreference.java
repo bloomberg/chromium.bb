@@ -43,8 +43,8 @@ public class SyncPreference extends Preference {
             // Sets preference icon and tints it to blue.
             Drawable icon = ApiCompatibilityUtils.getDrawable(
                     getContext().getResources(), R.drawable.permission_background_sync);
-            icon.setColorFilter(ApiCompatibilityUtils.getColor(
-                                        getContext().getResources(), R.color.light_active_color),
+            icon.setColorFilter(ApiCompatibilityUtils.getColor(getContext().getResources(),
+                                        R.color.default_icon_color_blue),
                     PorterDuff.Mode.SRC_IN);
             setIcon(icon);
         }

@@ -21,7 +21,7 @@ import org.chromium.chrome.R;
  * <ImageViewTinterInstanceOwner
  *     xmlns:android="http://schemas.android.com/apk/res/android"
  *     xmlns:app="http://schemas.android.com/apk/res-auto"
- *     app:chrometint="@color/light_active_color" />
+ *     app:chrometint="@color/default_icon_color_blue" />
  */
 public class ImageViewTinter {
     /** Classes that own an ImageViewTinter must implement these functions. */

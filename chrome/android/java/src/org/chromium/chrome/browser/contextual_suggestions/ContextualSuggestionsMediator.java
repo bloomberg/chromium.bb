@@ -530,7 +530,7 @@ class ContextualSuggestionsMediator
                     R.string.contextual_suggestions_in_product_help,
                     R.string.contextual_suggestions_in_product_help, true, rectProvider,
                     R.drawable.ic_logo_googleg_24dp);
-            mModel.setToolbarArrowTintResourceId(R.color.google_blue_500);
+            mModel.setToolbarArrowTintResourceId(R.color.default_icon_color_blue);
         } else {
             mHelpBubble = new TextBubble(mIphParentView.getContext(), mIphParentView,
                     R.string.contextual_suggestions_in_product_help,
