@@ -240,8 +240,7 @@ class VIEWS_EXPORT BridgedNativeWidget
   void InitCompositor();
   void DestroyCompositor();
 
-  // Installs the NSView for hosting the composited layer. It is later provided
-  // to |compositor_widget_| via AcceleratedWidgetGetNSView().
+  // Installs the NSView for hosting the composited layer.
   void AddCompositorSuperview();
 
   // Size the layer to match the client area bounds, taking into account display
@@ -277,7 +276,6 @@ class VIEWS_EXPORT BridgedNativeWidget
                                   float new_device_scale_factor) override;
 
   // Overridden from ui::AcceleratedWidgetMac:
-  NSView* AcceleratedWidgetGetNSView() const override;
   void AcceleratedWidgetCALayerParamsUpdated() override;
 
   // Overridden from BridgedNativeWidgetOwner:

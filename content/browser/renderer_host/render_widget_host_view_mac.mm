@@ -110,10 +110,6 @@ bool RenderWidgetHostViewMac::SynchronizeVisualProperties() {
 ////////////////////////////////////////////////////////////////////////////////
 // AcceleratedWidgetMacNSView, public:
 
-NSView* RenderWidgetHostViewMac::AcceleratedWidgetGetNSView() const {
-  return cocoa_view();
-}
-
 void RenderWidgetHostViewMac::AcceleratedWidgetCALayerParamsUpdated() {
   // Set the background color for the root layer from the frame that just
   // swapped. See RenderWidgetHostViewAura for more details. Note that this is

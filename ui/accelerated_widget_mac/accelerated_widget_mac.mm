@@ -73,14 +73,6 @@ AcceleratedWidgetMac* AcceleratedWidgetMac::Get(gfx::AcceleratedWidget widget) {
   return found->second;
 }
 
-// static
-NSView* AcceleratedWidgetMac::GetNSView(gfx::AcceleratedWidget widget) {
-  AcceleratedWidgetMac* widget_mac = Get(widget);
-  if (!widget_mac || !widget_mac->view_)
-    return nil;
-  return widget_mac->view_->AcceleratedWidgetGetNSView();
-}
-
 void AcceleratedWidgetMac::SetSuspended(bool is_suspended) {
   is_suspended_ = is_suspended;
 }
