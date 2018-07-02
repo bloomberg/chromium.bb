@@ -22,7 +22,7 @@ namespace translate {
 class TranslateURLFetcher {
  public:
   // Callback type for Request().
-  using Callback = base::OnceCallback<void(int, bool, const std::string&)>;
+  using Callback = base::OnceCallback<void(bool, const std::string&)>;
 
   // Represents internal state if the fetch is completed successfully.
   enum State {
@@ -32,7 +32,7 @@ class TranslateURLFetcher {
     FAILED,      // The last fetch request was finished with a failure.
   };
 
-  explicit TranslateURLFetcher(int id);
+  TranslateURLFetcher();
   ~TranslateURLFetcher();
 
   int max_retry_on_5xx() {
@@ -63,10 +63,6 @@ class TranslateURLFetcher {
 
   // URL to send the request.
   GURL url_;
-
-  // ID which is assigned to the request.
-  // TODO(tonikitoo): Get rid of this, after migrating to SimpleURLLoader.
-  const int id_;
 
   // Internal state.
   enum State state_;

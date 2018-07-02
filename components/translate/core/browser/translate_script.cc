@@ -73,7 +73,7 @@ void TranslateScript::Request(const RequestCallback& callback) {
 
   GURL translate_script_url = GetTranslateScriptURL();
 
-  fetcher_.reset(new TranslateURLFetcher(kFetcherId));
+  fetcher_.reset(new TranslateURLFetcher);
   fetcher_->set_extra_request_header(kRequestHeader);
   fetcher_->Request(translate_script_url,
                     base::BindOnce(&TranslateScript::OnScriptFetchComplete,
@@ -129,10 +129,8 @@ GURL TranslateScript::GetTranslateScriptURL() {
   return translate_script_url;
 }
 
-void TranslateScript::OnScriptFetchComplete(
-    int id, bool success, const std::string& data) {
-  DCHECK_EQ(kFetcherId, id);
-
+void TranslateScript::OnScriptFetchComplete(bool success,
+                                            const std::string& data) {
   std::unique_ptr<const TranslateURLFetcher> delete_ptr(fetcher_.release());
 
   if (success) {
