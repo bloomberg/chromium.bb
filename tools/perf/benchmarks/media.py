@@ -37,10 +37,6 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
     # 'toplevel' category provides CPU time slices used by # cpuTimeMetric.
     category_filter.AddIncludedCategory('toplevel')
 
-    # 'rail' category is used by powerMetric to attribute different period of
-    # time to different activities, such as video_animation, etc.
-    category_filter.AddIncludedCategory('rail')
-
     # Collect media related events required by mediaMetric.
     category_filter.AddIncludedCategory('media')
 
@@ -48,15 +44,14 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
     category_filter.AddDisabledByDefault('disabled-by-default-memory-infra')
 
     options = timeline_based_measurement.Options(category_filter)
-    options.config.enable_battor_trace = True
     options.config.enable_android_graphics_memtrack = True
 
     # Setting an empty memory dump config disables periodic dumps.
     options.config.chrome_trace_config.SetMemoryDumpConfig(
         chrome_trace_config.MemoryDumpConfig())
 
-    options.SetTimelineBasedMetrics(['powerMetric', 'mediaMetric',
-                                     'cpuTimeMetric', 'memoryMetric'])
+    options.SetTimelineBasedMetrics(['mediaMetric', 'cpuTimeMetric',
+                                     'memoryMetric'])
     return options
 
   @classmethod

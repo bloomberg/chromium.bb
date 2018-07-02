@@ -12,20 +12,16 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-class _BattOrPowerBenchmark(perf_benchmark.PerfBenchmark):
+class _PowerBenchmark(perf_benchmark.PerfBenchmark):
+  """A benchmark that indirectly measures power through CPU time."""
 
   def CreateCoreTimelineBasedMeasurementOptions(self):
     category_filter = chrome_trace_category_filter.ChromeTraceCategoryFilter(
         filter_string='toplevel')
     options = timeline_based_measurement.Options(category_filter)
-    options.config.chrome_trace_config.category_filter.AddFilterString('rail')
-    options.config.enable_atrace_trace = True
-    options.config.atrace_config.categories = ['sched']
-    options.config.enable_battor_trace = True
     options.config.enable_chrome_trace = True
     options.config.enable_cpu_trace = True
-    options.SetTimelineBasedMetrics(
-        ['powerMetric', 'clockSyncLatencyMetric', 'cpuTimeMetric'])
+    options.SetTimelineBasedMetrics(['cpuTimeMetric'])
     return options
 
 
@@ -44,6 +40,8 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
     return 'power.typical_10_mobile'
 
 
+# TODO(charliea): Delete this benchmark now that we're no longer measuring
+# ground-truth power.
 @benchmark.Owner(emails=['charliea@chromium.org'])
 class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   """Idle platform benchmark.
@@ -55,14 +53,11 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   def CreateCoreTimelineBasedMeasurementOptions(self):
     options = timeline_based_measurement.Options(
         chrome_trace_category_filter.ChromeTraceCategoryFilter())
-    options.config.enable_battor_trace = True
     options.config.enable_cpu_trace = True
     # Atrace tracing agent autodetects if its android and only runs if it is.
     options.config.enable_atrace_trace = True
     options.config.enable_chrome_trace = False
     options.SetTimelineBasedMetrics([
-        'clockSyncLatencyMetric',
-        'powerMetric',
         'tracingMetric'
     ])
     return options
@@ -76,7 +71,7 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
 
 
 @benchmark.Owner(emails=['charliea@chromium.org'])
-class PowerDesktop(_BattOrPowerBenchmark):
+class PowerDesktop(_PowerBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
   def CreateStorySet(self, options):
