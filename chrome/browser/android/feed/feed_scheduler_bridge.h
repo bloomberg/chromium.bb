@@ -6,10 +6,16 @@
 #define CHROME_BROWSER_ANDROID_FEED_FEED_SCHEDULER_BRIDGE_H_
 
 #include <jni.h>
+#include <stdint.h>
 
 #include "base/android/scoped_java_ref.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/feed/core/feed_scheduler_host.h"
+
+namespace base {
+class TimeDelta;
+}  // namespace base
 
 namespace feed {
 
@@ -43,13 +49,25 @@ class FeedSchedulerBridge {
   void OnForegrounded(JNIEnv* env,
                       const base::android::JavaRef<jobject>& j_this);
 
-  void OnFixedTimer(JNIEnv* env, const base::android::JavaRef<jobject>& j_this);
+  void OnFixedTimer(JNIEnv* env,
+                    const base::android::JavaRef<jobject>& j_this,
+                    const base::android::JavaRef<jobject>& j_callback);
 
+  void OnTaskReschedule(JNIEnv* env,
+                        const base::android::JavaRef<jobject>& j_this);
+
+ private:
   // Callable by native code to invoke Java code. Sends a request to the Feed
   // library to make the refresh call.
   void TriggerRefresh();
 
- private:
+  // Calls into Java logic to schedule a background task to wake up Chrome and
+  // call back into the FeedHostScheduler.
+  void ScheduleWakeUp(base::TimeDelta threshold_ms);
+
+  // Cancels previously scheduled background task.
+  void CancelWakeUp();
+
   // Reference to the Java half of this bridge. Always valid.
   base::android::ScopedJavaGlobalRef<jobject> j_this_;
 

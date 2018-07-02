@@ -4,17 +4,14 @@
 
 package org.chromium.chrome.browser.feed;
 
+import static org.mockito.Mockito.mock;
+
 import android.support.test.filters.SmallTest;
 import android.support.test.rule.UiThreadTestRule;
 
 import com.google.android.libraries.feed.api.requestmanager.RequestManager;
-import com.google.android.libraries.feed.common.Result;
-import com.google.android.libraries.feed.common.functional.Consumer;
-import com.google.android.libraries.feed.common.functional.Supplier;
+import com.google.android.libraries.feed.api.sessionmanager.SessionManager;
 import com.google.android.libraries.feed.testing.conformance.scheduler.SchedulerConformanceTest;
-import com.google.search.now.feed.client.StreamDataProto.StreamDataOperation;
-import com.google.search.now.feed.client.StreamDataProto.StreamToken;
-import com.google.search.now.wire.feed.FeedQueryProto.FeedQuery.RequestReason;
 
 import org.junit.After;
 import org.junit.Before;
@@ -60,20 +57,6 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
                 }
             });
 
-    private final class NoOpRequestManager implements RequestManager {
-        @Override
-        public void loadMore(StreamToken streamToken,
-                             Consumer < Result < List<StreamDataOperation>>> consumer) {}
-        @Override
-        public void triggerRefresh(RequestReason reason,
-                                   Consumer < Result < List<StreamDataOperation>>> consumer) {}
-        @Override
-        public void triggerRefresh(RequestReason reason) {}
-        @Override
-        public void setDefaultTriggerRefreshConsumerSupplier(
-                Supplier < Consumer < Result<List<StreamDataOperation>>>> consumer) {}
-    }
-
     private boolean mUseRequestManager;
 
     public FeedSchedulerBridgeConformanceTest(boolean useRequestManager) {
@@ -85,7 +68,9 @@ public final class FeedSchedulerBridgeConformanceTest extends SchedulerConforman
         // The scheduler is declared and tested in SchedulerConformanceTest.
         scheduler = new FeedSchedulerBridge(Profile.getLastUsedProfile());
         if (mUseRequestManager) {
-            ((FeedSchedulerBridge) scheduler).setRequestManager(new NoOpRequestManager());
+            ((FeedSchedulerBridge) scheduler)
+                    .initializeFeedDependencies(
+                            mock(RequestManager.class), mock(SessionManager.class));
         }
     }
 

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/android/feed/feed_scheduler_bridge.h"
 
+#include <utility>
+
+#include "base/android/callback_android.h"
 #include "base/android/jni_android.h"
 #include "base/bind.h"
 #include "base/time/time.h"
@@ -11,7 +14,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "components/feed/core/feed_host_service.h"
-#include "components/feed/core/feed_scheduler_host.h"
 #include "jni/FeedSchedulerBridge_jni.h"
 
 using base::android::JavaRef;
@@ -37,8 +39,11 @@ FeedSchedulerBridge::FeedSchedulerBridge(const JavaRef<jobject>& j_this,
       scheduler_host_(scheduler_host),
       weak_factory_(this) {
   DCHECK(scheduler_host_);
-  scheduler_host_->RegisterTriggerRefreshCallback(base::BindRepeating(
-      &FeedSchedulerBridge::TriggerRefresh, weak_factory_.GetWeakPtr()));
+  scheduler_host_->Initialize(
+      base::BindRepeating(&FeedSchedulerBridge::TriggerRefresh,
+                          weak_factory_.GetWeakPtr()),
+      base::BindRepeating(&FeedSchedulerBridge::ScheduleWakeUp,
+                          weak_factory_.GetWeakPtr()));
 }
 
 FeedSchedulerBridge::~FeedSchedulerBridge() {}
@@ -77,14 +82,36 @@ void FeedSchedulerBridge::OnForegrounded(JNIEnv* env,
   scheduler_host_->OnForegrounded();
 }
 
-void FeedSchedulerBridge::OnFixedTimer(JNIEnv* env,
-                                       const JavaRef<jobject>& j_this) {
-  scheduler_host_->OnFixedTimer();
+void FeedSchedulerBridge::OnFixedTimer(
+    JNIEnv* env,
+    const JavaRef<jobject>& j_this,
+    const base::android::JavaRef<jobject>& j_callback) {
+  base::OnceClosure callback =
+      base::BindOnce(&base::android::RunObjectCallbackAndroid,
+                     ScopedJavaGlobalRef<jobject>(j_callback), nullptr);
+  scheduler_host_->OnFixedTimer(std::move(callback));
+}
+
+void FeedSchedulerBridge::OnTaskReschedule(
+    JNIEnv* env,
+    const base::android::JavaRef<jobject>& j_this) {
+  scheduler_host_->OnTaskReschedule();
 }
 
 void FeedSchedulerBridge::TriggerRefresh() {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_FeedSchedulerBridge_triggerRefresh(env, j_this_);
+}
+
+void FeedSchedulerBridge::ScheduleWakeUp(base::TimeDelta threshold) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedSchedulerBridge_scheduleWakeUp(env, j_this_,
+                                          threshold.InMilliseconds());
+}
+
+void FeedSchedulerBridge::CancelWakeUp() {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_FeedSchedulerBridge_cancelWakeUp(env, j_this_);
 }
 
 }  // namespace feed

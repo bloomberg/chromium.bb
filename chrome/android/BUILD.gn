@@ -647,7 +647,7 @@ android_library("chrome_test_java") {
   ]
 
   if (enable_feed_in_chrome) {
-    deps += feed_conformance_test_deps
+    deps += feed_test_deps
   }
 
   data = [
