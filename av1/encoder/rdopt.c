@@ -2420,13 +2420,11 @@ static void PrintPredictionUnitStats(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_COLLECT_RD_STATS
 
 static void model_rd_with_dnn(const AV1_COMP *const cpi,
-                              const MACROBLOCK *const x, BLOCK_SIZE bsize,
+                              const MACROBLOCK *const x, BLOCK_SIZE plane_bsize,
                               int plane, unsigned int *rsse, int *rate,
                               int64_t *dist) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
-  const BLOCK_SIZE plane_bsize =
-      get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
   const int log_numpels = num_pels_log2_lookup[plane_bsize];
   const int num_samples = (1 << log_numpels);
 
@@ -2443,13 +2441,24 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
   const uint8_t *const dst = pd->dst.buf;
   unsigned int sse;
   cpi->fn_ptr[plane_bsize].vf(src, src_stride, dst, dst_stride, &sse);
+  const double sse_norm = (double)sse / num_samples;
+
   if (sse == 0) {
     if (rate) *rate = 0;
     if (dist) *dist = 0;
-    if (rsse) *rsse = 0;
+    if (rsse) *rsse = sse;
     return;
   }
-  const double sse_norm = (double)sse / num_samples;
+  if (plane) {
+    int model_rate;
+    int64_t model_dist;
+    model_rd_from_sse(cpi, xd, plane_bsize, plane, sse, &model_rate,
+                      &model_dist);
+    if (rate) *rate = model_rate;
+    if (dist) *dist = model_dist;
+    if (rsse) *rsse = sse;
+    return;
+  }
 
   const int diff_stride = block_size_wide[plane_bsize];
   const int16_t *const src_diff = p->src_diff;
@@ -2460,28 +2469,29 @@ static void model_rd_with_dnn(const AV1_COMP *const cpi,
                                    sse_norm_arr, NULL);
   const double mean = get_mean(src_diff, diff_stride, bw, bh);
   const double variance = sse_norm - mean * mean;
+  assert(variance >= 0.0);
   const double q_sqr = (double)(q_step * q_step);
   const double q_sqr_by_variance = q_sqr / (variance + 1.0);
   double hor_corr, vert_corr;
   get_horver_correlation(src_diff, diff_stride, bw, bh, &hor_corr, &vert_corr);
 
-  float features[12];
+  float features[11];
   features[0] = (float)hor_corr;
   features[1] = (float)log_numpels;
-  features[2] = (float)mean;
-  features[3] = (float)q_sqr;
-  features[4] = (float)q_sqr_by_variance;
-  features[5] = (float)sse_norm_arr[0];
-  features[6] = (float)sse_norm_arr[1];
-  features[7] = (float)sse_norm_arr[2];
-  features[8] = (float)sse_norm_arr[3];
-  features[9] = (float)sse_norm;
-  features[10] = (float)variance;
-  features[11] = (float)vert_corr;
+  features[2] = (float)q_sqr;
+  features[3] = (float)q_sqr_by_variance;
+  features[4] = (float)sse_norm_arr[0];
+  features[5] = (float)sse_norm_arr[1];
+  features[6] = (float)sse_norm_arr[2];
+  features[7] = (float)sse_norm_arr[3];
+  features[8] = (float)sse_norm;
+  features[9] = (float)variance;
+  features[10] = (float)vert_corr;
 
-  float rate_f, dist_f;
-  av1_nn_predict(features, &av1_pustats_dist_nnconfig, &dist_f);
+  float rate_f, dist_by_variance_f;
+  av1_nn_predict(features, &av1_pustats_dist_nnconfig, &dist_by_variance_f);
   av1_nn_predict(features, &av1_pustats_rate_nnconfig, &rate_f);
+  const float dist_f = (float)((double)dist_by_variance_f * (1.0 + variance));
   const int rate_i = (int)(AOMMAX(0.0, rate_f * (1 << log_numpels)) + 0.5);
   const int64_t dist_i =
       (int64_t)(AOMMAX(0.0, dist_f * (1 << log_numpels)) + 0.5);
@@ -2509,13 +2519,16 @@ void model_rd_for_sb_with_dnn(const AV1_COMP *const cpi, BLOCK_SIZE bsize,
   x->pred_sse[ref] = 0;
 
   for (int plane = plane_from; plane <= plane_to; ++plane) {
+    struct macroblockd_plane *const pd = &xd->plane[plane];
+    const BLOCK_SIZE plane_bsize =
+        get_plane_block_size(bsize, pd->subsampling_x, pd->subsampling_y);
     unsigned int sse;
     int rate;
     int64_t dist;
 
     if (x->skip_chroma_rd && plane) continue;
 
-    model_rd_with_dnn(cpi, x, bsize, plane, &sse, &rate, &dist);
+    model_rd_with_dnn(cpi, x, plane_bsize, plane, &sse, &rate, &dist);
 
     if (plane == 0) x->pred_sse[ref] = sse;
 
