@@ -211,6 +211,7 @@ TYPED_TEST_CASE(DuplicatableSharedMemoryRegionTest, DuplicatableRegionTypes);
 
 TYPED_TEST(DuplicatableSharedMemoryRegionTest, Duplicate) {
   TypeParam dup_region = this->region_.Duplicate();
+  EXPECT_EQ(this->region_.GetGUID(), dup_region.GetGUID());
   typename TypeParam::MappingType mapping = dup_region.Map();
   ASSERT_TRUE(mapping.IsValid());
   EXPECT_NE(this->rw_mapping_.memory(), mapping.memory());

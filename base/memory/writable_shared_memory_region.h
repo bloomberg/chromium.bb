@@ -83,6 +83,12 @@ class BASE_EXPORT WritableSharedMemoryRegion {
     return handle_.GetSize();
   }
 
+  // Returns 128-bit GUID of the region.
+  const UnguessableToken& GetGUID() const {
+    DCHECK(IsValid());
+    return handle_.GetGUID();
+  }
+
  private:
   explicit WritableSharedMemoryRegion(
       subtle::PlatformSharedMemoryRegion handle);
