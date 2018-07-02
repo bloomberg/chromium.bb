@@ -66,6 +66,11 @@ typedef NS_ENUM(NSInteger, ChromeTableViewControllerStyle) {
 // Removes the empty table view, if one is present.
 - (void)removeEmptyTableView;
 
+// Performs batch table view updates described by |updates|, using |completion|
+// as the completion block.
+- (void)performBatchTableViewUpdates:(void (^)(void))updates
+                          completion:(void (^)(BOOL finished))completion;
+
 // Methods for reconfiguring and reloading the table view are provided by
 // ChromeTableViewConsumer.
 
