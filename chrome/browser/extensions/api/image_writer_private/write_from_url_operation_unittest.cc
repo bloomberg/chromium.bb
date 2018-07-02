@@ -127,7 +127,15 @@ class ImageWriterWriteFromUrlOperationTest : public ImageWriterUnitTestBase {
   MockOperationManager manager_;
 };
 
-TEST_F(ImageWriterWriteFromUrlOperationTest, SelectTargetWithoutExtension) {
+// Crashes on Tsan.  http://crbug.com/859317
+#if defined(THREAD_SANITIZER)
+#define MAYBE_SelectTargetWithoutExtension DISABLED_SelectTargetWithoutExtension
+#define MAYBE_SelectTargetWithExtension DISABLED_SelectTargetWithExtension
+#else
+#define MAYBE_SelectTargetWithoutExtension SelectTargetWithoutExtension
+#define MAYBE_SelectTargetWithExtension SelectTargetWithExtension
+#endif
+TEST_F(ImageWriterWriteFromUrlOperationTest, MAYBE_SelectTargetWithoutExtension) {
   scoped_refptr<WriteFromUrlOperationForTest> operation =
       CreateOperation(GURL("http://localhost/foo/bar"), "");
 
@@ -142,7 +150,7 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, SelectTargetWithoutExtension) {
   content::RunAllTasksUntilIdle();
 }
 
-TEST_F(ImageWriterWriteFromUrlOperationTest, SelectTargetWithExtension) {
+TEST_F(ImageWriterWriteFromUrlOperationTest, MAYBE_SelectTargetWithExtension) {
   scoped_refptr<WriteFromUrlOperationForTest> operation =
       CreateOperation(GURL("http://localhost/foo/bar.zip"), "");
 
@@ -155,6 +163,9 @@ TEST_F(ImageWriterWriteFromUrlOperationTest, SelectTargetWithExtension) {
 
   operation->Cancel();
 }
+#undef MAYBE_SelectTargetWithoutExtension
+#undef MAYBE_SelectTargetWithExtension
+
 
 TEST_F(ImageWriterWriteFromUrlOperationTest, DownloadFile) {
   // This test actually triggers the URL fetch code, which will drain the
