@@ -244,14 +244,15 @@ void SequenceManagerImpl::OnExitNestedRunLoop() {
   main_thread_only().nesting_depth--;
   DCHECK_GE(main_thread_only().nesting_depth, 0);
   if (main_thread_only().nesting_depth == 0) {
-    // While we were nested some non-nestable tasks may have become eligible to
-    // run. We push them back onto the front of their original work queues.
+    // While we were nested some non-nestable tasks may have been deferred.
+    // We push them back onto the *front* of their original work queues,
+    // that's why we iterate |non_nestable_task_queue| in FIFO order.
     while (!main_thread_only().non_nestable_task_queue.empty()) {
       internal::TaskQueueImpl::DeferredNonNestableTask& non_nestable_task =
-          *main_thread_only().non_nestable_task_queue.begin();
+          main_thread_only().non_nestable_task_queue.back();
       non_nestable_task.task_queue->RequeueDeferredNonNestableTask(
           std::move(non_nestable_task));
-      main_thread_only().non_nestable_task_queue.pop_front();
+      main_thread_only().non_nestable_task_queue.pop_back();
     }
   }
   if (main_thread_only().observer)
@@ -326,9 +327,7 @@ Optional<PendingTask> SequenceManagerImpl::TakeTask() {
       internal::TaskQueueImpl::DeferredNonNestableTask deferred_task{
           work_queue->TakeTaskFromWorkQueue(), work_queue->task_queue(),
           work_queue->queue_type()};
-      // We push these tasks onto the front to make sure that when requeued they
-      // are pushed in the right order.
-      main_thread_only().non_nestable_task_queue.push_front(
+      main_thread_only().non_nestable_task_queue.push_back(
           std::move(deferred_task));
       continue;
     }
