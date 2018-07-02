@@ -464,7 +464,7 @@ static aom_codec_err_t set_encoder_config(
     oxcf->buffer_model.num_units_in_decoding_tick = cfg->g_timebase.num;
     oxcf->timing_info.equal_picture_interval = 0;
     oxcf->decoder_model_info_present_flag = 1;
-    oxcf->buffer_removal_delay_present = 1;
+    oxcf->buffer_removal_time_present = 1;
     oxcf->display_model_info_present_flag = 1;
   }
   if (oxcf->init_framerate > 180) {

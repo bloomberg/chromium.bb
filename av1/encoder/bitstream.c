@@ -2517,8 +2517,8 @@ static void write_decoder_model_info(AV1_COMMON *const cm,
       wb, cm->buffer_model.encoder_decoder_buffer_delay_length - 1, 5);
   aom_wb_write_unsigned_literal(wb, cm->buffer_model.num_units_in_decoding_tick,
                                 32);  // Number of units in decoding tick
-  aom_wb_write_literal(wb, cm->buffer_model.buffer_removal_delay_length - 1, 5);
-  aom_wb_write_literal(wb, cm->buffer_model.frame_presentation_delay_length - 1,
+  aom_wb_write_literal(wb, cm->buffer_model.buffer_removal_time_length - 1, 5);
+  aom_wb_write_literal(wb, cm->buffer_model.frame_presentation_time_length - 1,
                        5);
 }
 
@@ -2543,15 +2543,15 @@ static void write_dec_model_op_parameters(AV1_COMMON *const cm,
 
   aom_wb_write_bit(wb, cm->op_params[op_num].low_delay_mode_flag);
 
-  cm->op_frame_timing[op_num].buffer_removal_delay =
+  cm->op_frame_timing[op_num].buffer_removal_time =
       0;  // reset the decoded frame counter
 }
 
 static void write_tu_pts_info(AV1_COMMON *const cm,
                               struct aom_write_bit_buffer *wb) {
   aom_wb_write_unsigned_literal(
-      wb, (uint32_t)cm->tu_presentation_delay,
-      cm->buffer_model.frame_presentation_delay_length);
+      wb, cm->frame_presentation_time,
+      cm->buffer_model.frame_presentation_time_length);
 }
 
 static void write_film_grain_params(AV1_COMP *cpi,
@@ -3051,8 +3051,8 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   }
 
   if (cm->seq_params.decoder_model_info_present_flag) {
-    aom_wb_write_bit(wb, cm->buffer_removal_delay_present);
-    if (cm->buffer_removal_delay_present) {
+    aom_wb_write_bit(wb, cm->buffer_removal_time_present);
+    if (cm->buffer_removal_time_present) {
       for (int op_num = 0;
            op_num < cm->seq_params.operating_points_cnt_minus_1 + 1; op_num++) {
         if (cm->op_params[op_num].decoder_model_param_present_flag) {
@@ -3063,10 +3063,14 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                 (cm->spatial_layer_id + 8)) &
                    0x1) ||
               cm->seq_params.operating_point_idc[op_num] == 0) {
-            aom_wb_write_literal(
-                wb, (uint32_t)cm->op_frame_timing[op_num].buffer_removal_delay,
-                cm->buffer_model.buffer_removal_delay_length);
-            cm->op_frame_timing[op_num].buffer_removal_delay++;
+            aom_wb_write_unsigned_literal(
+                wb, cm->op_frame_timing[op_num].buffer_removal_time,
+                cm->buffer_model.buffer_removal_time_length);
+            cm->op_frame_timing[op_num].buffer_removal_time++;
+            if (cm->op_frame_timing[op_num].buffer_removal_time == 0) {
+              aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                                 "buffer_removal_time overflowed");
+            }
           }
         }
       }

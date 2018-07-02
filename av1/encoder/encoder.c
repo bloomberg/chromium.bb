@@ -1033,7 +1033,7 @@ static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
     // set the decoder model parameters in schedule mode
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
-    cm->buffer_removal_delay_present = 1;
+    cm->buffer_removal_time_present = 1;
     set_aom_dec_model_info(&cm->buffer_model);
     set_dec_model_op_parameters(&cm->op_params[0]);
   } else if (cm->timing_info_present &&
@@ -2286,7 +2286,7 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     // set the decoder model parameters in schedule mode
     cm->buffer_model.num_units_in_decoding_tick =
         oxcf->buffer_model.num_units_in_decoding_tick;
-    cm->buffer_removal_delay_present = 1;
+    cm->buffer_removal_time_present = 1;
     set_aom_dec_model_info(&cm->buffer_model);
     set_dec_model_op_parameters(&cm->op_params[0]);
   } else if (cm->timing_info_present &&
@@ -5911,8 +5911,9 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
   cm->cur_frame->film_grain_params_present = cm->film_grain_params_present;
 
   // only one operating point supported now
-  cpi->common.tu_presentation_delay =
-      ticks_to_timebase_units(timebase, *time_stamp);
+  const int64_t pts64 = ticks_to_timebase_units(timebase, *time_stamp);
+  if (pts64 < 0 || pts64 > UINT32_MAX) return AOM_CODEC_ERROR;
+  cpi->common.frame_presentation_time = (uint32_t)pts64;
 
   // Start with a 0 size frame.
   *size = 0;
