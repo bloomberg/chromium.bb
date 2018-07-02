@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
+#import "ios/chrome/browser/ui/reading_list/empty_reading_list_background_view.h"
 
 #include "base/logging.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
@@ -41,7 +41,7 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
 
 }  // namespace
 
-@interface ReadingListEmptyCollectionBackground ()
+@interface EmptyReadingListBackgroundView ()
 
 // Attaches the icon named |iconName| to |instructionString| and a |caret|. The
 // icon is positionned using the |iconOffset| and with the |attributes| (mainly
@@ -62,7 +62,7 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
 
 @end
 
-@implementation ReadingListEmptyCollectionBackground
+@implementation EmptyReadingListBackgroundView
 
 #pragma mark - Public
 
@@ -175,7 +175,7 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
     label.textAlignment = NSTextAlignmentCenter;
     label.accessibilityLabel = accessibilityLabel;
     label.accessibilityIdentifier =
-        [ReadingListEmptyCollectionBackground accessibilityIdentifier];
+        [EmptyReadingListBackgroundView accessibilityIdentifier];
     [label setTranslatesAutoresizingMaskIntoConstraints:NO];
     [self addSubview:label];
 
@@ -214,9 +214,9 @@ const CGFloat kPercentageFromTopForPosition = 0.4;
       appendAttributedString:[NSAttributedString
                                  attributedStringWithAttachment:toolbarIcon]];
 
-    [instructionString appendAttributedString:[[NSAttributedString alloc]
-                                                  initWithString:@" "
-                                                      attributes:attributes]];
+  [instructionString appendAttributedString:[[NSAttributedString alloc]
+                                                initWithString:@" "
+                                                    attributes:attributes]];
 
   [instructionString appendAttributedString:caret];
 }

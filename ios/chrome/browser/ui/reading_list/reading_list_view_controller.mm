@@ -8,6 +8,7 @@
 
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
@@ -23,9 +24,8 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 };
 }
 
-@interface ReadingListViewController ()<
-    ReadingListToolbarActions,
-    ReadingListCollectionViewControllerAudience>
+@interface ReadingListViewController ()<ReadingListToolbarActions,
+                                        ReadingListListViewControllerAudience>
 
 @property(nonatomic, strong, readonly)
     ReadingListCollectionViewController* readingListCollectionViewController;
@@ -114,7 +114,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
   [self.readingListCollectionViewController exitEditingModePressed];
 }
 
-#pragma mark - ReadingListCollectionViewControllerAudience
+#pragma mark - ReadingListListViewControllerAudience
 
 - (void)readingListHasItems:(BOOL)hasItems {
   if (hasItems) {

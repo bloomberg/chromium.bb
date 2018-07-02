@@ -14,9 +14,11 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/list_model/list_item+Controller.h"
+#import "ios/chrome/browser/ui/reading_list/empty_reading_list_background_view.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_updater.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_audience.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -39,9 +41,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
   SectionIdentifierUnread = kSectionIdentifierEnumZero,
   SectionIdentifierRead,
 };
-// Typedef for a block taking a ReadingListListItems as parameter and returning
-// nothing.
-typedef void (^ItemUpdater)(id<ReadingListListItem> item);
 }  // namespace
 
 @interface ReadingListCollectionViewController ()<
@@ -114,12 +113,12 @@ typedef void (^ItemUpdater)(id<ReadingListListItem> item);
 // order. The monitoring of the data source updates are suspended during this
 // time.
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
-                      usingItemUpdater:(ItemUpdater)updater;
+                      usingItemUpdater:(ReadingListListItemUpdater)updater;
 // Applies |updater| to the URL of every element in |indexPaths|. The updates
 // are done in reverse order |indexPaths| to keep the order. The monitoring of
 // the data source updates are suspended during this time.
 - (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
-        usingItemUpdater:(ItemUpdater)updater;
+        usingItemUpdater:(ReadingListListItemUpdater)updater;
 // Move all the items from |sourceSectionIdentifier| to
 // |destinationSectionIdentifier| and removes the empty section from the
 // collection.
@@ -165,8 +164,7 @@ typedef void (^ItemUpdater)(id<ReadingListListItem> item);
     _toolbar = toolbar;
 
     _dataSource = dataSource;
-    _emptyCollectionBackground =
-        [[ReadingListEmptyCollectionBackground alloc] init];
+    _emptyCollectionBackground = [[EmptyReadingListBackgroundView alloc] init];
 
     _shouldMonitorDataSource = YES;
     _dataSourceHasBeenModified = NO;
@@ -182,7 +180,7 @@ typedef void (^ItemUpdater)(id<ReadingListListItem> item);
   [_toolbar setState:toolbarState];
 }
 
-- (void)setAudience:(id<ReadingListCollectionViewControllerAudience>)audience {
+- (void)setAudience:(id<ReadingListListViewControllerAudience>)audience {
   _audience = audience;
   if (self.dataSource.ready) {
     [audience readingListHasItems:self.dataSource.hasElements];
@@ -789,7 +787,7 @@ typedef void (^ItemUpdater)(id<ReadingListListItem> item);
 }
 
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
-                      usingItemUpdater:(ItemUpdater)updater {
+                      usingItemUpdater:(ReadingListListItemUpdater)updater {
   [self.dataSource beginBatchUpdates];
   NSArray* readItems =
       [self.collectionViewModel itemsInSectionWithIdentifier:identifier];
@@ -802,7 +800,7 @@ typedef void (^ItemUpdater)(id<ReadingListListItem> item);
 }
 
 - (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
-        usingItemUpdater:(ItemUpdater)updater {
+        usingItemUpdater:(ReadingListListItemUpdater)updater {
   [self.dataSource beginBatchUpdates];
   // Read the objects in reverse order to keep the order (last modified first).
   for (NSIndexPath* index in [indexPaths reverseObjectEnumerator]) {

@@ -2,12 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_EMPTY_COLLECTION_BACKGROUND_H_
-#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_EMPTY_COLLECTION_BACKGROUND_H_
+#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_EMPTY_READING_LIST_BACKGROUND_VIEW_H_
+#define IOS_CHROME_BROWSER_UI_READING_LIST_EMPTY_READING_LIST_BACKGROUND_VIEW_H_
 
 #import <UIKit/UIKit.h>
 
-@interface ReadingListEmptyCollectionBackground : UIView
+// The view to use as the background view for an empty reading list list view.
+@interface EmptyReadingListBackgroundView : UIView
 
 - (instancetype)init NS_DESIGNATED_INITIALIZER;
 
@@ -18,4 +19,4 @@
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_EMPTY_COLLECTION_BACKGROUND_H_
+#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_EMPTY_READING_LIST_BACKGROUND_VIEW_H_

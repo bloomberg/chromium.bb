@@ -71,6 +71,8 @@ source_set("reading_list") {
 source_set("reading_list_ui") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "empty_reading_list_background_view.h",
+    "empty_reading_list_background_view.mm",
     "number_badge_view.h",
     "number_badge_view.mm",
     "reading_list_collection_view_cell.h",
@@ -79,10 +81,12 @@ source_set("reading_list_ui") {
     "reading_list_collection_view_controller.mm",
     "reading_list_data_sink.h",
     "reading_list_data_source.h",
-    "reading_list_empty_collection_background.h",
-    "reading_list_empty_collection_background.mm",
     "reading_list_list_item_accessibility_delegate.h",
+    "reading_list_list_item_updater.h",
+    "reading_list_list_view_controller_audience.h",
     "reading_list_list_view_controller_delegate.h",
+    "reading_list_table_view_controller.h",
+    "reading_list_table_view_controller.mm",
     "reading_list_toolbar.h",
     "reading_list_toolbar.mm",
     "reading_list_toolbar_button.h",
@@ -115,6 +119,7 @@ source_set("reading_list_ui") {
     "//ios/chrome/browser/ui/colors",
     "//ios/chrome/browser/ui/keyboard",
     "//ios/chrome/browser/ui/list_model",
+    "//ios/chrome/browser/ui/table_view",
     "//ios/chrome/browser/ui/table_view/cells",
     "//ios/chrome/browser/ui/table_view/cells/resources:table_view_cell_check_mark",
     "//ios/chrome/browser/ui/util",

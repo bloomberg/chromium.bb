@@ -145,6 +145,20 @@ const CGFloat kTableViewSeparatorColor = 0xC8C7CC;
   }
 }
 
+- (void)performBatchTableViewUpdates:(void (^)(void))updates
+                          completion:(void (^)(BOOL finished))completion {
+  if (@available(iOS 11, *)) {
+    [self.tableView performBatchUpdates:updates completion:completion];
+  } else {
+    [self.tableView beginUpdates];
+    if (updates)
+      updates();
+    [self.tableView endUpdates];
+    if (completion)
+      completion(YES);
+  }
+}
+
 #pragma mark - UITableViewDataSource
 
 - (UITableViewCell*)tableView:(UITableView*)tableView

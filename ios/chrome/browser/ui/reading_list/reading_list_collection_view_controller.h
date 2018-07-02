@@ -10,17 +10,9 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 
-@class ReadingListCollectionViewController;
-@protocol ReadingListListViewControllerDelegate;
 @protocol ReadingListDataSource;
-
-// Audience for the ReadingListCollectionViewController
-@protocol ReadingListCollectionViewControllerAudience
-
-// Whether the collection has items.
-- (void)readingListHasItems:(BOOL)hasItems;
-
-@end
+@protocol ReadingListListViewControllerAudience;
+@protocol ReadingListListViewControllerDelegate;
 
 @interface ReadingListCollectionViewController
     : CollectionViewController<ReadingListListItemAccessibilityDelegate,
@@ -34,8 +26,7 @@
     NS_UNAVAILABLE;
 
 @property(nonatomic, weak) id<ReadingListListViewControllerDelegate> delegate;
-@property(nonatomic, weak) id<ReadingListCollectionViewControllerAudience>
-    audience;
+@property(nonatomic, weak) id<ReadingListListViewControllerAudience> audience;
 @property(nonatomic, weak) id<ReadingListDataSource> dataSource;
 
 // Prepares this view controller to be dismissed.
