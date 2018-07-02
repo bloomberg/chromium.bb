@@ -100,12 +100,10 @@ class BLINK_EXPORT WebDocumentLoader {
   // The type of navigation that triggered the creation of this datasource.
   virtual WebNavigationType GetNavigationType() const = 0;
 
-  // Extra data associated with this datasource.  If non-null, the extra
-  // data pointer will be deleted when the datasource is destroyed.
-  // Setting the extra data pointer will cause any existing non-null
-  // extra data pointer to be deleted.
+  // Extra data associated with this DocumentLoader.
+  // Setting extra data will cause any existing extra data to be deleted.
   virtual ExtraData* GetExtraData() const = 0;
-  virtual void SetExtraData(ExtraData*) = 0;
+  virtual void SetExtraData(std::unique_ptr<ExtraData>) = 0;
 
   // Sets the navigation start time for this datasource. Ordinarily,
   // navigation start is determined in WebCore. But, in some situations,

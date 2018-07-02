@@ -804,8 +804,9 @@ blink::mojom::BlobURLTokenPtrInfo CloneBlobURLToken(
 
 // Creates a fully functional DocumentState in the case where we do not have
 // pending_navigation_params_ available in the RenderFrameImpl.
-DocumentState* BuildDocumentState() {
-  DocumentState* document_state = new DocumentState();
+std::unique_ptr<DocumentState> BuildDocumentState() {
+  std::unique_ptr<DocumentState> document_state =
+      std::make_unique<DocumentState>();
   document_state->set_navigation_state(
       NavigationStateImpl::CreateContentInitiated());
   return document_state;
@@ -813,11 +814,11 @@ DocumentState* BuildDocumentState() {
 
 // Creates a fully functional DocumentState in the case where we have
 // pending_navigation_params_ available in the RenderFrameImpl.
-DocumentState* BuildDocumentStateFromPending(
+std::unique_ptr<DocumentState> BuildDocumentStateFromPending(
     PendingNavigationParams* pending_navigation_params) {
-  DocumentState* document_state = new DocumentState();
+  std::unique_ptr<DocumentState> document_state(new DocumentState());
   InternalDocumentStateData* internal_data =
-      InternalDocumentStateData::FromDocumentState(document_state);
+      InternalDocumentStateData::FromDocumentState(document_state.get());
 
   const CommonNavigationParams& common_params =
       pending_navigation_params->common_params;
@@ -3930,14 +3931,14 @@ void RenderFrameImpl::DidCreateDocumentLoader(
   bool has_pending_params = pending_navigation_params.get();
 
   DCHECK(!DocumentState::FromDocumentLoader(document_loader));
-  DocumentState* document_state = nullptr;
+  std::unique_ptr<DocumentState> document_state;
   if (has_pending_params) {
     document_state =
         BuildDocumentStateFromPending(pending_navigation_params.get());
   } else {
     document_state = BuildDocumentState();
   }
-  document_loader->SetExtraData(document_state);
+  document_loader->SetExtraData(std::move(document_state));
 
   // Set the navigation start time in blink.
   document_loader->SetNavigationStartTime(
