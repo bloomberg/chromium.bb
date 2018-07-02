@@ -394,7 +394,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);
     if (GetParam().congestion_control_tag == kTPCC &&
-        GetQuicReloadableFlag(quic_enable_pcc2)) {
+        GetQuicReloadableFlag(quic_enable_pcc3)) {
       copt.push_back(kTPCC);
     }
 
@@ -1882,47 +1882,37 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
       QuicSpdySessionPeer::GetHeadersStream(client_session)->flow_controller();
   QuicFlowController* server_header_stream_flow_controller =
       QuicSpdySessionPeer::GetHeadersStream(server_session)->flow_controller();
-  if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
-    // Both client and server are sending this SETTINGS frame, and the send
-    // window is consumed. But because of timing issue, the server may send or
-    // not send the frame, and the client may send/ not send / receive / not
-    // receive the frame.
-    // TODO(fayang): Rewrite this part because it is hacky.
-    QuicByteCount win_difference1 = QuicFlowControllerPeer::ReceiveWindowSize(
-                                        server_header_stream_flow_controller) -
-                                    QuicFlowControllerPeer::SendWindowSize(
-                                        client_header_stream_flow_controller);
-    QuicByteCount win_difference2 = QuicFlowControllerPeer::ReceiveWindowSize(
-                                        client_header_stream_flow_controller) -
-                                    QuicFlowControllerPeer::SendWindowSize(
-                                        server_header_stream_flow_controller);
-    EXPECT_TRUE(win_difference1 == 0 || win_difference1 == frame.size());
-    EXPECT_TRUE(win_difference2 == 0 || win_difference2 == frame.size());
-  } else {
-    ExpectFlowControlsSynced(
-        QuicSpdySessionPeer::GetHeadersStream(client_session)
-            ->flow_controller(),
-        QuicSpdySessionPeer::GetHeadersStream(server_session)
-            ->flow_controller());
-  }
+  // Both client and server are sending this SETTINGS frame, and the send
+  // window is consumed. But because of timing issue, the server may send or
+  // not send the frame, and the client may send/ not send / receive / not
+  // receive the frame.
+  // TODO(fayang): Rewrite this part because it is hacky.
+  QuicByteCount win_difference1 = QuicFlowControllerPeer::ReceiveWindowSize(
+                                      server_header_stream_flow_controller) -
+                                  QuicFlowControllerPeer::SendWindowSize(
+                                      client_header_stream_flow_controller);
+  QuicByteCount win_difference2 = QuicFlowControllerPeer::ReceiveWindowSize(
+                                      client_header_stream_flow_controller) -
+                                  QuicFlowControllerPeer::SendWindowSize(
+                                      server_header_stream_flow_controller);
+  EXPECT_TRUE(win_difference1 == 0 || win_difference1 == frame.size());
+  EXPECT_TRUE(win_difference2 == 0 || win_difference2 == frame.size());
 
-  if (GetQuicReloadableFlag(quic_send_max_header_list_size)) {
-    // Client *may* have received the SETTINGs frame.
-    // TODO(fayang): Rewrite this part because it is hacky.
-    float ratio1 = static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
-                       client_session->flow_controller())) /
-                   QuicFlowControllerPeer::ReceiveWindowSize(
-                       QuicSpdySessionPeer::GetHeadersStream(client_session)
-                           ->flow_controller());
-    float ratio2 = static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
-                       client_session->flow_controller())) /
-                   (QuicFlowControllerPeer::ReceiveWindowSize(
-                        QuicSpdySessionPeer::GetHeadersStream(client_session)
-                            ->flow_controller()) +
-                    frame.size());
-    EXPECT_TRUE(ratio1 == kSessionToStreamRatio ||
-                ratio2 == kSessionToStreamRatio);
-  }
+  // Client *may* have received the SETTINGs frame.
+  // TODO(fayang): Rewrite this part because it is hacky.
+  float ratio1 = static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
+                     client_session->flow_controller())) /
+                 QuicFlowControllerPeer::ReceiveWindowSize(
+                     QuicSpdySessionPeer::GetHeadersStream(client_session)
+                         ->flow_controller());
+  float ratio2 = static_cast<float>(QuicFlowControllerPeer::ReceiveWindowSize(
+                     client_session->flow_controller())) /
+                 (QuicFlowControllerPeer::ReceiveWindowSize(
+                      QuicSpdySessionPeer::GetHeadersStream(client_session)
+                          ->flow_controller()) +
+                  frame.size());
+  EXPECT_TRUE(ratio1 == kSessionToStreamRatio ||
+              ratio2 == kSessionToStreamRatio);
 
   server_thread_->Resume();
 }
@@ -2997,7 +2987,7 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   EXPECT_EQ(kFooResponseBody,
             client_->SendCustomSynchronousRequest(headers, body));
   client_->Disconnect();
-  if (version > QUIC_VERSION_38) {
+  if (version != QUIC_VERSION_35) {
     EXPECT_LT(0u, observer.num_window_update_frames());
     EXPECT_EQ(0u, observer.num_ping_frames());
   } else {

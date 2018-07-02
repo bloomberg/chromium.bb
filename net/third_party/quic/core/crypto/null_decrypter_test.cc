@@ -24,7 +24,7 @@ TEST_F(NullDecrypterTest, DecryptClient) {
   NullDecrypter decrypter(Perspective::IS_SERVER);
   char buffer[256];
   size_t length = 0;
-  ASSERT_TRUE(decrypter.DecryptPacket(QUIC_VERSION_37, 0, "hello world!",
+  ASSERT_TRUE(decrypter.DecryptPacket(QUIC_VERSION_39, 0, "hello world!",
                                       QuicStringPiece(data, len), buffer,
                                       &length, 256));
   EXPECT_LT(0u, length);
@@ -43,7 +43,7 @@ TEST_F(NullDecrypterTest, DecryptServer) {
   NullDecrypter decrypter(Perspective::IS_CLIENT);
   char buffer[256];
   size_t length = 0;
-  ASSERT_TRUE(decrypter.DecryptPacket(QUIC_VERSION_37, 0, "hello world!",
+  ASSERT_TRUE(decrypter.DecryptPacket(QUIC_VERSION_39, 0, "hello world!",
                                       QuicStringPiece(data, len), buffer,
                                       &length, 256));
   EXPECT_LT(0u, length);

@@ -87,7 +87,9 @@ class QuicUnackedPacketMapTest : public QuicTestWithParam<bool> {
     unacked_packets_.RemoveObsoletePackets();
     if (num_packets == 0) {
       EXPECT_FALSE(unacked_packets_.HasUnackedPackets());
-      EXPECT_FALSE(unacked_packets_.HasUnackedRetransmittableFrames());
+      if (!GetQuicReloadableFlag(quic_optimize_inflight_check)) {
+        EXPECT_FALSE(unacked_packets_.HasUnackedRetransmittableFrames());
+      }
       return;
     }
     EXPECT_TRUE(unacked_packets_.HasUnackedPackets());
@@ -163,7 +165,7 @@ TEST_P(QuicUnackedPacketMapTest, RttOnly) {
   VerifyInFlightPackets(nullptr, 0);
   VerifyRetransmittablePackets(nullptr, 0);
 
-  unacked_packets_.IncreaseLargestObserved(1);
+  unacked_packets_.IncreaseLargestAcked(1);
   VerifyUnackedPackets(nullptr, 0);
   VerifyInFlightPackets(nullptr, 0);
   VerifyRetransmittablePackets(nullptr, 0);
@@ -184,7 +186,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmittableInflightAndRtt) {
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
 
-  unacked_packets_.IncreaseLargestObserved(1);
+  unacked_packets_.IncreaseLargestAcked(1);
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
@@ -290,7 +292,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmittedPacket) {
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
 
-  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.IncreaseLargestAcked(2);
   VerifyUnackedPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyInFlightPackets(unacked, QUIC_ARRAYSIZE(unacked));
   VerifyRetransmittablePackets(nullptr, 0);
@@ -322,7 +324,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
                                QUIC_ARRAYSIZE(retransmittable));
 
   // Early retransmit 1 as 3 and send new data as 4.
-  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.IncreaseLargestAcked(2);
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.RemoveRetransmittability(2);
   unacked_packets_.RemoveFromInFlight(1);
@@ -343,7 +345,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   VerifyRetransmittablePackets(&retransmittable2[0], retransmittable2.size());
 
   // Early retransmit 3 (formerly 1) as 5, and remove 1 from unacked.
-  unacked_packets_.IncreaseLargestObserved(4);
+  unacked_packets_.IncreaseLargestAcked(4);
   unacked_packets_.RemoveFromInFlight(4);
   unacked_packets_.RemoveRetransmittability(4);
   RetransmitAndSendPacket(3, 5, LOSS_RETRANSMISSION);
@@ -365,7 +367,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitThreeTimes) {
   VerifyInFlightPackets(pending3, QUIC_ARRAYSIZE(pending3));
 
   // Early retransmit 5 as 7 and ensure in flight packet 3 is not removed.
-  unacked_packets_.IncreaseLargestObserved(6);
+  unacked_packets_.IncreaseLargestAcked(6);
   unacked_packets_.RemoveFromInFlight(6);
   unacked_packets_.RemoveRetransmittability(6);
   RetransmitAndSendPacket(5, 7, LOSS_RETRANSMISSION);
@@ -406,7 +408,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitFourTimes) {
                                QUIC_ARRAYSIZE(retransmittable));
 
   // Early retransmit 1 as 3.
-  unacked_packets_.IncreaseLargestObserved(2);
+  unacked_packets_.IncreaseLargestAcked(2);
   unacked_packets_.RemoveFromInFlight(2);
   unacked_packets_.RemoveRetransmittability(2);
   unacked_packets_.RemoveFromInFlight(1);
@@ -442,7 +444,7 @@ TEST_P(QuicUnackedPacketMapTest, RetransmitFourTimes) {
   VerifyRetransmittablePackets(&retransmittable3[0], retransmittable3.size());
 
   // Early retransmit 4 as 6 and ensure in flight packet 3 is removed.
-  unacked_packets_.IncreaseLargestObserved(5);
+  unacked_packets_.IncreaseLargestAcked(5);
   unacked_packets_.RemoveFromInFlight(5);
   unacked_packets_.RemoveRetransmittability(5);
   unacked_packets_.RemoveFromInFlight(3);

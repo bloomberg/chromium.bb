@@ -49,10 +49,6 @@ QUIC_FLAG(bool,
 // allow CHLO packets to be buffered until next iteration of the event loop.
 QUIC_FLAG(bool, FLAGS_quic_allow_chlo_buffering, true)
 
-// If true, GFE sends spdy::SETTINGS_MAX_HEADER_LIST_SIZE to the client at the
-// beginning of a connection.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_send_max_header_list_size, true)
-
 // If greater than zero, mean RTT variation is multiplied by the specified
 // factor and added to the congestion window limit.
 QUIC_FLAG(double, FLAGS_quic_bbr_rtt_variation_weight, 0.0f)
@@ -67,9 +63,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_fix_adaptive_time_loss, false)
 // Allows the 3RTO QUIC connection option to close a QUIC connection after
 // 3RTOs if there are no open streams.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_3rtos, false)
-
-// If true, enable experiment for testing PCC congestion-control.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc2, false)
 
 // When true, defaults to BBR congestion control instead of Cubic.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_default_to_bbr, false)
@@ -100,14 +93,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_stream_too_long, false)
 // If true, enable QUIC v99.
 QUIC_FLAG(bool, FLAGS_quic_enable_version_99, false)
 
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_37, true)
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_38, true)
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41, false)
-
-// If true, framer will process and report ack frame incrementally.
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_use_incremental_ack_processing4,
-          true)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_41_2, false)
 
 // If this flag and
 // FLAGS_quic_reloadable_flag_quic_fix_write_out_of_order_queued_packet_crash
@@ -140,17 +126,6 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_one_rto, false)
 // When true, the NRTT QUIC connection option causes receivers to ignore
 // incoming initial RTT values.
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_no_irtt, false)
-
-// Fixed QUIC's PROBE_BW logic to exit low gain mode based on bytes_in_flight,
-// not prior_in_flight.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_fix_probe_bw, true)
-
-// If true, changes when the dispatcher changes internal state.
-QUIC_FLAG(bool, FLAGS_quic_restart_flag_quic_enable_l1_munge, true)
-
-// Don't slow down the pacing rate in STARTUP upon loss if there hasn't been
-// at least one non app-limited sample.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_slower_startup2, true)
 
 // If true, put ScopedRetransmissionScheduler's functionality to
 // ScopedPacketFlusher.
@@ -196,3 +171,40 @@ QUIC_FLAG(bool,
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_add_to_blocked_list_if_writer_blocked,
           false)
+
+// Only send an ack immediately when a previously missing packet is received if
+// an ack with a larger largest acked has already been sent.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_ack_reordered_packets, false)
+
+// If true, QuicWriteBlockedList will use StaticStreamCollection to speed up
+// operations on static streams.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_use_static_stream_collection_in_write_blocked_list,
+    false)
+
+// If true, disables QUIC v42.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_disable_version_42, false)
+
+// Stop checking QuicUnackedPacketMap::HasUnackedRetransmittableFrames and
+// instead rely on the existing check that bytes_in_flight > 0
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_optimize_inflight_check, false)
+
+// When you\'re app-limited entering recovery, stay app-limited until you exit
+// recovery in QUIC BBR.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_bbr_app_limited_recovery, false)
+
+// If true, mark QUIC as app-limited after sending queued packets or
+// retransmisssions and we then become congestion control blocked.
+QUIC_FLAG(bool,
+          FLAGS_quic_reloadable_flag_quic_retransmissions_app_limited,
+          false)
+
+// If true, stop resetting ideal_next_packet_send_time_ in pacing sender.
+QUIC_FLAG(
+    bool,
+    FLAGS_quic_reloadable_flag_quic_donot_reset_ideal_next_packet_send_time,
+    false)
+
+// If true, enable experiment for testing PCC congestion-control.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_pcc3, false)

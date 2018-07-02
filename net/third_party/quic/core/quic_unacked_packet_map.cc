@@ -13,7 +13,8 @@ namespace quic {
 QuicUnackedPacketMap::QuicUnackedPacketMap()
     : largest_sent_packet_(0),
       largest_sent_retransmittable_packet_(0),
-      largest_observed_(0),
+      largest_sent_largest_acked_(0),
+      largest_acked_(0),
       least_unacked_(1),
       bytes_in_flight_(0),
       pending_crypto_packet_count_(0),
@@ -47,6 +48,8 @@ void QuicUnackedPacketMap::AddSentPacket(SerializedPacket* packet,
       packet->encryption_level, packet->packet_number_length, transmission_type,
       sent_time, bytes_sent, has_crypto_handshake, packet->num_padding_bytes);
   info.largest_acked = packet->largest_acked;
+  largest_sent_largest_acked_ =
+      std::max(largest_sent_largest_acked_, packet->largest_acked);
   if (old_packet_number > 0) {
     TransferRetransmissionInfo(old_packet_number, packet_number,
                                transmission_type, &info);
@@ -193,10 +196,10 @@ void QuicUnackedPacketMap::RemoveRetransmittability(
   RemoveRetransmittability(info);
 }
 
-void QuicUnackedPacketMap::IncreaseLargestObserved(
-    QuicPacketNumber largest_observed) {
-  DCHECK_LE(largest_observed_, largest_observed);
-  largest_observed_ = largest_observed;
+void QuicUnackedPacketMap::IncreaseLargestAcked(
+    QuicPacketNumber largest_acked) {
+  DCHECK_LE(largest_acked_, largest_acked);
+  largest_acked_ = largest_acked;
 }
 
 bool QuicUnackedPacketMap::IsPacketUsefulForMeasuringRtt(
@@ -204,7 +207,7 @@ bool QuicUnackedPacketMap::IsPacketUsefulForMeasuringRtt(
     const QuicTransmissionInfo& info) const {
   // Packet can be used for RTT measurement if it may yet be acked as the
   // largest observed packet by the receiver.
-  return QuicUtils::IsAckable(info.state) && packet_number > largest_observed_;
+  return QuicUtils::IsAckable(info.state) && packet_number > largest_acked_;
 }
 
 bool QuicUnackedPacketMap::IsPacketUsefulForCongestionControl(
@@ -219,7 +222,7 @@ bool QuicUnackedPacketMap::IsPacketUsefulForRetransmittableData(
   // retransmitted with a new packet number.
   return HasRetransmittableFrames(info) ||
          // Allow for an extra 1 RTT before stopping to track old packets.
-         info.retransmission > largest_observed_;
+         info.retransmission > largest_acked_;
 }
 
 bool QuicUnackedPacketMap::IsPacketUseless(
@@ -345,6 +348,7 @@ bool QuicUnackedPacketMap::HasPendingCryptoPackets() const {
 }
 
 bool QuicUnackedPacketMap::HasUnackedRetransmittableFrames() const {
+  DCHECK(!GetQuicReloadableFlag(quic_optimize_inflight_check));
   for (UnackedPacketMap::const_reverse_iterator it = unacked_packets_.rbegin();
        it != unacked_packets_.rend(); ++it) {
     if (it->in_flight && HasRetransmittableFrames(*it)) {

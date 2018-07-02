@@ -449,12 +449,6 @@ TEST_P(QuicCryptoServerStreamTest, OnlySendSCUPAfterHandshakeComplete) {
 }
 
 TEST_P(QuicCryptoServerStreamTest, SendSCUPAfterHandshakeComplete) {
-  // Do not send MAX_HEADER_LIST_SIZE SETTING frame.
-  // TODO(fayang): This SETTING frame cannot be decrypted and
-  // crypto_test_utils::MovePackets stops processing parsing following packets.
-  // Actually, crypto stream test should use QuicSession instead of
-  // QuicSpdySession (b/32366134).
-  SetQuicReloadableFlag(quic_send_max_header_list_size, false);
   Initialize();
 
   InitializeFakeClient(/* supports_stateless_rejects= */ false);

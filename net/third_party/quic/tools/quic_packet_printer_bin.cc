@@ -105,10 +105,6 @@ class QuicPacketPrinter : public QuicFramerVisitorInterface {
               << " }\n";
     return true;
   }
-  bool OnAckFrame(const QuicAckFrame& frame) override {
-    std::cerr << "OnAckFrame: " << frame;
-    return true;
-  }
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta /*ack_delay_time*/) override {
     std::cerr << "OnAckFrameStart, largest_acked: " << largest_acked;

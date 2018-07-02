@@ -99,8 +99,12 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
     return largest_sent_retransmittable_packet_;
   }
 
+  QuicPacketNumber largest_sent_largest_acked() const {
+    return largest_sent_largest_acked_;
+  }
+
   // Returns the largest packet number that has been acked.
-  QuicPacketNumber largest_observed() const { return largest_observed_; }
+  QuicPacketNumber largest_acked() const { return largest_acked_; }
 
   // Returns the sum of bytes from all packets in flight.
   QuicByteCount bytes_in_flight() const { return bytes_in_flight_; }
@@ -160,9 +164,9 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   // RemoveRetransmittability.
   void RemoveRetransmittability(QuicPacketNumber packet_number);
 
-  // Increases the largest observed.  Any packets less or equal to
-  // |largest_acked_packet| are discarded if they are only for the RTT purposes.
-  void IncreaseLargestObserved(QuicPacketNumber largest_observed);
+  // Increases the largest acked.  Any packets less or equal to
+  // |largest_acked| are discarded if they are only for the RTT purposes.
+  void IncreaseLargestAcked(QuicPacketNumber largest_acked);
 
   // Remove any packets no longer needed for retransmission, congestion, or
   // RTT measurement purposes.
@@ -207,7 +211,10 @@ class QUIC_EXPORT_PRIVATE QuicUnackedPacketMap {
   QuicPacketNumber largest_sent_packet_;
   // The largest sent packet we expect to receive an ack for.
   QuicPacketNumber largest_sent_retransmittable_packet_;
-  QuicPacketNumber largest_observed_;
+  // The largest sent largest_acked in an ACK frame.
+  QuicPacketNumber largest_sent_largest_acked_;
+  // The largest received largest_acked from an ACK frame.
+  QuicPacketNumber largest_acked_;
 
   // Newly serialized retransmittable packets are added to this map, which
   // contains owning pointers to any contained frames.  If a packet is

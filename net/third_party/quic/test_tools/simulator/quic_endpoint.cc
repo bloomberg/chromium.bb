@@ -81,6 +81,7 @@ QuicEndpoint::QuicEndpoint(Simulator* simulator,
       bytes_transferred_(0),
       write_blocked_count_(0),
       wrong_data_received_(false),
+      drop_next_packet_(false),
       notifier_(nullptr) {
   nic_tx_queue_.set_listener_interface(this);
 
@@ -170,6 +171,10 @@ void QuicEndpoint::AddBytesToTransfer(QuicByteCount bytes) {
   WriteStreamData();
 }
 
+void QuicEndpoint::DropNextIncomingPacket() {
+  drop_next_packet_ = true;
+}
+
 void QuicEndpoint::RecordTrace() {
   trace_visitor_ = QuicMakeUnique<QuicTraceVisitor>(&connection_);
   connection_.set_debug_visitor(trace_visitor_.get());
@@ -177,6 +182,10 @@ void QuicEndpoint::RecordTrace() {
 
 void QuicEndpoint::AcceptPacket(std::unique_ptr<Packet> packet) {
   if (packet->destination != name_) {
+    return;
+  }
+  if (drop_next_packet_) {
+    drop_next_packet_ = false;
     return;
   }
 

@@ -702,11 +702,6 @@ bool QuicDispatcher::OnStreamFrame(const QuicStreamFrame& /*frame*/) {
   return false;
 }
 
-bool QuicDispatcher::OnAckFrame(const QuicAckFrame& /*frame*/) {
-  DCHECK(false);
-  return false;
-}
-
 bool QuicDispatcher::OnAckFrameStart(QuicPacketNumber /*largest_acked*/,
                                      QuicTime::Delta /*ack_delay_time*/) {
   DCHECK(false);
@@ -1080,17 +1075,14 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
     const QuicSocketAddress& current_self_address,
     std::unique_ptr<QuicReceivedPacket> current_packet,
     ParsedQuicVersion first_version) {
-  const bool enable_l1_munge = GetQuicRestartFlag(quic_enable_l1_munge);
-  if (enable_l1_munge) {
-    // Reset current_* to correspond to the packet which initiated the stateless
-    // reject logic.
-    current_client_address_ = current_client_address;
-    current_peer_address_ = current_peer_address;
-    current_self_address_ = current_self_address;
-    current_packet_ = current_packet.get();
-    current_connection_id_ = rejector->connection_id();
-    framer_.set_version(first_version);
-  }
+  // Reset current_* to correspond to the packet which initiated the stateless
+  // reject logic.
+  current_client_address_ = current_client_address;
+  current_peer_address_ = current_peer_address;
+  current_self_address_ = current_self_address;
+  current_packet_ = current_packet.get();
+  current_connection_id_ = rejector->connection_id();
+  framer_.set_version(first_version);
 
   // Stop buffering packets on this connection
   const auto num_erased =
@@ -1106,17 +1098,6 @@ void QuicDispatcher::OnStatelessRejectorProcessDone(
     time_wait_list_manager_->ProcessPacket(
         current_self_address, current_peer_address, rejector->connection_id());
     return;
-  }
-
-  if (!enable_l1_munge) {
-    // Reset current_* to correspond to the packet which initiated the stateless
-    // reject logic.
-    current_client_address_ = current_client_address;
-    current_peer_address_ = current_peer_address;
-    current_self_address_ = current_self_address;
-    current_packet_ = current_packet.get();
-    current_connection_id_ = rejector->connection_id();
-    framer_.set_version(first_version);
   }
 
   ProcessStatelessRejectorState(std::move(rejector),

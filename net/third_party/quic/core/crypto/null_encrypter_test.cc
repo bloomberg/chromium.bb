@@ -22,7 +22,7 @@ TEST_F(NullEncrypterTest, EncryptClient) {
   char encrypted[256];
   size_t encrypted_len = 0;
   NullEncrypter encrypter(Perspective::IS_CLIENT);
-  ASSERT_TRUE(encrypter.EncryptPacket(QUIC_VERSION_37, 0, "hello world!",
+  ASSERT_TRUE(encrypter.EncryptPacket(QUIC_VERSION_39, 0, "hello world!",
                                       "goodbye!", encrypted, &encrypted_len,
                                       256));
   test::CompareCharArraysWithHexError(
@@ -40,7 +40,7 @@ TEST_F(NullEncrypterTest, EncryptServer) {
   char encrypted[256];
   size_t encrypted_len = 0;
   NullEncrypter encrypter(Perspective::IS_SERVER);
-  ASSERT_TRUE(encrypter.EncryptPacket(QUIC_VERSION_37, 0, "hello world!",
+  ASSERT_TRUE(encrypter.EncryptPacket(QUIC_VERSION_39, 0, "hello world!",
                                       "goodbye!", encrypted, &encrypted_len,
                                       256));
   test::CompareCharArraysWithHexError(

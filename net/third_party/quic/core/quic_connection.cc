@@ -49,7 +49,7 @@ namespace {
 const QuicPacketNumber kMaxPacketGap = 5000;
 
 // Maximum number of acks received before sending an ack in response.
-// TODO(fayang): Remove this constant when deprecating QUIC_VERSION_38.
+// TODO(fayang): Remove this constant when deprecating QUIC_VERSION_35.
 const QuicPacketCount kMaxPacketsReceivedBeforeAckSend = 20;
 
 // Maximum number of consecutive sent nonretransmittable packets.
@@ -239,7 +239,6 @@ QuicConnection::QuicConnection(
       idle_timeout_connection_close_behavior_(
           ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET),
       close_connection_after_five_rtos_(false),
-      close_connection_after_three_rtos_(false),
       received_packet_manager_(&stats_),
       ack_queued_(false),
       num_retransmittable_packets_received_since_last_ack_sent_(0),
@@ -321,7 +320,10 @@ QuicConnection::QuicConnection(
       deprecate_scheduler_(
           GetQuicReloadableFlag(quic_deprecate_scoped_scheduler2)),
       add_to_blocked_list_if_writer_blocked_(
-          GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)) {
+          GetQuicReloadableFlag(quic_add_to_blocked_list_if_writer_blocked)),
+      ack_reordered_packets_(GetQuicReloadableFlag(quic_ack_reordered_packets)),
+      retransmissions_app_limited_(
+          GetQuicReloadableFlag(quic_retransmissions_app_limited)) {
   if (ack_mode_ == ACK_DECIMATION) {
     QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_ack_decimation);
   }
@@ -431,12 +433,7 @@ void QuicConnection::SetFromConfig(const QuicConfig& config) {
   if (config.HasClientSentConnectionOption(k5RTO, perspective_)) {
     close_connection_after_five_rtos_ = true;
   }
-  if (GetQuicReloadableFlag(quic_enable_3rtos) &&
-      config.HasClientSentConnectionOption(k3RTO, perspective_)) {
-    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_enable_3rtos);
-    close_connection_after_three_rtos_ = true;
-  }
-  if (transport_version() > QUIC_VERSION_37 &&
+  if (transport_version() != QUIC_VERSION_35 &&
       config.HasClientSentConnectionOption(kNSTP, perspective_)) {
     no_stop_waiting_frames_ = true;
   }
@@ -864,59 +861,9 @@ bool QuicConnection::OnStreamFrame(const QuicStreamFrame& frame) {
   return connected_;
 }
 
-bool QuicConnection::OnAckFrame(const QuicAckFrame& incoming_ack) {
-  DCHECK(connected_);
-  DCHECK(!framer_.use_incremental_ack_processing());
-
-  // Since an ack frame was received, this is not a connectivity probe.
-  // A probe only contains a PING and full padding.
-  UpdatePacketContent(NOT_PADDED_PING);
-
-  if (debug_visitor_ != nullptr) {
-    debug_visitor_->OnAckFrame(incoming_ack);
-  }
-  QUIC_DVLOG(1) << ENDPOINT << "OnAckFrame: " << incoming_ack;
-
-  if (last_header_.packet_number <= largest_seen_packet_with_ack_) {
-    QUIC_DLOG(INFO) << ENDPOINT << "Received an old ack frame: ignoring";
-    return true;
-  }
-
-  const char* error = ValidateAckFrame(incoming_ack);
-  if (error != nullptr) {
-    CloseConnection(QUIC_INVALID_ACK_DATA, error,
-                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    return false;
-  }
-
-  if (send_alarm_->IsSet()) {
-    send_alarm_->Cancel();
-  }
-
-  if (LargestAcked(incoming_ack) > sent_packet_manager_.GetLargestObserved()) {
-    visitor_->OnForwardProgressConfirmed();
-  }
-
-  largest_seen_packet_with_ack_ = last_header_.packet_number;
-  bool acked_new_packet = sent_packet_manager_.OnIncomingAck(
-      incoming_ack, time_of_last_received_packet_);
-  // If the incoming ack's packets set expresses missing packets: peer is still
-  // waiting for a packet lower than a packet that we are no longer planning to
-  // send.
-  // If the incoming ack's packets set expresses received packets: peer is still
-  // acking packets which we never care about.
-  // Send an ack to raise the high water mark.
-  PostProcessAfterAckFrame(!incoming_ack.packets.Empty() &&
-                               GetLeastUnacked() > incoming_ack.packets.Min(),
-                           acked_new_packet);
-
-  return connected_;
-}
-
 bool QuicConnection::OnAckFrameStart(QuicPacketNumber largest_acked,
                                      QuicTime::Delta ack_delay_time) {
   DCHECK(connected_);
-  DCHECK(framer_.use_incremental_ack_processing());
 
   if (processing_ack_frame_) {
     CloseConnection(QUIC_INVALID_ACK_DATA,
@@ -977,7 +924,6 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
                                 QuicPacketNumber end,
                                 bool last_range) {
   DCHECK(connected_);
-  DCHECK(framer_.use_incremental_ack_processing());
   QUIC_DVLOG(1) << ENDPOINT << "OnAckRange: [" << start << ", " << end
                 << "), last_range: " << last_range;
 
@@ -992,6 +938,9 @@ bool QuicConnection::OnAckRange(QuicPacketNumber start,
   }
   bool acked_new_packet =
       sent_packet_manager_.OnAckFrameEnd(time_of_last_received_packet_);
+  // Cancel the send alarm because new packets likely have been acked, which
+  // may change the congestion window and/or pacing rate.  Canceling the alarm
+  // causes CanWrite to recalculate the next send time.
   if (send_alarm_->IsSet()) {
     send_alarm_->Cancel();
   }
@@ -1336,7 +1285,7 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
   ++num_packets_received_since_last_ack_sent_;
   // Always send an ack every 20 packets in order to allow the peer to discard
   // information from the SentPacketManager and provide an RTT measurement.
-  if (transport_version() <= QUIC_VERSION_38 &&
+  if (transport_version() == QUIC_VERSION_35 &&
       num_packets_received_since_last_ack_sent_ >=
           kMaxPacketsReceivedBeforeAckSend) {
     ack_queued_ = true;
@@ -1344,11 +1293,24 @@ void QuicConnection::MaybeQueueAck(bool was_missing) {
 
   // Determine whether the newly received packet was missing before recording
   // the received packet.
-  // Ack decimation with reordering relies on the timer to send an ack, but if
-  // missing packets we reported in the previous ack, send an ack immediately.
-  if (was_missing && (ack_mode_ != ACK_DECIMATION_WITH_REORDERING ||
-                      last_ack_had_missing_packets_)) {
-    ack_queued_ = true;
+  if (was_missing) {
+    if (ack_reordered_packets_) {
+      QUIC_FLAG_COUNT(quic_reloadable_flag_quic_ack_reordered_packets);
+      // Only ack immediately if an ACK frame was sent with a larger
+      // largest acked than the newly received packet number.
+      if (last_header_.packet_number <
+          sent_packet_manager_.unacked_packets().largest_sent_largest_acked()) {
+        ack_queued_ = true;
+      }
+    } else {
+      // Ack decimation with reordering relies on the timer to send an ack,
+      // but if missing packets we reported in the previous ack, send an ack
+      // immediately.
+      if (ack_mode_ != ACK_DECIMATION_WITH_REORDERING ||
+          last_ack_had_missing_packets_) {
+        ack_queued_ = true;
+      }
+    }
   }
 
   if (should_last_packet_instigate_acks_ && !ack_queued_) {
@@ -1726,11 +1688,22 @@ void QuicConnection::OnBlockedWriterCanWrite() {
 void QuicConnection::OnCanWrite() {
   DCHECK(!writer_->IsWriteBlocked());
 
+  std::unique_ptr<ScopedPacketFlusher> flusher;
+  if (retransmissions_app_limited_) {
+    QUIC_FLAG_COUNT(quic_reloadable_flag_quic_retransmissions_app_limited);
+    // Add a flusher to ensure the connection is marked app-limited.
+    flusher.reset(new ScopedPacketFlusher(this, NO_ACK));
+  }
+
   WriteQueuedPackets();
   if (!session_decides_what_to_write()) {
     WritePendingRetransmissions();
   }
 
+  WriteNewData();
+}
+
+void QuicConnection::WriteNewData() {
   // Sending queued packets may have caused the socket to become write blocked,
   // or the congestion manager to prohibit sending.  If we've sent everything
   // we had queued and we're still not blocked, let the visitor know it can
@@ -1907,12 +1880,10 @@ void QuicConnection::WritePendingRetransmissions() {
   DCHECK(!session_decides_what_to_write());
   // Keep writing as long as there's a pending retransmission which can be
   // written.
-  while (sent_packet_manager_.HasPendingRetransmissions()) {
+  while (sent_packet_manager_.HasPendingRetransmissions() &&
+         CanWrite(HAS_RETRANSMITTABLE_DATA)) {
     const QuicPendingRetransmission pending =
         sent_packet_manager_.NextPendingRetransmission();
-    if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
-      break;
-    }
 
     // Re-packetize the frames with a new packet number for retransmission.
     // Retransmitted packets use the same packet number length as the
@@ -1927,6 +1898,7 @@ void QuicConnection::WritePendingRetransmissions() {
       ScopedPacketFlusher flusher(this, NO_ACK);
       packet_generator_.FlushAllQueuedFrames();
     }
+    DCHECK(!packet_generator_.HasQueuedFrames());
     char buffer[kMaxPacketSize];
     packet_generator_.ReserializeAllFrames(pending, buffer, kMaxPacketSize);
   }
@@ -2270,7 +2242,7 @@ void QuicConnection::OnSerializedPacket(SerializedPacket* serialized_packet) {
     return;
   }
 
-  if (transport_version() > QUIC_VERSION_38) {
+  if (transport_version() != QUIC_VERSION_35) {
     if (serialized_packet->retransmittable_frames.empty() &&
         serialized_packet->original_packet_number == 0) {
       // Increment consecutive_num_packets_with_no_retransmittable_frames_ if
@@ -2350,7 +2322,10 @@ void QuicConnection::SendAck() {
   ack_queued_ = false;
   stop_waiting_count_ = 0;
   num_retransmittable_packets_received_since_last_ack_sent_ = 0;
-  last_ack_had_missing_packets_ = received_packet_manager_.HasMissingPackets();
+  if (!ack_reordered_packets_) {
+    last_ack_had_missing_packets_ =
+        received_packet_manager_.HasMissingPackets();
+  }
   num_packets_received_since_last_ack_sent_ = 0;
 
   packet_generator_.SetShouldSendAck(!no_stop_waiting_frames_);
@@ -2374,15 +2349,6 @@ void QuicConnection::OnPathDegradingTimeout() {
 
 void QuicConnection::OnRetransmissionTimeout() {
   DCHECK(sent_packet_manager_.HasUnackedPackets());
-
-  if (close_connection_after_three_rtos_ &&
-      sent_packet_manager_.GetConsecutiveRtoCount() >= 2 &&
-      !visitor_->HasOpenDynamicStreams()) {
-    // Close on the 3rd consecutive RTO, so after 2 previous RTOs have occurred.
-    CloseConnection(QUIC_TOO_MANY_RTOS, "3 consecutive retransmission timeouts",
-                    ConnectionCloseBehavior::SEND_CONNECTION_CLOSE_PACKET);
-    return;
-  }
   if (close_connection_after_five_rtos_ &&
       sent_packet_manager_.GetConsecutiveRtoCount() >= 4) {
     // Close on the 5th consecutive RTO, so after 4 previous RTOs have occurred.

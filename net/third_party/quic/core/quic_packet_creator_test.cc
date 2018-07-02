@@ -281,26 +281,22 @@ TEST_P(QuicPacketCreatorTest, SerializeFrames) {
       EXPECT_CALL(framer_visitor_, OnUnauthenticatedHeader(_));
       EXPECT_CALL(framer_visitor_, OnDecryptedPacket(_));
       EXPECT_CALL(framer_visitor_, OnPacketHeader(_));
-      if (client_framer_.use_incremental_ack_processing()) {
-        EXPECT_CALL(framer_visitor_, OnAckFrameStart(_, _))
+      EXPECT_CALL(framer_visitor_, OnAckFrameStart(_, _))
+          .WillOnce(Return(true));
+      // This test includes an ack frame with largest_acked == 0 and
+      // the size of the first ack-block == 1 (serialized as
+      // 0). This is an invalid format for pre-version99, valid
+      // for version 99.
+      if (client_framer_.transport_version() != QUIC_VERSION_99) {
+        // pre-version 99; ensure that the error is gracefully
+        // handled.
+        EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
             .WillOnce(Return(true));
-        // This test includes an ack frame with largest_acked == 0 and
-        // the size of the first ack-block == 1 (serialized as
-        // 0). This is an invalid format for pre-version99, valid
-        // for version 99.
-        if (client_framer_.transport_version() != QUIC_VERSION_99) {
-          // pre-version 99; ensure that the error is gracefully
-          // handled.
-          EXPECT_CALL(framer_visitor_, OnAckRange(1, 1, true))
-              .WillOnce(Return(true));
-        } else {
-          // version 99; ensure that the correct packet is signalled
-          // properly.
-          EXPECT_CALL(framer_visitor_, OnAckRange(0, 1, true))
-              .WillOnce(Return(true));
-        }
       } else {
-        EXPECT_CALL(framer_visitor_, OnAckFrame(_));
+        // version 99; ensure that the correct packet is signalled
+        // properly.
+        EXPECT_CALL(framer_visitor_, OnAckRange(0, 1, true))
+            .WillOnce(Return(true));
       }
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));
       EXPECT_CALL(framer_visitor_, OnStreamFrame(_));

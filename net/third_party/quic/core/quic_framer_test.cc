@@ -212,12 +212,6 @@ class TestQuicVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnAckFrame(const QuicAckFrame& frame) override {
-    ++frame_count_;
-    ack_frames_.push_back(QuicMakeUnique<QuicAckFrame>(frame));
-    return true;
-  }
-
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     ++frame_count_;
@@ -770,7 +764,7 @@ TEST_P(QuicFramerTest, PacketHeader) {
   }
 
   PacketFragments& fragments =
-      framer_.transport_version() <= QUIC_VERSION_38 ? packet38 : packet39;
+      framer_.transport_version() == QUIC_VERSION_35 ? packet38 : packet39;
 
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -864,7 +858,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith0ByteConnectionId) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() <= QUIC_VERSION_38 ? packet
+          : (framer_.transport_version() == QUIC_VERSION_35 ? packet
                                                             : packet39);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -933,7 +927,7 @@ TEST_P(QuicFramerTest, PacketHeaderWithVersionFlag) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() <= QUIC_VERSION_38 ? packet
+          : (framer_.transport_version() == QUIC_VERSION_35 ? packet
                                                             : packet39);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -993,7 +987,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith4BytePacketNumber) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() <= QUIC_VERSION_38 ? packet
+          : (framer_.transport_version() == QUIC_VERSION_35 ? packet
                                                             : packet39);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -1052,7 +1046,7 @@ TEST_P(QuicFramerTest, PacketHeaderWith2BytePacketNumber) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() <= QUIC_VERSION_38 ? packet
+          : (framer_.transport_version() == QUIC_VERSION_35 ? packet
                                                             : packet39);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -1242,7 +1236,7 @@ TEST_P(QuicFramerTest, PacketWithDiversificationNonce) {
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -1310,7 +1304,7 @@ TEST_P(QuicFramerTest, LargePublicFlagWithMismatchedVersions) {
   QuicEncryptedPacket encrypted(
       AsChars(framer_.transport_version() > QUIC_VERSION_43
                   ? packet44
-                  : (framer_.transport_version() <= QUIC_VERSION_38
+                  : (framer_.transport_version() == QUIC_VERSION_35
                          ? packet
                          : packet39)),
       framer_.transport_version() > QUIC_VERSION_43 ? QUIC_ARRAYSIZE(packet44)
@@ -1354,7 +1348,7 @@ TEST_P(QuicFramerTest, PaddingFrame) {
   };
   // clang-format on
 
-  if (framer_.transport_version() > QUIC_VERSION_37) {
+  if (framer_.transport_version() != QUIC_VERSION_35) {
     return;
   }
 
@@ -1519,7 +1513,7 @@ TEST_P(QuicFramerTest, NewPaddingFrame) {
   };
   // clang-format on
 
-  if (framer_.transport_version() <= QUIC_VERSION_37) {
+  if (framer_.transport_version() == QUIC_VERSION_35) {
     return;
   }
   unsigned char* p = packet;
@@ -1532,7 +1526,7 @@ TEST_P(QuicFramerTest, NewPaddingFrame) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -1715,7 +1709,7 @@ TEST_P(QuicFramerTest, StreamFrame) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -1849,7 +1843,7 @@ TEST_P(QuicFramerTest, MissingDiversificationNonce) {
     p = packet44;
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   QuicEncryptedPacket encrypted(AsChars(p),
@@ -1966,7 +1960,8 @@ TEST_P(QuicFramerTest, StreamFrame3ByteStreamId) {
   PacketFragments& fragments =
       framer_.transport_version() == QUIC_VERSION_41
           ? packet41
-          : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
+          : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                            : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -2148,7 +2143,7 @@ TEST_P(QuicFramerTest, StreamFrame2ByteStreamId) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -2332,7 +2327,7 @@ TEST_P(QuicFramerTest, StreamFrame1ByteStreamId) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -2537,7 +2532,7 @@ TEST_P(QuicFramerTest, StreamFrameWithVersion) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -2663,7 +2658,7 @@ TEST_P(QuicFramerTest, RejectPacket) {
     p = packet44;
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   QuicEncryptedPacket encrypted(AsChars(p),
@@ -2874,7 +2869,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -3048,7 +3043,7 @@ TEST_P(QuicFramerTest, FirstAckFrameUnderflow) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -3503,8 +3498,8 @@ TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
           ? packet44
           : (framer_.transport_version() == QUIC_VERSION_41
                  ? packet41
-                 : (framer_.transport_version() > QUIC_VERSION_38 ? packet39
-                                                                  : packet));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
 
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
@@ -3518,11 +3513,7 @@ TEST_P(QuicFramerTest, AckFrameFirstAckBlockLengthZero) {
       PACKET_8BYTE_CONNECTION_ID, PACKET_0BYTE_CONNECTION_ID));
 
   EXPECT_EQ(0u, visitor_.stream_frames_.size());
-  if (framer_.use_incremental_ack_processing()) {
-    ASSERT_EQ(1u, visitor_.ack_frames_.size());
-  } else {
-    ASSERT_EQ(0u, visitor_.ack_frames_.size());
-  }
+  ASSERT_EQ(1u, visitor_.ack_frames_.size());
 
   CheckFramingBoundaries(fragments, QUIC_INVALID_ACK_DATA);
 }
@@ -3676,7 +3667,7 @@ TEST_P(QuicFramerTest, AckFrameOneAckBlockMaxLength) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -4038,7 +4029,7 @@ TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
 
@@ -4125,7 +4116,8 @@ TEST_P(QuicFramerTest, NewStopWaitingFrame) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
+          : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                            : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -4194,7 +4186,7 @@ TEST_P(QuicFramerTest, InvalidNewStopWaitingFrame) {
   QuicEncryptedPacket encrypted(
       AsChars(framer_.transport_version() > QUIC_VERSION_43
                   ? packet44
-                  : (framer_.transport_version() <= QUIC_VERSION_38
+                  : (framer_.transport_version() == QUIC_VERSION_35
                          ? packet
                          : packet39)),
       framer_.transport_version() > QUIC_VERSION_43 ? QUIC_ARRAYSIZE(packet44)
@@ -4339,7 +4331,7 @@ TEST_P(QuicFramerTest, RstStreamFrame) {
                  ? packet44
                  : (framer_.transport_version() == QUIC_VERSION_41
                         ? packet41
-                        : (framer_.transport_version() > QUIC_VERSION_38
+                        : (framer_.transport_version() != QUIC_VERSION_35
                                ? packet39
                                : packet)));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
@@ -4478,8 +4470,8 @@ TEST_P(QuicFramerTest, ConnectionCloseFrame) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() > QUIC_VERSION_38 ? packet39
-                                                                  : packet));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -4661,7 +4653,8 @@ TEST_P(QuicFramerTest, GoAwayFrame) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
+          : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                            : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -4757,7 +4750,8 @@ TEST_P(QuicFramerTest, WindowUpdateFrame) {
   PacketFragments& fragments =
       framer_.transport_version() > QUIC_VERSION_43
           ? packet44
-          : (framer_.transport_version() > QUIC_VERSION_38 ? packet39 : packet);
+          : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                            : packet);
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -4944,8 +4938,8 @@ TEST_P(QuicFramerTest, BlockedFrame) {
           ? packet99
           : (framer_.transport_version() > QUIC_VERSION_43
                  ? packet44
-                 : (framer_.transport_version() > QUIC_VERSION_38 ? packet39
-                                                                  : packet));
+                 : (framer_.transport_version() != QUIC_VERSION_35 ? packet39
+                                                                   : packet));
   std::unique_ptr<QuicEncryptedPacket> encrypted(
       AssemblePacketFromFragments(fragments));
   EXPECT_TRUE(framer_.ProcessPacket(*encrypted));
@@ -5012,7 +5006,7 @@ TEST_P(QuicFramerTest, PingFrame) {
   QuicEncryptedPacket encrypted(
       AsChars(framer_.transport_version() > QUIC_VERSION_43
                   ? packet44
-                  : (framer_.transport_version() <= QUIC_VERSION_38
+                  : (framer_.transport_version() == QUIC_VERSION_35
                          ? packet
                          : packet39)),
       framer_.transport_version() > QUIC_VERSION_43 ? QUIC_ARRAYSIZE(packet44)
@@ -5444,7 +5438,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -5464,7 +5458,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
 }
 
 TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
-  if (framer_.transport_version() <= QUIC_VERSION_37) {
+  if (framer_.transport_version() == QUIC_VERSION_35) {
     return;
   }
   QuicPacketHeader header;
@@ -5628,7 +5622,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithNewPaddingFrame) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   QuicEncryptedPacket encrypted(AsChars(p), p_size, false);
@@ -5691,7 +5685,7 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -5764,7 +5758,7 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -5973,7 +5967,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
@@ -6115,7 +6109,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
     p_size = QUIC_ARRAYSIZE(packet41);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   test::CompareCharArraysWithHexError("constructed packet", data->data(),
@@ -6289,7 +6283,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -6427,7 +6421,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlockMaxLength) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -6656,7 +6650,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -7154,7 +7148,7 @@ TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -7212,7 +7206,7 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
   // clang-format on
 
   unsigned char* p = packet;
-  if (framer_.transport_version() > QUIC_VERSION_38) {
+  if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -7221,8 +7215,8 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
 
   test::CompareCharArraysWithHexError(
       "constructed packet", data->data(), data->length(), AsChars(p),
-      framer_.transport_version() > QUIC_VERSION_38 ? QUIC_ARRAYSIZE(packet39)
-                                                    : QUIC_ARRAYSIZE(packet));
+      framer_.transport_version() != QUIC_VERSION_35 ? QUIC_ARRAYSIZE(packet39)
+                                                     : QUIC_ARRAYSIZE(packet));
 }
 
 TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
@@ -7352,7 +7346,7 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   QuicEncryptedPacket encrypted(AsChars(p), p_size, false);
@@ -7473,7 +7467,7 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -7707,7 +7701,7 @@ TEST_P(QuicFramerTest, BuildTruncatedCloseFramePacket) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -7938,7 +7932,7 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8127,7 +8121,7 @@ TEST_P(QuicFramerTest, BuildTruncatedGoAwayPacket) {
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8232,7 +8226,7 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8410,7 +8404,7 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
   } else if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     p_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8468,7 +8462,7 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8542,7 +8536,7 @@ TEST_P(QuicFramerTest, BuildConnectivityProbingPacket) {
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
     packet_size = QUIC_ARRAYSIZE(packet44);
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
     packet_size = QUIC_ARRAYSIZE(packet39);
   }
@@ -8617,7 +8611,7 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8789,7 +8783,7 @@ TEST_P(QuicFramerTest, EncryptPacket) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -8865,7 +8859,7 @@ TEST_P(QuicFramerTest, EncryptPacketWithVersionFlag) {
   unsigned char* p = packet;
   if (framer_.transport_version() > QUIC_VERSION_43) {
     p = packet44;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
 
@@ -9202,7 +9196,6 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
   EXPECT_CALL(visitor, OnPacket());
   EXPECT_CALL(visitor, OnPacketHeader(_));
   EXPECT_CALL(visitor, OnStreamFrame(_)).WillOnce(Return(false));
-  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnPacketComplete());
   EXPECT_CALL(visitor, OnUnauthenticatedPublicHeader(_)).WillOnce(Return(true));
   EXPECT_CALL(visitor, OnUnauthenticatedHeader(_)).WillOnce(Return(true));
@@ -9218,7 +9211,7 @@ TEST_P(QuicFramerTest, StopPacketProcessing) {
     p_size = QUIC_ARRAYSIZE(packet44);
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   QuicEncryptedPacket encrypted(AsChars(p), p_size, false);
@@ -9266,7 +9259,6 @@ TEST_P(QuicFramerTest, ConstructEncryptedPacket) {
   EXPECT_CALL(visitor, OnError(_)).Times(0);
   EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnStreamFrame(Truly(ExpectedStreamFrame))).Times(1);
-  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnPacketComplete()).Times(1);
 
   EXPECT_TRUE(framer_.ProcessPacket(*packet));
@@ -9302,7 +9294,6 @@ TEST_P(QuicFramerTest, ConstructMisFramedEncryptedPacket) {
   EXPECT_CALL(visitor, OnDecryptedPacket(_)).Times(1);
   EXPECT_CALL(visitor, OnError(_)).Times(1);
   EXPECT_CALL(visitor, OnStreamFrame(_)).Times(0);
-  EXPECT_CALL(visitor, OnAckFrame(_)).Times(0);
   EXPECT_CALL(visitor, OnPacketComplete()).Times(0);
 
   EXPECT_FALSE(framer_.ProcessPacket(*packet));
@@ -9445,7 +9436,7 @@ TEST_P(QuicFramerTest, FramerFuzzTest) {
     p = packet44;
   } else if (framer_.transport_version() == QUIC_VERSION_41) {
     p = packet41;
-  } else if (framer_.transport_version() > QUIC_VERSION_38) {
+  } else if (framer_.transport_version() != QUIC_VERSION_35) {
     p = packet39;
   }
   QuicFramerFuzzFunc(p,

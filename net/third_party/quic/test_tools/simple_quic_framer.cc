@@ -63,11 +63,6 @@ class SimpleFramerVisitor : public QuicFramerVisitorInterface {
     return true;
   }
 
-  bool OnAckFrame(const QuicAckFrame& frame) override {
-    ack_frames_.push_back(frame);
-    return true;
-  }
-
   bool OnAckFrameStart(QuicPacketNumber largest_acked,
                        QuicTime::Delta ack_delay_time) override {
     QuicAckFrame ack_frame;
