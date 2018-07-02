@@ -92,7 +92,7 @@ void MaybeShowExtensionControlledNewTabPage(
       browser->profile());
 
   content::NavigationEntry* entry =
-      web_contents->GetController().GetActiveEntry();
+      web_contents->GetController().GetVisibleEntry();
   if (!entry)
     return;
   GURL active_url = entry->GetURL();
