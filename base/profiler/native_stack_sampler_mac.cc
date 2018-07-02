@@ -37,7 +37,7 @@ using Frame = StackSamplingProfiler::Frame;
 using InternalFrame = StackSamplingProfiler::InternalFrame;
 using Module = StackSamplingProfiler::Module;
 using InternalModule = StackSamplingProfiler::InternalModule;
-using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
+using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 namespace {
 
@@ -348,7 +348,7 @@ class NativeStackSamplerMac : public NativeStackSampler {
   void ProfileRecordingStarting() override;
   std::vector<InternalFrame> RecordStackFrames(
       StackBuffer* stack_buffer,
-      SamplingProfileBuilder* profile_builder) override;
+      ProfileBuilder* profile_builder) override;
 
  private:
   // Returns the InternalModule containing |instruction_pointer|, adding it to
@@ -413,7 +413,7 @@ void NativeStackSamplerMac::ProfileRecordingStarting() {
 
 std::vector<InternalFrame> NativeStackSamplerMac::RecordStackFrames(
     StackBuffer* stack_buffer,
-    SamplingProfileBuilder* profile_builder) {
+    ProfileBuilder* profile_builder) {
   x86_thread_state64_t thread_state;
 
   const std::vector<InternalFrame> empty_internal_frames;

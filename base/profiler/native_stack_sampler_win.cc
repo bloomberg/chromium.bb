@@ -36,7 +36,7 @@ using Frame = StackSamplingProfiler::Frame;
 using InternalFrame = StackSamplingProfiler::InternalFrame;
 using Module = StackSamplingProfiler::Module;
 using InternalModule = StackSamplingProfiler::InternalModule;
-using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
+using ProfileBuilder = StackSamplingProfiler::ProfileBuilder;
 
 // Stack recording functions --------------------------------------------------
 
@@ -333,7 +333,7 @@ void SuspendThreadAndRecordStack(
     void* stack_copy_buffer,
     size_t stack_copy_buffer_size,
     std::vector<RecordedFrame>* stack,
-    SamplingProfileBuilder* profile_builder,
+    ProfileBuilder* profile_builder,
     NativeStackSamplerTestDelegate* test_delegate) {
   DCHECK(stack->empty());
 
@@ -394,7 +394,7 @@ class NativeStackSamplerWin : public NativeStackSampler {
   void ProfileRecordingStarting() override;
   std::vector<InternalFrame> RecordStackFrames(
       StackBuffer* stack_buffer,
-      SamplingProfileBuilder* profile_builder) override;
+      ProfileBuilder* profile_builder) override;
 
  private:
   // Attempts to query the module filename, base address, and id for
@@ -435,7 +435,7 @@ void NativeStackSamplerWin::ProfileRecordingStarting() {
 
 std::vector<InternalFrame> NativeStackSamplerWin::RecordStackFrames(
     StackBuffer* stack_buffer,
-    SamplingProfileBuilder* profile_builder) {
+    ProfileBuilder* profile_builder) {
   DCHECK(stack_buffer);
 
   std::vector<RecordedFrame> stack;

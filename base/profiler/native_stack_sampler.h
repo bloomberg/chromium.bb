@@ -65,7 +65,7 @@ class NativeStackSampler {
   // Records a set of internal frames and returns them.
   virtual std::vector<StackSamplingProfiler::InternalFrame> RecordStackFrames(
       StackBuffer* stackbuffer,
-      StackSamplingProfiler::SamplingProfileBuilder* profile_builder) = 0;
+      StackSamplingProfiler::ProfileBuilder* profile_builder) = 0;
 
  protected:
   NativeStackSampler();

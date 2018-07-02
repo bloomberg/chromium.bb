@@ -15,6 +15,7 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/stack_sampling_configuration.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
@@ -192,12 +193,11 @@ ThreadProfiler::ThreadProfiler(
     return;
 
   auto profile_builder =
-      std::make_unique<StackSamplingProfiler::SamplingProfileBuilder>(
-          BindRepeating(
-              &ThreadProfiler::ReceiveStartupProfile,
-              GetReceiverCallback(CallStackProfileParams(
-                  GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP,
-                  CallStackProfileParams::MAY_SHUFFLE))));
+      std::make_unique<CallStackProfileBuilder>(BindRepeating(
+          &ThreadProfiler::ReceiveStartupProfile,
+          GetReceiverCallback(CallStackProfileParams(
+              GetProcess(), thread, CallStackProfileParams::PROCESS_STARTUP,
+              CallStackProfileParams::MAY_SHUFFLE))));
 
   startup_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,
@@ -276,12 +276,10 @@ void ThreadProfiler::ScheduleNextPeriodicCollection() {
 void ThreadProfiler::StartPeriodicSamplingCollection() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   // NB: Destroys the previous profiler as side effect.
-  auto profile_builder =
-      std::make_unique<StackSamplingProfiler::SamplingProfileBuilder>(
-          BindRepeating(&ThreadProfiler::ReceivePeriodicProfile,
-                        GetReceiverCallback(periodic_profile_params_),
-                        owning_thread_task_runner_,
-                        weak_factory_.GetWeakPtr()));
+  auto profile_builder = std::make_unique<CallStackProfileBuilder>(
+      BindRepeating(&ThreadProfiler::ReceivePeriodicProfile,
+                    GetReceiverCallback(periodic_profile_params_),
+                    owning_thread_task_runner_, weak_factory_.GetWeakPtr()));
 
   periodic_profiler_ = std::make_unique<StackSamplingProfiler>(
       base::PlatformThread::CurrentId(), kSamplingParams,

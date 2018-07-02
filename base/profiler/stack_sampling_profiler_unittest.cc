@@ -12,6 +12,7 @@
 #include <vector>
 
 #include "base/bind.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
@@ -27,6 +28,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/synchronization/waitable_event.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/platform_thread.h"
 #include "base/threading/simple_thread.h"
 #include "base/time/time.h"
@@ -62,11 +64,13 @@ namespace base {
 
 using SamplingParams = StackSamplingProfiler::SamplingParams;
 using Frame = StackSamplingProfiler::Frame;
-using Frames = std::vector<StackSamplingProfiler::Frame>;
+using Frames = std::vector<Frame>;
+using InternalFrame = StackSamplingProfiler::InternalFrame;
+using InternalFrames = std::vector<InternalFrame>;
+using InternalFrameSets = std::vector<std::vector<InternalFrame>>;
 using Module = StackSamplingProfiler::Module;
+using InternalModule = StackSamplingProfiler::InternalModule;
 using Sample = StackSamplingProfiler::Sample;
-using CallStackProfile = StackSamplingProfiler::CallStackProfile;
-using SamplingProfileBuilder = StackSamplingProfiler::SamplingProfileBuilder;
 
 namespace {
 
@@ -276,6 +280,92 @@ NOINLINE const void* TargetThread::GetProgramCounter() {
 #endif
 }
 
+// Profile consists of a set of internal frame sets and other sampling
+// information.
+struct Profile {
+  Profile() = default;
+  Profile(Profile&& other) = default;
+  Profile(const InternalFrameSets& frame_sets,
+          int annotation_count,
+          TimeDelta profile_duration,
+          TimeDelta sampling_period);
+
+  ~Profile() = default;
+
+  Profile& operator=(Profile&& other) = default;
+
+  // The collected internal frame sets.
+  InternalFrameSets frame_sets;
+
+  // The number of invocations of RecordAnnotations().
+  int annotation_count;
+
+  // Duration of this profile.
+  TimeDelta profile_duration;
+
+  // Time between samples.
+  TimeDelta sampling_period;
+};
+
+Profile::Profile(const InternalFrameSets& frame_sets,
+                 int annotation_count,
+                 TimeDelta profile_duration,
+                 TimeDelta sampling_period)
+    : frame_sets(frame_sets),
+      annotation_count(annotation_count),
+      profile_duration(profile_duration),
+      sampling_period(sampling_period) {}
+
+// The callback type used to collect a profile. The passed Profile is move-only.
+// Other threads, including the UI thread, may block on callback completion so
+// this should run as quickly as possible.
+using ProfileCompletedCallback = Callback<void(Profile)>;
+
+// TestProfileBuilder collects internal frames produced by the profiler.
+class TestProfileBuilder : public StackSamplingProfiler::ProfileBuilder {
+ public:
+  TestProfileBuilder(const ProfileCompletedCallback& callback);
+
+  ~TestProfileBuilder() override;
+
+  // StackSamplingProfiler::ProfileBuilder:
+  void RecordAnnotations() override;
+  void OnSampleCompleted(InternalFrames internal_frames) override;
+  void OnProfileCompleted(TimeDelta profile_duration,
+                          TimeDelta sampling_period) override;
+
+ private:
+  // The sets of internal frames recorded.
+  std::vector<InternalFrames> frame_sets_;
+
+  // The number of invocations of RecordAnnotations().
+  int annotation_count_ = 0;
+
+  // Callback made when sampling a profile completes.
+  const ProfileCompletedCallback callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProfileBuilder);
+};
+
+TestProfileBuilder::TestProfileBuilder(const ProfileCompletedCallback& callback)
+    : callback_(callback) {}
+
+TestProfileBuilder::~TestProfileBuilder() = default;
+
+void TestProfileBuilder::RecordAnnotations() {
+  ++annotation_count_;
+}
+
+void TestProfileBuilder::OnSampleCompleted(InternalFrames internal_frames) {
+  frame_sets_.push_back(std::move(internal_frames));
+}
+
+void TestProfileBuilder::OnProfileCompleted(TimeDelta profile_duration,
+                                            TimeDelta sampling_period) {
+  callback_.Run(Profile(frame_sets_, annotation_count_, profile_duration,
+                        sampling_period));
+}
+
 // Loads the other library, which defines a function to be called in the
 // WITH_OTHER_LIBRARY configuration.
 NativeLibrary LoadOtherLibrary() {
@@ -322,21 +412,6 @@ void SynchronousUnloadNativeLibrary(NativeLibrary library) {
 #endif
 }
 
-// Called on the profiler thread when complete, to collect profile.
-void SaveProfile(CallStackProfile* profile, CallStackProfile pending_profile) {
-  *profile = std::move(pending_profile);
-}
-
-// Called on the profiler thread when complete. Collects the profile produced by
-// the profiler, and signals an event to allow the main thread to know that that
-// the profiler is done.
-void SaveProfileAndSignalEvent(CallStackProfile* profile,
-                               WaitableEvent* event,
-                               CallStackProfile pending_profile) {
-  *profile = std::move(pending_profile);
-  event->Signal();
-}
-
 // Executes the function with the target thread running and executing within
 // SignalAndWaitUntilSignaled(). Performs all necessary target thread startup
 // and shutdown work before and afterward.
@@ -369,15 +444,16 @@ struct TestProfilerInfo {
                   WaitableEvent::InitialState::NOT_SIGNALED),
         profiler(thread_id,
                  params,
-                 std::make_unique<SamplingProfileBuilder>(
-                     Bind(&SaveProfileAndSignalEvent,
-                          Unretained(&profile),
-                          Unretained(&completed))),
+                 std::make_unique<TestProfileBuilder>(
+                     BindLambdaForTesting([this](Profile result_profile) {
+                       profile = std::move(result_profile);
+                       completed.Signal();
+                     })),
                  delegate) {}
 
   // The order here is important to ensure objects being referenced don't get
   // destructed until after the objects referencing them.
-  CallStackProfile profile;
+  Profile profile;
   WaitableEvent completed;
   StackSamplingProfiler profiler;
 
@@ -400,22 +476,22 @@ std::vector<std::unique_ptr<TestProfilerInfo>> CreateProfilers(
   return profilers;
 }
 
-// Captures profile as specified by |params| on the TargetThread, and returns
-// it in |profile|. Waits up to |profiler_wait_time| for the profiler to
-// complete.
-void CaptureProfile(const SamplingParams& params,
-                    TimeDelta profiler_wait_time,
-                    CallStackProfile* profile) {
-  WithTargetThread([&params, profile,
+// Captures internal frames as specified by |params| on the TargetThread, and
+// returns them. Waits up to |profiler_wait_time| for the profiler to complete.
+InternalFrameSets CaptureFrameSets(const SamplingParams& params,
+                                   TimeDelta profiler_wait_time) {
+  InternalFrameSets frame_sets;
+  WithTargetThread([&params, &frame_sets,
                     profiler_wait_time](PlatformThreadId target_thread_id) {
     TestProfilerInfo info(target_thread_id, params);
     info.profiler.Start();
     info.completed.TimedWait(profiler_wait_time);
     info.profiler.Stop();
     info.completed.Wait();
-
-    *profile = std::move(info.profile);
+    frame_sets = std::move(info.profile.frame_sets);
   });
+
+  return frame_sets;
 }
 
 // Waits for one of multiple samplings to complete.
@@ -457,32 +533,30 @@ const void* MaybeFixupFunctionAddressForILT(const void* function_address) {
 // Searches through the frames in |sample|, returning an iterator to the first
 // frame that has an instruction pointer within |target_function|. Returns
 // sample.end() if no such frames are found.
-Frames::const_iterator FindFirstFrameWithinFunction(
-    const Sample& sample,
+InternalFrames::const_iterator FindFirstFrameWithinFunction(
+    const InternalFrames& frames,
     TargetFunction target_function) {
-  uintptr_t function_start = reinterpret_cast<uintptr_t>(
-      MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
-          target_function)));
+  uintptr_t function_start =
+      reinterpret_cast<uintptr_t>(MaybeFixupFunctionAddressForILT(
+          reinterpret_cast<const void*>(target_function)));
   uintptr_t function_end =
       reinterpret_cast<uintptr_t>(target_function(nullptr, nullptr, nullptr));
-  for (auto it = sample.frames.begin(); it != sample.frames.end(); ++it) {
+  for (auto it = frames.begin(); it != frames.end(); ++it) {
     if (it->instruction_pointer >= function_start &&
         it->instruction_pointer <= function_end) {
       return it;
     }
   }
-  return sample.frames.end();
+  return frames.end();
 }
 
 // Formats a sample into a string that can be output for test diagnostics.
-std::string FormatSampleForDiagnosticOutput(
-    const Sample& sample,
-    const std::vector<Module>& modules) {
+std::string FormatSampleForDiagnosticOutput(const InternalFrames& frames) {
   std::string output;
-  for (const auto& frame : sample.frames) {
+  for (const auto& frame : frames) {
     output += StringPrintf(
         "0x%p %s\n", reinterpret_cast<const void*>(frame.instruction_pointer),
-        modules[frame.module_index].filename.AsUTF8Unsafe().c_str());
+        frame.internal_module.filename.AsUTF8Unsafe().c_str());
   }
   return output;
 }
@@ -537,10 +611,8 @@ void TestLibraryUnload(bool wait_until_unloaded) {
   WaitableEvent sampling_thread_completed(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
-  CallStackProfile profile;
-  const StackSamplingProfiler::CompletedCallback callback =
-      Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
-           Unretained(&sampling_thread_completed));
+  Profile profile;
+
   WaitableEvent stack_copied(WaitableEvent::ResetPolicy::MANUAL,
                              WaitableEvent::InitialState::NOT_SIGNALED);
   WaitableEvent start_stack_walk(WaitableEvent::ResetPolicy::MANUAL,
@@ -549,7 +621,12 @@ void TestLibraryUnload(bool wait_until_unloaded) {
                                     wait_until_unloaded);
   StackSamplingProfiler profiler(
       target_thread.id(), params,
-      std::make_unique<SamplingProfileBuilder>(callback), &test_delegate);
+      std::make_unique<TestProfileBuilder>(BindLambdaForTesting(
+          [&profile, &sampling_thread_completed](Profile result_profile) {
+            profile = std::move(result_profile);
+            sampling_thread_completed.Signal();
+          })),
+      &test_delegate);
 
   profiler.Start();
 
@@ -574,53 +651,54 @@ void TestLibraryUnload(bool wait_until_unloaded) {
   // Wait for the sampling thread to complete and fill out |profile|.
   sampling_thread_completed.Wait();
 
-  // Look up the sample.
-  ASSERT_EQ(1u, profile.samples.size());
-  const Sample& sample = profile.samples[0];
+  // Look up the frames.
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const InternalFrames& frames = profile.frame_sets[0];
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  Frames::const_iterator end_frame = FindFirstFrameWithinFunction(
-      sample, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != sample.frames.end())
+  InternalFrames::const_iterator end_frame = FindFirstFrameWithinFunction(
+      frames, &TargetThread::SignalAndWaitUntilSignaled);
+  ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
              &TargetThread::SignalAndWaitUntilSignaled))
       << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << FormatSampleForDiagnosticOutput(frames);
 
   if (wait_until_unloaded) {
     // The stack should look like this, resulting one frame after
-    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library is not
-    // recorded since we can't get module information.
+    // SignalAndWaitUntilSignaled. The frame in the now-unloaded library is
+    // not recorded since we can't get module information.
     //
     // ... WaitableEvent and system frames ...
     // TargetThread::SignalAndWaitUntilSignaled
     // TargetThread::OtherLibraryCallback
-    EXPECT_EQ(2, sample.frames.end() - end_frame)
+    EXPECT_EQ(2, frames.end() - end_frame)
         << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(sample, profile.modules);
+        << FormatSampleForDiagnosticOutput(frames);
   } else {
     // We didn't wait for the asynchronous unloading to complete, so the results
     // are non-deterministic: if the library finished unloading we should have
     // the same stack as |wait_until_unloaded|, if not we should have the full
     // stack. The important thing is that we should not crash.
 
-    if (sample.frames.end() - end_frame == 2) {
+    if (frames.end() - end_frame == 2) {
       // This is the same case as |wait_until_unloaded|.
       return;
     }
 
     // Check that the stack contains a frame for
     // TargetThread::CallThroughOtherLibrary().
-    Frames::const_iterator other_library_frame = FindFirstFrameWithinFunction(
-        sample, &TargetThread::CallThroughOtherLibrary);
-    ASSERT_TRUE(other_library_frame != sample.frames.end())
+    InternalFrames::const_iterator other_library_frame =
+        FindFirstFrameWithinFunction(frames,
+                                     &TargetThread::CallThroughOtherLibrary);
+    ASSERT_TRUE(other_library_frame != frames.end())
         << "Function at "
         << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
                &TargetThread::CallThroughOtherLibrary))
         << " was not found in stack:\n"
-        << FormatSampleForDiagnosticOutput(sample, profile.modules);
+        << FormatSampleForDiagnosticOutput(frames);
 
     // The stack should look like this, resulting in three frames between
     // SignalAndWaitUntilSignaled and CallThroughOtherLibrary:
@@ -632,7 +710,7 @@ void TestLibraryUnload(bool wait_until_unloaded) {
     // TargetThread::CallThroughOtherLibrary
     EXPECT_EQ(3, other_library_frame - end_frame)
         << "Stack:\n"
-        << FormatSampleForDiagnosticOutput(sample, profile.modules);
+        << FormatSampleForDiagnosticOutput(frames);
   }
 }
 
@@ -657,8 +735,9 @@ class StackSamplingProfilerTest : public testing::Test {
 
 }  // namespace
 
-// Checks that the basic expected information is present in a sampled call stack
-// profile.
+// Checks that the basic expected information is present in sampled internal
+// frames.
+//
 // macOS ASAN is not yet supported - crbug.com/718628.
 #if !(defined(ADDRESS_SANITIZER) && defined(OS_MACOSX))
 #define MAYBE_Basic Basic
@@ -670,59 +749,26 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Basic) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  CallStackProfile profile;
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile);
+  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
 
-  // Check that the profile and samples sizes are correct, and the module
-  // indices are in range.
-  ASSERT_EQ(1u, profile.samples.size());
-  EXPECT_EQ(params.sampling_interval, profile.sampling_period);
-  const Sample& sample = profile.samples[0];
-  EXPECT_EQ(0u, sample.process_milestones);
-  for (const auto& frame : sample.frames) {
-    ASSERT_GE(frame.module_index, 0u);
-    ASSERT_LT(frame.module_index, profile.modules.size());
-  }
+  // Check that the size of the frame sets are correct.
+  ASSERT_EQ(1u, frame_sets.size());
+  const InternalFrames& frames = frame_sets[0];
+
+  // Check that all the modules are valid.
+  for (const auto& frame : frames)
+    EXPECT_TRUE(frame.internal_module.is_valid);
 
   // Check that the stack contains a frame for
-  // TargetThread::SignalAndWaitUntilSignaled() and that the frame has this
-  // executable's module.
-  Frames::const_iterator loc = FindFirstFrameWithinFunction(
-      sample, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(loc != sample.frames.end())
+  // TargetThread::SignalAndWaitUntilSignaled().
+  InternalFrames::const_iterator loc = FindFirstFrameWithinFunction(
+      frames, &TargetThread::SignalAndWaitUntilSignaled);
+  ASSERT_TRUE(loc != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
              &TargetThread::SignalAndWaitUntilSignaled))
       << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
-  FilePath executable_path;
-  EXPECT_TRUE(PathService::Get(FILE_EXE, &executable_path));
-  EXPECT_EQ(executable_path,
-            MakeAbsoluteFilePath(profile.modules[loc->module_index].filename));
-}
-
-// Checks that annotations are recorded in samples.
-PROFILER_TEST_F(StackSamplingProfilerTest, Annotations) {
-  SamplingParams params;
-  params.sampling_interval = TimeDelta::FromMilliseconds(0);
-  params.samples_per_profile = 1;
-
-  // Check that a run picks up annotations.
-  StackSamplingProfiler::SetProcessMilestone(1);
-  CallStackProfile profile1;
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile1);
-  ASSERT_EQ(1u, profile1.samples.size());
-  const Sample& sample1 = profile1.samples[0];
-  EXPECT_EQ(1u << 1, sample1.process_milestones);
-
-  // Run it a second time but with changed annotations. These annotations
-  // should appear in the first acquired sample.
-  StackSamplingProfiler::SetProcessMilestone(2);
-  CallStackProfile profile2;
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile2);
-  ASSERT_EQ(1u, profile2.samples.size());
-  const Sample& sample2 = profile2.samples[0];
-  EXPECT_EQ(sample1.process_milestones | (1u << 2), sample2.process_milestones);
+      << FormatSampleForDiagnosticOutput(frames);
 }
 
 // Checks that the profiler handles stacks containing dynamically-allocated
@@ -738,52 +784,53 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_Alloca) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  CallStackProfile profile;
+  Profile profile;
   WithTargetThread(
       [&params, &profile](PlatformThreadId target_thread_id) {
         WaitableEvent sampling_thread_completed(
             WaitableEvent::ResetPolicy::MANUAL,
             WaitableEvent::InitialState::NOT_SIGNALED);
-        const StackSamplingProfiler::CompletedCallback callback =
-            Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
-                 Unretained(&sampling_thread_completed));
         StackSamplingProfiler profiler(
             target_thread_id, params,
-            std::make_unique<SamplingProfileBuilder>(callback));
+            std::make_unique<TestProfileBuilder>(BindLambdaForTesting(
+                [&profile, &sampling_thread_completed](Profile result_profile) {
+                  profile = std::move(result_profile);
+                  sampling_thread_completed.Signal();
+                })));
         profiler.Start();
         sampling_thread_completed.Wait();
       },
       StackConfiguration(StackConfiguration::WITH_ALLOCA));
 
-  // Look up the sample.
-  ASSERT_EQ(1u, profile.samples.size());
-  const Sample& sample = profile.samples[0];
+  // Look up the frames.
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const InternalFrames& frames = profile.frame_sets[0];
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  Frames::const_iterator end_frame = FindFirstFrameWithinFunction(
-      sample, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != sample.frames.end())
+  InternalFrames::const_iterator end_frame = FindFirstFrameWithinFunction(
+      frames, &TargetThread::SignalAndWaitUntilSignaled);
+  ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
              &TargetThread::SignalAndWaitUntilSignaled))
       << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << FormatSampleForDiagnosticOutput(frames);
 
   // Check that the stack contains a frame for TargetThread::CallWithAlloca().
-  Frames::const_iterator alloca_frame =
-      FindFirstFrameWithinFunction(sample, &TargetThread::CallWithAlloca);
-  ASSERT_TRUE(alloca_frame != sample.frames.end())
+  InternalFrames::const_iterator alloca_frame =
+      FindFirstFrameWithinFunction(frames, &TargetThread::CallWithAlloca);
+  ASSERT_TRUE(alloca_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(
              reinterpret_cast<const void*>(&TargetThread::CallWithAlloca))
       << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << FormatSampleForDiagnosticOutput(frames);
 
   // These frames should be adjacent on the stack.
   EXPECT_EQ(1, alloca_frame - end_frame)
       << "Stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << FormatSampleForDiagnosticOutput(frames);
 }
 
 // Checks that a profiler can stop/destruct without ever having started.
@@ -793,16 +840,17 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopWithoutStarting) {
     params.sampling_interval = TimeDelta::FromMilliseconds(0);
     params.samples_per_profile = 1;
 
-    CallStackProfile profile;
+    Profile profile;
     WaitableEvent sampling_completed(WaitableEvent::ResetPolicy::MANUAL,
                                      WaitableEvent::InitialState::NOT_SIGNALED);
-    const StackSamplingProfiler::CompletedCallback callback =
-        Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
-             Unretained(&sampling_completed));
 
     StackSamplingProfiler profiler(
         target_thread_id, params,
-        std::make_unique<SamplingProfileBuilder>(callback));
+        std::make_unique<TestProfileBuilder>(BindLambdaForTesting(
+            [&profile, &sampling_completed](Profile result_profile) {
+              profile = std::move(result_profile);
+              sampling_completed.Signal();
+            })));
 
     profiler.Stop();  // Constructed but never started.
     EXPECT_FALSE(sampling_completed.IsSignaled());
@@ -884,20 +932,20 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopSafely) {
   });
 }
 
-// Checks that no call stack profile is captured if the profiling is stopped
+// Checks that no internal frames are captured if the profiling is stopped
 // during the initial delay.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInitialDelay) {
   SamplingParams params;
   params.initial_delay = TimeDelta::FromSeconds(60);
 
-  CallStackProfile profile;
-  CaptureProfile(params, TimeDelta::FromMilliseconds(0), &profile);
+  InternalFrameSets frame_sets =
+      CaptureFrameSets(params, TimeDelta::FromMilliseconds(0));
 
-  EXPECT_TRUE(profile.samples.empty());
+  EXPECT_TRUE(frame_sets.empty());
 }
 
-// Checks that tasks can be stopped before completion and incomplete call stack
-// profile is captured.
+// Checks that tasks can be stopped before completion and incomplete internal
+// frames are captured.
 PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
   // Test delegate that counts samples.
   class SampleRecordedEvent : public NativeStackSamplerTestDelegate {
@@ -932,7 +980,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, StopDuringInterSampleInterval) {
     profiler_info.profiler.Stop();
     profiler_info.completed.Wait();
 
-    EXPECT_EQ(1u, profiler_info.profile.samples.size());
+    EXPECT_EQ(1u, profiler_info.profile.frame_sets.size());
   });
 }
 
@@ -941,11 +989,13 @@ PROFILER_TEST_F(StackSamplingProfilerTest, DestroyProfilerWhileProfiling) {
   SamplingParams params;
   params.sampling_interval = TimeDelta::FromMilliseconds(10);
 
-  CallStackProfile profile;
+  Profile profile;
   WithTargetThread([&params, &profile](PlatformThreadId target_thread_id) {
     std::unique_ptr<StackSamplingProfiler> profiler;
-    auto profile_builder = std::make_unique<SamplingProfileBuilder>(
-        Bind(&SaveProfile, Unretained(&profile)));
+    auto profile_builder = std::make_unique<TestProfileBuilder>(
+        BindLambdaForTesting([&profile](Profile result_profile) {
+          profile = std::move(result_profile);
+        }));
     profiler.reset(new StackSamplingProfiler(target_thread_id, params,
                                              std::move(profile_builder)));
     profiler->Start();
@@ -963,13 +1013,11 @@ PROFILER_TEST_F(StackSamplingProfilerTest, CanRunMultipleProfilers) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  CallStackProfile profile;
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile);
-  ASSERT_EQ(1u, profile.samples.size());
+  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  ASSERT_EQ(1u, frame_sets.size());
 
-  profile = CallStackProfile();
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile);
-  ASSERT_EQ(1u, profile.samples.size());
+  frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  ASSERT_EQ(1u, frame_sets.size());
 }
 
 // Checks that a sampler can be started while another is running.
@@ -989,7 +1037,35 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleStart) {
     profiler_infos[0]->profiler.Start();
     profiler_infos[1]->profiler.Start();
     profiler_infos[1]->completed.Wait();
-    EXPECT_EQ(1u, profiler_infos[1]->profile.samples.size());
+    EXPECT_EQ(1u, profiler_infos[1]->profile.frame_sets.size());
+  });
+}
+
+// Checks that the profile duration and the sampling interval are calculated
+// correctly. Also checks that RecordAnnotations() is invoked each time a sample
+// is recorded.
+PROFILER_TEST_F(StackSamplingProfilerTest, ProfileGeneralInfo) {
+  WithTargetThread([](PlatformThreadId target_thread_id) {
+    SamplingParams params;
+    params.sampling_interval = TimeDelta::FromMilliseconds(1);
+    params.samples_per_profile = 3;
+
+    TestProfilerInfo profiler_info(target_thread_id, params);
+
+    profiler_info.profiler.Start();
+    profiler_info.completed.Wait();
+    EXPECT_EQ(3u, profiler_info.profile.frame_sets.size());
+
+    // The profile duration should be greater than the total sampling intervals.
+    EXPECT_GT(profiler_info.profile.profile_duration,
+              profiler_info.profile.sampling_period * 3);
+
+    EXPECT_EQ(TimeDelta::FromMilliseconds(1),
+              profiler_info.profile.sampling_period);
+
+    // The number of invocations of RecordAnnotations() should be equal to the
+    // number of samples recorded.
+    EXPECT_EQ(3, profiler_info.profile.annotation_count);
   });
 }
 
@@ -999,9 +1075,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, SamplerIdleShutdown) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  CallStackProfile profile;
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile);
-  ASSERT_EQ(1u, profile.samples.size());
+  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  ASSERT_EQ(1u, frame_sets.size());
 
   // Capture thread should still be running at this point.
   ASSERT_TRUE(StackSamplingProfiler::TestAPI::IsSamplingThreadRunning());
@@ -1025,9 +1100,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  CallStackProfile profile;
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile);
-  ASSERT_EQ(1u, profile.samples.size());
+  InternalFrameSets frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  ASSERT_EQ(1u, frame_sets.size());
 
   // Capture thread should still be running at this point.
   ASSERT_TRUE(StackSamplingProfiler::TestAPI::IsSamplingThreadRunning());
@@ -1037,9 +1111,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest,
   StackSamplingProfiler::TestAPI::PerformSamplingThreadIdleShutdown(false);
 
   // Ensure another capture will start the sampling thread and run.
-  profile = CallStackProfile();
-  CaptureProfile(params, AVeryLongTimeDelta(), &profile);
-  ASSERT_EQ(1u, profile.samples.size());
+  frame_sets = CaptureFrameSets(params, AVeryLongTimeDelta());
+  ASSERT_EQ(1u, frame_sets.size());
   EXPECT_TRUE(StackSamplingProfiler::TestAPI::IsSamplingThreadRunning());
 }
 
@@ -1113,7 +1186,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, IdleShutdownAbort) {
 
     profiler_info.profiler.Start();
     profiler_info.completed.Wait();
-    EXPECT_EQ(1u, profiler_info.profile.samples.size());
+    EXPECT_EQ(1u, profiler_info.profile.frame_sets.size());
 
     // Perform an idle shutdown but simulate that a new capture is started
     // before it can actually run.
@@ -1131,7 +1204,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, IdleShutdownAbort) {
     TestProfilerInfo another_info(target_thread_id, params);
     another_info.profiler.Start();
     another_info.completed.Wait();
-    EXPECT_EQ(1u, another_info.profile.samples.size());
+    EXPECT_EQ(1u, another_info.profile.frame_sets.size());
   });
 }
 
@@ -1166,9 +1239,9 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ConcurrentProfiling_InSync) {
     // Wait for the other profiler to finish.
     profiler_infos[other_profiler]->completed.Wait();
 
-    // Ensure each got the correct number of samples.
-    EXPECT_EQ(9u, profiler_infos[0]->profile.samples.size());
-    EXPECT_EQ(8u, profiler_infos[1]->profile.samples.size());
+    // Ensure each got the correct number of frame sets.
+    EXPECT_EQ(9u, profiler_infos[0]->profile.frame_sets.size());
+    EXPECT_EQ(8u, profiler_infos[1]->profile.frame_sets.size());
   });
 }
 
@@ -1197,7 +1270,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, ConcurrentProfiling_Mixed) {
 
     // Wait for one profiler to finish.
     size_t completed_profiler = WaitForSamplingComplete(profiler_infos);
-    EXPECT_EQ(10u, profiler_infos[completed_profiler]->profile.samples.size());
+    EXPECT_EQ(10u,
+              profiler_infos[completed_profiler]->profile.frame_sets.size());
     // Stop and destroy all profilers, always in the same order. Don't crash.
     for (size_t i = 0; i < profiler_infos.size(); ++i)
       profiler_infos[i]->profiler.Stop();
@@ -1219,7 +1293,7 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   params.sampling_interval = TimeDelta::FromMilliseconds(0);
   params.samples_per_profile = 1;
 
-  CallStackProfile profile;
+  Profile profile;
   {
     ScopedNativeLibrary other_library(LoadOtherLibrary());
     WithTargetThread(
@@ -1227,12 +1301,14 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
           WaitableEvent sampling_thread_completed(
               WaitableEvent::ResetPolicy::MANUAL,
               WaitableEvent::InitialState::NOT_SIGNALED);
-          const StackSamplingProfiler::CompletedCallback callback =
-              Bind(&SaveProfileAndSignalEvent, Unretained(&profile),
-                   Unretained(&sampling_thread_completed));
           StackSamplingProfiler profiler(
               target_thread_id, params,
-              std::make_unique<SamplingProfileBuilder>(callback));
+              std::make_unique<TestProfileBuilder>(
+                  BindLambdaForTesting([&profile, &sampling_thread_completed](
+                                           Profile result_profile) {
+                    profile = std::move(result_profile);
+                    sampling_thread_completed.Signal();
+                  })));
           profiler.Start();
           sampling_thread_completed.Wait();
         },
@@ -1240,31 +1316,32 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
                            other_library.get()));
   }
 
-  // Look up the sample.
-  ASSERT_EQ(1u, profile.samples.size());
-  const Sample& sample = profile.samples[0];
+  // Look up the frames.
+  ASSERT_EQ(1u, profile.frame_sets.size());
+  const InternalFrames& frames = profile.frame_sets[0];
 
   // Check that the stack contains a frame for
   // TargetThread::CallThroughOtherLibrary().
-  Frames::const_iterator other_library_frame = FindFirstFrameWithinFunction(
-      sample, &TargetThread::CallThroughOtherLibrary);
-  ASSERT_TRUE(other_library_frame != sample.frames.end())
+  InternalFrames::const_iterator other_library_frame =
+      FindFirstFrameWithinFunction(frames,
+                                   &TargetThread::CallThroughOtherLibrary);
+  ASSERT_TRUE(other_library_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
              &TargetThread::CallThroughOtherLibrary))
       << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << FormatSampleForDiagnosticOutput(frames);
 
   // Check that the stack contains a frame for
   // TargetThread::SignalAndWaitUntilSignaled().
-  Frames::const_iterator end_frame = FindFirstFrameWithinFunction(
-      sample, &TargetThread::SignalAndWaitUntilSignaled);
-  ASSERT_TRUE(end_frame != sample.frames.end())
+  InternalFrames::const_iterator end_frame = FindFirstFrameWithinFunction(
+      frames, &TargetThread::SignalAndWaitUntilSignaled);
+  ASSERT_TRUE(end_frame != frames.end())
       << "Function at "
       << MaybeFixupFunctionAddressForILT(reinterpret_cast<const void*>(
              &TargetThread::SignalAndWaitUntilSignaled))
       << " was not found in stack:\n"
-      << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << FormatSampleForDiagnosticOutput(frames);
 
   // The stack should look like this, resulting in three frames between
   // SignalAndWaitUntilSignaled and CallThroughOtherLibrary:
@@ -1275,7 +1352,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MAYBE_OtherLibrary) {
   // InvokeCallbackFunction (in other library)
   // TargetThread::CallThroughOtherLibrary
   EXPECT_EQ(3, other_library_frame - end_frame)
-      << "Stack:\n" << FormatSampleForDiagnosticOutput(sample, profile.modules);
+      << "Stack:\n"
+      << FormatSampleForDiagnosticOutput(frames);
 }
 
 // Checks that a stack that runs through a library that is unloading produces a
@@ -1328,35 +1406,37 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleSampledThreads) {
   params2.sampling_interval = TimeDelta::FromMilliseconds(1);
   params2.samples_per_profile = 8;
 
-  CallStackProfile profile1, profile2;
+  Profile profile1, profile2;
 
   WaitableEvent sampling_thread_completed1(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
-  const StackSamplingProfiler::CompletedCallback callback1 =
-      Bind(&SaveProfileAndSignalEvent, Unretained(&profile1),
-           Unretained(&sampling_thread_completed1));
   StackSamplingProfiler profiler1(
       target_thread1.id(), params1,
-      std::make_unique<SamplingProfileBuilder>(callback1));
+      std::make_unique<TestProfileBuilder>(BindLambdaForTesting(
+          [&profile1, &sampling_thread_completed1](Profile result_profile) {
+            profile1 = std::move(result_profile);
+            sampling_thread_completed1.Signal();
+          })));
 
   WaitableEvent sampling_thread_completed2(
       WaitableEvent::ResetPolicy::MANUAL,
       WaitableEvent::InitialState::NOT_SIGNALED);
-  const StackSamplingProfiler::CompletedCallback callback2 =
-      Bind(&SaveProfileAndSignalEvent, Unretained(&profile2),
-           Unretained(&sampling_thread_completed2));
   StackSamplingProfiler profiler2(
       target_thread2.id(), params2,
-      std::make_unique<SamplingProfileBuilder>(callback2));
+      std::make_unique<TestProfileBuilder>(BindLambdaForTesting(
+          [&profile2, &sampling_thread_completed2](Profile result_profile) {
+            profile2 = std::move(result_profile);
+            sampling_thread_completed2.Signal();
+          })));
 
   // Finally the real work.
   profiler1.Start();
   profiler2.Start();
   sampling_thread_completed1.Wait();
   sampling_thread_completed2.Wait();
-  EXPECT_EQ(9u, profile1.samples.size());
-  EXPECT_EQ(8u, profile2.samples.size());
+  EXPECT_EQ(9u, profile1.frame_sets.size());
+  EXPECT_EQ(8u, profile2.frame_sets.size());
 
   target_thread1.SignalThreadToFinish();
   target_thread2.SignalThreadToFinish();
@@ -1377,10 +1457,11 @@ class ProfilerThread : public SimpleThread {
                    WaitableEvent::InitialState::NOT_SIGNALED),
         profiler_(thread_id,
                   params,
-                  std::make_unique<SamplingProfileBuilder>(
-                      Bind(&SaveProfileAndSignalEvent,
-                           Unretained(&profile_),
-                           Unretained(&completed_)))) {}
+                  std::make_unique<TestProfileBuilder>(
+                      BindLambdaForTesting([this](Profile result_profile) {
+                        profile_ = std::move(result_profile);
+                        completed_.Signal();
+                      }))) {}
 
   void Run() override {
     run_.Wait();
@@ -1391,12 +1472,12 @@ class ProfilerThread : public SimpleThread {
 
   void Wait() { completed_.Wait(); }
 
-  CallStackProfile& profile() { return profile_; }
+  Profile& profile() { return profile_; }
 
  private:
   WaitableEvent run_;
 
-  CallStackProfile profile_;
+  Profile profile_;
   WaitableEvent completed_;
   StackSamplingProfiler profiler_;
 };
@@ -1430,8 +1511,8 @@ PROFILER_TEST_F(StackSamplingProfilerTest, MultipleProfilerThreads) {
     // Wait for them both to finish and validate collection.
     profiler_thread1.Wait();
     profiler_thread2.Wait();
-    EXPECT_EQ(9u, profiler_thread1.profile().samples.size());
-    EXPECT_EQ(8u, profiler_thread2.profile().samples.size());
+    EXPECT_EQ(9u, profiler_thread1.profile().frame_sets.size());
+    EXPECT_EQ(8u, profiler_thread2.profile().frame_sets.size());
 
     profiler_thread1.Join();
     profiler_thread2.Join();

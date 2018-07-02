@@ -136,61 +136,6 @@ StackSamplingProfiler::CallStackProfile::CopyForTesting() const {
 StackSamplingProfiler::CallStackProfile::CallStackProfile(
     const CallStackProfile& other) = default;
 
-// StackSamplingProfiler::SamplingProfileBuilder ------------------------------
-
-StackSamplingProfiler::SamplingProfileBuilder::SamplingProfileBuilder(
-    const CompletedCallback& callback)
-    : callback_(callback) {}
-
-StackSamplingProfiler::SamplingProfileBuilder::~SamplingProfileBuilder() =
-    default;
-
-void StackSamplingProfiler::SamplingProfileBuilder::RecordAnnotations() {
-  // The code inside this method must not do anything that could acquire a
-  // mutex, including allocating memory (which includes LOG messages) because
-  // that mutex could be held by a stopped thread, thus resulting in deadlock.
-  sample_.process_milestones = subtle::NoBarrier_Load(&process_milestones_);
-}
-
-void StackSamplingProfiler::SamplingProfileBuilder::OnProfileCompleted(
-    TimeDelta profile_duration,
-    TimeDelta sampling_period) {
-  profile_.profile_duration = profile_duration;
-  profile_.sampling_period = sampling_period;
-
-  // Run the associated callback, passing the collected profile.
-  callback_.Run(std::move(profile_));
-}
-
-void StackSamplingProfiler::SamplingProfileBuilder::OnSampleCompleted(
-    std::vector<InternalFrame> internal_frames) {
-  DCHECK_EQ(sample_.frames.size(), 0u);
-
-  // Dedup modules and convert InternalFrames to Frames.
-  for (const auto& internal_frame : internal_frames) {
-    const InternalModule& module(internal_frame.internal_module);
-    if (!module.is_valid) {
-      sample_.frames.emplace_back(internal_frame.instruction_pointer,
-                                  kUnknownModuleIndex);
-      continue;
-    }
-
-    auto loc = module_index_.find(module.base_address);
-    if (loc == module_index_.end()) {
-      profile_.modules.emplace_back(module.base_address, module.id,
-                                    module.filename);
-      size_t index = profile_.modules.size() - 1;
-      loc = module_index_.insert(std::make_pair(module.base_address, index))
-                .first;
-    }
-    sample_.frames.emplace_back(internal_frame.instruction_pointer,
-                                loc->second);
-  }
-
-  profile_.samples.push_back(std::move(sample_));
-  sample_ = Sample();
-}
-
 // StackSamplingProfiler::SamplingThread --------------------------------------
 
 class StackSamplingProfiler::SamplingThread : public Thread {
@@ -225,7 +170,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
                       const SamplingParams& params,
                       WaitableEvent* finished,
                       std::unique_ptr<NativeStackSampler> sampler,
-                      std::unique_ptr<SamplingProfileBuilder> profile_builder)
+                      std::unique_ptr<ProfileBuilder> profile_builder)
         : collection_id(next_collection_id.GetNext()),
           target(target),
           params(params),
@@ -246,7 +191,7 @@ class StackSamplingProfiler::SamplingThread : public Thread {
     std::unique_ptr<NativeStackSampler> native_sampler;
 
     // Receives the sampling data and builds a CallStackProfile.
-    std::unique_ptr<SamplingProfileBuilder> profile_builder;
+    std::unique_ptr<ProfileBuilder> profile_builder;
 
     // The absolute time for the next sample.
     Time next_sample_time;
@@ -765,7 +710,7 @@ subtle::Atomic32 StackSamplingProfiler::process_milestones_ = 0;
 
 StackSamplingProfiler::StackSamplingProfiler(
     const SamplingParams& params,
-    std::unique_ptr<SamplingProfileBuilder> profile_builder,
+    std::unique_ptr<ProfileBuilder> profile_builder,
     NativeStackSamplerTestDelegate* test_delegate)
     : StackSamplingProfiler(PlatformThread::CurrentId(),
                             params,
@@ -775,7 +720,7 @@ StackSamplingProfiler::StackSamplingProfiler(
 StackSamplingProfiler::StackSamplingProfiler(
     PlatformThreadId thread_id,
     const SamplingParams& params,
-    std::unique_ptr<SamplingProfileBuilder> profile_builder,
+    std::unique_ptr<ProfileBuilder> profile_builder,
     NativeStackSamplerTestDelegate* test_delegate)
     : thread_id_(thread_id),
       params_(params),
@@ -850,6 +795,11 @@ void StackSamplingProfiler::SetProcessMilestone(int milestone) {
   DCHECK_GT(static_cast<int>(sizeof(process_milestones_) * 8), milestone);
   DCHECK_EQ(0, subtle::NoBarrier_Load(&process_milestones_) & (1 << milestone));
   ChangeAtomicFlags(&process_milestones_, 1 << milestone, 0);
+}
+
+// static
+subtle::Atomic32 StackSamplingProfiler::ProcessMilestone() {
+  return subtle::NoBarrier_Load(&process_milestones_);
 }
 
 // StackSamplingProfiler::Frame global functions ------------------------------
