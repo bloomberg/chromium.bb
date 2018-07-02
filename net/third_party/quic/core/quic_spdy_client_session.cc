@@ -8,6 +8,7 @@
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
 #include "net/third_party/quic/core/crypto/crypto_protocol.h"
 #include "net/third_party/quic/core/quic_server_id.h"
+#include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_logging.h"

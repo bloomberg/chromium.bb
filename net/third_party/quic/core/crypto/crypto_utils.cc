@@ -6,7 +6,6 @@
 
 #include <memory>
 
-#include "crypto/hkdf.h"
 #include "net/third_party/quic/core/crypto/aes_128_gcm_decrypter.h"
 #include "net/third_party/quic/core/crypto/aes_128_gcm_encrypter.h"
 #include "net/third_party/quic/core/crypto/crypto_handshake.h"

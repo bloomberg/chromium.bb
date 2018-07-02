@@ -30,13 +30,5 @@ TEST_F(QuicRandomTest, RandUint64) {
   EXPECT_NE(value1, value2);
 }
 
-TEST_F(QuicRandomTest, Reseed) {
-  char buf[1024];
-  memset(buf, 0xaf, sizeof(buf));
-
-  QuicRandom* rng = QuicRandom::GetInstance();
-  rng->Reseed(buf, sizeof(buf));
-}
-
 }  // namespace test
 }  // namespace quic

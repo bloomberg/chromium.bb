@@ -124,15 +124,6 @@ void SimpleRandom::RandBytes(void* data, size_t len) {
   }
 }
 
-void SimpleRandom::Reseed(const void* additional_entropy, size_t len) {
-  const uint8_t* real_entropy = static_cast<const uint8_t*>(additional_entropy);
-  for (size_t offset = 0; offset < len; offset++) {
-    // Note: this is not actually a well-established way to incorporate new
-    // entropy, but good enough for tests.
-    seed_ *= real_entropy[len];
-  }
-}
-
 MockFramerVisitor::MockFramerVisitor() {
   // By default, we want to accept packets.
   ON_CALL(*this, OnProtocolVersionMismatch(_))

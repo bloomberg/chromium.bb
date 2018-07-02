@@ -5,8 +5,7 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_SPDY_CLIENT_STREAM_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_SPDY_CLIENT_STREAM_H_
 
-#include <stddef.h>
-#include <sys/types.h>
+#include <cstddef>
 
 #include "base/macros.h"
 #include "net/third_party/quic/core/quic_packets.h"

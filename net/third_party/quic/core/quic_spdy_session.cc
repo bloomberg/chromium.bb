@@ -20,23 +20,48 @@
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 #include "net/third_party/spdy/core/http2_frame_decoder_adapter.h"
 
+using http2::Http2DecoderAdapter;
+using spdy::HpackEntry;
+using spdy::HpackHeaderTable;
+using spdy::Http2WeightToSpdy3Priority;
+using spdy::SETTINGS_ENABLE_PUSH;
+using spdy::SETTINGS_HEADER_TABLE_SIZE;
+using spdy::SETTINGS_MAX_HEADER_LIST_SIZE;
+using spdy::Spdy3PriorityToHttp2Weight;
+using spdy::SpdyErrorCode;
+using spdy::SpdyFramer;
+using spdy::SpdyFramerDebugVisitorInterface;
+using spdy::SpdyFramerVisitorInterface;
+using spdy::SpdyFrameType;
+using spdy::SpdyHeaderBlock;
+using spdy::SpdyHeadersHandlerInterface;
+using spdy::SpdyHeadersIR;
+using spdy::SpdyKnownSettingsId;
+using spdy::SpdyPingId;
+using spdy::SpdyPriority;
+using spdy::SpdyPriorityIR;
+using spdy::SpdyPushPromiseIR;
+using spdy::SpdySerializedFrame;
+using spdy::SpdySettingsId;
+using spdy::SpdySettingsIR;
+using spdy::SpdyStreamId;
+
 namespace quic {
 
 namespace {
 
-class HeaderTableDebugVisitor
-    : public spdy::HpackHeaderTable::DebugVisitorInterface {
+class HeaderTableDebugVisitor : public HpackHeaderTable::DebugVisitorInterface {
  public:
   HeaderTableDebugVisitor(const QuicClock* clock,
                           std::unique_ptr<QuicHpackDebugVisitor> visitor)
       : clock_(clock), headers_stream_hpack_visitor_(std::move(visitor)) {}
 
-  int64_t OnNewEntry(const spdy::HpackEntry& entry) override {
+  int64_t OnNewEntry(const HpackEntry& entry) override {
     QUIC_DVLOG(1) << entry.GetDebugString();
     return (clock_->ApproximateNow() - QuicTime::Zero()).ToMicroseconds();
   }
 
-  void OnUseEntry(const spdy::HpackEntry& entry) override {
+  void OnUseEntry(const HpackEntry& entry) override {
     const QuicTime::Delta elapsed(
         clock_->ApproximateNow() -
         QuicTime::Delta::FromMicroseconds(entry.time_added()) -
@@ -58,44 +83,44 @@ class HeaderTableDebugVisitor
 // A SpdyFramerVisitor that passes HEADERS frames to the QuicSpdyStream, and
 // closes the connection if any unexpected frames are received.
 class QuicSpdySession::SpdyFramerVisitor
-    : public spdy::SpdyFramerVisitorInterface,
-      public spdy::SpdyFramerDebugVisitorInterface {
+    : public SpdyFramerVisitorInterface,
+      public SpdyFramerDebugVisitorInterface {
  public:
   explicit SpdyFramerVisitor(QuicSpdySession* session) : session_(session) {}
 
-  spdy::SpdyHeadersHandlerInterface* OnHeaderFrameStart(
-      spdy::SpdyStreamId /* stream_id */) override {
+  SpdyHeadersHandlerInterface* OnHeaderFrameStart(
+      SpdyStreamId /* stream_id */) override {
     return &header_list_;
   }
 
-  void OnHeaderFrameEnd(spdy::SpdyStreamId /* stream_id */) override {
+  void OnHeaderFrameEnd(SpdyStreamId /* stream_id */) override {
     if (session_->IsConnected()) {
       session_->OnHeaderList(header_list_);
     }
     header_list_.Clear();
   }
 
-  void OnStreamFrameData(spdy::SpdyStreamId stream_id,
+  void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
                          size_t len) override {
     CloseConnection("SPDY DATA frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnStreamEnd(spdy::SpdyStreamId stream_id) override {
+  void OnStreamEnd(SpdyStreamId stream_id) override {
     // The framer invokes OnStreamEnd after processing a frame that had the fin
     // bit set.
   }
 
-  void OnStreamPadding(spdy::SpdyStreamId stream_id, size_t len) override {
+  void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {
     CloseConnection("SPDY frame padding received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnError(http2::Http2DecoderAdapter::SpdyFramerError error) override {
+  void OnError(Http2DecoderAdapter::SpdyFramerError error) override {
     QuicErrorCode code = QUIC_INVALID_HEADERS_STREAM_DATA;
     switch (error) {
-      case http2::Http2DecoderAdapter::SpdyFramerError::SPDY_DECOMPRESS_FAILURE:
+      case Http2DecoderAdapter::SpdyFramerError::SPDY_DECOMPRESS_FAILURE:
         code = QUIC_HEADERS_STREAM_DATA_DECOMPRESS_FAILURE;
         break;
       default:
@@ -103,35 +128,33 @@ class QuicSpdySession::SpdyFramerVisitor
     }
     CloseConnection(
         QuicStrCat("SPDY framing error: ",
-                   http2::Http2DecoderAdapter::SpdyFramerErrorToString(error)),
+                   Http2DecoderAdapter::SpdyFramerErrorToString(error)),
         code);
   }
 
-  void OnDataFrameHeader(spdy::SpdyStreamId stream_id,
+  void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override {
     CloseConnection("SPDY DATA frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnRstStream(spdy::SpdyStreamId stream_id,
-                   spdy::SpdyErrorCode error_code) override {
+  void OnRstStream(SpdyStreamId stream_id, SpdyErrorCode error_code) override {
     CloseConnection("SPDY RST_STREAM frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnSetting(spdy::SpdySettingsId id, uint32_t value) override {
+  void OnSetting(SpdySettingsId id, uint32_t value) override {
     switch (id) {
-      case spdy::SETTINGS_HEADER_TABLE_SIZE:
+      case SETTINGS_HEADER_TABLE_SIZE:
         session_->UpdateHeaderEncoderTableSize(value);
         break;
-      case spdy::SETTINGS_ENABLE_PUSH:
+      case SETTINGS_ENABLE_PUSH:
         if (session_->perspective() == Perspective::IS_SERVER) {
           // See rfc7540, Section 6.5.2.
           if (value > 1) {
             CloseConnection(
-                QuicStrCat("Invalid value for spdy::SETTINGS_ENABLE_PUSH: ",
-                           value),
+                QuicStrCat("Invalid value for SETTINGS_ENABLE_PUSH: ", value),
                 QUIC_INVALID_HEADERS_STREAM_DATA);
             return;
           }
@@ -143,9 +166,9 @@ class QuicSpdySession::SpdyFramerVisitor
               QUIC_INVALID_HEADERS_STREAM_DATA);
         }
         break;
-      // TODO(fayang): Need to support spdy::SETTINGS_MAX_HEADER_LIST_SIZE when
+      // TODO(fayang): Need to support SETTINGS_MAX_HEADER_LIST_SIZE when
       // clients are actually sending it.
-      case spdy::SETTINGS_MAX_HEADER_LIST_SIZE:
+      case SETTINGS_MAX_HEADER_LIST_SIZE:
         break;
       default:
         CloseConnection(
@@ -156,21 +179,21 @@ class QuicSpdySession::SpdyFramerVisitor
 
   void OnSettingsEnd() override {}
 
-  void OnPing(spdy::SpdyPingId unique_id, bool is_ack) override {
+  void OnPing(SpdyPingId unique_id, bool is_ack) override {
     CloseConnection("SPDY PING frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnGoAway(spdy::SpdyStreamId last_accepted_stream_id,
-                spdy::SpdyErrorCode error_code) override {
+  void OnGoAway(SpdyStreamId last_accepted_stream_id,
+                SpdyErrorCode error_code) override {
     CloseConnection("SPDY GOAWAY frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnHeaders(spdy::SpdyStreamId stream_id,
+  void OnHeaders(SpdyStreamId stream_id,
                  bool has_priority,
                  int weight,
-                 spdy::SpdyStreamId /*parent_stream_id*/,
+                 SpdyStreamId /*parent_stream_id*/,
                  bool /*exclusive*/,
                  bool fin,
                  bool end) override {
@@ -178,21 +201,20 @@ class QuicSpdySession::SpdyFramerVisitor
       return;
     }
 
-    // TODO(mpw): avoid down-conversion and plumb spdy::SpdyStreamPrecedence
-    // through QuicHeadersStream.
-    spdy::SpdyPriority priority =
-        has_priority ? spdy::Http2WeightToSpdy3Priority(weight) : 0;
+    // TODO(mpw): avoid down-conversion and plumb SpdyStreamPrecedence through
+    // QuicHeadersStream.
+    SpdyPriority priority =
+        has_priority ? Http2WeightToSpdy3Priority(weight) : 0;
     session_->OnHeaders(stream_id, has_priority, priority, fin);
   }
 
-  void OnWindowUpdate(spdy::SpdyStreamId stream_id,
-                      int delta_window_size) override {
+  void OnWindowUpdate(SpdyStreamId stream_id, int delta_window_size) override {
     CloseConnection("SPDY WINDOW_UPDATE frame received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
   }
 
-  void OnPushPromise(spdy::SpdyStreamId stream_id,
-                     spdy::SpdyStreamId promised_stream_id,
+  void OnPushPromise(SpdyStreamId stream_id,
+                     SpdyStreamId promised_stream_id,
                      bool end) override {
     if (!session_->supports_push_promise()) {
       CloseConnection("PUSH_PROMISE not supported.",
@@ -205,10 +227,10 @@ class QuicSpdySession::SpdyFramerVisitor
     session_->OnPushPromise(stream_id, promised_stream_id, end);
   }
 
-  void OnContinuation(spdy::SpdyStreamId stream_id, bool end) override {}
+  void OnContinuation(SpdyStreamId stream_id, bool end) override {}
 
-  void OnPriority(spdy::SpdyStreamId stream_id,
-                  spdy::SpdyStreamId parent_id,
+  void OnPriority(SpdyStreamId stream_id,
+                  SpdyStreamId parent_id,
                   int weight,
                   bool exclusive) override {
     if (session_->connection()->transport_version() <= QUIC_VERSION_42) {
@@ -220,21 +242,20 @@ class QuicSpdySession::SpdyFramerVisitor
       return;
     }
     // TODO (wangyix): implement real HTTP/2 weights and dependencies instead of
-    // converting to spdy::SpdyPriority.
-    spdy::SpdyPriority priority = spdy::Http2WeightToSpdy3Priority(weight);
+    // converting to SpdyPriority.
+    SpdyPriority priority = Http2WeightToSpdy3Priority(weight);
     session_->OnPriority(stream_id, priority);
   }
 
-  bool OnUnknownFrame(spdy::SpdyStreamId stream_id,
-                      uint8_t frame_type) override {
+  bool OnUnknownFrame(SpdyStreamId stream_id, uint8_t frame_type) override {
     CloseConnection("Unknown frame type received.",
                     QUIC_INVALID_HEADERS_STREAM_DATA);
     return false;
   }
 
-  // spdy::SpdyFramerDebugVisitorInterface implementation
-  void OnSendCompressedFrame(spdy::SpdyStreamId stream_id,
-                             spdy::SpdyFrameType type,
+  // SpdyFramerDebugVisitorInterface implementation
+  void OnSendCompressedFrame(SpdyStreamId stream_id,
+                             SpdyFrameType type,
                              size_t payload_len,
                              size_t frame_len) override {
     if (payload_len == 0) {
@@ -245,8 +266,8 @@ class QuicSpdySession::SpdyFramerVisitor
     QUIC_DVLOG(1) << "Net.QuicHpackCompressionPercentage: " << compression_pct;
   }
 
-  void OnReceiveCompressedFrame(spdy::SpdyStreamId stream_id,
-                                spdy::SpdyFrameType type,
+  void OnReceiveCompressedFrame(SpdyStreamId stream_id,
+                                SpdyFrameType type,
                                 size_t frame_len) override {
     if (session_->IsConnected()) {
       session_->OnCompressedFrameSize(frame_len);
@@ -288,7 +309,7 @@ QuicSpdySession::QuicSpdySession(QuicConnection* connection,
       frame_len_(0),
       uncompressed_frame_len_(0),
       supports_push_promise_(perspective() == Perspective::IS_CLIENT),
-      spdy_framer_(spdy::SpdyFramer::ENABLE_COMPRESSION),
+      spdy_framer_(SpdyFramer::ENABLE_COMPRESSION),
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   h2_deframer_.set_visitor(spdy_framer_visitor_.get());
   h2_deframer_.set_debug_visitor(spdy_framer_visitor_.get());
@@ -330,7 +351,7 @@ void QuicSpdySession::Initialize() {
 }
 
 void QuicSpdySession::OnStreamHeadersPriority(QuicStreamId stream_id,
-                                              spdy::SpdyPriority priority) {
+                                              SpdyPriority priority) {
   QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
   if (!stream) {
     // It's quite possible to receive headers after a stream has been reset.
@@ -372,7 +393,7 @@ void QuicSpdySession::OnStreamHeaderList(QuicStreamId stream_id,
 }
 
 void QuicSpdySession::OnPriorityFrame(QuicStreamId stream_id,
-                                      spdy::SpdyPriority priority) {
+                                      SpdyPriority priority) {
   QuicSpdyStream* stream = GetSpdyDataStream(stream_id);
   if (!stream) {
     // It's quite possible to receive a PRIORITY frame after a stream has been
@@ -389,24 +410,24 @@ size_t QuicSpdySession::ProcessHeaderData(const struct iovec& iov) {
 
 size_t QuicSpdySession::WriteHeaders(
     QuicStreamId id,
-    spdy::SpdyHeaderBlock headers,
+    SpdyHeaderBlock headers,
     bool fin,
-    spdy::SpdyPriority priority,
+    SpdyPriority priority,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
   return WriteHeadersImpl(
-      id, std::move(headers), fin, spdy::Spdy3PriorityToHttp2Weight(priority),
+      id, std::move(headers), fin, Spdy3PriorityToHttp2Weight(priority),
       /*parent_stream_id=*/0, /*exclusive=*/false, std::move(ack_listener));
 }
 
 size_t QuicSpdySession::WriteHeadersImpl(
     QuicStreamId id,
-    spdy::SpdyHeaderBlock headers,
+    SpdyHeaderBlock headers,
     bool fin,
     int weight,
     QuicStreamId parent_stream_id,
     bool exclusive,
     QuicReferenceCountedPointer<QuicAckListenerInterface> ack_listener) {
-  spdy::SpdyHeadersIR headers_frame(id, std::move(headers));
+  SpdyHeadersIR headers_frame(id, std::move(headers));
   headers_frame.set_fin(fin);
   if (perspective() == Perspective::IS_CLIENT) {
     headers_frame.set_has_priority(true);
@@ -414,7 +435,7 @@ size_t QuicSpdySession::WriteHeadersImpl(
     headers_frame.set_parent_stream_id(parent_stream_id);
     headers_frame.set_exclusive(exclusive);
   }
-  spdy::SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(headers_frame));
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false,
       std::move(ack_listener));
@@ -428,9 +449,8 @@ size_t QuicSpdySession::WritePriority(QuicStreamId id,
   if (connection()->transport_version() <= QUIC_VERSION_42) {
     return 0;
   }
-  spdy::SpdyPriorityIR priority_frame(id, parent_stream_id, weight, exclusive);
-
-  spdy::SpdySerializedFrame frame(spdy_framer_.SerializeFrame(priority_frame));
+  SpdyPriorityIR priority_frame(id, parent_stream_id, weight, exclusive);
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(priority_frame));
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false, nullptr);
   return frame.size();
@@ -438,29 +458,29 @@ size_t QuicSpdySession::WritePriority(QuicStreamId id,
 
 size_t QuicSpdySession::WritePushPromise(QuicStreamId original_stream_id,
                                          QuicStreamId promised_stream_id,
-                                         spdy::SpdyHeaderBlock headers) {
+                                         SpdyHeaderBlock headers) {
   if (perspective() == Perspective::IS_CLIENT) {
     QUIC_BUG << "Client shouldn't send PUSH_PROMISE";
     return 0;
   }
 
-  spdy::SpdyPushPromiseIR push_promise(original_stream_id, promised_stream_id,
-                                       std::move(headers));
+  SpdyPushPromiseIR push_promise(original_stream_id, promised_stream_id,
+                                 std::move(headers));
   // PUSH_PROMISE must not be the last frame sent out, at least followed by
   // response headers.
   push_promise.set_fin(false);
 
-  spdy::SpdySerializedFrame frame(spdy_framer_.SerializeFrame(push_promise));
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(push_promise));
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false, nullptr);
   return frame.size();
 }
 
 size_t QuicSpdySession::SendMaxHeaderListSize(size_t value) {
-  spdy::SpdySettingsIR settings_frame;
-  settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE, value);
+  SpdySettingsIR settings_frame;
+  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE, value);
 
-  spdy::SpdySerializedFrame frame(spdy_framer_.SerializeFrame(settings_frame));
+  SpdySerializedFrame frame(spdy_framer_.SerializeFrame(settings_frame));
   headers_stream_->WriteOrBufferData(
       QuicStringPiece(frame.data(), frame.size()), false, nullptr);
   return frame.size();
@@ -493,9 +513,9 @@ bool QuicSpdySession::ShouldReleaseHeadersStreamSequencerBuffer() {
   return false;
 }
 
-void QuicSpdySession::OnHeaders(spdy::SpdyStreamId stream_id,
+void QuicSpdySession::OnHeaders(SpdyStreamId stream_id,
                                 bool has_priority,
-                                spdy::SpdyPriority priority,
+                                SpdyPriority priority,
                                 bool fin) {
   if (has_priority) {
     if (perspective() == Perspective::IS_CLIENT) {
@@ -517,8 +537,8 @@ void QuicSpdySession::OnHeaders(spdy::SpdyStreamId stream_id,
   fin_ = fin;
 }
 
-void QuicSpdySession::OnPushPromise(spdy::SpdyStreamId stream_id,
-                                    spdy::SpdyStreamId promised_stream_id,
+void QuicSpdySession::OnPushPromise(SpdyStreamId stream_id,
+                                    SpdyStreamId promised_stream_id,
                                     bool end) {
   DCHECK_EQ(kInvalidStreamId, stream_id_);
   DCHECK_EQ(kInvalidStreamId, promised_stream_id_);
@@ -526,10 +546,10 @@ void QuicSpdySession::OnPushPromise(spdy::SpdyStreamId stream_id,
   promised_stream_id_ = promised_stream_id;
 }
 
-// TODO (wangyix): Why is spdy::SpdyStreamId used instead of QuicStreamId?
+// TODO (wangyix): Why is SpdyStreamId used instead of QuicStreamId?
 // This occurs in many places in this file.
-void QuicSpdySession::OnPriority(spdy::SpdyStreamId stream_id,
-                                 spdy::SpdyPriority priority) {
+void QuicSpdySession::OnPriority(SpdyStreamId stream_id,
+                                 SpdyPriority priority) {
   if (perspective() == Perspective::IS_CLIENT) {
     CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
                                "Server must not send PRIORITY frames.");
@@ -558,7 +578,6 @@ void QuicSpdySession::OnHeaderList(const QuicHeaderList& header_list) {
 void QuicSpdySession::OnCompressedFrameSize(size_t frame_len) {
   frame_len_ += frame_len;
 }
-
 
 void QuicSpdySession::SetHpackEncoderDebugVisitor(
     std::unique_ptr<QuicHpackDebugVisitor> visitor) {

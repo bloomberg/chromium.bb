@@ -70,8 +70,14 @@
 #include "net/tools/epoll_server/epoll_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using base::IntToString;
-using base::WaitableEvent;
+using net::EpollEvent;
+using net::EpollServer;
+using spdy::kV3LowestPriority;
+using spdy::SETTINGS_MAX_HEADER_LIST_SIZE;
+using spdy::SpdyFramer;
+using spdy::SpdyHeaderBlock;
+using spdy::SpdySerializedFrame;
+using spdy::SpdySettingsIR;
 
 namespace quic {
 namespace test {
@@ -259,7 +265,7 @@ class ClientDelegate : public PacketDroppingTestWriter::Delegate {
   explicit ClientDelegate(QuicClient* client) : client_(client) {}
   ~ClientDelegate() override = default;
   void OnCanWrite() override {
-    net::EpollEvent event(EPOLLOUT);
+    EpollEvent event(EPOLLOUT);
     client_->epoll_network_helper()->OnEvent(client_->GetLatestFD(), &event);
   }
 
@@ -411,7 +417,7 @@ class EndToEndTest : public QuicTestWithParam<TestParams>,
     StartServer();
 
     CreateClientWithWriter();
-    static net::EpollEvent event(EPOLLOUT);
+    static EpollEvent event(EPOLLOUT);
     if (client_writer_ != nullptr) {
       client_writer_->Initialize(
           QuicConnectionPeer::GetHelper(
@@ -688,7 +694,7 @@ TEST_P(EndToEndTestWithTls, SeparateFinPacket) {
   ASSERT_TRUE(Initialize());
 
   // Send a request in two parts: the request and then an empty packet with FIN.
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -723,7 +729,7 @@ TEST_P(EndToEndTestWithTls, MultipleStreams) {
 
   const int kNumRequests = 10;
 
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -746,7 +752,7 @@ TEST_P(EndToEndTestWithTls, MultipleClients) {
   ASSERT_TRUE(Initialize());
   std::unique_ptr<QuicTestClient> client2(CreateQuicClient(nullptr));
 
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -797,7 +803,7 @@ TEST_P(EndToEndTestWithTls, PostMissingBytes) {
   ASSERT_TRUE(Initialize());
 
   // Add a content length header with no body.
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -819,7 +825,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss) {
 
   // 1 MB body.
   QuicString body(1024 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -840,7 +846,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLoss1sRTT) {
 
   // 100 KB body.
   QuicString body(100 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -868,7 +874,7 @@ TEST_P(EndToEndTest, LargePostWithPacketLoss) {
 
   // 10 KB body.
   QuicString body(1024 * 10, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -896,7 +902,7 @@ TEST_P(EndToEndTest, LargePostWithPacketLossAndBlockedSocket) {
 
   // 10 KB body.
   QuicString body(1024 * 10, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -916,7 +922,7 @@ TEST_P(EndToEndTest, LargePostNoPacketLossWithDelayAndReordering) {
 
   // 1 MB body.
   QuicString body(1024 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -932,7 +938,7 @@ TEST_P(EndToEndTest, LargePostZeroRTTFailure) {
   ASSERT_TRUE(Initialize());
 
   QuicString body(20480, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1042,7 +1048,7 @@ TEST_P(EndToEndTest, LargePostSynchronousRequest) {
   ASSERT_TRUE(Initialize());
 
   QuicString body(20480, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1142,7 +1148,7 @@ TEST_P(EndToEndTest, LargePostSmallBandwidthLargeBuffer) {
 
   // 1 MB body.
   QuicString body(1024 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1159,7 +1165,7 @@ TEST_P(EndToEndTestWithTls, DoNotSetSendAlarmIfConnectionFlowControlBlocked) {
   // Regression test for b/14677858.
   // Test that the resume write alarm is not set in QuicConnection::OnCanWrite
   // if currently connection level flow control blocked. If set, this results in
-  // an infinite loop in the net::EpollServer, as the alarm fires and is
+  // an infinite loop in the EpollServer, as the alarm fires and is
   // immediately rescheduled.
   ASSERT_TRUE(Initialize());
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
@@ -1203,7 +1209,7 @@ TEST_P(EndToEndTest, InvalidStream) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   QuicString body(kMaxPacketSize, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1226,7 +1232,7 @@ TEST_P(EndToEndTest, LargeHeaders) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   QuicString body(kMaxPacketSize, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1245,7 +1251,7 @@ TEST_P(EndToEndTest, EarlyResponseWithQuicStreamNoError) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
 
   QuicString large_body(1024 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1309,7 +1315,7 @@ TEST_P(EndToEndTestWithTls, MaxIncomingDynamicStreamsLimitRespected) {
   QuicSessionPeer::SetMaxOpenOutgoingStreams(
       client_->client()->client_session(), kServerMaxStreams + 1);
 
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -1675,7 +1681,7 @@ TEST_P(EndToEndTest, ConnectionMigrationClientPortChanged) {
 
   // Register the new FD for epoll events.
   int new_fd = client_->client()->GetLatestFD();
-  net::EpollServer* eps = client_->epoll_server();
+  EpollServer* eps = client_->epoll_server();
   eps->RegisterFD(new_fd, client_->client()->epoll_network_helper(),
                   EPOLLIN | EPOLLOUT | EPOLLET);
 
@@ -1873,11 +1879,11 @@ TEST_P(EndToEndTest, FlowControlsSynced) {
           ->flow_controller(),
       QuicSessionPeer::GetMutableCryptoStream(server_session)
           ->flow_controller());
-  spdy::SpdyFramer spdy_framer(spdy::SpdyFramer::ENABLE_COMPRESSION);
-  spdy::SpdySettingsIR settings_frame;
-  settings_frame.AddSetting(spdy::SETTINGS_MAX_HEADER_LIST_SIZE,
+  SpdyFramer spdy_framer(SpdyFramer::ENABLE_COMPRESSION);
+  SpdySettingsIR settings_frame;
+  settings_frame.AddSetting(SETTINGS_MAX_HEADER_LIST_SIZE,
                             kDefaultMaxUncompressedHeaderSize);
-  spdy::SpdySerializedFrame frame(spdy_framer.SerializeFrame(settings_frame));
+  SpdySerializedFrame frame(spdy_framer.SerializeFrame(settings_frame));
   QuicFlowController* client_header_stream_flow_controller =
       QuicSpdySessionPeer::GetHeadersStream(client_session)->flow_controller();
   QuicFlowController* server_header_stream_flow_controller =
@@ -1963,7 +1969,7 @@ class TestAckListener : public QuicAckListenerInterface {
 class TestResponseListener : public QuicSpdyClientBase::ResponseListener {
  public:
   void OnCompleteResponse(QuicStreamId id,
-                          const spdy::SpdyHeaderBlock& response_headers,
+                          const SpdyHeaderBlock& response_headers,
                           const QuicString& response_body) override {
     QUIC_DVLOG(1) << "response for stream " << id << " "
                   << response_headers.DebugString() << "\n"
@@ -1989,7 +1995,7 @@ TEST_P(EndToEndTest, AckNotifierWithPacketLossAndBlockedSocket) {
   client_writer_->set_fake_blocked_socket_percentage(10);
 
   // Create a POST request and send the headers only.
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -2305,7 +2311,7 @@ TEST_P(EndToEndTestWithTls, CanceledStreamDoesNotBecomeZombie) {
   EXPECT_TRUE(client_->client()->WaitForCryptoHandshakeConfirmed());
   // Lose the request.
   SetPacketLossPercentage(100);
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -2337,7 +2343,7 @@ class ServerStreamWithErrorResponseBody : public QuicSimpleServerStream {
  protected:
   void SendErrorResponse() override {
     QUIC_DLOG(INFO) << "Sending error response for stream " << id();
-    spdy::SpdyHeaderBlock headers;
+    SpdyHeaderBlock headers;
     headers[":status"] = "500";
     headers["content-length"] =
         QuicTextUtils::Uint64ToString(response_body_.size());
@@ -2500,7 +2506,7 @@ TEST_P(EndToEndTest, EarlyResponseFinRecording) {
   // and before the body is received, due to invalid content-length.
   // Set an invalid content-length, so the request will receive an early 500
   // response.
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/garbage";
   headers[":scheme"] = "https";
@@ -2551,12 +2557,12 @@ TEST_P(EndToEndTestWithTls, Trailers) {
   // Add a response with headers, body, and trailers.
   const QuicString kBody = "body content";
 
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":status"] = "200";
   headers[":version"] = "HTTP/1.1";
   headers["content-length"] = QuicTextUtils::Uint64ToString(kBody.size());
 
-  spdy::SpdyHeaderBlock trailers;
+  SpdyHeaderBlock trailers;
   trailers["some-trailing-header"] = "trailing-header-value";
 
   memory_cache_backend_.AddResponse(server_hostname_, "/trailer_url",
@@ -2604,14 +2610,13 @@ class EndToEndTestServerPush : public EndToEndTest {
           use_large_response
               ? large_resource
               : QuicStrCat("This is server push response body for ", url);
-      spdy::SpdyHeaderBlock response_headers;
+      SpdyHeaderBlock response_headers;
       response_headers[":version"] = "HTTP/1.1";
       response_headers[":status"] = "200";
       response_headers["content-length"] =
           QuicTextUtils::Uint64ToString(body.size());
       push_resources.push_back(QuicBackendResponse::ServerPushInfo(
-          resource_url, std::move(response_headers), spdy::kV3LowestPriority,
-          body));
+          resource_url, std::move(response_headers), kV3LowestPriority, body));
     }
 
     memory_cache_backend_.AddSimpleResponseWithServerPushResources(
@@ -2862,7 +2867,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugePostWithPacketLoss) {
   ASSERT_LT(INT64_C(4294967296), request_body_size_bytes);
   QuicString body(kSizeBytes, 'a');
 
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -2902,7 +2907,7 @@ TEST_P(EndToEndTest, DISABLED_TestHugeResponseWithPacketLoss) {
   client->UseWriter(client_writer_);
   client->Connect();
   client_.reset(client);
-  static net::EpollEvent event(EPOLLOUT);
+  static EpollEvent event(EPOLLOUT);
   client_writer_->Initialize(
       QuicConnectionPeer::GetHelper(
           client_->client()->client_session()->connection()),
@@ -2935,7 +2940,7 @@ TEST_P(EndToEndTest, ReleaseHeadersStreamBufferWhenIdle) {
 
 TEST_P(EndToEndTest, WayTooLongRequestHeaders) {
   ASSERT_TRUE(Initialize());
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "GET";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -2978,7 +2983,7 @@ TEST_P(EndToEndTest, WindowUpdateInAck) {
   QuicTransportVersion version = client_connection->transport_version();
   // 100KB body.
   QuicString body(100 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -3015,7 +3020,7 @@ TEST_P(EndToEndTest, DoNotCrashOnPacketWriteError) {
 
   // 1 MB body.
   QuicString body(1024 * 1024, 'a');
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/foo";
   headers[":scheme"] = "https";
@@ -3102,7 +3107,7 @@ TEST_P(EndToEndTest, RequestAndStreamRstInOnePacket) {
   // INCOMPLETE_RESPONSE will cause the server to not to send the trailer
   // (and the FIN) after the response body.
   QuicString response_body(1305, 'a');
-  spdy::SpdyHeaderBlock response_headers;
+  SpdyHeaderBlock response_headers;
   response_headers[":status"] = QuicTextUtils::Uint64ToString(200);
   response_headers["content-length"] =
       QuicTextUtils::Uint64ToString(response_body.length());
@@ -3133,7 +3138,7 @@ TEST_P(EndToEndTest, RequestAndStreamRstInOnePacket) {
 class EndToEndPacketReorderingTest : public EndToEndTest {
  public:
   void CreateClientWithWriter() override {
-    QUIC_LOG(ERROR) << "create client with reorder_writer_ ";
+    QUIC_LOG(ERROR) << "create client with reorder_writer_";
     reorder_writer_ = new PacketReorderingWriter();
     client_.reset(EndToEndTest::CreateQuicClient(reorder_writer_));
   }
@@ -3213,7 +3218,7 @@ TEST_P(EndToEndPacketReorderingTest, Buffer0RttRequest) {
   ASSERT_TRUE(client_->client()->connected());
 
   // Send a request before handshake finishes.
-  spdy::SpdyHeaderBlock headers;
+  SpdyHeaderBlock headers;
   headers[":method"] = "POST";
   headers[":path"] = "/bar";
   headers[":scheme"] = "https";

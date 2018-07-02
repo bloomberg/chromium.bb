@@ -11,12 +11,12 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/platform/api/quic_text_utils.h"
 
-namespace quic {
-namespace test {
-
 using spdy::SpdyHeaderBlock;
 using testing::Pair;
 using testing::UnorderedElementsAre;
+
+namespace quic {
+namespace test {
 
 static std::unique_ptr<QuicHeaderList> FromList(
     const QuicHeaderList::ListType& src) {

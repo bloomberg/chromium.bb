@@ -4,13 +4,14 @@
 
 #include "net/third_party/quic/core/quic_spdy_client_session.h"
 
+#include <memory>
 #include <vector>
 
 #include "net/third_party/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/third_party/quic/core/quic_spdy_client_stream.h"
 #include "net/third_party/quic/core/spdy_utils.h"
 #include "net/third_party/quic/core/tls_client_handshaker.h"
-#include "net/third_party/quic/platform/api/quic_flags.h"
+#include "net/third_party/quic/platform/api/quic_arraysize.h"
 #include "net/third_party/quic/platform/api/quic_ptr_util.h"
 #include "net/third_party/quic/platform/api/quic_socket_address.h"
 #include "net/third_party/quic/platform/api/quic_str_cat.h"
@@ -25,7 +26,7 @@
 #include "net/third_party/quic/test_tools/quic_spdy_session_peer.h"
 #include "net/third_party/quic/test_tools/quic_test_utils.h"
 
-using google::protobuf::implicit_cast;
+using spdy::SpdyHeaderBlock;
 using testing::_;
 using testing::AnyNumber;
 using testing::Invoke;
@@ -125,7 +126,7 @@ class QuicSpdyClientSessionTest : public QuicTestWithParam<ParsedQuicVersion> {
   PacketSavingConnection* connection_;
   std::unique_ptr<TestQuicSpdyClientSession> session_;
   QuicClientPushPromiseIndex push_promise_index_;
-  spdy::SpdyHeaderBlock push_promise_;
+  SpdyHeaderBlock push_promise_;
   QuicString promise_url_;
   QuicStreamId promised_stream_id_;
   QuicStreamId associated_stream_id_;
@@ -178,8 +179,8 @@ TEST_P(QuicSpdyClientSessionTest, NoEncryptionAfterInitialEncryption) {
   EXPECT_TRUE(session_->CreateOutgoingDynamicStream() == nullptr);
   // Verify that no data may be send on existing streams.
   char data[] = "hello world";
-  QuicConsumedData consumed =
-      session_->WritevData(stream, stream->id(), arraysize(data), 0, NO_FIN);
+  QuicConsumedData consumed = session_->WritevData(
+      stream, stream->id(), QUIC_ARRAYSIZE(data), 0, NO_FIN);
   EXPECT_FALSE(consumed.fin_consumed);
   EXPECT_EQ(0u, consumed.bytes_consumed);
 }
@@ -462,7 +463,7 @@ TEST_P(QuicSpdyClientSessionTest, PushPromiseAlreadyClosed) {
               OnStreamReset(promised_stream_id_, QUIC_REFUSED_STREAM));
 
   session_->ResetPromised(promised_stream_id_, QUIC_REFUSED_STREAM);
-  spdy::SpdyHeaderBlock promise_headers;
+  SpdyHeaderBlock promise_headers;
   EXPECT_FALSE(session_->HandlePromised(associated_stream_id_,
                                         promised_stream_id_, promise_headers));
 
@@ -559,16 +560,14 @@ TEST_P(QuicSpdyClientSessionTest, OnInitialHeadersCompleteIsPush) {
   EXPECT_NE(session_->GetPromisedStream(promised_stream_id_), nullptr);
   EXPECT_NE(session_->GetPromisedByUrl(promise_url_), nullptr);
 
-  session_->OnInitialHeadersComplete(promised_stream_id_,
-                                     spdy::SpdyHeaderBlock());
+  session_->OnInitialHeadersComplete(promised_stream_id_, SpdyHeaderBlock());
 }
 
 TEST_P(QuicSpdyClientSessionTest, OnInitialHeadersCompleteIsNotPush) {
   // Initialize crypto before the client session will create a stream.
   CompleteCryptoHandshake();
   session_->CreateOutgoingDynamicStream();
-  session_->OnInitialHeadersComplete(promised_stream_id_,
-                                     spdy::SpdyHeaderBlock());
+  session_->OnInitialHeadersComplete(promised_stream_id_, SpdyHeaderBlock());
 }
 
 TEST_P(QuicSpdyClientSessionTest, DeletePromised) {

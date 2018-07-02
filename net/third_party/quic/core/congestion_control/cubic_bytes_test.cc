@@ -11,8 +11,6 @@
 #include "net/third_party/quic/platform/api/quic_test.h"
 #include "net/third_party/quic/test_tools/mock_clock.h"
 
-using std::string;
-
 namespace quic {
 namespace test {
 namespace {

@@ -231,7 +231,6 @@ class SimpleRandom : public QuicRandom {
   uint64_t RandUint64() override;
 
   void RandBytes(void* data, size_t len) override;
-  void Reseed(const void* additional_entropy, size_t len) override;
 
   void set_seed(uint64_t seed) { seed_ = seed; }
 
