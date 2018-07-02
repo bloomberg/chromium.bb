@@ -1221,8 +1221,8 @@ public class ToolbarPhone extends ToolbarLayout
         mNtpSearchBoxTranslation.set(0, 0);
         mLocationBar.setTranslationY(0);
         if (!mUrlFocusChangeInProgress) {
-            mToolbarButtonsContainer.setAlpha(1.f);
-            if (mHomeButton != null) mHomeButton.setAlpha(1.f);
+            mToolbarButtonsContainer.setTranslationY(0);
+            if (mHomeButton != null) mHomeButton.setTranslationY(0);
         }
 
         if (!(mLocationBar.useModernDesign() && mUrlFocusChangeInProgress)) {
@@ -1269,7 +1269,7 @@ public class ToolbarPhone extends ToolbarLayout
                 Math.max(0, (mNtpSearchBoxBounds.top - mLocationBar.getTop()));
         mLocationBar.setTranslationY(locationBarTranslationY);
 
-        updateButtonsAlphaForNtp();
+        updateButtonsTranslationY();
 
         // Linearly interpolate between the bounds of the search box on the NTP and the omnibox
         // background bounds. |shrinkage| is the scaling factor for the offset -- if it's 1, we are
@@ -1317,17 +1317,14 @@ public class ToolbarPhone extends ToolbarLayout
     }
 
     /**
-     * Update the alpha of the toolbar buttons to make them disappear as the new tab page is
-     * scrolled.
+     * Update the y translation of the buttons to make it appear as if they were scrolling with
+     * the new tab page.
      */
-    private void updateButtonsAlphaForNtp() {
-        float transitionPercent = ((float) mNtpSearchBoxTranslation.y / (float) getHeight());
-        float alpha = mTabSwitcherState == STATIC_TAB
-                ? MathUtils.clamp(1.f + transitionPercent, 0.f, 1.f)
-                : 1.f;
+    private void updateButtonsTranslationY() {
+        int transY = mTabSwitcherState == STATIC_TAB ? Math.min(mNtpSearchBoxTranslation.y, 0) : 0;
 
-        mToolbarButtonsContainer.setAlpha(alpha);
-        if (mHomeButton != null) mHomeButton.setAlpha(alpha);
+        mToolbarButtonsContainer.setTranslationY(transY);
+        if (mHomeButton != null) mHomeButton.setTranslationY(transY);
     }
 
     private void setAncestorsShouldClipChildren(boolean clip) {
@@ -1979,7 +1976,7 @@ public class ToolbarPhone extends ToolbarLayout
             }
         }
 
-        updateButtonsAlphaForNtp();
+        updateButtonsTranslationY();
         mAnimateNormalToolbar = showToolbar;
         if (mTabSwitcherModeAnimation != null) mTabSwitcherModeAnimation.start();
 
@@ -2120,35 +2117,31 @@ public class ToolbarPhone extends ToolbarLayout
         float toolbarButtonTranslationX = MathUtils.flipSignIf(
                 URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP, isRtl) * density;
 
-        // When the location bar is shown in the NTP, toolbar button animation is handled in
-        // #updateButtonsAlphaForNtp().
-        if (!isLocationBarShownInNTP()) {
-            final View menuButtonWrapper = getMenuButtonWrapper();
-            if (menuButtonWrapper != null) {
-                animator = ObjectAnimator.ofFloat(
-                        menuButtonWrapper, TRANSLATION_X, toolbarButtonTranslationX);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-                animators.add(animator);
+        final View menuButtonWrapper = getMenuButtonWrapper();
+        if (menuButtonWrapper != null) {
+            animator = ObjectAnimator.ofFloat(
+                    menuButtonWrapper, TRANSLATION_X, toolbarButtonTranslationX);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+            animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(menuButtonWrapper, ALPHA, 0);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-                animators.add(animator);
-            }
+            animator = ObjectAnimator.ofFloat(menuButtonWrapper, ALPHA, 0);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+            animators.add(animator);
+        }
 
-            if (mToggleTabStackButton != null) {
-                animator = ObjectAnimator.ofFloat(
-                        mToggleTabStackButton, TRANSLATION_X, toolbarButtonTranslationX);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-                animators.add(animator);
+        if (mToggleTabStackButton != null) {
+            animator = ObjectAnimator.ofFloat(
+                    mToggleTabStackButton, TRANSLATION_X, toolbarButtonTranslationX);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+            animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(mToggleTabStackButton, ALPHA, 0);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
-                animators.add(animator);
-            }
+            animator = ObjectAnimator.ofFloat(mToggleTabStackButton, ALPHA, 0);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setInterpolator(BakedBezierInterpolator.FADE_OUT_CURVE);
+            animators.add(animator);
         }
 
         if (mLocationBar.useModernDesign()) {
@@ -2165,37 +2158,33 @@ public class ToolbarPhone extends ToolbarLayout
         animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
         animators.add(animator);
 
-        // When the location bar is shown in the NTP, toolbar button animation is handled in
-        // #updateButtonsAlphaForNtp().
         final View menuButtonWrapper = getMenuButtonWrapper();
-        if (!isLocationBarShownInNTP()) {
-            if (menuButtonWrapper != null) {
-                animator = ObjectAnimator.ofFloat(menuButtonWrapper, TRANSLATION_X, 0);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setStartDelay(URL_CLEAR_FOCUS_MENU_DELAY_MS);
-                animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-                animators.add(animator);
+        if (menuButtonWrapper != null) {
+            animator = ObjectAnimator.ofFloat(menuButtonWrapper, TRANSLATION_X, 0);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setStartDelay(URL_CLEAR_FOCUS_MENU_DELAY_MS);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(menuButtonWrapper, ALPHA, 1);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setStartDelay(URL_CLEAR_FOCUS_MENU_DELAY_MS);
-                animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-                animators.add(animator);
-            }
+            animator = ObjectAnimator.ofFloat(menuButtonWrapper, ALPHA, 1);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setStartDelay(URL_CLEAR_FOCUS_MENU_DELAY_MS);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
+        }
 
-            if (mToggleTabStackButton != null) {
-                animator = ObjectAnimator.ofFloat(mToggleTabStackButton, TRANSLATION_X, 0);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setStartDelay(URL_CLEAR_FOCUS_TABSTACK_DELAY_MS);
-                animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-                animators.add(animator);
+        if (mToggleTabStackButton != null) {
+            animator = ObjectAnimator.ofFloat(mToggleTabStackButton, TRANSLATION_X, 0);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setStartDelay(URL_CLEAR_FOCUS_TABSTACK_DELAY_MS);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
 
-                animator = ObjectAnimator.ofFloat(mToggleTabStackButton, ALPHA, 1);
-                animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
-                animator.setStartDelay(URL_CLEAR_FOCUS_TABSTACK_DELAY_MS);
-                animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
-                animators.add(animator);
-            }
+            animator = ObjectAnimator.ofFloat(mToggleTabStackButton, ALPHA, 1);
+            animator.setDuration(URL_FOCUS_TOOLBAR_BUTTONS_DURATION_MS);
+            animator.setStartDelay(URL_CLEAR_FOCUS_TABSTACK_DELAY_MS);
+            animator.setInterpolator(BakedBezierInterpolator.TRANSFORM_CURVE);
+            animators.add(animator);
         }
 
         for (int i = 0; i < mLocationBar.getChildCount(); i++) {
