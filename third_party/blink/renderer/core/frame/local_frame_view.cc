@@ -2694,32 +2694,29 @@ static void CollectDrawableLayersForLayerListRecursively(
   if (!layer || layer->Client().ShouldThrottleRendering())
     return;
 
-  scoped_refptr<cc::Layer> contents_layer = layer->ContentsLayer();
-  if (layer->DrawsContent() || contents_layer) {
+  if (layer->DrawsContent()) {
     ScopedPaintChunkProperties scope(context.GetPaintController(),
                                      layer->GetPropertyTreeState(), *layer,
                                      DisplayItem::kForeignLayerWrapper);
+    // TODO(trchen): Currently the GraphicsLayer hierarchy is still built
+    // during CompositingUpdate, and we have to clear them here to ensure no
+    // extraneous layers are still attached. In future we will disable all
+    // those layer hierarchy code so we won't need this line.
+    layer->CcLayer()->RemoveAllChildren();
+    RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
+                       layer->CcLayer(), layer->GetOffsetFromTransformNode(),
+                       layer->Size());
+  }
 
-    if (layer->DrawsContent()) {
-      // TODO(trchen): Currently the GraphicsLayer hierarchy is still built
-      // during CompositingUpdate, and we have to clear them here to ensure no
-      // extraneous layers are still attached. In future we will disable all
-      // those layer hierarchy code so we won't need this line.
-      layer->CcLayer()->RemoveAllChildren();
-      RecordForeignLayer(context, *layer, DisplayItem::kForeignLayerWrapper,
-                         layer->CcLayer(), layer->GetOffsetFromTransformNode(),
-                         layer->Size());
-    }
-    if (contents_layer) {
-      auto position = contents_layer->position();
-      auto size = contents_layer->bounds();
-      RecordForeignLayer(context, *layer,
-                         DisplayItem::kForeignLayerContentsWrapper,
-                         std::move(contents_layer),
-                         layer->GetOffsetFromTransformNode() +
-                             FloatSize(position.x(), position.y()),
-                         IntSize(size.width(), size.height()));
-    }
+  if (scoped_refptr<cc::Layer> contents_layer = layer->ContentsLayer()) {
+    ScopedPaintChunkProperties scope(
+        context.GetPaintController(), layer->GetContentsPropertyTreeState(),
+        *layer, DisplayItem::kForeignLayerContentsWrapper);
+    auto size = contents_layer->bounds();
+    RecordForeignLayer(
+        context, *layer, DisplayItem::kForeignLayerContentsWrapper,
+        std::move(contents_layer), layer->GetContentsOffsetFromTransformNode(),
+        IntSize(size.width(), size.height()));
   }
 
   DCHECK(!layer->ContentsClippingMaskLayer());

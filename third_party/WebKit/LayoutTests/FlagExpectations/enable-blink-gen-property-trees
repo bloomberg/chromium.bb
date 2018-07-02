@@ -406,6 +406,12 @@ Bug(none) compositing/overflow/siblings-composited-with-border-radius-ancestor.h
 Bug(none) compositing/overflow/siblings-composited-with-border-radius-ancestor-one-clipped.html [ Failure ]
 Bug(none) compositing/overflow/siblings-with-border-radius-ancestor.html [ Failure ]
 Bug(none) compositing/overflow/update-widget-positions-on-nested-frames-and-scrollers.html [ Crash Failure ]
+Bug(none) fast/borders/border-radius-mask-canvas-border.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-canvas.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-video-ratio.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-video-shadow.html [ Failure ]
+Bug(none) fast/borders/border-radius-mask-video.html [ Failure ]
 Bug(none) fast/clip/overflow-border-radius-composited-parent.html [ Failure ]
 Bug(none) fast/clip/overflow-border-radius-composited.html [ Failure ]
 
@@ -470,18 +476,6 @@ Bug(none) virtual/threaded/fast/scrolling/scrollbar-tickmarks-styled.html [ Cras
 
 # Something wrong with vertical-rl scrollbars
 crbug.com/853945 fast/block/positioning/vertical-rl/002.html [ Failure ]
-
-# Border radius mask wrong.
-crbug.com/853943 fast/borders/border-radius-mask-canvas-all.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-canvas-border.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-canvas-padding.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-canvas-with-mask.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-canvas-with-shadow.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-canvas.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-video-ratio.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-video-shadow.html [ Failure ]
-crbug.com/853943 fast/borders/border-radius-mask-video.html [ Failure ]
-crbug.com/853943 fast/borders/overflow-hidden-border-radius-force-backing-store.html [ Failure ]
 
 # Something with the pattern is wrong. Needs investigation.
 crbug.com/853947 fast/canvas/synchronous-create-pattern.html [ Failure ]
