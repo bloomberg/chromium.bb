@@ -4,8 +4,6 @@
 
 #include "services/shape_detection/face_detection_impl_mac_vision.h"
 
-#include <dlfcn.h>
-#include <objc/runtime.h>
 #include <vector>
 
 #include "base/bind.h"
@@ -64,7 +62,7 @@ class API_AVAILABLE(macos(10.13))
   bool PerformRequest(const SkBitmap& bitmap) {
     Class image_handler_class = NSClassFromString(@"VNImageRequestHandler");
     if (!image_handler_class) {
-      DLOG(ERROR) << "Failed to create VNImageRequestHandler";
+      DLOG(ERROR) << "Failed to load VNImageRequestHandler class";
       return false;
     }
 
@@ -115,16 +113,9 @@ class API_AVAILABLE(macos(10.13))
 };
 
 FaceDetectionImplMacVision::FaceDetectionImplMacVision() : weak_factory_(this) {
-  static void* const vision_framework =
-      dlopen("/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
-  if (!vision_framework) {
-    DLOG(ERROR) << "Failed to load Vision.framework";
-    return;
-  }
-
   Class request_class = NSClassFromString(@"VNDetectFaceLandmarksRequest");
   if (!request_class) {
-    DLOG(ERROR) << "Failed to create VNDetectFaceLandmarksRequest object";
+    DLOG(ERROR) << "Failed to load VNDetectFaceLandmarksRequest class";
     return;
   }
   // The repeating callback will not be run if FaceDetectionImplMacVision object
