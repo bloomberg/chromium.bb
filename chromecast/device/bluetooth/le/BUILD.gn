@@ -64,6 +64,7 @@ cast_source_set("test_support") {
   ]
   deps = [
     ":le",
+    "//base",
     "//chromecast/public",
     "//testing/gmock",
   ]
