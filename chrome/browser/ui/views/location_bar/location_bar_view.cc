@@ -159,7 +159,7 @@ LocationBarView::LocationBarView(Browser* browser,
 
   // TODO(tommycli): This is a placeholder duration. Replace this with the real
   // value once UX decides.
-  text_indent_animation_.SetSlideDuration(200);
+  text_indent_animation_.SetSlideDuration(60);
 }
 
 LocationBarView::~LocationBarView() {
