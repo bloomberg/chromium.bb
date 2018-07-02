@@ -6,6 +6,7 @@
 #define CONTENT_BROWSER_APPCACHE_APPCACHE_NAVIGATION_HANDLE_CORE_H_
 
 #include <memory>
+#include <sstream>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -46,6 +47,9 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
 
   AppCacheServiceImpl* GetAppCacheService();
 
+  void AddRequestToDebugLog(const GURL& url);
+  std::string GetDebugLog();
+
  protected:
   // AppCacheFrontend methods
   // We don't expect calls on the AppCacheFrontend methods while the
@@ -74,6 +78,9 @@ class AppCacheNavigationHandleCore : public AppCacheFrontend {
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   int appcache_host_id_;
   base::WeakPtr<AppCacheNavigationHandle> ui_handle_;
+
+  // For https://crbug.com/857005.
+  base::Optional<std::vector<std::string>> debug_log_;
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheNavigationHandleCore);
 };
