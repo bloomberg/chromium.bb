@@ -159,6 +159,10 @@ class POLICY_EXPORT Schema {
   // Returns all Schemas from pattern properties that match |key|. May be empty.
   SchemaList GetPatternProperties(const std::string& key) const;
 
+  // Returns this Schema's required properties. May be empty if the Schema has
+  // no required properties.
+  std::vector<std::string> GetRequiredProperties() const;
+
   // Returns the Schema for additional properties. If additional properties are
   // not allowed for this Schema then the Schema returned is not valid.
   Schema GetAdditionalProperties() const;

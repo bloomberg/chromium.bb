@@ -406,6 +406,7 @@ class SchemaNodesGenerator:
     self.property_nodes = []
     self.properties_nodes = []
     self.restriction_nodes = []
+    self.required_properties = []
     self.int_enums = []
     self.string_enums = []
     self.simple_types = {
@@ -595,9 +596,18 @@ class SchemaNodesGenerator:
         self.root_properties_begin = begin
         self.root_properties_end = end
 
+      # TODO(crbug.com/856903): Check that each string in
+      # |required_properties| is in |properties|.
+      required_begin = len(self.required_properties)
+      required_properties = schema.get('required', [])
+      assert type(required_properties) is list
+      assert all(type(x) == str for x in required_properties)
+      self.required_properties += required_properties
+      required_end = len(self.required_properties)
+
       extra = len(self.properties_nodes)
-      self.properties_nodes.append((begin, end, pattern_end,
-          additionalProperties, name))
+      self.properties_nodes.append((begin, end, pattern_end, required_begin,
+                                    required_end, additionalProperties, name))
 
       # Set the right data at |index| now.
       self.schema_nodes[index] = ('Type::DICTIONARY', extra, name)
@@ -640,9 +650,10 @@ class SchemaNodesGenerator:
 
     if self.properties_nodes:
       f.write('const internal::PropertiesNode kProperties[] = {\n'
-              '//  Begin    End  PatternEnd Additional Properties\n')
+              '//  Begin    End  PatternEnd  RequiredBegin  RequiredEnd'
+              '  Additional Properties\n')
       for node in self.properties_nodes:
-        f.write('  { %5d, %5d, %10d, %5d },  // %s\n' % node)
+        f.write('  { %5d, %5d, %5d, %5d, %10d, %5d },  // %s\n' % node)
       f.write('};\n\n')
 
     if self.restriction_nodes:
@@ -650,6 +661,12 @@ class SchemaNodesGenerator:
       f.write('//   FIRST, SECOND\n')
       for first, second in self.restriction_nodes:
         f.write('  {{ %-8s %4s}},\n' % (first + ',', second))
+      f.write('};\n\n')
+
+    if self.required_properties:
+      f.write('const char* const kRequiredProperties[] = {\n')
+      for required_property in self.required_properties:
+        f.write('  %s,\n' % self.GetString(required_property))
       f.write('};\n\n')
 
     if self.int_enums:
@@ -669,6 +686,8 @@ class SchemaNodesGenerator:
     f.write('  kPropertyNodes,\n' if self.property_nodes else '  NULL,\n')
     f.write('  kProperties,\n' if self.properties_nodes else '  NULL,\n')
     f.write('  kRestrictionNodes,\n' if self.restriction_nodes else '  NULL,\n')
+    f.write(
+        '  kRequiredProperties,\n' if self.required_properties else '  NULL,\n')
     f.write('  kIntegerEnumerations,\n' if self.int_enums else '  NULL,\n')
     f.write('  kStringEnumerations,\n' if self.string_enums else '  NULL,\n')
     f.write('  %d,  // validation_schema root index\n'

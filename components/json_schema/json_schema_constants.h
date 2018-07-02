@@ -32,6 +32,7 @@ extern const char kPattern[];
 extern const char kPatternProperties[];
 extern const char kProperties[];
 extern const char kRef[];
+extern const char kRequired[];
 extern const char kSchema[];
 extern const char kString[];
 extern const char kTitle[];
