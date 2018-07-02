@@ -5,7 +5,6 @@
 #ifndef UI_ACCESSIBILITY_AX_ACTION_DATA_H_
 #define UI_ACCESSIBILITY_AX_ACTION_DATA_H_
 
-#include "base/strings/string16.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_export.h"
 #include "ui/gfx/geometry/rect.h"
@@ -63,8 +62,8 @@ struct AX_EXPORT AXActionData {
   // The target point for the action.
   gfx::Point target_point;
 
-  // The new value for a node, for the SET_VALUE action.
-  base::string16 value;
+  // The new value for a node, for the SET_VALUE action. UTF-8 encoded.
+  std::string value;
 
   // The event to fire in response to a HIT_TEST action.
   ax::mojom::Event hit_test_event_to_fire = ax::mojom::Event::kNone;

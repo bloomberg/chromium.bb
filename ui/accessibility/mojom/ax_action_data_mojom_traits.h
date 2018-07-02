@@ -5,7 +5,6 @@
 #ifndef UI_ACCESSIBILITY_MOJOM_AX_ACTION_DATA_MOJOM_TRAITS_H_
 #define UI_ACCESSIBILITY_MOJOM_AX_ACTION_DATA_MOJOM_TRAITS_H_
 
-#include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "ui/accessibility/ax_action_data.h"
 #include "ui/accessibility/mojom/ax_action_data.mojom-shared.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"
@@ -49,7 +48,7 @@ struct StructTraits<ax::mojom::AXActionDataDataView, ui::AXActionData> {
   static gfx::Point target_point(const ui::AXActionData& a) {
     return a.target_point;
   }
-  static base::string16 value(const ui::AXActionData& a) { return a.value; }
+  static std::string value(const ui::AXActionData& a) { return a.value; }
   static ax::mojom::Event hit_test_event_to_fire(const ui::AXActionData& a) {
     return a.hit_test_event_to_fire;
   }

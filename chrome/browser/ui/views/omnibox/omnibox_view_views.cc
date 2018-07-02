@@ -944,7 +944,7 @@ bool OmniboxViewViews::HandleAccessibleAction(
     return Textfield::HandleAccessibleAction(action_data);
 
   if (action_data.action == ax::mojom::Action::kSetValue) {
-    SetUserText(action_data.value, true);
+    SetUserText(base::UTF8ToUTF16(action_data.value), true);
     return true;
   } else if (action_data.action == ax::mojom::Action::kReplaceSelectedText) {
     model()->SetInputInProgress(true);
@@ -952,7 +952,7 @@ bool OmniboxViewViews::HandleAccessibleAction(
       SelectRange(saved_selection_for_focus_change_);
       saved_selection_for_focus_change_ = gfx::Range::InvalidRange();
     }
-    InsertOrReplaceText(action_data.value);
+    InsertOrReplaceText(base::UTF8ToUTF16(action_data.value));
     TextChanged();
     return true;
   } else if (action_data.action == ax::mojom::Action::kSetSelection) {

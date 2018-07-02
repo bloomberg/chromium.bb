@@ -8,6 +8,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
 #include <vector>
 
 #include "base/callback_forward.h"
@@ -218,8 +219,7 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXEventGenerator {
   void SetAccessibilityFocus(const BrowserAccessibility& node);
   void SetFocus(const BrowserAccessibility& node);
   void SetScrollOffset(const BrowserAccessibility& node, gfx::Point offset);
-  void SetValue(
-      const BrowserAccessibility& node, const base::string16& value);
+  void SetValue(const BrowserAccessibility& node, const std::string& value);
   void SetSelection(
       ui::AXRange<
           BrowserAccessibilityPosition::AXPositionInstance::element_type>

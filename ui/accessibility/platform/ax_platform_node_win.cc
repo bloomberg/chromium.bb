@@ -952,7 +952,7 @@ STDMETHODIMP AXPlatformNodeWin::put_accValue(VARIANT var_id,
 
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
-  data.value = new_value;
+  data.value = base::WideToUTF8(new_value);
   if (target->delegate_->AccessibilityPerformAction(data))
     return S_OK;
   return E_FAIL;
@@ -1496,7 +1496,7 @@ STDMETHODIMP AXPlatformNodeWin::SetValue(LPCWSTR value) {
 
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
-  data.value = base::string16(value);
+  data.value = base::WideToUTF8(value);
   if (delegate_->AccessibilityPerformAction(data))
     return S_OK;
   return E_FAIL;
@@ -1527,7 +1527,7 @@ STDMETHODIMP AXPlatformNodeWin::get_Value(BSTR* result) {
 STDMETHODIMP AXPlatformNodeWin::SetValue(double value) {
   AXActionData data;
   data.action = ax::mojom::Action::kSetValue;
-  data.value = base::NumberToString16(value);
+  data.value = base::NumberToString(value);
   if (delegate_->AccessibilityPerformAction(data))
     return S_OK;
   return E_FAIL;
