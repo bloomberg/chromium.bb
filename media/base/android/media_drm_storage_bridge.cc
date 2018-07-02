@@ -23,7 +23,8 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaByteArrayToByteVector;
 using base::android::JavaParamRef;
-using base::android::RunCallbackAndroid;
+using base::android::RunBooleanCallbackAndroid;
+using base::android::RunObjectCallbackAndroid;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaByteArray;
 
@@ -128,7 +129,7 @@ void MediaDrmStorageBridge::OnClearInfo(
 
 void MediaDrmStorageBridge::RunAndroidBoolCallback(JavaObjectPtr j_callback,
                                                    bool success) {
-  RunCallbackAndroid(*j_callback, success);
+  RunBooleanCallbackAndroid(*j_callback, success);
 }
 
 void MediaDrmStorageBridge::OnInitialized(
@@ -147,7 +148,7 @@ void MediaDrmStorageBridge::OnSessionDataLoaded(
     const std::string& session_id,
     std::unique_ptr<MediaDrmStorage::SessionData> session_data) {
   if (!session_data) {
-    RunCallbackAndroid(*j_callback, ScopedJavaLocalRef<jobject>());
+    RunObjectCallbackAndroid(*j_callback, ScopedJavaLocalRef<jobject>());
     return;
   }
 
@@ -158,8 +159,9 @@ void MediaDrmStorageBridge::OnSessionDataLoaded(
   ScopedJavaLocalRef<jstring> j_mime =
       ConvertUTF8ToJavaString(env, session_data->mime_type);
 
-  RunCallbackAndroid(*j_callback, Java_PersistentInfo_create(
-                                      env, j_eme_id, j_key_set_id, j_mime));
+  RunObjectCallbackAndroid(
+      *j_callback,
+      Java_PersistentInfo_create(env, j_eme_id, j_key_set_id, j_mime));
 }
 
 }  // namespace media

@@ -38,7 +38,7 @@ void OnResult(const ScopedJavaGlobalRef<jobject>& j_callback,
   ScopedJavaLocalRef<jobject> j_http_response =
       Java_FeedNetworkBridge_createHttpResponse(env, http_code,
                                                 j_response_bytes);
-  base::android::RunCallbackAndroid(j_callback, j_http_response);
+  base::android::RunObjectCallbackAndroid(j_callback, j_http_response);
 }
 
 }  // namespace

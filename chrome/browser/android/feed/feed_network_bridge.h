@@ -16,8 +16,8 @@ class FeedNetworkingHost;
 
 // Native counterpart of FeedNetworkBridge.java. Holds non-owning pointers to
 // native implementation, to which operations are delegated. Results are passed
-// back by a single argument callback so base::android::RunCallbackAndroid() can
-// be used. This bridge is instantiated, owned, and destroyed from Java.
+// back by a single argument callback so base::android::RunObjectCallbackAndroid
+// can be used. This bridge is instantiated, owned, and destroyed from Java.
 class FeedNetworkBridge {
  public:
   explicit FeedNetworkBridge(

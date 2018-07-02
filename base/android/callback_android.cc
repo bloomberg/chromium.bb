@@ -12,17 +12,17 @@
 namespace base {
 namespace android {
 
-void RunCallbackAndroid(const JavaRef<jobject>& callback,
-                        const JavaRef<jobject>& arg) {
+void RunObjectCallbackAndroid(const JavaRef<jobject>& callback,
+                              const JavaRef<jobject>& arg) {
   Java_Helper_onObjectResultFromNative(AttachCurrentThread(), callback, arg);
 }
 
-void RunCallbackAndroid(const JavaRef<jobject>& callback, bool arg) {
+void RunBooleanCallbackAndroid(const JavaRef<jobject>& callback, bool arg) {
   Java_Helper_onBooleanResultFromNative(AttachCurrentThread(), callback,
                                         static_cast<jboolean>(arg));
 }
 
-void RunCallbackAndroid(const JavaRef<jobject>& callback, int arg) {
+void RunIntCallbackAndroid(const JavaRef<jobject>& callback, int arg) {
   Java_Helper_onIntResultFromNative(AttachCurrentThread(), callback, arg);
 }
 
@@ -33,8 +33,8 @@ void RunStringCallbackAndroid(const JavaRef<jobject>& callback,
   Java_Helper_onObjectResultFromNative(env, callback, java_string);
 }
 
-void RunCallbackAndroid(const JavaRef<jobject>& callback,
-                        const std::vector<uint8_t>& arg) {
+void RunByteArrayCallbackAndroid(const JavaRef<jobject>& callback,
+                                 const std::vector<uint8_t>& arg) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_bytes = ToJavaByteArray(env, arg);
   Java_Helper_onObjectResultFromNative(env, callback, j_bytes);

@@ -22,16 +22,6 @@ using base::android::ScopedJavaLocalRef;
 namespace offline_pages {
 namespace android {
 
-namespace {
-
-// C++ callback that delegates to Java callback.
-void ProcessingDoneCallback(
-    const ScopedJavaGlobalRef<jobject>& j_callback_obj, bool result) {
-  base::android::RunCallbackAndroid(j_callback_obj, result);
-}
-
-}  // namespace
-
 // JNI call to start request processing in scheduled mode.
 static jboolean JNI_BackgroundSchedulerBridge_StartScheduledProcessing(
     JNIEnv* env,
@@ -55,7 +45,9 @@ static jboolean JNI_BackgroundSchedulerBridge_StartScheduledProcessing(
       static_cast<net::NetworkChangeNotifier::ConnectionType>(
           j_net_connection_type));
   return coordinator->StartScheduledProcessing(
-      device_conditions, base::Bind(&ProcessingDoneCallback, j_callback_ref));
+      device_conditions,
+      base::BindRepeating(&base::android::RunBooleanCallbackAndroid,
+                          j_callback_ref));
 }
 
 // JNI call to stop request processing in scheduled mode.
@@ -87,7 +79,8 @@ void BackgroundSchedulerBridge::Schedule(
 }
 
 void BackgroundSchedulerBridge::BackupSchedule(
-    const TriggerConditions& trigger_conditions, long delay_in_seconds) {
+    const TriggerConditions& trigger_conditions,
+    int64_t delay_in_seconds) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_conditions =
       CreateTriggerConditions(env, trigger_conditions.require_power_connected,

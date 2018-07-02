@@ -5,6 +5,8 @@
 #include "chrome/browser/android/ntp/ntp_snippets_bridge.h"
 
 #include <jni.h>
+#include <set>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -377,7 +379,7 @@ void NTPSnippetsBridge::OnImageFetched(ScopedJavaGlobalRef<jobject> callback,
   if (!image.IsEmpty()) {
     j_bitmap = gfx::ConvertToJavaBitmap(image.ToSkBitmap());
   }
-  RunCallbackAndroid(callback, j_bitmap);
+  RunObjectCallbackAndroid(callback, j_bitmap);
 }
 
 void NTPSnippetsBridge::OnSuggestionsFetched(
@@ -389,14 +391,14 @@ void NTPSnippetsBridge::OnSuggestionsFetched(
   // TODO(fhorschig, dgn): Allow refetch or show notification acc. to status.
   JNIEnv* env = AttachCurrentThread();
   if (status.IsSuccess()) {
-    RunCallbackAndroid(
+    RunObjectCallbackAndroid(
         success_callback,
         JNI_SnippetsBridge_ToJavaSuggestionList(env, category, suggestions));
   } else {
     // The second parameter here means nothing - it was more convenient to pass
     // a Callback (which has 1 parameter) over to the native side than a
     // Runnable (which has no parameters). We ignore the parameter Java-side.
-    RunCallbackAndroid(failure_callback, 0);
+    RunIntCallbackAndroid(failure_callback, 0);
   }
 }
 

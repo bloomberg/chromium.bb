@@ -5,6 +5,8 @@
 #include "components/offline_items_collection/core/android/offline_content_aggregator_bridge.h"
 
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
@@ -52,14 +54,14 @@ void GetVisualsForItemHelperCallback(
 void RunGetAllItemsCallback(const base::android::JavaRef<jobject>& j_callback,
                             const std::vector<OfflineItem>& items) {
   JNIEnv* env = AttachCurrentThread();
-  RunCallbackAndroid(j_callback,
-                     OfflineItemBridge::CreateOfflineItemList(env, items));
+  RunObjectCallbackAndroid(
+      j_callback, OfflineItemBridge::CreateOfflineItemList(env, items));
 }
 
 void RunGetItemByIdCallback(const base::android::JavaRef<jobject>& j_callback,
                             const base::Optional<OfflineItem>& item) {
   JNIEnv* env = AttachCurrentThread();
-  RunCallbackAndroid(
+  RunObjectCallbackAndroid(
       j_callback, item.has_value()
                       ? OfflineItemBridge::CreateOfflineItem(env, item.value())
                       : nullptr);
