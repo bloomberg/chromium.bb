@@ -318,7 +318,12 @@ DirectoryItem.prototype.clearHasChildren = function() {
 DirectoryItem.prototype.onExpand_ = function(e) {
   this.updateSubDirectories(
       true /* recursive */,
-      function() {},
+      function() {
+        // Retrieve metadata information for the child (expanded) items.
+        this.parentTree_.metadataModel_.get(
+            this.entries_,
+            constants.DIRECTORY_TREE_METADATA_PREFETCH_PROPERTY_NAMES);
+      }.bind(this),
       function() {
         this.expanded = false;
       }.bind(this));
@@ -326,6 +331,22 @@ DirectoryItem.prototype.onExpand_ = function(e) {
   e.stopPropagation();
 };
 
+/**
+ * Returns all (recursive) visible children of parentItem.
+ * @param {DirectoryItem} parentItem The parent item to start searching from.
+ * @return {!Array<Entry>}
+ */
+let getVisibleChildEntries = function(parentItem) {
+  if (parentItem.expanded == false) {
+    return [parentItem.entry];
+  }
+  let visibleChildEntries = [];
+  for (let childItem of parentItem.items) {
+    visibleChildEntries.concat(
+        visibleChildEntries, getVisibleChildEntries(childItem));
+  }
+  return visibleChildEntries;
+};
 
 /**
  * Invoked when the item is being collapsed.
@@ -333,6 +354,15 @@ DirectoryItem.prototype.onExpand_ = function(e) {
  * @private
  */
 DirectoryItem.prototype.onCollapse_ = function(e) {
+  // Remove metadata information for the child (now hidden) items by recursively
+  // searching for all visible items under this item.
+  // TODO(sashab): Add a method to the cache to clear all children of a given
+  // parent instead.
+  const visibleEntries = getVisibleChildEntries(this);
+  this.parentTree_.metadataModel_.notifyEntriesRemoved(
+      visibleEntries,
+      constants.DIRECTORY_TREE_METADATA_PREFETCH_PROPERTY_NAMES);
+
   if (this.delayExpansion) {
     // For file systems where it is performance intensive
     // to update recursively when items expand this proactively

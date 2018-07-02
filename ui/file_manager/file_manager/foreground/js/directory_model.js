@@ -554,10 +554,22 @@ DirectoryModel.prototype.clearAndScan_ = function(newDirContents,
     callback(false);
   }.bind(this);
 
-  // Clear the table, and start scanning.
-  this.metadataModel_.clearAllCache();
-  cr.dispatchSimpleEvent(this, 'scan-started');
+  // Clear metadata information for the old (no longer visible) items in the
+  // file list.
   var fileList = this.getFileList();
+  let removedUrls = [];
+  for (var i = 0; i < fileList.length; i++) {
+    removedUrls.push(fileList.item(i).toURL());
+  }
+  this.metadataModel_.notifyEntriesRemoved(removedUrls);
+
+  // Retrieve metadata information for the new (visible) items in the list.
+  this.metadataModel_.get(
+      newDirContents.fileList_.array_,
+      constants.LIST_CONTAINER_METADATA_PREFETCH_PROPERTY_NAMES);
+
+  // Clear the table, and start scanning.
+  cr.dispatchSimpleEvent(this, 'scan-started');
   fileList.splice(0, fileList.length);
   this.scan_(this.currentDirContents_, false,
              onDone, onFailed, onUpdated, onCancelled);
