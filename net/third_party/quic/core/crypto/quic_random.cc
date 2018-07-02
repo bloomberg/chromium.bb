@@ -5,7 +5,6 @@
 #include "net/third_party/quic/core/crypto/quic_random.h"
 
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "crypto/random.h"
 #include "net/third_party/quic/platform/api/quic_bug_tracker.h"
 #include "net/third_party/quic/platform/api/quic_singleton.h"
@@ -21,7 +20,6 @@ class DefaultRandom : public QuicRandom {
   // QuicRandom implementation
   void RandBytes(void* data, size_t len) override;
   uint64_t RandUint64() override;
-  void Reseed(const void* additional_entropy, size_t entropy_len) override;
 
  private:
   DefaultRandom() {}
@@ -43,10 +41,6 @@ uint64_t DefaultRandom::RandUint64() {
   uint64_t value;
   RandBytes(&value, sizeof(value));
   return value;
-}
-
-void DefaultRandom::Reseed(const void* additional_entropy, size_t entropy_len) {
-  // No such function exists in crypto/random.h.
 }
 
 }  // namespace

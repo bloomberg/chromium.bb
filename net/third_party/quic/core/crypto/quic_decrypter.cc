@@ -4,7 +4,6 @@
 
 #include "net/third_party/quic/core/crypto/quic_decrypter.h"
 
-#include "crypto/hkdf.h"
 #include "net/third_party/quic/core/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/third_party/quic/core/crypto/aes_128_gcm_decrypter.h"
 #include "net/third_party/quic/core/crypto/aes_256_gcm_decrypter.h"

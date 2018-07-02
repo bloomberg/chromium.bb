@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "crypto/hkdf.h"
 #include "net/third_party/quic/core/crypto/aes_128_gcm_12_decrypter.h"
 #include "net/third_party/quic/core/crypto/aes_128_gcm_12_encrypter.h"
 #include "net/third_party/quic/core/crypto/cert_compressor.h"

@@ -23,8 +23,6 @@ class MockRandom : public QuicRandom {
   void RandBytes(void* data, size_t len) override;
   // Returns base + the current increment.
   uint64_t RandUint64() override;
-  // Does nothing.
-  void Reseed(const void* additional_entropy, size_t entropy_len) override;
 
   // ChangeValue increments |increment_|. This causes the value returned by
   // |RandUint64| and the byte that |RandBytes| fills with, to change.
