@@ -27,10 +27,11 @@
 namespace {
 
 // Background color of the bottom part of the prompt.
-constexpr SkColor kFooterBackgroundColor = gfx::kGoogleGrey050;
+constexpr SkColor kPasswordGenerationPopupFooterBackgroundColor =
+    gfx::kGoogleGrey050;
 
 // Color of the separator between the password and help sections.
-constexpr SkColor kSeparatorColor = gfx::kGoogleGrey200;
+constexpr SkColor kPasswordGenerationPopupSeparatorColor = gfx::kGoogleGrey200;
 
 }  // namespace
 
@@ -190,8 +191,8 @@ void PasswordGenerationPopupViewViews::CreateLayoutAndChildren() {
   link_style.disable_line_wrapping = false;
   help_label->AddStyleRange(controller_->HelpTextLinkRange(), link_style);
 
-  help_label->SetBackground(
-      views::CreateSolidBackground(kFooterBackgroundColor));
+  help_label->SetBackground(views::CreateSolidBackground(
+      kPasswordGenerationPopupFooterBackgroundColor));
   help_label->SetBorder(
       views::CreateEmptyBorder(kVerticalPadding, kHorizontalMargin,
                                kVerticalPadding, kHorizontalMargin));
@@ -210,7 +211,7 @@ void PasswordGenerationPopupViewViews::OnPaint(gfx::Canvas* canvas) {
   if (password_view_) {
     gfx::Rect divider_bounds(0, password_view_->bounds().bottom(),
                              password_view_->width(), 1);
-    canvas->FillRect(divider_bounds, kSeparatorColor);
+    canvas->FillRect(divider_bounds, kPasswordGenerationPopupSeparatorColor);
   }
 }
 
