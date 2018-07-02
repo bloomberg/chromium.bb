@@ -125,6 +125,14 @@ Polymer({
         return loadTimeData.getBoolean('unifiedConsentEnabled');
       },
     },
+
+    /** @private */
+    enableEphemeralFlashPermission_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('enableEphemeralFlashPermission');
+      },
+    },
   },
 
   listeners: {
