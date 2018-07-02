@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefChangeRegistrar;
@@ -85,7 +86,8 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
 
     /** @return Whether the user settings for contextual suggestions should be shown. */
     public static boolean shouldShowSettings() {
-        return isDSEConditionMet() && !AccessibilityUtil.isAccessibilityEnabled();
+        return isDSEConditionMet() && !AccessibilityUtil.isAccessibilityEnabled()
+                && ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_OPT_OUT);
     }
 
     /** @return Whether the settings state is currently enabled. */
@@ -105,7 +107,9 @@ public class EnabledStateMonitor implements SyncStateChangedListener, SignInStat
     /** @return Whether the state is currently enabled. */
     public static boolean getEnabledState() {
         return getSettingsEnabled()
-                && PrefServiceBridge.getInstance().getBoolean(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED);
+                && (PrefServiceBridge.getInstance().getBoolean(Pref.CONTEXTUAL_SUGGESTIONS_ENABLED)
+                           || !ChromeFeatureList.isEnabled(
+                                      ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_OPT_OUT));
     }
 
     public static void recordEnabled(boolean enabled) {

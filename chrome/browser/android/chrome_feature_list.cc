@@ -50,6 +50,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &contextual_suggestions::kContextualSuggestionsBottomSheet,
     &contextual_suggestions::kContextualSuggestionsButton,
     &contextual_suggestions::kContextualSuggestionsSlimPeekUI,
+    &contextual_suggestions::kContextualSuggestionsOptOut,
     &features::kClearOldBrowsingData,
     &features::kClipboardContentSetting,
     &features::kDownloadsForeground,

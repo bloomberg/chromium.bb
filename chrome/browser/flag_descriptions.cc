@@ -219,6 +219,11 @@ const char kContextualSuggestionsSlimPeekUIName[] =
 const char kContextualSuggestionsSlimPeekUIDescription[] =
     "Use a slimmer peek UI for the contextual suggestions bottom sheet.";
 
+const char kContextualSuggestionsOptOutName[] =
+    "Contextual Suggestions Opt-out";
+const char kContextualSuggestionsOptOutDescription[] =
+    "If enabled, allows the user to opt out of contextual suggestions.";
+
 const char kCreditCardAssistName[] = "Credit Card Assisted Filling";
 const char kCreditCardAssistDescription[] =
     "Enable assisted credit card filling on certain sites.";

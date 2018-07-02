@@ -2536,6 +2536,10 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kContextualSuggestionsSlimPeekUIDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(
          contextual_suggestions::kContextualSuggestionsSlimPeekUI)},
+    {"contextual-suggestions-opt-out",
+     flag_descriptions::kContextualSuggestionsOptOutName,
+     flag_descriptions::kContextualSuggestionsOptOutDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(contextual_suggestions::kContextualSuggestionsOptOut)},
     {"enable-content-suggestions-new-favicon-server",
      flag_descriptions::kEnableContentSuggestionsNewFaviconServerName,
      flag_descriptions::kEnableContentSuggestionsNewFaviconServerDescription,

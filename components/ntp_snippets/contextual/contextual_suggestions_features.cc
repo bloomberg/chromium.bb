@@ -15,4 +15,7 @@ const base::Feature kContextualSuggestionsButton{
 const base::Feature kContextualSuggestionsSlimPeekUI{
     "ContextualSuggestionsSlimPeekUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kContextualSuggestionsOptOut{
+    "ContextualSuggestionsOptOut", base::FEATURE_ENABLED_BY_DEFAULT};
+
 }  // namespace contextual_suggestions

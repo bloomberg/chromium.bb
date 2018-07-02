@@ -163,6 +163,9 @@ extern const char kContextualSuggestionsButtonDescription[];
 extern const char kContextualSuggestionsSlimPeekUIName[];
 extern const char kContextualSuggestionsSlimPeekUIDescription[];
 
+extern const char kContextualSuggestionsOptOutName[];
+extern const char kContextualSuggestionsOptOutDescription[];
+
 extern const char kCreditCardAssistName[];
 extern const char kCreditCardAssistDescription[];
 
