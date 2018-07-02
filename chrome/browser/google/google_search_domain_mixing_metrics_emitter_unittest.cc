@@ -38,8 +38,7 @@ class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
     clock_ = clock.get();
     emitter_->SetClockForTesting(std::move(clock));
 
-    auto timer = std::make_unique<base::MockTimer>(/*retain_user_task=*/true,
-                                                   /*is_repeating=*/true);
+    auto timer = std::make_unique<base::MockRepeatingTimer>();
     timer_ = timer.get();
     emitter_->SetTimerForTesting(std::move(timer));
 
@@ -85,7 +84,7 @@ class GoogleSearchDomainMixingMetricsEmitterTest : public testing::Test {
   std::unique_ptr<history::HistoryService> history_service_;
   std::unique_ptr<GoogleSearchDomainMixingMetricsEmitter> emitter_;
   base::SimpleTestClock* clock_;  // Not owned.
-  base::MockTimer* timer_;        // Not owned.
+  base::MockRepeatingTimer* timer_;  // Not owned.
 };
 
 TEST_F(GoogleSearchDomainMixingMetricsEmitterTest, FirstStart) {

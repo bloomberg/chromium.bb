@@ -364,8 +364,8 @@ TEST_F(SpeechRecognizerTest, NoSoundTimeout) {
   speech_recognizer_->Start();
   base::RunLoop().RunUntilIdle();
 
-  auto mock_timer = std::make_unique<base::MockTimer>(false, false);
-  base::MockTimer* timer_ptr = mock_timer.get();
+  auto mock_timer = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer_ptr = mock_timer.get();
   speech_recognizer_->SetSpeechTimerForTest(std::move(mock_timer));
 
   fake_speech_recognition_manager_->FakeSpeechRecognitionEvent(SOUND_START);

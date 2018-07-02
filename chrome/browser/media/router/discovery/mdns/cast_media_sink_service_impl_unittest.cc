@@ -82,8 +82,7 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    auto mock_timer = std::make_unique<base::MockTimer>(
-        true /*retain_user_task*/, false /*is_repeating*/);
+    auto mock_timer = std::make_unique<base::MockOneShotTimer>();
     mock_timer_ = mock_timer.get();
     media_sink_service_impl_.SetTimerForTest(std::move(mock_timer));
   }
@@ -130,7 +129,7 @@ class CastMediaSinkServiceImplTest : public ::testing::Test {
   TestMediaSinkService dial_media_sink_service_;
   std::unique_ptr<cast_channel::MockCastSocketService>
       mock_cast_socket_service_;
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
   CastMediaSinkServiceImpl media_sink_service_impl_;
   testing::NiceMock<MockObserver> observer_;
 

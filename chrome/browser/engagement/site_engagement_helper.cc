@@ -67,7 +67,7 @@ void SiteEngagementService::Helper::OnEngagementLevelChanged(
 
 SiteEngagementService::Helper::PeriodicTracker::PeriodicTracker(
     SiteEngagementService::Helper* helper)
-    : helper_(helper), pause_timer_(new base::Timer(true, false)) {}
+    : helper_(helper), pause_timer_(new base::OneShotTimer()) {}
 
 SiteEngagementService::Helper::PeriodicTracker::~PeriodicTracker() {}
 
@@ -92,7 +92,7 @@ bool SiteEngagementService::Helper::PeriodicTracker::IsTimerRunning() {
 }
 
 void SiteEngagementService::Helper::PeriodicTracker::SetPauseTimerForTesting(
-    std::unique_ptr<base::Timer> timer) {
+    std::unique_ptr<base::OneShotTimer> timer) {
   pause_timer_ = std::move(timer);
 }
 

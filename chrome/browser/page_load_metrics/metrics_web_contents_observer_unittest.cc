@@ -234,7 +234,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
 
   // Returns the mock timer used for buffering updates in the
   // PageLoadMetricsUpdateDispatcher.
-  base::MockTimer* GetMostRecentTimer() {
+  base::MockOneShotTimer* GetMostRecentTimer() {
     return embedder_interface_->GetMockTimer();
   }
 
@@ -248,7 +248,7 @@ class MetricsWebContentsObserverTest : public ChromeRenderViewHostTestHarness {
     // If sending the timing update caused the PageLoadMetricsUpdateDispatcher
     // to schedule a buffering timer, then fire it now so metrics are dispatched
     // to observers.
-    base::MockTimer* mock_timer = GetMostRecentTimer();
+    base::MockOneShotTimer* mock_timer = GetMostRecentTimer();
     if (mock_timer && mock_timer->IsRunning())
       mock_timer->Fire();
   }

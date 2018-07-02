@@ -13,19 +13,18 @@
 namespace page_load_metrics {
 
 // Thin wrapper around PageTimingMetricsSender that provides access to the
-// MockTimer instance.
+// MockOneShotTimer instance.
 class TestPageTimingMetricsSender : public PageTimingMetricsSender {
  public:
   explicit TestPageTimingMetricsSender(
       std::unique_ptr<PageTimingSender> page_timing_sender,
       mojom::PageLoadTimingPtr initial_timing)
-      : PageTimingMetricsSender(
-            std::move(page_timing_sender),
-            std::unique_ptr<base::Timer>(new base::MockTimer(false, false)),
-            std::move(initial_timing)) {}
+      : PageTimingMetricsSender(std::move(page_timing_sender),
+                                std::make_unique<base::MockOneShotTimer>(),
+                                std::move(initial_timing)) {}
 
-  base::MockTimer* mock_timer() const {
-    return reinterpret_cast<base::MockTimer*>(timer());
+  base::MockOneShotTimer* mock_timer() const {
+    return static_cast<base::MockOneShotTimer*>(timer());
   }
 };
 

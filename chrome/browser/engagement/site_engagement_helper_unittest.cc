@@ -78,13 +78,13 @@ class SiteEngagementHelperTest : public ChromeRenderViewHostTestHarness {
 
   // Set a pause timer on the input tracker for test purposes.
   void SetInputTrackerPauseTimer(SiteEngagementService::Helper* helper,
-                                 std::unique_ptr<base::Timer> timer) {
+                                 std::unique_ptr<base::OneShotTimer> timer) {
     helper->input_tracker_.SetPauseTimerForTesting(std::move(timer));
   }
 
   // Set a pause timer on the input tracker for test purposes.
   void SetMediaTrackerPauseTimer(SiteEngagementService::Helper* helper,
-                                 std::unique_ptr<base::Timer> timer) {
+                                 std::unique_ptr<base::OneShotTimer> timer) {
     helper->media_tracker_.SetPauseTimerForTesting(std::move(timer));
   }
 
@@ -209,7 +209,7 @@ TEST_F(SiteEngagementHelperTest, MediaEngagement) {
   GURL url2("http://www.google.com/");
   content::WebContents* contents = web_contents();
 
-  base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
+  base::MockOneShotTimer* media_tracker_timer = new base::MockOneShotTimer();
   SiteEngagementService::Helper* helper = GetHelper(contents);
   SetMediaTrackerPauseTimer(helper, base::WrapUnique(media_tracker_timer));
   SiteEngagementService* service = SiteEngagementService::Get(profile());
@@ -387,8 +387,8 @@ TEST_F(SiteEngagementHelperTest, CheckTimerAndCallbacks) {
   GURL url2("http://www.google.com/");
   content::WebContents* contents = web_contents();
 
-  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
-  base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
+  base::MockOneShotTimer* input_tracker_timer = new base::MockOneShotTimer;
+  base::MockOneShotTimer* media_tracker_timer = new base::MockOneShotTimer;
   SiteEngagementService::Helper* helper = GetHelper(contents);
   SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
   SetMediaTrackerPauseTimer(helper, base::WrapUnique(media_tracker_timer));
@@ -494,8 +494,8 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
   GURL url2("http://www.google.com/");
   content::WebContents* contents = web_contents();
 
-  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
-  base::MockTimer* media_tracker_timer = new base::MockTimer(true, false);
+  base::MockOneShotTimer* input_tracker_timer = new base::MockOneShotTimer();
+  base::MockOneShotTimer* media_tracker_timer = new base::MockOneShotTimer();
   SiteEngagementService::Helper* helper = GetHelper(contents);
   SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
   SetMediaTrackerPauseTimer(helper, base::WrapUnique(media_tracker_timer));
@@ -545,7 +545,7 @@ TEST_F(SiteEngagementHelperTest, ShowAndHide) {
 // - Handles a hidden <-> occluded transition like a hidden <-> visible
 //   transition.
 TEST_F(SiteEngagementHelperTest, Occlusion) {
-  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  base::MockOneShotTimer* input_tracker_timer = new base::MockOneShotTimer();
   SiteEngagementService::Helper* helper = GetHelper(web_contents());
   SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
 
@@ -595,7 +595,7 @@ TEST_F(SiteEngagementHelperTest, SingleTabNavigation) {
   GURL url2("https://www.example.com/");
   content::WebContents* contents = web_contents();
 
-  base::MockTimer* input_tracker_timer = new base::MockTimer(true, false);
+  base::MockOneShotTimer* input_tracker_timer = new base::MockOneShotTimer();
   SiteEngagementService::Helper* helper = GetHelper(contents);
   SetInputTrackerPauseTimer(helper, base::WrapUnique(input_tracker_timer));
 
