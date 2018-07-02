@@ -43,18 +43,24 @@ partial interface MyIFacePartial { };
 partial interface MyIFaceInherit : Foo {};
 
 /** TREE
- *InterfaceMixin(IFaceMixin)
+ *Interface(IFaceMixin)
+ *  MIXIN: True
  */
 interface mixin IFaceMixin {};
 
 /** ERROR Unexpected ":" after identifier "IFaceMixinInherit". */
 interface mixin IFaceMixinInherit : Foo {};
 
-/** ERROR Unexpected keyword "mixin" after keyword "interface". */
+/** TREE
+ *Interface(PartialIFaceMixin)
+ *  PARTIAL: True
+ *  MIXIN: True
+ */
 partial interface mixin PartialIFaceMixin {};
 
 /** TREE
- *InterfaceMixin(IFaceMixin)
+ *Interface(IFaceMixin)
+ *  MIXIN: True
  *  Error(Unexpected keyword "static" after "{".)
  */
 interface mixin IFaceMixin {
@@ -62,7 +68,8 @@ interface mixin IFaceMixin {
 };
 
 /** TREE
- *InterfaceMixin(IFaceMixin)
+ *Interface(IFaceMixin)
+ *  MIXIN: True
  *  Const(pi)
  *    PrimitiveType(double)
  *    Value() = "3.14159"
