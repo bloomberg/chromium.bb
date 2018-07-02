@@ -710,6 +710,16 @@ void PasswordManager::ProcessSubmittedForm(
   }
 }
 
+void PasswordManager::ReportSpecPriorityForGeneratedPassword(
+    const autofill::PasswordForm& password_form,
+    uint32_t spec_priority) {
+  PasswordFormManager* form_manager = GetMatchingPendingManager(password_form);
+  if (form_manager && form_manager->GetMetricsRecorder()) {
+    form_manager->GetMetricsRecorder()->ReportSpecPriorityForGeneratedPassword(
+        spec_priority);
+  }
+}
+
 void PasswordManager::OnStartNavigation(PasswordManagerDriver* driver) {
   // TODO(crbug/842643): use this signal instead of DidStartProvisionalLoad in
   // the renderer.

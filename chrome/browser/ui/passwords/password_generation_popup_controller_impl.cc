@@ -178,10 +178,15 @@ void PasswordGenerationPopupControllerImpl::Show(GenerationState state) {
   // When switching from editing to generation state, regenerate the password.
   if (state == kOfferGeneration &&
       (state_ != state || current_password_.empty())) {
+    uint32_t spec_priority = 0;
     current_password_ =
         driver_->GetPasswordGenerationManager()->GeneratePassword(
             web_contents_->GetLastCommittedURL().GetOrigin(), form_signature_,
-            field_signature_, max_length_);
+            field_signature_, max_length_, &spec_priority);
+    if (driver_ && driver_->GetPasswordManager()) {
+      driver_->GetPasswordManager()->ReportSpecPriorityForGeneratedPassword(
+          form_, spec_priority);
+    }
   }
   state_ = state;
 

@@ -82,11 +82,12 @@ class MockPasswordGenerationManager
                                 password_manager::PasswordManagerDriver* driver)
       : password_manager::PasswordGenerationManager(client, driver) {}
 
-  MOCK_METHOD4(GeneratePassword,
+  MOCK_METHOD5(GeneratePassword,
                base::string16(const GURL&,
                               autofill::FormSignature,
                               autofill::FieldSignature,
-                              uint32_t));
+                              uint32_t,
+                              uint32_t*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockPasswordGenerationManager);
@@ -423,7 +424,7 @@ TEST_F(PasswordAccessoryControllerTest,
       .WillOnce(Return(&mock_generation_manager));
   EXPECT_CALL(mock_generation_manager,
               GeneratePassword(_, form_signature, field_signature,
-                               uint32_t(new_ui_data.max_length)))
+                               uint32_t(new_ui_data.max_length), _))
       .WillOnce(Return(generated_password));
   EXPECT_CALL(*raw_dialog_view, Show(generated_password));
   controller()->OnGenerationRequested();

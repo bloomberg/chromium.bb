@@ -30,12 +30,17 @@ using Item = PasswordAccessoryViewInterface::AccessoryItem;
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(PasswordAccessoryController);
 
 struct PasswordAccessoryController::GenerationElementData {
-  GenerationElementData(autofill::FormSignature form_signature,
+  GenerationElementData(autofill::PasswordForm form,
+                        autofill::FormSignature form_signature,
                         autofill::FieldSignature field_signature,
                         uint32_t max_password_length)
-      : form_signature(form_signature),
+      : form(std::move(form)),
+        form_signature(form_signature),
         field_signature(field_signature),
         max_password_length(max_password_length) {}
+
+  // Form for which password generation is triggered.
+  autofill::PasswordForm form;
 
   // Signature of the form for which password generation is triggered.
   autofill::FormSignature form_signature;
@@ -136,6 +141,7 @@ void PasswordAccessoryController::OnAutomaticGenerationStatusChanged(
   if (available) {
     DCHECK(ui_data.has_value());
     generation_element_data_ = std::make_unique<GenerationElementData>(
+        ui_data.value().password_form,
         autofill::CalculateFormSignature(
             ui_data.value().password_form.form_data),
         autofill::CalculateFieldSignatureByNameAndType(
@@ -179,12 +185,18 @@ void PasswordAccessoryController::OnGenerationRequested() {
   // TODO(crbug.com/835234): Take the modal dialog logic out of the accessory
   // controller.
   dialog_view_ = create_dialog_factory_.Run(this);
+  uint32_t spec_priority = 0;
   base::string16 password =
       target_frame_driver_->GetPasswordGenerationManager()->GeneratePassword(
           web_contents_->GetLastCommittedURL().GetOrigin(),
           generation_element_data_->form_signature,
           generation_element_data_->field_signature,
-          generation_element_data_->max_password_length);
+          generation_element_data_->max_password_length, &spec_priority);
+  if (target_frame_driver_ && target_frame_driver_->GetPasswordManager()) {
+    target_frame_driver_->GetPasswordManager()
+        ->ReportSpecPriorityForGeneratedPassword(generation_element_data_->form,
+                                                 spec_priority);
+  }
   dialog_view_->Show(password);
 }
 
