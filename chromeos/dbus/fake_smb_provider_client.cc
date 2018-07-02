@@ -51,6 +51,9 @@ void FakeSmbProviderClient::Mount(const base::FilePath& share_path,
 
 void FakeSmbProviderClient::Remount(const base::FilePath& share_path,
                                     int32_t mount_id,
+                                    const std::string& workgroup,
+                                    const std::string& username,
+                                    base::ScopedFD password_fd,
                                     StatusCallback callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(callback), smbprovider::ERROR_OK));

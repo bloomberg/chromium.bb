@@ -64,6 +64,9 @@ class CHROMEOS_EXPORT SmbProviderClient
   // original |mount_id|.
   virtual void Remount(const base::FilePath& share_path,
                        int32_t mount_id,
+                       const std::string& workgroup,
+                       const std::string& username,
+                       base::ScopedFD password_fd,
                        StatusCallback callback) = 0;
 
   // Calls Unmount. This removes the corresponding mount of |mount_id| from
