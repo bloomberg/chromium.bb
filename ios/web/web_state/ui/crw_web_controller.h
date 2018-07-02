@@ -199,11 +199,6 @@ class WebStateImpl;
 // Removes |recognizer| from the web view.
 - (void)removeGestureRecognizerFromWebView:(UIGestureRecognizer*)recognizer;
 
-// Adds |toolbar| to the web view.
-- (void)addToolbarViewToWebView:(UIView*)toolbarView;
-// Removes |toolbar| from the web view.
-- (void)removeToolbarViewFromWebView:(UIView*)toolbarView;
-
 - (CRWJSInjectionReceiver*)jsInjectionReceiver;
 
 // Returns the native controller (if any) current mananging the content.

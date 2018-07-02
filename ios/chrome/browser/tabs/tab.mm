@@ -529,6 +529,7 @@ NSString* const kTabUrlKey = @"url";
     _openInController = [[OpenInController alloc]
         initWithRequestContext:_browserState->GetRequestContext()
                  webController:self.webController];
+    _openInController.baseView = self.view;
   }
   return _openInController;
 }
