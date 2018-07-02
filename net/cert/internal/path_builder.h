@@ -115,6 +115,9 @@ class NET_EXPORT CertPathBuilder {
     // if there was none.
     const CertPathBuilderResultPath* GetBestValidPath() const;
 
+    // Returns the best CertPathBuilderResultPath or nullptr if there was none.
+    const CertPathBuilderResultPath* GetBestPathPossiblyInvalid() const;
+
     // Resets to the initial value.
     void Clear();
 

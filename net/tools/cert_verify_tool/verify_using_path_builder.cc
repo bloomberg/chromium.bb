@@ -163,7 +163,8 @@ bool VerifyUsingPathBuilder(
     return false;
 
   // Verify the chain.
-  net::SimplePathBuilderDelegate delegate(2048);
+  net::SimplePathBuilderDelegate delegate(
+      2048, net::SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(
       target_cert, ssl_trust_store->GetTrustStore(), &delegate, time,
@@ -193,11 +194,11 @@ bool VerifyUsingPathBuilder(
   }
 
   // TODO(mattm): add flag to dump all paths, not just the final one?
-  if (!dump_prefix_path.empty() && result.paths.size()) {
+  if (!dump_prefix_path.empty() && !result.paths.empty()) {
     if (!DumpParsedCertificateChain(
             dump_prefix_path.AddExtension(
                 FILE_PATH_LITERAL(".CertPathBuilder.pem")),
-            *result.paths[result.best_result_index])) {
+            *result.GetBestPathPossiblyInvalid())) {
       return false;
     }
   }

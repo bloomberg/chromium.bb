@@ -42,7 +42,8 @@ class VerifyCertificateChainPkitsTestDelegate {
           << parsing_errors.ToDebugString();
     }
 
-    SimplePathBuilderDelegate path_builder_delegate(1024);
+    SimplePathBuilderDelegate path_builder_delegate(
+        1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
 
     std::set<der::Input> user_constrained_policy_set;
 

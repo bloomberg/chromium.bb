@@ -72,7 +72,8 @@ TEST_P(SimplePathBuilderDelegate1024SuccessTest, IsAcceptableSignatureAndKey) {
   ASSERT_TRUE(public_key);
 
   CertErrors errors;
-  SimplePathBuilderDelegate delegate(1024);
+  SimplePathBuilderDelegate delegate(
+      1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
 
   EXPECT_TRUE(
       delegate.IsSignatureAlgorithmAcceptable(*signature_algorithm, &errors));
@@ -98,7 +99,8 @@ TEST_P(SimplePathBuilderDelegate2048FailTest, RsaKeySmallerThan2048) {
   ASSERT_TRUE(public_key);
 
   CertErrors errors;
-  SimplePathBuilderDelegate delegate(2048);
+  SimplePathBuilderDelegate delegate(
+      2048, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
 
   EXPECT_TRUE(
       delegate.IsSignatureAlgorithmAcceptable(*signature_algorithm, &errors));

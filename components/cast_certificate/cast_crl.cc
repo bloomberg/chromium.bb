@@ -134,7 +134,8 @@ bool VerifyCRL(const Crl& crl,
 
   // SimplePathBuilderDelegate will enforce required signature algorithms of
   // RSASSA PKCS#1 v1.5 with SHA-256, and RSA keys 2048-bits or longer.
-  net::SimplePathBuilderDelegate path_builder_delegate(2048);
+  net::SimplePathBuilderDelegate path_builder_delegate(
+      2048, net::SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
 
   net::CertPathBuilder::Result result;
   net::CertPathBuilder path_builder(

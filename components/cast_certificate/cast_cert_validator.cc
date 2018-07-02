@@ -105,7 +105,10 @@ net::der::Input AudioOnlyPolicyOid() {
 // It will also require RSA keys have a modulus at least 2048-bits long.
 class CastPathBuilderDelegate : public net::SimplePathBuilderDelegate {
  public:
-  CastPathBuilderDelegate() : SimplePathBuilderDelegate(2048) {}
+  CastPathBuilderDelegate()
+      : SimplePathBuilderDelegate(
+            2048,
+            SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1) {}
 };
 
 class CertVerificationContextImpl : public CertVerificationContext {

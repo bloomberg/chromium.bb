@@ -56,7 +56,8 @@ class PathBuilderPkitsTestDelegate {
 
     scoped_refptr<ParsedCertificate> target_cert(certs.back());
 
-    SimplePathBuilderDelegate path_builder_delegate(1024);
+    SimplePathBuilderDelegate path_builder_delegate(
+        1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
 
     CertPathBuilder::Result result;
     CertPathBuilder path_builder(

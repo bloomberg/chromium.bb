@@ -28,24 +28,6 @@ namespace {
 DEFINE_CERT_ERROR_ID(kUnacceptableCurveForEcdsa,
                      "Only P-256, P-384, P-521 are supported for ECDSA");
 
-// Whitelist of default permitted signature digest algorithms.
-WARN_UNUSED_RESULT bool IsAcceptableDigest(DigestAlgorithm digest) {
-  switch (digest) {
-    case DigestAlgorithm::Md2:
-    case DigestAlgorithm::Md4:
-    case DigestAlgorithm::Md5:
-      return false;
-
-    case DigestAlgorithm::Sha1:
-    case DigestAlgorithm::Sha256:
-    case DigestAlgorithm::Sha384:
-    case DigestAlgorithm::Sha512:
-      return true;
-  }
-
-  return false;
-}
-
 bool IsAcceptableCurveForEcdsa(int curve_nid) {
   // Whitelist default permitted named curves.
   switch (curve_nid) {
@@ -61,8 +43,10 @@ bool IsAcceptableCurveForEcdsa(int curve_nid) {
 }  // namespace
 
 SimplePathBuilderDelegate::SimplePathBuilderDelegate(
-    size_t min_rsa_modulus_length_bits)
-    : min_rsa_modulus_length_bits_(min_rsa_modulus_length_bits) {}
+    size_t min_rsa_modulus_length_bits,
+    DigestPolicy digest_policy)
+    : min_rsa_modulus_length_bits_(min_rsa_modulus_length_bits),
+      digest_policy_(digest_policy) {}
 
 void SimplePathBuilderDelegate::CheckPathAfterVerification(
     CertPathBuilderResultPath* path) {
@@ -77,13 +61,6 @@ bool SimplePathBuilderDelegate::IsSignatureAlgorithmAcceptable(
   //    RSA PKCS#1 v1.5
   //    RSASSA-PSS
   //    ECDSA
-  //
-  // When used with digest algorithms:
-  //
-  //    SHA1
-  //    SHA256
-  //    SHA384
-  //    SHA512
   switch (algorithm.algorithm()) {
     case SignatureAlgorithmId::Dsa:
       return false;
@@ -135,6 +112,32 @@ bool SimplePathBuilderDelegate::IsPublicKeyAcceptable(EVP_PKEY* public_key,
   }
 
   // Unexpected key type.
+  return false;
+}
+
+// Restricted signature digest algorithms to:
+//
+//    SHA1 (if digest_policy_ == kWeakAllowSha1)
+//    SHA256
+//    SHA384
+//    SHA512
+bool SimplePathBuilderDelegate::IsAcceptableDigest(
+    DigestAlgorithm digest) const {
+  switch (digest) {
+    case DigestAlgorithm::Md2:
+    case DigestAlgorithm::Md4:
+    case DigestAlgorithm::Md5:
+      return false;
+
+    case DigestAlgorithm::Sha1:
+      return digest_policy_ ==
+             SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1;
+    case DigestAlgorithm::Sha256:
+    case DigestAlgorithm::Sha384:
+    case DigestAlgorithm::Sha512:
+      return true;
+  }
+
   return false;
 }
 

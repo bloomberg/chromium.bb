@@ -2393,6 +2393,38 @@ class CertBuilder {
     SetExtension(SubjectAltNameOid(), FinishCBB(cbb.get()));
   }
 
+  // Sets the signature algorithm for the certificate to either
+  // sha256WithRSAEncryption or sha1WithRSAEncryption.
+  void SetSignatureAlgorithmRsaPkca1(DigestAlgorithm digest) {
+    switch (digest) {
+      case DigestAlgorithm::Sha256: {
+        const uint8_t kSha256WithRSAEncryption[] = {
+            0x30, 0x0D, 0x06, 0x09, 0x2a, 0x86, 0x48, 0x86,
+            0xf7, 0x0d, 0x01, 0x01, 0x0b, 0x05, 0x00};
+        SetSignatureAlgorithm(std::string(std::begin(kSha256WithRSAEncryption),
+                                          std::end(kSha256WithRSAEncryption)));
+        break;
+      }
+
+      case DigestAlgorithm::Sha1: {
+        const uint8_t kSha1WithRSAEncryption[] = {0x30, 0x0D, 0x06, 0x09, 0x2a,
+                                                  0x86, 0x48, 0x86, 0xf7, 0x0d,
+                                                  0x01, 0x01, 0x05, 0x05, 0x00};
+        SetSignatureAlgorithm(std::string(std::begin(kSha1WithRSAEncryption),
+                                          std::end(kSha1WithRSAEncryption)));
+        break;
+      }
+
+      default:
+        ASSERT_TRUE(false);
+    }
+  }
+
+  void SetSignatureAlgorithm(std::string algorithm_tlv) {
+    signature_algorithm_tlv_ = std::move(algorithm_tlv);
+    Invalidate();
+  }
+
   void SetRandomSerialNumber() {
     serial_number_ = base::RandUint64();
     Invalidate();
@@ -2829,6 +2861,95 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, IntermediateFromAia200) {
   error = Verify(chain.get(), kHostname, flags, nullptr, CertificateList(),
                  &verify_result);
   EXPECT_THAT(error, IsOk());
+}
+
+// Tries verifying a certificate chain that uses a SHA1 intermediate,
+// however, chasing the AIA can discover a SHA256 version of the intermediate.
+//
+// Path building should discover the stronger intermediate and use it.
+TEST_P(CertVerifyProcInternalWithNetFetchingTest,
+       Sha1IntermediateButAIAHasSha256) {
+  const char kHostname[] = "www.example.com";
+
+  base::FilePath certs_dir =
+      GetTestNetDataDirectory()
+          .AppendASCII("verify_certificate_chain_unittest")
+          .AppendASCII("target-and-intermediate");
+
+  CertificateList orig_certs = CreateCertificateListFromFile(
+      certs_dir, "chain.pem", X509Certificate::FORMAT_AUTO);
+  ASSERT_EQ(3U, orig_certs.size());
+
+  // Build slightly modified variants of |orig_certs|.
+  CertBuilder root(orig_certs[2]->cert_buffer(), nullptr);
+  CertBuilder intermediate(orig_certs[1]->cert_buffer(), &root);
+  CertBuilder leaf(orig_certs[0]->cert_buffer(), &intermediate);
+
+  // Make the leaf certificate have an AIA (CA Issuers) that points to the
+  // embedded test server. This uses a random URL for predictable behavior in
+  // the presence of global caching.
+  std::string ca_issuers_relative_path = MakeRandomPath(".cer");
+  GURL ca_issuers_url = GetTestServerAbsoluteUrl(ca_issuers_relative_path);
+  leaf.SetCaIssuersUrl(ca_issuers_url);
+  leaf.SetSubjectAltName(kHostname);
+
+  // Make two versions of the intermediate - one that is SHA256 signed, and one
+  // that is SHA1 signed.
+  intermediate.SetSignatureAlgorithmRsaPkca1(DigestAlgorithm::Sha256);
+  intermediate.SetRandomSerialNumber();
+  auto intermediate_sha256 = intermediate.DupCertBuffer();
+
+  intermediate.SetSignatureAlgorithmRsaPkca1(DigestAlgorithm::Sha1);
+  intermediate.SetRandomSerialNumber();
+  auto intermediate_sha1 = intermediate.DupCertBuffer();
+
+  // Trust the root certificate.
+  auto root_cert = root.GetX509Certificate();
+  ScopedTestRoot scoped_root(root_cert.get());
+
+  // Setup the test server to reply with the SHA256 intermediate.
+  RegisterSimpleTestServerHandler(
+      ca_issuers_relative_path, "application/pkix-cert",
+      x509_util::CryptoBufferAsStringPiece(intermediate_sha256.get())
+          .as_string());
+
+  // Build a chain to verify that includes the SHA1 intermediate.
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates;
+  intermediates.push_back(x509_util::DupCryptoBuffer(intermediate_sha1.get()));
+  scoped_refptr<X509Certificate> chain_sha1 = X509Certificate::CreateFromBuffer(
+      leaf.DupCertBuffer(), std::move(intermediates));
+  ASSERT_TRUE(chain_sha1.get());
+
+  const int flags = 0;
+  CertVerifyResult verify_result;
+  int error = Verify(chain_sha1.get(), kHostname, flags, nullptr,
+                     CertificateList(), &verify_result);
+
+  if (verify_proc_type() == CERT_VERIFY_PROC_BUILTIN ||
+      verify_proc_type() == CERT_VERIFY_PROC_MAC) {
+    // Should have built a chain through the SHA256 intermediate. This was only
+    // available via AIA, and not the (SHA1) one provided directly to path
+    // building.
+    ASSERT_EQ(2u, verify_result.verified_cert->intermediate_buffers().size());
+    EXPECT_TRUE(x509_util::CryptoBufferEqual(
+        verify_result.verified_cert->intermediate_buffers()[0].get(),
+        intermediate_sha256.get()));
+    ASSERT_EQ(2u, verify_result.verified_cert->intermediate_buffers().size());
+
+    EXPECT_FALSE(verify_result.has_sha1);
+    EXPECT_THAT(error, IsOk());
+  } else if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
+    // TODO(eroman): Make these test expectations exact.
+    // This seemed to be working on Windows when !AreSHA1IntermediatesAllowed()
+    // from previous testing, but then failed on the Windows 10 bot.
+    if (error != OK) {
+      EXPECT_TRUE(verify_result.has_sha1);
+      EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
+    }
+  } else {
+    EXPECT_TRUE(verify_result.has_sha1);
+    EXPECT_THAT(error, IsError(ERR_CERT_WEAK_SIGNATURE_ALGORITHM));
+  }
 }
 
 TEST(CertVerifyProcTest, RejectsMD2) {
