@@ -17,9 +17,6 @@ crbug.com/854889 accessibility/canvas-fallback-content-2.html [ Timeout ]
 crbug.com/854889 accessibility/css-generated-content.html [ Failure ]
 crbug.com/854889 accessibility/css-styles.html [ Failure ]
 
-# Hit test failure due to vertical-rl writing mode
-crbug.com/851075 fast/writing-mode/vertical-inline-block-hittest.html [ Failure ]
-
 # Wrong image alignment in vertical-rl writing mode
 crbug.com/636993 fast/writing-mode/vertical-baseline-alignment.html [ Failure ]
 

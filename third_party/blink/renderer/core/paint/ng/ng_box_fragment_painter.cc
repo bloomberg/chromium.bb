@@ -54,25 +54,6 @@ bool ShouldPaintBoxFragmentBorders(const LayoutObject& object) {
   return !ToLayoutTableCell(object).Table()->ShouldCollapseBorders();
 }
 
-// In hit testing, legacy and NG assumes different semantics for the
-// |accumulated_offset| parameter:
-// - Legacy: offset of the containing block of |child| (excluding |child| when
-// it is block by itslef) in the paint layer.
-// - NG: offset of the fragment itself in the paint layer
-// This function converts the NG offset to legacy so that hit testing can fall
-// back to legacy with the correct |accumulated_offset|.
-LayoutPoint FallbackAccumulatedOffset(const NGPaintFragment& child,
-                                      const LayoutPoint& accumulated_offset) {
-  DCHECK(child.Parent());
-  const NGPaintFragment& parent = *child.Parent();
-  if (parent.PhysicalFragment().IsBlockFlow()) {
-    return accumulated_offset -
-           LayoutSize(child.Offset().left, child.Offset().top);
-  }
-  const NGPhysicalOffset inline_offset = child.InlineOffsetToContainerBox();
-  return accumulated_offset - LayoutSize(inline_offset.left, inline_offset.top);
-}
-
 bool FragmentVisibleToHitTestRequest(const NGPaintFragment& fragment,
                                      const HitTestRequest& request) {
   return fragment.Style().Visibility() == EVisibility::kVisible &&
@@ -92,8 +73,10 @@ bool HitTestCulledInlineAncestors(HitTestResult& result,
   DCHECK(fragment.Parent());
   DCHECK(fragment.PhysicalFragment().IsInline());
   const NGPaintFragment& parent = *fragment.Parent();
+  // To be passed as |accumulated_offset| to LayoutInline::HitTestCulledInline,
+  // where it equals the physical offset of the containing block in paint layer.
   const LayoutPoint fallback_accumulated_offset =
-      FallbackAccumulatedOffset(fragment, physical_offset);
+      physical_offset - fragment.InlineOffsetToContainerBox().ToLayoutSize();
   const LayoutObject* limit_layout_object =
       parent.PhysicalFragment().IsLineBox() ? parent.Parent()->GetLayoutObject()
                                             : parent.GetLayoutObject();
@@ -1079,8 +1062,12 @@ bool NGBoxFragmentPainter::HitTestChildren(
         // atomically, as if it created its own stacking context. (See Appendix
         // E.2, section 7.4 on inline block/table elements in CSS2.2 spec)
         bool should_hit_test_all_phases = fragment.IsAtomicInline();
+        // To be passed as |accumulated_offset| to legacy hit test functions of
+        // LayoutBox or subclass overrides, where it isn't in any well-defined
+        // coordinate space, but only equals the difference below.
         LayoutPoint fallback_accumulated_offset =
-            FallbackAccumulatedOffset(*child, child_physical_offset);
+            child_physical_offset -
+            ToLayoutSize(ToLayoutBox(fragment.GetLayoutObject())->Location());
         if (should_hit_test_all_phases) {
           stop_hit_testing = fragment.GetLayoutObject()->HitTestAllPhases(
               result, location_in_container, fallback_accumulated_offset);
