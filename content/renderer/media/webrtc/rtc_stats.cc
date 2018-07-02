@@ -4,6 +4,7 @@
 
 #include "content/renderer/media/webrtc/rtc_stats.h"
 
+#include <algorithm>
 #include <set>
 #include <string>
 
@@ -57,6 +58,22 @@ bool IsWhitelistedStats(const webrtc::RTCStats& stats) {
   return GetStatsWhitelist()->IsWhitelisted(stats);
 }
 
+// Filters out any unstandardized members; stats should only be surfaced to JS
+// if they're standardized.
+std::vector<const webrtc::RTCStatsMemberInterface*> StandardizedMembers(
+    std::vector<const webrtc::RTCStatsMemberInterface*> stats_members) {
+  // Note that using "is_standarized" avoids having to maintain a whitelist of
+  // every single standardized member, as we do at the "stats object" level
+  // with "RTCStatsWhitelist".
+  stats_members.erase(
+      std::remove_if(stats_members.begin(), stats_members.end(),
+                     [](const webrtc::RTCStatsMemberInterface* member) {
+                       return !member->is_standardized();
+                     }),
+      stats_members.end());
+  return stats_members;
+}
+
 }  // namespace
 
 RTCStatsReport::RTCStatsReport(
@@ -105,7 +122,7 @@ RTCStats::RTCStats(
     const webrtc::RTCStats* stats)
     : stats_owner_(stats_owner),
       stats_(stats),
-      stats_members_(stats->Members()) {
+      stats_members_(StandardizedMembers(stats->Members())) {
   DCHECK(stats_owner_);
   DCHECK(stats_);
   DCHECK(stats_owner_->Get(stats_->id()));
