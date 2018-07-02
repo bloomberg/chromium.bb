@@ -9,10 +9,12 @@
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
+#include "base/strings/stringprintf.h"
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
 #include "content/browser/appcache/appcache_service_impl.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
+#include "content/common/service_worker/service_worker_utils.h"
 #include "content/public/browser/browser_thread.h"
 
 namespace {
@@ -36,6 +38,9 @@ AppCacheNavigationHandleCore::AppCacheNavigationHandleCore(
     : appcache_service_(appcache_service),
       appcache_host_id_(appcache_host_id),
       ui_handle_(ui_handle) {
+  if (ServiceWorkerUtils::IsServicificationEnabled())
+    debug_log_ = base::make_optional<std::vector<std::string>>();
+
   // The AppCacheNavigationHandleCore is created on the UI thread but
   // should only be accessed from the IO thread afterwards.
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -56,6 +61,9 @@ void AppCacheNavigationHandleCore::Initialize() {
   DCHECK(g_appcache_handle_map.Get().find(appcache_host_id_) ==
          g_appcache_handle_map.Get().end());
   g_appcache_handle_map.Get()[appcache_host_id_] = this;
+
+  if (debug_log_)
+    debug_log_->emplace_back("Init:" + std::to_string(appcache_host_id_));
 }
 
 // static
@@ -66,13 +74,36 @@ std::unique_ptr<AppCacheHost> AppCacheNavigationHandleCore::GetPrecreatedHost(
   if (index != g_appcache_handle_map.Get().end()) {
     AppCacheNavigationHandleCore* instance = index->second;
     DCHECK(instance);
-    return std::move(instance->precreated_host_);
+    auto host = std::move(instance->precreated_host_);
+    if (instance->debug_log_) {
+      instance->debug_log_->emplace_back(
+          host ? base::StringPrintf("Get:id=%d,host=%d", host_id,
+                                    host->host_id())
+               : base::StringPrintf("Get:id=%d,host=null", host_id));
+    }
+    return host;
   }
   return std::unique_ptr<AppCacheHost>();
 }
 
 AppCacheServiceImpl* AppCacheNavigationHandleCore::GetAppCacheService() {
   return static_cast<AppCacheServiceImpl*>(appcache_service_.get());
+}
+
+void AppCacheNavigationHandleCore::AddRequestToDebugLog(const GURL& url) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (debug_log_)
+    debug_log_->emplace_back("Req:" + url.spec().substr(0, 64));
+}
+
+std::string AppCacheNavigationHandleCore::GetDebugLog() {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  if (!debug_log_)
+    return "debug log is not enabled";
+  std::string log;
+  for (const auto& event : *debug_log_)
+    log += event + " ";
+  return log;
 }
 
 void AppCacheNavigationHandleCore::OnCacheSelected(int host_id,
