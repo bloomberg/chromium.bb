@@ -92,7 +92,7 @@ void PageLoadMetricsObserverTester::SimulatePageLoadTimingUpdate(
   // If sending the timing update caused the PageLoadMetricsUpdateDispatcher to
   // schedule a buffering timer, then fire it now so metrics are dispatched to
   // observers.
-  base::MockTimer* mock_timer = GetMockTimer();
+  base::MockOneShotTimer* mock_timer = GetMockTimer();
   if (mock_timer && mock_timer->IsRunning())
     mock_timer->Fire();
 }

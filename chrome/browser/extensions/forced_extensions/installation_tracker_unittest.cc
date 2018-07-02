@@ -36,7 +36,7 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
   ForcedExtensionsInstallationTrackerTest()
       : prefs_(profile_.GetTestingPrefService()),
         registry_(ExtensionRegistry::Get(&profile_)) {
-    auto fake_timer = std::make_unique<base::MockTimer>(true, false);
+    auto fake_timer = std::make_unique<base::MockOneShotTimer>();
     fake_timer_ = fake_timer.get();
     tracker_ = std::make_unique<InstallationTracker>(registry_, prefs_,
                                                      std::move(fake_timer));
@@ -57,7 +57,7 @@ class ForcedExtensionsInstallationTrackerTest : public testing::Test {
   ExtensionRegistry* registry_;
   base::HistogramTester histogram_tester_;
 
-  base::MockTimer* fake_timer_;
+  base::MockOneShotTimer* fake_timer_;
   std::unique_ptr<InstallationTracker> tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(ForcedExtensionsInstallationTrackerTest);

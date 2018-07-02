@@ -15,9 +15,7 @@ TestMediaSinkService::TestMediaSinkService()
 
 TestMediaSinkService::TestMediaSinkService(
     const OnSinksDiscoveredCallback& callback)
-    : MediaSinkServiceBase(callback),
-      timer_(new base::MockTimer(true /*retain_user_task*/,
-                                 false /*is_repeating*/)) {
+    : MediaSinkServiceBase(callback), timer_(new base::MockOneShotTimer()) {
   SetTimerForTest(base::WrapUnique(timer_));
 }
 

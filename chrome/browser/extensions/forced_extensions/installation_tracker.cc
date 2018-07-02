@@ -19,9 +19,10 @@ constexpr base::TimeDelta kInstallationTimeout =
 
 namespace extensions {
 
-InstallationTracker::InstallationTracker(ExtensionRegistry* registry,
-                                         PrefService* pref_service,
-                                         std::unique_ptr<base::Timer> timer)
+InstallationTracker::InstallationTracker(
+    ExtensionRegistry* registry,
+    PrefService* pref_service,
+    std::unique_ptr<base::OneShotTimer> timer)
     : registry_(registry),
       pref_service_(pref_service),
       start_time_(base::Time::Now()),

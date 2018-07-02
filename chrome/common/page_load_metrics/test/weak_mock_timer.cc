@@ -7,13 +7,12 @@
 namespace page_load_metrics {
 namespace test {
 
-WeakMockTimer::WeakMockTimer()
-    : MockTimer(false /* retain_user_task */, false /* is_repeating */) {}
+WeakMockTimer::WeakMockTimer() {}
 
 WeakMockTimerProvider::WeakMockTimerProvider() {}
 WeakMockTimerProvider::~WeakMockTimerProvider() {}
 
-base::MockTimer* WeakMockTimerProvider::GetMockTimer() const {
+base::MockOneShotTimer* WeakMockTimerProvider::GetMockTimer() const {
   return timer_.get();
 }
 

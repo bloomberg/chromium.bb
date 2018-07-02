@@ -32,7 +32,7 @@ class InstallationTracker : public ExtensionRegistryObserver {
  public:
   InstallationTracker(ExtensionRegistry* registry,
                       PrefService* pref_service,
-                      std::unique_ptr<base::Timer> timer =
+                      std::unique_ptr<base::OneShotTimer> timer =
                           std::make_unique<base::OneShotTimer>());
 
   ~InstallationTracker() override;
@@ -70,7 +70,7 @@ class InstallationTracker : public ExtensionRegistryObserver {
   ScopedObserver<ExtensionRegistry, ExtensionRegistryObserver> observer_;
 
   // Tracks installation reporting timeout.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
 
   DISALLOW_COPY_AND_ASSIGN(InstallationTracker);
 };

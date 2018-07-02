@@ -65,7 +65,7 @@ class SiteEngagementService::Helper
     bool IsTimerRunning();
 
     // Set the timer object for testing.
-    void SetPauseTimerForTesting(std::unique_ptr<base::Timer> timer);
+    void SetPauseTimerForTesting(std::unique_ptr<base::OneShotTimer> timer);
 
     SiteEngagementService::Helper* helper() { return helper_; }
 
@@ -84,7 +84,7 @@ class SiteEngagementService::Helper
 
    private:
     SiteEngagementService::Helper* helper_;
-    std::unique_ptr<base::Timer> pause_timer_;
+    std::unique_ptr<base::OneShotTimer> pause_timer_;
 
     DISALLOW_COPY_AND_ASSIGN(PeriodicTracker);
   };

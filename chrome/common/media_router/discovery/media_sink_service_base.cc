@@ -72,7 +72,8 @@ void MediaSinkServiceBase::RemoveSink(const MediaSinkInternal& sink) {
   StartTimer();
 }
 
-void MediaSinkServiceBase::SetTimerForTest(std::unique_ptr<base::Timer> timer) {
+void MediaSinkServiceBase::SetTimerForTest(
+    std::unique_ptr<base::OneShotTimer> timer) {
   discovery_timer_ = std::move(timer);
 }
 

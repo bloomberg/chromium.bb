@@ -61,8 +61,7 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
     media_sink_service_->SetDescriptionServiceForTest(
         std::move(mock_description_service));
 
-    mock_timer_ =
-        new base::MockTimer(true /*retain_user_task*/, false /*is_repeating*/);
+    mock_timer_ = new base::MockOneShotTimer();
     media_sink_service_->SetTimerForTest(base::WrapUnique(mock_timer_));
 
     auto mock_app_discovery_service =
@@ -109,7 +108,7 @@ class DialMediaSinkServiceImplTest : public ::testing::Test {
   TestDialRegistry test_dial_registry_;
   MockDeviceDescriptionService* mock_description_service_;
   MockDialAppDiscoveryService* mock_app_discovery_service_;
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
 
   std::unique_ptr<DialMediaSinkServiceImpl> media_sink_service_;
 
