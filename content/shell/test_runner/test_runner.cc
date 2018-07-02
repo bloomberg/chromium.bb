@@ -1567,7 +1567,7 @@ void TestRunner::Reset() {
     close_remaining_windows_ = true;
 
   spellcheck_->Reset();
-  file_chooser_paths_ = std::vector<std::string>();
+  file_chooser_paths_.reset();
 }
 
 void TestRunner::SetTestIsRunning(bool running) {

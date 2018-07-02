@@ -132,7 +132,7 @@ class TestRunner : public WebTestRunner {
     return is_web_platform_tests_mode_;
   }
   void set_is_web_platform_tests_mode() { is_web_platform_tests_mode_ = true; }
-  const std::vector<std::string>& file_chooser_paths() const {
+  const base::Optional<std::vector<std::string>>& file_chooser_paths() const {
     return file_chooser_paths_;
   }
 
@@ -600,7 +600,7 @@ class TestRunner : public WebTestRunner {
   // Forces v8 compilation cache to be disabled (used for inspector tests).
   bool disable_v8_cache_ = false;
 
-  std::vector<std::string> file_chooser_paths_;
+  base::Optional<std::vector<std::string>> file_chooser_paths_;
 
   base::WeakPtrFactory<TestRunner> weak_factory_;
 
