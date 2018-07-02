@@ -8,7 +8,7 @@
 #include <iterator>
 
 #include "base/logging.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
+#include "chromeos/services/secure_channel/authenticated_channel.h"
 
 namespace chromeos {
 

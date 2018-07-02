@@ -12,9 +12,9 @@
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/ble_initiator_failure_type.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
+#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "chromeos/services/secure_channel/fake_ble_connection_manager.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

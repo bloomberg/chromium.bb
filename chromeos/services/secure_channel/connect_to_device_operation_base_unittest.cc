@@ -11,7 +11,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/test/test_simple_task_runner.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/fake_authenticated_channel.h"
+#include "chromeos/services/secure_channel/fake_authenticated_channel.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {

@@ -8,11 +8,11 @@
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
 #include "base/stl_util.h"
+#include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/ble_initiator_connection_attempt.h"
 #include "chromeos/services/secure_channel/ble_listener_connection_attempt.h"
 #include "chromeos/services/secure_channel/pending_ble_initiator_connection_request.h"
 #include "chromeos/services/secure_channel/pending_ble_listener_connection_request.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 
 namespace chromeos {
 

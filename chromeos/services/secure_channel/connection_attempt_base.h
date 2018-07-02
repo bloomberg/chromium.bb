@@ -12,12 +12,12 @@
 #include "base/observer_list.h"
 #include "base/stl_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
+#include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/connect_to_device_operation.h"
 #include "chromeos/services/secure_channel/connection_attempt.h"
 #include "chromeos/services/secure_channel/connection_attempt_details.h"
 #include "chromeos/services/secure_channel/connection_details.h"
 #include "chromeos/services/secure_channel/pending_connection_request.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 #include "chromeos/services/secure_channel/public/cpp/shared/connection_priority.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
 
