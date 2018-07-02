@@ -855,7 +855,7 @@ void WebContentsAccessibilityAndroid::SetTextFieldValue(
   BrowserAccessibilityAndroid* node = GetAXFromUniqueID(unique_id);
   if (node) {
     node->manager()->SetValue(
-        *node, base::android::ConvertJavaStringToUTF16(env, value));
+        *node, base::android::ConvertJavaStringToUTF8(env, value));
   }
 }
 
@@ -909,7 +909,7 @@ jboolean WebContentsAccessibilityAndroid::AdjustSlider(
   value += (increment ? delta : -delta);
   value = std::max(std::min(value, max), min);
   if (value != original_value) {
-    node->manager()->SetValue(*node, base::NumberToString16(value));
+    node->manager()->SetValue(*node, base::NumberToString(value));
     return true;
   }
   return false;

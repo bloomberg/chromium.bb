@@ -1035,11 +1035,11 @@ bool Textfield::HandleAccessibleAction(const ui::AXActionData& action_data) {
     return View::HandleAccessibleAction(action_data);
 
   if (action_data.action == ax::mojom::Action::kSetValue) {
-    SetText(action_data.value);
+    SetText(base::UTF8ToUTF16(action_data.value));
     ClearSelection();
     return true;
   } else if (action_data.action == ax::mojom::Action::kReplaceSelectedText) {
-    InsertOrReplaceText(action_data.value);
+    InsertOrReplaceText(base::UTF8ToUTF16(action_data.value));
     ClearSelection();
     return true;
   }

@@ -444,7 +444,7 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
               params->opt_args.additional_properties,
               &replace_selected_text_params));
       action->action = ax::mojom::Action::kReplaceSelectedText;
-      action->value = base::UTF8ToUTF16(replace_selected_text_params.value);
+      action->value = replace_selected_text_params.value;
       break;
     }
     case api::automation::ACTION_TYPE_SETVALUE: {
@@ -453,7 +453,7 @@ AutomationInternalPerformActionFunction::ConvertToAXActionData(
           api::automation_internal::SetValueParams::Populate(
               params->opt_args.additional_properties, &set_value_params));
       action->action = ax::mojom::Action::kSetValue;
-      action->value = base::UTF8ToUTF16(set_value_params.value);
+      action->value = set_value_params.value;
       break;
     }
     // These actions are currently unused by any existing clients of

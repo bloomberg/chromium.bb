@@ -673,9 +673,8 @@ void BrowserAccessibilityManager::SetScrollOffset(
   delegate_->AccessibilityPerformAction(action_data);
 }
 
-void BrowserAccessibilityManager::SetValue(
-    const BrowserAccessibility& node,
-    const base::string16& value) {
+void BrowserAccessibilityManager::SetValue(const BrowserAccessibility& node,
+                                           const std::string& value) {
   if (!delegate_)
     return;
 

@@ -652,7 +652,7 @@ void RenderAccessibilityImpl::OnPerformAction(
       target.SetSequentialFocusNavigationStartingPoint();
       break;
     case ax::mojom::Action::kSetValue:
-      target.SetValue(blink::WebString::FromUTF16(data.value));
+      target.SetValue(blink::WebString::FromUTF8(data.value));
       HandleAXEvent(target, ax::mojom::Event::kValueChanged);
       break;
     case ax::mojom::Action::kShowContextMenu:

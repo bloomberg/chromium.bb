@@ -29,7 +29,7 @@ TEST(AXActionDataMojomTraitsTest, RoundTrip) {
   input.custom_action_id = 9;
   input.target_rect = gfx::Rect(10, 11, 12, 13);
   input.target_point = gfx::Point(14, 15);
-  input.value = base::ASCIIToUTF16("value");
+  input.value = "value";
   input.hit_test_event_to_fire = ax::mojom::Event::kFocus;
 
   ui::AXActionData output;
@@ -49,6 +49,6 @@ TEST(AXActionDataMojomTraitsTest, RoundTrip) {
   EXPECT_EQ(output.custom_action_id, 9);
   EXPECT_EQ(output.target_rect, gfx::Rect(10, 11, 12, 13));
   EXPECT_EQ(output.target_point, gfx::Point(14, 15));
-  EXPECT_EQ(output.value, base::ASCIIToUTF16("value"));
+  EXPECT_EQ(output.value, "value");
   EXPECT_EQ(output.hit_test_event_to_fire, ax::mojom::Event::kFocus);
 }

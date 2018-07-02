@@ -4,7 +4,6 @@
 
 module ax.mojom;
 
-import "mojo/public/mojom/base/string16.mojom";
 import "ui/accessibility/ax_enums.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
@@ -24,6 +23,6 @@ struct AXActionData {
   int32 custom_action_id;
   gfx.mojom.Rect target_rect;
   gfx.mojom.Point target_point;
-  mojo_base.mojom.String16 value;
+  string value;
   Event hit_test_event_to_fire;
 };

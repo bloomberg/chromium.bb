@@ -651,7 +651,7 @@ bool AlsoUseShowMenuActionForDefaultAction(const ui::AXNodeData& data) {
 
   // Set type-specific information as necessary for actions set above.
   if ([value isKindOfClass:[NSString class]]) {
-    data.value = base::SysNSStringToUTF16(value);
+    data.value = base::SysNSStringToUTF8(value);
   } else if (data.action == ax::mojom::Action::kSetSelection &&
              [value isKindOfClass:[NSValue class]]) {
     NSRange range = [value rangeValue];
