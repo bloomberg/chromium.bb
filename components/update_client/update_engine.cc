@@ -82,6 +82,11 @@ void UpdateEngine::Update(bool is_foreground,
   }
 
   if (IsThrottled(is_foreground)) {
+    // TODO(xiaochu): remove this log after https://crbug.com/851151 is fixed.
+    VLOG(1) << "Background update is throttled for following components:";
+    for (const auto& id : ids) {
+      VLOG(1) << "id:" << id;
+    }
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(std::move(callback), Error::RETRY_LATER));
     return;
