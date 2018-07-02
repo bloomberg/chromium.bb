@@ -118,10 +118,9 @@ WebDocumentLoader::ExtraData* WebDocumentLoaderImpl::GetExtraData() const {
   return extra_data_.get();
 }
 
-void WebDocumentLoaderImpl::SetExtraData(ExtraData* extra_data) {
-  // extraData can't be a std::unique_ptr because setExtraData is a WebKit API
-  // function.
-  extra_data_ = base::WrapUnique(extra_data);
+void WebDocumentLoaderImpl::SetExtraData(
+    std::unique_ptr<ExtraData> extra_data) {
+  extra_data_ = std::move(extra_data);
 }
 
 void WebDocumentLoaderImpl::SetNavigationStartTime(

@@ -72,7 +72,7 @@ class CORE_EXPORT WebDocumentLoaderImpl final : public DocumentLoader,
   bool ReplacesCurrentHistoryItem() const override;
   WebNavigationType GetNavigationType() const override;
   ExtraData* GetExtraData() const override;
-  void SetExtraData(ExtraData*) override;
+  void SetExtraData(std::unique_ptr<ExtraData>) override;
   void SetNavigationStartTime(base::TimeTicks) override;
   void UpdateNavigation(base::TimeTicks redirect_start_time,
                         base::TimeTicks redirect_end_time,
