@@ -110,9 +110,6 @@ class Tab : public gfx::AnimationDelegate,
   void set_detached() { detached_ = true; }
   bool detached() const { return detached_; }
 
-  // Returns the radius of the outer corners of the tab shape.
-  int GetCornerRadius() const;
-
   // Returns the color used for the alert indicator icon.
   SkColor GetAlertIndicatorColor(TabAlertState state) const;
 
@@ -203,6 +200,12 @@ class Tab : public gfx::AnimationDelegate,
   // values for the vertical distances between points and then compute the
   // horizontal deltas from those.
   static float GetInverseDiagonalSlope();
+
+  // Returns the radius of the outer corners of the tab shape.
+  static int GetCornerRadius();
+
+  // Returns the insets to use for laying out tab contents.
+  static gfx::Insets GetContentsInsets();
 
   // Returns the overlap between adjacent tabs.
   static int GetOverlap();

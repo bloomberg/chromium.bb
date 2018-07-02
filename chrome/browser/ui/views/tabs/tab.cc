@@ -124,20 +124,25 @@ int Center(int size, int item_size) {
   return extra_space / 2;
 }
 
-// Returns the width of the tab endcap in DIP.  Pre-refresh, this is the
-// width of the curve making up either the outer or inner edge of the stroke.
-int GetTabEndcapWidth() {
-  constexpr int kEndcapWidth[] = {16, 18, 24, 16, 16};
-  return kEndcapWidth[MD::GetMode()];
+// For non-material-refresh mode, returns the width of the tab endcap in DIP.
+// More precisely, this is the width of the curve making up either the outer or
+// inner edge of the stroke.
+//
+// These two curves are horizontally offset by 1 px (regardless of scale); the
+// total width of the endcap from tab outer edge to the inside end of the stroke
+// inner edge is (GetTabEndcapWidthForLayout() * scale) + 1.
+int GetTabEndcapWidthForLayout() {
+  const int mode = MD::GetMode();
+  DCHECK_LE(mode, 2);
+
+  constexpr int kEndcapWidth[] = {16, 18, 24};
+  return kEndcapWidth[mode];
 }
 
-// Pre-refresh, endcaps paint slightly differently than they layout.
+// For painting the endcaps, the top corners are actually shifted outwards 0.5
+// DIP from the grid.
 float GetTabEndcapWidthForPainting() {
-  DCHECK(!MD::IsRefreshUi());
-
-  // For painting the endcaps, the top corners are actually shifted outwards 0.5
-  // DIP from the grid.
-  return GetTabEndcapWidth() - 0.5f;
+  return GetTabEndcapWidthForLayout() - 0.5f;
 }
 
 void DrawHighlight(gfx::Canvas* canvas,
@@ -156,12 +161,11 @@ void DrawHighlight(gfx::Canvas* canvas,
 
 // Scales |bounds| by scale and aligns so that the layout portion is snapped to
 // the pixel grid.  This ensures adjacent tabs meet up exactly during painting.
-const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds,
-                                     float endcap_width,
-                                     float scale) {
+const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds, float scale) {
   // Convert full bounds to layout bounds and scale from DIP to px.
   gfx::RectF aligned_bounds(bounds);
-  aligned_bounds.Inset(endcap_width / 2, 0);
+  const int corner_radius = Tab::GetCornerRadius();
+  aligned_bounds.Inset(corner_radius, 0);
   aligned_bounds.Scale(scale);
 
   // Snap layout bounds to nearest pixels.
@@ -177,7 +181,7 @@ const gfx::RectF ScaleAndAlignBounds(const gfx::Rect& bounds,
 
   // Convert back to full bounds.  The endcap widths are not rounded, since it's
   // OK if the corners do not snap to the pixel grid.
-  aligned_bounds.Inset(-(endcap_width / 2) * scale, 0);
+  aligned_bounds.Inset(-corner_radius * scale, 0);
   return aligned_bounds;
 }
 
@@ -197,11 +201,12 @@ gfx::Path OffsetAndIntersectPaths(gfx::Path& left_path,
 gfx::Path GetRefreshInteriorPath(float scale,
                                  const gfx::Rect& bounds,
                                  float horizontal_inset) {
-  const float endcap_width = GetTabEndcapWidth();
-  const float radius = (endcap_width / 2) * scale;
+  // TODO(pkasting): Fix this to work better with stroke heights > 0.
 
-  const gfx::RectF aligned_bounds =
-      ScaleAndAlignBounds(bounds, endcap_width, scale);
+  const int ideal_radius = Tab::GetCornerRadius();
+  const float radius = ideal_radius * scale;
+
+  const gfx::RectF aligned_bounds = ScaleAndAlignBounds(bounds, scale);
   const float left = aligned_bounds.x();
   const float top = aligned_bounds.y() + Tab::GetStrokeHeight();
   const float right = aligned_bounds.right();
@@ -310,12 +315,13 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
                                bool extend_to_top,
                                float scale,
                                float stroke_thickness) {
-  const float endcap_width = GetTabEndcapWidth();
-  const float outer_radius = (endcap_width / 2) * scale - stroke_thickness;
-  const float inner_radius = (endcap_width / 2) * scale + stroke_thickness;
+  // TODO(pkasting): Fix this to work better with stroke heights > 0.
 
-  const gfx::RectF aligned_bounds =
-      ScaleAndAlignBounds(bounds, endcap_width, scale);
+  const float ideal_radius = Tab::GetCornerRadius();
+  const float outer_radius = ideal_radius * scale - stroke_thickness;
+  const float inner_radius = ideal_radius * scale + stroke_thickness;
+
+  const gfx::RectF aligned_bounds = ScaleAndAlignBounds(bounds, scale);
   const float left = aligned_bounds.x();
   const float top = aligned_bounds.y();
   const float right = aligned_bounds.right();
@@ -463,8 +469,7 @@ Tab::Tab(TabController* controller, gfx::AnimationContainer* container)
 
   // This will cause calls to GetContentsBounds to return only the rectangle
   // inside the tab shape, rather than to its extents.
-  SetBorder(views::CreateEmptyBorder(
-      gfx::Insets(GetStrokeHeight(), GetTabEndcapWidth())));
+  SetBorder(views::CreateEmptyBorder(GetContentsInsets()));
 
   title_->SetHorizontalAlignment(gfx::ALIGN_TO_HEAD);
   title_->SetElideBehavior(gfx::FADE_TAIL);
@@ -912,12 +917,6 @@ void Tab::OnThemeChanged() {
   OnButtonColorMaybeChanged();
 }
 
-int Tab::GetCornerRadius() const {
-  // TODO(pkasting): This should vary as the tab width decreases.
-  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
-      views::EMPHASIS_HIGH);
-}
-
 SkColor Tab::GetAlertIndicatorColor(TabAlertState state) const {
   const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   // If theme provider is not yet available, return the default button
@@ -1089,12 +1088,12 @@ void Tab::FrameColorsChanged() {
 
 // static
 int Tab::GetMinimumInactiveWidth() {
-  return GetTabEndcapWidth() * 2;
+  return GetContentsInsets().width();
 }
 
 // static
 int Tab::GetMinimumActiveWidth() {
-  return TabCloseButton::GetWidth() + GetMinimumInactiveWidth();
+  return TabCloseButton::GetWidth() + GetContentsInsets().width();
 }
 
 // static
@@ -1106,7 +1105,7 @@ int Tab::GetStandardWidth() {
 // static
 int Tab::GetPinnedWidth() {
   constexpr int kTabPinnedContentWidth = 23;
-  return kTabPinnedContentWidth + GetMinimumInactiveWidth();
+  return kTabPinnedContentWidth + GetContentsInsets().width();
 }
 
 // static
@@ -1123,7 +1122,7 @@ float Tab::GetInverseDiagonalSlope() {
   // * The endcap width is enough for the whole stroke outer curve, i.e. the
   //   side diagonal plus the curves on both its ends.
   // * The bottom and top curve together are 4 DIP wide, so the diagonal is
-  //   (endcap_width - 4) DIP wide.
+  //   (endcap width - 4) DIP wide.
   // * The bottom and top curve are each 1.5 px high.  Additionally, there is an
   //   extra 1 px below the bottom curve and (scale - 1) px above the top curve,
   //   so the diagonal is ((height - 1.5 - 1.5) * scale - 1 - (scale - 1)) px
@@ -1134,10 +1133,23 @@ float Tab::GetInverseDiagonalSlope() {
 }
 
 // static
+int Tab::GetCornerRadius() {
+  return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_HIGH);
+}
+
+// static
+gfx::Insets Tab::GetContentsInsets() {
+  const int endcap_width = MD::IsRefreshUi() ? (GetCornerRadius() * 2)
+                                             : GetTabEndcapWidthForLayout();
+  return gfx::Insets(GetStrokeHeight(), endcap_width);
+}
+
+// static
 int Tab::GetOverlap() {
-  // We want to overlap the endcap portions entirely. Under refresh, we want to
-  // overlap by an extra dip on each end in order overlap the separators.
-  return GetTabEndcapWidth() + (MD::IsRefreshUi() ? kSeparatorThickness : 0);
+  // For refresh, overlap the separators.
+  return MD::IsRefreshUi() ? (GetCornerRadius() * 2 + kSeparatorThickness)
+                           : GetTabEndcapWidthForLayout();
 }
 
 // static
@@ -1355,18 +1367,15 @@ void Tab::PaintSeparators(gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped_canvas(canvas);
   const float scale = canvas->UndoDeviceScaleFactor();
 
-  const float endcap_width = GetTabEndcapWidth();
-  const gfx::RectF aligned_bounds =
-      ScaleAndAlignBounds(bounds(), endcap_width, scale);
-
+  const gfx::RectF aligned_bounds = ScaleAndAlignBounds(bounds(), scale);
+  const int corner_radius = GetCornerRadius();
   const float separator_height = GetTabSeparatorHeight() * scale;
   gfx::RectF leading_separator_bounds(
-      aligned_bounds.x() + (endcap_width / 2) * scale,
+      aligned_bounds.x() + corner_radius * scale,
       aligned_bounds.y() + (aligned_bounds.height() - separator_height) / 2,
       kSeparatorThickness * scale, separator_height);
   gfx::RectF trailing_separator_bounds(
-      aligned_bounds.right() - (endcap_width / 2) * scale -
-          kSeparatorThickness * scale,
+      aligned_bounds.right() - (corner_radius + kSeparatorThickness) * scale,
       leading_separator_bounds.y(), kSeparatorThickness * scale,
       separator_height);
 
@@ -1439,7 +1448,7 @@ void Tab::UpdateIconVisibility() {
   if (height() < GetLayoutConstant(TAB_HEIGHT))
     return;
 
-  int available_width = std::max(0, width() - GetMinimumInactiveWidth());
+  int available_width = GetContentsBounds().width();
 
   const bool is_touch_optimized = MD::IsTouchOptimizedUiEnabled();
   const int favicon_width = gfx::kFaviconSize;
