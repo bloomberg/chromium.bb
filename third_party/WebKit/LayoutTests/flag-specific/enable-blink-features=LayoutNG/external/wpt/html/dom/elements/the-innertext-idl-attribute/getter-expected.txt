@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 213 tests; 139 PASS, 74 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 213 tests; 140 PASS, 73 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -202,7 +202,7 @@ PASS innerText not supported on SVG elements ("<svg>abc")
 PASS innerText not supported on MathML elements ("<math>abc")
 PASS <rt> and no <rp> ("<div><ruby>abc<rt>def</rt></ruby>")
 PASS <rp> ("<div><ruby>abc<rp>(</rp><rt>def</rt><rp>)</rp></ruby>")
-FAIL Lone <rp> ("<div><rp>abc</rp>") assert_equals: expected "" but got "abc"
+PASS Lone <rp> ("<div><rp>abc</rp>")
 PASS visibility:hidden <rp> ("<div><rp style='visibility:hidden'>abc</rp>")
 PASS display:block <rp> ("<div><rp style='display:block'>abc</rp>def")
 PASS display:block <rp> with whitespace ("<div><rp style='display:block'> abc </rp>def")
