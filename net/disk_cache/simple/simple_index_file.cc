@@ -25,8 +25,6 @@
 #include "net/disk_cache/simple/simple_synchronous_entry.h"
 #include "net/disk_cache/simple/simple_util.h"
 
-using base::File;
-
 namespace disk_cache {
 namespace {
 
@@ -120,9 +118,9 @@ class SimpleIndexPickle : public base::Pickle {
 };
 
 bool WritePickleFile(base::Pickle* pickle, const base::FilePath& file_name) {
-  File file(
-      file_name,
-      File::FLAG_CREATE_ALWAYS | File::FLAG_WRITE | File::FLAG_SHARE_DELETE);
+  base::File file(file_name, base::File::FLAG_CREATE_ALWAYS |
+                                 base::File::FLAG_WRITE |
+                                 base::File::FLAG_SHARE_DELETE);
   if (!file.IsValid())
     return false;
 
@@ -481,9 +479,10 @@ void SimpleIndexFile::SyncLoadFromDisk(const base::FilePath& index_filename,
                                        SimpleIndexLoadResult* out_result) {
   out_result->Reset();
 
-  File file(index_filename, File::FLAG_OPEN | File::FLAG_READ |
-                                File::FLAG_SHARE_DELETE |
-                                File::FLAG_SEQUENTIAL_SCAN);
+  base::File file(index_filename, base::File::FLAG_OPEN |
+                                      base::File::FLAG_READ |
+                                      base::File::FLAG_SHARE_DELETE |
+                                      base::File::FLAG_SEQUENTIAL_SCAN);
   if (!file.IsValid())
     return;
 
