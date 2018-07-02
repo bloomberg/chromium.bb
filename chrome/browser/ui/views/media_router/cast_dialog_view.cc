@@ -4,7 +4,10 @@
 
 #include "chrome/browser/ui/views/media_router/cast_dialog_view.h"
 
+#include "base/location.h"
 #include "base/optional.h"
+#include "base/time/time.h"
+#include "chrome/browser/media/router/media_router_metrics.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
@@ -15,6 +18,7 @@
 #include "chrome/browser/ui/views/media_router/cast_dialog_sink_button.h"
 #include "chrome/common/media_router/media_sink.h"
 #include "chrome/grit/generated_resources.h"
+#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
@@ -52,9 +56,11 @@ bool SupportsDesktopSource(const UIMediaSink& sink) {
 // static
 void CastDialogView::ShowDialog(views::View* anchor_view,
                                 CastDialogController* controller,
-                                Browser* browser) {
+                                Browser* browser,
+                                const base::Time& start_time) {
   DCHECK(!instance_);
-  instance_ = new CastDialogView(anchor_view, controller, browser);
+  DCHECK(!start_time.is_null());
+  instance_ = new CastDialogView(anchor_view, controller, browser, start_time);
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(instance_);
   widget->Show();
@@ -125,6 +131,7 @@ bool CastDialogView::Accept() {
     for (MediaCastMode cast_mode : {PRESENTATION, TAB_MIRROR, DESKTOP_MIRROR}) {
       if ((cast_mode & selected_source_) &&
           base::ContainsKey(sink.cast_modes, cast_mode)) {
+        MediaRouterMetrics::RecordStartRouteDeviceIndex(selected_sink_index_);
         controller_->StartCasting(sink.id, cast_mode);
         break;
       }
@@ -161,11 +168,14 @@ void CastDialogView::OnControllerInvalidated() {
 
 CastDialogView::CastDialogView(views::View* anchor_view,
                                CastDialogController* controller,
-                               Browser* browser)
+                               Browser* browser,
+                               const base::Time& start_time)
     : BubbleDialogDelegateView(anchor_view, views::BubbleBorder::TOP_RIGHT),
       selected_source_(kTabSource),
       controller_(controller),
-      browser_(browser) {
+      browser_(browser),
+      start_time_(start_time),
+      weak_factory_(this) {
   ShowNoSinksView();
 }
 
@@ -200,6 +210,15 @@ gfx::Size CastDialogView::CalculatePreferredSize() const {
   return gfx::Size(width, GetHeightForWidth(width));
 }
 
+void CastDialogView::OnPaint(gfx::Canvas* canvas) {
+  views::BubbleDialogDelegateView::OnPaint(canvas);
+  if (!start_time_.is_null()) {
+    MediaRouterMetrics::RecordMediaRouterDialogPaint(base::Time::Now() -
+                                                     start_time_);
+    start_time_ = base::Time();
+  }
+}
+
 void CastDialogView::Init() {
   auto* provider = ChromeLayoutProvider::Get();
   set_margins(
@@ -211,6 +230,7 @@ void CastDialogView::Init() {
                   0));
   SetLayoutManager(std::make_unique<views::FillLayout>());
   controller_->AddObserver(this);
+  RecordSinkCountWithDelay();
 }
 
 void CastDialogView::WindowClosing() {
@@ -333,6 +353,20 @@ void CastDialogView::MaybeSizeToContents() {
   // The widget may be null if this is called while the dialog is opening.
   if (GetWidget())
     SizeToContents();
+}
+
+void CastDialogView::RecordSinkCountWithDelay() {
+  // Record the number of sinks after three seconds. This is consistent with the
+  // WebUI dialog.
+  content::BrowserThread::PostDelayedTask(
+      content::BrowserThread::UI, FROM_HERE,
+      base::BindOnce(&CastDialogView::RecordSinkCount,
+                     weak_factory_.GetWeakPtr()),
+      base::TimeDelta::FromSeconds(3));
+}
+
+void CastDialogView::RecordSinkCount() {
+  media_router::MediaRouterMetrics::RecordDeviceCount(sink_buttons_.size());
 }
 
 // static

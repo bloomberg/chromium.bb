@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/bubble/bubble_dialog_delegate.h"
@@ -15,6 +16,10 @@
 #include "ui/views/controls/menu/menu_runner.h"
 
 class Browser;
+
+namespace gfx {
+class Canvas;
+}  // namespace gfx
 
 namespace media_router {
 
@@ -33,7 +38,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   // currently shown.
   static void ShowDialog(views::View* anchor_view,
                          CastDialogController* controller,
-                         Browser* browser);
+                         Browser* browser,
+                         const base::Time& start_time);
 
   // No-op if the dialog is currently not shown.
   static void HideDialog();
@@ -68,6 +74,7 @@ class CastDialogView : public views::BubbleDialogDelegateView,
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void OnPaint(gfx::Canvas* canvas) override;
 
   // ui::SimpleMenuModel::Delegate:
   bool IsCommandIdChecked(int command_id) const override;
@@ -92,7 +99,8 @@ class CastDialogView : public views::BubbleDialogDelegateView,
  private:
   CastDialogView(views::View* anchor_view,
                  CastDialogController* controller,
-                 Browser* browser);
+                 Browser* browser,
+                 const base::Time& start_time);
   ~CastDialogView() override;
 
   // views::BubbleDialogDelegateView:
@@ -119,6 +127,12 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   const UIMediaSink& GetSelectedSink() const;
 
   void MaybeSizeToContents();
+
+  // Posts a delayed task to record an UMA metric for the number of sinks shown.
+  void RecordSinkCountWithDelay();
+
+  // Records an UMA metric for the number of sinks shown.
+  void RecordSinkCount();
 
   // The singleton dialog instance. This is a nullptr when a dialog is not
   // shown.
@@ -158,6 +172,11 @@ class CastDialogView : public views::BubbleDialogDelegateView,
   views::Button* sources_button_ = nullptr;
   std::unique_ptr<ui::SimpleMenuModel> sources_menu_model_;
   std::unique_ptr<views::MenuRunner> sources_menu_runner_;
+
+  // The time when the dialog UI started initializing.
+  base::Time start_time_;
+
+  base::WeakPtrFactory<CastDialogView> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDialogView);
 };

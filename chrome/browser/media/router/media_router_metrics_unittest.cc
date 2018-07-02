@@ -189,4 +189,45 @@ TEST(MediaRouterMetricsTest, RecordMediaSinkType) {
                   Bucket(static_cast<int>(SinkIconType::GENERIC), 1)));
 }
 
+TEST(MediaRouterMetricsTest, RecordDeviceCount) {
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramUiDeviceCount, 0);
+
+  MediaRouterMetrics::RecordDeviceCount(30);
+  MediaRouterMetrics::RecordDeviceCount(0);
+
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramUiDeviceCount, 2);
+  EXPECT_THAT(tester.GetAllSamples(MediaRouterMetrics::kHistogramUiDeviceCount),
+              ElementsAre(Bucket(0, 1), Bucket(30, 1)));
+}
+
+TEST(MediaRouterMetricsTest, RecordStartRouteDeviceIndex) {
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramStartLocalPosition, 0);
+
+  MediaRouterMetrics::RecordStartRouteDeviceIndex(30);
+  MediaRouterMetrics::RecordStartRouteDeviceIndex(0);
+
+  tester.ExpectTotalCount(MediaRouterMetrics::kHistogramStartLocalPosition, 2);
+  EXPECT_THAT(
+      tester.GetAllSamples(MediaRouterMetrics::kHistogramStartLocalPosition),
+      ElementsAre(Bucket(0, 1), Bucket(30, 1)));
+}
+
+TEST(MediaRouterMetricsTest, RecordStartLocalSessionSuccessful) {
+  base::HistogramTester tester;
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramStartLocalSessionSuccessful, 0);
+
+  MediaRouterMetrics::RecordStartLocalSessionSuccessful(true);
+  MediaRouterMetrics::RecordStartLocalSessionSuccessful(false);
+  MediaRouterMetrics::RecordStartLocalSessionSuccessful(true);
+
+  tester.ExpectTotalCount(
+      MediaRouterMetrics::kHistogramStartLocalSessionSuccessful, 3);
+  EXPECT_THAT(tester.GetAllSamples(
+                  MediaRouterMetrics::kHistogramStartLocalSessionSuccessful),
+              ElementsAre(Bucket(false, 1), Bucket(true, 2)));
+}
+
 }  // namespace media_router

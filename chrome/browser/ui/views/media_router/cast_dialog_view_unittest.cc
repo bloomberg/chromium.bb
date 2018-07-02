@@ -11,6 +11,7 @@
 
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/media_router/cast_dialog_controller.h"
 #include "chrome/browser/ui/media_router/cast_dialog_model.h"
@@ -101,7 +102,7 @@ class CastDialogViewTest : public ChromeViewsTestBase {
               dialog_ = static_cast<CastDialogView*>(observer);
             })));
     CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_,
-                               nullptr);
+                               nullptr, base::Time::Now());
 
     dialog_->OnModelUpdated(model);
   }
@@ -148,7 +149,7 @@ TEST_F(CastDialogViewTest, MAYBE_ShowAndHideDialog) {
 
   EXPECT_CALL(controller_, AddObserver(_));
   CastDialogView::ShowDialog(anchor_widget_->GetContentsView(), &controller_,
-                             nullptr);
+                             nullptr, base::Time::Now());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(CastDialogView::IsShowing());
   EXPECT_NE(nullptr, CastDialogView::GetCurrentDialogWidget());

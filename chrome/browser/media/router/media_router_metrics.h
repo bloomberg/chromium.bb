@@ -89,9 +89,12 @@ class MediaRouterMetrics {
   static const char kHistogramMediaSinkType[];
   static const char kHistogramPresentationUrlType[];
   static const char kHistogramRouteCreationOutcome[];
+  static const char kHistogramUiDeviceCount[];
   static const char kHistogramUiDialogPaint[];
   static const char kHistogramUiDialogLoadedWithData[];
   static const char kHistogramUiFirstAction[];
+  static const char kHistogramStartLocalPosition[];
+  static const char kHistogramStartLocalSessionSuccessful[];
 
   // Records where the user clicked to open the Media Router dialog.
   static void RecordMediaRouterDialogOrigin(
@@ -135,6 +138,17 @@ class MediaRouterMetrics {
 
   // Records the type of the sink that media is being Cast to.
   static void RecordMediaSinkType(SinkIconType sink_icon_type);
+
+  // Records the number of devices shown in the Cast dialog. The device count
+  // may be 0.
+  static void RecordDeviceCount(int device_count);
+
+  // Records the index of the device the user has started casting to on the
+  // devices list. The index starts at 0.
+  static void RecordStartRouteDeviceIndex(int index);
+
+  // Records whether or not an attempt to start casting was successful.
+  static void RecordStartLocalSessionSuccessful(bool success);
 };
 
 }  // namespace media_router

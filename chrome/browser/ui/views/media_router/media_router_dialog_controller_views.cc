@@ -75,6 +75,7 @@ MediaRouterDialogControllerViews::GetOrCreateForWebContents(
 }
 
 void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
+  base::Time dialog_creation_time = base::Time::Now();
   MediaRouterDialogControllerImplBase::CreateMediaRouterDialog();
 
   ui_ = std::make_unique<MediaRouterViewsUI>();
@@ -93,7 +94,8 @@ void MediaRouterDialogControllerViews::CreateMediaRouterDialog() {
   views::View* action_view = browser_actions->GetViewForId(
       ComponentToolbarActionsFactory::kMediaRouterActionId);
   CastDialogView::ShowDialog(action_view, ui_.get(),
-                             chrome::FindBrowserWithWebContents(initiator()));
+                             chrome::FindBrowserWithWebContents(initiator()),
+                             dialog_creation_time);
   CastDialogView::GetCurrentDialogWidget()->AddObserver(this);
 }
 
