@@ -4741,3 +4741,6 @@ crbug.com/857520 [ Mac Win ] external/wpt/accelerometer/Accelerometer-iframe-acc
 crbug.com/859064 [ Linux Win10 Mac10.13 ] http/tests/devtools/console-resource-errors.js [ Failure ]
 crbug.com/859169 [ Win7 ] http/tests/devtools/layers/layer-scroll-rects-get.js [ Failure Pass ]
 crbug.com/859270 [ Mac10.12 ] external/wpt/gyroscope/Gyroscope-iframe-access.https.html [ Timeout ]
+
+# Sheriff 2018-07-02
+crbug.com/859605 [ Mac10.10 ] external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-002.html [ Failure ]
