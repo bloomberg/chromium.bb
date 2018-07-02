@@ -6,6 +6,8 @@
 
 #include <stdint.h>
 
+#include <memory>
+
 #include "base/files/scoped_temp_dir.h"
 #include "base/run_loop.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
@@ -36,7 +38,7 @@ class DownloadHandlerTestFileSystem : public DummyFileSystem {
                         const GetResourceEntryCallback& callback) override {
     callback.Run(error_, std::unique_ptr<ResourceEntry>(error_ == FILE_ERROR_OK
                                                             ? new ResourceEntry
-                                                            : NULL));
+                                                            : nullptr));
   }
 
   void CreateDirectory(const base::FilePath& directory_path,
@@ -98,7 +100,7 @@ class DownloadHandlerTest : public testing::Test {
     EXPECT_CALL(download_item_, GetState())
         .WillRepeatedly(testing::Return(download::DownloadItem::IN_PROGRESS));
 
-    download_handler_.reset(new DownloadHandler(&test_file_system_));
+    download_handler_ = std::make_unique<DownloadHandler>(&test_file_system_);
     download_handler_->Initialize(download_manager_.get(), temp_dir_.GetPath());
     download_handler_->SetFreeDiskSpaceDelayForTesting(
         base::TimeDelta::FromMilliseconds(0));
@@ -185,7 +187,7 @@ TEST_F(DownloadHandlerTest, SubstituteDriveDownloadPathForSavePackage) {
   base::FilePath substituted_path;
   download_handler_->SubstituteDriveDownloadPath(
       drive_path,
-      NULL,  // DownloadItem is not available at this moment.
+      nullptr,  // DownloadItem is not available at this moment.
       google_apis::test_util::CreateCopyResultCallback(&substituted_path));
   content::RunAllTasksUntilIdle();
 
@@ -269,7 +271,8 @@ TEST_F(DownloadHandlerTest, FreeDiskSpace) {
 
   // Observe incognito download manager and add another download item.
   // FreeDiskSpace should be called with considering both download items.
-  incognito_download_manager_.reset(new DownloadHandlerTestDownloadManager);
+  incognito_download_manager_ =
+      std::make_unique<DownloadHandlerTestDownloadManager>();
   download_handler_->ObserveIncognitoDownloadManager(
       incognito_download_manager_.get());
 

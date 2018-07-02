@@ -110,8 +110,8 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractProfileFromPath) {
                           "/special/drive-" + user1_id_hash)));
   EXPECT_EQ(profile2, ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
                           "/special/drive-" + user2_id_hash + "/root/xxx")));
-  EXPECT_EQ(NULL, ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
-                      "/special/non-drive-path")));
+  EXPECT_EQ(nullptr, ExtractProfileFromPath(base::FilePath::FromUTF8Unsafe(
+                         "/special/non-drive-path")));
 }
 
 TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
@@ -127,8 +127,8 @@ TEST_F(ProfileRelatedFileSystemUtilTest, ExtractDrivePathFromFileSystemUrl) {
       new storage::FileSystemContext(
           base::ThreadTaskRunnerHandle::Get().get(),
           base::ThreadTaskRunnerHandle::Get().get(), mount_points.get(),
-          NULL,  // special_storage_policy
-          NULL,  // quota_manager_proxy,
+          nullptr,  // special_storage_policy
+          nullptr,  // quota_manager_proxy,
           std::vector<std::unique_ptr<storage::FileSystemBackend>>(),
           std::vector<storage::URLRequestAutoMountHandler>(),
           temp_dir_.GetPath(),  // partition_path

@@ -41,16 +41,17 @@ class WebkitFileStreamReaderImplTest : public ::testing::Test {
   }
 
   void SetUp() override {
-    worker_thread_.reset(new base::Thread("WebkitFileStreamReaderImplTest"));
+    worker_thread_ =
+        std::make_unique<base::Thread>("WebkitFileStreamReaderImplTest");
     ASSERT_TRUE(worker_thread_->Start());
 
     // Initialize FakeDriveService.
-    fake_drive_service_.reset(new FakeDriveService);
+    fake_drive_service_ = std::make_unique<FakeDriveService>();
     ASSERT_TRUE(test_util::SetUpTestEntries(fake_drive_service_.get()));
 
     // Create a testee instance.
-    fake_file_system_.reset(
-        new test_util::FakeFileSystem(fake_drive_service_.get()));
+    fake_file_system_ =
+        std::make_unique<test_util::FakeFileSystem>(fake_drive_service_.get());
   }
 
   FileSystemInterface* GetFileSystem() {

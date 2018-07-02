@@ -56,7 +56,7 @@ DriveIntegrationService* GetIntegrationServiceByProfile(Profile* profile) {
   DriveIntegrationService* service =
       DriveIntegrationServiceFactory::FindForProfile(profile);
   if (!service || !service->IsMounted())
-    return NULL;
+    return nullptr;
   return service;
 }
 
@@ -73,7 +73,7 @@ base::FilePath GetDriveMountPointPath(Profile* profile) {
         user_manager::UserManager::IsInitialized()
             ? chromeos::ProfileHelper::Get()->GetUserByProfile(
                   profile->GetOriginalProfile())
-            : NULL;
+            : nullptr;
     if (user)
       id = user->username_hash();
   }
@@ -120,7 +120,7 @@ FileSystemInterface* GetFileSystemByProfile(Profile* profile) {
 
   DriveIntegrationService* integration_service =
       GetIntegrationServiceByProfile(profile);
-  return integration_service ? integration_service->file_system() : NULL;
+  return integration_service ? integration_service->file_system() : nullptr;
 }
 
 FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
@@ -129,7 +129,7 @@ FileSystemInterface* GetFileSystemByProfileId(void* profile_id) {
   // |profile_id| needs to be checked with ProfileManager::IsValidProfile
   // before using it.
   if (!g_browser_process->profile_manager()->IsValidProfile(profile_id))
-    return NULL;
+    return nullptr;
   Profile* profile = reinterpret_cast<Profile*>(profile_id);
   return GetFileSystemByProfile(profile);
 }
@@ -139,7 +139,8 @@ DriveAppRegistry* GetDriveAppRegistryByProfile(Profile* profile) {
 
   DriveIntegrationService* integration_service =
       GetIntegrationServiceByProfile(profile);
-  return integration_service ? integration_service->drive_app_registry() : NULL;
+  return integration_service ? integration_service->drive_app_registry()
+                             : nullptr;
 }
 
 DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
@@ -147,7 +148,7 @@ DriveServiceInterface* GetDriveServiceByProfile(Profile* profile) {
 
   DriveIntegrationService* integration_service =
       GetIntegrationServiceByProfile(profile);
-  return integration_service ? integration_service->drive_service() : NULL;
+  return integration_service ? integration_service->drive_service() : nullptr;
 }
 
 Profile* ExtractProfileFromPath(const base::FilePath& path) {
@@ -165,7 +166,7 @@ Profile* ExtractProfileFromPath(const base::FilePath& path) {
         return original_profile;
     }
   }
-  return NULL;
+  return nullptr;
 }
 
 base::FilePath ExtractDrivePathFromFileSystemUrl(

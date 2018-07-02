@@ -40,7 +40,7 @@ class DriveIntegrationServiceTest : public testing::Test {
 TEST_F(DriveIntegrationServiceTest, InitializeAndShutdown) {
   std::unique_ptr<DriveIntegrationService> integration_service(
       new DriveIntegrationService(
-          profile_manager_.CreateTestingProfile(kTestProfileName), NULL,
+          profile_manager_.CreateTestingProfile(kTestProfileName), nullptr,
           new DummyDriveService, std::string(), base::FilePath(),
           new DummyFileSystem));
   integration_service->SetEnabled(true);
