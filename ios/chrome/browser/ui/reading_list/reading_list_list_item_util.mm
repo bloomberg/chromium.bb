@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_util.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_util.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/strings/sys_string_conversions.h"
@@ -35,12 +35,16 @@ NSString* GetReadingListCellAccessibilityLabel(
 }
 
 NSString* GetReadingListCellDistillationSizeText(int64_t distillation_size) {
+  if (!distillation_size)
+    return nil;
   return [NSByteCountFormatter
       stringFromByteCount:distillation_size
                countStyle:NSByteCountFormatterCountStyleFile];
 }
 
 NSString* GetReadingListCellDistillationDateText(int64_t distillation_date) {
+  if (!distillation_date)
+    return nil;
   int64_t now = (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
   int64_t elapsed = now - distillation_date;
   if (elapsed < base::Time::kMicrosecondsPerMinute) {

@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_DATA_SINK_H_
 
 @protocol ReadingListDataSource;
+@protocol ReadingListListItem;
 
 // Data Sink for the Reading List UI, receiving informations from the data
 // source.
@@ -18,16 +19,16 @@
 - (void)dataSourceChanged;
 
 // Returns the read items displayed.
-- (NSArray<CollectionViewItem*>*)readItems;
+- (NSArray<id<ReadingListListItem>>*)readItems;
 // Returns the unread items displayed.
-- (NSArray<CollectionViewItem*>*)unreadItems;
+- (NSArray<id<ReadingListListItem>>*)unreadItems;
 
 // Notifies the DataSink that the |item| has changed and it should be reloaded
 // if it is still displayed.
-- (void)itemHasChangedAfterDelay:(CollectionViewItem*)item;
+- (void)itemHasChangedAfterDelay:(id<ReadingListListItem>)item;
 // Notifies the DataSink that the |items| have changed and must be reloaded. The
 // |items| must be presented.
-- (void)itemsHaveChanged:(NSArray<CollectionViewItem*>*)items;
+- (void)itemsHaveChanged:(NSArray<id<ReadingListListItem>>*)items;
 
 @end
 

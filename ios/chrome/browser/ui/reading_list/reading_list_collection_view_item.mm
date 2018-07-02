@@ -7,8 +7,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "components/url_formatter/url_formatter.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_cell.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_custom_action_factory.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_util.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_util.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/common/favicon/favicon_view.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -55,9 +55,7 @@
   cell.accessibilityLabel = GetReadingListCellAccessibilityLabel(
       self.title, subtitle, self.distillationState);
   cell.accessibilityCustomActions =
-      [self.customActionFactory customActionsForItem:self
-                                             withURL:self.entryURL
-                                  distillationStatus:self.distillationState];
+      [self.customActionFactory customActionsForItem:self];
 }
 
 #pragma mark - NSObject

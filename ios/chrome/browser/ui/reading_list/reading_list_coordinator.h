@@ -6,7 +6,7 @@
 #define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_COORDINATOR_H_
 
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 
 namespace ios {
 class ChromeBrowserState;
@@ -17,7 +17,7 @@ class ChromeBrowserState;
 
 // Coordinator for Reading List, displaying the Reading List when starting.
 @interface ReadingListCoordinator
-    : ChromeCoordinator<ReadingListCollectionViewControllerDelegate>
+    : ChromeCoordinator<ReadingListListViewControllerDelegate>
 
 // Mediator used by this coordinator. Reset when |-start| is called.
 @property(nonatomic, strong, nullable) ReadingListMediator* mediator;

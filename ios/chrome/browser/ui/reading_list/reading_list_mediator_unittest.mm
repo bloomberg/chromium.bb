@@ -14,8 +14,9 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_accessibility_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_factory.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -57,9 +58,11 @@ class ReadingListMediatorTest : public PlatformTest {
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
 
-    mediator_ =
-        [[ReadingListMediator alloc] initWithModel:model_.get()
-                                  largeIconService:large_icon_service_.get()];
+    mediator_ = [[ReadingListMediator alloc]
+           initWithModel:model_.get()
+        largeIconService:large_icon_service_.get()
+         listItemFactory:[ReadingListListItemFactory
+                             collectionViewItemFactory]];
   }
 
  protected:
@@ -77,29 +80,18 @@ class ReadingListMediatorTest : public PlatformTest {
 
 TEST_F(ReadingListMediatorTest, fillItems) {
   // Setup.
-  NSMutableArray<CollectionViewItem*>* readArray = [NSMutableArray array];
-  NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
-  ReadingListListViewItemCustomActionFactory* customActionFactory =
-      [[ReadingListListViewItemCustomActionFactory alloc] init];
+  NSMutableArray<id<ReadingListListItem>>* readArray = [NSMutableArray array];
+  NSMutableArray<id<ReadingListListItem>>* unreadArray = [NSMutableArray array];
 
   // Action.
-  [mediator_ fillReadItems:readArray
-                  unreadItems:unreadArray
-      withCustomActionFactory:customActionFactory];
+  [mediator_ fillReadItems:readArray unreadItems:unreadArray];
 
   // Tests.
   EXPECT_EQ(3U, [unreadArray count]);
   EXPECT_EQ(2U, [readArray count]);
   NSArray<ReadingListCollectionViewItem*>* rlReadArray = [readArray copy];
   NSArray<ReadingListCollectionViewItem*>* rlUneadArray = [unreadArray copy];
-  EXPECT_TRUE([rlUneadArray[0].title
-      isEqualToString:base::SysUTF16ToNSString(url_formatter::FormatUrl(
-                          no_title_entry_url_.GetOrigin()))]);
+  EXPECT_TRUE([rlUneadArray[0].title isEqualToString:@""]);
   EXPECT_TRUE([rlReadArray[0].title isEqualToString:@"read2"]);
   EXPECT_TRUE([rlReadArray[1].title isEqualToString:@"read1"]);
-  EXPECT_EQ(customActionFactory, rlReadArray[0].customActionFactory);
-  EXPECT_EQ(customActionFactory, rlReadArray[1].customActionFactory);
-  EXPECT_EQ(customActionFactory, rlUneadArray[0].customActionFactory);
-  EXPECT_EQ(customActionFactory, rlUneadArray[1].customActionFactory);
-  EXPECT_EQ(customActionFactory, rlUneadArray[2].customActionFactory);
 }

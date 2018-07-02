@@ -9,8 +9,8 @@
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_custom_action_factory.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_util.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_util.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_url_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 #include "ios/chrome/browser/ui/ui_util.h"
@@ -108,9 +108,7 @@ NSString* const kURLAndDistillationDateFormat = @"%s • %@";
       self.title, base::SysUTF8ToNSString(self.entryURL.host()),
       self.distillationState);
   cell.accessibilityCustomActions =
-      [self.customActionFactory customActionsForItem:self
-                                             withURL:self.entryURL
-                                  distillationStatus:self.distillationState];
+      [self.customActionFactory customActionsForItem:self];
 }
 
 #pragma mark - NSObject

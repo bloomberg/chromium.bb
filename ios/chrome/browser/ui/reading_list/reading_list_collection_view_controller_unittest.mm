@@ -20,6 +20,9 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -61,16 +64,17 @@ class ReadingListCollectionViewControllerTest : public PlatformTest {
         nullptr, nullptr, base::DefaultClock::GetInstance()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
-    mediator_ =
-        [[ReadingListMediator alloc] initWithModel:reading_list_model_.get()
-                                  largeIconService:large_icon_service_.get()];
+    mediator_ = [[ReadingListMediator alloc]
+           initWithModel:reading_list_model_.get()
+        largeIconService:large_icon_service_.get()
+         listItemFactory:[ReadingListListItemFactory
+                             collectionViewItemFactory]];
     reading_list_view_controller_ = [[ReadingListCollectionViewController alloc]
         initWithDataSource:mediator_
                    toolbar:nil];
 
     mock_delegate_ = [OCMockObject
-        niceMockForProtocol:@protocol(
-                                ReadingListCollectionViewControllerDelegate)];
+        niceMockForProtocol:@protocol(ReadingListListViewControllerDelegate)];
     [reading_list_view_controller_ setDelegate:mock_delegate_];
   }
 
@@ -109,7 +113,7 @@ TEST_F(ReadingListCollectionViewControllerTest, GetsDismissed) {
   [reading_list_view_controller_ view];
 
   [[mock_delegate_ expect]
-      dismissReadingListCollectionViewController:reading_list_view_controller_];
+      dismissReadingListListViewController:reading_list_view_controller_];
 
   // Simulate tap on "Done" button.
   UIBarButtonItem* done =
@@ -142,8 +146,8 @@ TEST_F(ReadingListCollectionViewControllerTest, OpensItems) {
               itemAtIndexPath:indexPath]);
 
   [[mock_delegate_ expect]
-      readingListCollectionViewController:reading_list_view_controller_
-                                 openItem:readingListItem];
+      readingListListViewController:reading_list_view_controller_
+                           openItem:readingListItem];
 
   // Simulate touch on second cell.
   [reading_list_view_controller_
