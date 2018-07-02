@@ -56,7 +56,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
 
   // Returns the target bounds for the specified view. If |view| is not
   // animating its current bounds is returned.
-  gfx::Rect GetTargetBounds(View* view);
+  gfx::Rect GetTargetBounds(const View* view) const;
 
   // Sets the animation for the specified view.
   void SetAnimationForView(View* view,
@@ -127,7 +127,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
     ANIMATION_CANCELED
   };
 
-  typedef std::map<View*, Data> ViewToDataMap;
+  typedef std::map<const View*, Data> ViewToDataMap;
 
   typedef std::map<const gfx::Animation*, View*> AnimationToViewMap;
 
@@ -137,7 +137,7 @@ class VIEWS_EXPORT BoundsAnimator : public gfx::AnimationDelegate,
 
   // Does the necessary cleanup for |data|. If |send_cancel| is true and a
   // delegate has been installed on |data| AnimationCanceled is invoked on it.
-  void CleanupData(bool send_cancel, Data* data, View* view);
+  void CleanupData(bool send_cancel, Data* data);
 
   // Used when changing the animation for a view. This resets the maps for
   // the animation used by view and returns the current animation. Ownership

@@ -70,7 +70,7 @@ class FakeTabController : public TabController {
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override {
     return nullptr;
   }
-  Tab* GetSubsequentTab(Tab* tab) override { return nullptr; }
+  const Tab* GetSubsequentTab(const Tab* tab) override { return nullptr; }
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override {}
   bool ShouldPaintTab(
@@ -95,7 +95,7 @@ class FakeTabController : public TabController {
     *custom_image = false;
     return IDR_THEME_TAB_BACKGROUND;
   }
-  gfx::Rect GetTabAnimationTargetBounds(Tab* tab) override {
+  gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override {
     return tab->bounds();
   }
   base::string16 GetAccessibleTabName(const Tab* tab) const override {

@@ -111,7 +111,7 @@ class TabController {
 
   // Returns the next tab in the model order. Returns nullptr if there
   // isn't another tab beyond the given tab.
-  virtual Tab* GetSubsequentTab(Tab* tab) = 0;
+  virtual const Tab* GetSubsequentTab(const Tab* tab) = 0;
 
   // Invoked when a mouse event occurs on |source|.
   virtual void OnMouseEventInTab(views::View* source,
@@ -157,7 +157,7 @@ class TabController {
   // If the given tab is animating to its target destination, this returns the
   // target bounds. If the tab isn't moving this will return the current bounds
   // of the given tab.
-  virtual gfx::Rect GetTabAnimationTargetBounds(Tab* tab) = 0;
+  virtual gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) = 0;
 
   // Returns the accessible tab name for this tab.
   virtual base::string16 GetAccessibleTabName(const Tab* tab) const = 0;
