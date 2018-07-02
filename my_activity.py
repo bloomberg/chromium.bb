@@ -749,7 +749,7 @@ class MyActivity(object):
     changes_without_issue = []
     for change in self.changes:
       added = False
-      for issue_uid in set(change['bugs']):
+      for issue_uid in change['bugs']:
         if issue_uid in issues:
           changes_by_issue_uid[issue_uid].append(change)
           added = True
