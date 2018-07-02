@@ -12,12 +12,12 @@
 #include "base/stl_util.h"
 #include "chromeos/components/proximity_auth/logging/logging.h"
 #include "chromeos/services/secure_channel/active_connection_manager_impl.h"
+#include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/ble_connection_manager_impl.h"
 #include "chromeos/services/secure_channel/ble_service_data_helper_impl.h"
 #include "chromeos/services/secure_channel/client_connection_parameters_impl.h"
 #include "chromeos/services/secure_channel/device_id_pair.h"
 #include "chromeos/services/secure_channel/pending_connection_manager_impl.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 #include "chromeos/services/secure_channel/timer_factory_impl.h"
 #include "device/bluetooth/bluetooth_adapter.h"
 

@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 
 namespace chromeos {
 

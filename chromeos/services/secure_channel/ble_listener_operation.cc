@@ -8,8 +8,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
+#include "chromeos/services/secure_channel/authenticated_channel.h"
 #include "chromeos/services/secure_channel/ble_connection_manager.h"
-#include "chromeos/services/secure_channel/public/cpp/shared/authenticated_channel.h"
 
 namespace chromeos {
 
