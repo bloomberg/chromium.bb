@@ -129,7 +129,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling PDFium
   # and whatever else without interference from each other.
-  'pdfium_revision': '319ef06b2f695c7ebc26985d477b71fe8db93d3e',
+  'pdfium_revision': '61ff9b659a5b992e3e3ba4000f7ca5c799cc9ebf',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling openmax_dl
   # and whatever else without interference from each other.
