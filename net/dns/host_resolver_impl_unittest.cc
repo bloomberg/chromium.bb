@@ -20,7 +20,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/condition_variable.h"
 #include "base/synchronization/lock.h"
-#include "base/test/test_mock_time_task_runner.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -360,34 +359,32 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
         total_attempts_(total_attempts),
         total_attempts_resolved_(0),
         resolved_attempt_number_(0),
-        num_attempts_waiting_(0),
-        all_done_(&lock_),
-        blocked_attempt_signal_(&lock_) {}
+        all_done_(&lock_) {
+  }
 
   // Test harness will wait for all attempts to finish before checking the
   // results.
-  void WaitForAllAttemptsToFinish() {
-    base::AutoLock auto_lock(lock_);
-    while (total_attempts_resolved_ != total_attempts_) {
-      all_done_.Wait();
-    }
-  }
-
-  void WaitForNAttemptsToBeBlocked(int n) {
-    base::AutoLock auto_lock(lock_);
-    while (num_attempts_waiting_ < n) {
-      blocked_attempt_signal_.Wait();
+  void WaitForAllAttemptsToFinish(const base::TimeDelta& wait_time) {
+    base::TimeTicks end_time = base::TimeTicks::Now() + wait_time;
+    {
+      base::AutoLock auto_lock(lock_);
+      while (total_attempts_resolved_ != total_attempts_ &&
+          base::TimeTicks::Now() < end_time) {
+        all_done_.TimedWait(end_time - base::TimeTicks::Now());
+      }
     }
   }
 
   // All attempts will wait for an attempt to resolve the host.
   void WaitForAnAttemptToComplete() {
+    base::TimeDelta wait_time = base::TimeDelta::FromSeconds(60);
+    base::TimeTicks end_time = base::TimeTicks::Now() + wait_time;
     {
       base::AutoLock auto_lock(lock_);
       base::ScopedAllowBaseSyncPrimitivesForTesting
           scoped_allow_base_sync_primitives;
-      while (resolved_attempt_number_ == 0)
-        all_done_.Wait();
+      while (resolved_attempt_number_ == 0 && base::TimeTicks::Now() < end_time)
+        all_done_.TimedWait(end_time - base::TimeTicks::Now());
     }
     all_done_.Broadcast();  // Tell all waiting attempts to proceed.
   }
@@ -397,9 +394,6 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
 
   // Returns the first attempt that that has resolved the host.
   int resolved_attempt_number() { return resolved_attempt_number_; }
-
-  // Returns the current number of blocked attempts.
-  int num_attempts_waiting() { return num_attempts_waiting_; }
 
   // HostResolverProc methods.
   int Resolve(const std::string& host,
@@ -411,14 +405,11 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
     {
       base::AutoLock auto_lock(lock_);
       ++current_attempt_number_;
-      ++num_attempts_waiting_;
       if (current_attempt_number_ == attempt_number_to_resolve_) {
         resolved_attempt_number_ = current_attempt_number_;
         wait_for_right_attempt_to_complete = false;
       }
     }
-
-    blocked_attempt_signal_.Broadcast();
 
     if (wait_for_right_attempt_to_complete)
       // Wait for the attempt_number_to_resolve_ attempt to resolve.
@@ -430,7 +421,6 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
     {
       base::AutoLock auto_lock(lock_);
       ++total_attempts_resolved_;
-      --num_attempts_waiting_;
     }
 
     all_done_.Broadcast();  // Tell all attempts to proceed.
@@ -454,12 +444,10 @@ class LookupAttemptHostResolverProc : public HostResolverProc {
   int total_attempts_;
   int total_attempts_resolved_;
   int resolved_attempt_number_;
-  int num_attempts_waiting_;
 
   // All attempts wait for right attempt to be resolve.
   base::Lock lock_;
   base::ConditionVariable all_done_;
-  base::ConditionVariable blocked_attempt_signal_;
 };
 
 // TestHostResolverImpl's sole purpose is to mock the IPv6 reachability test.
@@ -1528,58 +1516,37 @@ TEST_F(HostResolverImplTest, ResolveStaleFromCacheError) {
 // Test the retry attempts simulating host resolver proc that takes too long.
 TEST_F(HostResolverImplTest, MultipleAttempts) {
   // Total number of attempts would be 3 and we want the 3rd attempt to resolve
-  // the host. First and second attempt will be forced to wait until they get
+  // the host. First and second attempt will be forced to sleep until they get
   // word that a resolution has completed. The 3rd resolution attempt will try
-  // to get done ASAP, and won't wait.
+  // to get done ASAP, and won't sleep..
   int kAttemptNumberToResolve = 3;
   int kTotalAttempts = 3;
-
-  // Add a little bit of extra fudge to the delay to allow reasonable
-  // flexibility for time > vs >= etc.  We don't need to fail the test if we
-  // retry at t=6001 instead of t=6000.
-  base::TimeDelta kSleepFudgeFactor = base::TimeDelta::FromMilliseconds(1);
 
   scoped_refptr<LookupAttemptHostResolverProc> resolver_proc(
       new LookupAttemptHostResolverProc(
           NULL, kAttemptNumberToResolve, kTotalAttempts));
 
   HostResolverImpl::ProcTaskParams params = DefaultParams(resolver_proc.get());
-  base::TimeDelta unresponsive_delay = params.unresponsive_delay;
-  int retry_factor = params.retry_factor;
+
+  // Specify smaller interval for unresponsive_delay_ for HostResolverImpl so
+  // that unit test runs faster. For example, this test finishes in 1.5 secs
+  // (500ms * 3).
+  params.unresponsive_delay = base::TimeDelta::FromMilliseconds(500);
 
   resolver_.reset(new TestHostResolverImpl(DefaultOptions(), NULL));
   resolver_->set_proc_params_for_test(params);
-
-  // Override the current thread task runner, so we can simulate the passage of
-  // time and avoid any actual sleeps.
-  auto test_task_runner = base::MakeRefCounted<base::TestMockTimeTaskRunner>();
-  base::ScopedClosureRunner task_runner_override_scoped_cleanup =
-      base::ThreadTaskRunnerHandle::OverrideForTesting(test_task_runner);
 
   // Resolve "host1".
   HostResolver::RequestInfo info(HostPortPair("host1", 70));
   Request* req = CreateRequest(info, DEFAULT_PRIORITY);
   EXPECT_THAT(req->Resolve(), IsError(ERR_IO_PENDING));
 
-  resolver_proc->WaitForNAttemptsToBeBlocked(1);
-
-  test_task_runner->FastForwardBy(unresponsive_delay + kSleepFudgeFactor);
-  resolver_proc->WaitForNAttemptsToBeBlocked(2);
-
-  test_task_runner->FastForwardBy(unresponsive_delay * retry_factor +
-                                  kSleepFudgeFactor);
-
-  resolver_proc->WaitForAllAttemptsToFinish();
-  test_task_runner->RunUntilIdle();
-
   // Resolve returns -4 to indicate that 3rd attempt has resolved the host.
-  // Since we're using a TestMockTimeTaskRunner, the RunLoop stuff in
-  // WaitForResult will fail if it actually has to wait, but unless there's an
-  // error, the result should be immediately ready by this point.
   EXPECT_EQ(-4, req->WaitForResult());
 
-  // We should be done with retries, but make sure none erroneously happen.
-  test_task_runner->FastForwardUntilNoTasksRemain();
+  resolver_proc->WaitForAllAttemptsToFinish(
+      base::TimeDelta::FromMilliseconds(60000));
+  base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(resolver_proc->total_attempts_resolved(), kTotalAttempts);
   EXPECT_EQ(resolver_proc->resolved_attempt_number(), kAttemptNumberToResolve);
