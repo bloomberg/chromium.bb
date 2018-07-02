@@ -18,6 +18,11 @@ class GURL;
 namespace net {
 namespace cookie_util {
 
+// Constants for use in VLOG
+const int kVlogPerCookieMonster = 1;
+const int kVlogSetCookies = 7;
+const int kVlogGarbageCollection = 5;
+
 // Returns the effective TLD+1 for a given host. This only makes sense for http
 // and https schemes. For other schemes, the host will be returned unchanged
 // (minus any leading period).
