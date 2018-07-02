@@ -13,6 +13,7 @@
 #include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/metrics/user_metrics.h"
+#include "base/numerics/ranges.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
@@ -99,6 +100,10 @@ constexpr int kTabSeparatorTouchHeight = 24;
 // Under refresh, thickness of the separator in dips painted on the left and
 // right edges of the tab.
 constexpr int kSeparatorThickness = 1;
+
+// The amount of padding inside the interior path to clip children against when
+// tabs are very narrow.
+constexpr int kChildClipPadding = 1;
 
 // Under material refresh, the spec for the favicon or title text is 12dips from
 // the left vertical edge of the tab. This edge is in the middle of the tab end
@@ -203,8 +208,19 @@ gfx::Path GetRefreshInteriorPath(float scale,
                                  float horizontal_inset) {
   // TODO(pkasting): Fix this to work better with stroke heights > 0.
 
-  const int ideal_radius = Tab::GetCornerRadius();
-  const float radius = ideal_radius * scale;
+  // Compute |extension| as the width outside the separators.  This is a fixed
+  // value equal to the normal corner radius.
+  const float ideal_radius = Tab::GetCornerRadius();
+  const float extension = ideal_radius * scale;
+  // As the separators get closer together, shrink the radius so the top (inner)
+  // corners touch.
+  const float radius =
+      base::ClampToRange((bounds.width() - ideal_radius * 2) / 2, 0.f,
+                         ideal_radius) *
+      scale;
+  // When the radius shrinks, it leaves a gap between the bottom (outer) corners
+  // and the edge of the tab.
+  const float corner_gap = extension - radius;
 
   const gfx::RectF aligned_bounds = ScaleAndAlignBounds(bounds, scale);
   const float left = aligned_bounds.x();
@@ -220,15 +236,16 @@ gfx::Path GetRefreshInteriorPath(float scale,
   // Bottom right.
   gfx::Path right_path;
   right_path.moveTo(right, bottom);
+  right_path.rLineTo(-corner_gap, 0);
   right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                   SkPath::kCW_Direction, right - radius, bottom - radius);
+                   SkPath::kCW_Direction, right - extension, bottom - radius);
 
   // Right vertical.
-  right_path.lineTo(right - radius, top + radius);
+  right_path.lineTo(right - extension, top + radius);
 
   // Top right.
   right_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                   SkPath::kCCW_Direction, right - radius * 2, top);
+                   SkPath::kCCW_Direction, right - extension - radius, top);
 
   // Top/bottom edges of right side.
   right_path.lineTo(left, top);
@@ -237,16 +254,16 @@ gfx::Path GetRefreshInteriorPath(float scale,
 
   // Top left.
   gfx::Path left_path;
-  left_path.moveTo(left + radius * 2, top);
+  left_path.moveTo(left + extension + radius, top);
   left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                  SkPath::kCCW_Direction, left + radius, top + radius);
+                  SkPath::kCCW_Direction, left + extension, top + radius);
 
   // Left vertical.
-  left_path.lineTo(left + radius, bottom - radius);
+  left_path.lineTo(left + extension, bottom - radius);
 
   // Bottom left.
   left_path.arcTo(radius, radius, 0, SkPath::kSmall_ArcSize,
-                  SkPath::kCW_Direction, left, bottom);
+                  SkPath::kCW_Direction, left + corner_gap, bottom);
 
   // Bottom/top edges of left side.
   left_path.lineTo(right, bottom);
@@ -317,9 +334,16 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
                                float stroke_thickness) {
   // TODO(pkasting): Fix this to work better with stroke heights > 0.
 
+  // See comments in GetRefreshInteriorPath().
   const float ideal_radius = Tab::GetCornerRadius();
-  const float outer_radius = ideal_radius * scale - stroke_thickness;
-  const float inner_radius = ideal_radius * scale + stroke_thickness;
+  const float extension = ideal_radius * scale;
+  const float radius =
+      base::ClampToRange((bounds.width() - ideal_radius * 2) / 2, 0.f,
+                         ideal_radius) *
+      scale;
+  const float outer_radius = std::max(radius - stroke_thickness, 0.f);
+  const float inner_radius = radius * 2 - outer_radius;
+  const float corner_gap = extension - outer_radius;
 
   const gfx::RectF aligned_bounds = ScaleAndAlignBounds(bounds, scale);
   const float left = aligned_bounds.x();
@@ -331,38 +355,41 @@ gfx::Path GetRefreshBorderPath(const gfx::Rect& bounds,
   gfx::Path path;
   path.moveTo(left, bottom);
   path.rLineTo(0, -stroke_thickness);
+  path.rLineTo(corner_gap, 0);
   path.arcTo(outer_radius, outer_radius, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCCW_Direction, left + outer_radius,
+             SkPath::kCCW_Direction, left + extension,
              bottom - stroke_thickness - outer_radius);
 
   if (extend_to_top) {
     // Left vertical.
-    path.lineTo(left + outer_radius, top);
+    path.lineTo(left + extension, top);
 
     // Top edge.
-    path.lineTo(right - outer_radius, top);
+    path.lineTo(right - extension, top);
   } else {
     // Left vertical.
-    path.lineTo(left + outer_radius, top + inner_radius);
+    path.lineTo(left + extension, top + inner_radius);
 
     // Top left.
     path.arcTo(inner_radius, inner_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCW_Direction, left + outer_radius + inner_radius, top);
+               SkPath::kCW_Direction, left + extension + inner_radius, top);
 
     // Top edge.
-    path.lineTo(right - outer_radius - inner_radius, top);
+    path.lineTo(right - extension - inner_radius, top);
 
     // Top right.
     path.arcTo(inner_radius, inner_radius, 0, SkPath::kSmall_ArcSize,
-               SkPath::kCW_Direction, right - outer_radius, top + inner_radius);
+               SkPath::kCW_Direction, right - extension, top + inner_radius);
   }
 
   // Right vertical.
-  path.lineTo(right - outer_radius, bottom - stroke_thickness - outer_radius);
+  path.lineTo(right - extension, bottom - stroke_thickness - outer_radius);
 
   // Bottom right.
   path.arcTo(outer_radius, outer_radius, 0, SkPath::kSmall_ArcSize,
-             SkPath::kCCW_Direction, right, bottom - stroke_thickness);
+             SkPath::kCCW_Direction, right - corner_gap,
+             bottom - stroke_thickness);
+  path.rLineTo(corner_gap, 0);
   path.rLineTo(0, stroke_thickness);
 
   // Bottom edge.
@@ -880,22 +907,21 @@ gfx::Size Tab::CalculatePreferredSize() const {
 }
 
 void Tab::PaintChildren(const views::PaintInfo& info) {
-  // Clip children to 1 dp inside the tab's fill path.  This has no effect
-  // except when the tab is too narrow to completely show even one icon, at
-  // which point this serves to clip the favicon.
+  // Clip children based on the tab's fill path.  This has no effect except when
+  // the tab is too narrow to completely show even one icon, at which point this
+  // serves to clip the favicon.
   ui::ClipRecorder clip_recorder(info.context());
   // The paint recording scale for tabs is consistent along the x and y axis.
   const float paint_recording_scale = info.paint_recording_scale_x();
-  constexpr int kFaviconPadding = 1;
   clip_recorder.ClipPathWithAntiAliasing(
-      GetInteriorPath(paint_recording_scale, bounds(), kFaviconPadding));
+      GetInteriorPath(paint_recording_scale, bounds(), kChildClipPadding));
   View::PaintChildren(info);
 }
 
 void Tab::OnPaint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumInactiveWidth() && !data().pinned)
+  if (!MD::IsRefreshUi() && (width() < GetMinimumInactiveWidth()))
     return;
 
   gfx::Path clip;
@@ -1088,7 +1114,15 @@ void Tab::FrameColorsChanged() {
 
 // static
 int Tab::GetMinimumInactiveWidth() {
-  return GetContentsInsets().width();
+  if (!MD::IsRefreshUi())
+    return GetContentsInsets().width();
+
+  // Allow the favicon to shrink until only the middle 4 DIP are visible.
+  constexpr int kFaviconMinWidth = 4;
+  // kSeparatorThickness is only added for the leading separator, because the
+  // trailing separator is part of the overlap.
+  return kSeparatorThickness + (kChildClipPadding * 2) + kFaviconMinWidth +
+         GetOverlap();
 }
 
 // static
