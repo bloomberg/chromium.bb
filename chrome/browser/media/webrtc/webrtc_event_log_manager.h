@@ -25,6 +25,7 @@
 
 namespace content {
 class BrowserContext;
+class NetworkConnectionTracker;
 };
 
 // This is a singleton class running in the browser UI thread (ownership of
@@ -197,6 +198,7 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   void EnableForBrowserContextInternal(
       BrowserContextId browser_context_id,
       const base::FilePath& browser_context_dir,
+      content::NetworkConnectionTracker* network_connection_tracker,
       net::URLRequestContextGetter* context_getter,
       base::OnceClosure reply);
   void DisableForBrowserContextInternal(BrowserContextId browser_context_id,
@@ -303,10 +305,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
   // peer connection. In (relevant) unit tests, a mock will be injected.
   std::unique_ptr<PeerConnectionTrackerProxy> pc_tracker_proxy_;
 
-  // The global system_request_context() is sent down to |remote_logs_manager_|
-  // with the first enabled browser context.
+  // The globals network_connection_tracker() and system_request_context() are
+  // sent down to |remote_logs_manager_| with the first enabled browser context.
   // This member must only be accessed on the UI thread.
-  bool url_request_context_getter_was_set_;
+  bool first_browser_context_initializations_done_;
 
   // The main logic will run sequentially on this runner, on which blocking
   // tasks are allowed.

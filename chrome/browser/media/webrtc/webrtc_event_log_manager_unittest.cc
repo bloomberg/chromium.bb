@@ -11,6 +11,7 @@
 #include <numeric>
 #include <queue>
 #include <string>
+#include <tuple>
 #include <utility>
 #include <vector>
 
@@ -39,6 +40,7 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "content/public/test/mock_network_connection_tracker.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/url_request/url_request_test_util.h"
@@ -182,7 +184,7 @@ class MockWebRtcRemoteEventLogsObserver : public WebRtcRemoteEventLogsObserver {
 
 }  // namespace
 
-class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
+class WebRtcEventLogManagerTestBase : public ::testing::Test {
  public:
   WebRtcEventLogManagerTestBase()
       : url_request_context_getter_(new net::TestURLRequestContextGetter(
@@ -208,12 +210,6 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
     EXPECT_TRUE(profiles_dir_.CreateUniqueTempDir());
   }
 
-  void SetUp() override {
-    SetLocalLogsObserver(&local_observer_);
-    SetRemoteLogsObserver(&remote_observer_);
-    LoadProfiles();
-  }
-
   ~WebRtcEventLogManagerTestBase() override {
     WaitForPendingTasks();
 
@@ -226,6 +222,19 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
 
     // Guard against unexpected state changes.
     EXPECT_TRUE(webrtc_state_change_instructions_.empty());
+  }
+
+  void SetUp() override {
+    SetUp(std::make_unique<content::MockNetworkConnectionTracker>(
+        true, network::mojom::ConnectionType::CONNECTION_ETHERNET));
+  }
+
+  void SetUp(std::unique_ptr<content::NetworkConnectionTracker> tracker) {
+    TestingBrowserProcess::GetGlobal()->SetNetworkConnectionTracker(
+        std::move(tracker));
+    SetLocalLogsObserver(&local_observer_);
+    SetRemoteLogsObserver(&remote_observer_);
+    LoadProfiles();
   }
 
   void LoadProfiles() {
@@ -242,7 +251,7 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
     browser_context_id_ = GetBrowserContextId(browser_context_);
     rph_.reset();
     EXPECT_FALSE(upload_suppressing_rph_);
-    testing_profile_manager_.reset();  // Make sure we only have on at a time.
+    testing_profile_manager_.reset();  // Make sure we only have one at a time.
   }
 
   void WaitForReply() {
@@ -629,7 +638,8 @@ class WebRtcEventLogManagerTestBase : public ::testing::TestWithParam<bool> {
 
 #if !defined(OS_ANDROID)
 
-class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase {
+class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase,
+                                  public ::testing::WithParamInterface<bool> {
  public:
   WebRtcEventLogManagerTest() {
     scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
@@ -637,7 +647,9 @@ class WebRtcEventLogManagerTest : public WebRtcEventLogManagerTestBase {
   }
 
   void SetUp() override {
-    WebRtcEventLogManagerTestBase::SetUp();
+    auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+        true, network::mojom::ConnectionType::CONNECTION_ETHERNET);
+    WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
     SetWebRtcEventLogUploaderFactoryForTesting(
         std::make_unique<NullWebRtcEventLogUploader::Factory>(false));
   }
@@ -719,7 +731,8 @@ const base::TimeDelta WebRtcEventLogManagerTestCacheClearing::kEpsion =
     base::TimeDelta::FromHours(1);
 
 class WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled
-    : public WebRtcEventLogManagerTestBase {
+    : public WebRtcEventLogManagerTestBase,
+      public ::testing::WithParamInterface<bool> {
  public:
   WebRtcEventLogManagerTestWithRemoteLoggingDisabledOrNotEnabled() {
     // Show that the feature is not active if not explicitly ENABLED.
@@ -744,6 +757,64 @@ class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
         ::switches::kWebRtcRemoteEventLogUploadNoSuppression);
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
+
+  ~WebRtcEventLogManagerTestUploadSuppressionDisablingFlag() override = default;
+};
+
+class WebRtcEventLogManagerTestForNetworkConnectivity
+    : public WebRtcEventLogManagerTestBase,
+      public ::testing::WithParamInterface<
+          std::tuple<bool,
+                     network::mojom::ConnectionType,
+                     network::mojom::ConnectionType>> {
+ public:
+  WebRtcEventLogManagerTestForNetworkConnectivity()
+      : get_conn_type_is_sync_(std::get<0>(GetParam())),
+        supported_type_(std::get<1>(GetParam())),
+        unsupported_type_(std::get<2>(GetParam())) {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+  }
+
+  ~WebRtcEventLogManagerTestForNetworkConnectivity() override = default;
+
+  void SetUp() override {
+    // Do nothing; the test body itself will call the super-class's SetUp
+    // with the correct MockNetworkConnectionTracker.
+  }
+
+  void UnloadProfileAndSeedPendingLog() {
+    DCHECK(browser_context_path_.empty()) << "Not expected to be called twice.";
+
+    // Unload the profile, but remember where it stores its files (for sanity).
+    browser_context_path_ = browser_context_->GetPath();
+    const base::FilePath remote_logs_dir = RemoteBoundLogsDir(browser_context_);
+    UnloadProfiles();
+
+    // Seed the remote logs' directory with one log file, simulating the
+    // creation of logs in a previous session.
+    ASSERT_TRUE(CreateDirectory(remote_logs_dir));
+
+    const base::FilePath file_path =
+        remote_logs_dir.Append(kRemoteBoundWebRtcEventLogFileNamePrefix)
+            .InsertBeforeExtensionASCII("01234567890123456789012345678901")
+            .AddExtension(kRemoteBoundWebRtcEventLogExtension);
+    constexpr int file_flags = base::File::FLAG_CREATE |
+                               base::File::FLAG_WRITE |
+                               base::File::FLAG_EXCLUSIVE_WRITE;
+    file_ = base::File(file_path, file_flags);
+    ASSERT_TRUE(file_.IsValid() && file_.created());
+    expected_files_.emplace_back(browser_context_id_, file_path,
+                                 GetLastModificationTime(file_path));
+  }
+
+  const bool get_conn_type_is_sync_;
+  const network::mojom::ConnectionType supported_type_;
+  const network::mojom::ConnectionType unsupported_type_;
+
+  base::FilePath browser_context_path_;  // For sanity over the test itself.
+  std::list<WebRtcLogFileInfo> expected_files_;
+  base::File file_;
 };
 
 namespace {
@@ -792,6 +863,9 @@ class FileListExpectingWebRtcEventLogUploader : public WebRtcEventLogUploader {
             base::RunLoop* run_loop)
         : result_(result), run_loop_(run_loop) {
       expected_files_.swap(*expected_files);
+      if (expected_files_.empty()) {
+        run_loop_->QuitWhenIdle();
+      }
     }
 
     ~Factory() override { EXPECT_TRUE(expected_files_.empty()); }
@@ -3191,6 +3265,147 @@ TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
   ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
   WaitForPendingTasks(&run_loop);
 }
+
+TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
+       DoNotUploadPendingLogsIfConnectedToUnsupportedNetworkType) {
+  WebRtcEventLogManagerTestBase::SetUp(
+      std::make_unique<content::MockNetworkConnectionTracker>(
+          get_conn_type_is_sync_, unsupported_type_));
+
+  const auto key = GetPeerConnectionKey(rph_.get(), 1);
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(log_file);
+
+  std::list<WebRtcLogFileInfo> empty_expected_files_list;
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &empty_expected_files_list, true, &run_loop));
+
+  // Peer connection removal MAY trigger upload, depending on network.
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
+       UploadPendingLogsIfConnectedToSupportedNetworkType) {
+  WebRtcEventLogManagerTestBase::SetUp(
+      std::make_unique<content::MockNetworkConnectionTracker>(
+          get_conn_type_is_sync_, supported_type_));
+
+  const auto key = GetPeerConnectionKey(rph_.get(), 1);
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(log_file);
+
+  base::RunLoop run_loop;
+  std::list<WebRtcLogFileInfo> expected_files = {WebRtcLogFileInfo(
+      browser_context_id_, *log_file, GetLastModificationTime(*log_file))};
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files, true, &run_loop));
+
+  // Peer connection removal MAY trigger upload, depending on network.
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
+       UploadPendingLogsIfConnectionTypeChangesFromUnsupportedToSupported) {
+  auto tracker = std::make_unique<content::MockNetworkConnectionTracker>(
+      get_conn_type_is_sync_, unsupported_type_);
+  content::MockNetworkConnectionTracker* mock = tracker.get();
+  WebRtcEventLogManagerTestBase::SetUp(std::move(tracker));
+
+  const auto key = GetPeerConnectionKey(rph_.get(), 1);
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(log_file);
+
+  // That a peer connection upload is not initiated by this point, is verified
+  // by previous tests.
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+  WaitForPendingTasks();
+
+  // Test focus - an upload will be initiated after changing the network type.
+  base::RunLoop run_loop;
+  std::list<WebRtcLogFileInfo> expected_files = {WebRtcLogFileInfo(
+      browser_context_id_, *log_file, GetLastModificationTime(*log_file))};
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files, true, &run_loop));
+  mock->SetConnectionType(supported_type_);
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
+       DoNotUploadPendingLogsAtStartupIfConnectedToUnsupportedNetworkType) {
+  WebRtcEventLogManagerTestBase::SetUp(
+      std::make_unique<content::MockNetworkConnectionTracker>(
+          get_conn_type_is_sync_, unsupported_type_));
+
+  UnloadProfileAndSeedPendingLog();
+
+  // This factory enforces the expectation that the files will be uploaded,
+  // all of them, only them, and in the order expected.
+  std::list<WebRtcLogFileInfo> empty_expected_files_list;
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &empty_expected_files_list, true, &run_loop));
+
+  LoadProfiles();
+  ASSERT_EQ(browser_context_->GetPath(), browser_context_path_);
+
+  WaitForPendingTasks(&run_loop);
+}
+
+TEST_P(WebRtcEventLogManagerTestForNetworkConnectivity,
+       UploadPendingLogsAtStartupIfConnectedToSupportedNetworkType) {
+  WebRtcEventLogManagerTestBase::SetUp(
+      std::make_unique<content::MockNetworkConnectionTracker>(
+          get_conn_type_is_sync_, supported_type_));
+
+  UnloadProfileAndSeedPendingLog();
+
+  // This factory enforces the expectation that the files will be uploaded,
+  // all of them, only them, and in the order expected.
+  base::RunLoop run_loop;
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files_, true, &run_loop));
+
+  LoadProfiles();
+  ASSERT_EQ(browser_context_->GetPath(), browser_context_path_);
+
+  WaitForPendingTasks(&run_loop);
+}
+
+INSTANTIATE_TEST_CASE_P(
+    UploadSupportingConnectionTypes,
+    WebRtcEventLogManagerTestForNetworkConnectivity,
+    ::testing::Combine(
+        // Wehther GetConnectionType() responds synchronously.
+        ::testing::Bool(),
+        // The upload-supporting network type to be used.
+        ::testing::Values(network::mojom::ConnectionType::CONNECTION_ETHERNET,
+                          network::mojom::ConnectionType::CONNECTION_WIFI),
+        // The upload-unsupporting network type to be used.
+        ::testing::Values(network::mojom::ConnectionType::CONNECTION_NONE,
+                          network::mojom::ConnectionType::CONNECTION_4G)));
 
 #else  // defined(OS_ANDROID)
 

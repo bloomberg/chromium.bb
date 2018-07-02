@@ -90,6 +90,20 @@ std::string CreateLogId() {
   DCHECK_EQ(log_id.find_first_not_of("0123456789ABCDEF"), std::string::npos);
   return log_id;
 }
+
+// Do not attempt to upload when there is no active connection.
+// Do not attempt to upload if the connection is known to be a mobile one.
+// Err on the side of caution with unknown connection types (by not uploading).
+// Note #1: A device may have multiple connections, so this is not bullet-proof.
+// Note #2: Does not attempt to recognize mobile hotspots.
+bool UploadSupportedUsingConnectionType(
+    network::mojom::ConnectionType connection) {
+  if (connection == network::mojom::ConnectionType::CONNECTION_ETHERNET ||
+      connection == network::mojom::ConnectionType::CONNECTION_WIFI) {
+    return true;
+  }
+  return false;
+}
 }  // namespace
 
 const size_t kMaxActiveRemoteBoundWebRtcEventLogs = 3;
@@ -113,7 +127,9 @@ WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
               ::switches::kWebRtcRemoteEventLogUploadNoSuppression)),
       proactive_prune_scheduling_delta_(GetProactivePruningDelta()),
       proactive_prune_scheduling_started_(false),
-      observer_(observer) {
+      observer_(observer),
+      network_connection_tracker_(nullptr),
+      uploading_supported_for_connection_type_(false) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
   // Proactive pruning would not do anything at the moment; it will be started
@@ -126,11 +142,46 @@ WebRtcRemoteEventLogManager::~WebRtcRemoteEventLogManager() {
   // TODO(crbug.com/775415): Purge from disk files which were being uploaded
   // while destruction took place, thereby avoiding endless attempts to upload
   // the same file.
+
+  // |network_connection_tracker_| might already have posted a task back to us,
+  // but it will not run, because |io_task_sequence_checker_|'s TaskRunner has
+  // already been stopped.
+  network_connection_tracker_->RemoveNetworkConnectionObserver(this);
+}
+
+void WebRtcRemoteEventLogManager::SetNetworkConnectionTracker(
+    content::NetworkConnectionTracker* network_connection_tracker) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(network_connection_tracker);
+  DCHECK(!network_connection_tracker_);
+
+  // |this| is only destroyed (on the UI thread) after the TaskRunner to which
+  // |io_task_sequence_checker_| is bound stops, so both base::Unretained(this)
+  // and AddNetworkConnectionObserver() are safe.
+
+  network_connection_tracker_ = network_connection_tracker;
+  network_connection_tracker_->AddNetworkConnectionObserver(this);
+
+  auto callback =
+      base::BindOnce(&WebRtcRemoteEventLogManager::OnConnectionChanged,
+                     base::Unretained(this));
+  network::mojom::ConnectionType connection_type;
+  const bool sync_answer = network_connection_tracker_->GetConnectionType(
+      &connection_type, std::move(callback));
+
+  if (sync_answer) {
+    OnConnectionChanged(connection_type);
+  }
+
+  // Because this happens while enabling the first browser context, there is no
+  // necessity to consider uploading yet.
+  DCHECK_EQ(enabled_browser_contexts_.size(), 0u);
 }
 
 void WebRtcRemoteEventLogManager::SetUrlRequestContextGetter(
     net::URLRequestContextGetter* context_getter) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  DCHECK(context_getter);
   DCHECK(!uploader_factory_);
   uploader_factory_ =
       std::make_unique<WebRtcEventLogUploaderImpl::Factory>(context_getter);
@@ -345,6 +396,24 @@ void WebRtcRemoteEventLogManager::RenderProcessHostExitedDestroyed(
   MaybeStartUploading();
 }
 
+// TODO(crbug.com/775415): Fix the issue where OnConnectionChanged sometimes
+// experiences toggling behavior shortly after a network change, by delaying
+// potential uploads until a few seconds of stable connection.
+void WebRtcRemoteEventLogManager::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  const bool supported_before = uploading_supported_for_connection_type_;
+
+  uploading_supported_for_connection_type_ =
+      UploadSupportedUsingConnectionType(type);
+
+  if (uploading_supported_for_connection_type_ && !supported_before) {
+    MaybeStartUploading();
+  }
+
+  // TODO(crbug.com/775415): Support pausing uploads when connection goes down,
+  // or switches to an unsupported connection type.
+}
+
 void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
     const base::FilePath& file_path,
     bool upload_successful) {
@@ -353,6 +422,9 @@ void WebRtcRemoteEventLogManager::OnWebRtcEventLogUploadComplete(
   // Post a task to deallocate the uploader (can't do this directly,
   // because this function is a callback from the uploader), potentially
   // starting a new upload for the next file.
+  // |this| is only destroyed (on the UI thread) after the TaskRunner to which
+  // |io_task_sequence_checker_| is bound stops, so base::Unretained(this) is
+  // safe.
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::BindOnce(
@@ -515,6 +587,9 @@ void WebRtcRemoteEventLogManager::RecurringPendingLogsPrune() {
 
   PrunePendingLogs();
 
+  // |this| is only destroyed (on the UI thread) after the TaskRunner to which
+  // |io_task_sequence_checker_| is bound stops, so base::Unretained(this) is
+  // safe.
   base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&WebRtcRemoteEventLogManager::RecurringPendingLogsPrune,
@@ -623,6 +698,9 @@ bool WebRtcRemoteEventLogManager::AdditionalActiveLogAllowed(
 
 bool WebRtcRemoteEventLogManager::UploadingAllowed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
+  if (!uploading_supported_for_connection_type_) {
+    return false;
+  }
   return upload_suppression_disabled_ || active_peer_connections_.empty();
 }
 
