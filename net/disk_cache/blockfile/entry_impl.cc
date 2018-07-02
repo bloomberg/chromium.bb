@@ -742,8 +742,9 @@ void EntryImpl::BeginLogging(net::NetLog* net_log, bool created) {
   DCHECK(!net_log_.net_log());
   net_log_ = net::NetLogWithSource::Make(
       net_log, net::NetLogSourceType::DISK_CACHE_ENTRY);
-  net_log_.BeginEvent(net::NetLogEventType::DISK_CACHE_ENTRY_IMPL,
-                      CreateNetLogEntryCreationCallback(this, created));
+  net_log_.BeginEvent(
+      net::NetLogEventType::DISK_CACHE_ENTRY_IMPL,
+      CreateNetLogParametersEntryCreationCallback(this, created));
 }
 
 const net::NetLogWithSource& EntryImpl::net_log() const {
