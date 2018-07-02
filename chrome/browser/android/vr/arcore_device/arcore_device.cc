@@ -4,7 +4,6 @@
 
 #include "chrome/browser/android/vr/arcore_device/arcore_device.h"
 
-#include <jni.h>
 #include "base/bind.h"
 #include "base/numerics/math_constants.h"
 #include "base/optional.h"
@@ -368,9 +367,8 @@ void ARCoreDevice::OnRequestCameraPermissionResult(
       // Show the Android camera permission info bar.
       PermissionUpdateInfoBarDelegate::Create(
           web_contents, content_settings_types,
-          base::BindRepeating(
-              &ARCoreDevice::OnRequestAndroidCameraPermissionResult,
-              GetWeakPtr(), base::Passed(&callback)));
+          base::BindOnce(&ARCoreDevice::OnRequestAndroidCameraPermissionResult,
+                         GetWeakPtr(), base::Passed(&callback)));
       return;
     case ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR:
       std::move(callback).Run(false);

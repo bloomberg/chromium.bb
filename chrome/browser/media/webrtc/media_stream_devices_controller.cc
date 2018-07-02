@@ -214,9 +214,8 @@ void MediaStreamDevicesController::RequestAndroidPermissionsIfNeeded(
     case ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR:
       PermissionUpdateInfoBarDelegate::Create(
           web_contents, content_settings_types,
-          base::BindRepeating(
-              &MediaStreamDevicesController::AndroidOSPromptAnswered,
-              base::Passed(&controller), responses));
+          base::BindOnce(&MediaStreamDevicesController::AndroidOSPromptAnswered,
+                         base::Passed(&controller), responses));
       return;
     case ShowPermissionInfoBarState::CANNOT_SHOW_PERMISSION_INFOBAR: {
       std::vector<ContentSetting> blocked_responses(responses.size(),
