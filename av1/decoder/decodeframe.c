@@ -3397,8 +3397,8 @@ void av1_read_op_parameters_info(AV1_COMMON *const cm,
 
 static void av1_read_tu_pts_info(AV1_COMMON *const cm,
                                  struct aom_read_bit_buffer *rb) {
-  cm->tu_presentation_delay =
-      aom_rb_read_literal(rb, cm->buffer_model.frame_presentation_delay_length);
+  cm->tu_presentation_delay = aom_rb_read_unsigned_literal(
+      rb, cm->buffer_model.frame_presentation_delay_length);
 }
 
 void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
@@ -3867,7 +3867,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                 0x1)) ||
               cm->seq_params.operating_point_idc[op_num] == 0) {
             cm->op_frame_timing[op_num].buffer_removal_delay =
-                aom_rb_read_literal(
+                aom_rb_read_unsigned_literal(
                     rb, cm->buffer_model.buffer_removal_delay_length);
           } else {
             cm->op_frame_timing[op_num].buffer_removal_delay = 0;
