@@ -89,6 +89,12 @@ class BASE_EXPORT ReadOnlySharedMemoryRegion {
     return handle_.GetSize();
   }
 
+  // Returns 128-bit GUID of the region.
+  const UnguessableToken& GetGUID() const {
+    DCHECK(IsValid());
+    return handle_.GetGUID();
+  }
+
  private:
   explicit ReadOnlySharedMemoryRegion(
       subtle::PlatformSharedMemoryRegion handle);

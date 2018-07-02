@@ -88,6 +88,12 @@ class BASE_EXPORT UnsafeSharedMemoryRegion {
     return handle_.GetSize();
   }
 
+  // Returns 128-bit GUID of the region.
+  const UnguessableToken& GetGUID() const {
+    DCHECK(IsValid());
+    return handle_.GetGUID();
+  }
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DiscardableSharedMemoryTest,
                            LockShouldFailIfPlatformLockPagesFails);
