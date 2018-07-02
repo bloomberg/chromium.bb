@@ -667,7 +667,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
   if (!request)
     return false;
   if (event_recorder_)
-    event_recorder_->RecordEventHandledStatus(request->event_type, was_handled);
+    event_recorder_->RecordEventHandledStatus(request->event_type);
   ServiceWorkerMetrics::RecordEventDuration(
       request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
@@ -1485,11 +1485,12 @@ void ServiceWorkerVersion::StartWorkerInternal() {
   DCHECK(request_timeouts_.empty());
   DCHECK(start_worker_first_purpose_);
 
-  if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)) {
+  if (!ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_) &&
+      start_worker_first_purpose_.value() ==
+          ServiceWorkerMetrics::EventType::NAVIGATION_HINT) {
     DCHECK(!event_recorder_);
     event_recorder_ =
-        std::make_unique<ServiceWorkerMetrics::ScopedEventRecorder>(
-            start_worker_first_purpose_.value());
+        std::make_unique<ServiceWorkerMetrics::ScopedEventRecorder>();
   }
   // We don't clear |start_worker_first_purpose_| here but clear in
   // FinishStartWorker. This is because StartWorkerInternal may be called

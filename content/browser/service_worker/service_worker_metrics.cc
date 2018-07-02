@@ -216,72 +216,22 @@ void RecordURLMetricOnUI(const std::string& metric_name, const GURL& url) {
   GetContentClient()->browser()->RecordURLMetric(metric_name, url);
 }
 
-enum EventHandledRatioType {
-  EVENT_HANDLED_NONE,
-  EVENT_HANDLED_SOME,
-  EVENT_HANDLED_ALL,
-  NUM_EVENT_HANDLED_RATIO_TYPE,
-};
-
 }  // namespace
 
 using ScopedEventRecorder = ServiceWorkerMetrics::ScopedEventRecorder;
 
-ScopedEventRecorder::ScopedEventRecorder(
-    ServiceWorkerMetrics::EventType start_worker_purpose)
-    : start_worker_purpose_(start_worker_purpose) {}
+ScopedEventRecorder::ScopedEventRecorder() = default;
 
 ScopedEventRecorder::~ScopedEventRecorder() {
-  for (const auto& ev : event_stats_) {
-    RecordEventHandledRatio(ev.first, ev.second.handled_events,
-                            ev.second.fired_events);
-  }
-  if (start_worker_purpose_ == EventType::NAVIGATION_HINT) {
-    bool frame_fetch_event_fired =
-        event_stats_[EventType::FETCH_MAIN_FRAME].fired_events ||
-        event_stats_[EventType::FETCH_SUB_FRAME].fired_events;
-    UMA_HISTOGRAM_BOOLEAN("ServiceWorker.StartHintPrecision",
-                          frame_fetch_event_fired);
-  }
+  UMA_HISTOGRAM_BOOLEAN("ServiceWorker.StartHintPrecision",
+                        frame_fetch_event_fired_);
 }
 
 void ScopedEventRecorder::RecordEventHandledStatus(
-    ServiceWorkerMetrics::EventType event,
-    bool handled) {
-  event_stats_[event].fired_events++;
-  if (handled)
-    event_stats_[event].handled_events++;
-}
-
-void ScopedEventRecorder::RecordEventHandledRatio(
-    ServiceWorkerMetrics::EventType event,
-    size_t handled_events,
-    size_t fired_events) {
-  if (!fired_events)
-    return;
-  EventHandledRatioType type = EVENT_HANDLED_SOME;
-  if (fired_events == handled_events)
-    type = EVENT_HANDLED_ALL;
-  else if (handled_events == 0)
-    type = EVENT_HANDLED_NONE;
-
-  // For now Fetch and Foreign Fetch are the only types that are recorded.
-  switch (event) {
-    case EventType::FETCH_MAIN_FRAME:
-    case EventType::FETCH_SUB_FRAME:
-    case EventType::FETCH_SHARED_WORKER:
-    case EventType::FETCH_SUB_RESOURCE:
-      UMA_HISTOGRAM_ENUMERATION("ServiceWorker.EventHandledRatioType.Fetch",
-                                type, NUM_EVENT_HANDLED_RATIO_TYPE);
-      break;
-    case EventType::FOREIGN_FETCH:
-      UMA_HISTOGRAM_ENUMERATION(
-          "ServiceWorker.EventHandledRatioType.ForeignFetch", type,
-          NUM_EVENT_HANDLED_RATIO_TYPE);
-      break;
-    default:
-      // Do nothing.
-      break;
+    ServiceWorkerMetrics::EventType event) {
+  if (event == EventType::FETCH_MAIN_FRAME ||
+      event == EventType::FETCH_SUB_FRAME) {
+    frame_fetch_event_fired_ = true;
   }
 }
 
