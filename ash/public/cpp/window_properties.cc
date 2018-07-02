@@ -60,6 +60,9 @@ void RegisterWindowProperties(aura::PropertyConverter* property_converter) {
       ui::mojom::WindowManager::kFrameInactiveColor_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
+      kFrameIsThemedByHostedAppKey, mojom::kFrameIsThemedByHostedApp_Property,
+      aura::PropertyConverter::CreateAcceptAnyValueCallback());
+  property_converter->RegisterPrimitiveProperty(
       kHideShelfWhenFullscreenKey, mojom::kHideShelfWhenFullscreen_Property,
       aura::PropertyConverter::CreateAcceptAnyValueCallback());
   property_converter->RegisterPrimitiveProperty(
@@ -150,6 +153,7 @@ DEFINE_UI_CLASS_PROPERTY_KEY(SkColor, kFrameActiveColorKey, kDefaultFrameColor);
 DEFINE_UI_CLASS_PROPERTY_KEY(SkColor,
                              kFrameInactiveColorKey,
                              kDefaultFrameColor);
+DEFINE_UI_CLASS_PROPERTY_KEY(bool, kFrameIsThemedByHostedAppKey, false);
 DEFINE_UI_CLASS_PROPERTY_KEY(mojom::WindowPinType,
                              kWindowPinTypeKey,
                              mojom::WindowPinType::NONE);

@@ -31,6 +31,7 @@ class HostedAppButtonContainer;
 class TabIconView;
 
 namespace ash {
+class DefaultFrameHeader;
 class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 class FrameHeaderOriginText;
@@ -187,6 +188,10 @@ class BrowserNonClientFrameViewAsh
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();
 
+  // Creates views and does other setup for a hosted app.
+  // TODO(estade): remove the parameter as it's unused in Mash.
+  void SetUpForHostedApp(ash::DefaultFrameHeader* header);
+
   // Triggers the hosted app origin and icon animations, assumes the hosted
   // app UI elements exist.
   void StartHostedAppAnimation();
@@ -209,6 +214,11 @@ class BrowserNonClientFrameViewAsh
   // URL origin text for hosted app windows.
   // Owned by views hierarchy.
   ash::FrameHeaderOriginText* frame_header_origin_text_ = nullptr;
+
+  // A view that contains the extra views used for hosted apps
+  // (|hosted_app_button_container_| and |frame_header_origin_text_|).
+  // Only used in Mash.
+  views::View* hosted_app_extras_container_ = nullptr;
 
   // Ash's mojom::SplitViewController.
   ash::mojom::SplitViewControllerPtr split_view_controller_;
