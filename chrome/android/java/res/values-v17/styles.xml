@@ -594,6 +594,8 @@
          they are removed from @style/ButtonCompatBase. -->
     <style name="SigninButtonBorderlessRegular">
         <item name="android:background">?android:attr/selectableItemBackground</item>
+        <item name="android:paddingStart">0dp</item>
+        <item name="android:paddingEnd">0dp</item>
         <item name="android:fontFamily">sans-serif</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:textStyle">normal</item>
