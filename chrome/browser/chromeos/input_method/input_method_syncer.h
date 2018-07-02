@@ -70,14 +70,14 @@ class InputMethodSyncer : public sync_preferences::PrefServiceSyncableObserver {
 
   StringPrefMember preferred_languages_;
   StringPrefMember preload_engines_;
-  StringPrefMember enabled_extension_imes_;
+  StringPrefMember enabled_imes_;
   // These are syncable variants which don't change the device settings. We can
   // set these to keep track of the user's most recent choices. That way, after
   // the initial sync, we can add the user's synced choices to the values that
   // have already been chosen at OOBE.
   StringPrefMember preferred_languages_syncable_;
   StringPrefMember preload_engines_syncable_;
-  StringPrefMember enabled_extension_imes_syncable_;
+  StringPrefMember enabled_imes_syncable_;
 
   sync_preferences::PrefServiceSyncable* prefs_;
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;

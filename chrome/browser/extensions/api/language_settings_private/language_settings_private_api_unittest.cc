@@ -236,26 +236,25 @@ TEST_F(LanguageSettingsPrivateApiTest, AddInputMethodTest) {
 
   // Initialize relevant prefs.
   profile()->GetPrefs()->SetString(prefs::kLanguagePreferredLanguages, "en-US");
-  StringPrefMember enabled_extension_imes;
-  enabled_extension_imes.Init(prefs::kLanguageEnabledExtensionImes,
-                              profile()->GetPrefs());
+  StringPrefMember enabled_imes;
+  enabled_imes.Init(prefs::kLanguageEnabledImes, profile()->GetPrefs());
   StringPrefMember preload_engines;
   preload_engines.Init(prefs::kLanguagePreloadEngines, profile()->GetPrefs());
-  enabled_extension_imes.SetValue(std::string());
+  enabled_imes.SetValue(std::string());
   preload_engines.SetValue(std::string());
 
   {
-    // Add an extension IME. kLanguageEnabledExtensionImes should be updated.
+    // Add an extension IME. kLanguageEnabledImes should be updated.
     auto function =
         base::MakeRefCounted<LanguageSettingsPrivateAddInputMethodFunction>();
     api_test_utils::RunFunctionAndReturnSingleResult(
         function.get(), "[\"" + GetExtensionImeId() + "\"]", profile());
 
-    EXPECT_EQ(GetExtensionImeId(), enabled_extension_imes.GetValue());
+    EXPECT_EQ(GetExtensionImeId(), enabled_imes.GetValue());
     EXPECT_TRUE(preload_engines.GetValue().empty());
   }
 
-  enabled_extension_imes.SetValue(std::string());
+  enabled_imes.SetValue(std::string());
   preload_engines.SetValue(std::string());
   {
     // Add a component extension IME. kLanguagePreloadEngines should be
@@ -266,20 +265,20 @@ TEST_F(LanguageSettingsPrivateApiTest, AddInputMethodTest) {
         function.get(), "[\"" + GetComponentExtensionImeId() + "\"]",
         profile());
 
-    EXPECT_TRUE(enabled_extension_imes.GetValue().empty());
+    EXPECT_TRUE(enabled_imes.GetValue().empty());
     EXPECT_EQ(GetComponentExtensionImeId(), preload_engines.GetValue());
   }
 
-  enabled_extension_imes.SetValue(std::string());
+  enabled_imes.SetValue(std::string());
   preload_engines.SetValue(std::string());
   {
-    // Add an ARC IME. kLanguageEnabledExtensionImes should be updated.
+    // Add an ARC IME. kLanguageEnabledImes should be updated.
     auto function =
         base::MakeRefCounted<LanguageSettingsPrivateAddInputMethodFunction>();
     api_test_utils::RunFunctionAndReturnSingleResult(
         function.get(), "[\"" + GetArcImeId() + "\"]", profile());
 
-    EXPECT_EQ(GetArcImeId(), enabled_extension_imes.GetValue());
+    EXPECT_EQ(GetArcImeId(), enabled_imes.GetValue());
     EXPECT_TRUE(preload_engines.GetValue().empty());
   }
 
@@ -290,13 +289,12 @@ TEST_F(LanguageSettingsPrivateApiTest, RemoveInputMethodTest) {
   TestInputMethodManager::Initialize(new TestInputMethodManager);
 
   // Initialize relevant prefs.
-  StringPrefMember enabled_extension_imes;
-  enabled_extension_imes.Init(prefs::kLanguageEnabledExtensionImes,
-                              profile()->GetPrefs());
+  StringPrefMember enabled_imes;
+  enabled_imes.Init(prefs::kLanguageEnabledImes, profile()->GetPrefs());
   StringPrefMember preload_engines;
   preload_engines.Init(prefs::kLanguagePreloadEngines, profile()->GetPrefs());
 
-  enabled_extension_imes.SetValue(
+  enabled_imes.SetValue(
       base::JoinString({GetExtensionImeId(), GetArcImeId()}, ","));
   preload_engines.SetValue(GetComponentExtensionImeId());
   {
@@ -306,7 +304,7 @@ TEST_F(LanguageSettingsPrivateApiTest, RemoveInputMethodTest) {
     api_test_utils::RunFunctionAndReturnSingleResult(
         function.get(), "[\"" + GetExtensionImeId() + "\"]", profile());
 
-    EXPECT_EQ(GetArcImeId(), enabled_extension_imes.GetValue());
+    EXPECT_EQ(GetArcImeId(), enabled_imes.GetValue());
     EXPECT_EQ(GetComponentExtensionImeId(), preload_engines.GetValue());
   }
 
@@ -318,7 +316,7 @@ TEST_F(LanguageSettingsPrivateApiTest, RemoveInputMethodTest) {
         function.get(), "[\"" + GetComponentExtensionImeId() + "\"]",
         profile());
 
-    EXPECT_EQ(GetArcImeId(), enabled_extension_imes.GetValue());
+    EXPECT_EQ(GetArcImeId(), enabled_imes.GetValue());
     EXPECT_TRUE(preload_engines.GetValue().empty());
   }
 
@@ -329,7 +327,7 @@ TEST_F(LanguageSettingsPrivateApiTest, RemoveInputMethodTest) {
     api_test_utils::RunFunctionAndReturnSingleResult(
         function.get(), "[\"" + GetArcImeId() + "\"]", profile());
 
-    EXPECT_TRUE(enabled_extension_imes.GetValue().empty());
+    EXPECT_TRUE(enabled_imes.GetValue().empty());
     EXPECT_TRUE(preload_engines.GetValue().empty());
   }
 

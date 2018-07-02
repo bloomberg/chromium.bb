@@ -329,18 +329,15 @@ TEST_F(ArcInputMethodManagerServiceTest, OnImeInfoChanged) {
 
     // Emulate enabling ARC IME from chrome://settings.
     const std::string& arc_ime_id = std::get<1>(added_extensions[0])[0].id();
-    profile()->GetPrefs()->SetString(prefs::kLanguageEnabledExtensionImes,
-                                     arc_ime_id);
-    EXPECT_EQ(arc_ime_id, profile()->GetPrefs()->GetString(
-                              prefs::kLanguageEnabledExtensionImes));
+    profile()->GetPrefs()->SetString(prefs::kLanguageEnabledImes, arc_ime_id);
+    EXPECT_EQ(arc_ime_id,
+              profile()->GetPrefs()->GetString(prefs::kLanguageEnabledImes));
 
     // Removing the ARC IME should clear the pref
     std::vector<mojom::ImeInfoPtr> empty_info_array;
     service()->OnImeInfoChanged(std::move(empty_info_array));
-    EXPECT_TRUE(profile()
-                    ->GetPrefs()
-                    ->GetString(prefs::kLanguageEnabledExtensionImes)
-                    .empty());
+    EXPECT_TRUE(
+        profile()->GetPrefs()->GetString(prefs::kLanguageEnabledImes).empty());
     added_extensions.clear();
   }
 

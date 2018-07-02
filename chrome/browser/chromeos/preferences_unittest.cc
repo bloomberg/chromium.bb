@@ -232,10 +232,9 @@ class InputMethodPreferencesTest : public PreferencesTest {
     preload_engines_.Init(prefs::kLanguagePreloadEngines, pref_service_);
     preload_engines_syncable_.Init(prefs::kLanguagePreloadEnginesSyncable,
                                    pref_service_);
-    enabled_extension_imes_.Init(prefs::kLanguageEnabledExtensionImes,
-                                 pref_service_);
-    enabled_extension_imes_syncable_.Init(
-        prefs::kLanguageEnabledExtensionImesSyncable, pref_service_);
+    enabled_imes_.Init(prefs::kLanguageEnabledImes, pref_service_);
+    enabled_imes_syncable_.Init(prefs::kLanguageEnabledImesSyncable,
+                                pref_service_);
 
     // Initialize component and 3rd-party input method extensions.
     InitComponentExtensionIMEManager();
@@ -295,38 +294,37 @@ class InputMethodPreferencesTest : public PreferencesTest {
   // Helper function to set local language and input values.
   void SetLocalValues(const std::string& preferred_languages,
                       const std::string& preload_engines,
-                      const std::string& enabled_extension_imes) {
+                      const std::string& enabled_imes) {
     preferred_languages_.SetValue(preferred_languages);
     preload_engines_.SetValue(preload_engines);
-    enabled_extension_imes_.SetValue(enabled_extension_imes);
+    enabled_imes_.SetValue(enabled_imes);
   }
 
   // Helper function to set global language and input values.
   void SetGlobalValues(const std::string& preferred_languages,
                        const std::string& preload_engines,
-                       const std::string& enabled_extension_imes) {
+                       const std::string& enabled_imes) {
     preferred_languages_syncable_.SetValue(preferred_languages);
     preload_engines_syncable_.SetValue(preload_engines);
-    enabled_extension_imes_syncable_.SetValue(enabled_extension_imes);
+    enabled_imes_syncable_.SetValue(enabled_imes);
   }
 
   // Helper function to check local language and input values.
   void ExpectLocalValues(const std::string& preferred_languages,
                          const std::string& preload_engines,
-                         const std::string& enabled_extension_imes) {
+                         const std::string& enabled_imes) {
     EXPECT_EQ(preferred_languages, preferred_languages_.GetValue());
     EXPECT_EQ(preload_engines, preload_engines_.GetValue());
-    EXPECT_EQ(enabled_extension_imes, enabled_extension_imes_.GetValue());
+    EXPECT_EQ(enabled_imes, enabled_imes_.GetValue());
   }
 
   // Helper function to check global language and input values.
   void ExpectGlobalValues(const std::string& preferred_languages,
                           const std::string& preload_engines,
-                          const std::string& enabled_extension_imes) {
+                          const std::string& enabled_imes) {
     EXPECT_EQ(preferred_languages, preferred_languages_syncable_.GetValue());
     EXPECT_EQ(preload_engines, preload_engines_syncable_.GetValue());
-    EXPECT_EQ(enabled_extension_imes,
-              enabled_extension_imes_syncable_.GetValue());
+    EXPECT_EQ(enabled_imes, enabled_imes_syncable_.GetValue());
   }
 
   // Translates engine IDs in a CSV string to input method IDs.
@@ -342,8 +340,8 @@ class InputMethodPreferencesTest : public PreferencesTest {
   StringPrefMember preferred_languages_syncable_;
   StringPrefMember preload_engines_;
   StringPrefMember preload_engines_syncable_;
-  StringPrefMember enabled_extension_imes_;
-  StringPrefMember enabled_extension_imes_syncable_;
+  StringPrefMember enabled_imes_;
+  StringPrefMember enabled_imes_syncable_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(InputMethodPreferencesTest);
@@ -369,9 +367,8 @@ TEST_F(InputMethodPreferencesTest, TestOobeAndSync) {
       prefs::kLanguagePreferredLanguagesSyncable, base::Value("ru,fi")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable, base::Value("xkb:se::swe")));
-  sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
-                         base::Value(kIdentityIMEID)));
+  sync_data_list.push_back(CreatePrefSyncData(
+      prefs::kLanguageEnabledImesSyncable, base::Value(kIdentityIMEID)));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
@@ -413,10 +410,10 @@ TEST_F(InputMethodPreferencesTest, TestOobeAndSync) {
       FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
       CreatePrefSyncData(prefs::kLanguagePreloadEnginesSyncable,
                          base::Value(ToInputMethodIds("xkb:de::ger")))));
-  change_list.push_back(syncer::SyncChange(
-      FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
-      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
-                         base::Value(kToUpperIMEID))));
+  change_list.push_back(
+      syncer::SyncChange(FROM_HERE, syncer::SyncChange::ACTION_UPDATE,
+                         CreatePrefSyncData(prefs::kLanguageEnabledImesSyncable,
+                                            base::Value(kToUpperIMEID))));
   sync->ProcessSyncChanges(FROM_HERE, change_list);
   content::RunAllTasksUntilIdle();
 
@@ -456,8 +453,8 @@ TEST_F(InputMethodPreferencesTest, TestLogIn) {
   sync_data_list.push_back(
       CreatePrefSyncData(prefs::kLanguagePreloadEngines,
                          base::Value(ToInputMethodIds("xkb:ru::rus"))));
-  sync_data_list.push_back(CreatePrefSyncData(
-      prefs::kLanguageEnabledExtensionImes, base::Value(kIdentityIMEID)));
+  sync_data_list.push_back(CreatePrefSyncData(prefs::kLanguageEnabledImes,
+                                              base::Value(kIdentityIMEID)));
 
   // Sync.
   syncer::SyncableService* sync =
@@ -496,9 +493,8 @@ TEST_F(InputMethodPreferencesTest, TestLogInLegacy) {
   sync_data_list.push_back(
       CreatePrefSyncData(prefs::kLanguagePreloadEnginesSyncable,
                          base::Value(ToInputMethodIds("xkb:ru::rus"))));
-  sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
-                         base::Value(kToUpperIMEID)));
+  sync_data_list.push_back(CreatePrefSyncData(
+      prefs::kLanguageEnabledImesSyncable, base::Value(kToUpperIMEID)));
 
   syncer::SyncableService* sync =
       pref_service_->GetSyncableService(
@@ -553,9 +549,8 @@ TEST_F(InputMethodPreferencesTest, MergeStressTest) {
       prefs::kLanguagePreloadEnginesSyncable,
       base::Value(
           "nacl_mozc_us,xkb:ru::rus,xkb:ru::rus,xkb:es::spa,xkb:es::spa")));
-  sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
-                         base::Value(std::string())));
+  sync_data_list.push_back(CreatePrefSyncData(
+      prefs::kLanguageEnabledImesSyncable, base::Value(std::string())));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
@@ -604,9 +599,8 @@ TEST_F(InputMethodPreferencesTest, MergeInvalidValues) {
                          base::Value("klingon,en-US")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable, base::Value(preload_engines)));
-  sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
-                         base::Value(kUnknownIMEID)));
+  sync_data_list.push_back(CreatePrefSyncData(
+      prefs::kLanguageEnabledImesSyncable, base::Value(kUnknownIMEID)));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
@@ -644,9 +638,8 @@ TEST_F(InputMethodPreferencesTest, MergeAfterSyncing) {
       prefs::kLanguagePreferredLanguagesSyncable, base::Value("en-US")));
   sync_data_list.push_back(CreatePrefSyncData(
       prefs::kLanguagePreloadEnginesSyncable, base::Value(preload_engines)));
-  sync_data_list.push_back(
-      CreatePrefSyncData(prefs::kLanguageEnabledExtensionImesSyncable,
-                         base::Value(kUnknownIMEID)));
+  sync_data_list.push_back(CreatePrefSyncData(
+      prefs::kLanguageEnabledImesSyncable, base::Value(kUnknownIMEID)));
 
   // Sync for the first time.
   syncer::SyncableService* sync =
