@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "ash/public/interfaces/cros_display_config.mojom.h"
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
 #include "chrome/browser/chromeos/login/demo_mode/demo_mode_detector.h"
@@ -23,6 +25,7 @@
 
 namespace base {
 class ListValue;
+class Value;
 }
 
 namespace ui {
@@ -140,6 +143,9 @@ class CoreOobeHandler : public BaseWebUIHandler,
   void HandleHeaderBarVisible();
   void HandleSetOobeBootstrappingSlave();
   void HandleGetPrimaryDisplayNameForTesting(const base::ListValue* args);
+  void GetPrimaryDisplayNameCallback(
+      const base::Value& callback_id,
+      std::vector<ash::mojom::DisplayUnitInfoPtr> info_list);
   void HandleSetupDemoMode();
 
   // When keyboard_utils.js arrow key down event is reached, raise it
@@ -183,6 +189,10 @@ class CoreOobeHandler : public BaseWebUIHandler,
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
   DemoModeDetector demo_mode_detector_;
+
+  ash::mojom::CrosDisplayConfigControllerPtr cros_display_config_ptr_;
+
+  base::WeakPtrFactory<CoreOobeHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreOobeHandler);
 };

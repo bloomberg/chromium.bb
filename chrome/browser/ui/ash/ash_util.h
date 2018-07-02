@@ -9,6 +9,10 @@
 
 #include "ui/views/widget/widget.h"
 
+namespace service_manager {
+class Connector;
+}
+
 namespace ui {
 class Accelerator;
 class KeyEvent;
@@ -32,6 +36,10 @@ bool WillAshProcessAcceleratorForEvent(const ui::KeyEvent& key_event);
 // TODO(jamescook): Extend to take a display_id.
 void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
                                        int container_id);
+
+// Returns the connector from ServiceManagerConnection::GetForProcess().
+// May be null in unit tests.
+service_manager::Connector* GetServiceManagerConnector();
 
 }  // namespace ash_util
 

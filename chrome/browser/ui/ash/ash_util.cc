@@ -10,6 +10,7 @@
 #include "ash/public/interfaces/event_properties.mojom.h"
 #include "ash/shell.h"
 #include "base/macros.h"
+#include "content/public/common/service_manager_connection.h"
 #include "mojo/public/cpp/bindings/type_converter.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -54,6 +55,14 @@ void SetupWidgetInitParamsForContainer(views::Widget::InitParams* params,
     params->parent = ash::Shell::GetContainer(
         ash::Shell::GetPrimaryRootWindow(), container_id);
   }
+}
+
+service_manager::Connector* GetServiceManagerConnector() {
+  content::ServiceManagerConnection* manager_connection =
+      content::ServiceManagerConnection::GetForProcess();
+  if (!manager_connection)
+    return nullptr;
+  return manager_connection->GetConnector();
 }
 
 }  // namespace ash_util

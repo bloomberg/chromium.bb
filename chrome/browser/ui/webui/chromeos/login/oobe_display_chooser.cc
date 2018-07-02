@@ -8,6 +8,7 @@
 
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/strings/string_number_conversions.h"
+#include "chrome/browser/ui/ash/ash_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/service_manager_connection.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -39,11 +40,8 @@ bool IsWhiteListedVendorId(uint16_t vendor_id) {
 
 OobeDisplayChooser::OobeDisplayChooser()
     : scoped_observer_(this), weak_ptr_factory_(this) {
-  // |manager_connection| or |connector| may be null in tests.
-  content::ServiceManagerConnection* manager_connection =
-      content::ServiceManagerConnection::GetForProcess();
-  service_manager::Connector* connector =
-      manager_connection ? manager_connection->GetConnector() : nullptr;
+  // |connector| may be null in tests.
+  auto* connector = ash_util::GetServiceManagerConnector();
   if (connector) {
     connector->BindInterface(ash::mojom::kServiceName,
                              &cros_display_config_ptr_);
