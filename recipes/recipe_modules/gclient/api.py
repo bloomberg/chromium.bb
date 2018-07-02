@@ -254,7 +254,7 @@ class GclientApi(recipe_api.RecipeApi):
         name = 'recurse (git config %s)' % var
         self(name, ['recurse', 'git', 'config', var, val], **kwargs)
     finally:
-      cwd = kwargs.get('cwd', self.m.path['start_dir'])
+      cwd = self.m.context.cwd or self.m.path['start_dir']
       if 'checkout' not in self.m.path:
         self.m.path['checkout'] = cwd.join(
           *cfg.solutions[0].name.split(self.m.path.sep))
