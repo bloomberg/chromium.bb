@@ -167,13 +167,6 @@ void EnableHotwordEffect(const StreamControls& controls, int* effects) {
   }
 }
 
-bool CalledOnIOThread() {
-  // Check if this function call is on the IO thread, except for unittests where
-  // an IO thread might not have been created.
-  return BrowserThread::CurrentlyOn(BrowserThread::IO) ||
-         !BrowserThread::IsThreadInitialized(BrowserThread::IO);
-}
-
 bool GetDeviceIDFromHMAC(const std::string& salt,
                          const url::Origin& security_origin,
                          const std::string& hmac_device_id,
@@ -744,6 +737,7 @@ int MediaStreamManager::VideoDeviceIdToSessionId(
 }
 
 void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "StopDevice"
            << "{type = " << type << "}"
            << "{session_id = " << session_id << "}";
@@ -782,6 +776,7 @@ void MediaStreamManager::StopDevice(MediaStreamType type, int session_id) {
 }
 
 void MediaStreamManager::CloseDevice(MediaStreamType type, int session_id) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "CloseDevice("
            << "{type = " << type << "} "
            << "{session_id = " << session_id << "})";
@@ -993,6 +988,7 @@ std::string MediaStreamManager::AddRequest(DeviceRequest* request) {
 
 MediaStreamManager::DeviceRequest* MediaStreamManager::FindRequest(
     const std::string& label) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   for (const LabeledDeviceRequest& labeled_request : requests_) {
     if (labeled_request.first == label)
       return labeled_request.second;
@@ -1001,6 +997,7 @@ MediaStreamManager::DeviceRequest* MediaStreamManager::FindRequest(
 }
 
 void MediaStreamManager::DeleteRequest(const std::string& label) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "DeleteRequest({label= " << label << "})";
   for (DeviceRequests::iterator request_it = requests_.begin();
        request_it != requests_.end(); ++request_it) {
@@ -1029,22 +1026,25 @@ void MediaStreamManager::ReadOutputParamsAndPostRequestToUI(
     audio_system_->GetOutputStreamParameters(
         media::AudioDeviceDescription::kDefaultDeviceId,
         base::BindOnce(&MediaStreamManager::PostRequestToUI,
-                       base::Unretained(this), label, request, enumeration));
+                       base::Unretained(this), label, enumeration));
   } else {
-    PostRequestToUI(label, request, enumeration,
+    PostRequestToUI(label, enumeration,
                     base::Optional<media::AudioParameters>());
   }
 }
 
 void MediaStreamManager::PostRequestToUI(
     const std::string& label,
-    DeviceRequest* request,
     const MediaDeviceEnumeration& enumeration,
     const base::Optional<media::AudioParameters>& output_parameters) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(request->HasUIRequest());
   DCHECK(!output_parameters || output_parameters->IsValid());
   DVLOG(1) << "PostRequestToUI({label= " << label << "})";
+
+  DeviceRequest* request = FindRequest(label);
+  if (!request)
+    return;
+  DCHECK(request->HasUIRequest());
 
   const MediaStreamType audio_type = request->audio_type();
   const MediaStreamType video_type = request->video_type();
@@ -1231,6 +1231,7 @@ bool MediaStreamManager::SetupScreenCaptureRequest(DeviceRequest* request) {
 
 MediaStreamDevices MediaStreamManager::GetDevicesOpenedByRequest(
     const std::string& label) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DeviceRequest* request = FindRequest(label);
   if (!request)
     return MediaStreamDevices();
@@ -1242,6 +1243,7 @@ bool MediaStreamManager::FindExistingRequestedDevice(
     const MediaStreamDevice& new_device,
     MediaStreamDevice* existing_device,
     MediaRequestState* existing_request_state) const {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(existing_device);
   DCHECK(existing_request_state);
 
@@ -1341,6 +1343,7 @@ void MediaStreamManager::FinalizeMediaAccessRequest(
     const std::string& label,
     DeviceRequest* request,
     const MediaStreamDevices& devices) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK(request->media_access_request_cb);
   std::move(request->media_access_request_cb)
       .Run(devices, std::move(request->ui_proxy));
@@ -1666,7 +1669,8 @@ void MediaStreamManager::StopMediaStreamFromBrowser(const std::string& label) {
 
 void MediaStreamManager::WillDestroyCurrentMessageLoop() {
   DVLOG(3) << "MediaStreamManager::WillDestroyCurrentMessageLoop()";
-  DCHECK(CalledOnIOThread());
+  DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO) ||
+         !BrowserThread::IsThreadInitialized(BrowserThread::IO));
   if (media_devices_manager_)
     media_devices_manager_->StopMonitoring();
   if (video_capture_manager_)
@@ -1875,6 +1879,7 @@ MediaStreamDevices MediaStreamManager::ConvertToMediaStreamDevices(
 }
 
 void MediaStreamManager::OnStreamStarted(const std::string& label) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DeviceRequest* const request = FindRequest(label);
   if (!request)
     return;
