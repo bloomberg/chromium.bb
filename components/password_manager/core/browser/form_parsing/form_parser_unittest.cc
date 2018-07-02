@@ -699,18 +699,6 @@ TEST(FormParserTest, TestAutocomplete) {
           },
       },
       {
-          "Partial autocomplete analysis is not complemented by basic "
-          "heuristics",
-          // Username not found because there was a valid autocomplete mark-up
-          // but it did not include the plain text field.
-          {
-              {.form_control_type = "text"},
-              {.role = ElementRole::CURRENT_PASSWORD,
-               .form_control_type = "password",
-               .autocomplete_attribute = "current-password"},
-          },
-      },
-      {
           "Partial autocomplete analysis fails if no passwords are found",
           // The attribute 'username' is ignored, because there was no password
           // marked up.
@@ -1191,6 +1179,53 @@ TEST(FormParserTest, UsernamePredictions) {
                .form_control_type = "text",
                .predicted_username = 1},
               {.form_control_type = "text", .predicted_username = 4},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password"},
+          },
+      },
+  });
+}
+
+// In some situations, server hints or autocomplete mark-up do not provide the
+// username might be omitted. Sometimes this is a truthful signal (there might
+// be no username despite the presence of plain text fields), but often this is
+// just incomplete data. In the long term, the server hints should be complete
+// and also cover cases when the autocomplete mark-up is lacking; at that point,
+// the parser should just trust that the signal is truthful. Until then,
+// however, the parser is trying to complement the signal with its structural
+// heuristics.
+TEST(FormParserTest, ComplementingResults) {
+  CheckTestData({
+      {
+          "Current password from autocomplete analysis, username from basic "
+          "heuristics",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CURRENT_PASSWORD,
+               .form_control_type = "password",
+               .autocomplete_attribute = "current-password"},
+          },
+      },
+      {
+          "New and confirmation passwords from server, username from basic "
+          "heuristics",
+          {
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
+              {.role = ElementRole::CONFIRMATION_PASSWORD,
+               .prediction = {.type = autofill::CONFIRMATION_PASSWORD},
+               .form_control_type = "password"},
+              {.form_control_type = "text"},
+              {.role = ElementRole::NEW_PASSWORD,
+               .prediction = {.type = autofill::NEW_PASSWORD},
+               .form_control_type = "password"},
+          },
+      },
+      {
+          "No password from server still means that serve hints are ignored.",
+          {
+              {.prediction = {.type = autofill::USERNAME_AND_EMAIL_ADDRESS},
+               .form_control_type = "text"},
+              {.role = ElementRole::USERNAME, .form_control_type = "text"},
               {.role = ElementRole::CURRENT_PASSWORD,
                .form_control_type = "password"},
           },
