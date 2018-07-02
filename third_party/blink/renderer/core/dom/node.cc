@@ -357,6 +357,10 @@ void Node::setNodeValue(const String&) {
   // By default, setting nodeValue has no effect.
 }
 
+ContainerNode* Node::parentNode() const {
+  return IsShadowRoot() ? nullptr : ParentOrShadowHostNode();
+}
+
 NodeList* Node::childNodes() {
   ThreadState::MainThreadGCForbiddenScope gc_forbidden;
   if (IsContainerNode())
