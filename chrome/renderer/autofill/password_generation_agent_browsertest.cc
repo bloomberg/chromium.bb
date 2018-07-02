@@ -136,7 +136,7 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
 
   void SelectGenerationFallbackInContextMenu(const char* element_id) {
     SimulateElementRightClick(element_id);
-    password_generation_->UserSelectedManualGenerationOption();
+    password_generation_->UserTriggeredGeneratePassword();
   }
 
   void BindPasswordManagerDriver(mojo::ScopedMessagePipeHandle handle) {
@@ -147,11 +147,6 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
   void BindPasswordManagerClient(mojo::ScopedInterfaceEndpointHandle handle) {
     fake_pw_client_.BindRequest(
         mojom::PasswordManagerClientAssociatedRequest(std::move(handle)));
-  }
-
-  void EnableManualGenerationFallback() {
-    scoped_feature_list_.InitAndEnableFeature(
-        password_manager::features::kManualFallbacksGeneration);
   }
 
   FakeContentPasswordManagerDriver fake_driver_;
@@ -944,7 +939,7 @@ TEST_F(PasswordGenerationAgentTest, GenerationFallback_NoFocusedElement) {
   // Checks the fallback doesn't cause a crash just in case no password element
   // had focus so far.
   LoadHTMLWithUserGesture(kAccountCreationFormHTML);
-  password_generation_->UserSelectedManualGenerationOption();
+  password_generation_->UserTriggeredGeneratePassword();
 }
 
 TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {

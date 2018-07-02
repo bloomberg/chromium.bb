@@ -710,15 +710,6 @@ void PasswordGenerationAgent::UserTriggeredGeneratePassword() {
     ShowGenerationPopup(true /* is_manual_generation */);
 }
 
-void PasswordGenerationAgent::UserSelectedManualGenerationOption() {
-  if (SetUpUserTriggeredGeneration()) {
-    last_focused_password_element_.SetAutofillValue(blink::WebString());
-    last_focused_password_element_.SetAutofillState(
-        WebAutofillState::kNotFilled);
-    ShowGenerationPopup(true /* is_manual_generation */);
-  }
-}
-
 const mojom::PasswordManagerDriverPtr&
 PasswordGenerationAgent::GetPasswordManagerDriver() {
   DCHECK(password_agent_);
