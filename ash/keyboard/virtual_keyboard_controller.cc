@@ -67,6 +67,14 @@ void MoveKeyboardToDisplayInternal(const display::Display& display) {
   }
 }
 
+bool HasTouchableDisplay() {
+  for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
+    if (display.touch_support() == display::Display::TouchSupport::AVAILABLE)
+      return true;
+  }
+  return false;
+}
+
 void MoveKeyboardToFirstTouchableDisplay() {
   // Move the keyboard to the first display with touch capability.
   for (const auto& display : display::Screen::GetScreen()->GetAllDisplays()) {
@@ -181,14 +189,15 @@ void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
 
   if (wm::GetFocusedWindow()) {
     // Move the virtual keyboard to the focused display if that display has
-    // touch capability or keyboard is locked
+    // touch capability or no other display has touch capability.
     const display::Display focused_display =
         display::Screen::GetScreen()->GetDisplayNearestWindow(
             wm::GetFocusedWindow());
     if (current_display.id() != focused_display.id() &&
-        focused_display.id() != display::kInvalidDisplayId &&
-        focused_display.touch_support() ==
-            display::Display::TouchSupport::AVAILABLE) {
+        focused_display.is_valid() &&
+        (focused_display.touch_support() ==
+             display::Display::TouchSupport::AVAILABLE ||
+         !HasTouchableDisplay())) {
       MoveKeyboardToDisplayInternal(focused_display);
       return;
     }

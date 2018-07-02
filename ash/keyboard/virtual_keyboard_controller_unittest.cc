@@ -416,7 +416,8 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest, DoesNotSuppressKeyboard) {
 }
 
 // Test for http://crbug.com/297858. |MoveKeyboardToTouchableDisplay| should
-// move keyboard to primary display if no display has touch capability.
+// move keyboard to primary display if no display has touch capability and
+// no window is focused.
 TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
        MovesKeyboardToPrimaryDisplayWhenNoDisplayHasTouch) {
   UpdateDisplay("500x500,500x500");
@@ -429,6 +430,24 @@ TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
   GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
 
   EXPECT_EQ(GetPrimaryRootWindow(), GetKeyboardController()->GetRootWindow());
+}
+
+// Test for http://crbug.com/297858. |MoveKeyboardToTouchableDisplay| should
+// move keyboard to focused display if no display has touch capability.
+TEST_F(VirtualKeyboardControllerAlwaysEnabledTest,
+       MovesKeyboardToFocusedDisplayWhenNoDisplayHasTouch) {
+  UpdateDisplay("500x500,500x500");
+
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetPrimaryDisplay().touch_support());
+  EXPECT_NE(display::Display::TouchSupport::AVAILABLE,
+            GetSecondaryDisplay().touch_support());
+
+  CreateFocusedTestWindowInRootWindow(GetSecondaryRootWindow());
+
+  GetVirtualKeyboardController()->MoveKeyboardToTouchableDisplay();
+
+  EXPECT_EQ(GetSecondaryRootWindow(), GetKeyboardController()->GetRootWindow());
 }
 
 // Test for http://crbug.com/303429. |MoveKeyboardToTouchableDisplay| should
