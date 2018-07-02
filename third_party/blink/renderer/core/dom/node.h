@@ -1030,10 +1030,6 @@ inline ContainerNode* Node::ParentOrShadowHostNode() const {
   return reinterpret_cast<ContainerNode*>(parent_or_shadow_host_node_.Get());
 }
 
-inline ContainerNode* Node::parentNode() const {
-  return IsShadowRoot() ? nullptr : ParentOrShadowHostNode();
-}
-
 inline void Node::LazyReattachIfAttached() {
   if (NeedsAttach())
     return;
