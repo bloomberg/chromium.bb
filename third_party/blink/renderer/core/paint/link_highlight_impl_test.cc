@@ -105,8 +105,7 @@ TEST(LinkHighlightImplTest, verifyWebViewImplIntegration) {
       GetTargetedEvent(web_view_impl, touch_event));
 
   EXPECT_TRUE(web_view_impl->GetLinkHighlight(0));
-  EXPECT_TRUE(web_view_impl->GetLinkHighlight(0)->ContentLayer());
-  EXPECT_TRUE(web_view_impl->GetLinkHighlight(0)->ClipLayer());
+  EXPECT_TRUE(web_view_impl->GetLinkHighlight(0)->Layer());
 
   // Find a target inside a scrollable div
   touch_event.SetPositionInWidget(WebFloatPoint(20, 100));
