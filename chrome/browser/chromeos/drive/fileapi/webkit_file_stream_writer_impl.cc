@@ -68,7 +68,7 @@ int WebkitFileStreamWriterImpl::Write(net::IOBuffer* buf,
                                       const net::CompletionCallback& callback) {
   DCHECK(pending_write_callback_.is_null());
   DCHECK(pending_cancel_callback_.is_null());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // If the local file is already available, just delegate to it.
   if (local_file_writer_)
@@ -90,7 +90,7 @@ int WebkitFileStreamWriterImpl::Write(net::IOBuffer* buf,
 int WebkitFileStreamWriterImpl::Cancel(
     const net::CompletionCallback& callback) {
   DCHECK(pending_cancel_callback_.is_null());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // If LocalFileWriter is already created, just delegate the cancel to it.
   if (local_file_writer_)
@@ -111,7 +111,7 @@ int WebkitFileStreamWriterImpl::Cancel(
 
 int WebkitFileStreamWriterImpl::Flush(const net::CompletionCallback& callback) {
   DCHECK(pending_cancel_callback_.is_null());
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // If LocalFileWriter is already created, just delegate to it.
   if (local_file_writer_)

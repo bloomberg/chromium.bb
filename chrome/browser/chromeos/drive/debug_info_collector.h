@@ -58,7 +58,7 @@ class DebugInfoCollector {
   FileSystemInterface* file_system_;  // Not owned.
   scoped_refptr<base::SequencedTaskRunner> blocking_task_runner_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(DebugInfoCollector);
 };

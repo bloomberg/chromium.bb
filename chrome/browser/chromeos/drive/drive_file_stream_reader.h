@@ -81,7 +81,7 @@ class LocalReaderProxy : public ReaderProxy {
   // The number of remaining bytes to be read.
   int64_t remaining_length_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
@@ -131,7 +131,7 @@ class NetworkReaderProxy : public ReaderProxy {
   int buffer_length_;
   net::CompletionCallback callback_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // Keeps the closure to cancel downloading job if necessary.
   // Will be reset when the job is completed (regardless whether the job is
@@ -222,7 +222,7 @@ class DriveFileStreamReader {
   base::Closure cancel_download_closure_;
   std::unique_ptr<internal::ReaderProxy> reader_proxy_;
 
-  base::ThreadChecker thread_checker_;
+  THREAD_CHECKER(thread_checker_);
 
   // This should remain the last member so it'll be destroyed first and
   // invalidate its weak pointers before other members are destroyed.
