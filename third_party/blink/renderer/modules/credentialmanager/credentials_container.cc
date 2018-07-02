@@ -137,8 +137,9 @@ bool CheckPublicKeySecurityRequirements(ScriptPromiseResolver* resolver,
       origin->Protocol() != url::kHttpsScheme) {
     resolver->Reject(DOMException::Create(
         DOMExceptionCode::kNotAllowedError,
-        "Public-key credentials are only available to secure HTTP or HTTPS "
-        "origins. See https://crbug.com/824383"));
+        "Public-key credentials are only available to HTTPS origin or "
+        "HTTP origins that fall under 'localhost'. See "
+        "https://crbug.com/824383"));
     return false;
   }
 
