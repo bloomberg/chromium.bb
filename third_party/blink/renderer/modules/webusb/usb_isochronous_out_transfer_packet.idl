@@ -6,7 +6,7 @@
 
 [
     Constructor(USBTransferStatus status, optional unsigned long bytesWritten = 0),
-    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers, SharedWorker WebUSBOnDedicatedAndSharedWorkers, Window WebUSB)
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB)
 ] interface USBIsochronousOutTransferPacket {
     readonly attribute unsigned long bytesWritten;
     readonly attribute USBTransferStatus status;

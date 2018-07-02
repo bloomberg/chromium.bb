@@ -268,21 +268,20 @@ void USB::EnsureDeviceManagerConnection() {
 }
 
 bool USB::IsContextSupported() const {
+  // Since WebUSB on Web Workers is in the process of being implemented, we
+  // check here if the runtime flag for the appropriate worker is enabled..
+  // TODO(https://crbug.com/837406): Remove this check once the feature has
+  // shipped.
   ExecutionContext* context = GetExecutionContext();
   if (!context)
     return false;
 
-  if (!(context->IsDedicatedWorkerGlobalScope() ||
-        context->IsSharedWorkerGlobalScope() || context->IsDocument()))
-    return false;
-
-  // Since WebUSB on Web Workers is in the process of being implemented, we
-  // check here if the runtime flag for this feature is enabled.
-  // TODO(https://crbug.com/837406): Remove this check once the feature has
-  // shipped.
-  if (!context->IsDocument() &&
-      !RuntimeEnabledFeatures::WebUSBOnDedicatedAndSharedWorkersEnabled())
-    return false;
+  DCHECK(context->IsDocument() || context->IsDedicatedWorkerGlobalScope() ||
+         context->IsSharedWorkerGlobalScope());
+  DCHECK(!context->IsDedicatedWorkerGlobalScope() ||
+         RuntimeEnabledFeatures::WebUSBOnDedicatedWorkersEnabled());
+  DCHECK(!context->IsSharedWorkerGlobalScope() ||
+         RuntimeEnabledFeatures::WebUSBOnSharedWorkersEnabled());
 
   return true;
 }

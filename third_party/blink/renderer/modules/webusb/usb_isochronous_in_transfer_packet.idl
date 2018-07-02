@@ -6,7 +6,7 @@
 
 [
     Constructor(USBTransferStatus status, optional DataView? data),
-    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers, SharedWorker WebUSBOnDedicatedAndSharedWorkers, Window WebUSB)
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB)
 ] interface USBIsochronousInTransferPacket {
     readonly attribute USBTransferStatus status;
     readonly attribute DataView? data;

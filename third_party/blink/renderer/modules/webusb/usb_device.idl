@@ -13,7 +13,7 @@ enum USBTransferStatus {
 // https://wicg.github.io/webusb/#device-usage
 
 [
-    Exposed(DedicatedWorker WebUSBOnDedicatedAndSharedWorkers, SharedWorker WebUSBOnDedicatedAndSharedWorkers, Window WebUSB)
+    Exposed(DedicatedWorker WebUSBOnDedicatedWorkers, SharedWorker WebUSBOnSharedWorkers, Window WebUSB)
 ] interface USBDevice {
     readonly attribute octet usbVersionMajor;
     readonly attribute octet usbVersionMinor;
