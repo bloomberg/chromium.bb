@@ -1351,7 +1351,7 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
   if (MD::IsRefreshUi() && GetNewTabButtonPosition() == TRAILING) {
     float separator_height = Tab::GetTabSeparatorHeight();
     gfx::RectF separator_bounds(
-        new_tab_button_bounds_.x() - Tab::GetOverlap() / 2,
+        new_tab_button_bounds_.x() - Tab::GetCornerRadius(),
         (height() - separator_height) / 2, 1, separator_height);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
@@ -1611,7 +1611,7 @@ int TabStrip::GetFrameGrabWidth() const {
     // space where the outer (lower) corners are, which should be treated as
     // part of the grab area, so decrease the size of the remaining grab area by
     // that width.
-    width -= tab_at(tab_count() - 1)->GetCornerRadius();
+    width -= Tab::GetCornerRadius();
   }
 
   return width;
