@@ -14,6 +14,7 @@
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -47,6 +48,8 @@ class ChangeListLoader::FeedFetcher {
 };
 
 namespace {
+
+constexpr char kDefaultCorpusMsg[] = "default corpus";
 
 // Fetches all the (currently available) resource entries from the server.
 class FullFeedFetcher : public ChangeListLoader::FeedFetcher {
@@ -217,6 +220,9 @@ ChangeListLoader::ChangeListLoader(
       loader_controller_(loader_controller),
       loaded_(false),
       team_drive_id_(team_drive_id),
+      team_drive_msg_(team_drive_id_.empty()
+                          ? kDefaultCorpusMsg
+                          : base::StrCat({"team drive id: ", team_drive_id_})),
       root_entry_path_(root_entry_path),
       weak_ptr_factory_(this) {}
 
@@ -266,7 +272,8 @@ void ChangeListLoader::CheckForUpdates(const FileOperationCallback& callback) {
   }
 
   DCHECK(loaded_);
-  logger_->Log(logging::LOG_INFO, "Checking for updates");
+  logger_->Log(logging::LOG_INFO, "Checking for updates (%s)",
+               team_drive_msg_.c_str());
   Load(callback);
 }
 
@@ -402,12 +409,13 @@ void ChangeListLoader::OnStartPageTokenLoaderUpdated(
 
   if (drive::GDataToFileError(error) != drive::FILE_ERROR_OK) {
     logger_->Log(logging::LOG_ERROR,
-                 "Failed to update the start page token: %s",
+                 "Failed to update the start page token (%s) (Error: %s)",
+                 team_drive_msg_.c_str(),
                  google_apis::DriveApiErrorCodeToString(error).c_str());
     return;
   }
-  logger_->Log(logging::LOG_INFO,
-               "Start page token for default corpus updated to: %s",
+  logger_->Log(logging::LOG_INFO, "Start page token updated (%s) (value: %s)",
+               team_drive_msg_.c_str(),
                start_page_token->start_page_token().c_str());
 }
 
@@ -461,9 +469,8 @@ void ChangeListLoader::LoadChangeListFromServerAfterLoadChangeList(
   // the initial content retrieval.
   const bool should_notify_changed_directories = is_delta_update;
 
-  logger_->Log(logging::LOG_INFO,
-               "Apply change lists (is delta: %d)",
-               is_delta_update);
+  logger_->Log(logging::LOG_INFO, "Apply change lists (%s) (is delta: %d)",
+               team_drive_msg_.c_str(), is_delta_update);
   loader_controller_->ScheduleRun(base::Bind(
       &drive::util::RunAsyncTask, base::RetainedRef(blocking_task_runner_),
       FROM_HERE,
@@ -486,7 +493,8 @@ void ChangeListLoader::LoadChangeListFromServerAfterUpdate(
 
   const base::TimeDelta elapsed = base::Time::Now() - start_time;
   logger_->Log(logging::LOG_INFO,
-               "Change lists applied (elapsed time: %sms)",
+               "Change lists applied (%s) (elapsed time: %sms)",
+               team_drive_msg_.c_str(),
                base::Int64ToString(elapsed.InMilliseconds()).c_str());
 
   if (should_notify_changed_directories) {
