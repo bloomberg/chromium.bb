@@ -2215,7 +2215,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.MST_ANDROID_PFQ_MASTER,
       site_config.templates.mst_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 150m interval',
   )
 
   _mst_hwtest_boards = frozenset([])
@@ -2230,7 +2231,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       site_config.templates.pi_android_pfq,
       site_config.templates.master_android_pfq_mixin,
       buildslave_type=constants.GCE_BEEFY_BUILD_SLAVE_TYPE,
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 150m interval',
   )
 
   _pi_no_hwtest_boards = frozenset([])
@@ -2252,7 +2254,8 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
       constants.NYC_ANDROID_PFQ_MASTER,
       site_config.templates.nyc_android_pfq,
       site_config.templates.master_android_pfq_mixin,
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='with 150m interval',
   )
 
   _nyc_hwtest_boards = frozenset([
@@ -3359,7 +3362,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'chrome'],
-      active_waterfall=waterfall.WATERFALL_INTERNAL,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
+      schedule='triggered',
+      triggered_gitiles=[[
+          'https://chromium.googlesource.com/chromium/src',
+          ['regexp:refs/tags/[^/]+']
+      ]],
   )
 
   # Create important configs, then non-important configs.
