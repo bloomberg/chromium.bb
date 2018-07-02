@@ -188,6 +188,19 @@ float AudioDecoderForMixer::SetPlaybackRate(float rate) {
   return rate;
 }
 
+bool AudioDecoderForMixer::GetTimestampedPts(int64_t* timestamp,
+                                             int64_t* pts) const {
+  if (last_push_timestamp_ == kInvalidTimestamp ||
+      last_push_pts_ == kInvalidTimestamp)
+    return false;
+
+  // Hmm this timestamp may be in the future. That should be fine, but it's
+  // a bit weird.
+  *timestamp = last_push_timestamp_;
+  *pts = last_push_pts_;
+  return true;
+}
+
 int64_t AudioDecoderForMixer::GetCurrentPts() const {
   if (paused_pts_ != kInvalidTimestamp)
     return paused_pts_;

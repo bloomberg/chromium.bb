@@ -59,8 +59,18 @@ class AvSyncVideo : public AvSync {
   void StopAvSync();
   void GatherPlaybackStatistics();
 
-  void SoftCorrection(int64_t now);
-  void InSyncCorrection(int64_t now);
+  void SoftCorrection(int64_t now,
+                      int64_t current_vpts,
+                      int64_t current_apts,
+                      double apts_slope,
+                      double vpts_slope,
+                      int64_t difference);
+  void InSyncCorrection(int64_t now,
+                        int64_t current_vpts,
+                        int64_t current_apts,
+                        double apts_slope,
+                        double vpts_slope,
+                        int64_t difference);
 
   Delegate* delegate_ = nullptr;
 

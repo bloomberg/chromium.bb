@@ -46,6 +46,7 @@ class AudioDecoderForMixer : public MediaPipelineBackend::AudioDecoder,
   virtual bool Pause();
   virtual bool Resume();
   virtual float SetPlaybackRate(float rate);
+  virtual bool GetTimestampedPts(int64_t* timestamp, int64_t* pts) const;
   virtual int64_t GetCurrentPts() const;
 
   // MediaPipelineBackend::AudioDecoder implementation:

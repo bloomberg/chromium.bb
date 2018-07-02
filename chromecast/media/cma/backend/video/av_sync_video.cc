@@ -19,7 +19,6 @@ namespace chromecast {
 namespace media {
 
 namespace {
-const int64_t kInvalidTimestamp = std::numeric_limits<int64_t>::min();
 
 // Threshold where the audio and video pts are far enough apart such that we
 // want to do a small correction.
@@ -111,33 +110,22 @@ void AvSyncVideo::UpkeepAvSync() {
     first_video_pts_received_ = true;
   }
 
-  // TODO(almasrymina): using GetCurrentPts is vulnerable to pairing it with an
-  // outdated 'now' if the thread gets descheduled in between. We currently see
-  // extraneous corrections on real hardware and it's probably due to this.
-  //
-  // Consider either going back to a NotifyAudioBufferPushed approach that
-  // works, or improving GetCurrentPts such as it returns the timestamp this
-  // was last updated at.
-  // TODO(almasrymina): b/78592779. AudioDecoderForMixer::GetCurrentPts seems
-  // to return invalid values which are not kInvalidTimestamp, for unknown
-  // reasons. As a workaround until that issue is root caused, ignore
-  // GetCurrentPts values that are way off.
-  int64_t audio_pts = backend_->audio_decoder()->GetCurrentPts();
-  if (abs(audio_pts - new_current_vpts) >
-          base::TimeDelta::FromHours(1).InMicroseconds() ||
-      audio_pts == kInvalidTimestamp) {
-    LOG(WARNING) << "Audio decoder returned invalid pts=" << audio_pts
-                 << " new_current_vpts=" << new_current_vpts;
-  } else {
-    audio_pts_->AddSample(now, backend_->audio_decoder()->GetCurrentPts(), 1.0);
+  int64_t new_current_apts = 0;
+  int64_t new_apts_timestamp = 0;
 
-    if (!first_audio_pts_received_) {
-      LOG(INFO) << "Audio starting at difference="
-                << (backend_->MonotonicClockNow() -
-                    backend_->audio_decoder()->GetCurrentPts()) -
-                       playback_start_timestamp_us_;
-      first_audio_pts_received_ = true;
-    }
+  if (!backend_->audio_decoder()->GetTimestampedPts(&new_apts_timestamp,
+                                                    &new_current_apts)) {
+    LOG(ERROR) << "Failed to get APTS.";
+    return;
+  }
+
+  audio_pts_->AddSample(new_apts_timestamp, new_current_apts, 1.0);
+
+  if (!first_audio_pts_received_) {
+    LOG(INFO) << "Audio starting at difference="
+              << (new_apts_timestamp - new_current_apts) -
+                     playback_start_timestamp_us_;
+    first_audio_pts_received_ = true;
   }
 
   if (video_pts_->num_samples() < 10 || audio_pts_->num_samples() < 20) {
@@ -150,10 +138,13 @@ void AvSyncVideo::UpkeepAvSync() {
   int64_t current_vpts;
   double vpts_slope;
   double apts_slope;
-  video_pts_->EstimateY(now, &current_vpts, &error);
-  audio_pts_->EstimateY(now, &current_apts, &error);
-  video_pts_->EstimateSlope(&vpts_slope, &error);
-  audio_pts_->EstimateSlope(&apts_slope, &error);
+  if (!video_pts_->EstimateY(now, &current_vpts, &error) ||
+      !audio_pts_->EstimateY(now, &current_apts, &error) ||
+      !video_pts_->EstimateSlope(&vpts_slope, &error) ||
+      !audio_pts_->EstimateSlope(&apts_slope, &error)) {
+    VLOG(3) << "Failed to get linear regression estimate.";
+    return;
+  }
 
   error_->AddSample(now, current_apts - current_vpts, 1.0);
 
@@ -165,14 +156,17 @@ void AvSyncVideo::UpkeepAvSync() {
   }
 
   int64_t difference;
-  error_->EstimateY(now, &difference, &error);
+  if (!error_->EstimateY(now, &difference, &error)) {
+    VLOG(3) << "Failed to get linear regression estimate.";
+    return;
+  }
 
   VLOG(3) << "Pts_monitor."
           << " difference=" << difference / 1000 << " apts_slope=" << apts_slope
           << " vpts_slope=" << vpts_slope
           << " current_audio_playback_rate_=" << current_audio_playback_rate_
           << " current_vpts=" << new_current_vpts
-          << " current_apts=" << backend_->audio_decoder()->GetCurrentPts()
+          << " current_apts=" << new_current_apts
           << " current_time=" << backend_->MonotonicClockNow()
           << " video_start_error="
           << (new_vpts_timestamp - new_current_vpts -
@@ -183,26 +177,20 @@ void AvSyncVideo::UpkeepAvSync() {
   ++av_sync_difference_count_;
 
   if (abs(difference) > kSoftCorrectionThresholdUs) {
-    SoftCorrection(now);
+    SoftCorrection(now, current_vpts, current_apts, apts_slope, vpts_slope,
+                   difference);
   } else {
-    InSyncCorrection(now);
+    InSyncCorrection(now, current_vpts, current_apts, apts_slope, vpts_slope,
+                     difference);
   }
 }
 
-void AvSyncVideo::SoftCorrection(int64_t now) {
-  int64_t current_apts = 0;
-  int64_t current_vpts = 0;
-  int64_t difference = 0;
-  double error = 0.0;
-  double apts_slope = 0.0;
-  double vpts_slope = 0.0;
-
-  video_pts_->EstimateY(now, &current_vpts, &error);
-  audio_pts_->EstimateY(now, &current_apts, &error);
-  video_pts_->EstimateSlope(&vpts_slope, &error);
-  audio_pts_->EstimateSlope(&apts_slope, &error);
-  error_->EstimateY(now, &difference, &error);
-
+void AvSyncVideo::SoftCorrection(int64_t now,
+                                 int64_t current_vpts,
+                                 int64_t current_apts,
+                                 double apts_slope,
+                                 double vpts_slope,
+                                 int64_t difference) {
   if (audio_pts_->num_samples() < 50) {
     VLOG(4) << "Not enough apts samples=" << audio_pts_->num_samples();
     return;
@@ -253,22 +241,15 @@ void AvSyncVideo::SoftCorrection(int64_t now) {
 // sufficiently close to each other, and we no longer need to bridge a gap
 // between them. This method will have it so that vpts_slope == apts_slope, and
 // the content should continue to play in sync from here on out.
-void AvSyncVideo::InSyncCorrection(int64_t now) {
+void AvSyncVideo::InSyncCorrection(int64_t now,
+                                   int64_t current_vpts,
+                                   int64_t current_apts,
+                                   double apts_slope,
+                                   double vpts_slope,
+                                   int64_t difference) {
   if (audio_pts_->num_samples() < 50 || !in_soft_correction_) {
     return;
   }
-
-  int64_t current_apts = 0;
-  int64_t current_vpts = 0;
-  int64_t difference = 0;
-  double error = 0.0;
-  double apts_slope = 0.0;
-  double vpts_slope = 0.0;
-
-  video_pts_->EstimateY(now, &current_vpts, &error);
-  audio_pts_->EstimateY(now, &current_apts, &error);
-  video_pts_->EstimateSlope(&vpts_slope, &error);
-  audio_pts_->EstimateSlope(&apts_slope, &error);
 
   current_audio_playback_rate_ *= vpts_slope / apts_slope;
   current_audio_playback_rate_ =
@@ -340,6 +321,11 @@ void AvSyncVideo::GatherPlaybackStatistics() {
   backend_->video_decoder()->GetCurrentPts(&accurate_vpts_timestamp,
                                            &accurate_vpts);
 
+  int64_t accurate_apts = 0;
+  int64_t accurate_apts_timestamp = 0;
+  backend_->video_decoder()->GetCurrentPts(&accurate_apts_timestamp,
+                                           &accurate_apts);
+
   LOG(INFO) << "Playback diagnostics:"
             << " CurrentContentRefreshRate="
             << backend_->video_decoder()->GetCurrentContentRefreshRate()
@@ -352,15 +338,17 @@ void AvSyncVideo::GatherPlaybackStatistics() {
             << accurate_vpts_timestamp - accurate_vpts -
                    playback_start_timestamp_us_
             << " audio_start_error_estimate="
-            << backend_->MonotonicClockNow() -
-                   backend_->audio_decoder()->GetCurrentPts() -
+            << accurate_apts_timestamp - accurate_apts -
                    playback_start_timestamp_us_;
 
   int64_t current_vpts = 0;
   int64_t current_apts = 0;
   double error = 0.0;
-  video_pts_->EstimateY(current_time, &current_vpts, &error);
-  audio_pts_->EstimateY(current_time, &current_apts, &error);
+  if (!video_pts_->EstimateY(current_time, &current_vpts, &error) ||
+      !audio_pts_->EstimateY(current_time, &current_apts, &error)) {
+    VLOG(3) << "Failed to get linear regression estimate.";
+    return;
+  }
 
   if (delegate_) {
     delegate_->NotifyAvSyncPlaybackStatistics(
