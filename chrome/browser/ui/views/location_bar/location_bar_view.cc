@@ -482,8 +482,6 @@ void LocationBarView::Layout() {
   if (!IsInitialized())
     return;
 
-  View::Layout();
-
   selected_keyword_view_->SetVisible(false);
   location_icon_view_->SetVisible(false);
   keyword_hint_view_->SetVisible(false);
@@ -628,6 +626,7 @@ void LocationBarView::Layout() {
         std::min(width, entry_width), location_bounds.height());
   }
   omnibox_view_->SetBoundsRect(location_bounds);
+  View::Layout();
 }
 
 void LocationBarView::OnThemeChanged() {
