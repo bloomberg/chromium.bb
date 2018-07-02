@@ -181,9 +181,8 @@ enum class ArcServicePolicyValue { kDisabled = 0, kUnderUserControl = 1 };
 
 // Instantiated once each for the |ArcBackupRestoreServiceEnabled| and
 // |ArcGoogleLocationServicesEnabled| policies to handle their special logic:
-// If the policy is unset or set to |kDisabled|, the corresponding pref is
-// managed and |false|. Only if the policy is set to |kUnderUserControl| is the
-// pref unmanaged, allowing the user to change its value.
+// If the policy is set to |kUnderUserControl|, the pref is unmanaged, as if no
+// policy was set.
 class ArcServicePolicyHandler : public IntRangePolicyHandlerBase {
  public:
   ArcServicePolicyHandler(const char* policy, const char* pref);

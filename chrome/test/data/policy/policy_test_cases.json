@@ -3799,15 +3799,19 @@
   "ArcBackupRestoreServiceEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,
-    "test_policy": { "ArcBackupRestoreServiceEnabled": 1 },
-    "note": "pref_mappings cannot be tested here because the policy has very unusual semantics, making a pref managed when unset."
+    "test_policy": { "ArcBackupRestoreServiceEnabled": 0 },
+    "pref_mappings": [
+      { "pref": "arc.backup_restore.enabled" }
+    ]
   },
 
   "ArcGoogleLocationServicesEnabled": {
     "os": ["chromeos"],
     "can_be_recommended": false,
-    "test_policy": { "ArcGoogleLocationServicesEnabled": 1 },
-    "note": "pref_mappings cannot be tested here because the policy has very unusual semantics, making a pref managed when unset."
+    "test_policy": { "ArcGoogleLocationServicesEnabled": 0 },
+    "pref_mappings": [
+      { "pref": "arc.location_service.enabled" }
+    ]
   },
 
   "SafeSitesFilterBehavior": {

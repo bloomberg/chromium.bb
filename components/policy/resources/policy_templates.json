@@ -12193,6 +12193,7 @@
       },
       'example_value': 1,
       'id': 449,
+      'default_for_enterprise_users': 0,
       'caption': '''Control Android backup and restore service''',
       'tags': ['google-sharing'],
       'desc':
@@ -12228,6 +12229,7 @@
       },
       'example_value': 1,
       'id': 450,
+      'default_for_enterprise_users': 0,
       'caption': '''Control Android Google location services''',
       'tags': ['google-sharing'],
       'desc':

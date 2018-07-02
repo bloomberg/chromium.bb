@@ -505,10 +505,8 @@ ArcServicePolicyHandler::ArcServicePolicyHandler(const char* policy,
 void ArcServicePolicyHandler::ApplyPolicySettings(const PolicyMap& policies,
                                                   PrefValueMap* prefs) {
   const base::Value* const value = policies.GetValue(policy_name());
-  if (!value ||
+  if (value &&
       value->GetInt() == static_cast<int>(ArcServicePolicyValue::kDisabled)) {
-    // This pref will be managed even if the policy is unset. Only if the policy
-    // is explicitly set to |kUnderUserControl| is the pref not managed.
     prefs->SetBoolean(pref_, false);
   }
 }
