@@ -268,9 +268,10 @@ FAKE OUTPUT. Will be filled in later.
                  '--hard-timeout', swarming_hard_timeout_secs,
                  '--expiration', swarming_expiration_secs,
                  '--tags=priority:%s' % priority,
-                 '--tags=suite:test-suite',
                  '--tags=build:test-build',
                  '--tags=task_name:test-build-test-suite',
+                 '--tags=luci_project:chromiumos',
+                 '--tags=suite:test-suite',
                  '--tags=board:test-board',
                  '--', commands.SKYLAB_RUN_SUITE_PATH,
                  '--build', self._build, '--board', self._board]

@@ -1081,8 +1081,10 @@ def _SkylabHWTestTriggerOrRun(swarming_cli_cmd, cmd, **kwargs):
   finally:
     # 'Outputs' only exist when swarming_cli_cmd='run'.
     # This is required to output buildbot annotations, e.g. 'STEP_LINKS'.
+    sys.stdout.write('######## Output for buildbot annotations ######## \n')
     for output in result.GetValue('outputs', []):
       sys.stdout.write(output)
+    sys.stdout.write('######## END Output for buildbot annotations ######## \n')
     sys.stdout.flush()
 
 
@@ -1269,6 +1271,16 @@ def _CreateSwarmingArgs(build, suite, board, priority,
         topology.SWARMING_PROXY_HOST_KEY)
     pool = SUITE_BOT_POOL
 
+  tags = {
+      'task_name': '-'.join([build, suite]),
+      'build': build,
+      'suite': suite,
+      'board': board,
+      'priority': priority,
+  }
+  if run_skylab:
+    tags['luci_project'] = 'chromiumos'
+
   return {
       'swarming_server': swarming_server,
       'task_name': '-'.join([build, suite]),
@@ -1279,13 +1291,7 @@ def _CreateSwarmingArgs(build, suite, board, priority,
       'io_timeout_secs': swarming_timeout,
       'hard_timeout_secs': swarming_timeout,
       'expiration_secs': _SWARMING_EXPIRATION,
-      'tags': {
-          'task_name': '-'.join([build, suite]),
-          'build': build,
-          'suite': suite,
-          'board': board,
-          'priority': priority,
-      },
+      'tags': tags,
   }
 
 
