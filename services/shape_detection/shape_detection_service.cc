@@ -9,12 +9,12 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
-#include "build/build_config.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #if defined(OS_WIN)
 #include "services/shape_detection/barcode_detection_provider_impl.h"
 #include "services/shape_detection/face_detection_provider_win.h"
 #elif defined(OS_MACOSX)
+#include <dlfcn.h>
 #include "services/shape_detection/barcode_detection_provider_mac.h"
 #include "services/shape_detection/face_detection_provider_mac.h"
 #else
@@ -34,9 +34,23 @@ std::unique_ptr<service_manager::Service> ShapeDetectionService::Create() {
   return std::make_unique<ShapeDetectionService>();
 }
 
-ShapeDetectionService::ShapeDetectionService() = default;
+ShapeDetectionService::ShapeDetectionService() {
+#if defined(OS_MACOSX)
+  if (__builtin_available(macOS 10.13, *)) {
+    vision_framework_ =
+        dlopen("/System/Library/Frameworks/Vision.framework/Vision", RTLD_LAZY);
+  }
+#endif
+}
 
-ShapeDetectionService::~ShapeDetectionService() = default;
+ShapeDetectionService::~ShapeDetectionService() {
+#if defined(OS_MACOSX)
+  if (__builtin_available(macOS 10.13, *)) {
+    if (vision_framework_)
+      dlclose(vision_framework_);
+  }
+#endif
+}
 
 void ShapeDetectionService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(

@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/cpp/service.h"
@@ -36,6 +37,8 @@ class ShapeDetectionService : public service_manager::Service {
 
   // InterfaceProvider that is bound to the Java-side interface registry.
   std::unique_ptr<service_manager::InterfaceProvider> java_interface_provider_;
+#elif defined(OS_MACOSX)
+  void* vision_framework_;
 #endif
 
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
