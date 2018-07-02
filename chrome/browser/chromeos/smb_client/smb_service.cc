@@ -176,12 +176,26 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
       GetSharePathFromFileSystemId(file_system_info.file_system_id());
   const int32_t mount_id =
       GetMountIdFromFileSystemId(file_system_info.file_system_id());
+  const bool is_kerberos_chromad =
+      IsKerberosChromadFileSystemId(file_system_info.file_system_id());
+
+  std::string workgroup;
+  std::string username;
+
+  if (is_kerberos_chromad) {
+    user_manager::User* user =
+        chromeos::ProfileHelper::Get()->GetUserByProfile(profile_);
+    DCHECK(user);
+    DCHECK(user->IsActiveDirectoryUser());
+
+    ParseUserPrincipalName(user->GetDisplayEmail(), &username, &workgroup);
+  }
 
   // An empty password is passed to Remount to conform with the credentials API
   // which expects username & workgroup strings along with a password file
   // descriptor.
   GetSmbProviderClient()->Remount(
-      share_path, mount_id, "" /* workgroup */, "" /* username */,
+      share_path, mount_id, workgroup, username,
       temp_file_manager_->WritePasswordToFile("" /* password */),
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
