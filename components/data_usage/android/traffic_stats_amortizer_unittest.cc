@@ -117,21 +117,18 @@ void AppendDataUseToSequence(
   data_use_sequence->push_back(std::move(data_use));
 }
 
-// Class that represents a base::MockTimer with an attached base::TickClock, so
-// that it can update its |desired_run_time()| according to the current time
-// when the timer is reset.
-class MockTimerWithTickClock : public base::MockTimer {
+// Class that represents a base::MockOneShotTimer with an attached
+// base::TickClock, so that it can update its |desired_run_time()| according to
+// the current time when the timer is reset.
+class MockTimerWithTickClock : public base::MockOneShotTimer {
  public:
-  MockTimerWithTickClock(bool retain_user_task,
-                         bool is_repeating,
-                         const base::TickClock* tick_clock)
-      : base::MockTimer(retain_user_task, is_repeating),
-        tick_clock_(tick_clock) {}
+  MockTimerWithTickClock(const base::TickClock* tick_clock)
+      : tick_clock_(tick_clock) {}
 
   ~MockTimerWithTickClock() override {}
 
   void Reset() override {
-    base::MockTimer::Reset();
+    base::MockOneShotTimer::Reset();
     set_desired_run_time(tick_clock_->NowTicks() + GetCurrentDelay());
   }
 
@@ -188,8 +185,7 @@ class TestTrafficStatsAmortizer : public TrafficStatsAmortizer {
 class TrafficStatsAmortizerTest : public testing::Test {
  public:
   TrafficStatsAmortizerTest()
-      : mock_timer_(
-            new MockTimerWithTickClock(false, false, &test_tick_clock_)),
+      : mock_timer_(new MockTimerWithTickClock(&test_tick_clock_)),
         amortizer_(&test_tick_clock_,
                    std::unique_ptr<base::Timer>(mock_timer_)),
         data_use_callback_call_count_(0) {}

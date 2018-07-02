@@ -2032,9 +2032,8 @@ TEST_F(AccountReconcilorTest, DelegateTimeoutIsCalled) {
   SpyReconcilorDelegate* spy_delegate = spy_delegate0.get();
   AccountReconcilor* reconcilor = GetMockReconcilor(std::move(spy_delegate0));
   ASSERT_TRUE(reconcilor);
-  auto timer0 = std::make_unique<base::MockTimer>(true /* retain_user_task */,
-                                                  false /* is_repeating */);
-  base::MockTimer* timer = timer0.get();
+  auto timer0 = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer = timer0.get();
   reconcilor->set_timer_for_testing(std::move(timer0));
 
   reconcilor->StartReconcile();
@@ -2057,9 +2056,8 @@ TEST_F(AccountReconcilorTest, DelegateTimeoutIsNotCalled) {
                                                               "12345");
   AccountReconcilor* reconcilor = GetMockReconcilor();
   ASSERT_TRUE(reconcilor);
-  auto timer0 = std::make_unique<base::MockTimer>(true /* retain_user_task */,
-                                                  false /* is_repeating */);
-  base::MockTimer* timer = timer0.get();
+  auto timer0 = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer = timer0.get();
   reconcilor->set_timer_for_testing(std::move(timer0));
 
   reconcilor->StartReconcile();
@@ -2075,9 +2073,8 @@ TEST_F(AccountReconcilorTest, DelegateTimeoutIsNotCalledIfTimeoutIsNotReached) {
   SpyReconcilorDelegate* spy_delegate = spy_delegate0.get();
   AccountReconcilor* reconcilor = GetMockReconcilor(std::move(spy_delegate0));
   ASSERT_TRUE(reconcilor);
-  auto timer0 = std::make_unique<base::MockTimer>(true /* retain_user_task */,
-                                                  false /* is_repeating */);
-  base::MockTimer* timer = timer0.get();
+  auto timer0 = std::make_unique<base::MockOneShotTimer>();
+  base::MockOneShotTimer* timer = timer0.get();
   reconcilor->set_timer_for_testing(std::move(timer0));
 
   reconcilor->StartReconcile();

@@ -170,7 +170,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DelegateTimeoutIsNotCalledIfTimeoutIsNotReached);
 
-  void set_timer_for_testing(std::unique_ptr<base::Timer> timer);
+  void set_timer_for_testing(std::unique_ptr<base::OneShotTimer> timer);
 
   bool IsRegisteredWithTokenService() const {
     return registered_with_token_service_;
@@ -305,7 +305,7 @@ class AccountReconcilor : public KeyedService,
   // of reconciliation completing within a finite time. It is technically
   // possible for account reconciliation to be running/waiting forever in cases
   // such as a network connection not being present.
-  std::unique_ptr<base::Timer> timer_;
+  std::unique_ptr<base::OneShotTimer> timer_;
   base::TimeDelta timeout_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountReconcilor);

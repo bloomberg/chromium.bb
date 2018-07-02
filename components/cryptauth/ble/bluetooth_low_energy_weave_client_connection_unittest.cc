@@ -403,8 +403,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
         base::WrapUnique(new MockConnectionObserver(connection.get()));
     connection->AddObserver(connection_observer_.get());
 
-    test_timer_ = new base::MockTimer(false /* retains_user_task */,
-                                      false /* is_repeating */);
+    test_timer_ = new base::MockOneShotTimer();
     generator_ = new NiceMock<MockBluetoothLowEnergyWeavePacketGenerator>();
     receiver_ = new NiceMock<MockBluetoothLowEnergyWeavePacketReceiver>();
     connection->SetupTestDoubles(task_runner_, base::WrapUnique(test_timer_),
@@ -653,7 +652,7 @@ class CryptAuthBluetoothLowEnergyWeaveClientConnectionTest
   const proximity_auth::ScopedDisableLoggingForTesting disable_logging_;
 
   scoped_refptr<device::MockBluetoothAdapter> adapter_;
-  base::MockTimer* test_timer_;
+  base::MockOneShotTimer* test_timer_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
 
   std::unique_ptr<device::MockBluetoothDevice> mock_bluetooth_device_;
