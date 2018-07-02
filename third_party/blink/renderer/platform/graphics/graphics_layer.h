@@ -290,6 +290,17 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   }
   IntPoint GetOffsetFromTransformNode() const { return layer_state_->offset; }
 
+  void SetContentsLayerState(const PropertyTreeState&,
+                             const IntPoint& layer_offset);
+  const PropertyTreeState& GetContentsPropertyTreeState() const {
+    return contents_layer_state_ ? contents_layer_state_->state
+                                 : GetPropertyTreeState();
+  }
+  IntPoint GetContentsOffsetFromTransformNode() const {
+    return contents_layer_state_ ? contents_layer_state_->offset
+                                 : GetOffsetFromTransformNode();
+  }
+
   // Capture the last painted result into a PaintRecord. This GraphicsLayer
   // must DrawsContent. The result is never nullptr.
   sk_sp<PaintRecord> CapturePaintRecord() const;
@@ -438,6 +449,7 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
     IntPoint offset;
   };
   std::unique_ptr<LayerState> layer_state_;
+  std::unique_ptr<LayerState> contents_layer_state_;
 
   std::unique_ptr<RasterInvalidator> raster_invalidator_;
 

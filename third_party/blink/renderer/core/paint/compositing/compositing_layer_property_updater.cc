@@ -125,6 +125,15 @@ void CompositingLayerPropertyUpdater::Update(const LayoutObject& object) {
     SetContainerLayerState(mapping->ForegroundLayer());
   }
 
+  auto* main_graphics_layer = mapping->MainGraphicsLayer();
+  if (const auto* contents_layer = main_graphics_layer->ContentsLayer()) {
+    auto position = contents_layer->position();
+    main_graphics_layer->SetContentsLayerState(
+        fragment_data.ContentsProperties(),
+        snapped_paint_offset + main_graphics_layer->OffsetFromLayoutObject() +
+            IntSize(position.x(), position.y()));
+  }
+
   if (auto* squashing_layer = mapping->SquashingLayer()) {
     auto state = fragment_data.PreEffectProperties();
     // The squashing layer's ClippingContainer is the common ancestor of clip

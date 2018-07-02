@@ -1361,6 +1361,17 @@ void GraphicsLayer::SetLayerState(const PropertyTreeState& layer_state,
   layer_state_->offset = layer_offset;
 }
 
+void GraphicsLayer::SetContentsLayerState(const PropertyTreeState& layer_state,
+                                          const IntPoint& layer_offset) {
+  if (!contents_layer_state_) {
+    contents_layer_state_ =
+        std::make_unique<LayerState>(LayerState{layer_state, layer_offset});
+    return;
+  }
+  contents_layer_state_->state = layer_state;
+  contents_layer_state_->offset = layer_offset;
+}
+
 scoped_refptr<cc::DisplayItemList> GraphicsLayer::PaintContentsToDisplayList(
     PaintingControlSetting painting_control) {
   TRACE_EVENT0("blink,benchmark", "GraphicsLayer::PaintContents");
