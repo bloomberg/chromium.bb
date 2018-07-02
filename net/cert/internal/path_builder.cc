@@ -478,17 +478,23 @@ bool CertPathBuilder::Result::HasValidPath() const {
 
 const CertPathBuilderResultPath* CertPathBuilder::Result::GetBestValidPath()
     const {
+  const CertPathBuilderResultPath* result_path = GetBestPathPossiblyInvalid();
+
+  if (result_path && result_path->IsValid())
+    return result_path;
+
+  return nullptr;
+}
+
+const CertPathBuilderResultPath*
+CertPathBuilder::Result::GetBestPathPossiblyInvalid() const {
   DCHECK((paths.empty() && best_result_index == 0) ||
          best_result_index < paths.size());
 
   if (best_result_index >= paths.size())
     return nullptr;
 
-  const CertPathBuilderResultPath* result_path = paths[best_result_index].get();
-  if (result_path->IsValid())
-    return result_path;
-
-  return nullptr;
+  return paths[best_result_index].get();
 }
 
 void CertPathBuilder::Result::Clear() {

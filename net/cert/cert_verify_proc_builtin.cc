@@ -82,22 +82,24 @@ enum class VerificationType {
 };
 
 // TODO(eroman): The path building code in this file enforces its idea of weak
-// keys, and separately cert_verify_proc.cc also checks the chains with its
-// own policy. These policies should be aligned, to give path building the
-// best chance of finding a good path.
+// keys, and signature algorithms, but separately cert_verify_proc.cc also
+// checks the chains with its own policy. These policies must be aligned to
+// give path building the best chance of finding a good path.
 class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
  public:
   // Uses the default policy from SimplePathBuilderDelegate, which requires RSA
-  // keys to be at least 1024-bits large, and accepts SHA1 certificates.
+  // keys to be at least 1024-bits large, and optionally accepts SHA1
+  // certificates.
   PathBuilderDelegateImpl(const CRLSet* crl_set,
                           CertNetFetcher* net_fetcher,
                           VerificationType verification_type,
+                          SimplePathBuilderDelegate::DigestPolicy digest_policy,
                           int flags,
                           const SystemTrustStore* ssl_trust_store,
                           base::StringPiece stapled_leaf_ocsp_response,
                           const EVRootCAMetadata* ev_metadata,
                           bool* checked_revocation_for_some_path)
-      : SimplePathBuilderDelegate(1024),
+      : SimplePathBuilderDelegate(1024, digest_policy),
         crl_set_(crl_set),
         net_fetcher_(net_fetcher),
         verification_type_(verification_type),
@@ -390,11 +392,28 @@ scoped_refptr<X509Certificate> CreateVerifiedCertChain(
   return result;
 }
 
+// Describes the parameters for a single path building attempt. Path building
+// may be re-tried with different parameters for EV and for accepting SHA1
+// certificates.
+struct BuildPathAttempt {
+  BuildPathAttempt(VerificationType verification_type,
+                   SimplePathBuilderDelegate::DigestPolicy digest_policy)
+      : verification_type(verification_type), digest_policy(digest_policy) {}
+
+  explicit BuildPathAttempt(VerificationType verification_type)
+      : BuildPathAttempt(verification_type,
+                         SimplePathBuilderDelegate::DigestPolicy::kStrong) {}
+
+  VerificationType verification_type;
+  SimplePathBuilderDelegate::DigestPolicy digest_policy;
+};
+
 void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
                   CertIssuerSourceStatic* intermediates,
                   SystemTrustStore* ssl_trust_store,
                   base::Time verification_time,
                   VerificationType verification_type,
+                  SimplePathBuilderDelegate::DigestPolicy digest_policy,
                   int flags,
                   const std::string& ocsp_response,
                   const CRLSet* crl_set,
@@ -421,8 +440,8 @@ void TryBuildPath(const scoped_refptr<ParsedCertificate>& target,
   }
 
   PathBuilderDelegateImpl path_builder_delegate(
-      crl_set, net_fetcher, verification_type, flags, ssl_trust_store,
-      ocsp_response, ev_metadata, checked_revocation);
+      crl_set, net_fetcher, verification_type, digest_policy, flags,
+      ssl_trust_store, ocsp_response, ev_metadata, checked_revocation);
 
   // Initialize the path builder.
   CertPathBuilder path_builder(
@@ -455,7 +474,10 @@ int AssignVerifyResult(X509Certificate* input_cert,
                        bool checked_revocation_for_some_path,
                        SystemTrustStore* ssl_trust_store,
                        CertVerifyResult* verify_result) {
-  if (result.best_result_index >= result.paths.size()) {
+  const CertPathBuilderResultPath* best_path_possibly_invalid =
+      result.GetBestPathPossiblyInvalid();
+
+  if (!best_path_possibly_invalid) {
     // TODO(crbug.com/634443): What errors to communicate? Maybe the path
     // builder should always return some partial path (even if just containing
     // the target), then there is a CertErrors to test.
@@ -463,10 +485,7 @@ int AssignVerifyResult(X509Certificate* input_cert,
     return ERR_CERT_AUTHORITY_INVALID;
   }
 
-  // Use the best path that was built. This could be a partial path, or it could
-  // be a valid complete path.
-  const CertPathBuilderResultPath& partial_path =
-      *result.paths[result.best_result_index].get();
+  const CertPathBuilderResultPath& partial_path = *best_path_possibly_invalid;
 
   AppendPublicKeyHashes(partial_path, &verify_result->public_key_hashes);
 
@@ -523,6 +542,22 @@ int AssignVerifyResult(X509Certificate* input_cert,
              : OK;
 }
 
+// Returns true if retrying path building with a less stringent signature
+// algorithm *might* successfully build a path, based on the earlier failed
+// |result|.
+//
+// This implementation is simplistic, and looks only for the presence of the
+// kUnacceptableSignatureAlgorithm error somewhere among the built paths.
+bool CanTryAgainWithWeakerDigestPolicy(const CertPathBuilder::Result& result) {
+  for (const auto& path : result.paths) {
+    if (path->errors.ContainsError(
+            cert_errors::kUnacceptableSignatureAlgorithm))
+      return true;
+  }
+
+  return false;
+}
+
 int CertVerifyProcBuiltin::VerifyInternal(
     X509Certificate* input_cert,
     const std::string& hostname,
@@ -571,31 +606,59 @@ int CertVerifyProcBuiltin::VerifyInternal(
   // setting output flag CERT_STATUS_REV_CHECKING_ENABLED).
   bool checked_revocation_for_some_path = false;
 
-  // Only attempt to build EV paths if the target could possibly be an EV
-  // certificate.
-  const bool should_try_ev = IsEVCandidate(ev_metadata, target.get());
-
   // Run path building with the different parameters (attempts) until a valid
   // path is found. Earlier successful attempts have priority over later
   // attempts.
+  //
+  // Attempts are enqueued into |attempts| and drained in FIFO order.
+  std::vector<BuildPathAttempt> attempts;
+
+  // First try EV validation. Can skip this if the leaf certificate has no
+  // chance of verifying as EV (lacks an EV policy).
+  if (IsEVCandidate(ev_metadata, target.get()))
+    attempts.emplace_back(VerificationType::kEV);
+
+  // Next try DV validation.
+  attempts.emplace_back(VerificationType::kDV);
 
   CertPathBuilder::Result result;
   VerificationType verification_type = VerificationType::kDV;
 
-  for (VerificationType cur_attempt :
-       {VerificationType::kEV, VerificationType::kDV}) {
-    // Only attempt EV if it was requested.
-    if (cur_attempt == VerificationType::kEV && !should_try_ev)
-      continue;
+  // Iterate over |attempts| until there are none left to try, or an attempt
+  // succeeded.
+  for (size_t cur_attempt_index = 0; cur_attempt_index < attempts.size();
+       ++cur_attempt_index) {
+    const auto& cur_attempt = attempts[cur_attempt_index];
+    verification_type = cur_attempt.verification_type;
 
-    verification_type = cur_attempt;
+    // Run the attempt through the path builder.
     TryBuildPath(target, &intermediates, ssl_trust_store.get(),
-                 verification_time, verification_type, flags, ocsp_response,
-                 crl_set, net_fetcher, ev_metadata, &result,
+                 verification_time, cur_attempt.verification_type,
+                 cur_attempt.digest_policy, flags, ocsp_response, crl_set,
+                 net_fetcher, ev_metadata, &result,
                  &checked_revocation_for_some_path);
 
     if (result.HasValidPath())
       break;
+
+    // If this path building attempt (may have) failed due to the chain using a
+    // weak signature algorithm, enqueue a similar attempt but with weaker
+    // signature algorithms (SHA1) permitted.
+    //
+    // This fallback is necessary because the CertVerifyProc layer may decide to
+    // allow SHA1 based on its own policy, so path building should return
+    // possibly weak chains too.
+    //
+    // TODO(eroman): Would be better for the SHA1 policy to be part of the
+    // delegate instead so it can interact with path building.
+    if (cur_attempt.digest_policy ==
+            SimplePathBuilderDelegate::DigestPolicy::kStrong &&
+        CanTryAgainWithWeakerDigestPolicy(result)) {
+      BuildPathAttempt sha1_fallback_attempt = cur_attempt;
+      sha1_fallback_attempt.digest_policy =
+          SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1;
+      attempts.push_back(sha1_fallback_attempt);
+    }
   }
 
   // Write the results to |*verify_result|.

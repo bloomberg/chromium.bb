@@ -117,7 +117,9 @@ class AsyncCertIssuerSourceStatic : public CertIssuerSource {
 
 class PathBuilderMultiRootTest : public ::testing::Test {
  public:
-  PathBuilderMultiRootTest() : delegate_(1024) {}
+  PathBuilderMultiRootTest()
+      : delegate_(1024,
+                  SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1) {}
 
   void SetUp() override {
     ASSERT_TRUE(ReadTestCert("multi-root-A-by-B.pem", &a_by_b_));
@@ -449,7 +451,9 @@ TEST_F(PathBuilderMultiRootTest, TestCertIssuerOrdering) {
 
 class PathBuilderKeyRolloverTest : public ::testing::Test {
  public:
-  PathBuilderKeyRolloverTest() : delegate_(1024) {}
+  PathBuilderKeyRolloverTest()
+      : delegate_(1024,
+                  SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1) {}
 
   void SetUp() override {
     ParsedCertificateList path;
@@ -1182,7 +1186,8 @@ class PathBuilderSimpleChainTest : public ::testing::Test {
     CertIssuerSourceStatic intermediates;
     intermediates.AddCert(test_.chain[1]);
 
-    SimplePathBuilderDelegate default_delegate(1024);
+    SimplePathBuilderDelegate default_delegate(
+        1024, SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1);
     CertPathBuilderDelegate* delegate =
         optional_delegate ? optional_delegate : &default_delegate;
 
@@ -1294,7 +1299,10 @@ class PathBuilderCheckPathAfterVerificationTest
 
 class CertPathBuilderDelegateBase : public SimplePathBuilderDelegate {
  public:
-  CertPathBuilderDelegateBase() : SimplePathBuilderDelegate(1024) {}
+  CertPathBuilderDelegateBase()
+      : SimplePathBuilderDelegate(
+            1024,
+            SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1) {}
   void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
     ADD_FAILURE() << "Tests must override this";
   }
