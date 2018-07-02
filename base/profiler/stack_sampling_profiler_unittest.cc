@@ -93,8 +93,9 @@ struct StackConfiguration {
 // Signature for a target function that is expected to appear in the stack. See
 // SignalAndWaitUntilSignaled() below. The return value should be a program
 // counter pointer near the end of the function.
-using TargetFunction = const void*(*)(WaitableEvent*, WaitableEvent*,
-                                      const StackConfiguration*);
+using TargetFunction = const void* (*)(WaitableEvent*,
+                                       WaitableEvent*,
+                                       const StackConfiguration*);
 
 // A thread to target for profiling, whose stack is guaranteed to contain
 // SignalAndWaitUntilSignaled() when coordinated with the main thread.
@@ -150,7 +151,7 @@ class TargetThread : public PlatformThread::Delegate {
   };
 
   // Callback function to be provided when calling through the other library.
-  static void OtherLibraryCallback(void *arg);
+  static void OtherLibraryCallback(void* arg);
 
   // Returns the current program counter, or a value very close to it.
   static const void* GetProgramCounter();
@@ -238,18 +239,15 @@ NOINLINE const void* TargetThread::CallThroughOtherLibrary(
     const StackConfiguration* stack_config) {
   if (stack_config) {
     // A function whose arguments are a function accepting void*, and a void*.
-    using InvokeCallbackFunction = void(*)(void (*)(void*), void*);
+    using InvokeCallbackFunction = void (*)(void (*)(void*), void*);
     EXPECT_TRUE(stack_config->library);
     InvokeCallbackFunction function = reinterpret_cast<InvokeCallbackFunction>(
         GetFunctionPointerFromNativeLibrary(stack_config->library,
                                             "InvokeCallbackFunction"));
     EXPECT_TRUE(function);
 
-    TargetFunctionArgs args = {
-      thread_started_event,
-      finish_event,
-      stack_config
-    };
+    TargetFunctionArgs args = {thread_started_event, finish_event,
+                               stack_config};
     (*function)(&OtherLibraryCallback, &args);
   }
 
@@ -259,7 +257,7 @@ NOINLINE const void* TargetThread::CallThroughOtherLibrary(
 }
 
 // static
-void TargetThread::OtherLibraryCallback(void *arg) {
+void TargetThread::OtherLibraryCallback(void* arg) {
   const TargetFunctionArgs* args = static_cast<TargetFunctionArgs*>(arg);
   SignalAndWaitUntilSignaled(args->thread_started_event, args->finish_event,
                              args->stack_config);
@@ -311,7 +309,7 @@ void SynchronousUnloadNativeLibrary(NativeLibrary library) {
   HMODULE module_handle;
   // Keep trying to get the module handle until the call fails.
   while (::GetModuleHandleEx(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS |
-                             GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
+                                 GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
                              reinterpret_cast<LPCTSTR>(module_base_address),
                              &module_handle) ||
          ::GetLastError() != ERROR_MOD_NOT_FOUND) {
@@ -491,7 +489,9 @@ std::string FormatSampleForDiagnosticOutput(
 
 // Returns a duration that is longer than the test timeout. We would use
 // TimeDelta::Max() but https://crbug.com/465948.
-TimeDelta AVeryLongTimeDelta() { return TimeDelta::FromDays(1); }
+TimeDelta AVeryLongTimeDelta() {
+  return TimeDelta::FromDays(1);
+}
 
 // Tests the scenario where the library is unloaded after copying the stack, but
 // before walking it. If |wait_until_unloaded| is true, ensures that the
@@ -527,8 +527,7 @@ void TestLibraryUnload(bool wait_until_unloaded) {
 
   NativeLibrary other_library = LoadOtherLibrary();
   TargetThread target_thread(StackConfiguration(
-      StackConfiguration::WITH_OTHER_LIBRARY,
-      other_library));
+      StackConfiguration::WITH_OTHER_LIBRARY, other_library));
 
   PlatformThreadHandle target_thread_handle;
   EXPECT_TRUE(PlatformThread::Create(0, &target_thread, &target_thread_handle));
