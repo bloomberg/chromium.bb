@@ -255,7 +255,7 @@ class TabStrip : public views::View,
   void ContinueDrag(views::View* view, const ui::LocatedEvent& event) override;
   bool EndDrag(EndDragReason reason) override;
   Tab* GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) override;
-  Tab* GetSubsequentTab(Tab* tab) override;
+  const Tab* GetSubsequentTab(const Tab* tab) override;
   void OnMouseEventInTab(views::View* source,
                          const ui::MouseEvent& event) override;
   bool ShouldPaintTab(
@@ -270,7 +270,7 @@ class TabStrip : public views::View,
   SkColor GetTabForegroundColor(TabState state) const override;
   base::string16 GetAccessibleTabName(const Tab* tab) const override;
   int GetBackgroundResourceId(bool* custom_image) const override;
-  gfx::Rect GetTabAnimationTargetBounds(Tab* tab) override;
+  gfx::Rect GetTabAnimationTargetBounds(const Tab* tab) override;
 
   // MouseWatcherListener:
   void MouseMovedOutOfHost() override;

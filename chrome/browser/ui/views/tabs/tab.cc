@@ -1382,12 +1382,12 @@ void Tab::PaintSeparators(gfx::Canvas* canvas) {
   // If the subsequent tab is active, don't consider its hover animation value.
   // Without this active check and the subsequent tab is also dragged, the
   // trailing separator on this tab will appear invisible (alpha = 0).
-  Tab* subsequent_tab = controller_->GetSubsequentTab(this);
+  const Tab* subsequent_tab = controller_->GetSubsequentTab(this);
   float leading_alpha;
   float trailing_alpha = leading_alpha =
       std::max(hover_controller_.GetAnimationValue(),
                subsequent_tab && !subsequent_tab->IsActive()
-                   ? subsequent_tab->hover_controller()->GetAnimationValue()
+                   ? subsequent_tab->hover_controller_.GetAnimationValue()
                    : 0);
   // When the tab's bounds are animating, inversely fade the leading or trailing
   // separator based on the NTB position, the tab's index, and how close to the

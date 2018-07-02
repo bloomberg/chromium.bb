@@ -1057,7 +1057,7 @@ Tab* TabStrip::GetTabAt(Tab* tab, const gfx::Point& tab_in_tab_coordinates) {
   return view && view->id() == VIEW_ID_TAB ? static_cast<Tab*>(view) : nullptr;
 }
 
-Tab* TabStrip::GetSubsequentTab(Tab* tab) {
+const Tab* TabStrip::GetSubsequentTab(const Tab* tab) {
   int index = GetModelIndexOfTab(tab);
   if (index < 0)
     return nullptr;
@@ -1170,7 +1170,7 @@ int TabStrip::GetBackgroundResourceId(bool* custom_image) const {
   return id;
 }
 
-gfx::Rect TabStrip::GetTabAnimationTargetBounds(Tab* tab) {
+gfx::Rect TabStrip::GetTabAnimationTargetBounds(const Tab* tab) {
   return bounds_animator_.GetTargetBounds(tab);
 }
 
