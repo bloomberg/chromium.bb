@@ -188,6 +188,19 @@ void UkmPageLoadMetricsObserver::RecordTimingMetrics(
         first_input_timestamp.InMilliseconds());
   }
 
+  if (timing.interactive_timing->longest_input_delay) {
+    base::TimeDelta longest_input_delay =
+        timing.interactive_timing->longest_input_delay.value();
+    builder.SetInteractiveTiming_LongestInputDelay(
+        longest_input_delay.InMilliseconds());
+  }
+  if (timing.interactive_timing->longest_input_timestamp) {
+    base::TimeDelta longest_input_timestamp =
+        timing.interactive_timing->longest_input_timestamp.value();
+    builder.SetInteractiveTiming_LongestInputTimestamp(
+        longest_input_timestamp.InMilliseconds());
+  }
+
   // Use a bucket spacing factor of 1.3 for bytes.
   builder.SetNet_CacheBytes(ukm::GetExponentialBucketMin(cache_bytes_, 1.3));
   builder.SetNet_NetworkBytes(

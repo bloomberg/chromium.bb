@@ -400,6 +400,23 @@ unsigned long long PerformanceTiming::FirstInputTimestamp() const {
       interactive_detector->GetFirstInputTimestamp());
 }
 
+unsigned long long PerformanceTiming::LongestInputDelay() const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return ToIntegerMilliseconds(interactive_detector->GetLongestInputDelay());
+}
+
+unsigned long long PerformanceTiming::LongestInputTimestamp() const {
+  const InteractiveDetector* interactive_detector = GetInteractiveDetector();
+  if (!interactive_detector)
+    return 0;
+
+  return MonotonicTimeToIntegerMilliseconds(
+      interactive_detector->GetLongestInputTimestamp());
+}
+
 unsigned long long PerformanceTiming::ParseStart() const {
   const DocumentParserTiming* timing = GetDocumentParserTiming();
   if (!timing)

@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/context_lifecycle_observer.h"
+#include "third_party/blink/renderer/core/page/page_visibility_state.h"
 #include "third_party/blink/renderer/core/paint/first_meaningful_paint_detector.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/long_task_detector.h"
@@ -70,7 +71,7 @@ class CORE_EXPORT InteractiveDetector
       FirstMeaningfulPaintDetector::HadUserInput user_input_before_fmp);
   void OnDomContentLoadedEnd(TimeTicks dcl_time);
   void OnInvalidatingInputEvent(TimeTicks invalidation_time);
-  void OnFirstInputDelay(TimeDelta delay_seconds);
+  void OnPageVisibilityChanged(mojom::PageVisibilityState);
 
   // Returns Interactive Time if already detected, or 0.0 otherwise.
   TimeTicks GetInteractiveTime() const;
@@ -92,9 +93,18 @@ class CORE_EXPORT InteractiveDetector
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
   TimeTicks GetFirstInputTimestamp() const;
 
+  // Queueing Time of the meaningful input event with longest delay. Meaningful
+  // input events are click, tap, key press, cancellable touchstart, or pointer
+  // down followed by a pointer up.
+  TimeDelta GetLongestInputDelay() const;
+
+  // The timestamp of the event whose delay is reported by
+  // GetLongestInputDelay().
+  TimeTicks GetLongestInputTimestamp() const;
+
   // Process an input event, updating first_input_delay and
   // first_input_timestamp if needed.
-  void HandleForFirstInputDelay(const WebInputEvent&);
+  void HandleForInputDelay(const WebInputEvent&);
 
   // ContextLifecycleObserver
   void ContextDestroyed(ExecutionContext*) override;
@@ -117,16 +127,24 @@ class CORE_EXPORT InteractiveDetector
     TimeTicks nav_start;
     TimeTicks first_invalidating_input;
     TimeDelta first_input_delay;
+    TimeDelta longest_input_delay;
     TimeTicks first_input_timestamp;
+    TimeTicks longest_input_timestamp;
     bool first_meaningful_paint_invalidated = false;
   } page_event_times_;
+
+  struct VisibilityChangeEvent {
+    TimeTicks timestamp;
+    mojom::PageVisibilityState visibility;
+  };
 
   // Stores sufficiently long quiet windows on main thread and network.
   std::vector<PODInterval<TimeTicks>> main_thread_quiet_windows_;
   std::vector<PODInterval<TimeTicks>> network_quiet_windows_;
 
   // Start times of currently active main thread and network quiet windows.
-  // Values of 0.0 implies main thread or network is not quiet at the moment.
+  // Null TimeTicks values indicate main thread or network is not quiet at the
+  // moment.
   TimeTicks active_main_thread_quiet_window_start_;
   TimeTicks active_network_quiet_window_start_;
 
@@ -152,6 +170,12 @@ class CORE_EXPORT InteractiveDetector
   void TimeToInteractiveTimerFired(TimerBase*);
   void CheckTimeToInteractiveReached();
   void OnTimeToInteractiveDetected();
+
+  std::vector<VisibilityChangeEvent> visibility_change_events_;
+  mojom::PageVisibilityState initial_visibility_;
+  // Returns true if page was ever backgrounded in the range
+  // [event_time, CurrentTimeTicks()].
+  bool PageWasBackgroundedSinceEvent(TimeTicks event_time);
 
   // Finds a window of length kTimeToInteractiveWindowSeconds after lower_bound
   // such that both main thread and network are quiet. Returns the end of last

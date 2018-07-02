@@ -192,6 +192,14 @@ double WebPerformance::FirstInputTimestamp() const {
   return MillisecondsToSeconds(private_->timing()->FirstInputTimestamp());
 }
 
+double WebPerformance::LongestInputDelay() const {
+  return MillisecondsToSeconds(private_->timing()->LongestInputDelay());
+}
+
+double WebPerformance::LongestInputTimestamp() const {
+  return MillisecondsToSeconds(private_->timing()->LongestInputTimestamp());
+}
+
 double WebPerformance::ParseStart() const {
   return MillisecondsToSeconds(private_->timing()->ParseStart());
 }

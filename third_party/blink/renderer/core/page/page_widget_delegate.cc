@@ -132,7 +132,7 @@ WebInputEventResult PageWidgetDelegate::HandleInputEvent(
     // interactive_detector is null in the OOPIF case.
     // TODO(crbug.com/808089): report across OOPIFs.
     if (interactive_detector)
-      interactive_detector->HandleForFirstInputDelay(event);
+      interactive_detector->HandleForInputDelay(event);
   }
 
   if (event.GetModifiers() & WebInputEvent::kIsTouchAccessibility &&

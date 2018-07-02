@@ -2278,6 +2278,19 @@ be describing additional metrics about the same event.
       detailed explanation. In ms.
     </summary>
   </metric>
+  <metric name="InteractiveTiming.LongestInputDelay">
+    <summary>
+      Measures longest Input Delay, the longest duration between the hardware
+      timestamp and the start of event processing on the main thread for the
+      meaningful input per navigation. In ms.
+    </summary>
+  </metric>
+  <metric name="InteractiveTiming.LongestInputTimestamp">
+    <summary>
+      The duration between navigation start and the hardware timestamp of the
+      meaningful input with longest queuing delay per navigation. In ms.
+    </summary>
+  </metric>
   <metric name="Navigation.PageTransition">
     <summary>
       The |ui::PageTransition| for the main frame navigation of this page load.

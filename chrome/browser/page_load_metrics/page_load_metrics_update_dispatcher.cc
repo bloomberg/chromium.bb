@@ -212,6 +212,31 @@ internal::PageLoadTimingStatus IsValidPageLoadTiming(
     return internal::INVALID_NULL_FIRST_INPUT_DELAY;
   }
 
+  if (timing.interactive_timing->longest_input_delay.has_value() &&
+      !timing.interactive_timing->longest_input_timestamp.has_value()) {
+    return internal::INVALID_NULL_LONGEST_INPUT_TIMESTAMP;
+  }
+
+  if (!timing.interactive_timing->longest_input_delay.has_value() &&
+      timing.interactive_timing->longest_input_timestamp.has_value()) {
+    return internal::INVALID_NULL_LONGEST_INPUT_DELAY;
+  }
+
+  if (timing.interactive_timing->longest_input_delay.has_value() &&
+      timing.interactive_timing->first_input_delay.has_value() &&
+      timing.interactive_timing->longest_input_delay <
+          timing.interactive_timing->first_input_delay) {
+    return internal::INVALID_LONGEST_INPUT_DELAY_LESS_THAN_FIRST_INPUT_DELAY;
+  }
+
+  if (timing.interactive_timing->longest_input_timestamp.has_value() &&
+      timing.interactive_timing->first_input_timestamp.has_value() &&
+      timing.interactive_timing->longest_input_timestamp <
+          timing.interactive_timing->first_input_timestamp) {
+    return internal::
+        INVALID_LONGEST_INPUT_TIMESTAMP_LESS_THAN_FIRST_INPUT_TIMESTAMP;
+  }
+
   return internal::VALID;
 }
 
@@ -349,6 +374,20 @@ class PageLoadTimingMerger {
       // associated first input delay.
       target_interactive_timing->first_input_delay =
           new_interactive_timing.first_input_delay;
+    }
+
+    if (new_interactive_timing.longest_input_delay.has_value()) {
+      base::TimeDelta new_longest_input_timestamp =
+          navigation_start_offset +
+          new_interactive_timing.longest_input_timestamp.value();
+      if (!target_interactive_timing->longest_input_delay.has_value() ||
+          new_interactive_timing.longest_input_delay.value() >
+              target_interactive_timing->longest_input_delay.value()) {
+        target_interactive_timing->longest_input_delay =
+            new_interactive_timing.longest_input_delay;
+        target_interactive_timing->longest_input_timestamp =
+            new_longest_input_timestamp;
+      }
     }
   }
 

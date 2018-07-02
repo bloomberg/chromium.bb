@@ -21,7 +21,8 @@ bool IsEmpty(const page_load_metrics::mojom::DocumentTiming& timing) {
 bool IsEmpty(const page_load_metrics::mojom::InteractiveTiming& timing) {
   return !timing.interactive && !timing.interactive_detection &&
          !timing.first_invalidating_input && !timing.first_input_delay &&
-         !timing.first_input_timestamp;
+         !timing.first_input_timestamp && !timing.longest_input_delay &&
+         !timing.longest_input_timestamp;
 }
 bool IsEmpty(const page_load_metrics::mojom::PaintTiming& timing) {
   return !timing.first_paint && !timing.first_text_paint &&

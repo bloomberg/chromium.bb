@@ -202,6 +202,7 @@
 #include "third_party/blink/renderer/core/loader/frame_fetch_context.h"
 #include "third_party/blink/renderer/core/loader/frame_loader.h"
 #include "third_party/blink/renderer/core/loader/idleness_detector.h"
+#include "third_party/blink/renderer/core/loader/interactive_detector.h"
 #include "third_party/blink/renderer/core/loader/navigation_scheduler.h"
 #include "third_party/blink/renderer/core/loader/prerenderer_client.h"
 #include "third_party/blink/renderer/core/loader/text_resource_decoder_builder.h"
@@ -1738,6 +1739,11 @@ void Document::DidChangeVisibilityState() {
 
   if (hidden() && canvas_font_cache_)
     canvas_font_cache_->PruneAll();
+
+  InteractiveDetector* interactive_detector = InteractiveDetector::From(*this);
+  if (interactive_detector) {
+    interactive_detector->OnPageVisibilityChanged(GetPageVisibilityState());
+  }
 }
 
 String Document::nodeName() const {

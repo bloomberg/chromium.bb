@@ -122,6 +122,12 @@ class CORE_EXPORT PerformanceTiming final : public ScriptWrappable,
   unsigned long long FirstInputDelay() const;
   // The timestamp of the event whose delay is reported by FirstInputDelay().
   unsigned long long FirstInputTimestamp() const;
+  // The longest duration between the hardware timestamp and being queued on the
+  // main thread for the click, tap, key press, cancellable touchstart, or
+  // pointer down followed by a pointer up.
+  unsigned long long LongestInputDelay() const;
+  // The timestamp of the event whose delay is reported by LongestInputDelay().
+  unsigned long long LongestInputTimestamp() const;
 
   unsigned long long ParseStart() const;
   unsigned long long ParseStop() const;

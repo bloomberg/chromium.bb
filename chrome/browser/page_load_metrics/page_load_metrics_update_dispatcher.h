@@ -68,6 +68,17 @@ enum PageLoadTimingStatus {
   // We received a first input timestamp without a first input delay.
   INVALID_NULL_FIRST_INPUT_DELAY,
 
+  // We received a longest input delay without a longest input timestamp.
+  INVALID_NULL_LONGEST_INPUT_TIMESTAMP,
+  // We received a longest input timestamp without a longest input delay.
+  INVALID_NULL_LONGEST_INPUT_DELAY,
+
+  // Longest input delay cannot happen before first input delay.
+  INVALID_LONGEST_INPUT_TIMESTAMP_LESS_THAN_FIRST_INPUT_TIMESTAMP,
+
+  // Longest input delay cannot be less than first input delay.
+  INVALID_LONGEST_INPUT_DELAY_LESS_THAN_FIRST_INPUT_DELAY,
+
   // New values should be added before this final entry.
   LAST_PAGE_LOAD_TIMING_STATUS
 };
