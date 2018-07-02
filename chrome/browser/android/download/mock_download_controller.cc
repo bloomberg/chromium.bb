@@ -4,6 +4,8 @@
 
 #include "chrome/browser/android/download/mock_download_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -28,9 +30,9 @@ void MockDownloadController::StartContextMenuDownload(
 
 void MockDownloadController::AcquireFileAccessPermission(
     const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-    const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb) {
+    DownloadControllerBase::AcquireFileAccessPermissionCallback cb) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(cb, approve_file_access_request_));
+      FROM_HERE, base::BindOnce(std::move(cb), approve_file_access_request_));
 }
 
 void MockDownloadController::SetApproveFileAccessRequestForTesting(

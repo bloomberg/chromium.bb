@@ -5,7 +5,7 @@
 #include "chrome/browser/android/download/download_controller.h"
 
 #include <memory>
-#include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -157,7 +157,7 @@ void RemoveDownloadItem(std::unique_ptr<DownloadManagerGetter> getter,
 
 void OnRequestFileAccessResult(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb,
+    DownloadControllerBase::AcquireFileAccessPermissionCallback cb,
     bool granted,
     const std::string& permission_to_update) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -169,7 +169,7 @@ void OnRequestFileAccessResult(
 
     PermissionUpdateInfoBarDelegate::Create(
         web_contents, permissions,
-        IDS_MISSING_STORAGE_PERMISSION_DOWNLOAD_EDUCATION_TEXT, cb);
+        IDS_MISSING_STORAGE_PERMISSION_DOWNLOAD_EDUCATION_TEXT, std::move(cb));
     return;
   }
 
@@ -177,11 +177,11 @@ void OnRequestFileAccessResult(
     DownloadController::RecordDownloadCancelReason(
         DownloadController::CANCEL_REASON_NO_STORAGE_PERMISSION);
   }
-  cb.Run(granted);
+  std::move(cb).Run(granted);
 }
 
 void OnStoragePermissionDecided(
-    const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb,
+    DownloadControllerBase::AcquireFileAccessPermissionCallback cb,
     bool granted) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -193,7 +193,7 @@ void OnStoragePermissionDecided(
         DownloadController::StoragePermissionType::STORAGE_PERMISSION_DENIED);
   }
 
-  cb.Run(granted);
+  std::move(cb).Run(granted);
 }
 
 }  // namespace
@@ -216,7 +216,7 @@ static void JNI_DownloadController_OnAcquirePermissionResult(
   std::unique_ptr<DownloadController::AcquirePermissionCallback> cb(
       reinterpret_cast<DownloadController::AcquirePermissionCallback*>(
           callback_id));
-  cb->Run(granted, permission_to_update);
+  std::move(*cb).Run(granted, permission_to_update);
 }
 
 // static
@@ -258,7 +258,7 @@ DownloadController::~DownloadController() = default;
 
 void DownloadController::AcquireFileAccessPermission(
     const content::ResourceRequestInfo::WebContentsGetter& web_contents_getter,
-    const DownloadControllerBase::AcquireFileAccessPermissionCallback& cb) {
+    DownloadControllerBase::AcquireFileAccessPermissionCallback cb) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   WebContents* web_contents = web_contents_getter.Run();
@@ -269,23 +269,23 @@ void DownloadController::AcquireFileAccessPermission(
     RecordStoragePermission(
         StoragePermissionType::STORAGE_PERMISSION_NO_ACTION_NEEDED);
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(cb, true));
+                            base::BindOnce(std::move(cb), true));
     return;
   } else if (vr::VrTabHelper::IsUiSuppressedInVr(
                  web_contents,
                  vr::UiSuppressedElement::kFileAccessPermission)) {
     BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::BindOnce(cb, false));
+                            base::BindOnce(std::move(cb), false));
     return;
   }
 
   RecordStoragePermission(StoragePermissionType::STORAGE_PERMISSION_REQUESTED);
-  AcquirePermissionCallback callback(
-      base::Bind(&OnRequestFileAccessResult, web_contents_getter,
-                 base::Bind(&OnStoragePermissionDecided, cb)));
+  AcquirePermissionCallback callback(base::BindOnce(
+      &OnRequestFileAccessResult, web_contents_getter,
+      base::BindOnce(&OnStoragePermissionDecided, base::Passed(&cb))));
   // Make copy on the heap so we can pass the pointer through JNI.
-  intptr_t callback_id =
-      reinterpret_cast<intptr_t>(new AcquirePermissionCallback(callback));
+  intptr_t callback_id = reinterpret_cast<intptr_t>(
+      new AcquirePermissionCallback(std::move(callback)));
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_DownloadController_requestFileAccess(env, callback_id);
 }
