@@ -61,8 +61,6 @@ struct CrossThreadResourceResponseData;
 // member variable to this class, do not forget to add the corresponding
 // one in CrossThreadResourceResponseData and write copying logic.
 class PLATFORM_EXPORT ResourceResponse final {
-  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
-
  public:
   enum HTTPVersion : uint8_t {
     kHTTPVersionUnknown,
