@@ -2489,7 +2489,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   int i;
 
   double boost_score = 0.0;
+#if !FIX_GF_INTERVAL_LENGTH
   double old_boost_score = 0.0;
+  double mv_ratio_accumulator_thresh;
+#endif
   double gf_group_err = 0.0;
 #if GROUP_ADAPTIVE_MAXQ
   double gf_group_raw_error = 0.0;
@@ -2509,7 +2512,7 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
   double this_frame_mv_in_out = 0.0;
   double mv_in_out_accumulator = 0.0;
   double abs_mv_in_out_accumulator = 0.0;
-  double mv_ratio_accumulator_thresh;
+
   unsigned int allow_alt_ref = is_altref_enabled(cpi);
 
   int f_boost = 0;
@@ -2551,11 +2554,11 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     gf_group_skip_pct -= this_frame->intra_skip_pct;
     gf_group_inactive_zone_rows -= this_frame->inactive_zone_rows;
   }
-
+#if !FIX_GF_INTERVAL_LENGTH
   // Motion breakout threshold for loop below depends on image size.
   mv_ratio_accumulator_thresh =
       (cpi->initial_height + cpi->initial_width) / 4.0;
-
+#endif
   // Set a maximum and minimum interval for the GF group.
   // If the image appears almost completely static we can extend beyond this.
   {
@@ -2643,7 +2646,10 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
     boost_score +=
         decay_accumulator *
         calc_frame_boost(cpi, &next_frame, this_frame_mv_in_out, GF_MAX_BOOST);
-
+#if FIX_GF_INTERVAL_LENGTH
+    if (i == (FIXED_GF_LENGTH + 1)) break;
+#else
+    // Skip breaking condition for FIX_GF_INTERVAL_LENGTH
     // Break out conditions.
     if (
         // Break at active_max_gf_interval unless almost totally static.
@@ -2666,9 +2672,9 @@ static void define_gf_group(AV1_COMP *cpi, FIRSTPASS_STATS *this_frame) {
         break;
       }
     }
-
-    *this_frame = next_frame;
     old_boost_score = boost_score;
+#endif  // FIX_GF_INTERVAL_LENGTH
+    *this_frame = next_frame;
   }
   twopass->gf_zeromotion_pct = (int)(zero_motion_accumulator * 1000.0);
 

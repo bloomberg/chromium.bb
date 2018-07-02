@@ -1612,6 +1612,10 @@ void av1_rc_set_gf_interval_range(const AV1_COMP *const cpi,
     if (rc->max_gf_interval > rc->static_scene_max_gf_interval)
       rc->max_gf_interval = rc->static_scene_max_gf_interval;
 
+#if FIX_GF_INTERVAL_LENGTH
+    rc->max_gf_interval = FIXED_GF_LENGTH + 1;
+#endif
+
     // Clamp min to max
     rc->min_gf_interval = AOMMIN(rc->min_gf_interval, rc->max_gf_interval);
   }

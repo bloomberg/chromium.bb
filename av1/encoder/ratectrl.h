@@ -25,6 +25,11 @@ extern "C" {
 #define BPER_MB_NORMBITS 9
 
 #define CUSTOMIZED_GF 1
+#define FIX_GF_INTERVAL_LENGTH 0
+
+#if FIX_GF_INTERVAL_LENGTH
+#define FIXED_GF_LENGTH 4
+#endif
 
 #define MIN_GF_INTERVAL 4
 #define MAX_GF_INTERVAL 16
