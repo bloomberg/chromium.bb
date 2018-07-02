@@ -23,12 +23,12 @@ AutoAdvancingVirtualTimeDomain::AutoAdvancingVirtualTimeDomain(
     base::TimeTicks initial_time_ticks,
     SchedulerHelper* helper,
     BaseTimeOverridePolicy policy)
-    : VirtualTimeDomain(initial_time_ticks),
-      task_starvation_count_(0),
+    : task_starvation_count_(0),
       max_task_starvation_count_(0),
       can_advance_virtual_time_(true),
       observer_(nullptr),
       helper_(helper),
+      now_ticks_(initial_time_ticks),
       initial_time_ticks_(initial_time_ticks),
       initial_time_(initial_time),
       previous_time_(initial_time) {
@@ -58,6 +58,17 @@ AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
 
   DCHECK_EQ(AutoAdvancingVirtualTimeDomain::g_time_domain_, this);
   AutoAdvancingVirtualTimeDomain::g_time_domain_ = nullptr;
+}
+
+base::sequence_manager::LazyNow AutoAdvancingVirtualTimeDomain::CreateLazyNow()
+    const {
+  base::AutoLock lock(now_ticks_lock_);
+  return base::sequence_manager::LazyNow(now_ticks_);
+}
+
+base::TimeTicks AutoAdvancingVirtualTimeDomain::Now() const {
+  base::AutoLock lock(now_ticks_lock_);
+  return now_ticks_;
 }
 
 base::Optional<base::TimeDelta>
@@ -135,7 +146,10 @@ bool AutoAdvancingVirtualTimeDomain::MaybeAdvanceVirtualTime(
   if (new_virtual_time <= Now())
     return false;
 
-  AdvanceNowTo(new_virtual_time);
+  {
+    base::AutoLock lock(now_ticks_lock_);
+    now_ticks_ = new_virtual_time;
+  }
 
   if (observer_)
     observer_->OnVirtualTimeAdvanced();
