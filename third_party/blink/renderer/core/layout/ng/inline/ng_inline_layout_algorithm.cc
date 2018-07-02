@@ -606,12 +606,21 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   bool is_empty_inline = Node().IsEmptyInline();
 
   if (is_empty_inline) {
+    // Margins should collapse across "certain zero-height line boxes".
+    // https://drafts.csswg.org/css2/box.html#collapsing-margins
+    container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
+
     // We're just going to collapse through this one, so whatever went in on one
     // side will go out on the other side. The position of the adjoining floats
     // will be affected by any subsequent block, until the BFC offset is
     // resolved.
     container_builder_.AddAdjoiningFloatTypes(
         ConstraintSpace().AdjoiningFloatTypes());
+
+    // For the empty lines, most of the logic here are not necessary, but in
+    // some edge cases we still need to create box fragments, such as when it
+    // has a containing block for out of flow objects. For now, use the code
+    // path than to create a fast code path for the stability.
   } else {
     DCHECK(ConstraintSpace().MarginStrut().IsEmpty());
     container_builder_.SetBfcOffset(ConstraintSpace().BfcOffset());
@@ -626,21 +635,6 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
   unsigned handled_item_index =
       PositionLeadingItems(initial_exclusion_space.get());
 
-  // If we are an empty inline, we don't have to run the full algorithm, we can
-  // return now as we should have positioned all of our floats.
-  if (is_empty_inline) {
-    DCHECK_EQ(handled_item_index, Node().ItemsData(false).items.size());
-
-    container_builder_.SwapPositionedFloats(&positioned_floats_);
-    container_builder_.SetEndMarginStrut(ConstraintSpace().MarginStrut());
-    container_builder_.SetExclusionSpace(std::move(initial_exclusion_space));
-    container_builder_.MoveOutOfFlowDescendantCandidatesToDescendants();
-
-    return container_builder_.ToLineBoxFragment();
-  }
-
-  DCHECK(container_builder_.BfcOffset());
-
   // We query all the layout opportunities on the initial exclusion space up
   // front, as if the line breaker may add floats and change the opportunities.
   const Vector<NGLayoutOpportunity> opportunities =
@@ -649,7 +643,8 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
           ConstraintSpace().AvailableSize().inline_size);
 
   Vector<NGPositionedFloat> positioned_floats;
-  DCHECK(unpositioned_floats_.IsEmpty());
+  // We shouldn't have any unpositioned floats if we aren't empty.
+  DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
 
   std::unique_ptr<NGExclusionSpace> exclusion_space;
   NGInlineBreakToken* break_token = BreakToken();
@@ -767,20 +762,23 @@ scoped_refptr<NGLayoutResult> NGInlineLayoutAlgorithm::Layout() {
     container_builder_.SetBreakToken(
         line_breaker.CreateBreakToken(line_info, std::move(box_states_)));
 
-    // Place any remaining floats which couldn't fit on the line.
-    PositionPendingFloats(line_height, exclusion_space.get());
+    if (is_empty_inline) {
+      DCHECK_EQ(container_builder_.BlockSize(), 0);
+    } else {
+      // Place any remaining floats which couldn't fit on the line.
+      PositionPendingFloats(line_height, exclusion_space.get());
 
-    // A <br clear=both> will strech the line-box height, such that the
-    // block-end edge will clear any floats.
-    // TODO(ikilpatrick): Move this into ng_block_layout_algorithm.
-    container_builder_.SetBlockSize(
-        ComputeContentSize(line_info, *exclusion_space, line_height));
-
+      // A <br clear=both> will strech the line-box height, such that the
+      // block-end edge will clear any floats.
+      // TODO(ikilpatrick): Move this into ng_block_layout_algorithm.
+      container_builder_.SetBlockSize(
+          ComputeContentSize(line_info, *exclusion_space, line_height));
+    }
     break;
   }
 
   // We shouldn't have any unpositioned floats if we aren't empty.
-  DCHECK(unpositioned_floats_.IsEmpty());
+  DCHECK(unpositioned_floats_.IsEmpty() || is_empty_inline);
   container_builder_.SwapPositionedFloats(&positioned_floats_);
   container_builder_.SetExclusionSpace(
       exclusion_space ? std::move(exclusion_space)
