@@ -21,6 +21,8 @@ class Origin;
 
 namespace net {
 
+struct ReportingClient;
+
 // Keeps track of which endpoints are pending (have active delivery attempts to
 // them) or in exponential backoff after one or more failures, and chooses an
 // endpoint from an endpoint group to receive reports for an origin.
@@ -39,12 +41,11 @@ class NET_EXPORT ReportingEndpointManager {
   // Deliberately chooses an endpoint randomly to ensure sites aren't relying on
   // any sort of fallback ordering.
   //
-  // Returns true and sets |*endpoint_url_out| to the endpoint URL if an
-  // endpoint was chosen; returns false (and leaves |*endpoint_url_out| invalid)
-  // if no endpoint was found.
-  virtual bool FindEndpointForOriginAndGroup(const url::Origin& origin,
-                                             const std::string& group,
-                                             GURL* endpoint_url_out) = 0;
+  // Returns the endpoint's |ReportingClient| if endpoint was chosen; returns
+  // nullptr if no endpoint was found.
+  virtual const ReportingClient* FindClientForOriginAndGroup(
+      const url::Origin& origin,
+      const std::string& group) = 0;
 
   // Adds |endpoint| to the set of pending endpoints, preventing it from being
   // chosen for a second parallel delivery attempt.
