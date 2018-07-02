@@ -49,18 +49,6 @@ class NET_EXPORT CachingCertVerifier : public CertVerifier,
              std::unique_ptr<Request>* out_req,
              const NetLogWithSource& net_log) override;
 
-  // Opportunistically attempts to add |error| and |verify_result| as the
-  // result for |params|, which was obtained at |verification_time| and
-  // expires at |expiration_time|.
-  // This is opportunistic because it is not guaranteed that the entry
-  // will be added (such as if the cache is full or an entry already
-  // exists).
-  // Returns true if the entry was added.
-  bool AddEntry(const RequestParams& params,
-                int error,
-                const CertVerifyResult& verify_result,
-                base::Time verification_time);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, CacheHit);
   FRIEND_TEST_ALL_PREFIXES(CachingCertVerifierTest, Visitor);

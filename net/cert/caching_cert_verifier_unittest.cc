@@ -74,66 +74,6 @@ TEST_F(CachingCertVerifierTest, CacheHit) {
   ASSERT_EQ(1u, verifier_.GetCacheSize());
 }
 
-TEST_F(CachingCertVerifierTest, AddsEntries) {
-  base::FilePath certs_dir = GetTestCertsDirectory();
-  scoped_refptr<X509Certificate> test_cert(
-      ImportCertFromFile(certs_dir, "ok_cert.pem"));
-  ASSERT_TRUE(test_cert.get());
-
-  CertVerifyResult result_1;
-  result_1.verified_cert = test_cert;
-  result_1.cert_status = CERT_STATUS_WEAK_SIGNATURE_ALGORITHM;
-  result_1.has_md2 = true;
-  result_1.is_issued_by_known_root = false;
-
-  CertVerifyResult result_2;
-  result_2.verified_cert = test_cert;
-  result_2.cert_status = CERT_STATUS_IS_EV;
-  result_2.is_issued_by_known_root = true;
-
-  CertVerifier::RequestParams params(test_cert, "www.example.com", 0,
-                                     std::string(), CertificateList());
-
-  base::Time now = base::Time::Now();
-
-  // On an empty cache, it should be fine to add an entry.
-  EXPECT_TRUE(verifier_.AddEntry(params, ERR_CERT_WEAK_KEY, result_1, now));
-  ASSERT_EQ(0u, verifier_.requests());
-  ASSERT_EQ(0u, verifier_.cache_hits());
-  ASSERT_EQ(1u, verifier_.GetCacheSize());
-
-  TestCompletionCallback callback;
-  std::unique_ptr<CertVerifier::Request> request;
-
-  CertVerifyResult cached_result;
-  int error = callback.GetResult(
-      verifier_.Verify(params, nullptr, &cached_result, callback.callback(),
-                       &request, NetLogWithSource()));
-  ASSERT_THAT(error, IsError(ERR_CERT_WEAK_KEY));
-  EXPECT_TRUE(cached_result.has_md2);
-  EXPECT_FALSE(cached_result.is_issued_by_known_root);
-
-  ASSERT_EQ(1u, verifier_.requests());
-  ASSERT_EQ(1u, verifier_.cache_hits());
-  ASSERT_EQ(1u, verifier_.GetCacheSize());
-
-  // But it should not be fine to replace it with an existing entry, even
-  // if that entry is 'newer'.
-  EXPECT_FALSE(verifier_.AddEntry(params, OK, result_2,
-                                  now + base::TimeDelta::FromMinutes(1)));
-
-  error = callback.GetResult(verifier_.Verify(params, nullptr, &cached_result,
-                                              callback.callback(), &request,
-                                              NetLogWithSource()));
-  ASSERT_THAT(error, IsError(ERR_CERT_WEAK_KEY));
-  EXPECT_TRUE(cached_result.has_md2);
-  EXPECT_FALSE(cached_result.is_issued_by_known_root);
-
-  ASSERT_EQ(2u, verifier_.requests());
-  ASSERT_EQ(2u, verifier_.cache_hits());
-  ASSERT_EQ(1u, verifier_.GetCacheSize());
-}
-
 // Tests the same server certificate with different intermediate CA
 // certificates.  These should be treated as different certificate chains even
 // though the two X509Certificate objects contain the same server certificate.
