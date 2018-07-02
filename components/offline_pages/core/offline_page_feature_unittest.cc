@@ -64,23 +64,23 @@ TEST(OfflinePageFeatureTest, OfflinePagesLoadSignalCollecting) {
 
 TEST(OfflinePageFeatureTest, OfflinePagesPrefetching) {
   // Disabled by default.
-  EXPECT_TRUE(offline_pages::IsPrefetchingOfflinePagesEnabled());
+  EXPECT_FALSE(offline_pages::IsPrefetchingOfflinePagesEnabled());
 
   // Check if helper method works correctly when the features is enabled.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kPrefetchingOfflinePagesFeature);
-  EXPECT_FALSE(offline_pages::IsPrefetchingOfflinePagesEnabled());
+  scoped_feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
+  EXPECT_TRUE(offline_pages::IsPrefetchingOfflinePagesEnabled());
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesPrefetchingUI) {
-  // Enabled by default.
-  EXPECT_TRUE(offline_pages::IsOfflinePagesPrefetchingUIEnabled());
+  // Disabled by default.
+  EXPECT_FALSE(offline_pages::IsOfflinePagesPrefetchingUIEnabled());
 
   // This feature is enabled by default but depends on the core prefetching
   // feature.
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kPrefetchingOfflinePagesFeature);
-  EXPECT_FALSE(offline_pages::IsOfflinePagesPrefetchingUIEnabled());
+  scoped_feature_list.InitAndEnableFeature(kPrefetchingOfflinePagesFeature);
+  EXPECT_TRUE(offline_pages::IsOfflinePagesPrefetchingUIEnabled());
 }
 
 TEST(OfflinePageFeatureTest, OfflinePagesLimitlessPrefetching) {

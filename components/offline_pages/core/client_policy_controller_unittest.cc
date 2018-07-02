@@ -237,7 +237,7 @@ TEST_F(ClientPolicyControllerTest, CheckSuggestedArticlesDefined) {
   EXPECT_TRUE(isTemporary(policy));
   EXPECT_TRUE(controller()->IsRemovedOnCacheReset(kSuggestedArticlesNamespace));
   ExpectRemovedOnCacheReset(kSuggestedArticlesNamespace, true);
-  ExpectDownloadSupport(kSuggestedArticlesNamespace, true);
+  ExpectDownloadSupport(kSuggestedArticlesNamespace, false);
   ExpectUserRequestedDownloadSupport(kSuggestedArticlesNamespace, false);
   ExpectRecentTab(kSuggestedArticlesNamespace, false);
   ExpectOnlyOriginalTab(kSuggestedArticlesNamespace, false);
