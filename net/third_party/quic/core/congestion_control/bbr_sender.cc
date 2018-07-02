@@ -20,7 +20,6 @@ namespace quic {
 
 namespace {
 // Constants based on TCP defaults.
-const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 // The minimum CWND to ensure delayed acks don't reduce bandwidth measurements.
 // Does not inflate the pacing rate.
 const QuicByteCount kDefaultMinimumCongestionWindow = 4 * kMaxSegmentSize;
