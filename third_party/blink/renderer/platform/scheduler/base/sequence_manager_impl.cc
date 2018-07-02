@@ -11,14 +11,15 @@
 #include "base/bit_cast.h"
 #include "base/compiler_specific.h"
 #include "base/debug/crash_logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/rand_util.h"
 #include "base/task/sequence_manager/task_time_observer.h"
 #include "base/time/default_tick_clock.h"
 #include "base/time/tick_clock.h"
 #include "base/trace_event/trace_event.h"
+#include "build/build_config.h"
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_selector.h"
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue.h"
 #include "third_party/blink/renderer/platform/scheduler/base/work_queue_sets.h"
@@ -115,7 +116,7 @@ SequenceManagerImpl::MainThreadOnly::~MainThreadOnly() = default;
 // static
 std::unique_ptr<SequenceManagerImpl>
 SequenceManagerImpl::CreateOnCurrentThread() {
-  return std::unique_ptr<SequenceManagerImpl>(
+  return WrapUnique(
       new SequenceManagerImpl(internal::ThreadControllerImpl::Create(
           MessageLoop::current(), DefaultTickClock::GetInstance())));
 }
@@ -404,12 +405,14 @@ void SequenceManagerImpl::NotifyWillProcessTask(ExecutingTask* executing_task,
   if (executing_task->task_queue->GetQuiescenceMonitored())
     main_thread_only().task_was_run_on_quiescence_monitored_queue = true;
 
+#if !defined(OS_NACL)
   debug::SetCrashKeyString(
       main_thread_only().file_name_crash_key,
       executing_task->pending_task.posted_from.file_name());
   debug::SetCrashKeyString(
       main_thread_only().function_name_crash_key,
       executing_task->pending_task.posted_from.function_name());
+#endif  // OS_NACL
 
   if (executing_task->task_queue->GetShouldNotifyObservers()) {
     {
@@ -687,10 +690,12 @@ void SequenceManagerImpl::EnableCrashKeys(
     const char* function_name_crash_key_name) {
   DCHECK(!main_thread_only().file_name_crash_key);
   DCHECK(!main_thread_only().function_name_crash_key);
+#if !defined(OS_NACL)
   main_thread_only().file_name_crash_key = debug::AllocateCrashKeyString(
       file_name_crash_key_name, debug::CrashKeySize::Size64);
   main_thread_only().function_name_crash_key = debug::AllocateCrashKeyString(
       function_name_crash_key_name, debug::CrashKeySize::Size64);
+#endif  // OS_NACL
 }
 
 internal::TaskQueueImpl* SequenceManagerImpl::currently_executing_task_queue()

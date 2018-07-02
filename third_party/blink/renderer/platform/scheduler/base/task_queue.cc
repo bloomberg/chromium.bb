@@ -4,8 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 
-#include "base/bind_helpers.h"
-#include "base/optional.h"
+#include "base/bind.h"
 #include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
 

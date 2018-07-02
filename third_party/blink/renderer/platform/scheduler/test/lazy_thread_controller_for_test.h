@@ -10,6 +10,9 @@
 #include "base/threading/platform_thread.h"
 #include "third_party/blink/renderer/platform/scheduler/base/thread_controller_impl.h"
 
+// TODO(kraynov): Move to //base/task/sequence_manager/test to avoid
+// cross-component exposure of internal ThreadControllerImpl.
+
 namespace blink {
 namespace scheduler {
 

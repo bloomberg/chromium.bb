@@ -8,6 +8,7 @@
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
+#include "third_party/blink/renderer/platform/platform_export.h"
 #include "third_party/blink/renderer/platform/scheduler/base/task_queue_forward.h"
 #include "third_party/blink/renderer/platform/scheduler/util/task_duration_metric_reporter.h"
 

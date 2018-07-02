@@ -4,9 +4,7 @@
 
 #include "third_party/blink/renderer/platform/scheduler/base/real_time_domain.h"
 
-#include "base/bind.h"
-#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_impl.h"
-#include "third_party/blink/renderer/platform/scheduler/base/task_queue_impl_forward.h"
+#include "third_party/blink/renderer/platform/scheduler/base/sequence_manager_forward.h"
 
 namespace base {
 namespace sequence_manager {

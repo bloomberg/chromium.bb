@@ -17,6 +17,8 @@
 
 namespace base {
 
+// TODO(kraynov): https://crbug.com/828835
+// Consider going away from using MessageLoop in the renderer process.
 class MessageLoop;
 
 namespace sequence_manager {
@@ -113,7 +115,7 @@ class PLATFORM_EXPORT ThreadControllerImpl : public ThreadController,
   RepeatingClosure immediate_do_work_closure_;
   RepeatingClosure delayed_do_work_closure_;
   CancelableClosure cancelable_delayed_do_work_closure_;
-  SequencedTaskSource* sequence_ = nullptr;  // NOT OWNED
+  SequencedTaskSource* sequence_ = nullptr;  // Not owned.
   debug::TaskAnnotator task_annotator_;
 
   WeakPtrFactory<ThreadControllerImpl> weak_factory_;

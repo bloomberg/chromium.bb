@@ -7,9 +7,6 @@
 
 #include <stddef.h>
 
-#include <set>
-
-#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/pending_task.h"
 #include "base/threading/thread_checker.h"

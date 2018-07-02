@@ -23,7 +23,6 @@ class GracefulQueueShutdownHelper
     : public RefCountedThreadSafe<GracefulQueueShutdownHelper> {
  public:
   GracefulQueueShutdownHelper();
-  ~GracefulQueueShutdownHelper();
 
   void GracefullyShutdownTaskQueue(
       std::unique_ptr<internal::TaskQueueImpl> queue);
@@ -33,6 +32,10 @@ class GracefulQueueShutdownHelper
   std::vector<std::unique_ptr<internal::TaskQueueImpl>> TakeQueues();
 
  private:
+  // This class is ref-counted so it controls its own lifetime.
+  ~GracefulQueueShutdownHelper();
+  friend class RefCountedThreadSafe<GracefulQueueShutdownHelper>;
+
   Lock lock_;
   bool sequence_manager_deleted_;
   std::vector<std::unique_ptr<internal::TaskQueueImpl>> queues_;
