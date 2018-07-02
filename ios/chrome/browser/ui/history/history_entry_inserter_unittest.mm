@@ -75,7 +75,7 @@ TEST_F(HistoryEntryInserterTest, AddItems) {
 
   [[mock_delegate expect]
           historyEntryInserter:inserter_
-      didInsertItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:1]];
+      didInsertItemAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:1]];
   [inserter_ insertHistoryEntryItem:entry1];
   EXPECT_OCMOCK_VERIFY(mock_delegate);
 
@@ -176,7 +176,7 @@ TEST_F(HistoryEntryInserterTest, AddSections) {
 
   [[mock_delegate expect]
           historyEntryInserter:inserter_
-      didInsertItemAtIndexPath:[NSIndexPath indexPathForItem:0 inSection:2]];
+      didInsertItemAtIndexPath:[NSIndexPath indexPathForItem:1 inSection:2]];
   [inserter_ insertHistoryEntryItem:day2_entry1];
   EXPECT_EQ(4, [model_ numberOfSections]);
   EXPECT_EQ(0, [model_ numberOfItemsInSection:0]);
