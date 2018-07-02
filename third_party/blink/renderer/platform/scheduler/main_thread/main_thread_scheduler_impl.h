@@ -762,7 +762,6 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
   scoped_refptr<TaskQueueWithTaskType> v8_task_runner_;
   scoped_refptr<TaskQueueWithTaskType> compositor_task_runner_;
   scoped_refptr<TaskQueueWithTaskType> control_task_runner_;
-  scoped_refptr<TaskQueueWithTaskType> default_task_runner_;
   scoped_refptr<TaskQueueWithTaskType> input_task_runner_;
   scoped_refptr<TaskQueueWithTaskType> ipc_task_runner_;
 

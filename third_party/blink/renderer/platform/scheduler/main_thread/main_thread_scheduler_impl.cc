@@ -203,6 +203,8 @@ const char* TaskTypeToString(TaskType task_type) {
       return "InternalIntersectionObserver";
     case TaskType::kCompositorThreadTaskQueueDefault:
       return "CompositorThreadTaskQueueDefault";
+    case TaskType::kCompositorThreadTaskQueueInput:
+      return "CompositorThreadTaskQueueInput";
     case TaskType::kWorkerThreadTaskQueueDefault:
       return "WorkerThreadTaskQueueDefault";
     case TaskType::kWorkerThreadTaskQueueV8:
@@ -321,9 +323,6 @@ MainThreadSchedulerImpl::MainThreadSchedulerImpl(
   control_task_runner_ =
       TaskQueueWithTaskType::Create(helper_.ControlMainThreadTaskQueue(),
                                     TaskType::kMainThreadTaskQueueControl);
-  default_task_runner_ =
-      TaskQueueWithTaskType::Create(helper_.DefaultMainThreadTaskQueue(),
-                                    TaskType::kMainThreadTaskQueueDefault);
   input_task_runner_ = TaskQueueWithTaskType::Create(
       input_task_queue_, TaskType::kMainThreadTaskQueueInput);
   ipc_task_runner_ = TaskQueueWithTaskType::Create(
@@ -635,7 +634,8 @@ MainThreadSchedulerImpl::AnyThread::AnyThread(
           YesNoStateToString) {}
 
 MainThreadSchedulerImpl::SchedulingSettings::SchedulingSettings() {
-  high_priority_input = base::FeatureList::IsEnabled(kHighPriorityInput);
+  high_priority_input =
+      base::FeatureList::IsEnabled(kHighPriorityInputOnMainThread);
 
   low_priority_background_page =
       base::FeatureList::IsEnabled(kLowPriorityForBackgroundPages);
@@ -701,7 +701,7 @@ MainThreadSchedulerImpl::ControlTaskRunner() {
 
 scoped_refptr<base::SingleThreadTaskRunner>
 MainThreadSchedulerImpl::DefaultTaskRunner() {
-  return default_task_runner_;
+  return helper_.DefaultTaskRunner();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner>

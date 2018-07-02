@@ -574,10 +574,13 @@ void RenderWidget::Init(const ShowCallback& show_callback,
 
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
 
+  blink::scheduler::WebThreadScheduler* compositor_thread_scheduler =
+      blink::scheduler::WebThreadScheduler::CompositorThreadScheduler();
+
   widget_input_handler_manager_ = WidgetInputHandlerManager::Create(
       weak_ptr_factory_.GetWeakPtr(),
-      render_thread_impl && compositor_
-          ? render_thread_impl->compositor_task_runner()
+      compositor_thread_scheduler && compositor_
+          ? compositor_thread_scheduler->InputTaskRunner()
           : nullptr,
       render_thread_impl ? render_thread_impl->GetWebMainThreadScheduler()
                          : nullptr);

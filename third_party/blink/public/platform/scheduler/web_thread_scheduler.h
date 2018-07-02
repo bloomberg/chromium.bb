@@ -74,6 +74,10 @@ class BLINK_PLATFORM_EXPORT WebThreadScheduler {
   static std::unique_ptr<WebThreadScheduler> CreateMainThreadScheduler(
       base::Optional<base::Time> initial_virtual_time = base::nullopt);
 
+  // Returns compositor thread scheduler for the compositor thread
+  // of the current process.
+  static WebThreadScheduler* CompositorThreadScheduler();
+
   // Returns the default task runner.
   virtual scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
 
