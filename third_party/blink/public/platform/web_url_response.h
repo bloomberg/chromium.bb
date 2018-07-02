@@ -305,15 +305,13 @@ class WebURLResponse {
 #endif
 
  private:
-  struct ResourceResponseContainer;
-
   // If this instance owns a ResourceResponse then |owned_resource_response_|
   // is non-null and |resource_response_| points to the ResourceResponse
   // instance it contains.
-  std::unique_ptr<ResourceResponseContainer> owned_resource_response_;
+  const std::unique_ptr<ResourceResponse> owned_resource_response_;
 
   // Should never be null.
-  ResourceResponse* resource_response_;
+  ResourceResponse* const resource_response_;
 };
 
 }  // namespace blink
