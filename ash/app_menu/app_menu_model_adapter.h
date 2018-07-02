@@ -54,13 +54,12 @@ class APP_MENU_EXPORT AppMenuModelAdapter : public views::MenuModelAdapter {
   void ExecuteCommand(int id, int mouse_event_flags) override;
   void OnMenuClosed(views::MenuItemView* menu) override;
 
+  ui::SimpleMenuModel* model() { return model_.get(); }
+
  protected:
   const std::string& app_id() const { return app_id_; }
   base::TimeTicks menu_open_time() const { return menu_open_time_; }
   ui::MenuSourceType source_type() const { return source_type_; }
-
-  ui::SimpleMenuModel* model() { return model_.get(); }
-  const ui::SimpleMenuModel* model() const { return model_.get(); }
 
   // Helper method to record ExecuteCommand() histograms.
   void RecordExecuteCommandHistogram(int command_id);

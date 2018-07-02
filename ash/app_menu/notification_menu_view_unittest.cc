@@ -9,18 +9,56 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/compositor/scoped_animation_duration_scale_mode.h"
+#include "ui/events/base_event_utils.h"
+#include "ui/events/test/event_generator.h"
+#include "ui/gfx/transform.h"
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/test/views_test_base.h"
 #include "ui/views/view.h"
+#include "ui/views/widget/widget_delegate.h"
 
 namespace ash {
-namespace test {
 
 namespace {
 
 // The app id used in tests.
 constexpr char kTestAppId[] = "test-app-id";
+
+class MockNotificationMenuController
+    : public message_center::SlideOutController::Delegate,
+      public NotificationItemView::Delegate {
+ public:
+  MockNotificationMenuController() = default;
+  virtual ~MockNotificationMenuController() = default;
+
+  void ActivateNotificationAndClose(
+      const std::string& notification_id) override {
+    activation_count_++;
+  }
+
+  ui::Layer* GetSlideOutLayer() override {
+    return notification_menu_view_->GetSlideOutLayer();
+  }
+
+  void OnSlideChanged() override {}
+
+  void OnSlideOut() override { slide_out_count_++; }
+
+  void set_notification_menu_view(
+      NotificationMenuView* notification_menu_view) {
+    notification_menu_view_ = notification_menu_view;
+  }
+
+  int slide_out_count_ = 0;
+  int activation_count_ = 0;
+
+  // Owned by NotificationMenuViewTest.
+  NotificationMenuView* notification_menu_view_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(MockNotificationMenuController);
+};
 
 }  // namespace
 
@@ -32,10 +70,45 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
   // views::ViewsTestBase:
   void SetUp() override {
     views::ViewsTestBase::SetUp();
-    notification_menu_view_ =
-        std::make_unique<NotificationMenuView>(kTestAppId);
+
+    zero_duration_scope_ =
+        std::make_unique<ui::ScopedAnimationDurationScaleMode>(
+            ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
+
+    mock_notification_menu_controller_ =
+        std::make_unique<MockNotificationMenuController>();
+
+    notification_menu_view_ = std::make_unique<NotificationMenuView>(
+        mock_notification_menu_controller_.get(),
+        mock_notification_menu_controller_.get(), kTestAppId);
+    notification_menu_view_->set_owned_by_client();
+
+    // Set the NotificationMenuView so |mock_notification_menu_controller_|
+    // can get the slide out layer. In production NotificationMenuController is
+    // the NotificationItemViewDelegate, and it gets a reference to
+    // NotificationMenuView when it is created.
+    mock_notification_menu_controller_->set_notification_menu_view(
+        notification_menu_view());
+
     test_api_ = std::make_unique<NotificationMenuViewTestAPI>(
         notification_menu_view_.get());
+
+    widget_ = std::make_unique<views::Widget>();
+    views::Widget::InitParams init_params(
+        CreateParams(views::Widget::InitParams::TYPE_POPUP));
+    init_params.ownership =
+        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
+    init_params.activatable = views::Widget::InitParams::ACTIVATABLE_YES;
+    widget_->Init(init_params);
+    widget_->SetContentsView(notification_menu_view_.get());
+    widget_->SetSize(notification_menu_view_->GetPreferredSize());
+    widget_->Show();
+    widget_->Activate();
+  }
+
+  void TearDown() override {
+    widget_->Close();
+    views::ViewsTestBase::TearDown();
   }
 
   message_center::Notification AddNotification(
@@ -50,6 +123,7 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
         notifier_id, message_center::RichNotificationData(),
         nullptr /* delegate */);
     notification_menu_view_->AddNotificationItemView(notification);
+    notification_menu_view_->Layout();
     return notification;
   }
 
@@ -64,15 +138,54 @@ class NotificationMenuViewTest : public views::ViewsTestBase {
     EXPECT_EQ(item_view->message(), notification.message());
   }
 
+  void BeginScroll() {
+    DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_BEGIN));
+  }
+
+  void EndScroll() {
+    DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_END));
+  }
+
+  void ScrollBy(int dx) {
+    DispatchGesture(
+        ui::GestureEventDetails(ui::ET_GESTURE_SCROLL_UPDATE, dx, 0));
+  }
+
+  void DispatchGesture(const ui::GestureEventDetails& details) {
+    ui::test::EventGenerator generator(
+        notification_menu_view_->GetWidget()->GetNativeWindow());
+
+    ui::GestureEvent event(
+        0,
+        test_api()->GetDisplayedNotificationItemView()->GetBoundsInScreen().y(),
+        0, ui::EventTimeForNow(), details);
+    generator.Dispatch(&event);
+  }
+
+  float GetSlideAmount() const {
+    return notification_menu_view_->GetSlideOutLayer()
+        ->transform()
+        .To2dTranslation()
+        .x();
+  }
+
   NotificationMenuView* notification_menu_view() {
     return notification_menu_view_.get();
   }
 
   NotificationMenuViewTestAPI* test_api() { return test_api_.get(); }
 
+  MockNotificationMenuController* mock_notification_menu_controller() {
+    return mock_notification_menu_controller_.get();
+  }
+
  private:
+  std::unique_ptr<MockNotificationMenuController>
+      mock_notification_menu_controller_;
   std::unique_ptr<NotificationMenuView> notification_menu_view_;
   std::unique_ptr<NotificationMenuViewTestAPI> test_api_;
+  std::unique_ptr<views::Widget> widget_;
+  std::unique_ptr<ui::ScopedAnimationDurationScaleMode> zero_duration_scope_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationMenuViewTest);
 };
@@ -132,5 +245,92 @@ TEST_F(NotificationMenuViewTest, RemoveOlderNotification) {
   CheckDisplayedNotification(notification_1);
 }
 
-}  // namespace test
+// Tests that the displayed NotificationItemView is only dismissed when dragged
+// beyond the threshold.
+TEST_F(NotificationMenuViewTest, SlideOut) {
+  AddNotification("notification_id", base::ASCIIToUTF16("title"),
+                  base::ASCIIToUTF16("message"));
+
+  EXPECT_EQ(0, mock_notification_menu_controller()->slide_out_count_);
+
+  BeginScroll();
+  // Scroll by a small amount, the notification should move but not slide out.
+  ScrollBy(-10);
+  EXPECT_EQ(0, mock_notification_menu_controller()->slide_out_count_);
+  EXPECT_EQ(-10.f, GetSlideAmount());
+
+  // End the scroll gesture, the notifications should return to its resting
+  // place.
+  EndScroll();
+  EXPECT_EQ(0, mock_notification_menu_controller()->slide_out_count_);
+  EXPECT_EQ(0.f, GetSlideAmount());
+
+  BeginScroll();
+  // Scroll beyond the threshold but do not release the gesture scroll.
+  ScrollBy(-200);
+  EXPECT_EQ(-200.f, GetSlideAmount());
+  // Release the gesture, the notification should slide out.
+  EndScroll();
+  EXPECT_EQ(1, mock_notification_menu_controller()->slide_out_count_);
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+}
+
+// Tests that tapping a notification activates it.
+TEST_F(NotificationMenuViewTest, TapNotification) {
+  AddNotification("notification_id", base::ASCIIToUTF16("title"),
+                  base::ASCIIToUTF16("message"));
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+  DispatchGesture(ui::GestureEventDetails(ui::ET_GESTURE_TAP));
+
+  EXPECT_EQ(1, mock_notification_menu_controller()->activation_count_);
+}
+
+// Tests that an in bounds mouse release activates a notification.
+TEST_F(NotificationMenuViewTest, ClickNotification) {
+  AddNotification("notification_id", base::ASCIIToUTF16("title"),
+                  base::ASCIIToUTF16("message"));
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+
+  const gfx::Point cursor_location = test_api()
+                                         ->GetDisplayedNotificationItemView()
+                                         ->GetBoundsInScreen()
+                                         .origin();
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, cursor_location, cursor_location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_NONE);
+  notification_menu_view()->GetWidget()->OnMouseEvent(&press);
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+
+  ui::MouseEvent release(ui::ET_MOUSE_RELEASED, cursor_location,
+                         cursor_location, ui::EventTimeForNow(),
+                         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_NONE);
+  notification_menu_view()->GetWidget()->OnMouseEvent(&release);
+  EXPECT_EQ(1, mock_notification_menu_controller()->activation_count_);
+}
+
+// Tests that an out of bounds mouse release does not activate a notification.
+TEST_F(NotificationMenuViewTest, OutOfBoundsClick) {
+  AddNotification("notification_id", base::ASCIIToUTF16("title"),
+                  base::ASCIIToUTF16("message"));
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+
+  const gfx::Point cursor_location = test_api()
+                                         ->GetDisplayedNotificationItemView()
+                                         ->GetBoundsInScreen()
+                                         .origin();
+  ui::MouseEvent press(ui::ET_MOUSE_PRESSED, cursor_location, cursor_location,
+                       ui::EventTimeForNow(), ui::EF_LEFT_MOUSE_BUTTON,
+                       ui::EF_NONE);
+  notification_menu_view()->GetWidget()->OnMouseEvent(&press);
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+
+  const gfx::Point out_of_bounds;
+  ui::MouseEvent out_of_bounds_release(ui::ET_MOUSE_RELEASED, out_of_bounds,
+                                       out_of_bounds, ui::EventTimeForNow(),
+                                       ui::EF_LEFT_MOUSE_BUTTON, ui::EF_NONE);
+  notification_menu_view()->GetWidget()->OnMouseEvent(&out_of_bounds_release);
+
+  EXPECT_EQ(0, mock_notification_menu_controller()->activation_count_);
+}
+
 }  // namespace ash

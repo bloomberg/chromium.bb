@@ -4,6 +4,7 @@
 
 #include "ash/app_menu/notification_menu_controller.h"
 
+#include "ash/app_menu/app_menu_model_adapter.h"
 #include "ash/app_menu/notification_menu_view.h"
 #include "ash/public/cpp/app_menu_constants.h"
 #include "ui/views/controls/menu/menu_item_view.h"
@@ -14,11 +15,12 @@ namespace ash {
 NotificationMenuController::NotificationMenuController(
     const std::string& app_id,
     views::MenuItemView* root_menu,
-    ui::SimpleMenuModel* model)
+    AppMenuModelAdapter* app_menu_model_adapter)
     : app_id_(app_id),
       root_menu_(root_menu),
-      model_(model),
+      app_menu_model_adapter_(app_menu_model_adapter),
       message_center_observer_(this) {
+  DCHECK(app_menu_model_adapter_);
   message_center_observer_.Add(message_center::MessageCenter::Get());
   InitializeNotificationMenuView();
 }
@@ -60,14 +62,36 @@ void NotificationMenuController::OnNotificationRemoved(
   // |root_menu_|, and remove the entry from the model.
   const views::View* container = notification_menu_view_->parent();
   root_menu_->RemoveMenuItemAt(root_menu_->GetSubmenu()->GetIndexOf(container));
-  // TODO(newcomer): move NOTIFICATION_CONTAINER and other CommandId enums to a
-  // shared constant file in ash/public/cpp.
-  model_->RemoveItemAt(model_->GetIndexOfCommandId(NOTIFICATION_CONTAINER));
+  app_menu_model_adapter_->model()->RemoveItemAt(
+      app_menu_model_adapter_->model()->GetIndexOfCommandId(
+          NOTIFICATION_CONTAINER));
   notification_menu_view_ = nullptr;
 
   // Notify the root MenuItemView so it knows to resize and re-calculate the
   // menu bounds.
   root_menu_->ChildrenChanged();
+}
+
+ui::Layer* NotificationMenuController::GetSlideOutLayer() {
+  return notification_menu_view_ ? notification_menu_view_->GetSlideOutLayer()
+                                 : nullptr;
+}
+
+void NotificationMenuController::OnSlideChanged() {}
+
+void NotificationMenuController::OnSlideOut() {
+  // Results in |this| being deleted if there are no more notifications to show.
+  // Only the displayed NotificationItemView can call OnSlideOut.
+  message_center::MessageCenter::Get()->RemoveNotification(
+      notification_menu_view_->GetDisplayedNotificationID(), true);
+}
+
+void NotificationMenuController::ActivateNotificationAndClose(
+    const std::string& notification_id) {
+  message_center::MessageCenter::Get()->ClickOnNotification(notification_id);
+
+  // Results in |this| being deleted.
+  app_menu_model_adapter_->Cancel();
 }
 
 void NotificationMenuController::InitializeNotificationMenuView() {
@@ -80,11 +104,12 @@ void NotificationMenuController::InitializeNotificationMenuView() {
     return;
   }
 
-  model_->AddItem(NOTIFICATION_CONTAINER, base::string16());
+  app_menu_model_adapter_->model()->AddItem(NOTIFICATION_CONTAINER,
+                                            base::string16());
   // Add the container MenuItemView to |root_menu_|.
   views::MenuItemView* container = root_menu_->AppendMenuItem(
       NOTIFICATION_CONTAINER, base::string16(), views::MenuItemView::NORMAL);
-  notification_menu_view_ = new NotificationMenuView(app_id_);
+  notification_menu_view_ = new NotificationMenuView(this, this, app_id_);
   container->AddChildView(notification_menu_view_);
 
   for (auto* notification :

@@ -54,8 +54,7 @@ void AppMenuModelAdapter::Run(const gfx::Rect& menu_anchor_rect,
   root_ = CreateMenu();
   if (features::IsNotificationIndicatorEnabled()) {
     notification_menu_controller_ =
-        std::make_unique<NotificationMenuController>(app_id_, root_,
-                                                     model_.get());
+        std::make_unique<NotificationMenuController>(app_id_, root_, this);
   }
   menu_runner_ = std::make_unique<views::MenuRunner>(root_, run_types);
   menu_runner_->RunMenuAt(menu_owner_->GetWidget(), nullptr /* MenuButton */,

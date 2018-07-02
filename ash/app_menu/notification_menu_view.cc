@@ -15,10 +15,19 @@
 
 namespace ash {
 
-NotificationMenuView::NotificationMenuView(const std::string& app_id)
-    : app_id_(app_id) {
+NotificationMenuView::NotificationMenuView(
+
+    NotificationItemView::Delegate* notification_item_view_delegate,
+    message_center::SlideOutController::Delegate* slide_out_controller_delegate,
+    const std::string& app_id)
+    : app_id_(app_id),
+      notification_item_view_delegate_(notification_item_view_delegate),
+      slide_out_controller_delegate_(slide_out_controller_delegate) {
+  DCHECK(notification_item_view_delegate_);
+  DCHECK(slide_out_controller_delegate_);
   DCHECK(!app_id_.empty())
       << "Only context menus for applications can show notifications.";
+
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));
 
@@ -46,6 +55,7 @@ void NotificationMenuView::AddNotificationItemView(
     RemoveChildView(notification_item_views_.front().get());
 
   notification_item_views_.push_front(std::make_unique<NotificationItemView>(
+      notification_item_view_delegate_, slide_out_controller_delegate_,
       notification.title(), notification.message(), notification.icon(),
       notification.id()));
   notification_item_views_.front()->set_owned_by_client();
@@ -72,6 +82,17 @@ void NotificationMenuView::RemoveNotificationItemView(
   // Replace the displayed view, if it is already being shown this is a no-op.
   if (!notification_item_views_.empty())
     AddChildView(notification_item_views_.front().get());
+}
+
+ui::Layer* NotificationMenuView::GetSlideOutLayer() {
+  if (notification_item_views_.empty())
+    return nullptr;
+  return notification_item_views_.front()->layer();
+}
+
+const std::string& NotificationMenuView::GetDisplayedNotificationID() {
+  DCHECK(!notification_item_views_.empty());
+  return notification_item_views_.front()->notification_id();
 }
 
 }  // namespace ash
