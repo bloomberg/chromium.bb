@@ -234,7 +234,7 @@ ArcInputMethodManagerService::BuildInputMethodDescriptor(
 }
 
 void ArcInputMethodManagerService::RemoveArcIMEFromPrefs() {
-  RemoveArcIMEFromPref(prefs::kLanguageEnabledExtensionImes);
+  RemoveArcIMEFromPref(prefs::kLanguageEnabledImes);
   RemoveArcIMEFromPref(prefs::kLanguagePreloadEngines);
 
   PrefService* prefs = profile_->GetPrefs();

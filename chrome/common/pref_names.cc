@@ -548,10 +548,10 @@ const char kLanguagePreloadEngines[] = "settings.language.preload_engines";
 const char kLanguagePreloadEnginesSyncable[] =
     "settings.language.preload_engines_syncable";
 
-// A string pref (comma-separated list) set to the extension IMEs to be enabled.
-const char kLanguageEnabledExtensionImes[] =
-    "settings.language.enabled_extension_imes";
-const char kLanguageEnabledExtensionImesSyncable[] =
+// A string pref (comma-separated list) set to the extension and ARC IMEs to be
+// enabled.
+const char kLanguageEnabledImes[] = "settings.language.enabled_extension_imes";
+const char kLanguageEnabledImesSyncable[] =
     "settings.language.enabled_extension_imes_syncable";
 
 // A boolean pref set to true if the IME menu is activated.

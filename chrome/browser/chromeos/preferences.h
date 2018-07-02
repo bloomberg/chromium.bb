@@ -133,7 +133,7 @@ class Preferences : public sync_preferences::PrefServiceSyncableObserver,
   StringPrefMember previous_input_method_;
 
   StringListPrefMember allowed_input_methods_;
-  StringPrefMember enabled_extension_imes_;
+  StringPrefMember enabled_imes_;
   BooleanPrefMember ime_menu_activated_;
 
   BooleanPrefMember xkb_auto_repeat_enabled_;

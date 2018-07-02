@@ -135,10 +135,8 @@ void InputMethodSyncer::RegisterProfilePrefs(
       prefs::kLanguagePreloadEnginesSyncable,
       "",
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
-  registry->RegisterStringPref(
-      prefs::kLanguageEnabledExtensionImesSyncable,
-      "",
-      user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
+  registry->RegisterStringPref(prefs::kLanguageEnabledImesSyncable, "",
+                               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterBooleanPref(prefs::kLanguageShouldMergeInputMethods, false);
 }
 
@@ -151,8 +149,7 @@ void InputMethodSyncer::Initialize() {
                                      prefs_);
   preload_engines_syncable_.Init(prefs::kLanguagePreloadEnginesSyncable,
                                  prefs_);
-  enabled_extension_imes_syncable_.Init(
-      prefs::kLanguageEnabledExtensionImesSyncable, prefs_);
+  enabled_imes_syncable_.Init(prefs::kLanguageEnabledImesSyncable, prefs_);
 
   BooleanPrefMember::NamedChangeCallback callback =
       base::Bind(&InputMethodSyncer::OnPreferenceChanged,
@@ -161,14 +158,13 @@ void InputMethodSyncer::Initialize() {
                             prefs_, callback);
   preload_engines_.Init(prefs::kLanguagePreloadEngines,
                         prefs_, callback);
-  enabled_extension_imes_.Init(
-      prefs::kLanguageEnabledExtensionImes, prefs_, callback);
+  enabled_imes_.Init(prefs::kLanguageEnabledImes, prefs_, callback);
 
   // If we have already synced but haven't merged input methods yet, do so now.
   if (prefs_->GetBoolean(prefs::kLanguageShouldMergeInputMethods) &&
       !(preferred_languages_syncable_.GetValue().empty() &&
         preload_engines_syncable_.GetValue().empty() &&
-        enabled_extension_imes_syncable_.GetValue().empty())) {
+        enabled_imes_syncable_.GetValue().empty())) {
     MergeSyncedPrefs();
   }
 }
@@ -196,17 +192,15 @@ void InputMethodSyncer::MergeSyncedPrefs() {
   MergeLists(&new_tokens, synced_tokens);
   preferred_languages_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
-  std::string enabled_extension_imes_syncable =
-      enabled_extension_imes_syncable_.GetValue();
-  synced_tokens =
-      base::SplitStringPiece(enabled_extension_imes_syncable, ",",
-                             base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  std::string enabled_extension_imes = enabled_extension_imes_.GetValue();
-  new_tokens = base::SplitStringPiece(
-      enabled_extension_imes, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string enabled_imes_syncable = enabled_imes_syncable_.GetValue();
+  synced_tokens = base::SplitStringPiece(
+      enabled_imes_syncable, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+  std::string enabled_imes = enabled_imes_.GetValue();
+  new_tokens = base::SplitStringPiece(enabled_imes, ",", base::TRIM_WHITESPACE,
+                                      base::SPLIT_WANT_ALL);
 
   MergeLists(&new_tokens, synced_tokens);
-  enabled_extension_imes_syncable_.SetValue(base::JoinString(new_tokens, ","));
+  enabled_imes_syncable_.SetValue(base::JoinString(new_tokens, ","));
 
   // Revert preload engines to legacy component IDs.
   std::string preload_engines = preload_engines_.GetValue();
@@ -231,10 +225,9 @@ void InputMethodSyncer::MergeSyncedPrefs() {
       AddSupportedInputMethodValues(preload_engines_.GetValue(),
                                     preload_engines_syncable,
                                     prefs::kLanguagePreloadEngines));
-  enabled_extension_imes_.SetValue(
-      AddSupportedInputMethodValues(enabled_extension_imes_.GetValue(),
-                                    enabled_extension_imes_syncable,
-                                    prefs::kLanguageEnabledExtensionImes));
+  enabled_imes_.SetValue(AddSupportedInputMethodValues(
+      enabled_imes_.GetValue(), enabled_imes_syncable,
+      prefs::kLanguageEnabledImes));
 
   // Remove unsupported locales before updating the local languages preference.
   std::string languages(
@@ -258,7 +251,7 @@ std::string InputMethodSyncer::AddSupportedInputMethodValues(
 
   // Check and convert the new tokens.
   if (pref_name == prefs::kLanguagePreloadEngines ||
-      pref_name == prefs::kLanguageEnabledExtensionImes) {
+      pref_name == prefs::kLanguageEnabledImes) {
     input_method::InputMethodManager* manager =
         input_method::InputMethodManager::Get();
     std::unique_ptr<input_method::InputMethodDescriptors> supported_descriptors;
@@ -305,7 +298,7 @@ void InputMethodSyncer::FinishMerge(const std::string& languages) {
 void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
   DCHECK(pref_name == prefs::kLanguagePreferredLanguages ||
          pref_name == prefs::kLanguagePreloadEngines ||
-         pref_name == prefs::kLanguageEnabledExtensionImes);
+         pref_name == prefs::kLanguageEnabledImes);
 
   if (merging_ || prefs_->GetBoolean(prefs::kLanguageShouldMergeInputMethods))
     return;
@@ -313,7 +306,7 @@ void InputMethodSyncer::OnPreferenceChanged(const std::string& pref_name) {
   // Set the language and input prefs at the same time. Otherwise we may,
   // e.g., use a stale languages setting but push a new preload engines setting.
   preferred_languages_syncable_.SetValue(preferred_languages_.GetValue());
-  enabled_extension_imes_syncable_.SetValue(enabled_extension_imes_.GetValue());
+  enabled_imes_syncable_.SetValue(enabled_imes_.GetValue());
 
   // For preload engines, use legacy xkb IDs so the preference can sync
   // across Chrome OS and Chromium OS.

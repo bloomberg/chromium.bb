@@ -134,11 +134,11 @@ std::vector<std::string> GetSortedComponentIMEs(
 }
 
 // Sorts the third-party IMEs by the order of their associated languages.
-std::vector<std::string> GetSortedExtensionIMEs(
+std::vector<std::string> GetSortedThirdPartyIMEs(
     scoped_refptr<InputMethodManager::State> ime_state,
-    const std::unordered_set<std::string>& extension_ime_set,
+    const std::unordered_set<std::string>& third_party_ime_set,
     PrefService* prefs) {
-  std::vector<std::string> extension_ime_list;
+  std::vector<std::string> ime_list;
   std::string preferred_languages =
       prefs->GetString(prefs::kLanguagePreferredLanguages);
   std::vector<std::string> enabled_languages =
@@ -152,10 +152,10 @@ std::vector<std::string> GetSortedExtensionIMEs(
   InputMethodDescriptors descriptors;
   ime_state->GetInputMethodExtensions(&descriptors);
 
-  // Filter out the IMEs not in |extension_ime_set|.
+  // Filter out the IMEs not in |third_party_ime_set|.
   auto it = descriptors.begin();
   while (it != descriptors.end()) {
-    if (extension_ime_set.count(it->id()) == 0)
+    if (third_party_ime_set.count(it->id()) == 0)
       it = descriptors.erase(it);
     else
       it++;
@@ -165,9 +165,9 @@ std::vector<std::string> GetSortedExtensionIMEs(
   for (const auto& language : enabled_languages) {
     auto it = descriptors.begin();
     while (it != descriptors.end() && descriptors.size()) {
-      if (extension_ime_set.count(it->id()) &&
+      if (third_party_ime_set.count(it->id()) &&
           base::ContainsValue(it->language_codes(), language)) {
-        extension_ime_list.push_back(it->id());
+        ime_list.push_back(it->id());
         // Remove the added descriptor from the candidate list.
         it = descriptors.erase(it);
       } else {
@@ -176,7 +176,7 @@ std::vector<std::string> GetSortedExtensionIMEs(
     }
   }
 
-  return extension_ime_list;
+  return ime_list;
 }
 
 }  // namespace
@@ -635,7 +635,7 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
   PrefService* prefs = chrome_details_.GetProfile()->GetPrefs();
   const char* pref_name = is_component_extension_ime
                               ? prefs::kLanguagePreloadEngines
-                              : prefs::kLanguageEnabledExtensionImes;
+                              : prefs::kLanguageEnabledImes;
 
   // Get the input methods we are adding to.
   std::unordered_set<std::string> input_method_set(
@@ -651,7 +651,7 @@ LanguageSettingsPrivateAddInputMethodFunction::Run() {
         GetSortedComponentIMEs(manager, ime_state, input_method_set, prefs);
   } else {
     input_method_list =
-        GetSortedExtensionIMEs(ime_state, input_method_set, prefs);
+        GetSortedThirdPartyIMEs(ime_state, input_method_set, prefs);
   }
 
   std::string input_methods = base::JoinString(input_method_list, ",");
@@ -690,7 +690,7 @@ LanguageSettingsPrivateRemoveInputMethodFunction::Run() {
   PrefService* prefs = chrome_details_.GetProfile()->GetPrefs();
   const char* pref_name = is_component_extension_ime
                               ? prefs::kLanguagePreloadEngines
-                              : prefs::kLanguageEnabledExtensionImes;
+                              : prefs::kLanguageEnabledImes;
 
   std::string input_method_ids = prefs->GetString(pref_name);
   std::vector<std::string> input_method_list = base::SplitString(
