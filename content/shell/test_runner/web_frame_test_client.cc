@@ -693,30 +693,35 @@ bool WebFrameTestClient::RunFileChooser(
       base::StringPrintf("FileChooser: opened; multiple=%s directory=%s\n",
                          params.multi_select ? "true" : "false",
                          params.directory ? "true" : "false"));
-  const std::vector<std::string>& paths = test_runner()->file_chooser_paths();
   if (params.directory) {
     delegate_->PrintMessage(
         "FileChooser: testRunner doesn't support directory selection yet.\n");
     return false;
-  } else if (params.multi_select) {
-    delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
-                                       weak_factory_.GetWeakPtr(), completion,
-                                       paths));
-  } else if (paths.size() == 0) {
-    delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
-                                       weak_factory_.GetWeakPtr(), completion,
-                                       paths));
-  } else {
-    delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
-                                       weak_factory_.GetWeakPtr(), completion,
-                                       std::vector<std::string>(1, paths[0])));
   }
+  const base::Optional<std::vector<std::string>>& optional_paths =
+      test_runner()->file_chooser_paths();
+  if (!optional_paths) {
+    // setFileChooserPaths() has never been called.
+    return false;
+  }
+  std::vector<std::string> paths(optional_paths.value());
+  if (!params.multi_select && paths.size() > 1)
+    paths.resize(1);
+  delegate_->PostTask(base::BindOnce(&WebFrameTestClient::ChooseFiles,
+                                     weak_factory_.GetWeakPtr(), completion,
+                                     paths));
   return true;
 }
 
 void WebFrameTestClient::ChooseFiles(
     blink::WebFileChooserCompletion* completion,
     std::vector<std::string> paths) {
+  if (!test_runner()->file_chooser_paths()) {
+    // TestRunner was reset. However we need to call DidChooseFile() to
+    // avoid memory leak.
+    completion->DidChooseFile(blink::WebVector<blink::WebString>());
+    return;
+  }
   if (paths.size() > 0)
     delegate_->PrintMessage("FileChooser: selected\n");
   else
