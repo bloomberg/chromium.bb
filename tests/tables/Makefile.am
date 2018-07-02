@@ -24,8 +24,6 @@ EXTRA_DIST =					\
 	pass0_typebuf.ctb			\
 	pass2.ctb				\
 	squash_space_with_context_1.utb		\
-	squash_space_with_context_2.utb		\
 	squash_space_with_correct.utb		\
-	squash_space_with_repeated.utb		\
 	suggestChunks.ctb		\
 	uplow_with_unicode.ctb

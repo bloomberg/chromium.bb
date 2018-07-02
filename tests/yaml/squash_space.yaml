@@ -1,6 +1,10 @@
 # Converted from squash_space.c
 # Note: Long strings consisting of spaces cannot be folded in yaml.
-table: [tests/tables/squash_space_with_repeated.utb]
+table: |
+  space \t 9
+  space \n 24578
+  repeated \s 0
+
 tests:
   - # one space
     - " "
@@ -29,7 +33,13 @@ tests:
   - - "\n    "
     - "\n "
 
-table: [tests/tables/squash_space_with_context_2.utb]
+table: |
+  space \t 9
+  space \n 0
+  space \s 0
+  noback context [$s]$s ?
+  noback context [$s] @0
+
 tests:
 # A number of strings that we want to squash, i.e. they should all
 # result in an output of one space */
@@ -48,7 +58,6 @@ tests:
   # a couple of strings containing tabs
   - - "    \t"
     - " "
-    - xfail: true
   - - "    \t    "
     - " "
   - - "\t    "
