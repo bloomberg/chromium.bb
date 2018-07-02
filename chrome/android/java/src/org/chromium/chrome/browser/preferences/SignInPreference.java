@@ -8,6 +8,7 @@ import android.accounts.Account;
 import android.content.Context;
 import android.preference.Preference;
 import android.preference.PreferenceFragment;
+import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
@@ -34,6 +35,8 @@ import org.chromium.components.signin.AccountsChangeObserver;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.AndroidSyncSettings;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Collections;
 
 /**
@@ -45,10 +48,21 @@ public class SignInPreference
         extends Preference implements SignInAllowedObserver, ProfileDataCache.Observer,
                                       AndroidSyncSettings.AndroidSyncSettingsObserver,
                                       SyncStateChangedListener, AccountsChangeObserver {
+    @IntDef({State.SIGNIN_DISABLED, State.GENERIC_PROMO, State.PERSONALIZED_PROMO, State.SIGNED_IN})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface State {
+        int SIGNIN_DISABLED = 0;
+        int GENERIC_PROMO = 1;
+        int PERSONALIZED_PROMO = 2;
+        int SIGNED_IN = 3;
+    }
+
     private boolean mWasGenericSigninPromoDisplayed;
     private boolean mViewEnabled;
     private @Nullable SigninPromoController mSigninPromoController;
     private final ProfileDataCache mProfileDataCache;
+    private @State int mState;
+    private @Nullable Runnable mStateChangedCallback;
 
     /**
      * Constructor for inflating from XML.
@@ -61,6 +75,9 @@ public class SignInPreference
 
         setOnPreferenceClickListener(preference
                 -> AccountSigninActivity.startIfAllowed(getContext(), SigninAccessPoint.SETTINGS));
+
+        // State will be updated in registerForUpdates.
+        mState = State.SIGNED_IN;
     }
 
     /**
@@ -105,9 +122,26 @@ public class SignInPreference
         }
     }
 
-    /**
-     * Updates the title, summary, and image based on the current sign-in state.
-     */
+    private void setState(@State int state) {
+        if (mState == state) return;
+        mState = state;
+        if (mStateChangedCallback != null) {
+            mStateChangedCallback.run();
+        }
+    }
+
+    /** Returns the state of the preference. Not valid until registerForUpdates is called. */
+    @State
+    public int getState() {
+        return mState;
+    }
+
+    /** Sets callback to be notified of changes to the preference state. See {@link #getState}. */
+    public void setOnStateChangedCallback(@Nullable Runnable stateChangedCallback) {
+        mStateChangedCallback = stateChangedCallback;
+    }
+
+    /** Updates the title, summary, and image based on the current sign-in state. */
     private void update() {
         if (SigninManager.get().isSigninDisabledByPolicy()) {
             setupSigninDisabled();
@@ -141,6 +175,7 @@ public class SignInPreference
     }
 
     private void setupSigninDisabled() {
+        setState(State.SIGNIN_DISABLED);
         setLayoutResource(R.layout.account_management_account_row);
         setTitle(R.string.sign_in_to_chrome);
         setSummary(R.string.sign_in_to_chrome_disabled_summary);
@@ -153,6 +188,7 @@ public class SignInPreference
     }
 
     private void setupPersonalizedPromo() {
+        setState(State.PERSONALIZED_PROMO);
         setLayoutResource(R.layout.personalized_signin_promo_view_settings);
         setTitle("");
         setSummary("");
@@ -170,6 +206,7 @@ public class SignInPreference
     }
 
     private void setupGenericPromo() {
+        setState(State.GENERIC_PROMO);
         setLayoutResource(R.layout.account_management_account_row);
         setTitle(R.string.sign_in_to_chrome);
 
@@ -191,6 +228,7 @@ public class SignInPreference
     }
 
     private void setupSignedIn(String accountName) {
+        setState(State.SIGNED_IN);
         mProfileDataCache.update(Collections.singletonList(accountName));
         DisplayableProfileData profileData = mProfileDataCache.getProfileDataOrDefault(accountName);
 

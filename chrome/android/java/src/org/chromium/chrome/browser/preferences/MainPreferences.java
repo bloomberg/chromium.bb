@@ -97,8 +97,9 @@ public class MainPreferences extends PreferenceFragment
         PreferenceUtils.addPreferencesFromResource(this, R.xml.main_preferences);
         cachePreferences();
 
-        // Remove UnifiedConsent preferences if the feature isn't enabled.
-        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.UNIFIED_CONSENT)) {
+            mSignInPreference.setOnStateChangedCallback(this::onSignInPreferenceStateChanged);
+        } else {
             getPreferenceScreen().removePreference(findPreference(PREF_ACCOUNT_SECTION));
             getPreferenceScreen().removePreference(findPreference(PREF_SYNC_AND_SERVICES));
         }
@@ -247,6 +248,15 @@ public class MainPreferences extends PreferenceFragment
     @Override
     public void onSignedOut() {
         updatePreferences();
+    }
+
+    private void onSignInPreferenceStateChanged() {
+        // Remove "Account" section header if the personalized sign-in promo is shown.
+        if (mSignInPreference.getState() == SignInPreference.State.PERSONALIZED_PROMO) {
+            removePreferenceIfPresent(PREF_ACCOUNT_SECTION);
+        } else {
+            addPreferenceIfAbsent(PREF_ACCOUNT_SECTION);
+        }
     }
 
     // TemplateUrlService.LoadListener implementation.
