@@ -12,10 +12,10 @@ layer at (48,38) size 722x542 layerType: foreground only
   LayoutNGBlockFlow (positioned) {body} at (48,38) size 722x542 [border: (1px solid #000000)]
     LayoutNGBlockFlow {form} at (1,1) size 720x129.59
       LayoutFieldset {fieldset} at (2,0) size 716x129.59 [border: (2px groove #C0C0C0)]
-        LayoutNGBlockFlow {legend} at (14,0) size 87x20
-          LayoutText {#text} at (2,0) size 83x19
-            text run at (2,0) width 83: "HTML Form"
-        LayoutNGBlockFlow {p} at (14,41.59) size 688x22
+        LayoutBlockFlow {legend} at (14,0) size 88x20
+          LayoutText {#text} at (2,0) size 84x19
+            text run at (2,0) width 84: "HTML Form"
+        LayoutBlockFlow {p} at (14,41.59) size 688x22
           LayoutInline {label} at (0,0) size 107x19
             LayoutText {#text} at (0,1) size 107x19
               text run at (0,1) width 107: "Enter something:"
@@ -23,9 +23,9 @@ layer at (48,38) size 722x542 layerType: foreground only
             text run at (107,1) width 4: " "
           LayoutTextControl {input} at (111,0) size 181x22 [bgcolor=#FFFFFF] [border: (2px inset #EEEEEE)]
           LayoutText {#text} at (0,0) size 0x0
-        LayoutNGBlockFlow {p} at (14,79.59) size 688x22
+        LayoutBlockFlow {p} at (14,79.59) size 688x22
           LayoutButton {button} at (0,0) size 68x22 [bgcolor=#C0C0C0] [border: (2px outset #C0C0C0)]
-            LayoutNGBlockFlow (anonymous) at (8,3) size 52x16
+            LayoutBlockFlow (anonymous) at (8,3) size 52x16
               LayoutText {#text} at (0,0) size 52x16
                 text run at (0,0) width 52: "Activate!"
 layer at (178,84) size 177x16
