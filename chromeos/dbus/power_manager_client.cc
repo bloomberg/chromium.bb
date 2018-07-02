@@ -228,8 +228,21 @@ class PowerManagerClientImpl : public PowerManagerClient {
         power_manager::kGetScreenBrightnessPercentMethod);
     power_manager_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
-        base::BindOnce(&PowerManagerClientImpl::OnGetScreenBrightnessPercent,
-                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+        base::BindOnce(
+            &PowerManagerClientImpl::OnGetScreenOrKeyboardBrightnessPercent,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
+  void GetKeyboardBrightnessPercent(
+      DBusMethodCallback<double> callback) override {
+    dbus::MethodCall method_call(
+        power_manager::kPowerManagerInterface,
+        power_manager::kGetKeyboardBrightnessPercentMethod);
+    power_manager_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(
+            &PowerManagerClientImpl::OnGetScreenOrKeyboardBrightnessPercent,
+            weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void RequestStatusUpdate() override {
@@ -648,13 +661,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
     }
   }
 
-  void OnGetScreenBrightnessPercent(DBusMethodCallback<double> callback,
-                                    dbus::Response* response) {
+  void OnGetScreenOrKeyboardBrightnessPercent(
+      DBusMethodCallback<double> callback,
+      dbus::Response* response) {
     if (!response) {
-      if (!system::StatisticsProvider::GetInstance()->IsRunningOnVm()) {
-        POWER_LOG(ERROR) << "Error calling "
-                         << power_manager::kGetScreenBrightnessPercentMethod;
-      }
       std::move(callback).Run(base::nullopt);
       return;
     }

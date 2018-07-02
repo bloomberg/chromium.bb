@@ -102,6 +102,13 @@ void FakePowerManagerClient::DecreaseKeyboardBrightness() {}
 
 void FakePowerManagerClient::IncreaseKeyboardBrightness() {}
 
+void FakePowerManagerClient::GetKeyboardBrightnessPercent(
+    DBusMethodCallback<double> callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindOnce(std::move(callback), keyboard_brightness_percent_));
+}
+
 const base::Optional<power_manager::PowerSupplyProperties>&
 FakePowerManagerClient::GetLastStatus() {
   return props_;
