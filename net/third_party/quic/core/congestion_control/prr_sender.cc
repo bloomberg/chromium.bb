@@ -8,11 +8,6 @@
 
 namespace quic {
 
-namespace {
-// Constant based on TCP defaults.
-const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
-}  // namespace
-
 PrrSender::PrrSender()
     : bytes_sent_since_loss_(0),
       bytes_delivered_since_loss_(0),

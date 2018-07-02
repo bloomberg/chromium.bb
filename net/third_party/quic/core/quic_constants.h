@@ -37,6 +37,7 @@ const QuicByteCount kMaxPacketSize = 1452;
 // Default maximum packet size used in the Linux TCP implementation.
 // Used in QUIC for congestion window computations in bytes.
 const QuicByteCount kDefaultTCPMSS = 1460;
+const QuicByteCount kMaxSegmentSize = kDefaultTCPMSS;
 
 // We match SPDY's use of 32 (since we'd compete with SPDY).
 const QuicPacketCount kInitialCongestionWindow = 32;
