@@ -33,7 +33,6 @@ const CGFloat buttonCornerRadius = 8;
 @implementation TableViewTextButtonItem
 @synthesize buttonBackgroundColor = _buttonBackgroundColor;
 @synthesize buttonText = _buttonText;
-@synthesize delegate = _delegate;
 @synthesize text = _text;
 
 - (instancetype)initWithType:(NSInteger)type {
@@ -49,7 +48,6 @@ const CGFloat buttonCornerRadius = 8;
   [super configureCell:tableCell withStyler:styler];
   TableViewTextButtonCell* cell =
       base::mac::ObjCCastStrict<TableViewTextButtonCell>(tableCell);
-  cell.delegate = self.delegate;
   cell.textLabel.text = self.text;
   [cell.button setTitle:self.buttonText forState:UIControlStateNormal];
   cell.button.backgroundColor = self.buttonBackgroundColor
@@ -61,7 +59,6 @@ const CGFloat buttonCornerRadius = 8;
 @end
 
 @implementation TableViewTextButtonCell
-@synthesize delegate = _delegate;
 @synthesize textLabel = _textLabel;
 @synthesize button = _button;
 
@@ -90,9 +87,6 @@ const CGFloat buttonCornerRadius = 8;
     self.button.contentEdgeInsets = UIEdgeInsetsMake(
         buttonTitleVerticalContentInset, buttonTitleHorizontalContentInset,
         buttonTitleVerticalContentInset, buttonTitleHorizontalContentInset);
-    [self.button addTarget:self
-                    action:@selector(performButtonAction)
-          forControlEvents:UIControlEventTouchUpInside];
 
     // Vertical stackView to hold label and button.
     UIStackView* verticalStackView = [[UIStackView alloc]
@@ -121,12 +115,6 @@ const CGFloat buttonCornerRadius = 8;
     ]];
   }
   return self;
-}
-
-#pragma mark - TextButtonItemDelegate
-
-- (void)performButtonAction {
-  [self.delegate performButtonAction];
 }
 
 @end
