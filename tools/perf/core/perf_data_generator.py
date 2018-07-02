@@ -266,86 +266,6 @@ def get_waterfall_config():
       }
     ], replace_system_webview=True)
 
-  waterfall = add_tester(
-    waterfall, 'Win 10 High-DPI Perf', 'win-high-dpi', 'win',
-    swarming=[
-      {
-       'gpu': '8086:1616',
-       'os': 'Windows-10',
-       'pool': 'chrome.tests.perf',
-       'device_ids': [
-           'build194-b7', 'build195-b7',
-           'build196-b7', 'build197-b7',
-           'build198-b7'
-          ]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Win 10 Perf', 'chromium-rel-win10', 'win',
-    swarming=[
-      {
-       'gpu': '8086:5912',
-       'os': 'Windows-10',
-       'pool': 'chrome.tests.perf',
-       'device_ids': [
-           'build117-a7', 'build118-a7',
-           'build119-a7', 'build120-a7', 'build121-a7'
-          ],
-       'perf_tests': [
-         ('media_perftests', 'build117-a7'),
-         ('views_perftests', 'build118-a7'),
-         ('components_perftests', 'build119-a7')]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Win 7 Perf', 'chromium-rel-win7-dual',
-    'win', target_bits=32,
-    swarming=[
-      {
-       'gpu': '102b:0532',
-       'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'chrome.tests.perf',
-       'device_ids': [
-           'build197-m7', 'build198-m7',
-           'build199-m7', 'build200-m7', 'build201-m7'
-          ],
-       'perf_tests': [
-         ('load_library_perf_tests', 'build199-m7'),
-         # crbug.com/735679
-         # ('performance_browser_tests', 'build199-m7'),
-         ('media_perftests', 'build200-m7'),
-         ('components_perftests', 'build201-m7')]
-      }
-    ])
-  waterfall = add_tester(
-    waterfall, 'Win 7 Nvidia GPU Perf',
-    'chromium-rel-win7-gpu-nvidia', 'win',
-    swarming=[
-      {
-       'gpu': '10de:1cb3',
-       'os': 'Windows-2008ServerR2-SP1',
-       'pool': 'chrome.tests.perf',
-       'device_ids': [
-           'build202-m7', 'build203-m7',
-           'build204-m7', 'build205-m7', 'build206-m7'
-          ],
-       'perf_tests': [
-         ('angle_perftests', 'build204-m7'),
-         ('load_library_perf_tests', 'build204-m7'),
-         # crbug.com/735679
-         # ('performance_browser_tests', 'build204-m7'),
-         ('media_perftests', 'build205-m7')
-        ],
-        'perf_tests_with_args': [
-         ('passthrough_command_buffer_perftests', 'build204-m7',
-          ['--use-cmd-decoder=passthrough', '--use-angle=gl-null'],
-          'command_buffer_perftests'),
-         ('validating_command_buffer_perftests', 'build204-m7',
-          ['--use-cmd-decoder=validating', '--use-stub'],
-          'command_buffer_perftests')]
-      }
-    ])
-
   return waterfall
 
 
@@ -1038,9 +958,155 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
   }
 }
 
-
 NEW_PERF_RECIPE_MIGRATED_TESTERS = {
   'testers' : {
+    'Win 10 High-DPI Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win10_highdpi_shard_map.json',
+          ],
+        }
+      ],
+      'platform': 'win',
+      'target_bits': 64,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-10',
+        'gpu': '8086:1616'
+      },
+      'device_ids': [],
+    },
+    'Win 10 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win10_shard_map.json',
+          ],
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'views_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'win',
+      'target_bits': 64,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-10',
+        'gpu': '8086:5912'
+      },
+      'device_ids': [],
+    },
+    'Win 7 Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win7_shard_map.json',
+          ],
+        },
+        # crbug.com/735679 enable performance_browser_tests
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'components_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        }
+      ],
+      'platform': 'win',
+      'target_bits': 32,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-2008ServerR2-SP1',
+        'gpu': '102b:0532'
+      },
+      'device_ids': [],
+    },
+    'Win 7 Nvidia GPU Perf': {
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+          'num_shards': 5,
+          'extra_args': [
+              '--run-ref-build',
+              '--test-shard-map-filename=win7_nvidia_shard_map.json',
+          ],
+        },
+        # crbug.com/735679 enable performance_browser_tests
+        {
+          'isolate': 'load_library_perf_tests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'angle_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'isolate': 'media_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+        },
+        {
+          'test_suite': 'passthrough_command_buffer_perftests',
+          'isolate': 'command_buffer_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--use-cmd-decoder=passthrough',
+              '--use-angle=gl-null',
+          ],
+        },
+        {
+          'test_suite': 'validating_command_buffer_perftests',
+          'isolate': 'command_buffer_perftests',
+          'num_shards': 1,
+          'telemetry': False,
+          'extra_args': [
+              '--use-cmd-decoder=validating',
+              '--use-stub',
+          ],
+        },
+      ],
+      'platform': 'win',
+      'target_bits': 64,
+      'dimension': {
+        'pool': 'chrome.tests.perf',
+        'os': 'Windows-2008ServerR2-SP1',
+        'gpu': '10de:1cb3'
+      },
+      'device_ids': [],
+    },
     'mac-10_12_laptop_low_end-perf': {
       'tests': [
         {
