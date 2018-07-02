@@ -176,8 +176,8 @@ bool WorkerFetchContext::ShouldBlockFetchByMixedContentCheck(
     const KURL& url,
     SecurityViolationReportingPolicy reporting_policy) const {
   return MixedContentChecker::ShouldBlockFetchOnWorker(
-      global_scope_, web_context_.get(), request_context, frame_type,
-      redirect_status, url, reporting_policy);
+      global_scope_, web_context_.get(), request_context, redirect_status, url,
+      reporting_policy);
 }
 
 bool WorkerFetchContext::ShouldBlockFetchAsCredentialedSubresource(
