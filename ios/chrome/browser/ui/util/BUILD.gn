@@ -29,6 +29,8 @@ source_set("util") {
     "optional_property_animator.mm",
     "pasteboard_util.h",
     "pasteboard_util.mm",
+    "property_animator_group.h",
+    "property_animator_group.mm",
     "relaxed_bounds_constraints_hittest.h",
     "snapshot_util.h",
     "snapshot_util.mm",
