@@ -466,8 +466,8 @@ Frames::const_iterator FindFirstFrameWithinFunction(
   uintptr_t function_end =
       reinterpret_cast<uintptr_t>(target_function(nullptr, nullptr, nullptr));
   for (auto it = sample.frames.begin(); it != sample.frames.end(); ++it) {
-    if ((it->instruction_pointer >= function_start) &&
-        (it->instruction_pointer <= function_end)) {
+    if (it->instruction_pointer >= function_start &&
+        it->instruction_pointer <= function_end) {
       return it;
     }
   }
