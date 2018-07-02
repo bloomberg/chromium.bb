@@ -102,6 +102,14 @@ struct InteractiveTiming {
 
   // The timestamp of the event whose delay is reported by GetFirstInputDelay().
   mojo_base.mojom.TimeDelta? first_input_timestamp;
+
+  // Queueing Time of the meaningful input event with longest delay. Meaningful
+  // input events are click, tap, key press, cancellable touchstart, or pointer
+  // down followed by a pointer up.
+  mojo_base.mojom.TimeDelta? longest_input_delay;
+
+  // The timestamp of the event whose delay is reported as longest_input_delay.
+  mojo_base.mojom.TimeDelta? longest_input_timestamp;
 };
 
 

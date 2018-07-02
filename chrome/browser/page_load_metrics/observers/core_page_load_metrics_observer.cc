@@ -93,6 +93,10 @@ const char kHistogramFirstInputDelay[] =
     "PageLoad.InteractiveTiming.FirstInputDelay";
 const char kHistogramFirstInputTimestamp[] =
     "PageLoad.InteractiveTiming.FirstInputTimestamp";
+const char kHistogramLongestInputDelay[] =
+    "PageLoad.InteractiveTiming.LongestInputDelay";
+const char kHistogramLongestInputTimestamp[] =
+    "PageLoad.InteractiveTiming.LongestInputTimestamp";
 const char kHistogramParseStartToFirstMeaningfulPaint[] =
     "PageLoad.Experimental.PaintTiming.ParseStartToFirstMeaningfulPaint";
 const char kHistogramParseStartToFirstContentfulPaint[] =
@@ -692,6 +696,18 @@ void CorePageLoadMetricsObserver::RecordTimingHistograms(
             ? internal::TIME_TO_INTERACTIVE_DID_NOT_REACH_QUIESCENCE
             : internal::
                   TIME_TO_INTERACTIVE_DID_NOT_REACH_FIRST_MEANINGFUL_PAINT);
+  }
+
+  if (timing.interactive_timing->longest_input_timestamp) {
+    DCHECK(timing.interactive_timing->longest_input_delay);
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramLongestInputDelay,
+        timing.interactive_timing->longest_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
+    PAGE_LOAD_HISTOGRAM(
+        internal::kHistogramLongestInputTimestamp,
+        timing.interactive_timing->longest_input_timestamp.value());
   }
 }
 

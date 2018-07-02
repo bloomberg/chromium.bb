@@ -307,6 +307,38 @@ TEST_F(UkmPageLoadMetricsObserverTest, FirstInputDelayAndTimestamp) {
   }
 }
 
+TEST_F(UkmPageLoadMetricsObserverTest, LongestInputDelayAndTimestamp) {
+  page_load_metrics::mojom::PageLoadTiming timing;
+  page_load_metrics::InitPageLoadTimingForTest(&timing);
+  timing.navigation_start = base::Time::FromDoubleT(1);
+  timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(50);
+  timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(712);
+  PopulateRequiredTimingFields(&timing);
+
+  NavigateAndCommit(GURL(kTestUrl1));
+  SimulateTimingUpdate(timing);
+
+  // Simulate closing the tab.
+  DeleteContents();
+
+  std::map<ukm::SourceId, ukm::mojom::UkmEntryPtr> merged_entries =
+      test_ukm_recorder().GetMergedEntriesByName(PageLoad::kEntryName);
+  EXPECT_EQ(1ul, merged_entries.size());
+
+  for (const auto& kv : merged_entries) {
+    test_ukm_recorder().ExpectEntrySourceHasUrl(kv.second.get(),
+                                                GURL(kTestUrl1));
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputDelayName,
+        50);
+    test_ukm_recorder().ExpectEntryMetric(
+        kv.second.get(), PageLoad::kInteractiveTiming_LongestInputTimestampName,
+        712);
+  }
+}
+
 TEST_F(UkmPageLoadMetricsObserverTest, MultiplePageLoads) {
   page_load_metrics::mojom::PageLoadTiming timing1;
   page_load_metrics::InitPageLoadTimingForTest(&timing1);

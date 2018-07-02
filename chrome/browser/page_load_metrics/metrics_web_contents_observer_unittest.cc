@@ -1015,6 +1015,148 @@ TEST_F(MetricsWebContentsObserverTest,
   CheckTotalErrorEvents();
 }
 
+TEST_F(MetricsWebContentsObserverTest,
+       LongestInputDelayMissingLongestInputTimestamp) {
+  mojom::PageLoadTiming timing;
+  PopulatePageLoadTiming(&timing);
+  timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(10);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  const mojom::InteractiveTiming& interactive_timing =
+      *complete_timings().back()->interactive_timing;
+
+  // Won't have been set, as we're missing the longest_input_timestamp.
+  EXPECT_FALSE(interactive_timing.longest_input_delay.has_value());
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::INVALID_NULL_LONGEST_INPUT_TIMESTAMP, 1);
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest,
+       LongestInputTimestampMissingLongestInputDelay) {
+  mojom::PageLoadTiming timing;
+  PopulatePageLoadTiming(&timing);
+  timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(10);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  const mojom::InteractiveTiming& interactive_timing =
+      *complete_timings().back()->interactive_timing;
+
+  // Won't have been set, as we're missing the longest_input_delay.
+  EXPECT_FALSE(interactive_timing.longest_input_timestamp.has_value());
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::INVALID_NULL_LONGEST_INPUT_DELAY, 1);
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest,
+       LongestInputDelaySmallerThanFirstInputDelay) {
+  mojom::PageLoadTiming timing;
+  PopulatePageLoadTiming(&timing);
+  timing.interactive_timing->first_input_delay =
+      base::TimeDelta::FromMilliseconds(50);
+  timing.interactive_timing->first_input_timestamp =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(10);
+  timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(2000);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  const mojom::InteractiveTiming& interactive_timing =
+      *complete_timings().back()->interactive_timing;
+
+  // Won't have been set, as it's invalid.
+  EXPECT_FALSE(interactive_timing.longest_input_delay.has_value());
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::
+          INVALID_LONGEST_INPUT_DELAY_LESS_THAN_FIRST_INPUT_DELAY,
+      1);
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest,
+       LongestInputTimestampEarlierThanFirstInputTimestamp) {
+  mojom::PageLoadTiming timing;
+  PopulatePageLoadTiming(&timing);
+  timing.interactive_timing->first_input_delay =
+      base::TimeDelta::FromMilliseconds(50);
+  timing.interactive_timing->first_input_timestamp =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(60);
+  timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(500);
+
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(timing);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  const mojom::InteractiveTiming& interactive_timing =
+      *complete_timings().back()->interactive_timing;
+
+  // Won't have been set, as it's invalid.
+  EXPECT_FALSE(interactive_timing.longest_input_delay.has_value());
+
+  histogram_tester_.ExpectTotalCount(
+      page_load_metrics::internal::kPageLoadTimingStatus, 1);
+  histogram_tester_.ExpectBucketCount(
+      page_load_metrics::internal::kPageLoadTimingStatus,
+      page_load_metrics::internal::
+          INVALID_LONGEST_INPUT_TIMESTAMP_LESS_THAN_FIRST_INPUT_TIMESTAMP,
+      1);
+
+  CheckErrorEvent(ERR_BAD_TIMING_IPC_INVALID_TIMING, 1);
+  CheckErrorEvent(ERR_NO_IPCS_RECEIVED, 1);
+  CheckTotalErrorEvents();
+}
+
 // Main frame delivers an input notification. Subsequently, a subframe delivers
 // an input notification, where the input occurred first. Verify that
 // FirstInputDelay and FirstInputTimestamp come from the subframe.
@@ -1122,6 +1264,133 @@ TEST_F(MetricsWebContentsObserverTest,
   // minutes.
   EXPECT_LT(interactive_timing.first_input_timestamp,
             base::TimeDelta::FromMinutes(10));
+
+  CheckNoErrorEvents();
+}
+
+TEST_F(MetricsWebContentsObserverTest, LongestInputInMainFrame) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  // We need to navigate before we can navigate the subframe.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+  content::RenderFrameHost* subframe = rfh_tester->AppendChild("subframe");
+
+  mojom::PageLoadTiming subframe_timing;
+  PopulatePageLoadTiming(&subframe_timing);
+  subframe_timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(70);
+  subframe_timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(1000);
+
+  subframe = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL(kDefaultTestUrl2), subframe);
+  SimulateTimingUpdate(subframe_timing, subframe);
+
+  mojom::PageLoadTiming main_frame_timing;
+  PopulatePageLoadTiming(&main_frame_timing);
+
+  // Dispatch a timing update for the main frame that includes a longest input
+  // delay longer than the one for the subframe.
+  main_frame_timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(100);
+  main_frame_timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(2000);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(main_frame_timing);
+
+  // Second subframe.
+  content::RenderFrameHost* subframe2 = rfh_tester->AppendChild("subframe2");
+  mojom::PageLoadTiming subframe2_timing;
+  PopulatePageLoadTiming(&subframe2_timing);
+  subframe2_timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(80);
+  subframe2_timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(3000);
+  subframe2 = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL(kDefaultTestUrl2), subframe2);
+  SimulateTimingUpdate(subframe2_timing, subframe2);
+
+  // Navigate again to confirm all timings are updated.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  const mojom::InteractiveTiming& interactive_timing =
+      *complete_timings().back()->interactive_timing;
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(100),
+            interactive_timing.longest_input_delay);
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(2000),
+            interactive_timing.longest_input_timestamp);
+
+  CheckNoErrorEvents();
+}
+
+// -----------------------------------------------------------------------------
+//     |                          |                          |
+//     1s                         2s                         3s
+//     Subframe1                  Main Frame                 Subframe2
+//     LID (15ms)                 LID (100ms)                LID (200ms)
+//
+// Delivery order: Main Frame -> Subframe1 -> Subframe2.
+TEST_F(MetricsWebContentsObserverTest, LongestInputInSubframe) {
+  content::WebContentsTester* web_contents_tester =
+      content::WebContentsTester::For(web_contents());
+
+  mojom::PageLoadTiming main_frame_timing;
+  PopulatePageLoadTiming(&main_frame_timing);
+  main_frame_timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(100);
+  main_frame_timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(2000);
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl));
+  SimulateTimingUpdate(main_frame_timing);
+
+  content::RenderFrameHostTester* rfh_tester =
+      content::RenderFrameHostTester::For(main_rfh());
+
+  // First subframe.
+  content::RenderFrameHost* subframe1 = rfh_tester->AppendChild("subframe1");
+  mojom::PageLoadTiming subframe_timing;
+  PopulatePageLoadTiming(&subframe_timing);
+  subframe_timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(15);
+  subframe_timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(1000);
+  subframe1 = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL(kDefaultTestUrl2), subframe1);
+  SimulateTimingUpdate(subframe_timing, subframe1);
+
+  // Second subframe.
+  content::RenderFrameHost* subframe2 = rfh_tester->AppendChild("subframe2");
+  mojom::PageLoadTiming subframe2_timing;
+  PopulatePageLoadTiming(&subframe2_timing);
+  subframe2_timing.interactive_timing->longest_input_delay =
+      base::TimeDelta::FromMilliseconds(200);
+  subframe2_timing.interactive_timing->longest_input_timestamp =
+      base::TimeDelta::FromMilliseconds(3000);
+  // TODO: Make this url3.
+  subframe2 = content::NavigationSimulator::NavigateAndCommitFromDocument(
+      GURL(kDefaultTestUrl2), subframe2);
+  SimulateTimingUpdate(subframe2_timing, subframe2);
+
+  // Navigate again to confirm all timings are updated.
+  web_contents_tester->NavigateAndCommit(GURL(kDefaultTestUrl2));
+
+  const mojom::InteractiveTiming& interactive_timing =
+      *complete_timings().back()->interactive_timing;
+
+  EXPECT_EQ(base::TimeDelta::FromMilliseconds(200),
+            interactive_timing.longest_input_delay);
+
+  // Actual LID timestamp includes the delta between navigation start in
+  // subframe2 and navigation time in the main frame. That delta varies with
+  // different runs, so we only check here that the timestamp is greater than
+  // 3s.
+  EXPECT_GT(interactive_timing.longest_input_timestamp.value(),
+            base::TimeDelta::FromMilliseconds(3000));
 
   CheckNoErrorEvents();
 }

@@ -35454,6 +35454,11 @@ Called by update_net_trust_anchors.py.-->
   <int value="17" label="Invalid order - first meaningful paint / interactive"/>
   <int value="18" label="First input delay without first input timestamp"/>
   <int value="19" label="First input timestamp without first input delay"/>
+  <int value="20" label="Longest input delay without longest input timestamp"/>
+  <int value="21" label="Longest input timestamp without longest input delay"/>
+  <int value="22"
+      label="Longest input timestamp earlier than first input timestamp"/>
+  <int value="23" label="Longest input delay less than first input delay"/>
 </enum>
 
 <enum name="PageScaleFactorRange">
