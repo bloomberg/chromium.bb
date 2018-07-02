@@ -14,82 +14,6 @@
 #error "This file requires ARC support."
 #endif
 
-#pragma mark - CRWToolbarContainerView
-
-// Class that manages the display of toolbars.
-@interface CRWToolbarContainerView : UIView {
-  // Backing object for |self.toolbars|.
-  NSMutableArray* _toolbars;
-}
-
-// The toolbars currently managed by this view.
-@property(nonatomic, strong, readonly) NSMutableArray* toolbars;
-
-// Adds |toolbar| as a subview and bottom aligns to any previously added
-// toolbars.
-- (void)addToolbar:(UIView*)toolbar;
-
-// Removes |toolbar| from the container view.
-- (void)removeToolbar:(UIView*)toolbar;
-
-@end
-
-@implementation CRWToolbarContainerView
-
-#pragma mark Accessors
-
-- (NSMutableArray*)toolbars {
-  if (!_toolbars)
-    _toolbars = [[NSMutableArray alloc] init];
-  return _toolbars;
-}
-
-#pragma mark Layout
-
-- (void)layoutSubviews {
-  [super layoutSubviews];
-
-  // Bottom-align the toolbars.
-  CGPoint toolbarOrigin =
-      CGPointMake(self.bounds.origin.x, CGRectGetMaxY(self.bounds));
-  for (UIView* toolbar in self.toolbars) {
-    CGSize toolbarSize = [toolbar sizeThatFits:self.bounds.size];
-    toolbarSize.width = self.bounds.size.width;
-    toolbarOrigin.y -= toolbarSize.height;
-    toolbar.frame = CGRectMake(toolbarOrigin.x, toolbarOrigin.y,
-                               toolbarSize.width, toolbarSize.height);
-  }
-}
-
-- (CGSize)sizeThatFits:(CGSize)size {
-  CGSize boundingRectSize = CGSizeMake(size.width, CGFLOAT_MAX);
-  CGFloat necessaryHeight = 0.0f;
-  for (UIView* toolbar in self.toolbars)
-    necessaryHeight += [toolbar sizeThatFits:boundingRectSize].height;
-  return CGSizeMake(size.width, necessaryHeight);
-}
-
-#pragma mark Toolbars
-
-- (void)addToolbar:(UIView*)toolbar {
-  DCHECK(toolbar);
-  DCHECK(![self.toolbars containsObject:toolbar]);
-  toolbar.translatesAutoresizingMaskIntoConstraints = NO;
-  [self.toolbars addObject:toolbar];
-  [self addSubview:toolbar];
-}
-
-- (void)removeToolbar:(UIView*)toolbar {
-  DCHECK(toolbar);
-  DCHECK([self.toolbars containsObject:toolbar]);
-  [self.toolbars removeObject:toolbar];
-  [toolbar removeFromSuperview];
-}
-
-@end
-
-#pragma mark - CRWWebControllerContainerView
-
 @interface CRWWebControllerContainerView ()
 
 // Redefine properties as readwrite.
@@ -97,11 +21,6 @@
     CRWWebViewContentView* webViewContentView;
 @property(nonatomic, strong, readwrite) id<CRWNativeContent> nativeController;
 @property(nonatomic, strong, readwrite) CRWContentView* transientContentView;
-
-// Container view that displays any added toolbars.  It is always the top-most
-// subview, and is bottom aligned with the CRWWebControllerContainerView.
-@property(nonatomic, strong, readonly)
-    CRWToolbarContainerView* toolbarContainerView;
 
 // Convenience getter for the proxy object.
 @property(nonatomic, weak, readonly) CRWWebViewProxyImpl* contentViewProxy;
@@ -118,7 +37,6 @@
 @synthesize webViewContentView = _webViewContentView;
 @synthesize nativeController = _nativeController;
 @synthesize transientContentView = _transientContentView;
-@synthesize toolbarContainerView = _toolbarContainerView;
 @synthesize delegate = _delegate;
 
 - (instancetype)initWithDelegate:
@@ -180,13 +98,6 @@
   }
 }
 
-- (void)setToolbarContainerView:(CRWToolbarContainerView*)toolbarContainerView {
-  if (![_toolbarContainerView isEqual:toolbarContainerView]) {
-    [_toolbarContainerView removeFromSuperview];
-    _toolbarContainerView = toolbarContainerView;
-  }
-}
-
 - (CRWWebViewProxyImpl*)contentViewProxy {
   return [_delegate contentViewProxyForContainerView:self];
 }
@@ -224,20 +135,6 @@
       [self addSubview:self.transientContentView];
     self.transientContentView.frame = self.bounds;
   }
-
-  // Bottom align the toolbars with the bottom of the container.
-  if (self.toolbarContainerView) {
-    if (!self.toolbarContainerView.superview)
-      [self addSubview:self.toolbarContainerView];
-    else
-      [self bringSubviewToFront:self.toolbarContainerView];
-    CGSize toolbarContainerSize =
-        [self.toolbarContainerView sizeThatFits:self.bounds.size];
-    self.toolbarContainerView.frame =
-        CGRectMake(CGRectGetMinX(self.bounds),
-                   CGRectGetMaxY(self.bounds) - toolbarContainerSize.height,
-                   toolbarContainerSize.width, toolbarContainerSize.height);
-  }
 }
 
 - (BOOL)isViewAlive {
@@ -251,7 +148,6 @@
   self.webViewContentView = nil;
   self.nativeController = nil;
   self.transientContentView = nil;
-  [self removeAllToolbars];
   self.contentViewProxy.contentView = nil;
 }
 
@@ -283,40 +179,6 @@
 - (void)clearTransientContentView {
   self.transientContentView = nil;
   self.contentViewProxy.contentView = self.webViewContentView;
-}
-
-#pragma mark Toolbars
-
-- (void)addToolbar:(UIView*)toolbar {
-  // Create toolbar container if necessary.
-  if (!self.toolbarContainerView) {
-    self.toolbarContainerView =
-        [[CRWToolbarContainerView alloc] initWithFrame:CGRectZero];
-  }
-  // Add the toolbar to the container.
-  [self.toolbarContainerView addToolbar:toolbar];
-  [self setNeedsLayout];
-}
-
-- (void)addToolbars:(NSArray*)toolbars {
-  DCHECK(toolbars);
-  for (UIView* toolbar in toolbars)
-    [self addToolbar:toolbar];
-}
-
-- (void)removeToolbar:(UIView*)toolbar {
-  // Remove the toolbar from the container view.
-  [self.toolbarContainerView removeToolbar:toolbar];
-  // Reset the container if there are no more toolbars.
-  if ([self.toolbarContainerView.toolbars count])
-    [self setNeedsLayout];
-  else
-    self.toolbarContainerView = nil;
-}
-
-- (void)removeAllToolbars {
-  // Resetting the property will remove the toolbars from the hierarchy.
-  self.toolbarContainerView = nil;
 }
 
 @end

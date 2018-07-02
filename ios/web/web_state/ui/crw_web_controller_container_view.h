@@ -71,21 +71,6 @@
 // Removes the transient content view, if one is displayed.
 - (void)clearTransientContentView;
 
-#pragma mark Toolbars
-
-// |toolbar| will be resized to the container width, bottom-aligned, and added
-// as the topmost subview.
-- (void)addToolbar:(UIView*)toolbar;
-
-// Adds each toolbar in |toolbars|.
-- (void)addToolbars:(NSArray*)toolbars;
-
-// Removes |toolbar| as a subview.
-- (void)removeToolbar:(UIView*)toolbar;
-
-// Removes all toolbars added via |-addToolbar:|.
-- (void)removeAllToolbars;
-
 @end
 
 #endif  // IOS_WEB_WEB_STATE_UI_CRW_WEB_CONTROLLER_CONTAINER_VIEW_H_

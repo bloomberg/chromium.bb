@@ -296,8 +296,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   NSMutableArray* _pendingLoadCompleteActions;
   // UIGestureRecognizers to add to the web view.
   NSMutableArray* _gestureRecognizers;
-  // Toolbars to add to the web view.
-  NSMutableArray* _webViewToolbars;
   // Flag to say if browsing is enabled.
   BOOL _webUsageEnabled;
   // The touch tracking recognizer allowing us to decide if a navigation is
@@ -939,7 +937,6 @@ GURL URLEscapedForHistory(const GURL& url) {
     _webViewProxy = [[CRWWebViewProxyImpl alloc] initWithWebController:self];
     [[_webViewProxy scrollViewProxy] addObserver:self];
     _gestureRecognizers = [[NSMutableArray alloc] init];
-    _webViewToolbars = [[NSMutableArray alloc] init];
     _pendingLoadCompleteActions = [[NSMutableArray alloc] init];
     web::BrowserState* browserState = _webStateImpl->GetBrowserState();
     _certVerificationController = [[CRWCertVerificationController alloc]
@@ -2182,23 +2179,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
   [_webView removeGestureRecognizer:recognizer];
   [_gestureRecognizers removeObject:recognizer];
-}
-
-- (void)addToolbarViewToWebView:(UIView*)toolbarView {
-  DCHECK(toolbarView);
-  if ([_webViewToolbars containsObject:toolbarView])
-    return;
-  [_webViewToolbars addObject:toolbarView];
-  if (_webView)
-    [_containerView addToolbar:toolbarView];
-}
-
-- (void)removeToolbarViewFromWebView:(UIView*)toolbarView {
-  if (![_webViewToolbars containsObject:toolbarView])
-    return;
-  [_webViewToolbars removeObject:toolbarView];
-  if (_webView)
-    [_containerView removeToolbar:toolbarView];
 }
 
 - (CRWJSInjectionReceiver*)jsInjectionReceiver {
@@ -3968,9 +3948,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (void)displayWebView {
   if (!self.webView || [_containerView webViewContentView])
     return;
-
-  // Add the web toolbars.
-  [_containerView addToolbars:_webViewToolbars];
 
   CRWWebViewContentView* webViewContentView =
       [[CRWWebViewContentView alloc] initWithWebView:_webView

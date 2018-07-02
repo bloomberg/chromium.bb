@@ -11,6 +11,9 @@
 
 - (instancetype)initWithTarget:(id)target action:(SEL)action;
 
+// Constraint to have the open in toolbar be displayed above the bottom toolbar.
+@property(nonatomic, strong) NSLayoutConstraint* bottomMarginConstraint;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OPEN_IN_TOOLBAR_H_

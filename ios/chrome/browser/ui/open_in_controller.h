@@ -26,6 +26,9 @@ class URLRequestContextGetter;
 - (id)initWithRequestContext:(net::URLRequestContextGetter*)requestContext
                webController:(CRWWebController*)webController;
 
+// Base view on which the Open In toolbar will be presented.
+@property(nonatomic, weak) UIView* baseView;
+
 // Removes the |openInToolbar_| from the |webController_|'s view and resets the
 // variables specific to the loaded document.
 - (void)disable;
