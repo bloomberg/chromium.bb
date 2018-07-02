@@ -90,7 +90,7 @@ message UserEventSpecifics {
   }
 
   // User consented to the usage of a feature or denied/revoked a consent.
-  // Next id: 13
+  // Next id: 14
   message UserConsent {
     // =========================================================================
     // Fields common to all Chrome User Consents.
@@ -127,6 +127,8 @@ message UserEventSpecifics {
 
       UserConsentTypes.ArcMetricsAndUsageConsent arc_metrics_and_usage_consent =
           11;
+
+      UserConsentTypes.UnifiedConsent unified_consent = 13;
     }
 
     // =========================================================================
@@ -158,6 +160,7 @@ message UserEventSpecifics {
       PLAY_STORE = 2;
       BACKUP_AND_RESTORE = 3;
       GOOGLE_LOCATION_SERVICE = 4;
+      CHROME_UNIFIED_CONSENT = 5;
     }
     optional Feature feature = 1 [deprecated = true];
     // Ids of the strings of the consent text presented to the user.
