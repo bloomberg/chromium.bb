@@ -176,8 +176,13 @@ void SmbService::Remount(const ProvidedFileSystemInfo& file_system_info) {
       GetSharePathFromFileSystemId(file_system_info.file_system_id());
   const int32_t mount_id =
       GetMountIdFromFileSystemId(file_system_info.file_system_id());
+
+  // An empty password is passed to Remount to conform with the credentials API
+  // which expects username & workgroup strings along with a password file
+  // descriptor.
   GetSmbProviderClient()->Remount(
-      share_path, mount_id,
+      share_path, mount_id, "" /* workgroup */, "" /* username */,
+      temp_file_manager_->WritePasswordToFile("" /* password */),
       base::BindOnce(&SmbService::OnRemountResponse, AsWeakPtr(),
                      file_system_info.file_system_id()));
 }

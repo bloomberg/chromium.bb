@@ -83,11 +83,23 @@ class SmbProviderClientImpl : public SmbProviderClient {
 
   void Remount(const base::FilePath& share_path,
                int32_t mount_id,
+               const std::string& workgroup,
+               const std::string& username,
+               base::ScopedFD password_fd,
                StatusCallback callback) override {
     smbprovider::RemountOptionsProto options;
     options.set_path(share_path.value());
     options.set_mount_id(mount_id);
-    CallDefaultMethod(smbprovider::kRemountMethod, options, &callback);
+    options.set_workgroup(workgroup);
+    options.set_username(username);
+
+    dbus::MethodCall method_call(smbprovider::kSmbProviderInterface,
+                                 smbprovider::kRemountMethod);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendProtoAsArrayOfBytes(options);
+    writer.AppendFileDescriptor(password_fd.release());
+
+    CallDefaultMethod(&method_call, &callback);
   }
 
   void Unmount(int32_t mount_id, StatusCallback callback) override {
