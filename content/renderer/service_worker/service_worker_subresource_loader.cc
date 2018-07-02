@@ -260,12 +260,13 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
   controller->DispatchFetchEvent(
       std::move(params), std::move(response_callback_ptr),
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnFetchEventFinished,
-                     weak_factory_.GetWeakPtr()));
+                     weak_factory_.GetWeakPtr(), base::Time::Now()));
 }
 
 void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
+    base::Time request_dispatch_time,
     blink::mojom::ServiceWorkerEventStatus status,
-    base::Time dispatch_event_time) {
+    base::Time actual_dispatch_time) {
   TRACE_EVENT_WITH_FLOW1("ServiceWorker",
                          "ServiceWorkerSubresourceLoader::OnFetchEventFinished",
                          this, TRACE_EVENT_FLAG_FLOW_IN, "status",
@@ -275,6 +276,11 @@ void ServiceWorkerSubresourceLoader::OnFetchEventFinished(
   // fetch event dispatch reached the renderer.
   SettleFetchEventDispatch(
       mojo::ConvertTo<blink::ServiceWorkerStatusCode>(status));
+
+  base::TimeDelta delay = actual_dispatch_time - request_dispatch_time;
+  UMA_HISTOGRAM_TIMES("ServiceWorker.EventDispatchingDelay", delay);
+  UMA_HISTOGRAM_TIMES("ServiceWorker.EventDispatchingDelay_FETCH_SUB_RESOURCE",
+                      delay);
 
   switch (status) {
     case blink::mojom::ServiceWorkerEventStatus::COMPLETED:
