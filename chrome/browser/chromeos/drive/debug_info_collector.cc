@@ -62,8 +62,7 @@ DebugInfoCollector::DebugInfoCollector(
   DCHECK(file_system_);
 }
 
-DebugInfoCollector::~DebugInfoCollector() {
-}
+DebugInfoCollector::~DebugInfoCollector() = default;
 
 void DebugInfoCollector::GetResourceEntry(
     const base::FilePath& file_path,

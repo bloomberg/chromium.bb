@@ -75,8 +75,7 @@ FileSystemBackendDelegate::FileSystemBackendDelegate()
     : async_file_util_(new internal::AsyncFileUtil) {
 }
 
-FileSystemBackendDelegate::~FileSystemBackendDelegate() {
-}
+FileSystemBackendDelegate::~FileSystemBackendDelegate() = default;
 
 storage::AsyncFileUtil* FileSystemBackendDelegate::GetAsyncFileUtil(
     storage::FileSystemType type) {

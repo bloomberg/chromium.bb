@@ -810,8 +810,7 @@ DriveIntegrationServiceFactory::DriveIntegrationServiceFactory()
   DependsOn(DownloadCoreServiceFactory::GetInstance());
 }
 
-DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() {
-}
+DriveIntegrationServiceFactory::~DriveIntegrationServiceFactory() = default;
 
 content::BrowserContext* DriveIntegrationServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
