@@ -26,6 +26,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -150,6 +151,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest
     public void testOpeningSettingsDoesntStartEngine() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.stopSync();
@@ -163,6 +165,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest
     public void testDefaultControlStatesWithSyncOffThenOn() {
         mSyncTestRule.setUpTestAccountAndSignIn();
         mSyncTestRule.stopSync();
@@ -514,6 +517,7 @@ public class SyncCustomizationFragmentTest {
     @Test
     @SmallTest
     @Feature({"Sync"})
+    @DisabledTest
     public void testPassphraseDialogDismissed() {
         final FakeProfileSyncService pss = overrideProfileSyncService();
 
