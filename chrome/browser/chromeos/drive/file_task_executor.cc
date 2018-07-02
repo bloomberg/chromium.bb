@@ -74,8 +74,7 @@ FileTaskExecutor::FileTaskExecutor(
       current_index_(0),
       weak_ptr_factory_(this) {}
 
-FileTaskExecutor::~FileTaskExecutor() {
-}
+FileTaskExecutor::~FileTaskExecutor() = default;
 
 void FileTaskExecutor::Execute(
     const std::vector<FileSystemURL>& file_urls,

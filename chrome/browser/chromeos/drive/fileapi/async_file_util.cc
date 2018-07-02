@@ -110,11 +110,9 @@ void RunCreateSnapshotFileCallback(
 
 }  // namespace
 
-AsyncFileUtil::AsyncFileUtil() {
-}
+AsyncFileUtil::AsyncFileUtil() = default;
 
-AsyncFileUtil::~AsyncFileUtil() {
-}
+AsyncFileUtil::~AsyncFileUtil() = default;
 
 void AsyncFileUtil::CreateOrOpen(
     std::unique_ptr<storage::FileSystemOperationContext> context,

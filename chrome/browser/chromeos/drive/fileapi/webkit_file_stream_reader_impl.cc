@@ -36,8 +36,7 @@ WebkitFileStreamReaderImpl::WebkitFileStreamReaderImpl(
   DCHECK_GE(offset, 0);
 }
 
-WebkitFileStreamReaderImpl::~WebkitFileStreamReaderImpl() {
-}
+WebkitFileStreamReaderImpl::~WebkitFileStreamReaderImpl() = default;
 
 int WebkitFileStreamReaderImpl::Read(net::IOBuffer* buffer,
                                      int buffer_length,

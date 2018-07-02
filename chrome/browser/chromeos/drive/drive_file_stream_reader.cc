@@ -107,8 +107,7 @@ LocalReaderProxy::LocalReaderProxy(
   DCHECK(file_reader_);
 }
 
-LocalReaderProxy::~LocalReaderProxy() {
-}
+LocalReaderProxy::~LocalReaderProxy() = default;
 
 int LocalReaderProxy::Read(net::IOBuffer* buffer, int buffer_length,
                            const net::CompletionCallback& callback) {
@@ -339,8 +338,7 @@ DriveFileStreamReader::DriveFileStreamReader(
       weak_ptr_factory_(this) {
 }
 
-DriveFileStreamReader::~DriveFileStreamReader() {
-}
+DriveFileStreamReader::~DriveFileStreamReader() = default;
 
 bool DriveFileStreamReader::IsInitialized() const {
   DCHECK(thread_checker_.CalledOnValidThread());

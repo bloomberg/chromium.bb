@@ -52,7 +52,7 @@ class DriveUserData : public base::SupportsUserData::Data {
  public:
   explicit DriveUserData(const base::FilePath& path) : file_path_(path),
                                                        is_complete_(false) {}
-  ~DriveUserData() override {}
+  ~DriveUserData() override = default;
 
   const base::FilePath& file_path() const { return file_path_; }
   const base::FilePath& cache_file_path() const { return cache_file_path_; }
@@ -150,8 +150,7 @@ DownloadHandler::DownloadHandler(FileSystemInterface* file_system)
           base::TimeDelta::FromSeconds(kFreeDiskSpaceDelayInSeconds)),
       weak_ptr_factory_(this) {}
 
-DownloadHandler::~DownloadHandler() {
-}
+DownloadHandler::~DownloadHandler() = default;
 
 // static
 DownloadHandler* DownloadHandler::GetForProfile(Profile* profile) {
