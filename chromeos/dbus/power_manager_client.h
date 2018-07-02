@@ -192,6 +192,11 @@ class CHROMEOS_EXPORT PowerManagerClient : public DBusClient {
   // Increases the keyboard brightness.
   virtual void IncreaseKeyboardBrightness() = 0;
 
+  // Similar to GetScreenBrightnessPercent, but gets the keyboard brightness
+  // instead.
+  virtual void GetKeyboardBrightnessPercent(
+      DBusMethodCallback<double> callback) = 0;
+
   // Returns the last power status that was received from D-Bus, if any.
   virtual const base::Optional<power_manager::PowerSupplyProperties>&
   GetLastStatus() = 0;

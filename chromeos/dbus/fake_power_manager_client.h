@@ -78,6 +78,8 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
   void GetScreenBrightnessPercent(DBusMethodCallback<double> callback) override;
   void DecreaseKeyboardBrightness() override;
   void IncreaseKeyboardBrightness() override;
+  void GetKeyboardBrightnessPercent(
+      DBusMethodCallback<double> callback) override;
   const base::Optional<power_manager::PowerSupplyProperties>& GetLastStatus()
       override;
   void RequestStatusUpdate() override;
@@ -164,6 +166,10 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
     screen_brightness_percent_ = percent;
   }
 
+  void set_keyboard_brightness_percent(const base::Optional<double>& percent) {
+    keyboard_brightness_percent_ = percent;
+  }
+
  private:
   // Callback that will be run by asynchronous suspend delays to report
   // readiness.
@@ -192,6 +198,9 @@ class CHROMEOS_EXPORT FakePowerManagerClient : public PowerManagerClient {
 
   // Current screen brightness in the range [0.0, 100.0].
   base::Optional<double> screen_brightness_percent_;
+
+  // Current keyboard brightness in the range [0.0, 100.0].
+  base::Optional<double> keyboard_brightness_percent_;
 
   // Last screen brightness requested via SetScreenBrightnessPercent().
   // Unlike |screen_brightness_percent_|, this value will not be changed by
