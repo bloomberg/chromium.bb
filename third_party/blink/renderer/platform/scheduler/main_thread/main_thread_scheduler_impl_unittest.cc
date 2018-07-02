@@ -12,6 +12,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
@@ -251,6 +252,13 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     }
   }
 
+  void OnQueueingTimeForWindowEstimated(base::TimeDelta queueing_time,
+                                        bool is_disjoint_window) override {
+    MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
+        queueing_time, is_disjoint_window);
+    expected_queueing_times_.push_back(queueing_time);
+  }
+
   void EnsureUrgentPolicyUpdatePostedOnMainThread() {
     base::AutoLock lock(any_thread_lock_);
     MainThreadSchedulerImpl::EnsureUrgentPolicyUpdatePostedOnMainThread(
@@ -275,8 +283,13 @@ class MainThreadSchedulerImplForTest : public MainThreadSchedulerImpl {
     return main_thread_only().virtual_time_policy;
   }
 
+  const std::vector<base::TimeDelta>& expected_queueing_times() const {
+    return expected_queueing_times_;
+  }
+
   int update_policy_count_;
   std::vector<std::string> use_cases_;
+  std::vector<base::TimeDelta> expected_queueing_times_;
 };
 
 // Lets gtest print human readable Policy values.
@@ -359,6 +372,12 @@ class MainThreadSchedulerImplTest : public testing::Test {
     CHECK(test_task_runner_);
     CHECK_LE(Now(), time);
     test_task_runner_->AdvanceMockTickClock(time - Now());
+  }
+
+  void AdvanceMockTickClockBy(base::TimeDelta delta) {
+    CHECK(test_task_runner_);
+    CHECK_LE(base::TimeDelta(), delta);
+    test_task_runner_->AdvanceMockTickClock(delta);
   }
 
   void DoMainFrame() {
@@ -602,15 +621,24 @@ class MainThreadSchedulerImplTest : public testing::Test {
     return scheduler_->any_thread().have_seen_a_blocking_gesture;
   }
 
-  void AdvanceTimeWithTask(double duration) {
+  void AdvanceTimeWithTask(double duration_seconds) {
+    base::TimeDelta duration = base::TimeDelta::FromSecondsD(duration_seconds);
+    RunTask(base::BindOnce(
+        [](scoped_refptr<base::TestMockTimeTaskRunner> test_task_runner,
+           base::TimeDelta duration) {
+          test_task_runner->AdvanceMockTickClock(duration);
+        },
+        test_task_runner_, duration));
+  }
+
+  void RunTask(base::OnceClosure task) {
     scoped_refptr<MainThreadTaskQueue> fake_queue =
         scheduler_->NewLoadingTaskQueue(
             MainThreadTaskQueue::QueueType::kFrameLoading, nullptr);
 
     base::TimeTicks start = Now();
     scheduler_->OnTaskStarted(fake_queue.get(), fake_task_, start);
-    test_task_runner_->AdvanceMockTickClock(
-        base::TimeDelta::FromSecondsD(duration));
+    std::move(task).Run();
     base::TimeTicks end = Now();
     scheduler_->OnTaskCompleted(fake_queue.get(), fake_task_, start, end,
                                 base::nullopt);
@@ -735,6 +763,10 @@ class MainThreadSchedulerImplTest : public testing::Test {
   static scoped_refptr<TaskQueue> ThrottleableTaskQueue(
       FrameSchedulerImpl* scheduler) {
     return scheduler->ThrottleableTaskQueue();
+  }
+
+  QueueingTimeEstimator* queueing_time_estimator() {
+    return &scheduler_->queueing_time_estimator_;
   }
 
   base::test::ScopedFeatureList feature_list_;
@@ -3936,6 +3968,45 @@ TEST_F(CompositingExperimentWithImplicitSignalsTest, CompositingAfterInput) {
               testing::ElementsAre(std::string("P1"), std::string("P2"),
                                    std::string("C1"), std::string("T1"),
                                    std::string("C2")));
+}
+
+TEST_F(MainThreadSchedulerImplTest, EQTWithNestedLoop) {
+  AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(100));
+
+  RunTask(base::BindLambdaForTesting([&] {
+    // After running a task for 10ms, start running a nested loop.
+    // This contributes to the first step EQT by 1ms ((10ms)^2 / 2 / 50ms), and
+    // the window EQT by 50us (1ms / 20).
+    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(10));
+    scheduler_->OnBeginNestedRunLoop();
+
+    // Leave the loop idle for 20ms.
+    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(20));
+
+    RunTask(base::BindLambdaForTesting([&] {
+      // Run a 30ms task in the nested loop.
+      // This contributes to the first step EQT by 8ms ((30ms + 10ms) * 20ms / 2
+      // / 50ms), and the window EQT by 400us (8ms / 20). Also, contributes to
+      // the second step EQT by 1ms ((10ms)^2 / 2 / 50ms), and the window EQT by
+      // 50us (1ms / 20).
+      AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(30));
+    }));
+
+    // After 40ms idle duration, exit the nested loop.
+    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(40));
+    scheduler_->OnExitNestedRunLoop();
+
+    // The outer task ends after extra 50ms work.
+    // This contributes to the third step EQT by 25ms ((50ms)^2 / 2 / 50ms), and
+    // the window EQT by 1250us (25ms / 20).
+    AdvanceMockTickClockBy(base::TimeDelta::FromMilliseconds(50));
+  }));
+
+  EXPECT_THAT(scheduler_->expected_queueing_times(),
+              testing::ElementsAre(
+                  base::TimeDelta::FromMicroseconds(400 + 50),
+                  base::TimeDelta::FromMicroseconds(400 + 50 + 50),
+                  base::TimeDelta::FromMicroseconds(400 + 50 + 50 + 1250)));
 }
 
 }  // namespace main_thread_scheduler_impl_unittest

@@ -13,8 +13,8 @@ namespace blink {
 class IdlenessDetectorTest : public PageTestBase {
  protected:
   void SetUp() override {
-    platform_time_ = SecondsToTimeTicks(1);
-    platform_->AdvanceClock(platform_time_ - base::TimeTicks());
+    platform_time_ = CurrentTimeTicks();
+    DCHECK(!platform_time_.is_null());
     PageTestBase::SetUp();
   }
 

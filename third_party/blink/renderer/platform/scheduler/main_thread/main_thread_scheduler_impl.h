@@ -867,6 +867,15 @@ class PLATFORM_EXPORT MainThreadSchedulerImpl
     // allowed). NB a value of 0 allows infinite starvation.
     int max_virtual_time_task_starvation_count;
     bool virtual_time_stopped;
+
+    // Holds task queues that are currently running.
+    // The queue for the inmost task is at the top of stack when there are
+    // nested RunLoops.
+    std::stack<scoped_refptr<MainThreadTaskQueue>,
+               std::vector<scoped_refptr<MainThreadTaskQueue>>>
+        running_queues;
+
+    // True if a nested RunLoop is running.
     bool nested_runloop;
 
     std::mt19937_64 random_generator;

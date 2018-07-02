@@ -147,16 +147,16 @@ TEST_F(QueueingTimeEstimatorTest, AllTasksWithinWindow) {
   QueueingTimeEstimatorForTest estimator(
       &client, base::TimeDelta::FromSeconds(5), 1, time);
   for (int i = 0; i < 3; ++i) {
-    estimator.OnTopLevelTaskStarted(time, nullptr);
+    estimator.OnExecutionStarted(time, nullptr);
     time += base::TimeDelta::FromMilliseconds(1000);
-    estimator.OnTopLevelTaskCompleted(time);
+    estimator.OnExecutionStopped(time);
   }
 
   // Flush the data by adding a task in the next window.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(300)));
@@ -178,20 +178,20 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
   QueueingTimeEstimatorForTest estimator(
       &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(3000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(20000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Flush the data by adding a task in the next window.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(7600),
@@ -209,44 +209,6 @@ TEST_F(QueueingTimeEstimatorTest, MultiWindowTask) {
                 fine_grained);
 }
 
-// Tasks containing nested run loops may be extremely long without
-// negatively impacting user experience. Ignore such tasks.
-TEST_F(QueueingTimeEstimatorTest, IgnoresTasksWithNestedMessageLoops) {
-  QueueingTimeEstimatorForTest estimator(
-      &client, base::TimeDelta::FromSeconds(5), 1, time);
-  time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
-
-  time += base::TimeDelta::FromMilliseconds(5000);
-
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  time += base::TimeDelta::FromMilliseconds(20000);
-  estimator.OnBeginNestedRunLoop();
-  estimator.OnTopLevelTaskCompleted(time);
-
-  // Perform an additional task after the nested run loop. A 1 second task
-  // in a 5 second window results in a 100ms expected queueing time.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
-
-  // Flush the data by adding a task in the next window.
-  time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskCompleted(time);
-
-  EXPECT_THAT(client.expected_queueing_times(),
-              testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
-                                   base::TimeDelta::FromMilliseconds(100)));
-  std::vector<BucketExpectation> expected = {{0, 1}, {100, 1}};
-  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration", 2, expected);
-  std::vector<BucketExpectation> fine_grained = GetFineGrained(expected);
-  TestHistogram("RendererScheduler.ExpectedTaskQueueingDuration3", 2,
-                fine_grained);
-}
-
 // If a task is too long, we assume it's invalid. Perhaps the user's machine
 // went to sleep during a task, resulting in an extremely long task. Ignore
 // these long tasks completely.
@@ -255,38 +217,38 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongTasks) {
       &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Start with a 1 second task.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   time += base::TimeDelta::FromMilliseconds(4000);
 
   // Now perform an invalid task. This will cause the windows involving this
   // task to be ignored.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(35000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Perform another 1 second task.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Add a task in the next window.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Now perform another invalid task. This will cause the windows involving
   // this task to be ignored. Therefore, the previous task is ignored.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(35000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Flush by adding a task.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
@@ -305,28 +267,28 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
       &client, base::TimeDelta::FromSeconds(5), 1, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Start with a 1 second task.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   time += base::TimeDelta::FromMilliseconds(4000);
   // Dummy task to ensure this window is reported.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   // Now go idle for long. This will cause the windows involving this
   // time to be ignored.
   time += base::TimeDelta::FromMilliseconds(35000);
 
   // Perform another 1 second task.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Add a task in the next window.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Now go idle again. This will cause the windows involving this idle period
   // to be ignored. Therefore, the previous task is ignored.
@@ -334,8 +296,8 @@ TEST_F(QueueingTimeEstimatorTest, IgnoreExtremelyLongIdlePeriods) {
 
   // Flush by adding a task.
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(100),
@@ -365,14 +327,14 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverOneTask) {
       &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(1000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(6000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   std::vector<base::TimeDelta> expected_durations = {
       base::TimeDelta::FromMilliseconds(900),
@@ -411,20 +373,20 @@ TEST_F(QueueingTimeEstimatorTest, SlidingWindowOverTwoTasksWithinFirstWindow) {
       &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(1000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(2500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(500);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(6000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   std::vector<base::TimeDelta> expected_durations = {
       base::TimeDelta::FromMilliseconds(400),
@@ -464,23 +426,23 @@ TEST_F(QueueingTimeEstimatorTest,
   QueueingTimeEstimatorForTest estimator(
       &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(4000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(2500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(6000);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   std::vector<base::TimeDelta> expected_durations = {
       base::TimeDelta::FromMilliseconds(0),
@@ -514,42 +476,42 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithSingleStepPerWindow) {
   QueueingTimeEstimatorForTest estimator(
       &client, base::TimeDelta::FromSeconds(1), 1, time);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
   time += base::TimeDelta::FromMilliseconds(1001);
 
   // Second window should not be reported.
   estimator.OnRendererStateChanged(true, time);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(456);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   time += base::TimeDelta::FromMilliseconds(200);
   estimator.OnRendererStateChanged(false, time);
   time += base::TimeDelta::FromMilliseconds(343);
 
   // Third, fourth windows should be reported
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   time += base::TimeDelta::FromMilliseconds(501);
 
   // Fifth, sixth task should not be reported
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(800);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   estimator.OnRendererStateChanged(true, time);
   time += base::TimeDelta::FromMilliseconds(200);
   estimator.OnRendererStateChanged(false, time);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(999);
 
   // Seventh task should be reported.
   time += base::TimeDelta::FromMilliseconds(200);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(0),
@@ -587,53 +549,53 @@ TEST_F(QueueingTimeEstimatorTest, BackgroundedEQTsWithMutipleStepsPerWindow) {
   QueueingTimeEstimatorForTest estimator(
       &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   estimator.OnRendererStateChanged(true, time);
   // This task should be ignored.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(800);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   estimator.OnRendererStateChanged(false, time);
 
   time += base::TimeDelta::FromMilliseconds(400);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(300);
   estimator.OnRendererStateChanged(true, time);
   time += base::TimeDelta::FromMilliseconds(2000);
   // These tasks should be ignored.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(2000);
-  estimator.OnTopLevelTaskCompleted(time);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(3400);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
   estimator.OnRendererStateChanged(false, time);
 
   time += base::TimeDelta::FromMilliseconds(2000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(1500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(800);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(2500);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Window with last step should not be reported.
   estimator.OnRendererStateChanged(true, time);
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   EXPECT_THAT(client.expected_queueing_times(),
               testing::ElementsAre(base::TimeDelta::FromMilliseconds(25),
@@ -661,25 +623,25 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Dummy task to initialize the estimator.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
 
   // Beginning of window 1.
   time += base::TimeDelta::FromMilliseconds(500);
   scoped_refptr<MainThreadTaskQueueForTest> default_queue(
       new MainThreadTaskQueueForTest(QueueType::kDefault));
-  estimator.OnTopLevelTaskStarted(time, default_queue.get());
+  estimator.OnExecutionStarted(time, default_queue.get());
   time += base::TimeDelta::FromMilliseconds(3000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(1500);
 
   // Beginning of window 2.
   time += base::TimeDelta::FromMilliseconds(3000);
-  estimator.OnTopLevelTaskStarted(time, default_queue.get());
+  estimator.OnExecutionStarted(time, default_queue.get());
   time += base::TimeDelta::FromMilliseconds(3000);
   // 1000 ms after beginning of window 3.
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(1000);
   scoped_refptr<MainThreadTaskQueueForTest> frame_loading_queue(
@@ -692,9 +654,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
                                                 frame_throttleable_queue.get(),
                                                 unthrottled_queue.get()};
   for (auto* queue : queues_for_thousand) {
-    estimator.OnTopLevelTaskStarted(time, queue);
+    estimator.OnExecutionStarted(time, queue);
     time += base::TimeDelta::FromMilliseconds(1000);
-    estimator.OnTopLevelTaskCompleted(time);
+    estimator.OnExecutionStopped(time);
   }
 
   // Beginning of window 4.
@@ -710,9 +672,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
       unthrottled_queue.get(),
       compositor_queue.get()};
   for (auto* queue : queues_for_six_hundred) {
-    estimator.OnTopLevelTaskStarted(time, queue);
+    estimator.OnExecutionStarted(time, queue);
     time += base::TimeDelta::FromMilliseconds(600);
-    estimator.OnTopLevelTaskCompleted(time);
+    estimator.OnExecutionStopped(time);
   }
   time += base::TimeDelta::FromMilliseconds(600);
 
@@ -720,22 +682,22 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByTaskQueueType) {
   // supported queue type.
   scoped_refptr<MainThreadTaskQueueForTest> control_queue(
       new MainThreadTaskQueueForTest(QueueType::kControl));
-  estimator.OnTopLevelTaskStarted(time, control_queue.get());
+  estimator.OnExecutionStarted(time, control_queue.get());
   time += base::TimeDelta::FromMilliseconds(300);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // The following task contributes to "Other" because kTest is not a supported
   // queue type.
   scoped_refptr<MainThreadTaskQueueForTest> test_queue(
       new MainThreadTaskQueueForTest(QueueType::kTest));
-  estimator.OnTopLevelTaskStarted(time, test_queue.get());
+  estimator.OnExecutionStarted(time, test_queue.get());
   time += base::TimeDelta::FromMilliseconds(300);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // The following task contributes to "Other" because there is no task queue.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(200);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // End of window 4. Now check the vectors per task queue type.
   EXPECT_THAT(client.QueueTypeValues(QueueType::kDefault),
@@ -845,8 +807,8 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
       &client, base::TimeDelta::FromSeconds(5), 5, time);
   time += base::TimeDelta::FromMilliseconds(5000);
   // Dummy task to initialize the estimator.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStarted(time, nullptr);
+  estimator.OnExecutionStopped(time);
   scoped_refptr<MainThreadTaskQueueForTest> queue1(
       new MainThreadTaskQueueForTest(QueueType::kTest));
 
@@ -858,9 +820,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetFrameType(FrameScheduler::FrameType::kMainFrame)
           .Build();
   queue1->SetFrameSchedulerForTest(frame1.get());
-  estimator.OnTopLevelTaskStarted(time, queue1.get());
+  estimator.OnExecutionStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(3000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(1500);
   // Beginning of window 2.
@@ -872,17 +834,17 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetIsFrameVisible(true)
           .Build();
   queue1->SetFrameSchedulerForTest(frame2.get());
-  estimator.OnTopLevelTaskStarted(time, queue1.get());
+  estimator.OnExecutionStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(2000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   scoped_refptr<MainThreadTaskQueueForTest> queue2(
       new MainThreadTaskQueueForTest(QueueType::kTest));
   queue2->SetFrameSchedulerForTest(frame2.get());
   time += base::TimeDelta::FromMilliseconds(1000);
-  estimator.OnTopLevelTaskStarted(time, queue2.get());
+  estimator.OnExecutionStarted(time, queue2.get());
   time += base::TimeDelta::FromMilliseconds(2000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Beginning of window 3.
   // Scheduler with frame type: MAIN_FRAME_VISIBLE.
@@ -894,9 +856,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetIsExemptFromThrottling(true)
           .Build();
   queue1->SetFrameSchedulerForTest(frame3.get());
-  estimator.OnTopLevelTaskStarted(time, queue1.get());
+  estimator.OnExecutionStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(3000);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // Scheduler with frame type: MAIN_FRAME_BACKGROUND.
   std::unique_ptr<FakeFrameScheduler> frame4 =
@@ -906,10 +868,10 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
           .SetIsExemptFromThrottling(true)
           .Build();
   queue1->SetFrameSchedulerForTest(frame4.get());
-  estimator.OnTopLevelTaskStarted(time, queue1.get());
+  estimator.OnExecutionStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(3000);
   // 1000 ms after beginning of window 4.
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   time += base::TimeDelta::FromMilliseconds(1000);
   // Scheduler with frame type: SAME_ORIGIN_VISIBLE.
@@ -937,9 +899,9 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
                                                    frame7.get()};
   for (auto* scheduler : schedulers_for_thousand) {
     queue1->SetFrameSchedulerForTest(scheduler);
-    estimator.OnTopLevelTaskStarted(time, queue1.get());
+    estimator.OnExecutionStarted(time, queue1.get());
     time += base::TimeDelta::FromMilliseconds(1000);
-    estimator.OnTopLevelTaskCompleted(time);
+    estimator.OnExecutionStopped(time);
   }
 
   // Beginning of window 5.
@@ -973,24 +935,24 @@ TEST_F(QueueingTimeEstimatorTest, SplitEQTByFrameStatus) {
       frame9.get(), frame7.get(), frame10.get(), frame11.get()};
   for (auto* scheduler : schedulers_for_four_hundred) {
     queue1->SetFrameSchedulerForTest(scheduler);
-    estimator.OnTopLevelTaskStarted(time, queue1.get());
+    estimator.OnExecutionStarted(time, queue1.get());
     time += base::TimeDelta::FromMilliseconds(400);
-    estimator.OnTopLevelTaskCompleted(time);
+    estimator.OnExecutionStopped(time);
   }
 
   // The following tasks contribute to "Other" because there is no frame.
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(300);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   queue1->DetachFromFrameScheduler();
-  estimator.OnTopLevelTaskStarted(time, queue1.get());
+  estimator.OnExecutionStarted(time, queue1.get());
   time += base::TimeDelta::FromMilliseconds(300);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
-  estimator.OnTopLevelTaskStarted(time, nullptr);
+  estimator.OnExecutionStarted(time, nullptr);
   time += base::TimeDelta::FromMilliseconds(800);
-  estimator.OnTopLevelTaskCompleted(time);
+  estimator.OnExecutionStopped(time);
 
   // End of window 5. Now check the vectors per frame type.
   EXPECT_THAT(client.FrameStatusValues(FrameStatus::kMainFrameBackground),

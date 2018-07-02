@@ -198,38 +198,6 @@ TEST_F(SequenceManagerTestWithCustomInitialization,
   EXPECT_EQ(18, test_count_uses_time_source.now_calls_count());
 }
 
-TEST_F(SequenceManagerTestWithCustomInitialization,
-       NowNotCalledForNestedTasks) {
-  message_loop_.reset(new MessageLoop());
-  // This memory is managed by the SequenceManager, but we need to hold a
-  // pointer to this object to read out how many times Now was called.
-  TestCountUsesTimeSource test_count_uses_time_source;
-
-  manager_ = SequenceManagerForTest::Create(message_loop_.get(),
-                                            message_loop_->task_runner(),
-                                            &test_count_uses_time_source);
-  manager_->AddTaskTimeObserver(&test_task_time_observer_);
-
-  runners_.push_back(CreateTaskQueue());
-
-  std::vector<std::pair<OnceClosure, bool>> tasks_to_post_from_nested_loop;
-  for (int i = 0; i < 7; ++i) {
-    tasks_to_post_from_nested_loop.push_back(
-        std::make_pair(BindOnce(&NopTask), true));
-  }
-
-  runners_[0]->PostTask(
-      FROM_HERE, BindOnce(&PostFromNestedRunloop, RetainedRef(runners_[0]),
-                          Unretained(&tasks_to_post_from_nested_loop)));
-
-  RunLoop().RunUntilIdle();
-  // We need to call Now twice, to measure the start and end of the outermost
-  // task. We shouldn't call it for any of the nested tasks.
-  // Also Now is called when a task is scheduled (8 times).
-  // That brings expected call count for Now() to 2 + 8 = 10
-  EXPECT_EQ(10, test_count_uses_time_source.now_calls_count());
-}
-
 void NullTask() {}
 
 void TestTask(uint64_t value, std::vector<EnqueueOrder>* out_result) {
