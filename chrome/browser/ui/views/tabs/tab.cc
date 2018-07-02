@@ -554,7 +554,7 @@ void Tab::ButtonPressed(views::Button* sender, const ui::Event& event) {
 void Tab::ShowContextMenuForView(views::View* source,
                                  const gfx::Point& point,
                                  ui::MenuSourceType source_type) {
-  if (!closing())
+  if (!closing_)
     controller_->ShowContextMenuForTab(this, point, source_type);
 }
 
@@ -1426,7 +1426,13 @@ void Tab::PaintSeparators(gfx::Canvas* canvas) {
 void Tab::UpdateIconVisibility() {
   // TODO(pkasting): This whole function should go away, and we should simply
   // compute child visibility state in Layout().
-  center_favicon_ = false;
+
+  // Don't adjust whether we're centering the favicon during tab closure; let it
+  // stay however it was prior to closing the tab.  This prevents the icon from
+  // sliding left at the end of closing a non-narrow tab.
+  if (!closing_)
+    center_favicon_ = false;
+
   showing_icon_ = showing_alert_indicator_ = false;
   extra_padding_before_content_ = false;
 
@@ -1510,7 +1516,10 @@ void Tab::UpdateIconVisibility() {
       if (!showing_close_button_ && !showing_alert_indicator_ &&
           !showing_icon_ && has_favicon) {
         showing_icon_ = true;
-        center_favicon_ = true;
+
+        // See comments near top of function on why this conditional is here.
+        if (!closing_)
+          center_favicon_ = true;
       }
     }
     extra_padding_before_content_ =

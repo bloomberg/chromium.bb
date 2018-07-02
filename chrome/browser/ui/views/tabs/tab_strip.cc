@@ -546,6 +546,8 @@ void TabStrip::MoveTab(int from_model_index,
 }
 
 void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
+  const bool first_unpinned_tab = model_index == GetPinnedTabCount();
+
   if (!touch_layout_)
     PrepareForAnimation();
 
@@ -563,9 +565,29 @@ void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
   GenerateIdealBounds();
   AnimateToIdealBounds();
 
-  // Animate the tab being closed to zero width.
+  // TODO(pkasting): When closing multiple tabs, we get repeated RemoveTabAt()
+  // calls, each of which closes a new tab and thus generates different ideal
+  // bounds.  We should update the animations of any other tabs that are
+  // currently being closed to reflect the new ideal bounds, or else change from
+  // removing one tab at a time to animating the removal of all tabs at once.
+
+  // Compute the target bounds for animating this tab closed.  The tab's left
+  // edge should stay joined to the right edge of the previous tab, if any.
   gfx::Rect tab_bounds = tab->bounds();
-  tab_bounds.set_width(0);
+  int desired_x = TabStartX();
+  if (model_index > 0) {
+    desired_x = ideal_bounds(model_index - 1).right() - Tab::GetOverlap();
+    if (first_unpinned_tab)
+      desired_x += GetPinnedToNonPinnedOffset();
+  }
+  tab_bounds.set_x(desired_x);
+
+  // The tab should animate to the width of the overlap in order to close at the
+  // same speed the surrounding tabs are moving, since at this width the
+  // subsequent tab is naturally positioned at the same X coordinate.
+  tab_bounds.set_width(Tab::GetOverlap());
+
+  // Animate the tab closed.
   bounds_animator_.AnimateViewTo(tab, tab_bounds);
   bounds_animator_.SetAnimationDelegate(
       tab, std::make_unique<RemoveTabDelegate>(this, tab));
@@ -1493,12 +1515,24 @@ void TabStrip::StartInsertTabAnimation(int model_index) {
 
   GenerateIdealBounds();
 
-  // Set the current bounds to be the correct place but 0 width.
+  // Insert the tab just after the current right edge of the previous tab, if
+  // any.
   gfx::Rect bounds = ideal_bounds(model_index);
-  bounds.set_width(0);
-  tab_at(model_index)->SetBoundsRect(bounds);
+  if (model_index > 0) {
+    int desired_x =
+        tab_at(model_index - 1)->bounds().right() - Tab::GetOverlap();
+    if (model_index == GetPinnedTabCount())
+      desired_x += GetPinnedToNonPinnedOffset();
+    bounds.set_x(desired_x);
+  }
+
+  // Start at the width of the overlap in order to animate at the same speed the
+  // surrounding tabs are moving, since at this width the subsequent tab is
+  // naturally positioned at the same X coordinate.
+  bounds.set_width(Tab::GetOverlap());
 
   // Animate in to the full width.
+  tab_at(model_index)->SetBoundsRect(bounds);
   AnimateToIdealBounds();
 }
 
@@ -1515,7 +1549,14 @@ void TabStrip::AnimateToIdealBounds() {
     if (tab->dragging() && !bounds_animator_.IsAnimating(tab))
       continue;
 
-    bounds_animator_.AnimateViewTo(tab, ideal_bounds(i));
+    // Also skip tabs already being animated to the same ideal bounds.  Calling
+    // AnimateViewTo() again restarts the animation, which changes the timing of
+    // how the tab animates, leading to hitches.
+    const gfx::Rect& target_bounds = ideal_bounds(i);
+    if (bounds_animator_.GetTargetBounds(tab) == target_bounds)
+      continue;
+
+    bounds_animator_.AnimateViewTo(tab, target_bounds);
 
     // Set an animation delegate for the tab so it will clip appropriately.
     // Don't do this if dragging() is true.  In this case the tab was
@@ -1530,7 +1571,9 @@ void TabStrip::AnimateToIdealBounds() {
     }
   }
 
-  bounds_animator_.AnimateViewTo(new_tab_button_, new_tab_button_bounds_);
+  if (bounds_animator_.GetTargetBounds(new_tab_button_) !=
+      new_tab_button_bounds_)
+    bounds_animator_.AnimateViewTo(new_tab_button_, new_tab_button_bounds_);
 }
 
 bool TabStrip::ShouldHighlightCloseButtonAfterRemove() {
