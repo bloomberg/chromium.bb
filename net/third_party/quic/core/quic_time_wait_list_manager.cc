@@ -75,13 +75,13 @@ class QuicTimeWaitListManager::QueuedPacket {
 QuicTimeWaitListManager::QuicTimeWaitListManager(
     QuicPacketWriter* writer,
     Visitor* visitor,
-    QuicConnectionHelperInterface* helper,
+    const QuicClock* clock,
     QuicAlarmFactory* alarm_factory)
     : time_wait_period_(
           QuicTime::Delta::FromSeconds(FLAGS_quic_time_wait_list_seconds)),
       connection_id_clean_up_alarm_(
           alarm_factory->CreateAlarm(new ConnectionIdCleanUpAlarm(this))),
-      clock_(helper->GetClock()),
+      clock_(clock),
       writer_(writer),
       visitor_(visitor) {
   SetConnectionIdCleanUpAlarm();

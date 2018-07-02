@@ -330,7 +330,7 @@ class QuicDispatcherTest : public QuicTest {
   void CreateTimeWaitListManager() {
     time_wait_list_manager_ = new MockTimeWaitListManager(
         QuicDispatcherPeer::GetWriter(dispatcher_.get()), dispatcher_.get(),
-        &helper_, &alarm_factory_);
+        helper_.GetClock(), &alarm_factory_);
     // dispatcher_ takes the ownership of time_wait_list_manager_.
     QuicDispatcherPeer::SetTimeWaitListManager(dispatcher_.get(),
                                                time_wait_list_manager_);
