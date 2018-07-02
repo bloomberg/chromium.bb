@@ -41,16 +41,16 @@ namespace {
 
 // By spec, dropdowns should have a min width of 64, and should always have
 // a width which is a multiple of 12.
-const int kDropdownWidthMultiple = 12;
-const int kDropdownMinWidth = 64;
+const int kAutofillPopupDropdownWidthMultiple = 12;
+const int kAutofillPopupDropdownMinWidth = 64;
 
 // TODO(crbug.com/831603): Determine how colors should be shared with menus
 // and/or omnibox, and how these should interact (if at all) with native
 // theme colors.
-const SkColor kAutofillBackgroundColor = SK_ColorWHITE;
-const SkColor kSelectedBackgroundColor = gfx::kGoogleGrey200;
-const SkColor kFooterBackgroundColor = gfx::kGoogleGrey050;
-const SkColor kSeparatorColor = gfx::kGoogleGrey200;
+const SkColor kAutofillPopupBackgroundColor = SK_ColorWHITE;
+const SkColor kAutofillPopupSelectedBackgroundColor = gfx::kGoogleGrey200;
+const SkColor kAutofillPopupFooterBackgroundColor = gfx::kGoogleGrey050;
+const SkColor kAutofillPopupSeparatorColor = gfx::kGoogleGrey200;
 
 int GetCornerRadius() {
   return ChromeLayoutProvider::Get()->GetCornerRadiusMetric(
@@ -226,7 +226,8 @@ class AutofillPopupSuggestionView : public AutofillPopupItemView {
   // AutofillPopupRowView:
   std::unique_ptr<views::Background> CreateBackground() override {
     return views::CreateSolidBackground(
-        is_selected_ ? kSelectedBackgroundColor : kAutofillBackgroundColor);
+        is_selected_ ? kAutofillPopupSelectedBackgroundColor
+                     : kAutofillPopupBackgroundColor);
   }
 
  private:
@@ -259,13 +260,14 @@ class AutofillPopupFooterView : public AutofillPopupItemView {
         /*left=*/0,
         /*bottom=*/0,
         /*right=*/0,
-        /*color=*/kSeparatorColor));
+        /*color=*/kAutofillPopupSeparatorColor));
     AutofillPopupItemView::CreateContent();
   }
 
   std::unique_ptr<views::Background> CreateBackground() override {
-    return views::CreateSolidBackground(is_selected_ ? kSelectedBackgroundColor
-                                                     : kFooterBackgroundColor);
+    return views::CreateSolidBackground(
+        is_selected_ ? kAutofillPopupSelectedBackgroundColor
+                     : kAutofillPopupFooterBackgroundColor);
   }
 
  private:
@@ -321,7 +323,7 @@ class AutofillPopupSeparatorView : public AutofillPopupRowView {
         /*left=*/0,
         /*bottom=*/views::MenuConfig::instance().separator_thickness,
         /*right=*/0,
-        /*color=*/kSeparatorColor));
+        /*color=*/kAutofillPopupSeparatorColor));
     SchedulePaint();
   }
 
@@ -384,7 +386,7 @@ AutofillPopupViewNativeViews::AutofillPopupViewNativeViews(
   layout->set_main_axis_alignment(views::BoxLayout::MAIN_AXIS_ALIGNMENT_START);
 
   CreateChildViews();
-  SetBackground(views::CreateSolidBackground(kAutofillBackgroundColor));
+  SetBackground(views::CreateSolidBackground(kAutofillPopupBackgroundColor));
 }
 
 AutofillPopupViewNativeViews::~AutofillPopupViewNativeViews() {}
@@ -411,17 +413,17 @@ gfx::Size AutofillPopupViewNativeViews::CalculatePreferredSize() const {
   gfx::Size size = AutofillPopupBaseView::CalculatePreferredSize();
   if (contents_width < size.width()) {
     contents_width = size.width();
-    // Use multiples of |kDropdownWidthMultiple| if the required width is larger
-    // than the element width.
-    if (contents_width % kDropdownWidthMultiple) {
-      contents_width +=
-          kDropdownWidthMultiple - (contents_width % kDropdownWidthMultiple);
+    // Use multiples of |kAutofillPopupDropdownWidthMultiple| if the required
+    // width is larger than the element width.
+    if (contents_width % kAutofillPopupDropdownWidthMultiple) {
+      contents_width += kAutofillPopupDropdownWidthMultiple -
+                        (contents_width % kAutofillPopupDropdownWidthMultiple);
     }
   }
 
   // Notwithstanding all the above rules, enforce a hard minimum so the dropdown
   // is not too small to interact with.
-  size.set_width(std::max(kDropdownMinWidth, contents_width));
+  size.set_width(std::max(kAutofillPopupDropdownMinWidth, contents_width));
   return size;
 }
 
@@ -516,7 +518,7 @@ void AutofillPopupViewNativeViews::CreateChildViews() {
   if (has_footer) {
     views::View* footer_container = new views::View();
     footer_container->SetBackground(
-        views::CreateSolidBackground(kFooterBackgroundColor));
+        views::CreateSolidBackground(kAutofillPopupFooterBackgroundColor));
 
     views::BoxLayout* footer_layout = footer_container->SetLayoutManager(
         std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
