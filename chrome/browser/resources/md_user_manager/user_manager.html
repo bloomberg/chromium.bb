@@ -87,7 +87,7 @@
     .pod {
       @apply --cr-card-elevation;
       border-radius: var(--cr-card-border-radius);
-      color: var(--primary-text-color);
+      color: var(--cr-primary-text-color);
       cursor: default;
       height: auto;
       transform: none;
@@ -133,7 +133,6 @@
 
     .pod .main-pane .name-container .name,
     .reauth-hint-container .reauth-name-hint {
-      color: inherit;
       font-size: inherit;
       margin: 0;
       padding: 0;
@@ -282,8 +281,12 @@
       height: auto;
     }
 
+    .action-box-menu-title-name {
+      color: var(--cr-primary-text-color);
+    }
+
     .action-box-menu-title-email {
-      color: var(--paper-grey-600);
+      color: var(--cr-secondary-text-color);
     }
 
     .action-box-menu-remove {

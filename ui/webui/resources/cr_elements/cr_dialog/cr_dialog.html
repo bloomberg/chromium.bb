@@ -5,7 +5,6 @@
 <link rel="import" href="chrome://resources/cr_elements/shared_vars_css.html">
 <link rel="import" href="chrome://resources/html/assert.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
-<link rel="import" href="chrome://resources/polymer/v1_0/paper-styles/default-theme.html">
 
 <dom-module id="cr-dialog">
   <template>
@@ -61,7 +60,7 @@
       :host ::slotted([slot=body]) {
         -webkit-padding-end: 20px;
         -webkit-padding-start: 20px;
-        color: var(--secondary-text-color);
+        color: var(--cr-secondary-text-color);
         padding-bottom: 0;
         padding-top: 0;
         @apply --cr-dialog-body;
@@ -78,7 +77,7 @@
       :host ::slotted([slot=title]) {
         -webkit-padding-end: 20px;
         -webkit-padding-start: 20px;
-        color: var(--primary-text-color);
+        color: var(--cr-primary-text-color);
         flex: 1;
         font-size: calc(15 / 13 * 100%);
         line-height: 1;
@@ -108,7 +107,7 @@
       :host ::slotted([slot=footer]) {
         border-bottom-left-radius: inherit;
         border-bottom-right-radius: inherit;
-        border-top: 1px solid var(--divider-color);
+        border-top: 1px solid #dbdbdb;
         margin: 0;
         padding: 16px 20px;
       }
