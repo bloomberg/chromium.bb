@@ -129,6 +129,13 @@ TEST(WritableUnalignedMappingTest, Map_Unaligned) {
   EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
 }
 
+TEST(WritableUnalignedMappingTest, Map_UnalignedHandle) {
+  auto region = CreateHandle(kUnalignedData, kUnalignedDataSize);
+  WritableUnalignedMapping shm(region, kDataSize, kUnalignedOffset);
+  ASSERT_TRUE(shm.IsValid());
+  EXPECT_EQ(0, memcmp(shm.memory(), kData, kDataSize));
+}
+
 TEST(WritableUnalignedMappingTest, Map_InvalidRegion) {
   base::UnsafeSharedMemoryRegion region;
   WritableUnalignedMapping shm(region, kDataSize, 0);
