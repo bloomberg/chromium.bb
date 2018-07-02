@@ -683,6 +683,7 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     // We don't measure the start time when wait_for_debugger flag is set. So
     // we set the NULL time here.
     step_time_ = base::TimeTicks();
+    inflight_start_task_->set_skip_recording_startup_time();
   }
   for (auto& observer : listener_list_)
     observer.OnRegisteredToDevToolsManager();
