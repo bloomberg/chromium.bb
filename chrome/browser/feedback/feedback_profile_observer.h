@@ -41,7 +41,7 @@ class FeedbackProfileObserver : public content::NotificationObserver {
   void QueueUnsentReports(content::BrowserContext* context);
 
   static void QueueSingleReport(feedback::FeedbackUploader* uploader,
-                                const std::string& data);
+                                std::unique_ptr<std::string> data);
 
   // Used to track creation of profiles so we can load any unsent reports
   // for that profile.

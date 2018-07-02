@@ -52,8 +52,8 @@ class MockFeedbackUploader : public FeedbackUploader {
         FROM_HERE,
         base::BindOnce(
             &FeedbackReport::LoadReportsAndQueue, feedback_reports_path(),
-            base::Bind(&MockFeedbackUploader::QueueSingleReport,
-                       base::SequencedTaskRunnerHandle::Get(), this)));
+            base::BindRepeating(&MockFeedbackUploader::QueueSingleReport,
+                                base::SequencedTaskRunnerHandle::Get(), this)));
   }
 
   const std::map<std::string, unsigned int>& dispatched_reports() const {
@@ -66,10 +66,10 @@ class MockFeedbackUploader : public FeedbackUploader {
   static void QueueSingleReport(
       scoped_refptr<base::SequencedTaskRunner> main_task_runner,
       MockFeedbackUploader* uploader,
-      const std::string& data) {
+      std::unique_ptr<std::string> data) {
     main_task_runner->PostTask(
         FROM_HERE, base::BindOnce(&MockFeedbackUploader::QueueReport,
-                                  uploader->AsWeakPtr(), data));
+                                  uploader->AsWeakPtr(), std::move(data)));
   }
 
   // FeedbackUploaderChrome:
@@ -122,7 +122,7 @@ class FeedbackUploaderTest : public testing::Test {
   }
 
   void QueueReport(const std::string& data) {
-    uploader_->QueueReport(data);
+    uploader_->QueueReport(std::make_unique<std::string>(data));
   }
 
   MockFeedbackUploader* uploader() const { return uploader_.get(); }

@@ -72,8 +72,8 @@ void FeedbackData::SetAndCompressSystemInfo(
     AddLogs(std::move(sys_info));
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
-        base::Bind(&FeedbackData::CompressLogs, this),
-        base::Bind(&FeedbackData::OnCompressComplete, this));
+        base::BindOnce(&FeedbackData::CompressLogs, this),
+        base::BindOnce(&FeedbackData::OnCompressComplete, this));
   }
 }
 
@@ -143,9 +143,9 @@ void FeedbackData::SendReport() {
     report_sent_ = true;
     userfeedback::ExtensionSubmit feedback_data;
     PrepareReport(&feedback_data);
-    std::string post_body;
-    feedback_data.SerializeToString(&post_body);
-    uploader_->QueueReport(post_body);
+    auto post_body = std::make_unique<std::string>();
+    feedback_data.SerializeToString(post_body.get());
+    uploader_->QueueReport(std::move(post_body));
   }
 }
 
