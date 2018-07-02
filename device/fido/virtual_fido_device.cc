@@ -7,7 +7,6 @@
 #include <tuple>
 #include <utility>
 
-#include "crypto/ec_private_key.h"
 #include "crypto/ec_signature_creator.h"
 #include "device/fido/fido_parsing_utils.h"
 
@@ -120,6 +119,34 @@ VirtualFidoDevice::GenerateAttestationCertificate(
   }
 
   return std::vector<uint8_t>(attestation_cert.begin(), attestation_cert.end());
+}
+
+void VirtualFidoDevice::StoreNewKey(
+    base::span<const uint8_t, kRpIdHashLength> application_parameter,
+    base::span<const uint8_t> key_handle,
+    std::unique_ptr<crypto::ECPrivateKey> private_key) {
+  // Store the registration. Because the key handle is the hashed public key we
+  // just generated, no way this should already be registered.
+  bool did_insert = false;
+  std::tie(std::ignore, did_insert) = mutable_state()->registrations.emplace(
+      fido_parsing_utils::Materialize(key_handle),
+      RegistrationData(std::move(private_key), application_parameter, 1));
+  DCHECK(did_insert);
+}
+
+VirtualFidoDevice::RegistrationData* VirtualFidoDevice::FindRegistrationData(
+    base::span<const uint8_t> key_handle,
+    base::span<const uint8_t, kRpIdHashLength> application_parameter) {
+  // Check if this is our key_handle and it's for this appId.
+  auto it = mutable_state()->registrations.find(key_handle);
+  if (it == mutable_state()->registrations.end())
+    return nullptr;
+
+  if (application_parameter !=
+      base::make_span(it->second.application_parameter))
+    return nullptr;
+
+  return &(it->second);
 }
 
 void VirtualFidoDevice::TryWink(WinkCallback cb) {
