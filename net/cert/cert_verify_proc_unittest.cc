@@ -2728,7 +2728,13 @@ INSTANTIATE_TEST_CASE_P(,
 // NOTE: This test is separate from IntermediateFromAia200 as a different URL
 // needs to be used to avoid having the result depend on globally cached success
 // or failure of the fetch.
-TEST_P(CertVerifyProcInternalWithNetFetchingTest, IntermediateFromAia404) {
+// Test flaky on Win crbug.com/859387
+#if defined(OS_WIN)
+#define MAYBE_IntermediateFromAia404 DISABLED_IntermediateFromAia404
+#else
+#define MAYBE_IntermediateFromAia404 IntermediateFromAia404
+#endif
+TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) {
   const char kHostname[] = "www.example.com";
 
   base::FilePath certs_dir =
@@ -2771,6 +2777,7 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, IntermediateFromAia404) {
                  &verify_result);
   EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));
 }
+#undef MAYBE_IntermediateFromAia404
 
 // Tries verifying a certificate chain that is missing an intermediate. The
 // intermediate is available via AIA.
