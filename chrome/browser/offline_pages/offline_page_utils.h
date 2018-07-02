@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_OFFLINE_PAGES_OFFLINE_PAGE_UTILS_H_
 
 #include <stdint.h>
+#include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -169,7 +171,7 @@ class OfflinePageUtils {
   // to inform if the file access permission is granted.
   static void AcquireFileAccessPermission(
       content::WebContents* web_contents,
-      const base::Callback<void(bool)>& callback);
+      base::OnceCallback<void(bool)> callback);
 };
 
 }  // namespace offline_pages

@@ -230,9 +230,9 @@ ScopedJavaLocalRef<jobjectArray> JNI_SavePageRequest_CreateJavaSavePageRequests(
         ConvertUTF8ToJavaString(env, request.request_origin());
 
     ScopedJavaLocalRef<jobject> j_save_page_request =
-        Java_SavePageRequest_create(env, (int)request.request_state(),
-                                    request.request_id(), url, name_space, id,
-                                    origin);
+        Java_SavePageRequest_create(
+            env, static_cast<int>(request.request_state()),
+            request.request_id(), url, name_space, id, origin);
     env->SetObjectArrayElement(joa, i, j_save_page_request.obj());
   }
 
@@ -1039,7 +1039,7 @@ void OfflinePageBridge::AcquireFileAccessPermission(
   }
   OfflinePageUtils::AcquireFileAccessPermission(
       web_contents,
-      base::Bind(&AcquireFileAccessPermissionCallback, j_callback_ref));
+      base::BindOnce(&AcquireFileAccessPermissionCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

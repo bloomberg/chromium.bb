@@ -77,13 +77,13 @@ class DownloadControllerBase : public download::DownloadItem::Observer,
 
   // Callback when user permission prompt finishes. Args: whether file access
   // permission is acquired.
-  typedef base::Callback<void(bool)> AcquireFileAccessPermissionCallback;
+  using AcquireFileAccessPermissionCallback = base::OnceCallback<void(bool)>;
 
   // Called to prompt the user for file access permission. When finished,
   // |callback| will be executed.
   virtual void AcquireFileAccessPermission(
       const content::ResourceRequestInfo::WebContentsGetter& wc_getter,
-      const AcquireFileAccessPermissionCallback& callback) = 0;
+      AcquireFileAccessPermissionCallback callback) = 0;
 
   // Called by unit test to approve or disapprove file access request.
   virtual void SetApproveFileAccessRequestForTesting(bool approve) {}

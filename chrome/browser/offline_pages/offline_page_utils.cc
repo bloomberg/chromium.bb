@@ -4,6 +4,10 @@
 
 #include "chrome/browser/offline_pages/offline_page_utils.h"
 
+#include <algorithm>
+#include <memory>
+#include <utility>
+
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
@@ -411,15 +415,15 @@ bool OfflinePageUtils::IsShowingTrustedOfflinePage(
 // static
 void OfflinePageUtils::AcquireFileAccessPermission(
     content::WebContents* web_contents,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
 #if defined(OS_ANDROID)
   content::ResourceRequestInfo::WebContentsGetter web_contents_getter =
       GetWebContentsGetter(web_contents);
   DownloadControllerBase::Get()->AcquireFileAccessPermission(
-      web_contents_getter, callback);
+      web_contents_getter, std::move(callback));
 #else
   // Not needed in other platforms.
-  callback.Run(true /*granted*/);
+  std::move(callback).Run(true /*granted*/);
 #endif  // defined(OS_ANDROID)
 }
 
