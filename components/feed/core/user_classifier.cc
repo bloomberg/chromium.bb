@@ -30,7 +30,7 @@ const char kDiscountRatePerDayParam[] = "user_classifier_discount_rate_per_day";
 // Never consider any larger interval than this (so that extreme situations such
 // as losing your phone or going for a long offline vacation do not skew the
 // average too much).
-// When everriding via variation parameters, it is better to use smaller values
+// When overriding via variation parameters, it is better to use smaller values
 // than |kMaxHours| as this it the maximum value reported in the histograms.
 const double kMaxHours = 7 * 24;
 const char kMaxHoursParam[] = "user_classifier_max_hours";
@@ -45,18 +45,15 @@ const char kMinHoursParam[] = "user_classifier_min_hours";
 const double kActiveConsumerClicksAtLeastOncePerHours = 96;
 const char kActiveConsumerClicksAtLeastOncePerHoursParam[] =
     "user_classifier_active_consumer_clicks_at_least_once_per_hours";
-
-// The previous value in production was 66, i.e. 2.75 days. The new value is a
-// shift in the direction we want (having more active users).
 const double kRareUserOpensNTPAtMostOncePerHours = 96;
 const char kRareUserOpensNTPAtMostOncePerHoursParam[] =
     "user_classifier_rare_user_opens_ntp_at_most_once_per_hours";
 
-// The enum used for iteration.
+// List of all Events used for iteration.
 const UserClassifier::Event kEvents[] = {
     UserClassifier::Event::NTP_OPENED, UserClassifier::Event::SUGGESTIONS_USED};
 
-// The summary of the prefs.
+// Arrays of pref names, indexed by Event's int value.
 const char* kRateKeys[] = {prefs::kUserClassifierAverageNTPOpenedPerHour,
                            prefs::kUserClassifierAverageSuggestionsUsedPerHour};
 const char* kLastTimeKeys[] = {prefs::kUserClassifierLastTimeToOpenNTP,
