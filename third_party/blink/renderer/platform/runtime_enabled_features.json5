@@ -255,7 +255,7 @@
     },
     {
       name: "CSSEnvironmentVariables",
-      status: "experimental",
+      status: "stable",
     },
     {
       name: "CSSFocusVisible",
