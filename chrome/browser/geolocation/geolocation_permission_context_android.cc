@@ -133,10 +133,10 @@ void GeolocationPermissionContextAndroid::RequestPermission(
           ShowPermissionInfoBarState::SHOW_PERMISSION_INFOBAR) {
     PermissionUpdateInfoBarDelegate::Create(
         web_contents, content_settings_types,
-        base::Bind(&GeolocationPermissionContextAndroid ::
-                       HandleUpdateAndroidPermissions,
-                   weak_factory_.GetWeakPtr(), id, requesting_frame_origin,
-                   embedding_origin, callback));
+        base::BindOnce(&GeolocationPermissionContextAndroid ::
+                           HandleUpdateAndroidPermissions,
+                       weak_factory_.GetWeakPtr(), id, requesting_frame_origin,
+                       embedding_origin, callback));
 
     return;
   }

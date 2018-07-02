@@ -6,6 +6,10 @@
 #define CHROME_BROWSER_ANDROID_VR_ARCORE_DEVICE_ARCORE_DEVICE_H_
 
 #include <jni.h>
+#include <memory>
+#include <utility>
+#include <vector>
+
 #include "base/android/jni_android.h"
 #include "base/macros.h"
 #include "base/optional.h"

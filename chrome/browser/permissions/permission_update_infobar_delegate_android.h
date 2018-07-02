@@ -35,7 +35,7 @@ enum class ShowPermissionInfoBarState {
 // permissions for previously allowed ContentSettingsTypes.
 class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
-  using PermissionUpdatedCallback = base::Callback<void(bool)>;
+  using PermissionUpdatedCallback = base::OnceCallback<void(bool)>;
 
   // Creates an infobar to resolve conflicts in Android runtime permissions.
   // The necessary runtime permissions are generated based on the list of
@@ -53,7 +53,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
   static infobars::InfoBar* Create(
       content::WebContents* web_contents,
       const std::vector<ContentSettingsType>& content_settings_types,
-      const PermissionUpdatedCallback& callback);
+      PermissionUpdatedCallback callback);
 
   // Creates an infobar to resolve conflicts in Android runtime permissions.
   // Returns the infobar if it was successfully added.
@@ -63,7 +63,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
       content::WebContents* web_contents,
       const std::vector<std::string>& android_permissions,
       int permission_msg_id,
-      const PermissionUpdatedCallback& callback);
+      PermissionUpdatedCallback callback);
 
   // Returns an indicator of whether a permission infobar should be shown or
   // not or cannot be shown.
@@ -80,7 +80,7 @@ class PermissionUpdateInfoBarDelegate : public ConfirmInfoBarDelegate {
       content::WebContents* web_contents,
       const std::vector<std::string>& android_permissions,
       int permission_msg_id,
-      const PermissionUpdatedCallback& callback);
+      PermissionUpdatedCallback callback);
   ~PermissionUpdateInfoBarDelegate() override;
 
   // InfoBarDelegate:
