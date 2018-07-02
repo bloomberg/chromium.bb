@@ -190,7 +190,7 @@ void PrepareWritableFileAndRun(Profile* profile,
                                const base::FilePath& path,
                                const PrepareWritableFileCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   FileSystemInterface* file_system = GetFileSystemByProfile(profile);
   if (!file_system || !IsUnderDriveMountPoint(path)) {
@@ -209,7 +209,7 @@ void EnsureDirectoryExists(Profile* profile,
                            const base::FilePath& directory,
                            const FileOperationCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   if (IsUnderDriveMountPoint(directory)) {
     FileSystemInterface* file_system = GetFileSystemByProfile(profile);
     DCHECK(file_system);

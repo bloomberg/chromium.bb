@@ -22,7 +22,7 @@ void RunCloseCallbackAndReplyTask(const base::Closure& close_callback,
                                   FileError error) {
   if (!close_callback.is_null())
     close_callback.Run();
-  DCHECK(!reply.is_null());
+  DCHECK(reply);
   reply.Run(error);
 }
 
@@ -61,8 +61,8 @@ void WriteOnCacheFileAndReply(FileSystemInterface* file_system,
                               const FileOperationCallback& reply) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(file_system);
-  DCHECK(!callback.is_null());
-  DCHECK(!reply.is_null());
+  DCHECK(callback);
+  DCHECK(reply);
 
   file_system->OpenFile(
       path,

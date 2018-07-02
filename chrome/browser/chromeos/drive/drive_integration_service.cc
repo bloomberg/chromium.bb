@@ -553,7 +553,7 @@ void DriveIntegrationService::OnPushNotificationEnabled(bool enabled) {
 void DriveIntegrationService::ClearCacheAndRemountFileSystem(
     const base::Callback<void(bool)>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   // TODO(crbug.com/845393): Implement for DriveFS.
   if (state_ != INITIALIZED || drivefs_holder_) {
@@ -589,7 +589,7 @@ void DriveIntegrationService::AddBackDriveMountPoint(
     const base::Callback<void(bool)>& callback,
     FileError error) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
 
   state_ = error == FILE_ERROR_OK ? INITIALIZED : NOT_INITIALIZED;
 

@@ -32,7 +32,7 @@ void IterateFileCacheInternal(
 void RunGetResourceEntryCallback(const GetResourceEntryCallback& callback,
                                  std::unique_ptr<ResourceEntry> entry,
                                  FileError error) {
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   if (error != FILE_ERROR_OK)
     entry.reset();
   callback.Run(error, std::move(entry));
@@ -43,7 +43,7 @@ void RunReadDirectoryCallback(
     const DebugInfoCollector::ReadDirectoryCallback& callback,
     std::unique_ptr<ResourceEntryVector> entries,
     FileError error) {
-  DCHECK(!callback.is_null());
+  DCHECK(callback);
   if (error != FILE_ERROR_OK)
     entries.reset();
   callback.Run(error, std::move(entries));
@@ -67,8 +67,8 @@ DebugInfoCollector::~DebugInfoCollector() = default;
 void DebugInfoCollector::GetResourceEntry(
     const base::FilePath& file_path,
     const GetResourceEntryCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   std::unique_ptr<ResourceEntry> entry(new ResourceEntry);
   ResourceEntry* entry_ptr = entry.get();
@@ -85,8 +85,8 @@ void DebugInfoCollector::GetResourceEntry(
 void DebugInfoCollector::ReadDirectory(
     const base::FilePath& file_path,
     const ReadDirectoryCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   std::unique_ptr<ResourceEntryVector> entries(new ResourceEntryVector);
   ResourceEntryVector* entries_ptr = entries.get();
@@ -103,9 +103,9 @@ void DebugInfoCollector::ReadDirectory(
 void DebugInfoCollector::IterateFileCache(
     const IterateFileCacheCallback& iteration_callback,
     const base::Closure& completion_callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!iteration_callback.is_null());
-  DCHECK(!completion_callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(iteration_callback);
+  DCHECK(completion_callback);
 
   blocking_task_runner_->PostTaskAndReply(
       FROM_HERE,
@@ -116,8 +116,8 @@ void DebugInfoCollector::IterateFileCache(
 
 void DebugInfoCollector::GetMetadata(
     const GetFilesystemMetadataCallback& callback) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!callback.is_null());
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(callback);
 
   // Currently, this is just a proxy to the FileSystem.
   // TODO(hidehiko): Move the implementation to here to simplify the
