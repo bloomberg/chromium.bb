@@ -173,7 +173,9 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
     FilesAppBrowserTest,
     ::testing::Values(TestCase("imageOpenDownloads").InGuestMode(),
                       TestCase("imageOpenDownloads"),
-                      TestCase("imageOpenDrive")));
+                      TestCase("imageOpenDrive"),
+                      TestCase("imageOpenGalleryOpenDownloads"),
+                      TestCase("imageOpenGalleryOpenDrive")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     CreateNewFolder, /* create_new_folder.js */
