@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/css/style_engine.h"
 #include "third_party/blink/renderer/core/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
+#include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
@@ -240,10 +241,15 @@ bool CSSVariableResolver::ResolveVariableReference(
 
 CSSVariableData* CSSVariableResolver::ValueForEnvironmentVariable(
     const AtomicString& name) {
+  // If we are in a User Agent Shadow DOM then we should not record metrics.
+  ContainerNode& scope_root = state_.GetTreeScope().RootNode();
+  bool is_ua_scope =
+      scope_root.IsShadowRoot() && ToShadowRoot(scope_root).IsUserAgent();
+
   return state_.GetDocument()
       .GetStyleEngine()
       .EnsureEnvironmentVariables()
-      .ResolveVariable(name);
+      .ResolveVariable(name, !is_ua_scope);
 }
 
 bool CSSVariableResolver::ResolveTokenRange(

@@ -42,13 +42,20 @@ DocumentStyleEnvironmentVariables::Create(StyleEnvironmentVariables& parent,
 }
 
 CSSVariableData* DocumentStyleEnvironmentVariables::ResolveVariable(
-    const AtomicString& name) {
+    const AtomicString& name,
+    bool record_metrics) {
   unsigned id = GenerateHashFromName(name);
-  RecordVariableUsage(id);
+  if (record_metrics)
+    RecordVariableUsage(id);
 
   // Mark the variable as seen so we will invalidate the style if we change it.
   seen_variables_.insert(id);
   return StyleEnvironmentVariables::ResolveVariable(name);
+}
+
+CSSVariableData* DocumentStyleEnvironmentVariables::ResolveVariable(
+    const AtomicString& name) {
+  return ResolveVariable(name, true /* record_metrics */);
 }
 
 void DocumentStyleEnvironmentVariables::InvalidateVariable(

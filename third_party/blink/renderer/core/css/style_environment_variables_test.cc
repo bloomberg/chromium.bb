@@ -39,6 +39,9 @@ class StyleEnvironmentVariablesTest : public PageTestBase {
     PageTestBase::SetUp();
 
     RuntimeEnabledFeatures::SetCSSEnvironmentVariablesEnabled(true);
+
+    // Needed for RecordUseCounter_IgnoreMediaControls.
+    RuntimeEnabledFeatures::SetModernMediaControlsEnabled(true);
   }
 
   void TearDown() override {
@@ -335,6 +338,21 @@ TEST_F(StyleEnvironmentVariablesTest,
     printf("0x%x\n",
            DocumentStyleEnvironmentVariables::GenerateHashFromName(name));
   }
+}
+
+TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_IgnoreMediaControls) {
+  InitializeWithHTML(GetFrame(), "<video controls />");
+
+  EXPECT_FALSE(UseCounter::IsCounted(GetDocument(),
+                                     WebFeature::kCSSEnvironmentVariable));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetTop));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetLeft));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetBottom));
+  EXPECT_FALSE(UseCounter::IsCounted(
+      GetDocument(), WebFeature::kCSSEnvironmentVariable_SafeAreaInsetRight));
 }
 
 TEST_F(StyleEnvironmentVariablesTest, RecordUseCounter_InvalidProperty) {
