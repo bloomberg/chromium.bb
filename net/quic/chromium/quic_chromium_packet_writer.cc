@@ -204,8 +204,11 @@ void QuicChromiumPacketWriter::OnWriteComplete(int rv) {
     // HandleWriteError returns the outcome of that rewrite attempt.
     rv = delegate_->HandleWriteError(rv, std::move(packet_));
     DCHECK(packet_ == nullptr);
-    if (rv == ERR_IO_PENDING)
+    if (rv == ERR_IO_PENDING) {
+      // Set write blocked back as HandleWriteError hasn't complete migration.
+      write_blocked_ = true;
       return;
+    }
   }
   if (retry_count_ != 0) {
     RecordRetryCount(retry_count_);
