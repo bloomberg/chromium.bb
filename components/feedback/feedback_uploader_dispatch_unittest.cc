@@ -31,6 +31,10 @@ constexpr int kHttpPostSuccessNoContent = 204;
 constexpr int kHttpPostFailClientError = 400;
 constexpr int kHttpPostFailServerError = 500;
 
+void QueueReport(FeedbackUploader* uploader, const std::string& report_data) {
+  uploader->QueueReport(std::make_unique<std::string>(report_data));
+}
+
 }  // namespace
 
 class FeedbackUploaderDispatchTest : public ::testing::Test {
@@ -75,7 +79,7 @@ TEST_F(FeedbackUploaderDispatchTest, VariationHeaders) {
       context(), FeedbackUploaderFactory::CreateUploaderTaskRunner());
 
   net::TestURLFetcherFactory factory;
-  uploader.QueueReport("test");
+  QueueReport(&uploader, "test");
 
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   net::HttpRequestHeaders headers;
@@ -99,7 +103,7 @@ TEST_F(FeedbackUploaderDispatchTest, TestVariousServerResponses) {
   // increase the backoff delay.
   net::TestURLFetcherFactory factory;
   factory.set_remove_fetcher_on_delete(true);
-  uploader.QueueReport("Successful report");
+  QueueReport(&uploader, "Successful report");
   net::TestURLFetcher* fetcher = factory.GetFetcherByID(0);
   fetcher->set_response_code(kHttpPostSuccessNoContent);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -108,7 +112,7 @@ TEST_F(FeedbackUploaderDispatchTest, TestVariousServerResponses) {
 
   // Failed reports due to client errors are not retried. No backoff delay
   // should be doubled.
-  uploader.QueueReport("Client error failed report");
+  QueueReport(&uploader, "Client error failed report");
   fetcher = factory.GetFetcherByID(0);
   fetcher->set_response_code(kHttpPostFailClientError);
   fetcher->delegate()->OnURLFetchComplete(fetcher);
@@ -116,7 +120,7 @@ TEST_F(FeedbackUploaderDispatchTest, TestVariousServerResponses) {
   EXPECT_TRUE(uploader.QueueEmpty());
 
   // Failed reports due to server errors are retried.
-  uploader.QueueReport("Server error failed report");
+  QueueReport(&uploader, "Server error failed report");
   fetcher = factory.GetFetcherByID(0);
   fetcher->set_response_code(kHttpPostFailServerError);
   fetcher->delegate()->OnURLFetchComplete(fetcher);

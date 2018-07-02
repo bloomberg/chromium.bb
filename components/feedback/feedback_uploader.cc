@@ -72,8 +72,8 @@ void FeedbackUploader::SetMinimumRetryDelayForTesting(base::TimeDelta delay) {
   g_minimum_retry_delay = delay;
 }
 
-void FeedbackUploader::QueueReport(const std::string& data) {
-  QueueReportWithDelay(data, base::TimeDelta());
+void FeedbackUploader::QueueReport(std::unique_ptr<std::string> data) {
+  QueueReportWithDelay(std::move(data), base::TimeDelta());
 }
 
 void FeedbackUploader::StartDispatchingReport() {
@@ -205,10 +205,11 @@ void FeedbackUploader::UpdateUploadTimer() {
   }
 }
 
-void FeedbackUploader::QueueReportWithDelay(const std::string& data,
+void FeedbackUploader::QueueReportWithDelay(std::unique_ptr<std::string> data,
                                             base::TimeDelta delay) {
   reports_queue_.emplace(base::MakeRefCounted<FeedbackReport>(
-      feedback_reports_path_, base::Time::Now() + delay, data, task_runner_));
+      feedback_reports_path_, base::Time::Now() + delay, std::move(data),
+      task_runner_));
   UpdateUploadTimer();
 }
 

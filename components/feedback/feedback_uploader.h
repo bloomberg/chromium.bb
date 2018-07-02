@@ -43,7 +43,7 @@ class FeedbackUploader : public KeyedService,
   static void SetMinimumRetryDelayForTesting(base::TimeDelta delay);
 
   // Queues a report for uploading.
-  void QueueReport(const std::string& data);
+  void QueueReport(std::unique_ptr<std::string> data);
 
   bool QueueEmpty() const { return reports_queue_.empty(); }
 
@@ -101,7 +101,8 @@ class FeedbackUploader : public KeyedService,
   // Update our timer for uploading the next report.
   void UpdateUploadTimer();
 
-  void QueueReportWithDelay(const std::string& data, base::TimeDelta delay);
+  void QueueReportWithDelay(std::unique_ptr<std::string> data,
+                            base::TimeDelta delay);
 
   // Browser context this uploader was created for.
   content::BrowserContext* context_;
