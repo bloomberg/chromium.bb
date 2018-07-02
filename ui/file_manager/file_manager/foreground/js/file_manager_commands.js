@@ -275,11 +275,13 @@ CommandUtil.shouldShowMenuItemsForEntry = function(volumeManager, entry) {
   if (!volumeManager || !volumeManager.getVolumeInfo(entry))
     return false;
 
-  // If the entry is root entry of its volume, hide context menu entries.
-  if (CommandUtil.isRootEntry(volumeManager, entry))
+  // If the entry is root entry of its volume (but not a team drive root), hide
+  // context menu entries.
+  if (CommandUtil.isRootEntry(volumeManager, entry) &&
+      !util.isTeamDriveRoot(entry))
     return false;
 
-  if (util.isTeamDrivesGrandRoot(entry) || util.isTeamDriveRoot(entry))
+  if (util.isTeamDrivesGrandRoot(entry))
     return false;
 
   return true;

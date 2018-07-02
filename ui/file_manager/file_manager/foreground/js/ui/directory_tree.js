@@ -556,7 +556,7 @@ function SubDirectoryItem(label, dirEntry, parentDirItem, tree) {
   }
 
   // Sets up context menu of the item.
-  if (tree.contextMenuForSubitems && !util.isTeamDriveRoot(dirEntry))
+  if (tree.contextMenuForSubitems)
     cr.ui.contextMenuHandler.setContextMenu(item, tree.contextMenuForSubitems);
 
   // Populates children now if needed.

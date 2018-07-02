@@ -239,6 +239,23 @@ var SHARED_WITH_ME_ENTRY_SET = [
 ];
 
 /**
+ * Entry set for Drive that includes team drives of various permissions and
+ * nested files with various permissions.
+ *
+ * TODO(sashab): Add support for capabilities of Team Drive roots.
+ *
+ * @type {Array<TestEntryInfo>}
+ * @const
+ */
+var TEAM_DRIVE_ENTRY_SET = [
+  ENTRIES.hello,
+  ENTRIES.teamDriveA,
+  ENTRIES.teamDriveAFile,
+  ENTRIES.teamDriveB,
+  ENTRIES.teamDriveBFile,
+];
+
+/**
  * Opens a Files app's main window.
  *
  * TODO(mtomasz): Pass a volumeId or an enum value instead of full paths.

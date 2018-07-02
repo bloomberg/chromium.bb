@@ -608,3 +608,123 @@ testcase.checkPasteDisabledForReadOnlyFolderInTree = function() {
         false);
   });
 };
+
+/**
+ * Tests that the specified menu item is in |expectedEnabledState| when the
+ * context menu for the Team Drive root with name |teamDriveName| is opened in
+ * the directory tree.
+ *
+ * TODO(sashab): Make this take a map of {commandId: expectedEnabledState}, and
+ * flatten all tests into 1.
+ *
+ * @param {string} commandId ID of the command in the context menu to check.
+ * @param {string} teamDriveName Team drive name to open the context menu for.
+ * @param {boolean} expectedEnabledState True if the command should be enabled
+ *     in the context menu, false if not.
+ */
+function checkTeamDriveContextMenuInTree(
+    commandId, teamDriveName, expectedEnabledState) {
+  let navItemSelector = `#directory-tree ` +
+      `.tree-item[full-path-for-testing="/team_drives/${teamDriveName}"]`;
+  let appId;
+  StepsRunner.run([
+    // Set up Files App.
+    function() {
+      setupAndWaitUntilReady(
+          null, RootPath.DRIVE, this.next, BASIC_LOCAL_ENTRY_SET,
+          TEAM_DRIVE_ENTRY_SET);
+    },
+    // Set focus on the file list.
+    function(results) {
+      appId = results.windowId;
+      remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#file-list:not([hidden])'], this.next);
+    },
+    // Select 'Team Drives'.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      remoteCall.callRemoteTestUtil(
+          'selectFolderInTree', appId, ['Team Drives'], this.next);
+    },
+    // Expand 'Team Drives'.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      remoteCall.callRemoteTestUtil(
+          'expandSelectedFolderInTree', appId, [], this.next);
+    },
+    // Wait for the team drive to be visible.
+    function(result) {
+      chrome.test.assertTrue(result);
+      remoteCall.waitForElement(appId, `${navItemSelector}:not([hidden])`)
+          .then(this.next);
+    },
+    // Focus the selected team drive.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'focus', appId, ['#directory-tree'], this.next);
+    },
+    // Right-click the selected team drive.
+    function() {
+      remoteCall.callRemoteTestUtil(
+          'fakeMouseRightClick', appId,
+          [`${navItemSelector}:not([hidden]) .label`], this.next);
+    },
+    // Wait for the context menu to appear.
+    function(result) {
+      chrome.test.assertTrue(!!result);
+      remoteCall
+          .waitForElement(appId, '#directory-tree-context-menu:not([hidden])')
+          .then(this.next);
+    },
+    // Wait for the command option to appear.
+    function() {
+      let query;
+      if (expectedEnabledState) {
+        query = `[command="#${commandId}"]:not([hidden]):not([disabled])`;
+      } else {
+        query = `[command="#${commandId}"][disabled]:not([hidden])`;
+      }
+      remoteCall.waitForElement(appId, query).then(this.next);
+    },
+    // Check for Javascript errors.
+    function() {
+      checkIfNoErrorsOccured(this.next);
+    }
+  ]);
+}
+
+/**
+ * Tests that the Cut menu item is disabled if a Team Drive Root is selected.
+ */
+testcase.checkCutDisabledForTeamDriveRoot = function() {
+  checkTeamDriveContextMenuInTree('cut', 'Team Drive A', false);
+};
+
+/**
+ * Tests that the Copy menu item is enabled if a Team Drive Root is selected.
+ */
+testcase.checkCopyEnabledForTeamDriveRoot = function() {
+  checkTeamDriveContextMenuInTree('copy', 'Team Drive A', true);
+};
+
+/**
+ * Tests that the Rename menu item is disabled if a Team Drive Root is selected.
+ */
+testcase.checkRenameDisabledForTeamDriveRoot = function() {
+  checkTeamDriveContextMenuInTree('rename', 'Team Drive A', false);
+};
+
+/**
+ * Tests that the Delete menu item is disabled if a Team Drive Root is selected.
+ */
+testcase.checkDeleteDisabledForTeamDriveRoot = function() {
+  checkTeamDriveContextMenuInTree('delete', 'Team Drive A', false);
+};
+
+/**
+ * Tests that the New Folder menu item is enabled if a Team Drive Root is
+ * selected.
+ */
+testcase.checkNewFolderEnabledForTeamDriveRoot = function() {
+  checkTeamDriveContextMenuInTree('new-folder', 'Team Drive A', true);
+};

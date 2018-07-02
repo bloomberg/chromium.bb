@@ -97,7 +97,7 @@ struct AddEntriesMessage {
   enum TargetVolume { LOCAL_VOLUME, DRIVE_VOLUME, CROSTINI_VOLUME, USB_VOLUME };
 
   // Represents the different types of entries (e.g. file, folder).
-  enum EntryType { FILE, DIRECTORY };
+  enum EntryType { FILE, DIRECTORY, TEAM_DRIVE };
 
   // Represents whether an entry appears in 'Share with Me' or not.
   enum SharedOption { NONE, SHARED };
@@ -193,6 +193,7 @@ struct AddEntriesMessage {
                   const std::string& source_file_name,
                   const std::string& target_path,
                   const std::string& mime_type,
+                  const std::string& team_drive_name,
                   SharedOption shared_option,
                   const base::Time& last_modified_time,
                   const EntryCapabilities& capabilities)
@@ -200,6 +201,7 @@ struct AddEntriesMessage {
           shared_option(shared_option),
           source_file_name(source_file_name),
           target_path(target_path),
+          team_drive_name(team_drive_name),
           mime_type(mime_type),
           last_modified_time(last_modified_time),
           capabilities(capabilities) {}
@@ -209,6 +211,7 @@ struct AddEntriesMessage {
     std::string source_file_name;    // Source file name prototype.
     std::string target_path;         // Target file or directory path.
     std::string name_text;           // Display file name.
+    std::string team_drive_name;     // Name of team drive this entry is in.
     std::string mime_type;           // File entry content mime type.
     base::Time last_modified_time;   // Entry last modified time.
     EntryCapabilities capabilities;  // Entry permissions.
@@ -222,6 +225,8 @@ struct AddEntriesMessage {
                                      &TestEntryInfo::source_file_name);
       converter->RegisterStringField("targetPath", &TestEntryInfo::target_path);
       converter->RegisterStringField("nameText", &TestEntryInfo::name_text);
+      converter->RegisterStringField("teamDriveName",
+                                     &TestEntryInfo::team_drive_name);
       converter->RegisterStringField("mimeType", &TestEntryInfo::mime_type);
       converter->RegisterCustomField("sharedOption",
                                      &TestEntryInfo::shared_option,
@@ -239,6 +244,8 @@ struct AddEntriesMessage {
         *type = FILE;
       else if (value == "directory")
         *type = DIRECTORY;
+      else if (value == "team_drive")
+        *type = TEAM_DRIVE;
       else
         return false;
       return true;
@@ -397,6 +404,10 @@ class LocalTestVolume : public TestVolume {
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
         break;
+      case AddEntriesMessage::TEAM_DRIVE:
+        NOTREACHED() << "Can't create a team drive in a local volume: "
+                     << target_path.value();
+        break;
     }
 
     ASSERT_TRUE(UpdateModifiedTime(entry));
@@ -490,12 +501,12 @@ class FakeTestVolume : public LocalTestVolume {
     // Note: must be kept in sync with BASIC_FAKE_ENTRY_SET defined in the
     // integration_tests/file_manager JS code.
     CreateEntry(AddEntriesMessage::TestEntryInfo(
-        AddEntriesMessage::FILE, "text.txt", "hello.txt", "text/plain",
-        AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        AddEntriesMessage::FILE, "text.txt", "hello.txt", std::string(),
+        "text/plain", AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
         AddEntriesMessage::EntryCapabilities()));
     CreateEntry(AddEntriesMessage::TestEntryInfo(
         AddEntriesMessage::DIRECTORY, std::string(), "A", std::string(),
-        AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
+        std::string(), AddEntriesMessage::SharedOption::NONE, base::Time::Now(),
         AddEntriesMessage::EntryCapabilities()));
     base::RunLoop().RunUntilIdle();
     return true;
@@ -547,10 +558,21 @@ class DriveTestVolume : public TestVolume {
     drive::FileError error = drive::FILE_ERROR_OK;
     std::unique_ptr<drive::ResourceEntry> parent_entry(
         new drive::ResourceEntry);
-    integration_service_->file_system()->GetResourceEntry(
-        drive::util::GetDriveMyDriveRootPath().Append(path).DirName(),
-        google_apis::test_util::CreateCopyResultCallback(&error,
-                                                         &parent_entry));
+
+    if (!entry.team_drive_name.empty()) {
+      integration_service_->file_system()->GetResourceEntry(
+          drive::util::GetDriveTeamDrivesRootPath()
+              .Append(entry.team_drive_name)
+              .Append(path)
+              .DirName(),
+          google_apis::test_util::CreateCopyResultCallback(&error,
+                                                           &parent_entry));
+    } else {
+      integration_service_->file_system()->GetResourceEntry(
+          drive::util::GetDriveMyDriveRootPath().Append(path).DirName(),
+          google_apis::test_util::CreateCopyResultCallback(&error,
+                                                           &parent_entry));
+    }
     content::RunAllTasksUntilIdle();
     ASSERT_EQ(drive::FILE_ERROR_OK, error);
     ASSERT_TRUE(parent_entry);
@@ -575,12 +597,20 @@ class DriveTestVolume : public TestVolume {
         CreateDirectory(parent_entry->resource_id(), target_name,
                         entry.last_modified_time, capabilities);
         break;
+      case AddEntriesMessage::TEAM_DRIVE:
+        CreateTeamDrive(entry.team_drive_name);
+        break;
     }
 
     // Any file or directory created above, will only appear in Drive after
     // CheckForUpdates() has completed.
     CheckForUpdates();
     content::RunAllTasksUntilIdle();
+  }
+
+  // Creates a new Team Drive with ID |name| and name |name|.
+  void CreateTeamDrive(const std::string& name) {
+    fake_drive_service_->AddTeamDrive(name, name);
   }
 
   // Creates an empty directory with the given |name| and |modification_time|.
@@ -736,6 +766,10 @@ class DriveFsTestVolume : public DriveTestVolume {
       case AddEntriesMessage::DIRECTORY:
         ASSERT_TRUE(base::CreateDirectory(target_path))
             << "Failed to create a directory: " << target_path.value();
+        break;
+      case AddEntriesMessage::TEAM_DRIVE:
+        // TODO(sashab): Add support for Team Drives in DriveFS tests.
+        NOTREACHED();
         break;
     }
 

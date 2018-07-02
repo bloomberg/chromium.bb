@@ -235,7 +235,12 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("checkCutEnabledForReadWriteFolderInTree"),
                       TestCase("checkCutDisabledForReadOnlyFolderInTree"),
                       TestCase("checkPasteEnabledForReadWriteFolderInTree"),
-                      TestCase("checkPasteDisabledForReadOnlyFolderInTree")));
+                      TestCase("checkPasteDisabledForReadOnlyFolderInTree"),
+                      TestCase("checkCutDisabledForTeamDriveRoot"),
+                      TestCase("checkCopyEnabledForTeamDriveRoot"),
+                      TestCase("checkRenameDisabledForTeamDriveRoot"),
+                      TestCase("checkDeleteDisabledForTeamDriveRoot"),
+                      TestCase("checkNewFolderEnabledForTeamDriveRoot")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */

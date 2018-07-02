@@ -199,7 +199,8 @@ function addEntries(volumeNames, entries, opt_callback) {
  */
 var EntryType = Object.freeze({
   FILE: 'file',
-  DIRECTORY: 'directory'
+  DIRECTORY: 'directory',
+  TEAM_DRIVE: 'team_drive',
 });
 
 /**
@@ -268,7 +269,6 @@ function TestEntryInfoOptions() {}
  * @type {EntryType} Entry type.
  */
 TestEntryInfoOptions.prototype.type;
-
 /**
  * @type {string|undefined} Source file name that provides file contents
  *     (file location relative to /chrome/test/data/chromeos/file_manager/).
@@ -279,6 +279,11 @@ TestEntryInfoOptions.prototype.sourceFileName;
  *     actual name of the file.
  */
 TestEntryInfoOptions.prototype.targetPath;
+/**
+ * @type {string} Name of the team drive this entry is in. Defaults to a blank
+ *     string (no team drive). Team Drive names must be unique.
+ */
+TestEntryInfoOptions.prototype.teamDriveName;
 /**
  * @type {string|undefined} Mime type.
  */
@@ -304,7 +309,6 @@ TestEntryInfoOptions.prototype.sizeText;
  * @type {string} Type name to be shown in the type column.
  */
 TestEntryInfoOptions.prototype.typeText;
-
 /**
  * @type {TestEntryCapabilities|undefined} Capabilities of this file. Defaults
  *     to all capabilities available (read-write access).
@@ -314,6 +318,8 @@ TestEntryInfoOptions.prototype.capabilities;
 /**
  * File system entry information for tests. Structure should match TestEntryInfo
  * in file_manager_browsertest_base.cc
+ * TODO(sashab): Remove this, rename TestEntryInfoOptions to TestEntryInfo and
+ * set the defaults in the record definition above.
  *
  * @param {TestEntryInfoOptions} options Parameters to create the TestEntryInfo.
  */
@@ -321,6 +327,7 @@ function TestEntryInfo(options) {
   this.type = options.type;
   this.sourceFileName = options.sourceFileName || '';
   this.targetPath = options.targetPath;
+  this.teamDriveName = options.teamDriveName || '';
   this.mimeType = options.mimeType || '';
   this.sharedOption = options.sharedOption || SharedOption.NONE;
   this.lastModifiedTime = options.lastModifiedTime;
@@ -547,6 +554,55 @@ var ENTRIES = {
     nameText: '.hiddenfile.txt',
     sizeText: '51 bytes',
     typeText: 'Plain text'
+  }),
+
+  // Team-drive entries.
+  teamDriveA: new TestEntryInfo({
+    type: EntryType.TEAM_DRIVE,
+    teamDriveName: 'Team Drive A',
+  }),
+
+  teamDriveAFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'teamDriveAFile.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'teamDriveAFile.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    teamDriveName: 'Team Drive A',
+    capabilities: {
+      canCopy: true,
+      canDelete: true,
+      canRename: true,
+      canAddChildren: false,
+      canShare: true,
+    },
+  }),
+
+  teamDriveB: new TestEntryInfo({
+    type: EntryType.TEAM_DRIVE,
+    teamDriveName: 'Team Drive B',
+  }),
+
+  teamDriveBFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'text.txt',
+    targetPath: 'teamDriveBFile.txt',
+    mimeType: 'text/plain',
+    lastModifiedTime: 'Sep 4, 1998, 12:34 PM',
+    nameText: 'teamDriveBFile.txt',
+    sizeText: '51 bytes',
+    typeText: 'Plain text',
+    teamDriveName: 'Team Drive B',
+    capabilities: {
+      canCopy: true,
+      canDelete: false,
+      canRename: false,
+      canAddChildren: false,
+      canShare: true,
+    },
   }),
 
 
