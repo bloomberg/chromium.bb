@@ -964,12 +964,12 @@ void GLES2Implementation::GetFramebufferAttachmentParameteriv(GLenum target,
                                                               GLint* params) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_VALIDATE_DESTINATION_INITALIZATION(GLint, params);
-  GPU_CLIENT_LOG("[" << GetLogPrefix()
-                     << "] glGetFramebufferAttachmentParameteriv("
-                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
-                     << GLES2Util::GetStringAttachmentQuery(attachment) << ", "
-                     << GLES2Util::GetStringFramebufferParameter(pname) << ", "
-                     << static_cast<const void*>(params) << ")");
+  GPU_CLIENT_LOG(
+      "[" << GetLogPrefix() << "] glGetFramebufferAttachmentParameteriv("
+          << GLES2Util::GetStringFramebufferTarget(target) << ", "
+          << GLES2Util::GetStringAttachmentQuery(attachment) << ", "
+          << GLES2Util::GetStringFramebufferAttachmentParameter(pname) << ", "
+          << static_cast<const void*>(params) << ")");
   TRACE_EVENT0("gpu",
                "GLES2Implementation::GetFramebufferAttachmentParameteriv");
   if (GetFramebufferAttachmentParameterivHelper(target, attachment, pname,

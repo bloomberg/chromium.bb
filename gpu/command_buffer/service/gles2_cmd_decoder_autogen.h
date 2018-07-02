@@ -1462,7 +1462,7 @@ error::Error GLES2DecoderImpl::HandleGetFramebufferAttachmentParameteriv(
                                     attachment, "attachment");
     return error::kNoError;
   }
-  if (!validators_->framebuffer_parameter.IsValid(pname)) {
+  if (!validators_->framebuffer_attachment_parameter.IsValid(pname)) {
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glGetFramebufferAttachmentParameteriv",
                                     pname, "pname");
     return error::kNoError;

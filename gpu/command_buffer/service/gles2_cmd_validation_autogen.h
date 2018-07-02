@@ -113,7 +113,7 @@ class FaceTypeValidator {
 };
 FaceTypeValidator face_type;
 
-ValueValidator<GLenum> framebuffer_parameter;
+ValueValidator<GLenum> framebuffer_attachment_parameter;
 ValueValidator<GLenum> framebuffer_target;
 ValueValidator<GLenum> g_l_state;
 class GetMaxIndexTypeValidator {

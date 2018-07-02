@@ -698,7 +698,7 @@ void FeatureInfo::InitializeFeatures() {
     validators_.texture_format.AddValue(GL_SRGB_EXT);
     validators_.texture_format.AddValue(GL_SRGB_ALPHA_EXT);
     validators_.render_buffer_format.AddValue(GL_SRGB8_ALPHA8_EXT);
-    validators_.framebuffer_parameter.AddValue(
+    validators_.framebuffer_attachment_parameter.AddValue(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
@@ -934,7 +934,7 @@ void FeatureInfo::InitializeFeatures() {
   if (feature_flags_.multisampled_render_to_texture) {
     validators_.render_buffer_parameter.AddValue(GL_RENDERBUFFER_SAMPLES_EXT);
     validators_.g_l_state.AddValue(GL_MAX_SAMPLES_EXT);
-    validators_.framebuffer_parameter.AddValue(
+    validators_.framebuffer_attachment_parameter.AddValue(
         GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT);
     AddExtensionString("GL_EXT_multisampled_render_to_texture");
   }
