@@ -156,4 +156,22 @@ TEST(JSONSchemaValidator, IsValidSchema) {
       "  \"type\": \"object\","
       "  \"unknown attribute\": \"that will cause a failure\""
       "}", 0, &error)) << error;
+
+  EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(R"(
+      {
+        "type": "object",
+        "properties": {"foo": {"type": "number"}},
+        "required": 123
+      })",
+                                                  0, &error))
+      << error;
+
+  EXPECT_FALSE(JSONSchemaValidator::IsValidSchema(R"(
+      {
+        "type": "object",
+        "properties": {"foo": {"type": "number"}},
+        "required": [ 123 ]
+      })",
+                                                  0, &error))
+      << error;
 }
