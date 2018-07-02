@@ -233,6 +233,7 @@ TEST_P(PaintLayerTest, CompositedScrollingNoNeedsRepaint) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;
 
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='scroll' style='width: 100px; height: 100px; overflow: scroll;
         will-change: transform'>
@@ -485,6 +486,7 @@ TEST_P(PaintLayerTest, HasDescendantWithClipPath) {
 }
 
 TEST_P(PaintLayerTest, HasVisibleDescendant) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='invisible' style='position:relative'>
       <div id='visible' style='visibility: visible; position: relative'>
@@ -502,6 +504,7 @@ TEST_P(PaintLayerTest, HasVisibleDescendant) {
 }
 
 TEST_P(PaintLayerTest, Has3DTransformedDescendant) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative; z-index: 0'>
       <div id='child' style='transform: translateZ(1px)'>
@@ -516,6 +519,7 @@ TEST_P(PaintLayerTest, Has3DTransformedDescendant) {
 }
 
 TEST_P(PaintLayerTest, Has3DTransformedDescendantChangeStyle) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative; z-index: 0'>
       <div id='child' style='position:relative '>
@@ -537,6 +541,7 @@ TEST_P(PaintLayerTest, Has3DTransformedDescendantChangeStyle) {
 }
 
 TEST_P(PaintLayerTest, Has3DTransformedDescendantNotStacking) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative;'>
       <div id='child' style='transform: translateZ(1px)'>
@@ -553,6 +558,7 @@ TEST_P(PaintLayerTest, Has3DTransformedDescendantNotStacking) {
 }
 
 TEST_P(PaintLayerTest, Has3DTransformedGrandchildWithPreserve3d) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='parent' style='position:relative; z-index: 0'>
       <div id='child' style='transform-style: preserve-3d'>
@@ -571,6 +577,7 @@ TEST_P(PaintLayerTest, Has3DTransformedGrandchildWithPreserve3d) {
 }
 
 TEST_P(PaintLayerTest, DescendantDependentFlagsStopsAtThrottledFrames) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>body { margin: 0; }</style>
     <div id='transform' style='transform: translate3d(4px, 5px, 6px);'>
@@ -662,6 +669,7 @@ TEST_P(PaintLayerTest, PaintInvalidationOnNonCompositedScroll) {
 }
 
 TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <style>* { margin: 0 } ::-webkit-scrollbar { display: none }</style>
     <div id='scroller' style='overflow: scroll; width: 50px; height: 50px;
@@ -691,6 +699,7 @@ TEST_P(PaintLayerTest, PaintInvalidationOnCompositedScroll) {
 }
 
 TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -715,6 +724,7 @@ TEST_P(PaintLayerTest, CompositingContainerStackedFloatUnderStackingInline) {
 
 TEST_P(PaintLayerTest,
        CompositingContainerStackedFloatUnderStackingCompositedInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -739,6 +749,7 @@ TEST_P(PaintLayerTest,
 }
 
 TEST_P(PaintLayerTest, CompositingContainerNonStackedFloatUnderStackingInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -764,6 +775,7 @@ TEST_P(PaintLayerTest, CompositingContainerNonStackedFloatUnderStackingInline) {
 
 TEST_P(PaintLayerTest,
        CompositingContainerNonStackedFloatUnderStackingCompositedInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -789,6 +801,7 @@ TEST_P(PaintLayerTest,
 
 TEST_P(PaintLayerTest,
        CompositingContainerStackedUnderFloatUnderStackingInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -815,6 +828,7 @@ TEST_P(PaintLayerTest,
 
 TEST_P(PaintLayerTest,
        CompositingContainerStackedUnderFloatUnderStackingCompositedInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -842,6 +856,7 @@ TEST_P(PaintLayerTest,
 
 TEST_P(PaintLayerTest,
        CompositingContainerNonStackedUnderFloatUnderStackingInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -869,6 +884,7 @@ TEST_P(PaintLayerTest,
 
 TEST_P(PaintLayerTest,
        CompositingContainerNonStackedUnderFloatUnderStackingCompositedInline) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -1074,6 +1090,7 @@ TEST_P(PaintLayerTest, LayerUnderFloatUnderInlineLayer) {
 }
 
 TEST_P(PaintLayerTest, CompositingContainerFloatingIframe) {
+  EnableCompositing();
   SetBodyInnerHTML(R"HTML(
     <div id='compositedContainer' style='position: relative;
         will-change: transform'>
@@ -1212,6 +1229,7 @@ TEST_P(PaintLayerTest, NeedsRepaintOnSelfPaintingStatusChange) {
 }
 
 TEST_P(PaintLayerTest, NeedsRepaintOnRemovingStackedLayer) {
+  EnableCompositing();
   SetBodyInnerHTML(
       "<style>body {margin-top: 200px; backface-visibility: hidden}</style>"
       "<div id='target' style='position: absolute; top: 0'>Text</div>");
