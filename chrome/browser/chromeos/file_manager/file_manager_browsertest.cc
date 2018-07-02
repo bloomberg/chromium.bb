@@ -227,7 +227,15 @@ WRAPPED_INSTANTIATE_TEST_CASE_P(
                       TestCase("checkCutDisabledForReadOnlyFolder"),
                       TestCase("checkPasteIntoFolderEnabledForReadWriteFolder"),
                       TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder"),
-                      TestCase("checkContextMenusForInputElements")));
+                      TestCase("checkContextMenusForInputElements"),
+                      TestCase("checkPasteEnabledInsideReadWriteFolder"),
+                      TestCase("checkPasteDisabledInsideReadOnlyFolder"),
+                      TestCase("checkCopyEnabledForReadWriteFolderInTree"),
+                      TestCase("checkCopyEnabledForReadOnlyFolderInTree"),
+                      TestCase("checkCutEnabledForReadWriteFolderInTree"),
+                      TestCase("checkCutDisabledForReadOnlyFolderInTree"),
+                      TestCase("checkPasteEnabledForReadWriteFolderInTree"),
+                      TestCase("checkPasteDisabledForReadOnlyFolderInTree")));
 
 WRAPPED_INSTANTIATE_TEST_CASE_P(
     Delete, /* delete.js */

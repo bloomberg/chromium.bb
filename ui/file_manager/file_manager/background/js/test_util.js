@@ -37,6 +37,27 @@ test.util.sync.getSelectedFiles = function(contentWindow) {
 };
 
 /**
+ * Returns the name of the item currently selected in the directory tree.
+ * Returns null if no entry is selected.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {string} Name of selected tree item.
+ */
+test.util.sync.getSelectedTreeItem = function(contentWindow) {
+  var tree = contentWindow.document.querySelector('#directory-tree');
+  var items = tree.querySelectorAll('.tree-item');
+  var selected = [];
+  for (var i = 0; i < items.length; ++i) {
+    if (items[i].hasAttribute('selected')) {
+      return items[i].querySelector('.label').textContent;
+    }
+  }
+  console.error('Unexpected; no tree item currently selected');
+  return null;
+};
+
+
+/**
  * Returns an array with the files on the file manager's file list.
  *
  * TODO(sashab): Since we recycle DOM elements, this only returns the first ~11
@@ -142,6 +163,77 @@ test.util.async.selectVolume = function(contentWindow, iconName, callback) {
     }
   };
   steps.checkQuery();
+};
+
+/**
+ * Fakes pressing the down arrow until the given |folderName| is selected in the
+ * navigation tree.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @param {string} folderName Name of the folder to be selected.
+ * @return {boolean} True if file got selected, false otherwise.
+ */
+test.util.sync.selectFolderInTree = function(contentWindow, folderName) {
+  var items =
+      contentWindow.document.querySelectorAll('#directory-tree .tree-item');
+  test.util.sync.fakeKeyDown(
+      contentWindow, '#directory-tree', 'Home', 'Home', false, false, false);
+  for (var index = 0; index < items.length; ++index) {
+    var selectedTreeItemName =
+        test.util.sync.getSelectedTreeItem(contentWindow);
+    if (selectedTreeItemName === folderName) {
+      test.util.sync.fakeKeyDown(
+          contentWindow, '#directory-tree', 'Enter', 'Enter', false, false,
+          false);
+      return true;
+    }
+    test.util.sync.fakeKeyDown(
+        contentWindow, '#directory-tree', 'ArrowDown', 'Down', false, false,
+        false);
+  }
+
+  console.error('Failed to select folder in tree "' + folderName + '"');
+  return false;
+};
+
+/**
+ * Fakes pressing the right arrow to expand the selected folder in the
+ * navigation tree.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True if folder got expanded, false otherwise.
+ */
+test.util.sync.expandSelectedFolderInTree = function(contentWindow) {
+  var selectedItem = contentWindow.document.querySelector(
+      '#directory-tree .tree-item[selected]');
+  if (!selectedItem) {
+    console.error('Unexpected; no tree item currently selected.');
+    return false;
+  }
+  test.util.sync.fakeKeyDown(
+      contentWindow, '#directory-tree .tree-item[selected]', 'ArrowRight',
+      'Right', false, false, false);
+  return true;
+};
+
+/**
+ * Fakes pressing the left arrow to collapse the selected folder in the
+ * navigation tree.
+ *
+ * @param {Window} contentWindow Window to be tested.
+ * @return {boolean} True if folder got expanded, false otherwise.
+ */
+test.util.sync.collapseSelectedFolderInTree = function(contentWindow) {
+  var selectedItem = contentWindow.document.querySelector(
+      '#directory-tree .tree-item[selected]');
+  if (!selectedItem) {
+    console.error('Unexpected; no tree item currently selected.');
+    return false;
+  }
+  test.util.sync.fakeKeyDown(
+      contentWindow, '#directory-tree .tree-item[selected]', 'ArrowLeft',
+      'Left', false, false, false);
+  return true;
 };
 
 /**

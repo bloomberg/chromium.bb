@@ -1364,12 +1364,18 @@ FileTransferController.prototype.canCutOrCopy_ = function(isMove) {
       return false;
     }
 
-    if (!isMove)
-      return true;
+    var metadata = this.metadataModel_.getCache(
+        [selectedItem.entry], ['canCopy', 'canDelete']);
+    assert(metadata.length === 1);
+
+    if (!isMove) {
+      return metadata[0].canCopy !== false;
+    }
 
     // We need to check source volume is writable for move operation.
     var volumeInfo = this.volumeManager_.getVolumeInfo(selectedItem.entry);
-    return !volumeInfo.isReadOnly;
+    return !volumeInfo.isReadOnly && metadata[0].canCopy !== false &&
+        metadata[0].canDelete !== false;
   }
 
   return isMove ? this.canCutOrDrag_() : this.canCopyOrDrag_() ;
