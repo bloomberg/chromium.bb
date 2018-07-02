@@ -597,7 +597,7 @@ void FocusOmnibox() {
   GREYElementMatcherBlock* positionMatcher = [GREYElementMatcherBlock
       matcherWithMatchesBlock:^BOOL(UIView* element) {
         UILayoutGuide* guide =
-            [NamedGuide guideWithName:kSecondaryToolbar view:element];
+            [NamedGuide guideWithName:kSecondaryToolbarGuide view:element];
         CGFloat toolbarTopPoint = CGRectGetMinY(
             [window convertRect:guide.layoutFrame fromView:guide.owningView]);
         CGFloat buttonBottomPoint = CGRectGetMaxY(
