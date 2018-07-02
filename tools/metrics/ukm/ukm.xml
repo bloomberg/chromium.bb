@@ -518,6 +518,35 @@ be describing additional metrics about the same event.
   </metric>
 </event>
 
+<event name="BloatedRenderer">
+  <owner>ulan@chromium.org</owner>
+  <summary>
+    Metrics related to a bloated renderer that is close to out-of-memory. They
+    are recorded only if the renderer process has a single page.
+  </summary>
+  <metric name="V8.Heap">
+    <summary>
+      The total physical size of V8's heap in MB.
+    </summary>
+  </metric>
+  <metric name="V8.Heap.AllocatedObjects">
+    <summary>
+      The total size of allocated on V8's heap in MB.
+    </summary>
+  </metric>
+  <metric name="V8.Heap.Limit">
+    <summary>
+      The V8 heap limit in MB.
+    </summary>
+  </metric>
+  <metric name="V8.NearV8HeapLimitHandling">
+    <summary>
+      An enum that specifies how the near V8 heap limit event was handled. See
+      blink::NearV8HeapLimitHandling for the enum elements.
+    </summary>
+  </metric>
+</event>
+
 <event name="Compositor.UserInteraction">
   <owner>khushalsagar@chromium.org</owner>
   <summary>
