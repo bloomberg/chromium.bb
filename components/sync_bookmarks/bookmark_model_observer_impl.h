@@ -6,10 +6,15 @@
 #define COMPONENTS_SYNC_BOOKMARKS_BOOKMARK_MODEL_OBSERVER_IMPL_H_
 
 #include <set>
+#include <string>
 
 #include "base/callback.h"
 #include "components/bookmarks/browser/bookmark_model_observer.h"
 #include "url/gurl.h"
+
+namespace syncer {
+class UniquePosition;
+}
 
 namespace sync_bookmarks {
 
@@ -54,6 +59,10 @@ class BookmarkModelObserverImpl : public bookmarks::BookmarkModelObserver {
       const bookmarks::BookmarkNode* node) override;
 
  private:
+  syncer::UniquePosition ComputePosition(const bookmarks::BookmarkNode& parent,
+                                         int index,
+                                         const std::string& sync_id);
+
   // Points to the tracker owned by the processor. It keeps the mapping between
   // bookmark nodes and corresponding sync server entities.
   SyncedBookmarkTracker* const bookmark_tracker_;

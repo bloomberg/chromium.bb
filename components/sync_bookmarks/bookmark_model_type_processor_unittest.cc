@@ -8,9 +8,11 @@
 
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/mock_callback.h"
+#include "base/test/scoped_task_environment.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/test/test_bookmark_client.h"
 #include "components/sync/driver/fake_sync_client.h"
+#include "components/sync/model/data_type_activation_request.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -29,6 +31,7 @@ const char kRootParentTag[] = "0";
 const char kBookmarkBarTag[] = "bookmark_bar";
 const char kBookmarkBarId[] = "bookmark_bar_id";
 const char kBookmarksRootId[] = "32904_google_chrome_bookmarks";
+const char kCacheGuid[] = "generated_id";
 
 struct BookmarkInfo {
   std::string server_id;
@@ -58,6 +61,13 @@ syncer::UpdateResponseData CreateUpdateData(const BookmarkInfo& bookmark_info) {
   // Similar to what's done in the loopback_server.
   response_data.response_version = 0;
   return response_data;
+}
+
+sync_pb::ModelTypeState CreateDummyModelTypeState() {
+  sync_pb::ModelTypeState model_type_state;
+  model_type_state.set_cache_guid(kCacheGuid);
+  model_type_state.set_initial_sync_done(true);
+  return model_type_state;
 }
 
 void AssertState(const BookmarkModelTypeProcessor* processor,
@@ -94,7 +104,7 @@ void InitWithSyncedBookmarks(const std::vector<BookmarkInfo>& bookmarks,
   for (BookmarkInfo bookmark : bookmarks) {
     updates.push_back(CreateUpdateData(bookmark));
   }
-  processor->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+  processor->OnUpdateReceived(CreateDummyModelTypeState(), updates);
   AssertState(processor, bookmarks);
 }
 
@@ -134,8 +144,14 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
       : bookmark_model_(bookmarks::TestBookmarkClient::CreateModel()),
         sync_client_(bookmark_model_.get()),
         processor_(sync_client()->GetBookmarkUndoServiceIfExists()) {
+    // TODO(crbug.com/516866): This class assumes model is loaded and sync has
+    // started before running tests. We should test other variations (i.e. model
+    // isn't loaded yet and/or sync didn't start yet).
     processor_.DecodeSyncMetadata(std::string(), schedule_save_closure_.Get(),
                                   bookmark_model_.get());
+    syncer::DataTypeActivationRequest request;
+    request.cache_guid = kCacheGuid;
+    processor_.OnSyncStarting(request, base::DoNothing());
   }
 
   TestSyncClient* sync_client() { return &sync_client_; }
@@ -146,9 +162,10 @@ class BookmarkModelTypeProcessorTest : public testing::Test {
   }
 
  private:
+  base::test::ScopedTaskEnvironment task_environment_;
+  NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
   std::unique_ptr<bookmarks::BookmarkModel> bookmark_model_;
   TestSyncClient sync_client_;
-  NiceMock<base::MockCallback<base::RepeatingClosure>> schedule_save_closure_;
   BookmarkModelTypeProcessor processor_;
 };
 
@@ -205,7 +222,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteCreation) {
   // Save will be scheduled in the model upon model change. No save should be
   // scheduled from the processor.
   EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
-  processor()->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   ASSERT_THAT(bookmarkbar->GetChild(0), NotNull());
   EXPECT_THAT(bookmarkbar->GetChild(0)->GetTitle(), Eq(ASCIIToUTF16(kTitle)));
@@ -241,7 +258,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteUpdate) {
   // Save will be scheduled in the model upon model change. No save should be
   // scheduled from the processor.
   EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
-  processor()->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   // Check if the bookmark has been updated properly.
   EXPECT_THAT(bookmark_bar->GetChild(0), Eq(bookmark_node));
@@ -273,7 +290,7 @@ TEST_F(BookmarkModelTypeProcessorTest,
   updates[0].response_version++;
 
   EXPECT_CALL(*schedule_save_closure(), Run());
-  processor()->OnUpdateReceived(sync_pb::ModelTypeState(), updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 }
 
 TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
@@ -330,11 +347,10 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldUpdateModelAfterRemoteDelete) {
   updates.push_back(CreateTombstone(kTitle1Id));
   updates.push_back(CreateTombstone(kFolder1Id));
 
-  const sync_pb::ModelTypeState model_type_state;
   // Save will be scheduled in the model upon model change. No save should be
   // scheduled from the processor.
   EXPECT_CALL(*schedule_save_closure(), Run()).Times(0);
-  processor()->OnUpdateReceived(model_type_state, updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   // The structure should be
   // bookmark_bar
@@ -406,8 +422,7 @@ TEST_F(BookmarkModelTypeProcessorTest, ShouldEncodeSyncMetadata) {
   syncer::UpdateResponseDataList updates;
   updates.push_back(CreateTombstone(kNodeId1));
 
-  const sync_pb::ModelTypeState model_type_state;
-  processor()->OnUpdateReceived(model_type_state, updates);
+  processor()->OnUpdateReceived(CreateDummyModelTypeState(), updates);
 
   metadata_str = processor()->EncodeSyncMetadata();
   model_metadata.ParseFromString(metadata_str);

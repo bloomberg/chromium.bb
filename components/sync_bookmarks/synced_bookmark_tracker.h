@@ -76,20 +76,24 @@ class SyncedBookmarkTracker {
       std::unique_ptr<sync_pb::ModelTypeState> model_type_state);
   ~SyncedBookmarkTracker();
 
-  // Returns null if not entity is found.
+  // Returns null if no entity is found.
   const Entity* GetEntityForSyncId(const std::string& sync_id) const;
+
+  // Returns null if no entity is found.
+  const SyncedBookmarkTracker::Entity* GetEntityForBookmarkNode(
+      const bookmarks::BookmarkNode* node) const;
 
   // Adds an entry for the |sync_id| and the corresponding local bookmark node
   // and metadata in |sync_id_to_entities_map_|.
   void Add(const std::string& sync_id,
            const bookmarks::BookmarkNode* bookmark_node,
            int64_t server_version,
-           base::Time modification_time,
+           base::Time creation_time,
            const sync_pb::UniquePosition& unique_position,
            const sync_pb::EntitySpecifics& specifics);
 
-  // Adds an existing entry for the |sync_id| and the corresponding metadata in
-  // |sync_id_to_entities_map_|.
+  // Updates an existing entry for the |sync_id| and the corresponding metadata
+  // in |sync_id_to_entities_map_|.
   void Update(const std::string& sync_id,
               int64_t server_version,
               base::Time modification_time,
@@ -112,15 +116,37 @@ class SyncedBookmarkTracker {
     return *model_type_state_;
   }
 
+  void set_model_type_state(
+      std::unique_ptr<sync_pb::ModelTypeState> model_type_state) {
+    model_type_state_ = std::move(model_type_state);
+  }
+
+  std::vector<const Entity*> GetEntitiesWithLocalChanges(
+      size_t max_entries) const;
+
+  // Updates the tracker after receiving the commit response. |old_id| should be
+  // equal to |new_id| for all updates except the initial commit, where the
+  // temporary client-generated ID will be overriden by the server-provided
+  // final ID. In which case |sync_id_to_entities_map_| will be updated
+  // accordingly.
+  void UpdateUponCommitResponse(const std::string& old_id,
+                                const std::string& new_id,
+                                int64_t acked_sequence_number,
+                                int64_t server_version);
+
   // Returns number of tracked entities. Used only in test.
   std::size_t TrackedEntitiesCountForTest() const;
 
  private:
   // A map of sync server ids to sync entities. This should contain entries and
-  // metadata for almost everything. However, since local data are loaded only
-  // when needed (e.g. before a commit cycle), the entities may not always
-  // contain model type data/specifics.
+  // metadata for almost everything.
   std::map<std::string, std::unique_ptr<Entity>> sync_id_to_entities_map_;
+
+  // A map of bookmark nodes to sync entities. It's keyed by the bookmark node
+  // pointers which get assigned when loading the bookmark model. This map is
+  // first initialized in the constructor.
+  std::map<const bookmarks::BookmarkNode*, Entity*>
+      bookmark_node_to_entities_map_;
 
   // The model metadata (progress marker, initial sync done, etc).
   std::unique_ptr<sync_pb::ModelTypeState> model_type_state_;

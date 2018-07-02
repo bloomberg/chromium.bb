@@ -43,9 +43,9 @@ message EntityMetadata {
   // those changes are based.
   optional int64 server_version = 6 [default = -1];
 
-  // Entity creation and modification timestamps.
-  // Assigned by the client and synced by the server, though the server usually
-  // doesn't bother to inspect their values.
+  // Entity creation and modification timestamps. Assigned by the client and
+  // synced by the server, though the server usually doesn't bother to inspect
+  // their values. They are encoded as milliseconds since the Unix epoch.
   optional int64 creation_time = 7;
   optional int64 modification_time = 8;
 

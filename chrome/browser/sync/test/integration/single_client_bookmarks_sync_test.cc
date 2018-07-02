@@ -245,6 +245,48 @@ IN_PROC_BROWSER_TEST_F(SingleClientBookmarksSyncTest, Sanity) {
 }
 
 IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
+                       CommitLocalCreations) {
+  ASSERT_TRUE(SetupClients()) << "SetupClients() failed.";
+
+  // Starting state:
+  // other_node
+  //    -> top
+  //      -> tier1_a
+  //        -> http://mail.google.com  "tier1_a_url0"
+  //        -> http://www.pandora.com  "tier1_a_url1"
+  //        -> http://www.facebook.com "tier1_a_url2"
+  //      -> tier1_b
+  //        -> http://www.nhl.com "tier1_b_url0"
+  const BookmarkNode* top = AddFolder(
+      kSingleProfileIndex, GetOtherNode(kSingleProfileIndex), 0, "top");
+  const BookmarkNode* tier1_a =
+      AddFolder(kSingleProfileIndex, top, 0, "tier1_a");
+  const BookmarkNode* tier1_b =
+      AddFolder(kSingleProfileIndex, top, 1, "tier1_b");
+  const BookmarkNode* tier1_a_url0 =
+      AddURL(kSingleProfileIndex, tier1_a, 0, "tier1_a_url0",
+             GURL("http://mail.google.com"));
+  const BookmarkNode* tier1_a_url1 =
+      AddURL(kSingleProfileIndex, tier1_a, 1, "tier1_a_url1",
+             GURL("http://www.pandora.com"));
+  const BookmarkNode* tier1_a_url2 =
+      AddURL(kSingleProfileIndex, tier1_a, 2, "tier1_a_url2",
+             GURL("http://www.facebook.com"));
+  const BookmarkNode* tier1_b_url0 =
+      AddURL(kSingleProfileIndex, tier1_b, 0, "tier1_b_url0",
+             GURL("http://www.nhl.com"));
+  EXPECT_TRUE(tier1_a_url0);
+  EXPECT_TRUE(tier1_a_url1);
+  EXPECT_TRUE(tier1_a_url2);
+  EXPECT_TRUE(tier1_b_url0);
+  // Setup sync, wait for its completion, and make sure changes were synced.
+  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
+  ASSERT_TRUE(
+      UpdatedProgressMarkerChecker(GetSyncService(kSingleProfileIndex)).Wait());
+  EXPECT_TRUE(ModelMatchesVerifier(kSingleProfileIndex));
+}
+
+IN_PROC_BROWSER_TEST_P(SingleClientBookmarksSyncTestIncludingUssTests,
                        InjectedBookmark) {
   std::string title = "Montreal Canadiens";
   fake_server::EntityBuilderFactory entity_builder_factory;
