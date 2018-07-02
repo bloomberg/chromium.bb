@@ -2248,17 +2248,6 @@ proto_library("net_quic_proto") {
   extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
 }
 
-proto_library("net_quic_trace_proto") {
-  visibility = [ ":simple_quic_tools" ]
-
-  sources = [
-    "third_party/quic/core/proto/quic_trace.proto",
-  ]
-  component_build_force_source_set = true
-
-  extra_configs = [ "//build/config/compiler:wexit_time_destructors" ]
-}
-
 if (!is_proto_quic) {
   static_library("extras") {
     sources = [
@@ -3050,6 +3039,8 @@ source_set("quic_test_tools") {
   testonly = true
   sources = [
     "quic/chromium/crypto_test_utils_chromium.cc",
+    "third_party/quic/core/quic_trace_visitor.cc",
+    "third_party/quic/core/quic_trace_visitor.h",
     "third_party/quic/platform/api/quic_hkdf_test.cc",
     "third_party/quic/platform/api/quic_mock_log.h",
     "third_party/quic/platform/api/quic_test.h",
@@ -3169,6 +3160,7 @@ source_set("quic_test_tools") {
     "//testing/gtest",
     "//third_party/boringssl",
     "//third_party/protobuf:protobuf_lite",
+    "//third_party/quic_trace:quic_trace_proto",
   ]
 
   if (is_linux) {
@@ -3222,8 +3214,6 @@ source_set("simple_quic_tools") {
     "third_party/quic/core/quic_spdy_server_stream_base.h",
     "third_party/quic/core/quic_time_wait_list_manager.cc",
     "third_party/quic/core/quic_time_wait_list_manager.h",
-    "third_party/quic/core/quic_trace_visitor.cc",
-    "third_party/quic/core/quic_trace_visitor.h",
     "third_party/quic/core/stateless_rejector.cc",
     "third_party/quic/core/stateless_rejector.h",
     "third_party/quic/tools/quic_backend_response.cc",
@@ -3267,9 +3257,6 @@ source_set("simple_quic_tools") {
     "//base/third_party/dynamic_annotations",
     "//third_party/protobuf:protobuf_lite",
     "//url",
-  ]
-  public_deps = [
-    ":net_quic_trace_proto",
   ]
 }
 
@@ -3331,17 +3318,6 @@ if (!is_ios) {
     ]
     deps = [
       ":net",
-      "//base",
-      "//build/win:default_exe_manifest",
-    ]
-  }
-  executable("quic_trace_to_time_sequence_gnuplot") {
-    sources = [
-      "third_party/quic/tools/trace/quic_trace_to_time_sequence_gnuplot.cc",
-    ]
-    deps = [
-      ":net",
-      ":simple_quic_tools",
       "//base",
       "//build/win:default_exe_manifest",
     ]
