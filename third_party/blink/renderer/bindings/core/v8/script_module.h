@@ -5,13 +5,9 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_MODULE_H_
 
-#include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/renderer/core/core_export.h"
-#include "third_party/blink/renderer/platform/bindings/script_state.h"
 #include "third_party/blink/renderer/platform/bindings/shared_persistent.h"
 #include "third_party/blink/renderer/platform/loader/fetch/access_control_status.h"
-#include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
-#include "third_party/blink/renderer/platform/loader/fetch/script_fetch_options.h"
 #include "third_party/blink/renderer/platform/wtf/allocator.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_position.h"
 #include "third_party/blink/renderer/platform/wtf/text/wtf_string.h"
@@ -21,6 +17,10 @@
 namespace blink {
 
 class ExceptionState;
+class KURL;
+class ScriptFetchOptions;
+class ScriptState;
+class ScriptValue;
 
 // ScriptModule wraps a handle to a v8::Module for use in core.
 //

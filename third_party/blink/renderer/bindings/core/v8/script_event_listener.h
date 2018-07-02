@@ -31,8 +31,8 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_EVENT_LISTENER_H_
 #define THIRD_PARTY_BLINK_RENDERER_BINDINGS_CORE_V8_SCRIPT_EVENT_LISTENER_H_
 
-#include "base/memory/scoped_refptr.h"
-#include "third_party/blink/renderer/bindings/core/v8/script_value.h"
+#include <memory>
+
 #include "third_party/blink/renderer/bindings/core/v8/v8_lazy_event_listener.h"
 
 namespace blink {

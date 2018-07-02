@@ -7,6 +7,7 @@
 #include <memory>
 #include "base/location.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/platform/web_thread.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_streamer.h"
 #include "third_party/blink/renderer/core/inspector/inspector_trace_events.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
