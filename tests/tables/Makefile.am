@@ -3,7 +3,6 @@ SUBDIRS = moreTables resolve_table emphclass
 EXTRA_DIST =					\
 	bad.ctb					\
 	begcaps_endcaps.utb			\
-	capitalization.ctb			\
 	context-ignored.utb			\
 	emphasis-full.utb			\
 	emphasis-no-context.utb			\
@@ -15,10 +14,6 @@ EXTRA_DIST =					\
 	inpos_pass3.ctb				\
 	large.ctb				\
 	letterDefTest.ctb			\
-	letterDefTest_letter.ctb		\
-	letterDefTest_lowercase.ctb		\
-	letterDefTest_uplow.ctb			\
-	letterDefTest_uppercase.ctb		\
 	loop.ctb				\
 	lowercase_with_unicode.ctb		\
 	new_emph.utb				\
