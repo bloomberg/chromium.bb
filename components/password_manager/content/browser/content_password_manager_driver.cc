@@ -103,10 +103,6 @@ void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
   GetPasswordGenerationAgent()->GeneratedPasswordAccepted(password);
 }
 
-void ContentPasswordManagerDriver::UserSelectedManualGenerationOption() {
-  GetPasswordGenerationAgent()->UserSelectedManualGenerationOption();
-}
-
 void ContentPasswordManagerDriver::FillSuggestion(
     const base::string16& username,
     const base::string16& password) {

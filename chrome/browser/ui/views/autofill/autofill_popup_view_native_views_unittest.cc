@@ -43,7 +43,6 @@ const struct TypeClicks kClickTestCase[] = {
     {autofill::POPUP_ITEM_ID_USERNAME_ENTRY, 1},
     {autofill::POPUP_ITEM_ID_CREATE_HINT, 1},
     {autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY, 1},
-    {autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, 1},
 };
 
 class MockAutofillPopupController : public autofill::AutofillPopupController {

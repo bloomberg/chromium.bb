@@ -85,32 +85,32 @@ void AppendSuggestionIfMatching(
     std::vector<autofill::Suggestion>* suggestions) {
   base::string16 lower_suggestion = base::i18n::ToLower(field_suggestion);
   base::string16 lower_contents = base::i18n::ToLower(field_contents);
-  bool prefix_matched_suggestion =
-      show_all || base::StartsWith(lower_suggestion, lower_contents,
-                                   base::CompareCase::SENSITIVE);
-  if (prefix_matched_suggestion ||
-      autofill::FieldIsSuggestionSubstringStartingOnTokenBoundary(
-          lower_suggestion, lower_contents, true)) {
+  if (show_all || autofill::FieldIsSuggestionSubstringStartingOnTokenBoundary(
+                      lower_suggestion, lower_contents, true)) {
     autofill::Suggestion suggestion(ReplaceEmptyUsername(field_suggestion));
     suggestion.label = GetHumanReadableRealm(signon_realm);
     suggestion.frontend_id = is_password_field
                                  ? autofill::POPUP_ITEM_ID_PASSWORD_ENTRY
                                  : autofill::POPUP_ITEM_ID_USERNAME_ENTRY;
-    suggestion.match = prefix_matched_suggestion
-                           ? autofill::Suggestion::PREFIX_MATCH
-                           : autofill::Suggestion::SUBSTRING_MATCH;
+    suggestion.match =
+        show_all || base::StartsWith(lower_suggestion, lower_contents,
+                                     base::CompareCase::SENSITIVE)
+            ? autofill::Suggestion::PREFIX_MATCH
+            : autofill::Suggestion::SUBSTRING_MATCH;
     suggestions->push_back(suggestion);
   }
 }
 
-// This function attempts to fill |suggestions| and |realms| form |fill_data|
-// based on |current_username|. Unless |show_all| is true, it only picks
-// suggestions where the username has |current_username| as a prefix.
+// This function attempts to fill |suggestions| from |fill_data| based on
+// |current_username| that is the current value of the field. Unless |show_all|
+// is true, it only picks suggestions allowed by
+// FieldIsSuggestionSubstringStartingOnTokenBoundary. It can pick either a
+// substring or a prefix based on the flag.
 void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
                     const base::string16& current_username,
-                    std::vector<autofill::Suggestion>* suggestions,
                     bool show_all,
-                    bool is_password_field) {
+                    bool is_password_field,
+                    std::vector<autofill::Suggestion>* suggestions) {
   AppendSuggestionIfMatching(fill_data.username_field.value, current_username,
                              fill_data.preferred_realm, show_all,
                              is_password_field, suggestions);
@@ -122,7 +122,7 @@ void GetSuggestions(const autofill::PasswordFormFillData& fill_data,
   }
 
   // Prefix matches should precede other token matches.
-  if (autofill::IsFeatureSubstringMatchEnabled()) {
+  if (!show_all && autofill::IsFeatureSubstringMatchEnabled()) {
     std::sort(suggestions->begin(), suggestions->end(),
               [](const autofill::Suggestion& a, const autofill::Suggestion& b) {
                 return a.match < b.match;
@@ -230,9 +230,9 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     NOTREACHED();
     return;
   }
-  GetSuggestions(fill_data_it->second, typed_username, &suggestions,
+  GetSuggestions(fill_data_it->second, typed_username,
                  (options & autofill::SHOW_ALL) != 0,
-                 (options & autofill::IS_PASSWORD_FIELD) != 0);
+                 (options & autofill::IS_PASSWORD_FIELD) != 0, &suggestions);
 
   form_data_key_ = key;
 
@@ -264,14 +264,6 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
           metrics_util::SHOW_ALL_SAVED_PASSWORDS_CONTEXT_PASSWORD;
       metrics_util::LogContextOfShowAllSavedPasswordsShown(
           show_all_saved_passwords_shown_context_);
-    }
-    if (base::FeatureList::IsEnabled(
-            password_manager::features::kManualFallbacksGeneration) &&
-        password_manager_util::GetPasswordSyncState(
-            autofill_client_->GetSyncService()) == SYNCING_NORMAL_ENCRYPTION) {
-      AddSimpleSuggestionWithSeparatorOnTop(
-          IDS_AUTOFILL_GENERATE_PASSWORD_FALLBACK,
-          autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, &suggestions);
     }
   }
 
@@ -306,14 +298,6 @@ void PasswordAutofillManager::OnShowManualFallbackSuggestion(
   metrics_util::LogContextOfShowAllSavedPasswordsShown(
       show_all_saved_passwords_shown_context_);
 
-  if (base::FeatureList::IsEnabled(
-          password_manager::features::kManualFallbacksGeneration) &&
-      password_manager_util::GetPasswordSyncState(
-          autofill_client_->GetSyncService()) == SYNCING_NORMAL_ENCRYPTION) {
-    AddSimpleSuggestionWithSeparatorOnTop(
-        IDS_AUTOFILL_GENERATE_PASSWORD_FALLBACK,
-        autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY, &suggestions);
-  }
   autofill_client_->ShowAutofillPopup(bounds, text_direction, suggestions,
                                       weak_ptr_factory_.GetWeakPtr());
 }
@@ -343,8 +327,7 @@ void PasswordAutofillManager::OnPopupHidden() {
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
-  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY ||
-      identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY)
+  if (identifier == autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY)
     return;
   bool success =
       PreviewSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
@@ -355,9 +338,7 @@ void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
   autofill_client_->ExecuteCommand(identifier);
-  if (identifier == autofill::POPUP_ITEM_ID_GENERATE_PASSWORD_ENTRY) {
-    password_manager_driver_->UserSelectedManualGenerationOption();
-  } else if (identifier != autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
+  if (identifier != autofill::POPUP_ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY) {
     bool success =
         FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
     DCHECK(success);

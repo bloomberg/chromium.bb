@@ -102,6 +102,3 @@ void IOSChromePasswordManagerDriver::MatchingBlacklistedFormFound() {
   NOTIMPLEMENTED();
 }
 
-void IOSChromePasswordManagerDriver::UserSelectedManualGenerationOption() {
-  NOTIMPLEMENTED();
-}
