@@ -91,6 +91,13 @@ void SVGImageChromeClient::ResumeAnimation() {
   ScheduleAnimation(nullptr);
 }
 
+void SVGImageChromeClient::RestoreAnimationIfNeeded() {
+  // If the timeline is not suspended we needn't attempt to restore.
+  if (!IsSuspended())
+    return;
+  image_->RestoreAnimation();
+}
+
 void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*) {
   // Because a single SVGImage can be shared by multiple pages, we can't key
   // our svg image layout on the page's real animation frame. Therefore, we
@@ -105,7 +112,7 @@ void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*) {
   // stringent.
   double fire_time = 0;
   if (image_->MaybeAnimated()) {
-    if (timeline_state_ >= kSuspended)
+    if (IsSuspended())
       return;
     fire_time = kAnimationFrameDelay;
   }
