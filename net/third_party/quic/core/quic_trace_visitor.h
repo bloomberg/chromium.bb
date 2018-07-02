@@ -5,9 +5,9 @@
 #ifndef NET_THIRD_PARTY_QUIC_CORE_QUIC_TRACE_VISITOR_H_
 #define NET_THIRD_PARTY_QUIC_CORE_QUIC_TRACE_VISITOR_H_
 
-#include "net/third_party/quic/core/proto/quic_trace.pb.h"
 #include "net/third_party/quic/core/quic_connection.h"
 #include "net/third_party/quic/core/quic_types.h"
+#include "third_party/quic_trace/lib/quic_trace.pb.h"
 
 namespace quic {
 

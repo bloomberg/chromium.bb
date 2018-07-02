@@ -176,6 +176,7 @@
 /python_26
 /pywebsocket/src
 /pywebsocket/src
+/quic_trace/src
 /r8/lib
 /re2/src
 /requests/src
