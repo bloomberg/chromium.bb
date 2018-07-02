@@ -30,8 +30,8 @@
 
 - (void)didMoveToParentViewController:(UIViewController*)parent {
   [super didMoveToParentViewController:parent];
-  [NamedGuide guideWithName:kSecondaryToolbar view:self.view].constrainedView =
-      self.view;
+  [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.view]
+      .constrainedView = self.view;
 }
 
 @end

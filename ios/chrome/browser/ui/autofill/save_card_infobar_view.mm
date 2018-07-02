@@ -166,7 +166,7 @@ UIFont* InfoBarMessageFont() {
   // Deduct the bottom safe area inset as it is already included in the height
   // of the secondary toolbar.
   NamedGuide* layoutGuide =
-      [NamedGuide guideWithName:kSecondaryToolbar view:self];
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
   CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
   self.footerViewBottomAnchorConstraint.constant =
       layoutGuide.constrained

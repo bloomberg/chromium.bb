@@ -721,9 +721,10 @@ UIImage* InfoBarCloseImage() {
   CGFloat bottomSafeAreaInset = SafeAreaInsetsForView(self).bottom;
   requiredHeight += bottomSafeAreaInset;
 
-  UILayoutGuide* guide = [NamedGuide guideWithName:kSecondaryToolbar view:self];
+  UILayoutGuide* guide =
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self];
   UILayoutGuide* guideNoFullscreen =
-      [NamedGuide guideWithName:kSecondaryToolbarNoFullscreen view:self];
+      [NamedGuide guideWithName:kSecondaryToolbarNoFullscreenGuide view:self];
   if (guide && guideNoFullscreen) {
     CGFloat toolbarHeightCurrent = guide.layoutFrame.size.height;
     CGFloat toolbarHeightMax = guideNoFullscreen.layoutFrame.size.height;

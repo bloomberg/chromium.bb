@@ -2248,7 +2248,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
         LayoutSides::kBottom | LayoutSides::kLeading | LayoutSides::kTrailing);
 
     UILayoutGuide* guide =
-        [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreen];
+        [[NamedGuide alloc] initWithName:kSecondaryToolbarNoFullscreenGuide];
     [self.view addLayoutGuide:guide];
     self.secondaryToolbarNoFullscreenHeightConstraint = [guide.heightAnchor
         constraintEqualToConstant:[self secondaryToolbarHeightWithInset]];
@@ -2303,7 +2303,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   DCHECK(_downloadManagerCoordinator);
   _downloadManagerCoordinator.webStateList = [_model webStateList];
   _downloadManagerCoordinator.bottomMarginHeightAnchor =
-      [NamedGuide guideWithName:kSecondaryToolbar view:self.view].heightAnchor;
+      [NamedGuide guideWithName:kSecondaryToolbarGuide view:self.view]
+          .heightAnchor;
 
   if (IsUIRefreshPhase1Enabled()) {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
@@ -2409,7 +2410,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       kToolsMenuGuide,
       kTabSwitcherGuide,
       kSearchButtonGuide,
-      kSecondaryToolbar,
+      kSecondaryToolbarGuide,
       kVoiceSearchButtonGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
