@@ -180,12 +180,10 @@ class ChromeSigninViewControllerTest
                   dispatcher:nil];
     vc_delegate_ = [[FakeChromeSigninViewControllerDelegate alloc] init];
     vc_.delegate = vc_delegate_;
-    __block base::MockTimer* mock_timer_ptr = nullptr;
+    __block base::MockOneShotTimer* mock_timer_ptr = nullptr;
     if (!unified_consent_enabled_) {
-      vc_.timerGenerator = ^std::unique_ptr<base::Timer>(bool retain_user_task,
-                                                         bool is_repeating) {
-        auto mock_timer =
-            std::make_unique<base::MockTimer>(retain_user_task, is_repeating);
+      vc_.timerGenerator = ^std::unique_ptr<base::OneShotTimer>() {
+        auto mock_timer = std::make_unique<base::MockOneShotTimer>();
         mock_timer_ptr = mock_timer.get();
         return mock_timer;
       };
@@ -406,7 +404,7 @@ class ChromeSigninViewControllerTest
   FakeConsentAuditor* fake_consent_auditor_;
   AccountTrackerService* account_tracker_service_;
   base::test::ScopedFeatureList scoped_feature_list_;
-  base::MockTimer* mock_timer_ptr_ = nullptr;
+  base::MockOneShotTimer* mock_timer_ptr_ = nullptr;
   FakeChromeSigninViewControllerDelegate* vc_delegate_;
 };
 
