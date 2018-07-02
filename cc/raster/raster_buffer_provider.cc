@@ -38,6 +38,15 @@ bool IsSupportedPlaybackToMemoryFormat(viz::ResourceFormat format) {
     case viz::LUMINANCE_F16:
     case viz::RGBA_F16:
     case viz::R16_EXT:
+    case viz::BGR_565:
+    case viz::RG_88:
+    case viz::RGBX_8888:
+    case viz::BGRX_8888:
+    case viz::RGBX_1010102:
+    case viz::BGRX_1010102:
+    case viz::YVU_420:
+    case viz::YUV_420_BIPLANAR:
+    case viz::UYVY_422:
       return false;
   }
   NOTREACHED();
@@ -136,6 +145,15 @@ void RasterBufferProvider::PlaybackToMemory(
     case viz::RED_8:
     case viz::LUMINANCE_F16:
     case viz::R16_EXT:
+    case viz::BGR_565:
+    case viz::RG_88:
+    case viz::RGBX_8888:
+    case viz::BGRX_8888:
+    case viz::RGBX_1010102:
+    case viz::BGRX_1010102:
+    case viz::YVU_420:
+    case viz::YUV_420_BIPLANAR:
+    case viz::UYVY_422:
       NOTREACHED();
       return;
   }

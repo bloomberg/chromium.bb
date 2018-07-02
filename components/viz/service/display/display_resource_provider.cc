@@ -239,7 +239,7 @@ GLenum DisplayResourceProvider::GetResourceTextureTarget(ResourceId id) {
 
 gfx::BufferFormat DisplayResourceProvider::GetBufferFormat(ResourceId id) {
   ChildResource* resource = GetResource(id);
-  return resource->transferable.buffer_format;
+  return BufferFormat(resource->transferable.format);
 }
 
 void DisplayResourceProvider::WaitSyncToken(ResourceId id) {

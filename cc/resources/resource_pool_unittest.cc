@@ -704,7 +704,6 @@ TEST_F(ResourcePoolTest, MetadataSentToDisplayCompositor) {
   EXPECT_EQ(transfer[0].mailbox_holder.sync_token, sync_token);
   EXPECT_EQ(transfer[0].mailbox_holder.texture_target, target);
   EXPECT_EQ(transfer[0].format, format);
-  EXPECT_EQ(transfer[0].buffer_format, viz::BufferFormat(format));
   EXPECT_TRUE(transfer[0].read_lock_fences_enabled);
   EXPECT_TRUE(transfer[0].is_overlay_candidate);
 

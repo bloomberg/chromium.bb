@@ -69,6 +69,15 @@ class PlatformColor {
       case LUMINANCE_F16:
       case RGBA_F16:
       case R16_EXT:
+      case BGR_565:
+      case RG_88:
+      case RGBX_8888:
+      case BGRX_8888:
+      case RGBX_1010102:
+      case BGRX_1010102:
+      case YVU_420:
+      case YUV_420_BIPLANAR:
+      case UYVY_422:
         break;
     }
 

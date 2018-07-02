@@ -257,6 +257,7 @@ void RasterImplementationGLES::TexStorage2D(GLuint texture_id,
                          viz::TextureStorageFormat(texture->format), width,
                          height);
   } else {
+    DCHECK(GLSupportsFormat(texture->format));
     gl_->TexImage2D(texture->target, 0, viz::GLInternalFormat(texture->format),
                     width, height, 0, viz::GLDataFormat(texture->format),
                     viz::GLDataType(texture->format), nullptr);

@@ -675,7 +675,6 @@ void VideoResourceUpdater::CopyHardwarePlane(
       hardware_resource->mailbox(), GL_LINEAR, GL_TEXTURE_2D, sync_token);
   transferable_resource.color_space = resource_color_space;
   transferable_resource.format = copy_resource_format;
-  transferable_resource.buffer_format = viz::BufferFormat(copy_resource_format);
   external_resources->resources.push_back(std::move(transferable_resource));
 
   external_resources->release_callbacks.push_back(base::BindOnce(
@@ -705,6 +704,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
   external_resources.type = ExternalResourceTypeForHardwarePlanes(
       video_frame->format(), target, video_frame->NumTextures(), &buffer_format,
       use_stream_video_draw_quad_);
+
   if (external_resources.type == VideoFrameResourceType::NONE) {
     DLOG(ERROR) << "Unsupported Texture format"
                 << VideoPixelFormatToString(video_frame->format());
@@ -734,7 +734,8 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForHardwarePlanes(
       transfer_resource.read_lock_fences_enabled =
           video_frame->metadata()->IsTrue(
               VideoFrameMetadata::READ_LOCK_FENCES_ENABLED);
-      transfer_resource.buffer_format = buffer_format;
+      transfer_resource.format = viz::GetResourceFormat(buffer_format);
+
 #if defined(OS_ANDROID)
       transfer_resource.is_backed_by_surface_texture =
           video_frame->metadata()->IsTrue(VideoFrameMetadata::TEXTURE_OWNER);
@@ -915,8 +916,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
     transferable_resource.color_space = output_color_space;
     transferable_resource.format = viz::ResourceFormat::RGBA_8888;
-    transferable_resource.buffer_format =
-        viz::BufferFormat(viz::ResourceFormat::RGBA_8888);
     external_resources.resources.push_back(std::move(transferable_resource));
     external_resources.release_callbacks.push_back(base::BindOnce(
         &VideoResourceUpdater::RecycleResource, weak_ptr_factory_.GetWeakPtr(),
@@ -1039,6 +1038,7 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
     auto* gl = context_provider_->ContextGL();
     gl->BindTexture(plane_resource->texture_target(),
                     plane_resource->texture_id());
+    DCHECK(GLSupportsFormat(plane_resource_format));
     gl->TexSubImage2D(
         plane_resource->texture_target(), 0, 0, 0, resource_size_pixels.width(),
         resource_size_pixels.height(), GLDataFormat(plane_resource_format),
@@ -1059,8 +1059,6 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
         plane_resource->overlay_candidate());
     transferable_resource.color_space = output_color_space;
     transferable_resource.format = output_resource_format;
-    transferable_resource.buffer_format =
-        viz::BufferFormat(output_resource_format);
     external_resources.resources.push_back(std::move(transferable_resource));
     external_resources.release_callbacks.push_back(base::BindOnce(
         &VideoResourceUpdater::RecycleResource, weak_ptr_factory_.GetWeakPtr(),

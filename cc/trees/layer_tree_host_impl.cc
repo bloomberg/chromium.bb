@@ -5087,7 +5087,6 @@ void LayerTreeHostImpl::CreateUIResource(UIResourceId uid,
         mailbox, GL_LINEAR, texture_alloc.texture_target, sync_token,
         upload_size, texture_alloc.overlay_candidate);
     transferable.format = format;
-    transferable.buffer_format = viz::BufferFormat(format);
   } else {
     mojo::ScopedSharedBufferHandle memory_handle =
         viz::bitmap_allocation::DuplicateAndCloseMappedBitmap(
