@@ -920,7 +920,6 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
       if (self.undoCloseAllAvailable) {
         [self.regularTabsDelegate undoCloseAllItems];
       } else {
-        [self.incognitoTabsDelegate closeAllItems];
         [self.regularTabsDelegate saveAndCloseAllItems];
       }
       self.undoCloseAllAvailable = !self.undoCloseAllAvailable;
