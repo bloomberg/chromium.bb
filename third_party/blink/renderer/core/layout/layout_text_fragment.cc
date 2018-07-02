@@ -160,7 +160,7 @@ Text* LayoutTextFragment::AssociatedTextNode() const {
   return (node && node->IsTextNode()) ? ToText(node) : nullptr;
 }
 
-LayoutText* LayoutTextFragment::GetFirstLetterPart() {
+LayoutText* LayoutTextFragment::GetFirstLetterPart() const {
   if (!is_remaining_text_layout_object_)
     return nullptr;
   // Node: We assume first letter pseudo element has only one child and it
