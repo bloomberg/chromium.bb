@@ -80,13 +80,19 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
  private:
   class Delivery {
    public:
-    Delivery(const GURL& endpoint, std::vector<const ReportingReport*> reports)
-        : endpoint(endpoint), reports(std::move(reports)) {}
+    Delivery(const GURL& endpoint) : endpoint(endpoint) {}
 
     ~Delivery() = default;
 
+    void AddReports(const ReportingClient* client,
+                    const std::vector<const ReportingReport*>& to_add) {
+      reports_per_client[client->origin][client->endpoint] += to_add.size();
+      reports.insert(reports.end(), to_add.begin(), to_add.end());
+    }
+
     const GURL endpoint;
     std::vector<const ReportingReport*> reports;
+    std::map<url::Origin, std::map<GURL, int>> reports_per_client;
   };
 
   using OriginGroup = std::pair<url::Origin, std::string>;
@@ -146,24 +152,32 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     // Find endpoint for each (origin, group) bucket and sort reports into
     // endpoint buckets. Don't allow concurrent deliveries to the same (origin,
     // group) bucket.
-    std::map<GURL, std::vector<const ReportingReport*>> endpoint_reports;
+    std::map<GURL, std::unique_ptr<Delivery>> deliveries;
     for (auto& it : origin_group_reports) {
       const OriginGroup& origin_group = it.first;
 
       if (base::ContainsKey(pending_origin_groups_, origin_group))
         continue;
 
-      GURL endpoint_url;
-      if (!endpoint_manager()->FindEndpointForOriginAndGroup(
-              origin_group.first, origin_group.second, &endpoint_url)) {
+      const ReportingClient* client =
+          endpoint_manager()->FindClientForOriginAndGroup(origin_group.first,
+                                                          origin_group.second);
+      if (client == nullptr) {
         continue;
       }
+      cache()->MarkClientUsed(client);
 
-      cache()->MarkClientUsed(origin_group.first, endpoint_url);
+      Delivery* delivery;
+      auto delivery_it = deliveries.find(client->endpoint);
+      if (delivery_it == deliveries.end()) {
+        auto new_delivery = std::make_unique<Delivery>(client->endpoint);
+        delivery = new_delivery.get();
+        deliveries[client->endpoint] = std::move(new_delivery);
+      } else {
+        delivery = delivery_it->second.get();
+      }
 
-      endpoint_reports[endpoint_url].insert(
-          endpoint_reports[endpoint_url].end(), it.second.begin(),
-          it.second.end());
+      delivery->AddReports(client, it.second);
       pending_origin_groups_.insert(origin_group);
     }
 
@@ -172,18 +186,18 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
     std::unordered_set<const ReportingReport*> undelivered_reports(
         reports.begin(), reports.end());
 
-    // Start a delivery to each endpoint.
-    for (auto& it : endpoint_reports) {
+    // Start an upload for each delivery.
+    for (auto& it : deliveries) {
       const GURL& endpoint = it.first;
-      const std::vector<const ReportingReport*>& reports = it.second;
+      std::unique_ptr<Delivery>& delivery = it.second;
 
       endpoint_manager()->SetEndpointPending(endpoint);
 
       std::string json;
-      SerializeReports(reports, tick_clock()->NowTicks(), &json);
+      SerializeReports(delivery->reports, tick_clock()->NowTicks(), &json);
 
       int max_depth = 0;
-      for (const ReportingReport* report : reports) {
+      for (const ReportingReport* report : delivery->reports) {
         undelivered_reports.erase(report);
         if (report->depth > max_depth)
           max_depth = report->depth;
@@ -192,10 +206,8 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
       // TODO: Calculate actual max depth.
       uploader()->StartUpload(
           endpoint, json, max_depth,
-          base::BindOnce(
-              &ReportingDeliveryAgentImpl::OnUploadComplete,
-              weak_factory_.GetWeakPtr(),
-              std::make_unique<Delivery>(endpoint, std::move(reports))));
+          base::BindOnce(&ReportingDeliveryAgentImpl::OnUploadComplete,
+                         weak_factory_.GetWeakPtr(), std::move(delivery)));
     }
 
     cache()->ClearReportsPending(
@@ -204,9 +216,16 @@ class ReportingDeliveryAgentImpl : public ReportingDeliveryAgent,
 
   void OnUploadComplete(const std::unique_ptr<Delivery>& delivery,
                         ReportingUploader::Outcome outcome) {
-    cache()->IncrementEndpointDeliveries(
-        delivery->endpoint, delivery->reports,
-        outcome == ReportingUploader::Outcome::SUCCESS);
+    for (const auto& origin_and_pair : delivery->reports_per_client) {
+      const url::Origin& origin = origin_and_pair.first;
+      for (const auto& endpoint_and_count : origin_and_pair.second) {
+        const GURL& endpoint = endpoint_and_count.first;
+        int report_count = endpoint_and_count.second;
+        cache()->IncrementEndpointDeliveries(
+            origin, endpoint, report_count,
+            outcome == ReportingUploader::Outcome::SUCCESS);
+      }
+    }
 
     if (outcome == ReportingUploader::Outcome::SUCCESS) {
       cache()->RemoveReports(delivery->reports,

@@ -197,27 +197,19 @@ class ReportingCacheImpl : public ReportingCache {
     context_->NotifyCacheUpdated();
   }
 
-  void IncrementEndpointDeliveries(
-      const GURL& endpoint,
-      const std::vector<const ReportingReport*>& reports,
-      bool successful) override {
-    std::unordered_map<const ReportingClient*, int> reports_per_client;
-    for (const ReportingReport* report : reports) {
-      DCHECK(base::ContainsKey(reports_, report));
-      url::Origin origin = url::Origin::Create(report->url);
-      const ReportingClient* client =
-          GetClientByOriginAndEndpoint(origin, endpoint);
-      DCHECK(client);
-      reports_per_client[client]++;
-    }
-
-    for (const auto& client_and_report_count : reports_per_client) {
-      auto& metadata = client_metadata_[client_and_report_count.first];
+  void IncrementEndpointDeliveries(const url::Origin& origin,
+                                   const GURL& endpoint,
+                                   int reports_delivered,
+                                   bool successful) override {
+    const ReportingClient* client =
+        GetClientByOriginAndEndpoint(origin, endpoint);
+    if (client) {
+      auto& metadata = client_metadata_[client];
       metadata.stats.attempted_uploads++;
-      metadata.stats.attempted_reports += client_and_report_count.second;
+      metadata.stats.attempted_reports += reports_delivered;
       if (successful) {
         metadata.stats.successful_uploads++;
-        metadata.stats.successful_reports += client_and_report_count.second;
+        metadata.stats.successful_reports += reports_delivered;
       }
     }
   }
@@ -292,10 +284,7 @@ class ReportingCacheImpl : public ReportingCache {
     context_->NotifyCacheUpdated();
   }
 
-  void MarkClientUsed(const url::Origin& origin,
-                      const GURL& endpoint) override {
-    const ReportingClient* client =
-        GetClientByOriginAndEndpoint(origin, endpoint);
+  void MarkClientUsed(const ReportingClient* client) override {
     DCHECK(client);
     client_metadata_[client].last_used = tick_clock()->NowTicks();
   }

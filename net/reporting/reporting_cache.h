@@ -104,10 +104,10 @@ class NET_EXPORT ReportingCache {
 
   // Records that we attempted (and possibly succeeded at) delivering |reports|
   // to |endpoint|.
-  virtual void IncrementEndpointDeliveries(
-      const GURL& endpoint,
-      const std::vector<const ReportingReport*>& reports,
-      bool successful) = 0;
+  virtual void IncrementEndpointDeliveries(const url::Origin& origin,
+                                           const GURL& endpoint,
+                                           int reports_delivered,
+                                           bool successful) = 0;
 
   // Removes a set of reports. Any reports that are pending will not be removed
   // immediately, but rather marked doomed and removed once they are no longer
@@ -134,8 +134,7 @@ class NET_EXPORT ReportingCache {
                          int priority,
                          int client) = 0;
 
-  virtual void MarkClientUsed(const url::Origin& origin,
-                              const GURL& endpoint) = 0;
+  virtual void MarkClientUsed(const ReportingClient* client) = 0;
 
   // Gets all of the clients in the cache, regardless of origin or group.
   //

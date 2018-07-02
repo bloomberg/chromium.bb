@@ -44,13 +44,16 @@ class ReportingDeliveryAgentTest : public ReportingTestBase {
 
   void SetClient(const url::Origin& origin,
                  const GURL& endpoint,
-                 const std::string& group) {
-    cache()->SetClient(origin, endpoint, ReportingClient::Subdomains::EXCLUDE,
-                       group, tomorrow(), ReportingClient::kDefaultPriority,
+                 const std::string& group,
+                 ReportingClient::Subdomains subdomains =
+                     ReportingClient::Subdomains::EXCLUDE) {
+    cache()->SetClient(origin, endpoint, subdomains, group, tomorrow(),
+                       ReportingClient::kDefaultPriority,
                        ReportingClient::kDefaultWeight);
   }
 
   const GURL kUrl_ = GURL("https://origin/path");
+  const GURL kSubdomainUrl_ = GURL("https://sub.origin/path");
   const url::Origin kOrigin_ = url::Origin::Create(GURL("https://origin/"));
   const GURL kEndpoint_ = GURL("https://endpoint/");
   const std::string kGroup_ = "group";
@@ -92,7 +95,70 @@ TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateUpload) {
   cache()->GetReports(&reports);
   EXPECT_TRUE(reports.empty());
 
-  // TODO(juliatuttle): Check that BackoffEntry was informed of success.
+  // TODO(dcreager): Check that BackoffEntry was informed of success.
+}
+
+TEST_F(ReportingDeliveryAgentTest, SuccessfulImmediateSubdomainUpload) {
+  base::DictionaryValue body;
+  body.SetString("key", "value");
+
+  SetClient(kOrigin_, kEndpoint_, kGroup_,
+            ReportingClient::Subdomains::INCLUDE);
+  cache()->AddReport(kSubdomainUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
+                     tick_clock()->NowTicks(), 0);
+
+  // Upload is automatically started when cache is modified.
+
+  ASSERT_EQ(1u, pending_uploads().size());
+  EXPECT_EQ(kEndpoint_, pending_uploads()[0]->url());
+  {
+    auto value = pending_uploads()[0]->GetValue();
+
+    base::ListValue* list;
+    ASSERT_TRUE(value->GetAsList(&list));
+    EXPECT_EQ(1u, list->GetSize());
+
+    base::DictionaryValue* report;
+    ASSERT_TRUE(list->GetDictionary(0, &report));
+    EXPECT_EQ(4u, report->size());
+
+    ExpectDictIntegerValue(0, *report, "age");
+    ExpectDictStringValue(kType_, *report, "type");
+    ExpectDictStringValue(kSubdomainUrl_.spec(), *report, "url");
+    ExpectDictDictionaryValue(body, *report, "report");
+  }
+  pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
+
+  // Successful upload should remove delivered reports.
+  std::vector<const ReportingReport*> reports;
+  cache()->GetReports(&reports);
+  EXPECT_TRUE(reports.empty());
+
+  // TODO(dcreager): Check that BackoffEntry was informed of success.
+}
+
+TEST_F(ReportingDeliveryAgentTest,
+       SuccessfulImmediateSubdomainUploadWithEvictedClient) {
+  base::DictionaryValue body;
+  body.SetString("key", "value");
+
+  SetClient(kOrigin_, kEndpoint_, kGroup_,
+            ReportingClient::Subdomains::INCLUDE);
+  cache()->AddReport(kSubdomainUrl_, kGroup_, kType_, body.CreateDeepCopy(), 0,
+                     tick_clock()->NowTicks(), 0);
+
+  // Upload is automatically started when cache is modified.
+
+  ASSERT_EQ(1u, pending_uploads().size());
+  // Evict the client
+  SetClient(kOrigin_, kEndpoint_, kGroup_,
+            ReportingClient::Subdomains::EXCLUDE);
+  pending_uploads()[0]->Complete(ReportingUploader::Outcome::SUCCESS);
+
+  // Successful upload should remove delivered reports.
+  std::vector<const ReportingReport*> reports;
+  cache()->GetReports(&reports);
+  EXPECT_TRUE(reports.empty());
 }
 
 TEST_F(ReportingDeliveryAgentTest, SuccessfulDelayedUpload) {

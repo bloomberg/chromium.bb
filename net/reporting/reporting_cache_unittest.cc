@@ -411,18 +411,8 @@ TEST_F(ReportingCacheTest, GetClientsAsValue) {
   SetClient(kOrigin1_, kEndpoint1_, false, kGroup1_, expires);
   SetClient(kOrigin2_, kEndpoint2_, true, kGroup1_, expires);
 
-  // Add some reports so that we can test the upload counts.
-  const ReportingReport* report1a = AddAndReturnReport(
-      kUrl1_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
-      expires, 0);
-  const ReportingReport* report1b = AddAndReturnReport(
-      kUrl1_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
-      expires, 1);
-  const ReportingReport* report2 = AddAndReturnReport(
-      kUrl2_, kGroup1_, kType_, std::make_unique<base::DictionaryValue>(), 0,
-      expires, 1);
-  cache()->IncrementEndpointDeliveries(kEndpoint1_, {report1a, report1b}, true);
-  cache()->IncrementEndpointDeliveries(kEndpoint2_, {report2}, false);
+  cache()->IncrementEndpointDeliveries(kOrigin1_, kEndpoint1_, 2, true);
+  cache()->IncrementEndpointDeliveries(kOrigin2_, kEndpoint2_, 1, false);
 
   base::Value actual = cache()->GetClientsAsValue();
   std::unique_ptr<base::Value> expected = base::test::ParseJson(R"json(
@@ -651,7 +641,9 @@ TEST_F(ReportingCacheTest, EvictLRUClient) {
 
   // Use clients in reverse order, so client (max_client_count - 1) is LRU.
   for (size_t i = 1; i <= max_client_count; ++i) {
-    cache()->MarkClientUsed(kOrigin1_, MakeEndpoint(max_client_count - i));
+    const ReportingClient* client = FindClientInCache(
+        cache(), kOrigin1_, MakeEndpoint(max_client_count - i));
+    cache()->MarkClientUsed(client);
     tick_clock()->Advance(base::TimeDelta::FromSeconds(1));
   }
 

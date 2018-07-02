@@ -35,9 +35,9 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
 
   ~ReportingEndpointManagerImpl() override = default;
 
-  bool FindEndpointForOriginAndGroup(const url::Origin& origin,
-                                     const std::string& group,
-                                     GURL* endpoint_url_out) override {
+  const ReportingClient* FindClientForOriginAndGroup(
+      const url::Origin& origin,
+      const std::string& group) override {
     std::vector<const ReportingClient*> clients;
     cache()->GetClientsForOriginAndGroup(origin, group, &clients);
 
@@ -79,8 +79,7 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
     }
 
     if (available_clients.empty()) {
-      *endpoint_url_out = GURL();
-      return false;
+      return nullptr;
     }
 
     int random_index = rand_callback_.Run(0, total_weight - 1);
@@ -89,14 +88,13 @@ class ReportingEndpointManagerImpl : public ReportingEndpointManager {
       const ReportingClient* client = available_clients[i];
       weight_so_far += client->weight;
       if (random_index < weight_so_far) {
-        *endpoint_url_out = client->endpoint;
-        return true;
+        return client;
       }
     }
 
     // TODO(juliatuttle): Can we reach this in some weird overflow case?
     NOTREACHED();
-    return false;
+    return nullptr;
   }
 
   void SetEndpointPending(const GURL& endpoint) override {
