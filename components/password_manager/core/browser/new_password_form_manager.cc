@@ -213,7 +213,7 @@ void NewPasswordFormManager::ProcessServerPredictions(
   for (const FormStructure* form_predictions : predictions) {
     if (form_predictions->form_signature() != observed_form_signature)
       continue;
-    predictions_ = ConvertToFormPredictions(observed_form_, *form_predictions);
+    predictions_ = ConvertToFormPredictions(*form_predictions);
     Fill();
     break;
   }

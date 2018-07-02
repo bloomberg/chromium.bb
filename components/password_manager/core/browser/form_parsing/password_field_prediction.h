@@ -11,7 +11,6 @@
 #include "components/autofill/core/browser/field_types.h"
 
 namespace autofill {
-struct FormData;
 class FormStructure;
 }  // namespace autofill
 
@@ -43,9 +42,7 @@ struct PasswordFieldPrediction {
 using FormPredictions = std::map<uint32_t, PasswordFieldPrediction>;
 
 // Extracts all password related server predictions from |form_structure|.
-// |observed_form| and |form_structure| must correspond to the same form.
 FormPredictions ConvertToFormPredictions(
-    const autofill::FormData& observed_form,
     const autofill::FormStructure& form_structure);
 
 }  // namespace password_manager
