@@ -4,8 +4,11 @@
 
 #include "chrome/browser/unified_consent/chrome_unified_consent_service_client.h"
 
+#include "chrome/browser/metrics/metrics_reporting_state.h"
+#include "chrome/browser/net/prediction_options.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safe_browsing_prefs.h"
 
 ChromeUnifiedConsentServiceClient::ChromeUnifiedConsentServiceClient(
     PrefService* pref_service)
@@ -18,28 +21,26 @@ void ChromeUnifiedConsentServiceClient::SetAlternateErrorPagesEnabled(
 
 void ChromeUnifiedConsentServiceClient::SetMetricsReportingEnabled(
     bool enabled) {
-  // TODO(http://crbug.com/800974): Implement this method.
-  NOTIMPLEMENTED();
+  ChangeMetricsReportingState(enabled);
 }
 
 void ChromeUnifiedConsentServiceClient::SetSearchSuggestEnabled(bool enabled) {
-  // TODO(http://crbug.com/800974): Implement this method.
-  NOTIMPLEMENTED();
+  pref_service_->SetBoolean(prefs::kSearchSuggestEnabled, enabled);
 }
 
 void ChromeUnifiedConsentServiceClient::SetSafeBrowsingEnabled(bool enabled) {
-  // TODO(http://crbug.com/800974): Implement this method.
-  NOTIMPLEMENTED();
+  pref_service_->SetBoolean(prefs::kSafeBrowsingEnabled, enabled);
 }
 
 void ChromeUnifiedConsentServiceClient::SetSafeBrowsingExtendedReportingEnabled(
     bool enabled) {
-  // TODO(http://crbug.com/800974): Implement this method.
-  NOTIMPLEMENTED();
+  safe_browsing::SetExtendedReportingPref(pref_service_, enabled);
 }
 
 void ChromeUnifiedConsentServiceClient::SetNetworkPredictionEnabled(
     bool enabled) {
-  // TODO(http://crbug.com/800974): Implement this method.
-  NOTIMPLEMENTED();
+  pref_service_->SetInteger(prefs::kNetworkPredictionOptions,
+                            enabled
+                                ? chrome_browser_net::NETWORK_PREDICTION_DEFAULT
+                                : chrome_browser_net::NETWORK_PREDICTION_NEVER);
 }
