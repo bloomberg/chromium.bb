@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Укључите или искључите ChromeVox (говорне повратне информације)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Померајте се надоле на веб-страници</translation>
-<translation id="2568632782096378307">Ресетујте резолуцију екрана на подразумевану вредност</translation>
 <translation id="2596078834055697711">Направите снимак екрана прозора</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, па <ph name="TAB" /> или <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Пређите на метод уноса следећег језика</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Умањите страницу</translation>
 <translation id="2804480015716812239">Притисните <ph name="ALT" /> и кликните на линк</translation>
 <translation id="2830827904629746450">Закачите прозор на десној страни</translation>
+<translation id="2840766858109427815">Пређите на следећу страницу</translation>
 <translation id="2872353916818027657">Замена примарног монитора</translation>
 <translation id="2914313326123580426">Прикажите или сакријте таблу Алатке за програмере</translation>
 <translation id="292495055542441795">Укључите/искључите приказивање на целом екрану</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Покрените менаџер задатка</translation>
 <translation id="3422679037938588196">Идите на претходно подударање за претрагу</translation>
 <translation id="344577624355799426"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Ресетујте ниво зумирања</translation>
 <translation id="353037708190149633">Сачувајте све отворене странице у тренутном прозору као обележиваче у новом директоријуму</translation>
 <translation id="355103131818127604">Отворите линк на новој картици у позадини</translation>
 <translation id="3649256019230929621">Смањивање прозора</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Истакните ред са траком за адресу</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> или <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Режим прегледа</translation>
+<translation id="4382340674111381977">Вратите се на претходну страницу</translation>
 <translation id="4472417192667361414">Подешавања система и приказа</translation>
 <translation id="4556221320735744018">Прегледајте помоћ за тастерске пречице</translation>
 <translation id="4628718545549558538">Отворите област статуса (где је слика налога)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Избришите претходну реч</translation>
 <translation id="5899919361772749550">Прикажите или сакријте конзолу Алатке за програмере</translation>
 <translation id="5921745308587794300">Ротација прозора</translation>
-<translation id="5975083100439434680">Умањивање</translation>
 <translation id="6022924867608035986">Обришите текст из оквира за претрагу</translation>
 <translation id="6045998054441862242">Укључите режим високог контраста</translation>
 <translation id="6052614013050385269">Десни клик на линк</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Отворите датотеку у прегледачу</translation>
 <translation id="7917881398263220094">Зауставите учитавање тренутне странице</translation>
 <translation id="7952165122793773711">Идите на картице од 1 до 8</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> или <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Обришите податке прегледања</translation>
 <translation id="8130528849632411619">Идите на почетак документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Прегледајте обавештења</translation>
 <translation id="8855885154700222542">Тастер за цео екран</translation>
 <translation id="88986195241502842">Страница надоле</translation>
-<translation id="8903921497873541725">Увећавање</translation>
 <translation id="8924883688469390268">Пређите на претходног корисника</translation>
-<translation id="8951768610999698672">Увећајте или умањите ставке на екрану</translation>
 <translation id="8977648847395357314">Изаберите садржај из траке за адресу</translation>
 <translation id="8982190978301344584">Прикажите мени са листом доступних IME-ова</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> од 1 до 8</translation>

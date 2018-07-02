@@ -4,8 +4,10 @@
 <translation id="1012876632442809908">Peranti USB-C (port depan)</translation>
 <translation id="1013923882670373915">Peranti Bluetooth "<ph name="DEVICE_NAME" />" ingin kebenaran untuk berpasangan. Sila masukkan kod PIN ini pada peranti tersebut: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Bateri stilus lemah</translation>
+<translation id="1037492556044956303"><ph name="DEVICE_NAME" /> ditambahkan</translation>
 <translation id="1056775291175587022">Tiada rangkaian</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104621072296271835">Peranti anda berfungsi lebih baik bersama-sama</translation>
 <translation id="112308213915226829">Autosembunyi rak</translation>
 <translation id="1153356358378277386">Peranti digandingkan</translation>
 <translation id="1195412055398077112">imbas lampau</translation>
@@ -99,6 +101,7 @@
 <translation id="277257480934873581">Menyambung semula ke <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+Search</translation>
 <translation id="2805756323405976993">Apl</translation>
+<translation id="2808012452536866044">Lebih Baik Bersama bertukar kepada telefon baharu</translation>
 <translation id="2819276065543622893">Anda akan dilog keluar sekarang.</translation>
 <translation id="2825619548187458965">Rak</translation>
 <translation id="2844169650293029770">Peranti USB-C (port depan sebelah kiri)</translation>
@@ -107,10 +110,12 @@
 <translation id="2878884018241093801">Tiada item terbaharu</translation>
 <translation id="2903844815300039659">Disambungkan ke <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Anda berkongsi skrin anda</translation>
+<translation id="2942350706960889382">Penggadang Didok</translation>
 <translation id="2942516765047364088">Kedudukan rak</translation>
 <translation id="2946119680249604491">Tambah sambungan</translation>
 <translation id="2961963223658824723">Maaf, kesilapan telah berlaku. Cuba lagi dalam beberapa saat.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2996462380875591307">Penggadang Didok didayakan. Tekan Ctrl+Cari+D semula untuk mematikannya.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ialah sesi awam yang diurus oleh <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Output</translation>
@@ -171,6 +176,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="4072264167173457037">Isyarat sederhana</translation>
 <translation id="4200057768455216496">Anda menekan pintasan untuk penggadang yang didok. Adakah anda ingin menghidupkannya?</translation>
 <translation id="4217571870635786043">Pengimlakan</translation>
+<translation id="4274921305979314545">Sambungkan Chromebook dengan telefon anda</translation>
 <translation id="4279490309300973883">Pencerminan</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">OS Chrome</translation>
@@ -224,6 +230,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="554893713779400387">Togol pengimlakan</translation>
 <translation id="5571066253365925590">Bluetooth didayakan</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5598551463564921617">Lebih Baik Bersama dihidupkan</translation>
 <translation id="5600837773213129531">Tekan Ctrl + Alt + Z untuk melumpuhkan maklum balas yang dituturkan.</translation>
 <translation id="5648021990716966815">Bicu mikrofon</translation>
 <translation id="5669267381087807207">Mengaktifkan</translation>
@@ -240,6 +247,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Paparan pintasan</translation>
 <translation id="5916664084637901428">Hidupkan</translation>
+<translation id="592343074608792716">Chromebook ini dan telefon anda akan disambungkan secara automatik</translation>
 <translation id="5927132638760172455">Menghantar ke penerima yang tidak diketahui</translation>
 <translation id="5947494881799873997">Berbalik</translation>
 <translation id="595202126637698455">Penjejakan prestasi didayakan</translation>
@@ -262,6 +270,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="615957422585914272">Paparkan papan kekunci pada skrin</translation>
 <translation id="6164005077879661055">Semua fail dan data setempat yang dikaitkan dengan pengguna diselia akan dipadamkan secara kekal apabila pengguna diselia ini dialih keluar. Tapak web yang dilawati dan tetapan untuk pengguna diselia ini masih boleh dilihat oleh pengurus di <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Ketahui lebih lanjut</translation>
+<translation id="6259254695169772643">Gunakan stilus anda untuk memilih</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Mengaktifkan...</translation>
 <translation id="6284232397434400372">Peleraian ditukar</translation>
 <translation id="6297287540776456956">Gunakan stilus untuk memilih bahagian</translation>
@@ -351,6 +360,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="7982789257301363584">Rangkaian</translation>
 <translation id="7994370417837006925">Log masuk berbilang</translation>
 <translation id="8000066093800657092">Tiada rangkaian</translation>
+<translation id="8029241286966751120">Penggadang Skrin Penuh didayakan. Tekan Ctrl+Cari+M semula untuk mematikannya.</translation>
 <translation id="8054466585765276473">Mengira tempoh bateri.</translation>
 <translation id="8061464966246066292">Kontras tinggi</translation>
 <translation id="8098591350844501178">Berhenti menghantar skrin ke <ph name="RECEIVER_NAME" /></translation>
@@ -366,6 +376,7 @@ Semua pengguna mesti log keluar untuk meneruskan.</translation>
 <translation id="8308637677604853869">Menu sebelumnya</translation>
 <translation id="8351131234907093545">Buat nota</translation>
 <translation id="8392451568018454956">Menu pilihan untuk <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8406981827175133772">Penggadang Skrin Penuh</translation>
 <translation id="8428213095426709021">Tetapan</translation>
 <translation id="8431190899827883166">Tunjukkan ketikan</translation>
 <translation id="8433186206711564395">Tetapan rangkaian</translation>

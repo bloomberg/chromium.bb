@@ -216,6 +216,7 @@ Pakitingnan ang iyong email sa <ph name="ACCOUNT_EMAIL" /> para sa mga karagdaga
 <translation id="7774736947049807614">Hindi nagtagumpay ang certificate ng pag-authenticate. Mag-sign muli sa Chromium bilang si <ph name="USER_NAME" /> o makipag-ugnayan sa iyong administrator para sa higit pang impormasyon. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Hindi ma-update ang Chromium sa pinakabagong bersyon, kaya may napapalampas kang mga bagong feature at pag-aayos sa seguridad.</translation>
+<translation id="7901117350626490574">May available na bagong update para sa Chromium at ilalapat ito sa sandaling muli kang maglunsad.</translation>
 <translation id="7937630085815544518">Naka-sign in ka sa Chromium bilang <ph name="USER_EMAIL_ADDRESS" />. Pakigamit ang parehong account upang mag-sign in muli.</translation>
 <translation id="7962572577636132072">Awtomatikong nag-a-update ang Chromium upang palagi kang may pinakabagong bersyon.</translation>
 <translation id="7975919845073681630">Pangalawang pag-install ito ng Chromium at hindi ito maaaring gawing iyong default na browser.</translation>

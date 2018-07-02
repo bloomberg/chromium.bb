@@ -98,7 +98,6 @@
 
       &lt;p&gt;请在&lt;strong&gt;设置&lt;/strong&gt;应用的&lt;strong&gt;通用&lt;/strong&gt;部分调整日期和时间。&lt;/p&gt;</translation>
 <translation id="1583429793053364125">显示此网页时出了点问题。</translation>
-<translation id="1590457302292452960">生成安全系数高的密码…</translation>
 <translation id="1592005682883173041">本地数据访问权限</translation>
 <translation id="1594030484168838125">选择</translation>
 <translation id="1620510694547887537">摄像头</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">声音</translation>
 <translation id="2094505752054353250">网域不匹配</translation>
 <translation id="2096368010154057602">省</translation>
+<translation id="2102134110707549001">建议安全系数高的密码…</translation>
 <translation id="2108755909498034140">重新启动计算机</translation>
 <translation id="2113977810652731515">信用卡</translation>
 <translation id="2114841414352855701">由于已被 <ph name="POLICY_NAME" /> 替换，该政策已忽略。</translation>
@@ -534,6 +534,7 @@
 <translation id="4726672564094551039">重新加载政策</translation>
 <translation id="4728558894243024398">平台</translation>
 <translation id="4736825316280949806">重新启动 Chromium</translation>
+<translation id="4742407542027196863">管理密码…</translation>
 <translation id="4744603770635761495">可执行文件路径</translation>
 <translation id="4749685221585524849">上次使用日期：<ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">您发送给这个网站的信息（例如密码或信用卡号）不会外泄。</translation>
@@ -552,6 +553,7 @@
 <translation id="4850886885716139402">视图</translation>
 <translation id="4854362297993841467">该递送方式不可用。请另选一种方式。</translation>
 <translation id="4858792381671956233">您已向父母发送请求，询问他们是否允许您访问此网站</translation>
+<translation id="4876305945144899064">无用户名</translation>
 <translation id="4880827082731008257">搜索历史记录</translation>
 <translation id="4881695831933465202">打开</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
@@ -628,6 +630,7 @@
 <translation id="5371425731340848620">更新信用卡</translation>
 <translation id="5377026284221673050">“您的时钟慢了”、“您的时钟快了”或“&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
+<translation id="5387961145478138773">快速访问您最喜爱的各款 Google 应用</translation>
 <translation id="5402410679244714488">到期日期：<ph name="EXPIRATION_DATE_ABBR" />；距离上次使用已超过 1 年</translation>
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5421136146218899937">清除浏览数据...</translation>
@@ -675,6 +678,7 @@
 <translation id="5689199277474810259">导出为 JSON 格式</translation>
 <translation id="5689516760719285838">位置</translation>
 <translation id="570530837424789914">管理…</translation>
+<translation id="57094364128775171">建议安全系数高的密码…</translation>
 <translation id="5710435578057952990">此网站尚未经过身份验证。</translation>
 <translation id="5719499550583120431">接受预付卡。</translation>
 <translation id="5720705177508910913">当前用户</translation>
@@ -749,7 +753,6 @@
 <translation id="6328786501058569169">此网站是欺骗性网站</translation>
 <translation id="6337133576188860026">释放了不到 <ph name="SIZE" />。当您下次访问时，某些网站的加载速度可能会更慢。</translation>
 <translation id="6337534724793800597">按名称过滤政策</translation>
-<translation id="6342069812937806050">刚刚</translation>
 <translation id="6355080345576803305">覆盖公用自助终端</translation>
 <translation id="6358450015545214790">这分别意味着什么？</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 条其他建议}other{# 条其他建议}}</translation>
@@ -876,6 +879,7 @@
       &lt;li&gt;依次点击&lt;strong&gt;应用&lt;/strong&gt;和&lt;strong&gt;确定&lt;/strong&gt;
       &lt;li&gt;访问 &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome 帮助中心&lt;/a&gt;，了解如何从您的计算机中永久移除该软件
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">管理密码…</translation>
 <translation id="7419106976560586862">个人资料路径</translation>
 <translation id="7437289804838430631">添加联系信息</translation>
 <translation id="7441627299479586546">策略主题有误</translation>
@@ -1107,6 +1111,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> 通常会使用加密技术来保护您的信息。Chromium 此次尝试连接到 <ph name="SITE" /> 时，此网站发回了异常的错误凭据。这可能是因为有攻击者在试图冒充 <ph name="SITE" />，或 Wi-Fi 登录屏幕中断了此次连接。请放心，您的信息仍然是安全的，因为 Chromium 尚未进行任何数据交换便停止了连接。</translation>
 <translation id="9106062320799175032">添加帐单邮寄地址</translation>
 <translation id="910908805481542201">帮我解决此问题</translation>
+<translation id="9114524666733003316">正在确认信用卡…</translation>
 <translation id="9128870381267983090">连接到网络</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9137248913990643158">在使用此应用前，请先启动并登录 Chrome。</translation>

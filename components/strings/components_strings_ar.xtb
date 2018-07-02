@@ -98,7 +98,6 @@
 
           &lt;p&gt;يُرجى تعديل التاريخ والوقت من القسم &lt;strong&gt;عام&lt;/strong&gt; في تطبيق &lt;strong&gt;الإعدادات&lt;/strong&gt; .&lt;/p&gt;</translation>
 <translation id="1583429793053364125">حدث خطأ في شيء ما أثناء عرض صفحة الويب هذه.</translation>
-<translation id="1590457302292452960">إنشاء كلمة مرور قوية...</translation>
 <translation id="1592005682883173041">الوصول إلى البيانات المحلية</translation>
 <translation id="1594030484168838125">اختيار</translation>
 <translation id="1620510694547887537">الكاميرا</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">الصوت</translation>
 <translation id="2094505752054353250">النطاق غير متطابق</translation>
 <translation id="2096368010154057602">الإدارة</translation>
+<translation id="2102134110707549001">اقتراح كلمة مرور قوية…</translation>
 <translation id="2108755909498034140">إعادة تشغيل جهاز الكمبيوتر</translation>
 <translation id="2113977810652731515">البطاقة</translation>
 <translation id="2114841414352855701">تم تجاهلها نظرًا لتجاوزها بواسطة <ph name="POLICY_NAME" />.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">إعادة تحميل السياسات</translation>
 <translation id="4728558894243024398">النظام الأساسي</translation>
 <translation id="4736825316280949806">‏إعادة تشغيل Chromium</translation>
+<translation id="4742407542027196863">إدارة كلمات المرور…</translation>
 <translation id="4744603770635761495">المسار التنفيذي</translation>
 <translation id="4749685221585524849">تاريخ آخر استخدام: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">إن معلوماتك (على سبيل المثال، كلمات المرور أو أرقام بطاقة الائتمان) تكون خاصة عندما يتم إرسالها إلى هذا الموقع.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">عرض</translation>
 <translation id="4854362297993841467">طريقة التسليم هذه غير متاحة. جرِّب طريقة أخرى.</translation>
 <translation id="4858792381671956233">لقد سألت والديك ما إذا كانت زيارة هذا الموقع مناسبةً لك</translation>
+<translation id="4876305945144899064">ليس هناك اسم مستخدم</translation>
 <translation id="4880827082731008257">سجلّ البحث</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />، <ph name="TYPE_2" />، <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">تحديث البطاقة</translation>
 <translation id="5377026284221673050">‏""توقيت ساعتك متأخِّر" أو "توقيت ساعتك متقدِّم" أو "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">‏تتضمن سلسلة الشهادات لهذا الموقع شهادة موقعة باستخدام SHA-1.</translation>
+<translation id="5387961145478138773">‏الحصول على إمكانية الوصول السريع إلى تطبيقات Google المفضلة لديك</translation>
 <translation id="5402410679244714488">تاريخ انتهاء الصلاحية: <ph name="EXPIRATION_DATE_ABBR" />، تم استخدامها آخر مرة قبل أكثر من عام</translation>
 <translation id="540969355065856584">لم يتمكن هذا الخادم من إثبات أنه <ph name="DOMAIN" />؛ بل إن شهادة الأمان الخاصة به غير صالحة حاليًا. وربما يكون السبب في ذلك وجود خطأ في التكوين أو اعترض أحد المهاجمين للاتصال.</translation>
 <translation id="5421136146218899937">محو بيانات التصفح...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">‏تصدير إلى JSON</translation>
 <translation id="5689516760719285838">الموقع</translation>
 <translation id="570530837424789914">إدارة...</translation>
+<translation id="57094364128775171">اقتراح كلمة مرور قوية…</translation>
 <translation id="5710435578057952990">لم  يتمّ التحقق من هوية هذا الموقع.</translation>
 <translation id="5719499550583120431">يتم قبول بطاقات الدفع المسبق.</translation>
 <translation id="5720705177508910913">المستخدم الحالي</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">هذا الموقع مخادع</translation>
 <translation id="6337133576188860026">يوفِّر أقل من <ph name="SIZE" />. وقد يتم تحميل بعض مواقع الويب بشكل أبطأ عند زيارتها في المرة القادمة.</translation>
 <translation id="6337534724793800597">تصفية السياسات بحسب الاسم</translation>
-<translation id="6342069812937806050">الآن</translation>
 <translation id="6355080345576803305">إلغاء الجلسة العامة</translation>
 <translation id="6358450015545214790">ماذا تعني هذه الأقسام؟</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{اقتراح واحد آخر}zero{# اقتراح آخر}two{اقتراحان آخران (#)}few{# اقتراحات أخرى}many{# اقتراحًا آخر}other{# اقتراح آخر}}</translation>
@@ -880,6 +883,7 @@
     &lt;li&gt;انقر على &lt;strong&gt;"تطبيق"&lt;/strong&gt;، ثم على &lt;strong&gt;"موافق"&lt;/strong&gt;
     &lt;li&gt;انتقِل إلى &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;مركز مساعدة Chrome&lt;/a&gt; لمعرفة كيفية إزالة البرنامج من جهاز الكمبيوتر نهائيًا
     &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">إدارة كلمات المرور…</translation>
 <translation id="7419106976560586862">مسار الملف الشخصي</translation>
 <translation id="7437289804838430631">إضافة معلومات الاتصال</translation>
 <translation id="7441627299479586546">موضوع السياسة غير صحيح</translation>
@@ -1111,6 +1115,7 @@
 <translation id="9103872766612412690">‏يستخدم <ph name="SITE" /> التشفير عادة لحماية معلوماتك. عندما حاول Chromium الاتصال بموقع <ph name="SITE" /> هذه المرة، أرجَع موقع الويب بيانات اعتماد غير عادية وغير صحيحة. وقد يحدث هذا عندما يحاول أحد المهاجمين التظاهر بأنه موقع <ph name="SITE" />، أو إذا قاطعت شاشة تسجيل دخول Wi-Fi الاتصال. ولكن لا تزال معلوماتك آمنة نظرًا لأن Chromium أوقَفَ الاتصال قبل تبادل أي بيانات.</translation>
 <translation id="9106062320799175032">إضافة عنوان إرسال الفواتير</translation>
 <translation id="910908805481542201">ساعدني لإصلاح ذلك</translation>
+<translation id="9114524666733003316">جارٍ التحقق من البطاقة...</translation>
 <translation id="9128870381267983090">الاتصال بالشبكة</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9137248913990643158">‏يُرجى البدء وتسجيل الدخول إلى Chrome قبل استخدام هذا التطبيق.</translation>

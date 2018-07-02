@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Įjungti arba išjungti „ChromeVox“ (ekrano skaitymą balsu)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Slinkti tinklalapiu žemyn</translation>
-<translation id="2568632782096378307">Nustatyti numatytuosius ekrano skyros nustatymus</translation>
 <translation id="2596078834055697711">Sukurti lango ekrano kopiją</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, tada <ph name="TAB" /> arba <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Perjungti į kitą kalbos įvesties metodą</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Tolinti puslapyje</translation>
 <translation id="2804480015716812239">Paspauskite <ph name="ALT" /> ir spustelėkite nuorodą</translation>
 <translation id="2830827904629746450">Pritvirtinti langą dešinėje</translation>
+<translation id="2840766858109427815">Eiti į kitą puslapį</translation>
 <translation id="2872353916818027657">Keisti pirminį monitorių</translation>
 <translation id="2914313326123580426">Rodyti arba slėpti kūrėjo įrankių skydelį</translation>
 <translation id="292495055542441795">Perjungti viso ekrano režimą</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Rodyti užduočių tvarkytuvę</translation>
 <translation id="3422679037938588196">Eiti į ankstesnę paieškos atitiktį</translation>
 <translation id="344577624355799426"><ph name="ALT" /> arba <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Iš naujo nustatyti mastelio keitimo lygį</translation>
 <translation id="353037708190149633">Visus dabartiniame lange atidarytus puslapius išsaugoti kaip žymes naujame aplanke</translation>
 <translation id="355103131818127604">Atidaryti nuorodą naujame skirtuke fone</translation>
 <translation id="3649256019230929621">Sumažinti langą</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Paryškinti eilutę su adreso juosta</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> arba <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Apžvalgos režimas</translation>
+<translation id="4382340674111381977">Grįžti į ankstesnį puslapį</translation>
 <translation id="4472417192667361414">Sistemos ir pateikties nustatymai</translation>
 <translation id="4556221320735744018">Žr. sparčiųjų klavišų pagalbos priemonę</translation>
 <translation id="4628718545549558538">Atidaryti būsenos sritį (kur rodoma paskyros nuotrauka)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Ištrinti ankstesnį žodį</translation>
 <translation id="5899919361772749550">Rodyti arba slėpti kūrėjo įrankių pultą</translation>
 <translation id="5921745308587794300">Pasukti langą</translation>
-<translation id="5975083100439434680">Tolinti</translation>
 <translation id="6022924867608035986">Išvalyti paieškos laukelio tekstą</translation>
 <translation id="6045998054441862242">Įjungti didelio kontrasto režimą</translation>
 <translation id="6052614013050385269">Dešiniuoju klavišu spustelėti nuorodą</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Atidaryti failą naršyklėje</translation>
 <translation id="7917881398263220094">Sustabdyti dabartinio puslapio įkėlimą</translation>
 <translation id="7952165122793773711">Eiti į 1–8 skirtukus</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> arba <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Išvalyti naršymo duomenis</translation>
 <translation id="8130528849632411619">Eiti į dokumento pradžią</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> arba <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Žiūrėti pranešimus</translation>
 <translation id="8855885154700222542">Viso ekrano klavišas</translation>
 <translation id="88986195241502842">Puslapiu žemyn</translation>
-<translation id="8903921497873541725">Artinti</translation>
 <translation id="8924883688469390268">Perjungti į ankstesnį naudotoją</translation>
-<translation id="8951768610999698672">Padidinti arba sumažinti ekrane rodomus elementus</translation>
 <translation id="8977648847395357314">Pasirinkti adreso juostos turinį</translation>
 <translation id="8982190978301344584">Rodyti meniu su pasiekiamų IMRP sąrašu</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> nuo 1 iki 8</translation>

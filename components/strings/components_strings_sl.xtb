@@ -98,7 +98,6 @@
 
       &lt;p&gt;V razdelku &lt;strong&gt;Splošno&lt;/strong&gt; aplikacije &lt;strong&gt;Nastavitve&lt;/strong&gt; prilagodite datum in uro.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Med prikazom spletne strani je prišlo do napake.</translation>
-<translation id="1590457302292452960">Ustvarite zapleteno geslo ...</translation>
 <translation id="1592005682883173041">Dostop do lokalnih podatkov</translation>
 <translation id="1594030484168838125">Izberi</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Zvok</translation>
 <translation id="2094505752054353250">Neujemanje domen</translation>
 <translation id="2096368010154057602">Departma</translation>
+<translation id="2102134110707549001">Predlagaj zapleteno geslo …</translation>
 <translation id="2108755909498034140">Znova zaženite računalnik</translation>
 <translation id="2113977810652731515">Kartica</translation>
 <translation id="2114841414352855701">Prezrto, ker je to preglasil pravilnik <ph name="POLICY_NAME" />.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">Znova naloži pravilnike</translation>
 <translation id="4728558894243024398">Okolje</translation>
 <translation id="4736825316280949806">Znova zaženite Chromium</translation>
+<translation id="4742407542027196863">Upravljaj gesla …</translation>
 <translation id="4744603770635761495">Pot do izvedljive datoteke</translation>
 <translation id="4749685221585524849">Zadnja uporaba: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Vaši podatki (npr. gesla ali številke kreditnih kartic) so zasebni, kadar so poslani temu spletnemu mestu.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">Pogled</translation>
 <translation id="4854362297993841467">Ta način pošiljanja ni na voljo. Poskusite uporabiti drugega.</translation>
 <translation id="4858792381671956233">Starše si vprašal(-a), ali smeš obiskati to spletno mesto</translation>
+<translation id="4876305945144899064">Ni uporabniškega imena</translation>
 <translation id="4880827082731008257">Zgodovina iskanja</translation>
 <translation id="4881695831933465202">Odpri</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">Posodobite kartico</translation>
 <translation id="5377026284221673050">Ura zaostaja« ali »Ura prehiteva« ali »&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;«</translation>
 <translation id="5386426401304769735">Veriga potrdil za to spletno mesto vsebuje potrdilo, podpisano z algoritmom SHA-1.</translation>
+<translation id="5387961145478138773">Hiter dostop do priljubljenih Googlovih aplikacij</translation>
 <translation id="5402410679244714488">Datum poteka: <ph name="EXPIRATION_DATE_ABBR" />, zadnja uporaba pred več kot enim letom</translation>
 <translation id="540969355065856584">Strežniku ni uspelo dokazati, da je <ph name="DOMAIN" />; njegovo varnostno potrdilo trenutno ni veljavno. Razlog za to je lahko napačna konfiguracija ali napadalčevo prestrezanje povezave.</translation>
 <translation id="5421136146218899937">Izbriši podatke brskanja ...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">Izvozi v JSON</translation>
 <translation id="5689516760719285838">Lokacija</translation>
 <translation id="570530837424789914">Upravljanje ...</translation>
+<translation id="57094364128775171">Predlagaj zapleteno geslo …</translation>
 <translation id="5710435578057952990">Identiteta tega spletnega mesta ni bila potrjena.</translation>
 <translation id="5719499550583120431">Sprejema predplačniške kartice.</translation>
 <translation id="5720705177508910913">Trenutni uporabnik</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">To spletno mesto je zavajajoče</translation>
 <translation id="6337133576188860026">Sprosti manj kot <ph name="SIZE" />. Nekatera spletna mesta se bodo ob naslednjem obisku morda počasneje naložila.</translation>
 <translation id="6337534724793800597">Filtriraj pravilnike po imenu</translation>
-<translation id="6342069812937806050">Pravkar</translation>
 <translation id="6355080345576803305">Preglasitev javne seje</translation>
 <translation id="6358450015545214790">Več o teh nastavitvah</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{in še 1 predlog}one{in še # predlog}two{in še # predloga}few{in še # predlogi}other{in še # predlogov}}</translation>
@@ -880,6 +883,7 @@
       &lt;li&gt;Kliknite &lt;strong&gt;Uporabi&lt;/strong&gt; in nato &lt;strong&gt;V redu&lt;/strong&gt;.
       &lt;li&gt;Obiščite &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;center za pomoč za Chrome&lt;/a&gt; če želite izvedeti, kako programsko opremo trajno odstranite iz računalnika.
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Upravljaj gesla …</translation>
 <translation id="7419106976560586862">Pot profila</translation>
 <translation id="7437289804838430631">Dodaj podatke o stiku</translation>
 <translation id="7441627299479586546">Napačen subjekt pravilnika</translation>
@@ -1110,6 +1114,7 @@
 <translation id="9103872766612412690">Spletno mesto <ph name="SITE" /> za zaščito vaših podatkov običajno uporablja šifriranje. Ko se je Chromium tokrat poskusil povezati s spletnim mestom <ph name="SITE" />, je to vrnilo nenavadne in nepravilne poverilnice. Do tega lahko pride, če se napadalec lažno predstavlja za spletno mesto <ph name="SITE" /> ali če je povezavo prekinil zaslon za prijavo v omrežje Wi-Fi. Vaši podatki so še vedno varni, saj je Chromium pred izmenjavo podatkov prekinil povezavo.</translation>
 <translation id="9106062320799175032">Dodajanje naslova za izstavitev računa</translation>
 <translation id="910908805481542201">Pomagajte mi odpraviti težavo</translation>
+<translation id="9114524666733003316">Potrjevanje kartice …</translation>
 <translation id="9128870381267983090">Vzpostavi povezavo z omrežjem</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9137248913990643158">Začnite s prijavo v Chrome, preden začnete uporabljati to aplikacijo.</translation>

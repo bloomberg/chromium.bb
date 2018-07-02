@@ -42,6 +42,9 @@ Wenn Sie diese Richtlinie festlegen, verwendet <ph name="PRODUCT_NAME" /> das be
 Unter https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables finden Sie eine Liste mit Variablen, die verwendet werden können.
 
 Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cache-Verzeichnis verwendet und der Nutzer kann sie mit der Befehlszeilenmarkierung "--disk-cache-dir" außer Kraft setzen.</translation>
+<translation id="1135264353752122851">Mit dieser Richtlinie wird festgelegt, welche Tastaturlayouts in <ph name="PRODUCT_OS_NAME" />-Nutzersitzungen zulässig sind.
+
+      Wenn die Richtlinie festgelegt ist, kann der Nutzer nur eine der in der Richtlinie vorgegebenen Eingabemethoden auswählen. Falls die Richtlinie nicht konfiguriert oder auf eine leere Liste festgelegt ist, kann der Nutzer aus allen unterstützten Eingabemethoden wählen. Sollte die aktuelle Eingabemethode durch die Richtlinie nicht zulässig sein, wird die Eingabemethode nach Möglichkeit auf das Hardware-Tastaturlayout oder den ersten gültigen Eintrag in dieser Liste eingestellt. Alle ungültigen oder nicht unterstützten Eingabemethoden in der Liste werden ignoriert.</translation>
 <translation id="1138294736309071213">Diese Richtlinie ist nur im Händlermodus aktiv.
 
       Legt fest, wie lange es dauert, bis für Geräte im Händlermodus der Bildschirmschoner auf der Anmeldeseite erscheint.
@@ -69,6 +72,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="1221359380862872747">Bei Demo-Anmeldung angegebene URLs laden</translation>
 <translation id="1223789468190631420">Safe Browsing-Aktivierungsstatus für vertrauenswürdige Quellen</translation>
 <translation id="123081309365616809">Streamen von Inhalten an das Gerät aktivieren</translation>
+<translation id="1243570869342663665">Filterung von Erwachseneninhalten durch "SafeSites" konfigurieren.</translation>
 <translation id="1257550411839719984">Standard-Downloadverzeichnis festlegen</translation>
 <translation id="1265053460044691532">Zeit beschränken, für die sich ein über SAML authentifizierter Nutzer offline anmelden kann</translation>
 <translation id="1291880496936992484">Achtung: RC4 wird nach Version 52, etwa im September 2016, vollständig aus <ph name="PRODUCT_NAME" /> entfernt. Anschließend funktioniert diese Richtlinie nicht mehr.
@@ -250,6 +254,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Das Format des Werts richtet sich nach den Namen der Zeitzonen in der IANA-Zeitzonen-Datenbank (siehe "https://de.wikipedia.org/wiki/Zeitzonen-Datenbank"). Auf die meisten Zeitzonen kann über "Kontinent/Stadt" oder "Ozean/Stadt" verwiesen werden.
 
       Durch das Festlegen dieser Richtlinie wird die automatische Auflösung der Zeitzone nach Gerätestandort komplett deaktiviert und die Richtlinie "SystemTimezoneAutomaticDetection" überschrieben.</translation>
+<translation id="1885782360784839335">Einblendung von Werbung auf dem gesamten Tab aktivieren</translation>
 <translation id="1888871729456797026">Das Registrierungstoken der Cloud-Richtlinie auf dem Desktop</translation>
 <translation id="1897365952389968758">Ausführung von JavaScript für alle Websites zulassen</translation>
 <translation id="1906888171268104594">Legt fest, ob Nutzungs- und Diagnosedaten, einschließlich Absturzberichten, an Google gesendet werden.
@@ -363,6 +368,7 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       und der Nutzer kann diesen ändern. In diesem Fall wird der Standardwert
       beim Neustart nicht angewendet.</translation>
 <translation id="2156132677421487971">Konfigurieren von Richtlinien für <ph name="PRODUCT_NAME" />, ein Tool, mit dem Nutzer Inhalte von Tabs, Websites oder dem Desktop von einem Browser auf andere Bildschirme und Soundsysteme übertragen können.</translation>
+<translation id="2166472654199325139">Websites bei Erwachseneninhalten nicht filtern</translation>
 <translation id="2168397434410358693">Inaktivitätsverzögerung im Netzbetrieb</translation>
 <translation id="2170233653554726857">WPAD-Optimierung aktivieren</translation>
 <translation id="2176565653304920879">Wenn diese Richtlinie aktiviert wird, hängt die automatische Erkennung der Zeitzone folgendermaßen vom Wert der Einstellung ab:
@@ -511,6 +517,12 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="2466131534462628618">Captive-Portal-Authentifizierung ignoriert Proxy</translation>
 <translation id="2482676533225429905">Natives Messaging</translation>
 <translation id="2483146640187052324">Netzwerkaktionen über alle Netzwerkverbindungen vervollständigen</translation>
+<translation id="2484208301968418871">Mit dieser Richtlinie wird die Anwendung des URL-Filters "SafeSites" konfiguriert.
+      Der Filter greift auf die Google Safe Search API zurück, um URLs als pornografisch oder nicht pornografisch einzuordnen.
+
+      Wenn diese Richtlinie nicht konfiguriert oder auf "Websites bei Erwachseneninhalten nicht filtern" festgelegt ist, werden Websites nicht gefiltert.
+
+      Falls die Richtlinie auf "Websites auf oberster Ebene bei Erwachseneninhalten filtern" gesetzt ist, werden als pornografisch eingestufte Websites gefiltert.</translation>
 <translation id="2485721741875148980">Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Profil in <ph name="PRODUCT_NAME" /> anmelden, um den Browser zu nutzen. Außerdem wird der Standardwert von BrowserGuestModeEnabled auf "false" gesetzt. Beachten Sie, dass vorhandene, nicht signierte Profile gesperrt werden und nach Aktivieren dieser Richtlinie nicht mehr zugänglich sind. Weitere Informationen erhalten Sie im Hilfeartikel.
 
       Ist die Richtlinie auf "false" gesetzt oder nicht konfiguriert, kann der Nutzer den Browser verwenden, ohne sich in <ph name="PRODUCT_NAME" /> anzumelden.</translation>
@@ -661,12 +673,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
 <translation id="2867699958489427143">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen vollständigen Powerwash durchführen.</translation>
-<translation id="286802604195763750">Mit dieser Richtlinie können Sie die Auslösung der Passwortschutzwarnung steuern. Durch diese Meldung werden Nutzer gewarnt, wenn sie ihr geschütztes Passwort auf potenziell verdächtigen Websites wiederverwenden.
-
-      Wenn diese Richtlinie auf "PasswordProtectionWarningOff" festgelegt ist, wird keine Passwortschutzwarnung angezeigt.
-      Wenn diese Richtlinie auf "PasswordProtectionWarningOnPasswordReuse" festgelegt ist, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein Google-Passwort auf einer Website wiederverwendet, die nicht auf der weißen Liste steht.
-      Wenn diese Richtlinie auf "PasswordProtectionWarningOnPhishingReuse" festgelegt ist, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet.
-      Wenn diese Richtlinie nicht konfiguriert ist, wird die Passwortschutzwarnung ausgelöst, wenn der Nutzer sein Google-Passwort auf Phishingwebsites wiederverwendet. Der Nutzer kann diese Einstellung jedoch ändern.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
 <translation id="2877225735001246144">CNAME-Suche bei der Aushandlung der Kerberos-Authentifizierung deaktivieren</translation>
@@ -1313,6 +1319,7 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 
       Werden diese Richtlinien weder festgelegt noch ausgefüllt, kann sich jeder Nutzer in <ph name="PRODUCT_NAME" /> anmelden.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
+<translation id="4861767323695239729">In einer Nutzersitzung zulässige Eingabemethoden konfigurieren</translation>
 <translation id="4869787217450099946">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API angefordert werden.
 
 Falls diese Richtlinie auf "true" gesetzt oder nicht festgelegt wird, werden Bildschirm-Wakelocks bei der Energieverwaltung zugelassen.
@@ -1864,6 +1871,7 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
       Wenn diese Richtlinie deaktiviert oder nicht konfiguriert ist, kommen nur die regulären lokalen Profile zum Einsatz.
 
       Durch die Richtlinie <ph name="SYNC_DISABLED_POLICY_NAME" /> wird die gesamte Datensynchronisierung deaktiviert und somit RoamingProfileSupportEnabled überschrieben.</translation>
+<translation id="6731757988219967594">Websites auf oberster Ebene (aber nicht eingebettete iFrames) bei Erwachseneninhalten filtern</translation>
 <translation id="6735701345096330595">Aktivierung von Sprachen für die Rechtschreibprüfung erzwingen</translation>
 <translation id="673699536430961464">Mit dieser Einstellung können Nutzer nach der Anmeldung auf ihrem <ph name="PRODUCT_OS_NAME" />-Gerät im Inhaltsbereich des Browserfensters zwischen Google-Konten wechseln.
 
@@ -1886,6 +1894,13 @@ Ist die Richtlinie nicht konfiguriert, wird die Netzwerkvorhersage aktiviert, ka
 <translation id="6757438632136860443">Ermöglicht die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Ausführung des Plug-ins "<ph name="FLASH_PLUGIN_NAME" />" gestattet ist.
 
           Ist diese Richtlinie nicht festgelegt, kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPluginsSetting", sofern konfiguriert, oder die persönliche Konfiguration des Nutzers zum Einsatz.</translation>
+<translation id="6762235610019366960">Mit dieser Richtlinie wird festgelegt, ob in <ph name="PRODUCT_NAME" /> Werbung und/oder Bildungsinhalte auf einem ganzen Tab angezeigt werden dürfen.
+
+      Falls sie nicht konfiguriert oder aktiviert (auf "true" gesetzt) ist, dürfen Nutzern in <ph name="PRODUCT_NAME" /> Inhalte auf einem ganzen Tab angezeigt werden, um ihnen Produktinformationen zu geben.
+
+      Wenn sie deaktiviert (auf "false" festgelegt) ist, werden Nutzern in <ph name="PRODUCT_NAME" /> Inhalte nicht auf einem ganzen Tab angezeigt, um ihnen Produktinformationen zu geben.
+
+      Mit dieser Einstellung wird die Einblendung von Begrüßungsseiten konfiguriert, die Nutzern bei der Anmeldung in <ph name="PRODUCT_NAME" /> helfen, auf denen der Browser als Standardbrowser eingerichtet werden kann oder über die Nutzer über Produktfunktionen informiert werden.</translation>
 <translation id="6766216162565713893">Websites dürfen den Nutzer um Zugriff auf ein Bluetooth-Gerät in der Nähe bitten</translation>
 <translation id="6770454900105963262">Informationen zu aktiven Kiosksitzungen senden</translation>
 <translation id="6786747875388722282">Erweiterungen</translation>
@@ -2199,17 +2214,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7511361072385293666">Wenn diese Richtlinie auf "true" eingestellt oder nicht konfiguriert ist, ist die Verwendung des QUIC-Protokolls in <ph name="PRODUCT_NAME" /> zulässig.
       Ist die Richtlinie auf "false" eingestellt, ist die Verwendung des QUIC-Protokolls nicht zulässig.</translation>
 <translation id="7519251620064708155">Schlüsselgenerierung auf diesen Websites zulassen</translation>
-<translation id="7529083451528428240">Ermöglicht, die Sitzung des Nutzers auf Grundlage der Clientzeit oder des Nutzungskontingents für den jeweiligen Tag zu sperren.
-
-          Das |time_window_limit| gibt ein tägliches Zeitfenster vor, in dem die Sitzung des Nutzers gesperrt sein soll. Wir unterstützen nur eine Regel für jeden Wochentag, weshalb die Größe der Matrix |entries| von 0 bis 7 reichen kann. |starts_at| und |ends_at| sind Anfang und Ende des Zeitfensters. Wenn |ends_at| kleiner ist als |starts_at|, bedeutet das, dass das |time_limit_window| am darauf folgenden Tag endet. |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
-
-          Das |time_usage_limit| stellt ein tägliches Nutzungslimit dar. Wenn der Nutzer es erreicht, wird seine Sitzung gesperrt. Für jeden Tag der Woche steht eine Eigenschaft zur Verfügung und diese sollte nur dann konfiguriert werden, wenn für diesen Tag ein aktives Limit vorliegt. |usage_quota_mins| ist der Zeitraum, über den das verwaltete Gerät an einem bestimmten Tag genutzt werden darf, und |reset_at| ist der Zeitpunkt, an dem das Kontingent erneuert wird. Der Standardwert für |reset_at| ist Mitternacht ({'hour': 0, 'minute': 0}). |last_updated_millis| ist der UTC-Zeitstempel für die letzte Aktualisierung des Eintrags. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde.
-
-          Mit |overrides| können die genannten Regeln vorübergehend außer Kraft gesetzt werden.
-          * Wenn weder "time_window_limit" noch "time_usage_limit" aktiv sind, kann |LOCK| zur Sperrung des Geräts verwendet werden.
-          * Mit |LOCK| wird eine Nutzersitzung vorübergehend gesperrt, bis das nächste "time_window_limit" oder "time_usage_limit" beginnt.
-          * Mit |UNLOCK| wird eine durch "time_window_limit" oder "time_usage_limit" gesperrte Sitzung entsperrt.
-          |created_time_millis| ist der UTC-Zeitstempel für die Erstellung der Außerkraftsetzung. Er wird als String gesendet, da ein Zeitstempel nicht in eine ganze Zahl passen würde. Mit ihm wird festgestellt, ob diese Außerkraftsetzung weiterhin angewendet werden soll. Wenn das aktuelle aktive Zeitlimit (Nutzungszeitlimit oder Zeitfensterlimit) gestartet wurde, nachdem die Außerkraftsetzung erfolgt ist, sollte sie keine Auswirkungen haben. Entsprechend gilt: Wenn die Außerkraftsetzung vor der letzten Änderung des aktiven "time_window_limit" oder "time_usage_window" erstellt wurde, sollte sie nicht angewendet werden.</translation>
 <translation id="7529100000224450960">Ermöglicht Ihnen die Zusammenstellung einer Liste mit URL-Mustern, die Websites angeben, denen das Öffnen von Pop-ups gestattet ist. Wenn diese Richtlinie nicht konfiguriert ist, so kommt für alle Websites entweder der globale Standardwert der Richtlinie "DefaultPopupsSetting", sofern konfiguriert, oder der persönlichen Konfiguration des Nutzers zum Einsatz.</translation>
 <translation id="7529144158022474049">Streufaktor automatisch aktualisieren</translation>
 <translation id="7534199150025803530">Diese Richtlinie hat keine Auswirkungen auf die Android Google Drive App. Wenn Sie die Nutzung von Google Drive über Mobilfunkverbindungen verhindern möchten, sollten Sie das Installieren der Android Google Drive App nicht zulassen.</translation>

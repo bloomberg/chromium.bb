@@ -42,6 +42,9 @@
       Aceda a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista das variáveis que podem ser utilizadas.
 
       Se esta política permanecer por definir, é utilizado o diretório de cache predefinido e o utilizador pode substituí-lo pelo sinalizador de linha de comando "--disk-cache-dir".</translation>
+<translation id="1135264353752122851">Configura os esquemas de teclado que são permitidos para as sessões de utilizador do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política estiver definida, o utilizador apenas pode selecionar um dos métodos de introdução especificados por esta política. Se esta política não estiver definida ou estiver definida como uma lista vazia, o utilizador pode selecionar todos os métodos de introdução suportados. Se o método de introdução atual não for autorizado por esta política, este será alterado para o esquema de teclado do hardware (se autorizado) ou a primeira entrada válida dessa lista. Todos os métodos de introdução desta lista inválidos ou não suportados são ignorados.</translation>
 <translation id="1138294736309071213">Esta política está ativa apenas no modo de retalho.
 
       Determina o período de tempo antes de a proteção de ecrã ser apresentada no ecrã de início de sessão para aparelhos no modo de retalho.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Carregar URLs especificados no início de sessão de demonstração</translation>
 <translation id="1223789468190631420">Estado de ativação da Navegação segura para fontes fidedignas</translation>
 <translation id="123081309365616809">Permite a transmissão de conteúdo para o dispositivo</translation>
+<translation id="1243570869342663665">Controlar a filtragem de conteúdo para adultos do SafeSites</translation>
 <translation id="1257550411839719984">Defina o diretório de transferências predefinido.</translation>
 <translation id="1265053460044691532">Limitar o tempo durante o qual um utilizador autenticado via SAML pode iniciar sessão offline</translation>
 <translation id="1291880496936992484">Aviso: o RC4 será completamente removido do <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016) e esta política deixa de funcionar nessa altura.
@@ -258,6 +262,7 @@
       O formato do valor segue os nomes dos fusos horários na "Base de dados de fuso horário IANA" (consulte "https://en.wikipedia.org/wiki/Tz_database"). Em particular, a maioria dos fusos horários pode ser referida como "continente/grande_cidade" ou "oceano/grande_cidade".
 
       A definição desta política desativa completamente a resolução automática do fuso horário através da localização do dispositivo. Além disso, substitui a política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Ativar a apresentação de conteúdo promocional no separador inteiro</translation>
 <translation id="1888871729456797026">O símbolo de inscrição da política da nuvem no computador</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem JavaScript</translation>
 <translation id="1906888171268104594">Controla se as métricas de utilização e os dados de diagnóstico, incluindo os relatórios de falhas, são comunicados à Google.
@@ -377,6 +382,7 @@
 
       Se desativar esta definição ou não a definir, todas as páginas de autenticação do portal cativo são apresentadas num separador de navegador novo (normal), com as definições de proxy do utilizador atual.</translation>
 <translation id="2156132677421487971">Configura políticas para o <ph name="PRODUCT_NAME" />, uma funcionalidade que permite aos utilizadores enviar o conteúdo de separadores, de sites ou do ambiente de trabalho a partir do navegador para sistemas de som e ecrãs remotos.</translation>
+<translation id="2166472654199325139">Não filtrar sites de conteúdo para adultos</translation>
 <translation id="2168397434410358693">Atraso de inatividade quando o dispositivo está ligado à eletricidade</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
 <translation id="2176565653304920879">Quando esta política está definida, o fluxo da deteção automática do fuso horário é um dos seguintes, consoante o valor da definição:
@@ -525,6 +531,12 @@
 <translation id="2466131534462628618">A autenticação de portal cativo ignora proxy</translation>
 <translation id="2482676533225429905">Mensagens nativas</translation>
 <translation id="2483146640187052324">Prever ações de rede em qualquer ligação de rede</translation>
+<translation id="2484208301968418871">Esta política controla a aplicação do filtro de URL SafeSites.
+      Este filtro utiliza a API da Pesquisa segura da Google para classificar URLs como pornográficos ou não pornográficos.
+
+      Quando esta política não está configurada ou está definida como "Não filtrar sites com conteúdo para adultos", os sites não são filtrados.
+
+      Quando esta política está definida como "Filtrar sites de nível superior com conteúdo para adultos", os sites classificados como pornográficos são filtrados.</translation>
 <translation id="2485721741875148980">Se esta política estiver definida como verdadeira, o utilizador tem de iniciar sessão no <ph name="PRODUCT_NAME" /> com o respetivo perfil antes de utilizar o navegador e o valor predefinido de BrowserGuestModeEnabled é definido como falso. Tenha em atenção que os perfis não assinados existentes serão bloqueados e estarão inacessíveis após a ativação desta política. Para mais informações, consulte o artigo do Centro de Ajuda.
 
       Se esta política for definida como falsa ou não for configurada, o utilizador pode utilizar o navegador sem iniciar sessão no <ph name="PRODUCT_NAME" />.</translation>
@@ -674,12 +686,6 @@
 
       Se ativar esta definição, a Pré-visualização de impressão utiliza a impressora predefinida do SO como a escolha de destino predefinida.</translation>
 <translation id="2867699958489427143">Reverta e continue a utilizar a versão de destino se a versão do SO for mais recente do que a de destino. Efetue um Powerwash completo durante o processo.</translation>
-<translation id="286802604195763750">Permite-lhe controlar o acionamento do aviso de proteção por palavra-passe. A proteção por palavra-passe alerta os utilizadores quando reutilizarem as respetivas palavras-passe protegidas em sites potencialmente suspeitos.
-
-      Se esta política estiver definida como "PasswordProtectionWarningOff", não é mostrado nenhum aviso de proteção por palavra-passe.
-      Se esta política estiver definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção por palavra-passe é mostrado quando os utilizadores reutilizarem as palavras-passe Google em sites que não tenham sido adicionados à lista de autorizações.
-      Se esta política estiver definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção por palavra-passe é mostrado quando os utilizadores reutilizarem as palavras-passe Google em sites de phishing.
-      Se esta política não for definida, o aviso de proteção por palavra-passe é acionado quando os utilizadores reutilizarem as palavras-passe Google em sites de phishing, mas os utilizadores podem alterar esta definição.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações Android:</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
@@ -1330,6 +1336,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
       Se esta política não for definida ou for deixada em branco, qualquer utilizador pode iniciar sessão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de ecrã inteiro</translation>
+<translation id="4861767323695239729">Configurar os métodos de introdução permitidos numa sessão de utilizador</translation>
 <translation id="4869787217450099946">Especifica se os bloqueios da ativação do ecrã são permitidos. Os bloqueios da ativação do ecrã podem ser solicitados por extensões através da API da extensão de gestão da alimentação.
 
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios da ativação do ecrã serão cumpridos no que toca à gestão da alimentação.
@@ -1880,6 +1887,7 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
       Se esta política estiver desativada ou não estiver definida, apenas são utilizados os perfis locais normais.
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados e substitui a política RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtrar sites de nível superior (mas não iFrames incorporados) com conteúdo para adultos</translation>
 <translation id="6735701345096330595">Forçar a ativação de idiomas com verificação ortográfica</translation>
 <translation id="673699536430961464">Esta definição permite que os utilizadores alternem entre Contas Google na área de conteúdo da respetiva janela do navegador após iniciarem sessão no dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -1902,6 +1910,13 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="6757438632136860443">Permite-lhe definir uma lista de padrões de URL que especificam sites que estão autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, é utilizado o valor predefinido global para todos os sites da política "DefaultPluginsSetting", se esta estiver definida ou, caso contrário, a configuração pessoal do utilizador.</translation>
+<translation id="6762235610019366960">Permite-lhe controlar a apresentação de conteúdo promocional e/ou educativo no separador inteiro no <ph name="PRODUCT_NAME" />.
+
+      Se não estiver configurada ou ativada (definida como verdadeira), o <ph name="PRODUCT_NAME" /> pode apresentar conteúdo em separador inteiro aos utilizadores para fornecer informações de produto.
+
+      Se estiver desativada (definida como falsa), o <ph name="PRODUCT_NAME" /> não apresenta conteúdo em separador inteiro aos utilizadores para fornecer informações de produto.
+
+      Esta definição controla a apresentação de páginas de boas-vindas que ajudam os utilizadores a iniciar sessão no <ph name="PRODUCT_NAME" />, escolhê-lo como navegador predefinido ou fornecer outras informações acerca de funcionalidades do produto.</translation>
 <translation id="6766216162565713893">Permitir que os sites solicitem ao utilizador a concessão de acesso a dispositivos Bluetooth próximos</translation>
 <translation id="6770454900105963262">Comunicar informações acerca de sessões ativas do quiosque</translation>
 <translation id="6786747875388722282">Extensões</translation>
@@ -2214,17 +2229,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="7511361072385293666">Se esta política estiver definida como verdadeira ou não estiver definida, é permitida a utilização do protocolo QUIC no <ph name="PRODUCT_NAME" />.
       Se esta política estiver definida como falsa, não é permitida a utilização do protocolo QUIC.</translation>
 <translation id="7519251620064708155">Permitir a geração de chaves nestes sites</translation>
-<translation id="7529083451528428240">Permite bloquear a sessão do utilizador com base no tempo do cliente ou na quota de utilização do dia.
-
-          |time_window_limit| especifica um intervalo diário durante o qual a sessão do utilizador deve ser bloqueada. Suportamos apenas uma regra para cada dia da semana, pelo que o tamanho da matriz de |entries| pode variar entre 0 e 7. |starts_at| e |ends_at| são o início e o fim do limite do intervalo; se |ends_at| for menor do que |starts_at|, significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
-
-          |time_usage_limit| especifica uma quota de ecrã diária, pelo que, quando o utilizador a atinge, a respetiva sessão é bloqueada. Existe uma propriedade para cada dia da semana e esta deverá ser definida apenas se houver uma quota ativa para esse dia. |usage_quota_mins| é o período de tempo durante o qual o dispositivo gerido pode ser utilizado num dia e |reset_at| é a hora em que a quota de utilização é renovada. O valor predefinido para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é a data/hora UTC em que a entrada foi atualizada pela última vez. É enviado como uma string porque a data/hora não seria suportada como um número inteiro.
-
-          |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
-          * Se time_window_limit e time_usage_limit não estiverem ativos, é possível utilizar |LOCK| para bloquear o dispositivo.
-          * |LOCK| bloqueia temporariamente a sessão do utilizador até que seja iniciado o próximo time_window_limit ou time_usage_limit.
-          * |UNLOCK| desbloqueia uma sessão do utilizador bloqueada por time_window_limit ou time_usage_limit.
-          |created_time_millis| é a data/hora UTC de criação da substituição. É enviado como uma string porque a data/hora não seria suportada como um número inteiro. É utilizado para determinar se esta substituição deve continuar a ser aplicada. Se a funcionalidade de limite de tempo ativa atual (limite de tempo de utilização ou limite de tempo da janela) for iniciada depois de a substituição ter sido criada, não deverá efetuar qualquer ação. Além disso, se a substituição tiver sido criada antes da última alteração de time_window_limit ou de time_usage_window ativo, não deverá ser aplicada.</translation>
 <translation id="7529100000224450960">Permite definir uma lista de padrões de URL que especificam os Web sites autorizados a abrir janelas de pop-up. Se esta política não for definida, será utilizado o valor global predefinido para todos os Web sites, seja a partir da política "DefaultPopupsSetting", caso esteja definida, ou a partir da configuração pessoal do utilizador.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualização automática</translation>
 <translation id="7534199150025803530">Esta política não tem qualquer efeito na aplicação Google Drive para Android. Se quiser evitar a utilização do Google Drive através da ligação de rede móvel, deve remover a autorização para instalar a aplicação Google Drive para Android.</translation>

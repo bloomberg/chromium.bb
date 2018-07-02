@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox（音声フィードバック）を有効または無効にする</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ウェブページを下にスクロールする</translation>
-<translation id="2568632782096378307">画面の解像度を既定値にリセットする</translation>
 <translation id="2596078834055697711">ウィンドウのスクリーンショットを撮影します</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> キーを押した状態で <ph name="TAB" /> キーまたは<ph name="RIGHT" />キーを押す</translation>
 <translation id="2687057317448262550">次の言語の入力方法に切り替えます</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">ページを縮小表示する</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> キーを押しながらリンクをクリックする</translation>
 <translation id="2830827904629746450">ウィンドウを右側に固定する</translation>
+<translation id="2840766858109427815">次のページに進む</translation>
 <translation id="2872353916818027657">メイン モニターを入れ替える</translation>
 <translation id="2914313326123580426">デベロッパー ツール パネルの表示と非表示を切り替える</translation>
 <translation id="292495055542441795">全画面表示に切り替える</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">タスク マネージャを表示する</translation>
 <translation id="3422679037938588196">検索に一致する前の文字列に移動する</translation>
 <translation id="344577624355799426"><ph name="ALT" /> キーまたは<ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" />キーを押す</translation>
-<translation id="346243998268439747">拡大縮小をリセットする</translation>
 <translation id="353037708190149633">現在のウィンドウで開いているすべてのページをブックマークとして新しいフォルダに保存する</translation>
 <translation id="355103131818127604">バックグラウンドの新しいタブでリンクを開く</translation>
 <translation id="3649256019230929621">ウィンドウを最小化</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">アドレスバーの行をハイライト表示する</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> キーまたは <ph name="ENTER" /> キーを押す</translation>
 <translation id="4240486403425279990">概要モード</translation>
+<translation id="4382340674111381977">前のページに戻る</translation>
 <translation id="4472417192667361414">システムと表示の設定</translation>
 <translation id="4556221320735744018">キーボード ショートカットのヘルプを表示する</translation>
 <translation id="4628718545549558538">ステータス領域（アカウント画像が表示されている部分）を開く</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">前の単語を削除する</translation>
 <translation id="5899919361772749550">デベロッパー ツール コンソールの表示と非表示を切り替えます</translation>
 <translation id="5921745308587794300">ウィンドウを回転</translation>
-<translation id="5975083100439434680">縮小する</translation>
 <translation id="6022924867608035986">検索ボックスのテキストを消去</translation>
 <translation id="6045998054441862242">ハイ コントラスト モードを有効にする</translation>
 <translation id="6052614013050385269">リンクを右クリックする</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">ブラウザ内でファイルを開く</translation>
 <translation id="7917881398263220094">現在のページの読み込みを停止する</translation>
 <translation id="7952165122793773711">1～8 番目のタブに移動します</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" />プラス記号（<ph name="PLUS" />）またはマイナス記号（<ph name="MINUS" />）キーを押す</translation>
 <translation id="8026334261755873520">閲覧履歴データを消去する</translation>
 <translation id="8130528849632411619">ドキュメントの先頭に移動する</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> または <ph name="E" /> キーを押す</translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">通知を表示する</translation>
 <translation id="8855885154700222542">全画面表示キー</translation>
 <translation id="88986195241502842">ページ内を下に移動</translation>
-<translation id="8903921497873541725">拡大する</translation>
 <translation id="8924883688469390268">前のユーザーに切り替えます</translation>
-<translation id="8951768610999698672">画面上のアイテムのサイズを変更します</translation>
 <translation id="8977648847395357314">アドレスバーの内容を選択します</translation>
 <translation id="8982190978301344584">利用可能な IME のリストをメニューで表示します</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" />1〜8 キーを押す</translation>

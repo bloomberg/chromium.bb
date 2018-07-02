@@ -98,7 +98,6 @@
 
       &lt;p&gt;Dátum a čas upravte v aplikácii &lt;strong&gt;Nastavenia&lt;/strong&gt; v sekcii &lt;strong&gt;Všeobecné&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Pri zobrazovaní tejto webovej stránky sa vyskytla chyba.</translation>
-<translation id="1590457302292452960">Vygenerujte silné heslo…</translation>
 <translation id="1592005682883173041">Prístup k miestnym údajom</translation>
 <translation id="1594030484168838125">Zvoliť</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Zvuk</translation>
 <translation id="2094505752054353250">Domény sa nezhodujú</translation>
 <translation id="2096368010154057602">Správna oblasť</translation>
+<translation id="2102134110707549001">Navrhnúť silné heslo…</translation>
 <translation id="2108755909498034140">Reštartujte počítač</translation>
 <translation id="2113977810652731515">Karta</translation>
 <translation id="2114841414352855701">Ignorované, pretože bolo prepísané pravidlom <ph name="POLICY_NAME" />.</translation>
@@ -533,6 +533,7 @@
 <translation id="4726672564094551039">Znova načítať pravidlá</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Reštartujte Chromium</translation>
+<translation id="4742407542027196863">Spravovať heslá…</translation>
 <translation id="4744603770635761495">Spustiteľná cesta</translation>
 <translation id="4749685221585524849">Naposledy použité <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Vaše informácie (napríklad heslá a čísla kreditných kariet) zostanú po odoslaní na tento web súkromné.</translation>
@@ -551,6 +552,7 @@
 <translation id="4850886885716139402">Zobraziť</translation>
 <translation id="4854362297993841467">Tento spôsob doručenia nie je k dispozícii. Skúste inú adresu.</translation>
 <translation id="4858792381671956233">Požiadali ste rodičov o povolenie návštevy tohto webu.</translation>
+<translation id="4876305945144899064">Žiadne používateľské meno</translation>
 <translation id="4880827082731008257">Hľadať v histórii</translation>
 <translation id="4881695831933465202">Otvoriť</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -627,6 +629,7 @@
 <translation id="5371425731340848620">Aktualizujte si kartu</translation>
 <translation id="5377026284221673050">„Vaše hodiny meškajú“, „Vaše hodiny idú dopredu“ alebo „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
 <translation id="5386426401304769735">Reťazec certifikátu pre tento web obsahuje certifikát podpísaný pomocou funkcie SHA-1.</translation>
+<translation id="5387961145478138773">Získajte okamžitý prístup k svojim aplikáciám Google</translation>
 <translation id="5402410679244714488">Platnosť do: <ph name="EXPIRATION_DATE_ABBR" />. Naposledy použitá pred viac ako rokom.</translation>
 <translation id="540969355065856584">Server nedokáže overiť, či ide o doménu <ph name="DOMAIN" /> – jej bezpečnostný certifikát je momentálne neplatný. Môže to byť spôsobené nesprávnou konfiguráciou alebo tým, že vaše pripojenie napadol útočník.</translation>
 <translation id="5421136146218899937">Odstrániť dáta prehliadania…</translation>
@@ -674,6 +677,7 @@
 <translation id="5689199277474810259">Exportovať vo formáte JSON</translation>
 <translation id="5689516760719285838">Poloha</translation>
 <translation id="570530837424789914">Spravovať...</translation>
+<translation id="57094364128775171">Navrhnúť silné heslo…</translation>
 <translation id="5710435578057952990">Identita tejto webovej stránky nebola overená.</translation>
 <translation id="5719499550583120431">Predplatené karty sú akceptované.</translation>
 <translation id="5720705177508910913">Aktuálny používateľ</translation>
@@ -748,7 +752,6 @@
 <translation id="6328786501058569169">Tento web je klamlivý</translation>
 <translation id="6337133576188860026">Uvoľní menej ako <ph name="SIZE" />. Niektoré weby sa môžu pri ďalšej návšteve načítať pomalšie.</translation>
 <translation id="6337534724793800597">Filtrovať pravidlá podľa mena</translation>
-<translation id="6342069812937806050">Práve teraz</translation>
 <translation id="6355080345576803305">Prepísanie verejnej relácie</translation>
 <translation id="6358450015545214790">Čo znamenajú tieto položky?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ďalší návrh}few{# ďalšie návrhy}many{# ďalšieho návrhu}other{# ďalších návrhov}}</translation>
@@ -875,6 +878,7 @@
     &lt;li&gt;Kliknite na možnosť &lt;strong&gt;Použiť&lt;/strong&gt;, potom na &lt;strong&gt;OK&lt;/strong&gt;.
     &lt;li&gt;Ďalšie informácie o tom, ako natrvalo odstrániť softvér z počítača, nájdete v &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;centre pomoci Chromu&lt;/a&gt;.
     &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Spravovať heslá…</translation>
 <translation id="7419106976560586862">Cesta profilu</translation>
 <translation id="7437289804838430631">Pridať kontaktné informácie</translation>
 <translation id="7441627299479586546">Chybný predmet pravidla</translation>
@@ -1106,6 +1110,7 @@
 <translation id="9103872766612412690">Web <ph name="SITE" /> zvyčajne chráni vaše informácie pomocou šifrovania. Keď sa prehliadač Chromium tentokrát pokúsil pripojiť k webu <ph name="SITE" />, odoslal späť nezvyčajné a nesprávne poverenia. Môže sa to stať vtedy, keď sa za web <ph name="SITE" /> snaží vydávať útočník alebo keď pripojenie preruší prihlasovacia obrazovka siete Wi‑Fi. Vaše informácie sú stále zabezpečené, pretože prehliadač Chromium zastavil pripojenie ešte pred výmenou dát.</translation>
 <translation id="9106062320799175032">Pridanie fakturačnej adresy</translation>
 <translation id="910908805481542201">Pomôžte mi to vyriešiť</translation>
+<translation id="9114524666733003316">Overuje sa karta…</translation>
 <translation id="9128870381267983090">Pripojiť k sieti</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9137248913990643158">Začnite a prihláste sa do Chromu ešte predtým, ako použijete túto aplikáciu.</translation>

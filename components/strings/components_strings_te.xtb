@@ -31,7 +31,7 @@
 <translation id="1165039591588034296">లోపం</translation>
 <translation id="1173894706177603556">పేరుమార్చు</translation>
 <translation id="1175364870820465910">&amp;ముద్రించు...</translation>
-<translation id="1181037720776840403">తొలగించు</translation>
+<translation id="1181037720776840403">తీసివేయి</translation>
 <translation id="1184214524891303587">సంభావ్య భద్రతా సంఘటనల గురించిన వివరాలను Googleకి <ph name="BEGIN_WHITEPAPER_LINK" />స్వయంచాలకంగా నివేదిస్తుంది<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="1201402288615127009">తదుపరి</translation>
 <translation id="1201895884277373915">ఈ సైట్ నుండి మరింత</translation>
@@ -98,7 +98,6 @@
 
           &lt;p&gt;దయచేసి &lt;strong&gt;సెట్టింగ్‌లు&lt;/strong&gt; అనువర్తనం యొక్క &lt;strong&gt;సాధారణం&lt;/strong&gt; విభాగంలో తేదీ మరియు సమయాన్ని సర్దుబాటు చేయండి.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">ఈ వెబ్ పేజీని ప్రదర్శిస్తున్నప్పుడు ఏదో తప్పు జరిగింది.</translation>
-<translation id="1590457302292452960">శక్తివంతమైన పాస్‌వర్డ్‌ని రూపొందించండి...</translation>
 <translation id="1592005682883173041">స్థానిక డేటా ప్రాప్యత</translation>
 <translation id="1594030484168838125">ఎంచుకోండి</translation>
 <translation id="1620510694547887537">కెమెరా</translation>
@@ -753,7 +752,6 @@
 <translation id="6328786501058569169">ఈ సైట్ మోసపూరితమైనది</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> కంటే తక్కువ స్థలాన్ని ఖాళీ చేస్తుంది. మీ తదుపరి సందర్శనలో కొన్ని సైట్‌లు మరింత నెమ్మదిగా లోడ్ కావచ్చు.</translation>
 <translation id="6337534724793800597">పేరు ద్వారా విధానాలను ఫిల్టర్ చేయి</translation>
-<translation id="6342069812937806050">ఇప్పుడే</translation>
 <translation id="6355080345576803305">పబ్లిక్ సెషన్ భర్తీ</translation>
 <translation id="6358450015545214790">దీని అర్ధం ఏమిటి?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 ఇతర సూచన}other{# ఇతర సూచనలు}}</translation>

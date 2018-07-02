@@ -19,6 +19,7 @@
 <translation id="1145536944570833626">기존 데이터 삭제</translation>
 <translation id="1146678959555564648">VR 시작</translation>
 <translation id="114721135501989771">Chrome에서 스마트한 Google 사용</translation>
+<translation id="1157102636231978136">Google 계정에 동기화된 인터넷 사용 기록 및 활동입니다.</translation>
 <translation id="116280672541001035">사용</translation>
 <translation id="1172593791219290334">시작 페이지</translation>
 <translation id="1178581264944972037">일시중지</translation>
@@ -33,6 +34,7 @@
 <translation id="124116460088058876">다른 언어</translation>
 <translation id="124678866338384709">현재 탭 닫기</translation>
 <translation id="1258753120186372309">Google 기념일 로고: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="127138278192656016">동기화 및 모든 서비스 사용</translation>
 <translation id="1272079795634619415">중지</translation>
 <translation id="1283039547216852943">탭하여 펼치기</translation>
 <translation id="1285320974508926690">이 사이트 번역 안함</translation>
@@ -48,6 +50,7 @@
 <translation id="1383876407941801731">검색</translation>
 <translation id="1384959399684842514">다운로드 일시중지됨</translation>
 <translation id="1389974829397082527">이 폴더에는 북마크가 없습니다.</translation>
+<translation id="1395084944394113895">오프라인 콘텐츠 보기</translation>
 <translation id="1397811292916898096"><ph name="PRODUCT_NAME" />에서 검색</translation>
 <translation id="1397854323885047133">동기화 및 맞춤설정</translation>
 <translation id="1404122904123200417"><ph name="WEBSITE_URL" />에 포함됨</translation>
@@ -178,6 +181,7 @@
 <translation id="2426805022920575512">다른 계정 선택</translation>
 <translation id="2433507940547922241">모양</translation>
 <translation id="2434158240863470628">다운로드 완료: <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2436117022029368436">Google과 소통하여 인터넷 사용 및 Chrome 개선</translation>
 <translation id="2440823041667407902">위치 정보 액세스</translation>
 <translation id="2450083983707403292"><ph name="FILE_NAME" />의 다운로드를 다시 시작하시겠습니까?</translation>
 <translation id="2476578072172137802">사이트 설정</translation>
@@ -401,6 +405,7 @@
 <translation id="4532845899244822526">폴더 선택</translation>
 <translation id="4550003330909367850">여기에서 비밀번호를 보거나 복사하려면 이 기기에 화면 잠금을 설정하세요.</translation>
 <translation id="4558311620361989323">웹페이지 단축키</translation>
+<translation id="4561979708150884304">연결되지 않음</translation>
 <translation id="4565377596337484307">비밀번호 감추기</translation>
 <translation id="4570913071927164677">세부정보</translation>
 <translation id="4572422548854449519">관리 계정에 로그인</translation>
@@ -792,6 +797,7 @@
 <translation id="7698359219371678927"><ph name="APP_NAME" />에서 이메일 만들기</translation>
 <translation id="773466115871691567"><ph name="SOURCE_LANGUAGE" />로 된 페이지를 항상 번역</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" />(<ph name="SPACE_OTHER" /> 사용 중)</translation>
+<translation id="773905249182896430">위험한 사이트로부터 사용자와 기기 보호</translation>
 <translation id="7762668264895820836">SD 카드 <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">주소 추가</translation>
 <translation id="7765158879357617694">이동</translation>
@@ -863,6 +869,7 @@
 <translation id="8374821112118309944">음성 안내 지원을 최신 버전으로 업데이트해야 합니다.</translation>
 <translation id="8393700583063109961">메시지 보내기</translation>
 <translation id="8413126021676339697">방문 기록 전체 보기</translation>
+<translation id="8420510748452002155">맞춤설정되지 않은 서비스</translation>
 <translation id="8428213095426709021">설정</translation>
 <translation id="8441146129660941386">뒤로 탐색</translation>
 <translation id="8445448999790540984">비밀번호를 내보낼 수 없음</translation>
@@ -908,6 +915,7 @@
 <translation id="8812260976093120287">일부 웹사이트에서는 위의 결제 앱을 사용하여 내 기기에서 결제할 수 있습니다.</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" />이(가) Chrome에서 열립니다. 계속하면 Chrome의 <ph name="BEGIN_LINK1" />서비스 약관<ph name="END_LINK1" />, <ph name="BEGIN_LINK2" />개인정보처리방침<ph name="END_LINK2" /> 및 <ph name="BEGIN_LINK3" />Family Link로 관리되는 Google 계정용 개인정보처리방침<ph name="END_LINK3" />에 동의하는 것으로 간주됩니다.</translation>
 <translation id="8820817407110198400">북마크</translation>
+<translation id="8823704566850948458">비밀번호 추천...</translation>
 <translation id="8830904257167680355"><ph name="DESCRIPTION" /> - <ph name="FILE_SIZE" /></translation>
 <translation id="883806473910249246">콘텐츠를 다운로드하는 중에 오류가 발생했습니다.</translation>
 <translation id="8840953339110955557">이 페이지는 온라인 버전과 다를 수 있습니다.</translation>
@@ -951,6 +959,7 @@
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9204836675896933765">파일 1개가 남았습니다.</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9218033835049520260">강력한 비밀번호 추천...</translation>
 <translation id="9219103736887031265">이미지</translation>
 <translation id="932327136139879170">홈</translation>
 <translation id="932599481871055447">데이터 절약 모드</translation>

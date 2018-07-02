@@ -216,6 +216,7 @@ Chromium에서 설정을 복구할 수 없습니다.</translation>
 <translation id="7774736947049807614">인증서가 실패했습니다. Chromium에 <ph name="USER_NAME" />(으)로 다시 로그인하거나 관리자에게 문의하여 자세히 알아보세요. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> - Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium을 최신 버전으로 업데이트하지 못했기 때문에 새로운 기능과 보안 수정 사항이 적용되지 않았습니다.</translation>
+<translation id="7901117350626490574">Chromium 업데이트가 있습니다. 다시 시작하면 바로 업데이트됩니다.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" />(으)로 Chromium에 로그인되어 있습니다. 같은 계정으로 다시 로그인해 주세요.</translation>
 <translation id="7962572577636132072">Chromium은 자동으로 업데이트되므로 항상 최신 버전을 사용할 수 있습니다.</translation>
 <translation id="7975919845073681630">Chromium의 보조 설치이며 기본 브라우저로 설정할 수 없습니다.</translation>

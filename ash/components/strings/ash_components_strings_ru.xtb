@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Включить или отключить ChromeVox (озвучивание действий)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Прокрутить веб-страницу вниз</translation>
-<translation id="2568632782096378307">Восстановить разрешение экрана по умолчанию</translation>
 <translation id="2596078834055697711">Сделать скриншот окна</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, затем <ph name="TAB" /> или <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Переключиться на способ ввода для следующего языка.</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Уменьшить масштаб страницы</translation>
 <translation id="2804480015716812239">Нажать <ph name="ALT" /> и перейти по ссылке</translation>
 <translation id="2830827904629746450">Закрепить окно справа</translation>
+<translation id="2840766858109427815">Перейти на следующую страницу</translation>
 <translation id="2872353916818027657">Переключить основной монитор</translation>
 <translation id="2914313326123580426">Показать или скрыть панель инструментов разработчика</translation>
 <translation id="292495055542441795">Включить или отключить полноэкранный режим</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Открыть диспетчер задач</translation>
 <translation id="3422679037938588196">Перейти к предыдущему совпадению в строке поиска</translation>
 <translation id="344577624355799426"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Установить исходный масштаб</translation>
 <translation id="353037708190149633">Сохранить все страницы, открытые в текущем окне, в закладках (в новой папке)</translation>
 <translation id="355103131818127604">Открыть ссылку в новой фоновой вкладке</translation>
 <translation id="3649256019230929621">Свернуть окно</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Выделить ряд с адресной строкой</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> или <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Режим обзора</translation>
+<translation id="4382340674111381977">Перейти на предыдущую страницу</translation>
 <translation id="4472417192667361414">Настройки экрана и системы</translation>
 <translation id="4556221320735744018">Открыть страницу справки по быстрым клавишам</translation>
 <translation id="4628718545549558538">Открыть панель состояния (на которой расположено изображение профиля)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Удалить предыдущее слово</translation>
 <translation id="5899919361772749550">Показать или скрыть консоль инструментов разработчика</translation>
 <translation id="5921745308587794300">Повернуть окно</translation>
-<translation id="5975083100439434680">Уменьшить</translation>
 <translation id="6022924867608035986">Удалить текст из окна поиска</translation>
 <translation id="6045998054441862242">Включить режим высокой контрастности</translation>
 <translation id="6052614013050385269">Нажать на ссылку правой кнопкой мыши</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Открыть файл в браузере</translation>
 <translation id="7917881398263220094">Прервать загрузку страницы</translation>
 <translation id="7952165122793773711">Перейти на вкладку 1–8.</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> или <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Очистить историю</translation>
 <translation id="8130528849632411619">Перейти к началу документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Посмотреть уведомления</translation>
 <translation id="8855885154700222542">Клавиша полноэкранного режима</translation>
 <translation id="88986195241502842">На страницу вниз</translation>
-<translation id="8903921497873541725">Увеличить</translation>
 <translation id="8924883688469390268">Переключиться на предыдущего пользователя</translation>
-<translation id="8951768610999698672">Увеличить или уменьшить объекты на экране</translation>
 <translation id="8977648847395357314">Выбрать текст в адресной строке</translation>
 <translation id="8982190978301344584">Показать меню со списком доступных редакторов метода ввода</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> клавиши от 1 до 8</translation>

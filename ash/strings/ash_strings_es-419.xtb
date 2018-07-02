@@ -4,8 +4,10 @@
 <translation id="1012876632442809908">Dispositivo USB-C (puerto delantero)</translation>
 <translation id="1013923882670373915">El dispositivo Bluetooth "<ph name="DEVICE_NAME" />" solicita permiso para sincronizarse. Ingresa el siguiente código de PIN en el dispositivo: <ph name="PINCODE" />.</translation>
 <translation id="1032891413405719768">El nivel de la batería de la pluma stylus está bajo</translation>
+<translation id="1037492556044956303">Se agregó <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">No hay redes</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104621072296271835">Tus dispositivos funcionan incluso mejor juntos</translation>
 <translation id="112308213915226829">Ocultar la biblioteca automáticamente</translation>
 <translation id="1153356358378277386">Dispositivos sincronizados</translation>
 <translation id="1195412055398077112">desajuste de dimensiones</translation>
@@ -99,6 +101,7 @@
 <translation id="277257480934873581">Restableciendo conexión con <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt+tecla de búsqueda</translation>
 <translation id="2805756323405976993">Aplicaciones</translation>
+<translation id="2808012452536866044">"Mejor juntos" configuró un teléfono nuevo</translation>
 <translation id="2819276065543622893">Saldrás de la sesión ahora.</translation>
 <translation id="2825619548187458965">Biblioteca</translation>
 <translation id="2844169650293029770">Dispositivo USB-C (puerto lateral izquierdo delantero)</translation>
@@ -107,10 +110,12 @@
 <translation id="2878884018241093801">No hay elementos recientes</translation>
 <translation id="2903844815300039659">Conectado a <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Estás compartiendo la pantalla</translation>
+<translation id="2942350706960889382">Lupa con vista acoplada</translation>
 <translation id="2942516765047364088">Posición de la biblioteca</translation>
 <translation id="2946119680249604491">Agregar conexión</translation>
 <translation id="2961963223658824723">Se produjo un error. Vuelve a intentarlo en unos segundos.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2996462380875591307">Se habilitó la lupa con vista acoplada. Presiona Ctrl+Buscar+D de nuevo para desactivarla.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> es una sesión pública administrada por <ph name="DOMAIN" />.</translation>
 <translation id="3000461861112256445">Audio mono</translation>
 <translation id="3009178788565917040">Salida</translation>
@@ -167,10 +172,11 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="397105322502079400">Calculando...</translation>
 <translation id="3995138139523574647">Dispositivo USB-C (puerto lateral derecho trasero)</translation>
 <translation id="4017989525502048489">Puntero láser</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una app}other{Desactivadas para # app}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivadas para una app}other{Desactivadas para # apps}}</translation>
 <translation id="4072264167173457037">Señal media</translation>
 <translation id="4200057768455216496">Presionaste la combinación de teclas para activar la lupa con vista acoplada. ¿Quieres activarla?</translation>
 <translation id="4217571870635786043">Dictado</translation>
+<translation id="4274921305979314545">Conecta tu Chromebook con el teléfono</translation>
 <translation id="4279490309300973883">Duplicando</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">SO Chrome</translation>
@@ -224,6 +230,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="554893713779400387">Activar o desactivar el dictado</translation>
 <translation id="5571066253365925590">Bluetooth activado</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5598551463564921617">Se activó "Mejor juntos"</translation>
 <translation id="5600837773213129531">Presiona Ctrl + Alt + Z para inhabilitar los comentarios por voz.</translation>
 <translation id="5648021990716966815">Conector para micrófono</translation>
 <translation id="5669267381087807207">Activando</translation>
@@ -240,6 +247,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="5901316534475909376">Mayúscula + Esc</translation>
 <translation id="5911533659001334206">Visualizador de combinaciones de teclas</translation>
 <translation id="5916664084637901428">Activada</translation>
+<translation id="592343074608792716">Se conectarán esta Chromebook y el teléfono automáticamente</translation>
 <translation id="5927132638760172455">Transmitiendo a un receptor desconocido</translation>
 <translation id="5947494881799873997">Revertir</translation>
 <translation id="595202126637698455">Seguimiento de rendimiento habilitado</translation>
@@ -262,6 +270,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="615957422585914272">Mostrar el teclado en pantalla</translation>
 <translation id="6164005077879661055">Todos los archivos y los datos locales asociados al usuario supervisado se eliminarán de forma permanente una vez que se elimine este usuario supervisado. Es posible que el administrador pueda seguir viendo la configuración y los sitios web visitados de este usuario supervisado en <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Más información</translation>
+<translation id="6259254695169772643">Usa tu pluma stylus para realizar una selección</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Activando...</translation>
 <translation id="6284232397434400372">Se cambió la resolución</translation>
 <translation id="6297287540776456956">Usa la pluma stylus para seleccionar una región</translation>
@@ -351,6 +360,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="7982789257301363584">Red</translation>
 <translation id="7994370417837006925">Acceso múltiple</translation>
 <translation id="8000066093800657092">Sin red</translation>
+<translation id="8029241286966751120">Se habilitó la lupa de pantalla completa. Presiona Ctrl+Buscar+M de nuevo para desactivarla.</translation>
 <translation id="8054466585765276473">Calculando duración de la batería...</translation>
 <translation id="8061464966246066292">Contraste alto</translation>
 <translation id="8098591350844501178">Detener la transmisión de la pantalla a <ph name="RECEIVER_NAME" /></translation>
@@ -366,6 +376,7 @@ Todos los usuarios deben salir de sus cuentas para continuar.</translation>
 <translation id="8308637677604853869">Menú anterior</translation>
 <translation id="8351131234907093545">Crear nota</translation>
 <translation id="8392451568018454956">Menú de opciones para <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8406981827175133772">Lupa de pantalla completa</translation>
 <translation id="8428213095426709021">Configuración</translation>
 <translation id="8431190899827883166">Mostrar presiones</translation>
 <translation id="8433186206711564395">Opciones de red</translation>

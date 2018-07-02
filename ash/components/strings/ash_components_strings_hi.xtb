@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox (कंप्यूटर का बोलकर दिया गया जवाब) चालू या बंद करें</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">वेबपेज में नीचे स्क्रोल करें</translation>
-<translation id="2568632782096378307">स्‍क्रीन रिज़ॉल्‍यूशन को डिफ़ॉल्‍ट पर रीसेट करें</translation>
 <translation id="2596078834055697711">विंडो का स्क्रीनशॉट लें</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, फिर <ph name="TAB" /> या <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">अगली भाषा के इनपुट के तरीके का इस्तेमाल करें</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">पेज पर ज़ूम घटाएं</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
 <translation id="2830827904629746450">विंडो दाईं ओर डॉक करें</translation>
+<translation id="2840766858109427815">अगले पेज पर जाएं</translation>
 <translation id="2872353916818027657">प्राथमिक मॉनीटर को स्वैप करें</translation>
 <translation id="2914313326123580426">डेवलपर टूल पैनल दिखाएं या छिपाएं</translation>
 <translation id="292495055542441795">फ़ुलस्‍क्रीन टॉगल करें</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">काम का प्रबंधक सामने लाएं</translation>
 <translation id="3422679037938588196">अपनी खोज के पिछले मिलान पर जाएं</translation>
 <translation id="344577624355799426"><ph name="ALT" /> या <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">ज़ूम स्‍तर रीसेट करें</translation>
 <translation id="353037708190149633">अपनी अभी वाली विंडो में खुले सभी पेज नए फ़ोल्डर में बुकमार्क के रूप में सेव करें</translation>
 <translation id="355103131818127604">लिंक को बैकग्राउंड में नए टैब में खोलें</translation>
 <translation id="3649256019230929621">विंडो को छोटा करें</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">पता बार वाली पंक्‍ति हाइलाइट करें</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> या <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">खास जानकारी मोड</translation>
+<translation id="4382340674111381977">पिछले पेज पर वापस जाएं</translation>
 <translation id="4472417192667361414">सिस्टम और डिसप्ले सेटिंग</translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट सहायक देखें</translation>
 <translation id="4628718545549558538">हाल बताने वाली जगह खोलें (जहां आपके खाते की तस्वीर दिखाई देती है)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">पिछला शब्द मिटाएं</translation>
 <translation id="5899919361772749550">डेवलपर टूल कंसोल दिखाएं या छिपाएं</translation>
 <translation id="5921745308587794300">विंडो घुमाएं</translation>
-<translation id="5975083100439434680">ज़ूम आउट</translation>
 <translation id="6022924867608035986">खोज बॉक्स का लेख मिटाएं</translation>
 <translation id="6045998054441862242">उच्च कंट्रास्ट मोड चालू करें</translation>
 <translation id="6052614013050385269">लिंक पर राइट-क्‍लिक करें</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">ब्राउज़र में फ़ाइल खोलें</translation>
 <translation id="7917881398263220094">अपने अभी वाले पेज को लोड होने से रोकें</translation>
 <translation id="7952165122793773711">टैब 1 से 8 तक जाएं</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> या <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ब्राउज़िंग डेटा साफ़ करें</translation>
 <translation id="8130528849632411619">दस्‍तावेज़ की शुरुआत में जाएं</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> या <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">अपनी सूचनाएं देखें</translation>
 <translation id="8855885154700222542">फ़ुलस्क्रीन कुंजी</translation>
 <translation id="88986195241502842">Page down</translation>
-<translation id="8903921497873541725">ज़ूम इन करें</translation>
 <translation id="8924883688469390268">पिछले उपयोगकर्ता पर स्विच करें</translation>
-<translation id="8951768610999698672">अपनी स्क्रीन पर मौजूद आइटम बड़े या छोटे करें</translation>
 <translation id="8977648847395357314">पता बार में सामग्री चुनें</translation>
 <translation id="8982190978301344584">उपलब्ध IME की सूची दिखाने वाला मेन्यू दिखाएं</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>

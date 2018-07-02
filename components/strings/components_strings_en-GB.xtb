@@ -98,7 +98,6 @@
 
       &lt;p&gt;Please adjust the date and time from the &lt;strong&gt;General&lt;/strong&gt; section of the &lt;strong&gt;Settings&lt;/strong&gt; app.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Something went wrong while displaying this web page.</translation>
-<translation id="1590457302292452960">Generate a strong password...</translation>
 <translation id="1592005682883173041">Local Data Access</translation>
 <translation id="1594030484168838125">Choose</translation>
 <translation id="1620510694547887537">Camera</translation>
@@ -758,7 +757,6 @@
 <translation id="6328786501058569169">This site is deceptive</translation>
 <translation id="6337133576188860026">Frees up less than <ph name="SIZE" />. Some sites may load more slowly on your next visit.</translation>
 <translation id="6337534724793800597">Filter policies by name</translation>
-<translation id="6342069812937806050">Just now</translation>
 <translation id="6355080345576803305">Public session override</translation>
 <translation id="6358450015545214790">What do these mean?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 other suggestion}other{# other suggestions}}</translation>

@@ -214,6 +214,7 @@ Daljnje upute poslali smo vam na e-adresu <ph name="ACCOUNT_EMAIL" />.</translat
 <translation id="7774736947049807614">Certifikat za autentifikaciju nije uspio. Ponovo se prijavite u Chromium kao <ph name="USER_NAME" /> ili se obratite administratoru za više informacija. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium se nije mogao ažurirati na najnoviju verziju, tako da nemate nove značajke i sigurnosne popravke.</translation>
+<translation id="7901117350626490574">Dostupno je novo ažuriranje za Chromium i primijenit će se nakon ponovnog pokretanja.</translation>
 <translation id="7937630085815544518">Bili ste prijavljeni na Chromium kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>
 <translation id="7962572577636132072">Chromium se automatski ažurira tako da uvijek imate najnoviju verziju.</translation>
 <translation id="7975919845073681630">Ovo je sekundarna instalacija Chromiuma, pa on ne može biti vaš zadani preglednik.</translation>

@@ -98,7 +98,6 @@
 
           &lt;p&gt;Sila laraskan tarikh dan masa daripada bahagian &lt;strong&gt;Umum&lt;/strong&gt; bagi apl &lt;strong&gt;Tetapan&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Kesilapan berlaku semasa memaparkan halaman web ini.</translation>
-<translation id="1590457302292452960">Hasilkan kata laluan yang kukuh...</translation>
 <translation id="1592005682883173041">Akses Data Setempat</translation>
 <translation id="1594030484168838125">Pilih</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Bunyi</translation>
 <translation id="2094505752054353250">Domain tidak padan</translation>
 <translation id="2096368010154057602">Jabatan</translation>
+<translation id="2102134110707549001">Cadangkan Kata Laluan Yang Kukuh…</translation>
 <translation id="2108755909498034140">Mulakan semula komputer anda</translation>
 <translation id="2113977810652731515">Kad</translation>
 <translation id="2114841414352855701">Diabaikan kerana ia telah diatasi oleh <ph name="POLICY_NAME" />.</translation>
@@ -538,6 +538,7 @@
 <translation id="4726672564094551039">Muat semula dasar</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Mulakan semula Chromium</translation>
+<translation id="4742407542027196863">Urus kata laluan…</translation>
 <translation id="4744603770635761495">Laluan Boleh Laku</translation>
 <translation id="4749685221585524849">Kali terakhir digunakan <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Maklumat anda (contohnya, kata laluan atau nombor kad kredit) adalah berciri peribadi apabila dihantar ke tapak ini.</translation>
@@ -556,6 +557,7 @@
 <translation id="4850886885716139402">Lihat</translation>
 <translation id="4854362297993841467">Kaedah penghantaran ini tidak tersedia. Cuba kaedah lain.</translation>
 <translation id="4858792381671956233">Anda telah bertanya kepada ibu bapa anda sama ada OK untuk melawat tapak ini</translation>
+<translation id="4876305945144899064">Tiada nama pengguna</translation>
 <translation id="4880827082731008257">Sejarah carian</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -632,6 +634,7 @@
 <translation id="5371425731340848620">Kemas kini kad</translation>
 <translation id="5377026284221673050">"Jam anda lambat" atau "Jam anda cepat" atau "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Rantaian sijil untuk tapak ini mengandungi sijil yang ditandatangani menggunakan SHA-1.</translation>
+<translation id="5387961145478138773">Dapatkan akses pantas ke Google Apps kegemaran anda</translation>
 <translation id="5402410679244714488">Tamat: <ph name="EXPIRATION_DATE_ABBR" />, terakhir digunakan lebih setahun lalu</translation>
 <translation id="540969355065856584">Pelayan ini tidak dapat membuktikan bahawa pelayan adalah <ph name="DOMAIN" />; sijil keselamatan pelayan tidak sah pada masa ini. Ini mungkin disebabkan oleh kesilapan konfigurasi atau penyerang memintas sambungan anda.</translation>
 <translation id="5421136146218899937">Kosongkan data semakan imbas...</translation>
@@ -679,6 +682,7 @@
 <translation id="5689199277474810259">Eksport ke JSON</translation>
 <translation id="5689516760719285838">Lokasi</translation>
 <translation id="570530837424789914">Urus...</translation>
+<translation id="57094364128775171">Cadangkan kata laluan yang kukuh…</translation>
 <translation id="5710435578057952990">Identiti tapak web ini belum disahkan.</translation>
 <translation id="5719499550583120431">Kad prabayar diterima.</translation>
 <translation id="5720705177508910913">Pengguna semasa</translation>
@@ -754,7 +758,6 @@
 <translation id="6328786501058569169">Tapak ini mengelirukan</translation>
 <translation id="6337133576188860026">Mengosongkan kurang daripada <ph name="SIZE" />. Sesetengah tapak mungkin dimuatkan dengan lebih perlahan pada lawatan anda yang seterusnya.</translation>
 <translation id="6337534724793800597">Tapis dasar mengikut nama</translation>
-<translation id="6342069812937806050">Sebentar tadi</translation>
 <translation id="6355080345576803305">Pembatalan sesi awam</translation>
 <translation id="6358450015545214790">Apakah maksudnya?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 cadangan lain}other{# cadangan lain}}</translation>
@@ -881,6 +884,7 @@
     &lt;li&gt;Klik &lt;strong&gt;Apply&lt;/strong&gt;, kemudian klik &lt;strong&gt;OK&lt;/strong&gt;
     &lt;li&gt;Lawati &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Pusat bantuan Chrome&lt;/a&gt; untuk mengetahui cara mengalih keluar perisian itu daripada komputer anda secara kekal
     &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Urus Kata Laluan…</translation>
 <translation id="7419106976560586862">Laluan Profil</translation>
 <translation id="7437289804838430631">Tambahkan Maklumat Hubungan</translation>
 <translation id="7441627299479586546">Subjek dasar salah</translation>
@@ -1112,6 +1116,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan penyulitan untuk melindungi maklumat anda. Apabila Chromium cuba menyambung ke <ph name="SITE" /> pada kali ini, tapak web tersebut mengembalikan bukti kelayakan yang luar biasa dan salah. Hal ini boleh berlaku apabila penyerang sedang cuba menyamar sebagai <ph name="SITE" /> atau skrin log masuk Wi-Fi telah memutuskan sambungan. Maklumat anda masih selamat kerana Chromium menghentikan sambungan sebelum sebarang pertukaran data berlaku.</translation>
 <translation id="9106062320799175032">Tambahkan Alamat Pengebilan</translation>
 <translation id="910908805481542201">Bantu saya menyelesaikan masalah ini</translation>
+<translation id="9114524666733003316">Mengesahkan kad...</translation>
 <translation id="9128870381267983090">Sambung ke rangkaian</translation>
 <translation id="9137013805542155359">Paparkan asal</translation>
 <translation id="9137248913990643158">Sila mulakan dan log masuk ke Chrome sebelum menggunakan apl ini.</translation>

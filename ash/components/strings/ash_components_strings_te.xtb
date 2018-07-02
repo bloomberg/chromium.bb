@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox (ప్రసంగ రూప అభిప్రాయం) ఆన్ లేదా ఆఫ్ చేయండి</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">వెబ్ పేజీని దిగువకు స్క్రోల్ చేయండి</translation>
-<translation id="2568632782096378307">స్క్రీన్ రిజల్యూషన్‌ని డిఫాల్ట్‌కి రీసెట్ చేయండి</translation>
 <translation id="2596078834055697711">విండో స్క్రీన్‌షాట్‌ని తీయండి</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ఆపై <ph name="TAB" /> లేదా <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">తర్వాతి భాష యొక్క ఇన్‌పుట్ పద్ధతికి మార్చండి</translation>
@@ -63,7 +62,6 @@
 <translation id="3407560819924487926">కార్య నిర్వాహకుడిని తెరవండి</translation>
 <translation id="3422679037938588196">మీ శోధన కోసం తదుపరి సరిపోలికకు వెళ్లండి</translation>
 <translation id="344577624355799426"><ph name="ALT" /> లేదా <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">జూమ్ స్థాయిని రీసెట్ చేయండి</translation>
 <translation id="353037708190149633">మీ ప్రస్తుత విండోలో తెరిచి ఉన్న అన్ని పేజీలను బుక్‌మార్క్‌ల వలె కొత్త ఫోల్డర్‌లో సేవ్ చేయండి</translation>
 <translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో నేపథ్యంలో తెరవండి</translation>
 <translation id="3649256019230929621">విండోను కనిష్టీకరించు</translation>
@@ -115,7 +113,6 @@
 <translation id="587531134027443617">మునుపటి పదాన్ని తొలగించండి</translation>
 <translation id="5899919361772749550">డెవలపర్ సాధనాల కన్సోల్‌ని చూపండి లేదా దాచండి</translation>
 <translation id="5921745308587794300">విండోని తిప్పు</translation>
-<translation id="5975083100439434680">దూరంగా జూమ్ చెయ్యి</translation>
 <translation id="6022924867608035986">శోధన పెట్టె వచనాన్ని క్లియర్ చేయండి</translation>
 <translation id="6045998054441862242">అధిక కాంట్రాస్ట్ మోడ్‌ని ఆన్ చేయండి</translation>
 <translation id="6052614013050385269">లింక్‌ని కుడి-క్లిక్ చేయండి</translation>
@@ -161,7 +158,6 @@
 <translation id="7787242579016742662">బ్రౌజర్‌లో ఫైల్‌ను తెరవండి</translation>
 <translation id="7917881398263220094">మీ ప్రస్తుత పేజీ లోడ్ కాకుండా ఆపివేయండి</translation>
 <translation id="7952165122793773711">1 నుండి 8 వరకు ట్యాబ్‌లలోకి వెళ్లండి</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> లేదా <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">బ్రౌజింగ్ డేటాను క్లియర్ చెయ్యి</translation>
 <translation id="8130528849632411619">పత్రం ప్రారంభం వద్దకు వెళ్లండి</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> లేదా <ph name="E" /></translation>
@@ -180,9 +176,7 @@
 <translation id="8727232706774971183">మీ నోటిఫికేషన్‌లను చూడండి</translation>
 <translation id="8855885154700222542">పూర్తిస్క్రీన్ కీ</translation>
 <translation id="88986195241502842">దిగువ పేజీకి వెళుతుంది</translation>
-<translation id="8903921497873541725">దగ్గరికి జూమ్ చెయ్యి</translation>
 <translation id="8924883688469390268">మునుపటి వినియోగదారుకి మారండి</translation>
-<translation id="8951768610999698672">మీ స్క్రీన్‌లో అంశాలను చిన్నవిగా లేదా పెద్దవిగా చేయండి</translation>
 <translation id="8977648847395357314">చిరునామా బార్‌‍లోని కంటెంట్‌ను ఎంచుకోండి</translation>
 <translation id="8982190978301344584">అందుబాటులో ఉన్న IMEల జాబితాని ప్రదర్శించే మెనూని చూపండి</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>

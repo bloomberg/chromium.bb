@@ -42,6 +42,9 @@
       Seznam spremenljivk, ki jih je mogoče uporabiti, si lahko ogledate na https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Če tega pravilnika ne nastavite, bo uporabljen privzeti imenik za shranjevanje predpomnjenih datotek in uporabnik ga bo lahko preglasil z zastavico »--disk-cache-dir« v ukazni vrstici.</translation>
+<translation id="1135264353752122851">Konfigurira, katere postavitve tipkovnice so dovoljene za uporabniške seje sistema <ph name="PRODUCT_OS_NAME" />.
+
+      Če je ta pravilnik nastavljen, lahko uporabnik izbere samo enega od načinov vnosa, ki jih določa ta pravilnik. Če ta pravilnik ni nastavljen ali je nastavljen na prazen seznam, lahko uporabnik izbere vse podprte načine vnosa. Če trenutnega načina vnosa pravilnik ne dovoljuje, bo način vnosa preklopljen na strojno postavitev tipkovnice (če je dovoljena) ali prvi veljaven vnos na tem seznamu. Vsi neveljavni ali nepodprti načini vnosa na tem seznamu bodo prezrti.</translation>
 <translation id="1138294736309071213">Ta pravilnik je aktiven samo v maloprodajnem načinu.
 
       Določa trajanje, preden se za naprave v maloprodajnem načinu na zaslonu za prijavo pokaže phranjevalnik zaslona.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Naloži določene URL-je v predstavitveni seji</translation>
 <translation id="1223789468190631420">Omogočeno stanje Varnega brskanja za zaupanja vredne vire</translation>
 <translation id="123081309365616809">Omogočanje predvajanje vsebine v napravi</translation>
+<translation id="1243570869342663665">Upravljanje filtriranja vsebine za odrasle s filtrom SafeSites</translation>
 <translation id="1257550411839719984">Določi privzeti imenik za prenos</translation>
 <translation id="1265053460044691532">Omejitev časa, ki je uporabniku, katerega pristnost je preverjena prek SAML-ja, na voljo za prijavo brez internetne povezave</translation>
 <translation id="1291880496936992484">Opozorilo: RC4 bo v celoti odstranjen iz programa <ph name="PRODUCT_NAME" /> po različici 52 (okoli septembra 2016) in ta pravilnik bo takrat prenehal delovati.
@@ -265,6 +269,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Oblika zapisa vrednosti je v skladu z imeni časovnih pasov v zbirki podatkov o časovnih pasovih IANA (glejte »https://en.wikipedia.org/wiki/Tz_database«). Večino časovnih pasov je mogoče navesti kot »celina/velemesto« ali »ocean/velemesto«.
 
       Če nastavite ta pravilnik, je v celoti onemogočeno samodejno določanje časovnega pasu glede na lokacijo naprave. Preglasi tudi pravilnik SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Omogočanje prikazovanja promocijske vsebine po celem zavihku</translation>
 <translation id="1888871729456797026">Včlanitveni žeton pravilnika o oblaku v namiznem računalniku</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
 <translation id="1906888171268104594">Nadzira, ali se podatki meritev uporabe in diagnostični podatki, vključno s poročili o zrušitvah, pošljejo Googlu.
@@ -377,6 +382,7 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       jo lahko spremeni. V tem primeru se privzeta vrednost ob vnovičnem
       zagonu ne uveljavi znova.</translation>
 <translation id="2156132677421487971">Konfiguriranje pravilnikov za napravo <ph name="PRODUCT_NAME" /> – to je funkcija, ki uporabnikom omogoča predvajanje vsebine zavihkov, spletnih mest ali namizja iz brskalnika na oddaljene zaslone ali zvočne sisteme.</translation>
+<translation id="2166472654199325139">Ne filtriraj spletnih mest za vsebino za odrasle</translation>
 <translation id="2168397434410358693">Časovni zamik nedejavnosti ob napajanju iz električnega omrežja</translation>
 <translation id="2170233653554726857">Omogočanje optimizacije za WPAD</translation>
 <translation id="2176565653304920879">Če je ta pravilnik nastavljen, je samodejno zaznavanje časovnega pasu odvisno od vrednosti nastavitve:
@@ -531,6 +537,12 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2466131534462628618">Prestrezni portal za preverjanje pristnosti prezre strežnik proxy</translation>
 <translation id="2482676533225429905">Izvorno pošiljanje sporočil</translation>
 <translation id="2483146640187052324">Predvidevaj omrežna dejanja v kateri koli omrežni povezavi</translation>
+<translation id="2484208301968418871">Ta pravilnik nadzira uporabo filtra URL-jev SafeSites.
+      Ta filter uporablja API Google Safe Search za klasificiranje URL-jev, ali so pornografski ali ne.
+
+      Če ta pravilnik ni konfiguriran ali nastavljen na »Ne filtriraj spletnih mest za vsebino za odrasle«, spletna mesta ne bodo filtrirana.
+
+      Če je ta pravilnik nastavljen na »Filtriraj vrhnja spletna mesta za vsebino za odrasle«, bodo spletna mesta, klasificirana kot pornografska, filtrirana.</translation>
 <translation id="2485721741875148980">Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno. Po omogočanju tega pravilnika bodo obstoječi nedodeljeni profili zaklenjeni in nedostopni. Če želite več informacij, preberite članek centra za pomoč.
 
       Če je ta pravilnik onemogočen ali ni konfiguriran, lahko uporabnik uporablja brskalnik brez prijave v brskalnik <ph name="PRODUCT_NAME" />.</translation>
@@ -691,12 +703,6 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če omogočite to nastavitev, predogled tiskanja kot privzeti cilj uporabi privzeti tiskalnik operacijskega sistema.</translation>
 <translation id="2867699958489427143">Povrnite in ostanite na ciljni različici, če je različica operacijskega sistema novejša kot ciljna. Med postopkom izvede popoln Powerwash.</translation>
-<translation id="286802604195763750">Omogoča, da nadzirate sprožitev opozorila zaščite z geslom. Zaščita z geslom opozori uporabnike, ko zaščiteno geslo znova uporabijo na spletnih mestih, ki so morda sumljiva.
-
-      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOff«, ni prikazano nobeno opozorilo zaščite z geslom.
-      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPasswordReuse«, je opozorilo zaščite z geslom prikazano, ko uporabniki znova uporabijo gesla za Google na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
-      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPhishingReuse«, je opozorilo zaščite z geslom prikazano, ko uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem.
-      Če ta pravilnik ni nastavljen, je opozorilo zaščite z geslom sproženo, ko uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2874209944580848064">Opomba glede naprav s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo aplikacije za Android:</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
@@ -1375,6 +1381,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen oziroma je prazen, se lahko v storitev <ph name="PRODUCT_NAME" /> prijavi vsak uporabnik.</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
+<translation id="4861767323695239729">Konfiguriranje dovoljenih način vnosa v uporabniški seji</translation>
 <translation id="4869787217450099946">Določa, ali je dovoljeno zaklepanje preklopa zaslona iz mirovanja. Zaklepanje preklopa zaslona iz mirovanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje porabe.
 
           Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
@@ -1964,6 +1971,7 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
       Če je ta pravilnik onemogočen ali ni nastavljen, se uporabijo samo lokalni profili.
 
       Pravilnik <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogoči vso sinhronizacijo podatkov in preglasi pravilnik RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtriranje vrhnjih spletnih mest (vendar ne vdelanih elementov iframe) za vsebino za odrasle</translation>
 <translation id="6735701345096330595">Vsiljeno preverjanje črkovanja jezikov</translation>
 <translation id="673699536430961464">Ta nastavitev uporabnikom po prijavi v napravo <ph name="PRODUCT_OS_NAME" /> omogoča preklop med Google Računi na območju z vsebino v oknu brskalnika.
 
@@ -1986,6 +1994,13 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="6757438632136860443">Omogoča nastavitev seznama vzorcev URL-jev, ki določa, katerim spletnim mestom je dovoljeno izvajanje vtičnika <ph name="FLASH_PLUGIN_NAME" />.
 
           Če ta pravilnik ni nastavljen, se za vsa spletna mesta uporabi globalna privzeta vrednost iz pravilnika »DefaultPluginsSetting«, kadar je ta pravilnik nastavljen, sicer pa iz osebnih nastavitev uporabnika.</translation>
+<translation id="6762235610019366960">Omogoča nadziranje predstavitve promocijske in/ali izobraževalne vsebine po celem zavihku v izdelku <ph name="PRODUCT_NAME" />.
+
+      Če nastavitev ni konfigurirana ali omogočena (nastavljena na »true«), lahko <ph name="PRODUCT_NAME" /> zaradi posredovanja podatkov o izdelku uporabnikom prikaže vsebino po celem zavihku.
+
+      Če je nastavitev onemogočena (nastavljena na »false«), <ph name="PRODUCT_NAME" /> zaradi posredovanja podatkov o izdelku uporabnikom ne bo prikazal vsebine po celem zavihku.
+
+      Ta nastavitev nadzira predstavitev pozdravnih strani, ki uporabnikom pomagajo, da se prijavijo v izdelek <ph name="PRODUCT_NAME" />, ga izberejo kot privzeti brskalnik ali jih kakor koli drugače obveščajo o funkcijah izdelka.</translation>
 <translation id="6766216162565713893">Dovoli spletnim mestom, da od uporabnika zahtevajo, da omogočijo dostop do naprave Bluetooth v bližini</translation>
 <translation id="6770454900105963262">Poročanje podatkov o aktivnih sejah kioska</translation>
 <translation id="6786747875388722282">Razširitve</translation>
@@ -2314,17 +2329,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7511361072385293666">Če je ta pravilnik omogočen ali ni nastavljen, je uporaba protokola QUIC v brskalniku <ph name="PRODUCT_NAME" /> dovoljena.
       Če je ta pravilnik onemogočen, uporaba protokola QUIC ni dovoljena.</translation>
 <translation id="7519251620064708155">Dovoli ustvarjanje ključev na teh spletnih mestih</translation>
-<translation id="7529083451528428240">Omogoča zaklepanje uporabnikove seje glede na čas odjemalca ali omejitev uporabe v dnevu. 
-
-          |time_window_limit| določa dnevno obdobje, v katerem je uporabnikova seja zaklenjena. Podpiramo samo eno pravilo za vsak dan v tednu, zato se polje |entries| morda razlikuje v velikosti od 0 do 7. |starts_at| in |ends_at| sta začetek in konec omejitve obdobja; če je |ends_at| manjši od |starts_at|, se |time_limit_window| konča naslednji dan. |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
-
-          |time_usage_limit| določa omejitev dnevne uporabe. Ko jo uporabnik doseže, se uporabnikova seja zaklene. Za vsak dan v tednu je na voljo lastnost, ki jo nastavite le, če je za ta dan aktivna omejitev. |usage_quota_mins| določa, koliko časa v dnevu je mogoče uporabljati upravljano napravo, |reset_at| pa določa čas, ko omejitev uporabe znova začne meriti od nič. Privzeta vrednost za |reset_at| je polnoč ({'hour': 0, 'minute': 0}). |last_updated_millis| je časovni žig časa UTC za zadnji čas, ko je bil ta vnos posodobljen. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število.
-
-          |overrides| je na voljo za začasno razveljavitev enega ali več prejšnjih pravil.
-          * Če nista aktivna ne time_window_limit ne time_usage_limit, je za zaklepanje naprave mogoče uporabiti |LOCK|.
-          * |LOCK| začasno zaklene uporabnikovo sejo, dokler se ne začne naslednji time_window_limit ali time_usage_limit.
-          * |UNLOCK| odklene uporabnikovo sejo, ki jo zaklene time_window_limit ali time_usage_limit.
-          |created_time_millis| je časovni žig časa UTC za ustvarjanje preglasitve. Poslan je kot niz, ker časovnega žiga ni mogoče spraviti v celo število. Uporabi se za določitev, ali se ta preglasitev še vedno uporabi. Če se je trenutno aktivna funkcija za omejitev časa (časovna omejitev uporabe ali omejitev časovnega obdobja) začela po ustvarjanju preglasitve, se ne izvaja. Če je bila preglasitev ustvarjena pred zadnjo spremembo aktivne omejitve time_window_limit ali aktivnega obdobja time_usage_window, se ne uporablja.</translation>
 <translation id="7529100000224450960">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena spletna mesta, ki lahko odpirajo pojavna okna.
 
           Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultPopupsSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultImagesSetting« ni nastavljen.</translation>

@@ -214,6 +214,7 @@ Täiendavad juhised leiate aadressilt <ph name="ACCOUNT_EMAIL" />.</translation>
 <translation id="7774736947049807614">Autentimissertifikaat ebaõnnestus. Logige Chromiumisse uuesti sisse kasutajana <ph name="USER_NAME" /> või võtke lisateabe saamiseks ühendust administraatoriga. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromiumi ei saanud uusimale versioonile värskendada, mistõttu jääte ilma uutest funktsioonidest ja turvaparandustest.</translation>
+<translation id="7901117350626490574">Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="7937630085815544518">Olite Chromiumisse sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
 <translation id="7962572577636132072">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>
 <translation id="7975919845073681630">See on Chromiumi sekundaarne install ja seda ei saa määrata vaikebrauseriks.</translation>

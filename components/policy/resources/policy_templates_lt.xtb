@@ -42,6 +42,9 @@
       Galimų naudoti kintamųjų sąrašą rasite apsilankę adresu https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Jei ši politika nenustatyta, bus naudojamas numatytasis talpyklos katalogas ir naudotojas galės jo nepaisyti naudodamas komandos eilutės žymą „--disk-cache-dir“.</translation>
+<translation id="1135264353752122851">Konfigūruojama, kurie klaviatūros išdėstymai leidžiami „<ph name="PRODUCT_OS_NAME" />“ naudotojų sesijoms.
+
+      Jei ši politika nustatyta, naudotojas gali pasirinkti tik vieną iš šios politikos nurodytų įvesties metodų. Jei ši politika nenustatyta arba nustatyta kaip tuščias sąrašas, naudotojas gali pasirinkti visus palaikomus įvesties metodus. Jei dabartinis įvesties metodas neleidžiamas pagal šią politiką, įvesties metodas bus perjungtas į aparatinės įrangos klaviatūros išdėstymą (jei leidžiama) arba pirmą tinkamą įrašą šiame sąraše. Visų netinkamų ar nepalaikomų įvesties metodų šiame sąraše bus nepaisoma.</translation>
 <translation id="1138294736309071213">Ši politika aktyvi tik dirbant mažmeninės prekybos režimu.
 
       Nustatoma trukmė iki ekrano užsklandos parodymo įrenginių prisijungimo ekrane dirbant mažmeninės prekybos režimu.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Įkelti nurodytus URL prisijungiant prie demonstracinės versijos</translation>
 <translation id="1223789468190631420">Saugus naršymas įgalina patikimų šaltinių būseną</translation>
 <translation id="123081309365616809">Įgalinamas turinio perdavimas į įrenginį</translation>
+<translation id="1243570869342663665">Valdomas „SafeSites“ turinio suaugusiesiems filtravimas.</translation>
 <translation id="1257550411839719984">Numatytojo atsisiuntimų katalogo nustatymas</translation>
 <translation id="1265053460044691532">Apribokite laiką, per kurį per SAML autentifikuotas naudotojas gali prisijungti neprisijungęs</translation>
 <translation id="1291880496936992484">Įspėjimas: RC4 bus visiškai pašalinta iš „<ph name="PRODUCT_NAME" />“ įdiegus 52 versiją (maždaug 2016 m. rugsėjo mėn.) ir ši politika nebegalios.
@@ -265,6 +269,7 @@
       Vertės formatas atitinka laiko juostų pavadinimus, nurodytus „IANA laiko juostų duomenų bazėje“ (žr. adresu https://en.wikipedia.org/wiki/Tz_database (anglų k.). Konkrečiau kalbant, daugelio laiko juostų pavadinimus galima sukurti naudojant formatą „žemynas / didelis_miestas“ arba „vandenynas / didelis_miestas“.
 
       Nustačius šią politiką visiškai išjungiama automatinio laiko juostos nustatymo pagal įrenginio vietovę funkcija. Be to, nepaisoma politikos „SystemTimezoneAutomaticDetection“.</translation>
+<translation id="1885782360784839335">Įgalinamas reklaminio turinio per visą skirtuką rodymas</translation>
 <translation id="1888871729456797026">Debesies politikos registracijos prieigos raktas staliniuose kompiuteriuose</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
 <translation id="1906888171268104594">Valdoma, ar naudojimo metrikos ir diagnostikos duomenų ataskaitos, įskaitant strigčių ataskaitas, teikiamos atgal į sistemą „Google“.
@@ -377,6 +382,7 @@
       gali ją keisti. Tokiu atveju numatytoji vertė nėra pritaikoma iš naujo
       paleidus įrenginį iš naujo.</translation>
 <translation id="2156132677421487971">Konfigūruojama „<ph name="PRODUCT_NAME" />“ – funkcijos, kurią naudodami naudotojai gali siųsti skirtukų, svetainių ar darbalaukio turinį iš naršyklės į nuotolinius ekranus ir garso sistemas – politika.</translation>
+<translation id="2166472654199325139">Nefiltruoti turinio suaugusiesiems svetainėse</translation>
 <translation id="2168397434410358693">Neveikos delsa, kai naudojama kintamosios srovės energija</translation>
 <translation id="2170233653554726857">Įgalinti WPAD optimizavimą</translation>
 <translation id="2176565653304920879">Kai ši politika nustatyta, automatinio laiko aptikimas bus vykdomas vienu iš toliau nurodytų būdų, atsižvelgiant į nustatymo vertę.
@@ -531,6 +537,12 @@
 <translation id="2466131534462628618">Fiksuotojo portalo autentifikavimas nepaiso tarpinio serverio</translation>
 <translation id="2482676533225429905">Savoji susirašinėjimo pranešimais programa</translation>
 <translation id="2483146640187052324">Tinklo veiksmų numatymas naudojant bet kurį tinklo ryšį</translation>
+<translation id="2484208301968418871">Ši politika valdo, kaip taikomas „SafeSites“ URL filtras.
+      Šiam filtrui naudojama „Google“ saugios paieškos API, norint klasifikuoti URL kaip pornografinius ar nepornografinius.
+
+      Kai ši politika nesukonfigūruota arba nustatyta kaip „Nefiltruoti turinio suaugusiesiems svetainėje“, svetainės nefiltruojamos.
+
+      Kai ši politika nustatyta kaip „Filtruoti turinį suaugusiesiems aukščiausio lygio svetainėse“, filtruojamos svetainės, kurios priskiriamos pornografinių svetainių kategorijai.</translation>
 <translation id="2485721741875148980">Jei ši politika nustatyta į „true“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta į „false“. Atminkite, kad įgalinus šią politiką esami profiliai, prie kurių neprisijungta, bus užrakinti ir nepasiekiami. Jei reikia daugiau informacijos, žr. pagalbos centro straipsnį.
 
       Jei ši politika nustatyta į „false“ arba nesukonfigūruota, naudotojas galės naudoti naršyklę neprisijungęs prie „<ph name="PRODUCT_NAME" />“.</translation>
@@ -691,12 +703,6 @@
 
       Įjungus šį nustatymą funkcija „Spaudinio peržiūra“ naudos OS sistemos numatytąjį spausdintuvą kaip numatytąją paskirties vietos parinktį.</translation>
 <translation id="2867699958489427143">Grąžinti ir palikti tikslinę versiją, jei OS versija naujesnė nei tikslinė. Atlikti išsamų „Powerwash“ vykdant procesą.</translation>
-<translation id="286802604195763750">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
-
-      Jei ši politika nustatyta kaip „PasswordProtectionWarningOff“, nebus rodomas įspėjimas dėl slaptažodžio apsaugos.
-      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPasswordReuse“, įspėjimas dėl slaptažodžio apsaugos bus rodomas, kai naudotojas pakartotinai naudos „Google“ slaptažodį svetainėje, kuri neįtraukta į baltąjį sąrašą.
-      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPhishingReuse“, įspėjimas dėl slaptažodžio apsaugos bus rodomas, kai naudotojas pakartotinai naudos „Google“ slaptažodį svetainėje, kurioje sukčiaujama.
-      Jei ši politika nenustatyta, įspėjimas dėl slaptažodžio apsaugos bus suaktyvintas, kai naudotojas pakartotinai naudos „Google“ slaptažodį svetainėje, kurioje sukčiaujama, bet naudotojas galės pakeisti šį nustatymą.</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2874209944580848064">„<ph name="PRODUCT_OS_NAME" />“ įrenginiams, kuriuose palaikomos „Android“ programos, skirta pastaba:</translation>
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>
@@ -1370,6 +1376,7 @@
 
       Jei ši politika nenustatyta arba jos laukas tuščias, tada bet kuris naudotojas gali prisijungti prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="4858735034935305895">Leisti viso ekrano režimą</translation>
+<translation id="4861767323695239729">Naudotojo sesijoje leidžiamų įvesties metodų konfigūravimas</translation>
 <translation id="4869787217450099946">Nurodoma, ar ekrano pažadinimo užraktai leidžiami. Ekrano pažadinimo užraktų užklausą gali pateikti plėtiniai, naudodami energijos tvarkymo plėtinio API.
 
           Jei ši politika nustatyta kaip „Tiesa“ arba nenustatyta, ekrano pažadinimo užraktams leidžiama tvarkyti energiją.
@@ -1960,6 +1967,7 @@
       Jei ši politika išjungta ar nenustatyta, bus naudojami tik įprasti vietiniai profiliai.
 
       „<ph name="SYNC_DISABLED_POLICY_NAME" />“ politika išjungia visų duomenų sinchronizavimą ir nepaiso „RoamingProfileSupportEnabled“.</translation>
+<translation id="6731757988219967594">Filtruoti turinį suaugusiesiems aukščiausio lygio svetainėse (bet ne įterptuose „iframe“)</translation>
 <translation id="6735701345096330595">Priverstinis rašybos tikrinimo kalbų įgalinimas</translation>
 <translation id="673699536430961464">Naudodami šį nustatymą naudotojai gali perjungti „Google“ paskyras naršyklės lango turinio srityje po to, kai prisijungia prie „<ph name="PRODUCT_OS_NAME" />“ įrenginio.
 
@@ -1982,6 +1990,13 @@
 <translation id="6757438632136860443">Galima nustatyti URL šablonų, kuriuose nurodomos svetainės, kurioms leidžiama paleisti papildinį „<ph name="FLASH_PLUGIN_NAME" />“, sąrašą.
 
           Jei ši politika nenustatyta, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultPluginsSetting“ (jei ji nustatyta) arba naudotojo asmeninės konfigūracijos (kitu atveju).</translation>
+<translation id="6762235610019366960">Leidžiama valdyti per visą skirtuką pateikiamo reklaminio ir (arba) mokomojo turinio rodymą naršyklėje „<ph name="PRODUCT_NAME" />“.
+
+      Jei nesukonfigūruota ar neįgalinta (nustatyta kaip „tiesa“), „<ph name="PRODUCT_NAME" />“ gali būti rodomas per visą skirtuką pateikiamas turinys naudotojams, norint teikti produkto informaciją.
+
+      Jei išjungta (nustatyta kaip „netiesa“), „<ph name="PRODUCT_NAME" />“ nerodomas per visą skirtuką pateikiamas turinys naudotojams, norint teikti produkto informaciją.
+
+      Šis nustatymas valdo pasisveikinimo puslapių, kuriuose padedama naudotojams prisijungti prie naršyklės „<ph name="PRODUCT_NAME" />“, pasirinkti ją kaip numatytąją naršyklę ar kitais būdais informuoti apie produkto funkcijas, rodymą.</translation>
 <translation id="6766216162565713893">Leisti svetainėms prašyti naudotojo suteikti leidimą pasiekti netoliese esantį „Bluetooth“ įrenginį</translation>
 <translation id="6770454900105963262">Informacijos apie aktyvias viešojo terminalo sesijas ataskaitos pateikimas</translation>
 <translation id="6786747875388722282">Plėtiniai</translation>
@@ -2309,17 +2324,6 @@
 <translation id="7511361072385293666">Jei ši politika nustatyta į „true“ arba yra nenustatyta, QUIC protokolo naudojimas sistemoje „<ph name="PRODUCT_NAME" />“ leidžiamas.
       Jei ši politika nustatyta į „false“ QUIC protokolo naudojimas neleidžiamas.</translation>
 <translation id="7519251620064708155">Leisti rakto generavimą šiose svetainėse</translation>
-<translation id="7529083451528428240">Leidžiama blokuoti naudotojo sesiją pagal kliento laiką arba išnaudotą dienos kvotą.
-
-          |time_window_limit| nurodo dienos laikotarpį, kuriuo naudotojo sesija turi būti užblokuota. Kiekvienai savaitės dienai palaikome tik po vieną taisyklę, tad masyvo |entries| dydis gali būti nuo 0 iki 7. |starts_at| ir |ends_at| yra pradžios ir pabaigos laikotarpio apribojimai. Kai |ends_at| vertė yra mažesnė nei |starts_at|, tai reiškia, kad |time_limit_window| baigsis kitą dieną. |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama atskira eilute, nes laiko žymei nepakanka sveikųjų skaičių.
-
-          |time_usage_limit| nurodo dienos įrenginio naudojimo kvotą. Ją pasiekus, naudotojo sesija užblokuojama. Kiekvienai savaitės dienai yra skirta nuosavybė, kuri turi būti nustatyta tik jei tą dieną kvota yra aktyvi. |usage_quota_mins| – tai laikas, kurį tvarkomas įrenginys gali būti naudojamas per dieną, o |reset_at| – laikas, kada atnaujinami naudojimo kvotos duomenys. Numatytoji |reset_at| vertė yra vidurnaktis ({'hour': 0, 'minute': 0}). |last_updated_millis| yra UTC laiko žymė, nurodanti, kada šis įrašas buvo paskutinį kartą atnaujintas; ji siunčiama atskira eilute, nes laiko žymei nepakanka sveikųjų skaičių.
-
-          |overrides| teikiama siekiant laikinai padaryti, kad viena ar daugiau ankstesnių taisyklių negaliotų.
-          * Jei nei time_window_limit, nei time_usage_limit nėra aktyvus, |LOCK| gali būti naudojamas įrenginiui užrakinti.
-          * |LOCK| laikinai užblokuoja naudotojo sesiją, kol prasideda kitas time_window_limit arba time_usage_limit.
-          * |UNLOCK| atfiksuoja naudotojo sesiją atėjus time_window_limit arba time_usage_limit.
-          |created_time_millis| – tai UTC laiko žymė, skirta nepaisymams kurti, siunčiama atskira eilute, nes laiko žymei nepakanka sveikųjų skaičių. Ji naudojama siekiant nustatyti, ar šis nepaisymas vis dar turi būti taikomas. Jei dabartinio aktyvaus laiko apribojimo funkcija (naudojimo laiko arba laikotarpių apribojimas) pradėta taikyti sukūrus nepaisymą, ši žymė negalioja. Taip pat, jei nepaisymas sukurtas prieš paskutinį aktyvaus time_window_limit arba time_usage_window pakeitimą, laiko žymė nebus naudojama.</translation>
 <translation id="7529100000224450960">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama atidaryti iššokančiuosius langus, sąrašą.
 
           Nenustačius šios politikos, visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „Numatytasis iššokančiųjų langų nustatymas“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>

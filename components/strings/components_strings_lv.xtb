@@ -98,7 +98,6 @@
 
       &lt;p&gt;Lūdzu, koriģējiet datumu un laiku lietotnes &lt;strong&gt;Iestatījumi&lt;/strong&gt; sadaļā &lt;strong&gt;Vispārīgi&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Šīs tīmekļa lapas rādīšanas laikā radās kļūda.</translation>
-<translation id="1590457302292452960">Ģenerēt drošu paroli...</translation>
 <translation id="1592005682883173041">Piekļuve lokālajiem datiem</translation>
 <translation id="1594030484168838125">Izvēlēties</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Signāls</translation>
 <translation id="2094505752054353250">Domēni nesaskan</translation>
 <translation id="2096368010154057602">Departaments</translation>
+<translation id="2102134110707549001">Ieteikt drošu paroli…</translation>
 <translation id="2108755909498034140">Restartējiet datoru</translation>
 <translation id="2113977810652731515">Karte</translation>
 <translation id="2114841414352855701">Ignorēta, jo to atcēla politika <ph name="POLICY_NAME" />.</translation>
@@ -536,6 +536,7 @@
 <translation id="4726672564094551039">Atkārtoti ielādēt politikas</translation>
 <translation id="4728558894243024398">Platforma</translation>
 <translation id="4736825316280949806">Restartējiet pārlūku Chromium</translation>
+<translation id="4742407542027196863">Pārvaldīt paroles…</translation>
 <translation id="4744603770635761495">Izpildāms ceļš</translation>
 <translation id="4749685221585524849">Pēdējoreiz izmantota: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Jūsu informācija (piemēram, paroles vai kredītkaršu numuri) ir privāta, kad tā tiek nosūtīta uz šo vietni.</translation>
@@ -554,6 +555,7 @@
 <translation id="4850886885716139402">Skatīt</translation>
 <translation id="4854362297993841467">Šis piegādes veids nav pieejams. Izmēģiniet citu veidu.</translation>
 <translation id="4858792381671956233">Jūs lūdzāt vecākiem atļauju apmeklēt šo lapu</translation>
+<translation id="4876305945144899064">Nav lietotājvārda</translation>
 <translation id="4880827082731008257">Meklēšanas vēsture</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -630,6 +632,7 @@
 <translation id="5371425731340848620">Kartes atjaunināšana</translation>
 <translation id="5377026284221673050">“Pulkstenis atpaliek”, “Pulkstenis steidzas” vai “&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5386426401304769735">Šīs vietnes sertifikātu ķēdē ir iekļauts sertifikāts, kas ir parakstīts, izmantojot SHA-1.</translation>
+<translation id="5387961145478138773">Ātrāk piekļūstiet iecienītajām Google lietotnēm</translation>
 <translation id="5402410679244714488">Derīguma termiņš: <ph name="EXPIRATION_DATE_ABBR" />, pēdējoreiz izmantota pirms vairāk nekā gada</translation>
 <translation id="540969355065856584">Šis serveris nevarēja pierādīt, ka šī ir vietne <ph name="DOMAIN" />; tā drošības sertifikāts šobrīd nav derīgs. Iespējams, tas ir nepareizas konfigurācijas dēļ vai arī kāds ļaunprātīgi izmanto jūsu savienojumu.</translation>
 <translation id="5421136146218899937">Notīrīt pārlūkošanas datus</translation>
@@ -677,6 +680,7 @@
 <translation id="5689199277474810259">Eksportēt JSON formātā</translation>
 <translation id="5689516760719285838">Atrašanās vieta</translation>
 <translation id="570530837424789914">Pārvaldīt...</translation>
+<translation id="57094364128775171">Ieteikt drošu paroli…</translation>
 <translation id="5710435578057952990">Tīmekļa vietnes identitāte nav apstiprināta.</translation>
 <translation id="5719499550583120431">Tiek pieņemtas priekšapmaksas kartes.</translation>
 <translation id="5720705177508910913">Pašreizējais lietotājs</translation>
@@ -752,7 +756,6 @@
 <translation id="6328786501058569169">Šī vietne ir krāpnieciska</translation>
 <translation id="6337133576188860026">Tiks atbrīvots mazāk nekā <ph name="SIZE" />. Dažas vietnes nākamajā apmeklējumā var ielādēt lēnāk.</translation>
 <translation id="6337534724793800597">Filtrēt politikas pēc nosaukuma</translation>
-<translation id="6342069812937806050">Tikko</translation>
 <translation id="6355080345576803305">Publiskas sesijas ignorēšana</translation>
 <translation id="6358450015545214790">Ko tas nozīmē?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{vēl 1 ieteikums}zero{vēl # ieteikumi}one{vēl # ieteikums}other{vēl # ieteikumi}}</translation>
@@ -879,6 +882,7 @@
       &lt;li&gt;Noklikšķiniet uz &lt;strong&gt;Lietot&lt;/strong&gt;, pēc tam noklikšķiniet uz &lt;strong&gt;Labi&lt;/strong&gt;.
       &lt;li&gt;Apmeklējiet &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome palīdzības centru&lt;/a&gt;, lai uzzinātu, kā neatgriezeniski noņemt programmatūru no datora.
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Pārvaldīt paroles…</translation>
 <translation id="7419106976560586862">Profila ceļš</translation>
 <translation id="7437289804838430631">Pievienot kontaktinformāciju</translation>
 <translation id="7441627299479586546">Politikas subjekts nav pareizs.</translation>
@@ -1110,6 +1114,7 @@
 <translation id="9103872766612412690">Vietnē <ph name="SITE" /> informācijas aizsargāšanai parasti tiek izmantota šifrēšana. Kad pārlūkā Chromium tika mēģināts izveidot savienojumu ar vietni <ph name="SITE" />, šoreiz tā nosūtīja neparastus un nepareizus akreditācijas datus. Iespējams, tas notika, jo uzbrucējs mēģināja uzdoties par vietni <ph name="SITE" />, vai arī Wi-Fi pierakstīšanās ekrāns pārtrauca savienojumu. Jūsu informācija joprojām ir drošībā, jo pārlūks Chromium pārtrauca savienojumu, pirms tika veikta jebkādu datu apmaiņa.</translation>
 <translation id="9106062320799175032">Norēķinu adreses pievienošana</translation>
 <translation id="910908805481542201">Palīdzēt man novērst problēmu</translation>
+<translation id="9114524666733003316">Notiek kartes apstiprināšana...</translation>
 <translation id="9128870381267983090">Izveidot savienojumu ar tīklu</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9137248913990643158">Pirms šīs lietotnes izmantošanas, lūdzu, palaidiet pārlūku Chrome un pierakstieties tajā.</translation>

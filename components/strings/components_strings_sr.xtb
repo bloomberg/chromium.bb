@@ -98,7 +98,6 @@
 
       &lt;p&gt;Прилагодите датум и време у одељку &lt;strong&gt;Опште&lt;/strong&gt; у апликацији &lt;strong&gt;Подешавања&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Дошло је до грешке при приказивању ове веб-странице.</translation>
-<translation id="1590457302292452960">Генеришите јаку лозинку...</translation>
 <translation id="1592005682883173041">Приступ локалним подацима</translation>
 <translation id="1594030484168838125">Одабери</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Домени се не подударају</translation>
 <translation id="2096368010154057602">Департман</translation>
+<translation id="2102134110707549001">Предложи јаку лозинку…</translation>
 <translation id="2108755909498034140">Поново покрените рачунар</translation>
 <translation id="2113977810652731515">Картица</translation>
 <translation id="2114841414352855701">Занемарују се јер су замењене смерницама <ph name="POLICY_NAME" />.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">Поново учитај смернице</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4736825316280949806">Поново покрените Chromium</translation>
+<translation id="4742407542027196863">Управљај лозинкама...</translation>
 <translation id="4744603770635761495">Путања извршне датотеке</translation>
 <translation id="4749685221585524849">Последњи пут коришћено: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Информације (на пример, лозинке или бројеви кредитних картица) су приватне када се шаљу овом сајту.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">Приказ</translation>
 <translation id="4854362297993841467">Овај начин испоруке није доступан. Испробајте неки други начин.</translation>
 <translation id="4858792381671956233">Питао/ла си родитеље да ли смеш да посетиш овај сајт</translation>
+<translation id="4876305945144899064">Нема корисничког имена</translation>
 <translation id="4880827082731008257">Претражи историју</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">Ажурирајте картицу</translation>
 <translation id="5377026284221673050">„Сат касни“ или „Сат жури“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
 <translation id="5386426401304769735">Ланац сертификата за овај сајт садржи сертификат потписан помоћу алгоритма SHA-1.</translation>
+<translation id="5387961145478138773">Брзо приступајте омиљеним Google апликацијама</translation>
 <translation id="5402410679244714488">Истиче: <ph name="EXPIRATION_DATE_ABBR" />, последњи пут коришћено пре више од годину дана</translation>
 <translation id="540969355065856584">Овај сервер не може да докаже да је <ph name="DOMAIN" />; његов безбедносни сертификат тренутно није важећи. Узрок томе је можда погрешна конфигурација или нападач који је прекинуо везу.</translation>
 <translation id="5421136146218899937">Обриши податке прегледања...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">Извези у JSON</translation>
 <translation id="5689516760719285838">Локација</translation>
 <translation id="570530837424789914">Управљајте...</translation>
+<translation id="57094364128775171">Предложи јаку лозинку…</translation>
 <translation id="5710435578057952990">Идентитет овог веб-сајта није верификован.</translation>
 <translation id="5719499550583120431">Прихватају се припејд картице.</translation>
 <translation id="5720705177508910913">Тренутни корисник</translation>
@@ -752,7 +756,6 @@
 <translation id="6328786501058569169">Овај сајт је обмањујућ</translation>
 <translation id="6337133576188860026">Ослобађа мање од <ph name="SIZE" />. Неки сајтови ће се можда спорије учитавати кад их следећи пут посетите.</translation>
 <translation id="6337534724793800597">Филтрирај смернице према називу</translation>
-<translation id="6342069812937806050">Малопре</translation>
 <translation id="6355080345576803305">Замена јавне сесије</translation>
 <translation id="6358450015545214790">Шта ово значи?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{још 1 предлог}one{још # предлог}few{још # предлога}other{још # предлога}}</translation>
@@ -879,6 +882,7 @@
     &lt;li&gt;Прво кликните на &lt;strong&gt;Apply&lt;/strong&gt; (Примени), па на &lt;strong&gt;OK&lt;/strong&gt; (У реду)
     &lt;li&gt;Посетите &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome центар за помоћ&lt;/a&gt; да бисте сазнали како да трајно уклоните софтвер са рачунара
     &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Управљај лозинкама...</translation>
 <translation id="7419106976560586862">Путања профила</translation>
 <translation id="7437289804838430631">Додај контакт информације</translation>
 <translation id="7441627299479586546">Погрешан субјекат смерница</translation>
@@ -1110,6 +1114,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> обично користи шифровање да би заштитио информације. Када је Chromium овог пута покушао да се повеже са <ph name="SITE" />, веб-сајт је вратио необичне и нетачне акредитиве. Или нападач покушава да се представи као <ph name="SITE" /> или је екран за Wi-Fi пријављивање прекинуо везу. Информације су и даље безбедне зато што је Chromium прекинуо везу пре него што су размењени било какви подаци.</translation>
 <translation id="9106062320799175032">Додајте адресу за обрачун</translation>
 <translation id="910908805481542201">Помозите ми да решим ово</translation>
+<translation id="9114524666733003316">Картица се потврђује...</translation>
 <translation id="9128870381267983090">Повезивање са мрежом</translation>
 <translation id="9137013805542155359">Прикажи оригинал</translation>
 <translation id="9137248913990643158">Пријавите се у Chrome пре коришћења ове апликације.</translation>

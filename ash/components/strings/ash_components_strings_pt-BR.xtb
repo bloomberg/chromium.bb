@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Ativar ou desativar o ChromeVox (feedback falado)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Rolar a página da Web para baixo</translation>
-<translation id="2568632782096378307">Redefinir resolução da tela para o padrão</translation>
 <translation id="2596078834055697711">Fazer captura de tela da janela</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> e depois <ph name="TAB" /> ou <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Mudar para o método de entrada do próximo idioma</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Diminuir zoom na página</translation>
 <translation id="2804480015716812239">Pressione <ph name="ALT" /> e clique em um link</translation>
 <translation id="2830827904629746450">Ancorar uma janela à direita</translation>
+<translation id="2840766858109427815">Avançar para a próxima página</translation>
 <translation id="2872353916818027657">Trocar monitor primário</translation>
 <translation id="2914313326123580426">Mostrar ou ocultar o painel Ferramentas do desenvolvedor</translation>
 <translation id="292495055542441795">Alternar para tela cheia</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Abrir o gerenciador de tarefas</translation>
 <translation id="3422679037938588196">Ir para a correspondência anterior da sua pesquisa</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ou <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Redefinir nível de zoom</translation>
 <translation id="353037708190149633">Salvar todas as páginas abertas na janela atual nos favoritos em uma nova pasta</translation>
 <translation id="355103131818127604">Abrir o link em uma nova guia no plano de fundo</translation>
 <translation id="3649256019230929621">Minimizar janela</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Destacar a linha com a barra de endereço</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ou <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Modo de visão geral</translation>
+<translation id="4382340674111381977">Voltar para a página anterior</translation>
 <translation id="4472417192667361414">Configurações de exibição e do sistema</translation>
 <translation id="4556221320735744018">Ver assistente de atalhos do teclado</translation>
 <translation id="4628718545549558538">Abrir a área de status, onde a imagem da sua conta aparece</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Excluir a palavra anterior</translation>
 <translation id="5899919361772749550">Mostrar ou ocultar o console das Ferramentas para Desenvolvedores</translation>
 <translation id="5921745308587794300">Girar janela</translation>
-<translation id="5975083100439434680">Diminuir zoom</translation>
 <translation id="6022924867608035986">Limpar texto da caixa de pesquisa</translation>
 <translation id="6045998054441862242">Ativar o modo de alto contraste</translation>
 <translation id="6052614013050385269">Clicar com o botão direito do mouse em um link</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Abrir um arquivo no navegador</translation>
 <translation id="7917881398263220094">Parar o carregamento da página atual</translation>
 <translation id="7952165122793773711">Ir para as guias 1 a 8</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ou <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Limpar dados de navegação</translation>
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Ver suas notificações</translation>
 <translation id="8855885154700222542">Tecla de tela cheia</translation>
 <translation id="88986195241502842">Página para baixo</translation>
-<translation id="8903921497873541725">Aumentar zoom</translation>
 <translation id="8924883688469390268">Alternar para o usuário anterior</translation>
-<translation id="8951768610999698672">Tornar os itens na tela maiores ou menores</translation>
 <translation id="8977648847395357314">Selecionar o conteúdo na barra de endereço</translation>
 <translation id="8982190978301344584">Mostrar o menu exibindo uma lista de IMEs (editores de método de entrada, na sigla em inglês) disponíveis</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 a 8</translation>

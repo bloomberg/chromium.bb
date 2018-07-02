@@ -46,7 +46,6 @@
 <translation id="1062407476771304334">Sustituir</translation>
 <translation id="1067048845568873861">Creada</translation>
 <translation id="1067291318998134776">Linux (beta)</translation>
-<translation id="1067922213147265141">Otros servicios de Google</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Otro programa de tu ordenador ha añadido una extensión que puede cambiar el funcionamiento de Chrome.
 
@@ -191,6 +190,7 @@
 <translation id="126710816202626562">Idioma de traducción:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1271317946095246719">Envía las búsquedas de la barra de direcciones y del cuadro de búsqueda junto con algunas cookies a tu buscador predeterminado</translation>
+<translation id="127138278192656016">Usar la sincronización y todos los servicios</translation>
 <translation id="1272079795634619415">Interrumpir</translation>
 <translation id="1272242203003205253">Los colaboradores de Google trabajan con tu Asistente para ayudarte</translation>
 <translation id="1272978324304772054">Esta cuenta de usuario no pertenece al dominio en el que se ha registrado el dispositivo. Si quieres registrarlo en un dominio diferente, primero debes llevar a cabo el proceso de recuperación de dispositivo.</translation>
@@ -697,9 +697,6 @@ Al instalar Linux, se descargarán <ph name="DOWNLOAD_SIZE" /> de datos.</transl
 <translation id="203574396658008164">Habilitar la toma de notas desde la pantalla de bloqueo</translation>
 <translation id="2039623879703305659">Has movido el dedo demasiado rápido</translation>
 <translation id="2040460856718599782">¡Vaya! Parece que algo ha fallado al intentar identificarte. Vuelve a comprobar tus credenciales de inicio de sesión e inténtalo de nuevo.</translation>
-<translation id="2042120400423652109">Instalando Linux... 
-
-    Este proceso puede tardar unos minutos.</translation>
 <translation id="2043818754674261542">Distancia necesaria para que el teléfono desbloquee este <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Nombre de plantilla de certificado de Microsoft</translation>
 <translation id="2045117674524495717">Asistente de combinaciones de teclas</translation>
@@ -817,7 +814,6 @@ Al instalar Linux, se descargarán <ph name="DOWNLOAD_SIZE" /> de datos.</transl
 <translation id="221872881068107022">Invertir desplazamiento</translation>
 <translation id="2220529011494928058">Notificar un problema</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>
-<translation id="2222414641881146529">Enviar datos del sistema</translation>
 <translation id="2224444042887712269">Esta opción pertenece a <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Editar nombre de carpeta</translation>
 <translation id="2226449515541314767">Se ha bloqueado este sitio para que no tenga un control absoluto de los dispositivos MIDI.</translation>
@@ -830,6 +826,7 @@ Al instalar Linux, se descargarán <ph name="DOWNLOAD_SIZE" /> de datos.</transl
 <translation id="2231238007119540260">Si eliminas un certificado de servidor, restablecerás las comprobaciones de seguridad habituales de ese servidor y necesitarás que este utilice un certificado válido.</translation>
 <translation id="2232876851878324699">El archivo contenía un certificado, que no se ha importado:</translation>
 <translation id="2233502537820838181">&amp;Más información</translation>
+<translation id="2234876718134438132">Servicios de Google y sincronización</translation>
 <translation id="2238379619048995541">Datos de estado de frecuencia</translation>
 <translation id="2239921694246509981">Añadir persona supervisada</translation>
 <translation id="2241053333139545397">Leer y modificar tus datos en una serie de sitios web</translation>
@@ -1253,7 +1250,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> se reiniciará y se restablecerá momentáneamente</translation>
 <translation id="2885378588091291677">Administrador de tareas</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
-<translation id="2886800363598651778">Sincronizar y personalizar Chrome en todos tus dispositivos</translation>
 <translation id="2887525882758501333">Documento PDF</translation>
 <translation id="2888807692577297075">No se ha encontrado ningún elemento que coincida con &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;.</translation>
 <translation id="2889064240420137087">Abrir enlace con...</translation>
@@ -1903,7 +1899,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3893630138897523026">ChromeVox (mensajes de voz)</translation>
 <translation id="3894427358181296146">Añadir carpeta</translation>
 <translation id="389589731200570180">Compartir con invitados</translation>
-<translation id="3898493977366060150">Navegación web con soluciones inteligentes de Google</translation>
 <translation id="3898521660513055167">Estado del token</translation>
 <translation id="389901847090970821">Seleccionar teclado</translation>
 <translation id="3899879303189199559">Sin conexión durante más de un año</translation>
@@ -1919,7 +1914,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3915280005470252504">Búsqueda por voz</translation>
 <translation id="3916445069167113093">Este tipo de archivo puede dañar tu ordenador. ¿Quieres descargar <ph name="FILE_NAME" /> de todos modos?</translation>
 <translation id="3918972485393593704">Enviar informe detallado a Google</translation>
-<translation id="391999873395511996">Descargando la máquina virtual.</translation>
 <translation id="3920504717067627103">Políticas de certificados</translation>
 <translation id="392089482157167418">Habilitar ChromeVox (mensajes de voz)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2373,7 +2367,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4707934200082538898">Accede a tu dirección de correo electrónico <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> para obtener instrucciones adicionales.</translation>
 <translation id="4708794300267213770">Mostrar la pantalla de bloqueo al activar el dispositivo</translation>
 <translation id="4708849949179781599">Salir de <ph name="PRODUCT_NAME" /></translation>
-<translation id="4710251968215868702">Utiliza el contenido de los sitios web que visitas, así como las interacciones y la actividad del navegador.</translation>
 <translation id="4711638718396952945">Restaurar configuración</translation>
 <translation id="4713544552769165154">Este archivo está diseñado para un ordenador que utilice software de Macintosh. No es compatible con tu dispositivo, que utiliza Chrome OS. Puedes buscar una aplicación equivalente adecuada en <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" />.<ph name="BEGIN_LINK_HELP" />Más información<ph name="END_LINK_HELP" /></translation>
 <translation id="4715553623069266137">muy breve (0,8 s)</translation>
@@ -3477,7 +3470,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6383051423892982287">Cifrar los datos sincronizados con tu propia <ph name="BEGIN_LINK" />frase de contraseña de sincronización<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Cambiar configuración de búsqueda por: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Los sitios web pueden guardar y consultar datos de cookies</translation>
-<translation id="6385974547588555598">Se está iniciando la máquina virtual.</translation>
 <translation id="6388429472088318283">Buscar idiomas</translation>
 <translation id="6388771388956873507">Busca el sensor de huellas digitales del dispositivo y tócalo con el dedo</translation>
 <translation id="6390799748543157332">Las páginas que aparezcan en esta ventana no se mostrarán en el historial del navegador y no dejarán otros rastros como cookies en el ordenador después de cerrar todas las ventanas abiertas de la sesión de invitado. No obstante, se conservará cualquier archivo que descargues.</translation>
@@ -4209,7 +4201,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7540972813190816353">Se ha producido un error al comprobar las actualizaciones: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Se habilitarán las funciones de depurado en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" /></translation>
 <translation id="7544853251252956727">Reproducir aleatoriamente</translation>
-<translation id="7545809182698428577">Activa las funciones de esta lista. Usa la actividad del navegador, el contenido de algunos sitios web que visitas y otras interacciones del navegador para personalizarlo.</translation>
 <translation id="7547317915858803630">Advertencia: la configuración de <ph name="PRODUCT_NAME" /> se almacena en una unidad de red, lo que puede provocar ralentizaciones, fallos e incluso pérdidas de datos.</translation>
 <translation id="7548856833046333824">Cóctel</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
@@ -4244,7 +4235,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7591957897535945411">Esta página se ha traducido.</translation>
 <translation id="7595453277607160340">Para usar aplicaciones de Android y que tu <ph name="DEVICE_TYPE" /> siga funcionando correctamente, inicia sesión de nuevo e instala la actualización.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (código de error <ph name="ERROR_CODE" />).</translation>
-<translation id="7595867490569826716">Se está iniciando el contenedor de Linux.</translation>
 <translation id="7598466960084663009">Reiniciar el ordenador</translation>
 <translation id="7599527631045201165">El nombre del dispositivo es demasiado largo. Introduce uno más corto para intentarlo de nuevo.</translation>
 <translation id="7600965453749440009">No traducir nunca del <ph name="LANGUAGE" /></translation>
@@ -4774,6 +4764,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8418445294933751433">Mo&amp;strar como pestaña</translation>
 <translation id="8419098111404128271">Resultados de búsqueda de "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="8420060421540670057">Mostrar archivos de Google Docs</translation>
+<translation id="8420510748452002155">Servicios no personalizados</translation>
 <translation id="8424039430705546751">abajo</translation>
 <translation id="8425213833346101688">Cambiar</translation>
 <translation id="8425492902634685834">Anclar a la barra de tareas</translation>
@@ -5115,11 +5106,6 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8944099748578356325">Consumirá batería de forma más rápida (carga actual: <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> está compartiendo una ventana con <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Las funciones de depuración no se han habilitado completamente en este dispositivo <ph name="IDS_SHORT_PRODUCT_NAME" />.</translation>
-<translation id="8948006114608036530">Este dispositivo envía a Google datos de diagnóstico y uso del dispositivo y de las aplicaciones automáticamente. El propietario aplica esta configuración. Si has activado la opción Actividad en la Web y en Aplicaciones, esta información se almacenará en tu cuenta para que puedas gestionarla en la sección Mi Actividad.
-
-    Esto es información general sobre el dispositivo y su uso (como el nivel de batería, el uso de las aplicaciones o la conectividad de red). La información se utilizará con el fin de mejorar los productos y servicios de Google para todo el mundo. Parte de los datos recogidos también ayudarán a nuestros colaboradores, como los desarrolladores de Android, a mejorar sus aplicaciones y productos.
-    Desactivar esta opción no afecta a la capacidad del dispositivo de enviar la información necesaria para recibir servicios esenciales, como actualizaciones de seguridad y del sistema.
-    Puedes controlar esta función en Ajustes &gt; Google (selecciona Uso y diagnósticos en el menú).</translation>
 <translation id="894871326938397531">¿Salir del modo de incógnito?</translation>
 <translation id="895347679606913382">Iniciando...</translation>
 <translation id="8954952943849489823">No se ha podido mover el archivo porque se ha producido un error inesperado ($1).</translation>

@@ -19,6 +19,7 @@
 <translation id="1145536944570833626">ลบข้อมูลที่มีอยู่</translation>
 <translation id="1146678959555564648">เข้าสู่ VR</translation>
 <translation id="114721135501989771">ใช้ฟีเจอร์เจ๋งๆ จาก Google ใน Chrome</translation>
+<translation id="1157102636231978136">ข้อมูลและกิจกรรมการท่องเว็บซึ่งซิงค์กับบัญชี Google</translation>
 <translation id="116280672541001035">ใช้ไป</translation>
 <translation id="1172593791219290334">หน้าเริ่มต้นใช้งาน</translation>
 <translation id="1178581264944972037">หยุดชั่วคราว</translation>
@@ -33,6 +34,7 @@
 <translation id="124116460088058876">ภาษาเพิ่มเติม</translation>
 <translation id="124678866338384709">ปิดแท็บปัจจุบัน</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="127138278192656016">ใช้การซิงค์และบริการทั้งหมด</translation>
 <translation id="1272079795634619415">หยุด</translation>
 <translation id="1283039547216852943">แตะเพื่อขยาย</translation>
 <translation id="1285320974508926690">ไม่ต้องแปลไซต์นี้</translation>
@@ -48,6 +50,7 @@
 <translation id="1383876407941801731">ค้นหา</translation>
 <translation id="1384959399684842514">หยุดดาวน์โหลดไว้ชั่วคราว</translation>
 <translation id="1389974829397082527">ไม่มีบุ๊กมาร์กที่นี่</translation>
+<translation id="1395084944394113895">ดูเนื้อหาออฟไลน์</translation>
 <translation id="1397811292916898096">ค้นหาด้วย <ph name="PRODUCT_NAME" /></translation>
 <translation id="1397854323885047133">การซิงค์และการปรับเปลี่ยนในแบบของคุณ</translation>
 <translation id="1404122904123200417">ฝังอยู่ใน <ph name="WEBSITE_URL" /></translation>
@@ -178,6 +181,7 @@
 <translation id="2426805022920575512">เลือกบัญชีอื่น</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
 <translation id="2434158240863470628">ดาวน์โหลดเสร็จสมบูรณ์ <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2436117022029368436">สื่อสารกับ Google เพื่อปรับปรุงการท่องเว็บและ Chrome</translation>
 <translation id="2440823041667407902">การเข้าถึงตำแหน่ง</translation>
 <translation id="2450083983707403292">คุณต้องการเริ่มดาวน์โหลด <ph name="FILE_NAME" /> อีกครั้งไหม</translation>
 <translation id="2476578072172137802">การตั้งค่าไซต์</translation>
@@ -401,6 +405,7 @@
 <translation id="4532845899244822526">เลือกโฟลเดอร์</translation>
 <translation id="4550003330909367850">หากต้องการดูหรือคัดลอกรหัสผ่านที่นี่ ให้ตั้งค่าการล็อกหน้าจอในอุปกรณ์นี้</translation>
 <translation id="4558311620361989323">แป้นพิมพ์ลัดสำหรับหน้าเว็บ</translation>
+<translation id="4561979708150884304">ไม่มีการเชื่อมต่อ</translation>
 <translation id="4565377596337484307">ซ่อนรหัสผ่าน</translation>
 <translation id="4570913071927164677">รายละเอียด</translation>
 <translation id="4572422548854449519">ลงชื่อเข้าใช้บัญชีที่มีการจัดการ</translation>
@@ -792,6 +797,7 @@
 <translation id="7698359219371678927">สร้างอีเมลใน <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">แปลหน้าเว็บภาษา<ph name="SOURCE_LANGUAGE" />ทุกครั้ง</translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="773905249182896430">ปกป้องคุณและอุปกรณ์จากเว็บไซต์ที่เป็นอันตราย</translation>
 <translation id="7762668264895820836">การ์ด SD <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">เพิ่มที่อยู่</translation>
 <translation id="7765158879357617694">ย้าย</translation>
@@ -863,6 +869,7 @@
 <translation id="8374821112118309944">คุณต้องอัปเดต TalkBack เป็นเวอร์ชันใหม่</translation>
 <translation id="8393700583063109961">ส่งข้อความ</translation>
 <translation id="8413126021676339697">แสดงประวัติการเข้าชมทั้งหมด</translation>
+<translation id="8420510748452002155">บริการที่ไม่ได้ปรับให้เหมาะกับแต่ละบุคคล</translation>
 <translation id="8428213095426709021">การตั้งค่า</translation>
 <translation id="8441146129660941386">ย้อนกลับ</translation>
 <translation id="8445448999790540984">ส่งออกรหัสผ่านไม่ได้</translation>
@@ -908,6 +915,7 @@
 <translation id="8812260976093120287">ในบางเว็บไซต์ คุณสามารถชำระเงินด้วยแอปชำระเงินที่รองรับด้านบนในอุปกรณ์ของคุณ</translation>
 <translation id="8816439037877937734"><ph name="APP_NAME" /> จะเปิดขึ้นใน Chrome การดำเนินการต่อแสดงว่าคุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome รวมถึง<ph name="BEGIN_LINK3" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวสำหรับบัญชี Google ที่จัดการด้วย Family Link<ph name="END_LINK3" /></translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
+<translation id="8823704566850948458">แนะนำรหัสผ่าน...</translation>
 <translation id="8830904257167680355"><ph name="DESCRIPTION" /> - <ph name="FILE_SIZE" /></translation>
 <translation id="883806473910249246">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหา</translation>
 <translation id="8840953339110955557">หน้าเว็บนี้อาจแตกต่างไปจากเวอร์ชันที่ออนไลน์</translation>
@@ -951,6 +959,7 @@
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
 <translation id="9204836675896933765">เหลืออีก 1 ไฟล์</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9218033835049520260">แนะนำรหัสผ่านที่รัดกุม...</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>
 <translation id="932599481871055447">ประหยัดเน็ตมือถือและท่องเว็บได้เร็วขึ้น</translation>

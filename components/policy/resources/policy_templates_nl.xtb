@@ -688,12 +688,6 @@
 
       Als je deze instelling inschakelt, gebruikt Afdrukvoorbeeld de standaardprinter van het besturingssysteem als standaardbestemming.</translation>
 <translation id="2867699958489427143">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Doe een volledige powerwash tijdens het proces.</translation>
-<translation id="286802604195763750">Hiermee kun je de activering van een beveiligingswaarschuwing voor je wachtwoord beheren. Wachtwoordbeveiliging waarschuwt gebruikers wanneer ze hun beveiligde wachtwoord hergebruiken op potentieel verdachte sites.
-
-      Als dit beleid is ingesteld op PasswordProtectionWarningOff, wordt er geen waarschuwing voor wachtwoordbeveiliging weergegeven.
-      Als dit beleid is ingesteld op PasswordProtectionWarningOnPasswordReuse, wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het Google-wachtwoord hergebruikt op een site die niet op de witte lijst staat.
-      Als dit beleid is ingesteld op PasswordProtectionWarningOnPhishingReuse, wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite.
-      Als dit beleid niet is ingesteld, wordt er een waarschuwing voor wachtwoordbeveiliging geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite, maar kan de gebruiker deze instelling aanpassen.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
@@ -2302,17 +2296,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7511361072385293666">Als dit beleid wordt ingesteld op 'waar' of niet wordt ingesteld, wordt het gebruik van het QUIC-protocol in <ph name="PRODUCT_NAME" /> toegestaan.
       Als dit beleid wordt ingesteld op 'onwaar', wordt het gebruik van het QUIC-protocol niet toegestaan.</translation>
 <translation id="7519251620064708155">Het genereren van sleutels toestaan op deze sites</translation>
-<translation id="7529083451528428240">Hiermee kun je de gebruikerssessie vergrendelen op basis van de tijd op de client of de gebruikslimiet van de dag.
-
-          Met |time_window_limit| kun je een dagelijks tijdvenster opgeven waarin de gebruikerssessie moet worden vergrendeld. Omdat er slechts één regel voor elke dag van de week wordt ondersteund, mag de reeks |entries| qua grootte variëren van 0-7. |starts_at| en |ends_at| geven het begin en het einde van het tijdvenster aan. Als |ends_at| kleiner is dan |starts_at|, betekent dit dat |time_limit_window| eindigt op de volgende dag. |last_updated_millis| is de UTC-tijdstempel voor de laatste keer dat deze invoer is geüpdatet en wordt als reeks verzonden, omdat de tijdstempel niet in een geheel getal past.
-
-          Met |time_usage_limit| kun je een dagelijkse schermlimiet opgeven. Wanneer de gebruiker deze limiet bereikt, wordt de gebruikerssessie vergrendeld. Er is een eigenschap voor elke dag van de week en deze mag alleen worden ingesteld als er een actieve limiet voor die dag bestaat. |usage_quota_mins| is de hoeveelheid tijd waarin het beheerde apparaat op een dag kan worden gebruikt en |reset_at| is het tijdstip waarop de gebruikslimiet wordt vernieuwd. De standaardwaarde voor |reset_at| is middernacht ({'hour': 0, 'minute': 0}). |last_updated_millis| is de UTC-tijdstempel voor de laatste keer dat deze invoer is geüpdatet en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past.
-
-          Met |overrides| kun je tijdelijk een of meer van de vorige regels ongeldig maken.
-          * Als time_window_limit en time_usage_limit geen van beide actief zijn, kun je |LOCK| gebruiken om het apparaat te vergrendelen.
-          * Met |LOCK| wordt een gebruikerssessie tijdelijk vergrendeld totdat de volgende time_window_limit of time_usage_limit begint.
-          * Met |UNLOCK| kun je een gebruikerssessie ontgrendelen die is vergrendeld door time_window_limit of time_usage_limit.
-          |created_time_millis| is de UTC-tijdstempel voor het maken van de overschrijving en wordt als reeks verzonden omdat de tijdstempel niet in een geheel getal past. Deze variabele wordt gebruikt om te bepalen of deze overschrijving nog steeds moet worden toegepast. Als de momenteel actieve tijdslimietfunctie (time_usage_limit of time_window_limit) is gestart nadat de overschrijving is gemaakt, onderneemt deze geen actie. Daarnaast is het zo dat de overschrijving niet wordt toegepast als deze is gemaakt vóór de laatste wijziging van de actieve time_window_limit of time_usage_window.</translation>
 <translation id="7529100000224450960">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd waarop pop-ups mogen worden geopend.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultPopupsSetting' (als dit is ingesteld) of anders op basis van de configuratie van de gebruiker.</translation>

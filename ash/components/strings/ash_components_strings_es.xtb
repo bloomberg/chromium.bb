@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Activar o desactivar ChromeVox (mensajes de voz)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Desplazarse hacia abajo por la página web</translation>
-<translation id="2568632782096378307">Recuperar la resolución de pantalla predeterminada</translation>
 <translation id="2596078834055697711">Hacer una captura de pantalla de la ventana</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> y <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Cambiar al método de introducción del siguiente idioma</translation>
@@ -64,7 +63,6 @@
 <translation id="3407560819924487926">Abrir el administrador de tareas</translation>
 <translation id="3422679037938588196">Ir al resultado de búsqueda anterior</translation>
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Restablecer nivel de zoom</translation>
 <translation id="353037708190149633">Guardar todas las páginas abiertas de la ventana actual en una nueva carpeta de marcadores</translation>
 <translation id="355103131818127604">Abrir el enlace en una nueva pestaña en segundo plano</translation>
 <translation id="3649256019230929621">Minimizar ventana</translation>
@@ -117,7 +115,6 @@
 <translation id="587531134027443617">Eliminar la palabra anterior</translation>
 <translation id="5899919361772749550">Mostrar u ocultar la consola de herramientas para desarrolladores</translation>
 <translation id="5921745308587794300">Gira la ventana</translation>
-<translation id="5975083100439434680">Reducir</translation>
 <translation id="6022924867608035986">Borrar el texto del cuadro de búsqueda</translation>
 <translation id="6045998054441862242">Activar el modo de contraste alto</translation>
 <translation id="6052614013050385269">Hacer clic con el botón derecho en un enlace</translation>
@@ -163,7 +160,6 @@
 <translation id="7787242579016742662">Abrir un archivo en el navegador</translation>
 <translation id="7917881398263220094">Interrumpir la carga de la página actual</translation>
 <translation id="7952165122793773711">Ir a una pestaña de la 1 a la 8</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Borrar datos de navegación</translation>
 <translation id="8130528849632411619">Ir al principio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
@@ -182,9 +178,7 @@
 <translation id="8727232706774971183">Ver las notificaciones</translation>
 <translation id="8855885154700222542">Tecla de pantalla completa</translation>
 <translation id="88986195241502842">Avanzar página</translation>
-<translation id="8903921497873541725">Acercar</translation>
 <translation id="8924883688469390268">Cambiar al usuario anterior</translation>
-<translation id="8951768610999698672">Aumentar o reducir el tamaño de los elementos de la pantalla</translation>
 <translation id="8977648847395357314">Seleccionar el contenido de la barra de direcciones</translation>
 <translation id="8982190978301344584">Mostrar el menú con una lista de métodos de introducción disponibles</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> una tecla del 1 al 8</translation>

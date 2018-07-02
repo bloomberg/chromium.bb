@@ -19,6 +19,7 @@
 <translation id="1145536944570833626">I-delete ang kasalukuyang data.</translation>
 <translation id="1146678959555564648">Pumasok sa VR</translation>
 <translation id="114721135501989771">Magkaroon ng mga smart na feature ng Google sa Chrome</translation>
+<translation id="1157102636231978136">Naka-sync sa iyong Google Account ang data mula sa pag-browse at aktibidad.</translation>
 <translation id="116280672541001035">Nagamit</translation>
 <translation id="1172593791219290334">Page sa Pagsisimula</translation>
 <translation id="1178581264944972037">I-pause</translation>
@@ -33,6 +34,7 @@
 <translation id="124116460088058876">Higit pang wika</translation>
 <translation id="124678866338384709">Isara ang kasalukuyang tab</translation>
 <translation id="1258753120186372309">Google doodle: <ph name="DOODLE_DESCRIPTION" /></translation>
+<translation id="127138278192656016">Gamitin ang pag-sync at ang lahat ng serbisyo</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1283039547216852943">I-tap upang palawakin</translation>
 <translation id="1285320974508926690">Huwag isalin kailanman ang site na ito</translation>
@@ -48,6 +50,7 @@
 <translation id="1383876407941801731">Hanapin</translation>
 <translation id="1384959399684842514">Na-pause ang pag-download</translation>
 <translation id="1389974829397082527">Walang mga bookmark dito</translation>
+<translation id="1395084944394113895">Tingnan ang offline na content</translation>
 <translation id="1397811292916898096">Maghanap gamit ang <ph name="PRODUCT_NAME" /></translation>
 <translation id="1397854323885047133">Pag-sync at pag-personalize</translation>
 <translation id="1404122904123200417">Naka-embed sa <ph name="WEBSITE_URL" /></translation>
@@ -178,6 +181,7 @@
 <translation id="2426805022920575512">Pumili ng ibang account</translation>
 <translation id="2433507940547922241">Hitsura</translation>
 <translation id="2434158240863470628">Tapos nang mag-download <ph name="SEPARATOR" /> <ph name="BYTES_DOWNLOADED" /></translation>
+<translation id="2436117022029368436">Nakikipag-ugnayan sa Google para mapahusay ang pag-browse at ang Chrome</translation>
 <translation id="2440823041667407902">Access sa lokasyon</translation>
 <translation id="2450083983707403292">Gusto mo bang simulang muli ang pag-download sa <ph name="FILE_NAME" />?</translation>
 <translation id="2476578072172137802">Mga Setting ng Site</translation>
@@ -401,6 +405,7 @@ Maaaring may ibang uri ng history ng pag-browse ang iyong Google account tulad n
 <translation id="4532845899244822526">Pumili ng folder</translation>
 <translation id="4550003330909367850">Upang tingnan o kopyahin ang iyong password dito, magtakda ng lock ng screen sa device na ito.</translation>
 <translation id="4558311620361989323">Mga shortcut ng webpage</translation>
+<translation id="4561979708150884304">Walang koneksyon</translation>
 <translation id="4565377596337484307">Itago ang password</translation>
 <translation id="4570913071927164677">Mga Detalye</translation>
 <translation id="4572422548854449519">Mag-sign in sa pinamamahalaang account</translation>
@@ -792,6 +797,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7698359219371678927">Gumawa ng email sa <ph name="APP_NAME" /></translation>
 <translation id="773466115871691567">Palaging isalin ang mga page sa <ph name="SOURCE_LANGUAGE" /></translation>
 <translation id="7735672056998735387"><ph name="SPACE_FREE" /> (<ph name="SPACE_OTHER" />)</translation>
+<translation id="773905249182896430">Pinoprotektahan ka at ang iyong device mula sa mapapanganib na site</translation>
 <translation id="7762668264895820836">SD card <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Magdagdag ng address</translation>
 <translation id="7765158879357617694">Ilipat</translation>
@@ -863,6 +869,7 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="8374821112118309944">Kailangan mong i-update ang TalkBack sa isang mas bagong bersyon.</translation>
 <translation id="8393700583063109961">Ipadala ang mensahe</translation>
 <translation id="8413126021676339697">Ipakita ang buong history</translation>
+<translation id="8420510748452002155">Mga hindi naka-personalize na serbisyo</translation>
 <translation id="8428213095426709021">Mga Setting</translation>
 <translation id="8441146129660941386">Maghanap nang pabalik</translation>
 <translation id="8445448999790540984">Hindi ma-export ang mga password</translation>
@@ -908,6 +915,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="8812260976093120287">Sa ilang website, maaari kang magbayad sa iyong device gamit ang mga sinusuportahang app sa pagbabayad sa itaas.</translation>
 <translation id="8816439037877937734">Bubukas ang <ph name="APP_NAME" /> sa Chrome. Sa pamamagitan ng pagpapatuloy, sumasang-ayon ka sa <ph name="BEGIN_LINK1" />Mga Tuntunin ng Serbisyo<ph name="END_LINK1" /> at <ph name="BEGIN_LINK2" />Notification ng Privacy<ph name="END_LINK2" /> ng Chrome, at sa <ph name="BEGIN_LINK3" />Notification ng Privacy para sa Mga Google Account na Pinamamahalaan gamit ang Family Link<ph name="END_LINK3" />.</translation>
 <translation id="8820817407110198400">Mga Bookmark</translation>
+<translation id="8823704566850948458">Magmungkahi ng password...</translation>
 <translation id="8830904257167680355"><ph name="DESCRIPTION" /> - <ph name="FILE_SIZE" /></translation>
 <translation id="883806473910249246">Nagka-error habang dina-download ang content.</translation>
 <translation id="8840953339110955557">Maaaring iba ang page na ito sa online na bersyon.</translation>
@@ -951,6 +959,7 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
 <translation id="9204836675896933765">1 file ang natitira</translation>
 <translation id="9206873250291191720">A</translation>
+<translation id="9218033835049520260">Magmungkahi ng malakas na password...</translation>
 <translation id="9219103736887031265">Mga Larawan</translation>
 <translation id="932327136139879170">Home</translation>
 <translation id="932599481871055447">Makatipid ng data at mag-browse nang mas mabilis</translation>

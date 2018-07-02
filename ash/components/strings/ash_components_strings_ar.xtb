@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">‏تفعيل ChromeVox (التعليقات والملاحظات المنطوقة) أو إيقافه</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">التمرير إلى أسفل صفحة الويب</translation>
-<translation id="2568632782096378307">إعادة تعيين مستوى دقة الشاشة على الخيار التلقائي</translation>
 <translation id="2596078834055697711">أخذ لقطة شاشة للنافذة</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />، ثم <ph name="TAB" /> أو <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">التبديل إلى أسلوب إدخال اللغة التالية</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">التصغير في الصفحة</translation>
 <translation id="2804480015716812239">اضغط على <ph name="ALT" /> وانقر على رابط</translation>
 <translation id="2830827904629746450">إرساء نافذة على اليسار</translation>
+<translation id="2840766858109427815">الانتقال للأمام إلى الصفحة التالية</translation>
 <translation id="2872353916818027657">تبديل الشاشة الرئيسية</translation>
 <translation id="2914313326123580426">عرض لوحة أدوات المطوِّرين أو إخفاؤها</translation>
 <translation id="292495055542441795">تبديل وضع ملء الشاشة</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">استدعاء إدارة المهام</translation>
 <translation id="3422679037938588196">الانتقال إلى المطابقة السابقة للبحث</translation>
 <translation id="344577624355799426"><ph name="ALT" /> أو <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">إعادة تعيين مستوى التكبير/التصغير</translation>
 <translation id="353037708190149633">حفظ كل الصفحات المفتوحة في النافذة الحالية كإشارات مرجعية في مجلد جديد</translation>
 <translation id="355103131818127604">فتح الرابط في علامة تبويب جديدة في الخلفية</translation>
 <translation id="3649256019230929621">تصغير النافذة</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">تحديد الصف الذي يتضمن شريط العناوين</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> أو <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">وضع "النظرة العامة"</translation>
+<translation id="4382340674111381977">الرجوع إلى الصفحة السابقة</translation>
 <translation id="4472417192667361414">النظام وإعدادات العرض</translation>
 <translation id="4556221320735744018">الاطلاع على "مساعد اختصارات لوحة المفاتيح"</translation>
 <translation id="4628718545549558538">فتح منطقة الحالة (التي تظهر فيها صورة الحساب)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">حذف الكلمة السابقة</translation>
 <translation id="5899919361772749550">عرض وحدة التحكُّم في "أدوات المطوِّرين" أو إخفاؤها</translation>
 <translation id="5921745308587794300">تدوير النافذة</translation>
-<translation id="5975083100439434680">تصغير</translation>
 <translation id="6022924867608035986">محو نص مربع البحث</translation>
 <translation id="6045998054441862242">تشغيل وضع التباين العالي</translation>
 <translation id="6052614013050385269">النقر بالزر الأيمن على رابط</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">فتح ملف في المتصفح</translation>
 <translation id="7917881398263220094">إيقاف تحميل الصفحة الحالية</translation>
 <translation id="7952165122793773711">الانتقال من علامة التبويب الأولى إلى الثامنة</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> أو <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">محو بيانات التصفُّح</translation>
 <translation id="8130528849632411619">الانتقال إلى بداية المستند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> أو <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">الاطلاع على الإشعارات</translation>
 <translation id="8855885154700222542">مفتاح ملء الشاشة</translation>
 <translation id="88986195241502842">صفحة لأسفل</translation>
-<translation id="8903921497873541725">تكبير</translation>
 <translation id="8924883688469390268">التبديل إلى المستخدم السابق</translation>
-<translation id="8951768610999698672">تكبير العناصر المعروضة على الشاشة أو تصغيرها</translation>
 <translation id="8977648847395357314">تحديد المحتوى في شريط العناوين</translation>
 <translation id="8982190978301344584">‏إظهار القائمة التي تعرض قائمة من "أدوات IME" المتاحة</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> من 1 إلى 8</translation>

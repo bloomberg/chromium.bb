@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox (ಮಾತಿನ ಪ್ರತಿಕ್ರಿಯೆ) ಆನ್‌ ಅಥವಾ ಆಫ್‌ ಮಾಡಿ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">ವೆಬ್‌ ಪುಟವನ್ನು ಸ್ಕ್ರಾಲ್ ಡೌನ್ ಮಾಡಿ</translation>
-<translation id="2568632782096378307">ಪರದೆಯ ರೆಸಲ್ಯೂಷನ್ ಅನ್ನು ಡೀಫಾಲ್ಟ್‌ಗೆ ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="2596078834055697711">ವಿಂಡೋ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, ನಂತರ <ph name="TAB" /> ಅಥವಾ <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">ಮುಂದಿನ ಭಾಷೆಯ ಇನ್‌ಪುಟ್‌ ವಿಧಾನಕ್ಕೆ ಬದಲಿಸಿ</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">ಪುಟದಲ್ಲಿ ಝೂಮ್ ಔಟ್ ಮಾಡಿ</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> ಅನ್ನು ಒತ್ತಿರಿ ಮತ್ತು ಲಿಂಕ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="2830827904629746450">ಬಲಭಾಗದಲ್ಲಿ ವಿಂಡೋವನ್ನು ಡಾಕ್‌ ಮಾಡಿ</translation>
+<translation id="2840766858109427815">ಮುಂದಿನ ಪುಟಕ್ಕೆ ಮುಂದುವರಿಯಿರಿ</translation>
 <translation id="2872353916818027657">ಪ್ರಾಥಮಿಕ ಮಾನೀಟರ್ ಸ್ವ್ಯಾಪ್</translation>
 <translation id="2914313326123580426">ಡೆವಲಪರ್ ಪರಿಕರಗಳ ಫಲಕವನ್ನು ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ</translation>
 <translation id="292495055542441795">ಪೂರ್ಣ ಪರದೆಯನ್ನು ಟಾಗಲ್ ಮಾಡಿ</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">ಹೊಸ ಕಾರ್ಯ ನಿರ್ವಾಹಕವನ್ನು ತೆರೆಯುತ್ತದೆ</translation>
 <translation id="3422679037938588196">ನಿಮ್ಮ ಹುಡುಕಾಟಕ್ಕೆ ಹೊಂದಿಕೆಯಾಗುವ ಹಿಂದಿನದಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ಅಥವಾ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">ಝೂಮ್‌ ಮಟ್ಟವನ್ನು ಮರುಹೊಂದಿಸಿ</translation>
 <translation id="353037708190149633">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆದಿರುವ ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಹೊಸ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳಂತೆ ಉಳಿಸಿ</translation>
 <translation id="355103131818127604">ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಲಿಂಕ್‌ ಅನ್ನು ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3649256019230929621">ವಿಂಡೋ ಕಿರಿದಾಗಿಸಿ</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">ವಿಳಾಸ ಪಟ್ಟಿ ಹೊಂದಿರುವ ಸಾಲನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ಅಥವಾ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">ಅವಲೋಕನ ಮೋಡ್‌</translation>
+<translation id="4382340674111381977">ಹಿಂದಿನ ಪುಟಕ್ಕೆ ಹಿಂತಿರುಗಿ</translation>
 <translation id="4472417192667361414">ಸಿಸ್ಟಂ ಮತ್ತು ಡಿಸ್‌ಪ್ಲೇ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4556221320735744018">ಕೀಬೋರ್ಡ್‌ ಶಾರ್ಟ್‌ಕಟ್‌ ಸಹಾಯಕವನ್ನು ನೋಡಿ</translation>
 <translation id="4628718545549558538">ಸ್ಥಿತಿ ಪ್ರದೇಶವನ್ನು ತೆರೆಯಿರಿ (ನಿಮ್ಮ ಖಾತೆ ಚಿತ್ರ ಗೋಚರಿಸುವಲ್ಲಿ)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">ಹಿಂದಿನ ಪದವನ್ನು ಅಳಿಸಿ</translation>
 <translation id="5899919361772749550">ಡೆವಲಪರ್ ಪರಿಕರಗಳ ಕನ್ಸೋಲ್‌ ಅನ್ನು ತೋರಿಸಿ ಅಥವಾ ಮರೆಮಾಡಿ</translation>
 <translation id="5921745308587794300">ವಿಂಡೋ ತಿರುಗಿಸಿ</translation>
-<translation id="5975083100439434680">ಝೂಮ್ ಔಟ್</translation>
 <translation id="6022924867608035986">ಹುಡುಕಾಟ ಬಾಕ್ಸ್ ಪಠ್ಯವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="6045998054441862242">ಅಧಿಕ ಕಾಂಟ್ರಾಸ್ಟ್ ಮೋಡ್ ಅನ್ನು ಆನ್‌ ಮಾಡಿ</translation>
 <translation id="6052614013050385269">ಲಿಂಕ್‌ ಅನ್ನು ರೈಟ್ ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">ಬ್ರೌಸರ್‌ನಲ್ಲಿ ಫೈಲ್ ತೆರೆಯಿರಿ</translation>
 <translation id="7917881398263220094">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ಪುಟದ ಲೋಡ್ ಮಾಡುವಿಕೆಯನ್ನು ನಿಲ್ಲಿಸಿ</translation>
 <translation id="7952165122793773711">1 ರಿಂದ 8 ರವರೆಗಿನ ಟ್ಯಾಬ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ಅಥವಾ <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ಬ್ರೌಸಿಂಗ್ ಡೇಟಾವನ್ನು ತೆರವುಗೊಳಿಸಿ</translation>
 <translation id="8130528849632411619">ಡಾಕ್ಯುಮೆಂಟ್‌ನ ಪ್ರಾರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ಅಥವಾ <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">ನಿಮ್ಮ ಅಧಿಸೂಚನೆಗಳನ್ನು ನೋಡಿ</translation>
 <translation id="8855885154700222542">ಪೂರ್ಣಪರದೆ ಕೀ</translation>
 <translation id="88986195241502842">Page down</translation>
-<translation id="8903921497873541725">ಝೂಮ್ ಇನ್</translation>
 <translation id="8924883688469390268">ಹಿಂದಿನ ಬಳಕೆದಾರರಿಗೆ ಬದಲಿಸಿ</translation>
-<translation id="8951768610999698672">ಐಟಂಗಳನ್ನು ಪರದೆಯ ಮೇಲೆ ಸಣ್ಣದು ಅಥವಾ ದೊಡ್ಡದು ಮಾಡಿ</translation>
 <translation id="8977648847395357314">ವಿಳಾಸದ ಪಟ್ಟಿಯಲ್ಲಿರುವ ವಿಷಯವನ್ನು ಆಯ್ಕೆ ಮಾಡಿ</translation>
 <translation id="8982190978301344584">ಲಭ್ಯವಿರುವ IME ಗಳ ಪಟ್ಟಿಯನ್ನು ಪ್ರದರ್ಶಿಸುವ ಮೆನುವನ್ನು ತೋರಿಸಿ</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 ರಿಂದ 8 ರವರೆಗೆ</translation>

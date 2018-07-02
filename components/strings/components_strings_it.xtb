@@ -98,7 +98,6 @@
 
       &lt;p&gt;Regola data e ora nella sezione &lt;strong&gt;Generali&lt;/strong&gt; dell'app &lt;strong&gt;Impostazioni&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Si è verificato un problema durante la visualizzazione della pagina web.</translation>
-<translation id="1590457302292452960">Genera una password efficace…</translation>
 <translation id="1592005682883173041">Accesso ai dati locali</translation>
 <translation id="1594030484168838125">Scegli</translation>
 <translation id="1620510694547887537">Videocamera</translation>
@@ -754,7 +753,6 @@
 <translation id="6328786501058569169">Questo sito è ingannevole</translation>
 <translation id="6337133576188860026">Consente di liberare meno di <ph name="SIZE" />. Alcuni siti potrebbero caricarsi più lentamente alla prossima visita.</translation>
 <translation id="6337534724793800597">Filtra i criteri per nome</translation>
-<translation id="6342069812937806050">In questo momento</translation>
 <translation id="6355080345576803305">Sostituzione sessione pubblica</translation>
 <translation id="6358450015545214790">Che cosa significano?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 altro suggerimento}other{# altri suggerimenti}}</translation>

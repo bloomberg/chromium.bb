@@ -46,7 +46,6 @@
 <translation id="1062407476771304334">Vervangen</translation>
 <translation id="1067048845568873861">Gemaakt</translation>
 <translation id="1067291318998134776">Linux (bèta)</translation>
-<translation id="1067922213147265141">Andere Google-services</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Een ander programma op je computer heeft een extensie toegevoegd die de manier kan wijzigen waarop Chrome werkt.
 
@@ -191,6 +190,7 @@
 <translation id="126710816202626562">Doeltaal:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1271317946095246719">Hiermee verzend je de zoekopdrachten in de adresbalk en in het zoekvak en bepaalde cookies naar je standaard zoekmachine</translation>
+<translation id="127138278192656016">Synchronisatie en alle services gebruiken</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272242203003205253">Google-partners werken samen met je Assistent om je te helpen</translation>
 <translation id="1272978324304772054">Dit gebruikersaccount hoort niet bij het domein waarbij het apparaat is geregistreerd. Als je het apparaat wilt registreren bij een ander domein, moet je eerst apparaatherstel uitvoeren.</translation>
@@ -697,9 +697,6 @@ Als je Linux installeert, wordt <ph name="DOWNLOAD_SIZE" /> aan data gedownload.
 <translation id="203574396658008164">Notities maken vanaf inlogscherm inschakelen</translation>
 <translation id="2039623879703305659">Vinger te snel bewogen</translation>
 <translation id="2040460856718599782">Er is iets verkeerd gegaan tijdens de verificatie. Controleer je inloggegevens en probeer het opnieuw.</translation>
-<translation id="2042120400423652109">Linux installeren... 
-
-    Dit kan enkele minuten duren.</translation>
 <translation id="2043818754674261542">Afstand die nodig is om deze <ph name="DEVICE_TYPE" /> te ontgrendelen met de telefoon</translation>
 <translation id="204497730941176055">Sjabloonnaam van Microsoft-certificaat</translation>
 <translation id="2045117674524495717">Helper voor sneltoetsen</translation>
@@ -817,7 +814,6 @@ Als je Linux installeert, wordt <ph name="DOWNLOAD_SIZE" /> aan data gedownload.
 <translation id="221872881068107022">Omgekeerd scrollen</translation>
 <translation id="2220529011494928058">Een probleem melden</translation>
 <translation id="2220572644011485463">Pincode of wachtwoord</translation>
-<translation id="2222414641881146529">Systeemgegevens verzenden</translation>
 <translation id="2224444042887712269">Deze instelling hoort bij <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Mapnaam bewerken</translation>
 <translation id="2226449515541314767">Deze site is geblokkeerd voor volledig beheer van MIDI-apparaten.</translation>
@@ -830,6 +826,7 @@ Als je Linux installeert, wordt <ph name="DOWNLOAD_SIZE" /> aan data gedownload.
 <translation id="2231238007119540260">Als je een servercertificaat verwijdert, herstel je de gebruikelijke beveiligingscontroles voor de server en verplicht je de server een geldig certificaat te gebruiken.</translation>
 <translation id="2232876851878324699">Het bestand bevat één certificaat. Dit certificaat is niet geïmporteerd:</translation>
 <translation id="2233502537820838181">&amp;Meer informatie</translation>
+<translation id="2234876718134438132">Synchronisatie &amp; Google-services</translation>
 <translation id="2238379619048995541">Gegevens van frequentiestatus</translation>
 <translation id="2239921694246509981">Persoon met beperkte rechten toevoegen</translation>
 <translation id="2241053333139545397">Je gegevens lezen en wijzigen op een aantal websites</translation>
@@ -1253,7 +1250,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> wordt zo meteen opnieuw gestart en opnieuw ingesteld.</translation>
 <translation id="2885378588091291677">Taakbeheer</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
-<translation id="2886800363598651778">Chrome op al je apparaten synchroniseren en personaliseren</translation>
 <translation id="2887525882758501333">Pdf-document</translation>
 <translation id="2888807692577297075">Er komen geen items overeen met &lt;b&gt;'<ph name="SEARCH_STRING" />'&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Link openen met...</translation>
@@ -1905,7 +1901,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3893630138897523026">ChromeVox (gesproken feedback)</translation>
 <translation id="3894427358181296146">Map toevoegen</translation>
 <translation id="389589731200570180">Delen met gasten</translation>
-<translation id="3898493977366060150">Browsen met innovaties van Google</translation>
 <translation id="3898521660513055167">Status van token</translation>
 <translation id="389901847090970821">Toetsenbord selecteren</translation>
 <translation id="3899879303189199559">Langer dan een jaar offline</translation>
@@ -1921,7 +1916,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="3915280005470252504">Spraakgestuurd zoeken</translation>
 <translation id="3916445069167113093">Dit type bestand kan schadelijk zijn voor je computer. Wil je <ph name="FILE_NAME" /> toch behouden?</translation>
 <translation id="3918972485393593704">Details melden aan Google</translation>
-<translation id="391999873395511996">De virtuele machine downloaden.</translation>
 <translation id="3920504717067627103">Certificaatbeleid</translation>
 <translation id="392089482157167418">ChromeVox (gesproken feedback) inschakelen</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2376,7 +2370,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="4707934200082538898">Controleer je e-mail op <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> voor meer instructies.</translation>
 <translation id="4708794300267213770">Het vergrendelingsscherm weergeven bij activering vanuit de slaapstand</translation>
 <translation id="4708849949179781599">Stop <ph name="PRODUCT_NAME" /></translation>
-<translation id="4710251968215868702">Maakt gebruik van content op sites die je bezoekt en van browseractiviteit en -interacties.</translation>
 <translation id="4711638718396952945">Instellingen herstellen</translation>
 <translation id="4713544552769165154">Dit bestand is ontworpen voor een computer met Macintosh-software. Dit is niet compatibel met je apparaat met Chrome OS. Zoek in de <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> naar een geschikte, vervangende app.<ph name="BEGIN_LINK_HELP" />Meer informatie<ph name="END_LINK_HELP" /></translation>
 <translation id="4715553623069266137">zeer kort (0,8 sec.)</translation>
@@ -2711,7 +2704,7 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="5227808808023563348">Vorige tekst vinden</translation>
 <translation id="5228076606934445476">Er is iets fout met dit apparaat. Als je deze fout wilt verhelpen, moet je het apparaat opnieuw opstarten en het opnieuw proberen.</translation>
 <translation id="5229189185761556138">Invoermethoden beheren</translation>
-<translation id="5230516054153933099">Venster</translation>
+<translation id="5230516054153933099">Raam</translation>
 <translation id="5233019165164992427">Foutopsporingspoort voor Native Client</translation>
 <translation id="5233231016133573565">Proces-ID</translation>
 <translation id="5233638681132016545">Nieuw tabblad</translation>
@@ -3482,7 +3475,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="6383051423892982287">Gesynchroniseerde gegevens versleutelen met je eigen <ph name="BEGIN_LINK" />wachtwoordzin voor synchronisatie<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Je zoekinstellingen wijzigen in: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Sites kunnen cookiegegevens opslaan en lezen</translation>
-<translation id="6385974547588555598">De virtuele machine starten.</translation>
 <translation id="6388429472088318283">Talen zoeken</translation>
 <translation id="6388771388956873507">Zoek de vingerafdruksensor op je apparaat en raak deze aan met je vinger</translation>
 <translation id="6390799748543157332">De pagina's die je in dit venster bekijkt, worden niet in de browsergeschiedenis weergegeven en laten geen sporen op de computer achter (zoals cookies) nadat je alle geopende gastvensters hebt gesloten. Bestanden die je downloadt, blijven echter wel behouden.</translation>
@@ -4215,7 +4207,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="7540972813190816353">Er is een fout opgetreden bij het ​​controleren op updates: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Foutopsporingsfuncties inschakelen voor dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat</translation>
 <translation id="7544853251252956727">Shuffle</translation>
-<translation id="7545809182698428577">Hiermee worden de hier vermelde functies ingeschakeld. Maakt gebruik van je browseractiviteit, de content van bepaalde sites die je bezoekt en andere browserinteracties voor personalisatie.</translation>
 <translation id="7547317915858803630">Waarschuwing: je instellingen voor <ph name="PRODUCT_NAME" /> zijn opgeslagen op een netwerkschijf. Dit kan leiden tot vertragingen, crashes of zelfs gegevensverlies.</translation>
 <translation id="7548856833046333824">Cocktail</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
@@ -4250,7 +4241,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="7591957897535945411">Deze pagina is vertaald.</translation>
 <translation id="7595453277607160340">Log opnieuw in en update de versleuteling om Android-apps te kunnen gebruiken en ervoor te zorgen dat je <ph name="DEVICE_TYPE" /> goed blijft functioneren.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (foutcode <ph name="ERROR_CODE" />).</translation>
-<translation id="7595867490569826716">De Linux-container starten.</translation>
 <translation id="7598466960084663009">Computer opnieuw opstarten</translation>
 <translation id="7599527631045201165">De apparaatnaam is te lang. Geef een kortere naam op om het opnieuw te proberen.</translation>
 <translation id="7600965453749440009"><ph name="LANGUAGE" /> nooit vertalen</translation>
@@ -4779,6 +4769,7 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8418445294933751433">Weergeven al&amp;s tabblad</translation>
 <translation id="8419098111404128271">Zoekresultaten voor '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Bestanden van Google Documenten weergeven</translation>
+<translation id="8420510748452002155">Niet-gepersonaliseerde services</translation>
 <translation id="8424039430705546751">omlaag</translation>
 <translation id="8425213833346101688">Wijzigen</translation>
 <translation id="8425492902634685834">Vastzetten op taakbalk</translation>
@@ -5121,11 +5112,6 @@ Bewaar je sleutelbestand op een veilige plaats. Je hebt het bestand nodig om nie
 <translation id="8944099748578356325">De batterij sneller gebruiken (momenteel <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> deelt een venster met <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Foutopsporingsfuncties zijn niet volledig ingeschakeld op dit <ph name="IDS_SHORT_PRODUCT_NAME" />-apparaat.</translation>
-<translation id="8948006114608036530">Dit apparaat verzendt momenteel automatisch diagnostische en app- en gebruiksgegevens naar Google. Deze instelling wordt afgedwongen door de eigenaar. Als je 'Web- en app-activiteit' ook hebt ingeschakeld, worden deze gegevens opgeslagen in je account, zodat je ze kunt beheren in 'Mijn activiteit'.
-
-    Dit is algemene informatie over je apparaat en hoe je het gebruikt (zoals de batterijstatus, het app-gebruik en de netwerkverbinding). De gegevens worden gebruikt om de producten en services van Google voor iedereen te verbeteren. Sommige samengevoegde gegevens helpen ook partners (zoals Android-ontwikkelaars) om hun apps en producten beter te maken.
-    Als je deze functie uitschakelt, kan je apparaat nog steeds de gegevens verzenden die nodig zijn voor essentiële services, zoals systeemupdates en beveiliging.
-    Je kunt deze functie beheren via Instellingen &gt; Google. Selecteer 'Gebruik en diagnostische gegevens' in het menu.</translation>
 <translation id="894871326938397531">Incognitomodus verlaten?</translation>
 <translation id="895347679606913382">Starten...</translation>
 <translation id="8954952943849489823">Verplaatsen mislukt. Onverwachte fout: $1</translation>

@@ -42,6 +42,9 @@
       En lista över variabler som kan användas finns på https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Om den här policyn inte ställs in används standardkatalogen för cacheminnet och användaren kan åsidosätta den med kommandoradsflaggan --disk-cache-dir.</translation>
+<translation id="1135264353752122851">Principen konfigurerar vilka tangentbordslayouter som är tillåtna för användarsessioner i <ph name="PRODUCT_OS_NAME" />.
+
+      När den här principen har ställts in kan användaren bara välja mellan de inmatningsmetoder som angetts i principen. Om principen lämnas utan inställning eller ställs in på en tom lista kan användaren välja mellan alla inmatningsmetoder som stöds. Om den nuvarande inmatningsmetoden inte är tillåten enligt principen ersätts den med maskinvarans tangentbordslayout (om den är tillåten) eller med den första giltiga posten i listan. Alla inmatningsmetoder i listan som är ogiltiga eller inte stöds ignoreras.</translation>
 <translation id="1138294736309071213">Den här policyn är bara aktiv i återförsäljarläge.
 
       Avgör hur länge skärmsläckaren ska visas på inloggningsskärmen för enheter i återförsäljarläge.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Läs in angivna webbadresser vid demoinloggning</translation>
 <translation id="1223789468190631420">Säker webbläsning aktiverad för betrodda källor</translation>
 <translation id="123081309365616809">Aktivera möjlighet att casta till enheten</translation>
+<translation id="1243570869342663665">Styr SafeSites-filtrering av barnförbjudet innehåll.</translation>
 <translation id="1257550411839719984">Ange standardkatalog för nedladdning</translation>
 <translation id="1265053460044691532">Begränsa tiden som en användare som verifierats via SAML kan logga in offline</translation>
 <translation id="1291880496936992484">Varning: RC4 kommer att helt tas bort från <ph name="PRODUCT_NAME" /> efter version 52 (kring september 2016) och den här principen upphör då att fungera.
@@ -265,6 +269,7 @@
       Formatvärdet följer namnen på tidszonerna i databasen IANA Time Zone Database (besök http://sv.wikipedia.org/wiki/Tz_database). Det går att hänvisa till de flesta tidszoner som continent/large_city eller ocean/large_city.
 
       När du anger principen inaktiveras automatiska tidszoner efter enhetens plats. Principen SystemTimezoneAutomaticDetection åsidosätts också.</translation>
+<translation id="1885782360784839335">Aktivera reklamflikar</translation>
 <translation id="1888871729456797026">Registreringstoken för molnprincip på stationär dator</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
 <translation id="1906888171268104594">Styr om användarstatistik och diagnostisk data, till exempel felrapporter, rapporteras till Google.
@@ -377,6 +382,7 @@
       Användarna kan ändra det när som helst och standardvärdet tillämpas
       i så fall inte på nytt vid omstart.</translation>
 <translation id="2156132677421487971">Konfigurera principer för <ph name="PRODUCT_NAME" />, en funktion med vars hjälp användare kan skicka innehåll på flikar, webbplatser och skrivbordet från webbläsaren till fjärrskärmar och ljudsystem.</translation>
+<translation id="2166472654199325139">Filtrera inte bort webbplatser med barnförbjudet innehåll</translation>
 <translation id="2168397434410358693">Inaktivitetstid när enheten är ansluten till elnätet</translation>
 <translation id="2170233653554726857">Aktivera WPAD-optimering</translation>
 <translation id="2176565653304920879">När den här principen har ställts in fungerar den automatiska identifieringen av tidszon på något av följande sätt beroende på vilken inställning som har valts:
@@ -530,6 +536,12 @@
 <translation id="2466131534462628618">Autentisering via infångstportal ignorerar proxy</translation>
 <translation id="2482676533225429905">Native Messaging</translation>
 <translation id="2483146640187052324">Förutsäg nätverksåtgärder för alla nätverksanslutningar</translation>
+<translation id="2484208301968418871">Den här principen styr SafeSites-filtret för webbadresser.
+      Filtret klassar webbadresser som porr eller inte porr med hjälp av Google Safe Search API.
+
+      När principen är inställd på Filtrera inte bort webbplatser med barnförbjudet innehåll, eller inte har konfigurerats, filtreras inga webbplatser bort.
+
+      När principen är inställd på Filtrera bort webbplatser på toppnivå med barnförbjudet innehåll filtreras webbplatser som klassats som porr bort.</translation>
 <translation id="2485721741875148980">Om principen är inställd på sant måste användaren logga in i <ph name="PRODUCT_NAME" /> med sin profil för att kunna använda webbläsaren. Dessutom anges falskt som standardvärde för BrowserGuestModeEnabled. Observera att när principen aktiveras låses befintliga, osignerade profiler och är därefter inte längre tillgängliga. I artikeln i hjälpcentret finns mer information.
 
       Om principen är inställd på falskt eller om den inte har konfigurerats kan användaren använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
@@ -690,12 +702,6 @@
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
 <translation id="2867699958489427143">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför en komplett powerwash under processen.</translation>
-<translation id="286802604195763750">Låter dig styra vad som ska utlösa en varning från lösenordsskyddet. Lösenordsskyddet varnar användarna om de återanvänder ett skyddat lösenord på en webbplats som kan vara misstänkt.
-
-      När principen är inställd på PasswordProtectionWarningOff visas inga varningar.
-      När principen är inställd på PasswordProtectionWarningOnPasswordReuse visas en varning om någon återanvänder sitt lösenord för Google på en webbplats som inte står med på vitlistan.
-      När principen är inställd på PasswordProtectionWarningOnPhishingReuse visas en varning om någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske.
-      Om principen har lämnats utan inställning utlöses en varning när någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske, men användaren kan ändra detta.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>
@@ -1370,6 +1376,7 @@
 
       Om denna princip inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
+<translation id="4861767323695239729">Konfigurera tillåtna inmatningsmetoder i en användarsession</translation>
 <translation id="4869787217450099946">Anger om skärmaktiveringslåset är tillåtet. Skärmaktiveringslåset kan krävas av vissa tillägg via API:et för näthanteringstillägget.
 
           Om denna policy har inställningen sant, eller inte har ställts in, kommer skärmaktiveringslåsen att användas för näthantering.
@@ -1961,6 +1968,7 @@
       Om den här principen är inaktiverad eller utan värde används endast vanliga lokala profiler.
 
       Principen <ph name="SYNC_DISABLED_POLICY_NAME" /> inaktiverar all synkronisering av data och åsidosätter RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtrera bort webbplatser på toppnivå (men inte inbäddade iframe) med barnförbjudet innehåll</translation>
 <translation id="6735701345096330595">Aktivera alltid språk för stavningskontroll</translation>
 <translation id="673699536430961464">Den här inställningen gör så att användarna kan byta Google-konto i webbläsarens innehållsområde när de har loggat in på <ph name="PRODUCT_OS_NAME" />-enheten.
 
@@ -1983,6 +1991,13 @@
 <translation id="6757438632136860443">Låter dig ange en lista med webbadressmönster som definierar på vilka webbplatser pluginprogrammet för <ph name="FLASH_PLUGIN_NAME" /> får köras.
 
           Om den här principen inte anges används det globala standardvärdet för alla webbplatser. Värdet hämtas antingen från principen DefaultPluginsSetting, om den har ställts in, eller från användarens egna inställningar.</translation>
+<translation id="6762235610019366960">Med den här principen kan du styra hur hela flikar med reklam och/eller utbildningsmaterial visas i <ph name="PRODUCT_NAME" />.
+
+      Om principen inte har konfigurerats eller om den är aktiverad (inställd på sant) kan produktinformation som tar upp hela fliken visas i <ph name="PRODUCT_NAME" />
+
+      Om principen har inaktiverats (är inställd på falskt) visas inte produktinformation som tar upp hela fliken i <ph name="PRODUCT_NAME" />.
+
+      Inställningen styr välkomstsidor som hjälper användarna att logga in i <ph name="PRODUCT_NAME" />, välja produkten som standardwebbläsare eller på annat sätt informera dem om funktioner i den.</translation>
 <translation id="6766216162565713893">Tillåt att webbplatser begär att få tillgång till Bluetooth-enheter i närheten</translation>
 <translation id="6770454900105963262">Rapportera information om aktiva kiosksessioner</translation>
 <translation id="6786747875388722282">Tillägg</translation>
@@ -2310,17 +2325,6 @@
 <translation id="7511361072385293666">Om den här policyn är inställd på sant eller inte har angetts är användning av QUIC-protokoll i <ph name="PRODUCT_NAME" /> tillåten.
       Om policyn är inställd på falskt är inte användning av QUIC-protokoll tillåten.</translation>
 <translation id="7519251620064708155">Tillåt nyckelgenerering på dessa webbplatser</translation>
-<translation id="7529083451528428240">Den här principen låter dig låsa användarens session utifrån klientenhetens klocka eller en daglig användningskvot.
-
-          Med |time_window_limit| anges en tidsperiod på dygnet när användarens session ska vara låst. Det finns bara stöd för en regel per veckodag och därför kan storleken på vektorn |entries| vara mellan 0 och 7. |starts_at| och |ends_at| anger tidsperiodens början och slut. Om värdet på |ends_at| är mindre än värdet på |starts_at| betyder det att |time_limit_window| slutar nästa dag. |last_updated_millis| är en UTC-tidsstämpel som anger när den här posten uppdaterades senast. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal.
-
-          Med |time_usage_limit| anges skärmtid per dag, så att användarens session låses när denna tid har gått. Det finns en egenskap per veckodag som bara ska anges om det finns en aktiv kvot den dagen. |usage_quota_mins| anger hur lång tid den hanterade enheten får användas på en dag och |reset_at| anger vid vilken tidpunkt användningskvoten förnyas. Standardvärdet för |reset_at| är midnatt ({'hour': 0, 'minute': 0}). |last_updated_millis| är en UTC-tidsstämpel som anger när den här posten uppdaterades senast. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal.
-
-          |overrides| ger möjlighet att tillfälligt åsidosätta en eller flera av de föregående reglerna.
-          * Om varken time_window_limit eller time_usage_limit är aktiva kan enheten låsas med |LOCK|.
-          * |LOCK| låser en användarsession tillfälligt tills nästa time_window_limit eller time_usage_limit börjar.
-          * |UNLOCK| låser upp en användarsession som låsts med time_window_limit eller time_usage_limit.
-          |created_time_millis| är en UTC-tidsstämpel som anger när åsidosättningen skapades. Värdet skickas som en sträng eftersom tidsstämpeln inte kan anges som ett heltal. Det används för att avgöra om den aktuella åsidosättningen fortfarande gäller. Om den nu gällande tidsbegränsningen (begränsad användningstid eller begränsad tidsperiod) påbörjades efter att åsidosättningen skapades gäller den inte. Åsidosättningen gäller inte heller om den skapades före den senaste ändringen av den time_window_limit eller time_usage_window som är aktiv.</translation>
 <translation id="7529100000224450960">Policyn gör att du kan ange en lista med webbadressmönster som anger webbplatser som får öppna popupfönster.
 
           Om den här policyn inte anges används det globala standardvärdet för alla webbplatser. Standardvärdet hämtas från policyn DefaultPopupsSetting om den har angetts och från användarens personliga konfiguration om den inte har det.</translation>

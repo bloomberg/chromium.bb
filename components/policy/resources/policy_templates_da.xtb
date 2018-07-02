@@ -42,6 +42,9 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
       Gå til https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for at se en liste over variabler, der kan bruges.
 
       Hvis denne politik ikke angives, anvendes standardcacheindekset, og brugeren vil kunne tilsidesætte det med kommandolinjemarkeringen "--disk-cache-dir".</translation>
+<translation id="1135264353752122851">Konfigurerer, hvilke tastaturlayouts der tillades for brugersessioner i <ph name="PRODUCT_OS_NAME" />.
+
+      Hvis denne politik er angivet, kan brugeren kun vælge én af indtastningsmetoderne, der er angivet af denne politik. Hvis politikken ikke er angivet eller er angivet som en tom liste, kan brugeren vælge alle understøttede indtastningsmetoder. Hvis den aktuelle indtastningsmetode ikke tillades af denne politik, skiftes indtastningsmetoden til hardwaretastaturlayoutet (hvis det er tilladt) eller den første gyldige post på denne liste. Alle ugyldige eller ikke-understøttede indtastningsmetoder på denne liste ignoreres.</translation>
 <translation id="1138294736309071213">Denne politik er kun aktiv i detailtilstand.
 
       Bestemmer, hvor lang tid der går, inden pauseskærmen vises på loginskærmen for enheder i detailtilstand.
@@ -69,6 +72,7 @@ Hvis denne politik er angivet, vises loginskærmen i den landestandard, der er a
 <translation id="1221359380862872747">Indlæs de angivne webadresser ved demologin</translation>
 <translation id="1223789468190631420">Aktivér Beskyttet browsing i forbindelse med godkendte kilder</translation>
 <translation id="123081309365616809">Aktivér casting af indhold til enheden</translation>
+<translation id="1243570869342663665">Administrer filtrering af voksenindhold for SafeSites.</translation>
 <translation id="1257550411839719984">Angiv standardmappe til downloads</translation>
 <translation id="1265053460044691532">Begræns den tid, hvor en bruger, der er godkendt via SAML, kan logge på offline</translation>
 <translation id="1291880496936992484">Advarsel! RC4 bliver fjernet helt fra <ph name="PRODUCT_NAME" /> efter version 52 (omkring september 2016), og på det tidspunkt vil denne politik holde op med at virke.
@@ -257,6 +261,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       Formatet for værdierne følger navnene på tidszonerne i "IANA Time Zone Database" (se "http://en.wikipedia.org/wiki/List_of_tz_database_time"). De fleste tidszoner kan betegnes som "continent/large_city" eller "ocean/large_city".
 
       Hvis du angiver denne politik, deaktiveres automatisk opdatering af tidszone på baggrund af enhedens placering fuldstændigt. Politikken SystemTimezoneAutomaticDetection tilsidesættes også.</translation>
+<translation id="1885782360784839335">Aktivér visning af kampagneindhold på hele fanen</translation>
 <translation id="1888871729456797026">Tilmeldingstoken for Cloud-politikken på computere</translation>
 <translation id="1897365952389968758">Tillad, at alle websites kører JavaScript</translation>
 <translation id="1906888171268104594">Bestemmer, om metrics om brug og diagnosticeringsdata, bl.a. nedbrudsrapporter, rapporteres tilbage til Google.
@@ -369,6 +374,7 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
       kan frit ændre den. I dette tilfælde genanvendes værdien ikke
       ved genstart.</translation>
 <translation id="2156132677421487971">Konfigurer politikker for <ph name="PRODUCT_NAME" />, som er en funktion, der giver brugerne mulighed for at sende indholdet af faner, websites eller skrivebordet fra browseren til eksterne skærme og lydsystemer.</translation>
+<translation id="2166472654199325139">Filtrér ikke voksenindhold fra på websites</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse, når strømforsyningen er tilsluttet</translation>
 <translation id="2170233653554726857">Aktivér WPAD-optimering</translation>
 <translation id="2176565653304920879">Når denne politik er indstillet, fungerer flowet for registrering af tidszoner på en af de følgende måder, alt efter hvilken værdi der bruges i indstillingen:
@@ -517,6 +523,12 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="2466131534462628618">Captive portal-godkendelse ignorerer proxy</translation>
 <translation id="2482676533225429905">Indbyggede beskedhosts</translation>
 <translation id="2483146640187052324">Forudse netværkshandlinger på enhver netværksforbindelse</translation>
+<translation id="2484208301968418871">Denne politik styrer anvendelsen af webadressefilteret for SafeSites.
+      Dette filter anvender Google Safe Search API til at klassificere, om webadresser indeholder pornografisk indhold eller ej.
+
+      Når denne politik ikke er konfigureret eller er angivet som "Filtrér ikke voksenindhold fra på websites", filtreres de pågældende websites ikke fra.
+
+      Når denne politik er angivet til "Filtrér voksenindhold fra på websites på øverste niveau", klassificeres disse websites som pornografiske og filtreres fra.</translation>
 <translation id="2485721741875148980">Hvis denne politik er angivet som sand, skal brugeren logge ind i <ph name="PRODUCT_NAME" /> med sin profil, inden browseren anvendes. Standardværdien for BrowserGuestModeEnabled angives dermed til falsk. Bemærk, at eksisterende profiler, der ikke er logget ind, vil blive låst og ikke længere vil være tilgængelige efter aktivering af denne politik. Du kan få flere oplysninger i artiklen i Hjælp.
 
       Hvis denne politik er angivet som falsk eller ikke er konfigureret, kan brugeren benytte browseren uden at logge ind i <ph name="PRODUCT_NAME" />.</translation>
@@ -667,12 +679,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 
       Hvis du aktiverer denne indstilling, benytter Vis udskrift operativsystemets standardprinter som standarddestination.</translation>
 <translation id="2867699958489427143">Gå tilbage til og behold målversionen, hvis OS-versionen er nyere end målversionen. Foretag en fuldstændig powerwash under processen.</translation>
-<translation id="286802604195763750">Giver dig mulighed for at bestemme udløsningen af advarsler via adgangskodebeskyttelse. Adgangskodebeskyttelse underretter brugerne, når de genbruger deres beskyttede adgangskode på potentielt mistænkelige websites.
-
-      Hvis der angives "PasswordProtectionWarningOff" for politikken, vises der ikke nogen advarsel via adgangskodebeskyttelse.
-      Hvis der angives "PasswordProtectionWarningOnPasswordReuse" for politikken, vises der en advarsel via adgangskodebeskyttelse, når brugeren genbruger adgangskoder til Google på websites, der ikke er hvidlistede.
-      Hvis der angives "PasswordProtectionWarningOnPhishingReuse" for politikken, vises advarslen via adgangskodebeskyttelse, når brugeren genbruger adgangskoder til Google på phishingwebsites.
-      Hvis politikken ikke angives, udløses advarslen via adgangskodebeskyttelse, når brugeren genbruger adgangskoder til Google på phishingwebsites, men brugeren kan ændre indstillingen.</translation>
 <translation id="2872961005593481000">Sluk</translation>
 <translation id="2874209944580848064">Bemærkning om <ph name="PRODUCT_OS_NAME" />-enheder, der understøtter Android-apps:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-opslag, når godkendelsen af Kerberos forhandles</translation>
@@ -1330,6 +1336,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
 
       Hvis denne politik ikke angives eller ikke udfyldes, kan alle brugere logge ind på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillad fuldskærmstilstand</translation>
+<translation id="4861767323695239729">Konfigurer tilladte indtastningsmetoder i en brugersession</translation>
 <translation id="4869787217450099946">Angiver om aktiveringslåse for skærm er tilladt. Der kan anmodes om aktiveringslåse vha. Power Management Extension API.
 
           Hvis denne politik er angivet til sand eller ikke er angivet, indfries aktiveringslåse for skærm med strømstyring.
@@ -1878,6 +1885,7 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
       Hvis denne politik deaktiveres eller ikke angives, er det kun de almindelige lokale profiler, der bruges.
 
       Politikken <ph name="SYNC_DISABLED_POLICY_NAME" /> deaktiverer al datasynkronisering og tilsidesætter RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtrér voksenindhold fra på websites på øverste niveau (men ikke integrerede iframes)</translation>
 <translation id="6735701345096330595">Gennemtving aktivering af stavekontrol af sprog</translation>
 <translation id="673699536430961464">Med denne indstilling har brugerne tilladelse til at skifte mellem Google-konti i browservinduets indholdsområde, når de er logget ind på deres <ph name="PRODUCT_OS_NAME" />-enhed.
 
@@ -1900,6 +1908,13 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6757438632136860443">Giver dig mulighed for at angive en liste med webadressemønstre, der angiver websites, som har tilladelse til at køre <ph name="FLASH_PLUGIN_NAME" />-pluginnet.
 
          Hvis denne politik ikke angives, anvendes den globale standardværdi for alle websites enten fra politikken "DefaultPluginsSetting", hvis denne er angivet, og ellers fra brugerens personlige konfiguration.</translation>
+<translation id="6762235610019366960">Giver dig mulighed for at styre præsentationen af kampagne- og/eller undervisningsindhold på hele fanen i <ph name="PRODUCT_NAME" />.
+
+      Hvis politikken ikke er konfigureret eller aktiveret (angivet som Sand), viser <ph name="PRODUCT_NAME" /> muligvis indhold på hele fanen til brugerne for at levere produktoplysninger.
+
+      Hvis den er deaktiveret (angivet som Falsk), viser <ph name="PRODUCT_NAME" /> ikke indhold på hele fanen til brugerne for at levere produktoplysninger.
+
+      Denne indstilling styrer præsentationen på de velkomstsider, der hjælper brugerne med at logge ind i <ph name="PRODUCT_NAME" />, vælge deres standardbrowser, eller som på anden måde oplyser dem om produktfunktioner.</translation>
 <translation id="6766216162565713893">Tillad, at websites anmoder en bruger om adgang til en Bluetooth-enhed i nærheden.</translation>
 <translation id="6770454900105963262">Rapportér oplysninger om aktive terminalsessioner</translation>
 <translation id="6786747875388722282">Udvidelser</translation>
@@ -2207,17 +2222,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7511361072385293666">Hvis denne politik er angivet som Sand eller ikke er indstillet, er brug i QUIC-protokollen i <ph name="PRODUCT_NAME" /> tilladt.
       Hvis denne politik er angivet som Falsk, er brug i QUIC-protokollen ikke tilladt.</translation>
 <translation id="7519251620064708155">Tillad nøglegenerering på disse websites</translation>
-<translation id="7529083451528428240">Giver dig mulighed for at låse brugerens session baseret på klienttiden eller dagens brugerkvote.
-
-          |time_window_limit| angiver et dagligt vindue, hvor brugersessionen skal være låst. Vi understøtter kun én regel for hver dag i ugen, og derfor kan matricen med |entries| variere fra 0-7 i størrelse. |starts_at| og |ends_at| er starten og slutningen på vinduesgrænsen. Når |ends_at| er mindre end |starts_at|, betyder det, at |time_limit_window| slutter den efterfølgende dag. |last_updated_millis| er UTC-tidsstemplet for det seneste tidspunkt, hvor denne post blev opdateret. Det sendes som en streng, fordi tidsstemplet ikke passer ind som et heltal.
-
-          |time_usage_limit| angiver en daglig skærmkvote, hvor brugerens session låses, når brugeren når denne kvote. Der er en egenskab for hver dag i ugen, og den skal kun angives, hvis der er en aktiv kvote for den pågældende dag. |usage_quota_mins| er den mængde tid, den administrerede enhed må bruges i løbet af en dag, og |reset_at| er det tidspunkt, hvor brugerkvoten fornys. Standardværdien for |reset_at| er midnat ({"timer": 0, "minutter": 0}). |last_updated_millis| er UTC-tidsstemplet for det seneste tidspunkt, hvor denne post blev opdateret. Det sendes som en streng, fordi tidsstemplet ikke passer ind som et heltal.
-
-          |overrides| kan gøre én eller flere af de forrige regler midlertidigt ugyldige.
-          * Hvis hverken time_window_limit eller time_usage_limit er aktiv, kan |LOCK| bruges til at låse enheden.
-          * |LOCK| låser en brugersession midlertidigt indtil næste time_window_limit eller time_usage_limit starter.
-          * |UNLOCK| låser op for en brugers session, som er blevet låst af time_window_limit eller time_usage_limit.
-          |created_time_millis| er UTC-tidsstemplet for oprettelse af tilsidesættelsen. Det sendes som en streng, fordi tidsstemplet ikke passer ind som et heltal. Det bruges til at afgøre, om denne tilsidesættelse stadig skal anvendes. Hvis den aktuelt aktive tidsbegrænsningsfunktion (begrænsning på tidsforbrug eller tidsvindue) startede, efter at tilsidesættelsen blev oprettet, skal den ikke udføre nogen handling. Hvis tilsidesættelsen blev oprettet før den seneste ændring af den aktive time_window_limit eller det aktive time_usage_window, skal den ikke anvendes.</translation>
 <translation id="7529100000224450960">Giver dig mulighed for at oprette en liste over webadressemønstre med websites, der må åbne pop op-vinduer. Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultPopupsSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
 <translation id="7529144158022474049">Automatisk opdatering af spredningsfaktor</translation>
 <translation id="7534199150025803530">Denne politik påvirker ikke Google Drev-appen til Android. Hvis du vil forhindre, at Google Drev bruges via mobildataforbindelser, skal du ikke tillade installation af Google Drev-appen til Android.</translation>

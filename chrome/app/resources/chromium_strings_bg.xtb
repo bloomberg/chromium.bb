@@ -208,6 +208,7 @@
 <translation id="7774736947049807614">Грешка в сертификата за удостоверяване. Моля, влезте отново в Chromium като <ph name="USER_NAME" /> или се свържете с администратора си за повече информация. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium не можа да се актуализира до най-новата версия. Това означава, че пропускате нови функции и корекции за сигурност.</translation>
+<translation id="7901117350626490574">Налице е актуализация на Chromium, която ще бъде приложена веднага щом рестартирате.</translation>
 <translation id="7937630085815544518">Бяхте влезли в Chromium като <ph name="USER_EMAIL_ADDRESS" />. Моля, използвайте същия профил, за да влезете отново.</translation>
 <translation id="7962572577636132072">Chromium се актуализира автоматично, така че винаги да имате най-новата версия.</translation>
 <translation id="7975919845073681630">Тази инсталация на Chromium е алтернативна и не може да се зададе като браузър по подразбиране.</translation>

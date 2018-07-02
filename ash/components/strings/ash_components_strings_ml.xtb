@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox (സംഭാഷണ ഫീഡ്‌ബാക്ക്) ഓണാക്കുക അല്ലെങ്കിൽ  ഓഫാക്കുക</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">വെബ് പേജ് താഴേയ്‌ക്ക് സ്‌ക്രോൾ ചെയ്യുക</translation>
-<translation id="2568632782096378307">സ്‌ക്രീൻ റെസല്യൂഷൻ ഡിഫോൾട്ടായി പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="2596078834055697711">വിൻഡോ സ്ക്രീൻഷോട്ട് എടുക്കുക</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, തുടർന്ന് <ph name="TAB" /> അല്ലെങ്കിൽ <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">അടുത്ത ഭാഷയുടെ ഇൻപുട്ട് രീതിയിലേക്ക് സ്വിച്ച് ചെയ്യുക</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">പേജിൽ സൂം ഔട്ട് ചെയ്യുക</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> അമർത്തി ഒരു ലിങ്ക് ക്ലിക്ക് ചെയ്യുക</translation>
 <translation id="2830827904629746450">വലത് വശത്ത് ഒരു വിൻഡോ ഡോക്ക് ചെയ്യുക</translation>
+<translation id="2840766858109427815">അടുത്ത പേജിലേക്ക് പോവുക</translation>
 <translation id="2872353916818027657">പ്രാഥമിക മോണിറ്റർ സ്വാപ്പുചെയ്യുക</translation>
 <translation id="2914313326123580426">ഡെവലപ്പര്‍ ടൂൾ പാനൽ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
 <translation id="292495055542441795">പൂർണ്ണ സ്‌ക്രീൻ മാറ്റുക</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">ടാസ്‌ക് മാനേജർ ഉപയോഗപ്പെടുത്തുക</translation>
 <translation id="3422679037938588196">നിങ്ങളുടെ തിരയലിനായി മുമ്പത്തെ പൊരുത്തത്തിലേക്ക് പോവുക</translation>
 <translation id="344577624355799426"><ph name="ALT" /> അല്ലെങ്കിൽ <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">സൂം നില പുനഃസജ്ജീകരിക്കുക</translation>
 <translation id="353037708190149633">നിങ്ങളുടെ നിലവിലെ വിൻഡോയിൽ തുറന്നിരിക്കുന്ന എല്ലാ പേജുകളും ബുക്കുമാർക്കുകളായി ഒരു പുതിയ ഫോൾഡറിൽ സംരക്ഷിക്കുക</translation>
 <translation id="355103131818127604">പശ്ചാത്തലത്തിൽ പുതിയൊരു ടാബിൽ ലിങ്ക് തുറക്കുക</translation>
 <translation id="3649256019230929621">വിൻഡോ ചെറുതാക്കുക</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">വിലാസ ബാർ ഉപയോഗിച്ച് വരി ഹൈലൈറ്റ് ചെയ്യുക</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> അല്ലെങ്കിൽ <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">അവലോകന മോഡ്</translation>
+<translation id="4382340674111381977">മുമ്പത്തെ പേജിലേക്ക് തിരികെ പോവുക</translation>
 <translation id="4472417192667361414">സിസ്‌റ്റം, ഡിസ്‌പ്ലേ ക്രമീകരണം</translation>
 <translation id="4556221320735744018">കീബോഡ് കുറുക്കുവഴി സഹായി കാണുക</translation>
 <translation id="4628718545549558538">സ്‌റ്റാറ്റസ് ഏരിയ തുറക്കുക (നിങ്ങളുടെ അക്കൗണ്ട് ചിത്രം ദൃശ്യമാകുന്ന സ്ഥലം)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">മുൻ വാക്ക് ഇല്ലാതാക്കുക</translation>
 <translation id="5899919361772749550">ഡെവലപ്പര്‍ ടൂളുകളുടെ കൺസോൾ കാണിക്കുക അല്ലെങ്കിൽ അദൃശ്യമാക്കുക</translation>
 <translation id="5921745308587794300">വിൻഡോ തിരിക്കുക</translation>
-<translation id="5975083100439434680">സൂം ഔട്ട്</translation>
 <translation id="6022924867608035986">തിരയൽ ബോക്‌സ് ടെക്‌സ്‌റ്റ് മായ്‌ക്കുക</translation>
 <translation id="6045998054441862242">ഉയർന്ന ദൃശ്യ തീവ്രത മോഡ് ഓണാക്കുക</translation>
 <translation id="6052614013050385269">ലിങ്കിൽ വലത് ക്ലിക്ക് ചെയ്യുക</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">ബ്രൗസറിൽ ഒരു ഫയൽ തുറക്കുക</translation>
 <translation id="7917881398263220094">നിങ്ങളുടെ നിലവിലെ പേജ് ലോഡ് ചെയ്യുന്നത് നിർത്തുക</translation>
 <translation id="7952165122793773711">1 മുതൽ 8 വരെയുള്ള ടാബുകളിൽ പോവുക</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> അല്ലെങ്കിൽ <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ബ്രൌസിംഗ് ഡാറ്റ മായ്‌ക്കുക</translation>
 <translation id="8130528849632411619">ഡോക്യുമെന്റിന്റെ തുടക്കത്തിലേക്ക് പോവുക</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> അല്ലെങ്കിൽ <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">നിങ്ങളുടെ അറിയിപ്പുകൾ കാണുക</translation>
 <translation id="8855885154700222542">പൂർണ്ണ സ്‌ക്രീൻ കീ</translation>
 <translation id="88986195241502842">Page down</translation>
-<translation id="8903921497873541725">സൂം ഇന്‍</translation>
 <translation id="8924883688469390268">മുമ്പത്തെ ഉപയോക്താവിലേക്ക് മാറുക</translation>
-<translation id="8951768610999698672">സ്ക്രീനിലെ ഇനങ്ങൾ ചെറുതോ വലുതോ ആക്കുക</translation>
 <translation id="8977648847395357314">വിലാസ ബാറിലെ ഉള്ളടക്കം തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8982190978301344584">ലഭ്യമായ IME-കളുടെ ഒരു ലിസ്റ്റ് ദൃശ്യമാക്കുന്ന മെനു കാണിക്കുക</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 മുതൽ 8 വരെ</translation>

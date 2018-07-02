@@ -216,6 +216,7 @@ Další pokyny naleznete v e-mailu ve svém účtu <ph name="ACCOUNT_EMAIL" />.
 <translation id="7774736947049807614">Ověřovací certifikát selhal. Přihlaste se do prohlížeče Chromium znovu jako uživatel <ph name="USER_NAME" /> nebo svého administrátora požádejte o další informace. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium nebylo možné aktualizovat na nejnovější verzi. Nemáte proto k dispozici nové funkce a opravy zabezpečení.</translation>
+<translation id="7901117350626490574">Je k dispozici nová aktualizace prohlížeče Chromium, která bude použita po restartování.</translation>
 <translation id="7937630085815544518">K prohlížeči Chromium jste byli přihlášeni s účtem <ph name="USER_EMAIL_ADDRESS" />. Přihlaste se prosím znovu pomocí stejného účtu.</translation>
 <translation id="7962572577636132072">Prohlížeč Chromium se automaticky aktualizuje, abyste vždy měli k dispozici nejnovější verzi.</translation>
 <translation id="7975919845073681630">Toto je druhá instalace prohlížeče Chromium. Tuto instalaci nelze nastavit jako výchozí prohlížeč.</translation>

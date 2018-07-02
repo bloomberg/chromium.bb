@@ -98,7 +98,6 @@
 
       &lt;p&gt;&lt;strong&gt;設定&lt;/strong&gt;アプリの [&lt;strong&gt;全般&lt;/strong&gt;] セクションで日時を調整してください。&lt;/p&gt;</translation>
 <translation id="1583429793053364125">このウェブページを表示中に問題が発生しました。</translation>
-<translation id="1590457302292452960">安全性の高いパスワードを生成...</translation>
 <translation id="1592005682883173041">ローカルデータへのアクセス</translation>
 <translation id="1594030484168838125">選択</translation>
 <translation id="1620510694547887537">カメラ</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">音声</translation>
 <translation id="2094505752054353250">ドメインが一致しません</translation>
 <translation id="2096368010154057602">県</translation>
+<translation id="2102134110707549001">安全なパスワードを自動生成…</translation>
 <translation id="2108755909498034140">パソコンを再起動する</translation>
 <translation id="2113977810652731515">カード</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> によって上書きされるため無視されます。</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">ポリシーを再読み込み</translation>
 <translation id="4728558894243024398">プラットフォーム</translation>
 <translation id="4736825316280949806">Chromium を再起動する</translation>
+<translation id="4742407542027196863">パスワードを管理…</translation>
 <translation id="4744603770635761495">実行ファイルのパス</translation>
 <translation id="4749685221585524849">最終使用日: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">お客様がこのサイトに送信した情報（パスワード、クレジット カード番号など）が第三者に見られることはありません。</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">表示</translation>
 <translation id="4854362297993841467">この配達方法はご利用いただけません。別の方法を選択してください。</translation>
 <translation id="4858792381671956233">このサイトを開いてもよいかの問い合わせを保護者に送信しました</translation>
+<translation id="4876305945144899064">ユーザー名が指定されていません</translation>
 <translation id="4880827082731008257">履歴を検索</translation>
 <translation id="4881695831933465202">開く</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">カードを更新</translation>
 <translation id="5377026284221673050">「時計が遅れています」、「時計が進んでいます」、「&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;」</translation>
 <translation id="5386426401304769735">このサイトの証明書チェーンには SHA-1 を使って署名された証明書が含まれています。</translation>
+<translation id="5387961145478138773">お気に入りの Google アプリにすばやくアクセスします</translation>
 <translation id="5402410679244714488">有効期限: <ph name="EXPIRATION_DATE_ABBR" />、最終使用日: 1 年以上前</translation>
 <translation id="540969355065856584">このサーバーが <ph name="DOMAIN" /> であることを確認できませんでした。このサーバーのセキュリティ証明書は現在有効ではありません。設定が不適切か、悪意のあるユーザーによって接続が妨害されている可能性があります。</translation>
 <translation id="5421136146218899937">閲覧履歴データの消去...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">JSON にエクスポート</translation>
 <translation id="5689516760719285838">現在地</translation>
 <translation id="570530837424789914">管理...</translation>
+<translation id="57094364128775171">安全なパスワードを自動生成…</translation>
 <translation id="5710435578057952990">このウェブサイトの ID は確認されていません。</translation>
 <translation id="5719499550583120431">プリペイド カードをご利用いただけます。</translation>
 <translation id="5720705177508910913">現在のユーザー</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">これは偽のサイトです</translation>
 <translation id="6337133576188860026">最大で <ph name="SIZE" /> を解放します。サイトによっては、次回アクセスする際に読み込みに時間がかかる可能性があります。</translation>
 <translation id="6337534724793800597">ポリシーを名前でフィルタ</translation>
-<translation id="6342069812937806050">たった今</translation>
 <translation id="6355080345576803305">公開セッションのオーバーライド</translation>
 <translation id="6358450015545214790">ヘルプ</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{他 1 件の候補}other{他 # 件の候補}}</translation>
@@ -880,6 +883,7 @@
       &lt;li&gt;[&lt;strong&gt;適用&lt;/strong&gt;] をクリックし、[&lt;strong&gt;OK&lt;/strong&gt;] をクリックします。
       &lt;li&gt;このソフトウェアをパソコンから完全に削除する方法については、&lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome ヘルプセンター&lt;/a&gt;をご覧ください。
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">パスワードを管理…</translation>
 <translation id="7419106976560586862">プロフィール パス</translation>
 <translation id="7437289804838430631">連絡先情報を追加</translation>
 <translation id="7441627299479586546">ポリシーの対象が間違っています</translation>
@@ -1111,6 +1115,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9106062320799175032">請求先住所の追加</translation>
 <translation id="910908805481542201">問題を修正するには</translation>
+<translation id="9114524666733003316">カードを確認しています…</translation>
 <translation id="9128870381267983090">ネットワークに接続する</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9137248913990643158">このアプリを使用するには、Chrome を起動してログインしてください。</translation>

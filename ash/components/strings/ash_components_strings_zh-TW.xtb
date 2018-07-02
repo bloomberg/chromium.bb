@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">開啟或關閉 ChromeVox 互動朗讀功能</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">向下捲動網頁</translation>
-<translation id="2568632782096378307">將螢幕解析度重設為預設值</translation>
 <translation id="2596078834055697711">擷取視窗螢幕畫面</translation>
 <translation id="2685170433750953446">按下 <ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> 鍵，然後按下 <ph name="TAB" /> 或 <ph name="RIGHT" /> 鍵</translation>
 <translation id="2687057317448262550">切換至下一個語言的輸入法</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">縮小網頁</translation>
 <translation id="2804480015716812239">按住 <ph name="ALT" /> 鍵，然後按一下連結</translation>
 <translation id="2830827904629746450">將視窗固定在右側</translation>
+<translation id="2840766858109427815">前往下一頁</translation>
 <translation id="2872353916818027657">切換主要顯示器</translation>
 <translation id="2914313326123580426">顯示或隱藏開發人員工具面板</translation>
 <translation id="292495055542441795">切換全螢幕</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">開啟工作管理員</translation>
 <translation id="3422679037938588196">前往上一個相符的搜尋結果</translation>
 <translation id="344577624355799426"><ph name="ALT" /> 鍵或 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /> 鍵</translation>
-<translation id="346243998268439747">重設縮放比例</translation>
 <translation id="353037708190149633">將目前視窗中所有開啟的網頁儲存為書籤，並放在新資料夾中</translation>
 <translation id="355103131818127604">在新分頁中開啟連結，顯示在背景中</translation>
 <translation id="3649256019230929621">將視窗縮到最小</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">醒目顯示網址列所在的行</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 鍵或 <ph name="ENTER" /> 鍵</translation>
 <translation id="4240486403425279990">總覽模式</translation>
+<translation id="4382340674111381977">返回上一頁</translation>
 <translation id="4472417192667361414">系統與顯示設定</translation>
 <translation id="4556221320735744018">查看鍵盤快速鍵說明</translation>
 <translation id="4628718545549558538">開啟狀態區 (顯示帳戶圖片的位置)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">刪除上一個字詞</translation>
 <translation id="5899919361772749550">顯示或隱藏開發人員工具控制台</translation>
 <translation id="5921745308587794300">旋轉視窗</translation>
-<translation id="5975083100439434680">縮小</translation>
 <translation id="6022924867608035986">清除搜尋框文字</translation>
 <translation id="6045998054441862242">開啟高對比模式</translation>
 <translation id="6052614013050385269">以滑鼠右鍵按一下連結</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">在瀏覽器中開啟檔案</translation>
 <translation id="7917881398263220094">停止載入目前網頁</translation>
 <translation id="7952165122793773711">前往第 1 到第 8 個分頁</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> 鍵或 <ph name="MINUS" /> 鍵</translation>
 <translation id="8026334261755873520">清除瀏覽資料</translation>
 <translation id="8130528849632411619">前往文件開頭</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 鍵或 <ph name="E" /> 鍵</translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">查看通知</translation>
 <translation id="8855885154700222542">全螢幕鍵</translation>
 <translation id="88986195241502842">Page Down 鍵</translation>
-<translation id="8903921497873541725">放大</translation>
 <translation id="8924883688469390268">切換至上一個使用者</translation>
-<translation id="8951768610999698672">縮小或放大畫面上的項目</translation>
 <translation id="8977648847395357314">選取網址列中的內容</translation>
 <translation id="8982190978301344584">顯示包含可用輸入法編輯器清單的選單</translation>
 <translation id="8990356943438003669"><ph name="ALT" /> <ph name="SEPARATOR" /> 1 到 8 鍵</translation>

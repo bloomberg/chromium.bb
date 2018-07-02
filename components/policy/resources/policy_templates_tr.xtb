@@ -43,6 +43,9 @@
       Kullanılabilecek değişkenlerin bir listesi için https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables adresine bakın.
 
       Bu politika ayarlanmadan bırakılırsa varsayılan önbellek dizini kullanılır ve kullanıcı, "--disk-cache-dir" komut satırı bayrağıyla bunu geçersiz kılabilir.</translation>
+<translation id="1135264353752122851"><ph name="PRODUCT_OS_NAME" /> kullanıcı oturumları için izin verilecek klavye düzenlerini yapılandırır.
+
+      Bu politika ayarlanırsa, kullanıcı yalnızca bu politika tarafından belirlenen giriş yöntemlerinden birini kullanabilir. Bu politika yapılandırılmaz veya liste boş olarak ayarlanırsa, kullanıcı desteklenen tüm giriş yöntemlerini seçebilir. Geçerli giriş yöntemine bu politikada izin verilmiyorsa, giriş yöntemi donanım klavye düzenine (izin veriliyorsa) veya bu listedeki ilk geçerli girişe ayarlanır. Bu listedeki geçersiz veya desteklenmeyen giriş yöntemleri yoksayılır.</translation>
 <translation id="1138294736309071213">Bu politika sadece perakende modunda etkindir.
 
      Perakende modunda oturum açma ekranında ekran koruyucunun devreye girmesi için geçecek süreyi belirler.
@@ -70,6 +73,7 @@
 <translation id="1221359380862872747">Demo girişinde belirtilen URL'leri yükle</translation>
 <translation id="1223789468190631420">Güvenilen kaynaklar için Güvenli Tarama etkinleştirme durumu</translation>
 <translation id="123081309365616809">Cihaza içerik yayınlamayı etkinleştirme</translation>
+<translation id="1243570869342663665">SafeSites yetişkinlere uygun içerik filtrelemeyi kontrol et.</translation>
 <translation id="1257550411839719984">Varsayılan indirme dizinini ayarlama</translation>
 <translation id="1265053460044691532">SAML kullanarak kimlik doğrulaması yapmış kullanıcının çevrimdışı olarak giriş yapabileceği süreyi sınırla</translation>
 <translation id="1291880496936992484">Uyarı: RC4, sürüm 52'den sonra (yaklaşık olarak Eylül 2016'da) <ph name="PRODUCT_NAME" /> ürününden tamamen kaldırılacak ve sonrasında bu politika çalışmayacaktır.
@@ -264,6 +268,7 @@
       Değerin biçimi "IANA Saat Dilimleri Veritabanı" (bkz."https://tr.wikipedia.org/wiki/IANA_zaman_dilimi_veritaban%C4%B1") içindeki saat dilimi adlarına uygundur. Özellikle, saat dilimlerinin çoğu "kıta/büyük_kent" veya "okyanus/büyük_kent" olarak anılır.
 
       Bu politikanın ayarlanması, cihaz konumuna göre otomatik saat dilimi belirlemeyi devre dışı bırakır. Ayrıca, SystemTimezoneAutomaticDetection politikasını da geçersiz kılar.</translation>
+<translation id="1885782360784839335">Tap sekme tanıtım içeriğini göstermeyi etkinleştir</translation>
 <translation id="1888871729456797026">Masaüstünde bulut politikasının kayıt jetonu</translation>
 <translation id="1897365952389968758">Tüm sitelerin JavaScript çalıştırmasına izin ver</translation>
 <translation id="1906888171268104594">Kilitlenme raporları da dahil olmak üzere kullanım ölçümlerinin ve teşhis verilerinin Google'a bildirilip bildirilmeyeceğini denetler.
@@ -376,6 +381,7 @@
       istediğinde bunu değiştirebilir. Bu durumda, yeniden başlatmada
       varsayılan değer tekrar uygulanmaz.</translation>
 <translation id="2156132677421487971">Kullanıcıların tarayıcılarındaki sekme, site veya masaüstü içeriklerini uzak ekranlara ve ses sistemlerine göndermelerine olanak tanıyan <ph name="PRODUCT_NAME" /> özelliğine ilişkin politikaları yapılandırın.</translation>
+<translation id="2166472654199325139">Yetişkinlere uygun içerik için siteler filtreleme</translation>
 <translation id="2168397434410358693">AC güçle çalışırken boşta kalma gecikmesi</translation>
 <translation id="2170233653554726857">WPAD optimizasyonunu etkinleştir</translation>
 <translation id="2176565653304920879">Bu politika ayarlandığında, otomatik saat dilimi algılama akışı, ayarın değerine bağlı olarak aşağıdaki yöntemlerden birini kullanır: 
@@ -526,6 +532,12 @@
 <translation id="2466131534462628618">Giriş portalı kimlik doğrulaması, proxy'yi yoksayar</translation>
 <translation id="2482676533225429905">Yerel Mesajlaşma</translation>
 <translation id="2483146640187052324">Ağ bağlantılarında ağ işlemlerini tahmin et</translation>
+<translation id="2484208301968418871">Bu politika SafeSites URL filtresinin uygulanmasını kontrol eder.
+      Bu filtre, URL'lerin pornografi içerikli olup olmadığını belirlemek için Google Güvenli Arama API'sini kullanır.
+
+      Bu politika yapılandırılmadığında veya "Yetişkinlere uygun içerik için siteleri filtreleme" seçeneğine ayarlandığında siteler filtrelenmez.
+
+      Bu politika "Üst düzey siteleri yetişkinlere uygun içerik için filtrele" seçeneğine ayarlandığında, pornografik olarak sınıflandırılan siteler filtrelenir.</translation>
 <translation id="2485721741875148980">Bu politika doğru (true) değerine ayarlanırsa kullanıcının tarayıcıyı kullanmadan önce <ph name="PRODUCT_NAME" /> ürününde kendi profiliyle oturum açması gerekir. BrowserGuestModeEnabled varsayılan değeri yanlış (false) olarak ayarlanır. Bu politika etkinleştirildikten sonra mevcut imzasız profillerin kilitleneceğini ve erişilemez hale geleceğini unutmayın. Daha fazla bilgi edinmek için yardım merkezi makalesine bakabilirsiniz.
 
       Bu politika yanlış (false) değerine ayarlanır veya yapılandırılmazsa kullanıcı <ph name="PRODUCT_NAME" /> ürününde oturum açmadan tarayıcıyı kullanabilir.</translation>
@@ -686,12 +698,6 @@
 
       Bu ayarı etkinleştirirseniz Baskı Önizleme, varsayılan hedef seçenek olarak işletim sisteminin varsayılan yazıcısını kullanır.</translation>
 <translation id="2867699958489427143">OS sürümü hedeften daha yeniyse sürümü geri alıp hedef sürümde kalır. Bu süreçte tam bir powerwash işlemi gerçekleştirir.</translation>
-<translation id="286802604195763750">Şifre koruma uyarısının tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma, korunan şifrelerini şüpheli olabilecek sitelerde yeniden kullandıklarında kullanıcıları uyarır.
-
-      Bu politikanın "PasswordProtectionWarningOff" değerine ayarlanması halinde herhangi bir şifre koruma uyarısı gösterilmez.
-      Bu politikanın "PasswordProtectionWarningOnPasswordReuse" değerine ayarlanması halinde, kullanıcı Google şifresini beyaz listede yer almayan sitelerde yeniden kullandığında şifre koruma uyarısı gösterilir.
-      Bu politikanın "PasswordProtectionWarningOnPhishingReuse" değerine ayarlanması halinde, kullanıcı Google şifresini kimlik avı sitelerinde yeniden kullandığında şifre koruma uyarısı gösterilir.
-      Bu politikanın ayarlanmadan bırakılması halinde, kullanıcı Google şifresini bir kimlik avı sitesinde yeniden kullandığında şifre koruma uyarısı tetiklenir ancak kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="2874209944580848064">Android uygulamalarını destekleyen <ph name="PRODUCT_OS_NAME" /> cihazlarına ilişkin not:</translation>
 <translation id="2877225735001246144">Kerberos kimlik doğrulaması anlaşmasını yaparken CNAME aramasını devre dışı bırak</translation>
@@ -1355,6 +1361,7 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmamış olarak veya boş bırakılırsa, <ph name="PRODUCT_NAME" /> uygulamasında herkes oturum açabilir.</translation>
 <translation id="4858735034935305895">Tam ekran moduna izin ver</translation>
+<translation id="4861767323695239729">Kullanıcı oturumunda izin verilen giriş yöntemlerini yapılandır</translation>
 <translation id="4869787217450099946">Ekran uyandırma kilitlerine izin verilip verilmeyeceğini belirtir. Ekran uyandırma kilitleri, güç yönetimi uzantı API'sı yoluyla uzantılar tarafından istenebilir.
 
           Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa, güç yönetimi için ekran uyandırma kilitleri kullanılır.
@@ -1940,6 +1947,7 @@ politikayı geçersiz kılamaz.
       Bu politika devre dışı bırakılırsa veya ayarlanmazsa yalnızca normal yerel profiller kullanılır.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> politikası, RoamingProfileSupportEnabled'ı geçersiz kılarak tüm veri senkronizasyonunu devre dışı bırakır.</translation>
+<translation id="6731757988219967594">Üst düzey siteleri (ancak yerleştirilmiş iframe'leri değil) yetişkinlere yönelik içerik için filtrele</translation>
 <translation id="6735701345096330595">Yazım denetimi dillerini etkinleştirmeye zorla</translation>
 <translation id="673699536430961464">Bu ayar, kullanıcıların <ph name="PRODUCT_OS_NAME" /> cihazlarında oturum açtıktan sonra tarayıcı pencerelerinin içerik alanındaki Google Hesapları arasında geçiş yapmalarına olanak tanır.
 
@@ -1962,6 +1970,13 @@ politikayı geçersiz kılamaz.
 <translation id="6757438632136860443"><ph name="FLASH_PLUGIN_NAME" /> eklentisini çalıştırmasına izin verilen siteleri belirten URL kalıplarının listesini ayarlamanıza izin verir.
 
           Bu politika ayarlanmadan bırakılırsa tüm siteler için ya "DefaultPluginsSetting" politikasından gelen (ayarlanmışsa) ya da kullanıcının kişisel yapılandırmasından gelen global varsayılan değer kullanılır.</translation>
+<translation id="6762235610019366960"><ph name="PRODUCT_NAME" /> içindeki tam sekme tanıtım ve/veya eğitim amaçlı içeriğin sunumunu kontrol etmeye izin verir.
+
+      Yapılandırılmaz veya etkinleştirilmezse (doğru (true) seçeneğine ayarlanmazsa), <ph name="PRODUCT_NAME" /> kullanıcılara ürün bilgilerini sunmak için tam sekme içeriği gösterebilir.
+
+      Devre dışı bırakılırsa (yanlış (false) olarak ayarlanırsa), <ph name="PRODUCT_NAME" /> kullanıcılara ürün bilgilerini göstermek için tam sekme içerik göstermez.
+
+      Bu ayar, kullanıcıların <ph name="PRODUCT_NAME" /> ürününde oturum açmalarına, bunu varsayılan tarayıcı olarak seçmelerine veya ürün özellikleriyle ilgili diğer bilgileri almalarına yardımcı olan karşılama sayfalarının sunulmasını kontrol eder.</translation>
 <translation id="6766216162565713893">Sitelerin, yakınlardaki bir Bluetooth cihazına erişmek için kullanıcıdan izin istemesine izin ver</translation>
 <translation id="6770454900105963262">Aktif kiosk oturumlarıyla ilgili bilgileri raporla</translation>
 <translation id="6786747875388722282">Uzantılar</translation>
@@ -2289,17 +2304,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7511361072385293666">Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa <ph name="PRODUCT_NAME" /> ürününde QUIC protokolünün kullanımına izin verilir.
       Bu politika yanlış seçeneğine ayarlanırsa QUIC protokolünün kullanımına izin verilmez.</translation>
 <translation id="7519251620064708155">Bu sitelerde anahtar oluşturmaya izin ver</translation>
-<translation id="7529083451528428240">Kullanıcının oturumunu istemci süresine veya günün kullanım kotasına dayalı olarak kilitlemenize olanak tanır.
-
-          |time_window_limit|, kullanıcı oturumunun kilitli olacağı bir günlük aralık belirtir. Haftanın her günü için yalnızca bir kural desteklendiğinden |entries| dizisinin büyüklüğü 0-7 arasında değişiklik gösterebilir. |starts_at| ve |ends_at|, zaman aralığı sınırının başlangıcı ve bitişidir. |ends_at| değerinin |starts_at| değerinden küçük olması |time_limit_window| aralığının ertesi gün sona ereceği anlamına gelir. |last_updated_millis|, bu girişin son güncellemesine ilişkin UTC zaman damgasıdır. Zaman damgası bir tam sayıya sığmayacağından dize olarak gönderilir.
-
-          |time_usage_limit|, bir günlük ekran kotasını belirtir. Böylece, kullanıcı bu değere ulaştığında kullanıcının oturumu kilitlenir. Haftanın her günü için bir özellik vardır ve yalnızca söz konusu gün için etkin bir kota olduğunda ayarlanması gerekir. |usage_quota_mins|, yönetilen cihazın bir günde kullanılabileceği süredir ve |reset_at|, kullanım kotasının ne zaman yenilendiğini belirtir. |reset_at| için varsayılan değer gece yarısıdır ({'hour': 0, 'minute': 0}). |last_updated_millis|, bu girişin son güncellemesine ilişkin UTC zaman damgasıdır. Zaman damgası bir tam sayıya sığmayacağından dize olarak gönderilir.
-
-          |overrides|, önceki kuralların birini veya birkaçını geçici olarak geçersiz kılmak için sağlanır.
-          * time_window_limit veya time_usage_limit etkin değilse, cihazı kilitlemek için |LOCK| kullanılabilir.
-          * |LOCK|, bir sonraki time_window_limit veya time_usage_limit başlayıncaya kadar bir kullanıcı oturumunu geçici olarak kilitler.
-          * |UNLOCK|, time_window_limit veya time_usage_limit tarafından kilitlenen bir kullanıcı oturumunun kilidini açar.
-          |created_time_millis|, geçersiz kılmanın oluşturulmasıyla ilgili UTC zaman damgasıdır. Zaman damgası bir tam sayıya sığmayacağından Dize olarak gönderilir. Bu geçersiz kılmanın hâlâ uygulanmasının gerekip gerekmediğini belirlemek için kullanılır. Geçerli etkin zaman sınırı özelliği (zaman kullanım sınırı veya zaman aralığı sınırı) geçersiz kılma oluşturulduktan sonra başladıysa herhangi bir işlem yapmaz. Ayrıca, geçersiz kılma, etkin time_window_limit veya time_usage_window değerinde yapılan son değişiklikten önce oluşturulduysa uygulanmamalıdır.</translation>
 <translation id="7529100000224450960">Pop-up açmasına izin verilen siteleri belirten bir URL kalıpları listesi ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultPopupsSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>

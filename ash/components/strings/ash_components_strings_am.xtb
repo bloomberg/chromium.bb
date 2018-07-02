@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox (የሚነገር ግብረመልስ) አብራ ወይም አጥፋ</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">በድር ገጹ ላይ ወደታች ይሸብልሉ</translation>
-<translation id="2568632782096378307">የማያ ገጽ ጥራትን ወደ ነባሪ ዳግም አቀናብር</translation>
 <translation id="2596078834055697711">የመስኮት ቅጽበታዊ ገጽ እይታን ያንሱ</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />፣ ከዚያ <ph name="TAB" /> ወይም <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">ወደ የቀጣዩ ቋንቋ የግቤት ስልት ይቀይሩ</translation>
@@ -64,7 +63,6 @@
 <translation id="3407560819924487926">የተግባር አስተዳዳሪን ያምጡት</translation>
 <translation id="3422679037938588196">ለፍለጋዎ ወደ ቀዳሚው ተዛማጅ ይሂዱ</translation>
 <translation id="344577624355799426"><ph name="ALT" /> ወይም <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">የማጉላት ደረጃን ዳግም ያስጀምሩ</translation>
 <translation id="353037708190149633">ሁሉንም የተከፈቱ ገጾች በአሁኑ መስኮትዎ ውስጥ በአዲስ አቃፊ ውስጥ እንደ እልባት ያስቀምጧቸው</translation>
 <translation id="355103131818127604">አገናኙን ከበስተጀርባ በአዲስ ትር ውስጥ ይክፈቱ</translation>
 <translation id="3649256019230929621">መስኮትን ያሳንሱት</translation>
@@ -117,7 +115,6 @@
 <translation id="587531134027443617">ቀዳሚውን ቃል ይሰርዙ</translation>
 <translation id="5899919361772749550">የገንቢ መሣሪያዎች መሥሪያን አሳይ ወይም ደብቅ</translation>
 <translation id="5921745308587794300">መስኮትን አሽከርክር</translation>
-<translation id="5975083100439434680">አሳንስ</translation>
 <translation id="6022924867608035986">የፍለጋ ሳጥን ጽሑፍን አጽዳ</translation>
 <translation id="6045998054441862242">ባለከፍተኛ ንጽጽር ሁነታን አብራ</translation>
 <translation id="6052614013050385269">አገናኝን በቀኝ ጠቅ ያድርጉ</translation>
@@ -163,7 +160,6 @@
 <translation id="7787242579016742662">አንድ ፋይል በአሳሹ ውስጥ ይክፈቱ</translation>
 <translation id="7917881398263220094">የአሁኑን ገጽዎ መጫን ያስቁሙ</translation>
 <translation id="7952165122793773711">ከትር 1 እስከ 8 ይሂዱ</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> ወይም <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">የአሰሳ ውሂብ አጽዳ</translation>
 <translation id="8130528849632411619">ወደ የሰነድ መጀመሪያ ይሂዱ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ወይም <ph name="E" /></translation>
@@ -182,9 +178,7 @@
 <translation id="8727232706774971183">የእርስዎን ማሳወቂያዎች ይመልከቱ</translation>
 <translation id="8855885154700222542">የሙሉ ማያ ገጽ እይታ ቁልፍ</translation>
 <translation id="88986195241502842">ገጽ ወደ ታች</translation>
-<translation id="8903921497873541725">አጉላ</translation>
 <translation id="8924883688469390268">ወደ ቀደሚው ተጠቃሚ ቀይር</translation>
-<translation id="8951768610999698672">በማያ ገጽዎ ላይ ያሉ ንጥሎችን ያተልቁ ወይም ያሳንሱ</translation>
 <translation id="8977648847395357314">በአድራሻ አሞሌ ውስጥ ይዘቱን ይምረጡ</translation>
 <translation id="8982190978301344584">የሚገኙ የአይኤምኢዎች ዝርዝር የሚያሳይ ምናሌን አሳይ</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> ከ1 እስከ 8</translation>

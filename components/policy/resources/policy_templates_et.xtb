@@ -42,6 +42,9 @@
       Vaadake kasutamiseks saadaolevate muutujate loendit aadressilt https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Kui jätate reegli määramata, kasutatakse vahemälu vaikekataloogi ja kasutaja saab selle alistada käsurea märgistusega „--disk-cache-dir”.</translation>
+<translation id="1135264353752122851">Seadistab, millised klaviatuuripaigutused on operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> kasutajaseansside jaoks lubatud.
+
+      Kui see reegel on määratud, saab kasutaja valida ainult ühe selle reegliga määratud sisestamismeetodi. Kui reegel on määramata või seadistatud on tühi loend, saab kasutaja valida kõik toetatud sisestamismeetodid. Kui selle reegliga on praegune sisestamismeetod keelatud, lülitatakse sisestamismeetod riistvara klaviatuuripaigutusele (kui see on lubatud) või esimesele loendis olevale kehtivale väärtusele. Kõiki selles loendis olevaid kehtetuid või toetamata sisestusmeetodeid eiratakse.</translation>
 <translation id="1138294736309071213">See reegel on aktiivne vaid jaemüügirežiimis.
 
       Määrab vahemiku, mille möödudes kuvatakse jaemüügirežiimis seadmete sisselogimiskuval ekraanisäästja.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Laadi määratud URL-id demosse sisselogimisel</translation>
 <translation id="1223789468190631420">Ohutu sirvimise lubamise olek usaldusväärsete allikate puhul</translation>
 <translation id="123081309365616809">Sisu ülekandmise lubamine seadmesse</translation>
+<translation id="1243570869342663665">Teenuse SafeSites täiskasvanutele mõeldud sisu filtreerimise haldamine.</translation>
 <translation id="1257550411839719984">Allalaadimise vaikekataloogi määramine</translation>
 <translation id="1265053460044691532">Piirake aega, mille jooksul SAML-i kaudu autenditud kasutaja saab võrguühenduseta sisse logida</translation>
 <translation id="1291880496936992484">Hoiatus. RC4 eemaldatakse teenusest <ph name="PRODUCT_NAME" /> pärast versiooni 52 täielikult (umbes septembris 2016) ja sellest hetkest see reegel enam ei tööta.
@@ -265,6 +269,7 @@
       Väärtuse vorming põhineb IANA ajavööndite andmebaasis olevatel nimedel (vt https://en.wikipedia.org/wiki/Tz_database). Täpsemalt tähendab see, et ajavööndite nimetused on kujul „manner/suurlinn” või „ookean/suurlinn”.
 
       Reegli määramisel keelatakse ajavööndi automaatne lahendamine seadme asukoha alusel. Samuti alistab see reegli SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Kogu vahelehel kuvatava reklaamsisu lubamine</translation>
 <translation id="1888871729456797026">Pilvepõhise reegli registreerimismärk lauaarvutis</translation>
 <translation id="1897365952389968758">Luba kõikidel saitidel JavaScripti käitamine</translation>
 <translation id="1906888171268104594">Määrab, kas kasutusmõõdikute teave ja diagnostikaandmed, sh krahhiaruanded, edastatakse Google'ile.
@@ -377,6 +382,7 @@
       saab seda muuta. Sellisel juhul ei rakendata vaikeväärtust
       taaskäivitamisel uuesti.</translation>
 <translation id="2156132677421487971">Seadistab teenuse <ph name="PRODUCT_NAME" /> reeglid. See on funktsioon, mis võimaldab kasutajatel saata vahelehtede, saitide või töölaua sisu brauserist kaugekraanidele või helisüsteemidesse.</translation>
+<translation id="2166472654199325139">Täiskasvanutele mõeldud sisuga saite ei filtreerita</translation>
 <translation id="2168397434410358693">Jõudeoleku viiteaeg võrgutoite kasutamisel</translation>
 <translation id="2170233653554726857">WPAD-optimeerimise lubamine</translation>
 <translation id="2176565653304920879">Kui reegel on määratud, toimib ajavööndi automaatse tuvastamise voog seade väärtusest olenevalt järgmisel moel.
@@ -528,6 +534,12 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 <translation id="2466131534462628618">Hõiveportaali autentimisel puhverserveri eiramine</translation>
 <translation id="2482676533225429905">Omasõnumside</translation>
 <translation id="2483146640187052324">Ennusta võrgutoiminguid iga võrguühenduse puhul</translation>
+<translation id="2484208301968418871">See reegel haldab teenuse SafeSites URL-ide filtri rakendamist.
+      See filter kasutab Google Safe Search API-t, et määrata, kas URL-il olev sisu on pornograafiline või mitte.
+
+      Kui see reegel on seadistamata või määratud valikule „Täiskasvanutele mõeldud sisuga saite ei filtreerita”, siis saite ei filtreerita.
+
+      Kui see reegel on määratud valikule „Filtreeri täiskasvanutele mõeldud sisuga ülataseme saidid”, siis pornograafilist sisu sisaldavad saidid filtreeritakse.</translation>
 <translation id="2485721741875148980">Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist teenusesse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse reegli BrowserGuestModeEnabled vaikeväärtuseks Väär. Pange tähele, et olemasolevad allkirjastamata profiilid lukustatakse ja nendele ei pääse pärast selle reegli lubamist juurde. Lisateavet leiate abikeskuse artiklist.
 
       Kui reegel määratakse väärtusele Väär või jäetakse seadistamata, saab kasutaja brauserit kasutada teenusesse <ph name="PRODUCT_NAME" /> sisse logimata.</translation>
@@ -689,12 +701,6 @@ Reegli iga loendiüksus on string, mis sisaldab laienduse ID-d ja valikuliselt k
 
       Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
 <translation id="2867699958489427143">Mine tagasi ja jää sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Protsessi käigus tehakse täielik Powerwash.</translation>
-<translation id="286802604195763750">Võimaldab teil juhtida paroolikaitse hoiatuse käivitamist. Paroolikaitse hoiatab kasutajaid, kui nad kasutavad oma kaitstud parooli potentsiaalselt ohtlikel saitidel.
-
-      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOff”, siis paroolikaitse hoiatust ei kuvata.
-      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPasswordReuse”, kuvatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
-      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPhishingReuse”, kuvatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil.
-      Kui see reegel jäetakse määramata, käivitatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2874209944580848064">Märkus Androidi rakendusi toetavate operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete kohta.</translation>
 <translation id="2877225735001246144">Keela CNAME-i otsing Kerberose autentimise läbirääkimisel</translation>
@@ -1360,6 +1366,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 
       Kui jätate eeskirjad määramata või tühjaks, siis saavad kõik kasutajad teenusesse <ph name="PRODUCT_NAME" /> sisse logida.</translation>
 <translation id="4858735034935305895">Täisekraanrežiimi lubamine</translation>
+<translation id="4861767323695239729">Kasutajaseansis lubatud sisestusmeetodite seadistamine</translation>
 <translation id="4869787217450099946">Määrab, kas ekraani aktiveerimise lukustamine on lubatud. Ekraani aktiveerimise lukustamist saab taotleda laiendustega energiahalduse laienduse API kaudu.
 
           Kui see reegli väärtuseks on seatud Tõene või on väärtus seadmata, kasutatakse energiahalduseks ekraani aktiveerimise lukustamist.
@@ -1948,6 +1955,7 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
       Kui keelate selle reegli või jätate selle määramata, kasutatakse ainult tavalisi kohalikke profiile.
 
       Reegel <ph name="SYNC_DISABLED_POLICY_NAME" /> keelab kogu andmete sünkroonimise, alistades reegli RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtreeri täiskasvanutele mõeldud sisuga ülataseme saidid (kuid mitte manustatud iframe'id)</translation>
 <translation id="6735701345096330595">Õigekirjakontrolli keelte sundlubamine</translation>
 <translation id="673699536430961464">Seade võimaldab kasutajatel pärast operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmesse sisselogimist vahetada Google'i kontosid brauseriakna sisualal.
 
@@ -1970,6 +1978,13 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="6757438632136860443">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud pistikprogrammi <ph name="FLASH_PLUGIN_NAME" /> käitada.
 
           Kui jätate selle reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPluginsSetting” (kui see on määratud) või kasutaja isiklikust seadistusest.</translation>
+<translation id="6762235610019366960">Võimaldab teil teenuses <ph name="PRODUCT_NAME" /> hallata kogu vahelehel esitatavat reklaam- ja/või hariduslikku sisu.
+
+      Kui see on seadistamata või lubatud (valikul Tõene), võib teenus <ph name="PRODUCT_NAME" /> kuvada kasutajatele kogu vahelehel esitatavat sisu, et toote kohta teavet anda.
+
+      Kui see on keelatud (valikul Väär), ei kuva teenus <ph name="PRODUCT_NAME" /> kasutajatele kogu vahelehel kuvatavat sisu, et toote kohta teavet anda.
+
+      Selle seadega hallatakse tervituslehtede esitamist, mis aitavad kasutajatel teenusesse <ph name="PRODUCT_NAME" /> sisse logida, määrata selle vaikebrauseriks või muul viisil neid toote funktsioonidest teavitada.</translation>
 <translation id="6766216162565713893">Luba saitidel paluda kasutajatelt juurdepääsu läheduses asuvatele Bloetoothi seadmetele</translation>
 <translation id="6770454900105963262">Aruandeteave aktiivsete kioskiseansside kohta</translation>
 <translation id="6786747875388722282">Laiendused</translation>
@@ -2300,17 +2315,6 @@ IsolateOrigins ja SitePerProcess testid keelatakse. Kasutajad saavad reegli Isol
 <translation id="7511361072385293666">Kui reegli väärtuseks määratakse Tõene või seda ei määrata, on QUIC-protokolli kasutamine teenuses <ph name="PRODUCT_NAME" /> lubatud.
       Kui reegli väärtuseks määratakse Väär, on QUIC-protokolli kasutamine keelatud.</translation>
 <translation id="7519251620064708155">Luba võtmete loomine nendel saitidel</translation>
-<translation id="7529083451528428240">Võimaldab lukustada kasutaja seansi kliendi aja või igapäevase kasutuskvoodi alusel.
-
-          Atribuut |time_window_limit| määrab igapäevase ajavahemiku, mil kasutaja seanss lukustatakse. Iga nädalapäeva puhul toetatakse ainult üht reeglit, seega võib massiivi |entries| suurus varieeruda vahemikus 0–7. Atribuudid |starts_at| ja |ends_at| määravad ajavahemiku alguse ja lõpu. Kui |ends_at| on väiksem kui |starts_at|, tähendab see, et |time_limit_window| lõpeb järgmisel päeval. Atribuut |last_updated_millis| on UTC ajatempel, mis näitab kirje viimase värskendamise aega. See saadetakse stringina, kuna ajatemplit ei saa täisarvuna esitada.
-
-          Atribuut |time_usage_limit| määrab igapäevase kasutuskvoodi, mille täitumisel kasutaja seanss lukustatakse. Iga nädalapäeva jaoks on eraldi atribuut ja see tuleks määrata ainult juhul, kui teatud päeval kehtib aktiivne kvoot. Atribuut |usage_quota_mins| määrab, kui kaua tohib hallatud seadet päeva jooksul kasutada, ja |reset_at| määrab, millal kasutuskvooti uuendatakse. Atribuudi |reset_at| vaikeväärtus on südaöö ({'hour': 0, 'minute': 0}). Atribuut |last_updated_millis| on UTC ajatempel, mis näitab kirje viimase värskendamise aega. See saadetakse stringina, kuna ajatemplit ei saa täisarvuna esitada.
-
-          Atribuut |overrides| võimaldab ühe või mitu eelmist reeglit ajutiselt tühistada.
-          * Kui atribuudid time_window_limit ja time_usage_limit ei ole aktiivsed, saab seadme lukustamiseks kasutada atribuuti |LOCK|.
-          * |LOCK| lukustab kasutaja seansi ajutiselt kuni järgmise atribuudi time_window_limit või time_usage_limit alguseni.
-          * |UNLOCK| avab kasutaja seansi, mis lukustati atribuudiga time_window_limit või time_usage_limit.
-          Atribuut |created_time_millis| on alistuse loomise UTC ajatempel. See saadetakse stringina, kuna ajatemplit ei saa täisarvuna esitada. Selle alusel määratakse, kas alistus tuleks rakendada. Kui praegune aktiivne ajapiirangu funktsioon (time_usage_limit või time_window_limit) algas pärast alistuse loomist, ei tohiks see aktiveeruda. Seda ei tohiks rakendada ka juhul, kui alistus loodi enne atribuutide time_window_limit või time_usage_window viimast muutmist.</translation>
 <translation id="7529100000224450960">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud avada hüpikaknaid.
 
           Kui jätate selle reegli määramata, siis kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultPopupsSetting”, kui see on määratud, või kasutaja isiklikku konfigureerimist.</translation>

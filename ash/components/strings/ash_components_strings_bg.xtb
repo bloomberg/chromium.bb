@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Включване или изключване на ChromeVox (обратна връзка с говор)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Превъртане на уеб страницата надолу</translation>
-<translation id="2568632782096378307">Задаване на стандартната разделителна способност на екрана</translation>
 <translation id="2596078834055697711">Правене на екранна снимка на прозореца</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> и след това <ph name="TAB" /> или <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Превключване към метода на въвеждане за следващия език</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Намаляване на мащаба на страницата</translation>
 <translation id="2804480015716812239">Натиснете <ph name="ALT" /> и кликнете върху връзка</translation>
 <translation id="2830827904629746450">Закрепване на прозорец отдясно</translation>
+<translation id="2840766858109427815">Напред към следващата страница</translation>
 <translation id="2872353916818027657">Размяна на основния монитор</translation>
 <translation id="2914313326123580426">Показване или скриване на панела с инструменти за програмисти</translation>
 <translation id="292495055542441795">Превключване на режима на цял екран</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Показване на диспечера на задачите</translation>
 <translation id="3422679037938588196">Преминаване към предишното съответствие за търсенето ви</translation>
 <translation id="344577624355799426"><ph name="ALT" /> или <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Повторно задаване на мащаба на страницата</translation>
 <translation id="353037708190149633">Запазване на всички отворени страници в текущия прозорец като отметки в нова папка</translation>
 <translation id="355103131818127604">Отваряне на връзката в нов раздел на заден план</translation>
 <translation id="3649256019230929621">Намаляване на прозореца</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Поставяне на фокуса върху реда с адресната лента</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> или <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Режим за общ преглед</translation>
+<translation id="4382340674111381977">Назад към предишната страница</translation>
 <translation id="4472417192667361414">Настройки за системата и екрана</translation>
 <translation id="4556221320735744018">Преглед на помощта за клавишните комбинации</translation>
 <translation id="4628718545549558538">Отваряне на лентата на състоянието (където се показва снимката на профила ви)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Изтриване на предишната дума</translation>
 <translation id="5899919361772749550">Показване или скриване на конзолата с инструменти за програмисти</translation>
 <translation id="5921745308587794300">Завъртане на прозореца</translation>
-<translation id="5975083100439434680">Намаляване на мащаба</translation>
 <translation id="6022924867608035986">Изчистване на текста от полето за търсене</translation>
 <translation id="6045998054441862242">Включване на режима на висок контраст</translation>
 <translation id="6052614013050385269">Кликване с десния бутон на мишката върху връзка</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Отваряне на файл в браузъра</translation>
 <translation id="7917881398263220094">Спиране на зареждането на текущата страница</translation>
 <translation id="7952165122793773711">Преминаване към раздел от 1 до 8</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> или <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Изчистване на данните за сърфирането</translation>
 <translation id="8130528849632411619">Към началото на документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Преглед на известията ви</translation>
 <translation id="8855885154700222542">Клавиш за цял екран</translation>
 <translation id="88986195241502842">Страница надолу</translation>
-<translation id="8903921497873541725">Увеличаване на мащаба</translation>
 <translation id="8924883688469390268">Превключване към предишния потребител</translation>
-<translation id="8951768610999698672">Уголемяване или смаляване на елементите на екрана</translation>
 <translation id="8977648847395357314">Избиране на съдържанието в адресната лента</translation>
 <translation id="8982190978301344584">Показване на менюто със списък на наличните редактори за метод на въвеждане</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 до 8</translation>

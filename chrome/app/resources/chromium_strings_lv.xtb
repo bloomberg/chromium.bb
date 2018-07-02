@@ -212,6 +212,7 @@ Papildu norādījumus skatiet e-pasta ziņojumā šeit: <ph name="ACCOUNT_EMAIL"
 <translation id="7774736947049807614">Autentificēšanas sertifikāts nedarbojās. Lūdzu, vēlreiz pierakstieties pārlūkā Chromium kā lietotājs <ph name="USER_NAME" /> vai sazinieties ar administratoru, lai iegūtu plašāku informāciju. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> — Chromium Canary</translation>
 <translation id="7867198900892795913">Nevarēja atjaunināt uz jaunāko Chromium versiju, tādēļ jūs nevarēsiet piekļūt jaunākajām funkcijām un drošības labojumiem.</translation>
+<translation id="7901117350626490574">Pieejams Chromium atjauninājums, un tas tiks lietots, tiklīdz restartēsiet pārlūku.</translation>
 <translation id="7937630085815544518">Operētājsistēmā Chromium iepriekš pierakstījāties kā lietotājs <ph name="USER_EMAIL_ADDRESS" />. Lai pierakstītos vēlreiz, lūdzu, izmantojiet to pašu kontu.</translation>
 <translation id="7962572577636132072">Pārlūks Chromium tiek atjaunināts automātiski, tādēļ jums vienmēr būs pieejama visjaunākā versija.</translation>
 <translation id="7975919845073681630">Šī ir Chromium papildu instalācija, un to nevar izmantot kā noklusējuma pārlūku.</translation>

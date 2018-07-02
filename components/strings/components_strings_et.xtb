@@ -98,7 +98,6 @@
 
           &lt;p&gt;Kohandage kuupäeva ja kellaaega rakenduse &lt;strong&gt;Seaded&lt;/strong&gt; jaotises &lt;strong&gt;Üldine&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Veebilehe kuvamisel läks midagi valesti.</translation>
-<translation id="1590457302292452960">Looge tugev parool …</translation>
 <translation id="1592005682883173041">Juurdepääs kohalikele andmetele</translation>
 <translation id="1594030484168838125">Vali</translation>
 <translation id="1620510694547887537">Kaamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Heli</translation>
 <translation id="2094505752054353250">Domeeni vastuolu</translation>
 <translation id="2096368010154057602">Osakond</translation>
+<translation id="2102134110707549001">Soovita tugevat parooli …</translation>
 <translation id="2108755909498034140">Taaskäivitage oma arvuti</translation>
 <translation id="2113977810652731515">Kaart</translation>
 <translation id="2114841414352855701">Seda ignoreeritakse, kuna reegel <ph name="POLICY_NAME" /> alistab selle.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">Laadi reeglid uuesti</translation>
 <translation id="4728558894243024398">Platvorm</translation>
 <translation id="4736825316280949806">Taaskäivitage Chromium</translation>
+<translation id="4742407542027196863">Halda paroole …</translation>
 <translation id="4744603770635761495">Täitmistee</translation>
 <translation id="4749685221585524849">Viimati kasutati kuupäeval <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Teie teave (nt paroolid või krediitkaardi numbrid) on sellele saidile saates privaatne.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">Kuva</translation>
 <translation id="4854362297993841467">See kohaletoimetamisviis pole saadaval. Proovige mõnda teist kohaletoimetamisviisi.</translation>
 <translation id="4858792381671956233">Küsisite oma vanematelt, kas võite seda lehte külastada</translation>
+<translation id="4876305945144899064">Kasutajanimi puudub</translation>
 <translation id="4880827082731008257">Otsi ajaloost</translation>
 <translation id="4881695831933465202">Ava</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">Värskendage kaarti</translation>
 <translation id="5377026284221673050">„Teie kell on ajast maas” või „Teie kell on ajast ees” või „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;”</translation>
 <translation id="5386426401304769735">Selle saidi sertifikaadiahel sisaldab sertifikaati, mis on allkirjastatud SHA-1-ga.</translation>
+<translation id="5387961145478138773">Hankige kiirem juurdepääs oma Google'i lemmikrakendustele</translation>
 <translation id="5402410679244714488">Aegub: <ph name="EXPIRATION_DATE_ABBR" />, viimati kasutati üle aasta tagasi</translation>
 <translation id="540969355065856584">Server ei suutnud tõestada, et see on domeen <ph name="DOMAIN" />; selle turvasertifikaat pole praegu kehtiv. Selle põhjuseks võib olla vale seadistus või ründaja, kes on sekkunud teie ühendusse.</translation>
 <translation id="5421136146218899937">Sirvimisandmete kustutamine ...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">Ekspordi JSON-vormingus</translation>
 <translation id="5689516760719285838">Asukoht</translation>
 <translation id="570530837424789914">Halda …</translation>
+<translation id="57094364128775171">Soovita tugevat parooli …</translation>
 <translation id="5710435578057952990">Selle veebisaidi identiteeti pole kinnitanud.</translation>
 <translation id="5719499550583120431">Kaupmees aktsepteerib ettemakstud kaarte.</translation>
 <translation id="5720705177508910913">Praegune kasutaja</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">See sait on petturlik</translation>
 <translation id="6337133576188860026">Vabastab alla <ph name="SIZE" />. Mõne saidi laadimine võib järgmisel külastusel rohkem aega võtta.</translation>
 <translation id="6337534724793800597">Reeglite filtreerimine nime järgi</translation>
-<translation id="6342069812937806050">Äsja</translation>
 <translation id="6355080345576803305">Avaliku seansi alistamine</translation>
 <translation id="6358450015545214790">Mida need tähendavad?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{veel 1 soovitus}other{veel # soovitust}}</translation>
@@ -880,6 +883,7 @@
       &lt;li&gt;Klõpsake käsul &lt;strong&gt;Apply&lt;/strong&gt; ja seejärel valikul &lt;strong&gt;OK&lt;/strong&gt;
       &lt;li&gt;Vaadake &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome'i abikeskusest&lt;/a&gt; teavet selle kohta, kuidas tarkvara arvutist jäädavalt eemaldada
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Halda paroole …</translation>
 <translation id="7419106976560586862">Profiili tee</translation>
 <translation id="7437289804838430631">Lisa kontaktteave</translation>
 <translation id="7441627299479586546">Reegli objekt on vale</translation>
@@ -1110,6 +1114,7 @@
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9106062320799175032">Arveldusaadressi lisamine</translation>
 <translation id="910908805481542201">Aita mul seda parandada</translation>
+<translation id="9114524666733003316">Kaardi kinnitamine …</translation>
 <translation id="9128870381267983090">Ühendumine Internetiga</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="9137248913990643158">Enne selle rakenduse kasutamist alustage ja logige Chrome'i sisse.</translation>

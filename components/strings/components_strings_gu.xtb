@@ -98,7 +98,6 @@
 
           &lt;p&gt;કૃપા કરીને &lt;strong&gt;સેટિંગ્સ&lt;/strong&gt; અ‍ૅપ્લિકેશનના &lt;strong&gt;સામાન્ય&lt;/strong&gt; વિભાગમાં તારીખ અને સમય સમાયોજિત કરો.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">આ વેબપૃષ્ઠ પ્રદર્શિત કરતી વખતે કંઇક ખોટું થયું.</translation>
-<translation id="1590457302292452960">સશક્ત પાસવર્ડ બનાવો...</translation>
 <translation id="1592005682883173041">સ્થાનિક ડેટા ઍક્સેસ</translation>
 <translation id="1594030484168838125">પસંદ કરો</translation>
 <translation id="1620510694547887537">કૅમેરો</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">ધ્વનિ</translation>
 <translation id="2094505752054353250">ડોમેન મેળ ખાતું નથી</translation>
 <translation id="2096368010154057602">વિભાગ</translation>
+<translation id="2102134110707549001">સશક્ત પાસવર્ડ સૂચવો…</translation>
 <translation id="2108755909498034140">તમારું કમ્પ્યુટર પુનઃપ્રારંભ કરો</translation>
 <translation id="2113977810652731515">કાર્ડ</translation>
 <translation id="2114841414352855701">અવગણ્યું કારણ કે તે <ph name="POLICY_NAME" /> દ્વારા ઓવરરાઇડ થયું હતું.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">નીતિઓ ફરીથી લોડ કરો</translation>
 <translation id="4728558894243024398">પ્લેટફોર્મ</translation>
 <translation id="4736825316280949806">Chromium ને પુનઃપ્રારંભ કરો</translation>
+<translation id="4742407542027196863">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="4744603770635761495">અમલ કરવાયોગ્ય પાથ</translation>
 <translation id="4749685221585524849">છેલ્લે <ph name="LAST_USED_MONTH" /> ના રોજ ઉપયોગ કર્યો</translation>
 <translation id="4750917950439032686">તમારી માહિતી (ઉદાહરણ તરીકે, પાસવર્ડ્સ અથવા ક્રેડિટ કાર્ડ નંબર્સ) ખાનગી હોય છે જ્યારે તે આ સાઇટ પર મોકલવામાં આવે.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">જુઓ</translation>
 <translation id="4854362297993841467">વિતરણની આ પદ્ધતિ ઉપલબ્ધ નથી. કોઈ ભિન્ન પદ્ધતિ અજમાવો.</translation>
 <translation id="4858792381671956233">તમે આ સાઇટની મુલાકાત લો છો તે ઠીક છે કે કેમ તેવું તમે તમારા માતાપિતાને પૂછ્યું</translation>
+<translation id="4876305945144899064">કોઈ વપરાશકર્તાનામ નથી</translation>
 <translation id="4880827082731008257">ઇતિહાસ શોધ</translation>
 <translation id="4881695831933465202">ખોલો</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">કાર્ડને અપડેટ કરો</translation>
 <translation id="5377026284221673050">"તમારી ઘડિયાળ પાછળ છે" અથવા "તમારી ઘડિયાળ આગળ છે" અથવા "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">આ સાઇટ માટેની પ્રમાણપત્ર શ્રૃંખલા SHA-1 નો ઉપયોગ કરીને સહી કરેલ પ્રમાણપત્ર ધરાવે છે.</translation>
+<translation id="5387961145478138773">તમારી મનપસંદ Google ઍપનો ઝડપી ઍક્સેસ મેળવો</translation>
 <translation id="5402410679244714488">સમાપ્તિ: <ph name="EXPIRATION_DATE_ABBR" />, છેલ્લે એક વર્ષ પહેલાં ઉપયોગ કરેલ</translation>
 <translation id="540969355065856584">આ સર્વર સાબિત કરી શક્યું નથી કે તે <ph name="DOMAIN" /> છે; તેનું સુરક્ષા પ્રમાણપત્ર આ સમયે માન્ય નથી. આ કોઇ ખોટી ગોઠવણીને કારણે થયું હોય અથવા કોઈ હુમલાખોર તમારા કનેક્શનને અટકાવી રહ્યો હોઇ શકે છે.</translation>
 <translation id="5421136146218899937">બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">JSON પર નિકાસ કરો</translation>
 <translation id="5689516760719285838">સ્થાન</translation>
 <translation id="570530837424789914">મેનેજ કરો…</translation>
+<translation id="57094364128775171">સશક્ત પાસવર્ડ સૂચવો…</translation>
 <translation id="5710435578057952990">આ વેબસાઇટની ઓળખ ચકાસવામાં આવી નથી.</translation>
 <translation id="5719499550583120431">પ્રીપેઇડ કાર્ડ સ્વીકારવામાં આવે છે.</translation>
 <translation id="5720705177508910913">વર્તમાન વપરાશકર્તા</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">આ સાઇટ ભ્રામક છે</translation>
 <translation id="6337133576188860026"><ph name="SIZE" /> કરતાં ઓછી જગ્યા ખાલી કરે છે. તમારી આગલી મુલાકાત સમયે કેટલીક સાઇટ વધુ ધીમે લોડ થઈ શકે છે.</translation>
 <translation id="6337534724793800597">નામ દ્વારા નીતિઓને ફિલ્ટર કરો</translation>
-<translation id="6342069812937806050">હમણાં જ</translation>
 <translation id="6355080345576803305">સાર્વજનિક સત્ર ઓવરરાઇડ</translation>
 <translation id="6358450015545214790">આનો અર્થ શું છે?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 અન્ય સૂચન}one{# અન્ય સૂચન}other{# અન્ય સૂચન}}</translation>
@@ -880,6 +883,7 @@
       &lt;li&gt;&lt;strong&gt;લાગુ કરો&lt;/strong&gt; પર ક્લિક કરો, પછી &lt;strong&gt;ઓકે&lt;/strong&gt; પર ક્લિક કરો
       &lt;li&gt;તમારા કમ્પ્યુટર પરથી સૉફ્ટવેરને કાયમી ધોરણે કાઢી નાખવાની રીત જાણવા માટે, &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome સહાયતા કેન્દ્ર&lt;/a&gt; પર જાઓ
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">પાસવર્ડ મેનેજ કરો…</translation>
 <translation id="7419106976560586862">પ્રોફાઇલ પાથ</translation>
 <translation id="7437289804838430631">સંપર્ક માહિતી ઉમેરો</translation>
 <translation id="7441627299479586546">ખોટો નીતિ વિષય</translation>
@@ -1110,6 +1114,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> સામાન્ય રીતે તમારી માહિતીને સુરક્ષિત રાખવા માટે એન્ક્રિપ્શનનો ઉપયોગ કરે છે. જ્યારે આ સમયે Chromium દ્વારા <ph name="SITE" /> થી કનેક્ટ કરવાનો પ્રયાસ થયો, ત્યારે વેબસાઇટે અસામાન્ય અને ખોટા ઓળખાણપત્રોને પાછા મોકલ્યાં. આવું ત્યારે થઇ શકે જ્યારે કોઈ હુમલાખોર <ph name="SITE" /> હોવાનો ડોળ કરવાનો પ્રયાસ કરી રહ્યો હોય અથવા કોઈ Wi-Fi સાઇન-ઇન સ્ક્રીને કનેક્શનમાં વિક્ષેપ પાડ્યો હોય. તમારી માહિતી હજી પણ સુરક્ષિત છે કારણ કે Chromium એ કોઈપણ ડેટા વિનિમય થાય તે પહેલાં જ કનેક્શન રોકી દીધું.</translation>
 <translation id="9106062320799175032">બિલિંગ સરનામું ઉમેરો</translation>
 <translation id="910908805481542201">આને સુધારવામાં મારી સહાય કરો</translation>
+<translation id="9114524666733003316">કાર્ડ કન્ફર્મ કરી રહ્યાં છીએ...</translation>
 <translation id="9128870381267983090">નેટવર્કથી કનેક્ટ કરો</translation>
 <translation id="9137013805542155359">મૂળ બતાવો</translation>
 <translation id="9137248913990643158">આ ઍપ્લિકેશનનો ઉપયોગ કરતાં પહેલાં કૃપા કરીને Chrome ને પ્રારંભ કરો અને સાઇન ઇન કરો.</translation>

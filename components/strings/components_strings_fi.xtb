@@ -98,7 +98,6 @@
 
           &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;‑sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;‑osiossa.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Jokin meni vikaan tätä verkkosivua näytettäessä.</translation>
-<translation id="1590457302292452960">Luo vahva salasana…</translation>
 <translation id="1592005682883173041">Tietojen paikallinen käyttö</translation>
 <translation id="1594030484168838125">Valitse</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Ääni</translation>
 <translation id="2094505752054353250">Verkkotunnukset eivät ole yhteensopivat</translation>
 <translation id="2096368010154057602">Osasto</translation>
+<translation id="2102134110707549001">Ehdota vahvaa salasanaa…</translation>
 <translation id="2108755909498034140">Käynnistä tietokone uudelleen.</translation>
 <translation id="2113977810652731515">Kortti</translation>
 <translation id="2114841414352855701">Ei käytetä – käytännön <ph name="POLICY_NAME" /> ohittama.</translation>
@@ -538,6 +538,7 @@
 <translation id="4726672564094551039">Päivitä käytännöt</translation>
 <translation id="4728558894243024398">Käyttöympäristö</translation>
 <translation id="4736825316280949806">Käynnistä Chromium uudelleen.</translation>
+<translation id="4742407542027196863">Ylläpidä salasanoja…</translation>
 <translation id="4744603770635761495">Suoritettavan tiedoston polku</translation>
 <translation id="4749685221585524849">Käytetty viimeksi: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Salasanat, luottokorttinumerot ja muut tietosi pysyvät yksityisinä, kun ne lähetetään tälle sivustolle.</translation>
@@ -556,6 +557,7 @@
 <translation id="4850886885716139402">Näytä</translation>
 <translation id="4854362297993841467">Tämä toimitustapa ei ole käytettävissä. Kokeile toista tapaa.</translation>
 <translation id="4858792381671956233">Pyysit vanhemmiltasi lupaa käydä tällä sivustolla.</translation>
+<translation id="4876305945144899064">Ei käyttäjänimeä</translation>
 <translation id="4880827082731008257">Haku historiasta</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -632,6 +634,7 @@
 <translation id="5371425731340848620">Päivitä kortti</translation>
 <translation id="5377026284221673050">"Kellosi jätättää", "Kellosi edistää" tai "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Tämän sivuston varmenneketju sisältää varmenteen, joka on allekirjoitettu SHA-1:llä.</translation>
+<translation id="5387961145478138773">Pääset käyttämään Googlen sovelluksia nopeasti</translation>
 <translation id="5402410679244714488">Vanhenee: <ph name="EXPIRATION_DATE_ABBR" />, käytetty viimeksi yli vuosi sitten</translation>
 <translation id="540969355065856584">Palvelin ei voinut todistaa olevansa <ph name="DOMAIN" />, sillä sen suojausvarmenne ei tällä hetkellä ole kelvollinen. Tämä voi johtua määritysvirheestä tai verkkoyhteytesi siepanneesta hyökkääjästä.</translation>
 <translation id="5421136146218899937">Poista selaustiedot...</translation>
@@ -679,6 +682,7 @@
 <translation id="5689199277474810259">Vie JSON-tiedostoon</translation>
 <translation id="5689516760719285838">Sijainti</translation>
 <translation id="570530837424789914">Hallinnoi…</translation>
+<translation id="57094364128775171">Ehdota vahvaa salasanaa…</translation>
 <translation id="5710435578057952990">Tämän sivuston identiteettiä ei ole vahvistettu.</translation>
 <translation id="5719499550583120431">Prepaid-kortit hyväksytään.</translation>
 <translation id="5720705177508910913">Nykyinen käyttäjä</translation>
@@ -754,7 +758,6 @@
 <translation id="6328786501058569169">Tämä sivusto on petollinen</translation>
 <translation id="6337133576188860026">Vapauttaa alle <ph name="SIZE" />. Jotkin sivustot saattavat latautua hitaammin seuraavalla käynnillä.</translation>
 <translation id="6337534724793800597">Suodata käytäntöjä nimen mukaan</translation>
-<translation id="6342069812937806050">Valmistui juuri</translation>
 <translation id="6355080345576803305">Julkisen istunnon ohitus</translation>
 <translation id="6358450015545214790">Mitä nämä tarkoittavat?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 muu ehdotus}other{# muuta ehdotusta}}</translation>
@@ -881,6 +884,7 @@
       &lt;li&gt;Valitse &lt;strong&gt;Käytä&lt;/strong&gt; ja sen jälkeen &lt;strong&gt;OK&lt;/strong&gt;.
       &lt;li&gt;Saat ohjeita ohjelmiston pysyvään poistamiseen tietokoneelta &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome-ohjekeskuksesta&lt;/a&gt;.
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Ylläpidä salasanoja…</translation>
 <translation id="7419106976560586862">Profiilin polku</translation>
 <translation id="7437289804838430631">Lisää yhteystieto</translation>
 <translation id="7441627299479586546">Väärä käytännön aihe</translation>
@@ -1112,6 +1116,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9106062320799175032">Lisää laskutusosoite</translation>
 <translation id="910908805481542201">Auta minua korjaamaan asia</translation>
+<translation id="9114524666733003316">Vahvistetaan korttia…</translation>
 <translation id="9128870381267983090">Yhdistä verkkoon</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9137248913990643158">Aloita ja kirjaudu sisään Chromeen ennen tämän sovelluksen käyttämistä.</translation>

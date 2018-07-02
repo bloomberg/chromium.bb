@@ -98,7 +98,6 @@
 
       &lt;p&gt;Juster datoen og tiden i sektionen &lt;strong&gt;Generelt&lt;/strong&gt; i appen &lt;strong&gt;Indstillinger&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Der opstod en fejl ved visningen af denne webside.</translation>
-<translation id="1590457302292452960">Generer en stærk adgangskode...</translation>
 <translation id="1592005682883173041">Lokal dataadgang</translation>
 <translation id="1594030484168838125">Vælg</translation>
 <translation id="1620510694547887537">Kamera</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Lyd</translation>
 <translation id="2094505752054353250">Uoverensstemmelse mellem domæner</translation>
 <translation id="2096368010154057602">Departement</translation>
+<translation id="2102134110707549001">Foreslå stærk adgangskode…</translation>
 <translation id="2108755909498034140">Genstart computeren</translation>
 <translation id="2113977810652731515">Kort</translation>
 <translation id="2114841414352855701">Ignoreret, da den blev tilsidesat af <ph name="POLICY_NAME" /> .</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">Opdater politikker</translation>
 <translation id="4728558894243024398">Platform</translation>
 <translation id="4736825316280949806">Genstart Chromium</translation>
+<translation id="4742407542027196863">Administrer adgangskoder…</translation>
 <translation id="4744603770635761495">Eksekverbar sti</translation>
 <translation id="4749685221585524849">Sidst anvendt <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Dine oplysninger (f.eks. adgangskoder eller kreditkortnumre) er private, når de sendes til dette website.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">Vis</translation>
 <translation id="4854362297993841467">Denne leveringsmetode er ikke tilgængelig. Prøv en anden metode.</translation>
 <translation id="4858792381671956233">Du har spurgt dine forældre, om det er i orden at besøge dette website.</translation>
+<translation id="4876305945144899064">Intet brugernavn</translation>
 <translation id="4880827082731008257">Søg i historikken</translation>
 <translation id="4881695831933465202">Åbn</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">Opdater kortet</translation>
 <translation id="5377026284221673050">"Dit ur er bagud" eller "Dit ur er forud" eller "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">Certifikatkæden for dette website indeholder et certifikat, der er signeret med SHA-1.</translation>
+<translation id="5387961145478138773">Få hurtig adgang til dine foretrukne Google-apps.</translation>
 <translation id="5402410679244714488">Udløbsdato: <ph name="EXPIRATION_DATE_ABBR" />, sidst anvendt for mere end et år siden</translation>
 <translation id="540969355065856584">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da dens sikkerhedscertifikat ikke er gyldigt i øjeblikket. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="5421136146218899937">Ryd browserdata...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">Eksportér i JSON</translation>
 <translation id="5689516760719285838">Placering</translation>
 <translation id="570530837424789914">Administrer...</translation>
+<translation id="57094364128775171">Foreslå stærk adgangskode…</translation>
 <translation id="5710435578057952990">Dette websites identitet er ikke blevet bekræftet.</translation>
 <translation id="5719499550583120431">Forudbetalte kort accepteres.</translation>
 <translation id="5720705177508910913">Aktuel bruger</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">Dette website er vildledende</translation>
 <translation id="6337133576188860026">Frigiver mindre end <ph name="SIZE" />. Nogle websites indlæses muligvis langsommere under dit næste besøg.</translation>
 <translation id="6337534724793800597">Filtrér politikker efter navn</translation>
-<translation id="6342069812937806050">Lige nu</translation>
 <translation id="6355080345576803305">Tilsidesættelse af offentlig session</translation>
 <translation id="6358450015545214790">Hvad betyder dette?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{1 andet forslag}one{# andet forslag}other{# andre forslag}}</translation>
@@ -880,6 +883,7 @@
       &lt;li&gt;Klik på &lt;strong&gt;Anvend&lt;/strong&gt;, og klik derefter på &lt;strong&gt;OK&lt;/strong&gt;
       &lt;li&gt;Gå til &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Hjælp til Chrome&lt;/a&gt; for at se, hvordan du permanent fjerner softwaren fra din computer
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Administrer adgangskoder…</translation>
 <translation id="7419106976560586862">Profilsti</translation>
 <translation id="7437289804838430631">Tilføj kontaktoplysninger</translation>
 <translation id="7441627299479586546">Forkert emne for politik</translation>
@@ -1111,6 +1115,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="9106062320799175032">Tilføj faktureringsadresse</translation>
 <translation id="910908805481542201">Hjælp mig med at løse dette</translation>
+<translation id="9114524666733003316">Bekræfter kort...</translation>
 <translation id="9128870381267983090">Opret forbindelse til netværk</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9137248913990643158">Start og log ind på Chrome, inden du bruger denne app.</translation>

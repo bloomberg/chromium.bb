@@ -42,6 +42,9 @@
       Consulte https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver uma lista de variáveis que podem ser usadas.
 
       Se esta política for deixada sem definição, o diretório de cache padrão será usado, e o usuário poderá substituí-lo pela sinalização de linha de comando "--disk-cache-dir".</translation>
+<translation id="1135264353752122851">Configura quais layouts de teclado são permitidos para as sessões de usuário do <ph name="PRODUCT_OS_NAME" />.
+
+      Se esta política estiver configurada, o usuário só poderá selecionar um dos métodos de entrada especificados por ela. Se esta política não estiver configurada ou for configurada como uma lista vazia, o usuário poderá selecionar todos os métodos de entrada compatíveis. Se o método de entrada atual não for permitido por esta política, ele será alterado para o layout de hardware de teclado (se permitido) ou para a primeira entrada válida nesta lista. Todos os métodos de entrada inválidos ou incompatíveis da lista serão ignorados.</translation>
 <translation id="1138294736309071213">Esta política é ativa somente no modo de varejo. Determina o tempo antes do protetor de tela ser mostrado na tela de login para os dispositivos no modo de varejo. O valor da política deve ser especificado em milésimos de segundos.</translation>
 <translation id="1151353063931113432">Permitir imagens nestes sites</translation>
 <translation id="1152117524387175066">Informa o estado da chave dev do dispositivo durante a inicialização.
@@ -65,6 +68,7 @@
 <translation id="1221359380862872747">Carrega os urls especificados no login de demonstração</translation>
 <translation id="1223789468190631420">Ativar Navegação segura para fontes confiáveis</translation>
 <translation id="123081309365616809">Ativa transmissão de conteúdo para o dispositivo</translation>
+<translation id="1243570869342663665">Controlar a filtragem de conteúdo adulto SafeSites.</translation>
 <translation id="1257550411839719984">Definir diretório de download padrão</translation>
 <translation id="1265053460044691532">Limite o tempo pelo qual um usuário autenticado via SAML pode fazer login off-line</translation>
 <translation id="1291880496936992484">Atenção: o RC4 será completamente removido de <ph name="PRODUCT_NAME" /> após a versão 52 (por volta de setembro de 2016), e esta política parará de funcionar.
@@ -253,6 +257,7 @@
       O formato do valor segue os nomes dos fusos horários do "IANA Time Zone Database" (consulte "https://en.wikipedia.org/wiki/Tz_database", link em inglês). Em particular, a maioria dos fusos horários pode ser referida como "continente/cidade_grande" ou "oceano/cidade_grande".
 
       A definição desta política desativa completamente a definição automática de fuso horário pelo local do dispositivo. Ela também substitui a política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Ativar a exibição de conteúdo promocional em guia cheia</translation>
 <translation id="1888871729456797026">Token de inscrição da política de nuvem na área de trabalho</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem o JavaScript</translation>
 <translation id="1906888171268104594">Controla se as métricas de uso e os dados de diagnóstico, incluindo relatórios de erros, são informados ao Google.
@@ -365,6 +370,7 @@
       liberdade para alterá-lo. Nesse caso, o valor padrão não é reaplicado na
       reinicialização.</translation>
 <translation id="2156132677421487971">"Configurar políticas para o <ph name="PRODUCT_NAME" />", um recurso que permite que os usuários enviem o conteúdo de guias, sites ou a área de trabalho do navegador para telas e sistemas de som remotos.</translation>
+<translation id="2166472654199325139">Não filtrar sites com conteúdo adulto</translation>
 <translation id="2168397434410358693">Intervalo de inatividade no funcionamento com alimentação CA</translation>
 <translation id="2170233653554726857">Ativar otimização WPAD</translation>
 <translation id="2176565653304920879">Quando esta política é definida, o fluxo de detecção automática de fuso horário acontece de uma das seguintes formas, dependendo do valor da configuração:
@@ -513,6 +519,12 @@
 <translation id="2466131534462628618">A autenticação de portal cativo ignora o proxy</translation>
 <translation id="2482676533225429905">Mensagens nativas</translation>
 <translation id="2483146640187052324">Prever ações da rede em qualquer conexão de rede</translation>
+<translation id="2484208301968418871">Esta política controla a aplicação do filtro de URL SafeSites.
+      Esse filtro usa a Google Safe Search API para classificar URLs como pornográficos ou não.
+
+      Quando esta política não está configurada ou é configurada como "Não filtrar sites com conteúdo adulto", os sites não são filtrados.
+
+      Quando esta política é configurada como "Filtrar sites de nível superior com conteúdo adulto", os sites classificados como pornográficos são filtrados.</translation>
 <translation id="2485721741875148980">Se esta política for definida como verdadeira, o usuário precisará fazer login no <ph name="PRODUCT_NAME" /> com o próprio perfil antes de usar o navegador. O valor padrão de BrowserGuestModeEnabled será definido como falso. Os perfis já existentes não atribuídos serão bloqueados e ficarão inacessíveis depois da ativação desta política. Para ver mais informações, consulte o artigo da Central de Ajuda.
 
       Se esta política for definida como falsa ou não for configurada, o usuário poderá usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
@@ -661,12 +673,6 @@
 
       Se você ativar essa configuração, a Visualização de impressão utilizará a impressora padrão do sistema operacional como a escolha padrão.</translation>
 <translation id="2867699958489427143">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino. Faça um Powerwash completo durante o processo.</translation>
-<translation id="286802604195763750">Permite que você controle o acionamento do aviso de proteção de senha. A proteção de senha alerta o usuário quando ele reutiliza a senha protegida dele em sites possivelmente suspeitos.
-
-      Se esta política for definida como "PasswordProtectionWarningOff", nenhum aviso de proteção de senha será exibido.
-      Se esta política for definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar as senhas do Google em quaisquer sites que não estejam na lista de permissões.
-      Se esta política for definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar as senhas do Google em sites de phishing.
-      Se esta política não for definida, o aviso de proteção de senha será acionado quando o usuário reutilizar senhas do Google em sites de phishing, mas ele conseguirá alterar essa configuração.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
@@ -1315,6 +1321,7 @@
 
       Se esta política for deixada sem configuração ou em branco, qualquer usuário poderá fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de tela cheia</translation>
+<translation id="4861767323695239729">Configurar os métodos de entrada permitidos em uma sessão de usuário</translation>
 <translation id="4869787217450099946">Especifica se são permitidos bloqueios de ativação da tela. Esses bloqueios podem ser solicitados por extensões por meio da API da extensão de gerenciamento de energia.
 
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios de ativação da tela são respeitados para o gerenciamento de energia.
@@ -1860,6 +1867,7 @@
       Se essa política for desativada ou não for configurada, apenas os perfis locais normais serão usados.
 
       A política <ph name="SYNC_DISABLED_POLICY_NAME" /> desativa a sincronização de todos os dados por meio da modificação de RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtrar sites de nível superior (exceto iframes incorporados) com conteúdo adulto</translation>
 <translation id="6735701345096330595">Forçar a ativação da correção ortográfica de idiomas</translation>
 <translation id="673699536430961464">Essa definição permite que os usuários alternem entre Contas do Google na área de conteúdo da janela do navegador depois de fazer login no dispositivo <ph name="PRODUCT_OS_NAME" />.
 
@@ -1882,6 +1890,13 @@
 <translation id="6757438632136860443">Permite definir uma lista de padrões de URL que especificam sites autorizados a executar o plug-in <ph name="FLASH_PLUGIN_NAME" />.
 
           Se esta política não for definida, o valor padrão global será usado para todos os sites, seja a partir da política "DefaultPluginsSetting", caso esta tenha sido definida, ou da configuração pessoal do usuário, caso não tenha sido definida.</translation>
+<translation id="6762235610019366960">Permite que você controle a apresentação de conteúdo promocional e/ou educativo em guia cheia no <ph name="PRODUCT_NAME" />.
+
+      Se esta política não for configurada ou ativada (configurada como verdadeira), o <ph name="PRODUCT_NAME" /> poderá exibir conteúdo em guia cheia para os usuários para fornecer informações de produtos.
+
+      Se esta política for desativada (configurada como falsa), o <ph name="PRODUCT_NAME" /> não exibirá conteúdo em guia cheia para os usuários para fornecer informações de produtos.
+
+      Esta configuração controla a apresentação das páginas de boas-vindas que ajudam os usuários a fazer login no <ph name="PRODUCT_NAME" />, a escolhê-lo como navegador padrão ou informam sobre os recursos do produto.</translation>
 <translation id="6766216162565713893">Permitir que os sites peçam ao usuário para conceder acesso a um dispositivo Bluetooth próximo</translation>
 <translation id="6770454900105963262">Denunciar informações sobre sessões de quiosque ativas</translation>
 <translation id="6786747875388722282">Extensões</translation>
@@ -2193,17 +2208,6 @@
 <translation id="7511361072385293666">Se esta política é definida como "true" ou não é configurada, o uso do protocolo QUIC no <ph name="PRODUCT_NAME" /> é permitido.
       Se esta política é definida como "false", o uso do protocolo QUIC não é permitido.</translation>
 <translation id="7519251620064708155">Permitir a geração de chaves nesses sites</translation>
-<translation id="7529083451528428240">Permite bloquear a sessão do usuário com base no tempo do cliente ou na cota de uso diária.
-
-          O |time_window_limit| especifica uma janela diária em que a sessão do usuário precisa ser bloqueada. É permitida apenas uma regra para cada dia da semana, portanto, o tamanho da matriz |entries| pode variar de 0 a 7. |starts_at| e |ends_at| são o início e o fim do limite da janela. Quando |ends_at| é menor do que |starts_at|, isso significa que |time_limit_window| termina no dia seguinte. |last_updated_millis| é o carimbo de data/hora UTC da última atualização desta entrada e é enviado como uma string, porque o carimbo de data/hora não se enquadra como um número inteiro.
-
-          O |time_usage_limit| especifica uma cota de tela diária, de modo que, quando o usuário atinge esse limite, a sessão do usuário é bloqueada. Há uma propriedade para cada dia da semana, que precisará ser definida apenas se existir uma cota ativa para esse dia. |usage_quota_mins| é a quantidade de tempo que o dispositivo gerenciado pode ser usado em um dia, e |reset_at| é o momento em que a cota de uso é renovada. O valor padrão para |reset_at| é meia-noite ({'hour': 0, 'minute': 0}). |last_updated_millis| é o carimbo de data/hora UTC para o último horário em que essa entrada foi atualizada e é enviado como uma string, porque o carimbo de data/hora não se enquadra como um número inteiro.
-
-          |overrides| é fornecido para invalidar temporariamente uma ou mais das regras anteriores.
-          * Se time_window_limit e time_usage_limit estiverem inativos, será possível usar |LOCK| para bloquear o dispositivo.
-          * |LOCK| bloqueia temporariamente uma sessão de usuário até que o próximo time_window_limit ou time_usage_limit seja iniciado.
-          * |UNLOCK| desbloqueia uma sessão de usuário bloqueada por time_window_limit ou time_usage_limit.
-          |created_time_millis| é o carimbo de data/hora UTC para criação de uma modificação e é enviado como uma string, porque o carimbo de data/hora não se enquadra como um número inteiro. É usado para determinar se essa modificação ainda deve ser aplicada. Se o recurso de limite de tempo ativo atual (limite de tempo de uso ou limite de tempo de janela) começa depois que a modificação é criada, nenhuma ação é tomada. Além disso, se a modificação foi criada antes da última alteração do time_window_limit ou time_usage_window, ela não deve ser aplicada.</translation>
 <translation id="7529100000224450960">Permite que você defina uma lista de padrões de URL que especificam sites com permissão para exibir pop-ups. Se esta política for deixada sem definição, o valor padrão global será utilizado para todos os sites a partir da política "DefaultPopupsSetting", caso esta tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
 <translation id="7529144158022474049">Fator de dispersão de atualizações automáticas</translation>
 <translation id="7534199150025803530">Esta política não tem nenhum efeito sobre o app do Google Drive para Android. Para impedir o uso do Google Drive por conexões celulares, bloqueie a instalação do app do Google Drive para Android.</translation>

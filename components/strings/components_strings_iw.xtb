@@ -98,7 +98,6 @@
 
       &lt;p&gt;שנה את התאריך והשעה בקטע &lt;strong&gt;כללי&lt;/strong&gt; באפליקציה &lt;strong&gt;הגדרות&lt;/strong&gt;‏.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">משהו השתבש בעת הצגת דף אינטרנט זה.</translation>
-<translation id="1590457302292452960">יצירת סיסמה חזקה...</translation>
 <translation id="1592005682883173041">גישה לנתונים מקומיים</translation>
 <translation id="1594030484168838125">בחר</translation>
 <translation id="1620510694547887537">מצלמה</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">צליל</translation>
 <translation id="2094505752054353250">אי התאמה בדומיינים</translation>
 <translation id="2096368010154057602">מחלקה</translation>
+<translation id="2102134110707549001">הצעת סיסמה חזקה…</translation>
 <translation id="2108755909498034140">אתחול המחשב</translation>
 <translation id="2113977810652731515">כרטיס</translation>
 <translation id="2114841414352855701">המערכת התעלמה משום שהמדיניות בוטלה על ידי <ph name="POLICY_NAME" />.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">טען מדיניות מחדש</translation>
 <translation id="4728558894243024398">פלטפורמה</translation>
 <translation id="4736825316280949806">‏אתחול ה-Chromium</translation>
+<translation id="4742407542027196863">ניהול סיסמאות…</translation>
 <translation id="4744603770635761495">נתיב להפעלה</translation>
 <translation id="4749685221585524849">שימוש אחרון: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">הפרטים שלך (כמו סיסמאות או מספרי כרטיסי אשראי) נשלחים לאתר הזה במצב פרטי.</translation>
@@ -559,6 +560,7 @@ Del</translation>
 <translation id="4850886885716139402">הצג</translation>
 <translation id="4854362297993841467">שיטת המסירה הזו אינה זמינה. עליך לבחור שיטה אחרת.</translation>
 <translation id="4858792381671956233">שאלת את ההורים שלך אם אתה יכול לגשת לאתר הזה</translation>
+<translation id="4876305945144899064">אין שם משתמש</translation>
 <translation id="4880827082731008257">חפש בהיסטוריה</translation>
 <translation id="4881695831933465202">פתח</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -635,6 +637,7 @@ Del</translation>
 <translation id="5371425731340848620">עדכון כרטיס</translation>
 <translation id="5377026284221673050">‏"השעון מאחר", "השעון מקדים" או "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">‏שרשרת האישורים של האתר הזה כוללת אישור שנחתם באמצעות SHA-1.</translation>
+<translation id="5387961145478138773">‏קבלת גישה מהירה אל אפליקציות Google המועדפות עליך</translation>
 <translation id="5402410679244714488">תאריך תפוגה: <ph name="EXPIRATION_DATE_ABBR" />, שימוש אחרון היה לפני שנה</translation>
 <translation id="540969355065856584">שרת זה לא הצליח להוכיח שהוא <ph name="DOMAIN" />; אישור האבטחה שלו אינו תקף כעת. הסיבה לכך עשויה להיות תצורה שגויה או שתוקף מיירט את החיבור שלך.</translation>
 <translation id="5421136146218899937">נקה נתוני גלישה...</translation>
@@ -683,6 +686,7 @@ Del</translation>
 <translation id="5689199277474810259">‏ייצוא אל JSON</translation>
 <translation id="5689516760719285838">מיקום</translation>
 <translation id="570530837424789914">ניהול...</translation>
+<translation id="57094364128775171">הצעת סיסמה חזקה…</translation>
 <translation id="5710435578057952990">הזהות של אתר זה לא אומתה.</translation>
 <translation id="5719499550583120431">אפשר לשלם באמצעות כרטיסים משולמים מראש.</translation>
 <translation id="5720705177508910913">משתמש נוכחי:</translation>
@@ -758,7 +762,6 @@ Del</translation>
 <translation id="6328786501058569169">האתר הזה מטעה</translation>
 <translation id="6337133576188860026">פינוי של פחות מ-<ph name="SIZE" /> מהשטח. ייתכן שחלק מהאתרים ייטענו לאט יותר בביקור הבא שלך.</translation>
 <translation id="6337534724793800597">סנן מדיניות לפי שם</translation>
-<translation id="6342069812937806050">זה עתה</translation>
 <translation id="6355080345576803305">שינוי הפעלה ציבורית</translation>
 <translation id="6358450015545214790">מה זה אומר?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{הצעה אחת נוספת}two{שתי הצעות נוספות}many{# הצעות נוספות}other{# הצעות נוספות}}</translation>
@@ -885,6 +888,7 @@ Del</translation>
       &lt;li&gt;לוחצים על &lt;strong&gt;הפעלה&lt;/strong&gt; ולאחר מכן לוחצים על &lt;strong&gt;אישור&lt;/strong&gt;
       &lt;li&gt;עוברים אל &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;מרכז העזרה של Chrome&lt;/a&gt; כדי ללמוד כיצד להסיר את התוכנה מהמחשב
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">ניהול סיסמאות…</translation>
 <translation id="7419106976560586862">נתיב פרופיל</translation>
 <translation id="7437289804838430631">הוספת פרטים ליצירת קשר</translation>
 <translation id="7441627299479586546">נושא המדיניות שגוי</translation>
@@ -1116,6 +1120,7 @@ Del</translation>
 <translation id="9103872766612412690">‏האתר <ph name="SITE" /> משתמש בדרך כלל בהצפנה כדי להגן על המידע שלך. כאשר Chromium ניסה הפעם להתחבר ל-<ph name="SITE" />, האתר שלח חזרה אישורים חריגים ושגויים. ייתכן שתוקף מנסה להתחזות לאתר <ph name="SITE" />, או שמסך כניסה ל-Wi-Fi הפריע לחיבור. המידע שלך עדיין מאובטח מכיוון ש-Chromium הפסיק את החיבור לפני חילופי הנתונים.</translation>
 <translation id="9106062320799175032">הוספה של כתובת לחיוב</translation>
 <translation id="910908805481542201">איך פותרים את הבעיה?</translation>
+<translation id="9114524666733003316">אישור הכרטיס מתבצע...</translation>
 <translation id="9128870381267983090">התחבר לרשת</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9137248913990643158">‏היכנס לחשבונך ב-Chrome לפני שתשתמש באפליקציה הזו.</translation>
