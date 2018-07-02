@@ -546,21 +546,41 @@ void TabStrip::MoveTab(int from_model_index,
 }
 
 void TabStrip::RemoveTabAt(content::WebContents* contents, int model_index) {
+  if (!touch_layout_)
+    PrepareForAnimation();
+
+  Tab* tab = tab_at(model_index);
+  tab->set_closing(true);
+
+  int old_x = tabs_.ideal_bounds(model_index).x();
+  RemoveTabFromViewModel(model_index);
+
   if (touch_layout_) {
-    Tab* tab = tab_at(model_index);
-    tab->set_closing(true);
-    int old_x = tabs_.ideal_bounds(model_index).x();
-    // We still need to paint the tab until we actually remove it. Put it in
-    // tabs_closing_map_ so we can find it.
-    RemoveTabFromViewModel(model_index);
     touch_layout_->RemoveTab(model_index,
                              GenerateIdealBoundsForPinnedTabs(nullptr), old_x);
-    ScheduleRemoveTabAnimation(tab);
-  } else if (in_tab_close_ && model_index != GetModelCount()) {
-    StartMouseInitiatedRemoveTabAnimation(model_index);
-  } else {
-    StartRemoveTabAnimation(model_index);
   }
+
+  GenerateIdealBounds();
+  AnimateToIdealBounds();
+
+  // Animate the tab being closed to zero width.
+  gfx::Rect tab_bounds = tab->bounds();
+  tab_bounds.set_width(0);
+  bounds_animator_.AnimateViewTo(tab, tab_bounds);
+  bounds_animator_.SetAnimationDelegate(
+      tab, std::make_unique<RemoveTabDelegate>(this, tab));
+
+  // TODO(pkasting): The first part of this conditional doesn't really make
+  // sense to me.  Why is each condition justified?
+  if ((touch_layout_ || !in_tab_close_ || model_index == GetModelCount()) &&
+      TabDragController::IsAttachedTo(this)) {
+    // Don't animate the new tab button when dragging tabs. Otherwise it looks
+    // like the new tab button magically appears from beyond the end of the tab
+    // strip.
+    bounds_animator_.StopAnimatingView(new_tab_button_);
+    new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
+  }
+
   SwapLayoutIfNecessary();
 
   for (TabStripObserver& observer : observers_)
@@ -1488,39 +1508,6 @@ void TabStrip::StartMoveTabAnimation() {
   AnimateToIdealBounds();
 }
 
-void TabStrip::StartRemoveTabAnimation(int model_index) {
-  PrepareForAnimation();
-
-  // Mark the tab as closing.
-  Tab* tab = tab_at(model_index);
-  tab->set_closing(true);
-
-  RemoveTabFromViewModel(model_index);
-
-  ScheduleRemoveTabAnimation(tab);
-}
-
-void TabStrip::ScheduleRemoveTabAnimation(Tab* tab) {
-  // Start an animation for the tabs.
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-
-  // Animate the tab being closed to zero width.
-  gfx::Rect tab_bounds = tab->bounds();
-  tab_bounds.set_width(0);
-  bounds_animator_.AnimateViewTo(tab, tab_bounds);
-  bounds_animator_.SetAnimationDelegate(
-      tab, std::make_unique<RemoveTabDelegate>(this, tab));
-
-  // Don't animate the new tab button when dragging tabs. Otherwise it looks
-  // like the new tab button magically appears from beyond the end of the tab
-  // strip.
-  if (TabDragController::IsAttachedTo(this)) {
-    bounds_animator_.StopAnimatingView(new_tab_button_);
-    new_tab_button_->SetBoundsRect(new_tab_button_bounds_);
-  }
-}
-
 void TabStrip::AnimateToIdealBounds() {
   for (int i = 0; i < tab_count(); ++i) {
     // If the tab is being dragged manually, skip it.
@@ -2251,28 +2238,6 @@ void TabStrip::StartPinnedTabAnimation() {
 
   GenerateIdealBounds();
   AnimateToIdealBounds();
-}
-
-void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
-  PrepareForAnimation();
-
-  Tab* tab_closing = tab_at(model_index);
-  tab_closing->set_closing(true);
-
-  // We still need to paint the tab until we actually remove it. Put it in
-  // tabs_closing_map_ so we can find it.
-  RemoveTabFromViewModel(model_index);
-
-  GenerateIdealBounds();
-  AnimateToIdealBounds();
-
-  gfx::Rect tab_bounds = tab_closing->bounds();
-  tab_bounds.set_width(0);
-  bounds_animator_.AnimateViewTo(tab_closing, tab_bounds);
-
-  // Register delegate to do cleanup when done.
-  bounds_animator_.SetAnimationDelegate(
-      tab_closing, std::make_unique<RemoveTabDelegate>(this, tab_closing));
 }
 
 bool TabStrip::IsPointInTab(Tab* tab,
