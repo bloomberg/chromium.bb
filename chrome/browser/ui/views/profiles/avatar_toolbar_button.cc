@@ -267,7 +267,7 @@ gfx::Image AvatarToolbarButton::GetIconImageFromProfile() const {
   // If the user isn't signed in and the profile icon wasn't changed explicitly,
   // try to use the first account icon of the sync promo.
   if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() &&
-      entry->GetAvatarIconIndex() == 0) {
+      entry->IsUsingDefaultAvatar()) {
     std::vector<AccountInfo> promo_accounts =
         signin_ui_util::GetAccountsForDicePromos(profile_);
     if (!promo_accounts.empty()) {
