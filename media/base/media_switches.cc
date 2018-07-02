@@ -354,7 +354,7 @@ const base::Feature kAutoplayIgnoreWebAudio{"AutoplayIgnoreWebAudio",
 #if defined(OS_ANDROID)
 // Enable a gesture to make the media controls expaned into the display cutout.
 const base::Feature kMediaControlsExpandGesture{
-    "MediaControlsExpandGesture", base::FEATURE_DISABLED_BY_DEFAULT};
+    "MediaControlsExpandGesture", base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Lock the screen orientation when a video goes fullscreen.
 const base::Feature kVideoFullscreenOrientationLock{
