@@ -63,25 +63,6 @@ int CachingCertVerifier::Verify(const CertVerifier::RequestParams& params,
   return result;
 }
 
-bool CachingCertVerifier::AddEntry(const RequestParams& params,
-                                   int error,
-                                   const CertVerifyResult& verify_result,
-                                   base::Time verification_time) {
-  // If the cache is full, don't bother.
-  if (cache_.size() == cache_.max_entries())
-    return false;
-
-  // If there is an existing entry, don't bother updating it.
-  const CertVerificationCache::value_type* entry =
-      cache_.Get(params, CacheValidityPeriod(base::Time::Now()));
-  if (entry)
-    return false;
-
-  // Otherwise, go and add it.
-  AddResultToCache(params, verification_time, verify_result, error);
-  return true;
-}
-
 CachingCertVerifier::CachedResult::CachedResult() : error(ERR_FAILED) {}
 
 CachingCertVerifier::CachedResult::~CachedResult() = default;
