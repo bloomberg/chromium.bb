@@ -44,22 +44,23 @@ void FontSizeTabHelper::SetPageFontSize(int size) {
 }
 
 int FontSizeTabHelper::GetSystemSuggestedFontSize() const {
-  // TODO(crbug.com/836962): Determine precise scaling numbers for
-  // |font_size_map|.
+  // Scaling numbers are calculated by [UIFont
+  // preferredFontForTextStyle:UIFontTextStyleBody].pointSize, which are [14,
+  // 15, 16, 17(default), 19, 21, 23, 28, 33, 40, 47, 53].
   static NSDictionary* font_size_map = @{
     UIContentSizeCategoryUnspecified : @100,
-    UIContentSizeCategoryExtraSmall : @70,
-    UIContentSizeCategorySmall : @80,
-    UIContentSizeCategoryMedium : @90,
+    UIContentSizeCategoryExtraSmall : @82,
+    UIContentSizeCategorySmall : @88,
+    UIContentSizeCategoryMedium : @94,
     UIContentSizeCategoryLarge : @100,  // system default
-    UIContentSizeCategoryExtraLarge : @110,
-    UIContentSizeCategoryExtraExtraLarge : @120,
-    UIContentSizeCategoryExtraExtraExtraLarge : @130,
-    UIContentSizeCategoryAccessibilityMedium : @140,
-    UIContentSizeCategoryAccessibilityLarge : @150,
-    UIContentSizeCategoryAccessibilityExtraLarge : @160,
-    UIContentSizeCategoryAccessibilityExtraExtraLarge : @170,
-    UIContentSizeCategoryAccessibilityExtraExtraExtraLarge : @180,
+    UIContentSizeCategoryExtraLarge : @112,
+    UIContentSizeCategoryExtraExtraLarge : @124,
+    UIContentSizeCategoryExtraExtraExtraLarge : @135,
+    UIContentSizeCategoryAccessibilityMedium : @165,
+    UIContentSizeCategoryAccessibilityLarge : @194,
+    UIContentSizeCategoryAccessibilityExtraLarge : @235,
+    UIContentSizeCategoryAccessibilityExtraExtraLarge : @276,
+    UIContentSizeCategoryAccessibilityExtraExtraExtraLarge : @312,
   };
   UIContentSizeCategory category =
       UIApplication.sharedApplication.preferredContentSizeCategory;

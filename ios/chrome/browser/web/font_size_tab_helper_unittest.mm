@@ -69,7 +69,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithDefaultFontSize) {
   preferred_content_size_category_ = UIContentSizeCategoryExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(112)", last_executed_js);
   histogram_tester_.ExpectUniqueSample(
       "Accessibility.iOS.NewLargerTextCategory", false, 2);
   web_state_.ClearLastExecutedJavascript();
@@ -77,7 +77,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithDefaultFontSize) {
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(112)", last_executed_js);
   histogram_tester_.ExpectUniqueSample(
       "Accessibility.iOS.NewLargerTextCategory", false, 3);
 }
@@ -91,7 +91,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
   // Load web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(110)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(112)", last_executed_js);
   histogram_tester_.ExpectUniqueSample(
       "Accessibility.iOS.NewLargerTextCategory", false, 1);
   web_state_.ClearLastExecutedJavascript();
@@ -101,7 +101,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
   preferred_content_size_category_ = UIContentSizeCategoryExtraExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
   histogram_tester_.ExpectUniqueSample(
       "Accessibility.iOS.NewLargerTextCategory", false, 2);
   web_state_.ClearLastExecutedJavascript();
@@ -109,7 +109,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithExtraLargeFontSize) {
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
   histogram_tester_.ExpectUniqueSample(
       "Accessibility.iOS.NewLargerTextCategory", false, 3);
 }
@@ -133,7 +133,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithUnrecognizableFontSize) {
   preferred_content_size_category_ = UIContentSizeCategoryExtraExtraLarge;
   SendUIContentSizeCategoryDidChangeNotification();
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
   histogram_tester_.ExpectBucketCount("Accessibility.iOS.NewLargerTextCategory",
                                       false, 1);
   web_state_.ClearLastExecutedJavascript();
@@ -141,7 +141,7 @@ TEST_F(FontSizeTabHelperTest, PageLoadedWithUnrecognizableFontSize) {
   // Reload web page.
   web_state_.OnPageLoaded(web::PageLoadCompletionStatus::SUCCESS);
   last_executed_js = base::UTF16ToUTF8(web_state_.GetLastExecutedJavascript());
-  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(120)", last_executed_js);
+  EXPECT_EQ("__gCrWeb.accessibility.adjustFontSize(124)", last_executed_js);
   histogram_tester_.ExpectBucketCount("Accessibility.iOS.NewLargerTextCategory",
                                       false, 2);
 }
