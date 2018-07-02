@@ -8,6 +8,7 @@
 
 #include "components/cbor/cbor_values.h"
 #include "components/cbor/cbor_writer.h"
+#include "device/fido/fido_parsing_utils.h"
 
 namespace device {
 
@@ -26,8 +27,9 @@ cbor::CBORValue::ArrayValue ToArrayValue(const Container& container) {
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     base::flat_set<ProtocolVersion> versions,
-    std::vector<uint8_t> aaguid)
-    : versions_(std::move(versions)), aaguid_(std::move(aaguid)) {}
+    base::span<const uint8_t, kAaguidLength> aaguid)
+    : versions_(std::move(versions)),
+      aaguid_(fido_parsing_utils::Materialize(aaguid)) {}
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     AuthenticatorGetInfoResponse&& that) = default;

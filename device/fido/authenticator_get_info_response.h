@@ -26,7 +26,7 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
  public:
   AuthenticatorGetInfoResponse(base::flat_set<ProtocolVersion> versions,
-                               std::vector<uint8_t> aaguid);
+                               base::span<const uint8_t, kAaguidLength> aaguid);
   AuthenticatorGetInfoResponse(AuthenticatorGetInfoResponse&& that);
   AuthenticatorGetInfoResponse& operator=(AuthenticatorGetInfoResponse&& other);
   ~AuthenticatorGetInfoResponse();
@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
       AuthenticatorSupportedOptions options);
 
   const base::flat_set<ProtocolVersion>& versions() const { return versions_; }
-  const std::vector<uint8_t>& aaguid() const { return aaguid_; }
+  const std::array<uint8_t, kAaguidLength>& aaguid() const { return aaguid_; }
   const base::Optional<uint32_t>& max_msg_size() const { return max_msg_size_; }
   const base::Optional<std::vector<uint8_t>>& pin_protocol() const {
     return pin_protocols_;
@@ -52,7 +52,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
 
  private:
   base::flat_set<ProtocolVersion> versions_;
-  std::vector<uint8_t> aaguid_;
+  std::array<uint8_t, kAaguidLength> aaguid_;
   base::Optional<uint32_t> max_msg_size_;
   base::Optional<std::vector<uint8_t>> pin_protocols_;
   base::Optional<std::vector<std::string>> extensions_;

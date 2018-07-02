@@ -20,6 +20,7 @@
 #include "device/fido/make_credential_task.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
+#include "device/fido/virtual_ctap2_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -105,6 +106,21 @@ TEST_F(FidoMakeCredentialTaskTest, MakeCredentialSuccess) {
   EXPECT_TRUE(make_credential_callback_receiver().value());
   EXPECT_EQ(device->supported_protocol(), ProtocolVersion::kCtap);
   EXPECT_TRUE(device->device_info());
+}
+
+TEST_F(FidoMakeCredentialTaskTest, TestRegisterSuccessWithFake) {
+  auto device = std::make_unique<VirtualCtap2Device>();
+  const auto task = CreateMakeCredentialTask(device.get());
+  make_credential_callback_receiver().WaitForCallback();
+
+  EXPECT_EQ(CtapDeviceResponseCode::kSuccess,
+            make_credential_callback_receiver().status());
+
+  // We don't verify the response from the fake, but do a quick sanity check.
+  ASSERT_TRUE(make_credential_callback_receiver().value());
+  EXPECT_EQ(
+      32u,
+      make_credential_callback_receiver().value()->raw_credential_id().size());
 }
 
 TEST_F(FidoMakeCredentialTaskTest, MakeCredentialWithIncorrectRpIdHash) {

@@ -70,6 +70,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   exclude_list() const {
     return exclude_list_;
   }
+  const base::Optional<std::vector<uint8_t>>& pin_auth() const {
+    return pin_auth_;
+  }
 
  private:
   std::array<uint8_t, kClientDataHashLength> client_data_hash_;
