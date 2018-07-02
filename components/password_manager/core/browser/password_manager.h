@@ -180,6 +180,13 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   NavigationEntryToCheck entry_to_check() const { return entry_to_check_; }
 
+  // Reports the priority of a PasswordGenerationRequirementsSpec for a
+  // generated password. See
+  // PasswordFormMetricsRecorder::ReportSpecPriorityForGeneratedPassword.
+  void ReportSpecPriorityForGeneratedPassword(
+      const autofill::PasswordForm& password_form,
+      uint32_t spec_priority);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(
       PasswordManagerTest,

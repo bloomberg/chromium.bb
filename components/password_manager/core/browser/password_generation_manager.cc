@@ -141,7 +141,8 @@ base::string16 PasswordGenerationManager::GeneratePassword(
     const GURL& last_committed_url,
     autofill::FormSignature form_signature,
     autofill::FieldSignature field_signature,
-    uint32_t max_length) {
+    uint32_t max_length,
+    uint32_t* spec_priority) {
   autofill::PasswordRequirementsSpec spec;
 
   // Lookup password requirements.
@@ -151,6 +152,9 @@ base::string16 PasswordGenerationManager::GeneratePassword(
     spec = password_requirements_service->GetSpec(
         last_committed_url.GetOrigin(), form_signature, field_signature);
   }
+
+  if (spec_priority)
+    *spec_priority = spec.priority();
 
   // Choose the password length as the minimum of default length, what website
   // allows, and what the autofill server suggests.
