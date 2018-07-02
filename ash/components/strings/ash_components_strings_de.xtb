@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox für gesprochenes Feedback aktivieren oder deaktivieren</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Auf der Webseite nach unten scrollen</translation>
-<translation id="2568632782096378307">Bildschirmauflösung auf Standardeinstellung zurücksetzen</translation>
 <translation id="2596078834055697711">Screenshot von Fenster erstellen</translation>
 <translation id="2685170433750953446">"<ph name="SHIFT" />" <ph name="SEPARATOR1" /> "<ph name="ALT" />" <ph name="SEPARATOR2" /> "<ph name="L" />", dann "<ph name="TAB" />" oder "<ph name="RIGHT" />"</translation>
 <translation id="2687057317448262550">Zur Eingabemethode der nächsten Sprache wechseln</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Seite herauszoomen</translation>
 <translation id="2804480015716812239">"<ph name="ALT" />" gedrückt halten und auf einen Link klicken</translation>
 <translation id="2830827904629746450">Fenster rechts andocken</translation>
+<translation id="2840766858109427815">Weiter zur nächsten Seite</translation>
 <translation id="2872353916818027657">Hauptmonitor tauschen</translation>
 <translation id="2914313326123580426">Steuerfeld für Entwicklertools ein- oder ausblenden</translation>
 <translation id="292495055542441795">Vollbildmodus an oder aus</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Task-Manager aufrufen</translation>
 <translation id="3422679037938588196">Vorherigen Treffer für die Suchanfrage aufrufen</translation>
 <translation id="344577624355799426">"<ph name="ALT" />" oder "<ph name="SEARCH" />" <ph name="SEPARATOR" /> "<ph name="DOWN" />"</translation>
-<translation id="346243998268439747">Zoomstufe zurücksetzen</translation>
 <translation id="353037708190149633">Alle geöffneten Webseiten im aktuellen Fenster als Lesezeichen in einem neuen Ordner speichern</translation>
 <translation id="355103131818127604">Link in einem neuen Tab im Hintergrund öffnen</translation>
 <translation id="3649256019230929621">Fenster minimieren</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Zeile mit der Adressleiste markieren</translation>
 <translation id="4148761611071495477">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="G" />" oder "<ph name="ENTER" />"</translation>
 <translation id="4240486403425279990">Übersichtsmodus</translation>
+<translation id="4382340674111381977">Zurück zur vorherigen Seite</translation>
 <translation id="4472417192667361414">System- &amp; Displayeinstellungen</translation>
 <translation id="4556221320735744018">Siehe Hilfe zu Tastenkombinationen</translation>
 <translation id="4628718545549558538">Statusbereich mit dem Kontobild öffnen</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Vorheriges Wort löschen</translation>
 <translation id="5899919361772749550">Entwicklertools-Konsole ein- oder ausblenden</translation>
 <translation id="5921745308587794300">Fenster drehen</translation>
-<translation id="5975083100439434680">Verkleinern</translation>
 <translation id="6022924867608035986">Text im Suchfeld löschen</translation>
 <translation id="6045998054441862242">Modus mit hohem Kontrast aktivieren</translation>
 <translation id="6052614013050385269">Mit der rechten Maustaste auf einen Link klicken</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Datei im Browser öffnen</translation>
 <translation id="7917881398263220094">Laden der aktuellen Seite beenden</translation>
 <translation id="7952165122793773711">Zu den Tabs 1 bis 8 wechseln</translation>
-<translation id="8025696740288105292">"<ph name="CTRL" />" <ph name="SEPARATOR1" /> "<ph name="SHIFT" />" <ph name="SEPARATOR2" /> "<ph name="PLUS" />" oder "<ph name="MINUS" />"</translation>
 <translation id="8026334261755873520">Browserdaten löschen</translation>
 <translation id="8130528849632411619">Zum Anfang des Dokuments springen</translation>
 <translation id="8147954207400281792">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="K" />" oder "<ph name="E" />"</translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Benachrichtigungen ansehen</translation>
 <translation id="8855885154700222542">Taste für Vollbildmodus</translation>
 <translation id="88986195241502842">Bildlauf nach unten</translation>
-<translation id="8903921497873541725">Vergrößern</translation>
 <translation id="8924883688469390268">Zum vorherigen Nutzer wechseln</translation>
-<translation id="8951768610999698672">Elemente auf dem Bildschirm vergrößern oder verkleinern</translation>
 <translation id="8977648847395357314">Inhalt der Adressleiste auswählen</translation>
 <translation id="8982190978301344584">Menü mit einer Liste der verfügbaren IMEs einblenden</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 bis 8</translation>

@@ -42,6 +42,9 @@
       Izmantojamo mainīgo vērtību sarakstu skatiet šeit: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ja šī politika nav iestatīta, tiks izmantots noklusējuma kešatmiņas direktorijs un lietotājs varēs to ignorēt, iestatot komandrindas karodziņu “--disk-cache-dir”.</translation>
+<translation id="1135264353752122851">Tiek konfigurēts, kuri tastatūras izkārtojumi ir atļauti <ph name="PRODUCT_OS_NAME" /> lietotāju sesijām.
+
+      Ja šī politika ir iestatīta, lietotājs var atlasīt tikai vienu šīs politikas norādīto ievades metodi. Ja šī politika nav iestatīta vai tai ir iestatīts tukšs saraksts, lietotājs var atlasīt visas atbalstītās ievades metodes. Ja šī politika neatļauj izmantot pašreizējo ievades metodi, ievades metode tiks pārslēgta uz aparatūras tastatūras izkārtojumu (ja tas būs atļauts) vai pirmo derīgo ierakstu sarakstā. Visas nederīgās vai neatbalstītās ievades metodes sarakstā tiks ignorētas.</translation>
 <translation id="1138294736309071213">Šī politika darbojas tikai mazumtirdzniecības režīmā.
 
       Nosaka ilgumu, pirms ekrānsaudzētājs tiek parādīts pierakstīšanās ekrānā ierīcēm mazumtirdzniecības režīmā.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Ielādēt norādītos vietrāžus URL demonstrācijas pieteikšanās brīdī</translation>
 <translation id="1223789468190631420">Drošas pārlūkošanas statuss uzticamiem avotiem</translation>
 <translation id="123081309365616809">Iespējot satura apraidi ierīcē</translation>
+<translation id="1243570869342663665">Pārvaldīt SafeSites pieaugušajiem paredzētā satura filtrēšanu</translation>
 <translation id="1257550411839719984">Noklusējuma lejupielāžu direktorija iestatīšana</translation>
 <translation id="1265053460044691532">Ierobežojiet laiku, kad autentificēts lietotājs, izmantojot SAML, var pieteikties bezsaistē.</translation>
 <translation id="1291880496936992484">Brīdinājums: RC4 tiks pilnībā noņemts no <ph name="PRODUCT_NAME" /> pēc 52. versijas (aptuveni 2016. gada septembrī), un šī politika vairs nebūs spēkā.
@@ -265,6 +269,7 @@
       Vērtības formāts tiek rādīts atbilstoši IANA laika joslu datu bāzē (skatiet vietni https://en.wikipedia.org/wiki/Tz_database) norādītajiem laika joslu nosaukumiem. Lielākā daļa laika joslu tiek attēlotas formātā “kontinents/liela_pilsēta” vai “okeāns/liela_pilsēta”.
 
       Iestatot šo politiku, tiek pilnībā atspējota laika joslas noteikšana pēc ierīces atrašanās vietas. Tiek ignorēta arī politika SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Iespējot reklāmas satura rādīšanu visā cilnē</translation>
 <translation id="1888871729456797026">Mākoņa politikas reģistrācijas marķieris datorā</translation>
 <translation id="1897365952389968758">Atļaut visām vietnēm izpildīt JavaScript</translation>
 <translation id="1906888171268104594">Kontrolē to, vai lietojuma un diagnostikas dati, tostarp avāriju pārskati, tiek nosūtīti uzņēmumam Google.
@@ -378,6 +383,7 @@
       var to mainīt. Tādā gadījumā noklusējuma vērtība vairs netiek lietota,
       restartējot ierīci.</translation>
 <translation id="2156132677421487971">Konfigurējiet <ph name="PRODUCT_NAME" /> politikas. Izmantojot šo funkciju, lietotāji pārlūka cilnēs, vietnēs vai darbvirsmā redzamo saturu var pārsūtīt uz attāliem displejiem un skaņas sistēmām.</translation>
+<translation id="2166472654199325139">Nefiltrēt vietnes ar pieaugušajiem paredzētu saturu</translation>
 <translation id="2168397434410358693">Aizkave līdz dīkstāvei, ja ierīce darbojas ar maiņstrāvu</translation>
 <translation id="2170233653554726857">WPAD optimizācijas iespējošana</translation>
 <translation id="2176565653304920879">Ja šī politika ir iestatīta, atkarībā no iestatījuma vērtības būs pieejama viena no tālāk norādītajām automātiskās laika joslas noteikšanas plūsmām.
@@ -532,6 +538,12 @@
 <translation id="2466131534462628618">Starpniekservera ignorēšana caurlaides lapas autentificēšanā</translation>
 <translation id="2482676533225429905">Vietējā ziņojumapmaiņa</translation>
 <translation id="2483146640187052324">Prognozēt tīkla darbības neatkarīgi no tīkla savienojuma</translation>
+<translation id="2484208301968418871">Šī politika pārvalda SafeSites URL filtra lietojumu.
+      Šis filtrs izmanto Google drošas meklēšanas API, lai noteiktu, vai vietrāžos URL ir ietverts pornogrāfiska rakstura saturs.
+
+      Ja šī politika nav konfigurēta vai tai ir iestatīta vērtība “Nefiltrēt vietnes ar pieaugušajiem paredzētu saturu”, vietnes netiks filtrētas.
+
+      Ja šai politika ir iestatīta vērtība “Filtrēt augšējā līmeņa vietnes ar pieaugušajiem paredzētu saturu”, tiks filtrētas vietnes, kurās ir pornogrāfiska rakstura saturs.</translation>
 <translation id="2485721741875148980">Ja šai politikai ir iestatīta vērtība “true”, lietotājam pirms pārlūka <ph name="PRODUCT_NAME" /> lietošanas ir jāpierakstās, izmantojot savu profilu. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība “false”. Ņemiet vērā, ka pēc šīs politikas iespējošanas neparakstītie profili tiek bloķēti un nav pieejami. Plašāku informāciju skatiet palīdzības centra rakstā.
 
       Ja šai politikai ir iestatīta vērtība “false” vai politika nav konfigurēta, lietotājs var lietot pārlūku <ph name="PRODUCT_NAME" /> bez pierakstīšanās.</translation>
@@ -692,12 +704,6 @@
 
       Ja iespējosiet šo iestatījumu, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots operētājsistēmas noklusējuma printeris.</translation>
 <translation id="2867699958489427143">Veikt atriti un paturēt mērķa versiju, ja OS versija ir jaunāka nekā mērķa versija. Vienlaikus pilnībā atiestatīt rūpnīcas datus ar funkciju Powerwash.</translation>
-<translation id="286802604195763750">Izmantojot šo politiku, varat kontrolēt, kad aktivizēt paroles brīdinājuma rādīšanu. Paroles aizsardzība brīdina lietotājus, ja tie atkārtoti izmanto savu aizsargāto paroli aizdomīgās vietnēs.
-
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOff”, netiks rādīts paroles aizsardzības brīdinājums.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPasswordReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotājs atkārtoti izmantos Google paroli vietnē, kas nav iekļauta baltajā sarakstā.
-      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPhishingReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē.
-      Ja šai politikai nav iestatīta vērtība, paroles aizsardzības brīdinājuma rādīšana tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē, taču lietotājs varēs mainīt šo iestatījumu.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
@@ -1366,6 +1372,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja šī politika netiek iestatīta vai tiek atstāta tukša, produktā <ph name="PRODUCT_NAME" /> var pierakstīties jebkurš lietotājs.</translation>
 <translation id="4858735034935305895">Atļaut pilnekrāna režīmu</translation>
+<translation id="4861767323695239729">Konfigurēt lietotāja sesijā atļautās ievades metodes</translation>
 <translation id="4869787217450099946">Norāda, vai ir atļauta ekrāna aktivizēšanas bloķēšana. Izmantojot barošanas pārvaldības paplašinājuma API, ekrāna aktivizēšanas bloķēšanu var pieprasīt paplašinājumi.
 
           Ja politikai ir iestatīta vērtība “true” vai politika nav iestatīta, barošanas pārvaldībā tiks veikta ekrāna aktivizēšanas bloķēšana.
@@ -1954,6 +1961,7 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
       Ja šī politika ir atspējota vai nav iestatīta, tiks izmantoti tikai parastie lokālie profili.
 
       Politika “<ph name="SYNC_DISABLED_POLICY_NAME" />” atspējo visu datu sinhronizāciju, ignorējot politiku “RoamingProfileSupportEnabled”.</translation>
+<translation id="6731757988219967594">Filtrēt augšējā līmeņa vietnes ar pieaugušajiem paredzētu saturu (bet ne iegultos iFrame tagus)</translation>
 <translation id="6735701345096330595">Iespējo pareizrakstības pārbaudes valodas piespiedu kārtā</translation>
 <translation id="673699536430961464">Šis iestatījums ļauj lietotājiem pārlūka loga satura apgabalā pārslēgt Google kontu, kad lietotāji ir pierakstījušies <ph name="PRODUCT_OS_NAME" /> ierīcē.
 
@@ -1975,6 +1983,13 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 <translation id="6757438632136860443">Ļauj iestatīt to vietrāžu URL rakstu sarakstu, kas norāda vietnes, kurām atļauts izpildīt spraudni <ph name="FLASH_PLUGIN_NAME" />.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota vispārējā noklusējuma vērtība no politikas “DefaultPluginsSetting” (ja tā ir iestatīta) vai lietotāja personiskās konfigurācijas.</translation>
+<translation id="6762235610019366960">Pārlūkā <ph name="PRODUCT_NAME" /> atļauj pārvaldīt reklāmas un/vai mācību satura rādīšanu pa visu cilni.
+
+      Ja iestatījums nav konfigurēts vai ir iespējots (iestatīta vērtība “True”), produkta informācijas sniegšanai pārlūkā <ph name="PRODUCT_NAME" /> lietotājiem var tikt rādīts saturs pa visu cilni.
+
+      Ja iestatījums ir atspējots (iestatīta vērtība “False”), produkta informācijas sniegšanai pārlūkā <ph name="PRODUCT_NAME" /> lietotājiem netiks rādīts saturs pa visu cilni.
+
+      Šis iestatījums pārvalda to sveiciena lapu attēlojumu, kas palīdz lietotājiem pierakstīties pārlūkā <ph name="PRODUCT_NAME" />, izvēlēties to kā noklusējuma pārlūku vai citādi informēt par produkta funkcijām.</translation>
 <translation id="6766216162565713893">Ļaut vietnēm pieprasīt, lai lietotājs piešķirtu piekļuvi tuvumā esošai Bluetooth ierīcei</translation>
 <translation id="6770454900105963262">Ziņošana par aktīvām kioska sesijām</translation>
 <translation id="6786747875388722282">Paplašinājumi</translation>
@@ -2303,17 +2318,6 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="7511361072385293666">Ja politikai ir iestatīta vērtība Patiesa vai tā nav iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> ir atļauts lietot protokolu QUIC.
       Ja politikai ir iestatīta vērtība Nepatiesa, protokolu QUIC nav atļauts lietot.</translation>
 <translation id="7519251620064708155">Atļaut atslēgu ģenerēšanu šajās vietnēs</translation>
-<translation id="7529083451528428240">Ļauj bloķēt lietotāja sesiju atbilstoši iestatītajam klienta laikam vai dienas lietojuma kvotai.
-
-          Elements |time_window_limit| norāda diennakts laika periodu, kurā lietotāja sesija ir jābloķē. Katrai nedēļas dienai tiek atbalstīta tikai viena kārtula, tāpēc elementa |entries| vērtību diapazons ir 0–7. Elementos |starts_at| un |ends_at| tiek norādītas laika perioda ierobežojuma sākuma un beigu vērtības: ja elementa |ends_at| vērtība ir mazāka par |starts_at| vērtību, tas nozīmē, ka laika periods |time_limit_window| beidzas nākamajā dienā. Elements |last_updated_millis| ir UTC laikspiedols, kas norāda ieraksta pēdējās atjaunināšanas laiku; tas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilstu veselam skaitlim.
-
-          Elements |time_usage_limit| norāda ierīces lietojuma ilguma dienas kvotu — lietojuma ilgumam sasniedzot šo vērtību, lietotāja sesija tiek aizvērta. Katrai nedēļas dienai ir atsevišķs rekvizīts — tas ir jāiestata tikai tad, ja attiecīgajai dienai ir iestatīta aktīva kvota. Elements |usage_quota_mins| norāda dienā atļauto pārvaldītās ierīces lietošanas ilgumu, bet elements |reset_at| norāda laiku, kad lietojuma kvota tiek atjaunota. Noklusējuma vērtība elementam |reset_at| ir pusnakts ({'hour': 0, 'minute': 0}). Elements |last_updated_millis| ir UTC laikspiedols, kas norāda ieraksta pēdējās atjaunināšanas laiku; tas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilst veselam skaitlim.
-
-          |overrides| var izmantot, lai norādītu īslaicīgi ignorējamu vienu vai vairākas iepriekšējās kārtulas.
-          * Ja elements “time_window_limit” vai “time_usage_limit” nav aktīvs, ierīces bloķēšanai var izmantot elementu |LOCK|.
-          * Elements |LOCK| īslaicīgi aizver lietotāja sesiju līdz nākamajam elementā “time_window_limit” vai “time_usage_limit” norādītajam laika periodam.
-          * Elements |UNLOCK| atver lietotāja sesiju, kuru aizvēršanu aktivizēja elementā “time_window_limit” vai “time_usage_limit” iestatītās vērtības.
-          Elements |created_time_millis| ir ignorēšanas kārtulas izveides UTC laikspiedols, kas tiek nosūtīts kā virkne, jo laikspiedola vērtības neatbilstu veselam skaitlim. Šī vērtība tiek izmantota, lai noteiktu ignorēšanas ilgumu. Ja pašreizējā aktīvā laika ierobežojuma funkcija (lietošanas ilguma ierobežojums vai lietošanas perioda ierobežojums) tika aktivizēta pēc ignorēšanas vērtības izveides, ignorēšanas vērtība netiks aktivizēta. Ja ignorēšanas vērtība tika izveidota pirms pēdējo izmaiņu ieviešanas aktīvajā elementā “time_window_limit” vai “time_usage_window”, ignorēšanas vērtība netiek piemērota.</translation>
 <translation id="7529100000224450960">Ļauj iestatīt URL rakstu sarakstu, kurā ir norādītas vietnes, kurām ir atļauts atvērt uznirstošos logus.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas DefaultPopupsSetting (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>

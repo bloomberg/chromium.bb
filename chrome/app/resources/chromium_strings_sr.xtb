@@ -216,6 +216,7 @@ Chromium не може да врати подешавања.</translation>
 <translation id="7774736947049807614">Није успела потврда идентитета помоћу овог сертификата. Поново се пријавите у Chromium као <ph name="USER_NAME" /> или контактирајте администратора за више информација. <ph name="ADDITIONAL_EXPLANATION" /></translation>
 <translation id="7790626492778995050"><ph name="PAGE_TITLE" /> – Chromium Canary</translation>
 <translation id="7867198900892795913">Chromium није успео да се ажурира на најновију верзију, па пропуштате нове функције и безбедносне исправке.</translation>
+<translation id="7901117350626490574">Ново ажурирање за Chromium је доступно и примениће се чим га поново покренете.</translation>
 <translation id="7937630085815544518">Били сте пријављени на Chromium као <ph name="USER_EMAIL_ADDRESS" />. Користите исти налог да бисте се поново пријавили.</translation>
 <translation id="7962572577636132072">Chromium се аутоматски ажурира, па увек имате најновију верзију.</translation>
 <translation id="7975919845073681630">Ово је секундарна инсталација Chromium-а па не можете да га подесите као подразумевани прегледач.</translation>

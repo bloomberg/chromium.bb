@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Zapnutie alebo vypnutie funkcie ChromeVox (hovorená spätná väzba)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Posunutie nadol na webovej stránke</translation>
-<translation id="2568632782096378307">Resetovanie rozlíšenia obrazovky na predvolenú hodnotu</translation>
 <translation id="2596078834055697711">Vytvorenie snímky obrazovky okna</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, potom <ph name="TAB" /> alebo <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Prepnutie na metódu vstupu ďalšieho jazyka</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Oddialenie stránky</translation>
 <translation id="2804480015716812239">Stlačenie klávesa <ph name="ALT" /> a kliknutie na odkaz</translation>
 <translation id="2830827904629746450">Ukotvenie okna vpravo</translation>
+<translation id="2840766858109427815">Prejsť na ďalšiu stranu</translation>
 <translation id="2872353916818027657">Prepnúť primárny monitor</translation>
 <translation id="2914313326123580426">Zobrazenie alebo skrytie panela s nástrojmi pre vývojárov</translation>
 <translation id="292495055542441795">Prepnutie na celú obrazovku</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Zobrazenie správcu úloh</translation>
 <translation id="3422679037938588196">Prechod na predchádzajúcu zhodu s vyhľadávacím dopytom</translation>
 <translation id="344577624355799426"><ph name="ALT" /> alebo <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Obnovenie úrovne lupy</translation>
 <translation id="353037708190149633">Uloženie všetkých otvorených stránok v aktuálnom okne ako záložiek v novom priečinku</translation>
 <translation id="355103131818127604">Otvorenie odkazu na novej karte na pozadí</translation>
 <translation id="3649256019230929621">Minimalizovať okno</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Zvýraznenie riadka s panelom s adresou</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> alebo <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Režim prehľadu</translation>
+<translation id="4382340674111381977">Prejsť na predchádzajúcu stránku</translation>
 <translation id="4472417192667361414">Nastavenia systému a zobrazenia</translation>
 <translation id="4556221320735744018">Zobrazenie pomocníka pre klávesové skratky</translation>
 <translation id="4628718545549558538">Otvorenie stavovej oblasti (kde je obrázok vášho účtu)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Odstránenie predchádzajúceho slova</translation>
 <translation id="5899919361772749550">Zobrazenie alebo skrytie konzoly s nástrojmi pre vývojárov</translation>
 <translation id="5921745308587794300">Otočiť okno</translation>
-<translation id="5975083100439434680">Oddialiť</translation>
 <translation id="6022924867608035986">Vymazať text vo vyhľadávacom poli</translation>
 <translation id="6045998054441862242">Zapnutie režimu vysokého kontrastu</translation>
 <translation id="6052614013050385269">Kliknutie na odkaz pravým tlačidlom</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Otvorenie súboru v prehliadači</translation>
 <translation id="7917881398263220094">Zastavenie načítavania aktuálnej stránky</translation>
 <translation id="7952165122793773711">Prechod na karty 1 až 8</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> alebo <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Vymazať dáta prehliadania</translation>
 <translation id="8130528849632411619">Prechod na začiatok dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> alebo <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Zobrazenie upozornení</translation>
 <translation id="8855885154700222542">Kláves celej obrazovky</translation>
 <translation id="88986195241502842">Posunúť stránku nadol</translation>
-<translation id="8903921497873541725">Priblížiť</translation>
 <translation id="8924883688469390268">Prepnutie na predchádzajúceho používateľa</translation>
-<translation id="8951768610999698672">Zväčšenie alebo zmenšenie položiek na obrazovke</translation>
 <translation id="8977648847395357314">Výber obsahu v paneli s adresou</translation>
 <translation id="8982190978301344584">Zobrazenie ponuky so zoznamom dostupných editorov IME</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 až 8</translation>

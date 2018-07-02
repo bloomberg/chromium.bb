@@ -4,8 +4,10 @@
 <translation id="1012876632442809908">USB-C 裝置 (前方連接埠)</translation>
 <translation id="1013923882670373915">藍牙裝置「<ph name="DEVICE_NAME" />」要求配對權限，請在裝置上輸入以下 PIN 碼：<ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">觸控筆電量偏低</translation>
+<translation id="1037492556044956303">已新增 <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">沒有網路</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>
+<translation id="1104621072296271835">完成連結可進一步提升裝置效能</translation>
 <translation id="112308213915226829">自動隱藏檔案櫃</translation>
 <translation id="1153356358378277386">配對裝置</translation>
 <translation id="1195412055398077112">遮視區域</translation>
@@ -99,6 +101,7 @@
 <translation id="277257480934873581">正在重新連線至 <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + 搜尋鍵</translation>
 <translation id="2805756323405976993">應用程式</translation>
+<translation id="2808012452536866044">Better Together 已改與新手機連結</translation>
 <translation id="2819276065543622893">現在即將登出。</translation>
 <translation id="2825619548187458965">檔案櫃</translation>
 <translation id="2844169650293029770">USB-C 裝置 (左前方連接埠)</translation>
@@ -107,10 +110,12 @@
 <translation id="2878884018241093801">最近沒有任何項目</translation>
 <translation id="2903844815300039659">已連上 <ph name="NAME" />，<ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">你正在分享螢幕畫面</translation>
+<translation id="2942350706960889382">停駐放大鏡</translation>
 <translation id="2942516765047364088">檔案櫃位置</translation>
 <translation id="2946119680249604491">新增連線</translation>
 <translation id="2961963223658824723">發生錯誤，請於幾秒後再試一次。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2996462380875591307">停駐放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + D 鍵即可停用。</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> 是受 <ph name="DOMAIN" /> 管理的公開工作階段</translation>
 <translation id="3000461861112256445">單聲道音訊</translation>
 <translation id="3009178788565917040">輸出</translation>
@@ -170,6 +175,7 @@
 <translation id="4072264167173457037">訊號中等</translation>
 <translation id="4200057768455216496">你按下了停駐放大鏡的快速鍵。確定要啟用這項功能嗎？</translation>
 <translation id="4217571870635786043">語音輸入</translation>
+<translation id="4274921305979314545">為你的 Chromebook 和手機建立連結</translation>
 <translation id="4279490309300973883">鏡像</translation>
 <translation id="4321179778687042513">Ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -223,6 +229,7 @@
 <translation id="554893713779400387">切換語音輸入</translation>
 <translation id="5571066253365925590">藍牙已啟用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
+<translation id="5598551463564921617">Better Together 已啟用</translation>
 <translation id="5600837773213129531">按下 Ctrl + Alt + Z 鍵即可停用互動朗讀功能。</translation>
 <translation id="5648021990716966815">麥克風插孔</translation>
 <translation id="5669267381087807207">啟用中</translation>
@@ -239,6 +246,7 @@
 <translation id="5901316534475909376">Shift + Esc 鍵</translation>
 <translation id="5911533659001334206">快速鍵檢視器</translation>
 <translation id="5916664084637901428">開啟</translation>
+<translation id="592343074608792716">這部 Chromebook 和你的手機會自動連結</translation>
 <translation id="5927132638760172455">正在投放至不明接收端</translation>
 <translation id="5947494881799873997">還原</translation>
 <translation id="595202126637698455">效能追蹤已啟用</translation>
@@ -261,6 +269,7 @@
 <translation id="615957422585914272">顯示螢幕小鍵盤</translation>
 <translation id="6164005077879661055">將這位受監管的使用者移除後，系統即會永久刪除所有與該使用者相關的檔案和本機資料。管理員仍可前往 <ph name="MANAGEMENT_URL" /> 查看這位受監管使用者的網頁瀏覽記錄和設定。</translation>
 <translation id="6165508094623778733">瞭解詳情</translation>
+<translation id="6259254695169772643">請使用觸控筆選取</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在啟用...</translation>
 <translation id="6284232397434400372">解析度已變更</translation>
 <translation id="6297287540776456956">使用觸控筆選取擷取範圍</translation>
@@ -350,6 +359,7 @@
 <translation id="7982789257301363584">網路</translation>
 <translation id="7994370417837006925">多帳戶登入</translation>
 <translation id="8000066093800657092">沒有網路</translation>
+<translation id="8029241286966751120">全螢幕放大鏡已啟用。再次按下 Ctrl 鍵 + 搜尋鍵 + M 鍵即可停用。</translation>
 <translation id="8054466585765276473">正在計算電池使用時間。</translation>
 <translation id="8061464966246066292">高對比模式</translation>
 <translation id="8098591350844501178">停止將畫面投放到「<ph name="RECEIVER_NAME" />」</translation>
@@ -365,6 +375,7 @@
 <translation id="8308637677604853869">前一個選單</translation>
 <translation id="8351131234907093545">寫筆記</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的選項選單</translation>
+<translation id="8406981827175133772">全螢幕放大鏡</translation>
 <translation id="8428213095426709021">設定</translation>
 <translation id="8431190899827883166">顯示觸控回應</translation>
 <translation id="8433186206711564395">網路設定</translation>

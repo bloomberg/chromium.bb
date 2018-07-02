@@ -42,6 +42,9 @@
       A használható változók listáját a következő webhelyen nézheti meg: https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Ha nem állítja be a házirendet, a böngésző az alapértelmezett gyorsítótárkönyvtárat fogja használni, amelyet a felhasználó felülbírálhat a „--disk-cache-dir” parancssori jelölővel.</translation>
+<translation id="1135264353752122851">Azt határozza meg, hogy milyen billentyűzetkiosztásokat lehet használni a <ph name="PRODUCT_OS_NAME" /> felhasználói munkameneteinél.
+
+      Ha be van állítva a házirend, a felhasználó a házirend által megadott beviteli módszerek közül csak egyet választhat ki. Ha a házirend nincs beállítva, vagy üres listára van állítva, a felhasználó az összes támogatott beviteli módot kiválaszthatja. Ha a házirend nem támogatja az aktuális beviteli módot, a rendszer a hardveres billentyűzetelosztásra (ha engedélyezett) vagy a listában lévő első érvényes lehetőségre állítja a beviteli módot. A listán lévő érvénytelen és nem támogatott beviteli módokat figyelmen kívül hagyja a rendszer.</translation>
 <translation id="1138294736309071213">Ez a házirend csak kiállító módban aktív.
 
       Meghatározza azt az időtartamot, amely eltelik, mire megjelenik a képernyőkímélő az eszközök bejelentkezési képernyőin kiállító módban.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Megadott URL-ek betöltése a Demó módban való bejelentkezésnél</translation>
 <translation id="1223789468190631420">A Biztonságos Böngészés engedélyezési állapota megbízható forrásoknál</translation>
 <translation id="123081309365616809">Tartalom eszközre való átküldésének engedélyezése</translation>
+<translation id="1243570869342663665">A SafeSites felnőtteknek szóló tartalmakra vonatkozó szűrőinek vezérlése.</translation>
 <translation id="1257550411839719984">Alapértelmezett letöltési könyvtár beállítása</translation>
 <translation id="1265053460044691532">Azon időtartam korlátozása, amennyit egy SAML révén hitelesített felhasználó offline bejelentkezve eltölthet</translation>
 <translation id="1291880496936992484">Figyelem: az RC4 teljes mértékben eltávolításra kerül a <ph name="PRODUCT_NAME" /> 52-es verziója után (2016 szeptembere körül), és ez a házirend onnantól kezdve nem lesz használható.
@@ -257,6 +261,7 @@
       Az érték formátuma megfelel az időzónák „IANA Time Zone Database” adatbázisban (lásd: „https://en.wikipedia.org/wiki/Tz_database”) található neveinek. A legtöbb időzónára lehetséges „földrész/nagyváros” vagy „óceán/nagyváros” formátumban hivatkozni.
 
       A házirend beállítása teljesen letiltja az eszköz helye szerinti automatikus időzóna-meghatározást, továbbá felülírja a SystemTimezoneAutomaticDetection házirendet is.</translation>
+<translation id="1885782360784839335">Teljes lapon megjelenített promóciós tartalom megjelenítésének engedélyezése</translation>
 <translation id="1888871729456797026">A felhővel kapcsolatos házirend regisztrációs tokenje asztali számítógépen</translation>
 <translation id="1897365952389968758">JavaScript futtatásának engedélyezése minden webhelyen</translation>
 <translation id="1906888171268104594">Beállítja, hogy kapjon-e a Google jelentést a használati statisztikákról és diagnosztikai adatokról (például összeomlási jelentéseket).
@@ -369,6 +374,7 @@
       amelyet a felhasználó szabadon módosíthat. Ebben az esetben
       a böngésző nem alkalmazza az alapértelmezett értéket újraindításkor.</translation>
 <translation id="2156132677421487971">Beállítja a(z) <ph name="PRODUCT_NAME" /> termékre vonatkozó házirendeket. Ez a funkció lehetővé teszi a felhasználók számára, hogy a böngészőből továbbítsák a lapok, a webhelyek vagy az asztal tartalmát a távoli kijelzők és hangrendszerek felé.</translation>
+<translation id="2166472654199325139">Felnőtteknek szóló tartalmakkal rendelkező webhelyek szűrésének kikapcsolása</translation>
 <translation id="2168397434410358693">Tétlenség késleltetése hálózati áramról való működés során</translation>
 <translation id="2170233653554726857">A WPAD-optimalizálás engedélyezése</translation>
 <translation id="2176565653304920879">Ha be van állítva ez a házirend, akkor az automatikus időzóna-érzékelési folyamat az alábbi módok valamelyikén történik a beállítás értékétől függően:
@@ -517,6 +523,12 @@
 <translation id="2466131534462628618">A hitelesítési portál a hitelesítéskor figyelmen kívül hagyja a proxyt</translation>
 <translation id="2482676533225429905">Natív üzenetküldő</translation>
 <translation id="2483146640187052324">Hálózati műveletek előrejelzése minden hálózati kapcsolaton</translation>
+<translation id="2484208301968418871">A házirend a SafeSites URL-szűrő alkalmazását vezérli.
+      A szűrő a Google Safe Search API-t használja annak eldöntésére, hogy pornográfként sorolja-e be az URL-eket.
+
+      Ha a házirend nincs beállítva, vagy értéke „Do not filter sites for adult content” (Ne szűrje a webhelyeket felnőtteknek szóló tartalmak szerint), akkor a rendszer nem szűri a webhelyeket.
+
+      Ha a házirend értéke „Filter top level sites for adult content” (Szűrje a legfelső szintű webhelyeket felnőtteknek szóló tartalmak szerint), akkor a pornográf besorolású webhelyeket kiszűri a rendszer.</translation>
 <translation id="2485721741875148980">Ha a házirend értéke igaz, akkor a felhasználónak be kell jelentkeznie a <ph name="PRODUCT_NAME" /> böngészőbe a profiljával, hogy használhassa. A BrowserGuestModeEnabled házirend alapértelmezett értéke hamisra lesz állítva. Fontos megjegyezni, hogy a meglévő, hitelesítés nélküli profilok kizárásra kerülnek, és hozzáférhetetlenné válnak a házirend engedélyezése után. További információt a súgócikkben talál.
 
       Ha a házirend értéke hamis, vagy ha nincs konfigurálva, a felhasználó bejelentkezés nélkül is használhatja a <ph name="PRODUCT_NAME" /> böngészőt.</translation>
@@ -667,12 +679,6 @@
 
       Ha engedélyezi ezt a beállítást, a nyomtatási előnézet az operációs rendszer alapértelmezett nyomtatóját használja alapértelmezettként.</translation>
 <translation id="2867699958489427143">Visszaállítás és a célverzió megtartása, ha az operációs rendszer verziója újabb a célverziónál. A folyamat során teljes powerwash műveletet végez.</translation>
-<translation id="286802604195763750">Lehetővé teszi a jelszóvédelmi figyelmeztetés kiváltásának szabályozását. A jelszóvédelem figyelmezteti a felhasználót, ha potenciálisan gyanús webhelyen próbálja beállítani védett jelszavát jelszóként.
-
-      Ha a házirend értéke „PasswordProtectionWarningOff”, akkor nem jelenik meg jelszóvédelmi figyelmeztetés.
-      Ha a házirend értéke „PasswordProtectionWarningOnPasswordReuse”, akkor a jelszóvédelmi figyelmeztetés abban az esetben jelenik meg, ha a felhasználó az engedélyezőlistán nem szereplő webhelyen próbálja meg beállítani Google-jelszavát jelszóként.
-      Ha a házirend értéke „PasswordProtectionWarningOnPhishingReuse”, akkor a jelszóvédelmi figyelmeztetés abban az esetben jelenik meg, ha a felhasználó adathalász webhelyen próbálja meg beállítani Google-jelszavát jelszóként.
-      Ha a házirend nincs beállítva, akkor a jelszóvédelmi figyelmeztetés abban az esetben jelenik meg, ha a felhasználó adathalász webhelyen próbálja meg beállítani Google-jelszavát jelszóként, azonban a felhasználó módosíthatja ezt a viselkedést.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2874209944580848064">Megjegyzés az Android-alkalmazásokat támogató <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz:</translation>
 <translation id="2877225735001246144">CNAME keresés tiltása a Kerberos hitelesítési tárgyalások során</translation>
@@ -1318,6 +1324,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha ez a házirend nincs beállítva vagy üres, akkor bármelyik felhasználó bejelentkezhet a(z) <ph name="PRODUCT_NAME" /> szolgáltatásba.</translation>
 <translation id="4858735034935305895">Teljes képernyős mód engedélyezése</translation>
+<translation id="4861767323695239729">A felhasználói munkamenetben engedélyezett beviteli módok konfigurálása</translation>
 <translation id="4869787217450099946">Meghatározza, hogy a képernyőébresztés zárolása kérhető legyen-e. A képernyőébresztés zárolására vonatkozó kérelmeket a bővítmények küldhetik az energiagazdálkodás bővítmény API-n keresztül.
 
           Ha a házirend beállítása igaz, vagy nincs beállítva, akkor a képernyőébresztés zárolására vonatkozó kérelmeket figyelembe veszi a rendszer az energiatakarékosság érdekében.
@@ -1869,6 +1876,7 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Ha a házirend le van tiltva, vagy ha nincs beállítva, a rendszer kizárólag a normál helyi profilokat használja.
 
       A(z) <ph name="SYNC_DISABLED_POLICY_NAME" /> házirend letilt minden adatszinkronizálást, felülbírálva a RoamingProfileSupportEnabled házirendet.</translation>
+<translation id="6731757988219967594">Legfelső szintű (de nem iframe keretekbe beágyazott) webhelyek szűrése felnőtteknek szóló tartalmak szerint</translation>
 <translation id="6735701345096330595">A helyesírás-ellenőrzéshez használt nyelvek engedélyezésének kényszerítése</translation>
 <translation id="673699536430961464">A beállítás lehetővé teszi a felhasználók számára a Google-fiókok közötti váltást a böngészőablak tartalomterületén belül, miután bejelentkeztek <ph name="PRODUCT_OS_NAME" />-eszközükbe.
 
@@ -1891,6 +1899,13 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6757438632136860443">Lehetővé teszi URL-minták olyan listájának megadását, amely meghatározza, hogy mely webhelyek futtathatják a(z) <ph name="FLASH_PLUGIN_NAME" /> beépülő modult.
 
           Ha nem állítja be ezt a házirendet, akkor a böngésző valamennyi webhelyre vonatkozóan a globális alapértelmezett értéket használja a „DefaultPluginsSetting” házirend (ha be van állítva) vagy a felhasználó személyes konfigurációja alapján.</translation>
+<translation id="6762235610019366960">Engedélyezi a teljes lapot kitöltő promóciós és/vagy oktatási célú tartalmak megjelenítésének szabályozását a <ph name="PRODUCT_NAME" /> böngészőben.
+
+      Ha nincs konfigurálva, vagy engedélyezve van (igaz értékre van állítva), a <ph name="PRODUCT_NAME" /> megjeleníthet teljes lapot kitöltő tartalmakat a felhasználók számára termékinformációk bemutatásának céljából.
+
+      Ha le van tiltva (hamis értékre van állítva), a <ph name="PRODUCT_NAME" /> nem jelenít meg teljes lapot betöltő tartalmakat a felhasználók számára termékinformációk bemutatásának céljából.
+
+      Ez a beállítás szabályozza azon üdvözlő oldalak megjelenését, amelyek segítik a felhasználókat a <ph name="PRODUCT_NAME" /> böngészőbe való bejelentkezésben, a böngésző alapértelmezettként való kiválasztásában, vagy a felhasználók termékfunkciókról való, más módon történő tájékoztatásában.</translation>
 <translation id="6766216162565713893">Engedélyezi azt, hogy a felhasználótól hozzáférést kérjenek a webhelyek egy közeli Bluetooth-eszköz használatára</translation>
 <translation id="6770454900105963262">Az aktív kioszkmunkamenetekkel kapcsolatos információk jelentése</translation>
 <translation id="6786747875388722282">Bővítmények</translation>
@@ -2203,17 +2218,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7511361072385293666">Ha a házirend értéke igaz, vagy ha nincs beállítva, akkor a <ph name="PRODUCT_NAME" /> termékben használható a QUIC protokoll.
       Ha a házirend értéke hamis, akkor a QUIC protokoll nem használható.</translation>
 <translation id="7519251620064708155">Kulcslétrehozás engedélyezése ezeken a webhelyeken</translation>
-<translation id="7529083451528428240">Engedélyezi a felhasználói munkamenet zárolását a kliens futási ideje és a napi használati kvóta alapján.
-
-          A |time_window_limit| meghatározza azt a napi időtartományt, amelyben zárolva van a felhasználói munkamenet. A rendszer egy-egy szabályt támogat a hét egyes napjaihoz, ezért az |entries| tömb 0–7 elemből állhat. A |starts_at| és az |ends_at| az időkorlát kezdetét és végét jelöli. Ha az |ends_at| kisebb, mint a |starts_at|, akkor a |time_limit_window| a következő napon ér véget. A |last_updated_millis| UTC-időbélyeg, amely azt jelöli, hogy mikor volt legutóbb frissítve a bejegyzés. Karakterláncként szerepel, mert az időbélyeg nem fejezhető ki egész számmal.
-
-          A |time_usage_limit| a napi képernyőhasználati kvótát határozza meg. Ha a felhasználó eléri, a munkamenete lezárul. A hét minden napjához tartozik egy-egy tulajdonság, és csak akkor kell beállítani, ha tartozik aktív kvóta az adott naphoz. A |usage_quota_mins| az az időmennyiség, amennyit a felügyelt eszköz használható naponta, és a |reset_at| az az időpont, amikor a rendszer megújítja a használati kvótát. A |reset_at| alapértelmezett értéke éjfél ({'hour': 0, 'minute': 0}). A |last_updated_millis| UTC-időbélyeg, amely azt jelöli, hogy mikor volt legutóbb frissítve a bejegyzés. Karakterláncként szerepel, mert az időbélyeg nem fejezhető ki egész számmal.
-
-          Az |overrides| megadásával átmenetileg érvényteleníteni lehet egy vagy több korábbi szabályt.
-          * Ha sem a time_window_limit, sem a time_usage_limit nem aktív, akkor a |LOCK| használható az eszköz zárolására.
-          * A |LOCK| átmenetileg zárolja a felhasználói munkamenetet, amíg el nem kezdődik a következő time_window_limit vagy time_usage_limit.
-          * Az |UNLOCK| feloldja a time_window_limit vagy time_usage_limit által lezárt felhasználói munkamenetet.
-          A |created_time_millis| a felülírás létrehozásának UTC-időbélyegje. Karakterláncként szerepel, mert az időbélyeg nem fejezhető ki egész számmal. Annak meghatározására használható, hogy továbbra is érvényesíteni kell-e a felülírást. Ha az aktuális aktív időkorlát funkció (használati időre vagy időtartományra vonatkozó korlát) a felülírás létrehozása után kezdődött meg, a rendszer nem végez műveletet. Akkor sem kerül alkalmazásra, ha a felülírás az aktív time_window_limit vagy time_usage_window legutóbbi módosítása előtt lett létrehozva.</translation>
 <translation id="7529100000224450960">Lehetővé teszi, hogy megadja az URL-minták egy olyan listáját, amely meghatározza, mely webhelyek nyithatnak meg felugró ablakokat. Ha a házirend beállítatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja valamennyi webhelyre vonatkozóan; vagy -- ha be van állítva -- a "DefaultPopupsSetting" házirendből, vagy pedig a felhasználó személyes konfigurációjából.</translation>
 <translation id="7529144158022474049">Szórási tényező automatikus frissítése</translation>
 <translation id="7534199150025803530">Ez a házirend nem vonatkozik az androidos Google Drive alkalmazásra. Ha mobiladat-kapcsolat esetén szeretné megakadályozni a Google Drive használatát, akkor le kell tiltania az androidos Google Drive alkalmazás telepítését.</translation>

@@ -4,8 +4,10 @@
 <translation id="1012876632442809908">USB-C 设备（前方端口）</translation>
 <translation id="1013923882670373915">蓝牙设备“<ph name="DEVICE_NAME" />”需要配对许可。请在该设备上输入以下PIN码：<ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">触控笔电池电量较低</translation>
+<translation id="1037492556044956303">已添加<ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">找不到任何网络</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />：<ph name="RESOLUTION" /></translation>
+<translation id="1104621072296271835">协同运作可使您的各部设备更好地发挥作用</translation>
 <translation id="112308213915226829">自动隐藏任务栏</translation>
 <translation id="1153356358378277386">已配对的设备</translation>
 <translation id="1195412055398077112">过扫描</translation>
@@ -99,6 +101,7 @@
 <translation id="277257480934873581">正在重新连接到 <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + 搜索键</translation>
 <translation id="2805756323405976993">应用</translation>
+<translation id="2808012452536866044">Better Together 已改为与新手机连接</translation>
 <translation id="2819276065543622893">您将立即退出。</translation>
 <translation id="2825619548187458965">任务栏</translation>
 <translation id="2844169650293029770">USB-C 设备（左侧前端端口）</translation>
@@ -107,10 +110,12 @@
 <translation id="2878884018241093801">近期没有任何内容</translation>
 <translation id="2903844815300039659">已连接到网络“<ph name="NAME" />”，<ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">您正在共享自己的屏幕</translation>
+<translation id="2942350706960889382">停靠的放大镜</translation>
 <translation id="2942516765047364088">任务栏位置</translation>
 <translation id="2946119680249604491">添加连接</translation>
 <translation id="2961963223658824723">出了点问题。请过几秒钟后重试。</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2996462380875591307">已启用停靠的放大镜。再按一次 Ctrl+搜索键+D 组合键即可将其停用。</translation>
 <translation id="2999742336789313416">“<ph name="DISPLAY_NAME" />”是由 <ph name="DOMAIN" /> 管理的公用自助终端</translation>
 <translation id="3000461861112256445">单声道音频</translation>
 <translation id="3009178788565917040">输出</translation>
@@ -170,6 +175,7 @@
 <translation id="4072264167173457037">信号中等</translation>
 <translation id="4200057768455216496">您按下了停靠放大镜的快捷键。要开启这项功能吗？</translation>
 <translation id="4217571870635786043">语音输入</translation>
+<translation id="4274921305979314545">将您的 Chromebook 连接到手机</translation>
 <translation id="4279490309300973883">正在镜像</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -224,6 +230,7 @@
 <translation id="554893713779400387">开启/关闭语音输入</translation>
 <translation id="5571066253365925590">蓝牙已启用</translation>
 <translation id="5597451508971090205"><ph name="DATE" /><ph name="SHORT_WEEKDAY" /></translation>
+<translation id="5598551463564921617">已开启 Better Together 功能</translation>
 <translation id="5600837773213129531">按 Ctrl + Alt + Z 即可停用语音反馈。</translation>
 <translation id="5648021990716966815">麦克风耳机插孔</translation>
 <translation id="5669267381087807207">正在激活</translation>
@@ -240,6 +247,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">快捷键查看器</translation>
 <translation id="5916664084637901428">启用</translation>
+<translation id="592343074608792716">此 Chromebook 将会自动连接到您的手机</translation>
 <translation id="5927132638760172455">正在投射至未知接收器</translation>
 <translation id="5947494881799873997">还原</translation>
 <translation id="595202126637698455">已启用性能跟踪</translation>
@@ -262,6 +270,7 @@
 <translation id="615957422585914272">显示屏幕键盘</translation>
 <translation id="6164005077879661055">删除该受监管用户后，与其相关联的所有文件和本地数据都会被永久删除，但管理员仍可以在 <ph name="MANAGEMENT_URL" /> 上查看该用户的设置和访问过的网站。</translation>
 <translation id="6165508094623778733">了解详情</translation>
+<translation id="6259254695169772643">请使用您的触控笔进行选择</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在激活…</translation>
 <translation id="6284232397434400372">分辨率已更改</translation>
 <translation id="6297287540776456956">使用触控笔选择一个区域</translation>
@@ -351,6 +360,7 @@
 <translation id="7982789257301363584">网络</translation>
 <translation id="7994370417837006925">多帐号登录</translation>
 <translation id="8000066093800657092">未连接任何网络</translation>
+<translation id="8029241286966751120">已启用全屏放大镜。再按一次 Ctrl+搜索键+M 组合键即可将其停用。</translation>
 <translation id="8054466585765276473">正在计算续航时间。</translation>
 <translation id="8061464966246066292">高对比度</translation>
 <translation id="8098591350844501178">停止将屏幕投射到“<ph name="RECEIVER_NAME" />”</translation>
@@ -366,6 +376,7 @@
 <translation id="8308637677604853869">上一菜单</translation>
 <translation id="8351131234907093545">创建记事</translation>
 <translation id="8392451568018454956"><ph name="USER_EMAIL_ADDRESS" /> 的“选项”菜单</translation>
+<translation id="8406981827175133772">全屏放大镜</translation>
 <translation id="8428213095426709021">设置</translation>
 <translation id="8431190899827883166">显示点按操作反馈</translation>
 <translation id="8433186206711564395">网络设置</translation>

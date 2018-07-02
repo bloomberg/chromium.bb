@@ -42,6 +42,9 @@
       Lihat https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables untuk mendapatkan senarai pemboleh ubah yang boleh digunakan.
 
       Jika dasar ini dibiarkan tanpa ditetapkan, direktori cache lalai akan digunakan dan pengguna dapat mengatasinya dengan bendera baris perintah '--disk-cache-dir'.</translation>
+<translation id="1135264353752122851">Konfigurasikan reka letak papan kekunci yang dibenarkan untuk sesi pengguna <ph name="PRODUCT_OS_NAME" />.
+
+      Jika dasar ini ditetapkan, pengguna hanya boleh memilih salah satu kaedah input yang dinyatakan oleh dasar ini. Jika dasar ini tidak ditetapkan atau ditetapkan kepada senarai kosong, pengguna boleh memilih semua kaedah input yang disokong. Jika kaedah input semasa tidak dibenarkan oleh dasar ini, kaedah input akan ditukar kepada reka letak papan kekunci perkakasan (jika dibenarkan) atau entri sah pertama dalam senarai ini. Semua kaedah input yang tidak sah atau tidak disokong dalam senarai ini akan diabaikan.</translation>
 <translation id="1138294736309071213">Dasar ini aktif dalam mod runcit sahaja.
 
       Menentukan tempoh sebelum penyelamat skrin dipaparkan pada skrin log masuk untuk peranti dalam mod runcit.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Memuatkan url tertentu pada log masuk tunjuk cara</translation>
 <translation id="1223789468190631420">Status Penyemakan Imbas Selamat didayakan untuk sumber yang dipercayai</translation>
 <translation id="123081309365616809">Dayakan penghantaran kandungan ke peranti</translation>
+<translation id="1243570869342663665">Kawal penapisan kandungan dewasa SafeSites.</translation>
 <translation id="1257550411839719984">Tetapkan direktori muat turun lalai</translation>
 <translation id="1265053460044691532">Hadkan masa untuk pengguna yang membuat pengesahan melalui SAML boleh melog masuk dalam talian.</translation>
 <translation id="1291880496936992484">Amaran: RC4 akan dialih keluar sepenuhnya daripada <ph name="PRODUCT_NAME" /> selepas versi 52 (sekitar September 2016) dan dasar ini akan berhenti berfungsi selepas itu.
@@ -265,6 +269,7 @@
       Format nilai mengikut nama zon waktu dalam "Pangkalan Data Zon Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khususnya, kebanyakan zon waktu boleh dirujuk mengikut "continent/large_city" atau "ocean/large_city".
 
       Zon waktu automatik yang diselesaikan oleh lokasi peranti akan dilumpuhkan sepenuhnya apabila dasar ini ditetapkan. Langkah ini turut mengatasi dasar SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Dayakan menunjukkan kandungan promosi tab penuh</translation>
 <translation id="1888871729456797026">Token pendaftaran dasar awan pada desktop</translation>
 <translation id="1897365952389968758">Benarkan semua tapak untuk menjalankan JavaScript</translation>
 <translation id="1906888171268104594">Mengawal sama ada metrik penggunaan dan data diagnostik, termasuk laporan ranap dilaporkan kembali kepada Google.
@@ -377,6 +382,7 @@
       untuk mengubahnya. Dalam keadaan ini, nilai lalai tidak digunakan semula
       pada mula semula.</translation>
 <translation id="2156132677421487971">Konfigurasikan dasar untuk <ph name="PRODUCT_NAME" />, ciri yang membolehkan pengguna menghantar kandungan tab, tapak atau desktop daripada penyemak imbas ke paparan dan sistem bunyi jauh.</translation>
+<translation id="2166472654199325139">Jangan tapis tapak untuk kandungan dewasa</translation>
 <translation id="2168397434410358693">Kelewatan melahu apabila dijalankan dengan kuasa AC</translation>
 <translation id="2170233653554726857">Dayakan pengoptimuman WPAD</translation>
 <translation id="2176565653304920879">Apabila dasar ini ditetapkan, aliran pengesanan zon waktu automatik akan menjadi satu daripada cara berikut bergantung pada nilai tetapan:
@@ -531,6 +537,12 @@
 <translation id="2466131534462628618">Pengesahan portal tawanan mengabaikan proksi</translation>
 <translation id="2482676533225429905">Pemesejan Natif</translation>
 <translation id="2483146640187052324">Ramalkan tindakan rangkaian pada sebarang sambungan rangkaian</translation>
+<translation id="2484208301968418871">Dasar ini mengawal penggunaan penapis URL SafeSites.
+      Penapis ini menggunakan Google Safe Search API untuk mengklasifikasikan URL sebagai pornografi atau tidak.
+
+      Apabila dasar ini tidak dikonfigurasikan atau ditetapkan kepada "Jangan tapis tapak untuk kandungan dewasa", tapak tidak akan ditapis.
+
+      Apabila dasar ini ditetapkan kepada "Tapis tapak peringkat atas untuk kandungan dewasa", tapak yang diklasifikasikan sebagai pornografi akan ditapis.</translation>
 <translation id="2485721741875148980">Jika dasar ini ditetapkan kepada benar, pengguna perlu mengelog masuk ke <ph name="PRODUCT_NAME" /> menggunakan profil mereka sebelum menggunakan penyemak imbas. Selain itu, nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu. Harap maklum bahawa profil sedia ada yang tidak dilog masuk akan dikunci dan tidak boleh diakses selepas dasar ini didayakan. Untuk mendapatkan maklumat lanjut, lihat artikel pusat bantuan.
 
       Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, pengguna boleh menggunakan penyemak imbas tanpa perlu mengelog masuk ke <ph name="PRODUCT_NAME" />.</translation>
@@ -689,12 +701,6 @@
 
       Jika anda mendayakan tetapan ini, Pratonton Cetakan akan menggunakan pencetak lalai sistem OS sebagai pilihan destinasi lalai.</translation>
 <translation id="2867699958489427143">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada sasaran. Lakukan powerwash lengkap semasa proses.</translation>
-<translation id="286802604195763750">Membenarkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
-
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOff', tiada amaran perlindungan kata laluan akan ditunjukkan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPasswordReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
-      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPhishingReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
-      Jika dasar ini dibiarkan tidak ditetapkan, amaran perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google mereka pada tapak pancingan data tetapi pengguna boleh menukar tetapan ini.</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2874209944580848064">Nota untuk peranti <ph name="PRODUCT_OS_NAME" /> yang menyokong apl Android:</translation>
 <translation id="2877225735001246144">Lumpuhkan carian CNAME apabila berunding pengesahan Kerberos</translation>
@@ -1368,6 +1374,7 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan atau kosong, maka mana-mana pengguna boleh log masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Benarkan mod skrin penuh</translation>
+<translation id="4861767323695239729">Konfigurasikan kaedah input yang dibenarkan dalam sesi pengguna</translation>
 <translation id="4869787217450099946">Menentukan sama ada kunci bangkit skrin dibenarkan. Kunci bangkit skrin boleh diminta oleh sambungan melalui API sambungan pengurusan kuasa.
 
           Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, kunci bangkit skrin akan digunakan untuk pengurusan kuasa.
@@ -1954,6 +1961,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Jika dasar ini dilumpuhkan atau dibiarkan tidak ditetapkan, hanya profil "local" biasa akan digunakan.
 
       Dasar <ph name="SYNC_DISABLED_POLICY_NAME" /> melumpuhkan semua penyegerakan data, mengatasi RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Tapis tapak peringkat atas (tetapi bukan iframe yang dibenamkan) untuk kandungan dewasa</translation>
 <translation id="6735701345096330595">Paksa dayakan semakan ejaan bahasa</translation>
 <translation id="673699536430961464">Tetapan ini membenarkan pengguna beralih antara akaun Google dalam kawasan kandungan tetingkap penyemak imbas selepas mereka mengelog masuk ke peranti <ph name="PRODUCT_OS_NAME" /> mereka.
 
@@ -1976,6 +1984,13 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="6757438632136860443">Membolehkan anda menetapkan senarai corak url bagi menentukan tapak yang dibenarkan menjalankan pemalam <ph name="FLASH_PLUGIN_NAME" />.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada daripada dasar 'DefaultPluginsSetting' jika dasar ini ditetapkan atau konfigurasi peribadi pengguna akan digunakan.</translation>
+<translation id="6762235610019366960">Membenarkan anda mengawal persembahan kandungan promosi dan/atau pendidikan tab penuh dalam <ph name="PRODUCT_NAME" />.
+
+      Jika tidak dikonfigurasi atau didayakan (ditetapkan kepada benar), <ph name="PRODUCT_NAME" /> mungkin menunjukkan kandungan tab penuh kepada pengguna untuk memberikan maklumat produk.
+
+      Jika dilumpuhkan (ditetapkan kepada palsu), <ph name="PRODUCT_NAME" /> tidak akan menunjukkan kandungan tab penuh kepada pengguna untuk memberikan maklumat produk.
+
+      Tetapan ini mengawal persembahan halaman pertama yang membantu pengguna log masuk ke <ph name="PRODUCT_NAME" />, memilihnya sebagai penyemak imbas lalai mereka atau sebaliknya memaklumkan mereka tentang ciri produk.</translation>
 <translation id="6766216162565713893">Benarkan tapak web meminta pengguna memberikan akses kepada peranti Bluetooth berhampiran</translation>
 <translation id="6770454900105963262">Laporkan maklumat tentang sesi kios aktif</translation>
 <translation id="6786747875388722282">Pelanjutan</translation>
@@ -2304,17 +2319,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7511361072385293666">Jika dasar ini ditetapkan kepada benar atau tidak ditetapkan, penggunaan protokol QUIC dalam <ph name="PRODUCT_NAME" /> dibenarkan.
       Jika dasar ini ditetapkan kepada palsu, penggunaan protokol QUIC tidak dibenarkan.</translation>
 <translation id="7519251620064708155">Benarkan penghasilan kunci pada tapak ini</translation>
-<translation id="7529083451528428240">Membolehkan anda mengunci sesi pengguna berdasarkan masa pelanggan atau kuota penggunaan untuk hari itu.
-
-          Ciri |time_window_limit| menentukan tingkap harian yang digunakan untuk mengunci sesi pengguna. Kami hanya menyokong satu peraturan bagi setiap hari dalam seminggu, oleh itu saiz tatasusunan |entries| mungkin berbeza-beza dari 0 hingga 7. |starts_at| dan |ends_at| ialah titik mula dan tamat had tingkap, apabila |ends_at| lebih kecil daripada |starts_at|, bermakna |time_limit_window| tamat pada hari berikutnya. |last_updated_millis| ialah cap masa UTC untuk kali terakhir masukan ini dikemas kini, yang dihantar sebagai rentetan kerana cap masa tidak sesuai dalam bentuk nombor bulat.
-
-          Ciri |time_usage_limit| menentukan kuota skrin harian. Oleh itu, apabila pengguna mencapai had ini, sesi pengguna akan dikunci. Terdapat sifat bagi setiap hari dalam seminggu dan sifat ini harus ditetapkan jika terdapat kuota aktif untuk hari itu. |usage_quota_mins| ialah jumlah masa peranti terurus boleh digunakan dalam sehari dan |reset_at| ialah masa apabila kuota penggunaan diperbaharui. Nilai lalai untuk |reset_at| ialah tengah malam ({'hour': 0, 'minute': 0}). |last_updated_millis| ialah cap masa UTC untuk kali terakhir masukan ini dikemas kini, yang dihantar sebagai rentetan kerana cap masa tidak sesuai dalam bentuk nombor bulat.
-
-          |overrides| disediakan untuk membatalkan pengesahan satu atau beberapa peraturan yang terdahulu buat sementara waktu.
-          * Jika time_window_limit atau time_usage_limit tidak aktif, |LOCK| boleh digunakan untuk mengunci peranti.
-          * |LOCK| mengunci sesi pengguna buat sementara waktu hingga time_window_limit atau time_usage_limit yang berikutnya bermula.
-          * |UNLOCK| membuka kunci sesi pengguna yang dikunci mengikut time_window_limit atau time_usage_limit.
-          |created_time_millis| ialah cap masa UTC untuk penghasilan pembatalan, yang dihantar sebagai Rentetan kerana cap masa tidak sesuai dalam bentuk nombor bulat. Cap masa ini digunakan untuk menentukan sama ada pembatalan ini masih perlu dikenakan. Jika ciri had masa aktif semasa (had penggunaan masa atau had tingkap masa) bermula selepas pembatalan dihasilkan, tiada tindakan perlu diambil. Selain itu, jika pembatalan dihasilkan sebelum perubahan time_window_limit atau time_usage_window aktif yang terakhir, pembatalan tidak perlu dikenakan.</translation>
 <translation id="7529100000224450960">Membolehkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk membuka pop timbul.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak sama ada dari dasar 'DefaultPopupsSetting' jika ia ditetapkan atau konfigurasi peribadi pengguna jika sebaliknya.</translation>

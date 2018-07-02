@@ -46,7 +46,6 @@
 <translation id="1062407476771304334">భర్తీ చేయి</translation>
 <translation id="1067048845568873861">సృష్టించబడింది</translation>
 <translation id="1067291318998134776">Linux (బీటా)</translation>
-<translation id="1067922213147265141">ఇతర Google సేవలు</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">మీ కంప్యూటర్‌లోని మరొక ప్రోగ్రామ్ Chrome పని చేసే విధానాన్ని మార్చే పొడిగింపుని జోడించింది.
 
@@ -84,7 +83,7 @@
 <translation id="1122960773616686544">పేరును బుక్‌మార్క్ చేయండి</translation>
 <translation id="1123187597739372905">సమకాలీకరణ సెట్టింగ్‌లను చూపు</translation>
 <translation id="1124772482545689468">వినియోగదారు</translation>
-<translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (అసలైనది) వలె కనిపిస్తుంది</translation>
+<translation id="1125550662859510761"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ఉన్నట్టుంది (అసలైనది)</translation>
 <translation id="1128109161498068552">MIDI పరికరాలను ప్రాప్యత చేయడం కోసం సిస్టమ్ విశిష్ట సందేశాలను ఉపయోగించడానికి ఏ సైట్‌లను అనుమతించవద్దు</translation>
 <translation id="1128128132059598906">EAP-TTLS</translation>
 <translation id="1128591060186966949">శోధన ఇంజిన్‌ని సవరించండి</translation>
@@ -123,7 +122,7 @@
 <translation id="1177138678118607465">శోధన, ప్రకటనలు మరియు ఇతర Google సేవలను వ్యక్తిగతీకరించడం కోసం Google మీ బ్రౌజింగ్ చరిత్రను ఉపయోగించవచ్చు. మీరు ఏ సమయంలో అయినా myaccount.google.com/activitycontrols/searchలో దీనిని మార్చవచ్చు</translation>
 <translation id="1177863135347784049">అనుకూలీకరించిన</translation>
 <translation id="1178581264944972037">పాజ్ చేయి</translation>
-<translation id="1181037720776840403">తొలగించు</translation>
+<translation id="1181037720776840403">తీసివేయి</translation>
 <translation id="1183237619868651138">స్థానిక కాష్‌లో <ph name="EXTERNAL_CRX_FILE" />ని ఇన్‌స్టాల్ చేయడం సాధ్యపడదు.</translation>
 <translation id="1185924365081634987">మీరు ఈ నెట్‌వర్క్ లోపాన్ని పరిష్కరించడానికి <ph name="GUEST_SIGNIN_LINK_START" />అతిథిగా బ్రౌజ్ చేయడాన్ని<ph name="GUEST_SIGNIN_LINK_END" /> కూడా ప్రయత్నించవచ్చు.</translation>
 <translation id="1186771945450942097">హానికరమైన సాఫ్ట్‌వేర్‌ని తీసివేయండి</translation>
@@ -757,7 +756,7 @@
 <translation id="2151576029659734873">చెల్లని టాబ్ సూచిక ఎంటర్ చెయ్యబడింది.</translation>
 <translation id="2154484045852737596">కార్డ్‌ను సవరించండి</translation>
 <translation id="2154710561487035718">URLను కాపీ చెయ్యి</translation>
-<translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> వలె ఉంది</translation>
+<translation id="2155772377859296191"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ఉన్నట్టుంది</translation>
 <translation id="2156283799932971644">కొంత సిస్టమ్ సమాచారం మరియు పేజీ కంటెంట్‌ను Googleకి పంపడం ద్వారా సురక్షిత బ్రౌజింగ్‌ని మెరుగుపరచడంలో మీరు సహాయపడవచ్చు.</translation>
 <translation id="215753907730220065">పూర్తి స్క్రీన్‌ను నిష్క్రమించు</translation>
 <translation id="2157875535253991059">ఈ పేజీ ఇప్పుడు పూర్తి స్క్రీన్‌లో ఉంది.</translation>
@@ -796,7 +795,6 @@
 <translation id="221872881068107022">రివర్స్ స్క్రోలింగ్</translation>
 <translation id="2220529011494928058">సమస్యను నివేదించు</translation>
 <translation id="2220572644011485463">PIN లేదా పాస్‌వర్డ్</translation>
-<translation id="2222414641881146529">సిస్టమ్ డేటాను పంపండి</translation>
 <translation id="2224444042887712269">ఈ సెట్టింగ్ <ph name="OWNER_EMAIL" />కి సంబంధించినది.</translation>
 <translation id="2224551243087462610">ఫోల్డర్ పేరును సవరించు</translation>
 <translation id="2226449515541314767">ఈ సైట్ MIDI పరికరాలకు పూర్తి నియంత్రణ లేకుండా బ్లాక్ చేయబడింది.</translation>
@@ -809,6 +807,7 @@
 <translation id="2231238007119540260">మీరు సర్వర్ ప్రమాణపత్రాన్ని తొలగిస్తే, సర్వర్ కోసం మీరు సాధారణ భద్రతా తనిఖీలను పునరుద్ధరించండి మరియు చెల్లుబాటు అయ్యే ప్రమాణపత్రాన్ని ఉపయోగించడానికి ఇది అవసరం.</translation>
 <translation id="2232876851878324699">ఫైల్ దిగుమతి చెయ్యని ఒక ప్రమాణపత్రాన్ని కలిగి ఉంది:</translation>
 <translation id="2233502537820838181">&amp;మరింత సమాచారం</translation>
+<translation id="2234876718134438132">సింక్ మరియు Google సేవలు</translation>
 <translation id="2238379619048995541">తరచుదనం స్థితి డేటా</translation>
 <translation id="2239921694246509981">పర్యవేక్షించబడే వ్యక్తిని జోడించు</translation>
 <translation id="2241053333139545397">అనేక వెబ్‌సైట్‌ల్లో ఉన్న మీ డేటాను చదవడం మరియు మార్చడం</translation>
@@ -1223,7 +1222,6 @@
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> పునఃప్రారంభించబడుతుంది మరియు కొద్దిసేపట్లో రీసెట్ చేయబడుతుంది</translation>
 <translation id="2885378588091291677">విధి సంచాలకులు</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
-<translation id="2886800363598651778">మీ పరికరాల అంతటా Chromeని సమకాలీకరించండి మరియు వ్యక్తిగతీకరించండి</translation>
 <translation id="2887525882758501333">PDF పత్రం</translation>
 <translation id="2888807692577297075">&lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;కు అంశాలు సరిపోలలేదు</translation>
 <translation id="2889064240420137087">దీనితో లింక్ తెరువు...</translation>
@@ -1857,7 +1855,6 @@
 <translation id="3893630138897523026">ChromeVox (చదవబడే అభిప్రాయం)</translation>
 <translation id="3894427358181296146">ఫోల్డర్‌ను జోడించండి</translation>
 <translation id="389589731200570180">అతిథులతో భాగస్వామ్యం చేయండి</translation>
-<translation id="3898493977366060150">Google స్మార్ట్‌లతో వెబ్ బ్రౌజింగ్</translation>
 <translation id="3898521660513055167">టోకెన్ స్థితి</translation>
 <translation id="389901847090970821">కీబోర్డ్‌ను ఎంచుకోండి</translation>
 <translation id="3899879303189199559">సంవత్సరం పైగా ఆఫ్‌లైన్‌లో ఉంది</translation>
@@ -2016,7 +2013,7 @@
 <translation id="4146026355784316281">ఎల్లప్పుడూ సిస్టమ్ వ్యూయర్‌తో తెరువు</translation>
 <translation id="4146785383423576110">రీసెట్ చేసి హానికరమైన వాటిని తీసివేయండి</translation>
 <translation id="4147897805161313378">Google ఫోటోలు</translation>
-<translation id="4150201353443180367">ప్రదర్శన</translation>
+<translation id="4150201353443180367">డిస్‌ప్లే</translation>
 <translation id="4152670763139331043">{NUM_TABS,plural, =1{1 ట్యాబ్}other{# ట్యాబ్‌లు}}</translation>
 <translation id="4154664944169082762">వేలిముద్రలు</translation>
 <translation id="4157869833395312646">Microsoft Server Gated Cryptography</translation>
@@ -2322,7 +2319,6 @@
 <translation id="4707934200082538898">దయచేసి తదుపరి సూచనల కోసం <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" />లో మీ ఇమెయిల్‌ను తనిఖీ చేయండి.</translation>
 <translation id="4708794300267213770">నిద్రావస్థ నుండి సక్రియం అవుతున్నప్పుడు లాక్ స్క్రీన్‌ని చూపు</translation>
 <translation id="4708849949179781599"><ph name="PRODUCT_NAME" /> నిష్క్రమించు</translation>
-<translation id="4710251968215868702">మీరు సందర్శించే సైట్‌లలోని కంటెంట్ మరియు బ్రౌజర్ కార్యకలాపం మరియు పరస్పర చర్యలను ఉపయోగిస్తుంది.</translation>
 <translation id="4711638718396952945">సెట్టింగ్‌లను పునరుద్ధరించు</translation>
 <translation id="4713544552769165154">ఈ ఫైల్ Macintosh సాఫ్ట్‌వేర్‌ను ఉపయోగించే కంప్యూటర్ కోసం రూపొందించబడింది. ఇది Chrome OSను అమలు చేసే మీ పరికరానికి అనుకూలమైనది కాదు. దయచేసి తగిన ప్రత్యామ్నాయ అనువర్తనం కోసం <ph name="BEGIN_LINK" />Chrome వెబ్ స్టోర్<ph name="END_LINK" />లో శోధించండి.<ph name="BEGIN_LINK_HELP" />మరింత తెలుసుకోండి<ph name="END_LINK_HELP" /></translation>
 <translation id="4715553623069266137">చాలా సంక్షిప్తం (0.8s)</translation>
@@ -2415,7 +2411,7 @@
 <translation id="4862042298115071399"><ph name="WINDOW_TITLE" /> - చిత్రంలో చిత్రం మోడ్‌లో వీడియో ప్లే అవుతోంది</translation>
 <translation id="4862050643946421924">పరికరాన్ని జోడించడం...</translation>
 <translation id="4862642413395066333">OCSP ప్రతిస్పందనలను సైన్ చేస్తోంది</translation>
-<translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> (డిఫాల్ట్) వలె ఉంది</translation>
+<translation id="4863769717153320198"><ph name="WIDTH" /> x <ph name="HEIGHT" /> ఉన్నట్టుంది (డిఫాల్ట్)</translation>
 <translation id="4864369630010738180">సైన్ ఇన్ అవుతోంది...</translation>
 <translation id="486635084936119914">డౌన్‌లోడ్ చేసిన తర్వాత స్వయంచాలకంగా నిర్దిష్ట ఫైల్ రకాలను తెరువు</translation>
 <translation id="4869142322204669043">Google మీరు సందర్శించే సైట్‌లలోని కంటెంట్‌ను, అలాగే బ్రౌజింగ్ కార్యకలాపం మరియు పరస్పర చర్యలను ఉపయోగించడం ద్వారా <ph name="IDS_SHORT_PRODUCT_NAME" />ని మరియు అనువాదం, శోధన మరియు ప్రకటనలు వంటి ఇతర Google సేవలను వ్యక్తిగతీకరించవచ్చు. మీరు దీన్ని సెట్టింగ్‌లలో ఎప్పుడైనా అనుకూలీకరించవచ్చు.</translation>
@@ -3381,7 +3377,7 @@
 <translation id="6318407754858604988">డౌన్‌లోడ్ ప్రారంభించబడింది</translation>
 <translation id="6324916366299863871">షార్ట్‌కట్‌ను సవరించండి</translation>
 <translation id="6325191661371220117">స్వీయ-ప్రారంభాన్ని నిలిపివేయి</translation>
-<translation id="6326175484149238433">Chrome నుండి తీసివేయి</translation>
+<translation id="6326175484149238433">Chrome నుండి తీసివేయండి</translation>
 <translation id="6326855256003666642">సక్రియ కార్యాచరణల గణన</translation>
 <translation id="632744581670418035">కీబోర్డ్ అతివ్యాప్తి</translation>
 <translation id="6327785803543103246">వెబ్ ప్రాక్సీ స్వీయశోధన</translation>
@@ -4137,7 +4133,6 @@
 <translation id="7540972813190816353">నవీకరణల కోసం తనిఖీ చేస్తున్నప్పుడు లోపం సంభవించింది: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">ఈ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరంలో డీబగ్గింగ్ లక్షణాలను ప్రారంభించండి</translation>
 <translation id="7544853251252956727">షఫుల్ చేయి</translation>
-<translation id="7545809182698428577">ఇక్కడ జాబితా చేయబడిన ఫీచర్‌లను ఆన్ చేస్తుంది. మీ బ్రౌజర్ కార్యకలాపాన్ని, మీరు సందర్శించే కొన్ని సైట్‌లలోని కంటెంట్‌ని మరియు ఇతర బ్రౌజర్ పరస్పర చర్యలను వ్యక్తిగతీకరణ కోసం ఉపయోగిస్తుంది.</translation>
 <translation id="7547317915858803630">హెచ్చరిక: మీ <ph name="PRODUCT_NAME" /> సెట్టింగ్‌లు నెట్‌వర్క్ డిస్క్‌లో నిల్వ చేయబడ్డాయి. దీని ఫలితంగా స్లోడౌన్‌లు, క్రాష్‌లు జరగవచ్చు లేదా డేటాను కూడా నష్టపోవచ్చు.</translation>
 <translation id="7548856833046333824">నిమ్మరసం</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
@@ -5026,11 +5021,6 @@
 <translation id="8944099748578356325">బ్యాటరీని మరింత శీఘ్రంగా ఉపయోగిస్తుంది (ప్రస్తుతం <ph name="BATTERY_PERCENTAGE" />% ఉంది)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> ఒక విండోను <ph name="TAB_NAME" />తో భాగస్వామ్యం చేస్తోంది.</translation>
 <translation id="8946359700442089734">డీబగ్గింగ్ లక్షణాలు ఈ <ph name="IDS_SHORT_PRODUCT_NAME" /> పరికరంలో పూర్తిగా ప్రారంభించబడలేదు.</translation>
-<translation id="8948006114608036530">ఈ పరికరం ప్రస్తుతం ఆటోమేటిక్‌గా సమస్య విశ్లేషణలు మరియు పరికర మరియు యాప్ వినియోగ డేటాను Googleకి పంపుతుంది. ఈ సెట్టింగ్ యజమాని ద్వారా అమలు చేయబడింది. మీరు అదనపు వెబ్ &amp; యాప్ కార్యకలాపం ఆన్ చేస్తే, ఈ సమాచారం మీ ఖాతాలో నిల్వ చేయబడుతుంది, తద్వారా మీరు దీనిని నా కార్యకలాపంలో నిర్వహించగలరు.
-
-    ఇందులో మీ పరికరం గురించి మరియు మీరు దానిని ఉపయోగించే పద్ధతి గురించి (బ్యాటరీ స్థాయి, యాప్ వినియోగం మరియు నెట్‌వర్క్ కనెక్టివిటీ వంటివి) సాధారణ సమాచారం చేర్చబడుతుంది. అందరి కోసం Google ఉత్పత్తులు మరియు సేవలను మెరుగుపరచడానికి ఈ డేటా ఉపయోగించబడుతుంది. కొంత ఏకీకృత సమాచారం Android డెవలపర్‌ల వంటి భాగస్వాములకు వారి యాప్‌లు మరియు ఉత్పత్తులను మెరుగుపరచడంలో కూడా సహయపడుతుంది.
-    ఈ ఫీచర్‌ని ఆఫ్ చేసినట్లయితే, సిస్టమ్ అప్‌డేట్‌లు మరియు భద్రత వంటి ఆవశ్యక సేవల కోసం అవసరమైన సమాచారాన్ని పంపగల మీ పరికర సామర్థ్యంపై దీని ప్రభావం పడదు.
-    మీరు సెట్టింగ్‌లు &gt; Google నుండి ఈ ఫీచర్‌ని నియంత్రించవచ్చు. మెనూ నుండి వినియోగం &amp; సమస్య విశ్లేషణలను ఎంచుకోండి.</translation>
 <translation id="894871326938397531">అజ్ఞాత మోడ్ నుండి నిష్క్రమించాలా?</translation>
 <translation id="895347679606913382">ప్రారంభిస్తోంది...</translation>
 <translation id="8954952943849489823">తరలింపు విఫలమైంది, ఊహించని లోపం: $1</translation>

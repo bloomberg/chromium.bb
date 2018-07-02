@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">I-on o i-off ang ChromeVox (pasalitang feedback)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Mag-scroll pababa sa web page</translation>
-<translation id="2568632782096378307">I-reset sa default ang resolution ng screen</translation>
 <translation id="2596078834055697711">Kumuha ng screenshot ng window</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, pagkatapos ay <ph name="TAB" /> o <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Naglilipat sa pamamaraan ng pag-input ng susunod na wika</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Mag-zoom out sa page</translation>
 <translation id="2804480015716812239">Pindutin ang <ph name="ALT" /> at mag-click ng link</translation>
 <translation id="2830827904629746450">Mag-dock ng window sa kanan</translation>
+<translation id="2840766858109427815">Magpatuloy sa susunod na page</translation>
 <translation id="2872353916818027657">Pagpalitin ang pangunahing monitor</translation>
 <translation id="2914313326123580426">Ipakita o itago ang panel ng Mga Tool ng Developer</translation>
 <translation id="292495055542441795">I-toggle ang fullscreen</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Palabasin ang task manager</translation>
 <translation id="3422679037938588196">Pumunta sa nakaraang tugma para sa iyong paghahanap</translation>
 <translation id="344577624355799426"><ph name="ALT" /> o <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">I-reset ang antas ng pag-zoom</translation>
 <translation id="353037708190149633">I-save ang lahat ng nakabukas na page sa iyong kasalukuyang window bilang mga bookmark sa isang bagong folder</translation>
 <translation id="355103131818127604">Buksan ang link sa isang bagong tab sa background</translation>
 <translation id="3649256019230929621">I-minimize ang window</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">I-highlight ang row na may address bar</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Overview mode</translation>
+<translation id="4382340674111381977">Bumalik sa nakaraang page</translation>
 <translation id="4472417192667361414">Mga Setting ng System at Display</translation>
 <translation id="4556221320735744018">Tingnan ang Helper sa Keyboard Shortcut</translation>
 <translation id="4628718545549558538">Buksan ang lugar ng status (kung saan lumalabas ang iyong larawan sa account)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">I-delete ang nakaraang salita</translation>
 <translation id="5899919361772749550">Ipakita o itago ang console ng Mga Tool ng Developer</translation>
 <translation id="5921745308587794300">I-rotate ang window</translation>
-<translation id="5975083100439434680">Mag-zoom out</translation>
 <translation id="6022924867608035986">I-clear ang text sa searchbox</translation>
 <translation id="6045998054441862242">I-on ang high contrast mode</translation>
 <translation id="6052614013050385269">Mag-right click ng link</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Magbukas ng file sa browser</translation>
 <translation id="7917881398263220094">Ihinto ang pag-load ng iyong kasalukuyang page</translation>
 <translation id="7952165122793773711">Pumupunta sa tab 1 hanggang 8</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> o <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">I-clear ang data ng pagba-browse</translation>
 <translation id="8130528849632411619">Pumunta sa simula ng dokumento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Tingnan ang iyong mga notification</translation>
 <translation id="8855885154700222542">Key ng fullscreen</translation>
 <translation id="88986195241502842">Pababa sa pahina</translation>
-<translation id="8903921497873541725">Mag-zoom in</translation>
 <translation id="8924883688469390268">Lumipat sa nakaraang user</translation>
-<translation id="8951768610999698672">Pinapalaki o pinapaliit ang mga item sa iyong screen</translation>
 <translation id="8977648847395357314">Piliin ang content sa address bar</translation>
 <translation id="8982190978301344584">Ipakita ang menu na nagpapakita sa listahan ng mga available na IME</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 hanggang 8</translation>

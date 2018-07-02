@@ -701,12 +701,6 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Si habilitas esta opción, la vista previa de impresión mostrará la impresora predeterminada del sistema operativo como impresora de destino predeterminada.</translation>
 <translation id="2867699958489427143">Vuelve a instalar la versión de destino si la versión del SO es más reciente que la de destino. Realiza un powerwash completo durante el proceso.</translation>
-<translation id="286802604195763750">Permite controlar la activación de la advertencia de protección de contraseña. La protección de contraseña alerta a los usuarios cuando vuelven a utilizar la contraseña protegida en sitios web potencialmente sospechosos.
-
-      Si se le asigna el valor "PasswordProtectionWarningOff" a esta política, no se mostrará ninguna advertencia de protección de contraseña.
-      Si se le asigna el valor "PasswordProtectionWarningOnPasswordReuse" a esta política, se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar las contraseñas de Google en cualquier sitio web que no esté incluido en la lista blanca.
-      Si se le asigna el valor "PasswordProtectionWarningOnPhishingReuse" a esta política, se mostrará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing.
-      Si no se le asigna ningún valor a esta política, se activará la advertencia de protección de contraseña cuando los usuarios vuelvan a utilizar las contraseñas de Google en sitios web de phishing, pero el usuario podrá cambiar esta opción.</translation>
 <translation id="2872961005593481000">Apagar</translation>
 <translation id="2874209944580848064">Nota para los dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con las aplicaciones de Android:</translation>
 <translation id="2877225735001246144">Inhabilitar la consulta de nombre canónico en negociación de autenticación Kerberos</translation>
@@ -2331,17 +2325,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="7511361072385293666">Si se asigna el valor true a esta política o si esta no se configura, se permitirá el uso del protocolo QUIC en <ph name="PRODUCT_NAME" />.
       Si se asigna el valor false, no se permitirá el uso de este protocolo.</translation>
 <translation id="7519251620064708155">Permitir la generación de claves en estos sitios web</translation>
-<translation id="7529083451528428240">Te permite bloquear la sesión del usuario en función del tiempo del cliente o la cuota de uso diaria.
-
-          El parámetro |time_window_limit| especifica un periodo diario durante el que se debería bloquear la sesión del usuario. Solo se admite una regla por cada día de la semana, por lo que la cantidad de |entries| puede variar entre 0 y 7.  Los parámetros |starts_at| y |ends_at| representan el principio y el final del límite de tiempo. Si |ends_at| es inferior a |starts_at|, significa que |time_limit_window| finaliza al día siguiente. |last_updated_millis| es la marca de tiempo UTC de la última vez que se ha actualizado esta entrada y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero.
-
-          |time_usage_limit| especifica una cuota de pantalla y, cuando el usuario la alcanza, se bloquea su sesión. Hay una propiedad para cada día de la semana y se debería definir únicamente si hay una cuota activa ese día. |usage_quota_mins| es la cantidad de tiempo que el dispositivo administrado se puede usar durante un día y |reset_at| es la hora a la que se renueva la cuota de uso. El valor predeterminado de |reset_at| es medianoche ({'hour': 0, 'minute': 0}). |last_updated_millis| es la marca de tiempo UTC de la última vez que se ha actualizado esta entrada y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero.
-
-          El parámetro |overrides| se proporciona para invalidar temporalmente una o más de las reglas anteriores.
-          * Si no están activos time_window_limit ni time_usage_limit, se puede usar |LOCK| para bloquear el dispositivo.
-          * |LOCK| bloquea temporalmente la sesión de un usuario hasta la próxima vez que se inician time_window_limit o time_usage_limit.
-           * |UNLOCK| desbloquea la sesión de un usuario durante el periodo de time_window_limit o time_usage_limit.
-          |created_time_millis| es la marca de tiempo UTC de la creación de la anulación y se envía en forma de cadena porque la marca de tiempo no cabe en un número entero. Se usa para determinar si la anulación se debería seguir aplicando. Si la función de límite de tiempo activa (el límite de tiempo de uso o el periodo límite) se ha iniciado después de crear la anulación, no se debería aplicar. De la misma forma, si la anulación se ha creado antes de que se aplicara el último cambio de los parámetros time_window_limit o time_usage_window activos, no se debería aplicar.</translation>
 <translation id="7529100000224450960">Permite establecer una lista de patrones de URL para especificar sitios que puedan abrir pop-ups.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultPopupsSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>

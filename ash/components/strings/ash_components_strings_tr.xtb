@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox'u (sesli geri bildirim) açar veya kapatır</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Web sayfasını aşağı doğru kaydırır</translation>
-<translation id="2568632782096378307">Ekran çözünürlüğünü varsayılan ayara sıfırlar</translation>
 <translation id="2596078834055697711">Pencerenin ekran görüntüsünü alır</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, daha sonra <ph name="TAB" /> veya <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Sonraki dilin giriş yöntemine geçer</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Sayfayı uzaklaştırır</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> tuşunu basılı tutarken bağlantıyı tıklayın</translation>
 <translation id="2830827904629746450">Pencereyi sağa yerleştirir</translation>
+<translation id="2840766858109427815">Bir sonraki sayfaya git</translation>
 <translation id="2872353916818027657">Birincil monitörü değiştir</translation>
 <translation id="2914313326123580426">Geliştirici Araçları panelini gösterir veya gizler</translation>
 <translation id="292495055542441795">Tam ekranı açar/kapatır</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Görev yöneticisini açar</translation>
 <translation id="3422679037938588196">Aramanızdaki önceki eşleşmeye gider</translation>
 <translation id="344577624355799426"><ph name="ALT" /> veya <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Yakınlaştırma düzeyini sıfırlar</translation>
 <translation id="353037708190149633">Geçerli pencerenizdeki tüm açık sayfaları yeni bir klasörde yer işaretleri olarak kaydeder</translation>
 <translation id="355103131818127604">Bağlantıyı arka planda yeni bir sekmede açar</translation>
 <translation id="3649256019230929621">Pencereyi simge durumuna küçült</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Adres çubuğu satırını vurgular</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> veya <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Genel bakış modu</translation>
+<translation id="4382340674111381977">Önceki sayfaya geri dön</translation>
 <translation id="4472417192667361414">Sistem ve Görüntü Ayarları</translation>
 <translation id="4556221320735744018">Klavye Kısayolu Yardımcısı'nı gösterir</translation>
 <translation id="4628718545549558538">Hesap resminizin görüntülendiği durum alanını açar</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Önceki kelimeyi siler</translation>
 <translation id="5899919361772749550">Geliştirici Araçları konsolunu görüntüler veya gizler</translation>
 <translation id="5921745308587794300">Pencereyi döndür</translation>
-<translation id="5975083100439434680">Uzaklaştır</translation>
 <translation id="6022924867608035986">Arama kutusu metnini temizle</translation>
 <translation id="6045998054441862242">Yüksek kontrast modunu etkinleştirir</translation>
 <translation id="6052614013050385269">Bağlantıyı sağ tıklar</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Bir dosyayı tarayıcıda açar</translation>
 <translation id="7917881398263220094">Geçerli sayfanızın yüklenmesini durdurur</translation>
 <translation id="7952165122793773711">1 ile 8 arasındaki sekmelere gider</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> veya <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Tarama verilerini temizle</translation>
 <translation id="8130528849632411619">Dokümanın başına gider</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> veya <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Bildirimlerinizi gösterir</translation>
 <translation id="8855885154700222542">Tam ekran tuşu</translation>
 <translation id="88986195241502842">Bir sayfa aşağı gider</translation>
-<translation id="8903921497873541725">Yakınlaştır</translation>
 <translation id="8924883688469390268">Önceki kullanıcıya geçer</translation>
-<translation id="8951768610999698672">Ekranınızdaki öğeleri daha büyük veya daha küçük yapar</translation>
 <translation id="8977648847395357314">Adres çubuğundaki içeriği seçer</translation>
 <translation id="8982190978301344584">Kullanılabilir IME'lerin listesini görüntüleyen menüyü gösterir</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 ile 8 arasındaki tuşlar</translation>

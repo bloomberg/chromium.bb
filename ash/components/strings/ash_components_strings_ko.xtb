@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox(음성 피드백) 사용 또는 사용 중지</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">웹페이지를 아래로 스크롤</translation>
-<translation id="2568632782096378307">기본 화면 해상도로 되돌리기</translation>
 <translation id="2596078834055697711">창 스크린샷 찍기</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />을 누르고 <ph name="TAB" /> 또는 <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">다음 언어 입력 방법으로 전환</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">페이지를 축소</translation>
 <translation id="2804480015716812239"><ph name="ALT" />를 누른 상태에서 링크를 클릭</translation>
 <translation id="2830827904629746450">오른쪽에 창 고정</translation>
+<translation id="2840766858109427815">다음 페이지로 이동</translation>
 <translation id="2872353916818027657">기본 모니터 전환</translation>
 <translation id="2914313326123580426">Developer Tools 패널 표시 또는 숨기기</translation>
 <translation id="292495055542441795">전체화면 전환</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">작업 관리자 호출</translation>
 <translation id="3422679037938588196">검색과 일치하는 이전 항목으로 이동</translation>
 <translation id="344577624355799426"><ph name="ALT" /> 또는 <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">확대/축소 수준 재설정</translation>
 <translation id="353037708190149633">현재 창에서 열린 모든 페이지를 북마크로 새 폴더에 저장</translation>
 <translation id="355103131818127604">백그라운드의 새 탭에서 링크 열기</translation>
 <translation id="3649256019230929621">창 최소화</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">검색주소창에서 행 강조표시</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 또는 <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">전체보기 모드</translation>
+<translation id="4382340674111381977">이전 페이지로 돌아가기</translation>
 <translation id="4472417192667361414">시스템 및 디스플레이 설정</translation>
 <translation id="4556221320735744018">단축키 도우미 보기</translation>
 <translation id="4628718545549558538">상태 영역(계정 사진이 표시되는 위치) 열기</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">이전 단어를 삭제</translation>
 <translation id="5899919361772749550">Developer Tools 콘솔 표시 또는 숨기기</translation>
 <translation id="5921745308587794300">창 회전</translation>
-<translation id="5975083100439434680">축소</translation>
 <translation id="6022924867608035986">검색창 텍스트 삭제</translation>
 <translation id="6045998054441862242">고대비 모드 사용</translation>
 <translation id="6052614013050385269">마우스 오른쪽 버튼으로 링크 클릭</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">브라우저에서 파일 열기</translation>
 <translation id="7917881398263220094">현재 페이지 로드를 중지</translation>
 <translation id="7952165122793773711">1~8번째 탭으로 이동합니다.</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> 또는 <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">인터넷 사용 기록 삭제</translation>
 <translation id="8130528849632411619">문서 처음으로 이동</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 또는 <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">알림 확인</translation>
 <translation id="8855885154700222542">전체화면 키</translation>
 <translation id="88986195241502842">페이지 아래로</translation>
-<translation id="8903921497873541725">확대</translation>
 <translation id="8924883688469390268">이전 사용자로 전환</translation>
-<translation id="8951768610999698672">화면에 표시된 항목을 확대 또는 축소</translation>
 <translation id="8977648847395357314">검색주소창의 콘텐츠를 선택</translation>
 <translation id="8982190978301344584">사용 가능한 IME 목록을 표시하는 메뉴 보기</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1부터 8</translation>

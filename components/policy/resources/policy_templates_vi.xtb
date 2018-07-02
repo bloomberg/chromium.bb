@@ -42,6 +42,9 @@
       Xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.
 
       Nếu chính sách này không được đặt thì thư mục bộ nhớ đệm mặc định sẽ được sử dụng và người dùng có thể ghi đè bằng cờ dòng lệnh '--disk-cache-dir'.</translation>
+<translation id="1135264353752122851">Định cấu hình cho phép bố cục bàn phím nào trong các phiên người dùng <ph name="PRODUCT_OS_NAME" />.
+
+      Nếu đặt chính sách này, thì người dùng chỉ có thể chọn một trong số các phương thức nhập do chính sách này chỉ định. Nếu chưa đặt chính sách này hoặc đặt thành danh sách trống, người dùng có thể chọn tất cả các phương thức nhập được hỗ trợ. Nếu chính sách này không cho phép phương thức nhập hiện tại, phương thức nhập đó sẽ chuyển sang bố cục bàn phím phần cứng (nếu được phép) hoặc mục nhập hợp lệ đầu tiên trong danh sách này. Bỏ qua tất cả các phương thức nhập không hợp lệ hoặc chưa được hỗ trợ trong danh sách này.</translation>
 <translation id="1138294736309071213">Chính sách này chỉ hoạt động trong chế độ bán lẻ.
 
       Xác định khoảng thời gian trước khi trình bảo vệ màn hình hiển thị trên màn hình đăng nhập của các thiết bị ở chế độ bán lẻ.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Tải các url đã chỉ định khi đăng nhập ở chế độ trình diễn</translation>
 <translation id="1223789468190631420">Trạng thái bật tính năng Duyệt web an toàn cho các nguồn đáng tin cậy</translation>
 <translation id="123081309365616809">Bật tính năng truyền nội dung đến thiết bị</translation>
+<translation id="1243570869342663665">Kiểm soát tùy chọn lọc nội dung người lớn của SafeSites.</translation>
 <translation id="1257550411839719984">Đặt thư mục tải xuống mặc định</translation>
 <translation id="1265053460044691532">Hạn chế thời gian người dùng được xác thực qua SAML có thể đăng nhập ngoại tuyến</translation>
 <translation id="1291880496936992484">Cảnh báo: RC4 sẽ bị xóa hoàn toàn khỏi <ph name="PRODUCT_NAME" /> sau phiên bản 52 (khoảng tháng 9 năm 2016) và chính sách này sẽ ngừng hoạt động sau đó.
@@ -259,6 +263,7 @@
       Định dạng của giá trị tuân theo tên của múi giờ trong "Cơ sở dữ liệu múi giờ của IANA" (xem "https://en.wikipedia.org/wiki/Tz_database"). Đặc biệt, bạn có thể tham chiếu hầu hết các múi giờ theo "continent/large_city" hoặc "ocean/large_city".
 
       Đặt chính sách này sẽ tắt hoàn toàn tính năng phân giải múi giờ tự động theo vị trí thiết bị. Thao tác này cũng ghi đè chính sách SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Cho phép hiển thị nội dung quảng cáo dưới dạng toàn bộ tab</translation>
 <translation id="1888871729456797026">Mã thông báo đăng ký của chính sách đám mây trên màn hình</translation>
 <translation id="1897365952389968758">Cho phép tất cả các trang web chạy JavaScript</translation>
 <translation id="1906888171268104594">Kiểm soát liệu số liệu sử dụng và dữ liệu chẩn đoán, kể cả báo cáo sự cố, có được báo cáo lại cho Google hay không.
@@ -378,6 +383,7 @@
 
       Nếu bạn tắt cài đặt này hoặc không thiết lập cài đặt, thì mọi trang xác thực cổng cố định sẽ hiển thị trong tab trình duyệt mới (thông thường), sử dụng cài đặt proxy của người dùng hiện tại.</translation>
 <translation id="2156132677421487971">Định cấu hình các chính sách cho <ph name="PRODUCT_NAME" />, một tính năng cho phép người dùng gửi nội dung của các tab, trang web hoặc màn hình từ trình duyệt đến màn hình và hệ thống âm thanh từ xa.</translation>
+<translation id="2166472654199325139">Không lọc các trang web có nội dung người lớn</translation>
 <translation id="2168397434410358693">Độ trễ lúc không sử dụng khi chạy trên nguồn AC</translation>
 <translation id="2170233653554726857">Bật tối ưu hóa WPAD</translation>
 <translation id="2176565653304920879">Khi chính sách này được đặt, tính năng phát hiện múi giờ tự động sẽ là một trong những cách sau đây tùy thuộc vào giá trị của cài đặt:
@@ -529,6 +535,12 @@
 <translation id="2466131534462628618">Xác thực cổng cố định bỏ qua proxy</translation>
 <translation id="2482676533225429905">Nhắn tin gốc</translation>
 <translation id="2483146640187052324">Dự đoán tác vụ mạng trên kết nối mạng bất kỳ</translation>
+<translation id="2484208301968418871">Chính sách này kiểm soát việc áp dụng bộ lọc URL SafeSites.
+      Bộ lọc này sử dụng API tìm kiếm an toàn của Google để phân loại xem các URL có chứa nội dung khiêu dâm hay không.
+
+      Khi chưa định cấu hình hoặc đặt chính sách này thành "Không lọc trang web có nội dung người lớn", chúng tôi sẽ không lọc các trang web này.
+
+      Khi đặt chính sách này thành "Lọc các trang web cấp cao nhất có nội dung người lớn", chúng tôi sẽ lọc các trang web được phân loại là có chứa nội dung khiêu dâm.</translation>
 <translation id="2485721741875148980">Nếu bạn đặt chính sách này là true, người dùng sẽ phải đăng nhập vào <ph name="PRODUCT_NAME" /> bằng hồ sơ của mình trước khi sử dụng trình duyệt. Giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt là false. Hãy lưu ý rằng sau khi bật chính sách này, các hồ sơ chưa ký hiện tại sẽ bị khóa và bạn không thể truy cập vào các hồ sơ đó. Để biết thêm thông tin, hãy xem bài viết trên trung tâm trợ giúp.
 
       Nếu bạn đặt chính sách này là false hoặc chưa đặt chính sách thì người dùng có thể sử dụng trình duyệt mà không cần đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
@@ -690,12 +702,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn bật cài đặt này, tính năng Xem trước bản in sẽ chọn máy in có sẵn trong hệ điều hành làm máy in mặc định.</translation>
 <translation id="2867699958489427143">Khôi phục và sử dụng phiên bản đích nếu phiên bản hệ điều hành mới hơn phiên bản đích. Thực hiện powerwash đầy đủ trong quá trình này.</translation>
-<translation id="286802604195763750">Cho phép bạn kiểm soát việc kích hoạt cảnh báo bảo vệ mật khẩu. Dịch vụ bảo vệ mật khẩu sẽ cảnh báo người dùng khi họ sử dụng lại mật khẩu được bảo vệ trên các trang web có thể đáng ngờ.
-
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOff', thì sẽ không có cảnh báo bảo vệ mật khẩu nào hiển thị.
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPasswordReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu Google trên trang web nằm ngoài danh sách cho phép.
-      Nếu bạn đặt chính sách này thành 'PasswordProtectionWarningOnPhishingReuse', thì cảnh báo bảo vệ mật khẩu sẽ hiển thị khi người dùng sử dụng lại mật khẩu Google của họ trên trang web lừa đảo.
-      Nếu bạn không đặt chính sách này, thì cảnh báo bảo vệ mật khẩu sẽ được kích hoạt khi người dùng sử dụng lại mật khẩu Google của họ trên trang web lừa đảo nhưng người dùng có thể thay đổi cài đặt này.</translation>
 <translation id="2872961005593481000">Tắt</translation>
 <translation id="2874209944580848064">Lưu ý dành cho thiết bị <ph name="PRODUCT_OS_NAME" /> hỗ trợ ứng dụng Android:</translation>
 <translation id="2877225735001246144">Tắt tra cứu CNAME khi thỏa thuận xác thực Kerberos</translation>
@@ -1361,6 +1367,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này không được thiết lập hoặc để trống, thì bất kỳ người dùng nào cũng có thể đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Cho phép chế độ toàn màn hình</translation>
+<translation id="4861767323695239729">Định cấu hình các phương thức nhập được phép trong phiên người dùng</translation>
 <translation id="4869787217450099946">Xác định xem khóa chế độ thức màn hình có được phép hay không. Khóa chế độ thức màn hình có thể được tiện ích yêu cầu qua API tiện ích quản lý công suất.
 
           Nếu chính sách này được đặt thành true hoặc không được đặt, khóa chế độ thức màn hình sẽ được đặt để quản lý công suất.
@@ -1947,6 +1954,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Nếu chính sách này bị tắt hoặc chưa được đặt thì chỉ các cấu hình cục bộ thông thường mới được sử dụng.
 
       Chính sách <ph name="SYNC_DISABLED_POLICY_NAME" /> sẽ tắt tất cả đồng bộ hóa dữ liệu, ghi đè RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Lọc các trang web cấp cao nhất (không phải iframe được nhúng) có nội dung người lớn</translation>
 <translation id="6735701345096330595">Buộc bật tính năng kiểm tra chính tả ngôn ngữ</translation>
 <translation id="673699536430961464">Cài đặt này cho phép người dùng chuyển đổi giữa các tài khoản Google trong vùng nội dung của cửa sổ trình duyệt sau khi họ đăng nhập vào thiết bị <ph name="PRODUCT_OS_NAME" /> của mình.
 
@@ -1969,6 +1977,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6757438632136860443">Cho phép bạn đặt danh sách mẫu url chỉ định các trang web được phép chạy plugin <ph name="FLASH_PLUGIN_NAME" />.
 
           Nếu bạn không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả các trang web của chính sách 'DefaultPluginsSetting' nếu chính sách này được đặt hoặc nếu không thì giá trị mặc định chung sẽ được sử dụng cho cấu hình cá nhân của người dùng.</translation>
+<translation id="6762235610019366960">Cho phép bạn kiểm soát việc trình bày nội dung giáo dục và/hoặc quảng cáo dưới dạng toàn bộ tab trong <ph name="PRODUCT_NAME" />.
+
+      Nếu chưa bật hoặc định cấu hình chính sách này (đặt thành đúng), <ph name="PRODUCT_NAME" /> có thể hiển thị nội dung dưới dạng toàn bộ tab cho người dùng nhằm cung cấp thông tin sản phẩm.
+
+      Nếu tắt chính sách này (đặt thành sai), <ph name="PRODUCT_NAME" /> sẽ không hiển thị nội dung dưới dạng toàn bộ tab cho người dùng nhằm cung cấp thông tin sản phẩm.
+
+      Mục cài đặt này sẽ kiểm soát việc trình bày các trang chào mừng giúp người dùng đăng nhập vào <ph name="PRODUCT_NAME" />, chọn trang đó làm trình duyệt mặc định hoặc thông báo cho họ về các tính năng sản phẩm.</translation>
 <translation id="6766216162565713893">Cho phép trang web yêu cầu người dùng cấp quyền truy cập vào thiết bị Bluetooth lân cận</translation>
 <translation id="6770454900105963262">Báo cáo thông tin về các phiên kiosk hiện hoạt</translation>
 <translation id="6786747875388722282">Tiện ích</translation>
@@ -2295,17 +2310,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7511361072385293666">Nếu chính sách này được đặt thành true hoặc không được đặt thì được phép sử dụng giao thức QUIC trong <ph name="PRODUCT_NAME" />.
       Nếu chính sách này được đặt thành false thì không được phép sử dụng giao thức QUIC.</translation>
 <translation id="7519251620064708155">Cho phép tạo khóa trên các trang web này</translation>
-<translation id="7529083451528428240">Cho phép bạn khóa phiên của người dùng dựa vào thời gian của ứng dụng hoặc hạn mức sử dụng trong ngày.
-
-          |time_window_limit| chỉ định một khoảng thời gian hàng ngày mà phiên của người dùng sẽ bị khóa. Chúng tôi chỉ hỗ trợ một quy tắc mỗi ngày trong tuần, do đó, kích thước của mảng |entries| có thể dao động trong khoảng từ 0 đến 7. |starts_at| và |ends_at| là thời gian bắt đầu và thời gian kết thúc của giới hạn thời gian, khi |ends_at| sớm hơn |starts_at| thì điều đó có nghĩa là |time_limit_window| kết thúc vào ngày tiếp theo. |last_updated_millis| là dấu thời gian UTC cho thời gian gần đây nhất mục này được cập nhật, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
-
-          |time_usage_limit| chỉ định định mức sử dụng màn hình hàng ngày, do vậy, khi người dùng đạt đến giới hạn này, phiên của người dùng sẽ bị khóa. Có một khoảng thời gian cho mỗi ngày trong tuần và chỉ nên đặt khoảng thời gian này nếu có định mức hoạt động cho ngày đó. |usage_quota_mins| là khoảng thời gian có thể sử dụng thiết bị được quản lý trong một ngày và |reset_at| là thời gian khi định mức sử dụng được gia hạn. Giá trị mặc định cho |reset_at| là nửa đêm ({'hour': 0, 'minute': 0}). |last_updated_millis| là dấu thời gian UTC cho lần gần đây nhất cập nhật mục này, dấu thời gian này được gửi dưới dạng chuỗi vì số nguyên sẽ không phù hợp.
-
-          |overrides| được cung cấp để tạm thời vô hiệu hóa một hoặc nhiều quy tắc trước đó.
-          * Nếu time_window_limit hoặc time_usage_limit đều không hoạt động, thì |LOCK| có thể được dùng để khóa thiết bị.
-          * |LOCK| sẽ tạm thời khóa phiên người dùng cho tới khi time_window_limit hoặc time_usage_limit tiếp theo bắt đầu.
-          * |UNLOCK| sẽ mở khóa phiên người dùng bị khóa bằng time_window_limit hoặc time_usage_limit.
-          |created_time_millis| là dấu thời gian UTC để tạo nội dung ghi đè, dấu thời gian này được gửi dưới dạng Chuỗi vì số nguyên sẽ không phù hợp. Dấu thời gian này dùng để xác định có tiếp tục áp dụng nội dung ghi đè này hay không. Nếu tính năng giới hạn thời gian hiện đang hoạt động (giới hạn mức sử dụng thời gian hoặc giới hạn khoảng thời gian) khởi động sau khi nội dung ghi đè được tạo, thì nội dung ghi đè sẽ không có hiệu lực. Ngoài ra, nếu nội dung ghi đè được tạo trước lần thay đổi gần đây nhất của time_window_limit hoặc time_usage_window đang hoạt động, thì nội dung ghi đè này cũng sẽ không được áp dụng.</translation>
 <translation id="7529100000224450960">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép mở cửa sổ bật lên.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung từ chính sách 'DefaultPopupsSetting' nếu chính sách này được thiết lập hoặc từ cấu hình cá nhân của người dùng sẽ được sử dụng cho tất cả các trang web.</translation>

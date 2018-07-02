@@ -42,6 +42,9 @@
       如需可使用的變數清單，請參閱 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。
 
       如果未設定這項政策，系統會使用預設的快取目錄，日後使用者可以自行透過「--disk-cache-dir」命令列標記覆寫這個目錄。</translation>
+<translation id="1135264353752122851">設定可供 <ph name="PRODUCT_OS_NAME" />使用者工作階段使用的鍵盤配置。
+
+      如果設定這項政策，使用者就只能選取這項政策指定的其中一種輸入法。如果設定這項政策，或是將這項政策設為空白清單，則使用者可以選取所有支援的輸入法。如果目前的輸入法遭到這項政策禁止，則會切換成硬體鍵盤配置 (如果允許的話) 或這份清單中第一個有效的項目。這份清單中無效或不支援的輸入法會全部遭到忽略。</translation>
 <translation id="1138294736309071213">這項政策只會在零售模式下啟用。
 
       決定螢幕保護程式顯示前的閒置時間是否要顯示在零售模式下的裝置登入畫面上。
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">在示範登入時載入指定的網址</translation>
 <translation id="1223789468190631420">信任來源的安全瀏覽功能啟用狀態</translation>
 <translation id="123081309365616809">允許將內容投放至裝置</translation>
+<translation id="1243570869342663665">控制安全網站成人內容篩選設定。</translation>
 <translation id="1257550411839719984">設定預設的下載目錄</translation>
 <translation id="1265053460044691532">限制透過 SAML 驗證的使用者可離線登入的時間</translation>
 <translation id="1291880496936992484">警告：自 <ph name="PRODUCT_NAME" /> 52 版 (將於 2016 年 9 月左右推出) 起，系統將全面移除 RC4，屆時這項政策將停止運作。
@@ -256,6 +260,7 @@
       時區值格式是採用「IANA 時區資料庫」中訂定的時區名稱 (請參閱「https://en.wikipedia.org/wiki/Tz_database」)。基本上，大部分時區均依照「&lt;大陸&gt;/&lt;大城市&gt;」或「&lt;大洋&gt;/&lt;大城市&gt;」的格式定名。
 
       設定這項政策後，系統將全面停止依裝置位置資訊自動偵測時區，SystemTimezoneAutomaticDetection 政策也會遭到覆寫。</translation>
+<translation id="1885782360784839335">允許顯示完整分頁宣傳內容</translation>
 <translation id="1888871729456797026">電腦上的雲端政策註冊憑證</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
 <translation id="1906888171268104594">控制是否要將使用指標和診斷資料 (含當機報告) 回報給 Google。
@@ -368,6 +373,7 @@
       在這種情況下，重新啟動時就不會重新套用
       預設值。</translation>
 <translation id="2156132677421487971">設定「<ph name="PRODUCT_NAME" />」的各項政策。這項功能可讓使用者透過瀏覽器將分頁、網站或桌面內容傳送至遠端的螢幕和音響設備。</translation>
+<translation id="2166472654199325139">不要針對成人內容篩選網站。</translation>
 <translation id="2168397434410358693">在 AC 供電環境下執行時的閒置延遲時間</translation>
 <translation id="2170233653554726857">啟用 WPAD 最佳化功能</translation>
 <translation id="2176565653304920879">設定這項政策後，系統會根據設定值採用下列其中一種方式執行自動偵測時區流程：
@@ -516,6 +522,12 @@
 <translation id="2466131534462628618">要求網頁認證入口的驗證機制忽略 Proxy 設定</translation>
 <translation id="2482676533225429905">內建訊息傳遞</translation>
 <translation id="2483146640187052324">無論使用任何網路連線，皆預測網路動作</translation>
+<translation id="2484208301968418871">這項政策可決定是否套用安全網站網址篩選器。
+      這個篩選器會使用 Google Safe Search API 判別網址是否指向色情內容。
+
+      如果未設定這項政策，或是將這項政策設為「不要針對成人內容篩選網站」，網站將不會經過篩選。
+
+      如果將這項政策設為「針對成人內容篩選頂層網站」，被判定為含有色情內容的網站就會遭到篩除。</translation>
 <translation id="2485721741875148980">如果將這項政策設為 true，使用者必須以自己的設定檔登入 <ph name="PRODUCT_NAME" />，才能使用瀏覽器。此外，BrowserGuestModeEnabled 的預設值將設為 false。請注意，啟用這項政策後，未經簽署的現有設定檔會遭到鎖定，無法再使用。詳情請參閱說明中心文章。
 
       如果將這項政策設為 false 或不予設定，使用者不必登入 <ph name="PRODUCT_NAME" /> 即可使用瀏覽器。</translation>
@@ -666,12 +678,6 @@
 
       如果啟用這項設定，預覽列印會使用作業系統預設印表機做為預設目的地選擇。</translation>
 <translation id="2867699958489427143">如果作業系統比目標版本還新，則復原並維持在目標版本，並在作業過程中執行完整的 Powerwash。</translation>
-<translation id="286802604195763750">讓你控制密碼保護警告訊息的觸發設定。當使用者在疑似不安全的網站上重複使用受保護的密碼時，密碼保護功能會向使用者發出警示。
-
-      如果將這項政策設為「PasswordProtectionWarningOff」，系統就不會顯示密碼保護警告訊息。
-      如果將這項政策設為「PasswordProtectionWarningOnPasswordReuse」，當使用者在任何非許可的網站上重複使用 Google 密碼時，系統就會顯示密碼保護警告訊息。
-      如果將這項政策設為「PasswordProtectionWarningOnPhishingReuse」，當使用者在網路詐騙網站上重複使用 Google 密碼時，系統就會顯示密碼保護警告訊息。
-      如果未設定這項政策，當使用者在網路詐騙網站上重複使用 Google 密碼時，就會觸發密碼保護警告訊息，但使用者可以變更這項設定。</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
@@ -1320,6 +1326,7 @@
 
       如果你未設定這項政策或將其留空，則任何使用者皆可登入 <ph name="PRODUCT_NAME" />。</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
+<translation id="4861767323695239729">設定可在使用者工作階段中使用的輸入法</translation>
 <translation id="4869787217450099946">指定是否允許螢幕喚醒鎖定。擴充功能可透過 Power Management Extension API 要求螢幕喚醒鎖。
 
           如果這項政策設為「True」或未設定，系統將啟用螢幕喚醒鎖，以強化電源管理效能。
@@ -1870,6 +1877,7 @@
       如果停用或未設定這項政策，系統只會使用一般本機設定檔。
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> 政策會停用所有資料同步處理功能，並覆寫 RoamingProfileSupportEnabled。</translation>
+<translation id="6731757988219967594">針對成人內容篩選頂層網站 (但不篩選嵌入的 iframe)</translation>
 <translation id="6735701345096330595">強制執行拼字檢查的語言</translation>
 <translation id="673699536430961464">如果啟用這項設定，使用者在登入 <ph name="PRODUCT_OS_NAME" />裝置後，將可在瀏覽器視窗的內容區域中切換 Google 帳戶。
 
@@ -1892,6 +1900,13 @@
 <translation id="6757438632136860443">允許你設定網址模式清單，指定允許執行 <ph name="FLASH_PLUGIN_NAME" /> 外掛程式的網站。
 
           如未設定這項政策，系統會從「DefaultPluginsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
+<translation id="6762235610019366960">讓你控制 <ph name="PRODUCT_NAME" /> 能否以完整分頁顯示宣傳和/或教學內容。
+
+      如果未設定或啟用這項政策 (設為 true)，<ph name="PRODUCT_NAME" /> 可能會向使用者顯示完整分頁內容，藉此提供產品資訊。
+
+      如果停用這項政策 (設為 false)，<ph name="PRODUCT_NAME" /> 就不會以顯示完整分頁內容的方式向使用者提供產品資訊。
+
+      這項設定將決定歡迎頁面顯示與否，歡迎頁面可協助使用者登入 <ph name="PRODUCT_NAME" />，並將其設為預設瀏覽器，或是讓使用者瞭解產品功能。</translation>
 <translation id="6766216162565713893">允許網站要求使用者授權存取附近的藍牙裝置</translation>
 <translation id="6770454900105963262">回報運作中資訊站工作階段相關資訊</translation>
 <translation id="6786747875388722282">擴充功能</translation>
@@ -2202,17 +2217,6 @@
 <translation id="7511361072385293666">如果這項政策設為 True 或未設定，可在 <ph name="PRODUCT_NAME" /> 中使用 QUIC 通訊協定。
       如果這項政策設為 False，則不可使用 QUIC 通訊協定。</translation>
 <translation id="7519251620064708155">允許在這些網站上使用金鑰產生功能</translation>
-<translation id="7529083451528428240">讓你可根據用戶端時間或當日用量配額鎖定使用者的工作階段。
-
-          |time_window_limit| 是用來指定一個每日時段，在這段時間系統會鎖定使用者的工作階段。星期一到日每天各只能設定一項規則，因此 |entries| 陣列的大小可為 1 到 7 之間的值。|starts_at| 和 |ends_at| 是時段限制的開始和結束時間；如果 |ends_at| 小於 |starts_at|，表示 |time_limit_window| 到隔天才會結束。|last_updated_millis| 是此項目上次更新時間的時間戳記 (採世界標準時間)，由於時間戳記無法轉換成整數，因此這項參數是採字串的形式傳送。
-
-          |time_usage_limit| 是用來指定每日螢幕使用時間配額，當使用者用盡配額，系統就會鎖定使用者的工作階段。星期一到日各有一個屬性，只有在該日具備有效配額的情況下才應設定屬性。|usage_quota_mins| 是受管理裝置的單日可用時間，|reset_at| 則是用量配額的更新時間。|reset_at| 的預設值為午夜 ({'hour'：0，'minute'：0})。|last_updated_millis| 是此項目上次更新時間的時間戳記 (採世界標準時間)，由於時間戳記無法轉換成整數，因此這項參數是採字串的形式傳送。
-
-          |overrides| 可讓一或多項先前設定的規則暫時失效。
-          * 如果 time_window_limit 和 time_usage_limit 都處於無效狀態，則可使用 |LOCK| 來鎖定裝置。
-          * |LOCK| 可暫時鎖定使用者工作階段，直到下一個 time_window_limit 或 time_usage_limit 開始為止。
-          * |UNLOCK| 可以解除鎖定根據 time_window_limit 或 time_usage_limit 鎖定的使用者工作階段。
-          |created_time_millis| 是覆寫作業建立時間的時間戳記 (採世界標準時間)，由於時間戳記無法轉換成整數，因此這項參數是採字串的形式傳送。這項參數是用來供系統判定是否仍要執行覆寫作業。如果目前有效的時間限制功能 (時間用量限制或時段限制) 是在覆寫作業建立後才開始，系統就不會採取行動。此外，如果覆寫作業的建立時間早於有效 time_window_limit 或 time_usage_window 的上次變更時間，系統就不會執行覆寫作業。</translation>
 <translation id="7529100000224450960">允許你設定網址模式清單，指定可以開啟彈出式視窗的網站。如果未設定這項政策，系統會從「DefaultPopupsSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用至所有網站。</translation>
 <translation id="7529144158022474049">自動更新分散係數</translation>
 <translation id="7534199150025803530">這項政策對 Android Google 雲端硬碟應用程式沒有影響。如要禁止透過行動網路連線使用 Google 雲端硬碟，則必須禁止安裝 Android Google 雲端硬碟應用程式。</translation>

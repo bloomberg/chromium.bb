@@ -593,6 +593,7 @@
 <translation id="5712338278108304766">表の次の列</translation>
 <translation id="571866080859340309">グループを検索しています</translation>
 <translation id="5728409797179002635">表が見つかりません。</translation>
+<translation id="5729047866208036762">数式要素間を移動するには上下左右の矢印キーを押します。</translation>
 <translation id="5732189279857692565">これは 2 番目の見出しです。他へ移動するには、検索+H キーまたは検索+Shift+H キーを押します。</translation>
 <translation id="5748623122140342504">前のレベル 5 見出し</translation>
 <translation id="5750633686117194034">修飾キーが押されていません。設定する修飾キーを押してください。2 つ以上の場合は同時に押します。指を離すとキーの設定が音声で通知されます。終了するには Tab キーを押します。</translation>
@@ -748,6 +749,7 @@ Chrome ブラウザのメニューを開くには、Alt+F キーを押します�
 <translation id="7226216518520804442">リスト</translation>
 <translation id="7229749224609077523">6 点点字表を選択:</translation>
 <translation id="72393384879519786">見出し</translation>
+<translation id="7240858705033280249">詳細へ移動</translation>
 <translation id="7241683698754534149">長い説明を新しいタブで開きます</translation>
 <translation id="7248671827512403053">アプリケーション</translation>
 <translation id="725969808843520477">次のラジオボタン</translation>

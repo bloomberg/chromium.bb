@@ -42,6 +42,9 @@
       Na stranici https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables možete pronaći popis mogućih varijabli.
 
       Ako se pravilo ne postavi, koristit će se zadani direktorij predmemorije i korisnik će ga moći nadjačati oznakom naredbenog retka "--disk-cache-dir".</translation>
+<translation id="1135264353752122851">Konfigurira koji su rasporedi tipkovnice dopušteni za korisničke sesije za <ph name="PRODUCT_OS_NAME" />.
+
+      Ako se to pravilo postavi, korisnik može odabrati samo jedan od načina unosa određenih tim pravilom. Ako se to pravilo ne postavi ili se postavi na prazan popis, korisnik može odabrati sve podržane načine unosa. Ako trenutačni način unosa nije dopušten tim pravilom, način unosa prebacit će se na raspored hardverske tipkovnice (ako je dopušten) ili prvi važeći unos na popisu. Svi nevažeći ili nepodržani načini unosa na popisu zanemarit će se.</translation>
 <translation id="1138294736309071213">To je pravilo aktivno samo u prodajnom načinu.
 
       Određuje koliko će potrajati prije nego što se čuvar zaslona prikaže na zaslonu prijave za uređaje u prodajnom načinu.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Učitaj navedene URL-ove pri demonstracijskoj prijavi</translation>
 <translation id="1223789468190631420">Stanje omogućivanja Sigurnog pregledavanja za pouzdane izvore</translation>
 <translation id="123081309365616809">Omogući emitiranje sadržaja na uređaju</translation>
+<translation id="1243570869342663665">Kontroliraj filtriranje sadržaja za odrasle za SafeSites.</translation>
 <translation id="1257550411839719984">Postavi zadani direktorij za preuzimanje</translation>
 <translation id="1265053460044691532">Ograničite vrijeme koliko se dugo korisnik autentificiran putem SAML-a može izvanmrežno prijaviti</translation>
 <translation id="1291880496936992484">Upozorenje: RC4 potpuno će se ukloniti iz preglednika <ph name="PRODUCT_NAME" /> nakon verzije 52 (oko rujna 2016.) i ovo će pravilo tada prestati funkcionirati.
@@ -259,6 +263,7 @@
       Format vrijednosti slijedi nazive vremenskih zona navedenih u bazi podataka vremenskih zona organizacije IANA (pogledajte "https://en.wikipedia.org/wiki/Tz_database"). To konkretno znači da se većina vremenskih zona navodi kao "kontinent/veliki_grad" ili "ocean/veliki_grad".
 
       Postavljanjem tog pravila potpuno se onemogućuje automatsko određivanje vremenske zone prema lokaciji uređaja, a nadjačava se i pravilo SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">Omogući prikazivanje promotivnog sadržaja na cijeloj kartici</translation>
 <translation id="1888871729456797026">Token za prijavu za pravila oblaka na računalu</translation>
 <translation id="1897365952389968758">Dopusti svim web-lokacijama izvođenje JavaScripta</translation>
 <translation id="1906888171268104594">Kontrolira šalju li se Googleu izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima, uključujući izvješća o rušenju.
@@ -371,6 +376,7 @@
       je može promijeniti. U tom slučaju zadana vrijednost neće se ponovo
       primjenjivati nakon ponovnog pokretanja.</translation>
 <translation id="2156132677421487971">Konfigurirajte pravila za <ph name="PRODUCT_NAME" />, značajku koja korisnicima omogućuje da sadržaj kartica, web-lokacija ili radne površine iz preglednika pošalju na udaljene zaslone i zvučne sustave.</translation>
+<translation id="2166472654199325139">Nemoj filtrirati web-lokacije na temelju sadržaja za odrasle</translation>
 <translation id="2168397434410358693">Odgoda neaktivnosti za vrijeme napajanja izmjeničnom strujom</translation>
 <translation id="2170233653554726857">Omogući WPAD optimizaciju</translation>
 <translation id="2176565653304920879">Kada se to pravilo postavi, automatsko otkrivanje vremenske zone odvijat će se na jedan od sljedećih način ovisno o vrijednosti postavke:
@@ -519,6 +525,12 @@
 <translation id="2466131534462628618">Autentifikacija putem obaveznog portala zanemaruje proxy</translation>
 <translation id="2482676533225429905">Lokalno slanje poruka</translation>
 <translation id="2483146640187052324">Predvidi mrežne radnje na bilo kojoj mrežnoj vezi</translation>
+<translation id="2484208301968418871">Tim se pravilom kontrolira primjena filtra URL-ova za SafeSites.
+      Taj se filtar koristi Google Safe Search API-jem da bi klasificirao URL-ove kao pornografske i nepornografske.
+
+      Kada se to pravilo ne konfigurira ili se postavi na "Nemoj filtrirati web-lokacije na temelju sadržaja za odrasle", web-lokacije neće se filtrirati.
+
+      Kada se to pravilo postavi na "Filtriraj vršne web-lokacije na temelju sadržaja za odrasle", filtrirat će se web-lokacije klasificirane kao pornografske.</translation>
 <translation id="2485721741875148980">Ako se to pravilo postavi na točno, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati preglednik. Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na netočno. Napominjemo da će nakon omogućivanja ovog pravila postojeći nepotpisani profili biti zaključani i neće im biti moguće pristupiti. Više informacija možete pronaći u centru za pomoć.
 
       Ako se to pravilo postavi na netočno ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
@@ -669,12 +681,6 @@
 
       Ako omogućite tu postavku, u Pregledu ispisa upotrebljavat će se zadani pisač OS-a kao zadani odredišni pisač.</translation>
 <translation id="2867699958489427143">Vrati se na ciljnu verziju i ostani na njoj ako je verzija OS-a novija od ciljne. Tijekom postupka izvrši potpuni powerwash.</translation>
-<translation id="286802604195763750">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke prikazati upozorenje. Zaštita zaporke to upozorenje prikazuje korisnicima kada ponovo upotrijebe svoju zaštićenu zaporku na potencijalno sumnjivim web-lokacijama.
-
-      Ako se pravilo postavi na "PasswordProtectionWarningOff", upozorenje zaštite zaporke neće se prikazati.
-      Ako se pravilo postavi na "PasswordProtectionWarningOnPasswordReuse", upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji koja nije dopuštena.
-      Ako se pravilo postavi na "PasswordProtectionWarningOnPhishingReuse", upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta.
-      Ako se pravilo ne postavi, upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta, ali će korisnik moći promijeniti tu postavku.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2874209944580848064">Napomena za uređaje <ph name="PRODUCT_OS_NAME" /> koji podržavaju Androidove aplikacije:</translation>
 <translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>
@@ -1323,6 +1329,7 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se ovo pravilo ne postavi ili ostavi prazno, korisnik se može prijaviti na uslugu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Dopusti način punog zaslona</translation>
+<translation id="4861767323695239729">Konfiguriraj dopuštene načine unosa u korisničkoj sesiji</translation>
 <translation id="4869787217450099946">Određuje jesu li dopuštena blokiranja aktivacije zaslona. Ta blokiranja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem.
 
           Ako je to pravilo postavljeno na točno ili ako nije postavljeno, blokiranja aktivacije zaslona primjenjivat će se radi upravljanja napajanjem.
@@ -1878,6 +1885,7 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
       Ako se to pravilo onemogući ili ne postavi, upotrebljavat će se samo uobičajeni lokalni profili.
 
       Pravilo <ph name="SYNC_DISABLED_POLICY_NAME" /> onemogućuje svu sinkronizaciju podataka nadjačavajući RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtriraj vršne web-lokacije (ali ne ugrađene iframeove) na temelju sadržaja za odrasle</translation>
 <translation id="6735701345096330595">Nametni omogućivanje provjere pravopisa za jezike</translation>
 <translation id="673699536430961464">Ova postavka korisnicima omogućuje promjenu Google računa unutar područja sadržaja u prozoru preglednika nakon što se prijave na svojem <ph name="PRODUCT_OS_NAME" /> uređaju.
 
@@ -1900,6 +1908,13 @@ otvorene kartice. Zato će se neke kartice možda i dalje ponašati u skladu s p
 <translation id="6757438632136860443">Omogućuje vam postavljanje popisa uzoraka URL-ova koji navode web-lokacije kojima je dopušteno pokretanje dodatka <ph name="FLASH_PLUGIN_NAME" />.
 
           Ako se to pravilo ne postavi, za sve web-lokacije upotrebljavat će se globalna zadana vrijednost iz pravila "DefaultPluginsSetting", ako je to pravilo postavljeno, ili vrijednost iz korisnikove osobne konfiguracije.</translation>
+<translation id="6762235610019366960">Omogućuje vam da upravljate prikazivanjem promotivnog i/ili obrazovnog sadržaja na cijeloj kartici na usluzi <ph name="PRODUCT_NAME" />.
+
+      Ako se ne konfigurira ili se omogući (postavi na True), <ph name="PRODUCT_NAME" /> korisnicima može prikazivati sadržaj na cijeloj kartici radi pružanja informacija o proizvodima.
+
+      Ako se onemogući (postavi na False), <ph name="PRODUCT_NAME" /> korisnicima neće prikazivati sadržaj na cijeloj stranici radi pružanja informacija o proizvodima.
+
+      Ta postavka upravlja prikazivanjem stranica dobrodošlice koje korisnicima pomažu da se prijave na <ph name="PRODUCT_NAME" /> i odaberu ga kao zadani preglednik ili ih na neki drugi način informiraju o značajkama proizvoda.</translation>
 <translation id="6766216162565713893">Dopusti web-lokacijama da traže dopuštenje korisnika za pristup Bluetooth uređajima u blizini</translation>
 <translation id="6770454900105963262">Izvješćivanje o informacijama o aktivnim sesijama kioska</translation>
 <translation id="6786747875388722282">Proširenja</translation>
@@ -2204,17 +2219,6 @@ onemogućene. Korisnici će još uvijek moći ručno omogućiti SitePerProcess.
 <translation id="7511361072385293666">Ako se to pravilo postavi na "istinito" ili ako se ne postavi, dopuštena je upotreba QUIC protokola na proizvodu <ph name="PRODUCT_NAME" />.
       Ako se postavi na "neistinito", upotreba QUIC protokola nije dopuštena.</translation>
 <translation id="7519251620064708155">Dopusti generiranje ključeva na ovim web-lokacijama</translation>
-<translation id="7529083451528428240">Omogućuje vam da zaključate sesiju korisnika na temelju vremena klijenta ili korisničke kvote za taj dan.
-
-          |time_window_limit| određuje dnevni vremenski okvir u kojemu se sesija korisnika treba zaključati. Podržavamo samo jedno pravilo za svaki dan u tjednu, stoga veličina niza |entries| može varirati od nula do sedam. |starts_at| i |ends_at| su početak i kraj ograničenja vremenskog okvira, a kada je |ends_at| manji od |starts_at|, to znači da |time_limit_window| završava sljedeći dan. |last_updated_millis| je vremenska oznaka prema UTC-u za posljednje ažuriranje tog unosa, a šalje se u obliku niza jer vremenska oznaka ne bi stala u cijeli broj. 
-
-          |time_usage_limit| određuje dnevnu kvotu zaslona i kada je korisnik dosegne, sesija korisnika se zaključava. Postoji određeno svojstvo za svaki dan u tjednu, a ono se postavlja samo ako postoji aktivna kvota za taj dan. |usage_quota_mins| je količina vremena u kojemu se upravljani uređaj može upotrebljavati u jednom danu, a |reset_at| je vrijeme kada se kvota za upotrebu obnavlja. Zadana vrijednost za |reset_at| jest ponoć ({"sat": 0, "minuta": 0}). |last_updated_millis| je vremenska oznaka prema UCT-u za vrijeme za posljednje ažuriranje tog unosa, a šalje se u obliku niza jer vremenska oznaka ne bi stala u cijeli broj.
-
-          |overrides| služi za privremeno poništavanje jednog ili više prethodnih pravila.
-          * Ako ni time_window_limit ni time_usage_limit nisu aktivni, za zaključavanje uređaja može se upotrijebiti |LOCK|.
-          * |LOCK| privremeno zaključava sesiju korisnika dok ne počne sljedeći time_window_limit ili time_usage_limit.
-          * |UNLOCK| otključava sesiju korisnika koja je zaključana funkcijom time_window_limit ili time_usage_limit.
-          |created_time_millis| je vremenska oznaka prema UTC-u za izradu nadjačavanja, a šalje se u obliku niza jer vremenska oznaka ne bi stala u cijeli broj. Upotrebljava se kako bi se odredilo treba li se to nadjačavanje još primjenjivati. Ako je trenutačna značajka ograničenja aktivnog vremena (vremensko ograničenje uporabe ili ograničenje vremenskog okvira) započela nakon što je nadjačavanje izrađeno, ne bi se trebala primjenjivati. Ne bi se trebala primjenjivati ni ako je nadjačavanje izrađeno prije posljednje promjene ograničenja time_window_limit ili time_usage_window.</translation>
 <translation id="7529100000224450960">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije kojima je dopušteno otvaranje skočnih prozora. Ako ovo pravilo nije postavljeno, upotrebljavat će se globalna zadana vrijednost za sve web-lokacije iz pravila "DefaultPopupsSetting" ako je postavljeno, odnosno iz osobne konfiguracije korisnika ako nije.</translation>
 <translation id="7529144158022474049">Čimbenik raspršivanja automatskog ažuriranja</translation>
 <translation id="7534199150025803530">To pravilo nema utjecaja na Android aplikaciju Google disk. Ako želite spriječiti upotrebu Google diska putem mobilnih veza, onemogućite instaliranje Android aplikacije Google disk.</translation>

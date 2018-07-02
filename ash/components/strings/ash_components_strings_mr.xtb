@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">ChromeVox (वाचिक फीडबॅक) चालू किंवा बंद करा</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">वेब पेज खालच्या दिशेला स्क्रोल करा</translation>
-<translation id="2568632782096378307">स्क्रीन रिझोल्युशन डिफॉल्टवर रीसेट करा</translation>
 <translation id="2596078834055697711">विंडो स्क्रीनशॉट घ्या</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, त्यानंतर <ph name="TAB" /> किंवा <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">पुढील भाषेच्या इनपुट पद्धतीवर स्विच करा</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">पेजवर झूम आउट करा</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> दाबा आणि एखाद्या लिंकवर क्लिक करा</translation>
 <translation id="2830827904629746450">एखादी विंडो उजवीकडे डॉक करा</translation>
+<translation id="2840766858109427815">पुढील पेजवर जा</translation>
 <translation id="2872353916818027657">प्राथमिक मॉनिटर स्वॅप करा</translation>
 <translation id="2914313326123580426">डेव्हलपर टूल पॅनेल दाखवा किंवा लपवा</translation>
 <translation id="292495055542441795">पूर्ण स्क्रीन टॉगल करा</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">टास्क मॅनेजर वर आणा</translation>
 <translation id="3422679037938588196">तुमच्या शोधाच्या आधीच्या जुळणीवर जा</translation>
 <translation id="344577624355799426"><ph name="ALT" /> किंवा <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">झूम स्तर रीसेट करा</translation>
 <translation id="353037708190149633">एका नवीन फोल्डरमध्ये बुकमार्क म्हणून तुमच्या या विंडोमधील उघडलेली सर्व पेज सेव्ह करा</translation>
 <translation id="355103131818127604">बॅकग्राउंडला एका नवीन टॅबमध्ये लिंक उघडा</translation>
 <translation id="3649256019230929621">विंडो लहान करा</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">पंक्ती अ‍ॅड्रेस बारने हायलाइट करा</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> किंवा <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">अवलोकन मोड</translation>
+<translation id="4382340674111381977">मागील पेजवर परत जा</translation>
 <translation id="4472417192667361414">सिस्टम आणि डिस्प्ले सेटिंग्ज</translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट मदतनीस पाहा</translation>
 <translation id="4628718545549558538">स्थिती क्षेत्र (जेथे तुमच्या खात्यावरील फोटो दिसतो) उघडा</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">आधीचा शब्द हटवा</translation>
 <translation id="5899919361772749550">डेव्हलपर साधने कन्सोल दाखवा किंवा लपवा</translation>
 <translation id="5921745308587794300">विंडो फिरवा</translation>
-<translation id="5975083100439434680">झूम कमी करा</translation>
 <translation id="6022924867608035986">शोध बॉक्स मजकूर साफ करा</translation>
 <translation id="6045998054441862242">उच्च तीव्रता मोड चालू करा</translation>
 <translation id="6052614013050385269">एखाद्या लिंकवर राइट क्लिक करा</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">ब्राउझरमध्ये एक फाइल उघडा</translation>
 <translation id="7917881398263220094">तुमचे हे पेज लोड करणे थांबवा</translation>
 <translation id="7952165122793773711">एक ते आठ टॅबवर जा</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> किंवा <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">ब्राउझिंग डेटा साफ करा</translation>
 <translation id="8130528849632411619">दस्तऐवजाच्या सुरूवातीला जा</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> किंवा <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">तुमच्या सूचना पाहा</translation>
 <translation id="8855885154700222542">पूर्णस्क्रीन की</translation>
 <translation id="88986195241502842">पृष्ठ खाली</translation>
-<translation id="8903921497873541725">झूम इन करा</translation>
 <translation id="8924883688469390268">मागील वापरकर्त्यावर स्विच करा</translation>
-<translation id="8951768610999698672">स्क्रीन वरील आयटम मोठे किंवा लहान करा</translation>
 <translation id="8977648847395357314">अॅड्रेस बारमध्ये आशय निवडा</translation>
 <translation id="8982190978301344584">उपलब्ध IME ची सूची प्रदर्शित करणारा मेनू दाखवा</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> १ ते ८</translation>

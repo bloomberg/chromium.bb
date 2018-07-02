@@ -98,7 +98,6 @@
 
       &lt;p&gt;தேதி மற்றும் நேரத்தை &lt;strong&gt;அமைப்புகள்&lt;/strong&gt; பயன்பாட்டின் &lt;strong&gt;பொது&lt;/strong&gt; என்கிற பகுதியில் மாற்றவும்.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">இந்த இணையப்பக்கத்தைக் காட்டும்போது ஏதோ தவறு ஏற்பட்டது.</translation>
-<translation id="1590457302292452960">வலிமையான கடவுச்சொல்லை உருவாக்கவும்...</translation>
 <translation id="1592005682883173041">அகத் தரவு அணுகல்</translation>
 <translation id="1594030484168838125">தேர்வுசெய்</translation>
 <translation id="1620510694547887537">கேமரா</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">ஒலி</translation>
 <translation id="2094505752054353250">டொமைன் பொருந்தவில்லை</translation>
 <translation id="2096368010154057602">துறை</translation>
+<translation id="2102134110707549001">வலுவான கடவுச்சொல்லைப் பரிந்துரைசெய்…</translation>
 <translation id="2108755909498034140">கணினியை மீண்டும் தொடங்கவும்</translation>
 <translation id="2113977810652731515">கார்டு</translation>
 <translation id="2114841414352855701"><ph name="POLICY_NAME" /> ஆல் கொள்கை மேலெழுதப்பட்டுள்ளதால் புறக்கணிக்கப்பட்டது.</translation>
@@ -534,6 +534,7 @@
 <translation id="4726672564094551039">கொள்கைகளை மீண்டும் ஏற்று</translation>
 <translation id="4728558894243024398">ப்ளாட்ஃபார்ம்</translation>
 <translation id="4736825316280949806">Chromiumஐ மீண்டும் தொடங்கவும்</translation>
+<translation id="4742407542027196863">கடவுச்சொற்களை நிர்வகி…</translation>
 <translation id="4744603770635761495">இயக்கநிரல் பாதை</translation>
 <translation id="4749685221585524849">கடைசியாகப் பயன்படுத்தியது: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">உங்கள் தகவலை (எடுத்துக்காட்டு: கடவுச்சொற்கள் அல்லது கிரெடிட் கார்டு எண்கள்) இந்தத் தளத்திற்கு அனுப்பும் போது, தனிப்பட்டதாக இருக்கும்.</translation>
@@ -552,6 +553,7 @@
 <translation id="4850886885716139402">காட்சி</translation>
 <translation id="4854362297993841467">இந்த டெலிவரி முறை இல்லை. வேறு முறையைப் பயன்படுத்திப் பார்க்கவும்.</translation>
 <translation id="4858792381671956233">இந்தத் தளத்தைப் பார்வையிடலாமா என, நீங்கள் பெற்றோரிடம் கேட்டுள்ளீர்கள்</translation>
+<translation id="4876305945144899064">பயனர்பெயர் இல்லை</translation>
 <translation id="4880827082731008257">வரலாற்றில் தேடு</translation>
 <translation id="4881695831933465202">திற</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" />, <ph name="TYPE_3" /></translation>
@@ -628,6 +630,7 @@
 <translation id="5371425731340848620">கார்டை மாற்றவும்</translation>
 <translation id="5377026284221673050">"நேரம் பின்தங்கியுள்ளது" அல்லது "நேரம் கூடுதலாக அமைக்கப்பட்டுள்ளது" அல்லது "&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;"</translation>
 <translation id="5386426401304769735">இந்தச் சான்றிதழ் சங்கிலியில், SHA-1ஐப் பயன்படுத்தி கையொப்பமிடப்பட்ட சான்றிதழ் உள்ளது.</translation>
+<translation id="5387961145478138773">உங்களுக்குப் பிடித்த Google ஆப்ஸை விரைவாக அணுகலாம்</translation>
 <translation id="5402410679244714488">காலாவதித் தேதி: <ph name="EXPIRATION_DATE_ABBR" />, கடைசியாக ஒரு ஆண்டிற்கு முன் பயன்படுத்தப்பட்டது</translation>
 <translation id="540969355065856584"><ph name="DOMAIN" /> டொமைனை, சேவையகம் உறுதிப்படுத்தவில்லை; அதற்கான காரணங்கள்: இதன் பாதுகாப்புச் சான்றிதழ் தற்போது செல்லுபடியானதல்ல. இது தவறான உள்ளமைவினால் ஏற்பட்டிருக்கலாம் அல்லது தீங்கிழைப்பவர் உங்கள் இணைப்பில் குறுக்கிட்டிருக்கலாம்.</translation>
 <translation id="5421136146218899937">உலாவல் தரவை அழி...</translation>
@@ -675,6 +678,7 @@
 <translation id="5689199277474810259">JSONக்கு ஏற்று</translation>
 <translation id="5689516760719285838">இருப்பிடம்</translation>
 <translation id="570530837424789914">நிர்வகி...</translation>
+<translation id="57094364128775171">வலுவான கடவுச்சொல்லைப் பரிந்துரைசெய்…</translation>
 <translation id="5710435578057952990">இந்த தளத்தின் அடையாளம் சரிபார்க்கப்படவில்லை.</translation>
 <translation id="5719499550583120431">ப்ரீபெய்டு கார்டுகள் ஏற்கப்படுகின்றன.</translation>
 <translation id="5720705177508910913">நடப்புப் பயனர்</translation>
@@ -749,7 +753,6 @@
 <translation id="6328786501058569169">இது ஏமாற்றக்கூடிய தளம்</translation>
 <translation id="6337133576188860026"><ph name="SIZE" />க்கும் குறைவான அளவைக் காலியாக்கும். நீங்கள் அடுத்த முறை பார்வையிடும் போது, சில தளங்கள் மிகவும் மெதுவாக ஏற்றப்படலாம்.</translation>
 <translation id="6337534724793800597">பெயரின்படி கொள்கைகளை வடி</translation>
-<translation id="6342069812937806050">இப்போது</translation>
 <translation id="6355080345576803305">பொது அமர்வு மேலெழுதப்பட்டது</translation>
 <translation id="6358450015545214790">இவற்றின் பொருள் என்ன?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{மேலும் 1 பரிந்துரை}other{மேலும் # பரிந்துரைகள்}}</translation>
@@ -876,6 +879,7 @@
       &lt;li&gt;&lt;strong&gt;பயன்படுத்து&lt;/strong&gt; என்பதைக் கிளிக் செய்து, &lt;strong&gt;சரி&lt;/strong&gt; என்பதைக் கிளிக் செய்யவும்
       &lt;li&gt;உங்கள் கணினியிலிருந்து மென்பொருளை நிரந்தரமாக அகற்றுவது எப்படி என்பதை அறிய, &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Chrome உதவி மையம்&lt;/a&gt; என்பதற்குச் செல்லவும்
       &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">கடவுச்சொற்களை நிர்வகி…</translation>
 <translation id="7419106976560586862">சுயவிவரப் பாதை</translation>
 <translation id="7437289804838430631">தொடர்புத் தகவலைச் சேர்</translation>
 <translation id="7441627299479586546">தவறான கொள்கைத் தலைப்பு</translation>
@@ -1107,6 +1111,7 @@
 இந்த முறை <ph name="SITE" /> உடன் இணைவதற்கு Chromium முயற்சித்தபோது வழக்கத்திற்கு மாறான, தவறான நற்சான்றிதழ்களை இணையதளம் வழங்கியது. தாக்குபவர் தன்னை <ph name="SITE" /> ஆகக் காட்ட முயற்சிக்கும் போது அல்லது இணைப்பை வைஃபை உள்நுழைவுத் திரை குறுக்கிடும் போது இது ஏற்படலாம். இருப்பினும், தரவு எதுவும் பரிமாற்றப்படுவதற்கு முன் Chromium இணைப்பை நிறுத்தியதால் உங்கள் தகவல் பாதுகாப்பாகவே இருக்கிறது.</translation>
 <translation id="9106062320799175032">பில்லிங் முகவரியைச் சேர்க்கவும்</translation>
 <translation id="910908805481542201">இதைச் சரிசெய்ய உதவு</translation>
+<translation id="9114524666733003316">கார்டை உறுதிசெய்கிறது...</translation>
 <translation id="9128870381267983090">பிணையத்துடன் இணை</translation>
 <translation id="9137013805542155359">அசலைக் காண்பி</translation>
 <translation id="9137248913990643158">இந்தப் பயன்பாட்டைப் பயன்படுத்தும் முன், Chromeஐத் தொடங்கி உள்நுழையவும்.</translation>

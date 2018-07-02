@@ -591,6 +591,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5712338278108304766">Neste tabellkolonne</translation>
 <translation id="571866080859340309">Utforsking av grupper</translation>
 <translation id="5728409797179002635">Fant ingen tabell.</translation>
+<translation id="5729047866208036762">Trykk opp, ned, til venstre eller til høyre for å utforske matematikk.</translation>
 <translation id="5732189279857692565">Dette er den andre overskriften. Gå videre ved å trykke på Søk+H eller Søk+Shift+H</translation>
 <translation id="5748623122140342504">Forrige overskrift på nivå 5</translation>
 <translation id="5750633686117194034">Du har ikke trykt på noen modifikatorer. Trykk på og hold inne én eller flere modifikatorer. Slipp dem når du er ferdig for å høre tastene du har trykket på. Trykk på tabulatortasten for å avslutte.</translation>
@@ -746,6 +747,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="7226216518520804442">lst</translation>
 <translation id="7229749224609077523">Bytt til en tabell for 6-punkts punktskrift:</translation>
 <translation id="72393384879519786">Overskrift</translation>
+<translation id="7240858705033280249">Gå til detaljer</translation>
 <translation id="7241683698754534149">Åpne lange beskrivelser i en ny fane</translation>
 <translation id="7248671827512403053">App</translation>
 <translation id="725969808843520477">Neste alternativknapp</translation>
@@ -922,6 +924,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="9043969572162476692"><ph name="NUM" /> %</translation>
 <translation id="9061884144798498064">Velg en tabell for 8-punkts punktskrift:</translation>
 <translation id="9065283790526219006">+forgrunnsvindu</translation>
+<translation id="9066023754636984703">Trykk på Søk + A, J for å gå til detaljer.</translation>
 <translation id="9067522039955793016">Sideskift</translation>
 <translation id="9077213568694924680">fjernet fra utvalget</translation>
 <translation id="9082874451376019682">Det fins ingen tidligere glidebrytere.</translation>

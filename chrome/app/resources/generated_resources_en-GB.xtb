@@ -46,7 +46,6 @@
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1067048845568873861">Created</translation>
 <translation id="1067291318998134776">Linux (Beta)</translation>
-<translation id="1067922213147265141">Other Google services</translation>
 <translation id="1070066693520972135">WEP</translation>
 <translation id="1070377999570795893">Another program on your computer added an extension that may change the way Chrome works.
 
@@ -191,6 +190,7 @@
 <translation id="126710816202626562">Translation language:</translation>
 <translation id="126768002343224824">16x</translation>
 <translation id="1271317946095246719">Sends searches from the address bar and search box and some cookies to your default search engine</translation>
+<translation id="127138278192656016">Use sync and all services</translation>
 <translation id="1272079795634619415">Stop</translation>
 <translation id="1272242203003205253">Google Partners work with your Assistant to help you</translation>
 <translation id="1272978324304772054">This user account does not belong to the domain that the device is enrolled to.  If you want to enrol to a different domain you need to go through device recovery first.</translation>
@@ -697,9 +697,6 @@ Installing Linux will download <ph name="DOWNLOAD_SIZE" /> of data.</translation
 <translation id="203574396658008164">Enable note taking from lock screen</translation>
 <translation id="2039623879703305659">Finger moved too quickly</translation>
 <translation id="2040460856718599782">Oops!  Something went wrong when trying to authenticate you. Please double-check your sign-in credentials and try again.</translation>
-<translation id="2042120400423652109">Installing Linux... 
-
-    This process may take a few minutes.</translation>
 <translation id="2043818754674261542">Distance needed for phone to unlock this <ph name="DEVICE_TYPE" /></translation>
 <translation id="204497730941176055">Microsoft Certificate Template Name</translation>
 <translation id="2045117674524495717">Keyboard Shortcut Helper</translation>
@@ -817,7 +814,6 @@ Installing Linux will download <ph name="DOWNLOAD_SIZE" /> of data.</translation
 <translation id="221872881068107022">Reverse scrolling</translation>
 <translation id="2220529011494928058">Report an issue</translation>
 <translation id="2220572644011485463">PIN or password</translation>
-<translation id="2222414641881146529">Send system data</translation>
 <translation id="2224444042887712269">This setting belongs to <ph name="OWNER_EMAIL" />.</translation>
 <translation id="2224551243087462610">Edit folder name</translation>
 <translation id="2226449515541314767">This site has been blocked from having full control of MIDI devices.</translation>
@@ -830,6 +826,7 @@ Installing Linux will download <ph name="DOWNLOAD_SIZE" /> of data.</translation
 <translation id="2231238007119540260">If you delete a server certificate, you restore the usual security checks for that server and require that it uses a valid certificate.</translation>
 <translation id="2232876851878324699">The file contained one certificate, which was not imported:</translation>
 <translation id="2233502537820838181">&amp;More information</translation>
+<translation id="2234876718134438132">Sync and Google services</translation>
 <translation id="2238379619048995541">Frequency State Data</translation>
 <translation id="2239921694246509981">Add supervised person</translation>
 <translation id="2241053333139545397">Read and change your data on a number of websites</translation>
@@ -1252,7 +1249,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2882943222317434580"><ph name="IDS_SHORT_PRODUCT_NAME" /> will restart and reset momentarily</translation>
 <translation id="2885378588091291677">Task Manager</translation>
 <translation id="2886771036282400576">• <ph name="PERMISSION" /></translation>
-<translation id="2886800363598651778">Sync and personalise Chrome across your devices</translation>
 <translation id="2887525882758501333">PDF document</translation>
 <translation id="2888807692577297075">No items match &lt;b&gt;"<ph name="SEARCH_STRING" />"&lt;/b&gt;</translation>
 <translation id="2889064240420137087">Open link with...</translation>
@@ -1904,7 +1900,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3893630138897523026">ChromeVox (spoken feedback)</translation>
 <translation id="3894427358181296146">Add folder</translation>
 <translation id="389589731200570180">Share with guests</translation>
-<translation id="3898493977366060150">Web browsing with Google smarts</translation>
 <translation id="3898521660513055167">Token Status</translation>
 <translation id="389901847090970821">Select keyboard</translation>
 <translation id="3899879303189199559">Offline for more than a year</translation>
@@ -1920,7 +1915,6 @@ I don't think this site should be blocked!</translation>
 <translation id="3915280005470252504">Search by voice</translation>
 <translation id="3916445069167113093">This type of file can harm your computer. Do you want to keep <ph name="FILE_NAME" /> anyway?</translation>
 <translation id="3918972485393593704">Report details to Google</translation>
-<translation id="391999873395511996">Downloading the virtual machine.</translation>
 <translation id="3920504717067627103">Certificate Policies</translation>
 <translation id="392089482157167418">Enable ChromeVox (spoken feedback)</translation>
 <translation id="3924145049010392604">Meta</translation>
@@ -2375,7 +2369,6 @@ I don't think this site should be blocked!</translation>
 <translation id="4707934200082538898">Please check your email at <ph name="BEGIN_BOLD" /><ph name="MANAGER_EMAIL" /><ph name="END_BOLD" /> for further instructions.</translation>
 <translation id="4708794300267213770">Show lock screen when waking from sleep</translation>
 <translation id="4708849949179781599">Quit <ph name="PRODUCT_NAME" /></translation>
-<translation id="4710251968215868702">Uses content on sites that you visit, browser activity and interactions.</translation>
 <translation id="4711638718396952945">Restore settings</translation>
 <translation id="4713544552769165154">This file is designed for a computer using Macintosh software. This is not compatible with your device which runs Chrome OS. Please search the <ph name="BEGIN_LINK" />Chrome Web Store<ph name="END_LINK" /> for a suitable replacement app.<ph name="BEGIN_LINK_HELP" />Learn More<ph name="END_LINK_HELP" /></translation>
 <translation id="4715553623069266137">very short (0.8s)</translation>
@@ -3480,7 +3473,6 @@ I don't think this site should be blocked!</translation>
 <translation id="6383051423892982287">Encrypt synced data with your own <ph name="BEGIN_LINK" />sync passphrase<ph name="END_LINK" /></translation>
 <translation id="6384275966486438344">Change your search settings to: <ph name="SEARCH_HOST" /></translation>
 <translation id="6385543213911723544">Sites can save and read cookie data</translation>
-<translation id="6385974547588555598">Starting the virtual machine.</translation>
 <translation id="6388429472088318283">Search languages</translation>
 <translation id="6388771388956873507">Find the fingerprint sensor on your device and touch it with your finger</translation>
 <translation id="6390799748543157332">Pages that you view in this window won’t appear in the browser history and they won’t leave other traces, like cookies, on the computer after you close all open Guest windows. Any files that you download, however, will be preserved.</translation>
@@ -4213,7 +4205,6 @@ I don't think this site should be blocked!</translation>
 <translation id="7540972813190816353">An error occurred while checking for updates: <ph name="ERROR" /></translation>
 <translation id="7543104066686362383">Enable debugging features on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device</translation>
 <translation id="7544853251252956727">Shuffle</translation>
-<translation id="7545809182698428577">Turns on the features listed here. Uses your browser activity, content on some sites that you visit and other browser interactions for personalisation.</translation>
 <translation id="7547317915858803630">Warning: your <ph name="PRODUCT_NAME" /> settings are stored on a network drive. This may result in slowdowns, crashes or even loss of data.</translation>
 <translation id="7548856833046333824">Fizzy</translation>
 <translation id="7550830279652415241">bookmarks_<ph name="DATESTAMP" />.html</translation>
@@ -4248,7 +4239,6 @@ I don't think this site should be blocked!</translation>
 <translation id="7591957897535945411">This Page Has Been Translated.</translation>
 <translation id="7595453277607160340">To use Android apps and keep your <ph name="DEVICE_TYPE" /> working properly, sign in again and update.</translation>
 <translation id="7595547011743502844"><ph name="ERROR" /> (error code <ph name="ERROR_CODE" />).</translation>
-<translation id="7595867490569826716">Starting the Linux container.</translation>
 <translation id="7598466960084663009">Restart computer</translation>
 <translation id="7599527631045201165">The device name is too long. Enter a shorter name to try again.</translation>
 <translation id="7600965453749440009">Never translate <ph name="LANGUAGE" /></translation>
@@ -4778,6 +4768,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8418445294933751433">&amp;Show as tab</translation>
 <translation id="8419098111404128271">Search results for '<ph name="SEARCH_TEXT" />'</translation>
 <translation id="8420060421540670057">Show Google Docs files</translation>
+<translation id="8420510748452002155">Non-personalised services</translation>
 <translation id="8424039430705546751">down</translation>
 <translation id="8425213833346101688">Change</translation>
 <translation id="8425492902634685834">Pin to task bar</translation>
@@ -5119,11 +5110,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
 <translation id="8944099748578356325">Use the battery more quickly (currently <ph name="BATTERY_PERCENTAGE" />%)</translation>
 <translation id="8944964446326379280"><ph name="APP_NAME" /> is sharing a window with <ph name="TAB_NAME" />.</translation>
 <translation id="8946359700442089734">Debugging features were not completely enabled on this <ph name="IDS_SHORT_PRODUCT_NAME" /> device.</translation>
-<translation id="8948006114608036530">This device currently automatically sends diagnostic and device and app usage data to Google. This setting is enforced by the owner. If you turned on additional Web &amp; App Activity, this information will be stored with your account so that you can manage it in My Activity.
-
-    This is general information about your device and how you use it (such as battery level, app usage and network connectivity). The data will be used to improve Google's products and services for everyone. Some aggregated information will help partners, such as Android developers, make their apps and products better, too.
-    Turning off this feature doesn't affect your device's ability to send the information needed for essential services such as system updates and security.
-    You can control this feature from Settings &gt; Google. Select Usage &amp; diagnostics from the menu.</translation>
 <translation id="894871326938397531">Leave incognito mode?</translation>
 <translation id="895347679606913382">Starting...</translation>
 <translation id="8954952943849489823">Move failed, unexpected error: $1</translation>

@@ -42,6 +42,9 @@
       Se https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables for en liste over variabler som kan brukes.
 
       Hvis denne regelen ikke blir angitt, brukes bufferkatalogen, og brukeren kan overstyre den med kommandolinjeflagget «--disk-cache-dir».</translation>
+<translation id="1135264353752122851">Konfigurerer hvilke tastaturoppsett som er tillatt for <ph name="PRODUCT_OS_NAME" />-brukerøkter.
+
+      Hvis denne regelen er satt, kan brukeren kun velge én av inndatametodene som regelen spesifiserer. Hvis denne regelen ikke tillater den gjeldende inndatametoden, byttes inndatametoden til maskinvaretastaturoppsettet (hvis det er tillatt), eller den første gyldige oppføringen i denne listen. Alle inndatametoder i denne listen som er ugyldige eller ikke støttes, ignoreres.</translation>
 <translation id="1138294736309071213">Denne retningslinjen er aktiv bare i detaljistmodus.
 
       Avgjør varighet før skjermspareren vises på påloggingssiden for enheter i detaljistmodus.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Last inn angitte nettadresser ved demo-pålogging</translation>
 <translation id="1223789468190631420">Safe Browsing-aktiveringsstatus for pålitelige kilder</translation>
 <translation id="123081309365616809">Slå på casting av innhold til enheten</translation>
+<translation id="1243570869342663665">Kontroller SafeSites-filtrering for seksuelt innhold.</translation>
 <translation id="1257550411839719984">Angi standard nedlastingskatalog</translation>
 <translation id="1265053460044691532">Begrens hvor lenge en bruker som er autentisert via SAML kan logge på uten nett</translation>
 <translation id="1291880496936992484">Advarsel: RC4 fjernes helt fra <ph name="PRODUCT_NAME" /> etter versjon 52 (rundt september 2016), og da slutter denne regelen å fungere.
@@ -264,6 +268,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       Formatet på verdien følger navnene på tidssonene i «IANA Time Zone Database» (se https://en.wikipedia.org/wiki/Tz_database). De fleste tidssonene kan angis som «kontinent/stor_by» eller «hav/stor_by».
 
       Hvis du spesifiserer denne regelen, blir den automatiske påvisningen av tidssoner basert på enhetens posisjon slått av. Regelen SystemTimezoneAutomaticDetection overstyres også.</translation>
+<translation id="1885782360784839335">Aktiver visning av reklameinnhold i hele fanen</translation>
 <translation id="1888871729456797026">Registreringstokenet for retningslinjer for nettskyen på datamaskiner</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
 <translation id="1906888171268104594">Kontrollerer om bruksberegninger og diagnostikkdata, inkludert programstopprapporter, rapporteres til Google.
@@ -376,6 +381,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
       står fritt til å endre den. I dette tilfellet brukes ikke standardverdien igjen
       ved omstart.</translation>
 <translation id="2156132677421487971">Konfigurer retningslinjer for <ph name="PRODUCT_NAME" /> – en funksjon som gjør det mulig for brukere å sende skrivebords-, nettsteds- og faneinnhold fra nettleseren til eksterne skjermer og lydanlegg.</translation>
+<translation id="2166472654199325139">Ikke filtrer nettsteder for seksuelt innhold</translation>
 <translation id="2168397434410358693">Inaktivitetsforsinkelse når enheten kjører på vekselstrøm</translation>
 <translation id="2170233653554726857">Slå på WPAD-optimalisering</translation>
 <translation id="2176565653304920879">Når denne regelen er spesifisert, blir tidssonen automatisk påvist i henhold til innstillingen som er valgt. Her ser du de ulike alternativene:
@@ -524,6 +530,12 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 <translation id="2466131534462628618">Autentisering via obligatoriske sider ignorerer proxy-tjenere</translation>
 <translation id="2482676533225429905">Innebygde meldinger</translation>
 <translation id="2483146640187052324">Forutsi nettverkshandlinger på alle nettverkstilkoblinger</translation>
+<translation id="2484208301968418871">Denne regelen kontrollerer bruken av SafeSites nettadressefilter.
+      Dette filteret bruker Google Sikkert søk-API-en til å klassifisere nettadresser som pornografiske eller ikke pornografiske.
+
+      Når denne regelen ikke er konfigurert, eller er satt til «Ikke filtrer nettsteder for seksuelt innhold», filtreres nettstedene ikke.
+
+      Når denne regelen er satt til «Filtrer toppnivånettsteder for seksuelt innhold», filtreres nettsteder som er klassifisert som pornografiske.</translation>
 <translation id="2485721741875148980">Hvis denne regelen er angitt som «sann», må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før vedkommende bruker nettleseren. Standardverdien for BrowserGuestModeEnabled er «usann». Vær oppmerksom på at eksisterende usignerte profiler blir låst og utilgjengelige etter at denne regelen aktiveres. Hvis du vil ha mer informasjon, kan du gå til artikkelen i brukerstøtten.
 
       Hvis denne regelen er satt til «usann» eller ikke er konfigurert, kan brukeren bruke nettleseren uten å logge på <ph name="PRODUCT_NAME" />.</translation>
@@ -682,12 +694,6 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis du aktiverer denne innstillingen, brukes skriveren som er standard for OS-et, som standard destinasjonsvalg.</translation>
 <translation id="2867699958489427143">Rull tilbake til og bli på målversjonen hvis OS-versjonen er nyere enn målet. Utfør en fullstendig powerwash i løpet av prosessen.</translation>
-<translation id="286802604195763750">Lar deg styre hva som utløser advarsler om passordbeskyttelse. Passordbeskyttelsen varsler brukerne når de bruker det beskyttede passordet sitt om igjen på potensielt mistenkelige nettsteder.
-
-      Hvis denne regelen er angitt som «PasswordProtectionWarningOff», blir det ikke vist noen advarsler om passordbeskyttelse.
-      Hvis denne regelen er angitt som «PasswordProtectionWarningOnPasswordReuse», blir det vist en advarsel om passordbeskyttelse når brukerne bruker Google-passord om igjen på nettsteder som ikke står på godkjenningslisten.
-      Hvis denne regelen er angitt som «PasswordProtectionWarningOnPhishingReuse», blir det vist en advarsel om passordbeskyttelse når brukere bruker Google-passord om igjen på nettsteder som driver med nettfisking.
-      Hvis denne regelen ikke er angitt, blir det utløst en advarsel om passordbeskyttelse når brukere bruker Google-passord om igjen på nettsteder som driver med nettfisking, men brukerne kan endre denne innstillingen.</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
@@ -1344,6 +1350,7 @@ Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en
 
       Hvis denne retningslinjen ikke angis eller står tom, kan alle brukere logge seg på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
+<translation id="4861767323695239729">Konfigurer tillatte inndatametoder i brukerøkter</translation>
 <translation id="4869787217450099946">Angir om det er tillatt med låser for skjermaktivering. Låser for skjermaktivering kan forespørres via utvidelses API-en for strømsparing.
 
           Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.
@@ -1927,6 +1934,7 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
       Hvis denne regelen er slått av eller ikke er angitt, blir bare de vanlige, lokale profilene brukt.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" />-regelen deaktiverer all datasynkronisering og overstyrer RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Filtrer toppnivånettsteder (men ikke innebygde iframer) for seksuelt innhold</translation>
 <translation id="6735701345096330595">Tving aktivering av språk med stavekontroll</translation>
 <translation id="673699536430961464">Denne innstillingen lar brukere bytte mellom Google-kontoer i innholdsområdet i nettleservinduet når de har logget på <ph name="PRODUCT_OS_NAME" />-enhetene sine.
 
@@ -1949,6 +1957,13 @@ skjermtastaturet når som helst og statusen den har på påloggingsskjermen er v
 <translation id="6757438632136860443">Lar deg angi en liste med nettadressemønstre for å spesifisere nettsteder hvor <ph name="FLASH_PLUGIN_NAME" />-programtillegget skal kunne kjøres automatisk.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettsteder. Denne verdien hentes fra «DefaultPluginsSetting»-regelen hvis den er angitt, eller fra brukerens personlige konfigurasjon hvis den ikke er angitt.</translation>
+<translation id="6762235610019366960">Lar deg kontrollere fremvisningen av reklame- og/eller utdanningsinnhold i hele fanen i <ph name="PRODUCT_NAME" />.
+
+      Hvis den ikke er konfigurert eller aktivert (satt til sann), kan <ph name="PRODUCT_NAME" /> vise innhold i hele fanen til brukere for å levere produktinformasjon.
+
+      Hvis den er deaktivert (satt til usann), viser <ph name="PRODUCT_NAME" /> ikke innhold i hele fanen til brukere for å levere produktinformasjon.
+
+      Denne innstillingen kontrollerer fremvisningen av velkomstsidene som hjelper brukerne med å logge på <ph name="PRODUCT_NAME" /> eller velge den som standardnettleser, eller på annet vis informerer dem om produktfunksjoner.</translation>
 <translation id="6766216162565713893">La nettsteder be brukeren om tilgang til Bluetooth-enheter i nærheten</translation>
 <translation id="6770454900105963262">Rapportér informasjon om aktive kioskøkter</translation>
 <translation id="6786747875388722282">Utvidelser</translation>
@@ -2260,17 +2275,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7511361072385293666">Hvis denne regelen settes til «sann» eller ikke spesifiseres, er bruk av QUIC-protokollen tillatt i <ph name="PRODUCT_NAME" />.
       Hvis denne regelen settes til «usann», er ikke bruk av QUIC-protokollen tillatt.</translation>
 <translation id="7519251620064708155">Tillat nøkkelgenerering på disse nettstedene</translation>
-<translation id="7529083451528428240">Lar deg låse brukerens økt basert på klienttiden eller dagens brukskvote.
-
-          [time_window_limit| angir et daglig vindu hvor brukerens økt skal være låst. Vi støtter bare én regel hver ukedag, derfor varierer |entries|-matrisen mellom 0 og 7. |starts_at| og |ends_at| er plassert på starten og slutten av vinduets grense. Når |ends_at| er mindre enn |starts_at|, betyr det at |time_limit_window| slutter neste dag. |last_updated_millis| er UTC-tidsstempelet for tidspunktet denne oppføringen sist ble oppdatert, og det sendes som en streng fordi tidsstempelet ikke passer i et heltall.
-
-          |time_usage_limit| angir en daglig skjermkvote som låser brukerens økt når den oppnås. Hver ukedag har en verdi, og den skal bare angis hvis det er en aktiv kvote for den dagen. |usage_quota_mins| angir hvor lang tid en administrert enhet kan brukes på en dag, og |reset_at| er tiden når brukskvoten fornyes. Standardverdien for |reset_at| er midnatt ({'hour': 0, 'minute': 0}). |last_updated_millis| er UTC-tidsstempelet for sist denne oppføringen ble oppdatert, og det sendes som en streng fordi tidsstempelet ikke passer i et heltall.
-
-          |overrides| kan brukes til å midlertidig deaktivere én eller flere av de nevnte reglene.
-          * Hvis verken time_window_limit eller time_usage_limit er aktiv, kan |LOCK| brukes til å låse enheten.
-          * |LOCK| låser en brukerøkt midlertidig til neste time_window_limit eller time_usage_limit starter.
-          * |UNLOCK| låser opp en brukers økt som er låst av time_window_limit eller time_usage_limit.
-          |created_time_millis| er UTC-tidsstempelet for overstyringen. Det sendes som en streng fordi det ikke passer i et heltall. Tidsstemplet brukes for å avgjøre om denne overstyringen skal anvendes. Hvis den gjeldende tidsbegrensningsfunksjonen (time_usage_limit eller time_window_limit) startet etter at overstyringen ble opprettet, blir den ikke tatt i bruk. Den blir heller ikke tatt i bruk hvis overstyringen ble opprettet før siste endring av den aktive time_window_limit eller time_usage_window.</translation>
 <translation id="7529100000224450960">Gjør at du kan angi en liste over nettadressemønstre som spesifiserer hvilke nettsteder som får åpne forgrunnsvinduer.
 
           Hvis denne retningslinjen ikke angis, brukes den globale standardverdien for alle nettsteder fra retningslinjen DefaultPopupsSetting hvis den er angitt, eller fra brukerens egen konfigurasjon hvis den nevnte retningslinjen ikke er angitt.</translation>

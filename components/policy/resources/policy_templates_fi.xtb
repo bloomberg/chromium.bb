@@ -42,6 +42,9 @@
       Katso mahdollisten muuttujien luettelo osoitteesta https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables.
 
       Jos tätä käytäntöä ei määritetä, välimuistin oletushakemistoa käytetään ja käyttäjä voi ohittaa tämän antamalla komentorivillä komennon --disk-cache-dir.</translation>
+<translation id="1135264353752122851">Määrittää näppäimistöasettelut, joiden käytön <ph name="PRODUCT_OS_NAME" /> sallii käyttökerroissa.
+
+      Jos tämä käytäntö on määritetty, käyttäjä voi valita vain yhden käytännössä määritetyn syöttötavan. Jos käytäntöä ei ole määritetty tai sen arvoksi on määritetty tyhjä luettelo, käyttäjä voi valita kaikki tuetut syöttötavat. Jos käytäntö ei salli nykyistä syöttötapaa, syöttötavaksi vaihdetaan laitteiston näppäimistöasettelu (jos mahdollista) tai luettelon ensimmäinen kelvollinen kohta. Luettelon kaikki kelpaamattomat tai tukemattomat syöttötavat ohitetaan.</translation>
 <translation id="1138294736309071213">Tämä käytäntö on aktiivisena vain jälleenmyyntitilassa.
 
       Määrittää ajan, jonka kuluttua kirjautumisruudulla näytetään näytönsäästäjä jälleenmyyntitilassa olevilla laitteilla.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Lataa määritetyt osoitteet esittelykirjautumisen yhteydessä</translation>
 <translation id="1223789468190631420">Selaussuojan käyttöönottotila luotetuissa lähteissä</translation>
 <translation id="123081309365616809">Salli sisällön suoratoisto laitteeseen</translation>
+<translation id="1243570869342663665">Vain aikuisille suunnatun sisällön SafeSites-suodatuksen määritys</translation>
 <translation id="1257550411839719984">Aseta oletuslataushakemisto</translation>
 <translation id="1265053460044691532">Rajoita sitä, kuinka kauan SAML-todennuksen käyttäjä voi kirjautua sisään offline-tilassa</translation>
 <translation id="1291880496936992484">Varoitus: RC4 poistetaan tuotteesta <ph name="PRODUCT_NAME" /> version 52 jälkeen (arviolta syyskuussa 2016), eikä tämä käytäntö enää toimi sen jälkeen.
@@ -257,6 +261,7 @@
       Arvon muoto noudattaa IANA Time Zone Databasen aikavyöhykkeiden nimiä (nähtävissä osoitteessa https://en.wikipedia.org/wiki/Tz_database). Useimpiin aikavyöhykkeisiin voidaan viitata seuraavasti: ”maanosa/suuri_kaupunki” tai ”valtameri/suuri_kaupunki”.
 
       Kun tämä käytäntö määritetään, aikavyöhykkeen määrittäminen laitteen sijainnin perusteella poistuu käytöstä. Käytäntö myös ohittaa SystemTimezoneAutomaticDetection-käytännön.</translation>
+<translation id="1885782360784839335">Koko välilehden mainossisällön näytön salliminen</translation>
 <translation id="1888871729456797026">Työpöydän pilvikäytännön rekisteröintitunnus</translation>
 <translation id="1897365952389968758">Anna kaikkien sivustojen käyttää JavaScriptiä (suositus)</translation>
 <translation id="1906888171268104594">Määrittää, lähetetäänkö Googlelle käyttötilastoja sekä kaatumisraportteja ja muuta diagnostiikkadataa
@@ -369,6 +374,7 @@
       voi muuttaa tätä vapaasti. Tässä tapauksessa oletusarvoon ei palata
       uudelleenkäynnistyksen yhteydessä.</translation>
 <translation id="2156132677421487971">Määrittää <ph name="PRODUCT_NAME" /> ‑käytäntöjä. Ominaisuuden avulla välilehtien, sivustojen tai työpöydän sisältö voidaan lähettää selaimesta ulkoisiin näyttöihin ja äänentoistolaitteisiin.</translation>
+<translation id="2166472654199325139">Älä suodata vain aikuisille suunnattua sisältöä sivustoilta</translation>
 <translation id="2168397434410358693">Käyttämättömyysaika käytettäessä laitetta verkkovirralla</translation>
 <translation id="2170233653554726857">Ota WPAD-optimointi käyttöön</translation>
 <translation id="2176565653304920879">Kun tämä käytäntö on määritetty, aikavyöhykkeen automaattinen tunnistaminen tapahtuu jollakin seuraavista tavoista, määritetystä arvosta riippuen:
@@ -516,6 +522,12 @@
 <translation id="2466131534462628618">Captive portal -todennus ohittaa välityspalvelimen</translation>
 <translation id="2482676533225429905">Laitteen oma viestijärjestelmä</translation>
 <translation id="2483146640187052324">Ennakoi verkon toimia millä tahansa verkkoyhteydellä</translation>
+<translation id="2484208301968418871">Tämän käytännön avulla määritetään SafeSites-URL-osoitesuodattimen käyttö.
+      Suodatin luokittelee URL-osoitteet pornografiseksi tai muunlaiseksi Google Safe Search ‑käyttöliittymän avulla.
+
+      Jos käytäntöä ei ole määritetty tai sen arvoksi on asetettu Älä suodata vain aikuisille suunnattua sisältöä sivustoilta, sivustoja ei suodateta.
+
+      Jos käytännön arvoksi on määritetty Suodata vain aikuisille suunnattua sisältöä ylimmän tason sivustoilta, pornografisiksi luokitellut sivustot suodatetaan.</translation>
 <translation id="2485721741875148980">Jos tämän käytännön arvoksi on määritetty tosi, käyttäjän on kirjauduttava kohteeseen <ph name="PRODUCT_NAME" /> omalla profiilillaan ennen selaimen käyttämistä ja BrowserGuestModeEnabled-arvon oletukseksi määritetään epätosi. Aiemmin luodut profiilit, joihin ei ole kirjauduttu sisään, lukitaan pois käytöstä, kun käytäntö on päällä. Lue lisää ohjekeskuksen artikkelista.
 
       Jos tämän käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, selainta voi käyttää ilman <ph name="PRODUCT_NAME" /> ‑kirjautumista.</translation>
@@ -666,12 +678,6 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Jos otat tämän asetuksen käyttöön, Tulostuksen esikatselussa valitaan oletuskohteeksi käyttöjärjestelmän oletustulostin.</translation>
 <translation id="2867699958489427143">Palaa ja pysy kohdeversiossa, jos käyttöjärjestelmän versio on uudempi kuin kohde. Suorita täysi powerwash-toiminto prosessin aikana.</translation>
-<translation id="286802604195763750">Sallii salasanasuojauksen varoituksen käynnistyksen hallinnan. Salasanasuojaus ilmoittaa käyttäjille, jos nämä käyttävät suojattuja salasanoja uudelleen mahdollisesti haitallisilla sivustoilla.
-
-      Jos tämän käytännön arvo on PasswordProtectionWarningOff, salasanasuojauksen varoitusta ei näytetä.
-      Jos tämän käytännön arvo on PasswordProtectionWarningOnPasswordReuse, salasanasuojauksen varoitus näytetään, kun käyttäjät käyttävät Google-salasanojaan sivustoilla, joita ei ole lisätty sallittujen sivustojen listaan.
-      Jos tämän käytännön arvo on PasswordProtectionWarningOnPhishingReuse, salasanasuojauksen varoitus näytetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla.
-      Jos tätä käytäntöä ei ole määritetty, salasanasuojauksen varoitus käynnistyy käyttäjien käyttäessä Google-salasanojaan tietojenkalastelusivustoilla. Käyttäjä voi kuitenkin muuttaa tämän asetuksen.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="2874209944580848064">Huomioitavaa, jos laitteesi käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja tukee Android-sovelluksia:</translation>
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
@@ -1322,6 +1328,7 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Jos käytäntö jätetään asettamatta tai tyhjäksi, kaikki käyttäjät voivat kirjautua tuotteeseen <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Salli koko ruudun tila</translation>
+<translation id="4861767323695239729">Määritä käyttökerran hyväksytyt syöttötavat</translation>
 <translation id="4869787217450099946">Määrittää, sallitaanko näytön herätyksen lukitus. Laajennus voi pyytää näytön herätyksen lukitusta virranhallintalaajennuksen sovellusliittymän kautta.
 
           Jos käytännön asetus on tosi tai arvoa ei ole asetettu, virranhallinta noudattaa näytön herätyksen lukitusta.
@@ -1870,6 +1877,7 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Jos tämä käytäntö ei ole käytössä tai sitä ei ole määritetty, vain paikallisia profiileja käytetään.
 
       <ph name="SYNC_DISABLED_POLICY_NAME" /> poistaa kaiken tietojen synkronoinnin käytöstä ja ohittaa RoamingProfileSupportEnabled-käytännön .</translation>
+<translation id="6731757988219967594">Suodata vain aikuisille suunnattua sisältöä (mutta ei upotettua sisältöä) ylimmän tason sivustoilta</translation>
 <translation id="6735701345096330595">Pakota oikeinkirjoituksen tarkistuskielten käyttöönotto</translation>
 <translation id="673699536430961464">Tämä käytäntö antaa käyttäjien vaihtaa Google-tililtä toiselle selainikkunan sisältöosassa <ph name="PRODUCT_OS_NAME" /> ‑laitteelle kirjautumisen jälkeen.
 
@@ -1892,6 +1900,13 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6757438632136860443">Voit määrittää URL-osoitemalleja, joiden määrittämät sivustot saavat suorittaa <ph name="FLASH_PLUGIN_NAME" />-laajennuksen.
 
           Jos tätä käytäntöä ei ole määritetty, kaikkiin sivustoihin sovelletaan DefaultPluginsSetting-käytäntöä (jos se on määritetty) tai käyttäjän omien asetusten mukaista yleistä oletusarvoa.</translation>
+<translation id="6762235610019366960">Voit määrittää koko välilehden mainos- ja/tai opetussisällön näkymisen (<ph name="PRODUCT_NAME" />).
+
+      Jos käytäntöä ei ole määritetty tai otettu käyttöön (arvona tosi), <ph name="PRODUCT_NAME" /> voi näyttää käyttäjille koko välilehden sisältöä tuotetietojen tarjoamiseksi.
+
+      Jos käytäntö on poistettu käytöstä (arvona epätosi), <ph name="PRODUCT_NAME" /> ei näytä käyttäjille koko välilehden sisältöä tuotetietojen tarjoamiseksi.
+
+      Tämä asetus määrittää niiden tervetulosivujen näyttämisen, joilla <ph name="PRODUCT_NAME" /> sallii sisäänkirjautumisen, oletusselaimen valinnan tai tuoteominaisuuksien lisätietojen tarjoamisen.</translation>
 <translation id="6766216162565713893">Salli sivustojen pyytää käyttäjältä lupaa lähistöllä olevien Bluetooth-laitteiden käyttämiseen</translation>
 <translation id="6770454900105963262">Aktiivisten kioskikäyttökertojen tietojen raportointi</translation>
 <translation id="6786747875388722282">Laajennukset</translation>
@@ -2203,17 +2218,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7511361072385293666">Jos tämän käytännön arvo on Tosi tai sitä ei aseteta, <ph name="PRODUCT_NAME" /> sallii QUIC-protokollan käytön.
       Jos käytännön arvo on Epätosi, QUIC-protokollan käyttöä ei sallita.</translation>
 <translation id="7519251620064708155">Salli avainten luominen näillä sivustoilla.</translation>
-<translation id="7529083451528428240">Voit lukita käyttäjän käyttökerran perustuen asiakasaikaan tai päivän käyttökiintiöön.
-
-          |time_window_limit| määrittää päivittäisen aikaikkunan, jolloin käyttäjän käyttökerta pitäisi lukita. Tuemme vain yhtä sääntöä viikonpäivää kohti, minkä vuoksi |entries|-joukko voi olla kooltaan 0–7. |starts_at| ja |ends_at| ovat aikaikkunan aloitus- ja päättymisajat. Jos |ends_at| on aiemmin kuin |starts_at|, |time_limit_window| päättyy seuraavana päivänä. |last_updated_millis| on tämän merkinnän edellisen päivityskerran UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun.
-
-          |time_usage_limit| määrittää päivittäisen näyttökiintiön, joten käyttäjän saavuttaessa sen hänen käyttökertansa lukitaan. Jokaiselle viikonpäivälle on ominaisuus, ja se pitäisi määrittää vain, jos kyseiselle päivälle on aktiivinen kiintiö. |usage_quota_mins| on aika, jonka verran hallinnoitua laitetta voi käyttää päivässä ja |reset_at| on aika, jolloin käyttökiintiö uusitaan. |reset_at|-oletusarvo on keskiyö ({'hour': 0, 'minute': 0}). |last_updated_millis| on merkinnän edellisen päivityskerran UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun.
-
-          |overrides| mitätöi väliaikaisesti yhden tai useamman aiemmista säännöistä.
-          * Jos time_window_limit tai time_usage_limit ei ole aktiivinen, laite voidaan lukita |LOCK|-toiminnon avulla.
-          * |LOCK| lukitsee väliaikaisesti käyttökerran, kunnes seuraava time_window_limit tai time_usage_limit alkaa.
-          * |UNLOCK| avaa käyttäjän käyttökerran lukituksen time_window_limit- tai time_usage_limit-aikaan mennessä.
-          |created_time_millis| on mitätöinnin luonnin UTC-aikaleima. Se lähetetään merkkijonona, koska aikaleima ei mahtuisi kokonaislukuun. Sen avulla määritetään, pitäisikö tätä mitätöintiä käyttää. Jos nykyinen aktiivinen aikarajaominaisuus (ajankäyttöraja tai aikaikkunaraja) alkoi mitätöinnin luomisen jälkeen, sen ei pitäisi käynnistyä. Jos mitätöinti luotiin ennen viimeisen active time_window_limit- tai time_usage_window-arvon luontia, sitä ei pitäisi käyttää.</translation>
 <translation id="7529100000224450960">Voit määrittää luettelon URL-malleja, joissa määritetään sivustot, jotka saavat avata ponnahdusikkunoita. Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultPopupsSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
 <translation id="7529144158022474049">Hajontatekijän automaattinen päivitys</translation>
 <translation id="7534199150025803530">Tällä käytännöllä ei ole vaikutusta Androidin Google Drive ‑sovellukseen. Jos haluat estää Google Driven käytön mobiiliyhteyden kautta, sinun on estettävä Androidin Google Drive ‑sovelluksen asennus.</translation>

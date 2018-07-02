@@ -181,7 +181,7 @@
 <translation id="2717271541250958000">tabpnl</translation>
 <translation id="2723001399770238859">ऑडियो</translation>
 <translation id="2732718972699418926">पूर्वाह्न</translation>
-<translation id="2737520612859577214">सुपरस्क्रिप्ट बंद</translation>
+<translation id="2737520612859577214">सुपरस्क्रिप्ट का आखिरी हिस्सा</translation>
 <translation id="2749275490991666823">चेक किया गया</translation>
 <translation id="27527859628328957">अगले फ़ोकस करने योग्‍य आइटम पर जंप करें</translation>
 <translation id="276402504937943375">विषय सूची</translation>
@@ -206,7 +206,7 @@
 <translation id="288178314850623291">सीधे किसी खास तरह के आइटम पर पहुंचने के लिए 'जंप कमांड' का इस्तेमाल करें. एक शीर्षक से दूसरे शीर्षक पर सीधे जाने के लिए, Search + H या पिछले शीर्षक पर वापस जाने के लिए Search + Shift + H दबाएं.</translation>
 <translation id="2894654529758326923">जानकारी</translation>
 <translation id="2899328121302785497">{COUNT,plural, =1{बायां कोष्ठक}one{# बाएं कोष्ठक}other{# बाएं कोष्ठक}}</translation>
-<translation id="2909478709401302630">सुपरस्क्रिप्ट शुरू</translation>
+<translation id="2909478709401302630">सुपरस्क्रिप्ट का शुरुआती हिस्सा</translation>
 <translation id="2911433807131383493">ChromeVox निर्देश खोलें</translation>
 <translation id="2932083475399492303">संरचनात्मक या लेआउट के बीच रेखा प्रकार टॉगल करें</translation>
 <translation id="2944762337049891859">पेज लोड हो जाने के बाद अपने आप उसे पढ़ेंं.</translation>
@@ -389,7 +389,7 @@
 <translation id="4148180433151187540">{COUNT,plural, =1{दायां कोष्ठक}one{# दाएं कोष्ठक}other{# दाएं कोष्ठक}}</translation>
 <translation id="4158704014418536539">केस संवेदी</translation>
 <translation id="4161663686871496107">ChromeVox बोले जाने वाला फ़ीडैबक तैयार है</translation>
-<translation id="4166192625054637755">सबस्क्रिप्ट खत्म</translation>
+<translation id="4166192625054637755">सबस्क्रिप्ट का आखिरी हिस्सा</translation>
 <translation id="4173994908659439270">कोई अगला संपादन-योग्य लेख फ़ील्ड नहीं.</translation>
 <translation id="4176463684765177261">अक्षम</translation>
 <translation id="4188530942454211480">पिछला वाक्य</translation>
@@ -534,7 +534,7 @@
 <translation id="5330443287809544590"><ph name="NAME" />, लिंक</translation>
 <translation id="5336381510091010269">autoinl+lst</translation>
 <translation id="5349770431644471053">बैक लिंक</translation>
-<translation id="5350654862897073517">सबस्क्रिप्ट शुरू</translation>
+<translation id="5350654862897073517">सबस्क्रिप्ट का शुरुआती हिस्सा</translation>
 <translation id="536031132345979795">निरंतर पढ़ने के दौरान पीछे जाएं छोड़ें</translation>
 <translation id="5368000168321181111">ईयरकॉन बंद हैं</translation>
 <translation id="5374320867641260420">कोई अगला बटन नहीं.</translation>
@@ -593,6 +593,7 @@
 <translation id="5712338278108304766">अगला तालिका स्‍तंभ</translation>
 <translation id="571866080859340309">समूहों को एक्सप्लोर कर रहा है</translation>
 <translation id="5728409797179002635">कोई तालिका नहीं मिली.</translation>
+<translation id="5729047866208036762">गणित के बारे में और जानने के लिए ऊपर, नीचे, बाएं या दाएं वाले तीर दबाएं.</translation>
 <translation id="5732189279857692565">यह दूसरा शीर्षक है. आगे बढ़ते रहें; Search+H या Search+Shift+H दबाएं</translation>
 <translation id="5748623122140342504">पिछले स्‍तर 5 का शीर्षक</translation>
 <translation id="5750633686117194034">कोई संशोधक नहीं दबाया गया; कृपया एक या अधिक संशोधक दबाकर रखें; पूर्ण हो जाने पर अपनी अंगुलियां उठा लें और आपको सुनाई देगा कि कुंजियां सेट हो गई हैं. बाहर निकलने के लिए टैब दबाएं.</translation>
@@ -748,6 +749,7 @@
 <translation id="7226216518520804442">lst</translation>
 <translation id="7229749224609077523">6 बिंदु वाली ब्रेल तालिका चुनें:</translation>
 <translation id="72393384879519786">शीर्षक</translation>
+<translation id="7240858705033280249">सीधे विवरण पर जाएं</translation>
 <translation id="7241683698754534149">बड़ा विवरण नए टैब में खोलें</translation>
 <translation id="7248671827512403053">ऐप्स </translation>
 <translation id="725969808843520477">अगला रेडियो बटन</translation>

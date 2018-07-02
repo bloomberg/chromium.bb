@@ -42,6 +42,9 @@
       Tingnan ang https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para sa listahan ng mga variable na maaaring gamitin.
 
       Kung iniwang hindi nakatakda ang patakarang ito, gagamitin ang default na direktoryo ng cache at magagawa itong i-override ng user gamit ang command line flag na '--disk-cache-dir'.</translation>
+<translation id="1135264353752122851">Kino-configure kung aling mga layout ng keyboard ang pinapayagan para sa mga session ng user ng <ph name="PRODUCT_OS_NAME" />.
+
+      Kung nakatakda ang patakarang ito, makakapili lang ang user ng isa sa mga pamamaraan ng pag-input na natukoy ng patakarang ito. Kung hindi nakatakda ang patakarang ito o nakatakda ito sa isang walang lamang listahan, mapipili ng user ang lahat ng sinusuportahang pamamaraan ng pag-input. Kung hindi pinapayagan ng patakarang ito ang kasalukuyang pamamaraan ng pag-input, malilipat ang pamamaraan ng pag-input sa layout ng hardware na keyboard (kung pinapayagan) o sa unang valid na entry sa listahang ito. Babalewalain ang lahat ng invalid o hindi sinusuportahang pamamaraan ng pag-input sa listahang ito.</translation>
 <translation id="1138294736309071213">Sa mode ng retail lamang aktibo ang patakarang ito.
 
       Tinutukoy ang tagal bago ipakita ang screen saver sa screen sa pag-sign-in para sa mga device sa mode ng retail.
@@ -69,6 +72,7 @@
 <translation id="1221359380862872747">Mag-load ng mga tinukoy na url sa pag-login sa demo</translation>
 <translation id="1223789468190631420">Status na naka-enable ang Ligtas na Pag-browse para sa mga pinagkakatiwalaang source</translation>
 <translation id="123081309365616809">I-enable ang pag-cast ng content sa device</translation>
+<translation id="1243570869342663665">Kontrolin ang pag-filter ng pang-adult na content ng SafeSites.</translation>
 <translation id="1257550411839719984">Itakda ang default na directory sa pag-download</translation>
 <translation id="1265053460044691532">Limitahan ang oras na maaaring mag-log in offline ang isang user na na-authenticate gamit ang SAML</translation>
 <translation id="1291880496936992484">Babala: Tuluyan nang maalis ang RC4 sa <ph name="PRODUCT_NAME" /> pagkatapos ng bersyon 52 (tinatayang lalabas sa Setyembre 2016) at hindi na gagana ang patakarang ito.
@@ -263,6 +267,7 @@
       Sinusundan ng format ng value ang pangalan ng mga timezone sa "IANA Time Zone Database" (tingnan ang "https://en.wikipedia.org/wiki/Tz_database"). Partikular dito, karamihan ng mga timezone ay maaaring matukoy ayon sa "continent/large_city" o "ocean/large_city."
 
       Kapag itinakda ang patakarang ito, ganap na madi-disable ang awtomatikong pag-alam sa timezone ayon sa lokasyon ng device. Io-override din nito ang SystemTimezoneAutomaticDetection.</translation>
+<translation id="1885782360784839335">I-enable ang pagpapakita ng full-tab na pampromosyong content</translation>
 <translation id="1888871729456797026">Ang token sa pag-enroll ng patakaran sa cloud sa desktop</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
 <translation id="1906888171268104594">Kinokontrol kung iuulat sa Google ang mga sukatan ng paggamit at diagnostic na data, kabilang ang mga ulat ng pag-crash.
@@ -375,6 +380,7 @@
       maaari itong baguhin ng user. Sa sitwasyong ito, ang default na value ay hindi muling ilalapat sa
       pag-restart.</translation>
 <translation id="2156132677421487971">Nagko-configure ng mga patakaran para sa <ph name="PRODUCT_NAME" />, isang feature na nagbibigay-daan sa mga user na maipadala ang mga content ng mga tab, mga site, o ang desktop mula sa browser papunta sa mga malayuang display at sound system.</translation>
+<translation id="2166472654199325139">Huwag i-filter ang mga site para sa pang-adult na content</translation>
 <translation id="2168397434410358693">Idle delay kapag tumatakbo habang nakasaksak sa kuryente</translation>
 <translation id="2170233653554726857">I-enable ang pag-optimize ng WPAD</translation>
 <translation id="2176565653304920879">Kapag nakatakda ang patakarang ito, ang awtomatikong proseso ng pag-detect ng timezone ay magiging isa sa mga sumusunod na paraan depende sa value ng setting:
@@ -527,6 +533,12 @@
 <translation id="2466131534462628618">Binabalewala ng pagpapatotoo ng captive portal ang proxy</translation>
 <translation id="2482676533225429905">Native na Pagmemensahe</translation>
 <translation id="2483146640187052324">Hulaan ang mga pagkilos sa network sa anumang koneksyon sa network</translation>
+<translation id="2484208301968418871">Kinokontrol ng patakarang ito ang application ng pag-filter ng URL ng SafeSites.
+      Ginagamit ng filter na ito ang Google Safe Search API para matukoy kung pornographic o hindi ang mga URL.
+
+      Kapag hindi naka-configure o nakatakda sa "Huwag mag-filter ng mga site para sa pang-adult na content" ang patakarang ito, hindi mafi-filter ang mga site.
+
+      Kapag nakatakda ang patakarang ito sa "Mag-filter ng mga nangungunang site para sa pang-adult na content," ifi-filter ang mga site na itinuturing na pornographic.</translation>
 <translation id="2485721741875148980">Kung nakatakda sa true ang patakarang ito, kailangang mag-sign in ng user sa <ph name="PRODUCT_NAME" /> gamit ang kanyang profile bago magamit ang browser. Itatakda rin sa false ang default na value ng BrowserGuestModeEnabled. Tandaan na ila-lock at hindi na maa-access ang mga kasalukuyang unsigned na profile pagkatapos i-enable ang pakatarang ito. Para sa higit pang impormasyon, tingnan ang artikulo sa help center.
 
       Kung nakatakda sa false o hindi naka-configure ang patakarang ito, maaaring gamitin ng user ang browser nang hindi nagsa-sign in sa <ph name="PRODUCT_NAME" />.</translation>
@@ -687,12 +699,6 @@
 
       Kung ie-enable mo ang setting na ito, gagamitin ng Preview sa Pag-print ang default na printer ng OS system bilang default na pagpipilian.</translation>
 <translation id="2867699958489427143">Mag-roll back at manatili sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Magsagawa ng ganap na pag-powerwash habang nasa proseso.</translation>
-<translation id="286802604195763750">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala sa pagprotekta ng password. Inaalertuhan ng pagprotekta ng password ang mga user kapag ginamit nilang muli ang kanilang pinoprotektahang password sa mga posibleng kahina-hinalang site.
-
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOff,' walang ipapakitang babala sa pagprotekta ng password.
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPasswordReuse,' magpapakita ng babala sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang hindi naka-whitelist na site.
-      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPhishingReuse,' magpapakita ng babala sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site.
-      Kung hindi itatakda ang patakarang ito, mati-trigger ang babala sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site, ngunit mababago ng user ang setting na ito.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
@@ -1360,6 +1366,7 @@
 
       Kung iniwang hindi nakatakda o blangko ang patakarang ito, makakapag-sign in ang sinumang user sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Pinapayagan ang mode na fullscreen</translation>
+<translation id="4861767323695239729">I-configure ang mga pinapayagang pamamaraan ng pag-input sa isang session ng user</translation>
 <translation id="4869787217450099946">Tinutukoy kung pinapayagan ang mga lock ng pagpapagana ng screen. Mahihiling ng mga extension ang mga lock ng pagpapagana ng screen sa pamamagitan ng power management extension API.
 
           Kung nakatakda sa true o iniwang hindi nakatakda ang patakarang ito, tatanggapin ang mga lock ng pagpapagana ng screen para sa pamamahala sa power.
@@ -1947,6 +1954,7 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung idi-disable ang patakarang ito o kaya ay hahayaang hindi nakatakda, ang mga regular na lokal na profile lang ang gagamitin.
 
       Dini-disable ng patakarang <ph name="SYNC_DISABLED_POLICY_NAME" /> ang lahat ng pag-synchronize ng data, na nag-o-override sa RoamingProfileSupportEnabled.</translation>
+<translation id="6731757988219967594">Mag-filter ng mga nangungunang site (ngunit hindi mga naka-embed na iframe) para sa pang-adult na content</translation>
 <translation id="6735701345096330595">Puwersahang ine-enable ang mga wika ng spellcheck</translation>
 <translation id="673699536430961464">Nagbibigay-daan ang setting na ito sa mga user na lumipat ng Google account sa lugar ng content ng window ng kanilang browser pagkatapos nilang mag-sign in sa kanilang <ph name="PRODUCT_OS_NAME" /> device.
 
@@ -1969,6 +1977,13 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6757438632136860443">Nagbibigay-daan sa iyo na magtakda ng isang listahan ng mga pattern ng url na tumutukoy sa mga site na pinapahintulutang magpatakbo sa plugin na <ph name="FLASH_PLUGIN_NAME" />.
 
           Kung hahayaang hindi nakatakda ang patakarang ito, ang pangkalahatang default na value ang gagamitin para sa lahat ng site na magmumula sa patakarang 'DefaultPluginsSetting' kung nakatakda ito, o kung hindi, sa personal na configuration ng user.</translation>
+<translation id="6762235610019366960">Pinapayagan kang kontrolin ang presentasyon ng full-tab na pampromosyon at/o pang-edukasyong content sa <ph name="PRODUCT_NAME" />.
+
+      Kung hindi naka-configure o naka-enable (nakatakda sa true), maaaring ipakita ng <ph name="PRODUCT_NAME" /> ang full-tab na content sa mga user para magbigay ng impormasyon ng produkto.
+
+      Kung naka-disable (nakatakda sa false), hindi ipapakita ng <ph name="PRODUCT_NAME" /> ang full-tab na content sa mga user para magbigay ng impormasyon ng produkto.
+
+      Kinokontrol ng setting na ito ang presentasyon ng mga welcome page na nakakatulong sa mga user na mag-sign in sa <ph name="PRODUCT_NAME" />, piliin ito bilang kanilang default na browser, o abisuhan sila tungkol sa mga feature ng produkto.</translation>
 <translation id="6766216162565713893">Payagan ang mga site na hilingin sa user na magbigay ng access sa malapit na Bluetooth device</translation>
 <translation id="6770454900105963262">Mag-ulat ng impormasyon tungkol sa mga aktibong session ng kiosk</translation>
 <translation id="6786747875388722282">Mga Extension</translation>
@@ -2297,17 +2312,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7511361072385293666">Kung nakatakda ang patakaran na ito sa true o hindi ito nakatakda, ang paggamit ng QUIC protocol sa <ph name="PRODUCT_NAME" /> ay pinapayagan.
       Kung ang patakaran na ito ay nakatakda sa false, ang paggamit ng QUIC protocol ay hindi pinapayagan.</translation>
 <translation id="7519251620064708155">Payagan ang pagbuo ng key sa mga site na ito</translation>
-<translation id="7529083451528428240">Nagbibigay-daan sa iyong i-lock ang session ng user batay sa oras ng client o quota sa paggamit sa araw na iyon.
-
-          Nagtatakda ang |time_window_limit| ng pang-araw-araw na window kung saan dapat i-lock ang session ng user. Isang panuntunan lang ang sinusuportahan namin para sa bawat araw ng linggo, samakatuwid maaaring mag-iba-iba ang array ng |entries| mula 0-7 sa laki. Ang |starts_at| at |ends_at| ang simula at dulo ng limitasyon sa window, kapag mas maliit ang |ends_at| kaysa sa |starts_at|, nangangahulugan itong matatapos ang |time_limit_window| sa susunod na araw. Ang |last_updated_millis| ay ang UTC timestamp kung kailan huling na-update ang entry na ito, ipinapadala ito bilang isang string dahil hindi magkakasya ang timestamp sa isang integer.
-
-          Tumutukoy ang |time_usage_limit| ng pang-araw-araw na quota sa screen, kaya kapag naabot ito ng user, mala-lock ang session ng user. May property para sa bawat araw ng linggo, at dapat lang itong itakda kung mayroong aktibong quota para sa araw na iyon. Ang |usage_quota_mins| ay ang haba ng oras kung kailan maaaring gamitin ang pinapamahalaang device sa isang araw at ang |reset_at| ay ang oras kung kailan nare-renew ang quota sa paggamit. Ang default na value para sa |reset_at| ay hatinggabi ({'hour': 0, 'minute': 0}). Ang |last_updated_millis| ay ang UTC timestamp kung kailan huling na-update ang entry na ito, ipinapadala ito bilang isang string dahil hindi magkakasya ang timestamp sa isang integer.
-
-          Ibinibigay ang |overrides| para pansamantalang ma-invalidate ang isa o higit pa sa mga nakaraang panuntunan.
-          * Kung hindi aktibo ang time_window_limit o time_usage_limit maaaring gamitin ang |LOCK| para i-lock ang device.
-          * Pansamantalang naglo-lock ng session ng user ang |LOCK| hanggang magsimula ang susunod na time_window_limit o time_usage_limit.
-          * Ang |UNLOCK| ay nakakapag-unlock ng session ng user na na-lock ng time_window_limit o time_usage_limit.
-          Ang |created_time_millis| ay ang UTC timestamp para sa paggawa ng override, ipinapadala ito bilang isang String dahil hindi magkakasya ang timestamp sa isang integer. Ginagamit ito para tukuyin kung dapat pa ring ilapat ang pag-override na ito. Kung nagsimula ang kasalukuyang aktibong feature na limitasyon sa oras (limitasyon sa oras ng paggamit o limitasyon sa oras sa window) pagkatapos gawin ang override, hindi dapat ito magsagawa ng pagkilos. Gayundin, kung nagawa ang override bago ang huling pagbabago ng aktibong time_window_limit o time_usage_window hindi dapat ito ilapat.</translation>
 <translation id="7529100000224450960">Binibigyang-daan kang magtakda ng isang listahan ng mga pattern ng url na tumutukoy ng mga site na pinapayagang magbukas ng mga popup.
 
           Kung hinayaang hindi nakatakda ang patakarang ito gagamitin ang global na default na halaga para sa lahat ng site mula sa patakaran ng 'DefaultPopupsSetting' kung nakatakda ito, o kung hindi man ay sa personal na configuration ng user.</translation>

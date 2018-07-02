@@ -98,7 +98,6 @@
 
 &lt;p&gt;Моля, коригирайте датата и часа от секцията &lt;strong&gt;General&lt;/strong&gt; на приложението &lt;strong&gt;Settings&lt;/strong&gt;.&lt;/p&gt;</translation>
 <translation id="1583429793053364125">Възникна проблем при показването на тази уеб страница.</translation>
-<translation id="1590457302292452960">Генериране на надеждна парола...</translation>
 <translation id="1592005682883173041">Достъп до локални данни</translation>
 <translation id="1594030484168838125">Избор</translation>
 <translation id="1620510694547887537">Камера</translation>
@@ -170,6 +169,7 @@
 <translation id="2091887806945687916">Звук</translation>
 <translation id="2094505752054353250">Несъответствие в домейна</translation>
 <translation id="2096368010154057602">Департамент</translation>
+<translation id="2102134110707549001">Предложение за надеждна парола…</translation>
 <translation id="2108755909498034140">Рестартирайте компютъра си.</translation>
 <translation id="2113977810652731515">Карта</translation>
 <translation id="2114841414352855701">Бе пренебрегнато, защото бе отменено от <ph name="POLICY_NAME" />.</translation>
@@ -537,6 +537,7 @@
 <translation id="4726672564094551039">Презареждане на правилата</translation>
 <translation id="4728558894243024398">Платформа</translation>
 <translation id="4736825316280949806">Рестартирайте Chromium.</translation>
+<translation id="4742407542027196863">Управление на паролите…</translation>
 <translation id="4744603770635761495">Път към изпълнимия файл</translation>
 <translation id="4749685221585524849">Последно използване: <ph name="LAST_USED_MONTH" /></translation>
 <translation id="4750917950439032686">Информацията ви (например пароли или номера на кредитни карти) е частна, когато се изпраща до този сайт.</translation>
@@ -555,6 +556,7 @@
 <translation id="4850886885716139402">Изглед</translation>
 <translation id="4854362297993841467">Този начин на бърза доставка не се поддържа. Опитайте с друг.</translation>
 <translation id="4858792381671956233">Попитахте родителите си дали може да посетите този сайт</translation>
+<translation id="4876305945144899064">Няма потребителско име</translation>
 <translation id="4880827082731008257">Търсене в историята</translation>
 <translation id="4881695831933465202">Отваряне</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> и <ph name="TYPE_3" /></translation>
@@ -631,6 +633,7 @@
 <translation id="5371425731340848620">Актуализиране на картата</translation>
 <translation id="5377026284221673050">„Часовникът ви е назад“, „Часовникът ви е напред“ или „&lt;span class="error-code"&gt;NET::ERR_CERT_DATE_INVALID&lt;/span&gt;“</translation>
 <translation id="5386426401304769735">Веригата от сертификати за този сайт съдържа сертификат, подписан с SHA-1.</translation>
+<translation id="5387961145478138773">Получете бърз достъп до любимите си приложения на Google</translation>
 <translation id="5402410679244714488">Валидност: <ph name="EXPIRATION_DATE_ABBR" />. Последно използване преди повече от година</translation>
 <translation id="540969355065856584">Сървърът не можа да докаже, че е <ph name="DOMAIN" />. Понастоящем сертификатът му за сигурност не е валиден. Това може да се дължи на неправилно конфигуриране или на прихващане на връзката ви от извършител на атака.</translation>
 <translation id="5421136146218899937">Изчистване на данните за сърфирането...</translation>
@@ -678,6 +681,7 @@
 <translation id="5689199277474810259">Експортиране във формат JSON</translation>
 <translation id="5689516760719285838">Местоположение</translation>
 <translation id="570530837424789914">Управление...</translation>
+<translation id="57094364128775171">Предложение за надеждна парола…</translation>
 <translation id="5710435578057952990">Самоличността на този уебсайт не е потвърдена.</translation>
 <translation id="5719499550583120431">Приемат се предплатени карти.</translation>
 <translation id="5720705177508910913">Текущият потребител</translation>
@@ -753,7 +757,6 @@
 <translation id="6328786501058569169">Този сайт е измамен</translation>
 <translation id="6337133576188860026">Ще освободите по-малко от <ph name="SIZE" />. Някои сайтове може да се заредят по-бавно при следващото ви посещение.</translation>
 <translation id="6337534724793800597">Филтриране на правилата по име</translation>
-<translation id="6342069812937806050">Току-що</translation>
 <translation id="6355080345576803305">Принудително зададено поради обществена сесия</translation>
 <translation id="6358450015545214790">Какво означават тези неща?</translation>
 <translation id="6386120369904791316">{COUNT,plural, =1{още 1 предложение}other{още # предложения}}</translation>
@@ -880,6 +883,7 @@
 &lt;li&gt;Кликнете върху &lt;strong&gt;Приложи&lt;/strong&gt; и след това – върху &lt;strong&gt;OK&lt;/strong&gt;.
 &lt;li&gt;Посетете &lt;a href="https://support.google.com/chrome/answer/6098869"&gt;Помощния център на Chrome&lt;/a&gt;, за да научите как да премахнете за постоянно софтуера от компютъра си.
 &lt;/ol&gt;</translation>
+<translation id="7416351320495623771">Управление на паролите…</translation>
 <translation id="7419106976560586862">Път на потребителския профил</translation>
 <translation id="7437289804838430631">Добавяне на информация за връзка</translation>
 <translation id="7441627299479586546">Грешен предмет на правилото</translation>
@@ -1110,6 +1114,7 @@
 <translation id="9103872766612412690">Обикновено <ph name="SITE" /> използва шифроване за защита на информацията ви. Когато Chromium опита да установи връзка с/ъс <ph name="SITE" /> този път, уебсайтът върна необичайни и неправилни идентификационни данни. Това може да се случи, когато извършител на атака пробва да се представи за <ph name="SITE" /> или връзката е прекъсната от екран за вход в Wi-Fi. Информацията ви продължава да е защитена, тъй като Chromium спря връзката, преди да бъдат обменени данни.</translation>
 <translation id="9106062320799175032">Добавяне на адрес за фактуриране</translation>
 <translation id="910908805481542201">Помогнете ми да отстраня този проблем</translation>
+<translation id="9114524666733003316">Картата се потвърждава...</translation>
 <translation id="9128870381267983090">Свързване към мрежа</translation>
 <translation id="9137013805542155359">Показване на оригинала</translation>
 <translation id="9137248913990643158">Моля, стартирайте браузъра Chrome и влезте в него, преди да използвате това приложение.</translation>

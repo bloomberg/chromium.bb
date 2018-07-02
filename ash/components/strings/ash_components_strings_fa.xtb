@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">‏روشن یا خاموش کردن ChromeVox (بازخورد گفتاری)</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">پیمایش به پایین صفحه وب</translation>
-<translation id="2568632782096378307">بازنشانی وضوح صفحه‌نمایش به پیش‌فرض</translation>
 <translation id="2596078834055697711">گرفتن عکس از پنجره صفحه‌نمایش</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" /> و سپس <ph name="TAB" /> یا <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">تغییر وضعیت به روش ورودی زبان بعدی</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">کوچک‌نمایی روی صفحه</translation>
 <translation id="2804480015716812239"><ph name="ALT" /> را فشار دهید و روی پیوند کلیک کنید</translation>
 <translation id="2830827904629746450">ثابت کردن یک پنجره در سمت راست</translation>
+<translation id="2840766858109427815">رفتن به صفحه بعدی</translation>
 <translation id="2872353916818027657">تعویض مانیتور اصلی</translation>
 <translation id="2914313326123580426">نمایش یا پنهان کردن پنل ابزارهای برنامه‌نویس</translation>
 <translation id="292495055542441795">جابه‌جایی به حالت تمام صفحه</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">باز کردن مدیر فعالیت‌ها</translation>
 <translation id="3422679037938588196">رفتن به مورد منطبق قبلی با جستجویتان</translation>
 <translation id="344577624355799426"><ph name="ALT" /> یا <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">بازنشانی بزرگ‌نمایی</translation>
 <translation id="353037708190149633">ذخیره تمام صفحات باز پنجره کنونی شما در پوشه به‌عنوان نشانک</translation>
 <translation id="355103131818127604">بازکردن پیوند در برگه جدیدی در پس‌زمینه</translation>
 <translation id="3649256019230929621">بازکردن پنجره در حداقل اندازه</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">برجسته‌سازی ردیف با نوار نشانی</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> یا <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">حالت نمای کلی</translation>
+<translation id="4382340674111381977">برگشتن به صفحه قبلی</translation>
 <translation id="4472417192667361414">تنظیمات سیستم و نمایشگر</translation>
 <translation id="4556221320735744018">مشاهده راهنمای میان‌برهای صفحه‌کلید</translation>
 <translation id="4628718545549558538">باز کردن ناحیه نشانگر وضعیت (جایی که تصویر حسابتان نشان داده می‌شود)</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">حذف کلمه قبلی</translation>
 <translation id="5899919361772749550">نمایش یا پنهان کردن کنسول «ابزارهای برنامه‌نویس»</translation>
 <translation id="5921745308587794300">چرخاندن پنجره</translation>
-<translation id="5975083100439434680">کوچک نمایی</translation>
 <translation id="6022924867608035986">پاک کردن نوشتار کادر جستجو</translation>
 <translation id="6045998054441862242">روشن کردن حالت کنتراست بالا</translation>
 <translation id="6052614013050385269">راست کلیک یک پیوند</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">باز کردن فایل در مرورگر</translation>
 <translation id="7917881398263220094">توقف بارگیری صفحه کنونی</translation>
 <translation id="7952165122793773711">رفتن به برگه‌های ۱ تا ۸</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> یا <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">پاک کردن داده‌های مرور</translation>
 <translation id="8130528849632411619">رفتن به ابتدای سند</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> یا <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">دیدن اعلان‌ها</translation>
 <translation id="8855885154700222542">کلید تمام‌صفحه</translation>
 <translation id="88986195241502842">صفحه پایین</translation>
-<translation id="8903921497873541725">بزرگ‌نمایی</translation>
 <translation id="8924883688469390268">جابه‌جا شدن به کاربر قبلی</translation>
-<translation id="8951768610999698672">بزرگ‌تر با کوچک‌تر کردن موارد روی صفحه‌نمایش</translation>
 <translation id="8977648847395357314">انتخاب محتوا در نوار نشانی</translation>
 <translation id="8982190978301344584">‏نمایش منوی نشان‌دهنده فهرست ابزارهای IME موجود</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> ۱‏ تا ۸</translation>

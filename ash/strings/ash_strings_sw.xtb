@@ -4,8 +4,10 @@
 <translation id="1012876632442809908">Kifaa cha USB-C (mlango wa mbele)</translation>
 <translation id="1013923882670373915">Kifaa cha Bluetooth cha "<ph name="DEVICE_NAME" />" kinaomba idhini ya kuoanisha. Tafadhali weka nambari hii ya PIN kwenye kifaa hicho: <ph name="PINCODE" /></translation>
 <translation id="1032891413405719768">Chaji ya betri ya Stylus imepungua</translation>
+<translation id="1037492556044956303">Imeongeza <ph name="DEVICE_NAME" /></translation>
 <translation id="1056775291175587022">Hakuna mitandao</translation>
 <translation id="1059194134494239015"><ph name="DISPLAY_NAME" />: <ph name="RESOLUTION" /></translation>
+<translation id="1104621072296271835">Vifaa vyako vitafanya kazi vizuri vikiwa pamoja</translation>
 <translation id="112308213915226829">Ficha rafu kiotomatiki</translation>
 <translation id="1153356358378277386">Vifaa vilivyooanishwa</translation>
 <translation id="1195412055398077112">angalia kwa ujumla:</translation>
@@ -99,6 +101,7 @@
 <translation id="277257480934873581">Inaunganisha upya kwenye <ph name="NAME" /></translation>
 <translation id="2792498699870441125">Alt + Utafutaji</translation>
 <translation id="2805756323405976993">Programu</translation>
+<translation id="2808012452536866044">Better Together imehamishiwa kwenye simu mpya</translation>
 <translation id="2819276065543622893">Utaondolewa kwenye akaunti sasa hivi.</translation>
 <translation id="2825619548187458965">Rafu</translation>
 <translation id="2844169650293029770">Kifaa cha USB-C (mlango wa upande wa kushoto mbele)</translation>
@@ -107,10 +110,12 @@
 <translation id="2878884018241093801">Hakuna vipengee vya hivi karibuni</translation>
 <translation id="2903844815300039659">Imeunganishwa kwenye <ph name="NAME" />, <ph name="STRENGTH" /></translation>
 <translation id="2911940648265863620">Unashiriki skrini yako</translation>
+<translation id="2942350706960889382">Kikuzaji Kilichoambatishwa</translation>
 <translation id="2942516765047364088">Nafasi ya rafu</translation>
 <translation id="2946119680249604491">Ongeza muunganisho</translation>
 <translation id="2961963223658824723">Hitilafu fulani imetokea. Jaribu tena baada ya sekunde chache.</translation>
 <translation id="2963773877003373896">mod3</translation>
+<translation id="2996462380875591307">Umewasha Kikuzaji Kilichoambatishwa. Bonyeza Ctrl+Search+D tena ili ukizime.</translation>
 <translation id="2999742336789313416"><ph name="DISPLAY_NAME" /> ni kipindi cha kila mtu kinachodhibitiwa na <ph name="DOMAIN" /></translation>
 <translation id="3000461861112256445">Kipengele cha sauti moja</translation>
 <translation id="3009178788565917040">Towe</translation>
@@ -170,6 +175,7 @@
 <translation id="4072264167173457037">Mtandao ni thabiti kiasi</translation>
 <translation id="4200057768455216496">Umebofya njia ya mkato ya kikuzaji kilichoambatishwa. Ungependa kukiwasha?</translation>
 <translation id="4217571870635786043">Kuandika kwa kutamka</translation>
+<translation id="4274921305979314545">Unganisha Chromebook na simu yako</translation>
 <translation id="4279490309300973883">Kuakisi</translation>
 <translation id="4321179778687042513">ctrl</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -223,6 +229,7 @@
 <translation id="554893713779400387">Kuwasha au kuzima huduma ya matamshi</translation>
 <translation id="5571066253365925590">Bluetooth imewezeshwa</translation>
 <translation id="5597451508971090205"><ph name="SHORT_WEEKDAY" />, <ph name="DATE" /></translation>
+<translation id="5598551463564921617">Umewasha Better Together</translation>
 <translation id="5600837773213129531">Bonyeza Ctrl + Alt + Z ili uzime kipengele cha maelezo yanayotamkwa.</translation>
 <translation id="5648021990716966815">Pini ya maikrofoni</translation>
 <translation id="5669267381087807207">Inaamilisha</translation>
@@ -239,6 +246,7 @@
 <translation id="5901316534475909376">Shift+Esc</translation>
 <translation id="5911533659001334206">Kitazamaji cha njia ya mkato</translation>
 <translation id="5916664084637901428">Imewashwa</translation>
+<translation id="592343074608792716">Chromebook hii na simu yako zitaunganishwa kiotomatiki</translation>
 <translation id="5927132638760172455">Inatuma kwa mpokeaji asiyejulikana</translation>
 <translation id="5947494881799873997">Rejesha</translation>
 <translation id="595202126637698455">Ufuatiliaji wa utendaji umewashwa</translation>
@@ -261,6 +269,7 @@
 <translation id="615957422585914272">Onyesha kibodi ya skrini</translation>
 <translation id="6164005077879661055">Faili zote na data ya ndani zinazohusishwa na mtumiaji anayesimamiwa zitafutwa kabisa mtumiaji huyu anayesimamiwa atakapoondolewa. Tovuti zilizotembelewa na mipangilio ya mtumiaji huyu anayesimamiwa inaweza bado kuonekana na msimamizi katika <ph name="MANAGEMENT_URL" />.</translation>
 <translation id="6165508094623778733">Pata maelezo zaidi</translation>
+<translation id="6259254695169772643">Tumia stylus yako kuchagua</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Inaanza kutumia...</translation>
 <translation id="6284232397434400372">Imebadilisha ubora</translation>
 <translation id="6297287540776456956">Tumia stylus kuchagua eneo</translation>
@@ -351,6 +360,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="7982789257301363584">Mtandao</translation>
 <translation id="7994370417837006925">Uwezo wa kuingia katika akaunti nyingi kwa wakati mmoja</translation>
 <translation id="8000066093800657092">Hakuna mtandao</translation>
+<translation id="8029241286966751120">Umewashwa Kikuzaji cha Skrini nzima . Bonyeza Ctrl+Search+M tena ili ukizime.</translation>
 <translation id="8054466585765276473">Inakokotoa muda wa betri.</translation>
 <translation id="8061464966246066292">Kilinganushi kikubwa</translation>
 <translation id="8098591350844501178">Acha kutuma skrini kwenye <ph name="RECEIVER_NAME" /></translation>
@@ -366,6 +376,7 @@ Arifa, madirisha na vidirisha vya baadaye vitagawanywa kati ya maeneo-kazi.</tra
 <translation id="8308637677604853869">Menyu ya awali</translation>
 <translation id="8351131234907093545">Unda kidokezo</translation>
 <translation id="8392451568018454956">Menyu ya chaguo za <ph name="USER_EMAIL_ADDRESS" /></translation>
+<translation id="8406981827175133772">Kikuzaji cha Skrini Nzima</translation>
 <translation id="8428213095426709021">Mipangilio</translation>
 <translation id="8431190899827883166">Onyesha unapogusa</translation>
 <translation id="8433186206711564395">Mipangilio ya mtandao</translation>

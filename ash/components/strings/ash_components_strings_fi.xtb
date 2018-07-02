@@ -39,7 +39,6 @@
 <translation id="2478303094958140141">Ota ChromeVox (äänipalaute) käyttöön tai poista se käytöstä</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2530339807289914946">Vieritä sivun alareunaan</translation>
-<translation id="2568632782096378307">Palauta näytön resoluutio oletusasetukseen</translation>
 <translation id="2596078834055697711">Ottaa kuvakaappauksen</translation>
 <translation id="2685170433750953446"><ph name="SHIFT" /><ph name="SEPARATOR1" /><ph name="ALT" /><ph name="SEPARATOR2" /><ph name="L" />, sitten <ph name="TAB" /> tai <ph name="RIGHT" /></translation>
 <translation id="2687057317448262550">Vaihda seuraavan kielen syöttötapaan</translation>
@@ -49,6 +48,7 @@
 <translation id="2789868185375229787">Loitonna sivunäkymää</translation>
 <translation id="2804480015716812239">Paina <ph name="ALT" /> ja klikkaa linkkiä.</translation>
 <translation id="2830827904629746450">Telakoi ikkuna oikealle</translation>
+<translation id="2840766858109427815">Siirry seuraavalle sivulle</translation>
 <translation id="2872353916818027657">Vaihda ensisijainen näyttö</translation>
 <translation id="2914313326123580426">Näytä tai piilota Kehittäjien työkalut ‑paneeli</translation>
 <translation id="292495055542441795">Koko näytön tila päälle/pois</translation>
@@ -63,7 +63,6 @@
 <translation id="3407560819924487926">Aktivoi tehtävänhallinta</translation>
 <translation id="3422679037938588196">Siirry edelliseen hakutulokseen</translation>
 <translation id="344577624355799426"><ph name="ALT" /> tai <ph name="SEARCH" /><ph name="SEPARATOR" /><ph name="DOWN" /></translation>
-<translation id="346243998268439747">Palauta zoomaustaso normaaliksi</translation>
 <translation id="353037708190149633">Tallenna nykyisen ikkunan kaikki välilehdet kirjanmerkeiksi uuteen kansioon</translation>
 <translation id="355103131818127604">Avaa linkki taustalle uudella välilehdellä</translation>
 <translation id="3649256019230929621">Pienennä ikkuna</translation>
@@ -87,6 +86,7 @@
 <translation id="4141203561740478845">Korosta osoitepalkkirivi</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> tai <ph name="ENTER" /></translation>
 <translation id="4240486403425279990">Yleiskatsaustila</translation>
+<translation id="4382340674111381977">Palaa edelliselle sivulle</translation>
 <translation id="4472417192667361414">Järjestelmä- ja näyttöasetukset</translation>
 <translation id="4556221320735744018">Avaa pikanäppäinapuri</translation>
 <translation id="4628718545549558538">Avaa tila-alue, jossa tilikuvasi näkyy</translation>
@@ -115,7 +115,6 @@
 <translation id="587531134027443617">Poista edellinen sana</translation>
 <translation id="5899919361772749550">Näyttää tai piilottaa Kehittäjien työkalut ‑konsolin</translation>
 <translation id="5921745308587794300">Kierrä ikkunaa</translation>
-<translation id="5975083100439434680">Loitonna</translation>
 <translation id="6022924867608035986">Tyhjennä hakukentän teksti</translation>
 <translation id="6045998054441862242">Ota suuri kontrasti ‑tila käyttöön</translation>
 <translation id="6052614013050385269">Klikkaa linkkiä hiiren kakkospainikkeella</translation>
@@ -161,7 +160,6 @@
 <translation id="7787242579016742662">Avaa tiedosto selaimessa</translation>
 <translation id="7917881398263220094">Pysäytä nykyisen sivun lataaminen</translation>
 <translation id="7952165122793773711">Vaihtele välilehtien 1–8 välillä</translation>
-<translation id="8025696740288105292"><ph name="CTRL" /><ph name="SEPARATOR1" /><ph name="SHIFT" /><ph name="SEPARATOR2" /><ph name="PLUS" /> tai <ph name="MINUS" /></translation>
 <translation id="8026334261755873520">Poista selaustiedot</translation>
 <translation id="8130528849632411619">Siirry dokumentin alkuun</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> tai <ph name="E" /></translation>
@@ -180,9 +178,7 @@
 <translation id="8727232706774971183">Näytä ilmoitukset</translation>
 <translation id="8855885154700222542">Koko näyttö ‑näppäin</translation>
 <translation id="88986195241502842">Sivu alas</translation>
-<translation id="8903921497873541725">Lähennä</translation>
 <translation id="8924883688469390268">Vaihda edelliseen käyttäjään</translation>
-<translation id="8951768610999698672">Suurentaa tai pienentää kohteita näytöllä</translation>
 <translation id="8977648847395357314">Valitse osoitepalkin sisältö</translation>
 <translation id="8982190978301344584">Näyttää saatavilla olevien syöttötapojen muokkausohjelmien luettelon</translation>
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1–8</translation>
