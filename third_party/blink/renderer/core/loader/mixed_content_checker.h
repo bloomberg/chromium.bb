@@ -77,7 +77,6 @@ class CORE_EXPORT MixedContentChecker final {
   static bool ShouldBlockFetchOnWorker(WorkerOrWorkletGlobalScope*,
                                        WebWorkerFetchContext*,
                                        WebURLRequest::RequestContext,
-                                       network::mojom::RequestContextFrameType,
                                        ResourceRequest::RedirectStatus,
                                        const KURL&,
                                        SecurityViolationReportingPolicy);
