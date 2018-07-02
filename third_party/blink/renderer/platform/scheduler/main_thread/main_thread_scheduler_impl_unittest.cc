@@ -307,7 +307,7 @@ class MainThreadSchedulerImplTest : public testing::Test {
   }
 
   MainThreadSchedulerImplTest()
-      : MainThreadSchedulerImplTest({kHighPriorityInput},
+      : MainThreadSchedulerImplTest({kHighPriorityInputOnMainThread},
                                     {kPrioritizeCompositingAfterInput}) {}
 
   ~MainThreadSchedulerImplTest() override = default;
@@ -3911,7 +3911,7 @@ class CompositingExperimentWithExplicitSignalsTest
  public:
   CompositingExperimentWithExplicitSignalsTest()
       : MainThreadSchedulerImplTest(
-            {kHighPriorityInput, kPrioritizeCompositingAfterInput,
+            {kHighPriorityInputOnMainThread, kPrioritizeCompositingAfterInput,
              kUseExplicitSignalForTriggeringCompositingPrioritization,
              kUseWillBeginMainFrameForCompositingPrioritization},
             {}) {}
@@ -3953,7 +3953,7 @@ class CompositingExperimentWithImplicitSignalsTest
  public:
   CompositingExperimentWithImplicitSignalsTest()
       : MainThreadSchedulerImplTest(
-            {kHighPriorityInput, kPrioritizeCompositingAfterInput},
+            {kHighPriorityInputOnMainThread, kPrioritizeCompositingAfterInput},
             {kHighestPriorityForCompositingAfterInput,
              kUseExplicitSignalForTriggeringCompositingPrioritization,
              kUseWillBeginMainFrameForCompositingPrioritization}) {}

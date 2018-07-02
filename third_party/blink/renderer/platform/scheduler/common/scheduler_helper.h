@@ -44,6 +44,9 @@ class PLATFORM_EXPORT SchedulerHelper
   virtual scoped_refptr<base::sequence_manager::TaskQueue>
   ControlTaskQueue() = 0;
 
+  // Returns task runner for the default queue.
+  scoped_refptr<base::SingleThreadTaskRunner> DefaultTaskRunner();
+
   // Adds or removes a task observer from the scheduler. The observer will be
   // notified before and after every executed task. These functions can only be
   // called on the thread this class was created on.
@@ -107,6 +110,8 @@ class PLATFORM_EXPORT SchedulerHelper
 
  private:
   friend class SchedulerHelperTest;
+
+  scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
 
   Observer* observer_;  // NOT OWNED
 

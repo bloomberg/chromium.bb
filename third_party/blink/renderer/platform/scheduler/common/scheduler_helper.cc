@@ -32,9 +32,11 @@ void SchedulerHelper::InitDefaultQueues(
     TaskType default_task_type) {
   control_task_queue->SetQueuePriority(TaskQueue::kControlPriority);
 
+  default_task_runner_ =
+      TaskQueueWithTaskType::Create(default_task_queue, default_task_type);
+
   DCHECK(sequence_manager_);
-  sequence_manager_->SetDefaultTaskRunner(
-      TaskQueueWithTaskType::Create(default_task_queue, default_task_type));
+  sequence_manager_->SetDefaultTaskRunner(default_task_runner_);
 }
 
 SchedulerHelper::~SchedulerHelper() {
@@ -47,6 +49,11 @@ void SchedulerHelper::Shutdown() {
     return;
   sequence_manager_->SetObserver(nullptr);
   sequence_manager_.reset();
+}
+
+scoped_refptr<base::SingleThreadTaskRunner>
+SchedulerHelper::DefaultTaskRunner() {
+  return default_task_runner_;
 }
 
 void SchedulerHelper::SetWorkBatchSizeForTesting(size_t work_batch_size) {

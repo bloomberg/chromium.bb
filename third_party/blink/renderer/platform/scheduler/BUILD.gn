@@ -215,6 +215,7 @@ jumbo_source_set("unit_tests") {
     "renderer/webthread_impl_for_renderer_scheduler_unittest.cc",
     "util/thread_load_tracker_unittest.cc",
     "util/tracing_helper_unittest.cc",
+    "worker/compositor_thread_scheduler_unittest.cc",
     "worker/worker_scheduler_proxy_unittest.cc",
     "worker/worker_scheduler_unittest.cc",
     "worker/worker_thread_scheduler_unittest.cc",
