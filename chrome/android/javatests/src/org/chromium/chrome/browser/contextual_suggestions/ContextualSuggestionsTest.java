@@ -35,6 +35,7 @@ import org.chromium.base.test.params.ParameterSet;
 import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.FlakyTest;
 import org.chromium.base.test.util.Restriction;
@@ -222,6 +223,7 @@ public class ContextualSuggestionsTest {
     @Test
     @MediumTest
     @Feature({"ContextualSuggestions"})
+    @DisabledTest(message = "Flaky - crbug.com/859292")
     public void testScrollPageToTrigger() throws InterruptedException, TimeoutException {
         ContextualSuggestionsMediator.setOverrideBrowserControlsHiddenForTesting(false);
         mMediator.setTargetScrollPercentageForTesting(0f);
