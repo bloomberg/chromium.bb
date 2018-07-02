@@ -849,9 +849,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   std::unique_ptr<PingController> ping_controller_;
 
-  // Used for recording worker activities (e.g., a ratio of handled events)
-  // while this service worker is running (i.e., after it starts up until it
-  // stops).
+  // Used for recording worker activities while this service worker is running
+  // (i.e., after it starts up until it stops). Created only when the service
+  // worker is speculatively launched for navigation hints.
   std::unique_ptr<ServiceWorkerMetrics::ScopedEventRecorder> event_recorder_;
 
   bool stop_when_devtools_detached_ = false;

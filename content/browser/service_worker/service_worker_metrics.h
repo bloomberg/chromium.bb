@@ -269,26 +269,17 @@ class ServiceWorkerMetrics {
     base::TimeTicks local_end;
   };
 
+  // Records worker activities. Currently this only records
+  // StartHintPrecision histogram.
   class ScopedEventRecorder {
    public:
-    explicit ScopedEventRecorder(EventType start_worker_purpose);
+    ScopedEventRecorder();
     ~ScopedEventRecorder();
 
-    void RecordEventHandledStatus(EventType event, bool handled);
+    void RecordEventHandledStatus(EventType event);
 
    private:
-    struct EventStat {
-      size_t fired_events = 0;
-      size_t handled_events = 0;
-    };
-
-    // Records how much of dispatched events are handled.
-    static void RecordEventHandledRatio(EventType event,
-                                        size_t handled_events,
-                                        size_t fired_events);
-
-    std::map<EventType, EventStat> event_stats_;
-    const EventType start_worker_purpose_;
+    bool frame_fetch_event_fired_ = false;
 
     DISALLOW_COPY_AND_ASSIGN(ScopedEventRecorder);
   };
