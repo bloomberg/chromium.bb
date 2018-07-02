@@ -562,7 +562,7 @@
             {
               "gpu": "8086:0a2e",
               "os": "Mac-10.12",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -606,7 +606,7 @@
             {
               "gpu": "8086:0a2e",
               "os": "Mac-10.12",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
@@ -647,7 +647,7 @@
             {
               "gpu": "8086:0a2e",
               "os": "Mac-10.12",
-              "pool": "Chrome-perf-fyi"
+              "pool": "chrome.tests.perf-fyi"
             }
           ],
           "expiration": 36000,
