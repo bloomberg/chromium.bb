@@ -95,6 +95,11 @@ RepeatingCallback<void()> BindRepeating(Functor, Args&&...) {
   return RepeatingCallback<void()>();
 }
 
+RepeatingCallback<void()> AdaptCallbackForRepeating(
+    OnceCallback<void()> callback) {
+  return Callback<void()>();
+}
+
 }  // namespace base
 
 #endif  // TOOLS_CLANG_BASE_BIND_REWRITERS_TESTS_CALLBACK_H_
