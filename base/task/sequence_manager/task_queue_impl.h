@@ -30,10 +30,10 @@ namespace sequence_manager {
 
 class LazyNow;
 class TimeDomain;
-class SequenceManagerImpl;
 
 namespace internal {
 
+class SequenceManagerImpl;
 class WorkQueue;
 class WorkQueueSets;
 

@@ -32,12 +32,12 @@ class BlameContext;
 namespace sequence_manager {
 
 namespace internal {
-class TaskQueueImpl;
 class GracefulQueueShutdownHelper;
+class SequenceManagerImpl;
+class TaskQueueImpl;
 }  // namespace internal
 
 class TimeDomain;
-class SequenceManagerImpl;
 
 class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
  public:
@@ -281,8 +281,8 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
   internal::TaskQueueImpl* GetTaskQueueImpl() const { return impl_.get(); }
 
  private:
+  friend class internal::SequenceManagerImpl;
   friend class internal::TaskQueueImpl;
-  friend class SequenceManagerImpl;
 
   bool IsOnMainThread() const;
 
@@ -304,7 +304,7 @@ class PLATFORM_EXPORT TaskQueue : public SingleThreadTaskRunner {
 
   const PlatformThreadId thread_id_;
 
-  const WeakPtr<SequenceManagerImpl> sequence_manager_;
+  const WeakPtr<internal::SequenceManagerImpl> sequence_manager_;
 
   const scoped_refptr<internal::GracefulQueueShutdownHelper>
       graceful_queue_shutdown_helper_;
