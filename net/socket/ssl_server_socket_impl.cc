@@ -36,7 +36,7 @@ namespace {
 
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
-const int kNoPendingResult = 1;
+const int kSSLServerSocketNoPendingResult = 1;
 
 class SocketDataIndex {
  public:
@@ -205,7 +205,7 @@ SSLServerContextImpl::SocketImpl::SocketImpl(
     SSLServerContextImpl* context,
     std::unique_ptr<StreamSocket> transport_socket)
     : context_(context),
-      signature_result_(kNoPendingResult),
+      signature_result_(kSSLServerSocketNoPendingResult),
       user_read_buf_len_(0),
       user_write_buf_len_(0),
       transport_socket_(std::move(transport_socket)),

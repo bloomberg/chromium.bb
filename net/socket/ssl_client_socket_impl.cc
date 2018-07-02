@@ -71,7 +71,7 @@ namespace {
 
 // This constant can be any non-negative/non-zero value (eg: it does not
 // overlap with any value of the net::Error range, including net::OK).
-const int kNoPendingResult = 1;
+const int kSSLClientSocketNoPendingResult = 1;
 
 // Default size of the internal BoringSSL buffers.
 const int kDefaultOpenSSLBufferSize = 17 * 1024;
@@ -421,7 +421,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
     const HostPortPair& host_and_port,
     const SSLConfig& ssl_config,
     const SSLClientSocketContext& context)
-    : pending_read_error_(kNoPendingResult),
+    : pending_read_error_(kSSLClientSocketNoPendingResult),
       pending_read_ssl_error_(SSL_ERROR_NONE),
       completed_connect_(false),
       was_ever_used_(false),
@@ -439,7 +439,7 @@ SSLClientSocketImpl::SSLClientSocketImpl(
       channel_id_sent_(false),
       certificate_verified_(false),
       certificate_requested_(false),
-      signature_result_(kNoPendingResult),
+      signature_result_(kSSLClientSocketNoPendingResult),
       transport_security_state_(context.transport_security_state),
       policy_enforcer_(context.ct_policy_enforcer),
       pkp_bypassed_(false),
@@ -983,7 +983,7 @@ int SSLClientSocketImpl::DoHandshake() {
     }
     if (ssl_error == SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
       DCHECK(ssl_config_.client_private_key);
-      DCHECK_NE(kNoPendingResult, signature_result_);
+      DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       next_handshake_state_ = STATE_HANDSHAKE;
       return ERR_IO_PENDING;
     }
@@ -1297,9 +1297,9 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
   DCHECK(buf);
 
   int rv;
-  if (pending_read_error_ != kNoPendingResult) {
+  if (pending_read_error_ != kSSLClientSocketNoPendingResult) {
     rv = pending_read_error_;
-    pending_read_error_ = kNoPendingResult;
+    pending_read_error_ = kSSLClientSocketNoPendingResult;
     if (rv == 0) {
       net_log_.AddByteTransferEvent(NetLogEventType::SSL_SOCKET_BYTES_RECEIVED,
                                     rv, buf->data());
@@ -1347,7 +1347,7 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
     } else if (pending_read_ssl_error_ ==
                SSL_ERROR_WANT_PRIVATE_KEY_OPERATION) {
       DCHECK(ssl_config_.client_private_key);
-      DCHECK_NE(kNoPendingResult, signature_result_);
+      DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
       pending_read_error_ = ERR_IO_PENDING;
     } else {
       pending_read_error_ = MapLastOpenSSLError(
@@ -1371,12 +1371,12 @@ int SSLClientSocketImpl::DoPayloadRead(IOBuffer* buf, int buf_len) {
     // DoPayloadRead() - instead, let the call fall through to check SSL_read()
     // again. The transport may have data available by then.
     if (pending_read_error_ == ERR_IO_PENDING)
-      pending_read_error_ = kNoPendingResult;
+      pending_read_error_ = kSSLClientSocketNoPendingResult;
   } else {
     // No bytes were returned. Return the pending read error immediately.
-    DCHECK_NE(kNoPendingResult, pending_read_error_);
+    DCHECK_NE(kSSLClientSocketNoPendingResult, pending_read_error_);
     rv = pending_read_error_;
-    pending_read_error_ = kNoPendingResult;
+    pending_read_error_ = kSSLClientSocketNoPendingResult;
   }
 
   if (rv >= 0) {
@@ -1668,7 +1668,7 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeySignCallback(
     uint16_t algorithm,
     const uint8_t* in,
     size_t in_len) {
-  DCHECK_EQ(kNoPendingResult, signature_result_);
+  DCHECK_EQ(kSSLClientSocketNoPendingResult, signature_result_);
   DCHECK(signature_.empty());
   DCHECK(ssl_config_.client_private_key);
 
@@ -1688,7 +1688,7 @@ ssl_private_key_result_t SSLClientSocketImpl::PrivateKeyCompleteCallback(
     uint8_t* out,
     size_t* out_len,
     size_t max_out) {
-  DCHECK_NE(kNoPendingResult, signature_result_);
+  DCHECK_NE(kSSLClientSocketNoPendingResult, signature_result_);
   DCHECK(ssl_config_.client_private_key);
 
   if (signature_result_ == ERR_IO_PENDING)
