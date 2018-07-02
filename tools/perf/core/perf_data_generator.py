@@ -696,9 +696,9 @@ def get_all_benchmarks_metadata(metadata):
 def get_tests_in_performance_test_suite():
   tests = sets.Set()
   add_benchmarks_from_sharding_map(
-      tests, "shard_maps/desktop_26_shard_map.json")
+      tests, "shard_maps/linux_perf_shard_map.json")
   add_benchmarks_from_sharding_map(
-      tests, "shard_maps/mobile_39_shard_map.json")
+      tests, "shard_maps/pixel2_7_shard_map.json")
   return tests
 
 
@@ -707,7 +707,9 @@ def add_benchmarks_from_sharding_map(tests, shard_map_name):
   if os.path.exists(path):
     with open(path) as f:
       sharding_map = json.load(f)
-    for _, benchmarks in sharding_map.iteritems():
+    for shard, benchmarks in sharding_map.iteritems():
+      if "extra_infos" in shard:
+        continue
       for benchmark, _ in benchmarks['benchmarks'].iteritems():
         tests.add(benchmark)
 
