@@ -200,8 +200,8 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   void ResetService(BrowsingHistoryDriver* driver,
                     HistoryService* local_history,
                     syncer::SyncService* sync_service) {
-    std::unique_ptr<base::MockTimer> timer =
-        std::make_unique<base::MockTimer>(false, false);
+    std::unique_ptr<base::MockOneShotTimer> timer =
+        std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     browsing_history_service_ = std::make_unique<TestBrowsingHistoryService>(
         driver, local_history, sync_service, std::move(timer));
@@ -285,7 +285,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   TestWebHistoryService* web_history() { return &web_history_; }
   TestSyncService* sync() { return &sync_service_; }
   TestBrowsingHistoryDriver* driver() { return &driver_; }
-  base::MockTimer* timer() { return timer_; }
+  base::MockOneShotTimer* timer() { return timer_; }
   TestBrowsingHistoryService* service() {
     return browsing_history_service_.get();
   }
@@ -302,7 +302,7 @@ class BrowsingHistoryServiceTest : public ::testing::Test {
   TestWebHistoryService web_history_;
   TestSyncService sync_service_;
   TestBrowsingHistoryDriver driver_;
-  base::MockTimer* timer_;
+  base::MockOneShotTimer* timer_;
   std::unique_ptr<TestBrowsingHistoryService> browsing_history_service_;
 };
 

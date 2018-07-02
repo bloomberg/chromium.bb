@@ -79,4 +79,23 @@ void MockRepeatingTimer::Fire() {
   FlushPendingTasks(test_task_runner_.get());
 }
 
+MockRetainingOneShotTimer::MockRetainingOneShotTimer()
+    : RetainingOneShotTimer(&clock_),
+      test_task_runner_(MakeRefCounted<TestSimpleTaskRunner>()) {
+  RetainingOneShotTimer::SetTaskRunner(test_task_runner_);
+}
+
+MockRetainingOneShotTimer::~MockRetainingOneShotTimer() = default;
+
+void MockRetainingOneShotTimer::SetTaskRunner(
+    scoped_refptr<SequencedTaskRunner> task_runner) {
+  NOTREACHED() << "MockRetainingOneShotTimer doesn't support SetTaskRunner().";
+}
+
+void MockRetainingOneShotTimer::Fire() {
+  DCHECK(IsRunning());
+  clock_.Advance(std::max(TimeDelta(), desired_run_time() - clock_.NowTicks()));
+  FlushPendingTasks(test_task_runner_.get());
+}
+
 }  // namespace base

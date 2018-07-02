@@ -253,6 +253,16 @@ class RepeatingTimer : public Timer {
 };
 
 //-----------------------------------------------------------------------------
+// A simple, one-shot timer with the retained user task.  See usage notes at the
+// top of the file.
+class RetainingOneShotTimer : public Timer {
+ public:
+  RetainingOneShotTimer() : RetainingOneShotTimer(nullptr) {}
+  explicit RetainingOneShotTimer(const TickClock* tick_clock)
+      : Timer(true, false, tick_clock) {}
+};
+
+//-----------------------------------------------------------------------------
 // A Delay timer is like The Button from Lost. Once started, you have to keep
 // calling Reset otherwise it will call the given method on the sequence it was
 // initially Reset() from.

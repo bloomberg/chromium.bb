@@ -40,7 +40,7 @@ bool IsTimeDeltaWithinJitter(const base::TimeDelta& base_time_delta,
   return percentage_of_base < max_jitter_ratio;
 }
 
-// Test harness for the SyncSchedulerImpl to create MockTimers.
+// Test harness for the SyncSchedulerImpl to create MockOneShotTimers.
 class TestSyncSchedulerImpl : public SyncSchedulerImpl {
  public:
   TestSyncSchedulerImpl(Delegate* delegate,
@@ -55,18 +55,16 @@ class TestSyncSchedulerImpl : public SyncSchedulerImpl {
 
   ~TestSyncSchedulerImpl() override {}
 
-  base::MockTimer* timer() { return mock_timer_; }
+  base::MockOneShotTimer* timer() { return mock_timer_; }
 
  private:
   std::unique_ptr<base::Timer> CreateTimer() override {
-    bool retain_user_task = false;
-    bool is_repeating = false;
-    mock_timer_ = new base::MockTimer(retain_user_task, is_repeating);
+    mock_timer_ = new base::MockOneShotTimer();
     return base::WrapUnique(mock_timer_);
   }
 
   // A timer instance for testing. Owned by the parent scheduler.
-  base::MockTimer* mock_timer_;
+  base::MockOneShotTimer* mock_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncSchedulerImpl);
 };
@@ -93,7 +91,7 @@ class CryptAuthSyncSchedulerImplTest : public testing::Test,
     sync_request_ = std::move(sync_request);
   }
 
-  base::MockTimer* timer() { return scheduler_->timer(); }
+  base::MockOneShotTimer* timer() { return scheduler_->timer(); }
 
   // The time deltas used to configure |scheduler_|.
   base::TimeDelta refresh_period_;

@@ -328,13 +328,11 @@ void AccountReconcilor::StartReconcile() {
   reconcile_is_noop_ = true;
 
   if (!timeout_.is_max()) {
-    // This is NOT a repeating callback but to test it, we need a |MockTimer|,
-    // which mocks |Timer| and not |OneShotTimer|. |Timer| currently does not
-    // support a |OnceClosure|.
-    timer_->Start(
-        FROM_HERE, timeout_,
-        base::BindRepeating(&AccountReconcilor::HandleReconcileTimeout,
-                            base::Unretained(this)));
+    // Keep using base::Bind() until base::OnceCallback get supported by
+    // base::OneShotTimer.
+    timer_->Start(FROM_HERE, timeout_,
+                  base::Bind(&AccountReconcilor::HandleReconcileTimeout,
+                             base::Unretained(this)));
   }
 
   const std::string& account_id = signin_manager_->GetAuthenticatedAccountId();
@@ -705,7 +703,7 @@ void AccountReconcilor::UnblockReconcile() {
 }
 
 void AccountReconcilor::set_timer_for_testing(
-    std::unique_ptr<base::Timer> timer) {
+    std::unique_ptr<base::OneShotTimer> timer) {
   timer_ = std::move(timer);
 }
 

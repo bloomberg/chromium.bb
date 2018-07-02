@@ -122,23 +122,18 @@ class DeviceToDeviceAuthenticatorForTest : public DeviceToDeviceAuthenticator {
         timer_(nullptr) {}
   ~DeviceToDeviceAuthenticatorForTest() override {}
 
-  base::MockTimer* timer() { return timer_; }
+  base::MockOneShotTimer* timer() { return timer_; }
 
  private:
   // DeviceToDeviceAuthenticator:
   std::unique_ptr<base::Timer> CreateTimer() override {
-    bool retain_user_task = false;
-    bool is_repeating = false;
-
-    std::unique_ptr<base::MockTimer> timer(
-        new base::MockTimer(retain_user_task, is_repeating));
-
+    auto timer = std::make_unique<base::MockOneShotTimer>();
     timer_ = timer.get();
     return std::move(timer);
   }
 
   // This instance is owned by the super class.
-  base::MockTimer* timer_;
+  base::MockOneShotTimer* timer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceToDeviceAuthenticatorForTest);
 };
