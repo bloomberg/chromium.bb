@@ -187,7 +187,8 @@ Polymer({
    * @private
    */
   getAccountLabel_: function(label, account) {
-    return this.syncStatus.signedIn && !this.syncStatus.hasError ?
+    return this.syncStatus.signedIn && !this.syncStatus.hasError &&
+            !this.syncStatus.disabled ?
         loadTimeData.substituteString(label, account) :
         account;
   },
@@ -203,19 +204,51 @@ Polymer({
   },
 
   /**
+   * Returns the class of the sync icon.
+   * @return {string}
+   * @private
+   */
+  getSyncIconStyle_: function() {
+    if (this.syncStatus.hasError) {
+      return this.syncStatus.statusAction ==
+              settings.StatusAction.REAUTHENTICATE ?
+          'sync-paused' :
+          'sync-problem';
+    }
+    if (!!this.syncStatus.disabled)
+      return 'sync-disabled';
+    return 'sync';
+  },
+
+  /**
    * Returned value must match one of iron-icon's settings:(*) icon name.
    * @return {string}
    * @private
    */
   getSyncIcon_: function() {
-    if (this.syncStatus.hasError) {
-      return this.syncStatus.statusAction ==
-              settings.StatusAction.REAUTHENTICATE ?
-          'sync-disabled' :
-          'sync-problem';
+    switch (this.getSyncIconStyle_()) {
+      case 'sync-problem':
+        return 'sync-problem';
+      case 'sync-paused':
+        return 'sync-disabled';
+      default:
+        return 'sync';
     }
+  },
 
-    return 'sync';
+  /**
+   * @return {string}
+   * @private
+   */
+  getAvatarRowTitle_: function(
+      accountName, syncErrorLabel, authErrorLabel, disabledLabel) {
+    if (!!this.syncStatus.disabled)
+      return disabledLabel;
+
+    if (this.syncStatus.hasError)
+      return this.getErrorLabel_(syncErrorLabel, authErrorLabel);
+
+    return accountName;
   },
 
   /**

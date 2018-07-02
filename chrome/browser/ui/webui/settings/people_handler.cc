@@ -615,10 +615,12 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
 
   ProfileSyncService* service = GetSyncService();
 
-  // Just let the page open for now, even when the user's not signed in.
+  // Just let the page open for now, even when the user's not signed in or sync
+  // is disabled.
   // TODO(scottchen): finish the UI for signed-out users
   //    (https://crbug.com/800972).
-  if (IsUnifiedConsentEnabled(profile_) && IsProfileAuthNeededOrHasErrors()) {
+  if (IsUnifiedConsentEnabled(profile_) &&
+      (IsProfileAuthNeededOrHasErrors() || !service)) {
     if (service && !sync_blocker_)
       sync_blocker_ = service->GetSetupInProgressHandle();
 
@@ -912,6 +914,11 @@ PeopleHandler::GetSyncStatusDictionary() {
   sync_status->SetString("statusAction", GetSyncErrorAction(action_type));
 
   sync_status->SetBoolean("managed", disallowed_by_policy);
+  sync_status->SetBoolean(
+      "disabled",
+      !service || disallowed_by_policy ||
+          service->HasDisableReason(
+              syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE));
   sync_status->SetBoolean("signedIn", signin->IsAuthenticated());
   sync_status->SetString("signedInUsername",
                          signin_ui_util::GetAuthenticatedUsername(signin));

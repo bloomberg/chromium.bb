@@ -20,6 +20,7 @@ settings.StoredAccount;
 
 /**
  * @typedef {{childUser: (boolean|undefined),
+ *            disabled: (boolean|undefined),
  *            domain: (string|undefined),
  *            hasError: (boolean|undefined),
  *            hasUnrecoverableError: (boolean|undefined),
