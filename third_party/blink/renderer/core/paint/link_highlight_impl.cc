@@ -29,7 +29,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "cc/layers/layer.h"
 #include "cc/layers/picture_layer.h"
 #include "cc/paint/display_item_list.h"
 #include "third_party/blink/public/platform/platform.h"
@@ -87,9 +86,7 @@ LinkHighlightImpl::LinkHighlightImpl(Node* node, WebViewImpl* owning_web_view)
   DCHECK(node_);
   DCHECK(owning_web_view);
   content_layer_ = cc::PictureLayer::Create(this);
-  clip_layer_ = cc::Layer::Create();
-  clip_layer_->SetTransformOrigin(FloatPoint3D());
-  clip_layer_->AddChild(content_layer_);
+  content_layer_->SetTransformOrigin(FloatPoint3D());
 
   compositor_animation_ = CompositorAnimation::Create();
   DCHECK(compositor_animation_);
@@ -118,14 +115,6 @@ LinkHighlightImpl::~LinkHighlightImpl() {
   ReleaseResources();
 }
 
-cc::PictureLayer* LinkHighlightImpl::ContentLayer() {
-  return content_layer_.get();
-}
-
-cc::Layer* LinkHighlightImpl::ClipLayer() {
-  return clip_layer_.get();
-}
-
 void LinkHighlightImpl::ReleaseResources() {
   node_.Clear();
 }
@@ -143,8 +132,6 @@ void LinkHighlightImpl::AttachLinkHighlightToCompositingLayer(
   }
   if (!new_graphics_layer)
     return;
-
-  clip_layer_->SetTransform(gfx::Transform());
 
   if (current_graphics_layer_ != new_graphics_layer) {
     if (current_graphics_layer_)
@@ -408,7 +395,7 @@ void LinkHighlightImpl::Invalidate() {
 }
 
 cc::Layer* LinkHighlightImpl::Layer() {
-  return ClipLayer();
+  return content_layer_.get();
 }
 
 CompositorAnimation* LinkHighlightImpl::GetCompositorAnimation() const {

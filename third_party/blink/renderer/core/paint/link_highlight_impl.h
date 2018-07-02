@@ -60,8 +60,6 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   static std::unique_ptr<LinkHighlightImpl> Create(Node*, WebViewImpl*);
   ~LinkHighlightImpl() override;
 
-  cc::PictureLayer* ContentLayer();
-  cc::Layer* ClipLayer();
   void StartHighlightAnimationIfNeeded();
   void UpdateGeometry();
 
@@ -103,7 +101,6 @@ class CORE_EXPORT LinkHighlightImpl final : public LinkHighlight,
   bool ComputeHighlightLayerPathAndPosition(const LayoutBoxModelObject&);
 
   scoped_refptr<cc::PictureLayer> content_layer_;
-  scoped_refptr<cc::Layer> clip_layer_;
   Path path_;
 
   Persistent<Node> node_;
