@@ -157,9 +157,7 @@ IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, IsKeyboardLoaded) {
   ASSERT_TRUE(loaded);
 }
 
-// Disabled; http://crbug.com/515596
-IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest,
-                       DISABLED_EndToEndTest) {
+IN_PROC_BROWSER_TEST_F(DefaultKeyboardExtensionBrowserTest, EndToEndTest) {
   // Get the virtual keyboard's WebContents.
   content::WebContents* keyboard_wc = GetKeyboardWebContents(kExtensionId);
   ASSERT_TRUE(keyboard_wc);
