@@ -68,6 +68,7 @@ import org.chromium.chrome.browser.omnibox.LocationBar;
 import org.chromium.chrome.browser.omnibox.LocationBarPhone;
 import org.chromium.chrome.browser.partnercustomizations.HomepageManager;
 import org.chromium.chrome.browser.partnercustomizations.PartnerBrowserCustomizations;
+import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -1887,7 +1888,8 @@ public class ToolbarPhone extends ToolbarLayout
         // Don't inflate the incognito toggle button unless the horizontal tab switcher experiment
         // is enabled and the user actually enters the tab switcher.
         if (mIncognitoToggleButton == null && mTabSwitcherState != STATIC_TAB
-                && usingHorizontalTabSwitcher()) {
+                && usingHorizontalTabSwitcher()
+                && PrefServiceBridge.getInstance().isIncognitoModeEnabled()) {
             ViewStub incognitoToggleButtonStub = findViewById(R.id.incognito_button_stub);
             mIncognitoToggleButton = (IncognitoToggleButton) incognitoToggleButtonStub.inflate();
             mIncognitoToggleButton.setOnClickListener(this);
