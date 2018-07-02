@@ -967,6 +967,12 @@ VISIT_PROTO_FIELDS(const sync_pb::UserConsentTypes::SyncConsent& proto) {
   VISIT_ENUM(status);
 }
 
+VISIT_PROTO_FIELDS(const sync_pb::UserConsentTypes::UnifiedConsent& proto) {
+  VISIT_REP(description_grd_ids);
+  VISIT(confirmation_grd_id);
+  VISIT_ENUM(status);
+}
+
 VISIT_PROTO_FIELDS(const sync_pb::UserEventSpecifics& proto) {
   VISIT(event_time_usec);
   VISIT(navigation_id);
