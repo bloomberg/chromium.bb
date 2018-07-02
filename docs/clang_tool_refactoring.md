@@ -123,9 +123,9 @@ ninja -C out/Debug  # For non-Windows
 ninja -d keeprsp -C out/Debug  # For Windows
 
 # experimental alternative:
-$gen_targets = $(ninja -C out/gn -t targets all \
+$gen_targets = $(ninja -C out/Debug -t targets all \
                  | grep '^gen/[^: ]*\.[ch][pc]*:' \
-                 | cut -f 1 -d :`)
+                 | cut -f 1 -d :)
 ninja -C out/Debug $gen_targets
 ```
 
@@ -150,7 +150,7 @@ from `//base` that got included by source files in `//cc`).
 
 ```shell
 tools/clang/scripts/run_tool.py --tool empty_string  \
-  --generated-compdb \
+  --generate-compdb \
   -p out/Debug net >/tmp/list-of-edits.debug
 ```
 

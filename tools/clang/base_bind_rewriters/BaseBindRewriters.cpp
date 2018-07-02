@@ -161,9 +161,8 @@ class BindOnceRewriter : public MatchFinder::MatchCallback, public Rewriter {
     auto constructor_conversion = cxxConstructExpr(
         is_once_callback, argumentCountIs(1),
         hasArgument(0, ignoringImplicit(parameter_construction)));
-    auto implicit_conversion = implicitCastExpr(
-        is_once_callback, hasSourceExpression(constructor_conversion));
-    return implicit_conversion;
+    return implicitCastExpr(is_once_callback,
+                            hasSourceExpression(constructor_conversion));
   }
 
   void run(const MatchFinder::MatchResult& result) override {
@@ -577,6 +576,64 @@ class AddStdMoveRewriter : public MatchFinder::MatchCallback, public Rewriter {
   Replacements* replacements_;
 };
 
+// Remove base::AdaptCallbackForRepeating() where resulting
+// base::RepeatingCallback is implicitly converted into base::OnceCallback.
+// Example:
+//   // Before
+//   base::PostTask(
+//       FROM_HERE,
+//       base::AdaptCallbackForRepeating(base::BindOnce(&Foo)));
+//   base::OnceCallback<void()> cb = base::AdaptCallbackForRepeating(
+//       base::OnceBind(&Foo));
+//
+//   // After
+//   base::PostTask(FROM_HERE, base::BindOnce(&Foo));
+//   base::OnceCallback<void()> cb = base::BindOnce(&Foo);
+class AdaptCallbackForRepeatingRewriter : public MatchFinder::MatchCallback,
+                                          public Rewriter {
+ public:
+  explicit AdaptCallbackForRepeatingRewriter(Replacements* replacements)
+      : replacements_(replacements) {}
+
+  StatementMatcher GetMatcher() {
+    auto is_once_callback = hasType(hasCanonicalType(hasDeclaration(
+        classTemplateSpecializationDecl(hasName("::base::OnceCallback")))));
+    auto is_repeating_callback =
+        hasType(hasCanonicalType(hasDeclaration(classTemplateSpecializationDecl(
+            hasName("::base::RepeatingCallback")))));
+
+    auto adapt_callback_call =
+        callExpr(
+            callee(namedDecl(hasName("::base::AdaptCallbackForRepeating"))))
+            .bind("target");
+    auto parameter_construction =
+        cxxConstructExpr(is_repeating_callback, argumentCountIs(1),
+                         hasArgument(0, ignoringImplicit(adapt_callback_call)));
+    auto constructor_conversion = cxxConstructExpr(
+        is_once_callback, argumentCountIs(1),
+        hasArgument(0, ignoringImplicit(parameter_construction)));
+    return implicitCastExpr(is_once_callback,
+                            hasSourceExpression(constructor_conversion));
+  }
+
+  void run(const MatchFinder::MatchResult& result) override {
+    auto* target = result.Nodes.getNodeAs<clang::CallExpr>("target");
+
+    auto left = clang::CharSourceRange::getTokenRange(
+        result.SourceManager->getSpellingLoc(target->getLocStart()),
+        result.SourceManager->getSpellingLoc(target->getArg(0)->getExprLoc())
+            .getLocWithOffset(-1));
+    replacements_->emplace_back(*result.SourceManager, left, "");
+    auto r_paren = clang::CharSourceRange::getTokenRange(
+        result.SourceManager->getSpellingLoc(target->getRParenLoc()),
+        result.SourceManager->getSpellingLoc(target->getRParenLoc()));
+    replacements_->emplace_back(*result.SourceManager, r_paren, "");
+  }
+
+ private:
+  Replacements* replacements_;
+};
+
 llvm::cl::extrahelp common_help(CommonOptionsParser::HelpMessage);
 llvm::cl::OptionCategory rewriter_category("Rewriter Options");
 
@@ -588,6 +645,7 @@ Available rewriters are:
     bind_to_bind_once
     pass_by_value
     add_std_move
+    remove_unneeded_adapt_callback
 The default is remove_unneeded_passed.
 )"),
     llvm::cl::init("remove_unneeded_passed"),
@@ -623,6 +681,12 @@ int main(int argc, const char* argv[]) {
     auto add_std_move = llvm::make_unique<AddStdMoveRewriter>(&replacements);
     match_finder.addMatcher(add_std_move->GetMatcher(), add_std_move.get());
     rewriter = std::move(add_std_move);
+  } else if (rewriter_option == "remove_unneeded_adapt_callback") {
+    auto remove_unneeded_adapt_callback =
+        llvm::make_unique<AdaptCallbackForRepeatingRewriter>(&replacements);
+    match_finder.addMatcher(remove_unneeded_adapt_callback->GetMatcher(),
+                            remove_unneeded_adapt_callback.get());
+    rewriter = std::move(remove_unneeded_adapt_callback);
   } else {
     abort();
   }
