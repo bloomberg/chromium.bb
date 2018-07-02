@@ -8,6 +8,7 @@
 
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 
@@ -86,7 +87,7 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 #pragma mark UIAccessibilityAction
 
 - (BOOL)accessibilityPerformEscape {
-  [self.delegate dismissReadingListCollectionViewController:
+  [self.delegate dismissReadingListListViewController:
                      self.readingListCollectionViewController];
   return YES;
 }
@@ -140,15 +141,13 @@ typedef NS_ENUM(NSInteger, LayoutPriority) {
 
 - (NSArray*)keyCommands {
   __weak ReadingListViewController* weakSelf = self;
-  return @[ [UIKeyCommand
-      cr_keyCommandWithInput:UIKeyInputEscape
-               modifierFlags:Cr_UIKeyModifierNone
-                       title:nil
-                      action:^{
-                        [weakSelf.delegate
-                            dismissReadingListCollectionViewController:
-                                weakSelf.readingListCollectionViewController];
-                      }] ];
+  return
+      @[ [UIKeyCommand cr_keyCommandWithInput:UIKeyInputEscape
+                                modifierFlags:Cr_UIKeyModifierNone
+                                        title:nil
+                                       action:^{
+                                         [weakSelf accessibilityPerformEscape];
+                                       }] ];
 }
 
 @end

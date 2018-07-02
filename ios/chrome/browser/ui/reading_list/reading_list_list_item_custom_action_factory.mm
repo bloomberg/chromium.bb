@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_custom_action_factory.h"
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_accessibility_delegate.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -20,15 +21,13 @@
 @interface ReadingListCustomAction : UIAccessibilityCustomAction
 
 // The reading list item.
-@property(nonatomic, readonly, strong) ListItem* item;
-// The URL.
-@property(nonatomic, readonly) GURL itemURL;
+@property(nonatomic, readonly, strong) id<ReadingListListItem> item;
 
 - (instancetype)initWithName:(NSString*)name
                       target:(id)target
                     selector:(SEL)selector
-                        item:(ListItem*)item
-                         URL:(const GURL&)URL NS_DESIGNATED_INITIALIZER;
+                        item:(id<ReadingListListItem>)item
+    NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithName:(NSString*)name
                       target:(id)target
                     selector:(SEL)selector NS_UNAVAILABLE;
@@ -36,54 +35,46 @@
 
 @implementation ReadingListCustomAction
 @synthesize item = _item;
-@synthesize itemURL = _itemURL;
 
 - (instancetype)initWithName:(NSString*)name
                       target:(id)target
                     selector:(SEL)selector
-                        item:(ListItem*)item
-                         URL:(const GURL&)URL {
+                        item:(id<ReadingListListItem>)item {
   if (self = [super initWithName:name target:target selector:selector]) {
     _item = item;
-    _itemURL = URL;
   }
   return self;
 }
 
 @end
 
-#pragma mark - ReadingListListViewItemCustomActionFactory
+#pragma mark - ReadingListListItemCustomActionFactory
 
-@implementation ReadingListListViewItemCustomActionFactory
+@implementation ReadingListListItemCustomActionFactory
 @synthesize accessibilityDelegate = _accessibilityDelegate;
 
-- (NSArray<UIAccessibilityCustomAction*>*)
-customActionsForItem:(ListItem*)item
-             withURL:(const GURL&)URL
-  distillationStatus:(ReadingListUIDistillationStatus)status {
+- (NSArray<UIAccessibilityCustomAction*>*)customActionsForItem:
+    (id<ReadingListListItem>)item {
   ReadingListCustomAction* deleteAction = [[ReadingListCustomAction alloc]
       initWithName:l10n_util::GetNSString(IDS_IOS_READING_LIST_DELETE_BUTTON)
             target:self
-          selector:@selector(deleteEntry:)
-              item:item
-               URL:URL];
+          selector:@selector(deleteItem:)
+              item:item];
   ReadingListCustomAction* toggleReadStatus = nil;
-  if ([self.accessibilityDelegate isEntryRead:item]) {
+  if ([self.accessibilityDelegate isItemRead:item]) {
     toggleReadStatus = [[ReadingListCustomAction alloc]
         initWithName:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_MARK_UNREAD_BUTTON)
               target:self
             selector:@selector(markUnread:)
-                item:item
-                 URL:URL];
+                item:item];
   } else {
     toggleReadStatus = [[ReadingListCustomAction alloc]
         initWithName:l10n_util::GetNSString(
                          IDS_IOS_READING_LIST_MARK_READ_BUTTON)
               target:self
             selector:@selector(markRead:)
-                item:item
-                 URL:URL];
+                item:item];
   }
 
   ReadingListCustomAction* openInNewTabAction = [[ReadingListCustomAction alloc]
@@ -91,28 +82,25 @@ customActionsForItem:(ListItem*)item
                        IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWTAB)
             target:self
           selector:@selector(openInNewTab:)
-              item:item
-               URL:URL];
+              item:item];
   ReadingListCustomAction* openInNewIncognitoTabAction =
       [[ReadingListCustomAction alloc]
           initWithName:l10n_util::GetNSString(
                            IDS_IOS_CONTENT_CONTEXT_OPENLINKNEWINCOGNITOTAB)
                 target:self
               selector:@selector(openInNewIncognitoTab:)
-                  item:item
-                   URL:URL];
+                  item:item];
   ReadingListCustomAction* copyURLAction = [[ReadingListCustomAction alloc]
       initWithName:l10n_util::GetNSString(IDS_IOS_CONTENT_CONTEXT_COPY)
             target:self
           selector:@selector(copyURL:)
-              item:item
-               URL:URL];
+              item:item];
 
   NSMutableArray* customActions = [NSMutableArray
       arrayWithObjects:deleteAction, toggleReadStatus, openInNewTabAction,
                        openInNewIncognitoTabAction, copyURLAction, nil];
 
-  if (status == ReadingListUIDistillationStatusSuccess) {
+  if (item.distillationState == ReadingListUIDistillationStatusSuccess) {
     // Add the possibility to open offline version only if the entry is
     // distilled.
     ReadingListCustomAction* openOfflineAction =
@@ -121,8 +109,7 @@ customActionsForItem:(ListItem*)item
                              IDS_IOS_READING_LIST_CONTENT_CONTEXT_OFFLINE)
                   target:self
                 selector:@selector(openOffline:)
-                    item:item
-                     URL:URL];
+                    item:item];
 
     [customActions addObject:openOfflineAction];
   }
@@ -130,38 +117,38 @@ customActionsForItem:(ListItem*)item
   return customActions;
 }
 
-- (BOOL)deleteEntry:(ReadingListCustomAction*)action {
-  [self.accessibilityDelegate deleteEntry:action.item];
+- (BOOL)deleteItem:(ReadingListCustomAction*)action {
+  [self.accessibilityDelegate deleteItem:action.item];
   return YES;
 }
 
 - (BOOL)markRead:(ReadingListCustomAction*)action {
-  [self.accessibilityDelegate markEntryRead:action.item];
+  [self.accessibilityDelegate markItemRead:action.item];
   return YES;
 }
 
 - (BOOL)markUnread:(ReadingListCustomAction*)action {
-  [self.accessibilityDelegate markEntryUnread:action.item];
+  [self.accessibilityDelegate markItemUnread:action.item];
   return YES;
 }
 
 - (BOOL)openInNewTab:(ReadingListCustomAction*)action {
-  [self.accessibilityDelegate openEntryInNewTab:action.item];
+  [self.accessibilityDelegate openItemInNewTab:action.item];
   return YES;
 }
 
 - (BOOL)openInNewIncognitoTab:(ReadingListCustomAction*)action {
-  [self.accessibilityDelegate openEntryInNewIncognitoTab:action.item];
+  [self.accessibilityDelegate openItemInNewIncognitoTab:action.item];
   return YES;
 }
 
 - (BOOL)copyURL:(ReadingListCustomAction*)action {
-  StoreURLInPasteboard(action.itemURL);
+  StoreURLInPasteboard(action.item.entryURL);
   return YES;
 }
 
 - (BOOL)openOffline:(ReadingListCustomAction*)action {
-  [self.accessibilityDelegate openEntryOffline:action.item];
+  [self.accessibilityDelegate openItemOffline:action.item];
   return YES;
 }
 

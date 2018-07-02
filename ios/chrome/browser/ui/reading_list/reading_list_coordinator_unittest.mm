@@ -21,6 +21,7 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_item_factory.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_mediator.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_utils.h"
 #import "ios/chrome/browser/ui/url_loader.h"
@@ -57,9 +58,11 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
         nullptr, nullptr, base::DefaultClock::GetInstance()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
-    mediator_ =
-        [[ReadingListMediator alloc] initWithModel:reading_list_model_.get()
-                                  largeIconService:large_icon_service_.get()];
+    mediator_ = [[ReadingListMediator alloc]
+           initWithModel:reading_list_model_.get()
+        largeIconService:large_icon_service_.get()
+         listItemFactory:[ReadingListListItemFactory
+                             collectionViewItemFactory]];
     coordinator_ = [[ReadingListCoordinator alloc]
         initWithBaseViewController:nil
                       browserState:browser_state_.get()
@@ -117,9 +120,9 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   item.distillationState = ReadingListUIDistillationStatusSuccess;
 
   // Action.
-  [GetCoordinator() readingListCollectionViewController:
-                        GetAReadingListCollectionViewController()
-                                               openItem:item];
+  [GetCoordinator()
+      readingListListViewController:GetAReadingListCollectionViewController()
+                           openItem:item];
 
   // Tests.
   FakeURLLoader* loader = GetLoader();
@@ -149,9 +152,9 @@ TEST_F(ReadingListCoordinatorTest, OpenItemOffline) {
   ASSERT_FALSE(model->GetEntryByURL(url)->IsRead());
 
   // Action.
-  [GetCoordinator() readingListCollectionViewController:
-                        GetAReadingListCollectionViewController()
-                                openItemOfflineInNewTab:item];
+  [GetCoordinator()
+      readingListListViewController:GetAReadingListCollectionViewController()
+            openItemOfflineInNewTab:item];
 
   // Tests.
   FakeURLLoader* loader = GetLoader();
@@ -173,10 +176,10 @@ TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
   item.distillationState = ReadingListUIDistillationStatusSuccess;
 
   // Action.
-  [GetCoordinator() readingListCollectionViewController:
-                        GetAReadingListCollectionViewController()
-                                       openItemInNewTab:item
-                                              incognito:YES];
+  [GetCoordinator()
+      readingListListViewController:GetAReadingListCollectionViewController()
+                   openItemInNewTab:item
+                          incognito:YES];
 
   // Tests.
   FakeURLLoader* loader = GetLoader();

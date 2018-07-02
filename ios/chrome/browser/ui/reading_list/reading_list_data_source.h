@@ -7,9 +7,8 @@
 
 #include <memory>
 
-@class CollectionViewItem;
 @protocol ReadingListDataSink;
-@class ReadingListListViewItemCustomActionFactory;
+@protocol ReadingListListItem;
 
 // Data Source for the Reading List UI, providing the data sink with the data to
 // be displayed. Handle the interactions with the model.
@@ -18,35 +17,33 @@
 // The data sink associated with this data source.
 @property(nonatomic, weak, nullable) id<ReadingListDataSink> dataSink;
 // Whether the data source is ready to be used.
-- (BOOL)ready;
+@property(nonatomic, readonly, getter=isReady) BOOL ready;
 // Whether the data source has some elements.
-- (BOOL)hasElements;
+@property(nonatomic, readonly) BOOL hasElements;
 // Whether the data source has some read elements.
-- (BOOL)hasRead;
+@property(nonatomic, readonly) BOOL hasReadElements;
+
 // Whether the entry corresponding to the |item| is read.
-- (BOOL)isEntryRead:(nonnull CollectionViewItem*)item;
+- (BOOL)isItemRead:(nonnull id<ReadingListListItem>)item;
 
 // Mark all entries as seen and stop sending updates to the data sink.
 - (void)dataSinkWillBeDismissed;
 
 // Set the read status of the entry associated with |item|.
-- (void)setReadStatus:(BOOL)read forItem:(nonnull CollectionViewItem*)item;
+- (void)setReadStatus:(BOOL)read forItem:(nonnull id<ReadingListListItem>)item;
 
 // Removes the entry associated with |item| and logs the deletion.
-- (void)removeEntryFromItem:(nonnull CollectionViewItem*)item;
+- (void)removeEntryFromItem:(nonnull id<ReadingListListItem>)item;
 
 // Fills the |readArray| and |unreadArray| with the corresponding items from the
 // model. The items are sorted most recent first.
-- (void)fillReadItems:(nullable NSMutableArray<CollectionViewItem*>*)readArray
-                unreadItems:
-                    (nullable NSMutableArray<CollectionViewItem*>*)unreadArray
-    withCustomActionFactory:
-        (nullable ReadingListListViewItemCustomActionFactory*)
-            customActionFactory;
+- (void)
+fillReadItems:(nullable NSMutableArray<id<ReadingListListItem>>*)readArray
+  unreadItems:(nullable NSMutableArray<id<ReadingListListItem>>*)unreadArray;
 
 // Fetches the |faviconURL| of this |item|, notifies the data sink when
 // receiving the favicon.
-- (void)fetchFaviconForItem:(nonnull CollectionViewItem*)item;
+- (void)fetchFaviconForItem:(nonnull id<ReadingListListItem>)item;
 
 // Prepares the data source for batch updates. The UI is not notified for the
 // updates happenning between |-beginBatchUpdates| and |-endBatchUpdates|.

@@ -11,7 +11,7 @@
 
 class GURL;
 @class FaviconAttributes;
-@class ReadingListListViewItemCustomActionFactory;
+@class ReadingListListItemCustomActionFactory;
 
 // Protocol used to supply reading list data to list items.
 @protocol ReadingListListItem<NSObject>
@@ -30,7 +30,7 @@ class GURL;
 @property(nonatomic, copy) NSString* distillationDateText;
 // The custom action factory.
 @property(nonatomic, weak)
-    ReadingListListViewItemCustomActionFactory* customActionFactory;
+    ReadingListListItemCustomActionFactory* customActionFactory;
 // Attributes for favicon.
 @property(nonatomic, strong) FaviconAttributes* attributes;
 

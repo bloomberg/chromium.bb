@@ -17,8 +17,7 @@
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_sink.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_data_source.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_empty_collection_background.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_accessibility_delegate.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_item_custom_action_factory.h"
+#import "ios/chrome/browser/ui/reading_list/reading_list_list_view_controller_delegate.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/third_party/material_components_ios/src/components/AppBar/src/MaterialAppBar.h"
@@ -30,24 +29,22 @@
 #endif
 
 namespace {
-
-typedef NS_ENUM(NSInteger, SectionIdentifier) {
-  SectionIdentifierUnread = kSectionIdentifierEnumZero,
-  SectionIdentifierRead,
-};
-
+// Types of ListItems used by the reading list UI.
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeHeader = kItemTypeEnumZero,
   ItemTypeItem,
 };
-
-// Typedef for a block taking a CollectionViewItem as parameter and returning
+// Identifiers for sections in the reading list.
+typedef NS_ENUM(NSInteger, SectionIdentifier) {
+  SectionIdentifierUnread = kSectionIdentifierEnumZero,
+  SectionIdentifierRead,
+};
+// Typedef for a block taking a ReadingListListItems as parameter and returning
 // nothing.
-typedef void (^EntryUpdater)(CollectionViewItem* item);
-}
+typedef void (^ItemUpdater)(id<ReadingListListItem> item);
+}  // namespace
 
 @interface ReadingListCollectionViewController ()<
-    ReadingListListViewItemAccessibilityDelegate,
     ReadingListDataSink,
     UIGestureRecognizerDelegate> {
   // Toolbar with the actions.
@@ -60,20 +57,23 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   BOOL _dataSourceHasBeenModified;
 }
 
+// Redefine the model to return ReadingListListItems
+@property(nonatomic, readonly)
+    CollectionViewModel<CollectionViewItem<ReadingListListItem>*>*
+        collectionViewModel;
+
 // Whether the data source modifications should be taken into account.
 @property(nonatomic, assign) BOOL shouldMonitorDataSource;
 
-// The factory that provides custom accessibility actions to the cells, using
-// self as the accessibility delegate.
-@property(nonatomic, strong)
-    ReadingListListViewItemCustomActionFactory* customActionFactory;
-
+// Casts |item| to a CollectionViewItem.
+- (CollectionViewItem<ReadingListListItem>*)collectionItemForReadingListItem:
+    (id<ReadingListListItem>)item;
 // Handles "Done" button touches.
 - (void)donePressed;
 // Loads all the items in all sections.
 - (void)loadItems;
 // Fills section |sectionIdentifier| with the items from |array|.
-- (void)loadItemsFromArray:(NSArray<CollectionViewItem*>*)array
+- (void)loadItemsFromArray:(NSArray<id<ReadingListListItem>>*)array
                  toSection:(SectionIdentifier)sectionIdentifier;
 // Reloads the data if a change occurred during editing
 - (void)applyPendingUpdates;
@@ -114,12 +114,12 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 // order. The monitoring of the data source updates are suspended during this
 // time.
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
-                     usingEntryUpdater:(EntryUpdater)updater;
+                      usingItemUpdater:(ItemUpdater)updater;
 // Applies |updater| to the URL of every element in |indexPaths|. The updates
 // are done in reverse order |indexPaths| to keep the order. The monitoring of
 // the data source updates are suspended during this time.
 - (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
-       usingEntryUpdater:(EntryUpdater)updater;
+        usingItemUpdater:(ItemUpdater)updater;
 // Move all the items from |sourceSectionIdentifier| to
 // |destinationSectionIdentifier| and removes the empty section from the
 // collection.
@@ -147,8 +147,8 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 @synthesize delegate = _delegate;
 @synthesize dataSource = _dataSource;
 
+@dynamic collectionViewModel;
 @synthesize shouldMonitorDataSource = _shouldMonitorDataSource;
-@synthesize customActionFactory = _customActionFactory;
 
 + (NSString*)accessibilityIdentifier {
   return @"ReadingListCollectionView";
@@ -170,10 +170,6 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 
     _shouldMonitorDataSource = YES;
     _dataSourceHasBeenModified = NO;
-
-    _customActionFactory =
-        [[ReadingListListViewItemCustomActionFactory alloc] init];
-    _customActionFactory.accessibilityDelegate = self;
 
     _dataSource.dataSink = self;
   }
@@ -236,10 +232,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   if (self.editor.editing) {
     [self updateToolbarState];
   } else {
-    [self.delegate
-        readingListCollectionViewController:self
-                                   openItem:[self.collectionViewModel
-                                                itemAtIndexPath:indexPath]];
+    id<ReadingListListItem> item =
+        [self.collectionViewModel itemAtIndexPath:indexPath];
+    [self.delegate readingListListViewController:self openItem:item];
   }
 }
 
@@ -297,32 +292,40 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   }
 }
 
-- (NSArray<CollectionViewItem*>*)readItems {
-  if (![self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierRead]) {
-    return nil;
-  }
-  return [self.collectionViewModel
-      itemsInSectionWithIdentifier:SectionIdentifierRead];
+- (NSArray<id<ReadingListListItem>>*)readItems {
+  return [self readingListItemsForSection:SectionIdentifierRead];
 }
 
-- (NSArray<CollectionViewItem*>*)unreadItems {
-  if (![self.collectionViewModel
-          hasSectionForSectionIdentifier:SectionIdentifierUnread]) {
-    return nil;
-  }
-  return [self.collectionViewModel
-      itemsInSectionWithIdentifier:SectionIdentifierUnread];
+- (NSArray<id<ReadingListListItem>>*)unreadItems {
+  return [self readingListItemsForSection:SectionIdentifierUnread];
 }
 
-- (void)itemHasChangedAfterDelay:(CollectionViewItem*)item {
-  if ([self.collectionViewModel hasItem:item]) {
-    [self reconfigureCellsForItems:@[ item ]];
+- (void)itemHasChangedAfterDelay:(id<ReadingListListItem>)item {
+  CollectionViewItem<ReadingListListItem>* collectionItem =
+      [self collectionItemForReadingListItem:item];
+  if ([self.collectionViewModel hasItem:collectionItem]) {
+    [self reconfigureCellsForItems:@[ collectionItem ]];
   }
 }
 
-- (void)itemsHaveChanged:(NSArray<CollectionViewItem*>*)items {
+- (void)itemsHaveChanged:(NSArray<id<ReadingListListItem>>*)items {
   [self reconfigureCellsForItems:items];
+}
+
+#pragma mark - ReadingListDataSink Helpers
+
+- (NSArray<id<ReadingListListItem>>*)readingListItemsForSection:
+    (SectionIdentifier)sectionID {
+  if (![self.collectionViewModel hasSectionForSectionIdentifier:sectionID]) {
+    return nil;
+  }
+  NSMutableArray<id<ReadingListListItem>>* items = [NSMutableArray array];
+  NSArray<CollectionViewItem*>* sectionItems =
+      [self.collectionViewModel itemsInSectionWithIdentifier:sectionID];
+  for (id<ReadingListListItem> item in sectionItems) {
+    [items addObject:item];
+  }
+  return items;
 }
 
 #pragma mark - Public methods
@@ -339,63 +342,55 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   [_actionSheet stop];
 }
 
-#pragma mark - ReadingListListViewItemAccessibilityDelegate
+#pragma mark - ReadingListListItemAccessibilityDelegate
 
-- (BOOL)isEntryRead:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  return [self.dataSource isEntryRead:item];
+- (BOOL)isItemRead:(id<ReadingListListItem>)item {
+  return [self.dataSource isItemRead:item];
 }
 
-- (void)deleteEntry:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  if ([self.collectionViewModel hasItem:item]) {
+- (void)deleteItem:(id<ReadingListListItem>)item {
+  CollectionViewItem<ReadingListListItem>* collectionItem =
+      [self collectionItemForReadingListItem:item];
+  if ([self.collectionViewModel hasItem:collectionItem]) {
     [self deleteItemsAtIndexPaths:@[ [self.collectionViewModel
-                                      indexPathForItem:item] ]];
+                                      indexPathForItem:collectionItem] ]];
   }
 }
 
-- (void)openEntryInNewTab:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  [self.delegate readingListCollectionViewController:self
-                                    openItemInNewTab:item
-                                           incognito:NO];
+- (void)openItemInNewTab:(id<ReadingListListItem>)item {
+  [self.delegate readingListListViewController:self
+                              openItemInNewTab:item
+                                     incognito:NO];
 }
 
-- (void)openEntryInNewIncognitoTab:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  [self.delegate readingListCollectionViewController:self
-                                    openItemInNewTab:item
-                                           incognito:YES];
+- (void)openItemInNewIncognitoTab:(id<ReadingListListItem>)item {
+  [self.delegate readingListListViewController:self
+                              openItemInNewTab:item
+                                     incognito:YES];
 }
 
-- (void)openEntryOffline:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  [self.delegate readingListCollectionViewController:self
-                             openItemOfflineInNewTab:item];
+- (void)openItemOffline:(id<ReadingListListItem>)item {
+  [self.delegate readingListListViewController:self
+                       openItemOfflineInNewTab:item];
 }
 
-- (void)markEntryRead:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  if ([self.collectionViewModel hasItem:item
+- (void)markItemRead:(id<ReadingListListItem>)item {
+  CollectionViewItem<ReadingListListItem>* collectionItem =
+      [self collectionItemForReadingListItem:item];
+  if ([self.collectionViewModel hasItem:collectionItem
                 inSectionWithIdentifier:SectionIdentifierUnread]) {
     [self markItemsReadAtIndexPath:@[ [self.collectionViewModel
-                                       indexPathForItem:item] ]];
+                                       indexPathForItem:collectionItem] ]];
   }
 }
 
-- (void)markEntryUnread:(ListItem*)entry {
-  CollectionViewItem* item =
-      base::mac::ObjCCastStrict<CollectionViewItem>(entry);
-  if ([self.collectionViewModel hasItem:item
+- (void)markItemUnread:(id<ReadingListListItem>)item {
+  CollectionViewItem<ReadingListListItem>* collectionItem =
+      [self collectionItemForReadingListItem:item];
+  if ([self.collectionViewModel hasItem:collectionItem
                 inSectionWithIdentifier:SectionIdentifierRead]) {
     [self markItemsUnreadAtIndexPath:@[ [self.collectionViewModel
-                                         indexPathForItem:item] ]];
+                                         indexPathForItem:collectionItem] ]];
   }
 }
 
@@ -419,7 +414,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 - (void)dismiss {
-  [self.delegate dismissReadingListCollectionViewController:self];
+  [self.delegate dismissReadingListListViewController:self];
 }
 
 - (void)loadModel {
@@ -436,7 +431,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   }
 }
 
-- (void)loadItemsFromArray:(NSArray<CollectionViewItem*>*)items
+- (void)loadItemsFromArray:(NSArray<id<ReadingListListItem>>*)items
                  toSection:(SectionIdentifier)sectionIdentifier {
   if (items.count == 0) {
     return;
@@ -445,7 +440,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   [model addSectionWithIdentifier:sectionIdentifier];
   [model setHeader:[self headerForSection:sectionIdentifier]
       forSectionWithIdentifier:sectionIdentifier];
-  for (CollectionViewItem* item in items) {
+  for (CollectionViewItem<ReadingListListItem>* item in items) {
     item.type = ItemTypeItem;
     [self.dataSource fetchFaviconForItem:item];
     [model addItem:item toSectionWithIdentifier:sectionIdentifier];
@@ -453,11 +448,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 - (void)loadItems {
-  NSMutableArray<CollectionViewItem*>* readArray = [NSMutableArray array];
-  NSMutableArray<CollectionViewItem*>* unreadArray = [NSMutableArray array];
-  [self.dataSource fillReadItems:readArray
-                     unreadItems:unreadArray
-         withCustomActionFactory:self.customActionFactory];
+  NSMutableArray<id<ReadingListListItem>>* readArray = [NSMutableArray array];
+  NSMutableArray<id<ReadingListListItem>>* unreadArray = [NSMutableArray array];
+  [self.dataSource fillReadItems:readArray unreadItems:unreadArray];
   [self loadItemsFromArray:unreadArray toSection:SectionIdentifierUnread];
   [self loadItemsFromArray:readArray toSection:SectionIdentifierRead];
 
@@ -511,17 +504,17 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
     // Make sure there is an item at this position.
     return;
   }
-  CollectionViewItem* touchedItem =
-      [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath];
 
-  if (touchedItem.type != ItemTypeItem) {
+  CollectionViewItem<ReadingListListItem>* item =
+      [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath];
+  if (item.type != ItemTypeItem) {
     // Do not trigger context menu on headers.
     return;
   }
 
-  [self.delegate readingListCollectionViewController:self
-                           displayContextMenuForItem:touchedItem
-                                             atPoint:touchLocation];
+  [self.delegate readingListListViewController:self
+                     displayContextMenuForItem:item
+                                       atPoint:touchLocation];
 }
 
 #pragma mark - ReadingListToolbarDelegate
@@ -576,6 +569,12 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 #pragma mark - Private methods - Toolbar
+
+- (CollectionViewItem<ReadingListListItem>*)collectionItemForReadingListItem:
+    (id<ReadingListListItem>)item {
+  return base::mac::ObjCCastStrict<CollectionViewItem<ReadingListListItem>>(
+      item);
+}
 
 - (void)updateToolbarState {
   BOOL readSelected = NO;
@@ -685,9 +684,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   }
 
   [self updateItemsInSectionIdentifier:SectionIdentifierUnread
-                     usingEntryUpdater:^(CollectionViewItem* item) {
-                       [self.dataSource setReadStatus:YES forItem:item];
-                     }];
+                      usingItemUpdater:^(id<ReadingListListItem> item) {
+                        [self.dataSource setReadStatus:YES forItem:item];
+                      }];
 
   [self exitEditingModeAnimated:YES];
   [self moveItemsFromSection:SectionIdentifierUnread
@@ -701,9 +700,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   }
 
   [self updateItemsInSectionIdentifier:SectionIdentifierRead
-                     usingEntryUpdater:^(CollectionViewItem* item) {
-                       [self.dataSource setReadStatus:NO forItem:item];
-                     }];
+                      usingItemUpdater:^(id<ReadingListListItem> item) {
+                        [self.dataSource setReadStatus:NO forItem:item];
+                      }];
 
   [self exitEditingModeAnimated:YES];
   [self moveItemsFromSection:SectionIdentifierRead
@@ -715,9 +714,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateIndexPaths:sortedIndexPaths
-       usingEntryUpdater:^(CollectionViewItem* item) {
-         [self.dataSource setReadStatus:YES forItem:item];
-       }];
+        usingItemUpdater:^(id<ReadingListListItem> item) {
+          [self.dataSource setReadStatus:YES forItem:item];
+        }];
 
   [self exitEditingModeAnimated:YES];
   [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierRead];
@@ -728,9 +727,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   NSArray* sortedIndexPaths =
       [indexPaths sortedArrayUsingSelector:@selector(compare:)];
   [self updateIndexPaths:sortedIndexPaths
-       usingEntryUpdater:^(CollectionViewItem* item) {
-         [self.dataSource setReadStatus:NO forItem:item];
-       }];
+        usingItemUpdater:^(id<ReadingListListItem> item) {
+          [self.dataSource setReadStatus:NO forItem:item];
+        }];
 
   [self exitEditingModeAnimated:YES];
   [self moveSelectedItems:sortedIndexPaths toSection:SectionIdentifierUnread];
@@ -744,9 +743,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   }
 
   [self updateItemsInSectionIdentifier:SectionIdentifierRead
-                     usingEntryUpdater:^(CollectionViewItem* item) {
-                       [self.dataSource removeEntryFromItem:item];
-                     }];
+                      usingItemUpdater:^(id<ReadingListListItem> item) {
+                        [self.dataSource removeEntryFromItem:item];
+                      }];
 
   [self exitEditingModeAnimated:YES];
   [self.collectionView performBatchUpdates:^{
@@ -768,9 +767,9 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 
 - (void)deleteItemsAtIndexPaths:(NSArray*)indexPaths {
   [self updateIndexPaths:indexPaths
-       usingEntryUpdater:^(CollectionViewItem* item) {
-         [self.dataSource removeEntryFromItem:item];
-       }];
+        usingItemUpdater:^(id<ReadingListListItem> item) {
+          [self.dataSource removeEntryFromItem:item];
+        }];
 
   [self exitEditingModeAnimated:YES];
 
@@ -790,7 +789,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 - (void)updateItemsInSectionIdentifier:(SectionIdentifier)identifier
-                     usingEntryUpdater:(EntryUpdater)updater {
+                      usingItemUpdater:(ItemUpdater)updater {
   [self.dataSource beginBatchUpdates];
   NSArray* readItems =
       [self.collectionViewModel itemsInSectionWithIdentifier:identifier];
@@ -803,11 +802,12 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
 }
 
 - (void)updateIndexPaths:(NSArray<NSIndexPath*>*)indexPaths
-       usingEntryUpdater:(EntryUpdater)updater {
+        usingItemUpdater:(ItemUpdater)updater {
   [self.dataSource beginBatchUpdates];
   // Read the objects in reverse order to keep the order (last modified first).
   for (NSIndexPath* index in [indexPaths reverseObjectEnumerator]) {
-    CollectionViewItem* item = [self.collectionViewModel itemAtIndexPath:index];
+    id<ReadingListListItem> item =
+        [self.collectionViewModel itemAtIndexPath:index];
     if (updater)
       updater(item);
   }
@@ -954,7 +954,7 @@ typedef void (^EntryUpdater)(CollectionViewItem* item);
   if (!self.dataSource.hasElements) {
     [self collectionIsEmpty];
   } else {
-    [_toolbar setHasReadItem:self.dataSource.hasRead];
+    [_toolbar setHasReadItem:self.dataSource.hasReadElements];
   }
 }
 
