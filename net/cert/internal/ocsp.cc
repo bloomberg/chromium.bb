@@ -534,7 +534,7 @@ bool CheckCertIDMatchesCertificate(
 // TODO(eroman): Revisit how certificate parsing is used by this file. Ideally
 // would either pass in the parsed bits, or have a better abstraction for lazily
 // parsing.
-scoped_refptr<ParsedCertificate> ParseCertificate(base::StringPiece der) {
+scoped_refptr<ParsedCertificate> OCSPParseCertificate(base::StringPiece der) {
   ParseCertificateOptions parse_options;
   parse_options.allow_invalid_serial_numbers = true;
 
@@ -640,7 +640,7 @@ WARN_UNUSED_RESULT bool VerifyOCSPResponseSignature(
   //  (3) Has signed the OCSP response using its public key.
   for (const auto& responder_cert_tlv : response.certs) {
     scoped_refptr<ParsedCertificate> cur_responder_certificate =
-        ParseCertificate(responder_cert_tlv.AsStringPiece());
+        OCSPParseCertificate(responder_cert_tlv.AsStringPiece());
 
     // If failed parsing the certificate, keep looking.
     if (!cur_responder_certificate)
@@ -778,9 +778,9 @@ OCSPRevocationStatus CheckOCSP(
   }
 
   scoped_refptr<ParsedCertificate> certificate =
-      ParseCertificate(certificate_der);
+      OCSPParseCertificate(certificate_der);
   scoped_refptr<ParsedCertificate> issuer_certificate =
-      ParseCertificate(issuer_certificate_der);
+      OCSPParseCertificate(issuer_certificate_der);
 
   if (!certificate || !issuer_certificate) {
     *response_details = OCSPVerifyResult::NOT_CHECKED;
