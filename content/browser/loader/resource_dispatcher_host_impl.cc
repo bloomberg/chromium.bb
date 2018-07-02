@@ -623,27 +623,12 @@ void ResourceDispatcherHostImpl::DidReceiveResponse(
 void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
   ResourceRequestInfoImpl* info = loader->GetRequestInfo();
 
-  base::TimeDelta request_loading_time(base::TimeTicks::Now() -
-                                       loader->request()->creation_time());
-
   // Record final result of all resource loads.
   if (info->GetResourceType() == RESOURCE_TYPE_MAIN_FRAME) {
     // This enumeration has "3" appended to its name to distinguish it from
     // older versions.
     base::UmaHistogramSparse("Net.ErrorCodesForMainFrame3",
                              -loader->request()->status().error());
-    if (loader->request()->status().error() == net::OK) {
-      UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2Success.MainFrame",
-                               request_loading_time);
-    }
-    if (loader->request()->status().error() == net::ERR_ABORTED) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.SentBytes",
-                                  loader->request()->GetTotalSentBytes(), 1,
-                                  50000000, 50);
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.ErrAborted.ReceivedBytes",
-                                  loader->request()->GetTotalReceivedBytes(), 1,
-                                  50000000, 50);
-    }
 
     if (loader->request()->url().SchemeIsCryptographic()) {
       if (loader->request()->url().host_piece() == "www.google.com") {
@@ -664,10 +649,6 @@ void ResourceDispatcherHostImpl::DidFinishLoading(ResourceLoader* loader) {
           "Net.CertificateTransparency.MainFrameValidSCTCount", num_valid_scts);
     }
   } else {
-    if (loader->request()->status().error() == net::OK) {
-      UMA_HISTOGRAM_LONG_TIMES("Net.RequestTime2Success.Subresource",
-                               request_loading_time);
-    }
     if (info->GetResourceType() == RESOURCE_TYPE_IMAGE) {
       base::UmaHistogramSparse("Net.ErrorCodesForImages",
                                -loader->request()->status().error());
