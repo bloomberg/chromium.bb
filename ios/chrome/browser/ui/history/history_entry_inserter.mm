@@ -80,15 +80,22 @@
                               inSortedRange:range
                                     options:NSBinarySearchingInsertionIndex
                             usingComparator:objectComparator];
+
+    // Calculate the new tableView indexPath row before inserting into the
+    // model. No matter where in the model the item is inserted, a new row will
+    // be created for the tableView. For this reason, make sure to insert a new
+    // index into the tableView after the item has been inserted into the model.
+    NSInteger section =
+        [_listModel sectionForSectionIdentifier:sectionIdentifier];
+    NSInteger tableViewRow = [_listModel numberOfItemsInSection:section];
+    NSIndexPath* tableIndexPath =
+        [NSIndexPath indexPathForRow:tableViewRow inSection:section];
+
     [_listModel insertItem:item
         inSectionWithIdentifier:sectionIdentifier
                         atIndex:index];
-    NSIndexPath* indexPath = [NSIndexPath
-        indexPathForItem:index
-               inSection:[_listModel
-                             sectionForSectionIdentifier:sectionIdentifier]];
     [self.delegate historyEntryInserter:self
-               didInsertItemAtIndexPath:indexPath];
+               didInsertItemAtIndexPath:tableIndexPath];
   }
 }
 
@@ -120,6 +127,8 @@
                            usingComparator:comparator];
   [_dates insertObject:date atIndex:index];
   NSInteger insertionIndex = _firstSectionIndex + index;
+  [_listModel insertSectionWithIdentifier:sectionIdentifier
+                                  atIndex:insertionIndex];
   if (IsUIRefreshPhase1Enabled()) {
     TableViewTextHeaderFooterItem* header =
         [[TableViewTextHeaderFooterItem alloc] initWithType:kItemTypeEnumZero];
@@ -134,8 +143,6 @@
         base::SysUTF16ToNSString(history::GetRelativeDateLocalized(timestamp));
     [_listModel setHeader:header forSectionWithIdentifier:sectionIdentifier];
   }
-  [_listModel insertSectionWithIdentifier:sectionIdentifier
-                                  atIndex:insertionIndex];
   [self.delegate historyEntryInserter:self
               didInsertSectionAtIndex:insertionIndex];
   return sectionIdentifier;
