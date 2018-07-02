@@ -5,8 +5,10 @@
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view_delegate.h"
 #import "ios/chrome/browser/ui/colors/MDCPalette+CrAdditions.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/common/ui_util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
@@ -22,12 +24,12 @@
 namespace {
 // Horizontal padding for label and buttons.
 const CGFloat kHorizontalPadding = 40;
-// Vertical padding for the image and the label.
-const CGFloat kStackViewVerticalSpacing = 14;
+// Spacing within stackView.
+const CGFloat kLegacySubViewVerticalSpacing = 14;
 // StackView vertical padding.
-const CGFloat kStackViewVerticalPadding = 20.0;
+const CGFloat kLegacyStackViewVerticalPadding = 20.0;
 // StackView horizontal padding.
-const CGFloat kStackViewHorizontalPadding = 15.0;
+const CGFloat kLegacyStackViewHorizontalPadding = 15.0;
 // Vertical padding for buttons.
 const CGFloat kButtonVerticalPadding = 10;
 // Image size for warm state.
@@ -36,6 +38,30 @@ const CGFloat kProfileImageFixedSize = 48;
 const CGFloat kCloseButtonSize = 24;
 // Padding for the close button.
 const CGFloat kCloseButtonPadding = 8;
+
+// UI Refresh Constants:
+// Text label gray color.
+const CGFloat kGrayHexColor = 0x6d6d72;
+// Action button blue background color.
+const CGFloat kBlueHexColor = 0x1A73E8;
+// Vertical spacing between stackView and cell contentView.
+const CGFloat kStackViewVerticalPadding = 11.0;
+// Horizontal spacing between stackView and cell contentView.
+const CGFloat kStackViewHorizontalPadding = 16.0;
+// Spacing within stackView.
+const CGFloat kStackViewSubViewSpacing = 13.0;
+// Horizontal Inset between button contents and edge.
+const CGFloat kButtonTitleHorizontalContentInset = 40.0;
+// Vertical Inset between button contents and edge.
+const CGFloat kButtonTitleVerticalContentInset = 8.0;
+// Button corner radius.
+const CGFloat kButtonCornerRadius = 8;
+// Trailing margin for the close button.
+const CGFloat kCloseButtonTrailingMargin = 5;
+// Size for the close button width and height.
+const CGFloat kCloseButtonWidthHeight = 24;
+// Size for the imageView width and height.
+const CGFloat kImageViewWidthHeight = 32;
 }
 
 NSString* const kSigninPromoViewId = @"kSigninPromoViewId";
@@ -43,6 +69,16 @@ NSString* const kSigninPromoPrimaryButtonId = @"kSigninPromoPrimaryButtonId";
 NSString* const kSigninPromoSecondaryButtonId =
     @"kSigninPromoSecondaryButtonId";
 NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
+
+@interface SigninPromoView ()
+// Re-declare as readwrite.
+@property(nonatomic, readwrite) UIImageView* imageView;
+@property(nonatomic, readwrite) UILabel* textLabel;
+@property(nonatomic, readwrite) UIButton* primaryButton;
+@property(nonatomic, readwrite) UIButton* secondaryButton;
+@property(nonatomic, readwrite) UIButton* closeButton;
+@property(nonatomic, assign) BOOL loadRefreshUI;
+@end
 
 @implementation SigninPromoView {
   signin_metrics::AccessPoint _accessPoint;
@@ -55,18 +91,22 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 @synthesize primaryButton = _primaryButton;
 @synthesize secondaryButton = _secondaryButton;
 @synthesize closeButton = _closeButton;
+@synthesize loadRefreshUI = _loadRefreshUI;
 
-- (instancetype)initWithFrame:(CGRect)frame {
+- (instancetype)initWithFrame:(CGRect)frame
+                        style:(SigninPromoViewUI)signinPromoViewUI {
   self = [super initWithFrame:frame];
   if (self) {
+    _loadRefreshUI = (IsUIRefreshPhase1Enabled() &&
+                      signinPromoViewUI == SigninPromoViewUIRefresh);
+
     // Set the whole element as accessible to take advantage of the
     // accessibilityCustomActions.
     self.isAccessibilityElement = YES;
     self.accessibilityIdentifier = kSigninPromoViewId;
 
     // Create and setup imageview that will hold the browser icon or user
-    // profile
-    // image.
+    // profile image.
     _imageView = [[UIImageView alloc] init];
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
     _imageView.layer.masksToBounds = YES;
@@ -77,36 +117,76 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     _textLabel.translatesAutoresizingMaskIntoConstraints = NO;
     _textLabel.numberOfLines = 0;
     _textLabel.textAlignment = NSTextAlignmentCenter;
-    _textLabel.font = [MDCTypography buttonFont];
-    _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    if (_loadRefreshUI) {
+      _textLabel.lineBreakMode = NSLineBreakByWordWrapping;
+      _textLabel.font =
+          [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+      _textLabel.textColor = UIColorFromRGB(kGrayHexColor);
+    } else {
+      _textLabel.font = [MDCTypography buttonFont];
+      _textLabel.textColor = [[MDCPalette greyPalette] tint900];
+    }
 
     // Create and setup primary button.
-    _primaryButton = [[MDCFlatButton alloc] init];
+    UIButton* primaryButton;
+    UIEdgeInsets primaryButtonInsets;
+    if (_loadRefreshUI) {
+      primaryButton = [[UIButton alloc] init];
+      primaryButton.backgroundColor = UIColorFromRGB(kBlueHexColor);
+      [primaryButton.titleLabel
+          setFont:[UIFont preferredFontForTextStyle:UIFontTextStyleHeadline]];
+      primaryButton.layer.cornerRadius = kButtonCornerRadius;
+      primaryButton.clipsToBounds = YES;
+      primaryButtonInsets = UIEdgeInsetsMake(
+          kButtonTitleVerticalContentInset, kButtonTitleHorizontalContentInset,
+          kButtonTitleVerticalContentInset, kButtonTitleHorizontalContentInset);
+    } else {
+      primaryButton = [[MDCFlatButton alloc] init];
+      MDCFlatButton* materialButton =
+          base::mac::ObjCCastStrict<MDCFlatButton>(primaryButton);
+      [materialButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
+                                forState:UIControlStateNormal];
+      materialButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2];
+      primaryButtonInsets =
+          UIEdgeInsetsMake(kButtonVerticalPadding, kHorizontalPadding,
+                           kButtonVerticalPadding, kHorizontalPadding);
+    }
+    _primaryButton = primaryButton;
+    DCHECK(_primaryButton);
+    _primaryButton.accessibilityIdentifier = kSigninPromoPrimaryButtonId;
     [_primaryButton setTitleColor:[UIColor whiteColor]
                          forState:UIControlStateNormal];
     _primaryButton.translatesAutoresizingMaskIntoConstraints = NO;
     _primaryButton.titleLabel.lineBreakMode = NSLineBreakByTruncatingTail;
-    _primaryButton.accessibilityIdentifier = kSigninPromoPrimaryButtonId;
     [_primaryButton addTarget:self
                        action:@selector(onPrimaryButtonAction:)
              forControlEvents:UIControlEventTouchUpInside];
-    [_primaryButton setBackgroundColor:[[MDCPalette cr_bluePalette] tint500]
-                              forState:UIControlStateNormal];
-    _primaryButton.inkColor = [UIColor colorWithWhite:1 alpha:0.2];
-    _primaryButton.contentEdgeInsets =
-        UIEdgeInsetsMake(kButtonVerticalPadding, kHorizontalPadding * 2,
-                         kButtonVerticalPadding, kHorizontalPadding * 2);
+    _primaryButton.contentEdgeInsets = primaryButtonInsets;
 
     // Create and setup seconday button.
-    _secondaryButton = [[MDCFlatButton alloc] init];
+    UIButton* secondaryButton;
+    if (_loadRefreshUI) {
+      secondaryButton = [[UIButton alloc] init];
+      [secondaryButton.titleLabel
+          setFont:[UIFont
+                      preferredFontForTextStyle:UIFontTextStyleSubheadline]];
+      [secondaryButton setTitleColor:UIColorFromRGB(kBlueHexColor)
+                            forState:UIControlStateNormal];
+    } else {
+      secondaryButton = [[MDCFlatButton alloc] init];
+      MDCFlatButton* materialButton =
+          base::mac::ObjCCastStrict<MDCFlatButton>(secondaryButton);
+      materialButton.uppercaseTitle = NO;
+      [materialButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
+                           forState:UIControlStateNormal];
+    }
+    _secondaryButton = secondaryButton;
+    DCHECK(_secondaryButton);
     _secondaryButton.translatesAutoresizingMaskIntoConstraints = NO;
     _secondaryButton.accessibilityIdentifier = kSigninPromoSecondaryButtonId;
     [_secondaryButton addTarget:self
                          action:@selector(onSecondaryButtonAction:)
                forControlEvents:UIControlEventTouchUpInside];
-    [_secondaryButton setTitleColor:[[MDCPalette cr_bluePalette] tint500]
-                           forState:UIControlStateNormal];
-    _secondaryButton.uppercaseTitle = NO;
 
     // Vertical stackView containing all previous view.
     UIStackView* verticalStackView =
@@ -115,8 +195,9 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
         ]];
     verticalStackView.alignment = UIStackViewAlignmentCenter;
     verticalStackView.axis = UILayoutConstraintAxisVertical;
-    verticalStackView.spacing = kStackViewVerticalSpacing;
     verticalStackView.translatesAutoresizingMaskIntoConstraints = NO;
+    verticalStackView.spacing = _loadRefreshUI ? kStackViewSubViewSpacing
+                                               : kLegacySubViewVerticalSpacing;
     [self addSubview:verticalStackView];
 
     // Create close button and adds it directly to self.
@@ -131,31 +212,66 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     _closeButton.hidden = YES;
     [self addSubview:_closeButton];
 
-    [NSLayoutConstraint activateConstraints:@[
-      // Add constraints for the stackView.
-      [verticalStackView.leadingAnchor
-          constraintEqualToAnchor:self.leadingAnchor
-                         constant:kStackViewHorizontalPadding],
-      [verticalStackView.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor
-                         constant:-kStackViewHorizontalPadding],
-      [verticalStackView.topAnchor
-          constraintEqualToAnchor:self.topAnchor
-                         constant:kStackViewVerticalPadding],
-      [verticalStackView.bottomAnchor
-          constraintEqualToAnchor:self.bottomAnchor
-                         constant:-kStackViewVerticalPadding],
-      // Close button constraints.
-      [self.closeButton.topAnchor constraintEqualToAnchor:self.topAnchor
-                                                 constant:kCloseButtonPadding],
-      [self.closeButton.trailingAnchor
-          constraintEqualToAnchor:self.trailingAnchor
-                         constant:-kCloseButtonPadding],
-      [self.closeButton.heightAnchor
-          constraintEqualToConstant:kCloseButtonSize],
-      [self.closeButton.widthAnchor constraintEqualToConstant:kCloseButtonSize],
-    ]];
-
+    // Add legacys or UIRefresh constraints for the stackView.
+    if (_loadRefreshUI) {
+      [NSLayoutConstraint activateConstraints:@[
+        [verticalStackView.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor
+                           constant:kStackViewHorizontalPadding],
+        [verticalStackView.trailingAnchor
+            constraintEqualToAnchor:self.trailingAnchor
+                           constant:-kStackViewHorizontalPadding],
+        [verticalStackView.topAnchor
+            constraintEqualToAnchor:self.topAnchor
+                           constant:kStackViewVerticalPadding],
+        [verticalStackView.bottomAnchor
+            constraintEqualToAnchor:self.bottomAnchor
+                           constant:-kStackViewVerticalPadding],
+        [_imageView.heightAnchor
+            constraintEqualToConstant:kImageViewWidthHeight],
+        [_imageView.widthAnchor
+            constraintEqualToConstant:kImageViewWidthHeight],
+        // Close button constraints.
+        [_closeButton.topAnchor constraintEqualToAnchor:self.topAnchor],
+        [_closeButton.trailingAnchor
+            constraintEqualToAnchor:self.trailingAnchor
+                           constant:kCloseButtonTrailingMargin],
+        [_closeButton.heightAnchor
+            constraintEqualToConstant:kCloseButtonWidthHeight],
+        [_closeButton.widthAnchor
+            constraintEqualToConstant:kCloseButtonWidthHeight],
+      ]];
+    } else {
+      [NSLayoutConstraint activateConstraints:@[
+        [verticalStackView.leadingAnchor
+            constraintEqualToAnchor:self.leadingAnchor
+                           constant:kLegacyStackViewHorizontalPadding],
+        [verticalStackView.trailingAnchor
+            constraintEqualToAnchor:self.trailingAnchor
+                           constant:-kLegacyStackViewHorizontalPadding],
+        [verticalStackView.topAnchor
+            constraintEqualToAnchor:self.topAnchor
+                           constant:kLegacyStackViewVerticalPadding],
+        [verticalStackView.bottomAnchor
+            constraintEqualToAnchor:self.bottomAnchor
+                           constant:-kLegacyStackViewVerticalPadding],
+        // Close button constraints.
+        [_closeButton.topAnchor constraintEqualToAnchor:self.topAnchor
+                                               constant:kCloseButtonPadding],
+        [_closeButton.trailingAnchor
+            constraintEqualToAnchor:self.trailingAnchor
+                           constant:-kCloseButtonPadding],
+        [_closeButton.heightAnchor constraintEqualToConstant:kCloseButtonSize],
+        [_closeButton.widthAnchor constraintEqualToConstant:kCloseButtonSize],
+        [_primaryButton.leadingAnchor
+            constraintEqualToAnchor:verticalStackView.leadingAnchor
+                           constant:kStackViewHorizontalPadding],
+        [_primaryButton.trailingAnchor
+            constraintEqualToAnchor:verticalStackView.trailingAnchor
+                           constant:-kStackViewHorizontalPadding],
+      ]];
+    }
+    // Default mode.
     _mode = SigninPromoViewModeColdState;
     [self activateColdMode];
   }
@@ -205,19 +321,20 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 
 - (void)setProfileImage:(UIImage*)image {
   DCHECK_EQ(SigninPromoViewModeWarmState, _mode);
-  _imageView.image = CircularImageFromImage(image, kProfileImageFixedSize);
+  self.imageView.image = CircularImageFromImage(image, kProfileImageFixedSize);
 }
 
 - (void)accessibilityPrimaryAction:(id)unused {
-  [_primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+  [self.primaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)accessibilitySecondaryAction:(id)unused {
-  [_secondaryButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+  [self.secondaryButton
+      sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 - (void)accessibilityCloseAction:(id)unused {
-  [_closeButton sendActionsForControlEvents:UIControlEventTouchUpInside];
+  [self.closeButton sendActionsForControlEvents:UIControlEventTouchUpInside];
 }
 
 - (CGFloat)horizontalPadding {
@@ -249,7 +366,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
   NSMutableArray* actions = [NSMutableArray array];
 
   NSString* primaryActionName =
-      [_primaryButton titleForState:UIControlStateNormal];
+      [self.primaryButton titleForState:UIControlStateNormal];
   UIAccessibilityCustomAction* primaryCustomAction =
       [[UIAccessibilityCustomAction alloc]
           initWithName:primaryActionName
@@ -259,7 +376,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 
   if (_mode == SigninPromoViewModeWarmState) {
     NSString* secondaryActionName =
-        [_secondaryButton titleForState:UIControlStateNormal];
+        [self.secondaryButton titleForState:UIControlStateNormal];
     UIAccessibilityCustomAction* secondaryCustomAction =
         [[UIAccessibilityCustomAction alloc]
             initWithName:secondaryActionName
@@ -268,7 +385,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
     [actions addObject:secondaryCustomAction];
   }
 
-  if (!_closeButton.hidden) {
+  if (!self.closeButton.hidden) {
     NSString* closeActionName =
         l10n_util::GetNSString(IDS_IOS_SIGNIN_PROMO_CLOSE_ACCESSIBILITY);
     UIAccessibilityCustomAction* closeCustomAction =
@@ -283,7 +400,7 @@ NSString* const kSigninPromoCloseButtonId = @"kSigninPromoCloseButtonId";
 }
 
 - (NSString*)accessibilityLabel {
-  return _textLabel.text;
+  return self.textLabel.text;
 }
 
 @end
