@@ -1069,10 +1069,6 @@ void BridgedNativeWidget::OnDeviceScaleFactorChanged(
 ////////////////////////////////////////////////////////////////////////////////
 // BridgedNativeWidget, AcceleratedWidgetMac:
 
-NSView* BridgedNativeWidget::AcceleratedWidgetGetNSView() const {
-  return compositor_superview_;
-}
-
 void BridgedNativeWidget::AcceleratedWidgetCALayerParamsUpdated() {
   // Ignore frames arriving "late" for an old size. A frame at the new size
   // should arrive soon.

@@ -19,11 +19,6 @@ namespace ui {
 // throughout its lifetime (one at a time, though).
 class AcceleratedWidgetMacNSView {
  public:
-  // The CALayer tree provided by the CALayerParams sent to the
-  // AcceleratedWidgetMac will be installed under the -[NSView layer] of this
-  // NSView.
-  virtual NSView* AcceleratedWidgetGetNSView() const = 0;
-
   // Called when the AcceleratedWidgetMac's CALayerFrameSink interface's
   // UpdateCALayerTree method is called. This is used to update background
   // colors and to suppressing drawing of blank windows until content is
@@ -56,11 +51,6 @@ class ACCELERATED_WIDGET_MAC_EXPORT AcceleratedWidgetMac
   // If |suspended| is true, then ignore all new frames that come in until
   // a call is made with |suspended| as false.
   void SetSuspended(bool suspended);
-
-  // Translate from a gfx::AcceleratedWidget to the NSView in which it will
-  // appear. This may return nil if |widget| is invalid or is not currently
-  // attached to an NSView.
-  static NSView* GetNSView(gfx::AcceleratedWidget widget);
 
  private:
   // For CALayerFrameSink::FromAcceleratedWidget to access Get.

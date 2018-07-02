@@ -397,7 +397,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   bool SynchronizeVisualProperties() override;
 
   // AcceleratedWidgetMacNSView implementation.
-  NSView* AcceleratedWidgetGetNSView() const override;
   void AcceleratedWidgetCALayerParamsUpdated() override;
 
   void SetShowingContextMenu(bool showing) override;

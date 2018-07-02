@@ -83,7 +83,6 @@ class TestAcceleratedWidgetMacNSView : public AcceleratedWidgetMacNSView {
   virtual ~TestAcceleratedWidgetMacNSView() { [view_ release]; }
 
   // AcceleratedWidgetMacNSView
-  NSView* AcceleratedWidgetGetNSView() const override { return view_; }
   void AcceleratedWidgetCALayerParamsUpdated() override {}
 
  private:
