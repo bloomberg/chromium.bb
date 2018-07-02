@@ -663,7 +663,7 @@ _NAMED_TYPE_INFO = {
       'GL_PIXEL_PACK_BUFFER',
     ],
   },
-  'FramebufferParameter': {
+  'FramebufferAttachmentParameter': {
     'type': 'GLenum',
     'valid': [
       'GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE',

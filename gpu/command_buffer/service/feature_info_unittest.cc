@@ -267,7 +267,7 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
         GL_SRGB_ALPHA_EXT));
     EXPECT_TRUE(info_->validators()->render_buffer_format.IsValid(
         GL_SRGB8_ALPHA8_EXT));
-    EXPECT_TRUE(info_->validators()->framebuffer_parameter.IsValid(
+    EXPECT_TRUE(info_->validators()->framebuffer_attachment_parameter.IsValid(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   } else {
     EXPECT_FALSE(gfx::HasExtension(info_->extensions(), "GL_EXT_sRGB"));
@@ -280,7 +280,7 @@ TEST_P(FeatureInfoTest, InitializeNoExtensions) {
         GL_SRGB_ALPHA_EXT));
     EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
         GL_SRGB8_ALPHA8_EXT));
-    EXPECT_FALSE(info_->validators()->framebuffer_parameter.IsValid(
+    EXPECT_FALSE(info_->validators()->framebuffer_attachment_parameter.IsValid(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   }
 
@@ -633,7 +633,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
         GL_SRGB_ALPHA_EXT));
     EXPECT_FALSE(
         info_->validators()->render_buffer_format.IsValid(GL_SRGB8_ALPHA8_EXT));
-    EXPECT_FALSE(info_->validators()->framebuffer_parameter.IsValid(
+    EXPECT_FALSE(info_->validators()->framebuffer_attachment_parameter.IsValid(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   } else {
     EXPECT_TRUE(gfx::HasExtension(info_->extensions(), "GL_EXT_sRGB"));
@@ -645,7 +645,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_sRGB) {
         GL_SRGB_ALPHA_EXT));
     EXPECT_TRUE(
         info_->validators()->render_buffer_format.IsValid(GL_SRGB8_ALPHA8_EXT));
-    EXPECT_TRUE(info_->validators()->framebuffer_parameter.IsValid(
+    EXPECT_TRUE(info_->validators()->framebuffer_attachment_parameter.IsValid(
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
   }
 }
@@ -977,7 +977,7 @@ TEST_P(FeatureInfoTest, Initialize_sRGBGLES3) {
       GL_SRGB_ALPHA_EXT));
   EXPECT_FALSE(info_->validators()->render_buffer_format.IsValid(
       GL_SRGB8_ALPHA8_EXT));
-  EXPECT_FALSE(info_->validators()->framebuffer_parameter.IsValid(
+  EXPECT_FALSE(info_->validators()->framebuffer_attachment_parameter.IsValid(
       GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT));
 }
 
@@ -1126,7 +1126,7 @@ TEST_P(FeatureInfoTest, InitializeEXT_multisampled_render_to_texture) {
       GL_MAX_SAMPLES_EXT));
   EXPECT_TRUE(info_->validators()->render_buffer_parameter.IsValid(
       GL_RENDERBUFFER_SAMPLES_EXT));
-  EXPECT_TRUE(info_->validators()->framebuffer_parameter.IsValid(
+  EXPECT_TRUE(info_->validators()->framebuffer_attachment_parameter.IsValid(
       GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT));
 }
 
@@ -1142,7 +1142,7 @@ TEST_P(FeatureInfoTest, InitializeIMG_multisampled_render_to_texture) {
       GL_MAX_SAMPLES_EXT));
   EXPECT_TRUE(info_->validators()->render_buffer_parameter.IsValid(
       GL_RENDERBUFFER_SAMPLES_EXT));
-  EXPECT_TRUE(info_->validators()->framebuffer_parameter.IsValid(
+  EXPECT_TRUE(info_->validators()->framebuffer_attachment_parameter.IsValid(
       GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_SAMPLES_EXT));
 }
 

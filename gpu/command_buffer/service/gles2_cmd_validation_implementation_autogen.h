@@ -225,14 +225,14 @@ bool Validators::FaceTypeValidator::IsValid(const GLenum value) const {
   return false;
 }
 
-static const GLenum valid_framebuffer_parameter_table[] = {
+static const GLenum valid_framebuffer_attachment_parameter_table[] = {
     GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE,
     GL_FRAMEBUFFER_ATTACHMENT_OBJECT_NAME,
     GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_LEVEL,
     GL_FRAMEBUFFER_ATTACHMENT_TEXTURE_CUBE_MAP_FACE,
 };
 
-static const GLenum valid_framebuffer_parameter_table_es3[] = {
+static const GLenum valid_framebuffer_attachment_parameter_table_es3[] = {
     GL_FRAMEBUFFER_ATTACHMENT_RED_SIZE,
     GL_FRAMEBUFFER_ATTACHMENT_GREEN_SIZE,
     GL_FRAMEBUFFER_ATTACHMENT_BLUE_SIZE,
@@ -1395,8 +1395,9 @@ Validators::Validators()
       dst_blend_factor(valid_dst_blend_factor_table,
                        arraysize(valid_dst_blend_factor_table)),
       equation(valid_equation_table, arraysize(valid_equation_table)),
-      framebuffer_parameter(valid_framebuffer_parameter_table,
-                            arraysize(valid_framebuffer_parameter_table)),
+      framebuffer_attachment_parameter(
+          valid_framebuffer_attachment_parameter_table,
+          arraysize(valid_framebuffer_attachment_parameter_table)),
       framebuffer_target(valid_framebuffer_target_table,
                          arraysize(valid_framebuffer_target_table)),
       g_l_state(valid_g_l_state_table, arraysize(valid_g_l_state_table)),
@@ -1478,9 +1479,9 @@ void Validators::UpdateValuesES3() {
                              arraysize(valid_dst_blend_factor_table_es3));
   equation.AddValues(valid_equation_table_es3,
                      arraysize(valid_equation_table_es3));
-  framebuffer_parameter.AddValues(
-      valid_framebuffer_parameter_table_es3,
-      arraysize(valid_framebuffer_parameter_table_es3));
+  framebuffer_attachment_parameter.AddValues(
+      valid_framebuffer_attachment_parameter_table_es3,
+      arraysize(valid_framebuffer_attachment_parameter_table_es3));
   framebuffer_target.AddValues(valid_framebuffer_target_table_es3,
                                arraysize(valid_framebuffer_target_table_es3));
   g_l_state.AddValues(valid_g_l_state_table_es3,
