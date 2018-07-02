@@ -20,8 +20,7 @@ namespace ios {
 class ChromeBrowserState;
 }  // namespace ios
 
-using TimerGeneratorBlock =
-    std::unique_ptr<base::Timer> (^)(bool retain_user_task, bool is_repeating);
+using TimerGeneratorBlock = std::unique_ptr<base::OneShotTimer> (^)();
 
 @protocol ChromeSigninViewControllerDelegate<NSObject>
 
@@ -119,7 +118,8 @@ using TimerGeneratorBlock =
 // Exposes methods for testing.
 @interface ChromeSigninViewController (Testing)
 
-// Timer generator. Should stay nil to use the default timer class: base::Timer.
+// Timer generator. Should stay nil to use the default timer class:
+// base::OneShotTimer.
 @property(nonatomic, copy) TimerGeneratorBlock timerGenerator;
 
 @end

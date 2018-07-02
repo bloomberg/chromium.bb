@@ -734,15 +734,11 @@ enum AuthenticationState {
       [strongSelf->_activityIndicator stopAnimating];
       strongSelf->_leavingPendingStateTimer.reset();
     };
-    const bool retain_user_task = false;
-    const bool is_repeating = false;
     if (self.timerGenerator) {
-      _leavingPendingStateTimer =
-          self.timerGenerator(retain_user_task, is_repeating);
+      _leavingPendingStateTimer = self.timerGenerator();
       DCHECK(_leavingPendingStateTimer);
     } else {
-      _leavingPendingStateTimer =
-          std::make_unique<base::Timer>(retain_user_task, is_repeating);
+      _leavingPendingStateTimer = std::make_unique<base::OneShotTimer>();
     }
     _leavingPendingStateTimer->Start(FROM_HERE, remainingTime,
                                      base::BindRepeating(completionBlock));
