@@ -59,6 +59,17 @@ Polymer({
       value: '',
     },
 
+    /**
+     * This is strictly used internally for styling, do not attempt to use
+     * this to set focus.
+     * @private
+     */
+    focused_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
+    },
+
     incremental: Boolean,
 
     invalid: {
@@ -127,8 +138,8 @@ Polymer({
   },
 
   listeners: {
-    'input.focus': 'onInputFocusChange_',
-    'input.blur': 'onInputFocusChange_',
+    'input.focus': 'onInputFocus_',
+    'input.blur': 'onInputBlur_',
     'input.change': 'onInputChange_',
     'input.keydown': 'onInputKeydown_',
     'focus': 'focusInput_',
@@ -159,7 +170,7 @@ Polymer({
   disabledChanged_: function(current, previous) {
     this.setAttribute('aria-disabled', this.disabled ? 'true' : 'false');
     // In case input was focused when disabled changes.
-    this.removeAttribute('focused_');
+    this.focused_ = false;
 
     // Don't change tabindex until after finished attaching, since this.tabindex
     // might not be intialized yet.
@@ -270,13 +281,14 @@ Polymer({
     this.fire('change', {sourceEvent: e});
   },
 
-  // focused_ is used instead of :focus-within, so focus on elements within the
-  // suffix slot does not trigger a change in input styles.
-  onInputFocusChange_: function() {
-    if (this.shadowRoot.activeElement == this.inputElement)
-      this.setAttribute('focused_', '');
-    else
-      this.removeAttribute('focused_');
+  /** @private */
+  onInputFocus_: function() {
+    this.focused_ = true;
+  },
+
+  /** @private */
+  onInputBlur_: function() {
+    this.focused_ = false;
   },
 
   /**

@@ -157,6 +157,8 @@ suite('cr-input', function() {
   });
 
   test('focusState', function() {
+    assertFalse(crInput.hasAttribute('focused_'));
+
     const underline = crInput.$.underline;
     const label = crInput.$.label;
     const originalLabelColor = getComputedStyle(label).color;
@@ -168,11 +170,19 @@ suite('cr-input', function() {
         test_util.eventToPromise('transitionend', underline);
 
     input.focus();
+    assertTrue(crInput.hasAttribute('focused_'));
     assertTrue(originalLabelColor != getComputedStyle(label).color);
-    return whenTransitionEnd.then(() => {
-      assertEquals('1', getComputedStyle(underline).opacity);
-      assertTrue(0 != underline.offsetWidth);
-    });
+    return whenTransitionEnd
+        .then(() => {
+          assertEquals('1', getComputedStyle(underline).opacity);
+          assertTrue(0 != underline.offsetWidth);
+        })
+        .then(() => {
+          input.blur();
+          assertFalse(crInput.hasAttribute('focused_'));
+          assertEquals('0', getComputedStyle(underline).opacity);
+          assertEquals(0, underline.offsetWidth);
+        });
   });
 
   test('invalidState', function() {
