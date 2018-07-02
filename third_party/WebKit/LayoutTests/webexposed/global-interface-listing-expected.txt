@@ -8858,6 +8858,19 @@ interface WebGLUniformLocation
 interface WebGLVertexArrayObject
     attribute @@toStringTag
     method constructor
+interface WebGPU
+    attribute @@toStringTag
+    method constructor
+    method getAdapter
+interface WebGPUAdapter
+    attribute @@toStringTag
+    getter name
+    method constructor
+    method createDevice
+interface WebGPUDevice
+    attribute @@toStringTag
+    getter adapter
+    method constructor
 interface WebKitAnimationEvent : Event
     attribute @@toStringTag
     getter animationName
@@ -9555,6 +9568,7 @@ interface webkitURL
     getter styleMedia
     getter toolbar
     getter visualViewport
+    getter webgpu
     getter webkitStorageInfo
     method NodeFilter
     method alert
@@ -9736,6 +9750,7 @@ interface webkitURL
     setter statusbar
     setter toolbar
     setter visualViewport
+    setter webgpu
 PASS successfullyParsed is true
 
 TEST COMPLETE

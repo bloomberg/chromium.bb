@@ -22,6 +22,7 @@ SPECIAL_TOKENS = [
     'Uint16',
     'Uint32',
     'WebGL2',
+    'WebGPU',
     'ASCII',
     'CSSOM',
     'CType',
