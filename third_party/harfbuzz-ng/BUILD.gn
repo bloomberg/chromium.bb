@@ -46,6 +46,7 @@ if (use_system_harfbuzz) {
 
     sources = [
       "src/src/hb-atomic-private.hh",
+      "src/src/hb-blob-private.hh",
       "src/src/hb-blob.cc",
       "src/src/hb-blob.h",
       "src/src/hb-buffer-deserialize-json.hh",
@@ -157,6 +158,7 @@ if (use_system_harfbuzz) {
       "src/src/hb-shaper-list.hh",
       "src/src/hb-shaper-private.hh",
       "src/src/hb-shaper.cc",
+      "src/src/hb-static.cc",
       "src/src/hb-string-array.hh",
       "src/src/hb-subset-glyf.hh",
       "src/src/hb-subset-plan.h",
@@ -176,6 +178,7 @@ if (use_system_harfbuzz) {
       "HAVE_ICU",
       "HAVE_ICU_BUILTIN",
       "HAVE_INTEL_ATOMIC_PRIMITIVES",
+      "HB_NO_MMAP",
     ]
 
     if (is_component_build) {
