@@ -251,4 +251,11 @@ Checking 'dontRunThis().'
 Checking 'stall().'
 error: Execution was terminated
 
+Checking 'shouldNot|FindThisFunction()'
+Not Found: shouldNotFindThisFunction
+
+Checking 'thePrefix'
+Found: thePrefix
+Found: thePrefixAndTheSuffix
+
 
