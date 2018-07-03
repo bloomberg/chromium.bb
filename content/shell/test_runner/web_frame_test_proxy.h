@@ -238,6 +238,11 @@ class WebFrameTestProxy : public Base, public WebFrameTestProxyBase {
   void PostAccessibilityEvent(const blink::WebAXObject& object,
                               blink::WebAXEvent event) override {
     test_client()->PostAccessibilityEvent(object, event);
+    // Guard against the case where |this| was deleted as a result of an
+    // accessibility listener detaching a frame. If that occurs, the
+    // WebAXObject will be detached.
+    if (object.IsDetached())
+      return;  // |this| is invalid.
     Base::PostAccessibilityEvent(object, event);
   }
 
