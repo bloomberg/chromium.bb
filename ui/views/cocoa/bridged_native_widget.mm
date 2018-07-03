@@ -1055,7 +1055,6 @@ void BridgedNativeWidget::OnDidChangeFocus(View* focused_before,
 // BridgedNativeWidget, LayerDelegate:
 
 void BridgedNativeWidget::OnPaintLayer(const ui::PaintContext& context) {
-  DCHECK(window_visible_);
   native_widget_mac_->GetWidget()->OnNativeWidgetPaint(context);
 }
 
