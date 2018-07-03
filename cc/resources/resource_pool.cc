@@ -83,6 +83,9 @@ ResourcePool::ResourcePool(
       this, "cc::ResourcePool", task_runner_.get());
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
+  memory_pressure_listener_.reset(
+      new base::MemoryPressureListener(base::BindRepeating(
+          &ResourcePool::OnMemoryPressure, weak_ptr_factory_.GetWeakPtr())));
 }
 
 ResourcePool::~ResourcePool() {
@@ -554,6 +557,18 @@ void ResourcePool::OnMemoryStateChange(base::MemoryState state) {
   // While in a SUSPENDED state, we don't put resources back into the pool
   // when they become available. Instead we free them immediately.
   evict_busy_resources_when_unused_ = state == base::MemoryState::SUSPENDED;
+}
+
+void ResourcePool::OnMemoryPressure(
+    base::MemoryPressureListener::MemoryPressureLevel level) {
+  switch (level) {
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
+      break;
+    case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
+      EvictResourcesNotUsedSince(base::TimeTicks() + base::TimeDelta::Max());
+      break;
+  }
 }
 
 ResourcePool::PoolResource::PoolResource(size_t unique_id,

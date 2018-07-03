@@ -14,6 +14,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/memory_coordinator_client.h"
+#include "base/memory/memory_pressure_listener.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
@@ -226,6 +227,11 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
   void OnPurgeMemory() override;
   void OnMemoryStateChange(base::MemoryState state) override;
 
+  // TODO(gyuyoung): OnMemoryPressure is deprecated. So this should be removed
+  // when the memory coordinator is enabled by default.
+  void OnMemoryPressure(
+      base::MemoryPressureListener::MemoryPressureLevel level);
+
   size_t GetTotalMemoryUsageForTesting() const {
     return total_memory_usage_bytes_;
   }
@@ -369,6 +375,8 @@ class CC_EXPORT ResourcePool : public base::trace_event::MemoryDumpProvider,
 
   // Map from the PoolResource |unique_id| to the PoolResource.
   std::map<size_t, std::unique_ptr<PoolResource>> in_use_resources_;
+
+  std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   base::WeakPtrFactory<ResourcePool> weak_ptr_factory_;
 
