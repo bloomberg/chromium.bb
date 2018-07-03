@@ -66,6 +66,10 @@ void ContextualSuggestionsUkmEntry::RecordEventMetrics(
       trigger_event_ = TriggerEvent::REVERSE_SCROLL;
       StartTimerIfNeeded();
       break;
+    case UI_BUTTON_SHOWN:
+      trigger_event_ = TriggerEvent::TOOLBAR_BUTTON;
+      StartTimerIfNeeded();
+      break;
     case UI_OPENED:
       was_sheet_opened_ = true;
       StartTimerIfNeeded();

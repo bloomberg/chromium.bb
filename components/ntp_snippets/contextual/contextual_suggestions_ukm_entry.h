@@ -35,6 +35,7 @@ enum class FetchState {
 enum class TriggerEvent {
   NEVER_SHOWN,
   REVERSE_SCROLL,
+  TOOLBAR_BUTTON,
 };
 
 // Writes a single UKM entry that describes the latest state of the event stream

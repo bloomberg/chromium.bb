@@ -48,6 +48,9 @@ void ContextualSuggestionsDebuggingReporter::RecordEvent(
     case UI_PEEK_REVERSE_SCROLL:
       current_event_.sheet_peeked = true;
       return;
+    case UI_BUTTON_SHOWN:
+      current_event_.button_shown = true;
+      return;
     case UI_OPENED:
       current_event_.sheet_opened = true;
       return;

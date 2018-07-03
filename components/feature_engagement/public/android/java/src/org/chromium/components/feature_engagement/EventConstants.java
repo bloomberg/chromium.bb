@@ -34,6 +34,10 @@ public final class EventConstants {
      */
     public static final String PULL_TO_REFRESH = "pull_to_refresh";
 
+    /** The contextual suggestions button was shown to the user. */
+    public static final String CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN =
+            "contextual_suggestions_button_shown";
+
     /**
      * The contextual suggestions bottom sheet was explicitly dismissed via a tap on its close
      * button.

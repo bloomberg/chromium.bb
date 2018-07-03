@@ -77,6 +77,7 @@ void EocInternalsPageHandler::GetCachedMetricEvents(
     auto metric_event = eoc_internals::mojom::MetricEvent::New();
     metric_event->url = debug_event.url;
     metric_event->sheet_peeked = debug_event.sheet_peeked;
+    metric_event->button_shown = debug_event.button_shown;
     metric_event->sheet_opened = debug_event.sheet_opened;
     metric_event->sheet_closed = debug_event.sheet_closed;
     metric_event->any_suggestion_taken = debug_event.any_suggestion_taken;

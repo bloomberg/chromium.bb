@@ -35,6 +35,9 @@ struct ContextualSuggestionsDebuggingEvent {
 
   // Whether the sheet ever peeked.
   bool sheet_peeked = false;
+
+  // Whether the button has even been shown.
+  bool button_shown = false;
 };
 
 // Reporter specialized for caching information for debugging purposes.

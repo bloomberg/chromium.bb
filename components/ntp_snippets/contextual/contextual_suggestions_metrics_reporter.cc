@@ -14,6 +14,7 @@ namespace contextual_suggestions {
 
 ContextualSuggestionsMetricsReporter::ContextualSuggestionsMetricsReporter()
     : sheet_peeked_(false),
+      button_shown_(false),
       sheet_opened_(false),
       sheet_closed_(false),
       any_suggestion_downloaded_(false),
@@ -64,6 +65,11 @@ void ContextualSuggestionsMetricsReporter::RecordUmaMetrics(
         return;
       sheet_peeked_ = true;
       break;
+    case UI_BUTTON_SHOWN:
+      if (button_shown_)
+        return;
+      button_shown_ = true;
+      break;
     case UI_OPENED:
       if (sheet_opened_)
         return;
@@ -97,6 +103,7 @@ void ContextualSuggestionsMetricsReporter::RecordUmaMetrics(
 
 void ContextualSuggestionsMetricsReporter::ResetUma() {
   sheet_peeked_ = false;
+  button_shown_ = false;
   sheet_opened_ = false;
   sheet_closed_ = false;
   any_suggestion_downloaded_ = false;
