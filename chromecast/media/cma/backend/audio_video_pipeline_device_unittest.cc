@@ -271,7 +271,7 @@ class AudioVideoPipelineDeviceTest : public testing::Test {
 
   // Pause settings
   std::vector<PauseInfo> pause_pattern_;
-  int pause_pattern_idx_;
+  size_t pause_pattern_idx_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioVideoPipelineDeviceTest);
 };
@@ -828,7 +828,7 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
 #if defined(ENABLE_VIDEO_WITH_MIXED_AUDIO)
   // Do AV sync checks.
   MediaPipelineBackendForMixer* backend_for_mixer =
-      reinterpret_cast<MediaPipelineBackendForMixer*>(backend_.get());
+      static_cast<MediaPipelineBackendForMixer*>(backend_.get());
   DCHECK(backend_for_mixer);
 
   int64_t playback_start_time =
@@ -842,7 +842,7 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
     EXPECT_TRUE(
         backend_for_mixer->video_decoder()->GetCurrentPts(&timestamp, &vpts))
         << "Getting VPTS failed at current time="
-        << " current time=" << backend_for_mixer->MonotonicClockNow()
+        << backend_for_mixer->MonotonicClockNow()
         << " playback should have started at=" << playback_start_time;
 
     // Check video started at the correct time.
@@ -856,7 +856,7 @@ void AudioVideoPipelineDeviceTest::MonitorLoop() {
   }
 #endif
 
-  if (!pause_pattern_.empty() &&
+  if (!pause_pattern_.empty() && pause_pattern_idx_ < pause_pattern_.size() &&
       pause_pattern_[pause_pattern_idx_].delay >= base::TimeDelta() &&
       media_time >= pause_time_ + pause_pattern_[pause_pattern_idx_].delay) {
     // Do Pause
@@ -893,8 +893,42 @@ void AudioVideoPipelineDeviceTest::OnPauseCompleted() {
   EXPECT_LT(media_time,
             pause_time_ + base::TimeDelta::FromMilliseconds(kPausePtsSlackMs));
 
+#if defined(ENABLE_VIDEO_WITH_MIXED_AUDIO)
+  // Do AV sync checks.
+  MediaPipelineBackendForMixer* backend_for_mixer =
+      static_cast<MediaPipelineBackendForMixer*>(backend_.get());
+  DCHECK(backend_for_mixer);
+
+  int64_t playback_start_time =
+      backend_for_mixer->GetPlaybackStartTimeForTesting();
+
+  if (backend_for_mixer->audio_decoder() &&
+      backend_for_mixer->video_decoder() &&
+      backend_for_mixer->MonotonicClockNow() > playback_start_time + 50000) {
+    // Check the audio time.
+    base::TimeDelta audio_time = base::TimeDelta::FromMicroseconds(
+        backend_for_mixer->audio_decoder()->GetCurrentPts());
+    EXPECT_LT(audio_time, pause_time_ + base::TimeDelta::FromMilliseconds(
+                                            kPausePtsSlackMs));
+
+    // Check the video time.
+    int64_t timestamp = 0;
+    int64_t pts = 0;
+    EXPECT_TRUE(
+        backend_for_mixer->video_decoder()->GetCurrentPts(&timestamp, &pts))
+        << "Getting VPTS failed at current time="
+        << backend_for_mixer->MonotonicClockNow()
+        << " playback should have started at=" << playback_start_time;
+
+    base::TimeDelta video_time = base::TimeDelta::FromMicroseconds(pts);
+
+    EXPECT_LT(video_time, pause_time_ + base::TimeDelta::FromMilliseconds(
+                                            kPausePtsSlackMs));
+  }
+#endif
+
   pause_time_ = media_time;
-  pause_pattern_idx_ = (pause_pattern_idx_ + 1) % pause_pattern_.size();
+  ++pause_pattern_idx_;
 
   VLOG(2) << "Pause complete, restarting media clock";
   RunPlaybackChecks();
@@ -1201,6 +1235,15 @@ TEST_F(AudioVideoPipelineDeviceTest, WebmPlayback_WithEffectsStreams) {
 
 TEST_F(AudioVideoPipelineDeviceTest, Mp4Playback) {
   set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
+  ConfigureForFile("bear.mp4");
+  Start();
+  base::RunLoop().Run();
+}
+
+TEST_F(AudioVideoPipelineDeviceTest, Mp4PlaybackStartsPaused) {
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
+  AddPause(base::TimeDelta(), base::TimeDelta::FromSeconds(1));
+
   ConfigureForFile("bear.mp4");
   Start();
   base::RunLoop().Run();
