@@ -423,8 +423,11 @@ void WebContentsViewMac::RenderViewCreated(RenderViewHost* host) {
   host->EnablePreferredSizeMode();
 }
 
-void WebContentsViewMac::RenderViewSwappedIn(RenderViewHost* host) {
-}
+void WebContentsViewMac::RenderViewReady() {}
+
+void WebContentsViewMac::RenderFrameSwappedIn(RenderFrameHost* old_host,
+                                              RenderFrameHost* new_host,
+                                              bool is_main_frame) {}
 
 void WebContentsViewMac::SetOverscrollControllerEnabled(bool enabled) {
 }

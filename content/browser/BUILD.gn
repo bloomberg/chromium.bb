@@ -2099,8 +2099,6 @@ jumbo_source_set("browser") {
       "accessibility/web_contents_accessibility_android.h",
       "android/content_ui_event_handler.cc",
       "android/content_ui_event_handler.h",
-      "android/content_view_core.cc",
-      "android/content_view_core.h",
       "android/content_view_statics.cc",
       "android/date_time_chooser_android.cc",
       "android/date_time_chooser_android.h",

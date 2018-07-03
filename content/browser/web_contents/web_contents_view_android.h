@@ -80,7 +80,10 @@ class WebContentsViewAndroid : public WebContentsView,
       RenderWidgetHost* render_widget_host) override;
   void SetPageTitle(const base::string16& title) override;
   void RenderViewCreated(RenderViewHost* host) override;
-  void RenderViewSwappedIn(RenderViewHost* host) override;
+  void RenderViewReady() override;
+  void RenderFrameSwappedIn(RenderFrameHost* old_host,
+                            RenderFrameHost* new_host,
+                            bool is_main_frame) override;
   void SetOverscrollControllerEnabled(bool enabled) override;
 
   // Backend implementation of RenderViewHostDelegateView.
@@ -122,10 +125,10 @@ class WebContentsViewAndroid : public WebContentsView,
   void OnSizeChanged() override;
   void OnPhysicalBackingSizeChanged() override;
 
+  void SetFocus(bool focused);
   void set_device_orientation(int orientation) {
     device_orientation_ = orientation;
   }
-  int device_orientation() { return device_orientation_; }
 
  private:
   void OnDragEntered(const std::vector<DropData::Metadata>& metadata,

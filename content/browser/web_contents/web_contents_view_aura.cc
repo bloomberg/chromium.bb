@@ -843,8 +843,11 @@ void WebContentsViewAura::SetPageTitle(const base::string16& title) {
 void WebContentsViewAura::RenderViewCreated(RenderViewHost* host) {
 }
 
-void WebContentsViewAura::RenderViewSwappedIn(RenderViewHost* host) {
-}
+void WebContentsViewAura::RenderViewReady() {}
+
+void WebContentsViewAura::RenderFrameSwappedIn(RenderFrameHost* old_host,
+                                               RenderFrameHost* new_host,
+                                               bool is_main_frame) {}
 
 void WebContentsViewAura::SetOverscrollControllerEnabled(bool enabled) {
   RenderWidgetHostViewAura* view =
