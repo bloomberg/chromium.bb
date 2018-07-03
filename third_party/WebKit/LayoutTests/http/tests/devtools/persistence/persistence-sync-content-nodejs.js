@@ -9,7 +9,7 @@
 
   var testMapping = BindingsTestRunner.initializeTestMapping();
   // Pretend we are running under V8 front-end.
-  SDK.targetManager.mainTarget().setIsNodeJSForTest();
+  SDK.targetManager.mainTarget().markAsNodeJS();
 
   var content = ['', '', 'var express = require("express");', '//TODO'].join('\n');
 
