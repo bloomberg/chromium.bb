@@ -175,10 +175,7 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             //   comes from a single thread. (Note in JB MR2 this exception was in WebView.java).
             if (mAppTargetSdkVersion >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
                 mFactory.startYourEngines(false);
-                try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
-                             "WebViewChromium.checkThreadInsideInit")) {
-                    checkThread();
-                }
+                checkThread();
             } else if (!mFactory.hasStarted()) {
                 if (Looper.myLooper() == Looper.getMainLooper()) {
                     mFactory.startYourEngines(true);
@@ -198,11 +195,8 @@ class WebViewChromium implements WebViewProvider, WebViewProvider.ScrollDelegate
             final boolean doNotUpdateSelectionOnMutatingSelectionRange =
                     mAppTargetSdkVersion <= Build.VERSION_CODES.M;
 
-            try (ScopedSysTraceEvent e2 = ScopedSysTraceEvent.scoped(
-                         "WebViewChromiumFactoryProvider.createWebViewContentsClientAdapter")) {
-                mContentsClientAdapter =
-                        mFactory.createWebViewContentsClientAdapter(mWebView, mContext);
-            }
+            mContentsClientAdapter =
+                    mFactory.createWebViewContentsClientAdapter(mWebView, mContext);
             try (ScopedSysTraceEvent e2 =
                             ScopedSysTraceEvent.scoped("WebViewChromium.ContentSettingsAdapter")) {
                 mWebSettings = new ContentSettingsAdapter(new AwSettings(mContext,
