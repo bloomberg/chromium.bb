@@ -308,6 +308,14 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   read_sequence_header(cm, rb);
 
   av1_read_color_config(cm, rb, pbi->allow_lowbitdepth);
+  if (!(cm->subsampling_x == 0 && cm->subsampling_y == 0) &&
+      !(cm->subsampling_x == 1 && cm->subsampling_y == 1) &&
+      !(cm->subsampling_x == 1 && cm->subsampling_y == 0)) {
+    aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                       "Only 4:4:4, 4:2:2 and 4:2:0 are currently supported by "
+                       "CfL, %d %d subsampling is not supported.\n",
+                       cm->subsampling_x, cm->subsampling_y);
+  }
 
   cm->film_grain_params_present = aom_rb_read_bit(rb);
 
