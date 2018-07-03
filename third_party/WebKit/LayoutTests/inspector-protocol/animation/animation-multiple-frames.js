@@ -23,7 +23,7 @@
     if (!lastStartTime || animation.startTime >= lastStartTime)
       testRunner.log('Animation started: start time is valid');
     else if (lastStartTime)
-      testRunner.log('Animation started: invalid startTime!' + animation.startTime + '.' + lastStartTime);
+      testRunner.log(`Animation started: invalid startTime: ${animation.startTime} < ${lastStartTime}`);
     lastStartTime = animation.startTime;
     numberAnimationsCaptured++;
 

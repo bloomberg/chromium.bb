@@ -4729,9 +4729,6 @@ crbug.com/856601 [ Linux ] fast/css/visited-link-hang.html [ Pass Timeout ]
 crbug.com/856601 [ Linux ] http/tests/devtools/elements/styles-4/styles-inline-element-style-changes-should-not-force-style-recalc.js [ Pass Timeout ]
 crbug.com/856601 [ Linux ] virtual/feature-policy-permissions/external/wpt/mediacapture-streams/MediaDevices-IDL-enumerateDevices.html [ Pass Timeout ]
 
-# Sheriff 2018-06-27
-crbug.com/856955 [ Win10 Linux ] inspector-protocol/animation/animation-multiple-frames.js [ Failure Pass ]
-
 # Sheriff 2018-06-28
 crbug.com/857520 [ Mac Win ] external/wpt/accelerometer/Accelerometer-iframe-access.https.html [ Failure ]
 
