@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "content/public/browser/web_contents.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -49,7 +50,8 @@ void UpdateToggleStateWithTag(NSInteger tag, id item, NSWindow* window) {
   // On Windows this logic happens in bookmark_bar_view.cc. This simply updates
   // the menu item; it does not display the bookmark bar itself.
   if (tag == IDC_SHOW_BOOKMARK_BAR) {
-    SetToggleState(browser->window()->IsBookmarkBarVisible(), item);
+    PrefService* prefs = browser->profile()->GetPrefs();
+    SetToggleState(prefs->GetBoolean(bookmarks::prefs::kShowBookmarkBar), item);
     return;
   }
 
