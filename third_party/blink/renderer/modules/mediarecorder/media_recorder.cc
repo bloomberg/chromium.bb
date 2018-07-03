@@ -202,6 +202,12 @@ MediaRecorder::MediaRecorder(ExecutionContext* context,
             mime_type_ + ") is not supported.");
     return;
   }
+  // If the user requested no mimeType, query |recorder_handler_|.
+  if (options.mimeType().IsEmpty()) {
+    const String actual_mime_type = recorder_handler_->ActualMimeType();
+    if (!actual_mime_type.IsEmpty())
+      mime_type_ = actual_mime_type;
+  }
   stopped_ = false;
 }
 

@@ -65,11 +65,12 @@ static const MediaRecorderTestParams kMediaRecorderTestParams[] = {
     {true, false, "video/webm", "vp8", true},
     {true, false, "video/webm", "vp9", true},
 #if BUILDFLAG(RTC_USE_H264)
-    {true, false, "video/webm", "h264", false},
+    {true, false, "video/x-matroska", "avc1", false},
 #endif
     {false, true, "audio/webm", "opus", true},
     {false, true, "audio/webm", "", true},  // Should default to opus.
     {false, true, "audio/webm", "pcm", true},
+    {true, true, "video/webm", "vp9,opus", true},
 };
 
 class MediaRecorderHandlerTest : public TestWithParam<MediaRecorderTestParams>,
@@ -429,6 +430,29 @@ TEST_P(MediaRecorderHandlerTest, WebmMuxerErrorWhileEncoding) {
     run_loop.Run();
   }
 
+  // Expect a last call on destruction, with size 0 and |lastInSlice| true.
+  EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
+  media_recorder_handler_.reset();
+}
+
+// Checks the ActualMimeType() versus the expected.
+TEST_P(MediaRecorderHandlerTest, ActualMimeType) {
+  AddTracks();
+  const WebString mime_type(WebString::FromASCII(GetParam().mime_type));
+  const WebString codecs(WebString::FromASCII(GetParam().codecs));
+  EXPECT_TRUE(media_recorder_handler_->Initialize(this, registry_.test_stream(),
+                                                  mime_type, codecs, 0, 0));
+
+  std::string actual_mime_type(GetParam().mime_type);
+  actual_mime_type.append(";codecs=");
+  if (strlen(GetParam().codecs) != 0u)
+    actual_mime_type.append(GetParam().codecs);
+  else if (GetParam().has_video)
+    actual_mime_type.append("vp8");
+  else if (GetParam().has_audio)
+    actual_mime_type.append("opus");
+
+  EXPECT_EQ(media_recorder_handler_->ActualMimeType().Utf8(), actual_mime_type);
 
   // Expect a last call on destruction, with size 0 and |lastInSlice| true.
   EXPECT_CALL(*this, WriteData(nullptr, 0, true, _)).Times(1);
