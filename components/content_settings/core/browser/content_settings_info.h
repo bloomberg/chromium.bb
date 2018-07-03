@@ -32,11 +32,19 @@ class ContentSettingsInfo {
     INHERIT_IF_LESS_PERMISSIVE
   };
 
+  enum StorageBehavior {
+    // The setting is stored and used in future sessions.
+    PERSISTENT,
+    // The setting is only valid throughout the current session.
+    EPHEMERAL,
+  };
+
   // This object does not take ownership of |website_settings_info|.
   ContentSettingsInfo(const WebsiteSettingsInfo* website_settings_info,
                       const std::vector<std::string>& whitelisted_schemes,
                       const std::set<ContentSetting>& valid_settings,
-                      IncognitoBehavior incognito_behavior);
+                      IncognitoBehavior incognito_behavior,
+                      StorageBehavior storage_behavior);
   ~ContentSettingsInfo();
 
   const WebsiteSettingsInfo* website_settings_info() const {
@@ -53,12 +61,14 @@ class ContentSettingsInfo {
   bool IsDefaultSettingValid(ContentSetting setting) const;
 
   IncognitoBehavior incognito_behavior() const { return incognito_behavior_; }
+  StorageBehavior storage_behavior() const { return storage_behavior_; }
 
  private:
   const WebsiteSettingsInfo* website_settings_info_;
   const std::vector<std::string> whitelisted_schemes_;
   const std::set<ContentSetting> valid_settings_;
   const IncognitoBehavior incognito_behavior_;
+  const StorageBehavior storage_behavior_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsInfo);
 };
