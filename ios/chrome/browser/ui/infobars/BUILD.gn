@@ -7,6 +7,8 @@ source_set("infobars") {
   sources = [
     "confirm_infobar_view.h",
     "confirm_infobar_view.mm",
+    "infobar_constants.h",
+    "infobar_constants.mm",
     "infobar_view_sizing.h",
     "infobar_view_sizing_delegate.h",
   ]
