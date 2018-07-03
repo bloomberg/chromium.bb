@@ -412,7 +412,6 @@ def _handle_perf_results(
     logdog_stream = None
     logdog_label = 'Results Dashboard'
     for benchmark_name, output_file in results_dict.iteritems():
-      print "Benchmark: %s, file: %s" % (benchmark_name, output_file)
       failure = benchmark_upload_result_map[benchmark_name]
       upload_failure = upload_failure or failure
       is_reference = '.reference' in benchmark_name
