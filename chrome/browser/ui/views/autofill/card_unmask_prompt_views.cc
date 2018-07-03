@@ -201,7 +201,7 @@ views::View* CardUnmaskPromptViews::CreateFootnoteView() {
   if (!controller_->CanStoreLocally())
     return nullptr;
 
-  // Local storage checkbox and (?) tooltip.
+  // Local storage checkbox.
   storage_row_ = new views::View();
   ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
   auto* storage_row_layout =
