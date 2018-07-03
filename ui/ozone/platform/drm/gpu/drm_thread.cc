@@ -186,7 +186,7 @@ void DrmThread::CreateBufferFromFds(
     gfx::AcceleratedWidget widget,
     const gfx::Size& size,
     gfx::BufferFormat format,
-    std::vector<base::ScopedFD>&& fds,
+    std::vector<base::ScopedFD> fds,
     const std::vector<gfx::NativePixmapPlane>& planes,
     scoped_refptr<GbmBuffer>* buffer) {
   scoped_refptr<GbmDevice> gbm =
