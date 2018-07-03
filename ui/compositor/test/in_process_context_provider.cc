@@ -96,7 +96,7 @@ gpu::ContextResult InProcessContextProvider::BindToCurrentThread() {
     return bind_result_;
   bind_tried_ = true;
 
-  context_ = gpu::GLInProcessContext::CreateWithoutInit();
+  context_ = std::make_unique<gpu::GLInProcessContext>();
   bind_result_ = context_->Initialize(
       nullptr,  /* service */
       nullptr,  /* surface */

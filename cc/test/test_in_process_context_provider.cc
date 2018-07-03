@@ -47,7 +47,7 @@ std::unique_ptr<gpu::GLInProcessContext> CreateGLInProcessContext(
   attribs.bind_generates_resource = false;
   attribs.enable_oop_rasterization = oop_raster;
 
-  auto context = gpu::GLInProcessContext::CreateWithoutInit();
+  auto context = std::make_unique<gpu::GLInProcessContext>();
   auto result = context->Initialize(
       nullptr, nullptr, is_offscreen, gpu::kNullSurfaceHandle, attribs,
       gpu::SharedMemoryLimits(), gpu_memory_buffer_manager, image_factory,

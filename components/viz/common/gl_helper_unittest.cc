@@ -64,7 +64,7 @@ class GLHelperTest : public testing::Test {
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
 
-    context_ = gpu::GLInProcessContext::CreateWithoutInit();
+    context_ = std::make_unique<gpu::GLInProcessContext>();
     auto result =
         context_->Initialize(nullptr,                 /* service */
                              nullptr,                 /* surface */

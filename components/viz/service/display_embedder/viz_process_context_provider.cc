@@ -58,7 +58,7 @@ VizProcessContextProvider::VizProcessContextProvider(
     gpu::GpuChannelManagerDelegate* gpu_channel_manager_delegate,
     const gpu::SharedMemoryLimits& limits)
     : attributes_(CreateAttributes()),
-      context_(gpu::GLInProcessContext::CreateWithoutInit()),
+      context_(std::make_unique<gpu::GLInProcessContext>()),
       context_result_(
           context_->Initialize(std::move(service),
                                nullptr,
@@ -132,15 +132,6 @@ const gpu::GpuFeatureInfo& VizProcessContextProvider::GetGpuFeatureInfo()
 void VizProcessContextProvider::AddObserver(ContextLostObserver* obs) {}
 
 void VizProcessContextProvider::RemoveObserver(ContextLostObserver* obs) {}
-
-uint32_t VizProcessContextProvider::GetCopyTextureInternalFormat() {
-  if (attributes_.alpha_size > 0)
-    return GL_RGBA;
-  DCHECK_NE(attributes_.red_size, 0);
-  DCHECK_NE(attributes_.green_size, 0);
-  DCHECK_NE(attributes_.blue_size, 0);
-  return GL_RGB;
-}
 
 void VizProcessContextProvider::SetUpdateVSyncParametersCallback(
     const gpu::InProcessCommandBuffer::UpdateVSyncParametersCallback&

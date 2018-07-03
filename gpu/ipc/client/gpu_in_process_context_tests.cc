@@ -34,7 +34,7 @@ class ContextTestBase : public testing::Test {
     attributes.sample_buffers = 1;
     attributes.bind_generates_resource = false;
 
-    auto context = gpu::GLInProcessContext::CreateWithoutInit();
+    auto context = std::make_unique<gpu::GLInProcessContext>();
     auto result = context->Initialize(
         nullptr,                 /* service */
         nullptr,                 /* surface */

@@ -66,7 +66,7 @@ class GLHelperBenchmark : public testing::Test {
     attributes.bind_generates_resource = false;
     attributes.gpu_preference = gl::PreferDiscreteGpu;
 
-    context_ = gpu::GLInProcessContext::CreateWithoutInit();
+    context_ = std::make_unique<gpu::GLInProcessContext>();
     auto result =
         context_->Initialize(nullptr,                 /* service */
                              nullptr,                 /* surface */

@@ -65,7 +65,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
   limits.start_transfer_buffer_size = 64 * 1024;
   limits.min_transfer_buffer_size = 64 * 1024;
 
-  context_ = gpu::GLInProcessContext::CreateWithoutInit();
+  context_ = std::make_unique<gpu::GLInProcessContext>();
   context_->Initialize(service, surface, surface->IsOffscreen(),
                        gpu::kNullSurfaceHandle, attributes, limits, nullptr,
                        nullptr, nullptr, nullptr);
