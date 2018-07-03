@@ -88,9 +88,6 @@ fast/harness/results.html [ WontFix ]
 [ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu-reveal-focus.html [ WontFix ]
 [ Mac ] virtual/user-activation-v2/fast/events/menu-key-context-menu.html [ WontFix ]
 
-# Link Highlighting is only supported on Windows and Linux
-[ Mac ] compositing/gestures [ WontFix ]
-
 # These tests are specific to Linux.
 [ Mac Win ] editing/input/linux_ltr_composition_underline.html [ WontFix ]
 [ Mac Win ] editing/input/linux_rtl_composition_underline.html [ WontFix ]
