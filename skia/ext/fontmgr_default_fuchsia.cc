@@ -22,5 +22,7 @@ SK_API sk_sp<SkFontMgr> SkFontMgr::Factory() {
   if (g_default_fontmgr) {
     return sk_ref_sp(g_default_fontmgr);
   }
+  // TODO(crbug.com/800156): Replace with FuchsiaFontManager when we can
+  // access FontProvider in sandbox.
   return SkFontMgr_New_Custom_Empty();
 }

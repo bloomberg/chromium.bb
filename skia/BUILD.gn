@@ -481,6 +481,13 @@ component("skia") {
       "//third_party/skia/src/ports/SkFontMgr_custom.cpp",
       "//third_party/skia/src/ports/SkFontMgr_custom_empty.cpp",
       "ext/fontmgr_default_fuchsia.cc",
+      "ext/fontmgr_default_fuchsia.h",
+      "ext/fontmgr_fuchsia.cc",
+      "ext/fontmgr_fuchsia.h",
+    ]
+    deps += [
+      "//third_party/fuchsia-sdk:fonts",
+      "//third_party/icu:icuuc",
     ]
   }
 
@@ -793,6 +800,17 @@ test("skia_unittests") {
       "//cc:test_support",
       "//mojo/public/cpp/bindings",
       "//skia/public/interfaces:test_interfaces",
+    ]
+  }
+
+  if (is_fuchsia) {
+    sources += [ "ext/fontmgr_fuchsia_unittest.cc" ]
+    deps += [
+      "//third_party/fuchsia-sdk:fonts",
+      "//third_party/test_fonts",
+    ]
+    data_deps = [
+      "//third_party/test_fonts",
     ]
   }
 }
