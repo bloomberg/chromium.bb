@@ -207,6 +207,7 @@ bool VrXrBrowserTestBase::RunJavaScriptAndExtractBoolOrFail(
     const std::string& js_expression,
     content::WebContents* web_contents) {
   bool result;
+  DLOG(ERROR) << "Run javascript: " << js_expression;
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
       web_contents,
       "window.domAutomationController.send(" + js_expression + ")", &result));

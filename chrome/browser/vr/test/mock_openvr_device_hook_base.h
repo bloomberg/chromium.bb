@@ -15,6 +15,9 @@ class MockOpenVRBase : public device::OpenVRTestHook {
 
   // OpenVRTestHook
   void OnFrameSubmitted(device::SubmittedFrameData frame_data) override;
+  device::DeviceConfig WaitGetDeviceConfig() override;
+  device::PoseFrameData WaitGetPresentingPose() override;
+  device::PoseFrameData WaitGetMagicWindowPose() override;
 };
 
 #endif  // CHROME_BROWSER_VR_TEST_MOCK_OPENVR_DEVICE_HOOK_BASE_H_

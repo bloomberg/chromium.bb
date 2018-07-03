@@ -17,14 +17,40 @@ struct Color {
   unsigned char a;
 };
 
+struct Viewport {
+  float left, right, top, bottom;
+};
+
 struct SubmittedFrameData {
   Color color;
+
+  bool left_eye;
+
+  Viewport viewport;
+  unsigned int image_width;
+  unsigned int image_height;
+
+  char raw_buffer[256];  // Can encode raw data here.
+};
+
+struct PoseFrameData {
+  float device_to_origin[16];
+  bool is_valid;
+};
+
+struct DeviceConfig {
+  float ipd;
+  float viewport_left[4];   // raw projection left {left, right, top, bottom}
+  float viewport_right[4];  // raw projection right {left, right, top, bottom}
 };
 
 // Tests may implement this, and register it to control behavior of OpenVR.
 class OpenVRTestHook {
  public:
   virtual void OnFrameSubmitted(SubmittedFrameData frame_data) = 0;
+  virtual DeviceConfig WaitGetDeviceConfig() = 0;
+  virtual PoseFrameData WaitGetPresentingPose() = 0;
+  virtual PoseFrameData WaitGetMagicWindowPose() = 0;
 };
 
 class TestHookRegistration {

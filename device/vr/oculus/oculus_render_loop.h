@@ -61,6 +61,8 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
   void Init() override;
   void CleanUp() override;
 
+  void ClearPendingFrame();
+
   mojom::VRPosePtr GetPose();
 
   std::vector<mojom::XRInputSourceStatePtr> GetInputState(
@@ -75,6 +77,9 @@ class OculusRenderLoop : public base::Thread, mojom::VRPresentationProvider {
 #if defined(OS_WIN)
   D3D11TextureHelper texture_helper_;
 #endif
+
+  base::OnceCallback<void()> delayed_get_frame_data_callback_;
+  bool has_outstanding_frame_ = false;
 
   long long ovr_frame_index_ = 0;
   int16_t next_frame_id_ = 0;
