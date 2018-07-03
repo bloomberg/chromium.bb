@@ -300,6 +300,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void ContentBoundsChanged(int width, int height);
   void BufferBoundsChanged(const gfx::Size& content_buffer_size,
                            const gfx::Size& overlay_buffer_size);
+  void DialogBufferBoundsChanged(const gfx::Size& size);
   void UIBoundsChanged(int width, int height);
   void ResumeContentRendering();
 
@@ -519,8 +520,9 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   bool cardboard_ = false;
   gfx::Quaternion controller_quat_;
 
-  gfx::Size content_tex_buffer_size_ = {0, 0};
-  gfx::Size webvr_surface_size_ = {0, 0};
+  gfx::Size content_tex_buffer_size_;
+  gfx::Size webvr_surface_size_;
+  gfx::Size dialog_tex_buffer_size_;
 
   std::unique_ptr<WebXrPresentationState> webxr_ = nullptr;
 
