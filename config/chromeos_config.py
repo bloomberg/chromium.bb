@@ -461,6 +461,7 @@ _arm_internal_release_boards = frozenset([
     'hana',
     'kevin',
     'kevin-arcnext',
+    'kukui',
     'lasilla-ground',
     'lasilla-sky',
     'macchiato-ground',
@@ -2555,6 +2556,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cheza', #contact: philipchen@
       'dragonegg', # contact:yueherngl@
       'eve-campfire', # contact:yueherngl@
+      'kukui', # contact:zhuohao@
       'tael',
       'atlas',
   ])
