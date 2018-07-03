@@ -338,9 +338,14 @@ class ContextualSuggestionsMediator
     @Override
     public ListMenuButton.Item[] getItems() {
         final Context context = ContextUtils.getApplicationContext();
-        return new ListMenuButton.Item[] {
-                new ListMenuButton.Item(context, R.string.menu_preferences, true),
-                new ListMenuButton.Item(context, R.string.menu_send_feedback, true)};
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_OPT_OUT)) {
+            return new ListMenuButton.Item[] {
+                    new ListMenuButton.Item(context, R.string.menu_preferences, true),
+                    new ListMenuButton.Item(context, R.string.menu_send_feedback, true)};
+        } else {
+            return new ListMenuButton.Item[] {
+                    new ListMenuButton.Item(context, R.string.menu_send_feedback, true)};
+        }
     }
 
     @Override
