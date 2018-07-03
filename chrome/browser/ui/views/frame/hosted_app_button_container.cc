@@ -7,6 +7,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/ui/browser_content_setting_bubble_model_delegate.h"
 #include "chrome/browser/ui/content_settings/content_setting_image_model.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/hosted_app_menu_button.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
@@ -62,7 +63,7 @@ class HostedAppButtonContainer::ContentSettingsContainer
     : public views::View,
       public ContentSettingImageView::Delegate {
  public:
-  ContentSettingsContainer(BrowserView* browser_view, SkColor icon_color);
+  explicit ContentSettingsContainer(BrowserView* browser_view);
   ~ContentSettingsContainer() override = default;
 
   // Updates the visibility of each content setting.
@@ -133,8 +134,7 @@ HostedAppButtonContainer::GetContentSettingViewsForTesting() const {
 }
 
 HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
-    BrowserView* browser_view,
-    SkColor icon_color)
+    BrowserView* browser_view)
     : browser_view_(browser_view) {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -154,7 +154,6 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
     auto image_view = std::make_unique<ContentSettingImageView>(
         std::move(model), this,
         views::NativeWidgetAura::GetWindowTitleFontList());
-    image_view->SetIconColor(icon_color);
     // Padding around content setting icons.
     constexpr int kContentSettingIconInteriorPadding = 4;
     image_view->SetBorder(views::CreateEmptyBorder(
@@ -171,12 +170,19 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
     : browser_view_(browser_view),
       active_icon_color_(active_icon_color),
       inactive_icon_color_(inactive_icon_color),
-      app_menu_button_(new HostedAppMenuButton(browser_view)),
+      content_settings_container_(new ContentSettingsContainer(browser_view)),
+      page_action_icon_container_view_(new PageActionIconContainerView(
+          {PageActionIconType::kZoom},
+          GetLayoutConstant(HOSTED_APP_PAGE_ACTION_ICON_SIZE),
+          browser_view->GetProfile(),
+          this,
+          nullptr)),
       browser_actions_container_(
           new BrowserActionsContainer(browser_view->browser(),
                                       nullptr,
                                       this,
-                                      false /* interactive */)) {
+                                      false /* interactive */)),
+      app_menu_button_(new HostedAppMenuButton(browser_view)) {
   DCHECK(browser_view_);
   const int kHorizontalPadding =
       views::LayoutProvider::Get()->GetDistanceMetric(
@@ -188,18 +194,12 @@ HostedAppButtonContainer::HostedAppButtonContainer(BrowserView* browser_view,
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
 
-  auto content_settings_container = std::make_unique<ContentSettingsContainer>(
-      browser_view, active_icon_color);
-  content_settings_container_ = content_settings_container.get();
-  AddChildView(content_settings_container.release());
-
-  page_action_icon_container_view_ = new PageActionIconContainerView();
+  AddChildView(content_settings_container_);
   AddChildView(page_action_icon_container_view_);
-
   AddChildView(browser_actions_container_);
-
-  app_menu_button_->SetIconColor(active_icon_color);
   AddChildView(app_menu_button_);
+
+  UpdateIconsColor();
 
   browser_view_->SetToolbarButtonProvider(this);
   browser_view_->immersive_mode_controller()->AddObserver(this);
@@ -217,11 +217,18 @@ void HostedAppButtonContainer::RefreshContentSettingViews() {
 }
 
 void HostedAppButtonContainer::SetPaintAsActive(bool active) {
-  content_settings_container_->SetIconColor(active ? active_icon_color_
-                                                   : inactive_icon_color_);
+  if (paint_as_active_ == active)
+    return;
+  paint_as_active_ = active;
+  UpdateIconsColor();
+}
 
-  app_menu_button_->SetIconColor(active ? active_icon_color_
-                                        : inactive_icon_color_);
+void HostedAppButtonContainer::UpdateIconsColor() {
+  SkColor icon_color =
+      paint_as_active_ ? active_icon_color_ : inactive_icon_color_;
+  content_settings_container_->SetIconColor(icon_color);
+  page_action_icon_container_view_->SetIconColor(icon_color);
+  app_menu_button_->SetIconColor(icon_color);
 }
 
 void HostedAppButtonContainer::StartTitlebarAnimation(
@@ -239,11 +246,6 @@ void HostedAppButtonContainer::StartTitlebarAnimation(
 }
 
 void HostedAppButtonContainer::ChildPreferredSizeChanged(views::View* child) {
-  if (child != browser_actions_container_ &&
-      child != content_settings_container_) {
-    return;
-  }
-
   PreferredSizeChanged();
 }
 
@@ -279,6 +281,11 @@ HostedAppButtonContainer::CreateToolbarActionsBar(
   DCHECK_EQ(browser_view_->browser(), browser);
   return std::make_unique<HostedAppToolbarActionsBar>(delegate, browser,
                                                       main_bar);
+}
+
+content::WebContents*
+HostedAppButtonContainer::GetWebContentsForPageActionIconView() {
+  return browser_view_->GetActiveWebContents();
 }
 
 BrowserActionsContainer*

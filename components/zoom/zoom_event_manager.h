@@ -51,8 +51,8 @@ class ZoomEventManager : public base::SupportsUserData::Data {
   void OnDefaultZoomLevelChanged();
 
   // Add and remove observers.
-  void AddZoomEventManagerObserver(ZoomEventManagerObserver* observer);
-  void RemoveZoomEventManagerObserver(ZoomEventManagerObserver* observer);
+  void AddObserver(ZoomEventManagerObserver* observer);
+  void RemoveObserver(ZoomEventManagerObserver* observer);
 
   // Get a weak ptr to be used by clients who may themselves be UserData for
   // the context, since the order of destruction is undefined between the client

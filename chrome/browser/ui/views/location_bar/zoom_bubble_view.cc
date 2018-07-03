@@ -20,9 +20,10 @@
 #include "chrome/browser/ui/browser_tabstrip.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/toolbar_button_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
-#include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "chrome/browser/ui/views/location_bar/zoom_view.h"
+#include "chrome/browser/ui/views/page_action/page_action_icon_container_view.h"
+#include "chrome/browser/ui/views/page_action/zoom_view.h"
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "chrome/common/extensions/api/extension_action/action_info.h"
 #include "chrome/grit/generated_resources.h"
@@ -129,10 +130,13 @@ views::View* GetAnchorViewForBrowser(Browser* browser, bool is_fullscreen) {
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser);
   if (!is_fullscreen ||
       browser_view->immersive_mode_controller()->IsRevealed()) {
-    LocationBarView* location_bar = browser_view->GetLocationBarView();
+    PageActionIconContainerView* container =
+        browser_view->toolbar_button_provider()
+            ->GetPageActionIconContainerView();
     return ui::MaterialDesignController::IsSecondaryUiMaterial()
-               ? static_cast<views::View*>(location_bar)
-               : static_cast<views::View*>(location_bar->zoom_view());
+               ? static_cast<views::View*>(container)
+               : static_cast<views::View*>(container->GetPageActionIconView(
+                     PageActionIconType::kZoom));
   }
   return nullptr;
 #else  // OS_MACOSX && !MAC_VIEWS_BROWSER
@@ -172,8 +176,10 @@ void ParentToViewsBrowser(Browser* browser,
   views::Widget* zoom_bubble_widget =
       views::BubbleDialogDelegateView::CreateBubble(zoom_bubble);
   if (zoom_bubble_widget && anchor_view) {
-    browser_view->GetLocationBarView()->zoom_view()->OnBubbleWidgetCreated(
-        zoom_bubble_widget);
+    browser_view->toolbar_button_provider()
+        ->GetPageActionIconContainerView()
+        ->GetPageActionIconView(PageActionIconType::kZoom)
+        ->OnBubbleWidgetCreated(zoom_bubble_widget);
   }
 }
 #endif
@@ -556,8 +562,11 @@ void ZoomBubbleView::UpdateZoomIconVisibility() {
   // may also be destroyed: the call to WindowClosing() may be triggered by
   // parent window destruction tearing down its child windows.
   Browser* browser = chrome::FindBrowserWithID(session_id_);
-  if (browser && browser->window() && browser->window()->GetLocationBar())
-    browser->window()->GetLocationBar()->UpdateZoomViewVisibility();
+  if (browser && browser->window() &&
+      browser->window()->GetPageActionIconContainer()) {
+    browser->window()->GetPageActionIconContainer()->UpdatePageActionIcon(
+        PageActionIconType::kZoom);
+  }
 }
 
 void ZoomBubbleView::StartTimerIfNecessary() {

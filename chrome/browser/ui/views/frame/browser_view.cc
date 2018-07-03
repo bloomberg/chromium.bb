@@ -844,10 +844,11 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
 
 void BrowserView::ZoomChangedForActiveTab(bool can_show_bubble) {
   const AppMenuButton* app_menu_button =
-      toolbar_button_provider_->GetAppMenuButton();
+      toolbar_button_provider()->GetAppMenuButton();
   bool app_menu_showing = app_menu_button && app_menu_button->IsMenuShowing();
-  GetLocationBarView()->ZoomChangedForActiveTab(can_show_bubble &&
-                                                !app_menu_showing);
+  toolbar_button_provider()
+      ->GetPageActionIconContainerView()
+      ->ZoomChangedForActiveTab(can_show_bubble && !app_menu_showing);
 }
 
 gfx::Rect BrowserView::GetRestoredBounds() const {

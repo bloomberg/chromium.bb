@@ -45,13 +45,11 @@ void ZoomEventManager::OnDefaultZoomLevelChanged() {
     observer.OnDefaultZoomLevelChanged();
 }
 
-void ZoomEventManager::AddZoomEventManagerObserver(
-    ZoomEventManagerObserver* observer) {
+void ZoomEventManager::AddObserver(ZoomEventManagerObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void ZoomEventManager::RemoveZoomEventManagerObserver(
-    ZoomEventManagerObserver* observer) {
+void ZoomEventManager::RemoveObserver(ZoomEventManagerObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

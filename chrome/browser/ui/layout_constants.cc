@@ -40,6 +40,10 @@ int GetLayoutConstant(LayoutConstant constant) {
                                       : 39;
     case HOSTED_APP_MENU_BUTTON_SIZE:
       return 24;
+    case HOSTED_APP_PAGE_ACTION_ICON_SIZE:
+      // We must limit the size of icons in the title bar to avoid vertically
+      // stretching the container view.
+      return 16;
     case LOCATION_BAR_BUBBLE_VERTICAL_PADDING:
       return hybrid ? 1 : 3;
     case LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING:
