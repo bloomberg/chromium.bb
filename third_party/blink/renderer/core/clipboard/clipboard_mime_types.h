@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
+ * Copyright (c) 2010 Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,23 +28,24 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_UTILITIES_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_UTILITIES_H_
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_
 
-#include "build/build_config.h"
-#include "third_party/blink/renderer/platform/platform_export.h"
-#include "third_party/blink/renderer/platform/weborigin/kurl.h"
-#include "third_party/blink/renderer/platform/wtf/forward.h"
+#include "third_party/blink/renderer/core/core_export.h"
 
 namespace blink {
 
-#if defined(OS_WIN)
-PLATFORM_EXPORT void ReplaceNewlinesWithWindowsStyleNewlines(String&);
-#endif
-PLATFORM_EXPORT void ReplaceNBSPWithSpace(String&);
-PLATFORM_EXPORT String ConvertURIListToURL(const String& uri_list);
-PLATFORM_EXPORT String URLToImageMarkup(const KURL&, const String& title);
+CORE_EXPORT extern const char kMimeTypeText[];
+CORE_EXPORT extern const char kMimeTypeTextPlain[];
+CORE_EXPORT extern const char kMimeTypeTextPlainEtc[];
+CORE_EXPORT extern const char kMimeTypeTextHTML[];
+CORE_EXPORT extern const char kMimeTypeTextRTF[];
+CORE_EXPORT extern const char kMimeTypeURL[];
+CORE_EXPORT extern const char kMimeTypeTextURIList[];
+CORE_EXPORT extern const char kMimeTypeDownloadURL[];
+CORE_EXPORT extern const char kMimeTypeFiles[];
+CORE_EXPORT extern const char kMimeTypeImagePng[];
 
 }  // namespace blink
 
-#endif  // THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_UTILITIES_H_
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_

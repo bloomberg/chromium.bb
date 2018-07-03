@@ -486,10 +486,6 @@ jumbo_component("platform") {
     "bindings/wrapper_type_info.cc",
     "bindings/wrapper_type_info.h",
     "calculation_value.h",
-    "clipboard/clipboard_mime_types.cc",
-    "clipboard/clipboard_mime_types.h",
-    "clipboard/clipboard_utilities.cc",
-    "clipboard/clipboard_utilities.h",
     "content_decryption_module_result.h",
     "content_setting_callbacks.cc",
     "content_setting_callbacks.h",
@@ -1556,7 +1552,6 @@ jumbo_component("platform") {
   }
 
   if (is_win) {
-    sources += [ "clipboard/clipboard_utilities_win.cc" ]
     sources -= [
       # TODO(https://crbug.com/808221): Use WebFontRenderStyle on Windows.
       "fonts/web_font_render_style.cc",

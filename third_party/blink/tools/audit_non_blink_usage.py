@@ -248,7 +248,7 @@ _CONFIG = [
     },
     {
         'paths': ['third_party/blink/renderer/core/clipboard'],
-        'allowed': ['gfx::PNGCodec'],
+        'allowed': ['gfx::PNGCodec', 'net::EscapeForHTML'],
     },
     {
         'paths': ['third_party/blink/renderer/core/css'],

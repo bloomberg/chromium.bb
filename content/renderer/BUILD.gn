@@ -67,8 +67,6 @@ target(link_target_type, "renderer") {
     "child_frame_compositing_helper.cc",
     "child_frame_compositing_helper.h",
     "child_frame_compositor.h",
-    "clipboard_utils.cc",
-    "clipboard_utils.h",
     "content_security_policy_util.cc",
     "content_security_policy_util.h",
     "context_menu_params_builder.cc",

@@ -32,10 +32,10 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_drag_data.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/dragged_isolated_file_system.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
-#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
-#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/platform/paste_mode.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 

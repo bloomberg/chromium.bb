@@ -28,24 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_
-#define THIRD_PARTY_BLINK_RENDERER_PLATFORM_CLIPBOARD_CLIPBOARD_MIME_TYPES_H_
-
-#include "third_party/blink/renderer/platform/platform_export.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 
 namespace blink {
 
-PLATFORM_EXPORT extern const char kMimeTypeText[];
-PLATFORM_EXPORT extern const char kMimeTypeTextPlain[];
-PLATFORM_EXPORT extern const char kMimeTypeTextPlainEtc[];
-PLATFORM_EXPORT extern const char kMimeTypeTextHTML[];
-PLATFORM_EXPORT extern const char kMimeTypeTextRTF[];
-PLATFORM_EXPORT extern const char kMimeTypeURL[];
-PLATFORM_EXPORT extern const char kMimeTypeTextURIList[];
-PLATFORM_EXPORT extern const char kMimeTypeDownloadURL[];
-PLATFORM_EXPORT extern const char kMimeTypeFiles[];
-PLATFORM_EXPORT extern const char kMimeTypeImagePng[];
+const char kMimeTypeText[] = "text";
+const char kMimeTypeTextPlain[] = "text/plain";
+const char kMimeTypeTextPlainEtc[] = "text/plain;";
+const char kMimeTypeTextHTML[] = "text/html";
+const char kMimeTypeTextRTF[] = "text/rtf";
+const char kMimeTypeURL[] = "url";
+const char kMimeTypeTextURIList[] = "text/uri-list";
+const char kMimeTypeDownloadURL[] = "downloadurl";
+const char kMimeTypeFiles[] = "Files";
+const char kMimeTypeImagePng[] = "image/png";
 
 }  // namespace blink
-
-#endif
