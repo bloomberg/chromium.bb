@@ -19,7 +19,7 @@ KeyboardUI::~KeyboardUI() = default;
 
 void KeyboardUI::ShowKeyboardWindow() {
   if (HasKeyboardWindow()) {
-    TRACE_EVENT0("vk", "ShowKeyboardContainerWindow");
+    TRACE_EVENT0("vk", "ShowKeyboardWindow");
     GetKeyboardWindow()->Show();
   }
 }
