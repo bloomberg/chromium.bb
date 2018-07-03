@@ -245,6 +245,7 @@ class ServiceWorkerContextClientTest : public testing::Test {
     ServiceWorkerContextClient::ResetThreadSpecificInstanceForTesting();
     // Unregister this thread from worker threads.
     WorkerThreadRegistry::Instance()->WillStopCurrentWorkerThread();
+    task_runner_->RunUntilIdle();
   }
 
   void EnableServicification() {

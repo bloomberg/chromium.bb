@@ -50,36 +50,59 @@ class LegacyMockClock : public Clock {
   DISALLOW_COPY_AND_ASSIGN(LegacyMockClock);
 };
 
-// A SingleThreadTaskRunner which forwards everything to its |target_|. This is
-// useful to break ownership chains when it is known that |target_| will outlive
-// the NonOwningProxyTaskRunner it's injected into. In particular,
-// TestMockTimeTaskRunner is forced to be ref-counted by virtue of being a
-// SingleThreadTaskRunner. As such it is impossible for it to have a
-// ThreadTaskRunnerHandle member that points back to itself as the
-// ThreadTaskRunnerHandle which it owns would hold a ref back to it. To break
-// this dependency cycle, the ThreadTaskRunnerHandle is instead handed a
-// NonOwningProxyTaskRunner which allows the TestMockTimeTaskRunner to not hand
-// a ref to its ThreadTaskRunnerHandle while promising in return that it will
-// outlive that ThreadTaskRunnerHandle instance.
-class NonOwningProxyTaskRunner : public SingleThreadTaskRunner {
+}  // namespace
+
+// A SingleThreadTaskRunner which forwards everything to its |target_|. This
+// serves two purposes:
+// 1) If a ThreadTaskRunnerHandle owned by TestMockTimeTaskRunner were to be
+//    set to point to that TestMockTimeTaskRunner, a reference cycle would
+//    result.  As |target_| here is a non-refcounting raw pointer, the cycle is
+//    broken.
+// 2) Since SingleThreadTaskRunner is ref-counted, it's quite easy for it to
+//    accidentally get captured between tests in a singleton somewhere.
+//    Indirecting via NonOwningProxyTaskRunner permits TestMockTimeTaskRunner
+//    to be cleaned up (removing the RunLoop::Delegate in the kBoundToThread
+//    mode), and to also cleanly flag any actual attempts to use the leaked
+//    task runner.
+class TestMockTimeTaskRunner::NonOwningProxyTaskRunner
+    : public SingleThreadTaskRunner {
  public:
   explicit NonOwningProxyTaskRunner(SingleThreadTaskRunner* target)
       : target_(target) {
     DCHECK(target_);
   }
 
+  // Detaches this NonOwningProxyTaskRunner instance from its |target_|. It is
+  // invalid to post tasks after this point but RunsTasksInCurrentSequence()
+  // will still pass on the original thread for convenience with legacy code.
+  void Detach() {
+    AutoLock scoped_lock(lock_);
+    target_ = nullptr;
+  }
+
   // SingleThreadTaskRunner:
   bool RunsTasksInCurrentSequence() const override {
-    return target_->RunsTasksInCurrentSequence();
+    AutoLock scoped_lock(lock_);
+    if (target_)
+      return target_->RunsTasksInCurrentSequence();
+    return thread_checker_.CalledOnValidThread();
   }
   bool PostDelayedTask(const Location& from_here,
                        OnceClosure task,
                        TimeDelta delay) override {
+    AutoLock scoped_lock(lock_);
+    CHECK(target_)
+        << "Attempt to post a task on a deleted TestMockTimeTaskRunner";
+
     return target_->PostDelayedTask(from_here, std::move(task), delay);
   }
   bool PostNonNestableDelayedTask(const Location& from_here,
                                   OnceClosure task,
                                   TimeDelta delay) override {
+    AutoLock scoped_lock(lock_);
+    CHECK(target_)
+        << "Attempt to post a task on a deleted TestMockTimeTaskRunner";
+
     return target_->PostNonNestableDelayedTask(from_here, std::move(task),
                                                delay);
   }
@@ -88,12 +111,14 @@ class NonOwningProxyTaskRunner : public SingleThreadTaskRunner {
   friend class RefCountedThreadSafe<NonOwningProxyTaskRunner>;
   ~NonOwningProxyTaskRunner() override = default;
 
-  SingleThreadTaskRunner* const target_;
+  mutable Lock lock_;
+  SingleThreadTaskRunner* target_;  // guarded by lock_
+
+  // Used to implement RunsTasksInCurrentSequence, without relying on |target_|.
+  ThreadCheckerImpl thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(NonOwningProxyTaskRunner);
 };
-
-}  // namespace
 
 // TestMockTimeTaskRunner::TestOrderedPendingTask -----------------------------
 
@@ -177,15 +202,18 @@ TestMockTimeTaskRunner::TestMockTimeTaskRunner(Time start_time,
     : now_(start_time),
       now_ticks_(start_ticks),
       tasks_lock_cv_(&tasks_lock_),
+      proxy_task_runner_(MakeRefCounted<NonOwningProxyTaskRunner>(this)),
       mock_clock_(this) {
   if (type == Type::kBoundToThread) {
     RunLoop::RegisterDelegateForCurrentThread(this);
-    thread_task_runner_handle_ = std::make_unique<ThreadTaskRunnerHandle>(
-        MakeRefCounted<NonOwningProxyTaskRunner>(this));
+    thread_task_runner_handle_ =
+        std::make_unique<ThreadTaskRunnerHandle>(proxy_task_runner_);
   }
 }
 
-TestMockTimeTaskRunner::~TestMockTimeTaskRunner() = default;
+TestMockTimeTaskRunner::~TestMockTimeTaskRunner() {
+  proxy_task_runner_->Detach();
+}
 
 void TestMockTimeTaskRunner::FastForwardBy(TimeDelta delta) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -211,10 +239,25 @@ void TestMockTimeTaskRunner::FastForwardUntilNoTasksRemain() {
 }
 
 void TestMockTimeTaskRunner::ClearPendingTasks() {
-  DCHECK(thread_checker_.CalledOnValidThread());
   AutoLock scoped_lock(tasks_lock_);
-  while (!tasks_.empty())
-    tasks_.pop();
+  // This is repeated in case task destruction triggers further tasks.
+  while (!tasks_.empty()) {
+    TaskPriorityQueue cleanup_tasks;
+    tasks_.swap(cleanup_tasks);
+
+    // Destroy task objects with |tasks_lock_| released. Task deletion can cause
+    // calls to NonOwningProxyTaskRunner::RunsTasksInCurrentSequence()
+    // (e.g. for DCHECKs), which causes |NonOwningProxyTaskRunner::lock_| to be
+    // grabbed.
+    //
+    // On the other hand, calls from NonOwningProxyTaskRunner::PostTask ->
+    // TestMockTimeTaskRunner::PostTask acquire locks as
+    // |NonOwningProxyTaskRunner::lock_| followed by |tasks_lock_|, so it's
+    // desirable to avoid the reverse order, for deadlock freedom.
+    AutoUnlock scoped_unlock(tasks_lock_);
+    while (!cleanup_tasks.empty())
+      cleanup_tasks.pop();
+  }
 }
 
 Time TestMockTimeTaskRunner::Now() const {
@@ -341,8 +384,9 @@ void TestMockTimeTaskRunner::ProcessAllTasksNoLaterThan(TimeDelta max_delta) {
   // unit tests. Make sure this TestMockTimeTaskRunner's tasks run in its scope.
   ScopedClosureRunner undo_override;
   if (!ThreadTaskRunnerHandle::IsSet() ||
-      ThreadTaskRunnerHandle::Get() != this) {
-    undo_override = ThreadTaskRunnerHandle::OverrideForTesting(this);
+      ThreadTaskRunnerHandle::Get() != proxy_task_runner_.get()) {
+    undo_override =
+        ThreadTaskRunnerHandle::OverrideForTesting(proxy_task_runner_.get());
   }
 
   const TimeTicks original_now_ticks = NowTicks();
