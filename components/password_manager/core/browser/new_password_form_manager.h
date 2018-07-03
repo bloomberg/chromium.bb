@@ -13,6 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/time/time.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/password_manager/core/browser/form_fetcher.h"
 #include "components/password_manager/core/browser/form_parsing/password_field_prediction.h"
@@ -111,6 +112,10 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   void RecordMetricOnCompareParsingResult(
       const autofill::PasswordForm& parsed_form);
 
+  // Report the time between receiving credentials from the password store and
+  // the autofill server responding to the lookup request.
+  void ReportTimeBetweenStoreAndServerUMA();
+
   // The client which implements embedder-specific PasswordManager operations.
   PasswordManagerClient* client_;
 
@@ -156,6 +161,9 @@ class NewPasswordFormManager : public PasswordFormManagerForUI,
   // TODO(https://crbug.com/831123): Remove it when the old form parsing is
   // removed.
   autofill::PasswordForm old_parsing_result_;
+
+  // Time when stored credentials are received from the store. Used for metrics.
+  base::TimeTicks received_stored_credentials_time_;
 
   base::WeakPtrFactory<NewPasswordFormManager> weak_ptr_factory_;
 
