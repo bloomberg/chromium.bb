@@ -1902,19 +1902,16 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
 // for clarity of purpose and for applicability to more architectures.
 #if defined(_MIPS_ARCH_LOONGSON)
   {
-    char* ptr1 = reinterpret_cast<char*>(PartitionAllocGeneric(
-        generic_allocator.root(), (32 * kSystemPageSize) - kExtraAllocSize,
-        type_name));
+    char* ptr1 = reinterpret_cast<char*>(generic_allocator.root()->Alloc(
+        (32 * kSystemPageSize) - kExtraAllocSize, type_name));
     memset(ptr1, 'A', (32 * kSystemPageSize) - kExtraAllocSize);
-    PartitionFreeGeneric(generic_allocator.root(), ptr1);
-    ptr1 = reinterpret_cast<char*>(PartitionAllocGeneric(
-        generic_allocator.root(), (31 * kSystemPageSize) - kExtraAllocSize,
-        type_name));
+    generic_allocator.root()->Free(ptr1);
+    ptr1 = reinterpret_cast<char*>(generic_allocator.root()->Alloc(
+        (31 * kSystemPageSize) - kExtraAllocSize, type_name));
     {
       MockPartitionStatsDumper dumper;
-      PartitionDumpStatsGeneric(generic_allocator.root(),
-                                "mock_generic_allocator",
-                                false /* detailed dump */, &dumper);
+      generic_allocator.root()->DumpStats("mock_generic_allocator",
+                                          false /* detailed dump */, &dumper);
       EXPECT_TRUE(dumper.IsMemoryAllocationRecorded());
 
       const PartitionBucketMemoryStats* stats =
@@ -1928,12 +1925,12 @@ TEST_F(PartitionAllocTest, PurgeDiscardable) {
     }
     CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 30), true);
     CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 31), true);
-    PartitionPurgeMemoryGeneric(generic_allocator.root(),
-                                PartitionPurgeDiscardUnusedSystemPages);
+    generic_allocator.root()->PurgeMemory(
+        PartitionPurgeDiscardUnusedSystemPages);
     CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 30), true);
     CheckPageInCore(ptr1 - kPointerOffset + (kSystemPageSize * 31), false);
 
-    PartitionFreeGeneric(generic_allocator.root(), ptr1);
+    generic_allocator.root()->Free(ptr1);
   }
 #else
   {
