@@ -99,15 +99,8 @@ class CORE_EXPORT EventHandler final
   void DispatchFakeMouseMoveEventSoon(MouseEventManager::FakeMouseMoveReason);
   void DispatchFakeMouseMoveEventSoonInQuad(const FloatQuad&);
 
-  HitTestResult HitTestResultAtPoint(
-      const LayoutPoint&,
-      HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
-                                                    HitTestRequest::kActive,
-      const LayoutObject* stop_node = nullptr,
-      bool no_lifecycle_update = false);
-
-  HitTestResult HitTestResultAtRect(
-      const LayoutRect&,
+  HitTestResult HitTestResultAtLocation(
+      const HitTestLocation&,
       HitTestRequest::HitTestRequestType hit_type = HitTestRequest::kReadOnly |
                                                     HitTestRequest::kActive,
       const LayoutObject* stop_node = nullptr,
@@ -196,10 +189,12 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleGestureScrollEnd(const WebGestureEvent&);
   bool IsScrollbarHandlingGestures() const;
 
-  bool BestClickableNodeForHitTestResult(const HitTestResult&,
+  bool BestClickableNodeForHitTestResult(const HitTestLocation& location,
+                                         const HitTestResult&,
                                          IntPoint& target_point,
                                          Node*& target_node);
-  bool BestContextMenuNodeForHitTestResult(const HitTestResult&,
+  bool BestContextMenuNodeForHitTestResult(const HitTestLocation& location,
+                                           const HitTestResult&,
                                            IntPoint& target_point,
                                            Node*& target_node);
   void CacheTouchAdjustmentResult(uint32_t, FloatPoint);
@@ -303,10 +298,12 @@ class CORE_EXPORT EventHandler final
       const WebMouseEvent&,
       const Vector<WebMouseEvent>&,
       HitTestResult* hovered_node = nullptr,
+      HitTestLocation* hit_test_location = nullptr,
       bool only_update_scrollbars = false,
       bool force_leave = false);
 
-  void ApplyTouchAdjustment(WebGestureEvent*, HitTestResult*);
+  // Updates the event, location and result to the adjusted target.
+  void ApplyTouchAdjustment(WebGestureEvent*, HitTestLocation&, HitTestResult*);
   WebInputEventResult HandleGestureTapDown(
       const GestureEventWithHitTestResults&);
   WebInputEventResult HandleGestureTap(const GestureEventWithHitTestResults&);
@@ -315,7 +312,9 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult HandleGestureLongTap(
       const GestureEventWithHitTestResults&);
 
-  void PerformHitTest(HitTestResult&, bool no_lifecycle_update) const;
+  void PerformHitTest(const HitTestLocation& location,
+                      HitTestResult&,
+                      bool no_lifecycle_update) const;
 
   void UpdateGestureTargetNodeForMouseEvent(
       const GestureEventWithHitTestResults&);
@@ -324,8 +323,9 @@ class CORE_EXPORT EventHandler final
   bool GestureCorrespondsToAdjustedTouch(const WebGestureEvent&);
   bool IsSelectingLink(const HitTestResult&);
   bool ShouldShowIBeamForNode(const Node*, const HitTestResult&);
-  bool ShouldShowResizeForNode(const Node*, const HitTestResult&);
-  OptionalCursor SelectCursor(const HitTestResult&);
+  bool ShouldShowResizeForNode(const Node*, const HitTestLocation&);
+  OptionalCursor SelectCursor(const HitTestLocation& location,
+                              const HitTestResult&);
   OptionalCursor SelectAutoCursor(const HitTestResult&,
                                   Node*,
                                   const Cursor& i_beam);
@@ -356,7 +356,8 @@ class CORE_EXPORT EventHandler final
       MouseEventWithHitTestResults&,
       const Vector<WebMouseEvent>&,
       LocalFrame* subframe,
-      HitTestResult* hovered_node = nullptr);
+      HitTestResult* hovered_node = nullptr,
+      HitTestLocation* hit_test_location = nullptr);
   WebInputEventResult PassMouseReleaseEventToSubframe(
       MouseEventWithHitTestResults&,
       LocalFrame* subframe);

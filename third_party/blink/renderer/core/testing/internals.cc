@@ -1416,7 +1416,8 @@ String Internals::rangeAsText(const Range* range) {
 // FIXME: The next four functions are very similar - combine them once
 // bestClickableNode/bestContextMenuNode have been combined..
 
-void Internals::HitTestRect(HitTestResult& result,
+void Internals::HitTestRect(HitTestLocation& location,
+                            HitTestResult& result,
                             long x,
                             long y,
                             long width,
@@ -1426,10 +1427,11 @@ void Internals::HitTestRect(HitTestResult& result,
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   LayoutPoint hit_test_point(
       document->GetFrame()->View()->ConvertFromRootFrame(LayoutPoint(x, y)));
-  result = event_handler.HitTestResultAtRect(
-      LayoutRect(hit_test_point, LayoutSize((int)width, (int)height)),
-      HitTestRequest::kReadOnly | HitTestRequest::kActive |
-          HitTestRequest::kListBased);
+  location = HitTestLocation(
+      (LayoutRect(hit_test_point, LayoutSize((int)width, (int)height))));
+  result = event_handler.HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive |
+                    HitTestRequest::kListBased);
 }
 
 DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(
@@ -1446,14 +1448,15 @@ DOMPoint* Internals::touchPositionAdjustedToBestClickableNode(
     return nullptr;
   }
 
+  HitTestLocation location;
   HitTestResult result;
-  HitTestRect(result, x, y, width, height, document);
+  HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
 
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   bool found_node = event_handler.BestClickableNodeForHitTestResult(
-      result, adjusted_point, target_node);
+      location, result, adjusted_point, target_node);
   if (found_node)
     return DOMPoint::Create(adjusted_point.X(), adjusted_point.Y());
 
@@ -1474,12 +1477,13 @@ Node* Internals::touchNodeAdjustedToBestClickableNode(
     return nullptr;
   }
 
+  HitTestLocation location;
   HitTestResult result;
-  HitTestRect(result, x, y, width, height, document);
+  HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
   document->GetFrame()->GetEventHandler().BestClickableNodeForHitTestResult(
-      result, adjusted_point, target_node);
+      location, result, adjusted_point, target_node);
   return target_node;
 }
 
@@ -1497,14 +1501,15 @@ DOMPoint* Internals::touchPositionAdjustedToBestContextMenuNode(
     return nullptr;
   }
 
+  HitTestLocation location;
   HitTestResult result;
-  HitTestRect(result, x, y, width, height, document);
+  HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
 
   EventHandler& event_handler = document->GetFrame()->GetEventHandler();
   bool found_node = event_handler.BestContextMenuNodeForHitTestResult(
-      result, adjusted_point, target_node);
+      location, result, adjusted_point, target_node);
   if (found_node)
     return DOMPoint::Create(adjusted_point.X(), adjusted_point.Y());
 
@@ -1525,12 +1530,13 @@ Node* Internals::touchNodeAdjustedToBestContextMenuNode(
     return nullptr;
   }
 
+  HitTestLocation location;
   HitTestResult result;
-  HitTestRect(result, x, y, width, height, document);
+  HitTestRect(location, result, x, y, width, height, document);
   Node* target_node = nullptr;
   IntPoint adjusted_point;
   document->GetFrame()->GetEventHandler().BestContextMenuNodeForHitTestResult(
-      result, adjusted_point, target_node);
+      location, result, adjusted_point, target_node);
   return target_node;
 }
 
@@ -1997,8 +2003,9 @@ StaticNodeList* Internals::nodesFromRect(
 
   HeapVector<Member<Node>> matches;
   HitTestRequest request(hit_type);
-  HitTestResult result(request, rect);
-  frame->ContentLayoutObject()->HitTest(result);
+  HitTestLocation location(rect);
+  HitTestResult result(request, location);
+  frame->ContentLayoutObject()->HitTest(location, result);
   CopyToVector(result.ListBasedTestResult(), matches);
 
   return StaticNodeList::Adopt(matches);

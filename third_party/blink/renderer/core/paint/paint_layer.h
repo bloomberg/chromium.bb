@@ -422,7 +422,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // The hitTest() method looks for mouse events by walking layers that
   // intersect the point from front to back.
-  bool HitTest(HitTestResult&);
+  bool HitTest(const HitTestLocation& location, HitTestResult&);
 
   bool IntersectsDamageRect(const LayoutRect& layer_bounds,
                             const LayoutRect& damage_rect,
@@ -1116,9 +1116,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     const LayoutRect& rect;
     // Whether location.Intersects(rect) returns true.
     const HitTestLocation& location;
+    const HitTestLocation& original_location;
     const bool intersects_location;
     HitTestRecursionData(const LayoutRect& rect_arg,
-                         const HitTestLocation& location_arg);
+                         const HitTestLocation& location_arg,
+                         const HitTestLocation& original_location_arg);
   };
 
   PaintLayer* HitTestLayer(PaintLayer* root_layer,

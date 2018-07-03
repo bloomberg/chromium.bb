@@ -1046,9 +1046,10 @@ size_t WebLocalFrameImpl::CharacterIndexForPoint(
   if (!GetFrame())
     return kNotFound;
 
-  LayoutPoint point = GetFrame()->View()->ViewportToFrame(point_in_viewport);
-  HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtPoint(
-      point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestLocation location(
+      GetFrame()->View()->ViewportToFrame(point_in_viewport));
+  HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   return GetFrame()->Selection().CharacterIndexForPoint(
       result.RoundedPointInInnerNodeFrame());
 }
@@ -1966,10 +1967,10 @@ HitTestResult WebLocalFrameImpl::HitTestResultForVisualViewportPos(
   IntPoint root_frame_point(
       GetFrame()->GetPage()->GetVisualViewport().ViewportToRootFrame(
           pos_in_viewport));
-  IntPoint doc_point(
+  HitTestLocation location(
       GetFrame()->View()->ConvertFromRootFrame(root_frame_point));
-  HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtPoint(
-      doc_point, HitTestRequest::kReadOnly | HitTestRequest::kActive);
+  HitTestResult result = GetFrame()->GetEventHandler().HitTestResultAtLocation(
+      location, HitTestRequest::kReadOnly | HitTestRequest::kActive);
   result.SetToShadowHostIfInRestrictedShadowRoot();
   return result;
 }

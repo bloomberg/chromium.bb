@@ -34,6 +34,16 @@ namespace blink {
 // size of 1.
 #define HIT_TEST_CACHE_SIZE (2)
 
+struct HitTestCacheEntry {
+  DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
+
+  void Trace(blink::Visitor*);
+  HitTestLocation location;
+  HitTestResult result;
+
+  void CacheValues(const HitTestCacheEntry&);
+};
+
 class CORE_EXPORT HitTestCache final
     : public GarbageCollectedFinalized<HitTestCache> {
  public:
@@ -41,12 +51,16 @@ class CORE_EXPORT HitTestCache final
 
   // Check the cache for a possible hit and update |result| if
   // hit encountered; returning true. Otherwise false.
-  bool LookupCachedResult(HitTestResult&, uint64_t dom_tree_version);
+  bool LookupCachedResult(const HitTestLocation&,
+                          HitTestResult&,
+                          uint64_t dom_tree_version);
 
   void Clear();
 
   // Adds a HitTestResult to the cache.
-  void AddCachedResult(const HitTestResult&, uint64_t dom_tree_version);
+  void AddCachedResult(const HitTestLocation&,
+                       const HitTestResult&,
+                       uint64_t dom_tree_version);
 
   void Trace(blink::Visitor*);
 
@@ -70,11 +84,14 @@ class CORE_EXPORT HitTestCache final
   };
 
   unsigned update_index_;
-  HeapVector<HitTestResult, HIT_TEST_CACHE_SIZE> items_;
+
+  HeapVector<HitTestCacheEntry, HIT_TEST_CACHE_SIZE> items_;
   uint64_t dom_tree_version_;
   DISALLOW_COPY_AND_ASSIGN(HitTestCache);
 };
 
 }  // namespace blink
+
+WTF_ALLOW_CLEAR_UNUSED_SLOTS_WITH_MEM_FUNCTIONS(blink::HitTestCacheEntry);
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_LAYOUT_HIT_TEST_CACHE_H_

@@ -1687,8 +1687,9 @@ HitTestResult LayoutObject::HitTestForOcclusion(
       HitTestRequest::kListBased | HitTestRequest::kPenetratingList |
       HitTestRequest::kIgnorePointerEventsNone | HitTestRequest::kReadOnly |
       HitTestRequest::kIgnoreClipping;
-  return frame->GetEventHandler().HitTestResultAtRect(hit_rect, hit_type, this,
-                                                      true);
+  HitTestLocation location(hit_rect);
+  return frame->GetEventHandler().HitTestResultAtLocation(location, hit_type,
+                                                          this, true);
 }
 
 void LayoutObject::DirtyLinesFromChangedChild(LayoutObject*, MarkingBehavior) {}

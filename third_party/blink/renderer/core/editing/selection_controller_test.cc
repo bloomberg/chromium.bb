@@ -117,8 +117,9 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResult) {
       "  event => elem.parentNode.removeChild(elem));");
   GetDocument().body()->AppendChild(script);
   GetDocument().View()->UpdateAllLifecyclePhases();
+  HitTestLocation location((IntPoint(8, 8)));
   GetFrame().GetEventHandler().GetSelectionController().HandleGestureLongPress(
-      GetFrame().GetEventHandler().HitTestResultAtPoint(IntPoint(8, 8)));
+      GetFrame().GetEventHandler().HitTestResultAtLocation(location));
 }
 
 // For http://crbug.com/704827
@@ -132,8 +133,9 @@ TEST_F(SelectionControllerTest, setCaretAtHitTestResultWithNullPosition) {
   GetDocument().View()->UpdateAllLifecyclePhases();
 
   // Hit "&nbsp;" in before pseudo element of "sample".
+  HitTestLocation location((IntPoint(10, 10)));
   SetCaretAtHitTestResult(
-      GetFrame().GetEventHandler().HitTestResultAtPoint(IntPoint(10, 10)));
+      GetFrame().GetEventHandler().HitTestResultAtLocation(location));
 
   EXPECT_TRUE(Selection().GetSelectionInDOMTree().IsNone());
 }
@@ -166,10 +168,11 @@ TEST_F(SelectionControllerTest,
       blink::WebInputEvent::GetStaticTimeStampForTests());
   // Frame scale defaults to 0, which would cause a divide-by-zero problem.
   mouse_event.SetFrameScale(1);
+  HitTestLocation location((IntPoint(0, 0)));
   GetFrame().GetEventHandler().GetSelectionController().HandleMousePressEvent(
       MouseEventWithHitTestResults(
-          mouse_event,
-          GetFrame().GetEventHandler().HitTestResultAtPoint(IntPoint(0, 0))));
+          mouse_event, location,
+          GetFrame().GetEventHandler().HitTestResultAtLocation(location)));
 
   // The original bug was that this test would cause
   // TextSuggestionController::HandlePotentialMisspelledWordTap() to crash. So

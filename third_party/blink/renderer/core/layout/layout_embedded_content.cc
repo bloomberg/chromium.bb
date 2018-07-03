@@ -202,8 +202,8 @@ bool LayoutEmbeddedContent::NodeAtPoint(
                                        new_hit_test_location);
 
       // The frame's layout and style must be up to date if we reach here.
-      bool is_inside_child_frame =
-          child_layout_view->HitTestNoLifecycleUpdate(child_frame_result);
+      bool is_inside_child_frame = child_layout_view->HitTestNoLifecycleUpdate(
+          new_hit_test_location, child_frame_result);
 
       if (result.GetHitTestRequest().ListBased()) {
         result.Append(child_frame_result);

@@ -63,8 +63,9 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   // hitTest() will update layout, style and compositing first while
   // hitTestNoLifecycleUpdate() does not.
-  bool HitTest(HitTestResult&);
-  bool HitTestNoLifecycleUpdate(HitTestResult&);
+  bool HitTest(const HitTestLocation& location, HitTestResult&);
+  bool HitTestNoLifecycleUpdate(const HitTestLocation& location,
+                                HitTestResult&);
 
   // Returns the total count of calls to HitTest, for testing.
   unsigned HitTestCount() const { return hit_test_count_; }

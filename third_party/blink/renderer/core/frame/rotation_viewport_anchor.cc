@@ -27,10 +27,12 @@ Node* FindNonEmptyAnchorNode(const FloatPoint& absolute_point,
                              const IntRect& view_rect,
                              EventHandler& event_handler) {
   IntPoint point = FlooredIntPoint(absolute_point);
-  Node* node = event_handler
-                   .HitTestResultAtPoint(point, HitTestRequest::kReadOnly |
-                                                    HitTestRequest::kActive)
-                   .InnerNode();
+  HitTestLocation location(point);
+  Node* node =
+      event_handler
+          .HitTestResultAtLocation(
+              location, HitTestRequest::kReadOnly | HitTestRequest::kActive)
+          .InnerNode();
 
   if (!node)
     return nullptr;
@@ -47,10 +49,10 @@ Node* FindNonEmptyAnchorNode(const FloatPoint& absolute_point,
   if (node_size.Width() * node_size.Height() > max_node_area) {
     IntSize point_offset = view_rect.Size();
     point_offset.Scale(kViewportAnchorRelativeEpsilon);
+    HitTestLocation location(point + point_offset);
     node = event_handler
-               .HitTestResultAtPoint(
-                   point + point_offset,
-                   HitTestRequest::kReadOnly | HitTestRequest::kActive)
+               .HitTestResultAtLocation(location, HitTestRequest::kReadOnly |
+                                                      HitTestRequest::kActive)
                .InnerNode();
   }
 

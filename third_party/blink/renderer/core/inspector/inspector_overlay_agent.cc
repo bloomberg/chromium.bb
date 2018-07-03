@@ -97,9 +97,10 @@ Node* HoveredNodeForPoint(LocalFrame* frame,
   if (ignore_pointer_events_none)
     hit_type |= HitTestRequest::kIgnorePointerEventsNone;
   HitTestRequest request(hit_type);
-  HitTestResult result(
-      request, frame->View()->ConvertFromRootFrame(point_in_root_frame));
-  frame->ContentLayoutObject()->HitTest(result);
+  HitTestLocation location(
+      frame->View()->ConvertFromRootFrame(point_in_root_frame));
+  HitTestResult result(request, location);
+  frame->ContentLayoutObject()->HitTest(location, result);
   Node* node = result.InnerPossiblyPseudoNode();
   while (node && node->getNodeType() == Node::kTextNode)
     node = node->parentNode();

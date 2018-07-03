@@ -569,8 +569,9 @@ VisiblePosition VisiblePositionForContentsPoint(const IntPoint& contents_point,
   HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
-  HitTestResult result(request, contents_point);
-  frame->GetDocument()->GetLayoutView()->HitTest(result);
+  HitTestLocation location(contents_point);
+  HitTestResult result(request, location);
+  frame->GetDocument()->GetLayoutView()->HitTest(location, result);
 
   if (Node* node = result.InnerNode()) {
     return CreateVisiblePosition(PositionRespectingEditingBoundary(

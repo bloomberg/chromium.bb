@@ -572,8 +572,9 @@ bool FrameSelection::Contains(const LayoutPoint& point) {
     return false;
 
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestResult result(request, point);
-  GetDocument().GetLayoutView()->HitTest(result);
+  HitTestLocation location(point);
+  HitTestResult result(request, location);
+  GetDocument().GetLayoutView()->HitTest(location, result);
   Node* inner_node = result.InnerNode();
   if (!inner_node || !inner_node->GetLayoutObject())
     return false;

@@ -107,12 +107,14 @@ TEST_F(LayoutInlineTest, RegionHitTest) {
 
   HitTestRequest hit_request(HitTestRequest::kTouchEvent |
                              HitTestRequest::kListBased);
+
   LayoutRect hit_rect(1, 3, 2, 4);
-  HitTestResult hit_result(hit_request, hit_rect);
+  HitTestLocation location(hit_rect);
+  HitTestResult hit_result(hit_request, location);
   LayoutPoint hit_offset;
 
-  bool hit_outcome = lots_of_boxes->HitTestCulledInline(
-      hit_result, hit_result.GetHitTestLocation(), hit_offset);
+  bool hit_outcome =
+      lots_of_boxes->HitTestCulledInline(hit_result, location, hit_offset);
   // Assert checks that we both hit something and that the area covered
   // by "something" totally contains the hit region.
   EXPECT_TRUE(hit_outcome);
@@ -130,6 +132,7 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
                              HitTestRequest::kActive);
   const LayoutPoint container_offset(8, 8);
   const LayoutPoint hit_location(18, 15);
+  HitTestLocation location(hit_location);
 
   Element* div = GetDocument().QuerySelector("div");
   Element* span = GetDocument().QuerySelector("span");
@@ -138,9 +141,9 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
   // Shouldn't hit anything in SPAN as it's in another paint layer
   {
     LayoutObject* layout_div = div->GetLayoutObject();
-    HitTestResult hit_result(hit_request, hit_location);
-    bool hit_outcome = layout_div->HitTestAllPhases(hit_result, hit_location,
-                                                    container_offset);
+    HitTestResult hit_result(hit_request, location);
+    bool hit_outcome =
+        layout_div->HitTestAllPhases(hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(div, hit_result.InnerNode());
   }
@@ -149,17 +152,17 @@ TEST_P(ParameterizedLayoutInlineTest, RelativePositionedHitTest) {
   // the SPAN itself.
   {
     LayoutObject* layout_span = span->GetLayoutObject();
-    HitTestResult hit_result(hit_request, hit_location);
-    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
-                                                     container_offset);
+    HitTestResult hit_result(hit_request, location);
+    bool hit_outcome =
+        layout_span->HitTestAllPhases(hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(text, hit_result.InnerNode());
   }
 
   // Hit test from LayoutView to verify that everything works together.
   {
-    HitTestResult hit_result(hit_request, hit_location);
-    bool hit_outcome = GetLayoutView().HitTest(hit_result);
+    HitTestResult hit_result(hit_request, location);
+    bool hit_outcome = GetLayoutView().HitTest(location, hit_result);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(text, hit_result.InnerNode());
   }
@@ -185,18 +188,19 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   // Hit test first line
   {
     LayoutPoint hit_location(13, 13);
+    HitTestLocation location(hit_location);
     Node* target = GetElementById("span")->firstChild();
 
-    HitTestResult hit_result(hit_request, hit_location);
-    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
-                                                     container_offset);
+    HitTestResult hit_result(hit_request, location);
+    bool hit_outcome =
+        layout_span->HitTestAllPhases(hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(target, hit_result.InnerNode());
 
     // Initiate a hit test from LayoutView to verify the "natural" process.
-    HitTestResult layout_view_hit_result(hit_request, hit_location);
+    HitTestResult layout_view_hit_result(hit_request, location);
     bool layout_view_hit_outcome =
-        GetLayoutView().HitTest(layout_view_hit_result);
+        GetLayoutView().HitTest(location, layout_view_hit_result);
     EXPECT_TRUE(layout_view_hit_outcome);
     EXPECT_EQ(target, layout_view_hit_result.InnerNode());
   }
@@ -204,18 +208,19 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   // Hit test second line
   {
     LayoutPoint hit_location(13, 23);
+    HitTestLocation location(hit_location);
     Node* target = GetElementById("line2")->firstChild();
 
-    HitTestResult hit_result(hit_request, hit_location);
-    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
-                                                     container_offset);
+    HitTestResult hit_result(hit_request, location);
+    bool hit_outcome =
+        layout_span->HitTestAllPhases(hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(target, hit_result.InnerNode());
 
     // Initiate a hit test from LayoutView to verify the "natural" process.
-    HitTestResult layout_view_hit_result(hit_request, hit_location);
+    HitTestResult layout_view_hit_result(hit_request, location);
     bool layout_view_hit_outcome =
-        GetLayoutView().HitTest(layout_view_hit_result);
+        GetLayoutView().HitTest(location, layout_view_hit_result);
     EXPECT_TRUE(layout_view_hit_outcome);
     EXPECT_EQ(target, layout_view_hit_result.InnerNode());
   }
@@ -223,18 +228,19 @@ TEST_P(ParameterizedLayoutInlineTest, MultilineRelativePositionedHitTest) {
   // Hit test image in third line
   {
     LayoutPoint hit_location(13, 33);
+    HitTestLocation location(hit_location);
     Node* target = GetDocument().QuerySelector("img");
 
-    HitTestResult hit_result(hit_request, hit_location);
-    bool hit_outcome = layout_span->HitTestAllPhases(hit_result, hit_location,
-                                                     container_offset);
+    HitTestResult hit_result(hit_request, location);
+    bool hit_outcome =
+        layout_span->HitTestAllPhases(hit_result, location, container_offset);
     EXPECT_TRUE(hit_outcome);
     EXPECT_EQ(target, hit_result.InnerNode());
 
     // Initiate a hit test from LayoutView to verify the "natural" process.
-    HitTestResult layout_view_hit_result(hit_request, hit_location);
+    HitTestResult layout_view_hit_result(hit_request, location);
     bool layout_view_hit_outcome =
-        GetLayoutView().HitTest(layout_view_hit_result);
+        GetLayoutView().HitTest(location, layout_view_hit_result);
     EXPECT_TRUE(layout_view_hit_outcome);
     EXPECT_EQ(target, layout_view_hit_result.InnerNode());
   }

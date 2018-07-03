@@ -186,8 +186,9 @@ bool LayoutSVGContainer::NodeAtFloatPoint(HitTestResult& result,
     if (child->NodeAtFloatPoint(result, local_point, hit_test_action)) {
       const LayoutPoint& local_layout_point = LayoutPoint(local_point);
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(
-              child->GetNode(), local_layout_point) == kStopHitTesting)
+      HitTestLocation location(local_layout_point);
+      if (result.AddNodeToListBasedTestResult(child->GetNode(), location) ==
+          kStopHitTesting)
         return true;
     }
   }
@@ -201,8 +202,9 @@ bool LayoutSVGContainer::NodeAtFloatPoint(HitTestResult& result,
         ObjectBoundingBox().Contains(local_point)) {
       const LayoutPoint& local_layout_point = LayoutPoint(local_point);
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(
-              GetElement(), local_layout_point) == kStopHitTesting)
+      HitTestLocation location(local_layout_point);
+      if (result.AddNodeToListBasedTestResult(GetElement(), location) ==
+          kStopHitTesting)
         return true;
     }
   }

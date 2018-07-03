@@ -152,8 +152,9 @@ HeapVector<Member<Element>> ElementsFromRect(LayoutRect rect,
                          HitTestRequest::kPenetratingList |
                          HitTestRequest::kIgnoreClipping);
 
-  HitTestResult result(request, rect);
-  document.GetFrame()->ContentLayoutObject()->HitTest(result);
+  HitTestLocation location(rect);
+  HitTestResult result(request, location);
+  document.GetFrame()->ContentLayoutObject()->HitTest(location, result);
   HeapVector<Member<Element>> elements;
   Node* previous_node = nullptr;
   for (const auto hit_test_result_node : result.ListBasedTestResult()) {

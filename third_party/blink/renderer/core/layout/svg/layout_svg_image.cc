@@ -169,9 +169,10 @@ bool LayoutSVGImage::NodeAtFloatPoint(HitTestResult& result,
   if (hit_rules.can_hit_fill || hit_rules.can_hit_bounding_box) {
     if (object_bounding_box_.Contains(local_point)) {
       const LayoutPoint& local_layout_point = LayoutPoint(local_point);
+      HitTestLocation location(local_layout_point);
       UpdateHitTestResult(result, local_layout_point);
-      if (result.AddNodeToListBasedTestResult(
-              GetElement(), local_layout_point) == kStopHitTesting)
+      if (result.AddNodeToListBasedTestResult(GetElement(), location) ==
+          kStopHitTesting)
         return true;
     }
   }

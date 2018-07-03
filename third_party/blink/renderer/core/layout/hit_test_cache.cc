@@ -9,7 +9,8 @@
 
 namespace blink {
 
-bool HitTestCache::LookupCachedResult(HitTestResult& hit_result,
+bool HitTestCache::LookupCachedResult(const HitTestLocation& location,
+                                      HitTestResult& hit_result,
                                       uint64_t dom_tree_version) {
   bool result = false;
   HitHistogramMetric metric = HitHistogramMetric::MISS;
@@ -17,15 +18,14 @@ bool HitTestCache::LookupCachedResult(HitTestResult& hit_result,
     metric = HitHistogramMetric::MISS_EXPLICIT_AVOID;
     // For now we don't support rect based hit results.
   } else if (dom_tree_version == dom_tree_version_ &&
-             !hit_result.GetHitTestLocation().IsRectBasedTest()) {
+             !location.IsRectBasedTest()) {
     for (const auto& cached_item : items_) {
-      if (cached_item.GetHitTestLocation().Point() ==
-          hit_result.GetHitTestLocation().Point()) {
+      if (cached_item.location.Point() == location.Point()) {
         if (hit_result.GetHitTestRequest().EqualForCacheability(
-                cached_item.GetHitTestRequest())) {
+                cached_item.result.GetHitTestRequest())) {
           metric = HitHistogramMetric::HIT_EXACT_MATCH;
           result = true;
-          hit_result = cached_item;
+          hit_result = cached_item.result;
           break;
         }
         metric = HitHistogramMetric::MISS_VALIDITY_RECT_MATCHES;
@@ -40,7 +40,17 @@ bool HitTestCache::LookupCachedResult(HitTestResult& hit_result,
   return result;
 }
 
-void HitTestCache::AddCachedResult(const HitTestResult& result,
+void HitTestCacheEntry::Trace(blink::Visitor* visitor) {
+  visitor->Trace(result);
+}
+
+void HitTestCacheEntry::CacheValues(const HitTestCacheEntry& other) {
+  *this = other;
+  result.CacheValues(other.result);
+}
+
+void HitTestCache::AddCachedResult(const HitTestLocation& location,
+                                   const HitTestResult& result,
                                    uint64_t dom_tree_version) {
   if (!result.IsCacheable())
     return;
@@ -52,15 +62,17 @@ void HitTestCache::AddCachedResult(const HitTestResult& result,
     return;
 
   // For now don't support rect based or list based requests.
-  if (result.GetHitTestLocation().IsRectBasedTest() ||
-      result.GetHitTestRequest().ListBased())
+  if (location.IsRectBasedTest() || result.GetHitTestRequest().ListBased())
     return;
   if (dom_tree_version != dom_tree_version_)
     Clear();
   if (items_.size() < HIT_TEST_CACHE_SIZE)
     items_.resize(update_index_ + 1);
 
-  items_.at(update_index_).CacheValues(result);
+  HitTestCacheEntry cache_entry;
+  cache_entry.location = location;
+  cache_entry.result = result;
+  items_.at(update_index_).CacheValues(cache_entry);
   dom_tree_version_ = dom_tree_version;
 
   update_index_++;

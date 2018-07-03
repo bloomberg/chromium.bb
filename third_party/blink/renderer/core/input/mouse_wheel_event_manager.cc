@@ -148,8 +148,9 @@ Node* MouseWheelEventManager::FindTargetNode(const WebMouseWheelEvent& event,
       view->ConvertFromRootFrame(FlooredIntPoint(event.PositionInRootFrame()));
 
   HitTestRequest request(HitTestRequest::kReadOnly);
-  HitTestResult result(request, v_point);
-  doc->GetLayoutView()->HitTest(result);
+  HitTestLocation location(v_point);
+  HitTestResult result(request, location);
+  doc->GetLayoutView()->HitTest(location, result);
 
   Node* node = result.InnerNode();
   // Wheel events should not dispatch to text nodes.

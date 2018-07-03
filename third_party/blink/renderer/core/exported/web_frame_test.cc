@@ -11642,9 +11642,10 @@ TEST_F(WebFrameSimTest, HitTestWithIgnoreClippingAtNegativeOffset) {
   HitTestRequest request = HitTestRequest::kMove | HitTestRequest::kReadOnly |
                            HitTestRequest::kActive |
                            HitTestRequest::kIgnoreClipping;
-  HitTestResult result(request,
-                       frame_view->ConvertFromRootFrame(LayoutPoint(100, -50)));
-  frame_view->GetLayoutView()->HitTest(result);
+  HitTestLocation location(
+      frame_view->ConvertFromRootFrame(LayoutPoint(100, -50)));
+  HitTestResult result(request, location);
+  frame_view->GetLayoutView()->HitTest(location, result);
 
   EXPECT_EQ(GetDocument().getElementById("top"), result.InnerNode());
 }

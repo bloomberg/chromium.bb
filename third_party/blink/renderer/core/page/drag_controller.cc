@@ -261,9 +261,10 @@ void DragController::PerformDrag(DragData* drag_data, LocalFrame& local_root) {
       if (!prevented_default) {
         // When drop target is plugin element and it can process drag, we
         // should prevent default behavior.
-        const LayoutPoint point = local_root.View()->ConvertFromRootFrame(
-            LayoutPoint(drag_data->ClientPosition()));
-        const HitTestResult result = event_handler.HitTestResultAtPoint(point);
+        const HitTestLocation location(local_root.View()->ConvertFromRootFrame(
+            LayoutPoint(drag_data->ClientPosition())));
+        const HitTestResult result =
+            event_handler.HitTestResultAtLocation(location);
         prevented_default |=
             IsHTMLPlugInElement(*result.InnerNode()) &&
             ToHTMLPlugInElement(result.InnerNode())->CanProcessDrag();
@@ -355,8 +356,9 @@ static HTMLInputElement* AsFileInput(Node* node) {
 static Element* ElementUnderMouse(Document* document_under_mouse,
                                   const LayoutPoint& point) {
   HitTestRequest request(HitTestRequest::kReadOnly | HitTestRequest::kActive);
-  HitTestResult result(request, point);
-  document_under_mouse->GetLayoutView()->HitTest(result);
+  HitTestLocation location(point);
+  HitTestResult result(request, location);
+  document_under_mouse->GetLayoutView()->HitTest(location, result);
 
   Node* n = result.InnerNode();
   while (n && !n->IsElementNode())
@@ -698,8 +700,9 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   LayoutPoint point = local_root.View()->ConvertFromRootFrame(
       LayoutPoint(drag_data->ClientPosition()));
 
+  HitTestLocation location(point);
   HitTestResult result =
-      local_root.GetEventHandler().HitTestResultAtPoint(point);
+      local_root.GetEventHandler().HitTestResultAtLocation(location);
 
   if (!result.InnerNode())
     return false;
@@ -716,7 +719,7 @@ bool DragController::CanProcessDrag(DragData* drag_data,
   }
 
   if (did_initiate_drag_ && document_under_mouse_ == drag_initiator_ &&
-      result.IsSelected())
+      result.IsSelected(location))
     return false;
 
   return true;
@@ -921,8 +924,9 @@ bool DragController::PopulateDragDataTransfer(LocalFrame* src,
   if (!src->View() || !src->ContentLayoutObject())
     return false;
 
+  HitTestLocation location(drag_origin);
   HitTestResult hit_test_result =
-      src->GetEventHandler().HitTestResultAtPoint(drag_origin);
+      src->GetEventHandler().HitTestResultAtLocation(location);
   // FIXME: Can this even happen? I guess it's possible, but should verify
   // with a layout test.
   if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
@@ -1156,8 +1160,9 @@ bool DragController::StartDrag(LocalFrame* src,
   if (!src->View() || !src->ContentLayoutObject())
     return false;
 
+  HitTestLocation location(drag_origin);
   HitTestResult hit_test_result =
-      src->GetEventHandler().HitTestResultAtPoint(drag_origin);
+      src->GetEventHandler().HitTestResultAtLocation(location);
   if (!state.drag_src_->IsShadowIncludingInclusiveAncestorOf(
           hit_test_result.InnerNode())) {
     // The original node being dragged isn't under the drag origin anymore...

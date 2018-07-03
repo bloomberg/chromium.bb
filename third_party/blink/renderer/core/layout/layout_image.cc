@@ -353,8 +353,7 @@ bool LayoutImage::NodeAtPoint(HitTestResult& result,
                               const HitTestLocation& location_in_container,
                               const LayoutPoint& accumulated_offset,
                               HitTestAction hit_test_action) {
-  HitTestResult temp_result(result.GetHitTestRequest(),
-                            result.GetHitTestLocation());
+  HitTestResult temp_result(result.GetHitTestRequest(), location_in_container);
   bool inside = LayoutReplaced::NodeAtPoint(
       temp_result, location_in_container, accumulated_offset, hit_test_action);
 
