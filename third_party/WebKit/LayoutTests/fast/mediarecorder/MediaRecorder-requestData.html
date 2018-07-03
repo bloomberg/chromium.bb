@@ -26,7 +26,7 @@ var makeAsyncTest = function(value, expected) {
   async_test(function(test) {
     const recorderOnDataAvailable = test.step_func_done(function(event) {
       assert_equals(event.data.size, 0, 'Recorded data size should be == 0');
-      assert_equals(event.data.type, "video/webm");
+      assert_equals(event.data.type, value['mimeType']);
       assert_not_equals(event.timecode, NaN, 'timecode');
     });
 
@@ -60,8 +60,11 @@ var makeAsyncTest = function(value, expected) {
 };
 
 generate_tests(makeAsyncTest,
-               [["video-only",  {video: true,  audio: false}],
-                ["audio-only",  {video: false, audio: true}],
-                ["audio-video", {video: true,  audio: true}]]);
+    [["video-only",
+         {video: true,  audio: false, mimeType: "video/webm;codecs=vp8"}],
+     ["audio-only",
+         {video: false, audio: true, mimeType: "audio/webm;codecs=opus"}],
+     ["audio-video",
+         {video: true,  audio: true, mimeType: "video/webm;codecs=vp8,opus"}]]);
 
 </script>
