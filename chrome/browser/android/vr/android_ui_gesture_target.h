@@ -34,6 +34,11 @@ class AndroidUiGestureTarget {
  private:
   void Inject(content::MotionEventAction action, int64_t time_ms);
   void SetPointer(int x, int y);
+  void SetDelayedEvent(int x,
+                       int y,
+                       content::MotionEventAction action,
+                       int64_t time_ms,
+                       int delay_ms);
 
   int scroll_x_ = 0;
   int scroll_y_ = 0;

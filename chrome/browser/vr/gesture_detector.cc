@@ -11,7 +11,7 @@ namespace vr {
 
 namespace {
 
-constexpr float kDisplacementScaleFactor = 300.0f;
+constexpr float kDisplacementScaleFactor = 129.0f;
 
 constexpr int kMaxNumOfExtrapolations = 2;
 
