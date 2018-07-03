@@ -251,7 +251,7 @@ CanvasAsyncBlobCreator::CanvasAsyncBlobCreator(
       }
       DCHECK(skia_image->colorSpace());
       skia_image = skia_image->makeColorSpace(
-          blob_color_space, SkTransferFunctionBehavior::kRespect);
+          blob_color_space, SkTransferFunctionBehavior::kIgnore);
       image_ = StaticBitmapImage::Create(skia_image);
     }
 
@@ -335,7 +335,7 @@ bool CanvasAsyncBlobCreator::EncodeImage(const double& quality) {
   SkTransferFunctionBehavior transfer_fn_behavior =
       SkTransferFunctionBehavior::kIgnore;
   if (function_type_ == kHTMLCanvasConvertToBlobPromise)
-    transfer_fn_behavior = SkTransferFunctionBehavior::kRespect;
+    transfer_fn_behavior = SkTransferFunctionBehavior::kIgnore;
   return buffer->EncodeImage("image/webp", quality, &encoded_image_,
                              transfer_fn_behavior);
 }
@@ -658,7 +658,7 @@ bool CanvasAsyncBlobCreator::EncodeImageForConvertToBlobTest() {
     return false;
   return buffer->EncodeImage(encode_options_.type(), encode_options_.quality(),
                              &encoded_image_,
-                             SkTransferFunctionBehavior::kRespect);
+                             SkTransferFunctionBehavior::kIgnore);
 }
 
 }  // namespace blink

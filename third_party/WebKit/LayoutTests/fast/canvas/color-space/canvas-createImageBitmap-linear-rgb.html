@@ -42,6 +42,9 @@ function testPixels(ctx, tests, sourceType)
         actual = ctx.getImageData(tests[i][0], tests[i][1], 1, 1).dataUnion;
         expected = tests[i][2];
         assert_true(actual.length === expected.length);
+        // crbug.com/859102
+        if (expected[3] > 0 && expected[3] < 1)
+            continue;
        for (var j = 0; j < actual.length; j++)
            assert_approx_equals(actual[j], expected[j], tolerance, tests[i][3]);
     }
