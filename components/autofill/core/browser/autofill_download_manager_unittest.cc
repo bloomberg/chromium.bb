@@ -23,7 +23,6 @@
 #include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/scoped_task_environment.h"
-#include "base/test/simple_test_clock.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/autofill/core/browser/autofill_field.h"
@@ -775,10 +774,6 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
     request_context_getter_ =
         base::MakeRefCounted<net::TestURLRequestContextGetter>(
             scoped_task_environment_.GetMainThreadTaskRunner());
-    request_context_getter_->GetURLRequestContext()
-        ->http_transaction_factory()
-        ->GetCache()
-        ->SetClockForTesting(&clock_);
     driver_ = std::make_unique<TestAutofillDriver>();
     driver_->SetURLRequestContext(request_context_getter_.get());
   }
@@ -812,8 +807,10 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
     response->set_content_type("text/proto");
     response->AddCustomHeader(
         "Cache-Control",
-        base::StringPrintf("max-age=%" PRId64,
-                           base::TimeDelta::FromDays(2).InSeconds()));
+        base::StringPrintf(
+            "max-age=%" PRId64,
+            base::TimeDelta::FromMilliseconds(cache_expiration_in_milliseconds_)
+                .InSeconds()));
     return response;
   }
 
@@ -834,9 +831,9 @@ class AutofillQueryTest : public AutofillDownloadManager::Observer,
   base::test::ScopedCommandLine scoped_command_line_;
   base::test::ScopedFeatureList scoped_feature_list_;
   EmbeddedTestServer server_;
+  int cache_expiration_in_milliseconds_ = 100000;
   std::unique_ptr<base::RunLoop> run_loop_;
   size_t call_count_ = 0;
-  base::SimpleTestClock clock_;
   scoped_refptr<net::TestURLRequestContextGetter> request_context_getter_;
   std::unique_ptr<TestAutofillDriver> driver_;
 };
@@ -855,8 +852,6 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
   std::vector<std::unique_ptr<FormStructure>> form_structures;
   form_structures.push_back(std::make_unique<FormStructure>(form));
 
-  clock_.SetNow(base::Time::Now());
-
   // Query for the form. This should go to the embedded server.
   {
     SCOPED_TRACE("First Query");
@@ -873,7 +868,6 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
   // Query again the next day. This should go to the cache, since the max-age
   // for the cached response is 2 days.
   {
-    clock_.Advance(base::TimeDelta::FromDays(1));
     SCOPED_TRACE("Second Query");
     base::HistogramTester histogram;
     call_count_ = 0;
@@ -884,13 +878,47 @@ TEST_F(AutofillQueryTest, CacheableResponse) {
     histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
     histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_HIT, 1);
   }
+}
 
-  // Query after another 2 days (a total of 3 days since the entry was cached).
-  // The cache entry had a max age of 2 days, so it should be expired. This
-  // should go to the embedded server.
+TEST_F(AutofillQueryTest, ExpiredCacheInResponse) {
+  FormFieldData field;
+  field.label = ASCIIToUTF16("First Name:");
+  field.name = ASCIIToUTF16("firstname");
+  field.form_control_type = "text";
+
+  FormData form;
+  form.fields.push_back(field);
+
+  std::vector<std::unique_ptr<FormStructure>> form_structures;
+  form_structures.push_back(std::make_unique<FormStructure>(form));
+
+  // Set the cache expiration interval to 0.
+  cache_expiration_in_milliseconds_ = 0;
+
+  // Query for the form. This should go to the embedded server.
   {
-    clock_.Advance(base::TimeDelta::FromDays(2));
-    SCOPED_TRACE("Third Query");
+    SCOPED_TRACE("First Query");
+    base::HistogramTester histogram;
+    call_count_ = 0;
+    ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
+    EXPECT_EQ(1u, call_count_);
+    histogram.ExpectBucketCount("Autofill.ServerQueryResponse",
+                                AutofillMetrics::QUERY_SENT, 1);
+    histogram.ExpectBucketCount("Autofill.Query.Method", METHOD_GET, 1);
+    histogram.ExpectBucketCount("Autofill.Query.WasInCache", CACHE_MISS, 1);
+  }
+
+  // The cache entry had a max age of 0 ms, so delaying only a few milliseconds
+  // ensures the cache expires and no request are served by cached content
+  // (ie this should go to the embedded server).
+  base::RunLoop run_loop;
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, run_loop.QuitClosure(),
+      base::TimeDelta::FromMilliseconds(100));
+  run_loop.Run();
+
+  {
+    SCOPED_TRACE("Second Query");
     base::HistogramTester histogram;
     call_count_ = 0;
     ASSERT_NO_FATAL_FAILURE(SendQueryRequest(form_structures));
