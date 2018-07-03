@@ -366,8 +366,7 @@ public class CustomTabActivity extends ChromeActivity {
                 mConnection.loadModule(packageName, mIntentDataProvider.getModuleClassName());
         if (entryPoint == null) return;
 
-        mActivityDelegate = entryPoint.createActivityDelegate(
-                new ActivityHostImpl(this), getIntent().getExtras());
+        mActivityDelegate = entryPoint.createActivityDelegate(new ActivityHostImpl(this));
         mActivityDelegate.onCreate(getSavedInstanceState());
     }
 
@@ -803,14 +802,14 @@ public class CustomTabActivity extends ChromeActivity {
         if (mWebappTimeSpentLogger != null) {
             mWebappTimeSpentLogger.onPause();
         }
-        if (mActivityDelegate != null) mActivityDelegate.onPause(isChangingConfigurations());
+        if (mActivityDelegate != null) mActivityDelegate.onPause();
     }
 
     @Override
     public void onStopWithNative() {
         super.onStopWithNative();
         BrowserSessionContentUtils.setActiveContentHandler(null);
-        if (mActivityDelegate != null) mActivityDelegate.onStop(isChangingConfigurations());
+        if (mActivityDelegate != null) mActivityDelegate.onStop();
         if (mIsClosing) {
             getTabModelSelector().closeAllTabs(true);
             mTabPersistencePolicy.deleteMetadataStateFileAsync();
@@ -822,7 +821,7 @@ public class CustomTabActivity extends ChromeActivity {
     @Override
     protected void onDestroyInternal() {
         super.onDestroyInternal();
-        if (mActivityDelegate != null) mActivityDelegate.onDestroy(isChangingConfigurations());
+        if (mActivityDelegate != null) mActivityDelegate.onDestroy();
         mConnection.maybeUnloadModule(mIntentDataProvider.getModulePackageName(),
                 mIntentDataProvider.getModuleClassName());
     }

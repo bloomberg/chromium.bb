@@ -11,7 +11,7 @@ interface IActivityDelegate {
 
   void onStart() = 2;
 
-  void onStop(boolean isChangingConfigurations) = 3;
+  void onStop() = 3;
 
   void onWindowFocusChanged(boolean hasFocus) = 4;
 
@@ -21,9 +21,9 @@ interface IActivityDelegate {
 
   void onResume() = 7;
 
-  void onPause(boolean isChangingConfigurations) = 8;
+  void onPause() = 8;
 
-  void onDestroy(boolean isChangingConfigurations) = 9;
+  void onDestroy() = 9;
 
   boolean onBackPressed() = 10;
 }
