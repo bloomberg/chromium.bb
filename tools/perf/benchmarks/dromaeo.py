@@ -106,7 +106,7 @@ class _DromaeoBenchmark(perf_benchmark.PerfBenchmark):
     return ps
 
 
-@benchmark.Owner(emails=['jbroman@chromium.org',
+@benchmark.Info(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class DromaeoBenchmark(_DromaeoBenchmark):

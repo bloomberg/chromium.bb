@@ -43,7 +43,7 @@ class _RasterizeAndRecordMicro(perf_benchmark.PerfBenchmark):
         options.record_repeat, options.timeout, options.report_detailed_results)
 
 
-@benchmark.Owner(
+@benchmark.Info(
     emails=['vmpstr@chromium.org', 'wkorman@chromium.org'],
     component='Internals>Compositing>Rasterization')
 class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
@@ -57,7 +57,7 @@ class RasterizeAndRecordMicroTop25(_RasterizeAndRecordMicro):
     return 'rasterize_and_record_micro.top_25'
 
 
-@benchmark.Owner(
+@benchmark.Info(
     emails=['vmpstr@chromium.org', 'wkorman@chromium.org'],
     component='Internals>Compositing>Rasterization')
 class RasterizeAndRecordMicroPartialInvalidation(_RasterizeAndRecordMicro):

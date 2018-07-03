@@ -5,7 +5,7 @@ from benchmarks import rendering
 from telemetry import benchmark
 
 
-@benchmark.Owner(emails=['sadrul@chromium.org', 'kylechar@chromium.org'])
+@benchmark.Info(emails=['sadrul@chromium.org', 'kylechar@chromium.org'])
 class RenderingDesktopOOPD(rendering.RenderingDesktop):
   tag = 'oopd'
 
@@ -17,7 +17,7 @@ class RenderingDesktopOOPD(rendering.RenderingDesktop):
     options.AppendExtraBrowserArgs('--enable-features=VizDisplayCompositor')
 
 
-@benchmark.Owner(emails=['ericrk@chromium.org', 'fsamuel@chromium.org'])
+@benchmark.Info(emails=['ericrk@chromium.org', 'fsamuel@chromium.org'])
 class RenderingMobileOOPD(rendering.RenderingMobile):
   tag = 'oopd'
 

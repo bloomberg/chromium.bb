@@ -24,7 +24,7 @@ class _PageCyclerV2(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2Typical25(_PageCyclerV2):
   """Page load time benchmark for a 25 typical web pages.
 
@@ -40,7 +40,7 @@ class PageCyclerV2Typical25(_PageCyclerV2):
     return page_sets.Typical25PageSet()
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2IntlArFaHe(_PageCyclerV2):
   """Page load time for a variety of pages in Arabic, Farsi and Hebrew.
 
@@ -56,7 +56,7 @@ class PageCyclerV2IntlArFaHe(_PageCyclerV2):
     return page_sets.IntlArFaHePageSet()
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2IntlEsFrPtBr(_PageCyclerV2):
   """Page load time for a pages in Spanish, French and Brazilian Portuguese.
 
@@ -72,7 +72,7 @@ class PageCyclerV2IntlEsFrPtBr(_PageCyclerV2):
     return page_sets.IntlEsFrPtBrPageSet()
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2IntlHiRu(_PageCyclerV2):
   """Page load time benchmark for a variety of pages in Hindi and Russian.
 
@@ -88,7 +88,7 @@ class PageCyclerV2IntlHiRu(_PageCyclerV2):
     return page_sets.IntlHiRuPageSet()
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2IntlJaZh(_PageCyclerV2):
   """Page load time benchmark for a variety of pages in Japanese and Chinese.
 
@@ -103,7 +103,7 @@ class PageCyclerV2IntlJaZh(_PageCyclerV2):
     return page_sets.IntlJaZhPageSet()
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'ksakamoto@chromium.org'])
 class PageCyclerV2IntlKoThVi(_PageCyclerV2):
   """Page load time for a variety of pages in Korean, Thai and Vietnamese.
 

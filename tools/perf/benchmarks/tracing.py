@@ -12,7 +12,7 @@ from telemetry.web_perf import timeline_based_measurement
 import page_sets
 
 
-@benchmark.Owner(emails=['ssid@chromium.org'])
+@benchmark.Info(emails=['ssid@chromium.org'])
 class TracingWithBackgroundMemoryInfra(perf_benchmark.PerfBenchmark):
   """Measures the overhead of background memory-infra dumps"""
   page_set = page_sets.Top10PageSet

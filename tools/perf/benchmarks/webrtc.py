@@ -10,7 +10,7 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-@benchmark.Owner(emails=['qiangchen@chromium.org', # For smoothness metrics
+@benchmark.Info(emails=['qiangchen@chromium.org', # For smoothness metrics
                          'ehmaldonado@chromium.org',
                          'phoglund@chromium.org'])
 class WebrtcPerfBenchmark(perf_benchmark.PerfBenchmark):

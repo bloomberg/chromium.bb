@@ -20,7 +20,7 @@ class _Smoothness(perf_benchmark.PerfBenchmark):
     return 'smoothness'
 
 
-@benchmark.Owner(emails=['bokan@chromium.org'])
+@benchmark.Info(emails=['bokan@chromium.org'])
 class SmoothnessToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases.
@@ -33,7 +33,7 @@ class SmoothnessToughPinchZoomCases(_Smoothness):
     return 'smoothness.tough_pinch_zoom_cases'
 
 
-@benchmark.Owner(emails=['ericrk@chromium.org'])
+@benchmark.Info(emails=['ericrk@chromium.org'])
 class SmoothnessGpuRasterizationToughPinchZoomCases(_Smoothness):
   """Measures rendering statistics for pinch-zooming in the tough pinch zoom
   cases with GPU rasterization.

@@ -175,7 +175,7 @@ class _MobileStartupStorySet(story_module.StorySet):
 # The mobile startup benchmark uses specifics of AndroidPlatform and hardcodes
 # sending Android intents. The benchmark is disabled on non-Android to avoid
 # failure at benchmark_smoke_unittest.BenchmarkSmokeTest.
-@benchmark.Owner(emails=['pasko@chromium.org',
+@benchmark.Info(emails=['pasko@chromium.org',
                          'chrome-android-perf-status@chromium.org'])
 @decorators.Disabled('linux', 'mac', 'win')
 class MobileStartupBenchmark(perf_benchmark.PerfBenchmark):

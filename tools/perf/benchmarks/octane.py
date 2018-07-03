@@ -117,7 +117,7 @@ class _OctaneMeasurement(legacy_page_test.LegacyPageTest):
                            'benchmark collection.'))
 
 
-@benchmark.Owner(emails=['hablich@chromium.org'])
+@benchmark.Info(emails=['hablich@chromium.org'])
 class Octane(perf_benchmark.PerfBenchmark):
   """Google's Octane JavaScript benchmark.
 

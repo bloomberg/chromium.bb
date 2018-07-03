@@ -353,7 +353,7 @@ class _BlinkPerfBenchmark(perf_benchmark.PerfBenchmark):
     return CreateStorySetFromPath(path, SKIPPED_FILE)
 
 
-@benchmark.Owner(emails=['jbroman@chromium.org',
+@benchmark.Info(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class BlinkPerfBindings(_BlinkPerfBenchmark):
@@ -364,7 +364,7 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
     return 'blink_perf.bindings'
 
 
-@benchmark.Owner(emails=['futhark@chromium.org'])
+@benchmark.Info(emails=['futhark@chromium.org'])
 class BlinkPerfCSS(_BlinkPerfBenchmark):
   subdir = 'css'
 
@@ -374,7 +374,7 @@ class BlinkPerfCSS(_BlinkPerfBenchmark):
 
 
 
-@benchmark.Owner(emails=['junov@chromium.org'])
+@benchmark.Info(emails=['junov@chromium.org'])
 class BlinkPerfCanvas(_BlinkPerfBenchmark):
   subdir = 'canvas'
 
@@ -395,7 +395,7 @@ class BlinkPerfCanvas(_BlinkPerfBenchmark):
     return story_set
 
 
-@benchmark.Owner(emails=['jbroman@chromium.org',
+@benchmark.Info(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class BlinkPerfDOM(_BlinkPerfBenchmark):
@@ -406,7 +406,7 @@ class BlinkPerfDOM(_BlinkPerfBenchmark):
     return 'blink_perf.dom'
 
 
-@benchmark.Owner(emails=['hayato@chromium.org'])
+@benchmark.Info(emails=['hayato@chromium.org'])
 class BlinkPerfEvents(_BlinkPerfBenchmark):
   subdir = 'events'
 
@@ -415,7 +415,7 @@ class BlinkPerfEvents(_BlinkPerfBenchmark):
     return 'blink_perf.events'
 
 
-@benchmark.Owner(emails=['cblume@chromium.org'])
+@benchmark.Info(emails=['cblume@chromium.org'])
 class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
   tag = 'image_decoder'
   subdir = 'image_decoder'
@@ -430,7 +430,7 @@ class BlinkPerfImageDecoder(_BlinkPerfBenchmark):
     ])
 
 
-@benchmark.Owner(emails=['eae@chromium.org'])
+@benchmark.Info(emails=['eae@chromium.org'])
 class BlinkPerfLayout(_BlinkPerfBenchmark):
   subdir = 'layout'
 
@@ -439,7 +439,7 @@ class BlinkPerfLayout(_BlinkPerfBenchmark):
     return 'blink_perf.layout'
 
 
-@benchmark.Owner(emails=['dmurph@chromium.org'])
+@benchmark.Info(emails=['dmurph@chromium.org'])
 class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
   subdir = 'owp_storage'
 
@@ -457,7 +457,7 @@ class BlinkPerfOWPStorage(_BlinkPerfBenchmark):
     ])
 
 
-@benchmark.Owner(emails=['wangxianzhu@chromium.org'])
+@benchmark.Info(emails=['wangxianzhu@chromium.org'])
 class BlinkPerfPaint(_BlinkPerfBenchmark):
   subdir = 'paint'
 
@@ -466,7 +466,7 @@ class BlinkPerfPaint(_BlinkPerfBenchmark):
     return 'blink_perf.paint'
 
 
-@benchmark.Owner(emails=['jbroman@chromium.org',
+@benchmark.Info(emails=['jbroman@chromium.org',
                          'yukishiino@chromium.org',
                          'haraken@chromium.org'])
 class BlinkPerfParser(_BlinkPerfBenchmark):
@@ -477,7 +477,7 @@ class BlinkPerfParser(_BlinkPerfBenchmark):
     return 'blink_perf.parser'
 
 
-@benchmark.Owner(emails=['kouhei@chromium.org', 'fs@opera.com'])
+@benchmark.Info(emails=['kouhei@chromium.org', 'fs@opera.com'])
 class BlinkPerfSVG(_BlinkPerfBenchmark):
   subdir = 'svg'
 
@@ -486,7 +486,7 @@ class BlinkPerfSVG(_BlinkPerfBenchmark):
     return 'blink_perf.svg'
 
 
-@benchmark.Owner(emails=['hayato@chromium.org'])
+@benchmark.Info(emails=['hayato@chromium.org'])
 class BlinkPerfShadowDOM(_BlinkPerfBenchmark):
   subdir = 'shadow_dom'
 

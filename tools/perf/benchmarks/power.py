@@ -25,7 +25,7 @@ class _PowerBenchmark(perf_benchmark.PerfBenchmark):
     return options
 
 
-@benchmark.Owner(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'])
 class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
   """Android typical 10 mobile power test."""
   test = power.Power
@@ -42,7 +42,7 @@ class PowerTypical10Mobile(perf_benchmark.PerfBenchmark):
 
 # TODO(charliea): Delete this benchmark now that we're no longer measuring
 # ground-truth power.
-@benchmark.Owner(emails=['charliea@chromium.org'])
+@benchmark.Info(emails=['charliea@chromium.org'])
 class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
   """Idle platform benchmark.
 
@@ -70,7 +70,7 @@ class IdlePlatformBenchmark(perf_benchmark.PerfBenchmark):
     return 'power.idle_platform'
 
 
-@benchmark.Owner(emails=['charliea@chromium.org'])
+@benchmark.Info(emails=['charliea@chromium.org'])
 class PowerDesktop(_PowerBenchmark):
   SUPPORTED_PLATFORMS = [story.expectations.ALL_DESKTOP]
 
