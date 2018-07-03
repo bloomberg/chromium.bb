@@ -825,6 +825,35 @@ TEST_P(PaintAndRasterInvalidationTest, UpdateVisualRectWhenPrinting) {
   EXPECT_EQ(LayoutRect(300, 0, 150, 20), c->FirstFragment().VisualRect());
 };
 
+TEST_P(PaintAndRasterInvalidationTest, PaintPropertyChange) {
+  SetUpHTML(*this);
+  Element* target = GetDocument().getElementById("target");
+  auto* object = target->GetLayoutObject();
+  target->setAttribute(HTMLNames::classAttr, "background transform");
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  auto* layer = ToLayoutBoxModelObject(object)->Layer();
+  GetDocument().View()->SetTracksPaintInvalidations(true);
+  target->setAttribute(HTMLNames::styleAttr, "transform: scale(3)");
+  GetDocument().View()->UpdateAllLifecyclePhasesExceptPaint();
+  EXPECT_FALSE(layer->NeedsRepaint());
+  const auto* transform =
+      object->FirstFragment().PaintProperties()->Transform();
+  EXPECT_TRUE(transform->Changed(*transform->Parent()));
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+  EXPECT_THAT(GetRasterInvalidationTracking()->Invalidations(),
+              UnorderedElementsAre(
+                  RasterInvalidationInfo{
+                      layer, layer->DebugName(), IntRect(0, 0, 100, 200),
+                      PaintInvalidationReason::kPaintProperty},
+                  RasterInvalidationInfo{
+                      layer, layer->DebugName(), IntRect(0, 0, 150, 300),
+                      PaintInvalidationReason::kPaintProperty}));
+  EXPECT_FALSE(transform->Changed(*transform->Parent()));
+  GetDocument().View()->SetTracksPaintInvalidations(false);
+}
+
 class PaintInvalidatorTestClient : public EmptyChromeClient {
  public:
   void InvalidateRect(const IntRect&) override {

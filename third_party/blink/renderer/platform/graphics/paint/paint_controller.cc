@@ -497,6 +497,7 @@ void PaintController::CommitNewDisplayItems() {
 #endif
 
   cache_is_all_invalid_ = false;
+  committed_ = true;
 
   new_cached_subsequences_.swap(current_cached_subsequences_);
   new_cached_subsequences_.clear();
@@ -528,21 +529,25 @@ void PaintController::FinishCycle() {
   DCHECK(new_display_item_list_.IsEmpty());
   DCHECK(new_paint_chunks_.IsInInitialState());
 
-  // Validate display item clients that have validly cached subsequence or
-  // display items in this PaintController.
-  for (auto& item : current_cached_subsequences_) {
-    if (item.key->IsCacheable())
-      item.key->Validate();
-  }
-  for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
-    const auto& client = item.Client();
-    client.ClearPartialInvalidationVisualRect();
-    if (client.IsCacheable())
-      client.Validate();
-  }
-  for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
-    if (chunk.id.client.IsCacheable())
-      chunk.id.client.Validate();
+  if (committed_) {
+    committed_ = false;
+
+    // Validate display item clients that have validly cached subsequence or
+    // display items in this PaintController.
+    for (auto& item : current_cached_subsequences_) {
+      if (item.key->IsCacheable())
+        item.key->Validate();
+    }
+    for (const auto& item : current_paint_artifact_->GetDisplayItemList()) {
+      const auto& client = item.Client();
+      client.ClearPartialInvalidationVisualRect();
+      if (client.IsCacheable())
+        client.Validate();
+    }
+    for (const auto& chunk : current_paint_artifact_->PaintChunks()) {
+      if (chunk.id.client.IsCacheable())
+        chunk.id.client.Validate();
+    }
   }
 
   current_paint_artifact_->FinishCycle();
