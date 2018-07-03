@@ -13,10 +13,10 @@
 #include "base/containers/queue.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/threading/thread_local.h"
 #include "base/time/time.h"
 #include "gpu/config/gpu_info.h"
+#include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 
 namespace gpu {
@@ -41,9 +41,7 @@ class ScopedAllowGL {
   DISALLOW_COPY_AND_ASSIGN(ScopedAllowGL);
 };
 
-class DeferredGpuCommandService
-    : public gpu::InProcessCommandBuffer::Service,
-      public base::RefCountedThreadSafe<DeferredGpuCommandService> {
+class DeferredGpuCommandService : public gpu::CommandBufferTaskExecutor {
  public:
   static DeferredGpuCommandService* GetInstance();
 
@@ -60,8 +58,6 @@ class DeferredGpuCommandService
   // idle tasks during the idle run.
   void PerformAllIdleWork();
 
-  void AddRef() const override;
-  void Release() const override;
   bool BlockThreadOnWaitSyncToken() const override;
 
   const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
@@ -70,7 +66,6 @@ class DeferredGpuCommandService
 
  protected:
   ~DeferredGpuCommandService() override;
-  friend class base::RefCountedThreadSafe<DeferredGpuCommandService>;
 
  private:
   friend class ScopedAllowGL;

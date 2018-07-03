@@ -297,11 +297,11 @@ void VizMainImpl::CreateFrameSinkManager(
 
 void VizMainImpl::CreateFrameSinkManagerInternal(
     mojom::FrameSinkManagerParamsPtr params) {
-  DCHECK(!gpu_command_service_);
+  DCHECK(!task_executor_);
   DCHECK(gpu_service_);
   DCHECK(gpu_thread_task_runner_->BelongsToCurrentThread());
 
-  gpu_command_service_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
+  task_executor_ = base::MakeRefCounted<gpu::GpuInProcessThreadService>(
       gpu_thread_task_runner_, gpu_service_->sync_point_manager(),
       gpu_service_->mailbox_manager(), gpu_service_->share_group(),
       gpu_service_->gpu_feature_info(),
@@ -326,7 +326,7 @@ void VizMainImpl::CreateFrameSinkManagerOnCompositorThread(
       base::ThreadTaskRunnerHandle::Get());
 
   display_provider_ = std::make_unique<GpuDisplayProvider>(
-      params->restart_id, gpu_service_.get(), gpu_command_service_,
+      params->restart_id, gpu_service_.get(), task_executor_,
       gpu_service_->gpu_channel_manager(), server_shared_bitmap_manager_.get(),
       command_line->HasSwitch(switches::kHeadless),
       command_line->HasSwitch(switches::kRunAllCompositorStagesBeforeDraw));

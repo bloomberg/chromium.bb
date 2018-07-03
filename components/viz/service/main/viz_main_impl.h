@@ -159,8 +159,10 @@ class VizMainImpl : public gpu::GpuSandboxHelper, public mojom::VizMain {
   std::unique_ptr<gpu::GpuInit> gpu_init_;
   std::unique_ptr<GpuServiceImpl> gpu_service_;
 
-  // The InCommandCommandBuffer::Service used by the frame sink manager.
-  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
+  // This is created for OOP-D only. It allows the display compositor to use
+  // InProcessCommandBuffer to send GPU commands to the GPU thread from the
+  // compositor thread.
+  scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor_;
 
   // If the gpu service is not yet ready then we stash pending
   // FrameSinkManagerParams.

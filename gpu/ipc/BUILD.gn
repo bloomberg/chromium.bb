@@ -6,6 +6,8 @@ import("//build/config/ui.gni")
 
 component("gl_in_process_context") {
   sources = [
+    "command_buffer_task_executor.cc",
+    "command_buffer_task_executor.h",
     "gl_in_process_context.cc",
     "gl_in_process_context.h",
     "gl_in_process_context_export.h",

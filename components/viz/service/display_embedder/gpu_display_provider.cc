@@ -23,6 +23,7 @@
 #include "components/viz/service/gl/gpu_service_impl.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/command_buffer/service/image_factory.h"
+#include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/service/gpu_channel_manager.h"
 #include "gpu/ipc/service/gpu_channel_manager_delegate.h"
@@ -71,14 +72,14 @@ namespace viz {
 GpuDisplayProvider::GpuDisplayProvider(
     uint32_t restart_id,
     GpuServiceImpl* gpu_service_impl,
-    scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
+    scoped_refptr<gpu::CommandBufferTaskExecutor> task_executor,
     gpu::GpuChannelManager* gpu_channel_manager,
     ServerSharedBitmapManager* server_shared_bitmap_manager,
     bool headless,
     bool wait_for_all_pipeline_stages_before_draw)
     : restart_id_(restart_id),
       gpu_service_impl_(gpu_service_impl),
-      gpu_service_(std::move(gpu_service)),
+      task_executor_(std::move(task_executor)),
       gpu_channel_manager_delegate_(gpu_channel_manager->delegate()),
       gpu_memory_buffer_manager_(
           std::make_unique<InProcessGpuMemoryBufferManager>(
@@ -133,7 +134,7 @@ std::unique_ptr<Display> GpuDisplayProvider::CreateDisplay(
     gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
     while (context_result != gpu::ContextResult::kSuccess) {
       context_provider = base::MakeRefCounted<VizProcessContextProvider>(
-          gpu_service_, surface_handle, gpu_memory_buffer_manager_.get(),
+          task_executor_, surface_handle, gpu_memory_buffer_manager_.get(),
           image_factory_, gpu_channel_manager_delegate_,
           gpu::SharedMemoryLimits());
       context_result = context_provider->BindToCurrentThread();

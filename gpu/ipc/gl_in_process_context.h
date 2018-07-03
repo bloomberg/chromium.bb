@@ -9,6 +9,7 @@
 
 #include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/common/context_creation_attribs.h"
+#include "gpu/ipc/command_buffer_task_executor.h"
 #include "gpu/ipc/gl_in_process_context_export.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ui/gfx/native_widget_types.h"
@@ -41,7 +42,7 @@ class GL_IN_PROCESS_CONTEXT_EXPORT GLInProcessContext {
   // to correctly create a surface.
   // |gpu_channel_manager| should be non-null when used in the GPU process.
   ContextResult Initialize(
-      scoped_refptr<InProcessCommandBuffer::Service> service,
+      scoped_refptr<CommandBufferTaskExecutor> task_executor,
       scoped_refptr<gl::GLSurface> surface,
       bool is_offscreen,
       SurfaceHandle window,
