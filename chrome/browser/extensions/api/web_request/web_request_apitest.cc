@@ -1605,14 +1605,8 @@ class LocalNTPInterceptionWebRequestAPITest
   DISALLOW_COPY_AND_ASSIGN(LocalNTPInterceptionWebRequestAPITest);
 };
 
-// Flaky on Win7x64 and Linux. See https://crbug.com/853118.
-#if defined(OS_WIN) || defined(OS_LINUX)
-#define MAYBE_OneGoogleBarRequestsHidden DISABLED_OneGoogleBarRequestsHidden
-#else
-#define MAYBE_OneGoogleBarRequestsHidden OneGoogleBarRequestsHidden
-#endif
 IN_PROC_BROWSER_TEST_F(LocalNTPInterceptionWebRequestAPITest,
-                       MAYBE_OneGoogleBarRequestsHidden) {
+                       OneGoogleBarRequestsHidden) {
   // Loads an extension which tries to intercept requests to the OneGoogleBar.
   ExtensionTestMessageListener listener("ready", true /*will_reply*/);
   const Extension* extension =
