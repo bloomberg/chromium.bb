@@ -223,6 +223,8 @@ class CONTENT_EXPORT MediaDevicesManager
 
   // Helpers to handle device-change notification.
   void HandleDevicesChanged(MediaDeviceType type);
+  void StopRemovedDevices(MediaDeviceType type,
+                          const MediaDeviceInfoArray& new_snapshot);
   void NotifyMediaStreamManager(MediaDeviceType type,
                                 const MediaDeviceInfoArray& new_snapshot);
   void NotifyDeviceChangeSubscribers(MediaDeviceType type,
