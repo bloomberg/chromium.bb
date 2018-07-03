@@ -108,7 +108,9 @@ function runAllTests() {
         {colorSpace: 'rec2020', pixelFormat: 'float16'},
         {colorSpace: 'p3', pixelFormat: 'float16'}
         ];
-    var alphaValues = [0.5, 1];
+    // crbug.com/859102
+//    var alphaValues = [0.5, 1];
+    var alphaValues = [1];
     var colorSpaceConversions = [
         'none', 'default', 'srgb', 'linear-rgb', 'rec2020', 'p3'];
 

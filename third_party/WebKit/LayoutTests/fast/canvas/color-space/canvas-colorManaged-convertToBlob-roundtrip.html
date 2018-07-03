@@ -148,7 +148,9 @@ function runAllTests() {
         {colorSpace: 'srgb', pixelFormat: 'float16'},
         {colorSpace: 'rec2020', pixelFormat: 'float16'},
         {colorSpace: 'p3', pixelFormat: 'float16'}];
-    var alphaValues = [0.5, 1];
+    // crbug.com/859102
+//    var alphaValues = [0.5, 1];
+    var alphaValues = [1];
 
     // The *correct* way to test convertToBlob() is to directly examine the
     // image file for the expected color space and pixels. Since this is not

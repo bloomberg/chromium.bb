@@ -448,7 +448,7 @@ scoped_refptr<StaticBitmapImage> ApplyColorSpaceConversion(
     scoped_refptr<StaticBitmapImage>&& image,
     ImageBitmap::ParsedOptions& options) {
   SkTransferFunctionBehavior transfer_function_behavior =
-      SkTransferFunctionBehavior::kRespect;
+      SkTransferFunctionBehavior::kIgnore;
   // We normally expect to respect transfer function. However, in two scenarios
   // we have to ignore the transfer function. First, when the source image is
   // unpremul. Second, when the source image is drawn using a
