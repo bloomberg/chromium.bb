@@ -98,7 +98,7 @@ class UserSelectionScreen
 
   // Fills |user_dict| with information about |user|.
   static void FillUserDictionary(
-      user_manager::User* user,
+      const user_manager::User* user,
       bool is_owner,
       bool is_signin_to_add,
       proximity_auth::mojom::AuthType auth_type,
@@ -106,7 +106,7 @@ class UserSelectionScreen
       base::DictionaryValue* user_dict);
 
   // Fills |user_dict| with |user| multi-profile related preferences.
-  static void FillMultiProfileUserPrefs(user_manager::User* user,
+  static void FillMultiProfileUserPrefs(const user_manager::User* user,
                                         base::DictionaryValue* user_dict,
                                         bool is_signin_to_add);
 
@@ -117,15 +117,6 @@ class UserSelectionScreen
   // |user|.
   static ash::mojom::UserAvatarPtr BuildMojoUserAvatarForUser(
       const user_manager::User* user);
-
-  // Fills |user_info| with information about |user|.
-  static void FillUserMojoStruct(
-      const user_manager::User* user,
-      bool is_owner,
-      bool is_signin_to_add,
-      proximity_auth::mojom::AuthType auth_type,
-      const std::vector<std::string>* public_session_recommended_locales,
-      ash::mojom::LoginUserInfo* user_info);
 
   std::unique_ptr<base::ListValue> UpdateAndReturnUserListForWebUI();
   std::vector<ash::mojom::LoginUserInfoPtr> UpdateAndReturnUserListForMojo();
@@ -158,7 +149,7 @@ class UserSelectionScreen
   // Set of Users that are visible.
   user_manager::UserList users_;
 
-  // Map of accounnt ids to their current authentication type. If a user is not
+  // Map of account ids to their current authentication type. If a user is not
   // contained in the map, it is using the default authentication type.
   std::map<AccountId, proximity_auth::mojom::AuthType> user_auth_type_map_;
 

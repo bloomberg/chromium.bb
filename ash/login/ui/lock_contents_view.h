@@ -189,7 +189,7 @@ class ASH_EXPORT LockContentsView
  private:
   class UserState {
    public:
-    explicit UserState(AccountId account_id);
+    explicit UserState(const mojom::LoginUserInfoPtr& user_info);
     UserState(UserState&&);
     ~UserState();
 

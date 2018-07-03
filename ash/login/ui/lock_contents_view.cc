@@ -233,8 +233,14 @@ views::View* LockContentsView::TestApi::main_view() const {
   return view_->main_view_;
 }
 
-LockContentsView::UserState::UserState(AccountId account_id)
-    : account_id(account_id) {}
+LockContentsView::UserState::UserState(const mojom::LoginUserInfoPtr& user_info)
+    : account_id(user_info->basic_user_info->account_id) {
+  fingerprint_state = user_info->allow_fingerprint_unlock
+                          ? mojom::FingerprintUnlockState::AVAILABLE
+                          : mojom::FingerprintUnlockState::UNAVAILABLE;
+  if (user_info->auth_type == proximity_auth::mojom::AuthType::ONLINE_SIGN_IN)
+    force_online_sign_in = true;
+}
 
 LockContentsView::UserState::UserState(UserState&&) = default;
 
@@ -405,13 +411,8 @@ void LockContentsView::OnUsersChanged(
   }
 
   // Build user state list.
-  for (const mojom::LoginUserInfoPtr& user : users) {
-    UserState state(user->basic_user_info->account_id);
-    state.fingerprint_state = user->allow_fingerprint_unlock
-                                  ? mojom::FingerprintUnlockState::AVAILABLE
-                                  : mojom::FingerprintUnlockState::UNAVAILABLE;
-    users_.push_back(std::move(state));
-  }
+  for (const mojom::LoginUserInfoPtr& user : users)
+    users_.push_back(UserState(user));
 
   auto box_layout =
       std::make_unique<views::BoxLayout>(views::BoxLayout::kHorizontal);
