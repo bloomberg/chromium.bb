@@ -161,7 +161,7 @@ crbug.com/834185 http/tests/fetch/serviceworker-proxied/thorough/redirect-loop-b
 crbug.com/834185 http/tests/fetch/serviceworker-proxied/thorough/redirect-nocors-base-https-other-https.html [ Pass Timeout ]
 crbug.com/834185 http/tests/fetch/serviceworker-proxied/thorough/redirect-password-base-https-other-https.html [ Pass Timeout ]
 crbug.com/834185 http/tests/fetch/serviceworker-proxied/thorough/scheme-blob-base-https-other-https.html [ Pass Timeout ]
-crbug.com/834185 http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Pass Timeout ]
+crbug.com/859988 http/tests/fetch/serviceworker-proxied/thorough/scheme-data-base-https-other-https.html [ Failure Pass Timeout ]
 crbug.com/834185 http/tests/fetch/serviceworker/thorough/access-control-base-https-other-https.html [ Pass Timeout ]
 crbug.com/834185 http/tests/fetch/serviceworker/thorough/auth-base-https-other-https.html [ Pass Timeout ]
 crbug.com/834185 http/tests/fetch/serviceworker/thorough/auth-nocors-base-https-other-https.html [ Pass Timeout ]
