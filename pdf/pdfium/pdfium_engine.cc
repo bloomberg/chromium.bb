@@ -671,18 +671,6 @@ void ShutdownSDK() {
   TearDownV8();
 }
 
-PDFiumEngine::TouchTimer::TouchTimer(PDFiumEngine* engine,
-                                     int id,
-                                     const pp::TouchInputEvent& event)
-    : Timer(kTouchLongPressTimeout), engine_(engine), id_(id), event_(event) {}
-
-PDFiumEngine::TouchTimer::~TouchTimer() = default;
-
-void PDFiumEngine::TouchTimer::OnTimer() {
-  engine_->HandleLongPress(event_);
-  engine_->KillTouchTimer(id_);
-}
-
 std::unique_ptr<PDFEngine> PDFEngine::Create(PDFEngine::Client* client,
                                              bool enable_javascript) {
   return std::make_unique<PDFiumEngine>(client, enable_javascript);
@@ -1100,7 +1088,7 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
       rv = OnChar(pp::KeyboardInputEvent(event));
       break;
     case PP_INPUTEVENT_TYPE_TOUCHSTART: {
-      KillTouchTimer(last_touch_timer_id_);
+      KillTouchTimer();
 
       pp::TouchInputEvent touch_event(event);
       if (touch_event.GetTouchCount(PP_TOUCHLIST_TYPE_TARGETTOUCHES) == 1)
@@ -1108,12 +1096,12 @@ bool PDFiumEngine::HandleEvent(const pp::InputEvent& event) {
       break;
     }
     case PP_INPUTEVENT_TYPE_TOUCHEND:
-      KillTouchTimer(last_touch_timer_id_);
+      KillTouchTimer();
       break;
     case PP_INPUTEVENT_TYPE_TOUCHMOVE:
       // TODO(dsinclair): This should allow a little bit of movement (up to the
       // touch radii) to account for finger jiggle.
-      KillTouchTimer(last_touch_timer_id_);
+      KillTouchTimer();
       break;
     default:
       break;
@@ -3526,12 +3514,13 @@ bool PDFiumEngine::IsPointInEditableFormTextArea(FPDF_PAGE page,
 }
 
 void PDFiumEngine::ScheduleTouchTimer(const pp::TouchInputEvent& evt) {
-  const int timer_id = ++last_touch_timer_id_;
-  touch_timers_[timer_id] = std::make_unique<TouchTimer>(this, timer_id, evt);
+  touch_timer_.Start(FROM_HERE, kTouchLongPressTimeout,
+                     base::BindRepeating(&PDFiumEngine::HandleLongPress,
+                                         base::Unretained(this), evt));
 }
 
-void PDFiumEngine::KillTouchTimer(int timer_id) {
-  touch_timers_.erase(timer_id);
+void PDFiumEngine::KillTouchTimer() {
+  touch_timer_.Stop();
 }
 
 bool PDFiumEngine::PageIndexInBounds(int index) const {

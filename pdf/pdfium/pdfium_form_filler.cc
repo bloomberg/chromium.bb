@@ -11,7 +11,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "pdf/pdfium/pdfium_engine.h"
-#include "pdf/timer.h"
 
 namespace chrome_pdf {
 
@@ -20,23 +19,6 @@ namespace {
 std::string WideStringToString(FPDF_WIDESTRING wide_string) {
   return base::UTF16ToUTF8(reinterpret_cast<const base::char16*>(wide_string));
 }
-
-class FormFillTimer : public Timer {
- public:
-  FormFillTimer(base::TimeDelta delay, int id, TimerCallback timer_callback)
-      : Timer(delay), id_(id), timer_callback_(timer_callback) {}
-
-  ~FormFillTimer() override = default;
-
-  // Timer overrides:
-  void OnTimer() override { timer_callback_(id_); }
-
- private:
-  const int id_;
-  TimerCallback timer_callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(FormFillTimer);
-};
 
 }  // namespace
 
@@ -644,8 +626,9 @@ PDFiumEngine* PDFiumFormFiller::GetEngine(IPDF_JSPLATFORM* platform) {
 int PDFiumFormFiller::SetTimer(const base::TimeDelta& delay,
                                TimerCallback timer_func) {
   const int timer_id = ++last_timer_id_;
-  timers_[timer_id] =
-      std::make_unique<FormFillTimer>(delay, timer_id, timer_func);
+  auto timer = std::make_unique<base::RepeatingTimer>();
+  timer->Start(FROM_HERE, delay, base::BindRepeating(timer_func, timer_id));
+  timers_[timer_id] = std::move(timer);
   return timer_id;
 }
 
