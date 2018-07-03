@@ -46,6 +46,13 @@ public class VrPopupWindow extends PopupWindow {
         mVrDialogManager.setDialogView(mVrPopupContainer);
         mVrDialogManager.initVrDialog(mWidth, mHeight);
         mVrDialogManager.setDialogLocation(x, y);
+        mVrDialogManager.setVrDialogDismissHandler(new Runnable() {
+            @Override
+            public void run() {
+                dismiss();
+            }
+        });
+
         mIsShowing = true;
     }
 

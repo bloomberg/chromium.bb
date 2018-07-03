@@ -126,6 +126,7 @@ public class VrShellImpl
     private ModalDialogManager mNonVrModalDialogManager;
     private ModalDialogManager mVrModalDialogManager;
     private VrModalPresenter mVrModalPresenter;
+    private Runnable mVrDialogDismissHandler;
 
     private VrInputMethodManagerWrapper mInputMethodManagerWrapper;
 
@@ -587,6 +588,18 @@ public class VrShellImpl
     @CalledByNative
     public void closeCurrentDialog() {
         mVrModalPresenter.closeCurrentDialog();
+        if (mVrDialogDismissHandler != null) {
+            mVrDialogDismissHandler.run();
+            mVrDialogDismissHandler = null;
+        }
+    }
+
+    /**
+     * @param vrDialogDismissHandler the mVrDialogDismissHandler to set
+     */
+    @Override
+    public void setVrDialogDismissHandler(Runnable vrDialogDismissHandler) {
+        mVrDialogDismissHandler = vrDialogDismissHandler;
     }
 
     @Override
@@ -796,6 +809,7 @@ public class VrShellImpl
     public void closeVrDialog() {
         nativeCloseAlertDialog(mNativeVrShell);
         mVrUiViewContainer.removeAllViews();
+        mVrDialogDismissHandler = null;
     }
 
     /**
