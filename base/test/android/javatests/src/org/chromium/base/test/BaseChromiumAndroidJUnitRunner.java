@@ -207,7 +207,6 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
         @Override
         public TestRequestBuilder addFromRunnerArgs(RunnerArgs runnerArgs) {
             mExcludedPrefixes.addAll(runnerArgs.notTestPackages);
-            runnerArgs.notTestPackages.clear();
             return super.addFromRunnerArgs(runnerArgs);
         }
 
