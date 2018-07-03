@@ -16,7 +16,6 @@ namespace translate {
 namespace metrics_internal {
 
 // Constant string values to indicate UMA names.
-extern const char kRenderer4LanguageDetection[];
 extern const char kTranslateContentLanguage[];
 extern const char kTranslateHtmlLang[];
 extern const char kTranslateLanguageVerification[];
@@ -91,9 +90,6 @@ void ReportUserActionDuration(base::TimeTicks begin, base::TimeTicks end);
 
 // Called when a translation is triggered.
 void ReportPageScheme(const std::string& scheme);
-
-// Called when CLD detects page language.
-void ReportLanguageDetectionTime(base::TimeTicks begin, base::TimeTicks end);
 
 // Called when CLD agreed on a language which is different, but in the similar
 // language list.
