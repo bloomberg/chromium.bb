@@ -435,14 +435,21 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
           chrome::GetTabAlertStateForContents(contents);
       if (alert_state != last_alert_state_) {
         last_alert_state_ = alert_state;
-        base::ThreadTaskRunnerHandle::Get()->PostTask(
-            FROM_HERE, base::RunLoop::QuitCurrentWhenIdleClosureDeprecated());
+        if (on_tab_changed_)
+          std::move(on_tab_changed_).Run();
       }
+    }
+
+    void WaitForTabChange() {
+      base::RunLoop run_loop;
+      on_tab_changed_ = run_loop.QuitClosure();
+      run_loop.Run();
     }
 
    private:
     Browser* const browser_;
     TabAlertState last_alert_state_;
+    base::OnceClosure on_tab_changed_;
   };
 
   IndicatorChangeObserver observer(browser());
@@ -462,7 +469,7 @@ IN_PROC_BROWSER_TEST_F(TabCaptureApiTest, MAYBE_TabIndicator) {
       EXPECT_EQ(TabAlertState::TAB_CAPTURING, observer.last_alert_state());
       return;
     }
-    content::RunMessageLoop();
+    observer.WaitForTabChange();
   }
 }
 
