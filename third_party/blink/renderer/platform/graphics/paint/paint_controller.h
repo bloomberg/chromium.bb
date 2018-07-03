@@ -347,6 +347,7 @@ class PLATFORM_EXPORT PaintController {
   bool subsequence_caching_disabled_ = false;
 
   bool cache_is_all_invalid_ = true;
+  bool committed_ = false;
 
   // A stack recording current frames' first paints.
   Vector<FrameFirstPaint> frame_first_paints_;
