@@ -83,6 +83,7 @@ SPECIAL_TESTS = {
     'mobmonitor/checkfile/manager_unittest': INSIDE,
     'mobmonitor/scripts/mobmonitor_unittest': INSIDE,
     'scripts/cros_mark_android_as_stable_unittest': INSIDE,
+    'scripts/cros_oobe_autoconfig': INSIDE,
     'scripts/cros_install_debug_syms_unittest': INSIDE,
     'scripts/cros_list_modified_packages_unittest': INSIDE,
     'scripts/cros_mark_as_stable_unittest': INSIDE,

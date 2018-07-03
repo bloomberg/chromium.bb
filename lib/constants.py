@@ -129,6 +129,9 @@ CL_STATUS_WAITING = 'waiting'
 CL_STATUS_READY_TO_SUBMIT = 'ready-to-submit'
 CL_STATUS_FULLY_VERIFIED = 'fully-verified'
 
+# Partition labels
+CROS_PART_STATEFUL = 'STATE'
+
 # Signer status strings
 SIGNER_STATUS_PASSED = 'passed'
 SIGNER_STATUS_FAILED = 'failed'

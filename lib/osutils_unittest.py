@@ -21,6 +21,15 @@ from chromite.lib import partial_mock
 class TestOsutils(cros_test_lib.TempDirTestCase):
   """General unittests for the osutils module."""
 
+  def testAllocateFile(self):
+    """Verify we can allocate a file of a certain length."""
+    filename = os.path.join(self.tempdir, 'foo')
+    size = 1234
+    osutils.AllocateFile(filename, size)
+
+    self.assertExists(filename)
+    self.assertEqual(size, os.path.getsize(filename))
+
   def testReadWriteFile(self):
     """Verify we can write data to a file, and then read it back."""
     filename = os.path.join(self.tempdir, 'foo')

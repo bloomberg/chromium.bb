@@ -79,6 +79,21 @@ def ExpandPath(path):
   return os.path.realpath(os.path.expanduser(path))
 
 
+def AllocateFile(path, size, makedirs=False):
+  """Allocates a file of a certain |size| in |path|.
+
+  Args:
+    path: Path to allocate the file.
+    size: The length, in bytes, of the desired file.
+    makedirs: If True, create missing leading directories in the path.
+  """
+  if makedirs:
+    SafeMakedirs(os.path.dirname(path))
+
+  with open(path, 'w') as out:
+    out.truncate(size)
+
+
 def WriteFile(path, content, mode='w', atomic=False, makedirs=False,
               sudo=False):
   """Write the given content to disk.
@@ -1101,7 +1116,8 @@ def ChdirContext(target_dir):
 class MountImageContext(object):
   """A context manager to mount an image."""
 
-  def __init__(self, image_file, destination, part_selects=(1, 3)):
+  def __init__(self, image_file, destination, part_selects=(1, 3),
+               mount_opts=('ro',)):
     """Construct a context manager object to actually do the job.
 
     Specified partitions will be mounted under |destination| according to the
@@ -1127,6 +1143,7 @@ class MountImageContext(object):
       part_selects: A list of partition numbers or labels to be mounted. If an
         element is an integer, it is matched as partition number, otherwise
         a partition label.
+      mount_opts: Tuple of options to mount with.
     """
     self._image_file = image_file
     self._gpt_table = cros_build_lib.GetImageDiskPartitionInfo(
@@ -1136,6 +1153,7 @@ class MountImageContext(object):
     # CWD being changed later.
     self._target_dir = ExpandPath(destination)
     self._part_selects = part_selects
+    self._mount_opts = mount_opts
     self._mounted = set()
     self._linked_labels = set()
 
@@ -1171,8 +1189,8 @@ class MountImageContext(object):
     if os.path.exists(dest_number):
       raise ValueError('Mount point %s already exists.' % dest_number)
 
-    MountImagePartition(self._image_file, part.number,
-                        dest_number, self._gpt_table)
+    MountImagePartition(self._image_file, part.number, dest_number,
+                        self._gpt_table, mount_opts=self._mount_opts)
     self._mounted.add(part)
 
     if not os.path.exists(dest_label):
