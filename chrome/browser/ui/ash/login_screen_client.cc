@@ -156,6 +156,10 @@ void LoginScreenClient::LaunchKioskApp(const std::string& app_id) {
                                                              false);
 }
 
+void LoginScreenClient::LaunchArcKioskApp(const AccountId& account_id) {
+  chromeos::LoginDisplayHost::default_host()->StartArcKiosk(account_id);
+}
+
 void LoginScreenClient::LoadWallpaper(const AccountId& account_id) {
   WallpaperControllerClient::Get()->ShowUserWallpaper(account_id);
 }

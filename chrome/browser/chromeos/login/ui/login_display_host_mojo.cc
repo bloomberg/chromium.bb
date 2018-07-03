@@ -211,7 +211,7 @@ void LoginDisplayHostMojo::OnStartAppLaunch() {
 }
 
 void LoginDisplayHostMojo::OnStartArcKiosk() {
-  NOTIMPLEMENTED();
+  dialog_->ShowFullScreen();
 }
 
 void LoginDisplayHostMojo::OnBrowserCreated() {

@@ -268,7 +268,8 @@ class LockDebugView::DebugDataDispatcherTransformer
 
   void AddKioskApp(ShelfWidget* shelf_widget) {
     mojom::KioskAppInfoPtr app_info = mojom::KioskAppInfo::New();
-    app_info->app_id = kDebugKioskAppId;
+    app_info->identifier = mojom::KioskAppIdentifier::New();
+    app_info->identifier->set_app_id(kDebugKioskAppId);
     app_info->name = base::UTF8ToUTF16(kDebugKioskAppName);
     kiosk_apps_.push_back(std::move(app_info));
     shelf_widget->SetLoginKioskApps(mojo::Clone(kiosk_apps_));

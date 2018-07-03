@@ -109,6 +109,7 @@ class OobeUIDialogDelegate : public display::DisplayObserver,
   views::WebDialogView* dialog_view_ = nullptr;
   gfx::Size size_;
   bool closable_by_esc_ = true;
+  bool showing_fullscreen_ = false;
 
   ScopedObserver<display::Screen, display::DisplayObserver> display_observer_;
   ScopedObserver<TabletModeClient, TabletModeClientObserver>

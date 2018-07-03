@@ -417,6 +417,10 @@ void LoginScreenController::LaunchKioskApp(const std::string& app_id) {
   login_screen_client_->LaunchKioskApp(app_id);
 }
 
+void LoginScreenController::LaunchArcKioskApp(const AccountId& account_id) {
+  login_screen_client_->LaunchArcKioskApp(account_id);
+}
+
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
                                                const std::string& password,
                                                bool authenticated_by_pin,
