@@ -104,7 +104,7 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
 
 SkColor BrowserNonClientFrameView::GetTabSeparatorColor() const {
   DCHECK(MD::IsRefreshUi());
-  constexpr SkAlpha kTabSeparatorAlpha = 0x6E;  // 43%
+  constexpr SkAlpha kTabSeparatorAlpha = 0x4D;  // 30%
   const SkColor frame_color = GetFrameColor();
   const SkColor base_color =
       color_utils::BlendTowardOppositeLuma(frame_color, SK_AlphaOPAQUE);
