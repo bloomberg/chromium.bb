@@ -17,6 +17,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <assert.h>
 #include "aom_dsp/grain_synthesis.h"
 #include "aom_mem/aom_mem.h"
 
@@ -950,6 +951,11 @@ void av1_add_film_grain(aom_film_grain_t *params, aom_image_t *src,
       exit(1);
   }
 
+  assert(params->bit_depth == src->bit_depth);
+
+  dst->fmt = src->fmt;
+  dst->bit_depth = src->bit_depth;
+
   dst->r_w = src->r_w;
   dst->r_h = src->r_h;
   dst->d_w = src->d_w;
@@ -998,8 +1004,6 @@ void av1_add_film_grain(aom_film_grain_t *params, aom_image_t *src,
   // luma and chroma strides in samples
   luma_stride = dst->stride[AOM_PLANE_Y] >> use_high_bit_depth;
   chroma_stride = dst->stride[AOM_PLANE_U] >> use_high_bit_depth;
-
-  params->bit_depth = dst->bit_depth;
 
   av1_add_film_grain_run(params, luma, cb, cr, height, width, luma_stride,
                          chroma_stride, use_high_bit_depth, chroma_subsamp_y,

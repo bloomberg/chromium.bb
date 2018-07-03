@@ -72,7 +72,7 @@ typedef struct {
 
   int clip_to_restricted_range;
 
-  int bit_depth;  // video bit depth
+  unsigned int bit_depth;  // video bit depth
 
   int chroma_scaling_from_luma;
 

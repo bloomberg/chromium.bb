@@ -3399,6 +3399,8 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   else
     pars->update_parameters = 1;
 
+  pars->bit_depth = cm->bit_depth;
+
   if (!pars->update_parameters) {
     // inherit parameters from a previous reference frame
     RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
