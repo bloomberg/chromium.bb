@@ -145,7 +145,8 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
       flags = GBM_BO_USE_LINEAR | GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
       break;
     case gfx::BufferUsage::SCANOUT_VDA_WRITE:
-      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING;
+      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_TEXTURING |
+              GBM_BO_USE_HW_VIDEO_DECODER;
       break;
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
     case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
