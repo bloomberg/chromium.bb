@@ -2785,6 +2785,11 @@ public class ToolbarPhone extends ToolbarLayout
         if (mLayoutUpdateHost != null) mLayoutUpdateHost.requestUpdate();
     }
 
+    @VisibleForTesting
+    public View getExperimentalButtonForTesting() {
+        return mExperimentalButton;
+    }
+
     private void setTabSwitcherAnimationMenuDrawable() {
         mTabSwitcherAnimationMenuDrawable = ApiCompatibilityUtils.getDrawable(
                 getResources(), R.drawable.ic_more_vert_black_24dp);

@@ -53,7 +53,10 @@ import org.chromium.chrome.browser.multiwindow.MultiWindowUtils;
 import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder.PartialBindCallback;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticleViewHolder;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.test.ScreenShooter;
+import org.chromium.chrome.browser.toolbar.ToolbarPhone;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.chrome.browser.widget.bottomsheet.EmptyBottomSheetObserver;
 import org.chromium.chrome.test.BottomSheetTestRule;
@@ -81,6 +84,7 @@ import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -328,26 +332,7 @@ public class ContextualSuggestionsTest {
     public void testOpenSuggestion() throws InterruptedException, TimeoutException {
         forceShowSuggestions();
         openSheet();
-
-        SnippetArticleViewHolder holder = getFirstSuggestionViewHolder();
-        String expectedUrl = holder.getUrl();
-
-        TestWebContentsObserver webContentsObserver = new TestWebContentsObserver(
-                mActivityTestRule.getActivity().getActivityTab().getWebContents());
-
-        int callCount = webContentsObserver.getOnPageStartedHelper().getCallCount();
-
-        ThreadUtils.runOnUiThreadBlocking(() -> {
-            holder.itemView.performClick();
-        });
-
-        webContentsObserver.getOnPageStartedHelper().waitForCallback(callCount);
-
-        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
-
-        assertEquals("Tab URL should match snippet URL", expectedUrl,
-                mActivityTestRule.getActivity().getActivityTab().getUrl());
-        assertFalse("Sheet should be closed.", mBottomSheet.isSheetOpen());
+        testOpenFirstSuggestion();
     }
 
     @Test
@@ -741,6 +726,78 @@ public class ContextualSuggestionsTest {
         assertNull("Bottom sheet contents should be null.", mBottomSheet.getCurrentSheetContent());
     }
 
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
+    @DisableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
+    public void testToolbarButton() throws Exception {
+        View toolbarButton = getToolbarButton();
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+
+        clickToolbarButton();
+        simulateClickOnCloseButton();
+
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+
+        clickToolbarButton();
+        testOpenFirstSuggestion();
+
+        assertEquals("Toolbar button should be visible", View.GONE, toolbarButton.getVisibility());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
+    @DisableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
+    public void testToolbarButton_ToggleTabSwitcher() throws Exception {
+        View toolbarButton = getToolbarButton();
+
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().getLayoutManager().showOverview(false); });
+
+        assertEquals("Toolbar button should be invisible", View.INVISIBLE,
+                toolbarButton.getVisibility());
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> { mActivityTestRule.getActivity().getLayoutManager().hideOverview(false); });
+
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"ContextualSuggestions"})
+    @EnableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BUTTON)
+    @DisableFeatures(ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)
+    public void testToolbarButton_SwitchTabs() throws Exception {
+        View toolbarButton = getToolbarButton();
+
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+
+        final TabModel currentModel =
+                mActivityTestRule.getActivity().getTabModelSelector().getCurrentModel();
+        int currentIndex = currentModel.index();
+        ChromeTabUtils.newTabFromMenu(
+                InstrumentationRegistry.getInstrumentation(), mActivityTestRule.getActivity());
+
+        assertEquals("Toolbar button should be gone", View.GONE, toolbarButton.getVisibility());
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> currentModel.setIndex(currentIndex, TabSelectionType.FROM_USER));
+
+        CriteriaHelper.pollUiThread(
+                () -> { return toolbarButton.getVisibility() == View.VISIBLE; });
+    }
+
     private void forceShowSuggestions() throws InterruptedException, TimeoutException {
         assertEquals("Model has incorrect number of items.",
                 (int) FakeContextualSuggestionsSource.TOTAL_ITEM_COUNT,
@@ -805,5 +862,46 @@ public class ContextualSuggestionsTest {
         RecyclerViewTestUtils.waitForStableRecyclerView(recyclerView);
 
         return (SnippetArticleViewHolder) recyclerView.findViewHolderForAdapterPosition(index);
+    }
+
+    private View getToolbarButton() throws ExecutionException {
+        return ThreadUtils.runOnUiThreadBlocking(() -> {
+            return ((ToolbarPhone) mActivityTestRule.getActivity()
+                            .getToolbarManager()
+                            .getToolbarLayout())
+                    .getExperimentalButtonForTesting();
+        });
+    }
+
+    private void clickToolbarButton() throws ExecutionException {
+        View toolbarButton = getToolbarButton();
+        assertEquals(
+                "Toolbar button should be visible", View.VISIBLE, toolbarButton.getVisibility());
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            toolbarButton.performClick();
+            mBottomSheet.endAnimations();
+        });
+        assertTrue("Sheet should be open.", mBottomSheet.isSheetOpen());
+    }
+
+    private void testOpenFirstSuggestion() throws InterruptedException, TimeoutException {
+        SnippetArticleViewHolder holder = getFirstSuggestionViewHolder();
+        String expectedUrl = holder.getUrl();
+
+        TestWebContentsObserver webContentsObserver = new TestWebContentsObserver(
+                mActivityTestRule.getActivity().getActivityTab().getWebContents());
+
+        int callCount = webContentsObserver.getOnPageStartedHelper().getCallCount();
+
+        ThreadUtils.runOnUiThreadBlocking(() -> { holder.itemView.performClick(); });
+
+        webContentsObserver.getOnPageStartedHelper().waitForCallback(callCount);
+
+        ThreadUtils.runOnUiThreadBlocking(() -> mBottomSheet.endAnimations());
+
+        assertEquals("Tab URL should match snippet URL", expectedUrl,
+                mActivityTestRule.getActivity().getActivityTab().getUrl());
+        assertFalse("Sheet should be closed.", mBottomSheet.isSheetOpen());
     }
 }
