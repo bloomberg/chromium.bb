@@ -183,7 +183,7 @@ class PLATFORM_EXPORT Character {
   static String NormalizeSpaces(const UChar*, unsigned length);
 
   static bool IsCommonOrInheritedScript(UChar32);
-  static bool IsUnassignedOrPrivateUse(UChar32);
+  static bool IsPrivateUse(UChar32);
 
  private:
   static bool IsCJKIdeographOrSymbolSlow(UChar32);

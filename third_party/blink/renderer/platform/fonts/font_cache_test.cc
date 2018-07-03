@@ -35,7 +35,7 @@ TEST(FontCache, NoFallbackForPrivateUseArea) {
   FontDescription font_description;
   font_description.SetGenericFamily(FontDescription::kStandardFamily);
   for (UChar32 character : {0xE000, 0xE401, 0xE402, 0xE403, 0xF8FF, 0xF0000,
-                            0xFAAAA, 0xFFFFF, 0x100000, 0x10AAAA, 0x10FFFF}) {
+                            0xFAAAA, 0x100000, 0x10AAAA}) {
     scoped_refptr<SimpleFontData> font_data =
         font_cache->FallbackFontForCharacter(font_description, character,
                                              nullptr);
