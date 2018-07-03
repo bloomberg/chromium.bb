@@ -906,7 +906,7 @@ static void hor_boundary_overlap(int *top_block, int top_stride,
   }
 }
 
-void av1_add_film_grain(aom_film_grain_t *params, aom_image_t *src,
+void av1_add_film_grain(aom_film_grain_t *params, const aom_image_t *src,
                         aom_image_t *dst) {
   uint8_t *luma, *cb, *cr;
   int height, width, luma_stride, chroma_stride;

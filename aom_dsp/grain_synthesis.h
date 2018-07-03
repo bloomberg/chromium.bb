@@ -106,9 +106,9 @@ void av1_add_film_grain_run(aom_film_grain_t *grain_params, uint8_t *luma,
  *
  * \param[in]    grain_params     Grain parameters
  * \param[in]    src              Source image
- * \param[in]    dst              Resulting image with grain
+ * \param[out]   dst              Resulting image with grain
  */
-void av1_add_film_grain(aom_film_grain_t *grain_params, aom_image_t *src,
+void av1_add_film_grain(aom_film_grain_t *grain_params, const aom_image_t *src,
                         aom_image_t *dst);
 
 #ifdef __cplusplus
