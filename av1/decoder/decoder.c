@@ -474,7 +474,10 @@ int av1_receive_compressed_data(AV1Decoder *pbi, size_t size,
   int frame_decoded =
       aom_decode_frame_from_obus(pbi, source, source + size, psource);
 
-  if (cm->error.error_code != AOM_CODEC_OK) return 1;
+  if (cm->error.error_code != AOM_CODEC_OK) {
+    cm->cur_frame->ref_count = 0;
+    return 1;
+  }
 
 #if TXCOEFF_TIMER
   cm->cum_txcoeff_timer += cm->txcoeff_timer;
