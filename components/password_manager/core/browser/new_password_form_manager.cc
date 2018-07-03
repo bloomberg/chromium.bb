@@ -4,6 +4,7 @@
 
 #include "components/password_manager/core/browser/new_password_form_manager.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
@@ -20,6 +21,7 @@ using autofill::FormSignature;
 using autofill::FormStructure;
 using autofill::PasswordForm;
 using base::TimeDelta;
+using base::TimeTicks;
 
 using Logger = autofill::SavePasswordProgressLogger;
 
@@ -164,6 +166,7 @@ void NewPasswordFormManager::OnPasswordsRevealed() {}
 void NewPasswordFormManager::ProcessMatches(
     const std::vector<const PasswordForm*>& non_federated,
     size_t filtered_count) {
+  received_stored_credentials_time_ = TimeTicks::Now();
   std::vector<const PasswordForm*> matches;
   std::copy_if(non_federated.begin(), non_federated.end(),
                std::back_inserter(matches), [](const PasswordForm* form) {
@@ -185,9 +188,10 @@ void NewPasswordFormManager::ProcessMatches(
 
   filled_ = false;
 
-  if (predictions_)
+  if (predictions_) {
+    ReportTimeBetweenStoreAndServerUMA();
     Fill();
-  else {
+  } else {
     base::SequencedTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
         base::BindOnce(&NewPasswordFormManager::Fill,
@@ -213,6 +217,7 @@ void NewPasswordFormManager::ProcessServerPredictions(
   for (const FormStructure* form_predictions : predictions) {
     if (form_predictions->form_signature() != observed_form_signature)
       continue;
+    ReportTimeBetweenStoreAndServerUMA();
     predictions_ = ConvertToFormPredictions(*form_predictions);
     Fill();
     break;
@@ -280,6 +285,13 @@ void NewPasswordFormManager::RecordMetricOnCompareParsingResult(
   } else {
     metrics_recorder_->RecordParsingsComparisonResult(
         PasswordFormMetricsRecorder::ParsingComparisonResult::kDifferent);
+  }
+}
+
+void NewPasswordFormManager::ReportTimeBetweenStoreAndServerUMA() {
+  if (!received_stored_credentials_time_.is_null()) {
+    UMA_HISTOGRAM_TIMES("PasswordManager.TimeBetweenStoreAndServer",
+                        TimeTicks::Now() - received_stored_credentials_time_);
   }
 }
 
