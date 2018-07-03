@@ -120,8 +120,7 @@ class PLATFORM_EXPORT ResourceFetcher
 
   int CountPreloads() const { return preloads_.size(); }
   void ClearPreloads(ClearPreloadsPolicy = kClearAllPreloads);
-  void LogPreloadStats(ClearPreloadsPolicy);
-  void WarnUnusedPreloads();
+  Vector<KURL> GetUrlsOfUnusedPreloads();
 
   MHTMLArchive* Archive() const { return archive_.Get(); }
   ArchiveResource* CreateArchive(Resource*);

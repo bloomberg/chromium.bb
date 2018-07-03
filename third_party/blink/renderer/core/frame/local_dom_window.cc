@@ -1410,12 +1410,20 @@ void LocalDOMWindow::RemovedEventListener(
 }
 
 void LocalDOMWindow::WarnUnusedPreloads(TimerBase* base) {
-  if (GetFrame() && GetFrame()->Loader().GetDocumentLoader()) {
-    ResourceFetcher* fetcher =
-        GetFrame()->Loader().GetDocumentLoader()->Fetcher();
-    DCHECK(fetcher);
-    if (fetcher->CountPreloads())
-      fetcher->WarnUnusedPreloads();
+  if (!GetFrame() || !GetFrame()->Loader().GetDocumentLoader())
+    return;
+  ResourceFetcher* fetcher =
+      GetFrame()->Loader().GetDocumentLoader()->Fetcher();
+  DCHECK(fetcher);
+  Vector<KURL> urls = fetcher->GetUrlsOfUnusedPreloads();
+  for (const KURL& url : urls) {
+    String message =
+        "The resource " + url.GetString() + " was preloaded using link " +
+        "preload but not used within a few seconds from the window's load " +
+        "event. Please make sure it has an appropriate `as` value and it is " +
+        "preloaded intentionally.";
+    GetFrameConsole()->AddMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
   }
 }
 

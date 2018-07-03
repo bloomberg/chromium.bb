@@ -1445,13 +1445,6 @@ TEST_F(FrameFetchContextTest, UpdateTimingInfoForIFrameNavigationWhenDetached) {
   // Should not crash.
 }
 
-TEST_F(FrameFetchContextTest, AddConsoleMessageWhenDetached) {
-  dummy_page_holder = nullptr;
-
-  fetch_context->AddWarningConsoleMessage("foobar", FetchContext::kJSSource);
-  // Should not crash.
-}
-
 TEST_F(FrameFetchContextTest, GetSecurityOriginWhenDetached) {
   scoped_refptr<SecurityOrigin> origin =
       SecurityOrigin::Create(KURL("https://www.example.com"));
