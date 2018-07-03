@@ -782,6 +782,8 @@ static_library("test_support_driver") {
     "driver/sync_client_mock.h",
     "engine/fake_sync_engine.cc",
     "engine/fake_sync_engine.h",
+    "engine/mock_sync_engine.cc",
+    "engine/mock_sync_engine.h",
     "model/change_processor_mock.cc",
     "model/change_processor_mock.h",
   ]
