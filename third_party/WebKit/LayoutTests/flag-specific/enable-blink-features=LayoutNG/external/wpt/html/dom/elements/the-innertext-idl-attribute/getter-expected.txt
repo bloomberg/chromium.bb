@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 213 tests; 140 PASS, 73 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 214 tests; 141 PASS, 73 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Simplest possible test ("<div>abc")
 PASS Leading whitespace removed ("<div> abc")
 PASS Trailing whitespace removed ("<div>abc ")
@@ -37,6 +37,7 @@ PASS Whitespace collapses across element boundaries ("<div><span>abc </span> def
 PASS Whitespace collapses across element boundaries ("<div><span>abc </span><span></span> def")
 PASS Whitespace collapses across element boundaries ("<div><span>abc </span><span style='white-space:pre'></span> def")
 PASS Soft line breaks ignored ("<div style='width:0'>abc def")
+PASS Whitespace text node preserved ("<div style='width:0'><span>abc</span> <span>def</span>")
 FAIL ::first-line styles applied ("<div class='first-line-uppercase' style='width:0'>abc def") assert_equals: expected "ABC def" but got "abc def"
 PASS ::first-letter styles applied ("<div class='first-letter-uppercase' style='width:0'>abc def")
 PASS ::first-letter float ignored ("<div class='first-letter-float' style='width:0'>abc def")
