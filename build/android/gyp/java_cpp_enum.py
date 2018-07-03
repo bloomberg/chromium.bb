@@ -441,9 +441,10 @@ def DoMain(argv):
     parser.error('Need to specify at least one input file')
   input_paths = args
 
-  with zipfile.ZipFile(options.srcjar, 'w', zipfile.ZIP_STORED) as srcjar:
-    for output_path, data in DoGenerate(input_paths):
-      build_utils.AddToZipHermetic(srcjar, output_path, data=data)
+  with build_utils.AtomicOutput(options.srcjar) as f:
+    with zipfile.ZipFile(f, 'w', zipfile.ZIP_STORED) as srcjar:
+      for output_path, data in DoGenerate(input_paths):
+        build_utils.AddToZipHermetic(srcjar, output_path, data=data)
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, options.srcjar)
