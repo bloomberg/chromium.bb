@@ -1064,6 +1064,7 @@ crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-rowspan
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-rowspan.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-table-cell.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/fragmented-table-with-fixed-height.html [ Failure ]
+crbug.com/591099 virtual/layout_ng_experimental/fragmentation/foreignobject-no-pagination.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/image-block-as-first-child.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/multi-line-cells-paginated.html [ Failure ]
 crbug.com/591099 virtual/layout_ng_experimental/fragmentation/multi-line-cells.html [ Failure ]
