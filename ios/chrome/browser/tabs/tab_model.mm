@@ -470,16 +470,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   return static_cast<NSUInteger>(index);
 }
 
-- (Tab*)openerOfTab:(Tab*)tab {
-  int index = _webStateList->GetIndexOfWebState(tab.webState);
-  if (index == WebStateList::kInvalidIndex)
-    return nil;
-
-  WebStateOpener opener = _webStateList->GetOpenerOfWebStateAt(index);
-  return opener.opener ? LegacyTabHelper::GetTabForWebState(opener.opener)
-                       : nil;
-}
-
 - (Tab*)insertTabWithURL:(const GURL&)URL
                 referrer:(const web::Referrer&)referrer
               transition:(ui::PageTransition)transition

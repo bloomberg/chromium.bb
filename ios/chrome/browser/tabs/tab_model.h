@@ -105,9 +105,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 - (Tab*)tabAtIndex:(NSUInteger)index;
 - (NSUInteger)indexOfTab:(Tab*)tab;
 
-// Returns the tab which opened this tab, or nil if it's not a child.
-- (Tab*)openerOfTab:(Tab*)tab;
-
 // Add/modify tabs.
 
 // Opens a tab at the specified URL. For certain transition types, will consult
