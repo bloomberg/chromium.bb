@@ -12,6 +12,6 @@ interface IModuleEntryPoint {
   void init(in IModuleHost moduleHost) = 0;
   int getModuleVersion() = 1;
   int getMinimumHostVersion() = 2;
-  IActivityDelegate createActivityDelegate(in IActivityHost activityHost, in Bundle data) = 3;
+  IActivityDelegate createActivityDelegate(in IActivityHost activityHost) = 3;
   void onDestroy() = 4;
 }

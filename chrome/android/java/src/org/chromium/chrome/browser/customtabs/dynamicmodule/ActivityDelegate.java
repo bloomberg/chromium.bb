@@ -43,9 +43,9 @@ public class ActivityDelegate {
         }
     }
 
-    public void onStop(boolean isChangingConfigurations) {
+    public void onStop() {
         try {
-            mActivityDelegate.onStop(isChangingConfigurations);
+            mActivityDelegate.onStop();
         } catch (RemoteException e) {
             assert false;
         }
@@ -83,17 +83,17 @@ public class ActivityDelegate {
         }
     }
 
-    public void onPause(boolean isChangingConfigurations) {
+    public void onPause() {
         try {
-            mActivityDelegate.onPause(isChangingConfigurations);
+            mActivityDelegate.onPause();
         } catch (RemoteException e) {
             assert false;
         }
     }
 
-    public void onDestroy(boolean isChangingConfigurations) {
+    public void onDestroy() {
         try {
-            mActivityDelegate.onDestroy(isChangingConfigurations);
+            mActivityDelegate.onDestroy();
         } catch (RemoteException e) {
             assert false;
         }
