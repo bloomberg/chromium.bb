@@ -726,32 +726,6 @@ void ServiceWorkerMetrics::RecordProcessCreated(bool is_new_process) {
                         is_new_process);
 }
 
-void ServiceWorkerMetrics::RecordTimeToSendStartWorker(
-    base::TimeDelta duration,
-    StartSituation situation) {
-  std::string name = "EmbeddedWorkerInstance.Start.TimeToSendStartWorker";
-  UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(
-      name, StartSituationToDeprecatedSuffix(situation), duration);
-}
-
-void ServiceWorkerMetrics::RecordTimeToStartThread(base::TimeDelta duration,
-                                                   StartSituation situation) {
-  std::string name = "EmbeddedWorkerInstance.Start.TimeToStartThread";
-  UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(
-      name, StartSituationToDeprecatedSuffix(situation), duration);
-}
-
-void ServiceWorkerMetrics::RecordTimeToEvaluateScript(
-    base::TimeDelta duration,
-    StartSituation situation) {
-  std::string name = "EmbeddedWorkerInstance.Start.TimeToEvaluateScript";
-  UMA_HISTOGRAM_MEDIUM_TIMES(name, duration);
-  RecordSuffixedMediumTimeHistogram(
-      name, StartSituationToDeprecatedSuffix(situation), duration);
-}
-
 void ServiceWorkerMetrics::RecordStartWorkerTiming(const StartTimes& times,
                                                    StartSituation situation) {
   // Bail if the timings across processes weren't consistent.

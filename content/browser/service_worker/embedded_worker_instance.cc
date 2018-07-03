@@ -569,7 +569,7 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
   DCHECK_NE(blink::mojom::kInvalidServiceWorkerVersionId,
             params->service_worker_version_id);
 
-  step_time_ = base::TimeTicks::Now();
+  auto start_time = base::TimeTicks::Now();
   status_ = EmbeddedWorkerStatus::STARTING;
   starting_phase_ = ALLOCATING_PROCESS;
   network_accessed_for_script_ = false;
@@ -588,7 +588,7 @@ void EmbeddedWorkerInstance::Start(mojom::EmbeddedWorkerStartParamsPtr params,
   client_.set_connection_error_handler(
       base::BindOnce(&EmbeddedWorkerInstance::Detach, base::Unretained(this)));
   inflight_start_task_.reset(
-      new StartTask(this, params->script_url, std::move(request), step_time_));
+      new StartTask(this, params->script_url, std::move(request), start_time));
   inflight_start_task_->Start(std::move(params), std::move(callback));
 }
 
@@ -679,12 +679,8 @@ void EmbeddedWorkerInstance::OnRegisteredToDevToolsManager(
     DCHECK(!devtools_proxy_);
     devtools_proxy_ = std::move(devtools_proxy);
   }
-  if (wait_for_debugger) {
-    // We don't measure the start time when wait_for_debugger flag is set. So
-    // we set the NULL time here.
-    step_time_ = base::TimeTicks();
+  if (wait_for_debugger)
     inflight_start_task_->set_skip_recording_startup_time();
-  }
   for (auto& observer : listener_list_)
     observer.OnRegisteredToDevToolsManager();
 }
@@ -709,14 +705,6 @@ void EmbeddedWorkerInstance::SendStartWorker(
       std::move(provider_info_getter_).Run(process_id(), std::move(factory));
   client_->StartWorker(std::move(params));
   registry_->BindWorkerToProcess(process_id(), embedded_worker_id());
-
-  if (!step_time_.is_null()) {
-    base::TimeDelta duration = UpdateStepTime();
-    if (inflight_start_task_->is_installed()) {
-      ServiceWorkerMetrics::RecordTimeToSendStartWorker(duration,
-                                                        start_situation_);
-    }
-  }
 
   starting_phase_ = is_script_streaming ? SCRIPT_STREAMING : SENT_START_WORKER;
   for (auto& observer : listener_list_)
@@ -791,12 +779,6 @@ void EmbeddedWorkerInstance::OnThreadStarted(int thread_id) {
     return;
 
   starting_phase_ = THREAD_STARTED;
-  if (!step_time_.is_null()) {
-    base::TimeDelta duration = UpdateStepTime();
-    if (inflight_start_task_->is_installed())
-      ServiceWorkerMetrics::RecordTimeToStartThread(duration, start_situation_);
-  }
-
   thread_id_ = thread_id;
   for (auto& observer : listener_list_)
     observer.OnThreadStarted();
@@ -808,14 +790,7 @@ void EmbeddedWorkerInstance::OnScriptEvaluated(bool success) {
 
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
 
-  // Renderer side has completed evaluating the loaded worker script.
   starting_phase_ = SCRIPT_EVALUATED;
-  if (!step_time_.is_null()) {
-    base::TimeDelta duration = UpdateStepTime();
-    if (success && inflight_start_task_->is_installed())
-      ServiceWorkerMetrics::RecordTimeToEvaluateScript(duration,
-                                                       start_situation_);
-  }
 
   base::WeakPtr<EmbeddedWorkerInstance> weak_this = weak_factory_.GetWeakPtr();
   StartTask::RunStartCallback(
@@ -969,15 +944,6 @@ void EmbeddedWorkerInstance::OnStartFailed(
     for (auto& observer : weak_this->listener_list_)
       observer.OnStopped(old_status);
   }
-}
-
-base::TimeDelta EmbeddedWorkerInstance::UpdateStepTime() {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  DCHECK(!step_time_.is_null());
-  base::TimeTicks now = base::TimeTicks::Now();
-  base::TimeDelta duration = now - step_time_;
-  step_time_ = now;
-  return duration;
 }
 
 void EmbeddedWorkerInstance::AddMessageToConsole(

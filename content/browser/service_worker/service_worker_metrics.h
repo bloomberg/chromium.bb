@@ -389,21 +389,7 @@ class ServiceWorkerMetrics {
   static void RecordFallbackedRequestMode(
       network::mojom::FetchRequestMode mode);
 
-  // Called at the beginning of each ServiceWorkerVersion::Dispatch*Event
-  // function. Records the time elapsed since idle (generally the time since the
-  // previous event ended).
-  static void RecordTimeBetweenEvents(base::TimeDelta time);
-
-  // The following record steps of EmbeddedWorkerInstance's start sequence.
-  // TODO(crbug.com/855952): Remove most of these and replace with
-  // RecordStartWorkingTiming().
   static void RecordProcessCreated(bool is_new_process);
-  static void RecordTimeToSendStartWorker(base::TimeDelta duration,
-                                          StartSituation start_situation);
-  static void RecordTimeToStartThread(base::TimeDelta duration,
-                                      StartSituation start_situation);
-  static void RecordTimeToEvaluateScript(base::TimeDelta duration,
-                                         StartSituation start_situation);
 
   CONTENT_EXPORT static void RecordStartWorkerTiming(const StartTimes& times,
                                                      StartSituation situation);
