@@ -74,7 +74,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   // Returns a value based on shelf alignment.
   int SelectValueForShelfAlignment(int bottom, int left, int right) const;
 
-  // Returns |horizontal| is shelf is horizontal, otherwise |vertical|.
+  // Returns |horizontal| if shelf is horizontal, otherwise |vertical|.
   int PrimaryAxisValue(int horizontal, int vertical) const;
 
   ShelfAutoHideBehavior auto_hide_behavior() const {

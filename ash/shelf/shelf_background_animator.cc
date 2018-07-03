@@ -61,12 +61,22 @@ std::pair<int, int> GetTargetColorAlphaValues(
 
   switch (background_type) {
     case SHELF_BACKGROUND_DEFAULT:
-      target_shelf_color_alpha = 0;
-      target_item_color_alpha = kShelfTranslucentAlpha;
+      if (chromeos::switches::ShouldUseShelfNewUi()) {
+        target_shelf_color_alpha = kShelfTranslucentAlpha;
+        target_item_color_alpha = 0;
+      } else {
+        target_shelf_color_alpha = 0;
+        target_item_color_alpha = kShelfTranslucentAlpha;
+      }
       break;
     case SHELF_BACKGROUND_OVERLAP:
-      target_shelf_color_alpha = kShelfTranslucentAlpha;
-      target_item_color_alpha = 0;
+      if (chromeos::switches::ShouldUseShelfNewUi()) {
+        target_shelf_color_alpha = kShelfTranslucentWithOverlapAlphaNewUi;
+        target_item_color_alpha = 0;
+      } else {
+        target_shelf_color_alpha = kShelfTranslucentAlpha;
+        target_item_color_alpha = 0;
+      }
       break;
     case SHELF_BACKGROUND_MAXIMIZED:
       target_shelf_color_alpha = ShelfBackgroundAnimator::kMaxAlpha;

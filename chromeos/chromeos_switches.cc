@@ -545,6 +545,9 @@ const char kRlzPingDelay[] = "rlz-ping-delay";
 // App window previews when hovering over the shelf.
 const char kShelfHoverPreviews[] = "shelf-hover-previews";
 
+// Resdesigned shelf UI.
+const char kShelfNewUi[] = "shelf-new-ui";
+
 // Overrides network stub behavior. By default, ethernet, wifi and vpn are
 // enabled, and transitions occur instantaneously. Multiple options can be
 // comma separated (no spaces). Note: all options are in the format 'foo=x'.
@@ -749,6 +752,10 @@ bool ShouldHideActiveAppsFromShelf() {
 
 bool ShouldShowShelfHoverPreviews() {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfHoverPreviews);
+}
+
+bool ShouldUseShelfNewUi() {
+  return base::CommandLine::ForCurrentProcess()->HasSwitch(kShelfNewUi);
 }
 
 bool IsInstantTetheringBackgroundAdvertisingSupported() {
