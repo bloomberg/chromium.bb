@@ -210,7 +210,7 @@ class OmniboxViewViews : public OmniboxView,
   gfx::NativeView GetRelativeWindowForPopup() const override;
   int GetWidth() const override;
   bool IsImeShowingPopup() const override;
-  void ShowImeIfNeeded() override;
+  void ShowVirtualKeyboardIfEnabled() override;
   void HideImeIfNeeded() override;
   int GetOmniboxTextLength() const override;
   void SetEmphasis(bool emphasize, const gfx::Range& range) override;

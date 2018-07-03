@@ -95,7 +95,7 @@ class ASH_EXPORT DockedMagnifierController
   void OnBlur() override {}
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
-  void OnShowImeIfNeeded() override {}
+  void OnShowVirtualKeyboardIfEnabled() override {}
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
 
   // views::WidgetObserver:

@@ -85,8 +85,7 @@ bool DummyInputMethod::GetClientShouldDoLearning() {
   return false;
 }
 
-void DummyInputMethod::ShowImeIfNeeded() {
-}
+void DummyInputMethod::ShowVirtualKeyboardIfEnabled() {}
 
 void DummyInputMethod::AddObserver(InputMethodObserver* observer) {
 }

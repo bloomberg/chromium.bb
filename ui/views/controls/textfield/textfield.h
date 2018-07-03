@@ -201,7 +201,7 @@ class VIEWS_EXPORT Textfield : public View,
   void SetHorizontalAlignment(gfx::HorizontalAlignment alignment);
 
   // Displays a virtual keyboard or alternate input view if enabled.
-  void ShowImeIfNeeded();
+  void ShowVirtualKeyboardIfEnabled();
 
   // Returns whether or not an IME is composing text.
   bool IsIMEComposing() const;

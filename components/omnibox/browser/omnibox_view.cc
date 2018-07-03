@@ -167,8 +167,7 @@ bool OmniboxView::IsImeShowingPopup() const {
   return false;
 }
 
-void OmniboxView::ShowImeIfNeeded() {
-}
+void OmniboxView::ShowVirtualKeyboardIfEnabled() {}
 
 void OmniboxView::HideImeIfNeeded() {}
 

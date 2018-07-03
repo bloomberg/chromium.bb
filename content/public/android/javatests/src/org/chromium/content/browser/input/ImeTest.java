@@ -852,8 +852,8 @@ public class ImeTest {
     @Test
     @SmallTest
     @Feature({"TextInput", "Main"})
-    public void testShowImeIfNeeded() throws Throwable {
-        // showImeIfNeeded() is now implicitly called by the updated focus
+    public void testShowVirtualKeyboardIfEnabled() throws Throwable {
+        // ShowVirtualKeyboardIfEnabled() is now implicitly called by the updated focus
         // heuristic so no need to call explicitly. http://crbug.com/371927
         DOMUtils.focusNode(mRule.getWebContents(), "input_radio");
         mRule.assertWaitForKeyboardStatus(false);

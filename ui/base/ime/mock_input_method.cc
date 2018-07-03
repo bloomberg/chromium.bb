@@ -109,9 +109,9 @@ bool MockInputMethod::GetClientShouldDoLearning() {
   return false;
 }
 
-void MockInputMethod::ShowImeIfNeeded() {
+void MockInputMethod::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
-    observer.OnShowImeIfNeeded();
+    observer.OnShowVirtualKeyboardIfEnabled();
 }
 
 void MockInputMethod::AddObserver(InputMethodObserver* observer) {

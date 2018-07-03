@@ -79,7 +79,7 @@ class TextInputTestHelper : public ui::InputMethodObserver {
   void OnBlur() override;
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
-  void OnShowImeIfNeeded() override;
+  void OnShowVirtualKeyboardIfEnabled() override;
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override;
 
   // Represents waiting type of text input event.

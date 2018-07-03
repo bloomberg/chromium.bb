@@ -150,8 +150,8 @@ void ArcImeBridgeImpl::OnCancelComposition() {
   delegate_->OnCancelComposition();
 }
 
-void ArcImeBridgeImpl::ShowImeIfNeeded() {
-  delegate_->ShowImeIfNeeded();
+void ArcImeBridgeImpl::ShowVirtualKeyboardIfEnabled() {
+  delegate_->ShowVirtualKeyboardIfEnabled();
 }
 
 void ArcImeBridgeImpl::OnCursorRectChangedWithSurroundingText(

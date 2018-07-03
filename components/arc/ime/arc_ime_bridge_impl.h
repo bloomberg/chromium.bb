@@ -43,7 +43,7 @@ class ArcImeBridgeImpl : public ArcImeBridge, public mojom::ImeHost {
   void OnCursorRectChanged(const gfx::Rect& rect,
                            bool screen_coordinates) override;
   void OnCancelComposition() override;
-  void ShowImeIfNeeded() override;
+  void ShowVirtualKeyboardIfEnabled() override;
   void OnCursorRectChangedWithSurroundingText(const gfx::Rect& rect,
                                               const gfx::Range& text_range,
                                               const std::string& text_in_range,

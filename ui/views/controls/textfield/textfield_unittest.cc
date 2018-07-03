@@ -96,7 +96,7 @@ class MockInputMethod : public ui::InputMethodBase {
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override {}
   void CancelComposition(const ui::TextInputClient* client) override;
   bool IsCandidatePopupOpen() const override;
-  void ShowImeIfNeeded() override {}
+  void ShowVirtualKeyboardIfEnabled() override {}
 
   bool untranslated_ime_message_called() const {
     return untranslated_ime_message_called_;

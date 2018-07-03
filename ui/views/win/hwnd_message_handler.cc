@@ -987,7 +987,7 @@ void HWNDMessageHandler::OnInputMethodDestroyed(
   DestroyAXSystemCaret();
 }
 
-void HWNDMessageHandler::OnShowImeIfNeeded() {}
+void HWNDMessageHandler::OnShowVirtualKeyboardIfEnabled() {}
 
 LRESULT HWNDMessageHandler::HandleMouseMessage(unsigned int message,
                                                WPARAM w_param,

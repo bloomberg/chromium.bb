@@ -2346,7 +2346,7 @@ void RenderWidgetHostViewAura::OnUpdateTextInputStateCalled(
       state->type != ui::TEXT_INPUT_TYPE_NONE &&
       state->mode != ui::TEXT_INPUT_MODE_NONE &&
       GetInputMethod()->GetTextInputClient() == this) {
-    GetInputMethod()->ShowImeIfNeeded();
+    GetInputMethod()->ShowVirtualKeyboardIfEnabled();
   }
 
   if (auto* render_widget_host = updated_view->host()) {

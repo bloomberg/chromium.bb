@@ -77,9 +77,7 @@ class FakeInputMethod : public ui::DummyInputMethod {
     return client_;
   }
 
-  void ShowImeIfNeeded() override {
-    count_show_ime_if_needed_++;
-  }
+  void ShowVirtualKeyboardIfEnabled() override { count_show_ime_if_needed_++; }
 
   void CancelComposition(const ui::TextInputClient* client) override {
     if (client == client_)
@@ -235,7 +233,7 @@ TEST_F(ArcImeServiceTest, HasCompositionText) {
   EXPECT_FALSE(instance_->HasCompositionText());
 }
 
-TEST_F(ArcImeServiceTest, ShowImeIfNeeded) {
+TEST_F(ArcImeServiceTest, ShowVirtualKeyboardIfEnabled) {
   instance_->OnWindowFocused(arc_win_.get(), nullptr);
 
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_NONE, false);
@@ -245,7 +243,7 @@ TEST_F(ArcImeServiceTest, ShowImeIfNeeded) {
   instance_->OnTextInputTypeChanged(ui::TEXT_INPUT_TYPE_TEXT, true);
   EXPECT_EQ(0, fake_input_method_->count_show_ime_if_needed());
 
-  instance_->ShowImeIfNeeded();
+  instance_->ShowVirtualKeyboardIfEnabled();
   EXPECT_EQ(1, fake_input_method_->count_show_ime_if_needed());
 }
 

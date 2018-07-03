@@ -1077,7 +1077,8 @@ class InputMethodObserverForShowIme : public InputMethodObserverBase {
  public:
   explicit InputMethodObserverForShowIme(content::WebContents* web_contents)
       : InputMethodObserverBase(web_contents) {
-    test_observer()->SetOnShowImeIfNeededCallback(success_closure());
+    test_observer()->SetOnShowVirtualKeyboardIfEnabledCallback(
+        success_closure());
   }
 
  private:
@@ -1092,7 +1093,7 @@ class InputMethodObserverForShowIme : public InputMethodObserverBase {
 // the TextInputState has not changed (according to the platform), e.g., in
 // aura when receiving two consecutive updates with same |TextInputState.type|.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
-                       CorrectlyShowImeIfNeeded) {
+                       CorrectlyShowVirtualKeyboardIfEnabled) {
   // We only need the <iframe> page to create RWHV.
   CreateIframePage("a()");
   content::RenderFrameHost* main_frame = GetFrame(IndexVector{});
@@ -1115,14 +1116,14 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   EXPECT_FALSE(send_and_check_show_ime());
 
   // Set |TextInputState.show_ime_if_needed| to true. Expect IME.
-  sender.SetShowImeIfNeeded(true);
+  sender.SetShowVirtualKeyboardIfEnabled(true);
   EXPECT_TRUE(send_and_check_show_ime());
 
   // Send the same message. Expect IME (no change).
   EXPECT_TRUE(send_and_check_show_ime());
 
   // Reset |TextInputState.show_ime_if_needed|. Expect no IME.
-  sender.SetShowImeIfNeeded(false);
+  sender.SetShowVirtualKeyboardIfEnabled(false);
   EXPECT_FALSE(send_and_check_show_ime());
 
   // Setting an irrelevant field. Expect no IME.
@@ -1130,7 +1131,7 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   EXPECT_FALSE(send_and_check_show_ime());
 
   // Set |TextInputState.show_ime_if_needed|. Expect IME.
-  sender.SetShowImeIfNeeded(true);
+  sender.SetShowVirtualKeyboardIfEnabled(true);
   EXPECT_TRUE(send_and_check_show_ime());
 
   // Set |TextInputState.type| to ui::TEXT_INPUT_TYPE_NONE. Expect no IME.

@@ -714,9 +714,9 @@ bool OmniboxViewViews::IsImeShowingPopup() const {
 #endif
 }
 
-void OmniboxViewViews::ShowImeIfNeeded() {
+void OmniboxViewViews::ShowVirtualKeyboardIfEnabled() {
   if (auto* input_method = GetInputMethod())
-    input_method->ShowImeIfNeeded();
+    input_method->ShowVirtualKeyboardIfEnabled();
 }
 
 void OmniboxViewViews::HideImeIfNeeded() {
