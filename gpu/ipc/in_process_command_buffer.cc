@@ -45,6 +45,7 @@
 #include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_decoder.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_utils.h"
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
@@ -64,6 +65,8 @@
 #include "ui/gl/gl_image.h"
 #include "ui/gl/gl_image_shared_memory.h"
 #include "ui/gl/gl_share_group.h"
+#include "ui/gl/gl_version_info.h"
+#include "ui/gl/init/create_gr_gl_interface.h"
 #include "ui/gl/init/gl_factory.h"
 
 #if defined(OS_WIN)
@@ -275,11 +278,11 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   // |context_group_| instead.
   transfer_buffer_manager_ = std::make_unique<TransferBufferManager>(nullptr);
 
+  GpuDriverBugWorkarounds workarounds(
+      task_executor_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
   if (params.share_command_buffer) {
     context_group_ = params.share_command_buffer->context_group_;
   } else {
-    GpuDriverBugWorkarounds workarounds(
-        task_executor_->gpu_feature_info().enabled_gpu_driver_bug_workarounds);
     auto feature_info = base::MakeRefCounted<gles2::FeatureInfo>(
         workarounds, task_executor_->gpu_feature_info());
 
@@ -313,22 +316,6 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
 
   command_buffer_ = std::make_unique<CommandBufferService>(
       this, transfer_buffer_manager_.get());
-
-  bool supports_oop_rasterization =
-      task_executor_->gpu_feature_info()
-          .status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
-      kGpuFeatureStatusEnabled;
-  if (supports_oop_rasterization && params.attribs.enable_oop_rasterization &&
-      params.attribs.enable_raster_interface &&
-      !params.attribs.enable_gles2_interface) {
-    decoder_.reset(raster::RasterDecoder::Create(this, command_buffer_.get(),
-                                                 task_executor_->outputter(),
-                                                 context_group_.get()));
-  } else {
-    decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
-                                               task_executor_->outputter(),
-                                               context_group_.get()));
-  }
 
   if (!surface_) {
     if (params.is_offscreen) {
@@ -396,31 +383,64 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
   crash_keys::gpu_gl_context_is_virtual.Set(use_virtualized_gl_context_ ? "1"
                                                                         : "0");
 
-  if (use_virtualized_gl_context_) {
-    DCHECK(gl_share_group_);
-    scoped_refptr<gl::GLContext> real_context =
-        gl_share_group_->GetSharedContext(surface_.get());
-    if (!real_context.get()) {
-      real_context = gl::init::CreateGLContext(
-          gl_share_group_.get(), surface_.get(),
-          GenerateGLContextAttribs(params.attribs, context_group_.get()));
-      if (!real_context) {
-        // TODO(piman): This might not be fatal, we could recurse into
-        // CreateGLContext to get more info, tho it should be exceedingly
-        // rare and may not be recoverable anyway.
-        DestroyOnGpuThread();
-        LOG(ERROR) << "ContextResult::kFatalFailure: "
-                      "Failed to create shared context for virtualization.";
-        return gpu::ContextResult::kFatalFailure;
-      }
-      // Ensure that context creation did not lose track of the intended share
-      // group.
-      DCHECK(real_context->share_group() == gl_share_group_.get());
-      gl_share_group_->SetSharedContext(surface_.get(), real_context.get());
-
-      task_executor_->gpu_feature_info().ApplyToGLContext(real_context.get());
+  // TODO(khushalsagar): A lot of this initialization code is duplicated in
+  // GpuChannelManager. Pull it into a common util method.
+  scoped_refptr<gl::GLContext> real_context =
+      use_virtualized_gl_context_
+          ? gl_share_group_->GetSharedContext(surface_.get())
+          : nullptr;
+  if (!real_context) {
+    real_context = gl::init::CreateGLContext(
+        gl_share_group_.get(), surface_.get(),
+        GenerateGLContextAttribs(params.attribs, context_group_.get()));
+    if (!real_context) {
+      // TODO(piman): This might not be fatal, we could recurse into
+      // CreateGLContext to get more info, tho it should be exceedingly
+      // rare and may not be recoverable anyway.
+      DestroyOnGpuThread();
+      LOG(ERROR) << "ContextResult::kFatalFailure: "
+                    "Failed to create shared context for virtualization.";
+      return gpu::ContextResult::kFatalFailure;
     }
+    // Ensure that context creation did not lose track of the intended share
+    // group.
+    DCHECK(real_context->share_group() == gl_share_group_.get());
+    task_executor_->gpu_feature_info().ApplyToGLContext(real_context.get());
 
+    if (use_virtualized_gl_context_)
+      gl_share_group_->SetSharedContext(surface_.get(), real_context.get());
+  }
+
+  if (!real_context->MakeCurrent(surface_.get())) {
+    LOG(ERROR)
+        << "ContextResult::kTransientFailure, failed to make context current";
+    DestroyOnGpuThread();
+    return ContextResult::kTransientFailure;
+  }
+
+  bool supports_oop_rasterization =
+      task_executor_->gpu_feature_info()
+          .status_values[GPU_FEATURE_TYPE_OOP_RASTERIZATION] ==
+      kGpuFeatureStatusEnabled;
+  if (supports_oop_rasterization && params.attribs.enable_oop_rasterization &&
+      params.attribs.enable_raster_interface &&
+      !params.attribs.enable_gles2_interface) {
+    scoped_refptr<raster::RasterDecoderContextState> context_state =
+        new raster::RasterDecoderContextState(gl_share_group_, surface_,
+                                              real_context,
+                                              use_virtualized_gl_context_);
+    context_state->InitializeGrContext(workarounds);
+
+    decoder_.reset(raster::RasterDecoder::Create(
+        this, command_buffer_.get(), task_executor_->outputter(),
+        context_group_.get(), std::move(context_state)));
+  } else {
+    decoder_.reset(gles2::GLES2Decoder::Create(this, command_buffer_.get(),
+                                               task_executor_->outputter(),
+                                               context_group_.get()));
+  }
+
+  if (use_virtualized_gl_context_) {
     context_ = base::MakeRefCounted<GLContextVirtual>(
         gl_share_group_.get(), real_context.get(), decoder_->AsWeakPtr());
     if (!context_->Initialize(
@@ -434,29 +454,20 @@ gpu::ContextResult InProcessCommandBuffer::InitializeOnGpuThread(
                     "Failed to initialize virtual GL context.";
       return gpu::ContextResult::kFatalFailure;
     }
-  } else {
-    context_ = gl::init::CreateGLContext(
-        gl_share_group_.get(), surface_.get(),
-        GenerateGLContextAttribs(params.attribs, context_group_.get()));
-    if (!context_) {
+
+    if (!context_->MakeCurrent(surface_.get())) {
       DestroyOnGpuThread();
-      LOG(ERROR) << "ContextResult::kFatalFailure: Failed to create context.";
-      return gpu::ContextResult::kFatalFailure;
+      // The caller should retry making a context, but this one won't work.
+      LOG(ERROR) << "ContextResult::kTransientFailure: "
+                    "Could not make context current.";
+      return gpu::ContextResult::kTransientFailure;
     }
-    task_executor_->gpu_feature_info().ApplyToGLContext(context_.get());
-  }
 
-  if (!context_->MakeCurrent(surface_.get())) {
-    DestroyOnGpuThread();
-    // The caller should retry making a context, but this one won't work.
-    LOG(ERROR) << "ContextResult::kTransientFailure: "
-                  "Could not make context current.";
-    return gpu::ContextResult::kTransientFailure;
-  }
-
-  if (!context_->GetGLStateRestorer()) {
     context_->SetGLStateRestorer(
         new GLStateRestorerImpl(decoder_->AsWeakPtr()));
+  } else {
+    context_ = real_context;
+    DCHECK(context_->IsCurrent(surface_.get()));
   }
 
   if (!context_group_->has_program_cache() &&

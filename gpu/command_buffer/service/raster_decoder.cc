@@ -32,7 +32,6 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
-#include "gpu/command_buffer/common/skia_utils.h"
 #include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -54,6 +53,7 @@
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_cmd_validation.h"
+#include "gpu/command_buffer/service/raster_decoder_context_state.h"
 #include "gpu/command_buffer/service/service_font_manager.h"
 #include "gpu/command_buffer/service/service_transfer_cache.h"
 #include "gpu/command_buffer/service/vertex_array_manager.h"
@@ -72,7 +72,6 @@
 #include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gl_version_info.h"
-#include "ui/gl/init/create_gr_gl_interface.h"
 
 // Local versions of the SET_GL_ERROR macros
 #define LOCAL_SET_GL_ERROR(error, function_name, msg) \
@@ -326,17 +325,19 @@ bool PermitsInconsistentContextState(CommandId command) {
 //     PessimisticallyResetGrContext).
 //
 //   Case 2b: Executing a command that is not whitelisted: We force GL state to
-//     match |state_| as necessary (see |need_context_state_reset_|) in
+//     match |state_| as necessary (see |need_context_state_reset|) in
 //     DoCommandsImpl with RestoreState(nullptr). This will call
 //     GrContext::resetContext.
 class RasterDecoderImpl final : public RasterDecoder,
                                 public gles2::ErrorStateClient,
                                 public ServiceFontManager::Client {
  public:
-  RasterDecoderImpl(DecoderClient* client,
-                    CommandBufferServiceBase* command_buffer_service,
-                    gles2::Outputter* outputter,
-                    gles2::ContextGroup* group);
+  RasterDecoderImpl(
+      DecoderClient* client,
+      CommandBufferServiceBase* command_buffer_service,
+      gles2::Outputter* outputter,
+      gles2::ContextGroup* group,
+      scoped_refptr<RasterDecoderContextState> raster_decoder_context_state);
   ~RasterDecoderImpl() override;
 
   GLES2Util* GetGLES2Util() override { return &util_; }
@@ -476,6 +477,9 @@ class RasterDecoderImpl final : public RasterDecoder,
   }
 
   gl::GLApi* api() const { return state_.api(); }
+  GrContext* gr_context() const {
+    return raster_decoder_context_state_->gr_context.get();
+  }
 
   const FeatureInfo::FeatureFlags& features() const {
     return feature_info_->feature_flags();
@@ -557,8 +561,8 @@ class RasterDecoderImpl final : public RasterDecoder,
     // Calling GrContext::resetContext() is very cheap, so we do it
     // pessimistically. We could dirty less state if skia state setting
     // performance becomes an issue.
-    if (gr_context_) {
-      gr_context_->resetContext();
+    if (gr_context()) {
+      gr_context()->resetContext();
     }
   }
 
@@ -752,6 +756,7 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   // The ContextGroup for this decoder uses to track resources.
   scoped_refptr<gles2::ContextGroup> group_;
+  scoped_refptr<RasterDecoderContextState> raster_decoder_context_state_;
   std::unique_ptr<Validators> validators_;
   scoped_refptr<gles2::FeatureInfo> feature_info_;
 
@@ -793,18 +798,10 @@ class RasterDecoderImpl final : public RasterDecoder,
 
   // Raster helpers.
   ServiceFontManager font_manager_;
-  sk_sp<GrContext> gr_context_;
   sk_sp<SkSurface> sk_surface_;
   std::unique_ptr<SkCanvas> raster_canvas_;
   uint32_t raster_color_space_id_;
   std::vector<SkDiscardableHandleId> locked_handles_;
-  size_t glyph_cache_max_texture_bytes_;
-
-  // |need_context_state_reset_| is set whenever Skia may have altered the
-  // driver's GL state. It signals the need to restore driver GL state to
-  // |state_| before executing commands that do not
-  // PermitsInconsistentContextState.
-  bool need_context_state_reset_ = false;
 
   // Tracing helpers.
   int raster_chromium_id_ = 0;
@@ -830,9 +827,10 @@ RasterDecoder* RasterDecoder::Create(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
-    ContextGroup* group) {
-  return new RasterDecoderImpl(client, command_buffer_service, outputter,
-                               group);
+    ContextGroup* group,
+    scoped_refptr<RasterDecoderContextState> raster_decoder_context_state) {
+  return new RasterDecoderImpl(client, command_buffer_service, outputter, group,
+                               std::move(raster_decoder_context_state));
 }
 
 RasterDecoder::RasterDecoder(CommandBufferServiceBase* command_buffer_service,
@@ -879,11 +877,13 @@ RasterDecoderImpl::RasterDecoderImpl(
     DecoderClient* client,
     CommandBufferServiceBase* command_buffer_service,
     Outputter* outputter,
-    ContextGroup* group)
+    ContextGroup* group,
+    scoped_refptr<RasterDecoderContextState> raster_decoder_context_state)
     : RasterDecoder(command_buffer_service, outputter),
       client_(client),
       logger_(&debug_marker_manager_, client),
       group_(group),
+      raster_decoder_context_state_(std::move(raster_decoder_context_state)),
       validators_(new Validators),
       feature_info_(group_->feature_info()),
       state_(group_->feature_info(), this, &logger_),
@@ -893,7 +893,9 @@ RasterDecoderImpl::RasterDecoderImpl(
       gpu_decoder_category_(TRACE_EVENT_API_GET_CATEGORY_GROUP_ENABLED(
           TRACE_DISABLED_BY_DEFAULT("gpu_decoder"))),
       font_manager_(this),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  DCHECK(raster_decoder_context_state_);
+}
 
 RasterDecoderImpl::~RasterDecoderImpl() {}
 
@@ -1010,62 +1012,18 @@ ContextResult RasterDecoderImpl::Initialize(
       return ContextResult::kFatalFailure;
     }
 
-    // Assume that we can create a GrContext. This will be set to false if
-    // there's a failure.
-    supports_oop_raster_ = true;
-    sk_sp<const GrGLInterface> interface(
-        gl::init::CreateGrGLInterface(gl_version_info()));
-    if (!interface) {
-      DLOG(ERROR) << "OOP raster support disabled: GrGLInterface creation "
-                     "failed.";
-      supports_oop_raster_ = false;
-    }
-
+    supports_oop_raster_ = !!raster_decoder_context_state_->gr_context;
     if (supports_oop_raster_) {
-      // If you make any changes to the GrContext::Options here that could
-      // affect text rendering, make sure to match the capabilities initialized
-      // in GetCapabilities and ensuring these are also used by the
-      // PaintOpBufferSerializer.
-      GrContextOptions options;
-      options.fDriverBugWorkarounds =
-          GrDriverBugWorkarounds(workarounds().ToIntSet());
-      size_t max_resource_cache_bytes = 0u;
-      DetermineGrCacheLimitsFromAvailableMemory(
-          &max_resource_cache_bytes, &glyph_cache_max_texture_bytes_);
-      options.fGlyphCacheTextureMaximumBytes = glyph_cache_max_texture_bytes_;
-      gr_context_ = GrContext::MakeGL(std::move(interface), options);
-
-      if (gr_context_) {
-        // TODO(enne): This cache is for this decoder only and each decoder has
-        // its own cache.  This is pretty unfortunate.  This really needs to be
-        // rethought before shipping.  Most likely a different command buffer
-        // context for raster-in-gpu, with a shared gl context / gr context
-        // that different decoders can use.
-        constexpr int kMaxGaneshResourceCacheCount = 16384;
-        gr_context_->setResourceCacheLimits(kMaxGaneshResourceCacheCount,
-                                            max_resource_cache_bytes);
         transfer_cache_ = std::make_unique<ServiceTransferCache>();
-      } else {
-        bool was_lost = CheckResetStatus();
-        if (was_lost) {
-          DLOG(ERROR)
-              << "ContextResult::kTransientFailure: Could not create GrContext";
-          Destroy(true);
-          return ContextResult::kTransientFailure;
-        }
-        DLOG(ERROR) << "OOP raster support disabled: GrContext creation "
-                       "failed.";
-        supports_oop_raster_ = false;
       }
     }
-  }
 
   return ContextResult::kSuccess;
 }
 
 const ContextState* RasterDecoderImpl::GetContextState() {
-  if (need_context_state_reset_) {
-    need_context_state_reset_ = false;
+  if (raster_decoder_context_state_->need_context_state_reset) {
+    raster_decoder_context_state_->need_context_state_reset = false;
     // Returning nullptr to force full state restoration by the caller.  We do
     // this because GrContext changes to GL state are untracked in our state_.
     return nullptr;
@@ -1090,13 +1048,20 @@ void RasterDecoderImpl::Destroy(bool have_context) {
       copy_texture_chromium_->Destroy();
       copy_texture_chromium_.reset();
     }
+
+    // Make sure we flush any pending skia work on this context.
+    if (sk_surface_) {
+      sk_surface_->flush();
+      sk_surface_.reset();
+    }
+    if (gr_context()) {
+      gr_context()->flush();
+    }
   } else {
     if (group_ && group_->texture_manager()) {
       group_->texture_manager()->MarkContextLost();
     }
-    if (gr_context_) {
-      gr_context_->abandonContext();
-    }
+
     state_.MarkContextLost();
   }
 
@@ -1197,10 +1162,11 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   // junk, which is a bug (https://crbug.com/828578).
   caps.sync_query = feature_info_->feature_flags().chromium_sync_query;
 
-  if (gr_context_) {
+  if (gr_context()) {
     caps.context_supports_distance_field_text =
-        gr_context_->supportsDistanceFieldText();
-    caps.glyph_cache_max_texture_bytes = glyph_cache_max_texture_bytes_;
+        gr_context()->supportsDistanceFieldText();
+    caps.glyph_cache_max_texture_bytes =
+        raster_decoder_context_state_->glyph_cache_max_texture_bytes;
   }
   return caps;
 }
@@ -1425,6 +1391,10 @@ void RasterDecoderImpl::MarkContextLost(error::ContextLostReason reason) {
     vertex_array_manager_->MarkContextLost();
   }
   state_.MarkContextLost();
+  raster_decoder_context_state_->context_lost = true;
+
+  if (gr_context())
+    gr_context()->abandonContext();
 }
 
 bool RasterDecoderImpl::CheckResetStatus() {
@@ -1549,8 +1519,8 @@ error::Error RasterDecoderImpl::DoCommandsImpl(unsigned int num_commands,
         }
       }
       if (!PermitsInconsistentContextState(command)) {
-        if (need_context_state_reset_) {
-          need_context_state_reset_ = false;
+        if (raster_decoder_context_state_->need_context_state_reset) {
+          raster_decoder_context_state_->need_context_state_reset = false;
           RestoreState(nullptr);
         }
       }
@@ -1772,9 +1742,9 @@ bool RasterDecoderImpl::ClearLevel(gles2::Texture* texture,
                          bound_texture ? bound_texture->service_id() : 0);
   DCHECK(glGetError() == GL_NO_ERROR);
 
-  if (gr_context_) {
-    gr_context_->resetContext(kPixelStore_GrGLBackendState |
-                              kTextureBinding_GrGLBackendState);
+  if (gr_context()) {
+    gr_context()->resetContext(kPixelStore_GrGLBackendState |
+                               kTextureBinding_GrGLBackendState);
   }
 
   return true;
@@ -1824,8 +1794,8 @@ bool RasterDecoderImpl::ClearCompressedTextureLevel(gles2::Texture* texture,
     api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, bound_buffer->service_id());
   }
 
-  if (gr_context_) {
-    gr_context_->resetContext(kTextureBinding_GrGLBackendState);
+  if (gr_context()) {
+    gr_context()->resetContext(kTextureBinding_GrGLBackendState);
   }
   return true;
 }
@@ -2208,7 +2178,7 @@ void RasterDecoderImpl::DoTexParameteri(GLuint client_id,
   }
 
   ScopedTextureBinder binder(&state_, texture_manager(), texture,
-                             texture_metadata->target(), gr_context_.get());
+                             texture_metadata->target(), gr_context());
 
   texture_manager()->SetParameteri("glTexParameteri", GetErrorState(), texture,
                                    pname, param);
@@ -2241,7 +2211,7 @@ void RasterDecoderImpl::DoBindTexImage2DCHROMIUM(GLuint client_id,
 
   {
     ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
-                               texture_metadata->target(), gr_context_.get());
+                               texture_metadata->target(), gr_context());
 
     if (image->BindTexImage(texture_metadata->target()))
       image_state = Texture::BOUND;
@@ -2290,7 +2260,7 @@ void RasterDecoderImpl::DoReleaseTexImage2DCHROMIUM(GLuint client_id,
 
   if (image_state == Texture::BOUND) {
     ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
-                               texture_metadata->target(), gr_context_.get());
+                               texture_metadata->target(), gr_context());
 
     image->ReleaseTexImage(texture_metadata->target());
     texture_manager()->SetLevelInfo(texture_ref, texture_metadata->target(), 0,
@@ -2404,7 +2374,7 @@ bool RasterDecoderImpl::TexStorage2DImage(
           untyped_format, &is_cleared);
 
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
-                             texture_metadata.target(), gr_context_.get());
+                             texture_metadata.target(), gr_context());
   if (!texture_manager()->ValidForTarget(texture_metadata.target(), 0, width,
                                          height, 1)) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImage",
@@ -2445,7 +2415,7 @@ bool RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
   }
 
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
-                             texture_metadata.target(), gr_context_.get());
+                             texture_metadata.target(), gr_context());
 
   unsigned int internal_format =
       viz::TextureStorageFormat(texture_metadata.format());
@@ -2498,7 +2468,7 @@ bool RasterDecoderImpl::TexImage2D(TextureRef* texture_ref,
   DCHECK(!state_.bound_pixel_unpack_buffer.get());
 
   ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
-                             texture_metadata.target(), gr_context_.get());
+                             texture_metadata.target(), gr_context());
 
   TextureManager::DoTexImageArguments args = {
       texture_metadata.target(),
@@ -2675,7 +2645,7 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
   GLint dest_level = 0;
 
   ScopedTextureBinder binder(&state_, texture_manager(), dest_texture_ref,
-                             dest_target, gr_context_.get());
+                             dest_target, gr_context());
 
   int source_width = 0;
   int source_height = 0;
@@ -2892,8 +2862,8 @@ bool RasterDecoderImpl::DoBindOrCopyTexImageIfNeeded(Texture* texture,
         DCHECK(rv) << "CopyTexImage() failed";
       }
       if (!texture_unit) {
-        RestoreCurrentTextureBindings(
-            &state_, textarget, state_.active_texture_unit, gr_context_.get());
+        RestoreCurrentTextureBindings(&state_, textarget,
+                                      state_.active_texture_unit, gr_context());
         return false;
       }
       return true;
@@ -2941,7 +2911,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
     GLboolean can_use_lcd_text,
     GLint color_type,
     GLuint color_space_transfer_cache_id) {
-  if (!gr_context_) {
+  if (!gr_context()) {
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glBeginRasterCHROMIUM",
                        "chromium_raster_transport not enabled via attribs");
     return;
@@ -2954,7 +2924,7 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
 
   DCHECK(locked_handles_.empty());
   DCHECK(!raster_canvas_);
-  need_context_state_reset_ = true;
+  raster_decoder_context_state_->need_context_state_reset = true;
 
   // This function should look identical to
   // ResourceProvider::ScopedSkSurfaceProvider.
@@ -3046,10 +3016,10 @@ void RasterDecoderImpl::DoBeginRasterCHROMIUM(
   // If we can't match requested MSAA samples, don't use MSAA.
   int final_msaa_count = std::max(static_cast<int>(msaa_sample_count), 0);
   if (final_msaa_count >
-      gr_context_->maxSurfaceSampleCountForColorType(sk_color_type))
+      gr_context()->maxSurfaceSampleCountForColorType(sk_color_type))
     final_msaa_count = 0;
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      gr_context_.get(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
+      gr_context(), gr_texture, kTopLeft_GrSurfaceOrigin, final_msaa_count,
       sk_color_type, nullptr, &surface_props);
 
   if (!sk_surface_) {
@@ -3105,7 +3075,7 @@ void RasterDecoderImpl::DoRasterCHROMIUM(GLuint raster_shm_id,
     return;
   }
   DCHECK(transfer_cache_);
-  need_context_state_reset_ = true;
+  raster_decoder_context_state_->need_context_state_reset = true;
 
   if (font_shm_size > 0) {
     // Deserialize fonts before raster.
@@ -3175,7 +3145,7 @@ void RasterDecoderImpl::DoEndRasterCHROMIUM() {
     return;
   }
 
-  need_context_state_reset_ = true;
+  raster_decoder_context_state_->need_context_state_reset = true;
 
   raster_canvas_.reset();
   sk_surface_->prepareForExternalIO();
@@ -3212,7 +3182,7 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
         "Attempt to use OOP transfer cache on a context without OOP raster.");
     return;
   }
-  DCHECK(gr_context_);
+  DCHECK(gr_context());
   DCHECK(transfer_cache_);
 
   // Validate the type we are about to create.
@@ -3244,7 +3214,7 @@ void RasterDecoderImpl::DoCreateTransferCacheEntryINTERNAL(
                                   handle_shm_id);
 
   if (!transfer_cache_->CreateLockedEntry(
-          entry_type, entry_id, handle, gr_context_.get(),
+          entry_type, entry_id, handle, gr_context(),
           base::make_span(data_memory, data_size))) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glCreateTransferCacheEntryINTERNAL",
                        "Failure to deserialize transfer cache entry.");
