@@ -4733,3 +4733,6 @@ crbug.com/859681 [ Mac10.13 ] http/tests/devtools/tracing/timeline-time/timeline
 crbug.com/859681 [ Mac10.13 ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Failure ]
 crbug.com/859681 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Failure ]
 crbug.com/859681 [ Linux Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-time/timeline-time.js [ Failure ]
+
+# Sheriff 2018-07-03
+crbug.com/860031 [ Linux ] http/tests/object/remote-frame-crash.html [ Failure ]
