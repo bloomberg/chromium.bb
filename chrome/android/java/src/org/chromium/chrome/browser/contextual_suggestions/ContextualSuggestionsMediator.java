@@ -319,6 +319,7 @@ class ContextualSuggestionsMediator
         reportEvent(ContextualSuggestionsEvent.UI_BUTTON_SHOWN);
         TrackerFactory.getTrackerForProfile(mProfile).notifyEvent(
                 EventConstants.CONTEXTUAL_SUGGESTIONS_BUTTON_SHOWN);
+        maybeShowHelpBubble();
     }
 
     @Override
@@ -541,22 +542,35 @@ class ContextualSuggestionsMediator
             return;
         }
 
-        int extraInset = mModel.isSlimPeekEnabled()
-                ? mIphParentView.getResources().getDimensionPixelSize(
-                          R.dimen.contextual_suggestions_slim_peek_inset)
-                : 0;
+        ViewRectProvider rectProvider;
+        if (!mToolbarButtonEnabled) {
+            int extraInset = mModel.isSlimPeekEnabled()
+                    ? mIphParentView.getResources().getDimensionPixelSize(
+                              R.dimen.contextual_suggestions_slim_peek_inset)
+                    : 0;
 
-        ViewRectProvider rectProvider = new ViewRectProvider(mIphParentView);
-        rectProvider.setInsetPx(0,
-                mIphParentView.getResources().getDimensionPixelSize(R.dimen.toolbar_shadow_height)
-                        + extraInset,
-                0, 0);
-        if (mModel.isSlimPeekEnabled()) {
+            rectProvider = new ViewRectProvider(mIphParentView);
+            rectProvider.setInsetPx(0,
+                    mIphParentView.getResources().getDimensionPixelSize(
+                            R.dimen.toolbar_shadow_height)
+                            + extraInset,
+                    0, 0);
+        } else {
+            rectProvider = new ViewRectProvider(
+                    mIphParentView.getRootView().findViewById(R.id.experimental_toolbar_button));
+            rectProvider.setInsetPx(0, 0, 0,
+                    mIphParentView.getResources().getDimensionPixelOffset(
+                            R.dimen.text_bubble_menu_anchor_y_inset));
+        }
+
+        if (mModel.isSlimPeekEnabled() || mToolbarButtonEnabled) {
             mHelpBubble = new ImageTextBubble(mIphParentView.getContext(), mIphParentView,
                     R.string.contextual_suggestions_in_product_help,
                     R.string.contextual_suggestions_in_product_help, true, rectProvider,
                     R.drawable.ic_logo_googleg_24dp);
-            mModel.setToolbarArrowTintResourceId(R.color.default_icon_color_blue);
+            if (!mToolbarButtonEnabled) {
+                mModel.setToolbarArrowTintResourceId(R.color.default_icon_color_blue);
+            }
         } else {
             mHelpBubble = new TextBubble(mIphParentView.getContext(), mIphParentView,
                     R.string.contextual_suggestions_in_product_help,
@@ -567,7 +581,9 @@ class ContextualSuggestionsMediator
         mHelpBubble.addOnDismissListener(() -> {
             tracker.dismissed(FeatureConstants.CONTEXTUAL_SUGGESTIONS_FEATURE);
             mHelpBubble = null;
-            mModel.setToolbarArrowTintResourceId(R.color.dark_mode_tint);
+            if (!mToolbarButtonEnabled) {
+                mModel.setToolbarArrowTintResourceId(R.color.dark_mode_tint);
+            }
         });
 
         mHelpBubble.show();

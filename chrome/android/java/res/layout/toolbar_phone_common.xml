@@ -46,7 +46,7 @@
 
         <ViewStub
             android:id="@+id/experimental_button_stub"
-            android:inflatedId="@+id/experimental_button"
+            android:inflatedId="@+id/experimental_toolbar_button"
             android:layout="@layout/experimental_toolbar_button"
             style="@style/ToolbarButton"
             android:layout_gravity="top"
