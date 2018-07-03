@@ -47,6 +47,7 @@
 #include "content/public/common/referrer.h"
 #include "content/public/common/renderer_preferences.h"
 #include "content/public/common/request_context_type.h"
+#include "content/public/common/resource_type.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/websocket_handshake_throttle_provider.h"
@@ -882,7 +883,8 @@ class CONTENT_EXPORT RenderFrameImpl
   void OnDroppedNavigation();
 
   void DidStartResponse(int request_id,
-                        const network::ResourceResponseHead& response_head);
+                        const network::ResourceResponseHead& response_head,
+                        content::ResourceType resource_type);
   void DidCompleteResponse(int request_id,
                            const network::URLLoaderCompletionStatus& status);
   void DidCancelResponse(int request_id);
