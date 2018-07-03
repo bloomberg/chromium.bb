@@ -12,14 +12,14 @@
 #include "chrome/browser/ui/sync/bubble_sync_promo_delegate.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "chrome/test/views/chrome_views_test_base.h"
 #include "components/signin/core/browser/account_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/event_constants.h"
 #include "ui/gfx/range/range.h"
 #include "ui/views/controls/styled_label.h"
-#include "ui/views/test/views_test_base.h"
 
-class BubbleSyncPromoViewTest : public views::ViewsTestBase,
+class BubbleSyncPromoViewTest : public ChromeViewsTestBase,
                                 public BubbleSyncPromoDelegate {
  public:
   BubbleSyncPromoViewTest() {}
