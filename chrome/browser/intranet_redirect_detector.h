@@ -12,9 +12,9 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "content/public/browser/network_connection_tracker.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "net/base/network_change_notifier.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -40,7 +40,7 @@ class PrefRegistrySimple;
 // return a value at all times (even during startup or in unittest mode).  If no
 // redirection is in place, the returned GURL will be empty.
 class IntranetRedirectDetector
-    : public net::NetworkChangeNotifier::NetworkChangeObserver {
+    : public content::NetworkConnectionTracker::NetworkConnectionObserver {
  public:
   // Only the main browser process loop should call this, when setting up
   // g_browser_process->intranet_redirect_detector_.  No code other than the
@@ -66,9 +66,8 @@ class IntranetRedirectDetector
   void OnSimpleLoaderComplete(network::SimpleURLLoader* source,
                               std::unique_ptr<std::string> response_body);
 
-  // NetworkChangeNotifier::NetworkChangeObserver
-  void OnNetworkChanged(
-      net::NetworkChangeNotifier::ConnectionType type) override;
+  // NetworkConnectionTracker::NetworkConnectionObserver
+  void OnConnectionChanged(network::mojom::ConnectionType type) override;
 
   GURL redirect_origin_;
   std::map<network::SimpleURLLoader*, std::unique_ptr<network::SimpleURLLoader>>
