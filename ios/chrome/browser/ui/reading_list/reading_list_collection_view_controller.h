@@ -7,8 +7,8 @@
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_list_item_accessibility_delegate.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar.h"
 
 @protocol ReadingListDataSource;
 @protocol ReadingListListViewControllerAudience;
@@ -16,10 +16,10 @@
 
 @interface ReadingListCollectionViewController
     : CollectionViewController<ReadingListListItemAccessibilityDelegate,
-                               ReadingListToolbarActions>
+                               LegacyReadingListToolbarActions>
 
 - (instancetype)initWithDataSource:(id<ReadingListDataSource>)dataSource
-                           toolbar:(ReadingListToolbar*)toolbar
+                           toolbar:(LegacyReadingListToolbar*)toolbar
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style

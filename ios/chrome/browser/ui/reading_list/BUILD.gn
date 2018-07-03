@@ -4,12 +4,12 @@
 
 source_set("reading_list") {
   sources = [
+    "legacy_reading_list_coordinator.h",
+    "legacy_reading_list_coordinator.mm",
     "offline_page_native_content.h",
     "offline_page_native_content.mm",
     "reading_list_collection_view_item.h",
     "reading_list_collection_view_item.mm",
-    "reading_list_coordinator.h",
-    "reading_list_coordinator.mm",
     "reading_list_list_item.h",
     "reading_list_list_item_custom_action_factory.h",
     "reading_list_list_item_custom_action_factory.mm",
@@ -73,6 +73,12 @@ source_set("reading_list_ui") {
   sources = [
     "empty_reading_list_background_view.h",
     "empty_reading_list_background_view.mm",
+    "legacy_reading_list_toolbar.h",
+    "legacy_reading_list_toolbar.mm",
+    "legacy_reading_list_toolbar_button.h",
+    "legacy_reading_list_toolbar_button.mm",
+    "legacy_reading_list_view_controller.h",
+    "legacy_reading_list_view_controller.mm",
     "number_badge_view.h",
     "number_badge_view.mm",
     "reading_list_collection_view_cell.h",
@@ -87,16 +93,10 @@ source_set("reading_list_ui") {
     "reading_list_list_view_controller_delegate.h",
     "reading_list_table_view_controller.h",
     "reading_list_table_view_controller.mm",
-    "reading_list_toolbar.h",
-    "reading_list_toolbar.mm",
-    "reading_list_toolbar_button.h",
-    "reading_list_toolbar_button.mm",
     "reading_list_toolbar_button_commands.h",
     "reading_list_toolbar_button_manager.h",
     "reading_list_toolbar_button_manager.mm",
     "reading_list_ui_distillation_status.h",
-    "reading_list_view_controller.h",
-    "reading_list_view_controller.mm",
     "text_badge_view.h",
     "text_badge_view.mm",
   ]
@@ -141,9 +141,9 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "legacy_reading_list_coordinator_unittest.mm",
     "offline_page_native_content_unittest.mm",
     "reading_list_collection_view_controller_unittest.mm",
-    "reading_list_coordinator_unittest.mm",
     "reading_list_list_item_factory_unittest.mm",
     "reading_list_mediator_unittest.mm",
     "text_badge_view_unittest.mm",

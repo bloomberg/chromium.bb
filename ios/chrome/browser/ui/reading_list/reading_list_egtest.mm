@@ -17,10 +17,10 @@
 #import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_constants.h"
 #import "ios/chrome/browser/ui/reading_list/empty_reading_list_background_view.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_toolbar_button.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_cell.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_controller.h"
 #import "ios/chrome/browser/ui/reading_list/reading_list_collection_view_item.h"
-#import "ios/chrome/browser/ui/reading_list/reading_list_toolbar_button.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -124,22 +124,22 @@ void ScrollToTop() {
 
 // Asserts the |button_id| button is not visible.
 void AssertButtonNotVisibleWithID(int button_id) {
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              chrome_test_util::ButtonWithAccessibilityLabelId(button_id),
-              grey_ancestor(grey_kindOfClass([ReadingListToolbarButton class])),
-              nil)] assertWithMatcher:grey_notVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                                button_id),
+                            grey_ancestor(grey_kindOfClass(
+                                [LegacyReadingListToolbarButton class])),
+                            nil)] assertWithMatcher:grey_notVisible()];
 }
 
 // Assert the |button_id| button is visible.
 void AssertButtonVisibleWithID(int button_id) {
-  [[EarlGrey
-      selectElementWithMatcher:
-          grey_allOf(
-              chrome_test_util::ButtonWithAccessibilityLabelId(button_id),
-              grey_ancestor(grey_kindOfClass([ReadingListToolbarButton class])),
-              nil)] assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(chrome_test_util::ButtonWithAccessibilityLabelId(
+                                button_id),
+                            grey_ancestor(grey_kindOfClass(
+                                [LegacyReadingListToolbarButton class])),
+                            nil)] assertWithMatcher:grey_sufficientlyVisible()];
 }
 
 // Taps the |button_id| button.

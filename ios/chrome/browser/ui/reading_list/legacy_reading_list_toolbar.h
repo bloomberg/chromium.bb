@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_TOOLBAR_H_
-#define IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_TOOLBAR_H_
+#ifndef IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_TOOLBAR_H_
+#define IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_TOOLBAR_H_
 
 #import <UIKit/UIKit.h>
 
 @class ActionSheetCoordinator;
-@class ReadingListToolbar;
+@class LegacyReadingListToolbar;
 
-typedef NS_ENUM(NSInteger, ReadingListToolbarState) {
+typedef NS_ENUM(NSInteger, LegacyReadingListToolbarState) {
   NoneSelected,
   OnlyReadSelected,
   OnlyUnreadSelected,
   MixedItemsSelected
 };
 
-typedef NS_ENUM(NSInteger, ReadingListToolbarHeight) {
+typedef NS_ENUM(NSInteger, LegacyReadingListToolbarHeight) {
   NormalHeight,
   ExpandedHeight
 };
 
-@protocol ReadingListToolbarActions<NSObject>
+@protocol LegacyReadingListToolbarActions<NSObject>
 
 // Callback for the toolbar mark button.
 - (void)markPressed;
@@ -38,10 +38,10 @@ typedef NS_ENUM(NSInteger, ReadingListToolbarHeight) {
 // View at the bottom of the reading list panel that presents options to edit
 // the entries. When editing, the interface changes, allowing the user to delete
 // them and mark them read/unread.
-@interface ReadingListToolbar : UIView
+@interface LegacyReadingListToolbar : UIView
 
 // The toolbar state. The text of the buttons change to reflect the state.
-@property(nonatomic, assign) ReadingListToolbarState state;
+@property(nonatomic, assign) LegacyReadingListToolbarState state;
 
 // Informs the toolbar whether there are read items. The "Delete All Read"
 // button will be enabled accordingly.
@@ -57,4 +57,4 @@ typedef NS_ENUM(NSInteger, ReadingListToolbarHeight) {
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_READING_LIST_TOOLBAR_H_
+#endif  // IOS_CHROME_BROWSER_UI_READING_LIST_LEGACY_READING_LIST_TOOLBAR_H_

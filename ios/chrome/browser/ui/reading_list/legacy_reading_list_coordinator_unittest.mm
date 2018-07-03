@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/reading_list/reading_list_coordinator.h"
+#import "ios/chrome/browser/ui/reading_list/legacy_reading_list_coordinator.h"
 
 #include <memory>
 
@@ -41,17 +41,17 @@
 using favicon::PostReply;
 using testing::_;
 
-#pragma mark - ReadingListCoordinatorTest
+#pragma mark - LegacyReadingListCoordinatorTest
 
-class ReadingListCoordinatorTest : public web::WebTestWithWebState {
+class LegacyReadingListCoordinatorTest : public web::WebTestWithWebState {
  public:
-  ReadingListCoordinatorTest() {
+  LegacyReadingListCoordinatorTest() {
     url_loader_ = [[FakeURLLoader alloc] init];
 
     TestChromeBrowserState::Builder builder;
     builder.AddTestingFactory(
         feature_engagement::TrackerFactory::GetInstance(),
-        ReadingListCoordinatorTest::BuildFeatureEngagementMockTracker);
+        LegacyReadingListCoordinatorTest::BuildFeatureEngagementMockTracker);
     browser_state_ = builder.Build();
 
     reading_list_model_.reset(new ReadingListModelImpl(
@@ -63,7 +63,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
         largeIconService:large_icon_service_.get()
          listItemFactory:[ReadingListListItemFactory
                              collectionViewItemFactory]];
-    coordinator_ = [[ReadingListCoordinator alloc]
+    coordinator_ = [[LegacyReadingListCoordinator alloc]
         initWithBaseViewController:nil
                       browserState:browser_state_.get()
                             loader:url_loader_];
@@ -74,9 +74,9 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
         .WillRepeatedly(PostReply<5>(favicon_base::FaviconRawBitmapResult()));
   }
 
-  ~ReadingListCoordinatorTest() override {}
+  ~LegacyReadingListCoordinatorTest() override {}
 
-  ReadingListCoordinator* GetCoordinator() { return coordinator_; }
+  LegacyReadingListCoordinator* GetCoordinator() { return coordinator_; }
 
   ReadingListModel* GetReadingListModel() { return reading_list_model_.get(); }
   FakeURLLoader* GetLoader() { return url_loader_; }
@@ -96,7 +96,7 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
   }
 
  private:
-  ReadingListCoordinator* coordinator_;
+  LegacyReadingListCoordinator* coordinator_;
   ReadingListMediator* mediator_;
   std::unique_ptr<ReadingListModelImpl> reading_list_model_;
   FakeURLLoader* url_loader_;
@@ -105,9 +105,9 @@ class ReadingListCoordinatorTest : public web::WebTestWithWebState {
   std::unique_ptr<TestChromeBrowserState> browser_state_;
 };
 
-// Tests that the implementation of ReadingListCoordinator openItemAtIndexPath
-// opens the entry.
-TEST_F(ReadingListCoordinatorTest, OpenItem) {
+// Tests that the implementation of LegacyReadingListCoordinator
+// openItemAtIndexPath opens the entry.
+TEST_F(LegacyReadingListCoordinatorTest, OpenItem) {
   // Setup.
   GURL url("https://chromium.org");
   std::string title("Chromium");
@@ -132,7 +132,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItem) {
   EXPECT_EQ(NO, loader.rendererInitiated);
 }
 
-TEST_F(ReadingListCoordinatorTest, OpenItemOffline) {
+TEST_F(LegacyReadingListCoordinatorTest, OpenItemOffline) {
   // Setup.
   GURL url("https://chromium.org");
   std::string title("Chromium");
@@ -163,7 +163,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItemOffline) {
   EXPECT_TRUE(model->GetEntryByURL(url)->IsRead());
 }
 
-TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
+TEST_F(LegacyReadingListCoordinatorTest, OpenItemInNewTab) {
   // Setup.
   GURL url("https://chromium.org");
   std::string title("Chromium");
@@ -187,7 +187,7 @@ TEST_F(ReadingListCoordinatorTest, OpenItemInNewTab) {
   EXPECT_TRUE(loader.inIncognito);
 }
 
-TEST_F(ReadingListCoordinatorTest, SendViewedReadingListEventInStart) {
+TEST_F(LegacyReadingListCoordinatorTest, SendViewedReadingListEventInStart) {
   // Setup.
   feature_engagement::test::MockTracker* tracker =
       static_cast<feature_engagement::test::MockTracker*>(
