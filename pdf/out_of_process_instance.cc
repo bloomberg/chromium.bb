@@ -1540,7 +1540,7 @@ void OutOfProcessInstance::SubmitForm(const std::string& url,
 void OutOfProcessInstance::FormDidOpen(int32_t result) {
   // TODO: inform the user of success/failure.
   if (result != PP_OK) {
-    NOTREACHED();
+    LOG(ERROR) << "FormDidOpen failed: " << result;
   }
 }
 
