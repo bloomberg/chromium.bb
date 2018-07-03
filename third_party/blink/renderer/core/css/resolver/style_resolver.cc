@@ -280,15 +280,14 @@ void StyleResolver::MatchPseudoPartRules(const Element& element,
       collector.FinishAddingAuthorRulesForTreeScope();
     }
 
-    // We have reached the top-level document.
-    if (!(host = host->OwnerShadowHost()))
-      return;
-
-    // After the direct host of the element, if the host doesn't forward any
-    // parts using partmap= then the element is unreachable from any scope above
-    // and we can stop.
+    // If the host doesn't forward any parts using partmap= then the element is
+    // unreachable from any scope further above and we can stop.
     const NamesMap* part_map = host->PartNamesMap();
     if (!part_map)
+      return;
+
+    // We have reached the top-level document.
+    if (!(host = host->OwnerShadowHost()))
       return;
 
     current_names.PushMap(*part_map);
