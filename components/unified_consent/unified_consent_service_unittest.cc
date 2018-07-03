@@ -1,0 +1,144 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "components/unified_consent/unified_consent_service.h"
+
+#include <memory>
+
+#include "base/message_loop/message_loop.h"
+#include "components/autofill/core/common/autofill_pref_names.h"
+#include "components/sync/driver/fake_sync_service.h"
+#include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "components/unified_consent/pref_names.h"
+#include "components/unified_consent/unified_consent_service_client.h"
+#include "services/identity/public/cpp/identity_test_environment.h"
+#include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+class TestSyncService : public syncer::FakeSyncService {
+ public:
+  bool IsSyncAllowed() const override { return true; }
+};
+
+class UnifiedConsentServiceTest : public testing::Test,
+                                  public UnifiedConsentServiceClient {
+ public:
+  // testing::Test:
+  void SetUp() override {
+    pref_service_.registry()->RegisterBooleanPref(
+        autofill::prefs::kAutofillWalletImportEnabled, false);
+    UnifiedConsentService::RegisterPrefs(pref_service_.registry());
+    consent_service_ = std::make_unique<UnifiedConsentService>(
+        this, &pref_service_, identity_test_environment_.identity_manager(),
+        &sync_service_);
+  }
+
+  void TearDown() override { consent_service_->Shutdown(); }
+
+  // UnifiedConsentServiceClient:
+  void SetAlternateErrorPagesEnabled(bool enabled) override {
+    alternate_error_pages_enabled_ = enabled;
+  }
+  void SetMetricsReportingEnabled(bool enabled) override {
+    metrics_reporting_enabled_ = enabled;
+  }
+  void SetNetworkPredictionEnabled(bool enabled) override {
+    network_predictions_enabled_ = enabled;
+  }
+  void SetSafeBrowsingEnabled(bool enabled) override {
+    safe_browsing_enabled_ = enabled;
+  }
+  void SetSafeBrowsingExtendedReportingEnabled(bool enabled) override {
+    safe_browsing_extended_reporting_enabled_ = enabled;
+  }
+  void SetSearchSuggestEnabled(bool enabled) override {
+    search_suggest_enabled_ = enabled;
+  }
+
+ protected:
+  base::MessageLoop message_loop_;
+  sync_preferences::TestingPrefServiceSyncable pref_service_;
+  identity::IdentityTestEnvironment identity_test_environment_;
+  TestSyncService sync_service_;
+  std::unique_ptr<UnifiedConsentService> consent_service_;
+  bool alternate_error_pages_enabled_ = false;
+  bool metrics_reporting_enabled_ = false;
+  bool network_predictions_enabled_ = false;
+  bool safe_browsing_enabled_ = false;
+  bool safe_browsing_extended_reporting_enabled_ = false;
+  bool search_suggest_enabled_ = false;
+};
+
+TEST_F(UnifiedConsentServiceTest, DefaultValuesWhenSignedOut) {
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+}
+
+TEST_F(UnifiedConsentServiceTest, EnableUnfiedConsent) {
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+
+  // Enable Unified Consent enables all non-personaized features
+  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
+  EXPECT_TRUE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+  EXPECT_TRUE(alternate_error_pages_enabled_);
+  EXPECT_TRUE(metrics_reporting_enabled_);
+  EXPECT_TRUE(network_predictions_enabled_);
+  EXPECT_TRUE(safe_browsing_enabled_);
+  EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
+  EXPECT_TRUE(search_suggest_enabled_);
+
+  // Disable unified consent does not disable any of the non-personalized
+  // features.
+  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, false);
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+  EXPECT_TRUE(alternate_error_pages_enabled_);
+  EXPECT_TRUE(metrics_reporting_enabled_);
+  EXPECT_TRUE(network_predictions_enabled_);
+  EXPECT_TRUE(safe_browsing_enabled_);
+  EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
+  EXPECT_TRUE(search_suggest_enabled_);
+}
+
+#if !defined(OS_CHROMEOS)
+TEST_F(UnifiedConsentServiceTest, ClearPrimaryAccountDisablesSomeServices) {
+  identity_test_environment_.SetPrimaryAccount("testaccount");
+
+  // Precondition: Enable unified consent.
+  pref_service_.SetBoolean(prefs::kUnifiedConsentGiven, true);
+  EXPECT_TRUE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+  EXPECT_TRUE(alternate_error_pages_enabled_);
+  EXPECT_TRUE(metrics_reporting_enabled_);
+  EXPECT_TRUE(network_predictions_enabled_);
+  EXPECT_TRUE(safe_browsing_enabled_);
+  EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
+  EXPECT_TRUE(search_suggest_enabled_);
+
+  // Clearing primary account revokes unfied consent and a couple of other
+  // non-personalized services.
+  identity_test_environment_.ClearPrimaryAccount();
+  EXPECT_FALSE(pref_service_.GetBoolean(prefs::kUnifiedConsentGiven));
+  EXPECT_FALSE(pref_service_.GetBoolean(
+      prefs::kUrlKeyedAnonymizedDataCollectionEnabled));
+
+  // Consent is not revoked for the following services.
+  EXPECT_TRUE(alternate_error_pages_enabled_);
+  EXPECT_TRUE(metrics_reporting_enabled_);
+  EXPECT_TRUE(network_predictions_enabled_);
+  EXPECT_TRUE(safe_browsing_enabled_);
+  EXPECT_TRUE(safe_browsing_extended_reporting_enabled_);
+  EXPECT_TRUE(search_suggest_enabled_);
+}
+#endif  // !defined(OS_CHROMEOS)
+
+}  // namespace
