@@ -330,10 +330,6 @@ NSError* WKWebViewErrorWithSource(NSError* error, WKWebViewErrorSource source) {
   // does not own this pointer.
   WebStateImpl* _webStateImpl;
 
-  // A set of URLs opened in external applications; stored so that errors
-  // from the web view can be identified as resulting from these events.
-  NSMutableSet* _openedApplicationURL;
-
   // A set of script managers whose scripts have been injected into the current
   // page.
   // TODO(stuartmorgan): Revisit this approach; it's intended only as a stopgap
@@ -1555,9 +1551,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
 
 // Load the current URL in a web view, first ensuring the web view is visible.
 - (void)loadCurrentURLInWebView {
-  // Clear the set of URLs opened in external applications.
-  _openedApplicationURL = [[NSMutableSet alloc] init];
-
   web::NavigationItem* item = self.currentNavItem;
   GURL targetURL = item ? item->GetVirtualURL() : GURL::EmptyGURL();
   // Load the url. The UIWebView delegate callbacks take care of updating the
@@ -2944,9 +2937,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
     if ([_delegate openExternalURL:requestURL
                          sourceURL:sourceURL
                        linkClicked:isNavigationTypeLinkActivated]) {
-      // Record the URL so that errors reported following the 'NO' reply can be
-      // safely ignored.
-      [_openedApplicationURL addObject:request.URL];
       if ([self shouldClosePageOnNativeApplicationLoad])
         _webStateImpl->CloseWebState();
     }
@@ -3030,12 +3020,6 @@ registerLoadRequestForURL:(const GURL&)requestURL
             return;
           }
         }
-      }
-
-      if ([_openedApplicationURL containsObject:errorURL]) {
-        // The load was rejected, because embedder launched an external
-        // application.
-        return;
       }
 
       if (!navigationContext->IsDownload()) {
