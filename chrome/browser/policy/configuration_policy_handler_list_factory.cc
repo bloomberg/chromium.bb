@@ -915,11 +915,17 @@ class BrowsingHistoryPolicyHandler : public TypeCheckingPolicyHandler {
   }
 };
 
-class SecureOriginPolicyHandler : public TypeCheckingPolicyHandler {
+class SecureOriginPolicyHandler : public SchemaValidatingPolicyHandler {
  public:
-  SecureOriginPolicyHandler()
-      : TypeCheckingPolicyHandler(key::kUnsafelyTreatInsecureOriginAsSecure,
-                                  base::Value::Type::LIST) {}
+  SecureOriginPolicyHandler(const char* policy_name, Schema schema)
+      : SchemaValidatingPolicyHandler(policy_name,
+                                      schema.GetKnownProperty(policy_name),
+                                      SCHEMA_STRICT) {
+    DCHECK(policy_name == key::kUnsafelyTreatInsecureOriginAsSecure ||
+           policy_name == key::kOverrideSecurityRestrictionsOnInsecureOrigin);
+  }
+
+ protected:
   void ApplyPolicySettings(const PolicyMap& policies,
                            PrefValueMap* prefs) override {
     const base::Value* value = policies.GetValue(policy_name());
@@ -1018,7 +1024,26 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
       SimpleSchemaValidatingPolicyHandler::RECOMMENDED_PROHIBITED,
       SimpleSchemaValidatingPolicyHandler::MANDATORY_ALLOWED));
 
-  handlers->AddHandler(std::make_unique<SecureOriginPolicyHandler>());
+// On most platforms, there is a legacy policy
+// kUnsafelyTreatInsecureOriginAsSecure which has been replaced by
+// kOverrideSecurityRestrictionsOnInsecureOrigins. The legacy policy was never
+// supported on ChromeOS or Android, so on those platforms, simply use the new
+// one.
+#if defined(OS_CHROMEOS) || defined(OS_ANDROID)
+  handlers->AddHandler(std::make_unique<SecureOriginPolicyHandler>(
+      key::kOverrideSecurityRestrictionsOnInsecureOrigin, chrome_schema));
+#else
+  std::vector<std::unique_ptr<ConfigurationPolicyHandler>>
+      secure_origin_legacy_policy;
+  secure_origin_legacy_policy.push_back(
+      std::make_unique<SecureOriginPolicyHandler>(
+          key::kUnsafelyTreatInsecureOriginAsSecure, chrome_schema));
+  handlers->AddHandler(std::make_unique<LegacyPoliciesDeprecatingPolicyHandler>(
+      std::move(secure_origin_legacy_policy),
+      base::WrapUnique(new SecureOriginPolicyHandler(
+          key::kOverrideSecurityRestrictionsOnInsecureOrigin, chrome_schema))));
+#endif  // defined(OS_CHROMEOS) || defined(OS_ANDROID)
+
   handlers->AddHandler(std::make_unique<DeveloperToolsPolicyHandler>());
 
 #if defined(OS_ANDROID)

@@ -13739,6 +13739,7 @@ Called by update_net_error_codes.py.-->
   <int value="454" label="PromotionalTabsEnabled"/>
   <int value="455" label="SafeSitesFilterBehavior"/>
   <int value="456" label="AllowedInputMethods"/>
+  <int value="457" label="OverrideSecurityRestrictionsOnInsecureOrigin"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">

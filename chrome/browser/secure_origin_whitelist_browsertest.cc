@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/strings/utf_string_conversions.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
@@ -19,7 +20,15 @@ namespace {
 // the setup is done before the actual test is run, we need to parameterize our
 // tests outside of the actual test bodies. We use test variants for this,
 // instead of the usual setup of mulitple tests.
-enum class TestVariant { kNone, kCommandline, kPolicy, kPolicy2, kPolicy3 };
+enum class TestVariant {
+  kNone,
+  kCommandline,
+  kPolicyOld,
+  kPolicy,
+  kPolicy2,
+  kPolicy3,
+  kPolicyOldAndNew,
+};
 }  // namespace
 
 // End-to-end browser test that ensures the secure origin whitelist works when
@@ -51,8 +60,9 @@ class SecureOriginWhitelistBrowsertest
 
   void SetUpInProcessBrowserTestFixture() override {
     TestVariant variant = GetParam();
-    if (variant != TestVariant::kPolicy && variant != TestVariant::kPolicy2 &&
-        variant != TestVariant::kPolicy3)
+    if (variant != TestVariant::kPolicyOld && variant != TestVariant::kPolicy &&
+        variant != TestVariant::kPolicy2 && variant != TestVariant::kPolicy3 &&
+        variant != TestVariant::kPolicyOldAndNew)
       return;
 
     // We setup the policy here, because the policy must be 'live' before
@@ -65,7 +75,8 @@ class SecureOriginWhitelistBrowsertest
     policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
 
     base::Value::ListStorage urls;
-    if (variant == TestVariant::kPolicy) {
+    if (variant == TestVariant::kPolicy || variant == TestVariant::kPolicyOld ||
+        variant == TestVariant::kPolicyOldAndNew) {
       urls.push_back(base::Value(BaseURL()));
     } else if (variant == TestVariant::kPolicy2) {
       urls.push_back(base::Value(BaseURL()));
@@ -76,10 +87,22 @@ class SecureOriginWhitelistBrowsertest
     }
 
     policy::PolicyMap values;
-    values.Set(policy::key::kUnsafelyTreatInsecureOriginAsSecure,
+    values.Set((variant == TestVariant::kPolicyOld ||
+                variant == TestVariant::kPolicyOldAndNew)
+                   ? policy::key::kUnsafelyTreatInsecureOriginAsSecure
+                   : policy::key::kOverrideSecurityRestrictionsOnInsecureOrigin,
                policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
                policy::POLICY_SOURCE_CLOUD,
                std::make_unique<base::Value>(std::move(urls)), nullptr);
+    if (variant == TestVariant::kPolicyOldAndNew) {
+      base::Value::ListStorage other_urls;
+      other_urls.push_back(base::Value(OtherURL()));
+      values.Set(policy::key::kOverrideSecurityRestrictionsOnInsecureOrigin,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(std::move(other_urls)), nullptr);
+    }
+
     provider_.UpdateChromePolicy(values);
   }
 
@@ -101,6 +124,12 @@ INSTANTIATE_TEST_CASE_P(SecureOriginWhitelistBrowsertest,
                         SecureOriginWhitelistBrowsertest,
                         testing::Values(TestVariant::kNone,
                                         TestVariant::kCommandline,
+// The legacy policy isn't defined on ChromeOS or Android, so skip tests that
+// use it on those platforms.
+#if !defined(OS_CHROMEOS) && !defined(OS_ANDROID)
+                                        TestVariant::kPolicyOld,
+                                        TestVariant::kPolicyOldAndNew,
+#endif
                                         TestVariant::kPolicy,
                                         TestVariant::kPolicy2,
                                         TestVariant::kPolicy3));
@@ -117,6 +146,20 @@ IN_PROC_BROWSER_TEST_P(SecureOriginWhitelistBrowsertest, Simple) {
       browser()->tab_strip_model()->GetActiveWebContents(), secure);
   title_watcher.AlsoWaitForTitle(insecure);
 
-  EXPECT_EQ(title_watcher.WaitAndGetTitle(),
-            ExpectSecureContext() ? secure : insecure);
+  if (GetParam() == TestVariant::kPolicyOldAndNew) {
+    // When both policies are set, the new one should take precedence over the
+    // old one.
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(), insecure);
+    content::TitleWatcher next_title_watcher(
+        browser()->tab_strip_model()->GetActiveWebContents(), secure);
+    next_title_watcher.AlsoWaitForTitle(insecure);
+    ui_test_utils::NavigateToURL(
+        browser(),
+        embedded_test_server()->GetURL(
+            "otherexample.com", "/secure_origin_whitelist_browsertest.html"));
+    EXPECT_EQ(next_title_watcher.WaitAndGetTitle(), secure);
+  } else {
+    EXPECT_EQ(title_watcher.WaitAndGetTitle(),
+              ExpectSecureContext() ? secure : insecure);
+  }
 }
