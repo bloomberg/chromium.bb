@@ -639,13 +639,6 @@ class ChannelAssociatedGroupController
         if (!shut_down_) {
           base::AutoLock lock(outgoing_messages_lock_);
           outgoing_messages_.emplace_back(std::move(*message));
-
-          // TODO(https://crbug.com/813045): Change this to a DCHECK. Typically
-          // this queue won't exceed something like 50 messages even on slow
-          // devices - higher numbers probably indicate that IPC messages are
-          // leaked.
-          CHECK_LE(outgoing_messages_.size(),
-                   MojoBootstrap::kMaxOutgoingMessagesSizeForTesting);
         }
         return true;
       }
