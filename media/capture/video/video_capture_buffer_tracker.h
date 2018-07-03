@@ -44,6 +44,7 @@ class CAPTURE_EXPORT VideoCaptureBufferTracker {
       bool read_only) = 0;
   virtual base::SharedMemoryHandle
   GetNonOwnedSharedMemoryHandleForLegacyIPC() = 0;
+  virtual uint32_t GetMemorySizeInBytes() = 0;
 
  private:
   // |dimensions_| may change as a VideoCaptureBufferTracker is re-used, but

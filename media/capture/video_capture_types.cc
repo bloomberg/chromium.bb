@@ -70,7 +70,8 @@ bool VideoCaptureFormat::ComparePixelFormatPreference(
 }
 
 VideoCaptureParams::VideoCaptureParams()
-    : resolution_change_policy(ResolutionChangePolicy::FIXED_RESOLUTION),
+    : buffer_type(VideoCaptureBufferType::kSharedMemory),
+      resolution_change_policy(ResolutionChangePolicy::FIXED_RESOLUTION),
       power_line_frequency(PowerLineFrequency::FREQUENCY_DEFAULT) {}
 
 bool VideoCaptureParams::IsValid() const {

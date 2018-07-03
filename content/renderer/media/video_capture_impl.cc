@@ -41,6 +41,9 @@ struct VideoCaptureImpl::BufferContext
         InitializeFromSharedMemory(
             std::move(buffer_handle->get_shared_buffer_handle()));
         break;
+      case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
+        NOTREACHED();
+        break;
       case VideoFrameBufferHandleType::MAILBOX_HANDLES:
         InitializeFromMailbox(std::move(buffer_handle->get_mailbox_handles()));
         break;
@@ -345,6 +348,9 @@ void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
           buffer_context->shared_memory_size(),
           buffer_context->shared_memory()->handle(),
           0 /* shared_memory_offset */, info->timestamp);
+      break;
+    case VideoFrameBufferHandleType::SHARED_MEMORY_VIA_RAW_FILE_DESCRIPTOR:
+      NOTREACHED();
       break;
     case VideoFrameBufferHandleType::MAILBOX_HANDLES:
       gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];

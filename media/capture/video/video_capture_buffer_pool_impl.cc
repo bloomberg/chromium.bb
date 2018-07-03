@@ -53,6 +53,18 @@ VideoCaptureBufferPoolImpl::GetNonOwnedSharedMemoryHandleForLegacyIPC(
   return tracker->GetNonOwnedSharedMemoryHandleForLegacyIPC();
 }
 
+uint32_t VideoCaptureBufferPoolImpl::GetMemorySizeInBytes(int buffer_id) {
+  base::AutoLock lock(lock_);
+
+  VideoCaptureBufferTracker* tracker = GetTracker(buffer_id);
+  if (!tracker) {
+    NOTREACHED() << "Invalid buffer_id.";
+    return 0u;
+  }
+
+  return tracker->GetMemorySizeInBytes();
+}
+
 std::unique_ptr<VideoCaptureBufferHandle>
 VideoCaptureBufferPoolImpl::GetHandleForInProcessAccess(int buffer_id) {
   base::AutoLock lock(lock_);

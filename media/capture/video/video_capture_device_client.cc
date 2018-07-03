@@ -22,6 +22,7 @@
 #include "media/capture/video/video_capture_jpeg_decoder.h"
 #include "media/capture/video/video_frame_receiver.h"
 #include "media/capture/video_capture_types.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 #include "third_party/libyuv/include/libyuv.h"
 
 namespace {
@@ -86,6 +87,9 @@ class BufferPoolBufferHandleProvider
       override {
     return buffer_pool_->GetNonOwnedSharedMemoryHandleForLegacyIPC(buffer_id_);
   }
+  uint32_t GetMemorySizeInBytes() override {
+    return buffer_pool_->GetMemorySizeInBytes(buffer_id_);
+  }
   std::unique_ptr<VideoCaptureBufferHandle> GetHandleForInProcessAccess()
       override {
     return buffer_pool_->GetHandleForInProcessAccess(buffer_id_);
@@ -97,10 +101,12 @@ class BufferPoolBufferHandleProvider
 };
 
 VideoCaptureDeviceClient::VideoCaptureDeviceClient(
+    VideoCaptureBufferType target_buffer_type,
     std::unique_ptr<VideoFrameReceiver> receiver,
     scoped_refptr<VideoCaptureBufferPool> buffer_pool,
     VideoCaptureJpegDecoderFactoryCB optional_jpeg_decoder_factory_callback)
-    : receiver_(std::move(receiver)),
+    : target_buffer_type_(target_buffer_type),
+      receiver_(std::move(receiver)),
       optional_jpeg_decoder_factory_callback_(
           std::move(optional_jpeg_decoder_factory_callback)),
       buffer_pool_(std::move(buffer_pool)),
@@ -402,14 +408,45 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(const gfx::Size& frame_size,
   if (!base::ContainsValue(buffer_ids_known_by_receiver_, buffer_id)) {
     media::mojom::VideoBufferHandlePtr buffer_handle =
         media::mojom::VideoBufferHandle::New();
-    buffer_handle->set_shared_buffer_handle(
-        buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
-                                                      true /*read_only*/));
+    switch (target_buffer_type_) {
+      case VideoCaptureBufferType::kSharedMemory:
+        buffer_handle->set_shared_buffer_handle(
+            buffer_pool_->GetHandleForInterProcessTransit(buffer_id,
+                                                          true /*read_only*/));
+        break;
+      case VideoCaptureBufferType::kSharedMemoryViaRawFileDescriptor:
+        buffer_handle->set_shared_memory_via_raw_file_descriptor(
+            CreateSharedMemoryViaRawFileDescriptorStruct(buffer_id));
+        break;
+      case VideoCaptureBufferType::kMailboxHolder:
+        NOTREACHED();
+        break;
+    }
     receiver_->OnNewBuffer(buffer_id, std::move(buffer_handle));
     buffer_ids_known_by_receiver_.push_back(buffer_id);
   }
 
   return MakeBufferStruct(buffer_pool_, buffer_id, frame_feedback_id);
+}
+
+mojom::SharedMemoryViaRawFileDescriptorPtr
+VideoCaptureDeviceClient::CreateSharedMemoryViaRawFileDescriptorStruct(
+    int buffer_id) {
+// This requires platforms where base::SharedMemoryHandle is backed by a
+// file descriptor.
+#if defined(OS_LINUX)
+  auto result = mojom::SharedMemoryViaRawFileDescriptor::New();
+  result->file_descriptor_handle = mojo::WrapPlatformFile(
+      base::SharedMemory::DuplicateHandle(
+          buffer_pool_->GetNonOwnedSharedMemoryHandleForLegacyIPC(buffer_id))
+          .GetHandle());
+  result->shared_memory_size_in_bytes =
+      buffer_pool_->GetMemorySizeInBytes(buffer_id);
+  return result;
+#else
+  NOTREACHED();
+  return mojom::SharedMemoryViaRawFileDescriptorPtr();
+#endif
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(

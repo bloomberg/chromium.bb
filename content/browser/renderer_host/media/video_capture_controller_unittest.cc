@@ -154,6 +154,7 @@ class VideoCaptureControllerTest
         std::make_unique<media::VideoCaptureBufferTrackerFactoryImpl>(),
         kPoolSize);
     device_client_.reset(new media::VideoCaptureDeviceClient(
+        media::VideoCaptureBufferType::kSharedMemory,
         std::make_unique<media::VideoFrameReceiverOnTaskRunner>(
             controller_->GetWeakPtrForIOThread(),
             BrowserThread::GetTaskRunnerForThread(BrowserThread::IO)),

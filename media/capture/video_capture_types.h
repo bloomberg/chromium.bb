@@ -54,6 +54,12 @@ enum class PowerLineFrequency {
   FREQUENCY_MAX = FREQUENCY_60HZ
 };
 
+enum class VideoCaptureBufferType {
+  kSharedMemory,
+  kSharedMemoryViaRawFileDescriptor,
+  kMailboxHolder
+};
+
 // Assert that the int:frequency mapping is correct.
 static_assert(static_cast<int>(PowerLineFrequency::FREQUENCY_DEFAULT) == 0,
               "static_cast<int>(FREQUENCY_DEFAULT) must equal 0.");
@@ -134,6 +140,8 @@ struct CAPTURE_EXPORT VideoCaptureParams {
 
   // Requests a resolution and format at which the capture will occur.
   VideoCaptureFormat requested_format;
+
+  VideoCaptureBufferType buffer_type;
 
   // Policy for resolution change.
   ResolutionChangePolicy resolution_change_policy;

@@ -39,4 +39,8 @@ SharedMemoryBufferTracker::GetNonOwnedSharedMemoryHandleForLegacyIPC() {
   return provider_.GetNonOwnedSharedMemoryHandleForLegacyIPC();
 }
 
+uint32_t SharedMemoryBufferTracker::GetMemorySizeInBytes() {
+  return provider_.GetMemorySizeInBytes();
+}
+
 }  // namespace media
