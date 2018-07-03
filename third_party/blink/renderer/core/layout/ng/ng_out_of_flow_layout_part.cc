@@ -398,8 +398,10 @@ scoped_refptr<NGLayoutResult> NGOutOfFlowLayoutPart::LayoutDescendant(
 bool NGOutOfFlowLayoutPart::IsContainingBlockForDescendant(
     const NGOutOfFlowPositionedDescendant& descendant) {
   EPosition position = descendant.node.Style().GetPosition();
+
+  // Descendants whose containing block is inline are always positioned
+  // inside closest parent block flow.
   if (descendant.inline_container) {
-    DCHECK(position == EPosition::kAbsolute);
     return true;
   }
   return (contains_absolute_ && position == EPosition::kAbsolute) ||
