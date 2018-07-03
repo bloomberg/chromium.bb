@@ -966,7 +966,6 @@ enum WebFeature {
   kAddEventListenerPassiveTrue = 1417,
   kAddEventListenerPassiveFalse = 1418,
   kCSPReferrerDirective = 1419,
-  kDocumentOpen = 1420,
   kElementRequestPointerLockInShadow = 1421,
   kShadowRootPointerLockElement = 1422,
   kDocumentPointerLockElementInV0Shadow = 1423,
@@ -1954,6 +1953,9 @@ enum WebFeature {
   kCSSEnvironmentVariable_SafeAreaInsetBottom = 2491,
   kCSSEnvironmentVariable_SafeAreaInsetRight = 2492,
   kMediaControlsDisplayCutoutGesture = 2493,
+  kDocumentOpenTwoArgs = 2494,
+  kDocumentOpenTwoArgsWithReplace = 2495,
+  kDocumentOpenThreeArgs = 2496,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.
