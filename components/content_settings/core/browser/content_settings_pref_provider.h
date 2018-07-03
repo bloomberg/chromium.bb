@@ -74,6 +74,12 @@ class PrefProvider : public UserModifiableProvider {
   // Clean up the obsolete preferences from the user's profile.
   void DiscardObsoletePreferences();
 
+  // Returns true if this provider supports the given |content_type|.
+  bool supports_type(ContentSettingsType content_type) const {
+    return content_settings_prefs_.find(content_type) !=
+           content_settings_prefs_.end();
+  }
+
   // Weak; owned by the Profile and reset in ShutdownOnUIThread.
   PrefService* prefs_;
 

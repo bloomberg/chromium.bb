@@ -66,7 +66,8 @@ class ContentSettingsRegistry {
                 const std::set<ContentSetting>& valid_settings,
                 WebsiteSettingsInfo::ScopingType scoping_type,
                 Platforms platforms,
-                ContentSettingsInfo::IncognitoBehavior incognito_behavior);
+                ContentSettingsInfo::IncognitoBehavior incognito_behavior,
+                ContentSettingsInfo::StorageBehavior storage_behavior);
 
   Map content_settings_info_;
   WebsiteSettingsRegistry* website_settings_registry_;

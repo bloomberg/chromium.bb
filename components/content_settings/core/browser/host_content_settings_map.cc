@@ -22,6 +22,7 @@
 #include "build/build_config.h"
 #include "components/content_settings/core/browser/content_settings_default_provider.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
+#include "components/content_settings/core/browser/content_settings_ephemeral_provider.h"
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 #include "components/content_settings/core/browser/content_settings_policy_provider.h"
@@ -65,6 +66,7 @@ constexpr ProviderNamesSourceMapEntry kProviderNamesSourceMap[] = {
     {"supervised_user", content_settings::SETTING_SOURCE_SUPERVISED},
     {"extension", content_settings::SETTING_SOURCE_EXTENSION},
     {"notification_android", content_settings::SETTING_SOURCE_USER},
+    {"ephemeral", content_settings::SETTING_SOURCE_USER},
     {"preference", content_settings::SETTING_SOURCE_USER},
     {"default", content_settings::SETTING_SOURCE_USER},
     {"tests", content_settings::SETTING_SOURCE_USER},
@@ -218,6 +220,13 @@ HostContentSettingsMap::HostContentSettingsMap(PrefService* prefs,
   // the guest profile and so we need to ensure those get cleared.
   if (is_guest_profile)
     pref_provider_->ClearPrefs();
+
+  content_settings::EphemeralProvider* ephemeral_provider =
+      new content_settings::EphemeralProvider(store_last_modified_);
+  content_settings_providers_[EPHEMERAL_PROVIDER] =
+      base::WrapUnique(ephemeral_provider);
+  user_modifiable_providers_.push_back(ephemeral_provider);
+  ephemeral_provider->AddObserver(this);
 
   auto default_provider = std::make_unique<content_settings::DefaultProvider>(
       prefs_, is_incognito_);
