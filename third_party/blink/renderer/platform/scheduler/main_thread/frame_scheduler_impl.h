@@ -118,10 +118,6 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   // page scheduler. Should be used only for testing purposes.
   FrameSchedulerImpl();
 
-  // Returns a valid per-frame task queue which should be used for testing.
-  // This task queue is expected to always run tasks.
-  scoped_refptr<MainThreadTaskQueue> GetTaskQueueForTesting();
-
  private:
   friend class PageSchedulerImpl;
   friend class main_thread_scheduler_impl_unittest::MainThreadSchedulerImplTest;
@@ -177,12 +173,12 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   void AddPauseSubresourceLoadingHandle();
   void RemovePauseSubresourceLoadingHandle();
 
-  scoped_refptr<MainThreadTaskQueue> LoadingTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> LoadingControlTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> ThrottleableTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> DeferrableTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> PausableTaskQueue();
-  scoped_refptr<MainThreadTaskQueue> UnpausableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> LoadingTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> LoadingControlTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> ThrottleableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> DeferrableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> PausableTaskQueue();
+  scoped_refptr<base::sequence_manager::TaskQueue> UnpausableTaskQueue();
 
   const FrameScheduler::FrameType frame_type_;
 
