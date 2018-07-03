@@ -44,6 +44,8 @@ PageActionIconView::PageActionIconView(CommandUpdater* command_updater,
       command_id_(command_id),
       active_(false),
       suppress_mouse_released_action_(false) {
+  if (views::PlatformStyle::kPreferFocusRings)
+    focus_ring_ = views::FocusRing::Install(this);
   SetBorder(views::CreateEmptyBorder(
       GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING)));
   if (ui::MaterialDesignController::IsNewerMaterialUi()) {
@@ -113,8 +115,8 @@ gfx::Size PageActionIconView::CalculatePreferredSize() const {
 
 void PageActionIconView::Layout() {
   image_->SetBoundsRect(GetContentsBounds());
-  if (views::PlatformStyle::kPreferFocusRings) {
-    focus_ring_ = views::FocusRing::Install(this);
+  if (focus_ring_) {
+    focus_ring_->Layout();
     if (LocationBarView::IsRounded()) {
       SkPath path;
       path.addOval(gfx::RectToSkRect(GetLocalBounds()));
