@@ -1,0 +1,36 @@
+This is a testharness.js-based test.
+PASS picture-in-picture interfaces.
+PASS Partial interface HTMLVideoElement: original interface defined
+PASS Partial interface Document: original interface defined
+PASS Partial interface DocumentOrShadowRoot: original interface defined
+FAIL PictureInPictureWindow interface: existence and properties of interface object assert_equals: prototype of self's property "PictureInPictureWindow" is not Function.prototype expected function "function () { [native code] }" but got function "function EventTarget() { [native code] }"
+PASS PictureInPictureWindow interface object length
+PASS PictureInPictureWindow interface object name
+FAIL PictureInPictureWindow interface: existence and properties of interface prototype object assert_equals: prototype of PictureInPictureWindow.prototype is not Object.prototype expected object "[object Object]" but got object "[object EventTarget]"
+PASS PictureInPictureWindow interface: existence and properties of interface prototype object's "constructor" property
+PASS PictureInPictureWindow interface: existence and properties of interface prototype object's @@unscopables property
+PASS PictureInPictureWindow interface: attribute width
+PASS Unscopable handled correctly for width property on PictureInPictureWindow
+PASS PictureInPictureWindow interface: attribute height
+PASS Unscopable handled correctly for height property on PictureInPictureWindow
+PASS PictureInPictureWindow interface: attribute onresize
+PASS Unscopable handled correctly for onresize property on PictureInPictureWindow
+PASS Document interface: attribute pictureInPictureEnabled
+PASS Unscopable handled correctly for pictureInPictureEnabled property on Document
+PASS Document interface: operation exitPictureInPicture()
+PASS Unscopable handled correctly for exitPictureInPicture() on Document
+PASS Document interface: attribute pictureInPictureElement
+PASS Unscopable handled correctly for pictureInPictureElement property on Document
+PASS Document interface: document must inherit property "pictureInPictureEnabled" with the proper type
+PASS Document interface: document must inherit property "exitPictureInPicture()" with the proper type
+PASS Document interface: document must inherit property "pictureInPictureElement" with the proper type
+PASS HTMLVideoElement interface: operation requestPictureInPicture()
+PASS Unscopable handled correctly for requestPictureInPicture() on HTMLVideoElement
+PASS HTMLVideoElement interface: attribute onenterpictureinpicture
+PASS Unscopable handled correctly for onenterpictureinpicture property on HTMLVideoElement
+PASS HTMLVideoElement interface: attribute onleavepictureinpicture
+PASS Unscopable handled correctly for onleavepictureinpicture property on HTMLVideoElement
+PASS HTMLVideoElement interface: attribute disablePictureInPicture
+PASS Unscopable handled correctly for disablePictureInPicture property on HTMLVideoElement
+Harness: the test ran to completion.
+
