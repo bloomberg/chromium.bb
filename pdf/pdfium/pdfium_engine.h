@@ -16,13 +16,13 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "base/timer/timer.h"
 #include "pdf/document_loader.h"
 #include "pdf/pdf_engine.h"
 #include "pdf/pdfium/pdfium_form_filler.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_print.h"
 #include "pdf/pdfium/pdfium_range.h"
-#include "pdf/timer.h"
 #include "ppapi/cpp/completion_callback.h"
 #include "ppapi/cpp/dev/buffer_dev.h"
 #include "ppapi/cpp/image_data.h"
@@ -146,20 +146,6 @@ class PDFiumEngine : public PDFEngine,
   FPDF_FORMHANDLE form() const { return form_.get(); }
 
  private:
-  class TouchTimer : public Timer {
-   public:
-    TouchTimer(PDFiumEngine* engine, int id, const pp::TouchInputEvent& event);
-    ~TouchTimer() override;
-
-    // Timer overrides:
-    void OnTimer() override;
-
-   private:
-    PDFiumEngine* engine_;
-    const int id_;
-    const pp::TouchInputEvent event_;
-  };
-
   // This helper class is used to detect the difference in selection between
   // construction and destruction.  At destruction, it invalidates all the
   // parts that are newly selected, along with all the parts that used to be
@@ -486,7 +472,7 @@ class PDFiumEngine : public PDFEngine,
   float GetToolbarHeightInScreenCoords();
 
   void ScheduleTouchTimer(const pp::TouchInputEvent& event);
-  void KillTouchTimer(int timer_id);
+  void KillTouchTimer();
   void HandleLongPress(const pp::TouchInputEvent& event);
 
   // Returns a VarDictionary (representing a bookmark), which in turn contains
@@ -619,9 +605,8 @@ class PDFiumEngine : public PDFEngine,
 
   pp::Size default_page_size_;
 
-  // Used to manage timers for touch long press.
-  std::map<int, std::unique_ptr<TouchTimer>> touch_timers_;
-  int last_touch_timer_id_ = 0;
+  // Timer for touch long press detection.
+  base::OneShotTimer touch_timer_;
 
   // Holds the zero-based page index of the last page that the mouse clicked on.
   int last_page_mouse_down_ = -1;

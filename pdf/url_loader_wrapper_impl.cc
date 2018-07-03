@@ -10,7 +10,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "net/http/http_util.h"
-#include "pdf/timer.h"
 #include "ppapi/c/pp_errors.h"
 #include "ppapi/cpp/logging.h"
 #include "ppapi/cpp/url_request_info.h"
@@ -97,19 +96,6 @@ bool IsDoubleEndLineAtEnd(const char* buffer, int size) {
 
 }  // namespace
 
-class URLLoaderWrapperImpl::ReadStarter : public Timer {
- public:
-  explicit ReadStarter(URLLoaderWrapperImpl* owner)
-      : Timer(kReadDelayMs), owner_(owner) {}
-  ~ReadStarter() override = default;
-
-  // Timer overrides:
-  void OnTimer() override { owner_->ReadResponseBodyImpl(); }
-
- private:
-  URLLoaderWrapperImpl* owner_;
-};
-
 URLLoaderWrapperImpl::URLLoaderWrapperImpl(pp::Instance* plugin_instance,
                                            const pp::URLLoader& url_loader)
     : plugin_instance_(plugin_instance),
@@ -171,7 +157,7 @@ bool URLLoaderWrapperImpl::GetDownloadProgress(
 
 void URLLoaderWrapperImpl::Close() {
   url_loader_.Close();
-  read_starter_.reset();
+  read_starter_.Stop();
 }
 
 void URLLoaderWrapperImpl::OpenRange(const std::string& url,
@@ -195,11 +181,13 @@ void URLLoaderWrapperImpl::ReadResponseBody(char* buffer,
   did_read_callback_ = cc;
   buffer_ = buffer;
   buffer_size_ = buffer_size;
-  read_starter_ = std::make_unique<ReadStarter>(this);
+  read_starter_.Start(
+      FROM_HERE, kReadDelayMs,
+      base::BindRepeating(&URLLoaderWrapperImpl::ReadResponseBodyImpl,
+                          base::Unretained(this)));
 }
 
 void URLLoaderWrapperImpl::ReadResponseBodyImpl() {
-  read_starter_.reset();
   pp::CompletionCallback callback =
       callback_factory_.NewCallback(&URLLoaderWrapperImpl::DidRead);
   int rv = url_loader_.ReadResponseBody(buffer_, buffer_size_, callback);

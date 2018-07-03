@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/timer/timer.h"
 #include "pdf/url_loader_wrapper.h"
 #include "ppapi/cpp/url_loader.h"
 #include "ppapi/utility/completion_callback_factory.h"
@@ -50,8 +51,6 @@ class URLLoaderWrapperImpl : public URLLoaderWrapper {
   void SetResponseHeaders(const std::string& response_headers);
 
  private:
-  class ReadStarter;
-
   void SetHeadersFromLoader();
   void ParseHeaders();
   void DidOpen(int32_t result);
@@ -79,7 +78,7 @@ class URLLoaderWrapperImpl : public URLLoaderWrapper {
   pp::CompletionCallback did_read_callback_;
   pp::CompletionCallbackFactory<URLLoaderWrapperImpl> callback_factory_;
 
-  std::unique_ptr<ReadStarter> read_starter_;
+  base::OneShotTimer read_starter_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderWrapperImpl);
 };
