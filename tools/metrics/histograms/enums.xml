@@ -31246,6 +31246,30 @@ Called by update_use_counter_css.py.-->
   </int>
 </enum>
 
+<enum name="MountEncryptedEncryptionKeyStatus">
+  <int value="0" label="unknown">Key not loaded yet.</int>
+  <int value="1" label="keyfile">Key loaded from encrypted.key file.</int>
+  <int value="2" label="NeedsFinalization">
+    Key loaded from needs-finalization file.
+  </int>
+  <int value="3" label="Fresh">Freshly generated key.</int>
+</enum>
+
+<enum name="MountEncryptedSystemKeyStatus">
+  <int value="0" label="Unknown">No key loaded yet.</int>
+  <int value="1" label="NVRAMLockbox">Using lockbox salt as system key.</int>
+  <int value="2" label="NVRAMEncstateful">
+    Key in dedicated encstateful NVRAM space.
+  </int>
+  <int value="3" label="FinalizationPending">
+    TPM not ready, obfuscated key on disk.
+  </int>
+  <int value="4" label="Factory">Hard-coded factory key.</int>
+  <int value="5" label="KernelCommandLine">Key from kernel command line.</int>
+  <int value="6" label="ProductUUID">Using product UUID as system key.</int>
+  <int value="7" label="StaticFallback">Using hard-coded fallback key.</int>
+</enum>
+
 <enum name="MouseEventFollowedByClick">
   <int value="0" label="Missed event before click"/>
   <int value="1" label="Caught event before click"/>
