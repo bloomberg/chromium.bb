@@ -416,16 +416,14 @@
             ],
             "experiments": [
                 {
-                    "name": "AudioProcess_v3",
+                    "name": "AudioProcess_LaunchOnStartup_v3",
                     "params": {
-                        "teardown_timeout_s": "900"
+                        "teardown_timeout_s": "0"
                     },
                     "enable_features": [
                         "AudioServiceAudioStreams",
+                        "AudioServiceLaunchOnStartup",
                         "AudioServiceOutOfProcess"
-                    ],
-                    "disable_features": [
-                        "AudioServiceLaunchOnStartup"
                     ]
                 }
             ]
