@@ -47,6 +47,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -100,7 +101,7 @@ class CreditCardSaveManagerTest : public testing::Test {
         base::ThreadTaskRunnerHandle::Get());
     autofill_driver_->SetURLRequestContext(request_context_.get());
     payments_client_ = new payments::TestPaymentsClient(
-        autofill_driver_->GetURLRequestContext(), autofill_client_.GetPrefs(),
+        autofill_driver_->GetURLLoaderFactory(), autofill_client_.GetPrefs(),
         autofill_client_.GetIdentityManager(),
         /*unmask_delegate=*/nullptr,
         // Will be set by CreditCardSaveManager's ctor

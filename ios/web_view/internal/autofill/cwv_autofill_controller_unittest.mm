@@ -18,6 +18,7 @@
 #import "ios/web/public/test/fakes/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "ios/web/public/test/test_web_thread_bundle.h"
+#include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/form_activity_params.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -49,6 +50,7 @@ NSString* const kTestFieldValue = @"FieldValue";
 class CWVAutofillControllerTest : public PlatformTest {
  protected:
   CWVAutofillControllerTest() : browser_state_(/*off_the_record=*/false) {
+    web::SetWebClient(&web_client_);
     l10n_util::OverrideLocaleWithCocoaLocale();
 
     web_state_.SetBrowserState(&browser_state_);
@@ -71,6 +73,7 @@ class CWVAutofillControllerTest : public PlatformTest {
                                     JSSuggestionManager:js_suggestion_manager_];
   };
 
+  web::WebClient web_client_;
   web::TestWebThreadBundle web_thread_bundle_;
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState web_state_;

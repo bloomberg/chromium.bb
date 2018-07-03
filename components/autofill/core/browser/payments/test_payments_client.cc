@@ -5,17 +5,18 @@
 #include "components/autofill/core/browser/payments/test_payments_client.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace autofill {
 namespace payments {
 
 TestPaymentsClient::TestPaymentsClient(
-    net::URLRequestContextGetter* context_getter,
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
     payments::PaymentsClientUnmaskDelegate* unmask_delegate,
     payments::PaymentsClientSaveDelegate* save_delegate)
-    : PaymentsClient(context_getter,
+    : PaymentsClient(url_loader_factory_,
                      pref_service,
                      identity_manager,
                      unmask_delegate,

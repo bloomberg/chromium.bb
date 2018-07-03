@@ -275,6 +275,9 @@ class AutofillManager : public AutofillHandler,
   }
 
   // Exposed for testing.
+  payments::PaymentsClient* payments_client() { return payments_client_.get(); }
+
+  // Exposed for testing.
   void set_payments_client(payments::PaymentsClient* payments_client) {
     payments_client_.reset(payments_client);
   }

@@ -171,8 +171,10 @@ network::mojom::URLLoaderFactory* BrowserState::GetURLLoaderFactory() {
     DCHECK(!network_context_);
     DCHECK(!network_context_owner_);
 
+    net::URLRequestContextGetter* request_context = GetRequestContext();
+    DCHECK(request_context);
     network_context_owner_ = std::make_unique<NetworkContextOwner>(
-        GetRequestContext(), &network_context_);
+        request_context, &network_context_);
     auto url_loader_factory_params =
         network::mojom::URLLoaderFactoryParams::New();
     url_loader_factory_params->process_id = network::mojom::kBrowserProcessId;

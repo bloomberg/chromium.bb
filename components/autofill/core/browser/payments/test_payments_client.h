@@ -10,16 +10,21 @@
 
 #include "components/autofill/core/browser/payments/payments_client.h"
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace autofill {
 namespace payments {
 
 class TestPaymentsClient : public payments::PaymentsClient {
  public:
-  TestPaymentsClient(net::URLRequestContextGetter* context_getter,
-                     PrefService* pref_service,
-                     identity::IdentityManager* identity_manager,
-                     payments::PaymentsClientUnmaskDelegate* unmask_delegate,
-                     payments::PaymentsClientSaveDelegate* save_delegate);
+  TestPaymentsClient(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_,
+      PrefService* pref_service,
+      identity::IdentityManager* identity_manager,
+      payments::PaymentsClientUnmaskDelegate* unmask_delegate,
+      payments::PaymentsClientSaveDelegate* save_delegate);
 
   ~TestPaymentsClient() override;
 

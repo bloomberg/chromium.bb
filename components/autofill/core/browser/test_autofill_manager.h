@@ -16,8 +16,8 @@
 
 using base::TimeTicks;
 
-namespace net {
-class URLRequestContextGetter;
+namespace network {
+class SharedURLLoaderFactory;
 }
 
 namespace autofill {
@@ -89,7 +89,7 @@ class TestAutofillManager : public AutofillManager {
 
  private:
   TestPersonalDataManager* personal_data_;                  // Weak reference.
-  net::URLRequestContextGetter* context_getter_ = nullptr;  // Weak reference.
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
   TestFormDataImporter* test_form_data_importer_ = nullptr;
   bool autofill_enabled_ = true;
   bool credit_card_enabled_ = true;

@@ -13,8 +13,10 @@ TestPaymentRequestDelegate::TestPaymentRequestDelegate(
     : personal_data_manager_(personal_data_manager),
       locale_("en-US"),
       last_committed_url_("https://shop.com"),
-      request_context_(new TestURLRequestContextGetter(loop_.task_runner())),
-      payments_client_(request_context_.get(),
+      test_shared_loader_factory_(
+          base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
+              &test_url_loader_factory_)),
+      payments_client_(test_shared_loader_factory_,
                        nullptr,
                        nullptr,
                        /*unmask_delegate=*/&payments_client_delegate_,
@@ -107,20 +109,5 @@ TestPaymentsClientDelegate::~TestPaymentsClientDelegate() {}
 void TestPaymentsClientDelegate::OnDidGetRealPan(
     autofill::AutofillClient::PaymentsRpcResult result,
     const std::string& real_pan) {}
-
-TestURLRequestContextGetter::TestURLRequestContextGetter(
-    scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-    : task_runner_(task_runner) {}
-
-TestURLRequestContextGetter::~TestURLRequestContextGetter() {}
-
-net::URLRequestContext* TestURLRequestContextGetter::GetURLRequestContext() {
-  return nullptr;
-}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-TestURLRequestContextGetter::GetNetworkTaskRunner() const {
-  return task_runner_;
-}
 
 }  // namespace payments

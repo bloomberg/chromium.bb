@@ -39,6 +39,7 @@ source_set("browser") {
     "//components/prefs/ios",
     "//google_apis",
     "//ios/web",
+    "//services/network/public/cpp",
     "//ui/gfx/geometry",
   ]
 }

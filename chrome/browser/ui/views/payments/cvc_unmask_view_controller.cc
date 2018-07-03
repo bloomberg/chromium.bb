@@ -26,6 +26,8 @@
 #include "components/payments/core/payment_request_delegate.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/vector_icons/vector_icons.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -56,8 +58,9 @@ CvcUnmaskViewController::CvcUnmaskViewController(
       credit_card_(credit_card),
       web_contents_(web_contents),
       payments_client_(
-          Profile::FromBrowserContext(web_contents_->GetBrowserContext())
-              ->GetRequestContext(),
+          content::BrowserContext::GetDefaultStoragePartition(
+              web_contents_->GetBrowserContext())
+              ->GetURLLoaderFactoryForBrowserProcess(),
           Profile::FromBrowserContext(web_contents_->GetBrowserContext())
               ->GetPrefs(),
           IdentityManagerFactory::GetForProfile(
