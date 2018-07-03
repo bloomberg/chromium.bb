@@ -19,7 +19,7 @@ class VideoPainter {
  public:
   VideoPainter(const LayoutVideo& layout_video) : layout_video_(layout_video) {}
 
-  void PaintReplaced(const PaintInfo&, const LayoutPoint&);
+  void PaintReplaced(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   const LayoutVideo& layout_video_;

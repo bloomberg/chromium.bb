@@ -197,8 +197,6 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
 
   void UpdateLayout() override;
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
-
   LayoutUnit CellBaselinePosition() const;
   bool IsBaselineAligned() const {
     EVerticalAlign va = Style()->VerticalAlign();
@@ -376,9 +374,11 @@ class CORE_EXPORT LayoutTableCell : public LayoutBlockFlow {
 
   void UpdateLogicalWidth() override;
 
-  void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint&) const override;
-  void PaintMask(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintBoxDecorationBackground(
+      const PaintInfo&,
+      const LayoutPoint& paint_offset) const override;
+  void PaintMask(const PaintInfo&,
+                 const LayoutPoint& paint_offset) const override;
 
   bool ComputeShouldClipOverflow() const override;
 

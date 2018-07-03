@@ -1489,9 +1489,8 @@ LayoutUnit LayoutTableSection::FirstLineBoxBaseline() const {
   return first_line_baseline;
 }
 
-void LayoutTableSection::Paint(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) const {
-  TableSectionPainter(*this).Paint(paint_info, paint_offset);
+void LayoutTableSection::Paint(const PaintInfo& paint_info) const {
+  TableSectionPainter(*this).Paint(paint_info);
 }
 
 LayoutRect LayoutTableSection::LogicalRectForWritingModeAndDirection(

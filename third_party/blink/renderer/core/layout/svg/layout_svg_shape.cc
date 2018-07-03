@@ -342,8 +342,7 @@ void LayoutSVGShape::UpdateNonScalingStrokeData() {
   rare_data.non_scaling_stroke_path_.Transform(t);
 }
 
-void LayoutSVGShape::Paint(const PaintInfo& paint_info,
-                           const LayoutPoint&) const {
+void LayoutSVGShape::Paint(const PaintInfo& paint_info) const {
   SVGShapePainter(*this).Paint(paint_info);
 }
 

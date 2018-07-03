@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/paint/collapsed_border_painter.h"
 
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/block_painter.h"
 #include "third_party/blink/renderer/core/paint/object_painter.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
@@ -333,8 +334,7 @@ static EBorderStyle CollapsedBorderStyle(EBorderStyle style) {
 }
 
 void CollapsedBorderPainter::PaintCollapsedBorders(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+    const PaintInfo& paint_info) {
   if (cell_.Style()->Visibility() != EVisibility::kVisible)
     return;
 
@@ -350,9 +350,10 @@ void CollapsedBorderPainter::PaintCollapsedBorders(
   // Now left=start_, right=end_, before_=top, after_=bottom.
 
   // Collapsed borders are half inside and half outside of |rect|.
+  AdjustPaintOffsetScope adjustment(cell_, paint_info);
   IntRect rect = PixelSnappedIntRect(
       TableCellPainter(cell_).PaintRectNotIncludingVisualOverflow(
-          paint_offset + cell_.Location()));
+          adjustment.PaintOffset()));
   // |paint_rect| covers the whole collapsed borders.
   IntRect paint_rect = rect;
   paint_rect.Expand(IntRectOutsets(before_.outer_width, end_.outer_width,

@@ -27,7 +27,7 @@ class NGBlockFlowPainter {
  public:
   NGBlockFlowPainter(const LayoutBlockFlow& layout_block_flow)
       : block_(layout_block_flow) {}
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
 
   // Hit tests this block flow
   // @param physical_offset Physical offset of this block flow in paint layer.
@@ -37,9 +37,7 @@ class NGBlockFlowPainter {
                    HitTestAction);
 
  private:
-  void PaintBoxFragment(const NGPaintFragment&,
-                        const PaintInfo&,
-                        const LayoutPoint&);
+  void PaintBoxFragment(const NGPaintFragment&, const PaintInfo&);
 
   const LayoutBlockFlow& block_;
 };

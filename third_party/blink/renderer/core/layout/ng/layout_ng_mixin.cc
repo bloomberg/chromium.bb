@@ -292,28 +292,11 @@ void LayoutNGMixin<Base>::InvalidateDisplayItemClients(
 }
 
 template <typename Base>
-void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
-  if (PaintFragment()) {
-    LayoutPoint flipped_offset(paint_offset);
-    // HACK: Legacy paints all FlippedBlocks Elements with an offset that
-    // is incorrect by VerticalScrollbarWidth. This happens because vertical-rl
-    // Location() does not include Scrollbar size (but does include border!).
-    // Paint corrects for incorrect LayoutObject.Location() by applyiing
-    // scroll transformation to all children of FlippedBlocks().
-    // See LayoutBox::ScrolledContentOffset() and
-    // paint_property_tree_builder VisualOffsetFromPaintOffsetRoot() for
-    // details.
-    // For NG, we modify paint_offset to correct for this transformation.
-    if (UNLIKELY(Base::Parent()->HasFlippedBlocksWritingMode() &&
-                 !AdjustPaintOffsetScope::WillUseLegacyLocation(this) &&
-                 Base::Parent()->IsBox())) {
-      flipped_offset.Move(ToLayoutBox(Base::Parent())->VerticalScrollbarWidth(),
-                          0);
-    }
-    NGBlockFlowPainter(*this).Paint(paint_info, flipped_offset);
-  } else
-    LayoutBlockFlow::Paint(paint_info, paint_offset);
+void LayoutNGMixin<Base>::Paint(const PaintInfo& paint_info) const {
+  if (PaintFragment())
+    NGBlockFlowPainter(*this).Paint(paint_info);
+  else
+    LayoutBlockFlow::Paint(paint_info);
 }
 
 template <typename Base>

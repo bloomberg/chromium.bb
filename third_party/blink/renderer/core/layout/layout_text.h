@@ -334,7 +334,7 @@ class CORE_EXPORT LayoutText : public LayoutObject {
   unsigned length() const final { return TextLength(); }
 
   // See the class comment as to why we shouldn't call this function directly.
-  void Paint(const PaintInfo&, const LayoutPoint&) const final { NOTREACHED(); }
+  void Paint(const PaintInfo&) const final { NOTREACHED(); }
   void UpdateLayout() final { NOTREACHED(); }
   bool NodeAtPoint(HitTestResult&,
                    const HitTestLocation&,

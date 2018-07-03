@@ -24,7 +24,7 @@ class LineBoxListPainter {
 
   void Paint(const LayoutBoxModelObject&,
              const PaintInfo&,
-             const LayoutPoint&) const;
+             const LayoutPoint& paint_offset) const;
 
  private:
   const LineBoxList& line_box_list_;

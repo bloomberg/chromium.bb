@@ -15,6 +15,7 @@
 #include "third_party/blink/renderer/core/layout/text_run_constructor.h"
 #include "third_party/blink/renderer/core/page/chrome_client.h"
 #include "third_party/blink/renderer/core/page/page.h"
+#include "third_party/blink/renderer/core/paint/adjust_paint_offset_scope.h"
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/platform/geometry/layout_point.h"
 #include "third_party/blink/renderer/platform/graphics/paint/display_item_cache_skipper.h"
@@ -24,16 +25,14 @@
 
 namespace blink {
 
-void ImagePainter::Paint(const PaintInfo& paint_info,
-                         const LayoutPoint& paint_offset) {
-  layout_image_.LayoutReplaced::Paint(paint_info, paint_offset);
+void ImagePainter::Paint(const PaintInfo& paint_info) {
+  layout_image_.LayoutReplaced::Paint(paint_info);
 
   if (paint_info.phase == PaintPhase::kOutline)
-    PaintAreaElementFocusRing(paint_info, paint_offset);
+    PaintAreaElementFocusRing(paint_info);
 }
 
-void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
-                                             const LayoutPoint& paint_offset) {
+void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info) {
   Document& document = layout_image_.GetDocument();
 
   if (paint_info.IsPrinting() ||
@@ -62,10 +61,9 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
   if (path.IsEmpty())
     return;
 
-  LayoutPoint adjusted_paint_offset = paint_offset;
-  adjusted_paint_offset.MoveBy(layout_image_.Location());
-  path.Translate(
-      FloatSize(adjusted_paint_offset.X(), adjusted_paint_offset.Y()));
+  AdjustPaintOffsetScope adjustment(layout_image_, paint_info);
+  auto paint_offset = adjustment.PaintOffset();
+  path.Translate(FloatSize(paint_offset.X(), paint_offset.Y()));
 
   if (DrawingRecorder::UseCachedDrawingIfPossible(
           paint_info.context, layout_image_, DisplayItem::kImageAreaFocusRing))
@@ -79,7 +77,7 @@ void ImagePainter::PaintAreaElementFocusRing(const PaintInfo& paint_info,
 
   paint_info.context.Save();
   LayoutRect focus_rect = layout_image_.ContentBoxRect();
-  focus_rect.MoveBy(adjusted_paint_offset);
+  focus_rect.MoveBy(paint_offset);
   paint_info.context.Clip(PixelSnappedIntRect(focus_rect));
   paint_info.context.DrawFocusRing(
       path, area_element_style.GetOutlineStrokeWidthForFocusRing(),

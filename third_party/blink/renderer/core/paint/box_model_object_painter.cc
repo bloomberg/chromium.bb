@@ -86,10 +86,7 @@ void BoxModelObjectPainter::PaintTextClipMask(GraphicsContext& context,
   } else {
     // FIXME: this should only have an effect for the line box list within
     // |box_model_|. Change this to create a LineBoxListPainter directly.
-    LayoutSize local_offset = box_model_.IsBox()
-                                  ? ToLayoutBox(&box_model_)->LocationOffset()
-                                  : LayoutSize();
-    box_model_.Paint(paint_info, paint_offset - local_offset);
+    box_model_.Paint(paint_info);
   }
 }
 

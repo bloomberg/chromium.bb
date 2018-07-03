@@ -59,7 +59,8 @@ class CORE_EXPORT LayoutFileUploadControl final : public LayoutBlockFlow {
       LayoutUnit& min_logical_width,
       LayoutUnit& max_logical_width) const override;
   void ComputePreferredLogicalWidths() override;
-  void PaintObject(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintObject(const PaintInfo&,
+                   const LayoutPoint& paint_offset) const override;
 
   int MaxFilenameWidth() const;
 

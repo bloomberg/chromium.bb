@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class LayoutPoint;
 class LayoutTextControlSingleLine;
 struct PaintInfo;
 
@@ -19,7 +18,7 @@ class TextControlSingleLinePainter {
  public:
   TextControlSingleLinePainter(const LayoutTextControlSingleLine& text_control)
       : text_control_(text_control) {}
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
 
  private:
   const LayoutTextControlSingleLine& text_control_;

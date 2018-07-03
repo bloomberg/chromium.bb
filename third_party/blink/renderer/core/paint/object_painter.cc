@@ -63,9 +63,7 @@ void ObjectPainter::PaintOutline(const PaintInfo& paint_info,
   PaintOutlineRects(paint_info, outline_rects, style_to_use);
 }
 
-void ObjectPainter::PaintInlineChildrenOutlines(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) {
+void ObjectPainter::PaintInlineChildrenOutlines(const PaintInfo& paint_info) {
   DCHECK(ShouldPaintDescendantOutlines(paint_info.phase));
 
   PaintInfo paint_info_for_descendants = paint_info.ForDescendants();
@@ -73,7 +71,7 @@ void ObjectPainter::PaintInlineChildrenOutlines(
        child = child->NextSibling()) {
     if (child->IsLayoutInline() &&
         !ToLayoutInline(child)->HasSelfPaintingLayer())
-      child->Paint(paint_info_for_descendants, paint_offset);
+      child->Paint(paint_info_for_descendants);
   }
 }
 
@@ -114,14 +112,13 @@ void ObjectPainter::AddPDFURLRectIfNeeded(const PaintInfo& paint_info,
   paint_info.context.SetURLForRect(url, rect);
 }
 
-void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info,
-                                             const LayoutPoint& paint_offset) {
+void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info) {
   // Pass PaintPhaseSelection and PaintPhaseTextClip to the descendants so that
   // they will paint for selection and text clip respectively. We don't need
   // complete painting for these phases.
   if (paint_info.phase == PaintPhase::kSelection ||
       paint_info.phase == PaintPhase::kTextClip) {
-    layout_object_.Paint(paint_info, paint_offset);
+    layout_object_.Paint(paint_info);
     return;
   }
 
@@ -130,13 +127,13 @@ void ObjectPainter::PaintAllPhasesAtomically(const PaintInfo& paint_info,
 
   PaintInfo info(paint_info);
   info.phase = PaintPhase::kBlockBackground;
-  layout_object_.Paint(info, paint_offset);
+  layout_object_.Paint(info);
   info.phase = PaintPhase::kFloat;
-  layout_object_.Paint(info, paint_offset);
+  layout_object_.Paint(info);
   info.phase = PaintPhase::kForeground;
-  layout_object_.Paint(info, paint_offset);
+  layout_object_.Paint(info);
   info.phase = PaintPhase::kOutline;
-  layout_object_.Paint(info, paint_offset);
+  layout_object_.Paint(info);
 }
 
 }  // namespace blink

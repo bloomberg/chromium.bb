@@ -671,7 +671,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   FloatRect LocalBoundingBoxRectForAccessibility() const final;
 
   void UpdateLayout() override;
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
 
   virtual bool IsInSelfHitTestingPhase(HitTestAction hit_test_action) const {
     return hit_test_action == kHitTestForeground;
@@ -1067,9 +1067,11 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
   // for this object.
   LayoutRect ClippingRect(const LayoutPoint& location) const;
 
-  virtual void PaintBoxDecorationBackground(const PaintInfo&,
-                                            const LayoutPoint&) const;
-  virtual void PaintMask(const PaintInfo&, const LayoutPoint&) const;
+  virtual void PaintBoxDecorationBackground(
+      const PaintInfo&,
+      const LayoutPoint& paint_offset) const;
+  virtual void PaintMask(const PaintInfo&,
+                         const LayoutPoint& paint_offset) const;
   void ImageChanged(WrappedImagePtr,
                     CanDeferInvalidation,
                     const IntRect* = nullptr) override;
@@ -1148,11 +1150,6 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   LayoutPoint FlipForWritingModeForChild(const LayoutBox* child,
                                          const LayoutPoint&) const;
-
-  // NG: Like FlipForWritingModeForChild, except that it will not flip
-  // if LayoutBox will be painted by NG using fragment.Offset.
-  LayoutPoint FlipForWritingModeForChildForPaint(const LayoutBox* child,
-                                                 const LayoutPoint&) const;
 
   WARN_UNUSED_RESULT LayoutUnit FlipForWritingMode(LayoutUnit position) const {
     // The offset is in the block direction (y for horizontal writing modes, x

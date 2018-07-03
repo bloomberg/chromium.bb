@@ -1140,9 +1140,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     bitfields_.SetCanContainFixedPositionObjects(can_contain_fixed_position);
   }
 
-  // paintOffset is the offset from the origin of the GraphicsContext at which
-  // to paint the current object.
-  virtual void Paint(const PaintInfo&, const LayoutPoint& paint_offset) const;
+  virtual void Paint(const PaintInfo&) const;
 
   virtual bool RecalcOverflowAfterStyleChange();
 

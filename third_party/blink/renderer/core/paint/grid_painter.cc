@@ -111,7 +111,7 @@ void GridPainter::PaintChildren(const PaintInfo& paint_info,
       continue;
 
     BlockPainter(layout_grid_)
-        .PaintAllChildPhasesAtomically(*current, paint_info, paint_offset);
+        .PaintAllChildPhasesAtomically(*current, paint_info);
     previous = current;
   }
 }

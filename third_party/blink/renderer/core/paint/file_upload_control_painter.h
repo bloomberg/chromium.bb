@@ -21,7 +21,7 @@ class FileUploadControlPainter {
       const LayoutFileUploadControl& layout_file_upload_control)
       : layout_file_upload_control_(layout_file_upload_control) {}
 
-  void PaintObject(const PaintInfo&, const LayoutPoint&);
+  void PaintObject(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   const LayoutFileUploadControl& layout_file_upload_control_;

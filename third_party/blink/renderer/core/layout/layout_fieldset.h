@@ -46,9 +46,11 @@ class LayoutFieldset final : public LayoutBlockFlow {
 
   void ComputePreferredLogicalWidths() override;
 
-  void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint&) const override;
-  void PaintMask(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintBoxDecorationBackground(
+      const PaintInfo&,
+      const LayoutPoint& paint_offset) const override;
+  void PaintMask(const PaintInfo&,
+                 const LayoutPoint& paint_offset) const override;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutFieldset, IsFieldset());

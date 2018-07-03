@@ -54,9 +54,8 @@ LayoutDetailsMarker::Orientation LayoutDetailsMarker::GetOrientation() const {
   return kRight;
 }
 
-void LayoutDetailsMarker::Paint(const PaintInfo& paint_info,
-                                const LayoutPoint& paint_offset) const {
-  DetailsMarkerPainter(*this).Paint(paint_info, paint_offset);
+void LayoutDetailsMarker::Paint(const PaintInfo& paint_info) const {
+  DetailsMarkerPainter(*this).Paint(paint_info);
 }
 
 bool LayoutDetailsMarker::IsOpen() const {

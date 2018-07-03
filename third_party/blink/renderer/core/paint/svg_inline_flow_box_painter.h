@@ -21,7 +21,7 @@ class SVGInlineFlowBoxPainter {
       : svg_inline_flow_box_(svg_inline_flow_box) {}
 
   void PaintSelectionBackground(const PaintInfo&);
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   const SVGInlineFlowBox& svg_inline_flow_box_;

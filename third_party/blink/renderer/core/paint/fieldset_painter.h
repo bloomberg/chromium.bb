@@ -20,8 +20,9 @@ class FieldsetPainter {
   FieldsetPainter(const LayoutFieldset& layout_fieldset)
       : layout_fieldset_(layout_fieldset) {}
 
-  void PaintBoxDecorationBackground(const PaintInfo&, const LayoutPoint&);
-  void PaintMask(const PaintInfo&, const LayoutPoint&);
+  void PaintBoxDecorationBackground(const PaintInfo&,
+                                    const LayoutPoint& paint_offset);
+  void PaintMask(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   const LayoutFieldset& layout_fieldset_;

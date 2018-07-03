@@ -23,11 +23,8 @@ class TableCellPainter {
   TableCellPainter(const LayoutTableCell& layout_table_cell)
       : layout_table_cell_(layout_table_cell) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
-
   void PaintContainerBackgroundBehindCell(
       const PaintInfo&,
-      const LayoutPoint&,
       const LayoutObject& background_object);
   void PaintBoxDecorationBackground(const PaintInfo&,
                                     const LayoutPoint& paint_offset);

@@ -53,7 +53,7 @@ class LayoutTextControlSingleLine : public LayoutTextControl {
     return type == kLayoutObjectTextField || LayoutTextControl::IsOfType(type);
   }
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
   void UpdateLayout() override;
 
   bool NodeAtPoint(HitTestResult&,

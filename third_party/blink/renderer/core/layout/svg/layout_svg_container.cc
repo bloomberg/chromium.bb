@@ -162,8 +162,7 @@ void LayoutSVGContainer::DescendantIsolationRequirementsChanged(
     Parent()->DescendantIsolationRequirementsChanged(state);
 }
 
-void LayoutSVGContainer::Paint(const PaintInfo& paint_info,
-                               const LayoutPoint&) const {
+void LayoutSVGContainer::Paint(const PaintInfo& paint_info) const {
   SVGContainerPainter(*this).Paint(paint_info);
 }
 

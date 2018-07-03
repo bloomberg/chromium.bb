@@ -430,9 +430,8 @@ void LayoutView::ComputeSelfHitTestRects(Vector<LayoutRect>& rects,
       LayoutRect(LayoutPoint::Zero(), LayoutSize(GetFrameView()->Size())));
 }
 
-void LayoutView::Paint(const PaintInfo& paint_info,
-                       const LayoutPoint& paint_offset) const {
-  ViewPainter(*this).Paint(paint_info, paint_offset);
+void LayoutView::Paint(const PaintInfo& paint_info) const {
+  ViewPainter(*this).Paint(paint_info);
 }
 
 void LayoutView::PaintBoxDecorationBackground(const PaintInfo& paint_info,

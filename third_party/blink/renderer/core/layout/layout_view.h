@@ -140,9 +140,10 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
 
   void InvalidatePaintForViewAndCompositedLayers();
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
-  void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
+  void PaintBoxDecorationBackground(
+      const PaintInfo&,
+      const LayoutPoint& paint_offset) const override;
 
   void ClearSelection();
   void CommitPendingSelection();

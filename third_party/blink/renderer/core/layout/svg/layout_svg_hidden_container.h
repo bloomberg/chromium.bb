@@ -44,7 +44,7 @@ class LayoutSVGHiddenContainer : public LayoutSVGContainer {
 
  private:
   // LayoutSVGHiddenContainer paints nothing.
-  void Paint(const PaintInfo&, const LayoutPoint&) const final {}
+  void Paint(const PaintInfo&) const final {}
   bool PaintedOutputOfObjectHasNoEffectRegardlessOfSize() const final {
     return true;
   }

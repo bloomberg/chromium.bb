@@ -18,14 +18,8 @@
 
 namespace blink {
 
-void TableCellPainter::Paint(const PaintInfo& paint_info,
-                             const LayoutPoint& paint_offset) {
-  BlockPainter(layout_table_cell_).Paint(paint_info, paint_offset);
-}
-
 void TableCellPainter::PaintContainerBackgroundBehindCell(
     const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset,
     const LayoutObject& background_object) {
   DCHECK(background_object != layout_table_cell_);
 
@@ -38,10 +32,9 @@ void TableCellPainter::PaintContainerBackgroundBehindCell(
       !layout_table_cell_.FirstChild())
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_table_cell_, paint_info,
-                                    paint_offset);
+  AdjustPaintOffsetScope adjustment(layout_table_cell_, paint_info);
   auto paint_rect =
-      PaintRectNotIncludingVisualOverflow(adjustment.AdjustedPaintOffset());
+      PaintRectNotIncludingVisualOverflow(adjustment.PaintOffset());
   PaintBackground(adjustment.GetPaintInfo(), paint_rect, background_object);
 }
 

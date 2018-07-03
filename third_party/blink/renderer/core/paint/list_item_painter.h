@@ -11,7 +11,6 @@ namespace blink {
 
 struct PaintInfo;
 class LayoutListItem;
-class LayoutPoint;
 
 class ListItemPainter {
   STACK_ALLOCATED();
@@ -20,7 +19,7 @@ class ListItemPainter {
   ListItemPainter(const LayoutListItem& layout_list_item)
       : layout_list_item_(layout_list_item) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
+  void Paint(const PaintInfo&);
 
  private:
   const LayoutListItem& layout_list_item_;

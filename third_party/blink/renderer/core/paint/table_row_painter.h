@@ -10,11 +10,9 @@
 
 namespace blink {
 
-class CellSpan;
-class LayoutPoint;
-class LayoutTableCell;
-class LayoutTableRow;
 struct PaintInfo;
+class CellSpan;
+class LayoutTableRow;
 
 class TableRowPainter {
   STACK_ALLOCATED();
@@ -23,20 +21,14 @@ class TableRowPainter {
   TableRowPainter(const LayoutTableRow& layout_table_row)
       : layout_table_row_(layout_table_row) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
-  void PaintOutline(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&);
+  void PaintOutline(const PaintInfo&);
   void PaintBoxDecorationBackground(const PaintInfo&,
-                                    const LayoutPoint&,
                                     const CellSpan& dirtied_columns);
   void PaintCollapsedBorders(const PaintInfo&,
-                             const LayoutPoint&,
                              const CellSpan& dirtied_columns);
 
  private:
-  void PaintBackgroundBehindCell(const LayoutTableCell&,
-                                 const PaintInfo&,
-                                 const LayoutPoint&);
-
   void HandleChangedPartialPaint(const PaintInfo&,
                                  const CellSpan& dirtied_columns);
 

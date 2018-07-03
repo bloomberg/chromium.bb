@@ -128,7 +128,8 @@ bool LayoutMedia::IsChildAllowed(LayoutObject* child,
   return false;
 }
 
-void LayoutMedia::PaintReplaced(const PaintInfo&, const LayoutPoint&) const {}
+void LayoutMedia::PaintReplaced(const PaintInfo&,
+                                const LayoutPoint& paint_offset) const {}
 
 LayoutUnit LayoutMedia::ComputePanelWidth(const LayoutRect& media_rect) const {
   // TODO(mlamouri): we don't know if the main frame has an horizontal scrollbar

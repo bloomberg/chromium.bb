@@ -31,15 +31,13 @@
 
 namespace blink {
 
-void BoxPainter::Paint(const PaintInfo& paint_info,
-                       const LayoutPoint& paint_offset) {
+void BoxPainter::Paint(const PaintInfo& paint_info) {
   // Default implementation. Just pass paint through to the children.
-  AdjustPaintOffsetScope adjustment(layout_box_, paint_info, paint_offset);
-  PaintChildren(adjustment.GetPaintInfo(), adjustment.AdjustedPaintOffset());
+  AdjustPaintOffsetScope adjustment(layout_box_, paint_info);
+  PaintChildren(adjustment.GetPaintInfo());
 }
 
-void BoxPainter::PaintChildren(const PaintInfo& paint_info,
-                               const LayoutPoint& paint_offset) {
+void BoxPainter::PaintChildren(const PaintInfo& paint_info) {
   PaintInfo child_info(paint_info);
   for (LayoutObject* child = layout_box_.SlowFirstChild(); child;
        child = child->NextSibling()) {
@@ -47,7 +45,7 @@ void BoxPainter::PaintChildren(const PaintInfo& paint_info,
       SVGForeignObjectPainter(ToLayoutSVGForeignObject(*child))
           .PaintLayer(paint_info);
     } else {
-      child->Paint(child_info, paint_offset);
+      child->Paint(child_info);
     }
   }
 }
@@ -85,14 +83,14 @@ void BoxPainter::PaintBoxDecorationBackground(const PaintInfo& paint_info,
 
 LayoutRect BoxPainter::BoundsForDrawingRecorder(
     const PaintInfo& paint_info,
-    const LayoutPoint& adjusted_paint_offset) {
+    const LayoutPoint& paint_offset) {
   LayoutRect bounds =
       BoxModelObjectPainter::
               IsPaintingBackgroundOfPaintContainerIntoScrollingContentsLayer(
                   &layout_box_, paint_info)
           ? layout_box_.LayoutOverflowRect()
           : layout_box_.SelfVisualOverflowRect();
-  bounds.MoveBy(adjusted_paint_offset);
+  bounds.MoveBy(paint_offset);
   return bounds;
 }
 

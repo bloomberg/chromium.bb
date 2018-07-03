@@ -50,9 +50,8 @@ HTMLFrameSetElement* LayoutFrameSet::FrameSet() const {
   return ToHTMLFrameSetElement(GetNode());
 }
 
-void LayoutFrameSet::Paint(const PaintInfo& paint_info,
-                           const LayoutPoint& paint_offset) const {
-  FrameSetPainter(*this).Paint(paint_info, paint_offset);
+void LayoutFrameSet::Paint(const PaintInfo& paint_info) const {
+  FrameSetPainter(*this).Paint(paint_info);
 }
 
 void LayoutFrameSet::ComputePreferredLogicalWidths() {

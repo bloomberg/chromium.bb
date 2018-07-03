@@ -28,8 +28,7 @@ bool EmbeddedContentPainter::IsSelected() const {
   return true;
 }
 
-void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
-                                   const LayoutPoint& paint_offset) {
+void EmbeddedContentPainter::Paint(const PaintInfo& paint_info) {
   // TODO(crbug.com/797779): For now embedded contents don't know whether
   // they are painted in a fragmented context and may do something bad in a
   // fragmented context, e.g. creating subsequences. Skip cache to avoid that.
@@ -39,33 +38,31 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
   if (layout_embedded_content_.Layer()->EnclosingPaginationLayer())
     cache_skipper.emplace(paint_info.context);
 
-  AdjustPaintOffsetScope adjustment(layout_embedded_content_, paint_info,
-                                    paint_offset);
+  AdjustPaintOffsetScope adjustment(layout_embedded_content_, paint_info);
   const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
+  auto paint_offset = adjustment.PaintOffset();
   if (!ReplacedPainter(layout_embedded_content_)
-           .ShouldPaint(local_paint_info, adjusted_paint_offset))
+           .ShouldPaint(local_paint_info, paint_offset))
     return;
 
-  LayoutRect border_rect(adjusted_paint_offset,
-                         layout_embedded_content_.Size());
+  LayoutRect border_rect(paint_offset, layout_embedded_content_.Size());
 
   if (layout_embedded_content_.HasBoxDecorationBackground() &&
       (local_paint_info.phase == PaintPhase::kForeground ||
        local_paint_info.phase == PaintPhase::kSelection)) {
     BoxPainter(layout_embedded_content_)
-        .PaintBoxDecorationBackground(local_paint_info, adjusted_paint_offset);
+        .PaintBoxDecorationBackground(local_paint_info, paint_offset);
   }
 
   if (local_paint_info.phase == PaintPhase::kMask) {
     BoxPainter(layout_embedded_content_)
-        .PaintMask(local_paint_info, adjusted_paint_offset);
+        .PaintMask(local_paint_info, paint_offset);
     return;
   }
 
   if (ShouldPaintSelfOutline(local_paint_info.phase)) {
     ObjectPainter(layout_embedded_content_)
-        .PaintOutline(local_paint_info, adjusted_paint_offset);
+        .PaintOutline(local_paint_info, paint_offset);
   }
 
   if (local_paint_info.phase != PaintPhase::kForeground)
@@ -98,7 +95,7 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
                                                    layout_embedded_content_,
                                                    local_paint_info.phase)) {
     LayoutRect rect = layout_embedded_content_.LocalSelectionRect();
-    rect.MoveBy(adjusted_paint_offset);
+    rect.MoveBy(paint_offset);
     IntRect selection_rect = PixelSnappedIntRect(rect);
     DrawingRecorder recorder(local_paint_info.context, layout_embedded_content_,
                              local_paint_info.phase);
@@ -112,25 +109,19 @@ void EmbeddedContentPainter::Paint(const PaintInfo& paint_info,
   if (layout_embedded_content_.CanResize()) {
     ScrollableAreaPainter(
         *layout_embedded_content_.Layer()->GetScrollableArea())
-        .PaintResizer(local_paint_info.context,
-                      RoundedIntPoint(adjusted_paint_offset),
+        .PaintResizer(local_paint_info.context, RoundedIntPoint(paint_offset),
                       local_paint_info.GetCullRect());
   }
 }
 
 void EmbeddedContentPainter::PaintContents(const PaintInfo& paint_info,
                                            const LayoutPoint& paint_offset) {
-  AdjustPaintOffsetScope adjustment(layout_embedded_content_, paint_info,
-                                    paint_offset);
-  const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto adjusted_paint_offset = adjustment.AdjustedPaintOffset();
-
   EmbeddedContentView* embedded_content_view =
       layout_embedded_content_.GetEmbeddedContentView();
   CHECK(embedded_content_view);
 
   IntPoint paint_location(RoundedIntPoint(
-      adjusted_paint_offset +
+      paint_offset +
       layout_embedded_content_.ReplacedContentRect().Location()));
 
   // Views don't support painting with a paint offset, but instead
@@ -139,10 +130,9 @@ void EmbeddedContentPainter::PaintContents(const PaintInfo& paint_info,
   // the frame rect neutralized.
   IntSize view_paint_offset =
       paint_location - embedded_content_view->FrameRect().Location();
-  CullRect adjusted_cull_rect(local_paint_info.GetCullRect(),
-                              -view_paint_offset);
-  embedded_content_view->Paint(local_paint_info.context,
-                               local_paint_info.GetGlobalPaintFlags(),
+  CullRect adjusted_cull_rect(paint_info.GetCullRect(), -view_paint_offset);
+  embedded_content_view->Paint(paint_info.context,
+                               paint_info.GetGlobalPaintFlags(),
                                adjusted_cull_rect, view_paint_offset);
 }
 

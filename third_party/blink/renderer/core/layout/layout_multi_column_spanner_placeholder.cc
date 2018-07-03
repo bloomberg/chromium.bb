@@ -143,10 +143,9 @@ void LayoutMultiColumnSpannerPlaceholder::ComputeLogicalHeight(
 }
 
 void LayoutMultiColumnSpannerPlaceholder::Paint(
-    const PaintInfo& paint_info,
-    const LayoutPoint& paint_offset) const {
+    const PaintInfo& paint_info) const {
   if (!layout_object_in_flow_thread_->HasSelfPaintingLayer())
-    layout_object_in_flow_thread_->Paint(paint_info, paint_offset);
+    layout_object_in_flow_thread_->Paint(paint_info);
 }
 
 bool LayoutMultiColumnSpannerPlaceholder::NodeAtPoint(

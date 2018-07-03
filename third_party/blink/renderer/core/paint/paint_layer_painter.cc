@@ -936,8 +936,6 @@ void PaintLayerPainter::PaintFragmentWithPhase(
       DisplayItem::PaintPhaseToDrawingType(phase));
 
   LayoutRect new_cull_rect(clip_rect.Rect());
-  LayoutPoint paint_offset = -paint_layer_.LayoutBoxLocation();
-  paint_offset += fragment.fragment_data->PaintOffset();
   // We paint in the containing transform node's space. Now |new_cull_rect| is
   // in the pixel-snapped border box space of |painting_info.root_layer|.
   // Adjust it to the correct space. |paint_offset| is already in the correct
@@ -958,7 +956,7 @@ void PaintLayerPainter::PaintFragmentWithPhase(
                            .GetDocument()
                            .DidLayoutWithPendingStylesheets());
 
-  paint_layer_.GetLayoutObject().Paint(paint_info, paint_offset);
+  paint_layer_.GetLayoutObject().Paint(paint_info);
 }
 
 void PaintLayerPainter::PaintBackgroundForFragments(

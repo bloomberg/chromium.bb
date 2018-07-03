@@ -79,7 +79,8 @@ class LayoutMedia : public LayoutImage {
   bool IsChildAllowed(LayoutObject*, const ComputedStyle&) const final;
 
   bool IsImage() const final { return false; }
-  void PaintReplaced(const PaintInfo&, const LayoutPoint&) const override;
+  void PaintReplaced(const PaintInfo&,
+                     const LayoutPoint& paint_offset) const override;
 
   bool BackgroundShouldAlwaysBeClipped() const final { return false; }
 

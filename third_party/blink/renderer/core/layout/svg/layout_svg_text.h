@@ -71,7 +71,7 @@ class LayoutSVGText final : public LayoutSVGBlock {
     return type == kLayoutObjectSVGText || LayoutSVGBlock::IsOfType(type);
   }
 
-  void Paint(const PaintInfo&, const LayoutPoint&) const override;
+  void Paint(const PaintInfo&) const override;
   bool NodeAtFloatPoint(HitTestResult&,
                         const FloatPoint& point_in_parent,
                         HitTestAction) override;

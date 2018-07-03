@@ -20,7 +20,7 @@ class SVGRootInlineBoxPainter {
   SVGRootInlineBoxPainter(const SVGRootInlineBox& svg_root_inline_box)
       : svg_root_inline_box_(svg_root_inline_box) {}
 
-  void Paint(const PaintInfo&, const LayoutPoint&);
+  void Paint(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   const SVGRootInlineBox& svg_root_inline_box_;

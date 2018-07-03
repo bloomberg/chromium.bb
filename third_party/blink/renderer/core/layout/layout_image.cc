@@ -280,9 +280,8 @@ void LayoutImage::PaintReplaced(const PaintInfo& paint_info,
   ImagePainter(*this).PaintReplaced(paint_info, paint_offset);
 }
 
-void LayoutImage::Paint(const PaintInfo& paint_info,
-                        const LayoutPoint& paint_offset) const {
-  ImagePainter(*this).Paint(paint_info, paint_offset);
+void LayoutImage::Paint(const PaintInfo& paint_info) const {
+  ImagePainter(*this).Paint(paint_info);
 }
 
 void LayoutImage::AreaElementFocusChanged(HTMLAreaElement* area_element) {

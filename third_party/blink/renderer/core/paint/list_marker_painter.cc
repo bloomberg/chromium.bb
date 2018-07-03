@@ -51,8 +51,7 @@ void ListMarkerPainter::PaintSymbol(const PaintInfo& paint_info,
   }
 }
 
-void ListMarkerPainter::Paint(const PaintInfo& paint_info,
-                              const LayoutPoint& paint_offset) {
+void ListMarkerPainter::Paint(const PaintInfo& paint_info) {
   if (paint_info.phase != PaintPhase::kForeground)
     return;
 
@@ -63,10 +62,9 @@ void ListMarkerPainter::Paint(const PaintInfo& paint_info,
           paint_info.context, layout_list_marker_, paint_info.phase))
     return;
 
-  AdjustPaintOffsetScope adjustment(layout_list_marker_, paint_info,
-                                    paint_offset);
+  AdjustPaintOffsetScope adjustment(layout_list_marker_, paint_info);
   const auto& local_paint_info = adjustment.GetPaintInfo();
-  auto box_origin = adjustment.AdjustedPaintOffset();
+  auto box_origin = adjustment.PaintOffset();
   LayoutRect overflow_rect(layout_list_marker_.VisualOverflowRect());
   overflow_rect.MoveBy(box_origin);
 

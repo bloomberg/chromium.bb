@@ -19,7 +19,7 @@ class GridPainter {
  public:
   GridPainter(const LayoutGrid& layout_grid) : layout_grid_(layout_grid) {}
 
-  void PaintChildren(const PaintInfo&, const LayoutPoint&);
+  void PaintChildren(const PaintInfo&, const LayoutPoint& paint_offset);
 
  private:
   const LayoutGrid& layout_grid_;
