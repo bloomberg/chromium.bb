@@ -1,2 +1,1 @@
-Blocked access to external URL http://www.example.org/
 Test passes if it does not crash.

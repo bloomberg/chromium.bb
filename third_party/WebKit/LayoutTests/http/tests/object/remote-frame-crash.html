@@ -1,5 +1,5 @@
 <!doctype HTML>
-<object style="all: inherit;" id="target" data="http://www.example.org/"/>
+<object style="all: inherit;" id="target" data="http://localhost:8000/object/resources/test.html"/>
 Test passes if it does not crash.
 <script>
 if (window.testRunner) {
@@ -8,7 +8,8 @@ if (window.testRunner) {
 }
 function go() {
   target.setAttribute("classid", "test");
-  window.testRunner.notifyDone();
+  if (window.testRunner)
+    window.testRunner.notifyDone();
 }
 requestAnimationFrame(() => requestAnimationFrame(go));
 </script>
