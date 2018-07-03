@@ -12,7 +12,7 @@
 namespace blink {
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
-ModuleScript* ModuleScript::Create(const String& original_source_text,
+ModuleScript* ModuleScript::Create(const MovableString& original_source_text,
                                    Modulator* modulator,
                                    const KURL& source_url,
                                    const KURL& base_url,
@@ -21,7 +21,7 @@ ModuleScript* ModuleScript::Create(const String& original_source_text,
                                    const TextPosition& start_position) {
   // <spec step="1">If scripting is disabled for settings's responsible browsing
   // context, then set source to the empty string.</spec>
-  String source_text;
+  MovableString source_text;
   if (!modulator->IsScriptingDisabled())
     source_text = original_source_text;
 
@@ -41,7 +41,7 @@ ModuleScript* ModuleScript::Create(const String& original_source_text,
                                  "ModuleScript", "Create");
 
   ScriptModule result = ScriptModule::Compile(
-      isolate, source_text, source_url, base_url, options,
+      isolate, source_text.ToString(), source_url, base_url, options,
       access_control_status, start_position, exception_state);
 
   // CreateInternal processes Steps 4 and 8-10.
@@ -101,14 +101,14 @@ ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
                                           ScriptModule record,
                                           const KURL& base_url,
                                           const ScriptFetchOptions& options) {
-  String dummy_source_text = "";
+  MovableString dummy_source_text(String("").ReleaseImpl());
   KURL dummy_source_url;
   return CreateInternal(dummy_source_text, modulator, record, dummy_source_url,
                         base_url, options, TextPosition::MinimumPosition());
 }
 
 // https://html.spec.whatwg.org/multipage/webappapis.html#creating-a-module-script
-ModuleScript* ModuleScript::CreateInternal(const String& source_text,
+ModuleScript* ModuleScript::CreateInternal(const MovableString& source_text,
                                            Modulator* modulator,
                                            ScriptModule result,
                                            const KURL& source_url,
@@ -141,7 +141,7 @@ ModuleScript::ModuleScript(Modulator* settings_object,
                            const KURL& source_url,
                            const KURL& base_url,
                            const ScriptFetchOptions& fetch_options,
-                           const String& source_text,
+                           const MovableString& source_text,
                            const TextPosition& start_position)
     : Script(fetch_options, base_url),
       settings_object_(settings_object),
@@ -234,7 +234,7 @@ void ModuleScript::RunScript(LocalFrame* frame, const SecurityOrigin*) const {
 }
 
 String ModuleScript::InlineSourceTextForCSP() const {
-  return source_text_;
+  return source_text_.ToString();
 }
 
 std::ostream& operator<<(std::ostream& stream,

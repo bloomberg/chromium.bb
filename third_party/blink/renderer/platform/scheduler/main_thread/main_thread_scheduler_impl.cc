@@ -36,6 +36,7 @@
 #include "third_party/blink/renderer/platform/scheduler/main_thread/auto_advancing_virtual_time_domain.h"
 #include "third_party/blink/renderer/platform/scheduler/main_thread/page_scheduler_impl.h"
 #include "third_party/blink/renderer/platform/scheduler/renderer/webthread_impl_for_renderer_scheduler.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 
 namespace blink {
 namespace scheduler {
@@ -1026,6 +1027,15 @@ void MainThreadSchedulerImpl::SetRendererBackgrounded(bool backgrounded) {
     main_thread_only().metrics_helper.OnRendererBackgrounded(now);
   } else {
     main_thread_only().metrics_helper.OnRendererForegrounded(now);
+  }
+
+  auto& movable_string_table = MovableStringTable::Instance();
+  movable_string_table.SetRendererBackgrounded(backgrounded);
+  if (backgrounded) {
+    DefaultTaskRunner()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce([]() { MovableStringTable::Instance().MaybeParkAll(); }),
+        base::TimeDelta::FromSeconds(10));
   }
 }
 

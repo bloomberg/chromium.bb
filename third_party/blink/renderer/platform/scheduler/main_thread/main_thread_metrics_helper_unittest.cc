@@ -280,29 +280,36 @@ TEST_F(MainThreadMetricsHelperTest, Metrics_PerQueueType) {
   RunTask(QueueType::kTest, Seconds(22), base::TimeDelta::FromSeconds(4));
 
   scheduler_->SetRendererBackgrounded(true);
+  // Wait for internally triggered tasks to run.
+  constexpr int kCoolingOfTimeSeconds = 10;
 
-  RunTask(QueueType::kControl, Seconds(26), base::TimeDelta::FromSeconds(2));
-  RunTask(QueueType::kFrameThrottleable, Seconds(28),
+  RunTask(QueueType::kControl, Seconds(26 + kCoolingOfTimeSeconds),
+          base::TimeDelta::FromSeconds(2));
+  RunTask(QueueType::kFrameThrottleable, Seconds(28 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(8));
-  RunTask(QueueType::kUnthrottled, Seconds(38),
+  RunTask(QueueType::kUnthrottled, Seconds(38 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(5));
-  RunTask(QueueType::kFrameLoading, Seconds(45),
+  RunTask(QueueType::kFrameLoading, Seconds(45 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(10));
-  RunTask(QueueType::kFrameThrottleable, Seconds(60),
+  RunTask(QueueType::kFrameThrottleable, Seconds(60 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(5));
-  RunTask(QueueType::kCompositor, Seconds(70),
+  RunTask(QueueType::kCompositor, Seconds(70 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(20));
-  RunTask(QueueType::kIdle, Seconds(90), base::TimeDelta::FromSeconds(5));
-  RunTask(QueueType::kFrameLoadingControl, Seconds(100),
+  RunTask(QueueType::kIdle, Seconds(90 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(5));
-  RunTask(QueueType::kControl, Seconds(106), base::TimeDelta::FromSeconds(6));
-  RunTask(QueueType::kFrameThrottleable, Seconds(114),
+  RunTask(QueueType::kFrameLoadingControl, Seconds(100 + kCoolingOfTimeSeconds),
+          base::TimeDelta::FromSeconds(5));
+  RunTask(QueueType::kControl, Seconds(106 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(6));
-  RunTask(QueueType::kFramePausable, Seconds(120),
+  RunTask(QueueType::kFrameThrottleable, Seconds(114 + kCoolingOfTimeSeconds),
+          base::TimeDelta::FromSeconds(6));
+  RunTask(QueueType::kFramePausable, Seconds(120 + kCoolingOfTimeSeconds),
           base::TimeDelta::FromSeconds(17));
-  RunTask(QueueType::kIdle, Seconds(140), base::TimeDelta::FromSeconds(15));
+  RunTask(QueueType::kIdle, Seconds(140 + kCoolingOfTimeSeconds),
+          base::TimeDelta::FromSeconds(15));
 
-  RunTask(QueueType::kDetached, Seconds(156), base::TimeDelta::FromSeconds(2));
+  RunTask(QueueType::kDetached, Seconds(156 + kCoolingOfTimeSeconds),
+          base::TimeDelta::FromSeconds(2));
 
   std::vector<base::Bucket> expected_samples = {
       {static_cast<int>(QueueType::kControl), 11},

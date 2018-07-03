@@ -33,6 +33,7 @@
 #include "third_party/blink/renderer/platform/loader/fetch/resource_client.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_loader_options.h"
 #include "third_party/blink/renderer/platform/loader/fetch/text_resource_decoder_options.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 
 namespace blink {
 
@@ -68,7 +69,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   void SetSerializedCachedMetadata(const char*, size_t) override;
 
-  const String& SourceText();
+  const MovableString& SourceText();
 
   AccessControlStatus CalculateAccessControlStatus(const SecurityOrigin*) const;
 
@@ -101,7 +102,7 @@ class CORE_EXPORT ScriptResource final : public TextResource {
 
   bool CanUseCacheValidator() const override;
 
-  AtomicString source_text_;
+  MovableString source_text_;
 };
 
 DEFINE_RESOURCE_TYPE_CASTS(Script);

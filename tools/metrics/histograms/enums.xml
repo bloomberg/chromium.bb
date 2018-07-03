@@ -35712,6 +35712,12 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Parent Frame Known"/>
 </enum>
 
+<enum name="ParkingAction">
+  <int value="0" label="Parked in Background"/>
+  <int value="1" label="Unparked in Background"/>
+  <int value="2" label="Unparked in Foreground"/>
+</enum>
+
 <enum name="ParsedCookieStatus">
   <obsolete>
     Deprecated as of 9/2013. Experiment to measure control characters in cookies

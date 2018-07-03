@@ -7,6 +7,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/script/layered_api.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/vector.h"
 
 namespace blink {
@@ -64,7 +65,7 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
   if (layered_api_url.IsNull())
     return false;
 
-  const String source_text = blink::layered_api::GetSourceText(layered_api_url);
+  String source_text = blink::layered_api::GetSourceText(layered_api_url);
 
   if (source_text.IsNull()) {
     HeapVector<Member<ConsoleMessage>> error_messages;
@@ -76,7 +77,7 @@ bool DocumentModuleScriptFetcher::FetchIfLayeredAPI(
   }
 
   ModuleScriptCreationParams params(
-      layered_api_url, source_text,
+      layered_api_url, MovableString(source_text.ReleaseImpl()),
       fetch_params.GetResourceRequest().GetFetchCredentialsMode(),
       kSharableCrossOrigin);
   client_->NotifyFetchFinished(params, HeapVector<Member<ConsoleMessage>>());

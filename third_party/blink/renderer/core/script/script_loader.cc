@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_hash.h"
 
@@ -515,8 +516,8 @@ bool ScriptLoader::PrepareScript(const TextPosition& script_start_position,
         Modulator* modulator = Modulator::From(
             ToScriptStateForMainWorld(context_document->GetFrame()));
         ModuleScript* module_script = ModuleScript::Create(
-            element_->TextFromChildren(), modulator, source_url, base_url,
-            options, kSharableCrossOrigin, position);
+            MovableString(element_->TextFromChildren().Impl()), modulator,
+            source_url, base_url, options, kSharableCrossOrigin, position);
 
         // <spec step="25.2.B.2">If this returns null, set the script's script
         // to null and return; the script is ready.</spec>

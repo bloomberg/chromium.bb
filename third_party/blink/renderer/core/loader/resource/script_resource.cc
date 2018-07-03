@@ -199,14 +199,14 @@ void ScriptResource::OnMemoryDump(WebMemoryDumpLevelOfDetail level_of_detail,
       dump->Guid(), String(WTF::Partitions::kAllocatedObjectPoolName));
 }
 
-const String& ScriptResource::SourceText() {
+const MovableString& ScriptResource::SourceText() {
   DCHECK(IsLoaded());
 
   if (source_text_.IsNull() && Data()) {
     String source_text = DecodedText();
     ClearData();
     SetDecodedSize(source_text.CharactersSizeInBytes());
-    source_text_ = AtomicString(source_text);
+    source_text_ = MovableString(source_text.ReleaseImpl());
   }
 
   return source_text_;
@@ -233,7 +233,7 @@ void ScriptResource::SetSerializedCachedMetadata(const char* data,
 }
 
 void ScriptResource::DestroyDecodedDataForFailedRevalidation() {
-  source_text_ = AtomicString();
+  source_text_ = MovableString();
   SetDecodedSize(0);
 }
 

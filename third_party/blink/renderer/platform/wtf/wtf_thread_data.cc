@@ -28,6 +28,7 @@
 
 #include "third_party/blink/renderer/platform/wtf/stack_util.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string_table.h"
+#include "third_party/blink/renderer/platform/wtf/text/movable_string.h"
 #include "third_party/blink/renderer/platform/wtf/text/text_codec_icu.h"
 
 namespace WTF {
@@ -36,6 +37,7 @@ ThreadSpecific<WTFThreadData>* WTFThreadData::static_data_;
 
 WTFThreadData::WTFThreadData()
     : atomic_string_table_(new AtomicStringTable),
+      movable_string_table_(new MovableStringTable),
       cached_converter_icu_(new ICUConverterWrapper),
       thread_id_(internal::CurrentThreadSyscall()) {}
 
