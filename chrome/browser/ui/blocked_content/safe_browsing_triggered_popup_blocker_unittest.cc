@@ -143,34 +143,6 @@ class SafeBrowsingTriggeredPopupBlockerTest
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerTest);
 };
 
-class IgnoreSublistSafeBrowsingTriggeredPopupBlockerTest
-    : public SafeBrowsingTriggeredPopupBlockerTest {
-  std::unique_ptr<base::test::ScopedFeatureList> DefaultFeatureList() override {
-    auto feature_list = std::make_unique<base::test::ScopedFeatureList>();
-    feature_list->InitAndEnableFeatureWithParameters(
-        kAbusiveExperienceEnforce, {{"ignore_sublists", "true"}});
-    return feature_list;
-  }
-};
-
-TEST_F(IgnoreSublistSafeBrowsingTriggeredPopupBlockerTest,
-       MatchNoSublist_BlocksPopup) {
-  const GURL url("https://example.test/");
-  fake_safe_browsing_database()->AddBlacklistedUrl(
-      url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER);
-  NavigateAndCommit(url);
-  EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
-}
-
-// ignore_sublists should still block on URLs matching a sublist.
-TEST_F(IgnoreSublistSafeBrowsingTriggeredPopupBlockerTest,
-       MatchSublist_BlocksPopup) {
-  const GURL url("https://example.test/");
-  MarkUrlAsAbusiveEnforce(url);
-  NavigateAndCommit(url);
-  EXPECT_TRUE(popup_blocker()->ShouldApplyStrongPopupBlocker(nullptr));
-}
-
 struct RedirectSamplesAndResults {
   GURL initial_url;
   GURL redirect_url;
