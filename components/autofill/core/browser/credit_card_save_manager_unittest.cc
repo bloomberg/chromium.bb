@@ -140,6 +140,11 @@ class CreditCardSaveManagerTest : public testing::Test {
         kAutofillUpstreamUpdatePromptExplanation);
   }
 
+  void DisableAutofillUpstreamUpdatePromptExplanationExperiment() {
+    scoped_feature_list_.InitAndDisableFeature(
+        kAutofillUpstreamUpdatePromptExplanation);
+  }
+
   void FormsSeen(const std::vector<FormData>& forms) {
     autofill_manager_->OnFormsSeen(forms, base::TimeTicks());
   }
@@ -463,7 +468,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
+  EXPECT_THAT(
+      payments_client_->GetActiveExperimentsSetInRequest(),
+      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -518,7 +525,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_FirstAndLastName) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
+  EXPECT_THAT(
+      payments_client_->GetActiveExperimentsSetInRequest(),
+      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -602,7 +611,9 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_LastAndFirstName) {
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
-  EXPECT_TRUE(payments_client_->GetActiveExperimentsSetInRequest().empty());
+  EXPECT_THAT(
+      payments_client_->GetActiveExperimentsSetInRequest(),
+      UnorderedElementsAre(kAutofillUpstreamUpdatePromptExplanation.name));
 
   // Server did not send a server_id, expect copy of card is not stored.
   EXPECT_TRUE(personal_data_.GetCreditCards().empty());
@@ -3268,7 +3279,7 @@ TEST_F(
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // Confirm that upload happened and that the enabled UpdatePromptExplanation
+  // Confirm upload happened and that the enabled UpdatePromptExplanation
   // experiment flag state was sent in the request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
@@ -3280,6 +3291,7 @@ TEST_F(
 
 TEST_F(CreditCardSaveManagerTest,
        UploadCreditCard_DoNotAddAnyFlagStatesToRequestIfExperimentsOff) {
+  DisableAutofillUpstreamUpdatePromptExplanationExperiment();
   personal_data_.ClearProfiles();
   credit_card_save_manager_->SetCreditCardUploadEnabled(true);
 
@@ -3303,8 +3315,8 @@ TEST_F(CreditCardSaveManagerTest,
   credit_card_form.fields[3].value = ASCIIToUTF16(NextYear());
   credit_card_form.fields[4].value = ASCIIToUTF16("123");
 
-  // Confirm upload happened and that no experiment flag state was sent in the
-  // request.
+  // Confirm that upload happened and that no experiment flag state was sent in
+  // the request.
   EXPECT_CALL(autofill_client_, ConfirmSaveCreditCardLocally(_, _)).Times(0);
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
@@ -3342,10 +3354,12 @@ TEST_F(CreditCardSaveManagerTest, UploadCreditCard_AddPanFirstSixToRequest) {
   FormSubmitted(credit_card_form);
   EXPECT_TRUE(credit_card_save_manager_->CreditCardWasUploaded());
   EXPECT_EQ(payments_client_->GetPanFirstSixSetInRequest(), "444433");
-  // Confirm that the "send pan first six" experiment flag was sent in the
-  // request.
-  EXPECT_THAT(payments_client_->GetActiveExperimentsSetInRequest(),
-              UnorderedElementsAre(kAutofillUpstreamSendPanFirstSix.name));
+  // Confirm that the "send pan first six" experiment flag and enabled
+  // UpdatePromptExplanation experiment flag state was sent in the request.
+  EXPECT_THAT(
+      payments_client_->GetActiveExperimentsSetInRequest(),
+      UnorderedElementsAre(kAutofillUpstreamSendPanFirstSix.name,
+                           kAutofillUpstreamUpdatePromptExplanation.name));
 }
 
 TEST_F(CreditCardSaveManagerTest, UploadCreditCard_UploadOfLocalCard) {
