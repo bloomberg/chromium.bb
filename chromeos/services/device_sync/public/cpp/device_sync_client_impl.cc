@@ -97,11 +97,13 @@ void DeviceSyncClientImpl::ForceSyncNow(
 }
 
 cryptauth::RemoteDeviceRefList DeviceSyncClientImpl::GetSyncedDevices() {
+  DCHECK(is_ready());
   return expiring_device_cache_->GetNonExpiredRemoteDevices();
 }
 
 base::Optional<cryptauth::RemoteDeviceRef>
 DeviceSyncClientImpl::GetLocalDeviceMetadata() {
+  DCHECK(is_ready());
   return local_device_id_
              ? expiring_device_cache_->GetRemoteDevice(*local_device_id_)
              : base::nullopt;
@@ -131,6 +133,25 @@ void DeviceSyncClientImpl::GetDebugInfo(
   device_sync_ptr_->GetDebugInfo(std::move(callback));
 }
 
+void DeviceSyncClientImpl::AttemptToBecomeReady() {
+  if (is_ready())
+    return;
+
+  if (waiting_for_synced_devices_ || waiting_for_local_device_metadata_)
+    return;
+
+  NotifyReady();
+
+  if (pending_notify_enrollment_finished_)
+    NotifyEnrollmentFinished();
+
+  if (pending_notify_new_synced_devices_)
+    NotifyNewDevicesSynced();
+
+  pending_notify_enrollment_finished_ = false;
+  pending_notify_new_synced_devices_ = false;
+}
+
 void DeviceSyncClientImpl::LoadSyncedDevices() {
   device_sync_ptr_->GetSyncedDevices(
       base::BindOnce(&DeviceSyncClientImpl::OnGetSyncedDevicesCompleted,
@@ -153,15 +174,22 @@ void DeviceSyncClientImpl::OnGetSyncedDevicesCompleted(
     return;
   }
 
-  if (waiting_for_local_device_metadata_) {
-    waiting_for_local_device_metadata_ = false;
+  waiting_for_synced_devices_ = false;
+
+  if (waiting_for_local_device_metadata_)
     LoadLocalDeviceMetadata();
-  }
 
   expiring_device_cache_->SetRemoteDevicesAndInvalidateOldEntries(
       *remote_devices);
 
-  NotifyNewDevicesSynced();
+  // Don't yet notify observers that new devices have synced until the client
+  // is ready.
+  if (is_ready()) {
+    NotifyNewDevicesSynced();
+  } else {
+    pending_notify_new_synced_devices_ = true;
+    AttemptToBecomeReady();
+  }
 }
 
 void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
@@ -170,14 +198,22 @@ void DeviceSyncClientImpl::OnGetLocalDeviceMetadataCompleted(
     PA_LOG(INFO) << "Tried to get local device metadata before service was "
                     "fully initialized; waiting for enrollment to complete "
                     "before continuing.";
-    waiting_for_local_device_metadata_ = true;
     return;
   }
 
   local_device_id_ = local_device_metadata->GetDeviceId();
   expiring_device_cache_->UpdateRemoteDevice(*local_device_metadata);
 
-  NotifyEnrollmentFinished();
+  waiting_for_local_device_metadata_ = false;
+
+  // Don't yet notify observers that enrollment has finished until the client
+  // is ready.
+  if (is_ready()) {
+    NotifyEnrollmentFinished();
+  } else {
+    pending_notify_enrollment_finished_ = true;
+    AttemptToBecomeReady();
+  }
 }
 
 void DeviceSyncClientImpl::OnFindEligibleDevicesCompleted(

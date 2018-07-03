@@ -26,7 +26,6 @@
 #include "chromeos/network/device_state.h"
 #include "chromeos/network/network_connect.h"
 #include "chromeos/network/network_type_pattern.h"
-#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "chromeos/services/secure_channel/public/cpp/client/secure_channel_client.h"
 #include "components/cryptauth/cryptauth_enrollment_manager.h"
 #include "components/cryptauth/cryptauth_service.h"
@@ -163,6 +162,8 @@ TetherService::TetherService(
   tether_host_fetcher_->AddObserver(this);
   power_manager_client_->AddObserver(this);
   network_state_handler_->AddObserver(this, FROM_HERE);
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    device_sync_client_->AddObserver(this);
 
   registrar_.Init(profile_->GetPrefs());
   registrar_.Add(prefs::kInstantTetheringAllowed,
@@ -173,6 +174,12 @@ TetherService::TetherService(
                         IsEnabledbyPreference());
   PA_LOG(INFO) << "TetherService has started. Initial user preference value: "
                << IsEnabledbyPreference();
+
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi) &&
+      !device_sync_client_->is_ready()) {
+    // Wait for OnReady() to be called. It will call GetAdapter().
+    return;
+  }
 
   // GetAdapter may call OnBluetoothAdapterFetched immediately which can cause
   // problems with the Fake implementation since the class is not fully
@@ -276,6 +283,8 @@ void TetherService::Shutdown() {
   tether_host_fetcher_->RemoveObserver(this);
   power_manager_client_->RemoveObserver(this);
   network_state_handler_->RemoveObserver(this, FROM_HERE);
+  if (base::FeatureList::IsEnabled(chromeos::features::kMultiDeviceApi))
+    device_sync_client_->RemoveObserver(this);
   if (adapter_)
     adapter_->RemoveObserver(this);
   registrar_.RemoveAll();
@@ -387,6 +396,15 @@ void TetherService::OnShutdownComplete() {
   // restart TetherComponent.
   if (!shut_down_)
     StartTetherIfPossible();
+}
+
+void TetherService::OnReady() {
+  if (shut_down_)
+    return;
+
+  device::BluetoothAdapterFactory::GetAdapter(
+      base::Bind(&TetherService::OnBluetoothAdapterFetched,
+                 weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TetherService::OnPrefsChanged() {

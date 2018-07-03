@@ -16,6 +16,7 @@
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/network_state_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "chromeos/services/device_sync/public/cpp/device_sync_client.h"
 #include "components/cryptauth/cryptauth_device_manager.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -25,9 +26,6 @@ class Profile;
 
 namespace chromeos {
 class NetworkStateHandler;
-namespace device_sync {
-class DeviceSyncClient;
-}  // namespace device_sync
 namespace secure_channel {
 class SecureChannelClient;
 }  // namespace secure_channel
@@ -62,7 +60,8 @@ class TetherService : public KeyedService,
                       public chromeos::tether::TetherHostFetcher::Observer,
                       public device::BluetoothAdapter::Observer,
                       public chromeos::NetworkStateHandlerObserver,
-                      public chromeos::tether::TetherComponent::Observer {
+                      public chromeos::tether::TetherComponent::Observer,
+                      public chromeos::device_sync::DeviceSyncClient::Observer {
  public:
   TetherService(
       Profile* profile,
@@ -116,6 +115,9 @@ class TetherService : public KeyedService,
   // chromeos::tether::TetherComponent::Observer:
   void OnShutdownComplete() override;
 
+  // chromeos::device_sync::DeviceSyncClient::Observer:
+  void OnReady() override;
+
   // Callback when the controlling pref changes.
   void OnPrefsChanged();
 
@@ -136,6 +138,7 @@ class TetherService : public KeyedService,
  private:
   friend class TetherServiceTest;
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestSuspend);
+  FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestDeviceSyncClientNotReady);
   FRIEND_TEST_ALL_PREFIXES(TetherServiceTest, TestBleAdvertisingNotSupported);
   FRIEND_TEST_ALL_PREFIXES(
       TetherServiceTest,

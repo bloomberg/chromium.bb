@@ -24,6 +24,13 @@ class DeviceSyncClient {
  public:
   class Observer {
    public:
+    // Called when the DeviceSyncClient is ready, i.e. local device metadata
+    // and synced devices are available.
+    virtual void OnReady() {}
+
+    // OnEnrollmentFinished() and OnNewDevicesSynced() will only be called once
+    // DeviceSyncClient is ready, i.e., OnReady() will always be the first
+    // callback called.
     virtual void OnEnrollmentFinished() {}
     virtual void OnNewDevicesSynced() {}
 
@@ -41,6 +48,11 @@ class DeviceSyncClient {
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
+
+  // Clients of DeviceSyncClient should ensure that this returns true before
+  // calling any methods. If false, clients should listen on and wait for the
+  // OnReady() callback.
+  bool is_ready() { return is_ready_; }
 
   virtual void ForceEnrollmentNow(
       mojom::DeviceSync::ForceEnrollmentNowCallback callback) = 0;
@@ -65,10 +77,12 @@ class DeviceSyncClient {
       mojom::DeviceSync::GetDebugInfoCallback callback) = 0;
 
  protected:
+  void NotifyReady();
   void NotifyEnrollmentFinished();
   void NotifyNewDevicesSynced();
 
  private:
+  bool is_ready_ = false;
   base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncClient);

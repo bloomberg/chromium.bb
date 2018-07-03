@@ -160,7 +160,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
   void FinishInitialization() {
     EXPECT_FALSE(fake_multidevice_setup());
     fake_device_sync_client_->set_local_device_metadata(test_device_);
-    fake_device_sync_client_->NotifyEnrollmentFinished();
+    fake_device_sync_client_->NotifyReady();
     EXPECT_TRUE(fake_multidevice_setup());
   }
 
