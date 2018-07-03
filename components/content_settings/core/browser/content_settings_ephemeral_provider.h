@@ -42,6 +42,11 @@ class EphemeralProvider : public UserModifiableProvider {
       const ResourceIdentifier& resource_identifier) override;
 
   void SetClockForTesting(base::Clock* clock);
+  void SetSupportedTypesForTesting(
+      std::set<ContentSettingsType>& supported_types) {
+    supported_types_ = supported_types;
+  }
+  size_t GetCountForTesting() { return content_settings_rules_.size(); }
 
  private:
   bool store_last_modified_;
