@@ -60,6 +60,25 @@ function smoothScroll(pixels_to_scroll, start_x, start_y, gesture_source_type, d
   });
 }
 
+// Returns the number of pixels per wheel tick which is a platform specific value.
+function pixelsPerTick() {
+  // Comes from ui/events/event.cc
+  if (navigator.platform.indexOf("Win") != -1)
+    return 120;
+
+  if (navigator.platform.indexOf("Mac") != -1 || navigator.platform.indexOf("iPhone") != -1 ||
+      navigator.platform.indexOf("iPod") != -1 || navigator.platform.indexOf("iPad") != -1) {
+    return 40;
+  }
+
+  // Some android devices return android while others return Android.
+  if (navigator.platform.toLowerCase().indexOf("android") != -1)
+    return 64;
+
+  // Comes from ui/events/event.cc
+  return 53;
+}
+
 function pinchBy(scale, centerX, centerY, speed_in_pixels_s, gesture_source_type) {
   return new Promise((resolve, reject) => {
     if (chrome && chrome.gpuBenchmarking) {

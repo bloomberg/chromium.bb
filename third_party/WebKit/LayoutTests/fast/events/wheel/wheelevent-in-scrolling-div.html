@@ -1,51 +1,44 @@
-<html>
-    <head>
-        <script src="../../../resources/js-test.js"></script>
-        <script>
-            window.jsTestIsAsync = true;
-            var expectedScrollTop = 200;
-            var expectedScrollLeft = 100;
-            var event;
-            var div;
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/gesture-util.js"></script>
+  <div id="overflow" style="border:2px solid black;overflow:auto;height:200px;width:200px;">
+    <div style="background-color:red;height:200px;width:400px;"></div>
+    <div style="background-color:green;height:200px;width:400px;"></div>
+    <div style="background-color:red;height:200px;width:400px;"></div>
+  </div>
+  <div id="console"></div>
+<script>
+  // scroll diagonally for 1 tick.
+  var expectedScroll = pixelsPerTick();
 
-            function runTest()
-            {
-                var overflowElement = document.getElementById("overflow");
-                if (overflowElement) {
-                    overflowElement.addEventListener("mousewheel", mousewheelHandler, false);
+  var overflowElement = document.getElementById("overflow");
+  overflowElement.addEventListener("mousewheel", mousewheelHandler, false);
+  var eventHandlerResolve;
+  eventHandlerPromise = new Promise(function(resolve) {
+      eventHandlerResolve = resolve;
+  });
 
-                    // EventSender uses 40px per tick.
-                    eventSender.mouseMoveTo(overflowElement.offsetLeft + 5, overflowElement.offsetTop + 5);
-                    eventSender.mouseScrollBy(-2.5, -5, false, true, 0, true, "phaseBegan");
-                }
+  promise_test (async () => {
+    var x = overflowElement.offsetLeft + 5;
+    var y = overflowElement.offsetTop + 5
+    await mouseMoveTo(x, y);
+    await smoothScroll(pixelsPerTick(), x, y, GestureSourceType.MOUSE_INPUT,
+        "downright", SPEED_INSTANT);
+    await waitFor( () => {
+      return overflowElement.scrollTop == expectedScroll &&
+          overflowElement.scrollLeft == expectedScroll;
+    });
+    // The test will timeout if the event handler doesn't resolve this promise.
+    await eventHandlerPromise;
+  });
 
-                div = document.getElementById("overflow");
-                shouldBecomeEqual("div.scrollTop == window.expectedScrollTop && " +
-                    "div.scrollLeft == window.expectedScrollLeft", "true", finishJSTest);
-            }
-
-            function mousewheelHandler(e)
-            {
-                event = e;
-                shouldBe("event.deltaY", "window.expectedScrollTop");
-                shouldBe("event.deltaX", "window.expectedScrollLeft");
-                shouldBe("event.wheelDeltaY", "-5*120");
-                shouldBe("event.wheelDeltaX", "-2.5*120");
-
-                if (e.wheelDeltaY)
-                    shouldBe("event.wheelDelta", "-5*120");
-                else
-                    shouldBe("event.wheelDelta", "-2.5*120");
-            }
-        </script>
-    </head>
-
-    <body style="margin:0" onload="runTest()">
-        <div id="overflow" style="border:2px solid black;overflow:auto;height:200px;width:200px;">
-            <div style="background-color:red;height:200px;width:400px;"></div>
-            <div style="background-color:green;height:200px;width:400px;"></div>
-            <div style="background-color:red;height:200px;width:400px;"></div>
-        </div>
-        <div id="console"></div>
-    </body>
-</html>
+  function mousewheelHandler(e) {
+    // e.wheelDeltaX/Y is equal to number of ticks * 120. See kTickMultiplier
+    // in src/third_party/blink/renderer/core/events/wheel_event.h
+    if (e.deltaY == expectedScroll && e.deltaX == expectedScroll &&
+        e.wheelDeltaY == -120 && e.wheelDeltaX == -120 && e.wheelDelta == -120) {
+      eventHandlerResolve();
+    }
+  }
+</script>
