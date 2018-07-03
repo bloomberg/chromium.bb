@@ -209,6 +209,7 @@ void ArcAuthService::ReportAccountCheckStatus(
 
 void ArcAuthService::ReportSupervisionChangeStatus(
     mojom::SupervisionChangeStatus status) {
+  UpdateSupervisionTransitionResultUMA(status);
   switch (status) {
     case mojom::SupervisionChangeStatus::CLOUD_DPC_DISABLED:
     case mojom::SupervisionChangeStatus::CLOUD_DPC_ALREADY_DISABLED:
