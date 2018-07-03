@@ -218,15 +218,9 @@ HEADLESS_PROTOCOL_TEST(VirtualTimeStarvation,
                        "emulation/virtual-time-starvation.js");
 HEADLESS_PROTOCOL_TEST(VirtualTimeVideo, "emulation/virtual-time-video.js");
 
-// Failing on MacOS10.13 (dbg) crbug.com/859382
-#if defined(OS_MACOSX)
-#define MAYBE_VirtualTimeHistoryNavigation DISABLED_VirtualTimeHistoryNavigation
-#else
-#define MAYBE_VirtualTimeHistoryNavigation VirtualTimeHistoryNavigation
-#endif
-HEADLESS_PROTOCOL_TEST(MAYBE_VirtualTimeHistoryNavigation,
+// Flaky Test crbug.com/859382
+HEADLESS_PROTOCOL_TEST(DISABLED_VirtualTimeHistoryNavigation,
                        "emulation/virtual-time-history-navigation.js");
-#undef MAYBE_VirtualTimeHistoryNavigation
 
 // http://crbug.com/633321
 #if defined(OS_ANDROID)
