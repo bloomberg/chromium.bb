@@ -2184,9 +2184,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                            TextureRef* source_texture_ref,
                                            TextureRef* dest_texture_ref);
   bool CanUseCopyTextureCHROMIUMInternalFormat(GLenum dest_internal_format);
-  bool ValidateCopyTextureCHROMIUMInternalFormats(const char* function_name,
-                                                  GLenum source_internal_format,
-                                                  GLenum dest_internal_format);
   bool ValidateCompressedCopyTextureCHROMIUM(const char* function_name,
                                              TextureRef* source_texture_ref,
                                              TextureRef* dest_texture_ref);
@@ -17011,105 +17008,6 @@ bool GLES2DecoderImpl::CanUseCopyTextureCHROMIUMInternalFormat(
   }
 }
 
-bool GLES2DecoderImpl::ValidateCopyTextureCHROMIUMInternalFormats(
-    const char* function_name,
-    GLenum source_internal_format,
-    GLenum dest_internal_format) {
-  bool valid_dest_format = false;
-  // TODO(qiankun.miao@intel.com): ALPHA, LUMINANCE and LUMINANCE_ALPHA formats
-  // are not supported on GL core profile. See crbug.com/577144. Enable the
-  // workaround for glCopyTexImage and glCopyTexSubImage in
-  // gles2_cmd_copy_tex_image.cc for glCopyTextureCHROMIUM implementation.
-  switch (dest_internal_format) {
-    case GL_RGB:
-    case GL_RGBA:
-    case GL_RGB8:
-    case GL_RGBA8:
-      valid_dest_format = true;
-      break;
-    case GL_BGRA_EXT:
-    case GL_BGRA8_EXT:
-      valid_dest_format =
-          feature_info_->feature_flags().ext_texture_format_bgra8888;
-      break;
-    case GL_SRGB_EXT:
-    case GL_SRGB_ALPHA_EXT:
-      valid_dest_format = feature_info_->feature_flags().ext_srgb;
-      break;
-    case GL_R8:
-    case GL_R8UI:
-    case GL_RG8:
-    case GL_RG8UI:
-    case GL_SRGB8:
-    case GL_RGB565:
-    case GL_RGB8UI:
-    case GL_SRGB8_ALPHA8:
-    case GL_RGB5_A1:
-    case GL_RGBA4:
-    case GL_RGBA8UI:
-    case GL_RGB10_A2:
-      valid_dest_format = feature_info_->IsWebGL2OrES3Context();
-      break;
-    case GL_RGB9_E5:
-    case GL_R16F:
-    case GL_R32F:
-    case GL_RG16F:
-    case GL_RG32F:
-    case GL_RGB16F:
-    case GL_RGBA16F:
-    case GL_R11F_G11F_B10F:
-      valid_dest_format = feature_info_->ext_color_buffer_float_available();
-      break;
-    case GL_RGB32F:
-      valid_dest_format =
-          feature_info_->ext_color_buffer_float_available() ||
-          feature_info_->feature_flags().chromium_color_buffer_float_rgb;
-      break;
-    case GL_RGBA32F:
-      valid_dest_format =
-          feature_info_->ext_color_buffer_float_available() ||
-          feature_info_->feature_flags().chromium_color_buffer_float_rgba;
-      break;
-    case GL_ALPHA:
-    case GL_LUMINANCE:
-    case GL_LUMINANCE_ALPHA:
-      valid_dest_format = true;
-      break;
-    default:
-      valid_dest_format = false;
-      break;
-  }
-
-  // TODO(aleksandar.stojiljkovic): Use sized internal formats: crbug.com/628064
-  bool valid_source_format =
-      source_internal_format == GL_RED || source_internal_format == GL_ALPHA ||
-      source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
-      source_internal_format == GL_RGB8 || source_internal_format == GL_RGBA8 ||
-      source_internal_format == GL_LUMINANCE ||
-      source_internal_format == GL_LUMINANCE_ALPHA ||
-      source_internal_format == GL_BGRA_EXT ||
-      source_internal_format == GL_BGRA8_EXT ||
-      source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
-      source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
-      source_internal_format == GL_R16_EXT;
-  if (!valid_source_format) {
-    std::string msg = "invalid source internal format " +
-        GLES2Util::GetStringEnum(source_internal_format);
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                       msg.c_str());
-    return false;
-  }
-  if (!valid_dest_format) {
-    std::string msg = "invalid dest internal format " +
-        GLES2Util::GetStringEnum(dest_internal_format);
-    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
-                       msg.c_str());
-    return false;
-  }
-
-  return true;
-}
-
 bool GLES2DecoderImpl::ValidateCompressedCopyTextureCHROMIUM(
     const char* function_name,
     TextureRef* source_texture_ref,
@@ -17203,8 +17101,12 @@ void GLES2DecoderImpl::DoCopyTextureCHROMIUM(
     return;
   }
 
+  std::string output_error_msg;
   if (!ValidateCopyTextureCHROMIUMInternalFormats(
-          kFunctionName, source_internal_format, internal_format)) {
+          GetFeatureInfo(), source_internal_format, internal_format,
+          &output_error_msg)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, kFunctionName,
+                       output_error_msg.c_str());
     return;
   }
 
@@ -17459,8 +17361,12 @@ void GLES2DecoderImpl::CopySubTextureHelper(const char* function_name,
     return;
   }
 
+  std::string output_error_msg;
   if (!ValidateCopyTextureCHROMIUMInternalFormats(
-          function_name, source_internal_format, dest_internal_format)) {
+          GetFeatureInfo(), source_internal_format, dest_internal_format,
+          &output_error_msg)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, function_name,
+                       output_error_msg.c_str());
     return;
   }
 

@@ -148,6 +148,7 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
     std::vector<std::string> extensions = {"GL_ARB_sync"};
     bool lose_context_when_out_of_memory = false;
     gpu::GpuDriverBugWorkarounds workarounds;
+    std::string gl_version = "2.1";
   };
 
   void InitDecoder(const InitState& init);

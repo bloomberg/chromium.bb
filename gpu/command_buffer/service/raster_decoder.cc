@@ -2749,6 +2749,14 @@ void RasterDecoderImpl::DoCopySubTexture(GLuint source_id,
                        "destination texture bad dimensions.");
     return;
   }
+  std::string output_error_msg;
+  if (!ValidateCopyTextureCHROMIUMInternalFormats(
+          GetFeatureInfo(), source_internal_format, dest_internal_format,
+          &output_error_msg)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glCopySubTexture",
+                       output_error_msg.c_str());
+    return;
+  }
 
   if (feature_info_->feature_flags().desktop_srgb_support) {
     bool enable_framebuffer_srgb =

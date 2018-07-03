@@ -173,7 +173,6 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   for (const std::string& extension : init.extensions) {
     all_extensions += extension + " ";
   }
-  const std::string gl_version("2.1");
   const bool bind_generates_resource(false);
   const ContextType context_type(CONTEXT_TYPE_OPENGLES2);
 
@@ -204,13 +203,13 @@ void RasterDecoderTestBase::InitDecoder(const InitState& init) {
   // extension support.
   context_ = new StrictMock<GLContextMock>();
   context_->SetExtensionsString(all_extensions.c_str());
-  context_->SetGLVersionString(gl_version.c_str());
+  context_->SetGLVersionString(init.gl_version.c_str());
 
   context_->GLContextStub::MakeCurrent(surface_.get());
 
   TestHelper::SetupContextGroupInitExpectations(
       gl_.get(), DisallowedFeatures(), all_extensions.c_str(),
-      gl_version.c_str(), context_type, bind_generates_resource);
+      init.gl_version.c_str(), context_type, bind_generates_resource);
 
   // We initialize the ContextGroup with a MockRasterDecoder so that
   // we can use the ContextGroup to figure out how the real RasterDecoder
