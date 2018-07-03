@@ -342,8 +342,8 @@ def FindChrootMountSource(chroot_path, proc_mounts='/proc/mounts'):
   return (match.group(1), match.group(2))
 
 
-# Raise an exception if cleanup takes more than 4 minutes.
-@timeout_util.TimeoutDecorator(240)
+# Raise an exception if cleanup takes more than 10 minutes.
+@timeout_util.TimeoutDecorator(600)
 def CleanupChrootMount(chroot=None, buildroot=None, delete=False,
                        proc_mounts='/proc/mounts'):
   """Unmounts a chroot and cleans up attached devices.
