@@ -1757,6 +1757,9 @@ void XMLHttpRequest::DidReceiveResponse(
     unsigned long identifier,
     const ResourceResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
+  // TODO(yhirano): Remove this CHECK: see https://crbug.com/570946.
+  CHECK(&response);
+
   ALLOW_UNUSED_LOCAL(handle);
   DCHECK(!handle);
   NETWORK_DVLOG(1) << this << " didReceiveResponse(" << identifier << ")";
