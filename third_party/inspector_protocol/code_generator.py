@@ -453,8 +453,7 @@ class Protocol(object):
                 elif type["type"] == "object":
                     self.type_definitions[type_name] = create_user_type_definition(domain["domain"], type)
                 elif type["type"] == "array":
-                    items_type = type["items"]["type"]
-                    self.type_definitions[type_name] = wrap_array_definition(self.type_definitions[items_type])
+                    self.type_definitions[type_name] = self.resolve_type(type)
                 elif type["type"] == domain["domain"] + ".string":
                     self.type_definitions[type_name] = create_string_type_definition()
                 else:

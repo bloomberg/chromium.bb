@@ -49,6 +49,11 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
           layout_tree_nodes,
       std::unique_ptr<protocol::Array<protocol::DOMSnapshot::ComputedStyle>>*
           computed_styles) override;
+  protocol::Response captureSnapshot(
+      std::unique_ptr<protocol::Array<String>> computed_styles,
+      std::unique_ptr<protocol::DOMSnapshot::DOMTreeSnapshot>* nodes,
+      std::unique_ptr<protocol::DOMSnapshot::LayoutTreeSnapshot>* layout,
+      std::unique_ptr<protocol::Array<String>>* strings) override;
 
   bool Enabled() const;
 
@@ -60,10 +65,19 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
   InspectorDOMSnapshotAgent(InspectedFrames*, InspectorDOMDebuggerAgent*);
   void InnerEnable();
 
-  // Adds a DOMNode for the given Node to |dom_nodes_| and returns its index.
   int VisitNode(Node*,
                 bool include_event_listeners,
                 bool include_user_agent_shadow_tree);
+
+  int AddString(const String& string);
+  void SetRare(protocol::DOMSnapshot::RareIntegerData* data,
+               int index,
+               int value);
+  void SetRare(protocol::DOMSnapshot::RareStringData* data,
+               int index,
+               const String& value);
+  void SetRare(protocol::DOMSnapshot::RareBooleanData* data, int index);
+  int VisitNode2(Node*, int parent_index);
 
   // Helpers for VisitContainerChildren.
   static Node* FirstChild(const Node& node,
@@ -77,23 +91,28 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       Node* container,
       bool include_event_listeners,
       bool include_user_agent_shadow_tree);
+  void VisitContainerChildren2(Node* container, int parent_index);
   std::unique_ptr<protocol::Array<int>> VisitPseudoElements(
       Element* parent,
       bool include_event_listeners,
       bool include_user_agent_shadow_tree);
+  void VisitPseudoElements2(Element* parent, int parent_index);
   std::unique_ptr<protocol::Array<protocol::DOMSnapshot::NameValue>>
   BuildArrayForElementAttributes(Element*);
+  std::unique_ptr<protocol::Array<int>> BuildArrayForElementAttributes2(Node*);
 
   // Adds a LayoutTreeNode for the LayoutObject of the given Node to
   // |layout_tree_nodes_| and returns its index. Returns -1 if the Node has no
   // associated LayoutObject.
   int VisitLayoutTreeNode(Node*, int node_index);
+  int BuildLayoutTreeNode(Node*, int node_index);
 
   // Returns the index of the ComputedStyle in |computed_styles_| for the given
   // Node. Adds a new ComputedStyle if necessary, but ensures no duplicates are
   // added to |computed_styles_|. Returns -1 if the node has no values for
   // styles in |style_whitelist_|.
   int GetStyleIndexForNode(Node*);
+  std::unique_ptr<protocol::Array<int>> BuildStylesForNode(Node*);
 
   // Traverses the PaintLayer tree in paint order to fill |paint_order_map_|.
   void TraversePaintLayerTree(Document*);
@@ -116,6 +135,14 @@ class CORE_EXPORT InspectorDOMSnapshotAgent final
       layout_tree_nodes_;
   std::unique_ptr<protocol::Array<protocol::DOMSnapshot::ComputedStyle>>
       computed_styles_;
+
+  std::unique_ptr<protocol::Array<String>> strings_;
+  WTF::HashMap<String, int> string_table_;
+
+  std::unique_ptr<protocol::DOMSnapshot::DOMTreeSnapshot> dom_tree_snapshot_;
+  std::unique_ptr<protocol::DOMSnapshot::LayoutTreeSnapshot>
+      layout_tree_snapshot_;
+
   // Maps a style string vector to an index in |computed_styles_|. Used to avoid
   // duplicate entries in |computed_styles_|.
   std::unique_ptr<ComputedStylesMap> computed_styles_map_;

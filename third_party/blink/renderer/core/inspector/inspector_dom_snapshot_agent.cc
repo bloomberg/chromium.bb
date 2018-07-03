@@ -63,6 +63,17 @@ std::unique_ptr<protocol::DOM::Rect> BuildRectForFloatRect(
       .build();
 }
 
+std::unique_ptr<protocol::Array<double>> BuildRectForFloatRect2(
+    const FloatRect& rect) {
+  std::unique_ptr<protocol::Array<double>> result =
+      protocol::Array<double>::create();
+  result->addItem(rect.X());
+  result->addItem(rect.Y());
+  result->addItem(rect.Width());
+  result->addItem(rect.Height());
+  return result;
+}
+
 Document* GetEmbeddedDocument(PaintLayer* layer) {
   // Documents are embedded on their own PaintLayer via a LayoutEmbeddedContent.
   if (layer->GetLayoutObject().IsLayoutEmbeddedContent()) {
@@ -74,6 +85,26 @@ Document* GetEmbeddedDocument(PaintLayer* layer) {
     }
   }
   return nullptr;
+}
+
+std::unique_ptr<protocol::DOMSnapshot::RareStringData> StringData() {
+  return protocol::DOMSnapshot::RareStringData::create()
+      .setIndex(protocol::Array<int>::create())
+      .setValue(protocol::Array<int>::create())
+      .build();
+}
+
+std::unique_ptr<protocol::DOMSnapshot::RareIntegerData> IntegerData() {
+  return protocol::DOMSnapshot::RareIntegerData::create()
+      .setIndex(protocol::Array<int>::create())
+      .setValue(protocol::Array<int>::create())
+      .build();
+}
+
+std::unique_ptr<protocol::DOMSnapshot::RareBooleanData> BooleanData() {
+  return protocol::DOMSnapshot::RareBooleanData::create()
+      .setIndex(protocol::Array<int>::create())
+      .build();
 }
 
 }  // namespace
@@ -203,8 +234,6 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
         layout_tree_nodes,
     std::unique_ptr<protocol::Array<protocol::DOMSnapshot::ComputedStyle>>*
         computed_styles) {
-  DCHECK(!dom_nodes_ && !layout_tree_nodes_ && !computed_styles_);
-
   Document* document = inspected_frames_->Root()->GetDocument();
   if (!document)
     return Response::Error("Document is not available");
@@ -244,6 +273,85 @@ Response InspectorDOMSnapshotAgent::getSnapshot(
   computed_styles_map_.reset();
   css_property_whitelist_.reset();
   paint_order_map_.reset();
+  return Response::OK();
+}
+
+protocol::Response InspectorDOMSnapshotAgent::captureSnapshot(
+    std::unique_ptr<protocol::Array<String>> computed_styles,
+    std::unique_ptr<protocol::DOMSnapshot::DOMTreeSnapshot>* dom_tree_snapshot,
+    std::unique_ptr<protocol::DOMSnapshot::LayoutTreeSnapshot>*
+        layout_tree_snapshot,
+    std::unique_ptr<protocol::Array<String>>* strings) {
+  Document* document = inspected_frames_->Root()->GetDocument();
+  if (!document)
+    return Response::Error("Document is not available");
+
+  strings_ = protocol::Array<String>::create();
+
+  // Setup snapshot.
+  dom_tree_snapshot_ =
+      protocol::DOMSnapshot::DOMTreeSnapshot::create()
+          .setParentIndex(protocol::Array<int>::create())
+          .setNodeType(protocol::Array<int>::create())
+          .setNodeName(protocol::Array<int>::create())
+          .setNodeValue(protocol::Array<int>::create())
+          .setBackendNodeId(protocol::Array<int>::create())
+          .setAttributes(protocol::Array<protocol::Array<int>>::create())
+          .setLayoutNodeIndex(protocol::Array<int>::create())
+          .setTextValue(StringData())
+          .setInputValue(StringData())
+          .setInputChecked(BooleanData())
+          .setOptionSelected(BooleanData())
+          .setDocumentURL(StringData())
+          .setBaseURL(StringData())
+          .setContentLanguage(StringData())
+          .setDocumentEncoding(StringData())
+          .setPublicId(StringData())
+          .setSystemId(StringData())
+          .setFrameId(StringData())
+          .setContentDocumentIndex(IntegerData())
+          .setImportedDocumentIndex(IntegerData())
+          .setTemplateContentIndex(IntegerData())
+          .setPseudoType(StringData())
+          .setIsClickable(BooleanData())
+          .setCurrentSourceURL(StringData())
+          .setOriginURL(StringData())
+          .build();
+  layout_tree_snapshot_ =
+      protocol::DOMSnapshot::LayoutTreeSnapshot::create()
+          .setNodeIndex(protocol::Array<int>::create())
+          .setBounds(protocol::Array<protocol::Array<double>>::create())
+          .setText(protocol::Array<int>::create())
+          .setStyles(protocol::Array<protocol::Array<int>>::create())
+          .setTextBoxes(
+              protocol::DOMSnapshot::TextBoxSnapshot::create()
+                  .setLayoutIndex(protocol::Array<int>::create())
+                  .setBounds(protocol::Array<protocol::Array<double>>::create())
+                  .setStart(protocol::Array<int>::create())
+                  .setLength(protocol::Array<int>::create())
+                  .build())
+          .build();
+
+  css_property_whitelist_ = std::make_unique<CSSPropertyWhitelist>();
+
+  // Look up the CSSPropertyIDs for each entry in |computed_styles|.
+  for (size_t i = 0; i < computed_styles->length(); i++) {
+    CSSPropertyID property_id = cssPropertyID(computed_styles->get(i));
+    if (property_id == CSSPropertyInvalid)
+      continue;
+    css_property_whitelist_->push_back(
+        std::make_pair(computed_styles->get(i), property_id));
+  }
+
+  // Actual traversal.
+  VisitNode2(document, -1);
+
+  // Extract results from state and reset.
+  *dom_tree_snapshot = std::move(dom_tree_snapshot_);
+  *layout_tree_snapshot = std::move(layout_tree_snapshot_);
+  *strings = std::move(strings_);
+  css_property_whitelist_.reset();
+  string_table_.clear();
   return Response::OK();
 }
 
@@ -414,6 +522,200 @@ int InspectorDOMSnapshotAgent::VisitNode(Node* node,
   return index;
 }
 
+int InspectorDOMSnapshotAgent::AddString(const String& string) {
+  if (string.IsEmpty())
+    return -1;
+  auto it = string_table_.find(string);
+  int index;
+  if (it == string_table_.end()) {
+    index = strings_->length();
+    strings_->addItem(string);
+    string_table_.Set(string, index);
+  } else {
+    index = it->value;
+  }
+  return index;
+}
+
+void InspectorDOMSnapshotAgent::SetRare(
+    protocol::DOMSnapshot::RareIntegerData* data,
+    int index,
+    int value) {
+  data->getIndex()->addItem(index);
+  data->getValue()->addItem(value);
+}
+
+void InspectorDOMSnapshotAgent::SetRare(
+    protocol::DOMSnapshot::RareStringData* data,
+    int index,
+    const String& value) {
+  data->getIndex()->addItem(index);
+  data->getValue()->addItem(AddString(value));
+}
+
+void InspectorDOMSnapshotAgent::SetRare(
+    protocol::DOMSnapshot::RareBooleanData* data,
+    int index) {
+  data->getIndex()->addItem(index);
+}
+
+int InspectorDOMSnapshotAgent::VisitNode2(Node* node, int parent_index) {
+  // Update layout tree before traversal of document so that we inspect a
+  // current and consistent state of all trees. No need to do this if paint
+  // order was calculated, since layout trees were already updated during
+  // TraversePaintLayerTree().
+  if (node->IsDocumentNode())
+    node->GetDocument().UpdateStyleAndLayoutTree();
+  String node_value;
+  switch (node->getNodeType()) {
+    case Node::kTextNode:
+    case Node::kAttributeNode:
+    case Node::kCommentNode:
+    case Node::kCdataSectionNode:
+    case Node::kDocumentFragmentNode:
+      node_value = node->nodeValue();
+      break;
+    default:
+      break;
+  }
+
+  int index = dom_tree_snapshot_->getNodeName(nullptr)->length();
+  int backend_node_id = DOMNodeIds::IdForNode(node);
+
+  // Create DOMNode object and add it to the result array before traversing
+  // children, so that parents appear before their children in the array.
+  dom_tree_snapshot_->getParentIndex(nullptr)->addItem(parent_index);
+
+  dom_tree_snapshot_->getNodeType(nullptr)->addItem(
+      static_cast<int>(node->getNodeType()));
+  dom_tree_snapshot_->getNodeName(nullptr)->addItem(
+      AddString(node->nodeName()));
+  dom_tree_snapshot_->getNodeValue(nullptr)->addItem(AddString(node_value));
+  dom_tree_snapshot_->getBackendNodeId(nullptr)->addItem(backend_node_id);
+  dom_tree_snapshot_->getAttributes(nullptr)->addItem(
+      BuildArrayForElementAttributes2(node));
+  dom_tree_snapshot_->getLayoutNodeIndex(nullptr)->addItem(
+      BuildLayoutTreeNode(node, index));
+
+  if (origin_url_map_ && origin_url_map_->Contains(backend_node_id)) {
+    String origin_url = origin_url_map_->at(backend_node_id);
+    // In common cases, it is implicit that a child node would have the same
+    // origin url as its parent, so no need to mark twice.
+    if (!node->parentNode() || origin_url_map_->at(DOMNodeIds::IdForNode(
+                                   node->parentNode())) != origin_url) {
+      SetRare(dom_tree_snapshot_->getOriginURL(nullptr), index, origin_url);
+    }
+  }
+
+  if (node->WillRespondToMouseClickEvents())
+    SetRare(dom_tree_snapshot_->getIsClickable(nullptr), index);
+
+  if (node->IsElementNode()) {
+    Element* element = ToElement(node);
+    if (node->IsFrameOwnerElement()) {
+      const HTMLFrameOwnerElement* frame_owner = ToHTMLFrameOwnerElement(node);
+      if (LocalFrame* frame =
+              frame_owner->ContentFrame() &&
+                      frame_owner->ContentFrame()->IsLocalFrame()
+                  ? ToLocalFrame(frame_owner->ContentFrame())
+                  : nullptr) {
+        SetRare(dom_tree_snapshot_->getFrameId(nullptr), index,
+                IdentifiersFactory::FrameId(frame));
+      }
+      if (Document* doc = frame_owner->contentDocument()) {
+        SetRare(dom_tree_snapshot_->getContentDocumentIndex(nullptr), index,
+                VisitNode2(doc, index));
+      }
+    }
+
+    if (node->parentNode() && node->parentNode()->IsDocumentNode()) {
+      LocalFrame* frame = node->GetDocument().GetFrame();
+      if (frame) {
+        SetRare(dom_tree_snapshot_->getFrameId(nullptr), index,
+                IdentifiersFactory::FrameId(frame));
+      }
+    }
+
+    if (auto* link_element = ToHTMLLinkElementOrNull(*element)) {
+      if (link_element->IsImport() && link_element->import() &&
+          InspectorDOMAgent::InnerParentNode(link_element->import()) ==
+              link_element) {
+        SetRare(dom_tree_snapshot_->getImportedDocumentIndex(nullptr), index,
+                VisitNode2(link_element->import(), index));
+      }
+    }
+
+    if (auto* template_element = ToHTMLTemplateElementOrNull(*element)) {
+      SetRare(dom_tree_snapshot_->getTemplateContentIndex(nullptr), index,
+              VisitNode2(template_element->content(), index));
+    }
+
+    if (auto* textarea_element = ToHTMLTextAreaElementOrNull(*element)) {
+      SetRare(dom_tree_snapshot_->getTextValue(nullptr), index,
+              textarea_element->value());
+    }
+
+    if (auto* input_element = ToHTMLInputElementOrNull(*element)) {
+      SetRare(dom_tree_snapshot_->getInputValue(nullptr), index,
+              input_element->value());
+      if ((input_element->type() == InputTypeNames::radio) ||
+          (input_element->type() == InputTypeNames::checkbox)) {
+        if (input_element->checked()) {
+          SetRare(dom_tree_snapshot_->getInputChecked(nullptr), index);
+        }
+      }
+    }
+
+    if (auto* option_element = ToHTMLOptionElementOrNull(*element)) {
+      if (option_element->Selected()) {
+        SetRare(dom_tree_snapshot_->getOptionSelected(nullptr), index);
+      }
+    }
+
+    if (element->GetPseudoId()) {
+      protocol::DOM::PseudoType pseudo_type;
+      if (InspectorDOMAgent::GetPseudoElementType(element->GetPseudoId(),
+                                                  &pseudo_type)) {
+        SetRare(dom_tree_snapshot_->getPseudoType(nullptr), index, pseudo_type);
+      }
+    } else {
+      VisitPseudoElements2(element, index);
+    }
+
+    HTMLImageElement* image_element = ToHTMLImageElementOrNull(node);
+    if (image_element) {
+      SetRare(dom_tree_snapshot_->getCurrentSourceURL(nullptr), index,
+              image_element->currentSrc());
+    }
+  } else if (node->IsDocumentNode()) {
+    Document* document = ToDocument(node);
+    SetRare(dom_tree_snapshot_->getDocumentURL(nullptr), index,
+            InspectorDOMAgent::DocumentURLString(document));
+    SetRare(dom_tree_snapshot_->getBaseURL(nullptr), index,
+            InspectorDOMAgent::DocumentBaseURLString(document));
+    if (document->ContentLanguage()) {
+      SetRare(dom_tree_snapshot_->getContentLanguage(nullptr), index,
+              document->ContentLanguage());
+    }
+    if (document->EncodingName()) {
+      SetRare(dom_tree_snapshot_->getDocumentEncoding(nullptr), index,
+              document->EncodingName());
+    }
+    SetRare(dom_tree_snapshot_->getFrameId(nullptr), index,
+            IdentifiersFactory::FrameId(document->GetFrame()));
+  } else if (node->IsDocumentTypeNode()) {
+    DocumentType* doc_type = ToDocumentType(node);
+    SetRare(dom_tree_snapshot_->getPublicId(nullptr), index,
+            doc_type->publicId());
+    SetRare(dom_tree_snapshot_->getSystemId(nullptr), index,
+            doc_type->systemId());
+  }
+
+  if (node->IsContainerNode())
+    VisitContainerChildren2(node, index);
+  return index;
+}
+
 Node* InspectorDOMSnapshotAgent::FirstChild(
     const Node& node,
     bool include_user_agent_shadow_tree) {
@@ -473,6 +775,17 @@ InspectorDOMSnapshotAgent::VisitContainerChildren(
   return children;
 }
 
+void InspectorDOMSnapshotAgent::VisitContainerChildren2(Node* container,
+                                                        int parent_index) {
+  if (!HasChildren(*container, false))
+    return;
+
+  for (Node* child = FirstChild(*container, false); child;
+       child = NextSibling(*child, false)) {
+    VisitNode2(child, parent_index);
+  }
+}
+
 std::unique_ptr<protocol::Array<int>>
 InspectorDOMSnapshotAgent::VisitPseudoElements(
     Element* parent,
@@ -499,6 +812,21 @@ InspectorDOMSnapshotAgent::VisitPseudoElements(
   return pseudo_elements;
 }
 
+void InspectorDOMSnapshotAgent::VisitPseudoElements2(Element* parent,
+                                                     int parent_index) {
+  if (!parent->GetPseudoElement(kPseudoIdBefore) &&
+      !parent->GetPseudoElement(kPseudoIdAfter)) {
+    return;
+  }
+
+  auto pseudo_elements = protocol::Array<int>::create();
+
+  if (parent->GetPseudoElement(kPseudoIdBefore))
+    VisitNode2(parent->GetPseudoElement(kPseudoIdBefore), parent_index);
+  if (parent->GetPseudoElement(kPseudoIdAfter))
+    VisitNode2(parent->GetPseudoElement(kPseudoIdAfter), parent_index);
+}
+
 std::unique_ptr<protocol::Array<protocol::DOMSnapshot::NameValue>>
 InspectorDOMSnapshotAgent::BuildArrayForElementAttributes(Element* element) {
   auto attributes_value =
@@ -513,6 +841,19 @@ InspectorDOMSnapshotAgent::BuildArrayForElementAttributes(Element* element) {
   if (attributes_value->length() == 0)
     return nullptr;
   return attributes_value;
+}
+
+std::unique_ptr<protocol::Array<int>>
+InspectorDOMSnapshotAgent::BuildArrayForElementAttributes2(Node* node) {
+  auto result = protocol::Array<int>::create();
+  if (!node->IsElementNode())
+    return result;
+  AttributeCollection attributes = ToElement(node)->Attributes();
+  for (const auto& attribute : attributes) {
+    result->addItem(AddString(attribute.GetName().ToString()));
+    result->addItem(AddString(attribute.Value()));
+  }
+  return result;
 }
 
 int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
@@ -569,6 +910,44 @@ int InspectorDOMSnapshotAgent::VisitLayoutTreeNode(Node* node, int node_index) {
   return index;
 }
 
+int InspectorDOMSnapshotAgent::BuildLayoutTreeNode(Node* node, int node_index) {
+  LayoutObject* layout_object = node->GetLayoutObject();
+  if (!layout_object)
+    return -1;
+
+  int index = layout_tree_snapshot_->getNodeIndex()->length();
+  layout_tree_snapshot_->getNodeIndex()->addItem(node_index);
+  layout_tree_snapshot_->getStyles()->addItem(BuildStylesForNode(node));
+  layout_tree_snapshot_->getBounds()->addItem(
+      BuildRectForFloatRect2(layout_object->AbsoluteBoundingBoxRect()));
+  auto* text_box_snapshot = layout_tree_snapshot_->getTextBoxes();
+
+  String text = layout_object->IsText() ? ToLayoutText(layout_object)->GetText()
+                                        : String();
+  layout_tree_snapshot_->getText()->addItem(AddString(text));
+
+  if (!layout_object->IsText())
+    return index;
+
+  LayoutText* layout_text = ToLayoutText(layout_object);
+  if (!layout_text->HasTextBoxes())
+    return index;
+
+  for (const InlineTextBox* text_box : layout_text->TextBoxes()) {
+    FloatRect local_coords_text_box_rect(text_box->FrameRect());
+    FloatRect absolute_coords_text_box_rect =
+        layout_object->LocalToAbsoluteQuad(local_coords_text_box_rect)
+            .BoundingBox();
+    text_box_snapshot->getLayoutIndex()->addItem(index);
+    text_box_snapshot->getBounds()->addItem(
+        BuildRectForFloatRect2(absolute_coords_text_box_rect));
+    text_box_snapshot->getStart()->addItem(text_box->Start());
+    text_box_snapshot->getLength()->addItem(text_box->Len());
+  }
+
+  return index;
+}
+
 int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
   CSSComputedStyleDeclaration* computed_style_info =
       CSSComputedStyleDeclaration::Create(node, true);
@@ -609,6 +988,18 @@ int InspectorDOMSnapshotAgent::GetStyleIndexForNode(Node* node) {
                                 .build());
   computed_styles_map_->insert(std::move(style), index);
   return index;
+}
+
+std::unique_ptr<protocol::Array<int>>
+InspectorDOMSnapshotAgent::BuildStylesForNode(Node* node) {
+  CSSComputedStyleDeclaration* computed_style_info =
+      CSSComputedStyleDeclaration::Create(node, true);
+  std::unique_ptr<protocol::Array<int>> result = protocol::Array<int>::create();
+  for (const auto& pair : *css_property_whitelist_) {
+    String value = computed_style_info->GetPropertyValue(pair.second);
+    result->addItem(AddString(value));
+  }
+  return result;
 }
 
 void InspectorDOMSnapshotAgent::TraversePaintLayerTree(Document* document) {
