@@ -615,8 +615,8 @@ class CC_EXPORT LayerTreeHostImpl
   gfx::ScrollOffset GetVisualScrollOffset(const ScrollNode& scroll_node) const;
 
   bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement_in_viewport,
-                        gfx::Vector2dF* initial_offset,
-                        gfx::Vector2dF* target_offset) const override;
+                        gfx::Vector2dF* out_initial_offset,
+                        gfx::Vector2dF* out_target_offset) const override;
 
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
