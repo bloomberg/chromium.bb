@@ -1810,7 +1810,7 @@ CODEC_INTERFACE(aom_codec_av1_cx) = {
       NULL,  // aom_codec_peek_si_fn_t
       NULL,  // aom_codec_get_si_fn_t
       NULL,  // aom_codec_decode_fn_t
-      NULL,  // aom_codec_frame_get_fn_t
+      NULL,  // aom_codec_get_frame_fn_t
       NULL   // aom_codec_set_fb_fn_t
   },
   {

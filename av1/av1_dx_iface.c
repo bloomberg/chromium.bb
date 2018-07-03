@@ -1206,7 +1206,7 @@ CODEC_INTERFACE(aom_codec_av1_dx) = {
       decoder_peek_si,    // aom_codec_peek_si_fn_t
       decoder_get_si,     // aom_codec_get_si_fn_t
       decoder_decode,     // aom_codec_decode_fn_t
-      decoder_get_frame,  // aom_codec_frame_get_fn_t
+      decoder_get_frame,  // aom_codec_get_frame_fn_t
       decoder_set_fb_fn,  // aom_codec_set_fb_fn_t
   },
   {
