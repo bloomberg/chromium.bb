@@ -22,6 +22,7 @@
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/commit_result.mojom-shared.h"
 #include "third_party/blink/public/web/selection_menu_behavior.mojom-shared.h"
+#include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_history_item.h"
@@ -37,7 +38,6 @@ class WebAssociatedURLLoader;
 class WebAutofillClient;
 class WebContentSettingsClient;
 class WebData;
-class WebDocumentLoader;
 class WebDocument;
 class WebDoubleSize;
 class WebDOMEvent;
@@ -214,7 +214,8 @@ class WebLocalFrame : public WebFrame {
       WebFrameLoadType,
       const WebHistoryItem&,
       bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token) = 0;
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   // Commits a same-document navigation in the frame. For history navigations, a
   // valid WebHistoryItem should be provided. Returns CommitResult::Ok if the
@@ -251,7 +252,9 @@ class WebLocalFrame : public WebFrame {
       bool replace = false,
       WebFrameLoadType = WebFrameLoadType::kStandard,
       const WebHistoryItem& = WebHistoryItem(),
-      bool is_client_redirect = false) = 0;
+      bool is_client_redirect = false,
+      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data =
+          nullptr) = 0;
 
   // Returns the document loader that is currently loading.  May be null.
   virtual WebDocumentLoader* GetProvisionalDocumentLoader() const = 0;

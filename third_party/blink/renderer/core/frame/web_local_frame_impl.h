@@ -263,22 +263,25 @@ class CORE_EXPORT WebLocalFrameImpl final
       WebFrameLoadType,
       const WebHistoryItem&,
       bool is_client_redirect,
-      const base::UnguessableToken& devtools_navigation_token) override;
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   blink::mojom::CommitResult CommitSameDocumentNavigation(
       const WebURL&,
       WebFrameLoadType,
       const WebHistoryItem&,
       bool is_client_redirect) override;
   void LoadJavaScriptURL(const WebURL&) override;
-  void CommitDataNavigation(const WebData&,
-                            const WebString& mime_type,
-                            const WebString& text_encoding,
-                            const WebURL& base_url,
-                            const WebURL& unreachable_url,
-                            bool replace,
-                            WebFrameLoadType,
-                            const WebHistoryItem&,
-                            bool is_client_redirect) override;
+  void CommitDataNavigation(
+      const WebData&,
+      const WebString& mime_type,
+      const WebString& text_encoding,
+      const WebURL& base_url,
+      const WebURL& unreachable_url,
+      bool replace,
+      WebFrameLoadType,
+      const WebHistoryItem&,
+      bool is_client_redirect,
+      std::unique_ptr<WebDocumentLoader::ExtraData> navigation_data) override;
   FallbackContentResult MaybeRenderFallbackContent(
       const WebURLError&) const override;
   void ReportContentSecurityPolicyViolation(

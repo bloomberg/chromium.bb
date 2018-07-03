@@ -230,7 +230,8 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       const ResourceRequest&,
       const SubstituteData&,
       ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token) = 0;
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) = 0;
 
   virtual String UserAgent() = 0;
 

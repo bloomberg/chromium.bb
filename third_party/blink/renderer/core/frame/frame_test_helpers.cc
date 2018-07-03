@@ -105,9 +105,10 @@ void LoadFrame(WebLocalFrame* frame, const std::string& url) {
   if (web_url.ProtocolIs("javascript")) {
     frame->LoadJavaScriptURL(web_url);
   } else {
-    frame->CommitNavigation(
-        WebURLRequest(web_url), blink::WebFrameLoadType::kStandard,
-        blink::WebHistoryItem(), false, base::UnguessableToken::Create());
+    frame->CommitNavigation(WebURLRequest(web_url),
+                            blink::WebFrameLoadType::kStandard,
+                            blink::WebHistoryItem(), false,
+                            base::UnguessableToken::Create(), nullptr);
   }
   PumpPendingRequestsForFrameToLoad(frame);
 }
@@ -126,7 +127,7 @@ void LoadHistoryItem(WebLocalFrame* frame,
   frame->CommitNavigation(
       WrappedResourceRequest(history_item->GenerateResourceRequest(cache_mode)),
       WebFrameLoadType::kBackForward, item,
-      /*is_client_redirect=*/false, base::UnguessableToken::Create());
+      /*is_client_redirect=*/false, base::UnguessableToken::Create(), nullptr);
   PumpPendingRequestsForFrameToLoad(frame);
 }
 

@@ -852,7 +852,7 @@ void BlinkTestRunner::OnReset() {
   main_frame->CommitNavigation(WebURLRequest(GURL(url::kAboutBlankURL)),
                                blink::WebFrameLoadType::kStandard,
                                blink::WebHistoryItem(), false,
-                               base::UnguessableToken::Create());
+                               base::UnguessableToken::Create(), nullptr);
   Send(new ShellViewHostMsg_ResetDone(routing_id()));
 }
 

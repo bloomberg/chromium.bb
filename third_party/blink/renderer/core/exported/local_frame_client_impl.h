@@ -159,7 +159,8 @@ class LocalFrameClientImpl final : public LocalFrameClient {
       const ResourceRequest&,
       const SubstituteData&,
       ClientRedirectPolicy,
-      const base::UnguessableToken& devtools_navigation_token) override;
+      const base::UnguessableToken& devtools_navigation_token,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) override;
   WTF::String UserAgent() override;
   WTF::String DoNotTrackValue() override;
   void TransitionToCommittedForNewPage() override;
