@@ -750,14 +750,7 @@ CSSPrimitiveValue* ConsumeLengthOrPercentCountNegative(
   CSSPrimitiveValue* result =
       ConsumeLengthOrPercent(range, context.Mode(), kValueRangeNonNegative,
                              CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
-  if (result || !negative_size)
-    return result;
-
-  result =
-      ConsumeLengthOrPercent(range, context.Mode(), kValueRangeAll,
-                             CSSPropertyParserHelpers::UnitlessQuirk::kForbid);
-
-  if (result)
+  if (!result && negative_size)
     context.Count(*negative_size);
   return result;
 }
@@ -777,6 +770,8 @@ CSSValue* ConsumeBackgroundSize(CSSParserTokenRange& range,
     horizontal =
         ConsumeLengthOrPercentCountNegative(range, context, negative_size);
   }
+  if (!horizontal)
+    return nullptr;
 
   CSSValue* vertical = nullptr;
   if (!range.AtEnd()) {
