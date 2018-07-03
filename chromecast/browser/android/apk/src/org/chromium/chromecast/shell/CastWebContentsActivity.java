@@ -56,9 +56,6 @@ public class CastWebContentsActivity extends Activity {
     private CastWebContentsSurfaceHelper mSurfaceHelper;
 
     {
-        // Create an Observable that only supplies the Intent when not finishing.
-        Observable<Intent> hasIntentState =
-                mGotIntentState.and(Observable.not(mIsFinishingState)).map(Both::getFirst);
         Observable<Intent> gotIntentAfterFinishingState =
                 mIsFinishingState.andThen(mGotIntentState).map(Both::getSecond);
         Observable<?> createdAndNotTestingState =
@@ -108,10 +105,14 @@ public class CastWebContentsActivity extends Activity {
                 }));
 
         // Handle each new Intent.
-        hasIntentState.map(Intent::getExtras)
+        Controller<CastWebContentsSurfaceHelper.StartParams> startParamsState = new Controller<>();
+        mGotIntentState.and(Observable.not(mIsFinishingState))
+                .map(Both::getFirst)
+                .map(Intent::getExtras)
                 .map(CastWebContentsSurfaceHelper.StartParams::fromBundle)
-                .unique((previous, current) -> previous.uri.equals(current.uri))
-                .watch(ScopeFactories.onEnter(this ::notifyNewWebContents));
+                // Use the duplicate-filtering functionality of Controller to drop duplicate params.
+                .watch(ScopeFactories.onEnter(startParamsState::set));
+        startParamsState.watch(ScopeFactories.onEnter(this ::notifyNewWebContents));
 
         mIsFinishingState.watch(ScopeFactories.onEnter((String reason) -> {
             if (DEBUG) Log.d(TAG, "Finishing activity: " + reason);
