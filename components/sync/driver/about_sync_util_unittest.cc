@@ -4,15 +4,10 @@
 
 #include "components/sync/driver/about_sync_util.h"
 
-#include "base/strings/utf_string_conversions.h"
 #include "components/sync/driver/fake_sync_service.h"
 #include "components/sync/engine/sync_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-using ::testing::NiceMock;
-using ::testing::Return;
-using ::testing::_;
 
 namespace syncer {
 namespace sync_ui_util {
@@ -21,8 +16,12 @@ namespace {
 class SyncServiceMock : public FakeSyncService {
  public:
   bool IsFirstSetupComplete() const override { return true; }
+  bool CanSyncStart() const override { return true; }
 
   bool HasUnrecoverableError() const override { return true; }
+  int GetDisableReasons() const override {
+    return DISABLE_REASON_UNRECOVERABLE_ERROR;
+  }
 
   bool QueryDetailedSyncStatus(SyncStatus* result) override { return false; }
 

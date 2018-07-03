@@ -10,6 +10,7 @@
 
 #include "base/i18n/time_formatting.h"
 #include "base/logging.h"
+#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
@@ -174,6 +175,45 @@ class SectionList {
   std::vector<std::unique_ptr<Section>> sections_;
 };
 
+std::string GetDisableReasonsString(int disable_reasons) {
+  std::vector<std::string> reason_strings;
+  if (disable_reasons & syncer::SyncService::DISABLE_REASON_PLATFORM_OVERRIDE)
+    reason_strings.push_back("Platform override");
+  if (disable_reasons & syncer::SyncService::DISABLE_REASON_ENTERPRISE_POLICY)
+    reason_strings.push_back("Enterprise policy");
+  if (disable_reasons & syncer::SyncService::DISABLE_REASON_NOT_SIGNED_IN)
+    reason_strings.push_back("Not signed in");
+  if (disable_reasons & syncer::SyncService::DISABLE_REASON_USER_CHOICE)
+    reason_strings.push_back("User choice");
+  if (disable_reasons & syncer::SyncService::DISABLE_REASON_UNRECOVERABLE_ERROR)
+    reason_strings.push_back("Unrecoverable error");
+  return base::JoinString(reason_strings, ", ");
+}
+
+std::string GetSummaryString(syncer::SyncService::State state,
+                             int disable_reasons) {
+  switch (state) {
+    case syncer::SyncService::State::DISABLED:
+      return "Disabled (" + GetDisableReasonsString(disable_reasons) + ")";
+    case syncer::SyncService::State::WAITING_FOR_START_REQUEST:
+      return "Waiting for start request";
+    case syncer::SyncService::State::START_DEFERRED:
+      return "Start deferred";
+    case syncer::SyncService::State::INITIALIZING:
+      return "Initializing";
+    case syncer::SyncService::State::AUTH_ERROR:
+      return "Auth error";
+    case syncer::SyncService::State::WAITING_FOR_CONSENT:
+      return "Waiting for initial setup";
+    case syncer::SyncService::State::CONFIGURING:
+      return "Configuring data types";
+    case syncer::SyncService::State::ACTIVE:
+      return "Active";
+  }
+  NOTREACHED();
+  return std::string();
+}
+
 // Returns a string describing the chrome version environment. Version format:
 // <Build Info> <OS> <Version number> (<Last change>)<channel or "-devel">
 // If version information is unavailable, returns "invalid."
@@ -292,8 +332,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   Stat<std::string>* last_synced = section_local->AddStringStat("Last Synced");
   Stat<bool>* is_setup_complete =
       section_local->AddBoolStat("Sync First-Time Setup Complete");
-  Stat<std::string>* engine_initialization_state =
-      section_local->AddStringStat("Sync Engine State");
   Stat<bool>* is_syncing = section_local->AddBoolStat("Sync Cycle Ongoing");
   Stat<bool>* is_local_sync_enabled =
       section_local->AddBoolStat("Local Sync Backend Enabled");
@@ -391,14 +429,14 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
     return about_info;
   }
 
+  // Summary.
+  summary_string->Set(
+      GetSummaryString(service->GetState(), service->GetDisableReasons()));
+
   SyncStatus full_status;
   bool is_status_valid = service->QueryDetailedSyncStatus(&full_status);
   const SyncCycleSnapshot& snapshot = service->GetLastCycleSnapshot();
   const SyncTokenStatus& token_status = service->GetSyncTokenStatus();
-
-  // Summary.
-  if (is_status_valid)
-    summary_string->Set(service->QuerySyncStatusSummaryString());
 
   // Version Info.
   // |client_version| was already set above.
@@ -423,8 +461,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   server_connection->Set(GetConnectionStatus(token_status));
   last_synced->Set(GetLastSyncedTimeString(service->GetLastSyncedTime()));
   is_setup_complete->Set(service->IsFirstSetupComplete());
-  engine_initialization_state->Set(
-      service->GetEngineInitializationStateString());
   if (is_status_valid)
     is_syncing->Set(full_status.syncing);
   is_local_sync_enabled->Set(service->IsLocalSyncEnabled());

@@ -192,20 +192,12 @@ syncer::SyncTokenStatus FakeSyncService::GetSyncTokenStatus() const {
   return syncer::SyncTokenStatus();
 }
 
-std::string FakeSyncService::QuerySyncStatusSummaryString() {
-  return "";
-}
-
 bool FakeSyncService::QueryDetailedSyncStatus(SyncStatus* result) {
   return false;
 }
 
 base::Time FakeSyncService::GetLastSyncedTime() const {
   return base::Time();
-}
-
-std::string FakeSyncService::GetEngineInitializationStateString() const {
-  return std::string();
 }
 
 SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
