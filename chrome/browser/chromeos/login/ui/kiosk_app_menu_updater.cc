@@ -6,6 +6,8 @@
 
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_data.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 #include "chrome/browser/ui/ash/login_screen_client.h"
@@ -15,13 +17,13 @@
 
 namespace chromeos {
 
-KioskAppMenuUpdater::KioskAppMenuUpdater() {
-  KioskAppManager::Get()->AddObserver(this);
+KioskAppMenuUpdater::KioskAppMenuUpdater()
+    : kiosk_observer_(this), arc_kiosk_observer_(this) {
+  kiosk_observer_.Add(KioskAppManager::Get());
+  arc_kiosk_observer_.Add(ArcKioskAppManager::Get());
 }
 
-KioskAppMenuUpdater::~KioskAppMenuUpdater() {
-  KioskAppManager::Get()->RemoveObserver(this);
-}
+KioskAppMenuUpdater::~KioskAppMenuUpdater() = default;
 
 void KioskAppMenuUpdater::OnKioskAppDataChanged(const std::string& app_id) {
   SendKioskApps();
@@ -35,17 +37,22 @@ void KioskAppMenuUpdater::OnKioskAppsSettingsChanged() {
   SendKioskApps();
 }
 
+void KioskAppMenuUpdater::OnArcKioskAppsChanged() {
+  SendKioskApps();
+}
+
 void KioskAppMenuUpdater::SendKioskApps() {
   if (!LoginScreenClient::HasInstance())
     return;
 
   std::vector<ash::mojom::KioskAppInfoPtr> output;
-  std::vector<chromeos::KioskAppManager::App> apps;
 
-  chromeos::KioskAppManager::Get()->GetApps(&apps);
+  std::vector<KioskAppManager::App> apps;
+  KioskAppManager::Get()->GetApps(&apps);
   for (const auto& app : apps) {
     auto mojo_app = ash::mojom::KioskAppInfo::New();
-    mojo_app->app_id = app.app_id;
+    mojo_app->identifier = ash::mojom::KioskAppIdentifier::New();
+    mojo_app->identifier->set_app_id(app.app_id);
     mojo_app->name = base::UTF8ToUTF16(app.name);
     if (app.icon.isNull()) {
       mojo_app->icon = *ui::ResourceBundle::GetSharedInstance()
@@ -53,6 +60,23 @@ void KioskAppMenuUpdater::SendKioskApps() {
                             .ToImageSkia();
     } else {
       mojo_app->icon = gfx::ImageSkia(app.icon);
+    }
+    output.push_back(std::move(mojo_app));
+  }
+
+  std::vector<ArcKioskAppData*> arc_apps;
+  ArcKioskAppManager::Get()->GetAllApps(&arc_apps);
+  for (ArcKioskAppData* app : arc_apps) {
+    auto mojo_app = ash::mojom::KioskAppInfo::New();
+    mojo_app->identifier = ash::mojom::KioskAppIdentifier::New();
+    mojo_app->identifier->set_account_id(app->account_id());
+    mojo_app->name = base::UTF8ToUTF16(app->name());
+    if (app->icon().isNull()) {
+      mojo_app->icon = *ui::ResourceBundle::GetSharedInstance()
+                            .GetImageNamed(IDR_APP_DEFAULT_ICON)
+                            .ToImageSkia();
+    } else {
+      mojo_app->icon = gfx::ImageSkia(app->icon());
     }
     output.push_back(std::move(mojo_app));
   }

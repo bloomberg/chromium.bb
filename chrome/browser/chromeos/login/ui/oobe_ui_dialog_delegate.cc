@@ -81,9 +81,12 @@ void OobeUIDialogDelegate::Show(bool closable_by_esc) {
 
 void OobeUIDialogDelegate::ShowFullScreen() {
   const gfx::Size& size =
-      display::Screen::GetScreen()->GetPrimaryDisplay().size();
+      display::Screen::GetScreen()
+          ->GetDisplayNearestWindow(dialog_widget_->GetNativeWindow())
+          .size();
   UpdateSizeAndPosition(size.width(), size.height());
   Show(false /*closable_by_esc*/);
+  showing_fullscreen_ = true;
 }
 
 void OobeUIDialogDelegate::Hide() {
@@ -103,15 +106,23 @@ void OobeUIDialogDelegate::UpdateSizeAndPosition(int width, int height) {
   if (!dialog_widget_)
     return;
 
-  const gfx::Rect rect =
+  // display_manager.js sends the width and height of the content in
+  // updateScreenSize() when we show the app launch splash. Without this if
+  // statement, the dialog would be resized to just fit the content rather than
+  // show fullscreen as expected.
+  if (showing_fullscreen_)
+    return;
+
+  gfx::Rect display_rect =
       display::Screen::GetScreen()
           ->GetDisplayNearestWindow(dialog_widget_->GetNativeWindow())
-          .work_area();
+          .bounds();
 
   // Place the dialog in the center of the screen.
-  const gfx::Rect bounds(rect.x() + (rect.width() - size_.width()) / 2,
-                         rect.y() + (rect.height() - size_.height()) / 2,
-                         size_.width(), size_.height());
+  const gfx::Rect bounds(
+      display_rect.x() + (display_rect.width() - size_.width()) / 2,
+      display_rect.y() + (display_rect.height() - size_.height()) / 2,
+      size_.width(), size_.height());
   dialog_widget_->SetBounds(bounds);
 }
 

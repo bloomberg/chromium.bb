@@ -6,12 +6,17 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_UI_KIOSK_APP_MENU_UPDATER_H_
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
+#include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
+#include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager_observer.h"
 
 namespace chromeos {
 
 // Observer class to update the Kiosk app menu when Kiosk app data is changed.
-class KioskAppMenuUpdater : public KioskAppManagerObserver {
+class KioskAppMenuUpdater
+    : public KioskAppManagerObserver,
+      public ArcKioskAppManager::ArcKioskAppManagerObserver {
  public:
   KioskAppMenuUpdater();
   ~KioskAppMenuUpdater() override;
@@ -24,7 +29,13 @@ class KioskAppMenuUpdater : public KioskAppManagerObserver {
   void OnKioskAppDataLoadFailure(const std::string& app_id) override;
   void OnKioskAppsSettingsChanged() override;
 
+  // ArcKioskAppManagerObserver:
+  void OnArcKioskAppsChanged() override;
+
  private:
+  ScopedObserver<KioskAppManager, KioskAppMenuUpdater> kiosk_observer_;
+  ScopedObserver<ArcKioskAppManager, KioskAppMenuUpdater> arc_kiosk_observer_;
+
   DISALLOW_COPY_AND_ASSIGN(KioskAppMenuUpdater);
 };
 

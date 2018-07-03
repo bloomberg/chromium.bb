@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login/app_launch_controller.h"
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"
 #include "base/bind.h"
 #include "base/callback.h"
@@ -166,18 +167,18 @@ void AppLaunchController::StartAppLaunch(bool is_auto_launch) {
   RecordKioskLaunchUMA(is_auto_launch);
 
   // Ensure WebUILoginView is enabled so that bailout shortcut key works.
-  WebUILoginView* webui = host_->GetWebUILoginView();
-  if (webui) {
-    webui->SetUIEnabled(true);
-
-    login_screen_visible_ = webui->webui_visible();
+  if (ash::features::IsViewsLoginEnabled()) {
+    host_->GetLoginDisplay()->SetUIEnabled(true);
+    login_screen_visible_ = true;
+  } else {
+    host_->GetWebUILoginView()->SetUIEnabled(true);
+    login_screen_visible_ = host_->GetWebUILoginView()->webui_visible();
     if (!login_screen_visible_) {
       registrar_.Add(this, chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                      content::NotificationService::AllSources());
     }
-  } else {
-    login_screen_visible_ = true;
   }
+
   launch_splash_start_time_ = base::TimeTicks::Now().ToInternalValue();
 
   // TODO(tengs): Add a loading profile app launch state.

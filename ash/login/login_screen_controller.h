@@ -83,6 +83,7 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                                            const std::string& locale);
   void ShowFeedback();
   void LaunchKioskApp(const std::string& app_id);
+  void LaunchArcKioskApp(const AccountId& account_id);
 
   // Add or remove an observer.
   void AddObserver(LoginScreenControllerObserver* observer);

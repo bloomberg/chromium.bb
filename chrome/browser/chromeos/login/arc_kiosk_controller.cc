@@ -41,7 +41,7 @@ ArcKioskController::~ArcKioskController() {
 void ArcKioskController::StartArcKiosk(const AccountId& account_id) {
   DVLOG(1) << "Starting ARC Kiosk for account: " << account_id.GetUserEmail();
 
-  host_->GetWebUILoginView()->SetUIEnabled(true);
+  host_->GetLoginDisplay()->SetUIEnabled(true);
 
   arc_kiosk_splash_screen_view_->SetDelegate(this);
   arc_kiosk_splash_screen_view_->Show();

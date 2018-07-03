@@ -213,8 +213,20 @@ class KioskAppsButton : public views::MenuButton,
     // the state is reset (when login screen reappears).
     is_launch_enabled_ = false;
 
-    Shell::Get()->login_screen_controller()->LaunchKioskApp(
-        kiosk_apps_[command_id]->app_id);
+    const mojom::KioskAppInfoPtr& kiosk_app = kiosk_apps_[command_id];
+
+    switch (kiosk_app->identifier->which()) {
+      case mojom::KioskAppIdentifier::Tag::ACCOUNT_ID:
+        Shell::Get()->login_screen_controller()->LaunchArcKioskApp(
+            kiosk_app->identifier->get_account_id());
+        return;
+      case mojom::KioskAppIdentifier::Tag::APP_ID:
+        Shell::Get()->login_screen_controller()->LaunchKioskApp(
+            kiosk_app->identifier->get_app_id());
+        return;
+      default:
+        NOTREACHED();
+    }
   }
 
   bool IsCommandIdChecked(int command_id) const override { return false; }

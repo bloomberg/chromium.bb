@@ -4,15 +4,21 @@
 
 module ash.mojom;
 
+import "components/account_id/interfaces/account_id.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "ui/gfx/image/mojo/image.mojom";
+
+union KioskAppIdentifier {
+  // For chrome kiosk apps only, the extension app id.
+  string app_id;
+  // For ARC kiosk apps only, the account id for the app.
+  signin.mojom.AccountId account_id;
+};
 
 // Metadata about a kiosk app. Used for display in the kiosk app menu in the
 // login screen shelf.
 struct KioskAppInfo {
-  // For chrome kiosk apps, the extension app id. For ARC apps, an id generated
-  // from the package name + class name
-  string app_id;
+  KioskAppIdentifier identifier;
   mojo_base.mojom.String16 name;
   gfx.mojom.ImageSkia icon;
 };
