@@ -184,6 +184,7 @@ class ProfileInfoCache : public ProfileInfoInterface,
   void RemoveDeprecatedStatistics();
 
   std::vector<std::string> sorted_keys_;
+  const base::FilePath user_data_dir_;
 
   DISALLOW_COPY_AND_ASSIGN(ProfileInfoCache);
 };

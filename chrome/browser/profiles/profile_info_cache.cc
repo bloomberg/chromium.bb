@@ -68,7 +68,7 @@ void DeleteBitmap(const base::FilePath& image_path) {
 
 ProfileInfoCache::ProfileInfoCache(PrefService* prefs,
                                    const base::FilePath& user_data_dir)
-    : ProfileAttributesStorage(prefs, user_data_dir) {
+    : ProfileAttributesStorage(prefs), user_data_dir_(user_data_dir) {
   // Populate the cache
   DictionaryPrefUpdate update(prefs_, prefs::kProfileInfoCache);
   base::DictionaryValue* cache = update.Get();
