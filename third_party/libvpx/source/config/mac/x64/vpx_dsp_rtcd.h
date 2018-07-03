@@ -2949,10 +2949,12 @@ unsigned int vpx_highbd_8_variance8x8_sse2(const uint8_t* src_ptr,
 #define vpx_highbd_8_variance8x8 vpx_highbd_8_variance8x8_sse2
 
 unsigned int vpx_highbd_avg_4x4_c(const uint8_t*, int p);
-#define vpx_highbd_avg_4x4 vpx_highbd_avg_4x4_c
+unsigned int vpx_highbd_avg_4x4_sse2(const uint8_t*, int p);
+#define vpx_highbd_avg_4x4 vpx_highbd_avg_4x4_sse2
 
 unsigned int vpx_highbd_avg_8x8_c(const uint8_t*, int p);
-#define vpx_highbd_avg_8x8 vpx_highbd_avg_8x8_c
+unsigned int vpx_highbd_avg_8x8_sse2(const uint8_t*, int p);
+#define vpx_highbd_avg_8x8 vpx_highbd_avg_8x8_sse2
 
 void vpx_highbd_comp_avg_pred_c(uint16_t* comp_pred,
                                 const uint16_t* pred,

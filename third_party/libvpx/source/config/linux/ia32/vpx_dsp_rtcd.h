@@ -3636,10 +3636,12 @@ RTCD_EXTERN unsigned int (*vpx_highbd_8_variance8x8)(const uint8_t* src_ptr,
                                                      unsigned int* sse);
 
 unsigned int vpx_highbd_avg_4x4_c(const uint8_t*, int p);
-#define vpx_highbd_avg_4x4 vpx_highbd_avg_4x4_c
+unsigned int vpx_highbd_avg_4x4_sse2(const uint8_t*, int p);
+RTCD_EXTERN unsigned int (*vpx_highbd_avg_4x4)(const uint8_t*, int p);
 
 unsigned int vpx_highbd_avg_8x8_c(const uint8_t*, int p);
-#define vpx_highbd_avg_8x8 vpx_highbd_avg_8x8_c
+unsigned int vpx_highbd_avg_8x8_sse2(const uint8_t*, int p);
+RTCD_EXTERN unsigned int (*vpx_highbd_avg_8x8)(const uint8_t*, int p);
 
 void vpx_highbd_comp_avg_pred_c(uint16_t* comp_pred,
                                 const uint16_t* pred,
@@ -9461,6 +9463,12 @@ static void setup_rtcd_internal(void) {
   vpx_highbd_8_variance8x8 = vpx_highbd_8_variance8x8_c;
   if (flags & HAS_SSE2)
     vpx_highbd_8_variance8x8 = vpx_highbd_8_variance8x8_sse2;
+  vpx_highbd_avg_4x4 = vpx_highbd_avg_4x4_c;
+  if (flags & HAS_SSE2)
+    vpx_highbd_avg_4x4 = vpx_highbd_avg_4x4_sse2;
+  vpx_highbd_avg_8x8 = vpx_highbd_avg_8x8_c;
+  if (flags & HAS_SSE2)
+    vpx_highbd_avg_8x8 = vpx_highbd_avg_8x8_sse2;
   vpx_highbd_convolve8 = vpx_highbd_convolve8_c;
   if (flags & HAS_AVX2)
     vpx_highbd_convolve8 = vpx_highbd_convolve8_avx2;
