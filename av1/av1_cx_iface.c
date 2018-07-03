@@ -1288,7 +1288,6 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       if (cx_data_sz < ctx->cx_data_sz / 2) {
         aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
                            "Compressed data buffer too small");
-        return AOM_CODEC_ERROR;
       }
     }
 
@@ -1304,8 +1303,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
                                          !img, timebase)) {
       if (cpi->common.seq_params.frame_id_numbers_present_flag) {
         if (cpi->common.invalid_delta_frame_id_minus_1) {
-          ctx->base.err_detail = "Invalid delta_frame_id_minus_1";
-          return AOM_CODEC_ERROR;
+          aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR,
+                             "Invalid delta_frame_id_minus_1");
         }
       }
       cpi->seq_params_locked = 1;
@@ -1334,7 +1333,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           // OBUs are preceded/succeeded by an unsigned leb128 coded integer.
           if (write_uleb_obu_size(obu_header_size, obu_payload_size,
                                   ctx->pending_cx_data) != AOM_CODEC_OK) {
-            return AOM_CODEC_ERROR;
+            aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR, NULL);
           }
 
           frame_size += obu_header_size + obu_payload_size + length_field_size;
@@ -1344,7 +1343,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           size_t curr_frame_size = frame_size;
           if (av1_convert_sect5obus_to_annexb(cx_data, &curr_frame_size) !=
               AOM_CODEC_OK) {
-            return AOM_CODEC_ERROR;
+            aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR, NULL);
           }
           frame_size = curr_frame_size;
 
@@ -1356,7 +1355,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
           }
           if (write_uleb_obu_size(0, (uint32_t)frame_size, cx_data) !=
               AOM_CODEC_OK) {
-            return AOM_CODEC_ERROR;
+            aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR, NULL);
           }
           frame_size += length_field_size;
         }
@@ -1387,7 +1386,7 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
         }
         if (write_uleb_obu_size(0, (uint32_t)tu_size, ctx->pending_cx_data) !=
             AOM_CODEC_OK) {
-          return AOM_CODEC_ERROR;
+          aom_internal_error(&cpi->common.error, AOM_CODEC_ERROR, NULL);
         }
         ctx->pending_cx_data_sz += length_field_size;
       }
