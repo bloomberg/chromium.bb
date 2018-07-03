@@ -31,9 +31,9 @@
 #include "third_party/blink/renderer/core/clipboard/data_object_item.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
-#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "ui/gfx/codec/png_codec.h"
 

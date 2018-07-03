@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 
 #include "net/base/escape.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
@@ -71,9 +71,6 @@ static String EscapeForHTML(const String& str) {
   return String(output.c_str());
 }
 
-// TODO(slangley): crbug.com/775830. Remove the implementation of
-// URLToImageMarkup from clipboard_utils.h once we can delete
-// MockClipboard.
 String URLToImageMarkup(const KURL& url, const String& title) {
   StringBuilder builder;
   builder.Append("<img src=\"");

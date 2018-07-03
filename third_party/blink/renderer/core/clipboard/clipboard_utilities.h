@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010 Google Inc. All rights reserved.
+ * Copyright (c) 2008, 2009, Google Inc. All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
  * modification, are permitted provided that the following conditions are
@@ -28,19 +28,23 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
+#ifndef THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_CLIPBOARD_UTILITIES_H_
+#define THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_CLIPBOARD_UTILITIES_H_
+
+#include "build/build_config.h"
+#include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/platform/weborigin/kurl.h"
+#include "third_party/blink/renderer/platform/wtf/forward.h"
 
 namespace blink {
 
-const char kMimeTypeText[] = "text";
-const char kMimeTypeTextPlain[] = "text/plain";
-const char kMimeTypeTextPlainEtc[] = "text/plain;";
-const char kMimeTypeTextHTML[] = "text/html";
-const char kMimeTypeTextRTF[] = "text/rtf";
-const char kMimeTypeURL[] = "url";
-const char kMimeTypeTextURIList[] = "text/uri-list";
-const char kMimeTypeDownloadURL[] = "downloadurl";
-const char kMimeTypeFiles[] = "Files";
-const char kMimeTypeImagePng[] = "image/png";
+#if defined(OS_WIN)
+CORE_EXPORT void ReplaceNewlinesWithWindowsStyleNewlines(String&);
+#endif
+CORE_EXPORT void ReplaceNBSPWithSpace(String&);
+CORE_EXPORT String ConvertURIListToURL(const String& uri_list);
+CORE_EXPORT String URLToImageMarkup(const KURL&, const String& title);
 
 }  // namespace blink
+
+#endif  // THIRD_PARTY_BLINK_RENDERER_CORE_CLIPBOARD_CLIPBOARD_UTILITIES_H_

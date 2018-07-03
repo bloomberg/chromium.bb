@@ -29,6 +29,8 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
+#include "third_party/blink/renderer/core/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_access_policy.h"
 #include "third_party/blink/renderer/core/clipboard/data_transfer_item.h"
@@ -50,8 +52,6 @@
 #include "third_party/blink/renderer/core/paint/paint_info.h"
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/paint_layer_painter.h"
-#include "third_party/blink/renderer/platform/clipboard/clipboard_mime_types.h"
-#include "third_party/blink/renderer/platform/clipboard/clipboard_utilities.h"
 #include "third_party/blink/renderer/platform/drag_image.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_canvas.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_record_builder.h"
