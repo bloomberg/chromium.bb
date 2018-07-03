@@ -493,7 +493,7 @@ void ArcAppWindowLauncherController::RegisterApp(
     arc::Intent intent;
     if (arc::ParseIntent(app_window_info->launch_intent(), &intent) &&
         intent.HasExtraParam(arc::kInitialStartParam)) {
-      DCHECK(!arc::IsRobotAccountMode());
+      DCHECK(!arc::IsRobotOrOfflineDemoAccountMode());
       arc::UpdatePlayStoreShowTime(
           base::Time::Now() - opt_in_management_check_start_time_,
           owner()->profile());

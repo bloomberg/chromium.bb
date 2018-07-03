@@ -10,6 +10,7 @@
 #include "base/callback.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/image_loader_client.h"
+#include "content/public/browser/browser_thread.h"
 
 namespace chromeos {
 
@@ -19,7 +20,8 @@ namespace {
 DemoSession* g_demo_session = nullptr;
 
 // Whether the demo mode was forced on for tests.
-bool g_force_device_in_demo_mode = false;
+DemoSession::EnrollmentType g_force_enrollment_type =
+    DemoSession::EnrollmentType::kNone;
 
 // The name of the offline demo resource image loader component.
 constexpr char kOfflineResourcesComponentName[] = "demo_mode_resources";
@@ -35,17 +37,27 @@ constexpr base::FilePath::CharType kOfflineResourcesComponentPath[] =
 constexpr base::FilePath::CharType kDemoAppsPath[] =
     FILE_PATH_LITERAL("android_demo_apps.squash");
 
+bool IsDemoModeOfflineEnrolled() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(DemoSession::IsDeviceInDemoMode());
+  // TODO(tbarzic): Implement this.
+  return g_force_enrollment_type == DemoSession::EnrollmentType::kOffline;
+}
+
 }  // namespace
 
 // static
 bool DemoSession::IsDeviceInDemoMode() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   // TODO(tbarzic): Implement this.
-  return g_force_device_in_demo_mode;
+  return g_force_enrollment_type != DemoSession::EnrollmentType::kNone;
 }
 
 // static
-void DemoSession::SetDeviceInDemoModeForTesting(bool in_demo_mode) {
-  g_force_device_in_demo_mode = in_demo_mode;
+void DemoSession::SetDemoModeEnrollmentTypeForTesting(
+    EnrollmentType enrollment_type) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  g_force_enrollment_type = enrollment_type;
 }
 
 // static
@@ -119,7 +131,8 @@ base::FilePath DemoSession::GetDemoAppsPath() const {
   return offline_resources_path_.Append(kDemoAppsPath);
 }
 
-DemoSession::DemoSession() : weak_ptr_factory_(this) {}
+DemoSession::DemoSession()
+    : offline_enrolled_(IsDemoModeOfflineEnrolled()), weak_ptr_factory_(this) {}
 
 DemoSession::~DemoSession() = default;
 

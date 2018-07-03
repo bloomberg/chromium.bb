@@ -902,7 +902,7 @@ void ArcAppListPrefs::AddAppAndShortcut(bool app_ready,
                                       : GetAppId(package_name, activity);
 
   // Do not add Play Store app for Public Session and Kiosk modes.
-  if (app_id == arc::kPlayStoreAppId && arc::IsRobotAccountMode())
+  if (app_id == arc::kPlayStoreAppId && arc::IsRobotOrOfflineDemoAccountMode())
     return;
 
   std::string updated_name = name;

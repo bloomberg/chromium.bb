@@ -83,7 +83,7 @@ bool IsWebstoreSearchEnabled() {
 }
 
 bool IsPlayStoreAvailable() {
-  if (IsRobotAccountMode())
+  if (IsRobotOrOfflineDemoAccountMode())
     return false;
   const auto* command_line = base::CommandLine::ForCurrentProcess();
   if (!command_line->HasSwitch(chromeos::switches::kArcStartMode))
@@ -143,7 +143,7 @@ bool IsArcKioskMode() {
          user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp();
 }
 
-bool IsRobotAccountMode() {
+bool IsRobotOrOfflineDemoAccountMode() {
   return user_manager::UserManager::IsInitialized() &&
          (user_manager::UserManager::Get()->IsLoggedInAsArcKioskApp() ||
           user_manager::UserManager::Get()->IsLoggedInAsPublicAccount());

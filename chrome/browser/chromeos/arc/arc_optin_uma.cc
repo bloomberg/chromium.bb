@@ -9,6 +9,7 @@
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/demo_mode/demo_session.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/arc/arc_util.h"
 
@@ -19,8 +20,14 @@ namespace {
 // Adds a suffix to the name based on the account type.
 std::string GetHistogramName(const std::string& base_name,
                              const Profile* profile) {
-  if (IsRobotAccountMode())
+  if (IsRobotOrOfflineDemoAccountMode()) {
+    chromeos::DemoSession* demo_session = chromeos::DemoSession::Get();
+    if (demo_session && demo_session->started()) {
+      return demo_session->offline_enrolled() ? base_name + "OfflineDemoMode"
+                                              : base_name + "DemoMode";
+    }
     return base_name + "RobotAccount";
+  }
   if (profile->IsChild())
     return base_name + "Child";
   return base_name +

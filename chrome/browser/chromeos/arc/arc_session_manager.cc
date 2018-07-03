@@ -117,7 +117,7 @@ bool ShouldLaunchPlayStoreApp(Profile* profile,
   if (ShouldShowOptInForTesting())
     return true;
 
-  if (IsRobotAccountMode())
+  if (IsRobotOrOfflineDemoAccountMode())
     return false;
 
   if (IsArcOptInVerificationDisabled())
@@ -300,7 +300,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
 
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
     // TODO(poromov): Consider PublicSession offline mode.
-    if (IsRobotAccountMode()) {
+    if (IsRobotOrOfflineDemoAccountMode()) {
       VLOG(1) << "Robot account auth code fetching error";
       // Log out the user. All the cleanup will be done in Shutdown() method.
       // The callback is not called because auth code is empty.
@@ -442,7 +442,7 @@ void ArcSessionManager::Initialize() {
   // in typical use case there will be no one nearby the kiosk device, who can
   // do some action to solve the problem be means of UI.
   if (g_ui_enabled && !IsArcOptInVerificationDisabled() &&
-      !IsRobotAccountMode()) {
+      !IsRobotOrOfflineDemoAccountMode()) {
     DCHECK(!support_host_);
     support_host_ = std::make_unique<ArcSupportHost>(profile_);
     support_host_->SetErrorDelegate(this);
@@ -659,7 +659,7 @@ bool ArcSessionManager::RequestEnableImpl() {
   // This is for testing purpose.
   const bool start_arc_directly =
       prefs->GetBoolean(prefs::kArcSignedIn) || ShouldArcAlwaysStart() ||
-      IsRobotAccountMode() || IsArcOptInVerificationDisabled();
+      IsRobotOrOfflineDemoAccountMode() || IsArcOptInVerificationDisabled();
 
   // When ARC is blocked because of filesystem compatibility, do not proceed
   // to starting ARC nor follow further state transitions.
@@ -758,7 +758,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
   DCHECK(!terms_of_service_negotiator_);
   // In Kiosk and Public Session mode, Terms of Service negotiation should be
   // skipped. See also RequestEnableImpl().
-  DCHECK(!IsRobotAccountMode());
+  DCHECK(!IsRobotOrOfflineDemoAccountMode());
   // If opt-in verification is disabled, Terms of Service negotiation should
   // be skipped, too. See also RequestEnableImpl().
   DCHECK(!IsArcOptInVerificationDisabled());
@@ -905,7 +905,7 @@ void ArcSessionManager::StartBackgroundAndroidManagementCheck() {
   // Skip Android management check for testing.
   // We also skip if Android management check for Kiosk and Public Session mode,
   // because there are no managed human users for them exist.
-  if (IsArcOptInVerificationDisabled() || IsRobotAccountMode() ||
+  if (IsArcOptInVerificationDisabled() || IsRobotOrOfflineDemoAccountMode() ||
       (!g_ui_enabled &&
        !g_enable_check_android_management_in_tests.value_or(false))) {
     return;
