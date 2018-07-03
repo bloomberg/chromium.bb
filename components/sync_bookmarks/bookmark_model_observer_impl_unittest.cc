@@ -84,6 +84,83 @@ TEST_F(BookmarkModelObserverImplTest,
   EXPECT_THAT(local_changes[0]->bookmark_node(), Eq(bookmark_node));
 }
 
+TEST_F(BookmarkModelObserverImplTest,
+       BookmarkChangedShouldUpdateTheTrackerAndNudgeForCommit) {
+  const std::string kTitle1 = "title1";
+  const std::string kUrl1 = "http://www.url1.com";
+  const std::string kNewUrl1 = "http://www.new-url1.com";
+  const std::string kTitle2 = "title2";
+  const std::string kUrl2 = "http://www.url2.com";
+  const std::string kNewTitle2 = "new_title2";
+  const size_t kMaxEntries = 10;
+
+  const bookmarks::BookmarkNode* bookmark_bar_node =
+      bookmark_model()->bookmark_bar_node();
+  const bookmarks::BookmarkNode* bookmark_node1 = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle1),
+      GURL(kUrl1));
+  const bookmarks::BookmarkNode* bookmark_node2 = bookmark_model()->AddURL(
+      /*parent=*/bookmark_bar_node, /*index=*/0, base::UTF8ToUTF16(kTitle2),
+      GURL(kUrl2));
+  // Both bookmarks should be tracked now.
+  ASSERT_THAT(bookmark_tracker()->TrackedEntitiesCountForTest(), 3U);
+
+  const std::string id1 = bookmark_tracker()
+                              ->GetEntityForBookmarkNode(bookmark_node1)
+                              ->metadata()
+                              ->server_id();
+  const std::string id2 = bookmark_tracker()
+                              ->GetEntityForBookmarkNode(bookmark_node2)
+                              ->metadata()
+                              ->server_id();
+  // There should be two local changes now for both entities.
+  ASSERT_THAT(
+      bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries).size(), 2U);
+
+  // Record commits responses for both nodes (without change in ids for
+  // simplcitiy of this test).
+  bookmark_tracker()->UpdateUponCommitResponse(
+      id1, id1, /*acked_sequence_number=*/1, /*server_version=*/1);
+  bookmark_tracker()->UpdateUponCommitResponse(
+      id2, id2, /*acked_sequence_number=*/1, /*server_version=*/1);
+
+  // There should be no local changes now.
+  ASSERT_TRUE(
+      bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries).empty());
+
+  // Now update the title of the 2nd node.
+  EXPECT_CALL(*nudge_for_commit_closure(), Run());
+  bookmark_model()->SetTitle(bookmark_node2, base::UTF8ToUTF16(kNewTitle2));
+  // Node 2 should be in the local changes list.
+  std::vector<const SyncedBookmarkTracker::Entity*> local_changes =
+      bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries);
+  ASSERT_THAT(local_changes.size(), 1U);
+  EXPECT_THAT(local_changes[0]->bookmark_node(), Eq(bookmark_node2));
+
+  // Now update the url of the 1st node.
+  EXPECT_CALL(*nudge_for_commit_closure(), Run());
+  bookmark_model()->SetURL(bookmark_node1, GURL(kNewUrl1));
+
+  // Node 1 and 2 should be in the local changes list.
+  local_changes = bookmark_tracker()->GetEntitiesWithLocalChanges(kMaxEntries);
+  ASSERT_THAT(local_changes.size(), 2U);
+
+  // Constuct a set of the bookmark nodes in the local changes.
+  std::set<const bookmarks::BookmarkNode*> nodes_in_local_changes;
+  for (const SyncedBookmarkTracker::Entity* entity : local_changes) {
+    nodes_in_local_changes.insert(entity->bookmark_node());
+  }
+  // Both bookmarks should exist in the set.
+  EXPECT_TRUE(nodes_in_local_changes.find(bookmark_node1) !=
+              nodes_in_local_changes.end());
+  EXPECT_TRUE(nodes_in_local_changes.find(bookmark_node2) !=
+              nodes_in_local_changes.end());
+
+  // Now update metainfo of the 1st node.
+  EXPECT_CALL(*nudge_for_commit_closure(), Run());
+  bookmark_model()->SetNodeMetaInfo(bookmark_node1, "key", "value");
+}
+
 TEST_F(BookmarkModelObserverImplTest, ShouldPositionSiblings) {
   const std::string kTitle = "title";
   const std::string kUrl = "http://www.url.com";
