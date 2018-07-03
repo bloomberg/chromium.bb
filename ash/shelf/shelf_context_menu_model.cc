@@ -8,6 +8,7 @@
 #include <string>
 #include <utility>
 
+#include "ash/public/cpp/app_menu_constants.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/menu_utils.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
@@ -143,6 +144,12 @@ bool ShelfContextMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool ShelfContextMenuModel::IsCommandIdEnabled(int command_id) const {
+  // NOTIFICATION_CONTAINER is always enabled. It is added to this model by
+  // NotificationMenuController, but it is not added to |menu_items_|, so check
+  // for it first.
+  if (command_id == ash::NOTIFICATION_CONTAINER)
+    return true;
+
   return menu_utils::GetMenuItemByCommandId(menu_items_, command_id)->enabled;
 }
 
