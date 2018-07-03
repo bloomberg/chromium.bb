@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_discovery.h"
 #include "device/fido/virtual_fido_device.h"
 
@@ -23,6 +24,7 @@ class ScopedVirtualFidoDevice
   ScopedVirtualFidoDevice();
   ~ScopedVirtualFidoDevice() override;
 
+  void SetSupportedProtocol(ProtocolVersion supported_protocol);
   VirtualFidoDevice::State* mutable_state();
 
  protected:
@@ -31,6 +33,7 @@ class ScopedVirtualFidoDevice
       ::service_manager::Connector* connector) override;
 
  private:
+  ProtocolVersion supported_protocol_ = ProtocolVersion::kU2f;
   scoped_refptr<VirtualFidoDevice::State> state_;
   DISALLOW_COPY_AND_ASSIGN(ScopedVirtualFidoDevice);
 };

@@ -180,14 +180,16 @@ class ClosureExecutorBeforeNavigationCommit
 // Cancels all navigations in a WebContents while in scope.
 class ScopedNavigationCancellingThrottleInstaller : public WebContentsObserver {
  public:
-  ScopedNavigationCancellingThrottleInstaller(WebContents* web_contents)
+  explicit ScopedNavigationCancellingThrottleInstaller(
+      WebContents* web_contents)
       : WebContentsObserver(web_contents) {}
   ~ScopedNavigationCancellingThrottleInstaller() override = default;
 
  protected:
   class CancellingThrottle : public NavigationThrottle {
    public:
-    CancellingThrottle(NavigationHandle* handle) : NavigationThrottle(handle) {}
+    explicit CancellingThrottle(NavigationHandle* handle)
+        : NavigationThrottle(handle) {}
     ~CancellingThrottle() override = default;
 
    protected:
@@ -249,9 +251,9 @@ class WebAuthBrowserTestClientDelegate
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTestClientDelegate);
-
   WebAuthBrowserTestState* const test_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTestClientDelegate);
 };
 
 // Implements ContentBrowserClient and allows webauthn-related calls to be
@@ -288,9 +290,9 @@ class WebAuthBrowserTestContentBrowserClient : public ContentBrowserClient {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTestContentBrowserClient);
-
   WebAuthBrowserTestState* const test_state_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTestContentBrowserClient);
 };
 
 // Test fixture base class for common tasks.
@@ -408,9 +410,8 @@ class WebAuthLocalClientBrowserTest : public WebAuthBrowserTestBase {
 
     auto descriptor = webauth::mojom::PublicKeyCredentialDescriptor::New(
         webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY,
-        std::vector<uint8_t>(
-            std::begin(device::test_data::kTestGetAssertionCredentialId),
-            std::end(device::test_data::kTestGetAssertionCredentialId)),
+        device::fido_parsing_utils::Materialize(
+            device::test_data::kTestGetAssertionCredentialId),
         transports);
     credentials.push_back(std::move(descriptor));
 
@@ -679,6 +680,9 @@ class WebAuthJavascriptClientBrowserTest : public WebAuthBrowserTestBase {
   DISALLOW_COPY_AND_ASSIGN(WebAuthJavascriptClientBrowserTest);
 };
 
+constexpr device::ProtocolVersion kAllProtocols[] = {
+    device::ProtocolVersion::kCtap, device::ProtocolVersion::kU2f};
+
 // Tests that when navigator.credentials.create() is called with an invalid
 // relying party id, we get a SecurityError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
@@ -698,74 +702,100 @@ IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
 // verification required, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithUserVerification) {
-  CreateParameters parameters;
-  parameters.user_verification = kRequiredVerification;
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildCreateCallWithParameters(parameters), &result));
-  ASSERT_EQ(kTimeoutErrorMessage, result);
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+
+    CreateParameters parameters;
+    parameters.user_verification = kRequiredVerification;
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(),
+        BuildCreateCallWithParameters(parameters), &result));
+    ASSERT_EQ(kTimeoutErrorMessage, result);
+  }
 }
 
 // Tests that when navigator.credentials.create() is called with resident key
 // required, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialWithResidentKeyRequired) {
-  CreateParameters parameters;
-  parameters.require_resident_key = true;
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildCreateCallWithParameters(parameters), &result));
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
 
-  ASSERT_EQ(kTimeoutErrorMessage, result);
+    CreateParameters parameters;
+    parameters.require_resident_key = true;
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(),
+        BuildCreateCallWithParameters(parameters), &result));
+
+    ASSERT_EQ(kTimeoutErrorMessage, result);
+  }
 }
 
 // Tests that when navigator.credentials.create() is called with an
 // unsupported algorithm, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialAlgorithmNotSupported) {
-  CreateParameters parameters;
-  parameters.algorithm_identifier = "123";
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildCreateCallWithParameters(parameters), &result));
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
 
-  ASSERT_EQ(kTimeoutErrorMessage, result);
+    CreateParameters parameters;
+    parameters.algorithm_identifier = "123";
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(),
+        BuildCreateCallWithParameters(parameters), &result));
+
+    ASSERT_EQ(kTimeoutErrorMessage, result);
+  }
 }
 
 // Tests that when navigator.credentials.create() is called with a
 // platform authenticator requested, request times out.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        CreatePublicKeyCredentialPlatformAuthenticator) {
-  CreateParameters parameters;
-  parameters.authenticator_attachment = kPlatform;
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildCreateCallWithParameters(parameters), &result));
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
 
-  ASSERT_EQ(kTimeoutErrorMessage, result);
+    CreateParameters parameters;
+    parameters.authenticator_attachment = kPlatform;
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(),
+        BuildCreateCallWithParameters(parameters), &result));
+
+    ASSERT_EQ(kTimeoutErrorMessage, result);
+  }
 }
 
 // Tests that when navigator.credentials.get() is called with user verification
 // required, we get a NotSupportedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialUserVerification) {
-  GetParameters parameters;
-  parameters.user_verification = "required";
-  std::string result;
-  ASSERT_TRUE(content::ExecuteScriptAndExtractString(
-      shell()->web_contents()->GetMainFrame(),
-      BuildGetCallWithParameters(parameters), &result));
-  ASSERT_EQ(kTimeoutErrorMessage, result);
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+
+    GetParameters parameters;
+    parameters.user_verification = "required";
+    std::string result;
+    ASSERT_TRUE(content::ExecuteScriptAndExtractString(
+        shell()->web_contents()->GetMainFrame(),
+        BuildGetCallWithParameters(parameters), &result));
+    ASSERT_EQ(kTimeoutErrorMessage, result);
+  }
 }
 
 // Tests that when navigator.credentials.get() is called with an empty
 // allowCredentials list, we get a NotSupportedError.
 IN_PROC_BROWSER_TEST_F(WebAuthJavascriptClientBrowserTest,
                        GetPublicKeyCredentialEmptyAllowCredentialsList) {
+  device::test::ScopedVirtualFidoDevice virtual_device;
   GetParameters parameters;
   parameters.allow_credentials = "";
   std::string result;
@@ -977,55 +1007,83 @@ class WebAuthBrowserCtapTest : public WebAuthLocalClientBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserCtapTest);
 };
 
-// TODO(hongjunchoi): Implement VirtualCtap2Device to replace mocking.
-// See: https://crbugs.com/829413
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest, TestCtapMakeCredential) {
-  device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
-  auto* fake_hid_discovery = discovery_factory.ForgeNextHidDiscovery();
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest, TestMakeCredential) {
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
 
-  TestCreateCallbackReceiver create_callback_receiver;
-  authenticator()->MakeCredential(BuildBasicCreateOptions(),
-                                  create_callback_receiver.callback());
+    TestCreateCallbackReceiver create_callback_receiver;
+    authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                    create_callback_receiver.callback());
 
-  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  auto device = std::make_unique<device::MockFidoDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
-  device->ExpectCtap2CommandAndRespondWith(
-      device::CtapRequestCommand::kAuthenticatorGetInfo,
-      device::test_data::kTestAuthenticatorGetInfoResponse);
-  device->ExpectCtap2CommandAndRespondWith(
-      device::CtapRequestCommand::kAuthenticatorMakeCredential,
-      device::test_data::kTestMakeCredentialResponse);
-
-  fake_hid_discovery->AddDevice(std::move(device));
-
-  create_callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, create_callback_receiver.status());
+    create_callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, create_callback_receiver.status());
+  }
 }
 
-IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest, TestCtapGetAssertion) {
-  device::test::ScopedFakeFidoDiscoveryFactory discovery_factory;
-  auto* fake_hid_discovery = discovery_factory.ForgeNextHidDiscovery();
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest,
+                       TestMakeCredentialWithDuplicateKeyHandle) {
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+    auto make_credential_request = BuildBasicCreateOptions();
+    auto excluded_credential =
+        webauth::mojom::PublicKeyCredentialDescriptor::New(
+            webauth::mojom::PublicKeyCredentialType::PUBLIC_KEY,
+            device::fido_parsing_utils::Materialize(
+                device::test_data::kCtap2MakeCredentialCredentialId),
+            std::vector<webauth::mojom::AuthenticatorTransport>{
+                webauth::mojom::AuthenticatorTransport::USB});
+    make_credential_request->exclude_credentials.push_back(
+        std::move(excluded_credential));
 
-  TestGetCallbackReceiver get_callback_receiver;
-  auto get_assertion_request_params = BuildBasicGetOptions();
-  authenticator()->GetAssertion(std::move(get_assertion_request_params),
-                                get_callback_receiver.callback());
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        device::fido_parsing_utils::Materialize(
+            device::test_data::kCtap2MakeCredentialCredentialId),
+        make_credential_request->relying_party->id));
 
-  fake_hid_discovery->WaitForCallToStartAndSimulateSuccess();
-  auto device = std::make_unique<device::MockFidoDevice>();
-  EXPECT_CALL(*device, GetId()).WillRepeatedly(testing::Return("device0"));
-  device->ExpectCtap2CommandAndRespondWith(
-      device::CtapRequestCommand::kAuthenticatorGetInfo,
-      device::test_data::kTestAuthenticatorGetInfoResponse);
-  device->ExpectCtap2CommandAndRespondWith(
-      device::CtapRequestCommand::kAuthenticatorGetAssertion,
-      device::test_data::kTestGetAssertionResponse);
+    TestCreateCallbackReceiver create_callback_receiver;
+    authenticator()->MakeCredential(std::move(make_credential_request),
+                                    create_callback_receiver.callback());
 
-  fake_hid_discovery->AddDevice(std::move(device));
+    create_callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_EXCLUDED,
+              create_callback_receiver.status());
+  }
+}
 
-  get_callback_receiver.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::SUCCESS, get_callback_receiver.status());
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest, TestGetAssertion) {
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+    auto get_assertion_request_params = BuildBasicGetOptions();
+    ASSERT_TRUE(virtual_device.mutable_state()->InjectRegistration(
+        device::fido_parsing_utils::Materialize(
+            device::test_data::kTestGetAssertionCredentialId),
+        get_assertion_request_params->relying_party_id));
+
+    TestGetCallbackReceiver get_callback_receiver;
+    authenticator()->GetAssertion(std::move(get_assertion_request_params),
+                                  get_callback_receiver.callback());
+    get_callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::SUCCESS, get_callback_receiver.status());
+  }
+}
+
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserCtapTest,
+                       TestGetAssertionWithNoMatchingKeyHandles) {
+  for (const auto protocol : kAllProtocols) {
+    device::test::ScopedVirtualFidoDevice virtual_device;
+    virtual_device.SetSupportedProtocol(protocol);
+    auto get_assertion_request_params = BuildBasicGetOptions();
+
+    TestGetCallbackReceiver get_callback_receiver;
+    authenticator()->GetAssertion(std::move(get_assertion_request_params),
+                                  get_callback_receiver.callback());
+    get_callback_receiver.WaitForCallback();
+    EXPECT_EQ(AuthenticatorStatus::CREDENTIAL_NOT_RECOGNIZED,
+              get_callback_receiver.status());
+  }
 }
 
 }  // namespace
