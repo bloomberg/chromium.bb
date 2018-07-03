@@ -91,6 +91,9 @@ class TrafficAnnotationTestsChecker():
     _, stderr_text, return_code = self.tools.RunAuditor(
         args + ["--annotations-file=%s" % temp_filename])
 
+    # TODO(https://crbug.com/844014): Remove after debugging.
+    print("Return Code: %i" % return_code)
+    print("File Exists: %i" % os.path.exists(temp_filename))
     if os.path.exists(temp_filename):
       annotations = None if return_code else open(temp_filename).read()
       os.remove(temp_filename)
