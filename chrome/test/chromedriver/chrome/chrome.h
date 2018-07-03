@@ -36,6 +36,16 @@ class Chrome {
   // Return the WebView for the given id.
   virtual Status GetWebViewById(const std::string& id, WebView** web_view) = 0;
 
+  // Gets the size of the specified WebView.
+  virtual Status GetWindowSize(const std::string& id,
+                               int* width,
+                               int* height) = 0;
+
+  // Gets the on-screen position of the specified WebView.
+  virtual Status GetWindowPosition(const std::string& target_id,
+                                   int* x,
+                                   int* y) = 0;
+
   // Closes the specified WebView.
   virtual Status CloseWebView(const std::string& id) = 0;
 

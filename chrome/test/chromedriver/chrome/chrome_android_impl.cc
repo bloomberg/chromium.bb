@@ -12,6 +12,7 @@
 #include "chrome/test/chromedriver/chrome/devtools_event_listener.h"
 #include "chrome/test/chromedriver/chrome/devtools_http_client.h"
 #include "chrome/test/chromedriver/chrome/status.h"
+#include "chrome/test/chromedriver/chrome/web_view_impl.h"
 
 ChromeAndroidImpl::ChromeAndroidImpl(
     std::unique_ptr<DevToolsHttpClient> http_client,
@@ -34,6 +35,32 @@ Status ChromeAndroidImpl::GetAsDesktop(ChromeDesktopImpl** desktop) {
 
 std::string ChromeAndroidImpl::GetOperatingSystemName() {
   return "ANDROID";
+}
+
+Status ChromeAndroidImpl::GetWindow(const std::string& target_id,
+                                    Window* window) {
+  WebView* web_view = nullptr;
+  Status status = GetWebViewById(target_id, &web_view);
+  if (status.IsError())
+    return status;
+
+  std::unique_ptr<base::Value> result;
+  std::string expression =
+      "[window.screenX, window.screenY, window.outerWidth * "
+      "window.devicePixelRatio, window.outerHeight * window.devicePixelRatio]";
+  status = web_view->EvaluateScript(target_id, expression, &result);
+  if (status.IsError())
+    return status;
+
+  window->left = result->GetList()[0].GetInt();
+  window->top = result->GetList()[1].GetInt();
+  window->width = result->GetList()[2].GetInt();
+  window->height = result->GetList()[3].GetInt();
+  // Android does not use Window.id or have window states
+  window->id = 0;
+  window->state = "";
+
+  return status;
 }
 
 bool ChromeAndroidImpl::HasTouchScreen() const {
