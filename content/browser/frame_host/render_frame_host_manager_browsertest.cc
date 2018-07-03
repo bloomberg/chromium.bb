@@ -653,8 +653,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
 
 // Test for crbug.com/116192.  Targeted links should still work after the
 // named target window has swapped processes.
+// Disabled Flaky test - crbug.com/859487
 IN_PROC_BROWSER_TEST_F(RenderFrameHostManagerTest,
-                       AllowTargetedNavigationsAfterSwap) {
+                       DISABLED_AllowTargetedNavigationsAfterSwap) {
   StartEmbeddedServer();
 
   // Load a page with links that open in a new window.
