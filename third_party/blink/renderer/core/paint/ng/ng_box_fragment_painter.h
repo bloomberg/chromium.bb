@@ -114,8 +114,9 @@ class NGBoxFragmentPainter : public BoxPainterBase {
 
   // Hit tests the children of a container fragment, which is either
   // |box_fragment_|, or one of its child line box fragments.
-  // @param physical_offset Physical offset of the container fragment in paint
-  // layer.
+  // @param physical_offset Physical offset of the container fragment's content
+  // box in paint layer. Note that this includes scrolling offset when the
+  // container has 'overflow: scroll'.
   bool HitTestChildren(HitTestResult&,
                        const Vector<std::unique_ptr<NGPaintFragment>>&,
                        const HitTestLocation& location_in_container,

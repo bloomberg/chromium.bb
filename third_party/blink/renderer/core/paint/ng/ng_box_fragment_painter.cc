@@ -876,10 +876,15 @@ bool NGBoxFragmentPainter::NodeAtPoint(
     }
   }
 
-  if (!skip_children &&
-      HitTestChildren(result, box_fragment_.Children(), location_in_container,
-                      physical_offset, action)) {
-    return true;
+  if (!skip_children) {
+    const IntSize scrolled_offset =
+        box_fragment_.HasOverflowClip()
+            ? PhysicalFragment().ScrolledContentOffset()
+            : IntSize();
+    if (HitTestChildren(result, box_fragment_.Children(), location_in_container,
+                        physical_offset - scrolled_offset, action)) {
+      return true;
+    }
   }
 
   if (style.HasBorderRadius() &&
