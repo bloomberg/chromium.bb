@@ -44,13 +44,15 @@ def main(argv):
       ]
       build_utils.CheckOutput(aidl_cmd)
 
-    with zipfile.ZipFile(options.srcjar, 'w') as srcjar:
-      for path in build_utils.FindInDirectory(temp_dir, '*.java'):
-        with open(path) as fileobj:
-          data = fileobj.read()
-        pkg_name = re.search(r'^\s*package\s+(.*?)\s*;', data, re.M).group(1)
-        arcname = '%s/%s' % (pkg_name.replace('.', '/'), os.path.basename(path))
-        build_utils.AddToZipHermetic(srcjar, arcname, data=data)
+    with build_utils.AtomicOutput(options.srcjar) as f:
+      with zipfile.ZipFile(f, 'w') as srcjar:
+        for path in build_utils.FindInDirectory(temp_dir, '*.java'):
+          with open(path) as fileobj:
+            data = fileobj.read()
+          pkg_name = re.search(r'^\s*package\s+(.*?)\s*;', data, re.M).group(1)
+          arcname = '%s/%s' % (
+              pkg_name.replace('.', '/'), os.path.basename(path))
+          build_utils.AddToZipHermetic(srcjar, arcname, data=data)
 
   if options.depfile:
     build_utils.WriteDepfile(options.depfile, options.srcjar)
