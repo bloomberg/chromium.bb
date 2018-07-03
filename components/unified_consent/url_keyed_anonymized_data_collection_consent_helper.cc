@@ -81,9 +81,9 @@ SyncBasedUrlKeyedDataCollectionConsentHelper::
     SyncBasedUrlKeyedDataCollectionConsentHelper(
         syncer::SyncService* sync_service)
     : sync_service_(sync_service),
-      sync_history_upload_state_(
-          syncer::GetUploadToGoogleState(sync_service_,
-                                         syncer::ModelType::TYPED_URLS)) {
+      sync_history_upload_state_(syncer::GetUploadToGoogleState(
+          sync_service_,
+          syncer::ModelType::HISTORY_DELETE_DIRECTIVES)) {
   DCHECK(sync_service_);
   sync_service_->AddObserver(this);
 }
@@ -103,7 +103,7 @@ void SyncBasedUrlKeyedDataCollectionConsentHelper::OnStateChanged(
   DCHECK_EQ(sync_service_, sync_service);
   bool enabled_before_state_updated = IsEnabled();
   sync_history_upload_state_ = syncer::GetUploadToGoogleState(
-      sync_service_, syncer::ModelType::TYPED_URLS);
+      sync_service_, syncer::ModelType::HISTORY_DELETE_DIRECTIVES);
 
   if (enabled_before_state_updated != IsEnabled())
     FireOnStateChanged();
