@@ -38,7 +38,7 @@ bool VulkanImplementationGbm::InitializeVulkanInstance() {
 
   vkGetPhysicalDeviceExternalFencePropertiesKHR_ =
       reinterpret_cast<PFN_vkGetPhysicalDeviceExternalFencePropertiesKHR>(
-          vulkan_function_pointers->vkGetInstanceProcAddr(
+          vkGetInstanceProcAddr(
               vulkan_instance_.vk_instance(),
               "vkGetPhysicalDeviceExternalFencePropertiesKHR"));
   if (!vkGetPhysicalDeviceExternalFencePropertiesKHR_) {
@@ -47,8 +47,7 @@ bool VulkanImplementationGbm::InitializeVulkanInstance() {
   }
 
   vkGetFenceFdKHR_ = reinterpret_cast<PFN_vkGetFenceFdKHR>(
-      vulkan_function_pointers->vkGetInstanceProcAddr(
-          vulkan_instance_.vk_instance(), "vkGetFenceFdKHR"));
+      vkGetInstanceProcAddr(vulkan_instance_.vk_instance(), "vkGetFenceFdKHR"));
   if (!vkGetFenceFdKHR_) {
     vulkan_instance_.Destroy();
     return false;
@@ -101,8 +100,8 @@ VkFence VulkanImplementationGbm::CreateVkFenceForGpuFence(VkDevice vk_device) {
       VK_EXTERNAL_FENCE_HANDLE_TYPE_SYNC_FD_BIT;
 
   VkFence fence;
-  VkResult result = gpu::GetVulkanFunctionPointers()->vkCreateFence(
-      vk_device, &fence_create_info, nullptr, &fence);
+  VkResult result =
+      vkCreateFence(vk_device, &fence_create_info, nullptr, &fence);
   if (result != VK_SUCCESS) {
     DLOG(ERROR) << "vkCreateFence failed: " << result;
     return VK_NULL_HANDLE;
