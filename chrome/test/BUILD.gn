@@ -654,6 +654,7 @@ test("browser_tests") {
       "../browser/picture_in_picture/picture_in_picture_window_controller_browsertest.cc",
       "../browser/plugins/flash_permission_browsertest.cc",
       "../browser/plugins/plugin_power_saver_browsertest.cc",
+      "../browser/plugins/plugin_response_interceptor_url_loader_throttle_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_manager_browsertest.cc",
       "../browser/policy/cloud/cloud_policy_test_utils.cc",

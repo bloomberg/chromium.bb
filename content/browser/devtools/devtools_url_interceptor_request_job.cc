@@ -9,7 +9,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/devtools/protocol/page.h"
-#include "content/browser/loader/navigation_loader_util.h"
+#include "content/browser/loader/download_utils_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "ipc/ipc_channel.h"
 #include "net/base/completion_once_callback.h"
@@ -552,8 +552,8 @@ bool IsDownload(net::URLRequest* orig_request, net::URLRequest* subrequest) {
   std::string mime_type;
   subrequest->GetMimeType(&mime_type);
   return req_info->allow_download() &&
-         navigation_loader_util::IsDownload(
-             orig_request->url(), subrequest->response_headers(), mime_type);
+         download_utils::IsDownload(orig_request->url(),
+                                    subrequest->response_headers(), mime_type);
 }
 
 }  // namespace

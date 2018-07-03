@@ -9,12 +9,12 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pdf_uma.h"
 #include "content/public/browser/browser_context.h"
+#include "content/public/browser/download_utils.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
-#include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "ppapi/buildflags/buildflags.h"
 
@@ -77,13 +77,10 @@ PDFIFrameNavigationThrottle::WillProcessResponse() {
   if (mime_type != kPDFMimeType)
     return content::NavigationThrottle::PROCEED;
 
-  // Following the same logic as navigational_loader_util, we MUST download
-  // responses marked as attachments rather than showing a placeholder.
-  std::string disposition;
-  if (response_headers->GetNormalizedHeader("content-disposition",
-                                            &disposition) &&
-      !disposition.empty() &&
-      net::HttpContentDisposition(disposition, std::string()).is_attachment()) {
+  // We MUST download responses marked as attachments rather than showing
+  // a placeholder.
+  if (content::download_utils::MustDownload(navigation_handle()->GetURL(),
+                                            response_headers, mime_type)) {
     return content::NavigationThrottle::PROCEED;
   }
 

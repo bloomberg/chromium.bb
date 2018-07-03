@@ -10,7 +10,7 @@
 #include "base/unguessable_token.h"
 #include "content/browser/devtools/protocol/network_handler.h"
 #include "content/browser/frame_host/frame_tree_node.h"
-#include "content/browser/loader/navigation_loader_util.h"
+#include "content/browser/loader/download_utils_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/system/data_pipe_drainer.h"
@@ -1154,7 +1154,7 @@ void InterceptionJob::OnReceiveResponse(
   const network::ResourceRequest& request = create_loader_params_->request;
   request_info->is_download =
       request_info->is_navigation && request.allow_download &&
-      (is_download_ || navigation_loader_util::IsDownload(
+      (is_download_ || download_utils::IsDownload(
                            request.url, head.headers.get(), head.mime_type));
   NotifyClient(std::move(request_info));
 }
