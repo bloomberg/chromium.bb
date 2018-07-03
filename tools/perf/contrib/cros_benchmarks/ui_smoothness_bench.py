@@ -8,7 +8,7 @@ import page_sets
 from telemetry import benchmark
 from telemetry import story as story_module
 
-@benchmark.Owner(emails=['chiniforooshan@chromium.org', 'sadrul@chromium.org'])
+@benchmark.Info(emails=['chiniforooshan@chromium.org', 'sadrul@chromium.org'])
 class CrosUiSmoothnessBenchmark(perf_benchmark.PerfBenchmark):
   """Measures ChromeOS UI smoothness."""
   test = smoothness.Smoothness

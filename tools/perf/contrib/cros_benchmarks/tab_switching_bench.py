@@ -12,7 +12,7 @@ from telemetry import benchmark
 from telemetry import story
 
 
-@benchmark.Owner(emails=['vovoy@chromium.org'],
+@benchmark.Info(emails=['vovoy@chromium.org'],
                  component='OS>Performance')
 class CrosTabSwitchingTypical24(perf_benchmark.PerfBenchmark):
   """Measures tab switching performance with 24 tabs.

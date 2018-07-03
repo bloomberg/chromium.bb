@@ -79,7 +79,7 @@ class _MemoryInfra(perf_benchmark.PerfBenchmark):
     SetExtraBrowserOptionsForMemoryMeasurement(options)
 
 
-@benchmark.Owner(emails=['erikchen@chromium.org'])
+@benchmark.Info(emails=['erikchen@chromium.org'])
 class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
   """Measure memory usage on trivial sites."""
   options = {'pageset_repeat': 5}
@@ -98,7 +98,7 @@ class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
     return DefaultShouldAddValueForMemoryMeasurement(name)
 
 
-@benchmark.Owner(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'])
 class MemoryBenchmarkTop10Mobile(_MemoryInfra):
   """Measure foreground/background memory on top 10 mobile page set.
 
@@ -151,7 +151,7 @@ class _MemoryV8Benchmark(_MemoryInfra):
     return 'v8' in name
 
 
-@benchmark.Owner(emails=['ulan@chromium.org'])
+@benchmark.Info(emails=['ulan@chromium.org'])
 class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """
@@ -162,7 +162,7 @@ class MemoryLongRunningIdleGmail(_MemoryV8Benchmark):
     return 'memory.long_running_idle_gmail_tbmv2'
 
 
-@benchmark.Owner(emails=['ulan@chromium.org'])
+@benchmark.Info(emails=['ulan@chromium.org'])
 class MemoryLongRunningIdleGmailBackground(_MemoryV8Benchmark):
   """Use (recorded) real world web sites and measure memory consumption
   of long running idle Gmail page """

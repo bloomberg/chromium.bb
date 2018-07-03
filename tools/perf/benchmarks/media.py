@@ -62,7 +62,7 @@ class _MediaBenchmark(perf_benchmark.PerfBenchmark):
     return not _IGNORED_STATS_RE.search(name)
 
 
-@benchmark.Owner(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
+@benchmark.Info(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
                  component='Internals>Media')
 class MediaDesktop(_MediaBenchmark):
   """Obtains media performance for key user scenarios on desktop."""
@@ -74,7 +74,7 @@ class MediaDesktop(_MediaBenchmark):
 
 
 # If any story is failing on svelte, please only disable on svelte.
-@benchmark.Owner(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
+@benchmark.Info(emails=['johnchen@chromium.org', 'crouleau@chromium.org'],
                  component='Internals>Media')
 class MediaMobile(_MediaBenchmark):
   """Obtains media performance for key user scenarios on mobile devices."""

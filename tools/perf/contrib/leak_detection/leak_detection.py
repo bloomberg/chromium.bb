@@ -28,7 +28,7 @@ class _LeakDetectionBase(perf_benchmark.PerfBenchmark):
     options.AppendExtraBrowserArgs('--js-flags=--expose-gc')
 
 
-@benchmark.Owner(emails=['yuzus@chromium.org'])
+@benchmark.Info(emails=['yuzus@chromium.org'])
 class MemoryLeakDetectionBenchmark(_LeakDetectionBase):
   page_set = page_sets.LeakDetectionStorySet
 

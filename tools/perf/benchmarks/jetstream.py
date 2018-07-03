@@ -75,7 +75,7 @@ class _JetstreamMeasurement(legacy_page_test.LegacyPageTest):
     results.AddSummaryValue(list_of_scalar_values.ListOfScalarValues(
         None, 'Score', 'score', all_scores))
 
-@benchmark.Owner(emails=['hablich@chromium.org'])
+@benchmark.Info(emails=['hablich@chromium.org'])
 class Jetstream(perf_benchmark.PerfBenchmark):
   test = _JetstreamMeasurement
 

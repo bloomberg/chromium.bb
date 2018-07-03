@@ -102,7 +102,7 @@ class _V8BrowsingBenchmark(perf_benchmark.PerfBenchmark):
     return True
 
 
-@benchmark.Owner(emails=['mythria@chromium.org','ulan@chromium.org'])
+@benchmark.Info(emails=['mythria@chromium.org','ulan@chromium.org'])
 class V8DesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'
@@ -117,7 +117,7 @@ class V8DesktopBrowsingBenchmark(
     return 'v8.browsing_desktop'
 
 
-@benchmark.Owner(emails=['mythria@chromium.org','ulan@chromium.org'])
+@benchmark.Info(emails=['mythria@chromium.org','ulan@chromium.org'])
 class V8MobileBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'mobile'
@@ -132,7 +132,7 @@ class V8MobileBrowsingBenchmark(
     return 'v8.browsing_mobile'
 
 
-@benchmark.Owner(emails=['mythria@chromium.org','ulan@chromium.org'])
+@benchmark.Info(emails=['mythria@chromium.org','ulan@chromium.org'])
 class V8FutureDesktopBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'desktop'
@@ -148,7 +148,7 @@ class V8FutureDesktopBrowsingBenchmark(
     return 'v8.browsing_desktop-future'
 
 
-@benchmark.Owner(emails=['mythria@chromium.org','ulan@chromium.org'])
+@benchmark.Info(emails=['mythria@chromium.org','ulan@chromium.org'])
 class V8FutureMobileBrowsingBenchmark(
     _V8BrowsingBenchmark):
   PLATFORM = 'mobile'

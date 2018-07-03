@@ -91,7 +91,7 @@ class _BaseWebXRBenchmark(_BaseWebVRWebXRBenchmark):
     ])
 
 
-@benchmark.Owner(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
+@benchmark.Info(emails=['bsheedy@chromium.org', 'leilei@chromium.org'])
 # pylint: disable=too-many-ancestors
 class XrWebVrStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with synthetic sample pages."""
@@ -104,7 +104,7 @@ class XrWebVrStatic(_BaseWebVRBenchmark):
     return 'xr.webvr.static'
 
 
-@benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+@benchmark.Info(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
 # pylint: disable=too-many-ancestors
 class XrWebXrStatic(_BaseWebXRBenchmark):
   """Measures WebXR performance with synthetic sample pages."""
@@ -117,7 +117,7 @@ class XrWebXrStatic(_BaseWebXRBenchmark):
     return 'xr.webxr.static'
 
 
-@benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+@benchmark.Info(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
 # pylint: disable=too-many-ancestors
 class XrWebVrWprStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with WPR copies of live websites."""
@@ -130,7 +130,7 @@ class XrWebVrWprStatic(_BaseWebVRBenchmark):
     return 'xr.webvr.wpr.static'
 
 
-@benchmark.Owner(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
+@benchmark.Info(emails=['bsheedy@chromium.org', 'tiborg@chromium.org'])
 # pylint: disable=too-many-ancestors
 class XrWebVrLiveStatic(_BaseWebVRBenchmark):
   """Measures WebVR performance with live websites.
@@ -182,7 +182,7 @@ class _BaseBrowsingBenchmark(_BaseVRBenchmark):
     ])
 
 
-@benchmark.Owner(emails=['tiborg@chromium.org'])
+@benchmark.Info(emails=['tiborg@chromium.org'])
 class XrBrowsingStatic(_BaseBrowsingBenchmark):
   """Benchmark for testing the VR Browsing Mode performance on sample pages."""
 
@@ -194,7 +194,7 @@ class XrBrowsingStatic(_BaseBrowsingBenchmark):
     return 'xr.browsing.static'
 
 
-@benchmark.Owner(emails=['tiborg@chromium.org', 'bsheedy@chromium.org'])
+@benchmark.Info(emails=['tiborg@chromium.org', 'bsheedy@chromium.org'])
 class XrBrowsingWprStatic(_BaseBrowsingBenchmark):
   """Benchmark for testing the VR Browsing Mode performance on WPR pages."""
 
@@ -206,7 +206,7 @@ class XrBrowsingWprStatic(_BaseBrowsingBenchmark):
     return 'xr.browsing.wpr.static'
 
 
-@benchmark.Owner(emails=['tiborg@chromium.org', 'bsheedy@chromium.org'])
+@benchmark.Info(emails=['tiborg@chromium.org', 'bsheedy@chromium.org'])
 class XrBrowsingWprSmoothness(_BaseBrowsingBenchmark):
   """Benchmark for testing VR browser scrolling smoothness and throughput."""
 

@@ -9,7 +9,7 @@ from telemetry import benchmark
 
 
 # pylint: disable=protected-access
-@benchmark.Owner(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'])
 class DualBrowserBenchmark(memory._MemoryInfra):
   """Measures memory usage while interacting with two different browsers.
 
@@ -35,7 +35,7 @@ class DualBrowserBenchmark(memory._MemoryInfra):
     return not memory._IGNORED_STATS_RE.search(name)
 
 
-@benchmark.Owner(emails=['perezju@chromium.org'])
+@benchmark.Info(emails=['perezju@chromium.org'])
 class LongRunningDualBrowserBenchmark(memory._MemoryInfra):
   """Measures memory during prolonged usage of alternating browsers.
 
@@ -60,7 +60,7 @@ class LongRunningDualBrowserBenchmark(memory._MemoryInfra):
     return not memory._IGNORED_STATS_RE.search(name)
 
 
-@benchmark.Owner(emails=['etienneb@chromium.org'])
+@benchmark.Info(emails=['etienneb@chromium.org'])
 class LongRunningMemoryBenchmarkSitesDesktop(memory._MemoryInfra):
   """Measure memory usage on popular sites.
 

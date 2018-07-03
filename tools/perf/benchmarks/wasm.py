@@ -10,7 +10,7 @@ from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
 
 
-@benchmark.Owner(emails=['bradnelson@chromium.org'])
+@benchmark.Info(emails=['bradnelson@chromium.org'])
 class Wasm(perf_benchmark.PerfBenchmark):
   """Runtime Stats benchmark for real world wasm apps."""
 

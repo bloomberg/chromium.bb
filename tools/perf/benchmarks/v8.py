@@ -50,7 +50,7 @@ class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
     return tbm_options
 
 
-@benchmark.Owner(emails=['cbruni@chromium.org'])
+@benchmark.Info(emails=['cbruni@chromium.org'])
 class V8Top25RuntimeStats(_Top25RuntimeStats):
   """Runtime Stats benchmark for a 25 top V8 web pages.
 
