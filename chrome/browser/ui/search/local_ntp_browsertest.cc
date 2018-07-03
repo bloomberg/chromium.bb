@@ -34,6 +34,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/ntp_tiles/constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/interstitial_page.h"
@@ -103,13 +104,14 @@ class TestMostVisitedObserver : public InstantServiceObserver {
 
 class LocalNTPTest : public InProcessBrowserTest {
  public:
-  LocalNTPTest() {
-    feature_list_.InitAndEnableFeature(features::kUseGoogleLocalNtp);
+  LocalNTPTest(const std::vector<base::Feature>& enabled_features,
+               const std::vector<base::Feature>& disabled_features) {
+    feature_list_.InitWithFeatures(enabled_features, disabled_features);
   }
 
-  explicit LocalNTPTest(const std::vector<base::Feature>& enabled_features) {
-    feature_list_.InitWithFeatures(enabled_features, {});
-  }
+  LocalNTPTest()
+      : LocalNTPTest(/*enabled_features=*/{features::kUseGoogleLocalNtp},
+                     /*disabled_features=*/{}) {}
 
  private:
   void SetUpOnMainThread() override {
@@ -419,7 +421,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, GoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 1);
   histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 0, 1);
   histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 1);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 1);
+  // The material design NTP shouldn't have any thumbnails.
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail",
+                              features::IsMDIconsEnabled() ? 0 : 1);
   histograms.ExpectTotalCount("NewTabPage.TileTitle", 1);
   histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 1);
   histograms.ExpectTotalCount("NewTabPage.TileType", 1);
@@ -470,7 +474,9 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, NonGoogleNTPLoadsWithoutError) {
   histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression", 1);
   histograms.ExpectBucketCount("NewTabPage.SuggestionsImpression", 0, 1);
   histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.client", 1);
-  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail", 1);
+  // The material design NTP shouldn't have any thumbnails.
+  histograms.ExpectTotalCount("NewTabPage.SuggestionsImpression.Thumbnail",
+                              features::IsMDIconsEnabled() ? 0 : 1);
   histograms.ExpectTotalCount("NewTabPage.TileTitle", 1);
   histograms.ExpectTotalCount("NewTabPage.TileTitle.client", 1);
   histograms.ExpectTotalCount("NewTabPage.TileType", 1);
@@ -534,46 +540,10 @@ content::RenderFrameHost* GetMostVisitedIframe(content::WebContents* tab) {
   return nullptr;
 }
 
-IN_PROC_BROWSER_TEST_F(LocalNTPTest, LoadsIframe) {
-  content::WebContents* active_tab =
-      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
-  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
-
-  // Get the iframe and check that the tiles loaded correctly.
-  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
-
-  // Get the total number of (non-empty) tiles from the iframe.
-  int total_thumbs = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.mv-thumb').length", &total_thumbs));
-  // Also get how many of the tiles succeeded and failed in loading their
-  // thumbnail images.
-  int succeeded_imgs = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.mv-thumb img').length",
-      &succeeded_imgs));
-  int failed_imgs = 0;
-  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
-      iframe, "document.querySelectorAll('.mv-thumb.failed-img').length",
-      &failed_imgs));
-
-  // First, sanity check that the numbers line up (none of the css classes was
-  // renamed, etc).
-  EXPECT_EQ(total_thumbs, succeeded_imgs + failed_imgs);
-
-  // Since we're in a non-signed-in, fresh profile with no history, there should
-  // be the default TopSites tiles (see history::PrepopulatedPage).
-  // Check that there is at least one tile, and that all of them loaded their
-  // images successfully.
-  EXPECT_GT(total_thumbs, 0);
-  EXPECT_EQ(total_thumbs, succeeded_imgs);
-  EXPECT_EQ(0, failed_imgs);
-}
-
 class LocalNTPMDTest : public LocalNTPTest {
  public:
   LocalNTPMDTest()
-      : LocalNTPTest({features::kUseGoogleLocalNtp, features::kNtpUIMd}) {}
+      : LocalNTPTest({features::kUseGoogleLocalNtp, features::kNtpUIMd}, {}) {}
 
  private:
   base::test::ScopedFeatureList feature_list_;
@@ -713,6 +683,52 @@ IN_PROC_BROWSER_TEST_F(LocalNTPTest, InterstitialsAreNotNTPs) {
   content::WaitForInterstitialDetach(active_tab);
   // Now the page should be an NTP again.
   EXPECT_TRUE(search::IsInstantNTP(active_tab));
+}
+
+class LocalNTPNonMDTest : public LocalNTPTest {
+ public:
+  LocalNTPNonMDTest()
+      : LocalNTPTest(
+            /*enabled_features=*/{features::kUseGoogleLocalNtp},
+            /*disabled_features=*/{features::kNtpUIMd,
+                                   features::kNtpBackgrounds,
+                                   ntp_tiles::kNtpIcons}) {}
+};
+
+IN_PROC_BROWSER_TEST_F(LocalNTPNonMDTest, LoadsNonMDIframe) {
+  content::WebContents* active_tab =
+      local_ntp_test_utils::OpenNewTab(browser(), GURL("about:blank"));
+  local_ntp_test_utils::NavigateToNTPAndWaitUntilLoaded(browser());
+
+  // Get the iframe and check that the tiles loaded correctly.
+  content::RenderFrameHost* iframe = GetMostVisitedIframe(active_tab);
+
+  // Get the total number of (non-empty) tiles from the iframe.
+  int total_thumbs = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb').length", &total_thumbs));
+  // Also get how many of the tiles succeeded and failed in loading their
+  // thumbnail images.
+  int succeeded_imgs = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb img').length",
+      &succeeded_imgs));
+  int failed_imgs = 0;
+  ASSERT_TRUE(instant_test_utils::GetIntFromJS(
+      iframe, "document.querySelectorAll('.mv-thumb.failed-img').length",
+      &failed_imgs));
+
+  // First, sanity check that the numbers line up (none of the css classes was
+  // renamed, etc).
+  EXPECT_EQ(total_thumbs, succeeded_imgs + failed_imgs);
+
+  // Since we're in a non-signed-in, fresh profile with no history, there should
+  // be the default TopSites tiles (see history::PrepopulatedPage).
+  // Check that there is at least one tile, and that all of them loaded their
+  // images successfully.
+  EXPECT_GT(total_thumbs, 0);
+  EXPECT_EQ(total_thumbs, succeeded_imgs);
+  EXPECT_EQ(0, failed_imgs);
 }
 
 }  // namespace
