@@ -547,16 +547,18 @@ DocumentTimeline& InspectorAnimationAgent::ReferenceTimeline() {
 
 double InspectorAnimationAgent::NormalizedStartTime(
     blink::Animation& animation) {
+  double time_ms = animation.startTime().value_or(NullValue());
   if (ReferenceTimeline().PlaybackRate() == 0) {
-    return animation.startTime().value_or(NullValue()) +
-           ReferenceTimeline().currentTime() -
-           animation.TimelineInternal()->currentTime();
+    time_ms += ReferenceTimeline().currentTime() -
+               animation.TimelineInternal()->currentTime();
+  } else {
+    time_ms += (animation.TimelineInternal()->ZeroTime() -
+                ReferenceTimeline().ZeroTime())
+                   .InMillisecondsF() *
+               ReferenceTimeline().PlaybackRate();
   }
-  return animation.startTime().value_or(NullValue()) +
-         (animation.TimelineInternal()->ZeroTime() -
-          ReferenceTimeline().ZeroTime())
-                 .InMillisecondsF() *
-             ReferenceTimeline().PlaybackRate();
+  // Round to the closest microsecond.
+  return std::round(time_ms * 1000) / 1000;
 }
 
 void InspectorAnimationAgent::Trace(blink::Visitor* visitor) {
