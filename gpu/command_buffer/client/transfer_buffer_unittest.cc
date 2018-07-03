@@ -44,10 +44,14 @@ class TransferBufferTest : public testing::Test {
   void SetUp() override;
   void TearDown() override;
 
-  virtual void Initialize() {
+  virtual void Initialize(unsigned int size_to_flush) {
     ASSERT_TRUE(transfer_buffer_->Initialize(
-        kTransferBufferSize, kStartingOffset, kTransferBufferSize,
-        kTransferBufferSize, kAlignment));
+        kTransferBufferSize,
+        kStartingOffset,
+        kTransferBufferSize,
+        kTransferBufferSize,
+        kAlignment,
+        size_to_flush));
   }
 
   MockClientCommandBufferMockFlush* command_buffer() const {
@@ -97,7 +101,7 @@ const size_t TransferBufferTest::kTransferBufferSize;
 #endif
 
 TEST_F(TransferBufferTest, Basic) {
-  Initialize();
+  Initialize(0);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
   EXPECT_EQ(
@@ -108,7 +112,7 @@ TEST_F(TransferBufferTest, Basic) {
 }
 
 TEST_F(TransferBufferTest, Free) {
-  Initialize();
+  Initialize(0);
   EXPECT_TRUE(transfer_buffer_->HaveBuffer());
   EXPECT_EQ(transfer_buffer_id_, transfer_buffer_->GetShmId());
   EXPECT_NE(base::UnguessableToken(),
@@ -210,7 +214,7 @@ TEST_F(TransferBufferTest, Free) {
 }
 
 TEST_F(TransferBufferTest, TooLargeAllocation) {
-  Initialize();
+  Initialize(0);
   // Check that we can't allocate large than max size.
   void* ptr = transfer_buffer_->Alloc(kTransferBufferSize + 1);
   EXPECT_TRUE(ptr == NULL);
@@ -224,7 +228,7 @@ TEST_F(TransferBufferTest, TooLargeAllocation) {
 }
 
 TEST_F(TransferBufferTest, MemoryAlignmentAfterZeroAllocation) {
-  Initialize();
+  Initialize(32u);
   void* ptr = transfer_buffer_->Alloc(0);
   EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
   transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
@@ -232,6 +236,32 @@ TEST_F(TransferBufferTest, MemoryAlignmentAfterZeroAllocation) {
   ptr = transfer_buffer_->Alloc(4);
   EXPECT_EQ((reinterpret_cast<uintptr_t>(ptr) & (kAlignment - 1)), 0u);
   transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
+}
+
+TEST_F(TransferBufferTest, Flush) {
+  Initialize(16u);
+  unsigned int size_allocated = 0;
+  for (int i = 0; i < 8; ++i) {
+    void* ptr = transfer_buffer_->AllocUpTo(8u, &size_allocated);
+    ASSERT_TRUE(ptr != NULL);
+    EXPECT_EQ(8u, size_allocated);
+    if (i % 2) {
+      EXPECT_CALL(*command_buffer(), Flush(_))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+    transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
+  }
+  for (int i = 0; i < 8; ++i) {
+    void* ptr = transfer_buffer_->Alloc(8u);
+    ASSERT_TRUE(ptr != NULL);
+    if (i % 2) {
+      EXPECT_CALL(*command_buffer(), Flush(_))
+          .Times(1)
+          .RetiresOnSaturation();
+    }
+    transfer_buffer_->FreePendingToken(ptr, helper_->InsertToken());
+  }
 }
 
 class MockClientCommandBufferCanFail : public MockClientCommandBufferMockFlush {
@@ -278,7 +308,6 @@ class TransferBufferExpandContractTest : public testing::Test {
 
 void TransferBufferExpandContractTest::SetUp() {
   command_buffer_.reset(new StrictMock<MockClientCommandBufferCanFail>());
-  command_buffer_->SetTokenForSetGetBuffer(0);
 
   EXPECT_CALL(*command_buffer(),
               CreateTransferBuffer(kCommandBufferSizeBytes, _))
@@ -302,8 +331,12 @@ void TransferBufferExpandContractTest::SetUp() {
 
   transfer_buffer_.reset(new TransferBuffer(helper_.get()));
   ASSERT_TRUE(transfer_buffer_->Initialize(
-      kStartTransferBufferSize, kStartingOffset, kMinTransferBufferSize,
-      kMaxTransferBufferSize, kAlignment));
+      kStartTransferBufferSize,
+      kStartingOffset,
+      kMinTransferBufferSize,
+      kMaxTransferBufferSize,
+      kAlignment,
+      0));
 }
 
 void TransferBufferExpandContractTest::TearDown() {
@@ -337,153 +370,62 @@ const size_t TransferBufferExpandContractTest::kMaxTransferBufferSize;
 const size_t TransferBufferExpandContractTest::kMinTransferBufferSize;
 #endif
 
-TEST_F(TransferBufferExpandContractTest, ExpandWithSmallAllocations) {
-  int32_t token = helper_->InsertToken();
-  EXPECT_FALSE(helper_->HasTokenPassed(token));
-
-  auto ExpectCreateTransferBuffer = [&](int size) {
-    EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), CreateTransferBuffer(size, _))
-        .WillOnce(
-            Invoke(command_buffer(),
-                   &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
-        .RetiresOnSaturation();
-  };
-
+TEST_F(TransferBufferExpandContractTest, Expand) {
   // Check it starts at starting size.
   EXPECT_EQ(
       kStartTransferBufferSize - kStartingOffset,
       transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
 
-  // Fill the free space.
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*command_buffer(),
+              CreateTransferBuffer(kStartTransferBufferSize * 2, _))
+      .WillOnce(Invoke(
+          command_buffer(),
+          &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
+      .RetiresOnSaturation();
+
+  // Try next power of 2.
+  const size_t kSize1 = 512 - kStartingOffset;
   unsigned int size_allocated = 0;
-  void* ptr = transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize(),
-                                          &size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
-
-  // Allocate one more byte to force expansion.
-  ExpectCreateTransferBuffer(kStartTransferBufferSize * 2);
-  ptr = transfer_buffer_->AllocUpTo(1, &size_allocated);
+  void* ptr = transfer_buffer_->AllocUpTo(kSize1, &size_allocated);
   ASSERT_TRUE(ptr != NULL);
-  EXPECT_EQ(1u, size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
+  EXPECT_EQ(kSize1, size_allocated);
+  EXPECT_EQ(kSize1, transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+  transfer_buffer_->FreePendingToken(ptr, 1);
 
-  // Fill free space and expand again.
-  ptr = transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize(),
-                                    &size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
-  ExpectCreateTransferBuffer(kStartTransferBufferSize * 4);
-  ptr = transfer_buffer_->AllocUpTo(1, &size_allocated);
+  EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*command_buffer(),
+              CreateTransferBuffer(kMaxTransferBufferSize, _))
+      .WillOnce(Invoke(
+          command_buffer(),
+          &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
+      .RetiresOnSaturation();
+
+  // Try next power of 2.
+  const size_t kSize2 = 1024 - kStartingOffset;
+  ptr = transfer_buffer_->AllocUpTo(kSize2, &size_allocated);
   ASSERT_TRUE(ptr != NULL);
-  EXPECT_EQ(1u, size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
+  EXPECT_EQ(kSize2, size_allocated);
+  EXPECT_EQ(kSize2, transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+  transfer_buffer_->FreePendingToken(ptr, 1);
 
-  // Try to expand again, no expansion should occur because we are at max.
-  ptr = transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize(),
-                                    &size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
-  EXPECT_CALL(*command_buffer(), Flush(_)).Times(1).RetiresOnSaturation();
-  ptr = transfer_buffer_->AllocUpTo(1, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
-  EXPECT_EQ(1u, size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
-  EXPECT_EQ(kMaxTransferBufferSize - kStartingOffset,
-            transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
-}
-
-TEST_F(TransferBufferExpandContractTest, ExpandWithLargeAllocations) {
-  int32_t token = helper_->InsertToken();
-  EXPECT_FALSE(helper_->HasTokenPassed(token));
-
-  auto ExpectCreateTransferBuffer = [&](int size) {
-    EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), CreateTransferBuffer(size, _))
-        .WillOnce(
-            Invoke(command_buffer(),
-                   &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
-        .RetiresOnSaturation();
-  };
-
-  // Check it starts at starting size.
-  EXPECT_EQ(kStartTransferBufferSize - kStartingOffset,
-            transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
-
-  // Allocate one byte more than the free space to force expansion.
-  unsigned int size_allocated = 0;
-  ExpectCreateTransferBuffer(kStartTransferBufferSize * 2);
-  void* ptr = transfer_buffer_->AllocUpTo(transfer_buffer_->GetFreeSize() + 1,
-                                          &size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
-
-  // Expand again.
-  ExpectCreateTransferBuffer(kStartTransferBufferSize * 4);
-  unsigned int size_requested = transfer_buffer_->GetFreeSize() + 1;
-  ptr = transfer_buffer_->AllocUpTo(size_requested, &size_allocated);
-  ASSERT_TRUE(ptr != NULL);
-  EXPECT_EQ(size_requested, size_allocated);
-  transfer_buffer_->FreePendingToken(ptr, token);
-
-  // Try to expand again, no expansion should occur because we are at max.
-  EXPECT_CALL(*command_buffer(), Flush(_)).Times(1).RetiresOnSaturation();
-  size_requested =
-      transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc() + 1;
-  ptr = transfer_buffer_->AllocUpTo(size_requested, &size_allocated);
-  EXPECT_LT(size_allocated, size_requested);
-  transfer_buffer_->FreePendingToken(ptr, token);
-  EXPECT_EQ(kMaxTransferBufferSize - kStartingOffset,
-            transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
-}
-
-TEST_F(TransferBufferExpandContractTest, ShrinkRingBuffer) {
-  int32_t token = helper_->InsertToken();
-  // For this test we want all allocations to be freed immediately.
-  command_buffer_->SetToken(token);
-  EXPECT_TRUE(helper_->HasTokenPassed(token));
-
-  auto ExpectCreateTransferBuffer = [&](int size) {
-    EXPECT_CALL(*command_buffer(), DestroyTransferBuffer(_))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), OrderingBarrier(_))
-        .Times(1)
-        .RetiresOnSaturation();
-    EXPECT_CALL(*command_buffer(), CreateTransferBuffer(size, _))
-        .WillOnce(
-            Invoke(command_buffer(),
-                   &MockClientCommandBufferCanFail::RealCreateTransferBuffer))
-        .RetiresOnSaturation();
-  };
-
-  // Expand the ring buffer to the maximum size.
-  ExpectCreateTransferBuffer(kMaxTransferBufferSize);
-  void* ptr = transfer_buffer_->Alloc(kMaxTransferBufferSize - kStartingOffset);
-  EXPECT_TRUE(ptr != NULL);
-  transfer_buffer_->FreePendingToken(ptr, token);
-
-  // We shouldn't shrink before we reach the allocation threshold.
-  for (size_t allocated = kMaxTransferBufferSize - kStartingOffset;
-       allocated < (kStartTransferBufferSize + kStartingOffset) *
-                       (TransferBuffer::kShrinkThreshold);) {
-    ptr = transfer_buffer_->Alloc(kStartTransferBufferSize);
-    EXPECT_TRUE(ptr != NULL);
-    transfer_buffer_->FreePendingToken(ptr, token);
-    allocated += kStartTransferBufferSize;
-  }
-  // The next allocation should trip the threshold and shrink.
-  ExpectCreateTransferBuffer(kStartTransferBufferSize * 2);
-  ptr = transfer_buffer_->Alloc(1);
-  EXPECT_TRUE(ptr != NULL);
-  transfer_buffer_->FreePendingToken(ptr, token);
+  // Try next one more. Should not go past max.
+  size_allocated = 0;
+  const size_t kSize3 = kSize2 + 1;
+  ptr = transfer_buffer_->AllocUpTo(kSize3, &size_allocated);
+  EXPECT_EQ(kSize2, size_allocated);
+  EXPECT_EQ(kSize2, transfer_buffer_->GetCurrentMaxAllocationWithoutRealloc());
+  transfer_buffer_->FreePendingToken(ptr, 1);
 }
 
 TEST_F(TransferBufferExpandContractTest, Contract) {
