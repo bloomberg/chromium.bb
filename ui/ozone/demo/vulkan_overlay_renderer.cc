@@ -43,7 +43,6 @@ VulkanOverlayRenderer::VulkanOverlayRenderer(
     : RendererBase(widget, size),
       surface_factory_ozone_(surface_factory_ozone),
       vulkan_implementation_(vulkan_implementation),
-      vulkan_function_pointers_(gpu::GetVulkanFunctionPointers()),
       overlay_surface_(std::move(overlay_surface)),
       weak_ptr_factory_(this) {}
 
@@ -98,9 +97,8 @@ bool VulkanOverlayRenderer::Initialize() {
       .dependencyCount = 0,
   };
 
-  CHECK_EQ(vulkan_function_pointers_->vkCreateRenderPass(
-               device_queue_->GetVulkanDevice(), &render_pass_create_info,
-               nullptr, &render_pass_),
+  CHECK_EQ(vkCreateRenderPass(device_queue_->GetVulkanDevice(),
+                              &render_pass_create_info, nullptr, &render_pass_),
            VK_SUCCESS);
 
   command_pool_ = std::make_unique<gpu::VulkanCommandPool>(device_queue_.get());
@@ -122,14 +120,10 @@ void VulkanOverlayRenderer::DestroyBuffers() {
   for (std::unique_ptr<Buffer>& buffer : buffers_) {
     if (!buffer)
       continue;
-    vulkan_function_pointers_->vkDestroyFramebuffer(
-        vk_device, buffer->vk_framebuffer(), nullptr);
-    vulkan_function_pointers_->vkDestroyImageView(
-        vk_device, buffer->vk_image_view(), nullptr);
-    vulkan_function_pointers_->vkDestroyImage(vk_device, buffer->vk_image(),
-                                              nullptr);
-    vulkan_function_pointers_->vkFreeMemory(
-        vk_device, buffer->vk_device_memory(), nullptr);
+    vkDestroyFramebuffer(vk_device, buffer->vk_framebuffer(), nullptr);
+    vkDestroyImageView(vk_device, buffer->vk_image_view(), nullptr);
+    vkDestroyImage(vk_device, buffer->vk_image(), nullptr);
+    vkFreeMemory(vk_device, buffer->vk_device_memory(), nullptr);
     buffer.reset();
   }
 }
@@ -140,9 +134,9 @@ void VulkanOverlayRenderer::RecreateBuffers() {
   DestroyBuffers();
 
   for (auto& buffer : buffers_) {
-    buffer = Buffer::Create(surface_factory_ozone_, vulkan_function_pointers_,
-                            device_queue_->GetVulkanDevice(), render_pass_,
-                            widget_, size_);
+    buffer =
+        Buffer::Create(surface_factory_ozone_, device_queue_->GetVulkanDevice(),
+                       render_pass_, widget_, size_);
     CHECK(buffer);
   }
 }
@@ -171,18 +165,18 @@ void VulkanOverlayRenderer::RenderFrame() {
     begin_info.clearValueCount = 1;
     begin_info.pClearValues = &clear_value;
 
-    vulkan_function_pointers_->vkCmdBeginRenderPass(
-        recorder.handle(), &begin_info, VK_SUBPASS_CONTENTS_INLINE);
+    vkCmdBeginRenderPass(recorder.handle(), &begin_info,
+                         VK_SUBPASS_CONTENTS_INLINE);
 
-    vulkan_function_pointers_->vkCmdEndRenderPass(recorder.handle());
+    vkCmdEndRenderPass(recorder.handle());
   }
 
   VkSemaphoreCreateInfo sem_create_info = {
       .sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO,
   };
   VkSemaphore semaphore;
-  vulkan_function_pointers_->vkCreateSemaphore(
-      device_queue_->GetVulkanDevice(), &sem_create_info, NULL, &semaphore);
+  vkCreateSemaphore(device_queue_->GetVulkanDevice(), &sem_create_info, NULL,
+                    &semaphore);
 
   command_buffer_->Submit(1, &semaphore, 0, nullptr);
 
@@ -264,7 +258,6 @@ VulkanOverlayRenderer::Buffer::~Buffer() {}
 std::unique_ptr<VulkanOverlayRenderer::Buffer>
 VulkanOverlayRenderer::Buffer::Create(
     SurfaceFactoryOzone* surface_factory_ozone,
-    const gpu::VulkanFunctionPointers* vulkan_function_pointers,
     VkDevice vk_device,
     VkRenderPass vk_render_pass,
     gfx::AcceleratedWidget widget,
@@ -275,8 +268,8 @@ VulkanOverlayRenderer::Buffer::Create(
   VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
   scoped_refptr<gfx::NativePixmap> native_pixmap =
       surface_factory_ozone->CreateNativePixmapForVulkan(
-          widget, size, format, gfx::BufferUsage::SCANOUT,
-          vulkan_function_pointers, vk_device, &vk_device_memory, &vk_image);
+          widget, size, format, gfx::BufferUsage::SCANOUT, vk_device,
+          &vk_device_memory, &vk_image);
   if (!native_pixmap) {
     LOG(FATAL)
         << "Failed to create a presentable buffer for rendering with vulkan";
@@ -306,8 +299,8 @@ VulkanOverlayRenderer::Buffer::Create(
 
   VkResult result;
   VkImageView vk_image_view = VK_NULL_HANDLE;
-  result = vulkan_function_pointers->vkCreateImageView(
-      vk_device, &vk_image_view_create_info, nullptr, &vk_image_view);
+  result = vkCreateImageView(vk_device, &vk_image_view_create_info, nullptr,
+                             &vk_image_view);
   if (result != VK_SUCCESS) {
     LOG(FATAL) << "Failed to create a Vulkan image view.";
   }
@@ -322,8 +315,8 @@ VulkanOverlayRenderer::Buffer::Create(
   };
 
   VkFramebuffer vk_framebuffer = VK_NULL_HANDLE;
-  result = vulkan_function_pointers->vkCreateFramebuffer(
-      vk_device, &vk_framebuffer_create_info, nullptr, &vk_framebuffer);
+  result = vkCreateFramebuffer(vk_device, &vk_framebuffer_create_info, nullptr,
+                               &vk_framebuffer);
   if (result != VK_SUCCESS) {
     LOG(FATAL) << "Failed to create a Vulkan framebuffer.";
   }

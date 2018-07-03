@@ -32,10 +32,6 @@ namespace gfx {
 class NativePixmap;
 }
 
-namespace gpu {
-struct VulkanFunctionPointers;
-}
-
 namespace ui {
 
 class SurfaceOzoneCanvas;
@@ -93,7 +89,6 @@ class OZONE_BASE_EXPORT SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const gpu::VulkanFunctionPointers* vulkan_function_pointers,
       VkDevice vk_device,
       VkDeviceMemory* vk_device_memory,
       VkImage* vk_image);

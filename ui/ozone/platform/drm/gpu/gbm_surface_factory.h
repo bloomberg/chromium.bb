@@ -46,7 +46,6 @@ class GbmSurfaceFactory : public SurfaceFactoryOzone {
       gfx::Size size,
       gfx::BufferFormat format,
       gfx::BufferUsage usage,
-      const gpu::VulkanFunctionPointers* vulkan_function_pointers,
       VkDevice vk_device,
       VkDeviceMemory* vk_device_memory,
       VkImage* vk_image) override;

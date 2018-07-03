@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "gpu/vulkan/vulkan_function_pointers.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/presentation_feedback.h"
 #include "ui/gfx/swap_result.h"
@@ -65,7 +64,6 @@ class VulkanOverlayRenderer : public RendererBase {
 
     static std::unique_ptr<Buffer> Create(
         SurfaceFactoryOzone* surface_factory_ozone,
-        const gpu::VulkanFunctionPointers* vulkan_function_pointers,
         VkDevice vk_device,
         VkRenderPass vk_render_pass,
         gfx::AcceleratedWidget widget,
@@ -96,7 +94,6 @@ class VulkanOverlayRenderer : public RendererBase {
 
   SurfaceFactoryOzone* const surface_factory_ozone_;
   gpu::VulkanImplementation* const vulkan_implementation_;
-  const gpu::VulkanFunctionPointers* const vulkan_function_pointers_;
   std::unique_ptr<gpu::VulkanDeviceQueue> device_queue_;
   std::unique_ptr<gpu::VulkanCommandPool> command_pool_;
   std::unique_ptr<gpu::VulkanCommandBuffer> command_buffer_;

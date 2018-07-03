@@ -28,7 +28,7 @@ class VulkanImplementationGbm : public gpu::VulkanImplementation {
       uint32_t queue_family_index) override;
   std::vector<const char*> GetRequiredDeviceExtensions() override;
   VkFence CreateVkFenceForGpuFence(VkDevice vk_device) override;
-  virtual std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
+  std::unique_ptr<gfx::GpuFence> ExportVkFenceToGpuFence(
       VkDevice vk_device,
       VkFence vk_fence) override;
 

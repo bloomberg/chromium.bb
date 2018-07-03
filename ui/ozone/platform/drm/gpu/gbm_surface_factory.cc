@@ -145,7 +145,6 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
     gfx::Size size,
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
-    const gpu::VulkanFunctionPointers* vulkan_function_pointers,
     VkDevice vk_device,
     VkDeviceMemory* vk_device_memory,
     VkImage* vk_image) {
@@ -157,8 +156,7 @@ scoped_refptr<gfx::NativePixmap> GbmSurfaceFactory::CreateNativePixmapForVulkan(
 
   PFN_vkCreateDmaBufImageINTEL create_dma_buf_image_intel =
       reinterpret_cast<PFN_vkCreateDmaBufImageINTEL>(
-          vulkan_function_pointers->vkGetDeviceProcAddr(
-              vk_device, "vkCreateDmaBufImageINTEL"));
+          vkGetDeviceProcAddr(vk_device, "vkCreateDmaBufImageINTEL"));
   if (!create_dma_buf_image_intel) {
     LOG(ERROR) << "Scanout buffers can only be imported into vulkan when "
                   "vkCreateDmaBufImageINTEL is available.";
