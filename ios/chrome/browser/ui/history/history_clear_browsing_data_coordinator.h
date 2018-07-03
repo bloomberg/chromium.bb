@@ -8,6 +8,7 @@
 #import "ios/chrome/browser/ui/coordinators/chrome_coordinator.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data_local_commands.h"
 
+@protocol ApplicationCommands;
 @protocol UrlLoader;
 @protocol HistoryLocalCommands;
 @protocol HistoryPresentationDelegate;
@@ -20,6 +21,9 @@
 
 // Delegate for this coordinator.
 @property(nonatomic, weak) id<HistoryLocalCommands> localDispatcher;
+
+// Dispatcher for view controller.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 // The UrlLoader used by this coordinator.
 @property(nonatomic, weak) id<UrlLoader> loader;

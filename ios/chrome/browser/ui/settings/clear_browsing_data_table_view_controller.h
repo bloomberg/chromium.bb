@@ -11,6 +11,7 @@ namespace ios {
 class ChromeBrowserState;
 }
 
+@protocol ApplicationCommands;
 @protocol ClearBrowsingDataLocalCommands;
 
 // TableView for clearing browsing data (including history,
@@ -27,6 +28,9 @@ class ChromeBrowserState;
 
 // Local Dispatcher for this ClearBrowsingDataTableView.
 @property(nonatomic, weak) id<ClearBrowsingDataLocalCommands> localDispatcher;
+
+// The dispatcher used by this ViewController.
+@property(nonatomic, weak) id<ApplicationCommands> dispatcher;
 
 @end
 
