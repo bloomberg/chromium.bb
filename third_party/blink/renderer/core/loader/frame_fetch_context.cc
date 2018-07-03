@@ -999,7 +999,10 @@ void FrameFetchContext::PopulateResourceRequest(
     ResourceRequest& request) {
   ModifyRequestForCSP(request);
   AddClientHintsIfNecessary(hints_preferences, resource_width, request);
-  AddCSPHeaderIfNecessary(type, request);
+
+  const ContentSecurityPolicy* csp = GetContentSecurityPolicy();
+  if (csp && csp->ShouldSendCSPHeader(type))
+    request.AddHTTPHeaderField("CSP", "active");
 }
 
 void FrameFetchContext::SetFirstPartyCookieAndRequestorOrigin(

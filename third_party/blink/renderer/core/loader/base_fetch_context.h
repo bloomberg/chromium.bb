@@ -95,11 +95,9 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
 
   virtual void AddConsoleMessage(ConsoleMessage*) const = 0;
 
-  // Utility method that can be used to implement other methods.
-  void PrintAccessDeniedMessage(const KURL&) const;
-  void AddCSPHeaderIfNecessary(Resource::Type, ResourceRequest&);
-
  private:
+  void PrintAccessDeniedMessage(const KURL&) const;
+
   // Utility methods that are used in default implement for CanRequest,
   // CanFollowRedirect and AllowResponse.
   base::Optional<ResourceRequestBlockedReason> CanRequestInternal(
