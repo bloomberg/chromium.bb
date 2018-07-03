@@ -192,6 +192,7 @@ class PLATFORM_EXPORT BlobDataHandle
   ~BlobDataHandle();
 
   mojom::blink::BlobPtr CloneBlobPtr();
+  network::mojom::blink::DataPipeGetterPtr AsDataPipeGetter();
 
   void ReadAll(mojo::ScopedDataPipeProducerHandle,
                mojom::blink::BlobReaderClientPtr);

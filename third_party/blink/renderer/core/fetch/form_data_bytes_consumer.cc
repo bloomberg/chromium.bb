@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/fetch/form_data_bytes_consumer.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/fetch/blob_bytes_consumer.h"
 #include "third_party/blink/renderer/core/fetch/bytes_consumer_for_data_consumer_handle.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
@@ -319,7 +320,6 @@ class DataPipeAndDataBytesConsumer final : public BytesConsumer {
       case PublicState::kErrored:
         return;
       case PublicState::kClosed:
-        NOTREACHED();
         return;
       case PublicState::kReadableOrWaiting:
         break;

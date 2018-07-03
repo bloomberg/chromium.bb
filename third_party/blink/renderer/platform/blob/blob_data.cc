@@ -362,6 +362,18 @@ BlobPtr BlobDataHandle::CloneBlobPtr() {
   return blob_clone;
 }
 
+network::mojom::blink::DataPipeGetterPtr BlobDataHandle::AsDataPipeGetter() {
+  MutexLocker locker(blob_info_mutex_);
+  if (!blob_info_.is_valid())
+    return nullptr;
+  network::mojom::blink::DataPipeGetterPtr result;
+  BlobPtr blob;
+  blob.Bind(std::move(blob_info_));
+  blob->AsDataPipeGetter(MakeRequest(&result));
+  blob_info_ = blob.PassInterface();
+  return result;
+}
+
 void BlobDataHandle::ReadAll(mojo::ScopedDataPipeProducerHandle pipe,
                              mojom::blink::BlobReaderClientPtr client) {
   MutexLocker locker(blob_info_mutex_);
