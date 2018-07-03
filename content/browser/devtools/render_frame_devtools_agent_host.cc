@@ -456,7 +456,7 @@ bool RenderFrameDevToolsAgentHost::AttachSession(DevToolsSession* session) {
   session->AddHandler(base::WrapUnique(new protocol::StorageHandler()));
   if (!session->restricted()) {
     session->AddHandler(base::WrapUnique(
-        new protocol::TargetHandler(false /* browser_only */)));
+        new protocol::TargetHandler(false /* browser_only */, GetId())));
   }
   session->AddHandler(
       base::WrapUnique(new protocol::PageHandler(emulation_handler)));

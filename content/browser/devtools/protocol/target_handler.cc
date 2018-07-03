@@ -365,13 +365,15 @@ void TargetHandler::Throttle::Clear() {
   }
 }
 
-TargetHandler::TargetHandler(bool browser_only)
+TargetHandler::TargetHandler(bool browser_only,
+                             const std::string& owner_target_id)
     : DevToolsDomainHandler(Target::Metainfo::domainName),
       auto_attacher_(
           base::Bind(&TargetHandler::AutoAttach, base::Unretained(this)),
           base::Bind(&TargetHandler::AutoDetach, base::Unretained(this))),
       discover_(false),
       browser_only_(browser_only),
+      owner_target_id_(owner_target_id),
       weak_factory_(this) {}
 
 TargetHandler::~TargetHandler() {
@@ -533,8 +535,10 @@ Response TargetHandler::SendMessageToTarget(const std::string& message,
 }
 
 Response TargetHandler::GetTargetInfo(
-    const std::string& target_id,
+    Maybe<std::string> maybe_target_id,
     std::unique_ptr<Target::TargetInfo>* target_info) {
+  const std::string& target_id =
+      maybe_target_id.isJust() ? maybe_target_id.fromJust() : owner_target_id_;
   // TODO(dgozman): only allow reported hosts.
   scoped_refptr<DevToolsAgentHost> agent_host(
       DevToolsAgentHost::GetForId(target_id));
