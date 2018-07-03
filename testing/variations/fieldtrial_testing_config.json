@@ -777,26 +777,6 @@
             ]
         }
     ],
-    "BlinkSchedulerHighPriorityInputOnMainThread": [
-        {
-            "platforms": [
-                "android",
-                "chromeos",
-                "ios",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "BlinkSchedulerHighPriorityInput"
-                    ]
-                }
-            ]
-        }
-    ],
     "BlockTabUnders": [
         {
             "platforms": [
