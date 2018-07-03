@@ -21,7 +21,7 @@ void AuthenticatorRequestDialogModel::StartGuidedFlowForTransport(
   DCHECK_EQ(current_step(), Step::kTransportSelection);
   switch (transport) {
     case AuthenticatorTransport::kUsb:
-      SetCurrentStep(Step::kUsbInsert);
+      SetCurrentStep(Step::kUsbInsertAndActivateOnRegister);
       break;
     default:
       break;
@@ -51,7 +51,7 @@ void AuthenticatorRequestDialogModel::FinishPairingWithPin(
 }
 
 void AuthenticatorRequestDialogModel::TryUsbDevice() {
-  DCHECK_EQ(current_step(), Step::kUsbInsert);
+  DCHECK_EQ(current_step(), Step::kUsbInsertAndActivateOnRegister);
 }
 
 void AuthenticatorRequestDialogModel::Cancel() {}

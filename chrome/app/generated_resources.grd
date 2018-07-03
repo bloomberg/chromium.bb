@@ -10002,8 +10002,11 @@ Please help our engineers fix this problem. Tell us what happened right before y
     <message name="IDS_WEBAUTHN_TRANSPORT_CABLE" desc="Use a phone as a Security Key over cloud-assisted BLE with the Web Authentication API.">
       Use your phone as a Security Key
     </message>
-    <message name="IDS_WEBAUTHN_USB_TITLE" desc="Title of the dialog shown when the user has choosen to access their security key through USB.">
+    <message name="IDS_WEBAUTHN_USB_TITLE_ON_REGISTER" desc="Title of the dialog shown when the user has choosen to access their security key through USB during registration.">
       Use USB Security Key
+    </message>
+    <message name="IDS_WEBAUTHN_USB_TITLE_ON_SIGNIN" desc="Title of the dialog shown when the user has choosen to access their security key through USB during sign-in.">
+      Use USB Security Key with <ph name="APP_NAME">$1<ex>google.com</ex></ph>
     </message>
     <message name="IDS_WEBAUTHN_USB_INSERT_DESCRIPTION" desc="Contents of the dialog shown instructing the user to plug in their USB security key.">
       Plug in your Security Key and activate it
