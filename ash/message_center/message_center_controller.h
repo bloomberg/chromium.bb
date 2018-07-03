@@ -67,20 +67,27 @@ class ASH_EXPORT MessageCenterController
   class NotifierSettingsListener {
    public:
     // Sets the user-visible and toggle-able list of notifiers.
-    virtual void SetNotifierList(
+    virtual void OnNotifierListUpdated(
         const std::vector<mojom::NotifierUiDataPtr>& ui_data) = 0;
 
-    // Updates an icon for a notifier previously sent via SetNotifierList.
+    // Updates an icon for a notifier previously sent via OnNotifierListUpdated.
     virtual void UpdateNotifierIcon(
         const message_center::NotifierId& notifier_id,
         const gfx::ImageSkia& icon) = 0;
   };
 
-  // Sets |notifier_id_| and asks the client for the list of notifiers to
-  // display.
-  void SetNotifierSettingsListener(NotifierSettingsListener* listener);
+  void AddNotifierSettingsListener(NotifierSettingsListener* listener);
+  void RemoveNotifierSettingsListener(NotifierSettingsListener* listener);
+
+  // Asks the client for the list of notifiers to display.
+  void RequestNotifierSettingsUpdate();
+
+  int disabled_notifier_count() const { return disabled_notifier_count_; }
 
  private:
+  // Number of disabled notifier sources. Updated in OnGotNotifierList.
+  int disabled_notifier_count_ = 0;
+
   // Callback for GetNotifierList.
   void OnGotNotifierList(std::vector<mojom::NotifierUiDataPtr> ui_data);
 
@@ -92,7 +99,7 @@ class ASH_EXPORT MessageCenterController
       session_state_notification_blocker_;
   std::unique_ptr<message_center::NotificationBlocker> all_popup_blocker_;
 
-  NotifierSettingsListener* notifier_id_ = nullptr;
+  base::ObserverList<NotifierSettingsListener> notifier_settings_listeners_;
 
   mojo::BindingSet<mojom::AshMessageCenterController> binding_set_;
 
