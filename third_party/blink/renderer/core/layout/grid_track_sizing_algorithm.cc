@@ -826,8 +826,10 @@ GridTrackSize GridTrackSizingAlgorithm::GetGridTrackSize(
   // If the logical width/height of the grid container is indefinite, percentage
   // values are treated as <auto>.
   if (IsRelativeSizedTrackAsAuto(track_size, direction)) {
-    UseCounter::Count(layout_grid_->GetDocument(),
-                      WebFeature::kGridRowTrackPercentIndefiniteHeight);
+    if (direction == kForRows) {
+      UseCounter::Count(layout_grid_->GetDocument(),
+                        WebFeature::kGridRowTrackPercentIndefiniteHeight);
+    }
     if (min_track_breadth.HasPercentage())
       min_track_breadth = Length(kAuto);
     if (max_track_breadth.HasPercentage())
