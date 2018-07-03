@@ -27,6 +27,8 @@ UiElementName UserFriendlyElementNameToUiElementName(
       return kUrlBarSecurityButton;
     case UserFriendlyElementName::kBrowsingDialog:
       return k2dBrowsingHostedUiContent;
+    case UserFriendlyElementName::kContentQuad:
+      return kContentQuad;
     default:
       NOTREACHED();
       return kNone;

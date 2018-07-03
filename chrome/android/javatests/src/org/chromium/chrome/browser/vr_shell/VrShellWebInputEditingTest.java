@@ -10,6 +10,7 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
+import android.graphics.PointF;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Before;
@@ -23,6 +24,7 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.vr_shell.keyboard.TextEditAction;
 import org.chromium.chrome.browser.vr_shell.mock.MockBrowserKeyboardInterface;
 import org.chromium.chrome.browser.vr_shell.rules.ChromeTabbedActivityVrTestRule;
+import org.chromium.chrome.browser.vr_shell.util.NativeUiUtils;
 import org.chromium.chrome.browser.vr_shell.util.VrTransitionUtils;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content.browser.test.util.Criteria;
@@ -46,7 +48,6 @@ public class VrShellWebInputEditingTest {
     @Before
     public void setUp() throws Exception {
         mVrTestFramework = new VrTestFramework(mVrTestRule);
-        mController = new EmulatedVrController(mVrTestRule.getActivity());
     }
 
     /**
@@ -63,7 +64,6 @@ public class VrShellWebInputEditingTest {
                 PAGE_LOAD_TIMEOUT_S);
         VrTransitionUtils.forceEnterVr();
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
-        mController.recenterView();
 
         VrShellImpl vrShellImpl = (VrShellImpl) TestVrShellDelegate.getVrShellForTesting();
         MockBrowserKeyboardInterface keyboard = new MockBrowserKeyboardInterface();
@@ -71,8 +71,9 @@ public class VrShellWebInputEditingTest {
                 keyboard);
 
         // The webpage reacts to the first controller click by focusing its input field. Verify that
-        // focus gain spawns the keyboard.
-        mController.performControllerClick();
+        // focus gain spawns the keyboard by clicking in the center of the page.
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.CONTENT_QUAD, new PointF());
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -93,12 +94,13 @@ public class VrShellWebInputEditingTest {
             @Override
             public boolean isSatisfied() {
                 MockBrowserKeyboardInterface.Indices indices = keyboard.getLastIndices();
-                return indices.equals(expectedIndices);
+                return indices == null ? false : indices.equals(expectedIndices);
             }
         }, POLL_TIMEOUT_LONG_MS, POLL_CHECK_INTERVAL_SHORT_MS);
 
         // The second click should result in a focus loss and should hide the keyboard.
-        mController.performControllerClick();
+        NativeUiUtils.clickElementAndWaitForUiQuiescence(
+                UserFriendlyElementName.CONTENT_QUAD, new PointF());
         CriteriaHelper.pollInstrumentationThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

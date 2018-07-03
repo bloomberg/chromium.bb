@@ -1286,6 +1286,14 @@ void VrShellGl::HandleControllerInput(const gfx::Point3F& laser_origin,
     test_controller_model_queue_.pop();
   }
   if (using_test_controller_model_) {
+    // We need to copy the timestamps, otherwise we hit a DCHECK when submitting
+    // motion events due to invalid timestamps.
+    cached_test_controller_model_.last_orientation_timestamp =
+        controller_model.last_orientation_timestamp;
+    cached_test_controller_model_.last_touch_timestamp =
+        controller_model.last_touch_timestamp;
+    cached_test_controller_model_.last_button_timestamp =
+        controller_model.last_button_timestamp;
     controller_model = cached_test_controller_model_;
   }
   controller_model_ = controller_model;

@@ -22,6 +22,7 @@ enum class UserFriendlyElementName : int {
   kOverflowMenu,    // Overflow menu
   kPageInfoButton,  // Page info button on the URL bar
   kBrowsingDialog,  // 2D fallback UI, e.g. permission prompts
+  kContentQuad,     // Main content quad showing web contents
 };
 
 // These are used to report the current state of the UI after performing an
