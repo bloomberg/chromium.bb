@@ -234,8 +234,7 @@ NETWORK_EVENT_DETAILS_2 = {
 };
 
 TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
-  assertNotEquals(null, chrome.sync.aboutInfo);
-  expectTrue(this.hasInDetails(false, 'Summary', 'Uninitialized'));
+   assertNotEquals(null, chrome.sync.aboutInfo);
 });
 
 // Test that username is set correctly when the user is signed in or not.
@@ -244,11 +243,13 @@ TEST_F('SyncInternalsWebUITest', 'Uninitialized', function() {
 GEN('#if defined(OS_CHROMEOS)');
 TEST_F('SyncInternalsWebUITest', 'SignedIn', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
+  expectTrue(this.hasInDetails(true, 'Summary', 'Waiting for start request'));
   expectTrue(this.hasInDetails(true, 'Username', 'stub-user@example.com'));
 });
 GEN('#else');
 TEST_F('SyncInternalsWebUITest', 'SignedOut', function() {
   assertNotEquals(null, chrome.sync.aboutInfo);
+  expectTrue(this.hasInDetails(true, 'Summary', 'Disabled (Not signed in)'));
   expectTrue(this.hasInDetails(true, 'Username', ''));
 });
 GEN('#endif  // defined(OS_CHROMEOS)');

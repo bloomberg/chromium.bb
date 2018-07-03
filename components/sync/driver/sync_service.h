@@ -125,6 +125,10 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
     // The Sync engine is initialized and the data types may or may not be
     // configured (i.e. any of the states below), but Sync has encountered an
     // auth error. Call GetAuthError for more details.
+    // TODO(crbug.com/839834): If we receive an auth error and then shut down,
+    // we can be in one of the previous states but still have an auth error. Can
+    // we clear the auth error on shutdown, since it's not persisted anyway?
+    // Otherwise this state might have to move to just after DISABLED.
     AUTH_ERROR,
     // The Sync engine is initialized, but the user hasn't completed the initial
     // Sync setup yet, so we won't actually configure the data types.
@@ -358,9 +362,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
   // Return sync token status.
   virtual SyncTokenStatus GetSyncTokenStatus() const = 0;
 
-  // Get a description of the sync status for displaying in the user interface.
-  virtual std::string QuerySyncStatusSummaryString() = 0;
-
   // Initializes a struct of status indicators with data from the engine.
   // Returns false if the engine was not available for querying; in that case
   // the struct will be filled with default data.
@@ -368,9 +369,6 @@ class SyncService : public DataTypeEncryptionHandler, public KeyedService {
 
   // Returns the last synced time.
   virtual base::Time GetLastSyncedTime() const = 0;
-
-  // Returns a human readable string describing engine initialization state.
-  virtual std::string GetEngineInitializationStateString() const = 0;
 
   virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 

@@ -797,7 +797,10 @@ syncer::SyncService::State ProfileSyncService::GetState() const {
   // progress. StartupController::TryStartImmediately bypasses the first setup
   // check though, so we first have to check whether the engine is initialized.
   if (!IsEngineInitialized()) {
-    DCHECK_EQ(GetAuthError().state(), GoogleServiceAuthError::NONE);
+    // Note: We generally shouldn't be in an auth error state here (we get those
+    // errors only after the engine is initialized), but if we received an auth
+    // error and then shut down, it'll still be here.
+    // TODO(crbug.com/839834): Should we check for an auth error first here?
     switch (startup_controller_->GetState()) {
       case syncer::StartupController::State::NOT_STARTED:
         DCHECK(!engine_);
@@ -1286,45 +1289,6 @@ void ProfileSyncService::OnConfigureStart() {
   sync_configure_start_time_ = base::Time::Now();
   engine_->StartConfiguration();
   NotifyObservers();
-}
-
-std::string ProfileSyncService::QuerySyncStatusSummaryString() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-
-  // TODO(crbug.com/839834): Reevaluate this method; the cases below don't make
-  // a whole lot of sense.
-
-  if (HasDisableReason(DISABLE_REASON_UNRECOVERABLE_ERROR))
-    return "Unrecoverable error detected";
-  if (!engine_)
-    return "Syncing not enabled";
-  if (!IsFirstSetupComplete())
-    return "First time sync setup incomplete";
-  if (data_type_manager_ &&
-      data_type_manager_->state() == DataTypeManager::STOPPED) {
-    return "Datatypes not fully initialized";
-  }
-  if (IsSyncActive())
-    return "Sync service initialized";
-
-  return "Status unknown: Internal error?";
-}
-
-std::string ProfileSyncService::GetEngineInitializationStateString() const {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  switch (startup_controller_->GetState()) {
-    case syncer::StartupController::State::NOT_STARTED:
-      DCHECK(!engine_);
-      return "Not started";
-    case syncer::StartupController::State::STARTING_DEFERRED:
-      DCHECK(!engine_);
-      return "Deferred";
-    case syncer::StartupController::State::STARTED:
-      DCHECK(engine_);
-      return "Started";
-  }
-  NOTREACHED();
-  return std::string();
 }
 
 bool ProfileSyncService::IsSetupInProgress() const {
