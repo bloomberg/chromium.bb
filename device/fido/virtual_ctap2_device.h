@@ -41,12 +41,17 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualCtap2Device
   CtapDeviceResponseCode OnMakeCredential(base::span<const uint8_t> request,
                                           std::vector<uint8_t>* response);
 
+  CtapDeviceResponseCode OnGetAssertion(base::span<const uint8_t> request,
+                                        std::vector<uint8_t>* response);
+
   CtapDeviceResponseCode OnAuthenticatorGetInfo(
       std::vector<uint8_t>* response) const;
 
   AuthenticatorData ConstructAuthenticatorData(
       base::span<const uint8_t, kRpIdHashLength> rp_id_hash,
-      base::Optional<AttestedCredentialData> attested_credential_data);
+      uint32_t current_signature_count,
+      base::Optional<AttestedCredentialData> attested_credential_data =
+          base::nullopt);
 
   AuthenticatorGetInfoResponse device_info_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
