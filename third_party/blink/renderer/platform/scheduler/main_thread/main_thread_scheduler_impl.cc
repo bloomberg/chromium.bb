@@ -2698,8 +2698,16 @@ void MainThreadSchedulerImpl::OnQueueingTimeForWindowEstimated(
     }
   }
 
-  if (!is_disjoint_window || !ContainsLocalMainFrame())
+  if (!is_disjoint_window)
     return;
+
+  if (!ContainsLocalMainFrame()) {
+    UMA_HISTOGRAM_CUSTOM_COUNTS(
+        "RendererScheduler.ExpectedTaskQueueingDurationWithoutMainFrame",
+        queueing_time.InMicroseconds(), kMinExpectedQueueingTimeBucket,
+        kMaxExpectedQueueingTimeBucket, kNumberExpectedQueueingTimeBuckets);
+    return;
+  }
 
   UMA_HISTOGRAM_TIMES("RendererScheduler.ExpectedTaskQueueingDuration",
                       queueing_time);
