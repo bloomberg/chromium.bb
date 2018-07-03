@@ -14,9 +14,7 @@ LDADD =							\
 	$(top_builddir)/tools/gnulib/libgnutools.la	\
 	$(LTLIBINTL)
 
-capitalized_word_SOURCES = default_table.h capitalized_word.c
 checkTable_SOURCES = checkTable.c
-compbrlAtCursor_SOURCES = compbrlAtCursor.c
 emphclass_SOURCES = emphclass.c
 en_gb_g1_italics_SOURCES = en_gb_g1_italics.c
 findTable_SOURCES = findTable.c
@@ -34,11 +32,8 @@ check_metadata_SOURCES = check_metadata.c
 suggestChunks_SOURCES = suggestChunks.c
 
 program_TESTS =					\
-	capitalized_with_sentance		\
-	capitalized_word			\
 	checkTable				\
 	check_metadata				\
-	compbrlAtCursor				\
 	emphclass				\
 	en_gb_g1_italics			\
 	findTable				\
