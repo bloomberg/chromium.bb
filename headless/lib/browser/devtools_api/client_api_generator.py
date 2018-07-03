@@ -292,9 +292,8 @@ def CreateTypeDefinitions(json_api):
           type_definitions[domain['domain'] + '.' + type['id']] = (
               CreateObjectTypeDefinition())
       elif type['type'] == 'array':
-        items_type = type['items']['type']
         type_definitions[domain['domain'] + '.' + type['id']] = (
-            WrapArrayDefinition(type_definitions[items_type]))
+            ResolveType(type))
       elif 'enum' in type:
         type_definitions[domain['domain'] + '.' + type['id']] = (
             CreateEnumTypeDefinition(domain['domain'], type))
