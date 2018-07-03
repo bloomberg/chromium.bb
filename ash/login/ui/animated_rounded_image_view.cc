@@ -49,8 +49,9 @@ AnimatedRoundedImageView::~AnimatedRoundedImageView() = default;
 void AnimatedRoundedImageView::SetAnimationDecoder(
     std::unique_ptr<AnimationDecoder> decoder) {
   decoder_ = std::move(decoder);
-  // Force a new decode.
+  // Force a new decode and repaint.
   frames_scale_ = NAN;
+  SchedulePaint();
 }
 
 void AnimatedRoundedImageView::SetImage(const gfx::ImageSkia& image) {
