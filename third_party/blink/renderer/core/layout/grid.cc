@@ -159,8 +159,6 @@ void Grid::SetNeedsItemsPlacement(bool needs_items_placement) {
   auto_repeat_rows_ = 0;
   auto_repeat_empty_columns_ = nullptr;
   auto_repeat_empty_rows_ = nullptr;
-  baseline_grid_items_.resize(0);
-  orthogonal_grid_items_.resize(0);
 }
 
 Grid::GridIterator::GridIterator(GridTrackSizingDirection direction,
