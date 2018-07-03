@@ -1,32 +1,20 @@
 <!DOCTYPE html>
-<html>
-<body>
-<p>This is an integration test for childNodes. You should see 1 through 5 below.</p>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
 <pre></pre>
-<div id="console"></div>
-<script src="../../../resources/js-test.js"></script>
 <script>
-
-if (window.testRunner)
-    testRunner.dumpAsText();
-
-var node = document.querySelector('pre');
-var failed = false;
-for (var j = 0; j < 5; ++j) {
-    var child = document.createElement('div');
+test(() => {
+  const node = document.querySelector('pre'); 
+  for (let j = 0; j < 5; ++j) {
+    const child = document.createElement('div');
     child.innerHTML = j + 1;
     node.appendChild(child);
-    for (var i = node.childNodes.length - 1; i >= 0; --i) {
-        var actual = node.childNodes[i] ? node.childNodes[i].innerHTML : undefined;
-        if (actual != i + 1) {
-            testFailed('Got ' + actual + ' on ' + (i + 1) + 'st/nd/th child after adding ' + (j + 1) + 'st/nd/th child.');
-            failed  = true;
-        }
+    for (let i = node.childNodes.length - 1; i >= 0; --i) {
+        const actual = node.childNodes[i] ? node.childNodes[i].innerHTML
+                                          : undefined;
+        assert_equals(actual, (i + 1).toString(),
+                      `child[${i}] after adding child[${j}]`);
     }
-}
-
-shouldBe("node.innerText", "'1\\n2\\n3\\n4\\n5\\n'");
-
+  }
+}, 'Node#childNodes reverse iteration');
 </script>
-</body>
-</html>
