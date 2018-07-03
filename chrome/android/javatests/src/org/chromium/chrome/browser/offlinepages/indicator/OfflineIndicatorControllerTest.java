@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -92,6 +93,7 @@ public class OfflineIndicatorControllerTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "https://crbug.com/859849")
     @MediumTest
     public void testHideOfflineIndicatorWhenBackToOnline() throws Exception {
         EmbeddedTestServer testServer =
@@ -116,6 +118,7 @@ public class OfflineIndicatorControllerTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = 22, message = "https://crbug.com/859849")
     @MediumTest
     public void testDoNotShowOfflineIndicatorOnErrorPageWhenOffline() throws Exception {
         EmbeddedTestServer testServer =
