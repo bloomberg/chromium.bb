@@ -108,6 +108,8 @@ source_set("internal") {
     "policy_namespace.h",
     "policy_pref_names.cc",
     "policy_pref_names.h",
+    "policy_proto_decoders.cc",
+    "policy_proto_decoders.h",
     "policy_service.cc",
     "policy_service.h",
     "policy_service_impl.cc",

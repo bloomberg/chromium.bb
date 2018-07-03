@@ -78,7 +78,6 @@ chrome_settings_full_runtime_proto_path =
 
 constants_header_path = "$target_gen_dir/policy_constants.h"
 constants_source_path = "$target_gen_dir/policy_constants.cc"
-protobuf_decoder_path = "$target_gen_dir/cloud_policy_generated.cc"
 app_restrictions_path = "$target_gen_dir/app_restrictions.xml"
 risk_tag_header_path = "$target_gen_dir/risk_tag.h"
 
@@ -100,7 +99,6 @@ action("cloud_policy_code_generate") {
   outputs = [
     constants_header_path,
     constants_source_path,
-    protobuf_decoder_path,
     chrome_settings_proto_path,
     cloud_policy_proto_path,
     app_restrictions_path,
@@ -120,8 +118,6 @@ action("cloud_policy_code_generate") {
         rebase_path(chrome_settings_proto_path, root_build_dir),
     "--cloud-policy-protobuf=" +
         rebase_path(cloud_policy_proto_path, root_build_dir),
-    "--cloud-policy-decoder=" +
-        rebase_path(protobuf_decoder_path, root_build_dir),
     "--app-restrictions-definition=" +
         rebase_path(app_restrictions_path, root_build_dir),
     "--risk-tag-header=" + rebase_path(risk_tag_header_path, root_build_dir),
@@ -334,7 +330,6 @@ static_library("generated") {
   sources = [
     constants_header_path,
     constants_source_path,
-    protobuf_decoder_path,
     risk_tag_header_path,
   ]
 
