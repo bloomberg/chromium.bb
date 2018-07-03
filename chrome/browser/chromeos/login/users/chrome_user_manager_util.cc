@@ -113,10 +113,15 @@ bool AreSupervisedUsersAllowed(const CrosSettings* cros_settings) {
 bool IsGuestSessionAllowed(const CrosSettings* cros_settings) {
   const AccountId& owner_account_id =
       user_manager::UserManager::Get()->GetOwnerAccountId();
-  if (owner_account_id.is_valid() &&
-      user_manager::UserManager::Get()->FindUser(owner_account_id)->GetType() ==
-          user_manager::UserType::USER_TYPE_CHILD) {
-    return false;
+  if (owner_account_id.is_valid()) {
+    // Some Autotest policy tests appear to wipe the user list in Local State
+    // but preserve a policy file referencing an owner: https://crbug.com/850139
+    const user_manager::User* owner_user =
+        user_manager::UserManager::Get()->FindUser(owner_account_id);
+    if (owner_user &&
+        owner_user->GetType() == user_manager::UserType::USER_TYPE_CHILD) {
+      return false;
+    }
   }
 
   // In tests CrosSettings might not be initialized.
