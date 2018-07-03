@@ -114,7 +114,8 @@ public class TabListSceneLayer extends SceneLayer {
                     defaultThemeColor, t.getToolbarBackgroundColor(), closeButtonColor,
                     t.anonymizeToolbar(), t.isTitleNeeded(), urlBarBackgroundId,
                     t.getTextBoxBackgroundColor(), textBoxAlpha, t.getToolbarAlpha(),
-                    t.getToolbarYOffset() * dpToPx, t.getSideBorderScale());
+                    t.getToolbarYOffset() * dpToPx, t.getSideBorderScale(),
+                    t.insetBorderVertical());
         }
         nativeFinishBuildingFrame(mNativePtr);
     }
@@ -177,16 +178,17 @@ public class TabListSceneLayer extends SceneLayer {
     private native void nativePutTabLayer(long nativeTabListSceneLayer, int id,
             int toolbarResourceId, int closeButtonResourceId, int shadowResourceId,
             int contourResourceId, int backLogoResourceId, int borderResourceId,
-            int borderInnerShadowResourceId, boolean canUseLiveLayer, boolean modernDesignEnabled,
-            int tabBackgroundColor, int backLogoColor, boolean incognito, boolean isPortrait,
-            float x, float y, float width, float height, float contentWidth, float contentHeight,
-            float visibleContentHeight, float shadowX, float shadowY, float shadowWidth,
-            float shadowHeight, float pivotX, float pivotY, float rotationX, float rotationY,
-            float alpha, float borderAlpha, float borderInnerShadowAlpha, float contourAlpha,
-            float shadowAlpha, float closeAlpha, float closeBtnWidth, float staticToViewBlend,
-            float borderScale, float saturation, float brightness, boolean showToolbar,
-            int defaultThemeColor, int toolbarBackgroundColor, int closeButtonColor,
-            boolean anonymizeToolbar, boolean showTabTitle, int toolbarTextBoxResource,
-            int toolbarTextBoxBackgroundColor, float toolbarTextBoxAlpha, float toolbarAlpha,
-            float toolbarYOffset, float sideBorderScale);
+            int borderInnerShadowResourceId, boolean canUseLiveLayer,
+            boolean modernDesignEnabled, int tabBackgroundColor,
+            int backLogoColor, boolean incognito, boolean isPortrait, float x, float y, float width,
+            float height, float contentWidth, float contentHeight, float visibleContentHeight,
+            float shadowX, float shadowY, float shadowWidth, float shadowHeight, float pivotX,
+            float pivotY, float rotationX, float rotationY, float alpha, float borderAlpha,
+            float borderInnerShadowAlpha, float contourAlpha, float shadowAlpha, float closeAlpha,
+            float closeBtnWidth, float staticToViewBlend, float borderScale, float saturation,
+            float brightness, boolean showToolbar, int defaultThemeColor,
+            int toolbarBackgroundColor, int closeButtonColor, boolean anonymizeToolbar,
+            boolean showTabTitle, int toolbarTextBoxResource, int toolbarTextBoxBackgroundColor,
+            float toolbarTextBoxAlpha, float toolbarAlpha, float toolbarYOffset,
+            float sideBorderScale, boolean insetVerticalBorder);
 }

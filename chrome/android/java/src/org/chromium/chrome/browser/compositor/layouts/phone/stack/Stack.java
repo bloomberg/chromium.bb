@@ -1644,6 +1644,7 @@ public abstract class Stack implements ChromeAnimation.Animatable<Stack.Property
 
                 LayoutTab layoutTab = mLayout.createLayoutTab(tabId, isIncognito,
                         Layout.SHOW_CLOSE_BUTTON, needTitle, maxContentWidth, maxContentHeight);
+                layoutTab.setInsetBorderVertical(true);
                 layoutTab.setShowToolbar(true);
                 layoutTab.setToolbarAlpha(0.f);
                 layoutTab.setAnonymizeToolbar(!mIsStackForCurrentTabList || mTabList.index() != i);

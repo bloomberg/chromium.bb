@@ -142,7 +142,8 @@ void TabLayer::SetProperties(int id,
                              float toolbar_textbox_alpha,
                              float toolbar_alpha,
                              float toolbar_y_offset,
-                             float side_border_scale) {
+                             float side_border_scale,
+                             bool inset_border) {
   if (alpha <= 0) {
     layer_->SetHideLayerAndSubtree(true);
     return;
@@ -341,35 +342,39 @@ void TabLayer::SetProperties(int id,
   //----------------------------------------------------------------------------
   // Handle Insetting the Top Border Component
   //----------------------------------------------------------------------------
-  descaled_local_content_area.set_height(descaled_local_content_area.height() -
-                                         border_padding.y());
-  scaled_local_content_area.set_height(scaled_local_content_area.height() -
-                                       border_padding.y() * content_scale);
-  shadow_size.set_height(shadow_size.height() - border_padding.y());
-  border_size.set_height(border_size.height() - border_padding.y());
-  border_inner_shadow_size.set_height(border_inner_shadow_size.height() -
-                                      border_padding.y());
-  contour_size.set_height(contour_size.height() - border_padding.y());
-  shadow_position.set_y(shadow_position.y() + border_padding.y());
-  border_position.set_y(border_position.y() + border_padding.y());
-  border_inner_shadow_position.set_y(border_inner_shadow_position.y() +
-                                     border_padding.y());
-  contour_position.set_y(contour_position.y() + border_padding.y());
-  close_button_position.set_y(close_button_position.y() + border_padding.y());
-  title_position.set_y(title_position.y() + border_padding.y());
+  if (inset_border) {
+    float inset_diff = inset_border ? border_padding.y() : 0.f;
+    descaled_local_content_area.set_height(
+        descaled_local_content_area.height() - inset_diff);
+    scaled_local_content_area.set_height(scaled_local_content_area.height() -
+                                         inset_diff * content_scale);
+    shadow_size.set_height(shadow_size.height() - inset_diff);
+    border_size.set_height(border_size.height() - inset_diff);
+    border_inner_shadow_size.set_height(
+        border_inner_shadow_size.height() - inset_diff);
+    contour_size.set_height(contour_size.height() - inset_diff);
+    shadow_position.set_y(shadow_position.y() + inset_diff);
+    border_position.set_y(border_position.y() + inset_diff);
+    border_inner_shadow_position.set_y(
+        border_inner_shadow_position.y() + inset_diff);
+    contour_position.set_y(contour_position.y() + inset_diff);
+    close_button_position.set_y(close_button_position.y() + inset_diff);
+    title_position.set_y(title_position.y() + inset_diff);
 
-  // Scaled eventually, so have to descale the size difference first.
-  toolbar_position.set_y(toolbar_position.y() +
-                         border_padding.y() / content_scale);
-  content_position.set_y(content_position.y() +
-                         border_padding.y() / content_scale);
-  desired_content_size_pt.set_y(desired_content_size_pt.y() -
-                                border_padding.y() / content_scale);
+    // Scaled eventually, so have to descale the size difference first.
+    toolbar_position.set_y(toolbar_position.y() + inset_diff / content_scale);
+    content_position.set_y(content_position.y() + inset_diff / content_scale);
+    desired_content_size_pt.set_y(desired_content_size_pt.y() -
+                                  inset_diff / content_scale);
+  }
 
-  toolbar_position.set_y(toolbar_position.y() - toolbar_impact_height);
-  content_position.set_y(content_position.y() - toolbar_impact_height);
-  desired_content_size_pt.set_y(desired_content_size_pt.y() +
-                                toolbar_impact_height);
+  const bool inset_toolbar = !inset_border;
+  if (!inset_toolbar) {
+    float inset_diff = toolbar_impact_height;
+    toolbar_position.set_y(toolbar_position.y() - inset_diff);
+    content_position.set_y(content_position.y() - inset_diff);
+    desired_content_size_pt.set_y(desired_content_size_pt.y() + inset_diff);
+  }
 
   // Finally build the sizes that might have calculations that go negative.
   gfx::Size desired_content_size(desired_content_size_pt.x(),

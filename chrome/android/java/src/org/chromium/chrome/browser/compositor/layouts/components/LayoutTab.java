@@ -93,6 +93,7 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
     private boolean mShowToolbar;
     private boolean mAnonymizeToolbar;
     private float mToolbarAlpha;
+    private boolean mInsetBorderVertical;
     private float mToolbarYOffset;
     private float mSideBorderScale;
     private boolean mCloseButtonIsOnRight;
@@ -190,6 +191,7 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
         mShowToolbar = false;
         mAnonymizeToolbar = false;
         mToolbarAlpha = 1.f;
+        mInsetBorderVertical = false;
         mToolbarYOffset = 0.f;
         mSideBorderScale = 1.f;
         mOriginalContentWidth = maxContentTextureWidth * sPxToDp;
@@ -860,6 +862,20 @@ public class LayoutTab implements ChromeAnimation.Animatable<LayoutTab.Property>
      */
     public float getToolbarAlpha() {
         return mToolbarAlpha;
+    }
+
+    /**
+     * @param inset Whether or not to inset the top vertical component of the tab border or not.
+     */
+    public void setInsetBorderVertical(boolean inset) {
+        mInsetBorderVertical = inset;
+    }
+
+    /**
+     * @return Whether or not to inset the top vertical component of the tab border or not.
+     */
+    public boolean insetBorderVertical() {
+        return mInsetBorderVertical;
     }
 
     public void setCloseButtonIsOnRight(boolean closeButtonIsOnRight) {
