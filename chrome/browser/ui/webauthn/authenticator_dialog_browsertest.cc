@@ -40,6 +40,9 @@ class AuthenticatorDialogTest : public DialogBrowserTest {
     } else if (name == "insert_usb_sign") {
       model->SetCurrentStep(
           AuthenticatorRequestDialogModel::Step::kUsbInsertAndActivateOnSign);
+    } else if (name == "timeout") {
+      model->SetCurrentStep(
+          AuthenticatorRequestDialogModel::Step::kErrorTimedOut);
     }
 
     ShowAuthenticatorRequestDialog(
@@ -68,6 +71,11 @@ IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_transports) {
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_insert_usb_register) {
   ShowAndVerifyUi();
 }
+
 IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_insert_usb_sign) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(AuthenticatorDialogTest, InvokeUi_timeout) {
   ShowAndVerifyUi();
 }

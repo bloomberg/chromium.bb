@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/webauthn/sheet_models.h"
 
+#include <vector>
+
 #include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
@@ -123,4 +125,14 @@ base::string16 AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepTitle()
 base::string16
 AuthenticatorInsertAndActivateUsbOnSignSheetModel::GetStepDescription() const {
   return l10n_util::GetStringUTF16(IDS_WEBAUTHN_USB_INSERT_DESCRIPTION);
+}
+
+// AuthenticatorTimeoutErrorModel ---------------------------------------------
+
+base::string16 AuthenticatorTimeoutErrorModel::GetStepTitle() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TIMEOUT_TITLE);
+}
+
+base::string16 AuthenticatorTimeoutErrorModel::GetStepDescription() const {
+  return l10n_util::GetStringUTF16(IDS_WEBAUTHN_TIMEOUT_DESCRIPTION);
 }

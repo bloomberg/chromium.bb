@@ -72,3 +72,7 @@ void AuthenticatorRequestDialogModel::RemoveObserver(Observer* observer) {
 void AuthenticatorRequestDialogModel::OnRequestComplete() {
   SetCurrentStep(Step::kCompleted);
 }
+
+void AuthenticatorRequestDialogModel::OnRequestTimeout() {
+  SetCurrentStep(Step::kErrorTimedOut);
+}
