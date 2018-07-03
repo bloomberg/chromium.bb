@@ -15,6 +15,7 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
+class RenderFrameHost;
 class RenderViewHost;
 class RenderWidgetHost;
 class RenderWidgetHostViewBase;
@@ -110,9 +111,14 @@ class WebContentsView {
   // fully created.
   virtual void RenderViewCreated(RenderViewHost* host) = 0;
 
-  // Invoked when the WebContents is notified that the RenderView has been
+  // Invoked when the WebContents is notified that the RenderView is ready.
+  virtual void RenderViewReady() = 0;
+
+  // Invoked when the WebContents is notified that the RenderFrame has been
   // swapped in.
-  virtual void RenderViewSwappedIn(RenderViewHost* host) = 0;
+  virtual void RenderFrameSwappedIn(RenderFrameHost* old_host,
+                                    RenderFrameHost* new_host,
+                                    bool is_main_frame) = 0;
 
   // Invoked to enable/disable overscroll gesture navigation.
   virtual void SetOverscrollControllerEnabled(bool enabled) = 0;

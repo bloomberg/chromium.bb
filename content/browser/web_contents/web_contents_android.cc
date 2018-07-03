@@ -22,7 +22,6 @@
 #include "base/task_scheduler/post_task.h"
 #include "content/browser/accessibility/browser_accessibility_android.h"
 #include "content/browser/accessibility/browser_accessibility_manager_android.h"
-#include "content/browser/android/content_view_core.h"
 #include "content/browser/android/java/gin_java_bridge_dispatcher_host.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
@@ -851,13 +850,9 @@ void WebContentsAndroid::OnScaleFactorChanged(
 void WebContentsAndroid::SetFocus(JNIEnv* env,
                                   const JavaParamRef<jobject>& obj,
                                   jboolean focused) {
-  RenderWidgetHostViewAndroid* rwhva = GetRenderWidgetHostViewAndroid();
-  if (!rwhva)
-    return;
-  if (focused)
-    rwhva->GotFocus();
-  else
-    rwhva->LostFocus();
+  WebContentsViewAndroid* view =
+      static_cast<WebContentsViewAndroid*>(web_contents_->GetView());
+  view->SetFocus(focused);
 }
 
 int WebContentsAndroid::GetTopControlsShrinkBlinkHeightPixForTesting(
