@@ -10,8 +10,10 @@
 #include "base/logging.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "build/buildflag.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 
@@ -169,6 +171,8 @@ MaterialDesignController::Mode MaterialDesignController::DefaultMode() {
 
 #if defined(OS_WIN) || defined(OS_LINUX)
   return MATERIAL_REFRESH;
+#elif defined(OS_MACOSX) && BUILDFLAG(MAC_VIEWS_BROWSER)
+  return features::IsViewsBrowserCocoa() ? MATERIAL_NORMAL : MATERIAL_REFRESH;
 #else
   return MATERIAL_NORMAL;
 #endif
