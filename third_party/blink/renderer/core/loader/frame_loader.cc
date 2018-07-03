@@ -1360,6 +1360,11 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       return kNavigationPolicyIgnore;
   }
 
+  if (!check_with_client) {
+    DCHECK_EQ(kNavigationPolicyCurrentTab, policy);
+    return policy;
+  }
+
   bool replaces_current_history_item =
       frame_load_type == WebFrameLoadType::kReplaceCurrentItem;
   policy = Client()->DecidePolicyForNavigation(
@@ -1367,8 +1372,6 @@ NavigationPolicy FrameLoader::ShouldContinueForNavigationPolicy(
       replaces_current_history_item, is_client_redirect, triggering_event_info,
       form, should_check_main_world_content_security_policy,
       std::move(blob_url_token));
-  if (!check_with_client)
-    CHECK_EQ(kNavigationPolicyCurrentTab, policy);
   DCHECK(policy == kNavigationPolicyCurrentTab ||
          policy == kNavigationPolicyIgnore ||
          policy == kNavigationPolicyHandledByClient ||
