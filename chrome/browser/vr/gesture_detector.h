@@ -62,8 +62,7 @@ class VR_EXPORT GestureDetector {
 
   std::unique_ptr<blink::WebGestureEvent> GetGestureFromTouchInfo(
       const TouchInfo& input_touch_info,
-      bool force_cancel,
-      base::TimeTicks current_timestamp);
+      bool force_cancel);
 
   void HandleWaitingState(const TouchInfo& touch_info,
                           blink::WebGestureEvent* gesture);
@@ -72,15 +71,12 @@ class VR_EXPORT GestureDetector {
                             blink::WebGestureEvent* gesture);
   void HandleScrollingState(const TouchInfo& touch_info,
                             bool force_cancel,
-                            base::TimeTicks current_timestamp,
                             blink::WebGestureEvent* gesture);
   void HandlePostScrollingState(const TouchInfo& touch_info,
                                 bool force_cancel,
-                                base::TimeTicks current_timestamp,
                                 blink::WebGestureEvent* gesture);
 
-  void UpdateGestureWithScrollDelta(blink::WebGestureEvent* gesture,
-                                    base::TimeTicks current_timestamp);
+  void UpdateGestureWithScrollDelta(blink::WebGestureEvent* gesture);
 
   // If the user is touching the touch pad and the touch point is different from
   // before, update the touch point and return true. Otherwise, return false.
