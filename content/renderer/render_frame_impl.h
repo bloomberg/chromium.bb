@@ -1136,20 +1136,23 @@ class CONTENT_EXPORT RenderFrameImpl
       const blink::WebURLError& error,
       bool replace,
       HistoryEntry* entry,
-      const base::Optional<std::string>& error_page_content);
+      const base::Optional<std::string>& error_page_content,
+      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
   void LoadNavigationErrorPageForHttpStatusError(
       const blink::WebURLRequest& failed_request,
       const GURL& unreachable_url,
       int http_status,
       bool replace,
-      HistoryEntry* entry);
+      HistoryEntry* entry,
+      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
   void LoadNavigationErrorPageInternal(
       const std::string& error_html,
       const GURL& error_page_url,
       const GURL& error_url,
       bool replace,
       blink::WebFrameLoadType frame_load_type,
-      const blink::WebHistoryItem& history_item);
+      const blink::WebHistoryItem& history_item,
+      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
 
   void HandleJavascriptExecutionResult(const base::string16& javascript,
                                        int id,
@@ -1170,12 +1173,14 @@ class CONTENT_EXPORT RenderFrameImpl
   void BeginNavigation(const NavigationPolicyInfo& info);
 
   // Loads a data url.
-  void LoadDataURL(const CommonNavigationParams& params,
-                   const RequestNavigationParams& request_params,
-                   blink::WebLocalFrame* frame,
-                   blink::WebFrameLoadType load_type,
-                   blink::WebHistoryItem item_for_history_navigation,
-                   bool is_client_redirect);
+  void LoadDataURL(
+      const CommonNavigationParams& params,
+      const RequestNavigationParams& request_params,
+      blink::WebLocalFrame* frame,
+      blink::WebFrameLoadType load_type,
+      blink::WebHistoryItem item_for_history_navigation,
+      bool is_client_redirect,
+      std::unique_ptr<blink::WebDocumentLoader::ExtraData> navigation_data);
 
   // Sends a proper FrameHostMsg_DidFailProvisionalLoadWithError_Params IPC for
   // the failed request |request|.

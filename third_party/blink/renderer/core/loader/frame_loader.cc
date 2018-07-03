@@ -215,10 +215,10 @@ void FrameLoader::Init() {
       frame_->IsMainFrame() ? network::mojom::RequestContextFrameType::kTopLevel
                             : network::mojom::RequestContextFrameType::kNested);
 
-  provisional_document_loader_ =
-      Client()->CreateDocumentLoader(frame_, initial_request, SubstituteData(),
-                                     ClientRedirectPolicy::kNotClientRedirect,
-                                     base::UnguessableToken::Create());
+  provisional_document_loader_ = Client()->CreateDocumentLoader(
+      frame_, initial_request, SubstituteData(),
+      ClientRedirectPolicy::kNotClientRedirect,
+      base::UnguessableToken::Create(), nullptr /* extra_data */);
   provisional_document_loader_->StartLoading();
 
   frame_->GetDocument()->CancelParsing();
@@ -836,7 +836,7 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 
   StartLoad(request, frame_load_type, policy, nullptr,
-            true /* check_with_client */);
+            true /* check_with_client */, nullptr);
 
   // TODO(csharrison): In M70 when UserActivation v2 should ship, we can remove
   // the check that the pages are equal, because consumption should not be
@@ -848,9 +848,11 @@ void FrameLoader::StartNavigation(const FrameLoadRequest& passed_request,
   }
 }
 
-void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
-                                   WebFrameLoadType frame_load_type,
-                                   HistoryItem* history_item) {
+void FrameLoader::CommitNavigation(
+    const FrameLoadRequest& passed_request,
+    WebFrameLoadType frame_load_type,
+    HistoryItem* history_item,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   CHECK(!passed_request.OriginDocument());
   CHECK(passed_request.FrameName().IsEmpty());
   CHECK(!passed_request.Form());
@@ -885,7 +887,7 @@ void FrameLoader::CommitNavigation(const FrameLoadRequest& passed_request,
   //   with regards to the last commit.
   // In this rare case, we intentionally proceed as cross-document.
   StartLoad(request, frame_load_type, kNavigationPolicyCurrentTab, history_item,
-            false /* check_with_client */);
+            false /* check_with_client */, std::move(extra_data));
 }
 
 mojom::CommitResult FrameLoader::CommitSameDocumentNavigation(
@@ -1393,11 +1395,13 @@ void FrameLoader::ClientDroppedNavigation() {
   }
 }
 
-void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
-                            WebFrameLoadType type,
-                            NavigationPolicy navigation_policy,
-                            HistoryItem* history_item,
-                            bool check_with_client) {
+void FrameLoader::StartLoad(
+    FrameLoadRequest& frame_load_request,
+    WebFrameLoadType type,
+    NavigationPolicy navigation_policy,
+    HistoryItem* history_item,
+    bool check_with_client,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DCHECK(Client()->HasWebView());
   ResourceRequest& resource_request = frame_load_request.GetResourceRequest();
   WebNavigationType navigation_type = DetermineNavigationType(
@@ -1463,8 +1467,9 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   if (!CancelProvisionalLoaderForNewNavigation(navigation_policy))
     return;
 
-  provisional_document_loader_ = CreateDocumentLoader(
-      resource_request, frame_load_request, type, navigation_type);
+  provisional_document_loader_ =
+      CreateDocumentLoader(resource_request, frame_load_request, type,
+                           navigation_type, std::move(extra_data));
 
   // This seems to correspond to step 9 of the specification:
   // "9. Abort the active document of browsingContext."
@@ -1748,14 +1753,15 @@ DocumentLoader* FrameLoader::CreateDocumentLoader(
     const ResourceRequest& request,
     const FrameLoadRequest& frame_load_request,
     WebFrameLoadType load_type,
-    WebNavigationType navigation_type) {
+    WebNavigationType navigation_type,
+    std::unique_ptr<WebDocumentLoader::ExtraData> extra_data) {
   DocumentLoader* loader = Client()->CreateDocumentLoader(
       frame_, request,
       frame_load_request.GetSubstituteData().IsValid()
           ? frame_load_request.GetSubstituteData()
           : DefaultSubstituteDataForURL(request.Url()),
       frame_load_request.ClientRedirect(),
-      frame_load_request.GetDevToolsNavigationToken());
+      frame_load_request.GetDevToolsNavigationToken(), std::move(extra_data));
 
   loader->SetLoadType(load_type);
   loader->SetNavigationType(navigation_type);

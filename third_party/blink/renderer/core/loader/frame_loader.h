@@ -37,6 +37,7 @@
 #include "third_party/blink/public/mojom/blob/blob_url_store.mojom-blink.h"
 #include "third_party/blink/public/platform/web_insecure_request_policy.h"
 #include "third_party/blink/public/web/commit_result.mojom-shared.h"
+#include "third_party/blink/public/web/web_document_loader.h"
 #include "third_party/blink/public/web/web_frame_load_type.h"
 #include "third_party/blink/public/web/web_navigation_type.h"
 #include "third_party/blink/public/web/web_triggering_event_info.h"
@@ -105,9 +106,11 @@ class CORE_EXPORT FrameLoader final {
   // that browser process has already performed any checks necessary.
   // For history navigations, a history item should be provided and
   // an appropriate WebFrameLoadType should be given.
-  void CommitNavigation(const FrameLoadRequest&,
-                        WebFrameLoadType = WebFrameLoadType::kStandard,
-                        HistoryItem* = nullptr);
+  void CommitNavigation(
+      const FrameLoadRequest&,
+      WebFrameLoadType = WebFrameLoadType::kStandard,
+      HistoryItem* = nullptr,
+      std::unique_ptr<WebDocumentLoader::ExtraData> extra_data = nullptr);
 
   // Called when the browser process has asked this renderer process to commit a
   // same document navigation in that frame. Returns false if the navigation
@@ -256,7 +259,8 @@ class CORE_EXPORT FrameLoader final {
                  WebFrameLoadType,
                  NavigationPolicy,
                  HistoryItem*,
-                 bool check_with_client);
+                 bool check_with_client,
+                 std::unique_ptr<WebDocumentLoader::ExtraData> extra_data);
 
   void ClearInitialScrollState();
 
@@ -278,10 +282,12 @@ class CORE_EXPORT FrameLoader final {
   std::unique_ptr<TracedValue> ToTracedValue() const;
   void TakeObjectSnapshot() const;
 
-  DocumentLoader* CreateDocumentLoader(const ResourceRequest&,
-                                       const FrameLoadRequest&,
-                                       WebFrameLoadType,
-                                       WebNavigationType);
+  DocumentLoader* CreateDocumentLoader(
+      const ResourceRequest&,
+      const FrameLoadRequest&,
+      WebFrameLoadType,
+      WebNavigationType,
+      std::unique_ptr<WebDocumentLoader::ExtraData>);
 
   LocalFrameClient* Client() const;
 
