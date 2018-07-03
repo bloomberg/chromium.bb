@@ -48,11 +48,13 @@ IntranetRedirectDetector::IntranetRedirectDetector()
                      weak_ptr_factory_.GetWeakPtr()),
       base::TimeDelta::FromSeconds(kStartFetchDelaySeconds));
 
-  net::NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()->AddNetworkConnectionObserver(
+      this);
 }
 
 IntranetRedirectDetector::~IntranetRedirectDetector() {
-  net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
+  g_browser_process->network_connection_tracker()
+      ->RemoveNetworkConnectionObserver(this);
 }
 
 // static
@@ -191,9 +193,9 @@ void IntranetRedirectDetector::OnSimpleLoaderComplete(
           redirect_origin_.spec() : std::string());
 }
 
-void IntranetRedirectDetector::OnNetworkChanged(
-    net::NetworkChangeNotifier::ConnectionType type) {
-  if (type == net::NetworkChangeNotifier::CONNECTION_NONE)
+void IntranetRedirectDetector::OnConnectionChanged(
+    network::mojom::ConnectionType type) {
+  if (type == network::mojom::ConnectionType::CONNECTION_NONE)
     return;
   // If a request is already scheduled, do not scheduled yet another one.
   if (in_sleep_)
