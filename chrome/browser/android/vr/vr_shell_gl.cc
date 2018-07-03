@@ -1511,14 +1511,15 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
 
   // From this point on, the current frame is either a pure UI frame
   // (frame_index==-1), or a WebVR frame (frame_index >= 0). If it's a WebVR
-  // frame, it must be the current processing frame, and ShouldDrawWebVr() must
-  // be true (not in UI-only mode). Careful, we may still have a processing
-  // frame in UI mode that couldn't be cancelled yet. Also, WebVR frames
-  // can still have overlay UI drawn on top of them.
+  // frame, it must be the current processing frame. Careful, we may still have
+  // a processing frame in UI mode that couldn't be cancelled yet. For example
+  // when showing a permission prompt, ShouldDrawWebVr() may have become false
+  // in the time between SubmitFrame and OnWebVRFrameAvailable or
+  // OnWebVRTokenSignaled. In that case we continue handling the current frame
+  // as a WebVR frame. Also, WebVR frames can still have overlay UI drawn on top
+  // of them.
   bool is_webvr_frame = frame_index >= 0;
-  DCHECK_EQ(is_webvr_frame, ShouldDrawWebVr());
   DCHECK(!is_webvr_frame || webxr_->HaveProcessingFrame());
-
   CHECK(!acquired_frame_);
 
   // When using async reprojection, we need to know which pose was
@@ -1526,8 +1527,9 @@ void VrShellGl::DrawFrame(int16_t frame_index, base::TimeTicks current_time) {
   // submitting. Technically we don't need a pose if not reprojecting,
   // but keeping it uninitialized seems likely to cause problems down
   // the road. Copying it is cheaper than fetching a new one.
-  if (is_webvr_frame && webxr_->HaveProcessingFrame()) {
+  if (is_webvr_frame) {
     // Copy into render info for overlay UI. WebVR doesn't use this.
+    DCHECK(webxr_->HaveProcessingFrame());
     WebXrFrame* frame = webxr_->GetProcessingFrame();
     render_info_.head_pose = frame->head_pose;
   } else {
