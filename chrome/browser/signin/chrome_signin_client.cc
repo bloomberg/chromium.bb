@@ -22,7 +22,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
-#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/signin/account_consistency_mode_manager.h"
 #include "chrome/browser/signin/force_signin_verifier.h"
 #include "chrome/browser/signin/local_auth.h"
@@ -61,12 +60,15 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "components/user_manager/known_user.h"
 #include "components/user_manager/user_manager.h"
-#else
-#include "chrome/browser/ui/user_manager.h"
 #endif
 
 #if !defined(OS_ANDROID)
 #include "chrome/browser/first_run/first_run.h"
+#include "chrome/browser/profiles/profile_window.h"
+#endif
+
+#if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
+#include "chrome/browser/ui/user_manager.h"
 #endif
 
 ChromeSigninClient::ChromeSigninClient(
