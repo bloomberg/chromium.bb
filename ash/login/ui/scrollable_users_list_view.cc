@@ -5,10 +5,10 @@
 #include "ash/login/ui/scrollable_users_list_view.h"
 
 #include "ash/login/ui/hover_notifier.h"
-#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/public/interfaces/login_user_info.mojom.h"
 #include "ash/shell.h"
@@ -278,7 +278,7 @@ void ScrollableUsersListView::Layout() {
 
   // Update |contents()| layout spec.
   bool should_show_landscape =
-      login_layout_util::ShouldShowLandscape(GetWidget());
+      login_views_utils::ShouldShowLandscape(GetWidget());
   LayoutParams layout_params = BuildLayoutForStyle(display_style_);
   contents_layout_->set_inside_border_insets(
       should_show_landscape ? layout_params.insets_landscape

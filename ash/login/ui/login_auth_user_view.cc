@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "ash/login/login_screen_controller.h"
-#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/login_password_view.h"
@@ -16,6 +15,7 @@
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/pin_keyboard_animation.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/public/cpp/login_constants.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -404,17 +404,17 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
 
   // Build layout.
   auto* wrapped_password_view =
-      login_layout_util::WrapViewForPreferredSize(password_view_);
+      login_views_utils::WrapViewForPreferredSize(password_view_);
   auto* wrapped_online_sign_in_message_view =
-      login_layout_util::WrapViewForPreferredSize(online_sign_in_message_);
+      login_views_utils::WrapViewForPreferredSize(online_sign_in_message_);
   auto* wrapped_disabled_auth_message_view =
-      login_layout_util::WrapViewForPreferredSize(disabled_auth_message_);
+      login_views_utils::WrapViewForPreferredSize(disabled_auth_message_);
   auto* wrapped_user_view =
-      login_layout_util::WrapViewForPreferredSize(user_view_);
+      login_views_utils::WrapViewForPreferredSize(user_view_);
   auto* wrapped_pin_view =
-      login_layout_util::WrapViewForPreferredSize(pin_view_);
+      login_views_utils::WrapViewForPreferredSize(pin_view_);
   auto* wrapped_fingerprint_view =
-      login_layout_util::WrapViewForPreferredSize(fingerprint_view_);
+      login_views_utils::WrapViewForPreferredSize(fingerprint_view_);
 
   // Add views in tabbing order; they are rendered in a different order below.
   AddChildView(wrapped_password_view);

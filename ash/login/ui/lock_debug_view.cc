@@ -12,12 +12,12 @@
 #include "ash/detachable_base/detachable_base_pairing_status.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/login/login_screen_controller.h"
-#include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_detachable_base_model.h"
 #include "ash/login/ui/non_accessible_view.h"
+#include "ash/login/ui/views_utils.h"
 #include "ash/public/interfaces/kiosk_app_info.mojom.h"
 #include "ash/shelf/shelf.h"
 #include "ash/shelf/shelf_widget.h"
@@ -835,7 +835,7 @@ views::LabelButton* LockDebugView::AddButton(const std::string& text,
       this, base::ASCIIToUTF16(text));
   button->set_id(id);
   button->SetFocusBehavior(views::View::FocusBehavior::NEVER);
-  container->AddChildView(login_layout_util::WrapViewForPreferredSize(button));
+  container->AddChildView(login_views_utils::WrapViewForPreferredSize(button));
   return button;
 }
 

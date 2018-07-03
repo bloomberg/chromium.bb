@@ -102,6 +102,8 @@ class ASH_EXPORT LockContentsView
 
   enum class AcceleratorAction {
     kShowFeedback,
+    kFocusNextUser,
+    kFocusPreviousUser,
   };
 
   // Number of login attempts before a login dialog is shown. For example, if
@@ -116,6 +118,9 @@ class ASH_EXPORT LockContentsView
       LoginDataDispatcher* data_dispatcher,
       std::unique_ptr<LoginDetachableBaseModel> detachable_base_model);
   ~LockContentsView() override;
+
+  void FocusNextUser();
+  void FocusPreviousUser();
 
   // views::View:
   void Layout() override;
