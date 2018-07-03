@@ -5843,6 +5843,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="InProductHelp.ShouldTriggerHelpUI.IPH_BottomToolbarTip">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
 <action name="InProductHelp.ShouldTriggerHelpUI.IPH_ChromeHomeExpand">
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
@@ -6099,6 +6107,15 @@ should be able to be added at any place in this file.
   <owner>xingliu@chromium.org</owner>
   <description>
     A user action that could have triggered In-Product Help did not.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.NotTriggered.IPH_BottomToolbarTip">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
   </description>
 </action>
 
@@ -6361,6 +6378,15 @@ should be able to be added at any place in this file.
 </action>
 
 <action
+    name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_BottomToolbarTip">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
+  </description>
+</action>
+
+<action
     name="InProductHelp.ShouldTriggerHelpUIResult.Triggered.IPH_ChromeHomeExpand">
   <owner>twellington@chromium.org</owner>
   <owner>mdjones@chromium.org</owner>
@@ -6591,6 +6617,15 @@ should be able to be added at any place in this file.
   <description>
     A user action would have triggered In-Product Help, but the feature was
     configured for tracking only.
+  </description>
+</action>
+
+<action
+    name="InProductHelp.ShouldTriggerHelpUIResult.WouldHaveTriggered.IPH_BottomToolbarTip">
+  <owner>gambard@chromium.org</owner>
+  <description>
+    The feature engagement tracker tried to determine whether in-product help
+    should be shown to the user.
   </description>
 </action>
 
