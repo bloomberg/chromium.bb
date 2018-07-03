@@ -2906,7 +2906,8 @@ registerLoadRequestForURL:(const GURL&)requestURL
       return NO;
     }
     web::NavigationItem* item = self.currentNavItem;
-    GURL sourceURL = item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
+    const GURL& sourceURL =
+        item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
 
     // Stop load if navigation is believed to be happening on the main frame.
     if ([self isMainFrameNavigationAction:action])
@@ -4291,9 +4292,12 @@ registerLoadRequestForURL:(const GURL&)requestURL
       [self userClickedRecently] &&
       net::GURLWithNSURL(action.request.mainDocumentURL) ==
           _lastUserInteraction->main_document_url;
+  web::NavigationItem* item = self.currentNavItem;
+  const GURL& sourceURL =
+      item ? item->GetOriginalRequestURL() : GURL::EmptyGURL();
 
   web::WebStatePolicyDecider::RequestInfo requestInfo(
-      transition, [self isMainFrameNavigationAction:action],
+      transition, sourceURL, [self isMainFrameNavigationAction:action],
       userInteractedWithRequestMainFrame);
   BOOL allowLoad =
       self.webStateImpl->ShouldAllowRequest(action.request, requestInfo);

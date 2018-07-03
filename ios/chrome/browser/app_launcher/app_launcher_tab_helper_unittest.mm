@@ -82,7 +82,8 @@ class AppLauncherTabHelperTest : public PlatformTest {
                             bool has_user_gesture) WARN_UNUSED_RESULT {
     NSURL* url = [NSURL URLWithString:url_string];
     web::WebStatePolicyDecider::RequestInfo request_info(
-        ui::PageTransition::PAGE_TRANSITION_LINK, target_frame_is_main,
+        ui::PageTransition::PAGE_TRANSITION_LINK,
+        /*source_url=*/GURL::EmptyGURL(), target_frame_is_main,
         has_user_gesture);
     return tab_helper_->ShouldAllowRequest([NSURLRequest requestWithURL:url],
                                            request_info);
