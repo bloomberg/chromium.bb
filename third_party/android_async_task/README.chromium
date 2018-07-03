@@ -1,14 +1,17 @@
 Name: AsyncTask
-URL: https://chromium.googlesource.com/android_tools.git/+/master/sdk/sources/android-23/android/os/AsyncTask.java
-Version: f4c36ad89b2696b37d9cd7ca7d984b691888b188
+URL: https://android.googlesource.com/platform/frameworks/base/+/oreo-release/core/java/android/os/AsyncTask.java
+Version: 1488a3a19d4681a41fb45570c15e14d99db1cb66
 License: Apache 2.0
 License File: LICENSE
 Security Critical: yes
 
 Description:
-This contains a copy of Android sdk 23's AsyncTask.java.
+This contains a copy of Android Oreo's AsyncTask.java.
 
 Local Modifications:
-- Renamed package to org.chromium.third_party.android.os.
+- Renamed package to org.chromium.base.
 - Explicitly import android.os objects.
 - Switch to using android.support.annotations (from android.support.v13).
+- Added annotations to help it compile issue-free.
+- Changed THREAD_POOL_EXECUTOR to reuse the threads from android.os.AsyncTask
+- Changed SERIAL_EXECUTOR to reuse the executor from android.os.AsyncTask

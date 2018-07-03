@@ -297,7 +297,6 @@ group("gn_all") {
       "//net/android:net_junit_tests",
       "//services:service_junit_tests",
       "//testing/android/junit:junit_unit_tests",
-      "//third_party/android_async_task:android_async_task_java",
       "//third_party/catapult/devil",
       "//third_party/errorprone:errorprone_java",
       "//third_party/smhasher:murmurhash3",

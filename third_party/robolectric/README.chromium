@@ -13,6 +13,8 @@ Local Modifications:
   with GN.
 - Provided stub implementation of MavenDependencyResolver.java to avoid
   needing maven third_party libraries.
+- Added custom_asynctask folder to have workable copies of shadows required
+  for our own implementation of AsyncTask
 How To Update:
 - Visit the migration guide to see which APIs changed and need updating.
   http://robolectric.org/migrating/

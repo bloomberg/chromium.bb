@@ -1197,6 +1197,7 @@ jar_src("jar_cronet_impl_native_java_source") {
     "//components/cronet/android/java/src",
     "//net/android/java/src",
     "//url/android/java/src",
+    "//third_party/android_async_task/java/src",
   ]
   source_deps = [
     ":cronet_impl_native_base_java",
