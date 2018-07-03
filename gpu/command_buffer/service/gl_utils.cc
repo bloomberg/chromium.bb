@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/gl_utils.h"
 
+#include <algorithm>
 #include <unordered_set>
 
 #include "base/metrics/histogram.h"
@@ -639,6 +640,102 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
   // Draw to a fbo attaching level 0 of an intermediate texture,
   // then copy from the fbo to dest texture level with glCopyTexImage2D.
   return CopyTextureMethod::DRAW_AND_COPY;
+}
+
+bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
+                                                GLenum source_internal_format,
+                                                GLenum dest_internal_format,
+                                                std::string* output_error_msg) {
+  bool valid_dest_format = false;
+  // TODO(qiankun.miao@intel.com): ALPHA, LUMINANCE and LUMINANCE_ALPHA formats
+  // are not supported on GL core profile. See https://crbug.com/577144. Enable
+  // the workaround for glCopyTexImage and glCopyTexSubImage in
+  // gles2_cmd_copy_tex_image.cc for glCopyTextureCHROMIUM implementation.
+  switch (dest_internal_format) {
+    case GL_RGB:
+    case GL_RGBA:
+    case GL_RGB8:
+    case GL_RGBA8:
+      valid_dest_format = true;
+      break;
+    case GL_BGRA_EXT:
+    case GL_BGRA8_EXT:
+      valid_dest_format =
+          feature_info->feature_flags().ext_texture_format_bgra8888;
+      break;
+    case GL_SRGB_EXT:
+    case GL_SRGB_ALPHA_EXT:
+      valid_dest_format = feature_info->feature_flags().ext_srgb;
+      break;
+    case GL_R8:
+    case GL_R8UI:
+    case GL_RG8:
+    case GL_RG8UI:
+    case GL_SRGB8:
+    case GL_RGB565:
+    case GL_RGB8UI:
+    case GL_SRGB8_ALPHA8:
+    case GL_RGB5_A1:
+    case GL_RGBA4:
+    case GL_RGBA8UI:
+    case GL_RGB10_A2:
+      valid_dest_format = feature_info->IsWebGL2OrES3Context();
+      break;
+    case GL_RGB9_E5:
+    case GL_R16F:
+    case GL_R32F:
+    case GL_RG16F:
+    case GL_RG32F:
+    case GL_RGB16F:
+    case GL_RGBA16F:
+    case GL_R11F_G11F_B10F:
+      valid_dest_format = feature_info->ext_color_buffer_float_available();
+      break;
+    case GL_RGB32F:
+      valid_dest_format =
+          feature_info->ext_color_buffer_float_available() ||
+          feature_info->feature_flags().chromium_color_buffer_float_rgb;
+      break;
+    case GL_RGBA32F:
+      valid_dest_format =
+          feature_info->ext_color_buffer_float_available() ||
+          feature_info->feature_flags().chromium_color_buffer_float_rgba;
+      break;
+    case GL_ALPHA:
+    case GL_LUMINANCE:
+    case GL_LUMINANCE_ALPHA:
+      valid_dest_format = true;
+      break;
+    default:
+      valid_dest_format = false;
+      break;
+  }
+
+  // TODO(aleksandar.stojiljkovic): Use sized internal formats:
+  // https://crbug.com/628064
+  bool valid_source_format =
+      source_internal_format == GL_RED || source_internal_format == GL_ALPHA ||
+      source_internal_format == GL_RGB || source_internal_format == GL_RGBA ||
+      source_internal_format == GL_RGB8 || source_internal_format == GL_RGBA8 ||
+      source_internal_format == GL_LUMINANCE ||
+      source_internal_format == GL_LUMINANCE_ALPHA ||
+      source_internal_format == GL_BGRA_EXT ||
+      source_internal_format == GL_BGRA8_EXT ||
+      source_internal_format == GL_RGB_YCBCR_420V_CHROMIUM ||
+      source_internal_format == GL_RGB_YCBCR_422_CHROMIUM ||
+      source_internal_format == GL_R16_EXT;
+  if (!valid_source_format) {
+    *output_error_msg = "invalid source internal format " +
+                        GLES2Util::GetStringEnum(source_internal_format);
+    return false;
+  }
+  if (!valid_dest_format) {
+    *output_error_msg = "invalid dest internal format " +
+                        GLES2Util::GetStringEnum(dest_internal_format);
+    return false;
+  }
+
+  return true;
 }
 
 }  // namespace gles2

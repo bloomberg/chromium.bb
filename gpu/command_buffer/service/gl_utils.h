@@ -8,6 +8,7 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
+#include <string>
 #include <vector>
 
 #include "build/build_config.h"
@@ -124,6 +125,10 @@ CopyTextureMethod GetCopyTextureCHROMIUMMethod(const FeatureInfo* feature_info,
                                                bool unpremultiply_alpha,
                                                bool dither);
 
+bool ValidateCopyTextureCHROMIUMInternalFormats(const FeatureInfo* feature_info,
+                                                GLenum source_internal_format,
+                                                GLenum dest_internal_format,
+                                                std::string* output_error_msg);
 }  // namespace gles2
 }  // namespace gpu
 

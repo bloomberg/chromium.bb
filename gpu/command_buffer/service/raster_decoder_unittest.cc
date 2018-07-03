@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/raster_decoder.h"
 
+#include <limits>
+
 #include "base/command_line.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -447,6 +449,34 @@ TEST_P(RasterDecoderTest, CopyTexSubImage2DTwiceClearsUnclearedTexture) {
   ASSERT_TRUE(texture_ref != NULL);
   gles2::Texture* texture = texture_ref->texture();
   EXPECT_TRUE(texture->SafeToRenderFrom());
+}
+
+TEST_P(RasterDecoderManualInitTest, CopyTexSubImage2DValidateColorFormat) {
+  InitState init;
+  init.gl_version = "3.0";
+  init.extensions.push_back("GL_EXT_texture_storage");
+  init.extensions.push_back("GL_EXT_texture_rg");
+  InitDecoder(init);
+
+  // Create dest texture.
+  GLuint dest_texture_id = kNewClientId;
+  EXPECT_CALL(*gl_, GenTextures(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceId))
+      .RetiresOnSaturation();
+  cmds::CreateTexture cmd;
+  cmd.Init(false /* use_buffer */, gfx::BufferUsage::GPU_READ,
+           viz::ResourceFormat::RED_8, dest_texture_id);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+
+  // Set dimensions on source and dest textures.
+  DoTexStorage2D(client_texture_id_, 2, 2);
+  DoTexStorage2D(dest_texture_id, 2, 2);
+
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+  CopySubTexture copy_cmd;
+  copy_cmd.Init(client_texture_id_, dest_texture_id, 0, 0, 0, 0, 2, 1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(copy_cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
 TEST_P(RasterDecoderTest, GLImageAttachedAfterClearLevel) {
