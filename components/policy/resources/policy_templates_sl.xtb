@@ -2839,11 +2839,6 @@ Teh nastavitev ni treba konfigurirati ročno. Za sisteme Windows, macOS in Linux
       Če te nastavitve ne določite, se lahko uporabnik odloči, ali bo uporabljal to funkcijo.</translation>
 <translation id="8870318296973696995">Domača stran</translation>
 <translation id="8882006618241293596">Blokiraj vtičnik <ph name="FLASH_PLUGIN_NAME" /> na teh spletnih mestih</translation>
-<translation id="8894962626537183708">
-      Pravilnik določa seznam izvorov (URL-jev), ki se obravnavajo kot varni kontekst. Namen tega je omogočiti organizacijam nastavitev preskusnega produkcijskega strežnika za notranje spletno razvijanje, tako da lahko razvijalci preskušajo funkcije, ki zahtevajo varne kontekste, ne da bi bilo treba uvesti TLS v preskusnem produkcijskem strežniku.
-      Nastavitev seznama URL-jev v tem pravilniku ima enak učinek kot nastavitev zastavice ukazne vrstice »--unsafely-treat-insecure-origin-as-secure« na seznamu, ločenemu z vejicami istih URL-jev. Če je pravilnik nastavljen, preglasi zastavico ukazne vrstice.
-      Več informacij o varnih kontekstih je na voljo na https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Vsili preverjanja črkovanja jezikov. Neprepoznani jeziki na tem seznamu so prezrti.
 
       Če omogočite ta pravilnik, je preverjanje črkovanja omogočeno za navedene jezike poleg jezikov, za katere je uporabnik omogočil preverjanje črkovanja.

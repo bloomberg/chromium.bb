@@ -2784,11 +2784,6 @@ Mfumo wa kipimo  lazima uwe 100% au zaidi. Thamani zitakazofupisha kuchelewa kwa
       Kama mipangilio hii haitawekwa, mtumiaji anaweza kuamua kutumia kipengele hiki au asikitumie.</translation>
 <translation id="8870318296973696995">Ukurasa wa Kwanza</translation>
 <translation id="8882006618241293596">Zuia programu-jalizi ya <ph name="FLASH_PLUGIN_NAME" /> kwenye tovuti hizi</translation>
-<translation id="8894962626537183708">
-      Sera hii hutaja orodha ya vyanzo (URL) vitakavyotumiwa kama muktadha salama. Lengo lake ni kuruhusu mashirika kuweka seva ya kuanzisha usanidi wa ndani wa wavuti, ili wasanidi programu wake waweze kujaribu vipengele vinavyohitaji muktadha salama bila kutakiwa kutumia TLS kwenye seva ya kuanzisha usanidi.
-     Kuweka orodha ya URL katika sera hii kuna athari sawa na kuweka mipangilio kupitia sehemu ya amri  ya '--unsafely-treat-insecure-origin-as-secure' kwenye orodha ya kando ya URL sawa iliyotenganishwa kwa koma. Kama sera hii imewekwa, itabatilisha sehemu ya amri.
-    Kwa maelezo zaidi kuhusu miktadha salama, angalia https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Lazimisha kuwasha kikagua tahajia cha lugha. Lugha ambazo hazitambuliki katika orodha hii hazitakaguliwa.
 
       Kama utawasha sera hii, kikagua tahajia kitawashwa kwa lugha zilizobainishwa, mbali na lugha ambazo mtumiaji amewasha ukaguaji tahajia.  

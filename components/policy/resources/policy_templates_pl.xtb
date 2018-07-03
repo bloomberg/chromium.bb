@@ -2699,11 +2699,6 @@ Jeśli bieżąca wersja stanie się przestarzała podczas sesji użytkownika, je
       Jeśli ustawienie pozostanie nieskonfigurowane, użytkownik może sam zdecydować, czy będzie korzystać z tej funkcji.</translation>
 <translation id="8870318296973696995">Strona startowa</translation>
 <translation id="8882006618241293596">Blokuj uruchamianie wtyczki <ph name="FLASH_PLUGIN_NAME" /> w tych witrynach</translation>
-<translation id="8894962626537183708">
-      Ta zasada określa listę źródeł (adresów URL), które będą traktowane jako bezpieczny kontekst. Dzięki temu organizacje mogą skonfigurować wewnętrzny serwer do testowania własnych stron internetowych, a programiści mają możliwość testowania funkcji, które wymagają bezpiecznego kontekstu, bez wdrażania zabezpieczeń TLS na serwerze testowym.
-      Określenie listy adresów URL w tej zasadzie działa tak samo jak flaga wiersza poleceń „--unsafely-treat-insecure-origin-as-secure” na oddzielonej przecinkami liście zawierającej te same adresy URL. Ta zasada zastępuje flagę wiersza poleceń, jeśli jest skonfigurowana.
-      Więcej informacji o bezpiecznym kontekście znajdziesz na stronie https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Wymusza włączenie sprawdzania pisowni. Nierozpoznane języki z tej listy będą ignorowane.
 
       Jeśli ta zasada jest włączona, sprawdzanie pisowni będzie dostępne także dla wskazanych języków, a nie tylko dla tych, dla których funkcję tę włączył użytkownik.

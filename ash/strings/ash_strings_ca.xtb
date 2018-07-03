@@ -171,7 +171,7 @@
 <translation id="397105322502079400">S’està calculant...</translation>
 <translation id="3995138139523574647">Dispositiu USB-C (port posterior dret)</translation>
 <translation id="4017989525502048489">Punter làser</translation>
-<translation id="4065525899979931964">{NUM_APPS,plural, =1{S'han desactivat en una aplicació}other{S'han desactivat en # aplicacions}}</translation>
+<translation id="4065525899979931964">{NUM_APPS,plural, =1{Desactivades en una aplicació}other{Desactivades en # aplicacions}}</translation>
 <translation id="4072264167173457037">Senyal mitjà</translation>
 <translation id="4200057768455216496">Has premut la drecera de la lupa acoblada. Vols activar-la?</translation>
 <translation id="4217571870635786043">Dictat</translation>
@@ -363,7 +363,7 @@
 <translation id="8054466585765276473">S'està calculant el temps de la bateria.</translation>
 <translation id="8061464966246066292">Contrast alt</translation>
 <translation id="8098591350844501178">Deixa d'emetre la pantalla a <ph name="RECEIVER_NAME" /></translation>
-<translation id="8113423164597455979">S'han activat en totes les aplicacions</translation>
+<translation id="8113423164597455979">Activades en totes les aplicacions</translation>
 <translation id="8132793192354020517">Connectat a <ph name="NAME" /></translation>
 <translation id="813913629614996137">S'està inicialitzant…</translation>
 <translation id="8142699993796781067">Xarxa privada</translation>
@@ -385,7 +385,7 @@
 <translation id="847056008324733326">Configuració de l'escala de visualització</translation>
 <translation id="8477270416194247200">Prem Alt+Cerca o Maj per cancel·lar.</translation>
 <translation id="8484916590211895857"><ph name="NAME" />: s'està tornant a connectar…</translation>
-<translation id="8513108775083588393">Gira automàticament</translation>
+<translation id="8513108775083588393">Rotació automàtica</translation>
 <translation id="8517041960877371778">És possible que el dispositiu <ph name="DEVICE_TYPE" /> no es carregui mentre està encès.</translation>
 <translation id="8639760480004882931">Queda un <ph name="PERCENTAGE" /></translation>
 <translation id="8649101189709089199">Escolta la selecció</translation>

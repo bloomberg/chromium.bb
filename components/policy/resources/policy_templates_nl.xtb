@@ -2804,11 +2804,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Als je deze instelling niet instelt, kan de gebruiker ervoor kiezen deze functie wel of niet te gebruiken.</translation>
 <translation id="8870318296973696995">Homepage</translation>
 <translation id="8882006618241293596">De <ph name="FLASH_PLUGIN_NAME" />-plug-in blokkeren op deze sites</translation>
-<translation id="8894962626537183708">
-      Dit beleid bevat een lijst met beginpunten (URL's) die moeten worden behandeld als beveiligde context. Het is de bedoeling dat organisaties hiermee een staging-server kunnen instellen voor interne webontwikkelingen, zodat hun ontwikkelaars functies kunnen testen die een beveiligde context vereisen, zonder dat ze TLS op de staging-server hoeven te implementeren.
-      Wanneer er een lijst met URL's wordt ingesteld in dit beleid, heeft dit hetzelfde effect als wanneer de opdrachtregelmarkering '--unsafely-treat-insecure-origin-as-secure' wordt ingesteld voor een door komma's gescheiden lijst met dezelfde URL's. Als het beleid is ingesteld, wordt de opdrachtregelmarkering overschreven.
-      Ga naar https://www.w3.org/TR/secure-contexts/ voor meer informatie over beveiligde contexten.
-      </translation>
 <translation id="890403179930035128">De spellingcontrole van talen wordt afgedwongen. Niet-herkende talen in de lijst worden genegeerd.
 
       Als je dit beleid inschakelt, wordt de spellingcontrole ingeschakeld voor de opgegeven talen, naast de talen waarvoor de gebruiker de spellingcontrole heeft ingeschakeld.

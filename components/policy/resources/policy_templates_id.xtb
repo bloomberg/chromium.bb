@@ -2701,11 +2701,6 @@ Cara yang disarankan untuk mengonfigurasi kebijakan di Windows adalah melalui GP
       Jika setelan ini dibiarkan tidak disetel, pengguna dapat memutuskan untuk menggunakan fungsi ini atau tidak.</translation>
 <translation id="8870318296973696995">Beranda</translation>
 <translation id="8882006618241293596">Blokir plugin <ph name="FLASH_PLUGIN_NAME" /> di situs ini</translation>
-<translation id="8894962626537183708">
-      Kebijakan tersebut menentukan daftar asal (URL) yang akan diperlakukan sebagai konten aman. Tujuannya untuk mengizinkan organisasi menyiapkan server persiapan untuk pengembangan web internal, agar developer dapat menguji fitur yang memerlukan konteks aman tanpa harus menerapkan TLS di server persiapan.
-      Menyetel daftar URL di kebijakan ini memiliki efek yang sama seperti menyetel tanda baris perintah '--unsafely-treat-insecure-origin-as-secure' menjadi daftar yang dipisahkan koma yang berisi URL yang sama. Jika disetel, kebijakan tersebut akan mengganti tanda baris perintah.
-      Untuk informasi selengkapnya tentang konteks aman, lihat https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Mengaktifkan paksa fitur pemeriksa ejaan bahasa. Bahasa yang tidak dikenal dalam daftar akan diabaikan.
 
       Jika Anda mengaktifkan kebijakan ini, fitur pemeriksa ejaan akan diaktifkan untuk bahasa yang ditentukan, selain bahasa yang telah diaktifkan oleh pengguna.

@@ -2822,11 +2822,6 @@ Ang inirerekomendang paraan upang mag-configure ng patakaran sa Windows ay sa pa
       Kung hahayaang hindi nakatakda ang setting na ito, maaaring magpasya ang user na gamitin ang function na ito o hindi.</translation>
 <translation id="8870318296973696995">Home page</translation>
 <translation id="8882006618241293596">I-block ang plugin na <ph name="FLASH_PLUGIN_NAME" /> sa mga site na ito</translation>
-<translation id="8894962626537183708">
-      Nagtatakda ang patakaran ng listahan ng mga pinagmulan (mga URL) na ituturing bilang secure na konteksto. Ang layunin ay payagan ang mga organisasyong mag-set up ng server ng pag-stage para sa mga internal na pag-develop sa web, nang sa gayon ay masubukan ng mga developer ng mga ito ang mga feature na nangangailangan ng secure na konteksto nang hindi kinakailangang i-deploy ang TLS sa server ng pag-stage.
-      Ang pagtatakda ng listahan ng mga URL sa patakarang ito ay may epektong katulad sa pagtatakda sa command-line flag na '--unsafely-treat-insecure-origin-as-secure' sa listahan ng mga parehong URL na pinaghihiwalay ng kuwit. Kung nakatakda ang patakaran, io-override nito ang command-line flag.
-      Para sa higit pang impormasyon tungkol sa mga secure na konteksto, tingnan ang https://www.w3.org/TR/secure-contexts/
-      </translation>
 <translation id="890403179930035128">Puwersahang ine-enable ang mga wika ng spellcheck. Babalewalain ang mga hindi kilalang wika sa listahang iyon.
 
       Kung ie-enable mo ang patakarang ito, mae-enable ang spellcheck para sa mga tinukoy na wika, bukod pa sa mga wikang kung saan na-enable ng user ang spellcheck.
