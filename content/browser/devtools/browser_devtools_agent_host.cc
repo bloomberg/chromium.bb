@@ -53,8 +53,8 @@ bool BrowserDevToolsAgentHost::AttachSession(DevToolsSession* session) {
     return false;
 
   session->SetBrowserOnly(true);
-  session->AddHandler(
-      base::WrapUnique(new protocol::TargetHandler(true /* browser_only */)));
+  session->AddHandler(base::WrapUnique(
+      new protocol::TargetHandler(true /* browser_only */, GetId())));
   if (only_discovery_)
     return true;
 
