@@ -23,7 +23,6 @@ import android.util.AttributeSet;
 import android.view.InputDevice;
 import android.view.MotionEvent;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
@@ -42,7 +41,6 @@ import org.chromium.chrome.browser.omnibox.UrlBarData;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.ViewUtils;
 import org.chromium.chrome.browser.widget.PulseDrawable;
 import org.chromium.chrome.browser.widget.ScrimView;
@@ -157,12 +155,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
         mMenuButton = (TintedImageButton) findViewById(R.id.menu_button);
         mMenuBadge = (ImageView) findViewById(R.id.menu_badge);
         mMenuButtonWrapper = findViewById(R.id.menu_button_wrapper);
-        if (FeatureUtilities.isBottomToolbarEnabled()) {
-            if (mMenuButtonWrapper != null) UiUtils.removeViewFromParent(mMenuButtonWrapper);
-            mMenuButtonWrapper = null;
-            mMenuButton = null;
-            mMenuBadge = null;
-        }
 
         // Initialize the provider to an empty version to avoid null checking everywhere.
         mToolbarDataProvider = new ToolbarDataProvider() {
@@ -279,10 +271,8 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
         mAppMenuButtonHelper = appMenuButtonHelper;
 
-        if (mMenuButton != null) {
-            mMenuButton.setOnTouchListener(mAppMenuButtonHelper);
-            mMenuButton.setAccessibilityDelegate(mAppMenuButtonHelper);
-        }
+        mMenuButton.setOnTouchListener(mAppMenuButtonHelper);
+        mMenuButton.setAccessibilityDelegate(mAppMenuButtonHelper);
     }
 
     /** Notified that the menu was shown. */
@@ -828,7 +818,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
 
     @Override
     public void removeAppMenuUpdateBadge(boolean animate) {
-        if (mMenuBadge == null) return;
         boolean wasShowingMenuBadge = mShowMenuBadge;
         mShowMenuBadge = false;
         setMenuButtonContentDescription(false);
@@ -887,7 +876,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * bitmap.
      */
     protected void setAppMenuUpdateBadgeToVisible(boolean animate) {
-        if (mMenuBadge == null || mMenuButton == null) return;
         setMenuButtonContentDescription(true);
         if (!animate || mIsMenuBadgeAnimationRunning) {
             mMenuBadge.setVisibility(View.VISIBLE);
@@ -932,7 +920,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param useLightDrawable Whether the light drawable should be used.
      */
     protected void setAppMenuUpdateBadgeDrawable(boolean useLightDrawable) {
-        if (mMenuBadge == null) return;
         mMenuBadge.setImageResource(useLightDrawable ? R.drawable.badge_update_light
                 : R.drawable.badge_update_dark);
     }
@@ -944,7 +931,7 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      */
     protected void setMenuButtonHighlightDrawable(boolean highlighting) {
         // Return if onFinishInflate didn't finish
-        if (mMenuButtonWrapper == null || mMenuButton == null) return;
+        if (mMenuButtonWrapper == null) return;
 
         if (highlighting) {
             if (mHighlightDrawable == null) {
@@ -966,7 +953,6 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
      * @param isUpdateBadgeVisible Whether the update menu badge is visible.
      */
     protected void setMenuButtonContentDescription(boolean isUpdateBadgeVisible) {
-        if (mMenuButton == null) return;
         if (isUpdateBadgeVisible) {
             mMenuButton.setContentDescription(getResources().getString(
                     R.string.accessibility_toolbar_btn_menu_update));

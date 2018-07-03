@@ -1261,9 +1261,7 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
         updateReloadState(tabCrashed);
         updateBookmarkButtonStatus();
 
-        if (mToolbar.getMenuButtonWrapper() != null) {
-            mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
-        }
+        mToolbar.getMenuButtonWrapper().setVisibility(View.VISIBLE);
     }
 
     private void updateBookmarkButtonStatus() {
