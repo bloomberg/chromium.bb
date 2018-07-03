@@ -1265,6 +1265,7 @@ def GeneralTemplates(site_config, ge_build_config):
       # Add betty smoke VMTest crbug.com/710629.
       vm_tests=[config_lib.VMTestConfig(constants.SIMPLE_AU_TEST_TYPE)],
       vm_tests_override=None,
+      active_waterfall=waterfall.WATERFALL_SWARMING,
   )
 
   # TODO(davidjames): Convert this to an external config once the unified master
@@ -3352,7 +3353,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       health_alert_recipients=['chromeos-infra-eng@grotations.appspotmail.com',
                                'chrome'],
-      active_waterfall=waterfall.WATERFALL_SWARMING,
       schedule='triggered',
       triggered_gitiles=[[
           'https://chromium.googlesource.com/chromium/src',
@@ -3368,7 +3368,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           external_board_configs,
           site_config.templates.chromium_pfq,
           site_config.templates.build_external_chrome,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
   site_config.AddForBoards(
@@ -3418,7 +3417,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           _chrome_pfq_important_boards,
           internal_board_configs,
           site_config.templates.chrome_pfq,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
   master_config.AddSlaves(
@@ -3428,7 +3426,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
           internal_board_configs,
           site_config.templates.chrome_pfq,
           important=False,
-          active_waterfall=waterfall.WATERFALL_INTERNAL,
       )
   )
   # Define the result of the build configs for tryjob purposes.
