@@ -299,7 +299,7 @@ class ChromePrintContext : public PrintContext {
 
     // The page rect gets scaled and translated, so specify the entire
     // print content area here as the recording rect.
-    IntRect bounds(0, 0, printed_page_height_, printed_page_width_);
+    FloatRect bounds(0, 0, printed_page_height_, printed_page_width_);
     PaintRecordBuilder builder(&canvas->getMetaData());
     builder.Context().SetPrinting(true);
     builder.Context().BeginRecording(bounds);
@@ -326,7 +326,7 @@ class ChromePrintContext : public PrintContext {
     const float page_width = page_size_in_pixels.Width();
     size_t num_pages = PageRects().size();
     int total_height = num_pages * (page_size_in_pixels.Height() + 1) - 1;
-    IntRect all_pages_rect(0, 0, page_width, total_height);
+    FloatRect all_pages_rect(0, 0, page_width, total_height);
 
     PaintRecordBuilder builder(&canvas->getMetaData());
     GraphicsContext& context = builder.Context();

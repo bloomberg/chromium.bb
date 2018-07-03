@@ -36,7 +36,7 @@ TEST_F(CullRectTest, IntersectsCullRectWithTransform) {
   AffineTransform transform;
   transform.Translate(-2, -2);
 
-  EXPECT_TRUE(cull_rect.IntersectsCullRect(transform, IntRect(51, 51, 1, 1)));
+  EXPECT_TRUE(cull_rect.IntersectsCullRect(transform, FloatRect(51, 51, 1, 1)));
   EXPECT_FALSE(cull_rect.IntersectsCullRect(IntRect(52, 52, 1, 1)));
 }
 

@@ -253,7 +253,7 @@ static bool ExtractImageData(Image* image,
   // for layout, which is not allowed. See https://crbug.com/429346
   ImageObserverDisabler disabler(image);
   PaintFlags flags;
-  IntRect image_source_rect(IntPoint(), image->Size());
+  FloatRect image_source_rect(FloatPoint(), FloatSize(image->Size()));
   IntRect image_dest_rect(IntPoint(), image_size);
   // TODO(ccameron): No color conversion is required here.
   std::unique_ptr<cc::PaintCanvas> canvas =

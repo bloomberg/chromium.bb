@@ -389,7 +389,7 @@ FloatPoint ConvertToRootFrame(LocalFrameView* view, FloatPoint pt) {
 
 // Adjusts 'point' to the nearest point inside rect, and leaves it unchanged if
 // already inside.
-void AdjustPointToRect(FloatPoint& point, const FloatRect& rect) {
+void AdjustPointToRect(FloatPoint& point, const IntRect& rect) {
   if (point.X() < rect.X())
     point.SetX(rect.X());
   else if (point.X() > rect.MaxX())

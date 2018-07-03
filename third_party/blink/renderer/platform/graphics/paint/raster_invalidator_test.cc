@@ -358,13 +358,13 @@ TEST_F(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   ASSERT_EQ(4u, invalidations.size());
   // |clip1| change should trigger incremental raster invalidation.
   EXPECT_INCREMENTAL_INVALIDATION(invalidations, 0, artifact->PaintChunks()[1],
-                                  IntRect(-1000, -1000, 2000, 500));
+                                  FloatRect(-1000, -1000, 2000, 500));
   EXPECT_INCREMENTAL_INVALIDATION(invalidations, 1, artifact->PaintChunks()[1],
-                                  IntRect(-1000, -500, 500, 1000));
+                                  FloatRect(-1000, -500, 500, 1000));
   EXPECT_INCREMENTAL_INVALIDATION(invalidations, 2, artifact->PaintChunks()[1],
-                                  IntRect(500, -500, 500, 1000));
+                                  FloatRect(500, -500, 500, 1000));
   EXPECT_INCREMENTAL_INVALIDATION(invalidations, 3, artifact->PaintChunks()[1],
-                                  IntRect(-1000, 500, 2000, 500));
+                                  FloatRect(-1000, 500, 2000, 500));
   invalidator.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 
@@ -380,7 +380,7 @@ TEST_F(RasterInvalidatorTest, ClipPropertyChangeSimple) {
   ASSERT_EQ(1u, invalidations1.size());
   // |clip1| change should trigger incremental raster invalidation.
   EXPECT_INCREMENTAL_INVALIDATION(invalidations1, 0, artifact->PaintChunks()[1],
-                                  IntRect(500, -500, 500, 1000));
+                                  FloatRect(500, -500, 500, 1000));
   invalidator.SetTracksRasterInvalidations(false);
   FinishCycle(*artifact);
 }

@@ -36,7 +36,7 @@ SourceGraphic* SourceGraphic::Create(Filter* filter) {
 }
 
 FloatRect SourceGraphic::MapInputs(const FloatRect& rect) const {
-  return !source_rect_.IsEmpty() ? source_rect_ : rect;
+  return !source_rect_.IsEmpty() ? FloatRect(source_rect_) : rect;
 }
 
 void SourceGraphic::SetSourceRect(const IntRect& source_rect) {

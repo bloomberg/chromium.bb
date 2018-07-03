@@ -165,7 +165,8 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionInlineConstraints) {
   EXPECT_EQ(
       IntRect(0, 100, 10, 10),
       EnclosingIntRect(GetScrollContainerRelativeStickyBoxRect(constraints)));
-  EXPECT_EQ(IntRect(0, 50, 100, 100), sticky->ComputeStickyConstrainingRect());
+  EXPECT_EQ(IntRect(0, 50, 100, 100),
+            EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 
 // Verifies that the sticky constraints are correctly computed for sticky with
@@ -224,7 +225,7 @@ TEST_F(LayoutBoxModelObjectTest, StickyPositionVerticalRLInlineConstraints) {
       IntRect(2190, 100, 10, 10),
       EnclosingIntRect(GetScrollContainerRelativeStickyBoxRect(constraints)));
   EXPECT_EQ(IntRect(2100, 50, 100, 100),
-            sticky->ComputeStickyConstrainingRect());
+            EnclosingIntRect(sticky->ComputeStickyConstrainingRect()));
 }
 
 // Verifies that the sticky constraints are not affected by transforms
