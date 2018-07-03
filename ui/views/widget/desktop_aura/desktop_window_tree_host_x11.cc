@@ -1549,6 +1549,8 @@ void DesktopWindowTreeHostX11::InitX11Window(
   // SetWMSpecState) has no effect here since the window has not yet been
   // mapped. So we manually change the state.
   if (!state_atom_list.empty()) {
+    DCHECK(window_properties_in_client_.empty());
+    window_properties_in_client_ = state_atom_list;
     ui::SetAtomArrayProperty(xwindow_,
                              "_NET_WM_STATE",
                              "ATOM",
