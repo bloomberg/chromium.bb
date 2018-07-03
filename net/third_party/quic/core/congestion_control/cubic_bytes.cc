@@ -8,6 +8,7 @@
 #include <cmath>
 #include <cstdint>
 
+#include "net/third_party/quic/core/quic_constants.h"
 #include "net/third_party/quic/core/quic_packets.h"
 #include "net/third_party/quic/platform/api/quic_flag_utils.h"
 #include "net/third_party/quic/platform/api/quic_flags.h"
@@ -28,7 +29,6 @@ const int kCubeCongestionWindowScale = 410;
 const uint64_t kCubeFactor =
     (UINT64_C(1) << kCubeScale) / kCubeCongestionWindowScale / kDefaultTCPMSS;
 
-const uint32_t kDefaultNumConnections = 2;
 const float kDefaultCubicBackoffFactor = 0.7f;  // Default Cubic backoff factor.
 // Additional backoff factor when loss occurs in the concave part of the Cubic
 // curve. This additional backoff factor is expected to give up bandwidth to
