@@ -725,7 +725,6 @@ def SetCIPD(gclient_dict, dep_name, package_name, new_version):
         "The deps entry for %s:%s has no formatting information." %
         (dep_name, package_name))
 
-  new_version = 'version:' + new_version
   _UpdateAstString(tokens, node, new_version)
   packages[0].SetNode('version', new_version, node)
 
@@ -808,7 +807,7 @@ def GetCIPD(gclient_dict, dep_name, package_name):
         "There must be exactly one package with the given name (%s), "
         "%s were found." % (package_name, len(packages)))
 
-  return packages[0]['version'][len('version:'):]
+  return packages[0]['version']
 
 
 def GetRevision(gclient_dict, dep_name):

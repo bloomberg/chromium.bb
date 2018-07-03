@@ -382,7 +382,7 @@ class CipdTest(unittest.TestCase):
         '        "packages": [',
         '            {',
         '                "package": "some/cipd/package",',
-        '                "version": "version:1234",',
+        '                "version": "deadbeef",',
         '            },',
         '            {',
         '                "package": "another/cipd/package",',
@@ -395,12 +395,20 @@ class CipdTest(unittest.TestCase):
         '}',
     ]))
 
-    result = gclient_eval.GetCIPD(
-        local_scope, 'src/cipd/package', 'another/cipd/package')
-    self.assertEqual(result, '5678')
+    self.assertEqual(
+        gclient_eval.GetCIPD(
+            local_scope, 'src/cipd/package', 'some/cipd/package'),
+        'deadbeef')
+
+    self.assertEqual(
+        gclient_eval.GetCIPD(
+            local_scope, 'src/cipd/package', 'another/cipd/package'),
+        'version:5678')
 
     gclient_eval.SetCIPD(
-        local_scope, 'src/cipd/package', 'another/cipd/package', '6.789')
+        local_scope, 'src/cipd/package', 'another/cipd/package', 'version:6789')
+    gclient_eval.SetCIPD(
+        local_scope, 'src/cipd/package', 'some/cipd/package', 'foobar')
     result = gclient_eval.RenderDEPSFile(local_scope)
 
     self.assertEqual(result, '\n'.join([
@@ -409,14 +417,47 @@ class CipdTest(unittest.TestCase):
         '        "packages": [',
         '            {',
         '                "package": "some/cipd/package",',
-        '                "version": "version:1234",',
+        '                "version": "foobar",',
         '            },',
         '            {',
         '                "package": "another/cipd/package",',
-        '                "version": "version:6.789",',
+        '                "version": "version:6789",',
         '            },',
         '        ],',
         '        "condition": "checkout_android",',
+        '        "dep_type": "cipd",',
+        '    },',
+        '}',
+    ]))
+
+  def test_preserves_escaped_vars(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'deps = {',
+        '    "src/cipd/package": {',
+        '        "packages": [',
+        '            {',
+        '                "package": "package/${{platform}}",',
+        '                "version": "version:abcd",',
+        '            },',
+        '        ],',
+        '        "dep_type": "cipd",',
+        '    },',
+        '}',
+    ]))
+
+    gclient_eval.SetCIPD(
+        local_scope, 'src/cipd/package', 'package/${platform}', 'version:dcba')
+    result = gclient_eval.RenderDEPSFile(local_scope)
+
+    self.assertEqual(result, '\n'.join([
+        'deps = {',
+        '    "src/cipd/package": {',
+        '        "packages": [',
+        '            {',
+        '                "package": "package/${{platform}}",',
+        '                "version": "version:dcba",',
+        '            },',
+        '        ],',
         '        "dep_type": "cipd",',
         '    },',
         '}',
@@ -552,6 +593,24 @@ class RevisionTest(unittest.TestCase):
     ]
     self.assert_gets_and_sets_revision(before, after, rev_before=None)
 
+  def test_preserves_variables(self):
+    before = [
+        'vars = {',
+        '  "src_root": "src"',
+        '}',
+        'deps = {',
+        '  "{src_root}/dep": "https://example.com/dep.git@deadbeef",',
+        '}',
+    ]
+    after = [
+        'vars = {',
+        '  "src_root": "src"',
+        '}',
+        'deps = {',
+        '  "{src_root}/dep": "https://example.com/dep.git@deadfeed",',
+        '}',
+    ]
+    self.assert_gets_and_sets_revision(before, after)
 
   def test_preserves_formatting(self):
     before = [
