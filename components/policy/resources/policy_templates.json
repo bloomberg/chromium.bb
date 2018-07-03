@@ -11366,6 +11366,7 @@
         'type': 'array',
         'items': { 'type': 'string' },
       },
+      'deprecated': True,
       'supported_on': ['chrome.*:65-'],
       'features': {
         'dynamic_refresh': False,
@@ -11375,7 +11376,8 @@
       'id': 400,
       'caption': '''Origins to be treated as secure context.''',
       'tags': ['system-security'],
-      'desc': '''
+      'desc': '''Deprecated in M69. Use OverrideSecurityRestrictionsOnInsecureOrigin instead.
+
       The policy specifies a list of origins (URLs) to be treated as secure context. The intent is to allow organizations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
       Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
       For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
@@ -12416,6 +12418,28 @@
       When this policy is not configured or set to "Do not filter sites for adult content", sites will not be filtered.
 
       When this policy is set to "Filter top level sites for adult content", sites classified as pornographic will be filtered.''',
+    },
+    {
+      'name': 'OverrideSecurityRestrictionsOnInsecureOrigin',
+      'type': 'list',
+      'schema': {
+        'type': 'array',
+        'items': { 'type': 'string' }
+      },
+      'supported_on': ['chrome.*:69-', 'chrome_os:69-', 'android:69-'],
+      'features': {
+        'dynamic_refresh': False,
+        'per_profile': True,
+      },
+      'example_value': ['http://testserver.example.com/'],
+      'id': 457,
+      'caption': '''Origins or hostname patterns to be treated as secure context.''',
+      'tags': ['system-security'],
+      'desc': '''
+      The policy specifies a list of origins (URLs) or hostname patterns (such as "*.example.com") to be treated as secure contexts. The intent is to allow organizations to set up a staging server for internal web development, so that their developers can test out features requiring secure contexts without having to deploy TLS on the staging server.
+      Setting a list of URLs in this policy has the same effect as setting the command-line flag '--unsafely-treat-insecure-origin-as-secure' to a comma-separated list of the same URLs. If the policy is set, it will override the command-line flag.
+      For more information on secure contexts, see https://www.w3.org/TR/secure-contexts/
+      '''
     }
   ],
 
@@ -12558,5 +12582,5 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   },
   'placeholders': [],
   'deleted_policy_ids': [412],
-  'highest_id_currently_used': 456
+  'highest_id_currently_used': 457
 }
