@@ -20,26 +20,31 @@ class AdjustPaintOffsetScope {
                          const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset)
       : old_paint_info_(paint_info) {
-    if (!AdjustPaintOffset(box))
-      adjusted_paint_offset_ = paint_offset + box.Location();
+    AdjustPaintOffset(box, paint_offset + box.Location());
   }
 
   AdjustPaintOffsetScope(const NGPaintFragment& fragment,
                          const PaintInfo& paint_info,
                          const LayoutPoint& paint_offset)
       : old_paint_info_(paint_info) {
+    DCHECK(RuntimeEnabledFeatures::LayoutNGEnabled());
     DCHECK(fragment.GetLayoutObject());
     const LayoutBox& box = ToLayoutBox(*fragment.GetLayoutObject());
-    if (AdjustPaintOffset(box))
-      return;
-    if (UNLIKELY(box.HasSelfPaintingLayer())) {
-      //   There is no containing block here, we are painting from origin.
-      //   paint_offset is 0,0
-      //   box.Location is offset from Layer()
-      adjusted_paint_offset_ = paint_offset + box.Location();
+    LayoutPoint old_path_paint_offset = paint_offset;
+    if (box.HasSelfPaintingLayer()) {
+      // There is no containing block here, we are painting from origin.
+      // paint_offset is 0,0
+      // box.Location is offset from Layer()
+      old_path_paint_offset += box.Location();
     } else {
-      adjusted_paint_offset_ = paint_offset + fragment.Offset().ToLayoutPoint();
+      old_path_paint_offset += fragment.Offset().ToLayoutPoint();
     }
+    AdjustPaintOffset(box, old_path_paint_offset);
+  }
+
+  ~AdjustPaintOffsetScope() {
+    if (paint_offset_translation_as_drawing_)
+      FinishPaintOffsetTranslationAsDrawing();
   }
 
   const PaintInfo& GetPaintInfo() const {
@@ -52,19 +57,30 @@ class AdjustPaintOffsetScope {
     return *new_paint_info_;
   }
 
-  LayoutPoint AdjustedPaintOffset() const { return adjusted_paint_offset_; }
+  LayoutPoint AdjustedPaintOffset() const {
+    // TODO(wangxianzhu): Use DCHECK(fragment_to_paint_) when removing paint
+    // offset parameter from paint methods.
+    return fragment_to_paint_
+               ? fragment_to_paint_->PaintOffset()
+               : LayoutPoint(LayoutUnit::NearlyMax(), LayoutUnit::NearlyMax());
+  }
+
+  const FragmentData* FragmentToPaint() const { return fragment_to_paint_; }
 
   // True if child will use LayoutObject::Location to compute adjusted_offset.
   static bool WillUseLegacyLocation(const LayoutBox* child);
 
  private:
-  // Returns true if paint info and offset has been adjusted.
-  bool AdjustPaintOffset(const LayoutBox&);
+  void AdjustPaintOffset(const LayoutBox&,
+                         const LayoutPoint& old_path_paint_offset);
 
+  void FinishPaintOffsetTranslationAsDrawing();
+
+  const FragmentData* fragment_to_paint_;
   const PaintInfo& old_paint_info_;
-  LayoutPoint adjusted_paint_offset_;
   base::Optional<PaintInfo> new_paint_info_;
   base::Optional<ScopedPaintChunkProperties> contents_properties_;
+  bool paint_offset_translation_as_drawing_ = false;
 };
 
 }  // namespace blink

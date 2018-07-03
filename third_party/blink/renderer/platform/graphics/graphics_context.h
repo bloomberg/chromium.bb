@@ -392,9 +392,8 @@ class PLATFORM_EXPORT GraphicsContext {
 
   static int FocusRingOutsetExtent(int offset, int width);
 
-#if DCHECK_IS_ON()
   void SetInDrawingRecorder(bool);
-#endif
+  bool InDrawingRecorder() const { return in_drawing_recorder_; }
 
   static sk_sp<SkColorFilter> WebCoreColorFilterToSkiaColorFilter(ColorFilter);
 
@@ -490,7 +489,6 @@ class PLATFORM_EXPORT GraphicsContext {
 #if DCHECK_IS_ON()
   int layer_count_;
   bool disable_destruction_checks_;
-  bool in_drawing_recorder_;
 #endif
 
   const DisabledMode disabled_state_;
@@ -503,6 +501,7 @@ class PLATFORM_EXPORT GraphicsContext {
 
   unsigned printing_ : 1;
   unsigned has_meta_data_ : 1;
+  unsigned in_drawing_recorder_ : 1;
 
   DISALLOW_COPY_AND_ASSIGN(GraphicsContext);
 };

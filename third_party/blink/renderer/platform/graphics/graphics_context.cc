@@ -68,12 +68,12 @@ GraphicsContext::GraphicsContext(PaintController& paint_controller,
 #if DCHECK_IS_ON()
       layer_count_(0),
       disable_destruction_checks_(false),
-      in_drawing_recorder_(false),
 #endif
       disabled_state_(disable_context_or_painting),
       device_scale_factor_(1.0f),
       printing_(false),
-      has_meta_data_(!!meta_data) {
+      has_meta_data_(!!meta_data),
+      in_drawing_recorder_(false) {
   if (meta_data)
     meta_data_ = *meta_data;
 
@@ -193,13 +193,11 @@ void GraphicsContext::RestoreLayer() {
   canvas_->restore();
 }
 
-#if DCHECK_IS_ON()
 void GraphicsContext::SetInDrawingRecorder(bool val) {
   // Nested drawing recorers are not allowed.
   DCHECK(!val || !in_drawing_recorder_);
   in_drawing_recorder_ = val;
 }
-#endif
 
 void GraphicsContext::SetShadow(
     const FloatSize& offset,

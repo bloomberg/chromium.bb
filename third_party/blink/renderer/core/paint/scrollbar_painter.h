@@ -29,7 +29,8 @@ class ScrollbarPainter {
   static void PaintIntoRect(const LayoutScrollbarPart&,
                             GraphicsContext&,
                             const LayoutPoint& paint_offset,
-                            const LayoutRect&);
+                            const LayoutRect&,
+                            const LayoutScrollbar* = nullptr);
 
  private:
   Member<const LayoutScrollbar> layout_scrollbar_;
