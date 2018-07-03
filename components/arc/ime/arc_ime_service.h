@@ -89,7 +89,7 @@ class ArcImeService : public KeyedService,
   void OnCursorRectChanged(const gfx::Rect& rect,
                            bool is_screen_coordinates) override;
   void OnCancelComposition() override;
-  void ShowImeIfNeeded() override;
+  void ShowVirtualKeyboardIfEnabled() override;
   void OnCursorRectChangedWithSurroundingText(
       const gfx::Rect& rect,
       const gfx::Range& text_range,

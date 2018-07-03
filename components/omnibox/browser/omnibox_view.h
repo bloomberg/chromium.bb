@@ -208,7 +208,7 @@ class OmniboxView {
   virtual bool IsImeShowingPopup() const;
 
   // Display a virtual keyboard or alternate input view if enabled.
-  virtual void ShowImeIfNeeded();
+  virtual void ShowVirtualKeyboardIfEnabled();
 
   // Hides a virtual keyboard or alternate input view if enabled.
   virtual void HideImeIfNeeded();

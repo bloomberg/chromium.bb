@@ -284,7 +284,7 @@ class KEYBOARD_EXPORT KeyboardController
   void OnFocus() override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
   void OnTextInputStateChanged(const ui::TextInputClient* client) override;
-  void OnShowImeIfNeeded() override;
+  void OnShowVirtualKeyboardIfEnabled() override;
 
   // Sets the bounds of the keyboard window.
   void SetKeyboardWindowBounds(const gfx::Rect& new_bounds);

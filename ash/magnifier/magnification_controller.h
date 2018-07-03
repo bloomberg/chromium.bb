@@ -124,7 +124,7 @@ class ASH_EXPORT MagnificationController : public ui::EventHandler,
   void OnCaretBoundsChanged(const ui::TextInputClient* client) override;
   void OnTextInputStateChanged(const ui::TextInputClient* client) override {}
   void OnInputMethodDestroyed(const ui::InputMethod* input_method) override {}
-  void OnShowImeIfNeeded() override {}
+  void OnShowVirtualKeyboardIfEnabled() override {}
 
   // Returns the last mouse cursor (or last touched) location.
   gfx::Point GetPointOfInterestForTesting() {

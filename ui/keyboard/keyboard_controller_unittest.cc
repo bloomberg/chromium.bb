@@ -247,7 +247,7 @@ class KeyboardControllerTest : public aura::test::AuraTestBase,
     input_method->SetFocusedTextInputClient(client);
     if (client && client->GetTextInputType() != ui::TEXT_INPUT_TYPE_NONE &&
         client->GetTextInputMode() != ui::TEXT_INPUT_MODE_NONE) {
-      input_method->ShowImeIfNeeded();
+      input_method->ShowVirtualKeyboardIfEnabled();
       if (controller_.ui()->GetKeyboardWindow()->bounds().height() == 0) {
         // Set initial bounds for test keyboard window.
         controller_.ui()->GetKeyboardWindow()->SetBounds(

@@ -180,7 +180,7 @@ class MockInputMethodObserver : public InputMethodObserver {
   void OnTextInputStateChanged(const TextInputClient* client) override {
     verifier_->OnTextInputStateChanged(client);
   }
-  void OnShowImeIfNeeded() override {}
+  void OnShowVirtualKeyboardIfEnabled() override {}
   void OnInputMethodDestroyed(const InputMethod* client) override {}
 
   ClientChangeVerifier* verifier_;

@@ -54,7 +54,7 @@ interface ImeHost {
   [MinVersion=1] OnCancelComposition@2();
 
   // Show virtual keyboard of Chrome OS if needed.
-  [MinVersion=2] ShowImeIfNeeded@3();
+  [MinVersion=2] ShowVirtualKeyboardIfEnabled@3();
 
   // Notifies Chrome that the cursor position has changed and
   // also sends surrounding text.

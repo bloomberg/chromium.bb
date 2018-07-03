@@ -163,7 +163,7 @@ class InputMethod {
   virtual bool GetClientShouldDoLearning() = 0;
 
   // Displays an on screen keyboard if enabled.
-  virtual void ShowImeIfNeeded() = 0;
+  virtual void ShowVirtualKeyboardIfEnabled() = 0;
 
   // Management of the observer list.
   virtual void AddObserver(InputMethodObserver* observer) = 0;

@@ -126,9 +126,9 @@ bool InputMethodBase::GetClientShouldDoLearning() {
   return client && client->ShouldDoLearning();
 }
 
-void InputMethodBase::ShowImeIfNeeded() {
+void InputMethodBase::ShowVirtualKeyboardIfEnabled() {
   for (InputMethodObserver& observer : observer_list_)
-    observer.OnShowImeIfNeeded();
+    observer.OnShowVirtualKeyboardIfEnabled();
   GetInputMethodKeyboardController()->DisplayVirtualKeyboard();
 }
 

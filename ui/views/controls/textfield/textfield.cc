@@ -531,10 +531,10 @@ void Textfield::SetHorizontalAlignment(gfx::HorizontalAlignment alignment) {
   GetRenderText()->SetHorizontalAlignment(alignment);
 }
 
-void Textfield::ShowImeIfNeeded() {
+void Textfield::ShowVirtualKeyboardIfEnabled() {
   // GetInputMethod() may return nullptr in tests.
   if (enabled() && !read_only() && GetInputMethod())
-    GetInputMethod()->ShowImeIfNeeded();
+    GetInputMethod()->ShowVirtualKeyboardIfEnabled();
 }
 
 bool Textfield::IsIMEComposing() const {
@@ -666,7 +666,7 @@ bool Textfield::OnMousePressed(const ui::MouseEvent& event) {
       (event.IsOnlyLeftMouseButton() || event.IsOnlyRightMouseButton())) {
     if (!had_focus)
       RequestFocusWithPointer(ui::EventPointerType::POINTER_TYPE_MOUSE);
-    ShowImeIfNeeded();
+    ShowVirtualKeyboardIfEnabled();
   }
 
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -746,7 +746,7 @@ void Textfield::OnGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP_DOWN:
       RequestFocusWithPointer(event->details().primary_pointer_type());
-      ShowImeIfNeeded();
+      ShowVirtualKeyboardIfEnabled();
       event->SetHandled();
       break;
     case ui::ET_GESTURE_TAP:

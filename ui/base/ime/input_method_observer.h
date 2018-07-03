@@ -37,7 +37,7 @@ class UI_BASE_IME_EXPORT InputMethodObserver {
 
   // Called when a user gesture should trigger showing the virtual keyboard
   // or alternate input view (e.g. handwriting palette). Used in ChromeOS.
-  virtual void OnShowImeIfNeeded() = 0;
+  virtual void OnShowVirtualKeyboardIfEnabled() = 0;
 };
 
 }  // namespace ui

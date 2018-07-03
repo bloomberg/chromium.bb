@@ -302,10 +302,10 @@ void ArcImeService::OnCancelComposition() {
     input_method->CancelComposition(this);
 }
 
-void ArcImeService::ShowImeIfNeeded() {
+void ArcImeService::ShowVirtualKeyboardIfEnabled() {
   ui::InputMethod* const input_method = GetInputMethod();
   if (input_method && input_method->GetTextInputClient() == this) {
-    input_method->ShowImeIfNeeded();
+    input_method->ShowVirtualKeyboardIfEnabled();
   }
 }
 

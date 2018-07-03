@@ -63,7 +63,7 @@ class UI_BASE_IME_EXPORT InputMethodBase
   int GetTextInputFlags() const override;
   bool CanComposeInline() const override;
   bool GetClientShouldDoLearning() override;
-  void ShowImeIfNeeded() override;
+  void ShowVirtualKeyboardIfEnabled() override;
 
   void AddObserver(InputMethodObserver* observer) override;
   void RemoveObserver(InputMethodObserver* observer) override;
