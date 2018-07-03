@@ -4744,3 +4744,7 @@ crbug.com/859270 [ Mac10.12 ] external/wpt/gyroscope/Gyroscope-iframe-access.htt
 
 # Sheriff 2018-07-02
 crbug.com/859605 [ Mac10.10 ] external/wpt/shadow-dom/untriaged/events/retargeting-focus-events/test-002.html [ Failure ]
+crbug.com/859681 [ Mac10.13 ] http/tests/devtools/tracing/timeline-time/timeline-time.js [ Failure ]
+crbug.com/859681 [ Mac10.13 ] http/tests/devtools/tracing/timeline-time/timeline-usertiming.js [ Failure ]
+crbug.com/859681 [ Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/console-timeline.js [ Failure ]
+crbug.com/859681 [ Linux Mac10.13 ] virtual/threaded/http/tests/devtools/tracing/timeline-time/timeline-time.js [ Failure ]
