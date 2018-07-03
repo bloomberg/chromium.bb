@@ -12,7 +12,7 @@ traits_headers =
     [ "//components/metrics/public/cpp/call_stack_profile_struct_traits.h" ]
 deps = [
   "//base",
-  "//components/metrics:call_stack_profile_params",
+  "//components/metrics:call_stack_profile",
 ]
 type_mappings = [
   "metrics.mojom.CallStackModule=base::StackSamplingProfiler::Module",

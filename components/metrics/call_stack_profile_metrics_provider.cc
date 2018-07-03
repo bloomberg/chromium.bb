@@ -414,7 +414,7 @@ CallStackProfileMetricsProvider::CallStackProfileMetricsProvider() {}
 
 CallStackProfileMetricsProvider::~CallStackProfileMetricsProvider() {}
 
-StackSamplingProfiler::CompletedCallback
+CallStackProfileBuilder::CompletedCallback
 CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
     const CallStackProfileParams& params) {
   // Ignore the profile if the collection is disabled. If the collection state

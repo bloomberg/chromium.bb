@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/lock.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/public/interfaces/call_stack_profile_collector.mojom.h"
 
 namespace service_manager {
@@ -41,7 +42,7 @@ namespace metrics {
 //       g_call_stack_profile_collector = LAZY_INSTANCE_INITIALIZER;
 //
 // Then, invoke CreateCompletedCallback() to generate the CompletedCallback to
-// pass when creating the StackSamplingProfiler.
+// pass when creating the CallStackProfileBuilder.
 //
 // When the mojo InterfaceProvider becomes available, provide it via
 // SetParentProfileCollector().
@@ -50,11 +51,11 @@ class ChildCallStackProfileCollector {
   ChildCallStackProfileCollector();
   ~ChildCallStackProfileCollector();
 
-  // Get a callback for use with StackSamplingProfiler that provides the
+  // Get a callback for use with CallStackProfileBuilder that provides the
   // completed profile to this object. The callback should be immediately passed
-  // to the StackSamplingProfiler, and should not be reused between
-  // StackSamplingProfilers. This function may be called on any thread.
-  base::StackSamplingProfiler::CompletedCallback GetProfilerCallback(
+  // to the CallStackProfileBuilder, and should not be reused between
+  // CallStackProfileBuilders. This function may be called on any thread.
+  CallStackProfileBuilder::CompletedCallback GetProfilerCallback(
       const CallStackProfileParams& params,
       base::TimeTicks profile_start_time);
 

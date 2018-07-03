@@ -481,7 +481,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
                                 CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
-  base::StackSamplingProfiler::CompletedCallback callback =
+  CallStackProfileBuilder::CompletedCallback callback =
       CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
           params);
   provider.OnRecordingDisabled();
@@ -507,7 +507,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
                                 CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
-  base::StackSamplingProfiler::CompletedCallback callback =
+  CallStackProfileBuilder::CompletedCallback callback =
       CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
           params);
   provider.OnRecordingDisabled();
@@ -534,7 +534,7 @@ TEST_F(CallStackProfileMetricsProviderTest,
                                 CallStackProfileParams::MAIN_THREAD,
                                 CallStackProfileParams::PROCESS_STARTUP,
                                 CallStackProfileParams::MAY_SHUFFLE);
-  base::StackSamplingProfiler::CompletedCallback callback =
+  CallStackProfileBuilder::CompletedCallback callback =
       CallStackProfileMetricsProvider::GetProfilerCallbackForBrowserProcess(
           params);
   provider.OnRecordingEnabled();

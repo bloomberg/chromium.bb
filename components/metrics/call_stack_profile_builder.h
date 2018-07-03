@@ -9,6 +9,8 @@
 
 #include <map>
 
+#include "base/callback.h"
+
 // CallStackProfileBuilder builds a CallStackProfile from the collected sampling
 // data.
 //
@@ -20,8 +22,20 @@
 class CallStackProfileBuilder
     : public base::StackSamplingProfiler::ProfileBuilder {
  public:
-  CallStackProfileBuilder(
-      const base::StackSamplingProfiler::CompletedCallback& callback);
+  // The callback type used to collect a completed profile. The passed
+  // CallStackProfile is move-only. Other threads, including the UI thread, may
+  // block on callback completion so this should run as quickly as possible.
+  //
+  // IMPORTANT NOTE: The callback is invoked on a thread the profiler
+  // constructs, rather than on the thread used to construct the profiler, and
+  // thus the callback must be callable on any thread. For threads with message
+  // loops that create CallStackProfileBuilders, posting a task to the message
+  // loop with the moved (i.e. std::move) profile is the thread-safe callback
+  // implementation.
+  using CompletedCallback =
+      base::Callback<void(base::StackSamplingProfiler::CallStackProfile)>;
+
+  CallStackProfileBuilder(const CompletedCallback& callback);
 
   ~CallStackProfileBuilder() override;
 
@@ -43,7 +57,7 @@ class CallStackProfileBuilder
   std::map<uintptr_t, size_t> module_index_;
 
   // Callback made when sampling a profile completes.
-  const base::StackSamplingProfiler::CompletedCallback callback_;
+  const CompletedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(CallStackProfileBuilder);
 };

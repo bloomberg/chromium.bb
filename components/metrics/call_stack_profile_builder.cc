@@ -11,7 +11,7 @@
 using StackSamplingProfiler = base::StackSamplingProfiler;
 
 CallStackProfileBuilder::CallStackProfileBuilder(
-    const StackSamplingProfiler::CompletedCallback& callback)
+    const CompletedCallback& callback)
     : callback_(callback) {}
 
 CallStackProfileBuilder::~CallStackProfileBuilder() = default;

@@ -15,9 +15,7 @@
 #include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/common/stack_sampling_configuration.h"
-#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_metrics_provider.h"
-#include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
@@ -221,7 +219,7 @@ ThreadProfiler::ThreadProfiler(
     ScheduleNextPeriodicCollection();
 }
 
-StackSamplingProfiler::CompletedCallback ThreadProfiler::GetReceiverCallback(
+CallStackProfileBuilder::CompletedCallback ThreadProfiler::GetReceiverCallback(
     const CallStackProfileParams& profile_params) {
   // TODO(wittman): Simplify the approach to getting the profiler callback
   // across CallStackProfileMetricsProvider and
@@ -247,14 +245,14 @@ StackSamplingProfiler::CompletedCallback ThreadProfiler::GetReceiverCallback(
 
 // static
 void ThreadProfiler::ReceiveStartupProfile(
-    const StackSamplingProfiler::CompletedCallback& receiver_callback,
+    const CallStackProfileBuilder::CompletedCallback& receiver_callback,
     StackSamplingProfiler::CallStackProfile profile) {
   receiver_callback.Run(std::move(profile));
 }
 
 // static
 void ThreadProfiler::ReceivePeriodicProfile(
-    const StackSamplingProfiler::CompletedCallback& receiver_callback,
+    const CallStackProfileBuilder::CompletedCallback& receiver_callback,
     scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
     base::WeakPtr<ThreadProfiler> thread_profiler,
     StackSamplingProfiler::CallStackProfile profile) {
