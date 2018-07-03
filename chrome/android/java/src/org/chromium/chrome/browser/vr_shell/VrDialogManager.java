@@ -54,4 +54,14 @@ public interface VrDialogManager {
      * @param floating indicates if the dialog is floating.
      */
     void setDialogFloating(boolean floating);
+
+    /**
+     * Set dismiss handler for dialog. When VrDialogManager wants to close the
+     * dialog should call dismissHandler. This is used to close the dialog when
+     * native wants to dismiss.
+     *
+     * @param dismissHandler is called when VrDialogManager wants to dismiss the
+     * current dialog.
+     */
+    void setVrDialogDismissHandler(Runnable dismissHandler);
 }
