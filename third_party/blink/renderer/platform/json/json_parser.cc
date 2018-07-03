@@ -215,9 +215,8 @@ Error ParseStringToken(Cursor<CharType>* cursor, const CharType* end) {
         default:
           return Error::kInvalidEscape;
       }
-    } else if (c == '\n') {
-      cursor->line++;
-      cursor->line_start = cursor->pos;
+    } else if (c < 0x20) {
+      return Error::kSyntaxError;
     } else if ('"' == c) {
       return Error::kNoError;
     }
@@ -278,7 +277,7 @@ Error SkipWhitespaceAndComments(Cursor<CharType>* cursor, const CharType* end) {
       cursor->line++;
       ++(cursor->pos);
       cursor->line_start = cursor->pos;
-    } else if (IsSpaceOrNewline(c)) {
+    } else if (c == ' ' || c == '\n' || c == '\r' || c == '\t') {
       ++(cursor->pos);
     } else if (c == '/') {
       Error error = SkipComment(cursor, end);

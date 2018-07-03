@@ -268,11 +268,6 @@ TEST(JSONParserTest, Reading) {
   EXPECT_EQ(JSONValue::kTypeString, root->GetType());
   EXPECT_TRUE(root->AsString(&str_val));
   EXPECT_EQ(" \"\\/\b\f\n\r\t\v", str_val);
-  root = ParseJSON("\"\n\"");
-  ASSERT_TRUE(root.get());
-  EXPECT_EQ(JSONValue::kTypeString, root->GetType());
-  EXPECT_TRUE(root->AsString(&str_val));
-  EXPECT_EQ("\n", str_val);
 
   // Test hex and unicode escapes including the null character.
   root = ParseJSON("\"\\x41\\x00\\u1234\"", &error);
@@ -296,10 +291,33 @@ TEST(JSONParserTest, Reading) {
   EXPECT_FALSE(root.get());
   EXPECT_EQ("Line: 1, column: 4, Unexpected data after root element.",
             error.message);
-  root = ParseJSON("\"string with \n new \n lines in it\"extra data", &error);
+
+  // Bare control characters (including newlines) are not permitted in string
+  // literals.
+  root = ParseJSON("\"\n\"", &error);
   EXPECT_FALSE(root.get());
-  EXPECT_EQ("Line: 3, column: 14, Unexpected data after root element.",
-            error.message);
+  EXPECT_EQ("Line: 1, column: 3, Syntax error.", error.message);
+  root = ParseJSON("[\"\n\"]", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Syntax error.", error.message);
+  root = ParseJSON("{\"\n\": true}", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Syntax error.", error.message);
+  root = ParseJSON("{\"key\": \"\n\"}", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 11, Syntax error.", error.message);
+  root = ParseJSON("\"\x1b\"", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 3, Syntax error.", error.message);
+  root = ParseJSON("[\"\x07\"]", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Syntax error.", error.message);
+  root = ParseJSON("{\"\x09\": true}", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 4, Syntax error.", error.message);
+  root = ParseJSON("{\"key\": \"\x01\"}", &error);
+  EXPECT_FALSE(root.get());
+  EXPECT_EQ("Line: 1, column: 11, Syntax error.", error.message);
 
   // Basic array
   root = ParseJSON("[true, false, null]");
@@ -409,6 +427,33 @@ TEST(JSONParserTest, Reading) {
       "}\r\n");
   ASSERT_TRUE(root2.get());
   EXPECT_EQ(root->ToJSONString(), root2->ToJSONString());
+
+  // Test that allowed whitespace is limited to TAB, CR, LF and SP. There are
+  // several other Unicode characters defined as whitespace, so a selection of
+  // them are tested to ensure that they are not allowed.
+  // U+0009 CHARACTER TABULATION is allowed
+  root = ParseJSON("\t{\t\"key\"\t:\t[\t\"value1\"\t,\t\"value2\"\t]\t}\t");
+  ASSERT_TRUE(root.get());
+  // U+000A LINE FEED is allowed
+  root = ParseJSON("\n{\n\"key\"\n:\n[\n\"value1\"\n,\n\"value2\"\n]\n}\n");
+  ASSERT_TRUE(root.get());
+  // U+000D CARRIAGE RETURN is allowed
+  root = ParseJSON("\r{\r\"key\"\r:\r[\r\"value1\"\r,\r\"value2\"\r]\r}\r");
+  ASSERT_TRUE(root.get());
+  // U+0020 SPACE is allowed
+  root = ParseJSON(" { \"key\" : [ \"value1\" , \"value2\" ] } ");
+  ASSERT_TRUE(root.get());
+  // U+000B LINE TABULATION is not allowed
+  root = ParseJSON("[\x0b\"value\"]");
+  ASSERT_FALSE(root.get());
+  // U+00A0 NO-BREAK SPACE is not allowed
+  UChar invalid_space_1[] = {0x5b, 0x00a0, 0x5d};  // [<U+00A0>]
+  root = ParseJSON(String(invalid_space_1, base::size(invalid_space_1)));
+  ASSERT_FALSE(root.get());
+  // U+3000 IDEOGRAPHIC SPACE is not allowed
+  UChar invalid_space_2[] = {0x5b, 0x3000, 0x5d};  // [<U+3000>]
+  root = ParseJSON(String(invalid_space_2, base::size(invalid_space_2)));
+  ASSERT_FALSE(root.get());
 
   // Test nesting
   root = ParseJSON("{\"inner\":{\"array\":[true]},\"false\":false,\"d\":{}}");
