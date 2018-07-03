@@ -344,7 +344,9 @@ def ZipDir(output, base_dir, compress_fn=None):
   for root, _, files in os.walk(base_dir):
     for f in files:
       inputs.append(os.path.join(root, f))
-  DoZip(inputs, output, base_dir, compress_fn=compress_fn)
+
+  with AtomicOutput(output) as f:
+    DoZip(inputs, f, base_dir, compress_fn=compress_fn)
 
 
 def MatchesGlob(path, filters):
@@ -591,4 +593,3 @@ def CallAndWriteDepfileIfStale(function, options, record_path=None,
       output_paths=output_paths,
       force=force,
       pass_changes=True)
-
