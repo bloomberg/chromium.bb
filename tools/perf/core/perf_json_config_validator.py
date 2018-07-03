@@ -12,7 +12,6 @@ _VALID_SWARMING_DIMENSIONS = {
     'gpu', 'device_ids', 'os', 'pool', 'perf_tests', 'perf_tests_with_args',
     'device_os', 'device_type', 'device_os_flavor', 'id'}
 _VALID_PERF_POOLS = {
-    'Chrome-perf',
     'chrome.tests.perf', 'chrome.tests.perf-webview',
     'chrome.tests.perf-fyi', 'chrome.tests.perf-webview-fyi'}
 
