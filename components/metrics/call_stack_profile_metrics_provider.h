@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/profiler/stack_sampling_profiler.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/metrics_provider.h"
 
@@ -36,10 +37,11 @@ class CallStackProfileMetricsProvider : public MetricsProvider {
   CallStackProfileMetricsProvider();
   ~CallStackProfileMetricsProvider() override;
 
-  // Returns a callback for use with StackSamplingProfiler that sets up
+  // Returns a callback for use with CallStackProfileBuilder that sets up
   // parameters for general browser process sampling. The callback should be
-  // immediately passed to the StackSamplingProfiler, and should not be reused.
-  static base::StackSamplingProfiler::CompletedCallback
+  // immediately passed to the CallStackProfileBuilder, and should not be
+  // reused.
+  static CallStackProfileBuilder::CompletedCallback
   GetProfilerCallbackForBrowserProcess(const CallStackProfileParams& params);
 
   // Provides completed stack profile to the metrics provider. Intended for use

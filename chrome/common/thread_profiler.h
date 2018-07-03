@@ -15,6 +15,7 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
+#include "components/metrics/call_stack_profile_builder.h"
 #include "components/metrics/call_stack_profile_params.h"
 
 namespace service_manager {
@@ -92,19 +93,19 @@ class ThreadProfiler {
           scoped_refptr<base::SingleThreadTaskRunner>());
 
   // Gets the completed callback for the ultimate receiver of the profile.
-  base::StackSamplingProfiler::CompletedCallback GetReceiverCallback(
+  CallStackProfileBuilder::CompletedCallback GetReceiverCallback(
       const metrics::CallStackProfileParams& profile_params);
 
-  // Receives |profile| from the StackSamplingProfiler and forwards it on to
+  // Receives |profile| from the CallStackProfileBuilder and forwards it on to
   // the original |receiver_callback|.  Note that we must obtain and bind the
   // original receiver callback prior to the start of collection because the
   // collection start time is currently recorded when obtaining the callback in
   // some collection scenarios. The implementation contains a TODO to fix this.
   static void ReceiveStartupProfile(
-      const base::StackSamplingProfiler::CompletedCallback& receiver_callback,
+      const CallStackProfileBuilder::CompletedCallback& receiver_callback,
       base::StackSamplingProfiler::CallStackProfile profile);
   static void ReceivePeriodicProfile(
-      const base::StackSamplingProfiler::CompletedCallback& receiver_callback,
+      const CallStackProfileBuilder::CompletedCallback& receiver_callback,
       scoped_refptr<base::SingleThreadTaskRunner> owning_thread_task_runner,
       base::WeakPtr<ThreadProfiler> thread_profiler,
       base::StackSamplingProfiler::CallStackProfile profile);

@@ -6,8 +6,6 @@ import("//testing/test.gni")
 
 static_library("metrics") {
   sources = [
-    "call_stack_profile_builder.cc",
-    "call_stack_profile_builder.h",
     "call_stack_profile_metrics_provider.cc",
     "call_stack_profile_metrics_provider.h",
     "clean_exit_beacon.cc",
@@ -107,7 +105,7 @@ static_library("metrics") {
   ]
 
   public_deps = [
-    ":call_stack_profile_params",
+    ":call_stack_profile",
     "//third_party/metrics_proto",
   ]
 
@@ -258,8 +256,10 @@ static_library("single_sample_metrics") {
   ]
 }
 
-source_set("call_stack_profile_params") {
+source_set("call_stack_profile") {
   sources = [
+    "call_stack_profile_builder.cc",
+    "call_stack_profile_builder.h",
     "call_stack_profile_params.h",
   ]
 
@@ -285,6 +285,7 @@ source_set("child_call_stacks") {
     "child_call_stack_profile_collector.h",
   ]
   deps = [
+    ":call_stack_profile",
     "//components/metrics/public/interfaces:call_stack_mojo_bindings",
     "//services/service_manager/public/cpp",
   ]
@@ -360,7 +361,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    ":call_stack_profile_params",
+    ":call_stack_profile",
     ":child_call_stacks",
     ":component_metrics",
     ":metrics",

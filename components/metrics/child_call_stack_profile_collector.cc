@@ -38,7 +38,7 @@ ChildCallStackProfileCollector::ChildCallStackProfileCollector() {}
 
 ChildCallStackProfileCollector::~ChildCallStackProfileCollector() {}
 
-base::StackSamplingProfiler::CompletedCallback
+CallStackProfileBuilder::CompletedCallback
 ChildCallStackProfileCollector::GetProfilerCallback(
     const CallStackProfileParams& params,
     base::TimeTicks profile_start_time) {

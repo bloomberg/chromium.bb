@@ -14,7 +14,6 @@
 
 #include "base/atomicops.h"
 #include "base/base_export.h"
-#include "base/callback.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
@@ -269,18 +268,6 @@ class BASE_EXPORT StackSamplingProfiler {
    private:
     DISALLOW_COPY_AND_ASSIGN(ProfileBuilder);
   };
-
-  // The callback type used to collect a completed profile. The passed |profile|
-  // is move-only. Other threads, including the UI thread, may block on callback
-  // completion so this should run as quickly as possible.
-  //
-  // IMPORTANT NOTE: The callback is invoked on a thread the profiler
-  // constructs, rather than on the thread used to construct the profiler, and
-  // thus the callback must be callable on any thread. For threads with message
-  // loops that create StackSamplingProfilers, posting a task to the message
-  // loop with the moved (i.e. std::move) profile is the thread-safe callback
-  // implementation.
-  using CompletedCallback = Callback<void(CallStackProfile)>;
 
   // Creates a profiler for the CURRENT thread. An optional |test_delegate| can
   // be supplied by tests. The caller must ensure that this object gets
