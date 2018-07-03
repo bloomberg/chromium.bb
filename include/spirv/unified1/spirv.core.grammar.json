@@ -6530,6 +6530,25 @@
           "version" : "None"
         },
         {
+          "enumerant" : "StorageBuffer8BitAccess",
+          "value" : 4448,
+          "extensions" : [ "SPV_KHR_8bit_storage" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "UniformAndStorageBuffer8BitAccess",
+          "value" : 4449,
+          "capabilities" : [ "StorageBuffer8BitAccess" ],
+          "extensions" : [ "SPV_KHR_8bit_storage" ],
+          "version" : "None"
+        },
+        {
+          "enumerant" : "StoragePushConstant8",
+          "value" : 4450,
+          "extensions" : [ "SPV_KHR_8bit_storage" ],
+          "version" : "None"
+        },
+        {
           "enumerant" : "Float16ImageAMD",
           "value" : 5008,
           "capabilities" : [ "Shader" ],
