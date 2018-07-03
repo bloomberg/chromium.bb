@@ -2530,9 +2530,8 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
       // See crbug.com/667547
       bool print_mode_enabled = frame_->GetDocument()->Printing() &&
                                 !RuntimeEnabledFeatures::PrintBrowserEnabled();
-      bool repainted_paint_controller = false;
       if (!print_mode_enabled)
-        repainted_paint_controller = PaintTree();
+        PaintTree();
 
       if (!RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
         if (layout_view->Compositor()->InCompositingMode()) {
@@ -2553,8 +2552,7 @@ bool LocalFrameView::UpdateLifecyclePhasesInternal(
 
           // Notify the controller that the artifact has been pushed and some
           // lifecycle state can be freed (such as raster invalidations).
-          if (repainted_paint_controller)
-            paint_controller_->FinishCycle();
+          paint_controller_->FinishCycle();
           // PaintController for BlinkGenPropertyTrees is transient.
           if (RuntimeEnabledFeatures::BlinkGenPropertyTreesEnabled())
             paint_controller_ = nullptr;
@@ -2725,7 +2723,7 @@ static void CollectDrawableLayersForLayerListRecursively(
   CollectDrawableLayersForLayerListRecursively(context, layer->MaskLayer());
 }
 
-bool LocalFrameView::PaintTree() {
+void LocalFrameView::PaintTree() {
   TRACE_EVENT0("blink,benchmark", "LocalFrameView::paintTree");
   SCOPED_UMA_AND_UKM_TIMER("Blink.Paint.UpdateTime", UkmMetricNames::kPaint);
 
@@ -2739,7 +2737,6 @@ bool LocalFrameView::PaintTree() {
     frame_view.Lifecycle().AdvanceTo(DocumentLifecycle::kInPaint);
   });
 
-  bool repainted_paint_controller = false;
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
     if (!paint_controller_)
       paint_controller_ = PaintController::Create();
@@ -2762,7 +2759,6 @@ bool LocalFrameView::PaintTree() {
       PaintInternal(graphics_context, kGlobalPaintNormalPhase,
                     CullRect(LayoutRect::InfiniteIntRect()));
       paint_controller_->CommitNewDisplayItems();
-      repainted_paint_controller = true;
     }
   } else {
     // A null graphics layer can occur for painting of SVG images that are not
@@ -2813,7 +2809,6 @@ bool LocalFrameView::PaintTree() {
     CollectDrawableLayersForLayerListRecursively(
         context, layout_view->Compositor()->PaintRootGraphicsLayer());
     paint_controller_->CommitNewDisplayItems();
-    repainted_paint_controller = true;
   }
 
   ForAllNonThrottledLocalFrameViews([](LocalFrameView& frame_view) {
@@ -2821,8 +2816,6 @@ bool LocalFrameView::PaintTree() {
     if (auto* layout_view = frame_view.GetLayoutView())
       layout_view->Layer()->ClearNeedsRepaintRecursively();
   });
-
-  return repainted_paint_controller;
 }
 
 void LocalFrameView::PushPaintArtifactToCompositor(
