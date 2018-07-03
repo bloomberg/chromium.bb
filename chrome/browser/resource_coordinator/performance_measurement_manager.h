@@ -8,34 +8,30 @@
 #include "base/macros.h"
 #include "base/scoped_observer.h"
 #include "base/sequence_checker.h"
-#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
+#include "chrome/browser/resource_coordinator/page_signal_receiver.h"
 
 namespace resource_coordinator {
 
 class RenderProcessProbe;
-class TabLoadTracker;
 
-// This class observes tab state change notifications issued by the
-// TabLoadTracker and uses them to drive performance measurement requests
-// to the RenderProcessProbe. Results then funnel through the resource
-// coordinator service, back to this class, which stores them in the feature
-// database.
-class PerformanceMeasurementManager : public TabLoadTracker::Observer {
+// This class observes the PageAlmostIdle signal from the PageSignalGenerator
+// and uses it to fire off performance measurements for tabs that have reached
+// idle state.
+class PerformanceMeasurementManager : public PageSignalObserver {
  public:
-  PerformanceMeasurementManager(TabLoadTracker* tab_load_tracker,
+  PerformanceMeasurementManager(PageSignalReceiver* receiver,
                                 RenderProcessProbe* render_process_probe);
   ~PerformanceMeasurementManager() override;
 
-  // TabLoadTracker::Observer implementation.
-  void OnStartTracking(content::WebContents* web_contents,
-                       LoadingState loading_state) override;
-  void OnLoadingStateChange(content::WebContents* web_contents,
-                            LoadingState old_loading_state,
-                            LoadingState new_loading_state) override;
+  // PageSignalObserver overrides.
+  void OnPageAlmostIdle(
+      content::WebContents* web_contents,
+      const PageNavigationIdentity& page_navigation_id) override;
 
  private:
-  ScopedObserver<TabLoadTracker, PerformanceMeasurementManager>
+  ScopedObserver<PageSignalReceiver, PerformanceMeasurementManager>
       scoped_observer_;
+  PageSignalReceiver* page_signal_receiver_;
   RenderProcessProbe* render_process_probe_;
 
   DISALLOW_COPY_AND_ASSIGN(PerformanceMeasurementManager);

@@ -12,27 +12,23 @@ namespace resource_coordinator {
 using LoadingState = TabLoadTracker::LoadingState;
 
 PerformanceMeasurementManager::PerformanceMeasurementManager(
-    TabLoadTracker* tab_load_tracker,
+    PageSignalReceiver* page_signal_receiver,
     RenderProcessProbe* render_process_probe)
-    : scoped_observer_(this), render_process_probe_(render_process_probe) {
-  scoped_observer_.Add(tab_load_tracker);
+    : scoped_observer_(this),
+      page_signal_receiver_(page_signal_receiver),
+      render_process_probe_(render_process_probe) {
+  scoped_observer_.Add(page_signal_receiver);
 }
 
 PerformanceMeasurementManager::~PerformanceMeasurementManager() = default;
 
-void PerformanceMeasurementManager::OnStartTracking(
+void PerformanceMeasurementManager::OnPageAlmostIdle(
     content::WebContents* web_contents,
-    LoadingState loading_state) {
-  if (loading_state == LoadingState::LOADED)
+    const PageNavigationIdentity& page_navigation_id) {
+  if (page_signal_receiver_->GetNavigationIDForWebContents(web_contents) ==
+      page_navigation_id.navigation_id) {
     render_process_probe_->StartSingleGather();
-}
-
-void PerformanceMeasurementManager::OnLoadingStateChange(
-    content::WebContents* web_contents,
-    LoadingState old_loading_state,
-    LoadingState new_loading_state) {
-  if (new_loading_state == LoadingState::LOADED)
-    render_process_probe_->StartSingleGather();
+  }
 }
 
 }  // namespace resource_coordinator
