@@ -234,6 +234,10 @@ cr.define('print_preview', function() {
         [
           print_preview.PrinterType.LOCAL_PRINTER,
           print_preview.DestinationStorePrinterSearchStatus.START
+        ],
+        [
+          print_preview.PrinterType.CLOUD_PRINTER,
+          print_preview.DestinationStorePrinterSearchStatus.START
         ]
       ]);
 
@@ -259,7 +263,6 @@ cr.define('print_preview', function() {
        */
       this.useSystemDefaultAsDefault_ =
           loadTimeData.getBoolean('useSystemDefaultPrinter');
-
 
       /**
        * The recent print destinations, set when the store is initialized.
@@ -874,11 +877,23 @@ cr.define('print_preview', function() {
 
     /** Initiates loading of all known destination types. */
     startLoadAllDestinations() {
-      this.startLoadCloudDestinations();
-      for (const printerType of Object.values(print_preview.PrinterType)) {
-        if (printerType !== print_preview.PrinterType.PDF_PRINTER)
-          this.startLoadDestinations(printerType);
-      }
+      // Printer types that need to be retrieved from the handler.
+      let types = [
+        print_preview.PrinterType.PRIVET_PRINTER,
+        print_preview.PrinterType.EXTENSION_PRINTER,
+        print_preview.PrinterType.LOCAL_PRINTER,
+      ];
+
+      // If the network service is enabled, request cloud printers from the
+      // handler instead of trying to directly communicate with the cloud print
+      // server, which will cause a crash. See https://crbug.com/848987.
+      if (loadTimeData.getBoolean('networkServiceEnabled'))
+        types.push(print_preview.PrinterType.CLOUD_PRINTER);
+      else
+        this.startLoadCloudDestinations();
+
+      for (const printerType of types)
+        this.startLoadDestinations(printerType);
     }
 
     /**

@@ -42,7 +42,8 @@ enum PrinterType {
   kPrivetPrinter,
   kExtensionPrinter,
   kPdfPrinter,
-  kLocalPrinter
+  kLocalPrinter,
+  kCloudPrinter
 };
 
 }  // namespace printing
@@ -322,6 +323,10 @@ class PrintPreviewHandler
   // Pointer to cookie manager service so that print preview can listen for GAIA
   // cookie changes.
   GaiaCookieManagerService* gaia_cookie_manager_service_;
+
+  // Handles requests for cloud printers. Created lazily by calling
+  // GetPrinterHandler().
+  std::unique_ptr<PrinterHandler> cloud_printer_handler_;
 
   // Handles requests for extension printers. Created lazily by calling
   // GetPrinterHandler().

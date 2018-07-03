@@ -3899,6 +3899,8 @@ split_static_library("ui") {
   }
   if (enable_print_preview) {
     sources += [
+      "webui/print_preview/cloud_printer_handler.cc",
+      "webui/print_preview/cloud_printer_handler.h",
       "webui/print_preview/extension_printer_handler.cc",
       "webui/print_preview/extension_printer_handler.h",
       "webui/print_preview/pdf_printer_handler.cc",

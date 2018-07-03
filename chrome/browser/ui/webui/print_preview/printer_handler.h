@@ -60,6 +60,10 @@ class PrinterHandler {
   using GetPrinterInfoCallback =
       base::OnceCallback<void(const base::DictionaryValue& printer_info)>;
 
+  // Creates an instance of a PrinterHandler for cloud printers.
+  // Note: Implementation currently empty, see https://crbug.com/829414
+  static std::unique_ptr<PrinterHandler> CreateForCloudPrinters();
+
   // Creates an instance of a PrinterHandler for extension printers.
   static std::unique_ptr<PrinterHandler> CreateForExtensionPrinters(
       Profile* profile);
