@@ -355,18 +355,15 @@ if (is_android || is_chromeos) {
 
   # Dynamic app bundles -------------------------------------------------------
 
-  # TODO(digit): Remove this once we roll a version of the Android SDK that
-  # has the proper build-tools binaries to both public and internal.
   declare_args() {
-    # To enable generation of application bundles, define
-    # android_sdk_app_bundle_build_tools to point to an Android SDK build-tools
-    # directory that has the relevant aapt2 and bundletool binaries.
-    #
-    android_sdk_app_bundle_build_tools = ""
-  }
+    # Location of aapt2 binary used for app bundles. For now, a more recent version
+    # than the one distributed with the Android SDK is required.
+    android_sdk_tools_bundle_aapt2 =
+        "//third_party/android_build_tools/aapt2/aapt2"
 
-  # Whether building application bundles is supported.
-  android_enable_app_bundles = android_sdk_app_bundle_build_tools != ""
+    # Set this variable to true to enable building app bundles.
+    android_enable_app_bundles = false
+  }
 }
 
 declare_args() {

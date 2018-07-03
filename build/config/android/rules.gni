@@ -2377,6 +2377,7 @@ if (enable_java_templates) {
       srcjar_deps = _srcjar_deps
       final_jar_path = _jar_path
       dex_path = _lib_dex_path
+      final_dex_path = _final_dex_path
       apk_path = _final_apk_path
 
       if (android_enable_app_bundles) {

@@ -656,6 +656,7 @@ def main(args):
 
   possible_input_paths = [
     options.aapt_path,
+    options.aapt2_path,
     options.android_manifest,
     options.shared_resources_whitelist,
   ]
