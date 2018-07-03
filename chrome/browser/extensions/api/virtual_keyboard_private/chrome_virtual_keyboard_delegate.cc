@@ -40,7 +40,7 @@ namespace {
 
 aura::Window* GetKeyboardWindow() {
   auto* controller = keyboard::KeyboardController::Get();
-  return controller->enabled() ? controller->GetContentsWindow() : nullptr;
+  return controller->enabled() ? controller->GetKeyboardWindow() : nullptr;
 }
 
 std::string GenerateFeatureFlag(const std::string& feature, bool enabled) {

@@ -586,7 +586,7 @@ void RootWindowController::ActivateKeyboard(
   DCHECK(vk_container);
   keyboard_controller->ActivateKeyboardInContainer(vk_container);
 
-  keyboard_controller->LoadKeyboardUiInBackground();
+  keyboard_controller->LoadKeyboardWindowInBackground();
 }
 
 void RootWindowController::DeactivateKeyboard(

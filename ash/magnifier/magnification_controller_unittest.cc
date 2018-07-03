@@ -1026,7 +1026,7 @@ TEST_F(MagnificationControllerTest, TextfieldFocusedWithKeyboard) {
   keyboard_controller->ShowKeyboard(true);
 
   gfx::Rect keyboard_bounds = gfx::Rect(0, 300, 800, 300);
-  keyboard_controller->GetContentsWindow()->SetBounds(keyboard_bounds);
+  keyboard_controller->GetKeyboardWindow()->SetBounds(keyboard_bounds);
 
   // Focus on the text input field.
   text_input_helper_.FocusOnTextInputView();

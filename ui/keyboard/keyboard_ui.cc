@@ -13,27 +13,20 @@
 
 namespace keyboard {
 
-KeyboardUI::KeyboardUI() : keyboard_controller_(nullptr) {}
-KeyboardUI::~KeyboardUI() {}
+KeyboardUI::KeyboardUI() = default;
 
-void KeyboardUI::ShowKeyboardContainer(aura::Window* container) {
-  if (HasContentsWindow()) {
-    {
-      TRACE_EVENT0("vk", "ShowKeyboardContainerWindow");
-      GetContentsWindow()->Show();
-    }
-    {
-      TRACE_EVENT0("vk", "ShowKeyboardContainer");
-      container->Show();
-    }
+KeyboardUI::~KeyboardUI() = default;
+
+void KeyboardUI::ShowKeyboardWindow() {
+  if (HasKeyboardWindow()) {
+    TRACE_EVENT0("vk", "ShowKeyboardContainerWindow");
+    GetKeyboardWindow()->Show();
   }
 }
 
-void KeyboardUI::HideKeyboardContainer(aura::Window* container) {
-  if (HasContentsWindow()) {
-    container->Hide();
-    GetContentsWindow()->Hide();
-  }
+void KeyboardUI::HideKeyboardWindow() {
+  if (HasKeyboardWindow())
+    GetKeyboardWindow()->Hide();
 }
 
 void KeyboardUI::EnsureCaretInWorkArea(const gfx::Rect& occluded_bounds) {

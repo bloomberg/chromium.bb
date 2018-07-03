@@ -163,7 +163,7 @@ void VirtualKeyboardController::MoveKeyboardToDisplay(
   TRACE_EVENT0("vk", "MoveKeyboardToDisplay");
 
   aura::Window* keyboard_window =
-      keyboard::KeyboardController::Get()->GetContentsWindow();
+      keyboard::KeyboardController::Get()->GetKeyboardWindow();
   DCHECK(keyboard_window);
 
   const display::Screen* screen = display::Screen::GetScreen();
@@ -180,7 +180,7 @@ void VirtualKeyboardController::MoveKeyboardToTouchableDisplay() {
   TRACE_EVENT0("vk", "MoveKeyboardToTouchableDisplay");
 
   aura::Window* keyboard_window =
-      keyboard::KeyboardController::Get()->GetContentsWindow();
+      keyboard::KeyboardController::Get()->GetKeyboardWindow();
   DCHECK(keyboard_window);
 
   const display::Screen* screen = display::Screen::GetScreen();

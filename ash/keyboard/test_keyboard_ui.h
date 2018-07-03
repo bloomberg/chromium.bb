@@ -23,9 +23,9 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   TestKeyboardUI();
   ~TestKeyboardUI() override;
 
-  bool HasContentsWindow() const override;
+  bool HasKeyboardWindow() const override;
   bool ShouldWindowOverscroll(aura::Window* window) const override;
-  aura::Window* GetContentsWindow() override;
+  aura::Window* GetKeyboardWindow() override;
 
  private:
   // Overridden from keyboard::KeyboardUI:
@@ -35,7 +35,7 @@ class TestKeyboardUI : public keyboard::KeyboardUI {
   void ResetInsets() override;
 
   aura::test::TestWindowDelegate delegate_;
-  std::unique_ptr<aura::Window> keyboard_;
+  std::unique_ptr<aura::Window> keyboard_window_;
   DISALLOW_COPY_AND_ASSIGN(TestKeyboardUI);
 };
 

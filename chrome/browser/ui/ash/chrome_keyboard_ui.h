@@ -60,8 +60,8 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   void UpdateInsetsForWindow(aura::Window* window);
 
   // Overridden from KeyboardUI:
-  aura::Window* GetContentsWindow() override;
-  bool HasContentsWindow() const override;
+  aura::Window* GetKeyboardWindow() override;
+  bool HasKeyboardWindow() const override;
   bool ShouldWindowOverscroll(aura::Window* window) const override;
   void ReloadKeyboardIfNeeded() override;
   void InitInsets(const gfx::Rect& new_bounds) override;
@@ -113,7 +113,6 @@ class ChromeKeyboardUI : public keyboard::KeyboardUI,
   // Overridden from KeyboardUI:
   ui::InputMethod* GetInputMethod() override;
   void SetController(keyboard::KeyboardController* controller) override;
-  void ShowKeyboardContainer(aura::Window* container) override;
 
   // content::WebContentsObserver overrides
   void RenderViewCreated(content::RenderViewHost* render_view_host) override;

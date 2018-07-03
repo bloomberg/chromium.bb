@@ -44,9 +44,9 @@ TEST_F(ChromeKeyboardUITest, DoesNotCrashWhenParentDoesNotExist) {
   std::unique_ptr<content::WebContents> contents = CreateTestWebContents();
   TestChromeKeyboardUI keyboard_ui(std::move(contents));
 
-  EXPECT_FALSE(keyboard_ui.HasContentsWindow());
-  aura::Window* view = keyboard_ui.GetContentsWindow();
-  EXPECT_TRUE(keyboard_ui.HasContentsWindow());
+  EXPECT_FALSE(keyboard_ui.HasKeyboardWindow());
+  aura::Window* view = keyboard_ui.GetKeyboardWindow();
+  EXPECT_TRUE(keyboard_ui.HasKeyboardWindow());
 
   EXPECT_FALSE(view->parent());
 

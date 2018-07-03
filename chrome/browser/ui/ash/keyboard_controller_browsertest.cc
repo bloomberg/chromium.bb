@@ -62,9 +62,9 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     input_method->ShowImeIfNeeded();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    ui()->GetContentsWindow()->SetBounds(init_bounds);
+    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
     // Mock KeyboardUI notifying KeyboardController that the contents loaded.
-    keyboard::KeyboardController::Get()->NotifyContentsLoaded();
+    keyboard::KeyboardController::Get()->NotifyKeyboardWindowLoaded();
   }
 
   void FocusNonEditableNode() {
@@ -80,7 +80,7 @@ class VirtualKeyboardWebContentTest : public InProcessBrowserTest {
     keyboard::KeyboardController::Get()->Reload();
     // Mock window.resizeTo that is expected to be called after navigate to a
     // new virtual keyboard.
-    ui()->GetContentsWindow()->SetBounds(init_bounds);
+    ui()->GetKeyboardWindow()->SetBounds(init_bounds);
   }
 
   bool IsKeyboardVisible() const {
@@ -130,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardWebContentTest,
   controller->ShowKeyboard(false);
   WaitControllerStateChangesTo(keyboard::KeyboardControllerState::SHOWN);
 
-  aura::Window* contents_window = controller->GetContentsWindow();
+  aura::Window* contents_window = controller->GetKeyboardWindow();
   contents_window->SetBounds(gfx::Rect(0, 0, 100, 100));
   EXPECT_EQ(gfx::Point(0, 0), contents_window->bounds().origin());
 
@@ -206,12 +206,12 @@ IN_PROC_BROWSER_TEST_F(VirtualKeyboardAppWindowTest,
   gfx::Rect test_bounds(0, 0, 0, screen_height - ime_window_visible_height + 1);
   auto* controller = keyboard::KeyboardController::Get();
   controller->ShowKeyboard(true);
-  controller->ui()->GetContentsWindow()->SetBounds(test_bounds);
-  controller->NotifyContentsLoaded();
+  controller->ui()->GetKeyboardWindow()->SetBounds(test_bounds);
+  controller->NotifyKeyboardWindowLoaded();
 
-  gfx::Rect keyboard_bounds = controller->GetContentsWindow()->bounds();
+  gfx::Rect keyboard_bounds = controller->GetKeyboardWindow()->bounds();
   // Starts overscroll.
-  controller->NotifyContentsBoundsChanging(keyboard_bounds);
+  controller->NotifyKeyboardBoundsChanging(keyboard_bounds);
 
   // Non ime window should have smaller visible view port due to overlap with
   // virtual keyboard.
