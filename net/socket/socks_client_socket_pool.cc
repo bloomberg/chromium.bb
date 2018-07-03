@@ -221,14 +221,14 @@ int SOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                                          const SocketTag& socket_tag,
                                          RespectLimits respect_limits,
                                          ClientSocketHandle* handle,
-                                         const CompletionCallback& callback,
+                                         CompletionOnceCallback callback,
                                          const NetLogWithSource& net_log) {
   const scoped_refptr<SOCKSSocketParams>* casted_socket_params =
       static_cast<const scoped_refptr<SOCKSSocketParams>*>(socket_params);
 
   return base_.RequestSocket(group_name, *casted_socket_params, priority,
-                             socket_tag, respect_limits, handle, callback,
-                             net_log);
+                             socket_tag, respect_limits, handle,
+                             std::move(callback), net_log);
 }
 
 void SOCKSClientSocketPool::RequestSockets(const std::string& group_name,

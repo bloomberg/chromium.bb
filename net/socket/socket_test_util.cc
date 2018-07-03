@@ -2034,14 +2034,14 @@ int MockTransportClientSocketPool::RequestSocket(
     const SocketTag& socket_tag,
     RespectLimits respect_limits,
     ClientSocketHandle* handle,
-    const CompletionCallback& callback,
+    CompletionOnceCallback callback,
     const NetLogWithSource& net_log) {
   last_request_priority_ = priority;
   std::unique_ptr<StreamSocket> socket =
       client_socket_factory_->CreateTransportClientSocket(
           AddressList(), NULL, net_log.net_log(), NetLogSource());
-  MockConnectJob* job =
-      new MockConnectJob(std::move(socket), handle, socket_tag, callback);
+  MockConnectJob* job = new MockConnectJob(std::move(socket), handle,
+                                           socket_tag, std::move(callback));
   job_list_.push_back(base::WrapUnique(job));
   handle->set_pool_id(1);
   return job->Connect();
@@ -2091,11 +2091,11 @@ int MockSOCKSClientSocketPool::RequestSocket(const std::string& group_name,
                                              const SocketTag& socket_tag,
                                              RespectLimits respect_limits,
                                              ClientSocketHandle* handle,
-                                             const CompletionCallback& callback,
+                                             CompletionOnceCallback callback,
                                              const NetLogWithSource& net_log) {
   return transport_pool_->RequestSocket(group_name, socket_params, priority,
                                         socket_tag, respect_limits, handle,
-                                        callback, net_log);
+                                        std::move(callback), net_log);
 }
 
 void MockSOCKSClientSocketPool::SetPriority(const std::string& group_name,
