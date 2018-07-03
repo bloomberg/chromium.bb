@@ -92,6 +92,7 @@ class NodeTraversal;
 class PerformanceMonitor;
 class PluginData;
 class ScriptController;
+class SharedBuffer;
 class SpellChecker;
 class TextSuggestionController;
 class WebComputedAXTree;

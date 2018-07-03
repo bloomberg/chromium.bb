@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/modules/serviceworker/web_service_worker_clients_info.h"
+#include "third_party/blink/renderer/platform/heap/handle.h"
 
 namespace blink {
 

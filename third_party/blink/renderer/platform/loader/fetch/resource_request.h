@@ -29,6 +29,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_PLATFORM_LOADER_FETCH_RESOURCE_REQUEST_H_
 
 #include <memory>
+#include "base/macros.h"
 #include "base/optional.h"
 #include "base/time/time.h"
 #include "base/unguessable_token.h"
@@ -47,9 +48,12 @@
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/weborigin/referrer.h"
 #include "third_party/blink/renderer/platform/wtf/ref_counted.h"
+#include "third_party/blink/renderer/platform/wtf/time.h"
 
 namespace blink {
 
+class EncodedFormData;
+class SecurityOrigin;
 struct CrossThreadResourceRequestData;
 
 // A ResourceRequest is a "request" object for ResourceLoader. Conceptually
@@ -453,7 +457,7 @@ class PLATFORM_EXPORT ResourceRequest final {
 //  - Non-simple members need explicit copying (e.g., String::IsolatedCopy,
 //    KURL::Copy) rather than the copy constructor or the assignment operator.
 struct PLATFORM_EXPORT CrossThreadResourceRequestData {
-  WTF_MAKE_NONCOPYABLE(CrossThreadResourceRequestData);
+  DISALLOW_COPY_AND_ASSIGN(CrossThreadResourceRequestData);
   USING_FAST_MALLOC(CrossThreadResourceRequestData);
 
  public:
