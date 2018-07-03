@@ -5,7 +5,7 @@
 #ifndef MEDIA_GPU_D3D11_VIDEO_DECODER_IMPL_H_
 #define MEDIA_GPU_D3D11_VIDEO_DECODER_IMPL_H_
 
-#include <d3d11.h>
+#include <d3d11_1.h>
 #include <wrl/client.h>
 
 #include <list>
@@ -95,7 +95,7 @@ class MEDIA_GPU_EXPORT D3D11VideoDecoderImpl : public VideoDecoder,
   Microsoft::WRL::ComPtr<ID3D11Device> device_;
   Microsoft::WRL::ComPtr<ID3D11DeviceContext> device_context_;
   Microsoft::WRL::ComPtr<ID3D11VideoDevice> video_device_;
-  Microsoft::WRL::ComPtr<ID3D11VideoContext> video_context_;
+  Microsoft::WRL::ComPtr<ID3D11VideoContext1> video_context_;
 
   std::unique_ptr<AcceleratedVideoDecoder> accelerated_video_decoder_;
 

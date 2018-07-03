@@ -73,19 +73,19 @@ void D3D11VideoDecoderImpl::Initialize(
   // could use our own device, and run on the mojo thread, but texture sharing
   // seems to be difficult.
   device_ = gl::QueryD3D11DeviceObjectFromANGLE();
-  device_->GetImmediateContext(device_context_.GetAddressOf());
+  device_->GetImmediateContext(device_context_.ReleaseAndGetAddressOf());
 
   HRESULT hr;
 
   // TODO(liberato): Handle cleanup better.  Also consider being less chatty in
   // the logs, since this will fall back.
-  hr = device_context_.CopyTo(video_context_.GetAddressOf());
+  hr = device_context_.CopyTo(video_context_.ReleaseAndGetAddressOf());
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to get device context");
     return;
   }
 
-  hr = device_.CopyTo(video_device_.GetAddressOf());
+  hr = device_.CopyTo(video_device_.ReleaseAndGetAddressOf());
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to get video device");
     return;
@@ -162,16 +162,22 @@ void D3D11VideoDecoderImpl::Initialize(
   memcpy(&decoder_guid_, &decoder_guid, sizeof decoder_guid_);
 
   Microsoft::WRL::ComPtr<ID3D11VideoDecoder> video_decoder;
-  hr = video_device_->CreateVideoDecoder(&desc, &dec_config,
-                                         video_decoder.GetAddressOf());
+  hr = video_device_->CreateVideoDecoder(
+      &desc, &dec_config, video_decoder.ReleaseAndGetAddressOf());
   if (!video_decoder.Get()) {
     NotifyError("Failed to create a video decoder");
     return;
   }
 
+  CdmProxyContext* proxy_context = nullptr;
+#if BUILDFLAG(ENABLE_LIBRARY_CDMS)
+  if (cdm_context)
+    proxy_context = cdm_context->GetCdmProxyContext();
+#endif
+
   accelerated_video_decoder_ = std::make_unique<H264Decoder>(
-      std::make_unique<D3D11H264Accelerator>(this, video_decoder, video_device_,
-                                             video_context_),
+      std::make_unique<D3D11H264Accelerator>(this, proxy_context, video_decoder,
+                                             video_device_, video_context_),
       config.color_space_info());
 
   // |cdm_context| could be null for clear playback.
@@ -323,7 +329,7 @@ void D3D11VideoDecoderImpl::CreatePictureBuffers() {
 
   Microsoft::WRL::ComPtr<ID3D11Texture2D> out_texture;
   HRESULT hr = device_->CreateTexture2D(&texture_desc, nullptr,
-                                        out_texture.GetAddressOf());
+                                        out_texture.ReleaseAndGetAddressOf());
   if (!SUCCEEDED(hr)) {
     NotifyError("Failed to create a Texture2D for PictureBuffers");
     return;
