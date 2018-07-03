@@ -34,6 +34,8 @@
     function stall() {
       while(true);
     }
+    var thePrefix = true;
+    var thePrefixAndTheSuffix = true;
   `);
 
   var consoleEditor;
@@ -181,7 +183,8 @@
     () => testCompletions('var x = "string".char', ['charAt']),
     () => testCompletions('({abc: 123}).a', ['abc']),
     () => testCompletions('{dontFindLabels: 123}.dont', ['dontFindLabels']),
-    () => testCompletions('const x = 5; {dontFindLabels: 123}.dont', ['dontFindLabels']),
+    () => testCompletions(
+        'const x = 5; {dontFindLabels: 123}.dont', ['dontFindLabels']),
     () => testCompletions('const x = {abc: 123}.a', ['abc']),
     () => testCompletions('x = {abc: 123}.', ['abc']),
     () => testCompletions('[1,2,3].j', ['join']),
@@ -199,5 +202,8 @@
     () => testCompletions('(dontRunThis`asdf`).', []),
     () => testCompletions('dontRunThis().', []),
     () => testCompletions('stall().', []),
+    () => testCompletions(
+        'shouldNot|FindThisFunction()', ['shouldNotFindThisFunction']),
+    () => testCompletions('thePrefix', ['thePrefix', 'thePrefixAndTheSuffix']),
   ]).then(TestRunner.completeTest);
 })();
