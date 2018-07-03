@@ -2,6 +2,7 @@ DEPS = [
   'depot_tools',
   'gclient',
   'gerrit',
+  'recipe_engine/buildbucket',
   'recipe_engine/context',
   'recipe_engine/json',
   'recipe_engine/path',

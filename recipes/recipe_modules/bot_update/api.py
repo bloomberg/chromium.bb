@@ -28,6 +28,12 @@ class BotUpdateApi(recipe_api.RecipeApi):
     self._last_returned_properties = {}
     super(BotUpdateApi, self).__init__(*args, **kwargs)
 
+  def initialize(self):
+    gm = self.m.buildbucket.build_input.gitiles_commit
+    if self._revision is None and self._repository is None and gm:
+      self._revision = gm.id
+      self._repository = gm.host + '/' + gm.project
+
   def __call__(self, name, cmd, **kwargs):
     """Wrapper for easy calling of bot_update."""
     assert isinstance(cmd, (list, tuple))
