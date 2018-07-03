@@ -1292,7 +1292,7 @@ TEST_F(PasswordManagerTest, SameDocumentNavigation) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  manager()->OnSameDocumentNavigation(&driver_, form);
+  manager()->OnPasswordFormSubmittedNoChecks(&driver_, form);
   ASSERT_TRUE(form_manager_to_save);
 
   // Simulate saving the form, as if the info bar was accepted.
@@ -1327,7 +1327,7 @@ TEST_F(PasswordManagerTest, SameDocumentBlacklistedSite) {
   EXPECT_CALL(client_, PromptUserToSaveOrUpdatePasswordPtr(_))
       .WillOnce(WithArg<0>(SaveToScopedPtr(&form_manager_to_save)));
 
-  manager()->OnSameDocumentNavigation(&driver_, form);
+  manager()->OnPasswordFormSubmittedNoChecks(&driver_, form);
   EXPECT_TRUE(form_manager_to_save->IsBlacklisted());
 }
 

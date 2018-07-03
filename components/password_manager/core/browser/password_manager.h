@@ -123,6 +123,9 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // Handles a password form being submitted, assumes that submission is
   // successful and does not do any checks on success of submission.
+  // For example, this is called if |password_form| was filled
+  // upon in-page navigation.This often means history.pushState being
+  // called from JavaScript.
   void OnPasswordFormSubmittedNoChecks(
       password_manager::PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
@@ -140,13 +143,6 @@ class PasswordManager : public LoginModel, public FormSubmissionObserver {
 
   // Handles a request to hide manual fallback for password saving.
   void HideManualFallbackForSaving();
-
-  // Called if |password_form| was filled upon in-page navigation. This often
-  // means history.pushState being called from JavaScript. If this causes false
-  // positive in password saving, update http://crbug.com/357696.
-  // TODO(https://crbug.com/795462): find better name for this function.
-  void OnSameDocumentNavigation(password_manager::PasswordManagerDriver* driver,
-                                const autofill::PasswordForm& password_form);
 
   void ProcessAutofillPredictions(
       password_manager::PasswordManagerDriver* driver,

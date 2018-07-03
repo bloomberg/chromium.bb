@@ -869,12 +869,6 @@ void PasswordManager::OnPasswordFormsRendered(
   }
 }
 
-void PasswordManager::OnSameDocumentNavigation(
-    password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& password_form) {
-  OnPasswordFormSubmittedNoChecks(driver, password_form);
-}
-
 void PasswordManager::OnLoginSuccessful() {
   std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
   if (password_manager_util::IsLoggingActive(client_)) {

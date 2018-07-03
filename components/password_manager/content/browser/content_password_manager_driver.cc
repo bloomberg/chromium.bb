@@ -236,7 +236,7 @@ void ContentPasswordManagerDriver::SameDocumentNavigation(
           render_frame_host_, password_form,
           BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
     return;
-  GetPasswordManager()->OnSameDocumentNavigation(this, password_form);
+  GetPasswordManager()->OnPasswordFormSubmittedNoChecks(this, password_form);
 }
 
 void ContentPasswordManagerDriver::ShowPasswordSuggestions(
