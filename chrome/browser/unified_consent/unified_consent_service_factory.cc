@@ -53,7 +53,7 @@ KeyedService* UnifiedConsentServiceFactory::BuildServiceInstanceFor(
   return new UnifiedConsentService(
       new ChromeUnifiedConsentServiceClient(profile->GetPrefs()),
       profile->GetPrefs(), IdentityManagerFactory::GetForProfile(profile),
-      ProfileSyncServiceFactory::GetForProfile(profile));
+      ProfileSyncServiceFactory::GetSyncServiceForBrowserContext(profile));
 }
 
 bool UnifiedConsentServiceFactory::ServiceIsNULLWhileTesting() const {

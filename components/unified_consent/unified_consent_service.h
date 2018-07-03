@@ -20,8 +20,8 @@ class PrefRegistrySyncable;
 class PrefChangeRegistrar;
 class PrefService;
 
-namespace browser_sync {
-class ProfileSyncService;
+namespace syncer {
+class SyncService;
 }
 
 class UnifiedConsentServiceClient;
@@ -35,7 +35,7 @@ class UnifiedConsentService : public KeyedService,
   UnifiedConsentService(UnifiedConsentServiceClient* service_client,
                         PrefService* pref_service,
                         identity::IdentityManager* identity_manager,
-                        browser_sync::ProfileSyncService* profile_sync_service);
+                        syncer::SyncService* sync_service);
   ~UnifiedConsentService() override;
 
   // Register the prefs used by this UnifiedConsentService.
@@ -57,7 +57,7 @@ class UnifiedConsentService : public KeyedService,
   UnifiedConsentServiceClient* service_client_;
   PrefService* pref_service_;
   identity::IdentityManager* identity_manager_;
-  browser_sync::ProfileSyncService* profile_sync_service_;
+  syncer::SyncService* sync_service_;
 
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;
 

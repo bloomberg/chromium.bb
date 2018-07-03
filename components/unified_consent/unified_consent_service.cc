@@ -5,11 +5,11 @@
 #include "components/unified_consent/unified_consent_service.h"
 
 #include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/browser_sync/profile_sync_service.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync/base/model_type.h"
+#include "components/sync/driver/sync_service.h"
 #include "components/unified_consent/pref_names.h"
 #include "components/unified_consent/unified_consent_service_client.h"
 
@@ -17,14 +17,14 @@ UnifiedConsentService::UnifiedConsentService(
     UnifiedConsentServiceClient* service_client,
     PrefService* pref_service,
     identity::IdentityManager* identity_manager,
-    browser_sync::ProfileSyncService* profile_sync_service)
+    syncer::SyncService* sync_service)
     : service_client_(service_client),
       pref_service_(pref_service),
       identity_manager_(identity_manager),
-      profile_sync_service_(profile_sync_service) {
+      sync_service_(sync_service) {
   DCHECK(pref_service_);
   DCHECK(identity_manager_);
-  DCHECK(profile_sync_service_);
+  DCHECK(sync_service_);
   identity_manager_->AddObserver(this);
 
   pref_change_registrar_ = std::make_unique<PrefChangeRegistrar>();
@@ -66,22 +66,24 @@ void UnifiedConsentService::OnUnifiedConsentGivenPrefChanged() {
     if (identity_manager_->HasPrimaryAccount()) {
       // KeepEverythingSynced is set to false, so the user can select individual
       // sync data types.
-      profile_sync_service_->OnUserChoseDatatypes(
-          false, syncer::UserSelectableTypes());
+      sync_service_->OnUserChoseDatatypes(false, syncer::UserSelectableTypes());
     }
     return;
   }
 
-  DCHECK(profile_sync_service_->IsSyncAllowed());
+  DCHECK(sync_service_->IsSyncAllowed());
   DCHECK(identity_manager_->HasPrimaryAccount());
 
   // Enable all sync data types.
   pref_service_->SetBoolean(autofill::prefs::kAutofillWalletImportEnabled,
                             true);
-  profile_sync_service_->OnUserChoseDatatypes(true,
-                                              syncer::UserSelectableTypes());
+  sync_service_->OnUserChoseDatatypes(true, syncer::UserSelectableTypes());
 
   // Enable all non-personalized services.
+  pref_service_->SetBoolean(prefs::kUrlKeyedAnonymizedDataCollectionEnabled,
+                            true);
+
+  // Inform client to enable non-personalized services.
   service_client_->SetAlternateErrorPagesEnabled(true);
   service_client_->SetMetricsReportingEnabled(true);
   service_client_->SetSafeBrowsingExtendedReportingEnabled(true);
