@@ -18156,7 +18156,7 @@ Called by update_net_error_codes.py.-->
   <int value="1417" label="AddEventListenerPassiveTrue"/>
   <int value="1418" label="AddEventListenerPassiveFalse"/>
   <int value="1419" label="CSPReferrerDirective"/>
-  <int value="1420" label="DocumentOpen"/>
+  <int value="1420" label="OBSOLETE_DocumentOpen"/>
   <int value="1421" label="ElementRequestPointerLockInShadow"/>
   <int value="1422" label="ShadowRootPointerLockElement"/>
   <int value="1423" label="DocumentPointerLockElementInV0Shadow"/>
@@ -19269,6 +19269,9 @@ Called by update_net_error_codes.py.-->
   <int value="2491" label="CSSEnvironmentVariable_SafeAreaInsetBottom"/>
   <int value="2492" label="CSSEnvironmentVariable_SafeAreaInsetRight"/>
   <int value="2493" label="MediaControlsDisplayCutoutGesture"/>
+  <int value="2494" label="DocumentOpenTwoArgs"/>
+  <int value="2495" label="DocumentOpenTwoArgsWithReplace"/>
+  <int value="2496" label="DocumentOpenThreeArgs"/>
 </enum>
 
 <enum name="FeedbackSource">
