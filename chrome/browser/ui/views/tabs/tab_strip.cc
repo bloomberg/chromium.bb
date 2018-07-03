@@ -1352,7 +1352,8 @@ void TabStrip::OnPaint(gfx::Canvas* canvas) {
     float separator_height = Tab::GetTabSeparatorHeight();
     gfx::RectF separator_bounds(
         new_tab_button_bounds_.x() - Tab::GetCornerRadius(),
-        (height() - separator_height) / 2, 1, separator_height);
+        (height() - separator_height) / 2, Tab::kSeparatorThickness,
+        separator_height);
     cc::PaintFlags flags;
     flags.setAntiAlias(true);
     flags.setColor(GetTabSeparatorColor());

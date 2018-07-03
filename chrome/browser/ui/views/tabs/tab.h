@@ -54,6 +54,10 @@ class Tab : public gfx::AnimationDelegate,
   // The Tab's class name.
   static const char kViewClassName[];
 
+  // Under refresh, thickness in DIPs of the separator painted on the left and
+  // right edges of the tab.
+  static constexpr int kSeparatorThickness = 1;
+
   Tab(TabController* controller, gfx::AnimationContainer* container);
   ~Tab() override;
 
@@ -218,6 +222,13 @@ class Tab : public gfx::AnimationDelegate,
   FRIEND_TEST_ALL_PREFIXES(TabStripTest,
                            TabCloseButtonVisibilityWhenNotStacked);
 
+  // Contains values 0..1 representing the opacity of the corresponding
+  // separators.  These are physical and not logical, so "left" is the left
+  // separator in both LTR and RTL.
+  struct SeparatorOpacities {
+    float left = 0, right = 0;
+  };
+
   // Invoked from Layout to adjust the position of the favicon or alert
   // indicator for pinned tabs. The visual_width parameter is how wide the
   // icon looks (rather than how wide the bounds are).
@@ -265,6 +276,11 @@ class Tab : public gfx::AnimationDelegate,
   // Returns whether the tab should be rendered as a normal tab as opposed to a
   // pinned tab.
   bool ShouldRenderAsNormalTab() const;
+
+  // Returns the opacities of the separators.  If |for_layout| is true, returns
+  // the "layout" opacities, which ignore the effects of surrounding tabs' hover
+  // effects and consider only the current tab's state.
+  SeparatorOpacities GetSeparatorOpacities(bool for_layout) const;
 
   // Gets the throb value for the tab. When a tab is not selected the active
   // background is drawn at GetThrobValue() * 100%. This is used for hover, mini
