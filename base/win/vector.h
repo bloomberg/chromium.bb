@@ -124,13 +124,56 @@ class VectorView
   EventRegistrationToken vector_changed_token_;
 };
 
+template <typename T>
+HRESULT CopyTo(const T& value, T* ptr) {
+  *ptr = value;
+  return S_OK;
+}
+
+template <typename T>
+HRESULT CopyTo(const Microsoft::WRL::ComPtr<T>& com_ptr, T** ptr) {
+  return com_ptr.CopyTo(ptr);
+}
+
+template <typename T>
+HRESULT CopyN(typename std::vector<T>::const_iterator first,
+              unsigned count,
+              T* result) {
+  std::copy_n(first, count, result);
+  return S_OK;
+}
+
+template <typename T>
+HRESULT CopyN(
+    typename std::vector<Microsoft::WRL::ComPtr<T>>::const_iterator first,
+    unsigned count,
+    T** result) {
+  for (unsigned i = 0; i < count; ++i)
+    CopyTo(*first++, result++);
+  return S_OK;
+}
+
+template <typename T>
+bool IsEqual(const T& lhs, const T& rhs) {
+  return lhs == rhs;
+}
+
+template <typename T>
+bool IsEqual(const Microsoft::WRL::ComPtr<T>& com_ptr, const T* ptr) {
+  return com_ptr.Get() == ptr;
+}
+
 }  // namespace internal
 
 // This file provides an implementation of Windows::Foundation::IVector. It
 // functions as a thin wrapper around an std::vector, and dispatches method
 // calls to either the corresponding std::vector API or appropriate
 // std::algorithms. Furthermore, it notifies its observers whenever its
-// observable state changes.
+// observable state changes. A base::win::Vector can be constructed for any type
+// T, and is implicitly constructible from a std::vector. In the case where T is
+// a pointer derived from IUnknown, the std::vector needs to be of type
+// Microsoft::WRL::ComPtr<T>. This enforces proper reference counting and
+// improves safety.
 template <typename T>
 class Vector
     : public Microsoft::WRL::RuntimeClass<
@@ -154,16 +197,21 @@ class Vector
   using LogicalT = internal::Logical<T>;
   using AbiT = internal::Abi<T>;
 
+  using StorageT =
+      std::conditional_t<std::is_convertible<AbiT, IUnknown*>::value,
+                         Microsoft::WRL::ComPtr<std::remove_pointer_t<AbiT>>,
+                         AbiT>;
+
   Vector() = default;
-  explicit Vector(const std::vector<AbiT>& vector) : vector_(vector) {}
-  explicit Vector(std::vector<AbiT>&& vector) : vector_(std::move(vector)) {}
+  explicit Vector(const std::vector<StorageT>& vector) : vector_(vector) {}
+  explicit Vector(std::vector<StorageT>&& vector)
+      : vector_(std::move(vector)) {}
+
   // ABI::Windows::Foundation::Collections::IVector:
   IFACEMETHODIMP GetAt(unsigned index, AbiT* item) override {
     if (index >= vector_.size())
       return E_BOUNDS;
-
-    *item = vector_[index];
-    return S_OK;
+    return internal::CopyTo(vector_[index], item);
   }
 
   IFACEMETHODIMP get_Size(unsigned* size) override {
@@ -179,7 +227,10 @@ class Vector
   }
 
   IFACEMETHODIMP IndexOf(AbiT value, unsigned* index, boolean* found) override {
-    auto iter = std::find(vector_.begin(), vector_.end(), value);
+    auto iter = std::find_if(vector_.begin(), vector_.end(),
+                             [&value](const StorageT& elem) {
+                               return internal::IsEqual(elem, value);
+                             });
     *index = iter != vector_.end() ? std::distance(vector_.begin(), iter) : 0;
     *found = iter != vector_.end();
     return S_OK;
@@ -252,8 +303,8 @@ class Vector
       return E_BOUNDS;
 
     *actual = std::min<unsigned>(vector_.size() - start_index, capacity);
-    std::copy_n(std::next(vector_.begin(), start_index), *actual, value);
-    return S_OK;
+    return internal::CopyN(std::next(vector_.begin(), start_index), *actual,
+                           value);
   }
 
   IFACEMETHODIMP ReplaceAll(unsigned count, AbiT* value) override {
@@ -301,7 +352,7 @@ class Vector
     DCHECK(handlers_.empty());
   }
 
-  std::vector<AbiT> vector_;
+  std::vector<StorageT> vector_;
   base::flat_map<int64_t,
                  ABI::Windows::Foundation::Collections::
                      VectorChangedEventHandler<LogicalT>*>
