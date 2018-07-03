@@ -60,6 +60,10 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
   // wishes to save a dangerous file.
   void HandleSaveDangerous(const base::ListValue* args);
 
+  // Callback for the "retryDownload" message - specifies that the user wishes
+  // to download an item again.
+  void HandleRetryDownload(const base::ListValue* args);
+
   // Callback for the "discardDangerous" message - specifies that the user
   // wishes to discard (remove) a dangerous file.
   void HandleDiscardDangerous(const base::ListValue* args);
@@ -140,6 +144,9 @@ class MdDownloadsDOMHandler : public content::WebContentsObserver,
 
   // Removes the download specified by an ID from JavaScript in |args|.
   void RemoveDownloadInArgs(const base::ListValue* args);
+
+  // Retry the download specified by an ID from JavaScript in |args|.
+  void RetryDownload(const base::ListValue* args);
 
   // Checks whether a download's file was removed from its original location.
   void CheckForRemovedFiles();
