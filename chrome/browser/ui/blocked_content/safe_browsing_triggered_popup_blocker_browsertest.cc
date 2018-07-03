@@ -200,18 +200,6 @@ class SafeBrowsingTriggeredPopupBlockerBrowserTest
   DISALLOW_COPY_AND_ASSIGN(SafeBrowsingTriggeredPopupBlockerBrowserTest);
 };
 
-// The boolean parameter is whether to ignore sublists.
-class SafeBrowsingTriggeredPopupBlockerParamBrowserTest
-    : public SafeBrowsingTriggeredPopupBlockerBrowserTest,
-      public testing::WithParamInterface<bool> {
-  void FinalizeFeatures() override {
-    std::string ignore_param = GetParam() ? "true" : "false";
-    scoped_feature_list_.InitAndEnableFeatureWithParameters(
-        kAbusiveExperienceEnforce, {{"ignore_sublists", ignore_param}});
-  }
-  base::test::ScopedFeatureList scoped_feature_list_;
-};
-
 class SafeBrowsingTriggeredPopupBlockerDisabledTest
     : public SafeBrowsingTriggeredPopupBlockerBrowserTest {
   void FinalizeFeatures() override {
@@ -604,34 +592,6 @@ IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
   ui_test_utils::NavigateToURL(browser(), url2);
   open_popup_and_expect_block(false);
 }
-
-IN_PROC_BROWSER_TEST_P(SafeBrowsingTriggeredPopupBlockerParamBrowserTest,
-                       IgnoreSublist) {
-  const char kWindowOpenPath[] = "/subresource_filter/window_open.html";
-  GURL url(embedded_test_server()->GetURL("a.com", kWindowOpenPath));
-
-  // Do not set the ABUSIVE bit.
-  safe_browsing::ThreatMetadata metadata;
-  database_helper()->AddFullHashToDbAndFullHashCache(
-      url, safe_browsing::GetUrlSubresourceFilterId(), metadata);
-
-  // Navigate to url, should not trigger the popup blocker.
-  ui_test_utils::NavigateToURL(browser(), url);
-  bool opened_window = false;
-  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      web_contents(), "openWindow()", &opened_window));
-
-  bool ignoring_sublists = GetParam();
-
-  EXPECT_EQ(ignoring_sublists, !opened_window);
-  EXPECT_EQ(ignoring_sublists,
-            TabSpecificContentSettings::FromWebContents(web_contents())
-                ->IsContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS));
-}
-
-INSTANTIATE_TEST_CASE_P(/* no prefix */,
-                        SafeBrowsingTriggeredPopupBlockerParamBrowserTest,
-                        testing::Values(true, false));
 
 IN_PROC_BROWSER_TEST_F(SafeBrowsingTriggeredPopupBlockerBrowserTest,
                        WarningDoNotBlockCreatingNewWindows_LogsToConsole) {

@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -23,8 +22,6 @@
 #include "third_party/blink/public/web/web_triggering_event_info.h"
 
 namespace {
-
-const char kIgnoreSublistsParam[] = "ignore_sublists";
 
 void LogAction(SafeBrowsingTriggeredPopupBlocker::Action action) {
   UMA_HISTOGRAM_ENUMERATION("ContentSettings.Popups.StrongBlockerActions",
@@ -111,11 +108,7 @@ SafeBrowsingTriggeredPopupBlocker::SafeBrowsingTriggeredPopupBlocker(
     subresource_filter::SubresourceFilterObserverManager* observer_manager)
     : content::WebContentsObserver(web_contents),
       scoped_observer_(this),
-      current_page_data_(std::make_unique<PageData>()),
-      ignore_sublists_(
-          base::GetFieldTrialParamByFeatureAsBool(kAbusiveExperienceEnforce,
-                                                  kIgnoreSublistsParam,
-                                                  false /* default_value */)) {
+      current_page_data_(std::make_unique<PageData>()) {
   DCHECK(observer_manager);
   scoped_observer_.Add(observer_manager);
 }
@@ -161,11 +154,6 @@ void SafeBrowsingTriggeredPopupBlocker::OnSafeBrowsingChecksComplete(
   for (const auto& result : results) {
     if (result.threat_type ==
         safe_browsing::SBThreatType::SB_THREAT_TYPE_SUBRESOURCE_FILTER) {
-      if (ignore_sublists_) {
-        // No warning for ignore_sublists mode.
-        level_for_next_committed_navigation_ = SubresourceFilterLevel::ENFORCE;
-        return;
-      }
       auto abusive = result.threat_metadata.subresource_filter_match.find(
           safe_browsing::SubresourceFilterType::ABUSIVE);
       if (abusive != result.threat_metadata.subresource_filter_match.end()) {
